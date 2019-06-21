@@ -2,89 +2,90 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.tab;
+package org.chromium.chrome.browser.fullscreen;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 
-import org.chromium.base.UserData;
-import org.chromium.base.UserDataHost;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.base.Supplier;
+import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.tab.SadTab;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 
 /**
- * Handles browser controls offset for a Tab.
+ * Handles browser controls offset.
  */
-public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData {
-    private static final Class<TabBrowserControlsOffsetHelper> USER_DATA_KEY =
-            TabBrowserControlsOffsetHelper.class;
-
+public class BrowserControlsOffsetHelper implements VrModeObserver, Destroyable {
     /**
      * Maximum duration for the control container slide-in animation. Note that this value matches
      * the one in browser_controls_offset_manager.cc.
      */
     private static final int MAX_CONTROLS_ANIMATION_DURATION_MS = 200;
 
-    private final Tab mTab;
-    private final TabObserver mTabObserver;
+    /** Observes active tab. */
+    private final ActivityTabTabObserver mTabObserver;
 
-    private int mPreviousTopControlsOffsetY;
-    private int mPreviousBottomControlsOffsetY;
-    private int mPreviousContentOffsetY;
-    private boolean mAreOffsetsInitialized;
+    /* Provides {@link FullscreenManager} lazily when actually used. */
+    private final Supplier<FullscreenManager> mFullscreenManager;
 
-    /**
-     * Whether the Android browser controls offset is overridden. This handles top controls only.
-     */
-    private boolean mIsControlsOffsetOverridden;
+    /** Active tab in the foreground. */
+    private Tab mTab;
 
-    /**
-     * The animator for slide-in animation on the Android controls.
-     */
+    /** The animator for slide-in animation on the Android controls. */
     private ValueAnimator mControlsAnimator;
 
-    /**
-     * Whether the browser is currently in VR mode.
-     */
+    /** Whether the browser is currently in VR mode. */
     private boolean mIsInVr;
 
-    public static TabBrowserControlsOffsetHelper from(Tab tab) {
-        UserDataHost host = tab.getUserDataHost();
-        TabBrowserControlsOffsetHelper helper = host.getUserData(USER_DATA_KEY);
-        return helper != null
-                ? helper
-                : host.setUserData(USER_DATA_KEY, new TabBrowserControlsOffsetHelper(tab));
-    }
-
     /**
-     * @param tab The {@link Tab} that this class is associated with.
+     * Indicates if control offset is in the overridden state by animation. Stays {@code true}
+     * from animation start till the next offset update from compositor arrives.
      */
-    private TabBrowserControlsOffsetHelper(Tab tab) {
-        mTab = tab;
-        mTabObserver = new EmptyTabObserver() {
+    private boolean mOffsetOverridden;
+
+    public BrowserControlsOffsetHelper(ActivityLifecycleDispatcher lifecycleDispatcher,
+            ActivityTabProvider activityTabProvider,
+            Supplier<FullscreenManager> fullscreenManager) {
+        mFullscreenManager = fullscreenManager;
+        mTab = activityTabProvider.get();
+        mTabObserver = new ActivityTabTabObserver(activityTabProvider) {
+            @Override
+            protected void onObservingDifferentTab(Tab tab) {
+                // Got into a state where there's no active tab (e.g. tab switcher). Wait till the
+                // next non-null active tab is set for any update.
+                if (tab == null) return;
+                mTab = tab;
+                restorePositions();
+            }
+
             @Override
             public void onCrash(Tab tab) {
                 if (SadTab.isShowing(tab)) showAndroidControls(false);
             }
+
             @Override
             public void onRendererResponsiveStateChanged(Tab tab, boolean isResponsive) {
                 if (!isResponsive) showAndroidControls(false);
             }
+
+            @Override
+            public void onBrowserControlsOffsetChanged(
+                    int topControlsOffset, int bottomControlsOffset, int contentOffset) {
+                onOffsetsChanged(topControlsOffset, bottomControlsOffset, contentOffset);
+            }
         };
 
-        mTab.addObserver(mTabObserver);
         VrModuleProvider.registerVrModeObserver(this);
         if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
-    }
-
-    /**
-     * @return Whether the Android browser controls offset is overridden on the browser side.
-     */
-    public boolean isControlsOffsetOverridden() {
-        return mIsControlsOffsetOverridden;
+        lifecycleDispatcher.register(this);
     }
 
     /**
@@ -94,21 +95,16 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
      * @param bottomControlsOffsetY The Y offset of the bottom controls in physical pixels.
      * @param contentOffsetY The Y offset of the content in physical pixels.
      */
-    void onOffsetsChanged(int topControlsOffsetY, int bottomControlsOffsetY, int contentOffsetY) {
+    private void onOffsetsChanged(
+            int topControlsOffsetY, int bottomControlsOffsetY, int contentOffsetY) {
         // Cancel any animation on the Android controls and let compositor drive the offset updates.
         resetControlsOffsetOverridden();
 
-        mPreviousTopControlsOffsetY = topControlsOffsetY;
-        mPreviousBottomControlsOffsetY = bottomControlsOffsetY;
-        mPreviousContentOffsetY = contentOffsetY;
-        mAreOffsetsInitialized = true;
-
-        if (mTab.isHidden()) return;
         if (SadTab.isShowing(mTab) || mTab.isNativePage()) {
             showAndroidControls(false);
         } else {
-            updateFullscreenManagerOffsets(false, mPreviousTopControlsOffsetY,
-                    mPreviousBottomControlsOffsetY, mPreviousContentOffsetY);
+            updateFullscreenManagerOffsets(
+                    false, topControlsOffsetY, bottomControlsOffsetY, contentOffsetY);
         }
         TabModelImpl.setActualTabSwitchLatencyMetricRequired();
     }
@@ -118,40 +114,28 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
      * @param animate Whether a slide-in animation should be run.
      */
     public void showAndroidControls(boolean animate) {
-        FullscreenManager manager = FullscreenManager.from(mTab);
-        if (manager == null) return;
-
         if (animate) {
             runBrowserDrivenShowAnimation();
         } else {
-            updateFullscreenManagerOffsets(true, 0, 0, manager.getContentOffset());
+            updateFullscreenManagerOffsets(true, 0, 0, mFullscreenManager.get().getContentOffset());
         }
     }
 
     /**
-     * Resets the controls positions in {@link FullscreenManager} to the cached positions.
+     * Restores the controls positions to the cached positions of the active Tab.
      */
-    public void resetPositions() {
+    private void restorePositions() {
         resetControlsOffsetOverridden();
-        if (FullscreenManager.from(mTab) == null) return;
 
         // Make sure the dominant control offsets have been set.
-        if (mAreOffsetsInitialized) {
-            updateFullscreenManagerOffsets(false, mPreviousTopControlsOffsetY,
-                    mPreviousBottomControlsOffsetY, mPreviousContentOffsetY);
+        TabBrowserControlsState controlState = TabBrowserControlsState.get(mTab);
+        if (controlState.offsetInitialized()) {
+            updateFullscreenManagerOffsets(false, controlState.topControlsOffset(),
+                    controlState.bottomControlsOffset(), controlState.contentOffset());
         } else {
             showAndroidControls(false);
         }
         TabBrowserControlsState.updateEnabledState(mTab);
-    }
-
-    /**
-     * Clears the cached browser controls positions.
-     */
-    private void clearPreviousPositions() {
-        mPreviousTopControlsOffsetY = 0;
-        mPreviousBottomControlsOffsetY = 0;
-        mPreviousContentOffsetY = 0;
     }
 
     /**
@@ -160,9 +144,7 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
      */
     private void updateFullscreenManagerOffsets(boolean toNonFullscreen, int topControlsOffset,
             int bottomControlsOffset, int topContentOffset) {
-        final FullscreenManager manager = FullscreenManager.from(mTab);
-        if (manager == null) return;
-
+        FullscreenManager manager = mFullscreenManager.get();
         if (mIsInVr) {
             VrModuleProvider.getDelegate().rawTopContentOffsetChanged(topContentOffset);
             // The dip scale of java UI and WebContents are different while in VR, leading to a
@@ -182,13 +164,26 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
         }
     }
 
+    /** @return {@code true} if browser control offset is overridden by animation. */
+    public boolean offsetOverridden() {
+        return mOffsetOverridden;
+    }
+
+    /**
+     * Sets the flat indicating if browser control offset is overridden by animation.
+     * @param flag Boolean flag of the new offset overridden state.
+     */
+    private void setOffsetOverridden(boolean flag) {
+        mOffsetOverridden = flag;
+    }
+
     /**
      * Helper method to cancel overridden offset on Android browser controls.
      */
     private void resetControlsOffsetOverridden() {
-        if (!mIsControlsOffsetOverridden) return;
+        if (!offsetOverridden()) return;
         if (mControlsAnimator != null) mControlsAnimator.cancel();
-        mIsControlsOffsetOverridden = false;
+        setOffsetOverridden(false);
     }
 
     /**
@@ -197,9 +192,10 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
     private void runBrowserDrivenShowAnimation() {
         if (mControlsAnimator != null) return;
 
-        mIsControlsOffsetOverridden = true;
+        TabBrowserControlsState controlState = TabBrowserControlsState.get(mTab);
+        setOffsetOverridden(true);
 
-        final FullscreenManager manager = FullscreenManager.from(mTab);
+        final FullscreenManager manager = mFullscreenManager.get();
         final float hiddenRatio = manager.getBrowserControlHiddenRatio();
         final int topControlHeight = manager.getTopControlsHeight();
         final int topControlOffset = manager.getTopControlOffset();
@@ -212,8 +208,6 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
             @Override
             public void onAnimationEnd(Animator animation) {
                 mControlsAnimator = null;
-                mPreviousTopControlsOffsetY = 0;
-                mPreviousContentOffsetY = topControlHeight;
             }
 
             @Override
@@ -231,25 +225,24 @@ public class TabBrowserControlsOffsetHelper implements VrModeObserver, UserData 
     @Override
     public void onEnterVr() {
         mIsInVr = true;
-        resetPositions();
+        restorePositions();
     }
 
     @Override
     public void onExitVr() {
         mIsInVr = false;
-        // Call resetPositions() to clear the VR-specific overrides for controls height.
-        resetPositions();
+
+        // Clear the VR-specific overrides for controls height.
+        restorePositions();
+
         // Show the Controls explicitly because under some situations, like when we're showing a
         // Native Page, the renderer won't send any new offsets.
         showAndroidControls(false);
     }
 
-    // UserData
-
     @Override
     public void destroy() {
-        clearPreviousPositions();
         VrModuleProvider.unregisterVrModeObserver(this);
-        mTab.removeObserver(mTabObserver);
+        mTabObserver.destroy();
     }
 }
