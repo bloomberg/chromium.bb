@@ -408,6 +408,7 @@ class CrOSTest(object):
     if cwd:
       # Run the remote command with cwd.
       cmd = '"cd %s && %s"' % (cwd, ' '.join(self.args))
+      # Pass shell=True because of && in the cmd.
       result = self._device.RemoteCommand(cmd, stream_output=True, shell=True,
                                           remote_user=user)
     else:

@@ -191,7 +191,7 @@ def ListContains(small, big, strict=False):
   """Looks for a sublist within a bigger list.
 
   Args:
-    small: The sublist to search for.
+    small: The sublist or string to search for.
     big: The list to search in.
     strict: If True, all items in list must be adjacent.
   """
@@ -584,7 +584,8 @@ class PartialCmdMock(PartialMock):
       mock_attr: Which attributes's mock is being referenced.
     """
     for call_args, call_kwargs in self.patched[mock_attr].call_args_list:
-      if (ListContains(args, call_args[cmd_arg_index]) and
+      if (ListContains(args, call_args[cmd_arg_index],
+                       strict=isinstance(args, str)) and
           DictContains(kwargs, call_kwargs)):
         return True
     return False

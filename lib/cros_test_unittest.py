@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import mock
 import os
+import stat
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -94,7 +95,7 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
 
   def testBasicAutotest(self):
     """Tests a simple autotest call."""
-    self._tester.autotest = ['accessiblity_Sanity']
+    self._tester.autotest = ['accessibility_Sanity']
     self._tester.Run()
 
     # Check VM got launched.
@@ -104,7 +105,7 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains([
         'test_that', '--no-quickmerge', '--ssh_options',
         '-F /dev/null -i /dev/null',
-        'localhost:9222', 'accessiblity_Sanity'])
+        'localhost:9222', 'accessibility_Sanity'])
 
   def testAutotestWithArgs(self):
     """Tests an autotest call with attributes."""
@@ -137,7 +138,7 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     # Checks that mock version has been called.
     check_inside_chroot_mock.assert_called()
 
-    self._tester.autotest = ['accessiblity_Sanity']
+    self._tester.autotest = ['accessibility_Sanity']
     self._tester.results_dir = '/mnt/host/source/test_results'
     self._tester._device.private_key = '/mnt/host/source/.ssh/testing_rsa'
 
@@ -223,6 +224,31 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
         '-ephemeraldevserver=false', '-keyfile', '/tmp/.ssh/testing_rsa',
         '-extrauseflags=tast_vm', 'localhost:9222', 'ui.ChromeLogin'
     ])
+
+  def testRunDeviceCmd(self):
+    """Verify a run device cmd call."""
+    self._tester.remote_cmd = True
+    self._tester.files = [self.TempFilePath('crypto_unittests')]
+    osutils.Touch(self._tester.files[0], mode=stat.S_IRWXU)
+    self._tester.as_chronos = True
+    self._tester.args = ['crypto_unittests',
+                         '--test-launcher-print-test-stdio=always']
+
+    self._tester.Run()
+
+    # Ensure target directory is created on the DUT.
+    self.assertCommandContains(['mkdir', '-p', '/usr/local/cros_test'])
+    # Ensure test ssh keys are authorized with chronos.
+    self.assertCommandContains(['cp', '-r', '/root/.ssh/',
+                                '/home/chronos/user/'])
+    # Ensure chronos has ownership of the directory.
+    self.assertCommandContains(['chown', '-R', 'chronos:',
+                                '/usr/local/cros_test'])
+    # Ensure command runs in the target directory.
+    self.assertCommandContains('"cd /usr/local/cros_test && crypto_unittests '
+                               '--test-launcher-print-test-stdio=always"')
+    # Ensure target directory is removed at the end of the test.
+    self.assertCommandContains(['rm', '-rf', '/usr/local/cros_test'])
 
   def testRunDeviceCmdWithoutSrcFiles(self):
     """Verify running a remote command when src files are not specified.
