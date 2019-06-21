@@ -17766,8 +17766,8 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Failure"/>
 </enum>
 
-<!-- This must be kept current with ExploreSitesEnums.java's
-     ExploreSitesEnums.CatalogUpdateRequestSource -->
+<!-- This must be kept current with explore_sites_bridge.h's
+     ExploreSitesCatalogUpdateRequestSource -->
 
 <enum name="ExploreSitesCatalogUpdateRequestSource">
   <int value="0" label="New Tab Page"/>
