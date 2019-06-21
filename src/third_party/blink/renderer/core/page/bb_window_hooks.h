@@ -73,6 +73,8 @@ namespace blink {
         bool isOverwriteModeEnabled(Document* document);
         void toggleOverwriteMode(Document* document);
 
+        void allowPrint(long value);
+
         void Trace(blink::Visitor*) override;
 
         explicit BBWindowHooks(LocalFrame*);
