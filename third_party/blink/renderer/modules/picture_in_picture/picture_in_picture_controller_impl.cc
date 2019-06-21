@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event.h"
+#include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_options.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -84,6 +85,25 @@ PictureInPictureControllerImpl::IsDocumentAllowed() const {
   }
 
   return Status::kEnabled;
+}
+
+PictureInPictureController::Status
+PictureInPictureControllerImpl::VerifyElementAndOptions(
+    const HTMLElement& element,
+    const PictureInPictureOptions* options) const {
+  if (!IsVideoElement(element) && options) {
+    // If either the width or height is present then we should make sure they
+    // are both present and valid.
+    if (options->hasWidth() || options->hasHeight()) {
+      if (!options->hasWidth() || options->width() <= 0)
+        return Status::kInvalidWidthOrHeightOption;
+
+      if (!options->hasHeight() || options->height() <= 0)
+        return Status::kInvalidWidthOrHeightOption;
+    }
+  }
+
+  return IsElementAllowed(element);
 }
 
 PictureInPictureController::Status
