@@ -621,8 +621,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirContextMenuSharedWithMe"),
         TestCase("dirContextMenuOffline"),
         TestCase("dirContextMenuComputers"),
-        TestCase("dirContextMenuShortcut"),
-        TestCase("dirContextMenuFocus")));
+        TestCase("dirContextMenuShortcut")));
+// Disabled crbug.com/977225
+//        TestCase("dirContextMenuFocus")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DriveSpecific, /* drive_specific.js */
