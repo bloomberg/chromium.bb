@@ -2699,6 +2699,8 @@ jumbo_split_static_library("browser") {
       "notifications/notification_platform_bridge_android.h",
       "notifications/notification_trigger_scheduler_android.cc",
       "notifications/notification_trigger_scheduler_android.h",
+      "notifications/scheduler/display_agent_android.cc",
+      "notifications/scheduler/display_agent_android.h",
       "notifications/scheduler/notification_background_task_scheduler_android.cc",
       "notifications/scheduler/notification_background_task_scheduler_android.h",
       "page_load_metrics/observers/android_page_load_metrics_observer.cc",
