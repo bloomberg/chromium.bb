@@ -49,14 +49,6 @@ struct EnumTraits<autofill::mojom::SubmissionSource,
 };
 
 template <>
-struct EnumTraits<autofill::mojom::ButtonTitleType, autofill::ButtonTitleType> {
-  static autofill::mojom::ButtonTitleType ToMojom(
-      autofill::ButtonTitleType input);
-  static bool FromMojom(autofill::mojom::ButtonTitleType input,
-                        autofill::ButtonTitleType* output);
-};
-
-template <>
 struct StructTraits<autofill::mojom::FormFieldDataDataView,
                     autofill::FormFieldData> {
   static const base::string16& label(const autofill::FormFieldData& r) {
@@ -188,7 +180,7 @@ struct StructTraits<autofill::mojom::ButtonTitleInfoDataView,
     return r.first;
   }
 
-  static const autofill::ButtonTitleType& type(
+  static autofill::mojom::ButtonTitleType type(
       const autofill::ButtonTitleInfo& r) {
     return r.second;
   }

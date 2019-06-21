@@ -124,66 +124,6 @@ bool EnumTraits<autofill::mojom::SubmissionSource, autofill::SubmissionSource>::
 }
 
 // static
-autofill::mojom::ButtonTitleType EnumTraits<
-    autofill::mojom::ButtonTitleType,
-    autofill::ButtonTitleType>::ToMojom(autofill::ButtonTitleType input) {
-  switch (input) {
-    case autofill::ButtonTitleType::NONE:
-      return autofill::mojom::ButtonTitleType::NONE;
-    case autofill::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE:
-      return autofill::mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE;
-    case autofill::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE:
-      return autofill::mojom::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE;
-    case autofill::ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE:
-      return autofill::mojom::ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE;
-    case autofill::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE:
-      return autofill::mojom::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE;
-    case autofill::ButtonTitleType::HYPERLINK:
-      return autofill::mojom::ButtonTitleType::HYPERLINK;
-    case autofill::ButtonTitleType::DIV:
-      return autofill::mojom::ButtonTitleType::DIV;
-    case autofill::ButtonTitleType::SPAN:
-      return autofill::mojom::ButtonTitleType::SPAN;
-  }
-  NOTREACHED();
-  return autofill::mojom::ButtonTitleType::NONE;
-}
-
-// static
-bool EnumTraits<autofill::mojom::ButtonTitleType, autofill::ButtonTitleType>::
-    FromMojom(autofill::mojom::ButtonTitleType input,
-              autofill::ButtonTitleType* output) {
-  switch (input) {
-    case autofill::mojom::ButtonTitleType::NONE:
-      *output = autofill::ButtonTitleType::NONE;
-      return true;
-    case autofill::mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE:
-      *output = autofill::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE;
-      return true;
-    case autofill::mojom::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE:
-      *output = autofill::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE;
-      return true;
-    case autofill::mojom::ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE:
-      *output = autofill::ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE;
-      return true;
-    case autofill::mojom::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE:
-      *output = autofill::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE;
-      return true;
-    case autofill::mojom::ButtonTitleType::HYPERLINK:
-      *output = autofill::ButtonTitleType::HYPERLINK;
-      return true;
-    case autofill::mojom::ButtonTitleType::DIV:
-      *output = autofill::ButtonTitleType::DIV;
-      return true;
-    case autofill::mojom::ButtonTitleType::SPAN:
-      *output = autofill::ButtonTitleType::SPAN;
-      return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
-// static
 bool StructTraits<
     autofill::mojom::FormFieldDataDataView,
     autofill::FormFieldData>::Read(autofill::mojom::FormFieldDataDataView data,

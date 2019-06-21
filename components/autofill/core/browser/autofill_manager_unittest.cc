@@ -78,11 +78,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
-using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
-using autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout;
-using autofill::mojom::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using testing::_;
@@ -95,6 +90,14 @@ using testing::SaveArg;
 using testing::UnorderedElementsAre;
 
 namespace autofill {
+
+using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
+using autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout;
+using autofill::mojom::ButtonTitleType;
+using autofill::mojom::SubmissionIndicatorEvent;
+
 namespace {
 
 const int kDefaultPageID = 137;

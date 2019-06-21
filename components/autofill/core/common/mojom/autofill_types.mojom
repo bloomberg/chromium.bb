@@ -63,16 +63,18 @@ enum FillingStatus {
   ERROR_NOT_ALLOWED,  // Filling not permitted (e.g. password in email field).
 };
 
-// autofill::ButtonTitleType
+// Describes how a form button is implemented in HTML source. Should be
+// synced with |ButtonTitleType| in
+// components/autofill/core/browser/proto/server.proto.
 enum ButtonTitleType {
-  NONE,
-  BUTTON_ELEMENT_SUBMIT_TYPE,
-  BUTTON_ELEMENT_BUTTON_TYPE,
-  INPUT_ELEMENT_SUBMIT_TYPE,
-  INPUT_ELEMENT_BUTTON_TYPE,
-  HYPERLINK,
-  DIV,
-  SPAN
+  NONE = 0,
+  BUTTON_ELEMENT_SUBMIT_TYPE = 1,  // <button type='submit'>
+  BUTTON_ELEMENT_BUTTON_TYPE = 2,  // <button type='button'>
+  INPUT_ELEMENT_SUBMIT_TYPE = 3,   // <input type='submit'>
+  INPUT_ELEMENT_BUTTON_TYPE = 4,   // <input type='button'>
+  HYPERLINK = 5,                   // e.g. <a class='button'>
+  DIV = 6,                         // e.g. <div id='submit'>
+  SPAN = 7                         // e.g. <span name='btn'>
 };
 
 // autofill::FormFieldData
