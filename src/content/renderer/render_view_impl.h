@@ -261,6 +261,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   blink::WebScreenInfo GetScreenInfo() override;
   bool CanHandleGestureEvent() override;
   bool AllowPopupsDuringPageUnload() override;
+  void setRubberbandRect(const blink::WebRect&) override;
+  void hideRubberbandRect() override;
 
 #if defined(OS_ANDROID)
   // Only used on Android since all other platforms implement
@@ -465,6 +467,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
   void OnSetPageScale(float page_scale_factor);
+  void OnForceRedraw(const ui::LatencyInfo& latency_info);
+  void OnEnableAltDragRubberbanding(bool enable);
   void OnAudioStateChanged(bool is_audio_playing);
   void OnSetBackgroundOpaque(bool opaque);
 

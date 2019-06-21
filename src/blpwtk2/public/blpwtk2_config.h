@@ -56,6 +56,7 @@
 // feature 7
 #define BLPWTK2_FEATURE_PERFORMANCETIMING
 // feature 8
+#define BLPWTK2_FEATURE_RUBBERBAND
 // feature 9
 #define BLPWTK2_FEATURE_TIMEZONE
 // feature 10

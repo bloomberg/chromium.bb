@@ -648,6 +648,7 @@ blink_core_sources("css") {
     "properties/longhands/right_custom.cc",
     "properties/longhands/rotate_custom.cc",
     "properties/longhands/row_gap_custom.cc",
+    "properties/longhands/rubberbandable_custom.cc",
     "properties/longhands/rx_custom.cc",
     "properties/longhands/ry_custom.cc",
     "properties/longhands/scale_custom.cc",

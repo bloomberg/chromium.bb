@@ -552,6 +552,8 @@ bool Shell::CanOverscrollContent() const {
 
 void Shell::DidNavigateMainFramePostCommit(WebContents* web_contents) {
   PlatformSetAddressBarURL(web_contents->GetLastCommittedURL());
+
+  web_contents->GetRenderViewHost()->EnableAltDragRubberbanding(true);
 }
 
 JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
