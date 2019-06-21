@@ -430,15 +430,6 @@ void OAuth2TokenService::RemoveObserver(OAuth2TokenServiceObserver* observer) {
   delegate_->RemoveObserver(observer);
 }
 
-void OAuth2TokenService::AddDiagnosticsObserver(DiagnosticsObserver* observer) {
-  diagnostics_observer_list_.AddObserver(observer);
-}
-
-void OAuth2TokenService::RemoveDiagnosticsObserver(
-    DiagnosticsObserver* observer) {
-  diagnostics_observer_list_.RemoveObserver(observer);
-}
-
 void OAuth2TokenService::AddAccessTokenDiagnosticsObserver(
     AccessTokenDiagnosticsObserver* observer) {
   token_manager_->AddDiagnosticsObserver(observer);

@@ -52,7 +52,6 @@ struct CookieParams;
 // Gives access to information about the user's Google identities. See
 // ./README.md for detailed documentation.
 class IdentityManager : public PrimaryAccountManager::Observer,
-                        public OAuth2TokenService::DiagnosticsObserver,
                         public AccessTokenDiagnosticsObserver,
                         public OAuth2TokenServiceObserver {
  public:
@@ -608,12 +607,13 @@ class IdentityManager : public PrimaryAccountManager::Observer,
                                   base::Time expiration_time) override;
   void OnAccessTokenRemoved(const CoreAccountId& account_id,
                             const ScopeSet& scopes) override;
-  // OAuth2TokenService::DiagnosticsObserver:
+
+  // ProfileOAuth2TokenService callbacks:
   void OnRefreshTokenAvailableFromSource(const CoreAccountId& account_id,
                                          bool is_refresh_token_valid,
-                                         const std::string& source) override;
+                                         const std::string& source);
   void OnRefreshTokenRevokedFromSource(const CoreAccountId& account_id,
-                                       const std::string& source) override;
+                                       const std::string& source);
 
   // AccountTrackerService callbacks:
   void OnAccountUpdated(const AccountInfo& info);
