@@ -40,6 +40,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/DeviceConditions.java",
   "java/src/org/chromium/chrome/browser/DevToolsServer.java",
   "java/src/org/chromium/chrome/browser/FileProviderHelper.java",
+  "java/src/org/chromium/chrome/browser/GlobalDiscardableReferencePool.java",
   "java/src/org/chromium/chrome/browser/InsetObserverView.java",
   "java/src/org/chromium/chrome/browser/IntentHandler.java",
   "java/src/org/chromium/chrome/browser/IntentHeadersRecorder.java",

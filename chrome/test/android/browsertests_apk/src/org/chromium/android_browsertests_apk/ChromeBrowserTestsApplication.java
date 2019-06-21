@@ -7,6 +7,7 @@ package org.chromium.android_browsertests_apk;
 import android.content.Context;
 
 import org.chromium.base.PathUtils;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.native_test.NativeBrowserTestApplication;
 
@@ -20,6 +21,9 @@ import org.chromium.native_test.NativeBrowserTestApplication;
  */
 public class ChromeBrowserTestsApplication extends NativeBrowserTestApplication {
     static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
+
+    private final GlobalDiscardableReferencePool mReferencePool =
+            new GlobalDiscardableReferencePool();
 
     @Override
     protected void attachBaseContext(Context base) {
