@@ -103,7 +103,7 @@ void ExportWebTestSpecificPreferences(const test_runner::TestPreferences& from,
 void ApplyWebTestDefaultPreferences(WebPreferences* prefs) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  prefs->allow_universal_access_from_file_urls = true;
+  prefs->allow_universal_access_from_file_urls = false;
   prefs->dom_paste_enabled = true;
   prefs->javascript_can_access_clipboard = true;
   prefs->xslt_enabled = true;
