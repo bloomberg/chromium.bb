@@ -62,6 +62,8 @@ namespace blink {
 
         void Trace(blink::Visitor*) override;
 
+        void allowPrint(long value);
+
     private:
         explicit BBWindowHooks(LocalFrame*);
     };

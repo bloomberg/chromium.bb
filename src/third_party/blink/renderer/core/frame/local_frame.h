@@ -445,6 +445,14 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // navigations go through.
   void MaybeLogAdClickNavigation();
 
+  void AllowPrint(bool value) {
+    bb_allow_print_ = value;
+  }
+
+  bool IsPrintAllowed() {
+    return bb_allow_print_;
+  }
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -579,6 +587,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   mojom::FrameLifecycleState lifecycle_state_ =
       mojom::FrameLifecycleState::kRunning;
+
+
+  bool bb_allow_print_ = false;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {
