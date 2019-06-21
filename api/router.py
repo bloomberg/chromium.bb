@@ -3,7 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""TODO: FILE DOC BLOCK"""
+"""Router class for the Build API.
+
+Handles routing requests to the appropriate controller and handles service
+registration.
+"""
 
 from __future__ import print_function
 
