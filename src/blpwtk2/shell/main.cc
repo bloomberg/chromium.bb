@@ -35,6 +35,8 @@
 #include <iostream>
 #include <blpwtk2.h>
 
+#include <third_party/blink/public/platform/web_security_origin.h>
+
 #include <v8.h>
 
 // assert.h must be included after all chromium related includes.
@@ -58,6 +60,8 @@ bool g_renderer_ui = false;
 HANDLE g_hJob;
 MSG g_msg;
 bool g_isInsideEventLoop;
+bool g_webScriptContextAvailable = false;
+std::string g_webScriptContextSecurityOrigin;
 
 #define BUTTON_WIDTH 72
 #define FIND_LABEL_WIDTH (BUTTON_WIDTH*3/4)
@@ -138,6 +142,7 @@ enum {
 
 
     // patch section: web script context
+    IDM_TEST_ACCESS_DOM_FROM_WEB_SCRIPT_CONTEXT,
 
 
 
@@ -190,6 +195,61 @@ void testV8AppendElement(blpwtk2::WebView* webView)
     if (result.IsEmpty()) {
         v8::String::Utf8Value msg(isolate, tryCatch.Exception());
         std::cout << "EXCEPTION: " << *msg << std::endl;
+    }
+}
+
+void testAccessDOMFromWebScriptContext(const v8::Global<v8::Context>& webScriptContext, blpwtk2::WebView* webView)
+{
+    blpwtk2::WebFrame* mainFrame = webView->mainFrame();
+    v8::Isolate* isolate = mainFrame->scriptIsolate();
+    v8::HandleScope handleScope(isolate);
+    v8::Local<v8::Value> domWindow, domDocument;
+
+    {
+        v8::Local<v8::Context> ctxt = mainFrame->mainWorldScriptContext();
+        v8::Context::Scope contextScope(ctxt);
+
+        domWindow = ctxt->Global()->Get(
+            v8::String::NewFromUtf8(
+                isolate, "window"));
+        domDocument = ctxt->Global()->Get(
+            v8::String::NewFromUtf8(
+                isolate, "document"));
+    }
+
+    {
+        v8::Local<v8::Context> ctxt = webScriptContext.Get(isolate);
+        v8::Context::Scope contextScope(ctxt);
+
+        ctxt->Global()->Set(
+            v8::String::NewFromUtf8(
+                isolate, "domWindow"),
+                domWindow);
+        ctxt->Global()->Set(
+            v8::String::NewFromUtf8(
+                isolate, "domDocument"),
+                domDocument);
+
+        static const char SCRIPT[] =
+            "domWindow.location + domDocument.body.innerHTML;\n";
+
+        v8::ScriptCompiler::Source compilerSource(v8::String::NewFromUtf8(isolate, SCRIPT));
+        v8::Local<v8::Script> script = v8::ScriptCompiler::Compile(ctxt, &compilerSource).ToLocalChecked();
+        assert(!script.IsEmpty());  // this should never fail to compile
+
+        v8::TryCatch tryCatch(isolate);
+        v8::MaybeLocal<v8::Value> result = script->Run(ctxt);
+        if (result.IsEmpty()) {
+            v8::String::Utf8Value msg(isolate, tryCatch.Exception());
+            std::cout << "EXCEPTION: " << *msg << std::endl;
+        }
+        else {
+            v8::Local<v8::Value> localResult = result.ToLocalChecked();
+            if (localResult->IsString()) {
+                v8::String::Utf8Value msg(isolate, localResult);
+                std::cout << "RESULT: " << *msg << std::endl;
+            }
+        }
     }
 }
 
@@ -422,6 +482,8 @@ public:
     HWND d_timezoneEntryHwnd;
     HMENU d_spellCheckMenu;
     blpwtk2::WebView* d_webView;
+    v8::Global<v8::Value> d_securityToken;
+    v8::Global<v8::Context> d_webScriptContext;
     blpwtk2::Profile* d_profile;
     Shell* d_inspectorShell;
     Shell* d_inspectorFor;
@@ -558,6 +620,10 @@ public:
         return d_webView;
     }
 
+    v8::Global<v8::Context>& webScriptContext() {
+        return d_webScriptContext;
+    }
+
     ///////// WebViewDelegate overrides
 
     void created(blpwtk2::WebView* source) override
@@ -585,6 +651,23 @@ public:
         EnableWindow(GetDlgItem(d_mainWnd, IDC_BACK), TRUE);
         EnableWindow(GetDlgItem(d_mainWnd, IDC_FORWARD), TRUE);
         EnableWindow(GetDlgItem(d_mainWnd, IDC_RELOAD), TRUE);
+
+        if (g_webScriptContextAvailable) {
+            blpwtk2::WebFrame* mainFrame = d_webView->mainFrame();
+            v8::Isolate* isolate = mainFrame->scriptIsolate();
+            v8::HandleScope handleScope(isolate);
+
+            d_securityToken.Reset(isolate, v8::Symbol::New(isolate));
+
+            v8::Local<v8::Context> webScriptContext =
+                g_toolkit->createWebScriptContext(
+                    blpwtk2::StringRef(g_webScriptContextSecurityOrigin));
+
+            webScriptContext->SetSecurityToken(d_securityToken.Get(isolate));
+            d_webScriptContext = v8::Global<v8::Context>(isolate, webScriptContext);
+
+            mainFrame->mainWorldScriptContext()->SetSecurityToken(d_securityToken.Get(isolate));
+        }
     }
 
     // Invoked when the main frame failed loading the specified 'url', or was
@@ -1140,6 +1223,11 @@ int main(int, const char**)
                 sprintf_s(buf, sizeof(buf), "%S", argv[i]+14);
                 proxyPort = atoi(buf);
             }
+            else if (0 == wcsncmp(L"--web-script-context-security-origin=", argv[i], 37)) {
+                char buf[1024];
+                sprintf_s(buf, sizeof(buf), "%S", argv[i]+37);
+                g_webScriptContextSecurityOrigin = buf;
+            }
             else if (argv[i][0] != '-') {
                 char buf[1024];
                 sprintf_s(buf, sizeof(buf), "%S", argv[i]);
@@ -1197,6 +1285,8 @@ int main(int, const char**)
         }
 
         // patch section: web script context
+        g_webScriptContextAvailable = true;
+        toolkitParams.appendCommandLineSwitch("disable-web-security");
 
 
 
@@ -1368,6 +1458,10 @@ LRESULT CALLBACK shellWndProc(HWND hwnd,        // handle to window
             return 0;
         case IDM_TEST_V8_APPEND_ELEMENT:
             testV8AppendElement(shell->webView());
+            return 0;
+        case IDM_TEST_ACCESS_DOM_FROM_WEB_SCRIPT_CONTEXT:
+            testAccessDOMFromWebScriptContext(
+                shell->webScriptContext(), shell->webView());
             return 0;
         case IDM_TEST_PLAY_KEYBOARD_EVENTS:
             testPlayKeyboardEvents(shell->d_mainWnd, shell->webView());
@@ -1656,6 +1750,9 @@ Shell* createShell(blpwtk2::Profile* profile, blpwtk2::WebView* webView, bool fo
 
 
     // patch section: web script context
+    if (g_webScriptContextAvailable) {
+        AppendMenu(testMenu, MF_STRING, IDM_TEST_ACCESS_DOM_FROM_WEB_SCRIPT_CONTEXT, L"Access the DOM from a 'web script context'");
+    }
 
 
 

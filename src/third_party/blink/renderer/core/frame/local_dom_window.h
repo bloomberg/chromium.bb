@@ -104,10 +104,14 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   static LocalDOMWindow* Create(LocalFrame& frame) {
     return MakeGarbageCollected<LocalDOMWindow>(frame);
   }
+  static LocalDOMWindow* Create() {
+    return MakeGarbageCollected<LocalDOMWindow>();
+  }
 
   static LocalDOMWindow* From(const ScriptState*);
 
   explicit LocalDOMWindow(LocalFrame&);
+  explicit LocalDOMWindow();
   ~LocalDOMWindow() override;
 
   LocalFrame* GetFrame() const { return To<LocalFrame>(DOMWindow::GetFrame()); }
@@ -117,6 +121,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   Document* InstallNewDocument(const String& mime_type,
                                const DocumentInit&,
                                bool force_xhtml);
+  Document* InstallNewUnintializedDocument(const String& mime_type,
+                                           const DocumentInit&,
+                                           bool force_xhtml);
 
   // EventTarget overrides:
   ExecutionContext* GetExecutionContext() const override;
