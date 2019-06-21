@@ -60,10 +60,6 @@ class WebStateImpl;
 @property(weak, nonatomic, readonly) id<CRWWebViewNavigationProxy>
     webViewNavigationProxy;
 
-// The view that generates print data when printing. It is nil if printing
-// is not supported.
-@property(weak, nonatomic, readonly) UIView* viewForPrinting;
-
 // The fraction of the page load that has completed as a number between 0.0
 // (nothing loaded) and 1.0 (fully loaded).
 @property(nonatomic, readonly) double loadingProgress;

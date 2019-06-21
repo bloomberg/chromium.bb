@@ -405,11 +405,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return static_cast<id<CRWWebViewNavigationProxy>>(self.webView);
 }
 
-- (UIView*)viewForPrinting {
-  // Printing is not supported for native controllers.
-  return self.webView;
-}
-
 - (double)loadingProgress {
   return [self.webView estimatedProgress];
 }

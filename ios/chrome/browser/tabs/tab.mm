@@ -64,10 +64,6 @@
 
 #pragma mark - Public API
 
-- (UIView*)viewForPrinting {
-  return self.webController.viewForPrinting;
-}
-
 - (void)dismissModals {
   [self.webController dismissModals];
 }
