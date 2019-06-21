@@ -2686,10 +2686,9 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
       )
 
     if board in postsubmit_boards:
-      # Mark unimportant for postsubmit iff at least one of release, paladin,
+      # Mark unimportant for postsubmit iff at least one of paladin,
       # or pre_cq had it marked unimportant.
-      important = (release_boards_importance.get(board, True)
-                   and paladin_boards_importance.get(board, True)
+      important = (paladin_boards_importance.get(board, True)
                    and pre_cq_boards_importance.get(board, True))
       config.update(important=important)
       master_config.AddSlave(config)
