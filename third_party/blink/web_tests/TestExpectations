@@ -6144,10 +6144,6 @@ crbug.com/973769 [ Linux ] media/controls/controls-cast-do-not-fade-out.html [ P
 # Flaky on Linux
 crbug.com/974660 [ Linux ] http/tests/devtools/elements/highlight/highlight-node-vertical-rl.js [ Pass Failure ]
 
-# Failing with lazy-feedback-allocation feature in V8. See the bug for more
-# details.
-crbug.com/976587 netinfo/gc-unused-listeners.html [ Pass Failure ]
-
 # Sheriff 2019-06-19
 crbug.com/959129 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 
