@@ -19,6 +19,10 @@ struct VisualProperties;
 // delegate in order to transport emulation information across processes.
 class CONTENT_EXPORT RenderWidgetScreenMetricsEmulatorDelegate {
  public:
+
+  // Requests a full redraw of the contents of the renderer.
+  virtual void Redraw() = 0;
+
   // Synchronize visual properties with the widget.
   virtual void SynchronizeVisualProperties(
       const VisualProperties& visual_properties) = 0;

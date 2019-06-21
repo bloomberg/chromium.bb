@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/latency/latency_tracker.h"
 
@@ -36,7 +37,7 @@ class ReflectorTexture;
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
 // viz::OutputSurface that also handles vsync parameter updates
 // arriving from the GPU process.
-class GpuBrowserCompositorOutputSurface
+class CONTENT_EXPORT GpuBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
  public:
   GpuBrowserCompositorOutputSurface(

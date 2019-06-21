@@ -29,6 +29,7 @@
 #include <blpwtk2_stringref.h>
 #include <blpwtk2_webframeimpl.h>
 #include <blpwtk2_webviewdelegate.h>
+#include <blpwtk2_webviewproxydelegate.h>
 #include <blpwtk2_blob.h>
 #include <blpwtk2_rendererutil.h>
 
@@ -132,6 +133,7 @@ namespace blpwtk2 {
 WebViewProxy::WebViewProxy(WebViewDelegate *delegate, ProfileImpl *profile)
     : d_client(nullptr)
     , d_delegate(delegate)
+    , d_proxyDelegate(nullptr)
     , d_profile(profile)
     , d_renderViewRoutingId(0)
     , d_gotRenderViewInfo(false)
@@ -154,6 +156,11 @@ WebViewProxy::~WebViewProxy()
     }
 }
 
+void WebViewProxy::setProxyDelegate(WebViewProxyDelegate *proxyDelegate)
+{
+    d_proxyDelegate = proxyDelegate;
+}
+
 void WebViewProxy::destroy()
 {
     DCHECK(Statics::isInApplicationMainThread());
@@ -166,6 +173,7 @@ void WebViewProxy::destroy()
     // the WebView.
     d_pendingDestroy = true;
     d_delegate = nullptr;
+    d_proxyDelegate = nullptr;
     base::MessageLoopCurrent::Get()->task_runner()->DeleteSoon(FROM_HERE, this);
 }
 
@@ -608,6 +616,10 @@ void WebViewProxy::notifyRoutingId(int id)
 
     d_renderViewRoutingId = id;
     LOG(INFO) << "routingId=" << id;
+
+    if (d_proxyDelegate) {
+        d_proxyDelegate->notifyRoutingId(id);
+    }
 }
 
 void WebViewProxy::onLoadStatus(int status)

@@ -457,6 +457,11 @@ class WebView {
   virtual void ClearAutoplayFlags() = 0;
   virtual int32_t AutoplayFlagsForTest() = 0;
 
+  // HWND ----------------------------------------------------------------
+  // Save the hwnd of WebView if available
+  virtual HWND GetHwnd() { return 0; }
+  virtual void SetHwnd(HWND hwnd) {}
+
   // Suspend and resume ---------------------------------------------------
 
   // TODO(lfg): Remove this once the refactor of WebView/WebWidget is
