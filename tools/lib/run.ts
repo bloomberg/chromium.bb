@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as process from 'process';
 
 import { ITestNode } from '../../src/framework/loader';
-import { Logger } from '../../src/framework/logger';
+import { Logger, IResult } from '../../src/framework/logger';
 import { parseFilters } from '../../src/framework/url_query';
 import { TestLoaderNode } from './loader_node';
 
@@ -32,8 +32,8 @@ if (!fs.existsSync('tools/lib/run.ts')) {
   const log = new Logger();
   const entries = await Promise.all(Array.from(listing, ({ suite, path, node }) => node.then((n: ITestNode) => ({ suite, path, node: n }))));
 
-  const failed = [];
-  const warned = [];
+  const failed: IResult[] = [];
+  const warned: IResult[] = [];
 
   // TODO: don't run all tests all at once
   const running = [];

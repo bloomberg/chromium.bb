@@ -8,7 +8,7 @@ interface ITestLog {
 }
 export interface IResult {
   name: string;
-  params?: IParamsSpec;
+  params: IParamsSpec | null;
   status: Status;
   logs?: string[];
   timems: number;
@@ -34,8 +34,8 @@ export class GroupRecorder {
     this.test = test;
   }
 
-  public record(name: string, params?: IParamsSpec): [IResult, CaseRecorder] {
-    const result: IResult = { name, status: 'running', timems: -1 };
+  public record(name: string, params: IParamsSpec | null): [IResult, CaseRecorder] {
+    const result: IResult = { name, params, status: 'running', timems: -1 };
     if (params) {
       result.params = params;
     }

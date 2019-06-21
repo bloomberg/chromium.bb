@@ -5,6 +5,7 @@ import * as fg from 'fast-glob';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
+import { IGroupDesc } from '../../src/framework/loader';
 
 function usage(rc: number) {
   console.error('Usage:');
@@ -33,14 +34,12 @@ if (!fs.existsSync('tools/lib/gen.ts')) {
       markDirectories: true,
     });
 
-    const listing = [];
-    const modules = {};
+    const listing: IGroupDesc[] = [];
     for (const file of specFiles) {
       const f = file.substring(specDir.length);
       if (f.endsWith(specSuffix)) {
         const mod = await import('../../' + file);
         const testPath = f.substring(0, f.length - specSuffix.length);
-        modules[testPath] = mod;
         listing.push({
           path: testPath,
           description: mod.description.trim(),

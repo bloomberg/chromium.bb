@@ -95,7 +95,7 @@ export abstract class TestLoader {
     const test = filter.substring(i2 + 1, i3);
     const token = filter.charAt(i3);
 
-    let params;
+    let params = null;
     if (i3 + 1 < filter.length) {
       params = JSON.parse(filter.substring(i3 + 1)) as IParamsAny;
     }
@@ -150,7 +150,7 @@ export abstract class TestLoader {
     };
   }
 
-  private async filterByParamsMatch(suite: string, group: string, test: string, paramsMatch?: IParamsAny): Promise<ITestNode> {
+  private async filterByParamsMatch(suite: string, group: string, test: string, paramsMatch: IParamsAny | null): Promise<ITestNode> {
     const node = (await this.import(`${suite}/${group}.spec.js`)) as ITestNode;
     if (!node.group) {
       return node;
@@ -162,7 +162,7 @@ export abstract class TestLoader {
     };
   }
 
-  private async filterByParamsExact(suite: string, group: string, test: string, paramsExact?: IParamsAny): Promise<ITestNode> {
+  private async filterByParamsExact(suite: string, group: string, test: string, paramsExact: IParamsAny | null): Promise<ITestNode> {
     const node = (await this.import(`${suite}/${group}.spec.js`)) as ITestNode;
     if (!node.group) {
       return node;

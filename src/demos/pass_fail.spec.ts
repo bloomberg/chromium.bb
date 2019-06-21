@@ -9,14 +9,14 @@ import {
 
 export const group = new TestGroup();
 
-group.test('test_pass', DefaultFixture, (t) => {
+group.test('test_pass', null, DefaultFixture, (t) => {
   t.log('hello');
 });
 
-group.test('test_warn', DefaultFixture, (t) => {
+group.test('test_warn', null, DefaultFixture, (t) => {
   t.warn();
 });
 
-group.test('test_fail', DefaultFixture, (t) => {
+group.test('test_fail', null, DefaultFixture, (t) => {
   t.fail();
 });

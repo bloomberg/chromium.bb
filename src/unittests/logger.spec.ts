@@ -10,10 +10,10 @@ import { Logger } from '../framework/logger.js';
 
 export const group = new TestGroup();
 
-group.test('construct', DefaultFixture, (t) => {
+group.test('construct', null, DefaultFixture, (t) => {
   const mylog = new Logger();
   const [testres, testrec] = mylog.record('foo/bar');
-  const [res1] = testrec.record('baz');
+  const [res1] = testrec.record('baz', null);
   const params2 = {};
   const [res2] = testrec.record('qux', params2);
 
@@ -33,10 +33,10 @@ group.test('construct', DefaultFixture, (t) => {
   t.expect(res2.timems < 0);
 });
 
-group.test('empty', DefaultFixture, (t) => {
+group.test('empty', null, DefaultFixture, (t) => {
   const mylog = new Logger();
   const [, testrec] = mylog.record('');
-  const [res, rec] = testrec.record('baz');
+  const [res, rec] = testrec.record('baz', null);
 
   rec.start();
   t.expect(res.status === 'running');
@@ -45,10 +45,10 @@ group.test('empty', DefaultFixture, (t) => {
   t.expect(res.timems >= 0);
 });
 
-group.test('pass', DefaultFixture, (t) => {
+group.test('pass', null, DefaultFixture, (t) => {
   const mylog = new Logger();
   const [, testrec] = mylog.record('');
-  const [res, rec] = testrec.record('baz');
+  const [res, rec] = testrec.record('baz', null);
 
   rec.start();
   rec.log('hello');
@@ -58,10 +58,10 @@ group.test('pass', DefaultFixture, (t) => {
   t.expect(res.timems >= 0);
 });
 
-group.test('warn', DefaultFixture, (t) => {
+group.test('warn', null, DefaultFixture, (t) => {
   const mylog = new Logger();
   const [, testrec] = mylog.record('');
-  const [res, rec] = testrec.record('baz');
+  const [res, rec] = testrec.record('baz', null);
 
   rec.start();
   rec.warn();
@@ -71,10 +71,10 @@ group.test('warn', DefaultFixture, (t) => {
   t.expect(res.timems >= 0);
 });
 
-group.test('fail', DefaultFixture, (t) => {
+group.test('fail', null, DefaultFixture, (t) => {
   const mylog = new Logger();
   const [, testrec] = mylog.record('');
-  const [res, rec] = testrec.record('baz');
+  const [res, rec] = testrec.record('baz', null);
 
   rec.start();
   rec.fail('bye');

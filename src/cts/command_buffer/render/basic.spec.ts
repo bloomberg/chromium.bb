@@ -7,7 +7,7 @@ import { GPUTest } from '../../gpu_test.js';
 
 export const group = new TestGroup();
 
-group.test('clear', GPUTest, async (t) => {
+group.test('clear', null, GPUTest, async (t) => {
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
 
   const colorAttachment = t.device.createTexture({
@@ -37,7 +37,7 @@ group.test('clear', GPUTest, async (t) => {
   await t.expectContents(dst, new Uint8Array([0x00, 0xff, 0x00, 0xff]));
 });
 
-group.test('fullscreen quad', GPUTest, async (t) => {
+group.test('fullscreen quad', null, GPUTest, async (t) => {
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
 
   const colorAttachment = t.device.createTexture({

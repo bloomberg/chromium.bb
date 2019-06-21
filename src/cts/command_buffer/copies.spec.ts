@@ -9,7 +9,7 @@ export const group = new TestGroup();
 
 class CopyTest extends GPUTest { }
 
-group.test('b2b', CopyTest, async (t) => {
+group.test('b2b', null, CopyTest, async (t) => {
   const data = new Uint32Array([0x01020304]);
   const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
@@ -22,7 +22,7 @@ group.test('b2b', CopyTest, async (t) => {
   await t.expectContents(dst, data);
 });
 
-group.test('b2t2b', CopyTest, async (t) => {
+group.test('b2t2b', null, CopyTest, async (t) => {
   const data = new Uint32Array([0x01020304]);
   const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
@@ -46,7 +46,7 @@ group.test('b2t2b', CopyTest, async (t) => {
   await t.expectContents(dst, data);
 });
 
-group.test('b2t2t2b', CopyTest, async (t) => {
+group.test('b2t2t2b', null, CopyTest, async (t) => {
   const data = new Uint32Array([0x01020304]);
   const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });

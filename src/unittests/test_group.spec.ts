@@ -11,20 +11,20 @@ import {
 
 export const group = new TestGroup();
 
-group.test('default fixture', DefaultFixture, (t0) => {
+group.test('default fixture', null, DefaultFixture, (t0) => {
   function print(t: Fixture) {
     t.log(JSON.stringify(t.params));
   }
 
   const g = new TestGroup();
 
-  g.test('test', DefaultFixture, print);
-  g.test('testp', DefaultFixture, print, { a: 1 });
+  g.test('test', null, DefaultFixture, print);
+  g.test('testp', { a: 1 }, DefaultFixture, print);
 
   // TODO: check output
 });
 
-group.test('custom fixture', DefaultFixture, (t0) => {
+group.test('custom fixture', null, DefaultFixture, (t0) => {
   class Printer extends DefaultFixture {
     public print() {
       this.log(JSON.stringify(this.params));
@@ -33,31 +33,31 @@ group.test('custom fixture', DefaultFixture, (t0) => {
 
   const g = new TestGroup();
 
-  g.test('test', Printer, (t) => {
+  g.test('test', null, Printer, (t) => {
     t.print();
   });
-  g.test('testp', Printer, (t) => {
+  g.test('testp', { a: 1 }, Printer, (t) => {
     t.print();
-  }, { a: 1 });
+  });
 
   // TODO: check output
 });
 
-group.test('duplicate test name', DefaultFixture, (t) => {
+group.test('duplicate test name', null, DefaultFixture, (t) => {
   const g = new TestGroup();
-  g.test('abc', DefaultFixture, () => { });
+  g.test('abc', null, DefaultFixture, () => { });
 
   t.shouldThrow(() => {
-    g.test('abc', DefaultFixture, () => { });
+    g.test('abc', null, DefaultFixture, () => { });
   });
 });
 
 for (const char of '"`~@#$+=\\|!^&*[]<>{}-\'.,') {
-  group.test('invalid test name', DefaultFixture, (t) => {
+  group.test('invalid test name', { char }, DefaultFixture, (t) => {
     const g = new TestGroup();
 
     t.shouldThrow(() => {
-      g.test('a' + char + 'b', DefaultFixture, () => { });
+      g.test('a' + char + 'b', null, DefaultFixture, () => { });
     });
-  }, { char });
+  });
 }
