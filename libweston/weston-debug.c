@@ -77,7 +77,6 @@ struct weston_log_scope {
 	char *desc;
 	weston_log_scope_cb begin_cb;
 	void *user_data;
-	struct wl_list stream_list; /**< weston_debug_stream::scope_link */
 	struct wl_list compositor_link;
 	struct wl_list subscription_list;  /**< weston_log_subscription::source_link */
 };
@@ -119,10 +118,16 @@ struct weston_log_subscription {
  * same messages.
  */
 struct weston_debug_stream {
+	struct weston_log_subscriber base;
 	int fd;				/**< client provided fd */
 	struct wl_resource *resource;	/**< weston_debug_stream_v1 object */
-	struct wl_list scope_link;
 };
+
+static struct weston_debug_stream *
+to_weston_debug_stream(struct weston_log_subscriber *sub)
+{
+        return container_of(sub, struct weston_debug_stream, base);
+}
 
 /** Creates a new subscription using the subscriber by \c owner.
  *
@@ -254,9 +259,6 @@ stream_close_unlink(struct weston_debug_stream *stream)
 	if (stream->fd != -1)
 		close(stream->fd);
 	stream->fd = -1;
-
-	wl_list_remove(&stream->scope_link);
-	wl_list_init(&stream->scope_link);
 }
 
 static void WL_PRINTF(2, 3)
@@ -282,28 +284,107 @@ stream_close_on_failure(struct weston_debug_stream *stream,
 	}
 }
 
+/** Write data into a specific debug stream
+ *
+ * \param sub The subscriber's stream to write into; must not be NULL.
+ * \param[in] data Pointer to the data to write.
+ * \param len Number of bytes to write.
+ *
+ * Writes the given data (binary verbatim) into the debug stream.
+ * If \c len is zero or negative, the write is silently dropped.
+ *
+ * Writing is continued until all data has been written or
+ * a write fails. If the write fails due to a signal, it is re-tried.
+ * Otherwise on failure, the stream is closed and
+ * \c weston_debug_stream_v1.failure event is sent to the client.
+ *
+ * \memberof weston_debug_stream
+ */
+static void
+weston_debug_stream_write(struct weston_log_subscriber *sub,
+			  const char *data, size_t len)
+{
+	ssize_t len_ = len;
+	ssize_t ret;
+	int e;
+	struct weston_debug_stream *stream = to_weston_debug_stream(sub);
+
+	if (stream->fd == -1)
+		return;
+
+	while (len_ > 0) {
+		ret = write(stream->fd, data, len_);
+		e = errno;
+		if (ret < 0) {
+			if (e == EINTR)
+				continue;
+
+			stream_close_on_failure(stream,
+					"Error writing %zd bytes: %s (%d)",
+					len_, strerror(e), e);
+			break;
+		}
+
+		len_ -= ret;
+		data += ret;
+	}
+}
+
+/** Close the debug stream and send success event
+ *
+ * \param sub Subscriber's stream to close.
+ *
+ * Closes the debug stream and sends \c weston_debug_stream_v1.complete
+ * event to the client. This tells the client the debug information dump
+ * is complete.
+ *
+ * \memberof weston_debug_stream
+ */
+static void
+weston_debug_stream_complete(struct weston_log_subscriber *sub)
+{
+	struct weston_debug_stream *stream = to_weston_debug_stream(sub);
+
+	stream_close_unlink(stream);
+	weston_debug_stream_v1_send_complete(stream->resource);
+}
+
+static void
+weston_debug_stream_to_destroy(struct weston_log_subscriber *sub)
+{
+	struct weston_debug_stream *stream = to_weston_debug_stream(sub);
+	stream_close_on_failure(stream, "debug name removed");
+}
+
 static struct weston_debug_stream *
 stream_create(struct weston_log_context *log_ctx, const char *name,
 	      int32_t streamfd, struct wl_resource *stream_resource)
 {
 	struct weston_debug_stream *stream;
 	struct weston_log_scope *scope;
+	struct weston_log_subscription *sub;
 
 	stream = zalloc(sizeof *stream);
 	if (!stream)
 		return NULL;
 
+
 	stream->fd = streamfd;
 	stream->resource = stream_resource;
 
+	stream->base.write = weston_debug_stream_write;
+	stream->base.destroy = weston_debug_stream_to_destroy;
+	stream->base.complete = weston_debug_stream_complete;
+	wl_list_init(&stream->base.subscription_list);
+
+	sub = weston_log_subscription_create(&stream->base, name);
+
 	scope = get_scope(log_ctx, name);
 	if (scope) {
-		wl_list_insert(&scope->stream_list, &stream->scope_link);
-
+		weston_log_subscription_add(scope, sub);
 		if (scope->begin_cb)
-			scope->begin_cb(stream, scope->user_data);
+			scope->begin_cb(scope, scope->user_data);
 	} else {
-		wl_list_init(&stream->scope_link);
 		stream_close_on_failure(stream,
 					"Debug stream name '%s' is unknown.",
 					name);
@@ -316,12 +397,17 @@ static void
 stream_destroy(struct wl_resource *stream_resource)
 {
 	struct weston_debug_stream *stream;
+	struct weston_log_subscription *sub = NULL;
 
 	stream = wl_resource_get_user_data(stream_resource);
 
 	if (stream->fd != -1)
 		close(stream->fd);
-	wl_list_remove(&stream->scope_link);
+
+	sub = weston_log_subscriber_get_only_subscription(&stream->base);
+	weston_log_subscription_remove(sub);
+	weston_log_subscription_destroy(sub);
+
 	free(stream);
 }
 
@@ -595,7 +681,7 @@ weston_compositor_add_log_scope(struct weston_log_context *log_ctx,
 	scope->desc = strdup(description);
 	scope->begin_cb = begin_cb;
 	scope->user_data = user_data;
-	wl_list_init(&scope->stream_list);
+	wl_list_init(&scope->subscription_list);
 
 	if (!scope->name || !scope->desc) {
 		weston_log("Error adding debug scope '%s': out of memory.\n",
@@ -623,16 +709,18 @@ weston_compositor_add_log_scope(struct weston_log_context *log_ctx,
 WL_EXPORT void
 weston_compositor_log_scope_destroy(struct weston_log_scope *scope)
 {
-	struct weston_debug_stream *stream;
+	struct weston_log_subscription *sub, *sub_tmp;
 
 	if (!scope)
 		return;
 
-	while (!wl_list_empty(&scope->stream_list)) {
-		stream = wl_container_of(scope->stream_list.prev,
-					 stream, scope_link);
+	wl_list_for_each_safe(sub, sub_tmp, &scope->subscription_list, source_link) {
+		/* destroy each subscription */
+		if (sub->owner->destroy)
+			sub->owner->destroy(sub->owner);
 
-		stream_close_on_failure(stream, "debug name removed");
+		weston_log_subscription_remove(sub);
+		weston_log_subscription_destroy(sub);
 	}
 
 	wl_list_remove(&scope->compositor_link);
@@ -668,115 +756,20 @@ weston_log_scope_is_enabled(struct weston_log_scope *scope)
 	if (!scope)
 		return false;
 
-	return !wl_list_empty(&scope->stream_list);
+	return !wl_list_empty(&scope->subscription_list);
 }
 
-/** Write data into a specific debug stream
- *
- * \param stream The debug stream to write into; must not be NULL.
- * \param[in] data Pointer to the data to write.
- * \param len Number of bytes to write.
- *
- * Writes the given data (binary verbatim) into the debug stream.
- * If \c len is zero or negative, the write is silently dropped.
- *
- * Writing is continued until all data has been written or
- * a write fails. If the write fails due to a signal, it is re-tried.
- * Otherwise on failure, the stream is closed and
- * \c weston_debug_stream_v1.failure event is sent to the client.
- *
- * \memberof weston_debug_stream
- */
 WL_EXPORT void
-weston_debug_stream_write(struct weston_debug_stream *stream,
-			  const char *data, size_t len)
+weston_log_scope_complete(struct weston_log_scope *scope)
 {
-	ssize_t len_ = len;
-	ssize_t ret;
-	int e;
+	struct weston_log_subscription *sub;
 
-	if (stream->fd == -1)
+	if (!scope)
 		return;
 
-	while (len_ > 0) {
-		ret = write(stream->fd, data, len_);
-		e = errno;
-		if (ret < 0) {
-			if (e == EINTR)
-				continue;
-
-			stream_close_on_failure(stream,
-					"Error writing %zd bytes: %s (%d)",
-					len_, strerror(e), e);
-			break;
-		}
-
-		len_ -= ret;
-		data += ret;
-	}
-}
-
-/** Write a formatted string into a specific debug stream (varargs)
- *
- * \param stream The debug stream to write into.
- * \param fmt Printf-style format string.
- * \param ap Formatting arguments.
- *
- * The behavioral details are the same as for weston_debug_stream_write().
- *
- * \memberof weston_debug_stream
- */
-WL_EXPORT void
-weston_debug_stream_vprintf(struct weston_debug_stream *stream,
-			    const char *fmt, va_list ap)
-{
-	char *str;
-	int len;
-
-	len = vasprintf(&str, fmt, ap);
-	if (len >= 0) {
-		weston_debug_stream_write(stream, str, len);
-		free(str);
-	} else {
-		stream_close_on_failure(stream, "Out of memory");
-	}
-}
-
-/** Write a formatted string into a specific debug stream
- *
- * \param stream The debug stream to write into.
- * \param fmt Printf-style format string and arguments.
- *
- * The behavioral details are the same as for weston_debug_stream_write().
- *
- * \memberof weston_debug_stream
- */
-WL_EXPORT void
-weston_debug_stream_printf(struct weston_debug_stream *stream,
-			   const char *fmt, ...)
-{
-	va_list ap;
-
-	va_start(ap, fmt);
-	weston_debug_stream_vprintf(stream, fmt, ap);
-	va_end(ap);
-}
-
-/** Close the debug stream and send success event
- *
- * \param stream The debug stream to close.
- *
- * Closes the debug stream and sends \c weston_debug_stream_v1.complete
- * event to the client. This tells the client the debug information dump
- * is complete.
- *
- * \memberof weston_debug_stream
- */
-WL_EXPORT void
-weston_debug_stream_complete(struct weston_debug_stream *stream)
-{
-	stream_close_unlink(stream);
-	weston_debug_stream_v1_send_complete(stream->resource);
+	wl_list_for_each(sub, &scope->subscription_list, source_link)
+		if (sub->owner && sub->owner->complete)
+			sub->owner->complete(sub->owner);
 }
 
 /** Write log data for a scope
@@ -788,22 +781,20 @@ weston_debug_stream_complete(struct weston_debug_stream *stream)
  *
  * Writes the given data to all subscribed clients' streams.
  *
- * The behavioral details for each stream are the same as for
- * weston_debug_stream_write().
- *
  * \memberof weston_log_scope
  */
 WL_EXPORT void
 weston_log_scope_write(struct weston_log_scope *scope,
 		       const char *data, size_t len)
 {
-	struct weston_debug_stream *stream;
+	struct weston_log_subscription *sub;
 
 	if (!scope)
 		return;
 
-	wl_list_for_each(stream, &scope->stream_list, scope_link)
-		weston_debug_stream_write(stream, data, len);
+	wl_list_for_each(sub, &scope->subscription_list, source_link)
+		if (sub->owner && sub->owner->write)
+			sub->owner->write(sub->owner, data, len);
 }
 
 /** Write a formatted string for a scope (varargs)

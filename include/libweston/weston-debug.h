@@ -49,14 +49,13 @@ struct weston_debug_stream;
 
 /** weston_log_scope callback
  *
- * \param stream The debug stream.
- * \param user_data The \c user_data argument given to
+ * @param scope The log scope.
+ * @param user_data The \c user_data argument given to
  * weston_compositor_add_log_scope()
  *
- * \memberof weston_log_scope
- * \sa weston_debug_stream
+ * @memberof weston_log_scope
  */
-typedef void (*weston_log_scope_cb)(struct weston_debug_stream *stream,
+typedef void (*weston_log_scope_cb)(struct weston_log_scope *scope,
 				      void *user_data);
 
 struct weston_log_scope *
@@ -84,22 +83,8 @@ void
 weston_log_scope_printf(struct weston_log_scope *scope,
 			  const char *fmt, ...)
 			  __attribute__ ((format (printf, 2, 3)));
-
 void
-weston_debug_stream_write(struct weston_debug_stream *stream,
-			  const char *data, size_t len);
-
-void
-weston_debug_stream_vprintf(struct weston_debug_stream *stream,
-			    const char *fmt, va_list ap);
-
-void
-weston_debug_stream_printf(struct weston_debug_stream *stream,
-			   const char *fmt, ...)
-			   __attribute__ ((format (printf, 2, 3)));
-
-void
-weston_debug_stream_complete(struct weston_debug_stream *stream);
+weston_log_scope_complete(struct weston_log_scope *scope);
 
 char *
 weston_log_scope_timestamp(struct weston_log_scope *scope,
