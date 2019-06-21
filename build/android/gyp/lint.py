@@ -15,6 +15,7 @@ import shutil
 import sys
 import traceback
 from xml.dom import minidom
+from xml.etree import ElementTree
 
 from util import build_utils
 from util import manifest_utils
@@ -195,20 +196,17 @@ def _OnStaleMd5(lint_path,
     lint_manifest_path = os.path.join(project_dir, 'AndroidManifest.xml')
     shutil.copyfile(os.path.abspath(manifest_path), lint_manifest_path)
 
-    # Add the minSdkVersion to the manifest.
+    # Check that minSdkVersion is correct and add it to the manifest in case it
+    # does not exist.
     doc, manifest, _ = manifest_utils.ParseManifest(lint_manifest_path)
-    # TODO(crbug.com/891996): Only activate once downstream has been updated.
-    # manifest_utils.AssertNoUsesSdk(manifest)
-    if min_sdk_version:
-      # TODO(crbug.com/891996): Don't remove uses-sdk once downstream has been
-      # updated.
-      uses_sdk = manifest.find('./uses-sdk')
-      if uses_sdk is not None:
-        manifest.remove(uses_sdk)
-      uses_sdk = manifest_utils.MakeElement(
-          'uses-sdk', [('android:minSdkVersion', min_sdk_version)])
+    manifest_utils.AssertUsesSdk(manifest, min_sdk_version)
+    uses_sdk = manifest.find('./uses-sdk')
+    if uses_sdk is None:
+      uses_sdk = ElementTree.Element('uses-sdk')
       manifest.insert(0, uses_sdk)
-      manifest_utils.SaveManifest(doc, lint_manifest_path)
+    uses_sdk.set('{%s}minSdkVersion' % manifest_utils.ANDROID_NAMESPACE,
+                 min_sdk_version)
+    manifest_utils.SaveManifest(doc, lint_manifest_path)
 
     cmd.append(project_dir)
 
@@ -306,9 +304,6 @@ def main():
   parser.add_argument('--android-sdk-version',
                       help='Version (API level) of the Android SDK used for '
                            'building.')
-  parser.add_argument('--create-cache', action='store_true',
-                      help='Mark the lint cache file as an output rather than '
-                      'an input.')
   parser.add_argument('--can-fail-build', action='store_true',
                       help='If set, script will exit with nonzero exit status'
                            ' if lint errors are present')
@@ -342,7 +337,9 @@ def main():
   parser.add_argument('--srcjars',
                       help='GN list of included srcjars.')
   parser.add_argument(
-      '--min-sdk-version', help='Minimal SDK version to lint against.')
+      '--min-sdk-version',
+      required=True,
+      help='Minimal SDK version to lint against.')
 
   args = parser.parse_args(build_utils.ExpandFileArgs(sys.argv[1:]))
 
