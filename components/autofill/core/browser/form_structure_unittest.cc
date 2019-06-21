@@ -38,6 +38,7 @@ using features::kAutofillEnforceMinRequiredFieldsForQuery;
 using features::kAutofillEnforceMinRequiredFieldsForUpload;
 using mojom::ButtonTitleType;
 using mojom::SubmissionIndicatorEvent;
+using mojom::SubmissionSource;
 
 class FormStructureTest : public testing::Test {
  public:

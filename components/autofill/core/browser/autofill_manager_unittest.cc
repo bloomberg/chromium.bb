@@ -91,12 +91,13 @@ using testing::UnorderedElementsAre;
 
 namespace autofill {
 
-using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
-using autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout;
-using autofill::mojom::ButtonTitleType;
-using autofill::mojom::SubmissionIndicatorEvent;
+using features::kAutofillEnforceMinRequiredFieldsForHeuristics;
+using features::kAutofillEnforceMinRequiredFieldsForQuery;
+using features::kAutofillEnforceMinRequiredFieldsForUpload;
+using features::kAutofillRestrictUnownedFieldsToFormlessCheckout;
+using mojom::ButtonTitleType;
+using mojom::SubmissionIndicatorEvent;
+using mojom::SubmissionSource;
 
 namespace {
 

@@ -37,15 +37,16 @@ enum PasswordFormFieldPredictionType {
   PREDICTION_NOT_PASSWORD
 };
 
-// autofill::SubmissionSource
 enum SubmissionSource {
-  NONE,
-  SAME_DOCUMENT_NAVIGATION,
-  XHR_SUCCEEDED,
-  FRAME_DETACHED,
-  DOM_MUTATION_AFTER_XHR,
-  PROBABLY_FORM_SUBMITTED,
-  FORM_SUBMISSION,
+  NONE,                      // No submission signal was detected.
+  SAME_DOCUMENT_NAVIGATION,  // The form was removed in same document
+                             // navigation.
+  XHR_SUCCEEDED,             // The form was removed whem XHR succeeded.
+  FRAME_DETACHED,            // The subframe which has form was detached.
+  DOM_MUTATION_AFTER_XHR,    // The form was removed after XHR.
+  PROBABLY_FORM_SUBMITTED,   // The form was probably submitted since new page
+                             // is loaded.
+  FORM_SUBMISSION,           // Normal form submission.
 };
 
 enum FocusedFieldType {
