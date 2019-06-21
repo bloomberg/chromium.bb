@@ -101,11 +101,6 @@ void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action) {
       ACCOUNT_CHOOSER_ACTION_COUNT);
 }
 
-void LogSyncSigninPromoUserAction(SyncSignInUserAction action) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.SignInPromo", action,
-                            CHROME_SIGNIN_ACTION_COUNT);
-}
-
 void LogShouldBlockPasswordForSameOriginButDifferentScheme(bool should_block) {
   UMA_HISTOGRAM_BOOLEAN(
       "PasswordManager.ShouldBlockPasswordForSameOriginButDifferentScheme",

@@ -121,13 +121,6 @@ enum AccountChooserUserAction {
   ACCOUNT_CHOOSER_ACTION_COUNT
 };
 
-enum SyncSignInUserAction {
-  CHROME_SIGNIN_DISMISSED,
-  CHROME_SIGNIN_OK,
-  CHROME_SIGNIN_CANCEL,
-  CHROME_SIGNIN_ACTION_COUNT
-};
-
 enum CredentialManagerGetResult {
   // The promise is rejected.
   CREDENTIAL_MANAGER_GET_REJECTED,
@@ -376,9 +369,6 @@ void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action);
 // Log a user action on showing the account chooser for one or many accounts.
 void LogAccountChooserUserActionOneAccount(AccountChooserUserAction action);
 void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action);
-
-// Log a user action on showing the Chrome sign in promo.
-void LogSyncSigninPromoUserAction(SyncSignInUserAction action);
 
 // Logs whether a password was rejected due to same origin but different scheme.
 void LogShouldBlockPasswordForSameOriginButDifferentScheme(bool should_block);

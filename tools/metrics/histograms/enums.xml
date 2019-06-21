@@ -45696,6 +45696,7 @@ Called by update_net_trust_anchors.py.-->
 <enum name="PasswordSuggestionType">
   <int value="0" label="Credential"/>
   <int value="1" label="Show All"/>
+  <int value="2" label="Generate password"/>
 </enum>
 
 <enum name="PasswordSyncState">
