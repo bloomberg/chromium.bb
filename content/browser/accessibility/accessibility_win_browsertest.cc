@@ -1696,7 +1696,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
         offset, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
     EXPECT_EQ(prev_x, x);
     EXPECT_EQ(prev_y, y);
-    EXPECT_EQ(1, width);
+    EXPECT_EQ(7, width);
     EXPECT_EQ(prev_height, height);
   }
 }
