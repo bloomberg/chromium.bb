@@ -3264,7 +3264,6 @@ if (is_android) {
       "android/java/src/org/chromium/net/ProxyChangeListener.java",
       "android/java/src/org/chromium/net/X509Util.java",
     ]
-    jni_package = "net"
   }
   generate_jni("net_test_jni_headers") {
     sources = [
@@ -3274,7 +3273,6 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java",
       "test/android/javatests/src/org/chromium/net/test/EmbeddedTestServerImpl.java",
     ]
-    jni_package = "net/test"
   }
 }
 
