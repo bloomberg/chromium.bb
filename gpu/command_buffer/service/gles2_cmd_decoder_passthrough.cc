@@ -569,7 +569,6 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
       gpu_trace_level_(2),
       gpu_trace_commands_(false),
       gpu_debug_commands_(false),
-      has_robustness_extension_(false),
       context_lost_(false),
       reset_by_robustness_extension_(false),
       lose_context_when_out_of_memory_(false),
@@ -888,8 +887,6 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
     api()->glHintFn(GL_TEXTURE_FILTERING_HINT_CHROMIUM, GL_NICEST);
   }
 
-  has_robustness_extension_ = feature_info_->feature_flags().khr_robustness ||
-                              feature_info_->feature_flags().ext_robustness;
   lose_context_when_out_of_memory_ =
       attrib_helper.lose_context_when_out_of_memory;
 
@@ -2037,37 +2034,29 @@ bool GLES2DecoderPassthroughImpl::CheckResetStatus() {
   DCHECK(!WasContextLost());
   DCHECK(context_->IsCurrent(nullptr));
 
-  if (IsRobustnessSupported()) {
-    // If the reason for the call was a GL error, we can try to determine the
-    // reset status more accurately.
-    GLenum driver_status = api()->glGetGraphicsResetStatusARBFn();
-    if (driver_status == GL_NO_ERROR) {
-      return false;
-    }
-
-    switch (driver_status) {
-      case GL_GUILTY_CONTEXT_RESET_ARB:
-        MarkContextLost(error::kGuilty);
-        break;
-      case GL_INNOCENT_CONTEXT_RESET_ARB:
-        MarkContextLost(error::kInnocent);
-        break;
-      case GL_UNKNOWN_CONTEXT_RESET_ARB:
-        MarkContextLost(error::kUnknown);
-        break;
-      default:
-        NOTREACHED();
-        return false;
-    }
-    reset_by_robustness_extension_ = true;
-    return true;
+  // If the reason for the call was a GL error, we can try to determine the
+  // reset status more accurately.
+  GLenum driver_status = context_->CheckStickyGraphicsResetStatus();
+  if (driver_status == GL_NO_ERROR) {
+    return false;
   }
-  return false;
-}
 
-bool GLES2DecoderPassthroughImpl::IsRobustnessSupported() {
-  return has_robustness_extension_ &&
-         context_->WasAllocatedUsingRobustnessExtension();
+  switch (driver_status) {
+    case GL_GUILTY_CONTEXT_RESET_ARB:
+      MarkContextLost(error::kGuilty);
+      break;
+    case GL_INNOCENT_CONTEXT_RESET_ARB:
+      MarkContextLost(error::kInnocent);
+      break;
+    case GL_UNKNOWN_CONTEXT_RESET_ARB:
+      MarkContextLost(error::kUnknown);
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
+  reset_by_robustness_extension_ = true;
+  return true;
 }
 
 bool GLES2DecoderPassthroughImpl::IsEmulatedQueryTarget(GLenum target) const {

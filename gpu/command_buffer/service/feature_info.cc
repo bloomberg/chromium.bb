@@ -1506,12 +1506,6 @@ void FeatureInfo::InitializeFeatures() {
       gfx::HasExtension(extensions, "GL_ANGLE_request_extension");
   feature_flags_.ext_debug_marker =
       gfx::HasExtension(extensions, "GL_EXT_debug_marker");
-  feature_flags_.arb_robustness =
-      gfx::HasExtension(extensions, "GL_ARB_robustness");
-  feature_flags_.khr_robustness =
-      gfx::HasExtension(extensions, "GL_KHR_robustness");
-  feature_flags_.ext_robustness =
-      gfx::HasExtension(extensions, "GL_EXT_robustness");
   feature_flags_.ext_pixel_buffer_object =
       gfx::HasExtension(extensions, "GL_ARB_pixel_buffer_object") ||
       gfx::HasExtension(extensions, "GL_NV_pixel_buffer_object");
