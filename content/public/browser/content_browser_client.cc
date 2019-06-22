@@ -298,6 +298,7 @@ bool ContentBrowserClient::AllowAppCache(const GURL& manifest_url,
 bool ContentBrowserClient::AllowServiceWorker(
     const GURL& scope,
     const GURL& first_party,
+    const GURL& script_url,
     ResourceContext* context,
     base::RepeatingCallback<WebContents*()> wc_getter) {
   return true;

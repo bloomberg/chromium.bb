@@ -539,14 +539,23 @@ class CONTENT_EXPORT ContentBrowserClient {
                              const GURL& first_party,
                              ResourceContext* context);
 
-  // Allow the embedder to control if a Service Worker can be associated
-  // with the given scope.
+  // Allows the embedder to control if a service worker is allowed at the given
+  // |scope| and can be accessed from |first_party|. This function is called
+  // whenever an attempt is made to create or access the persistent state of the
+  // registration, or to start the service worker.
+  //
+  // If non-empty, |script_url| is the script of the service worker that is
+  // attempted to be registered or started. If it's empty, an attempt is being
+  // made to access the registration but there is no specific service worker in
+  // the registration being acted on.
+  //
   // A null |wc_getter| callback indicates this is for starting a service
   // worker, which is not necessarily associated with a particular tab.
   // This is called on the IO thread.
   virtual bool AllowServiceWorker(
       const GURL& scope,
       const GURL& first_party,
+      const GURL& script_url,
       ResourceContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter);
 
