@@ -111,6 +111,7 @@ generate_jni("ui_android_jni_headers") {
     "java/src/org/chromium/ui/resources/ResourceFactory.java",
     "java/src/org/chromium/ui/resources/ResourceManager.java",
   ]
+  jni_package = "ui_android"
 }
 
 java_cpp_enum("java_enums_srcjar") {

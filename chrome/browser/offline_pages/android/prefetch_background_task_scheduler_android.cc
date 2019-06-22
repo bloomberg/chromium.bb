@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "chrome/android/chrome_jni_headers/PrefetchBackgroundTaskScheduler_jni.h"
+#include "jni/PrefetchBackgroundTaskScheduler_jni.h"
 
 namespace offline_pages {
 

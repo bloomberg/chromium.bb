@@ -6,7 +6,6 @@
 
 #include "base/android/jni_string.h"
 #include "base/logging.h"
-#include "chrome/android/chrome_jni_headers/OmniboxPrerender_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
@@ -15,6 +14,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "content/public/browser/web_contents.h"
+#include "jni/OmniboxPrerender_jni.h"
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;

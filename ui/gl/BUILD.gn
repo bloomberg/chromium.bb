@@ -590,6 +590,7 @@ group("gl_unittests_ozone") {
 
 if (is_android) {
   generate_jar_jni("surface_jni_headers") {
+    jni_package = "ui/gl"
     classes = [ "android/view/Surface.class" ]
     always_mangle = true
   }
@@ -602,5 +603,6 @@ if (is_android) {
     public_deps = [
       ":surface_jni_headers",
     ]
+    jni_package = "ui/gl"
   }
 }

@@ -2229,6 +2229,7 @@ jumbo_split_static_library("browser") {
       "android/compositor/navigation_glow.cc",
       "android/compositor/navigation_glow.h",
       "android/compositor/resources/resource_factory.cc",
+      "android/compositor/resources/resource_factory.h",
       "android/compositor/resources/toolbar_resource.cc",
       "android/compositor/resources/toolbar_resource.h",
       "android/compositor/scene_layer/contextual_search_scene_layer.cc",

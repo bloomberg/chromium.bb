@@ -1,5 +1,5 @@
 include_rules = [
-  "+ui/base/ui_base_jni_headers",
+  "+jni",
   "+components/remote_cocoa",
   "+mojo/core/embedder",
   "+mojo/public/cpp/bindings",

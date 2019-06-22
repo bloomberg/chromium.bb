@@ -13,7 +13,6 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/android/chrome_jni_headers/UsbChooserDialog_jni.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/url_constants.h"
@@ -22,6 +21,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/vr/buildflags/buildflags.h"
+#include "jni/UsbChooserDialog_jni.h"
 #include "ui/android/window_android.h"
 #include "url/gurl.h"
 

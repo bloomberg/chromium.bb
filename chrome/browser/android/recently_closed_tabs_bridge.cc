@@ -5,7 +5,6 @@
 #include "chrome/browser/android/recently_closed_tabs_bridge.h"
 
 #include "base/android/jni_string.h"
-#include "chrome/android/chrome_jni_headers/RecentlyClosedBridge_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -15,6 +14,7 @@
 #include "components/sessions/core/live_tab.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "content/public/browser/web_contents.h"
+#include "jni/RecentlyClosedBridge_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
