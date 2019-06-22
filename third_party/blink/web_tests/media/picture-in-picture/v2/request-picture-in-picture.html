@@ -105,5 +105,13 @@ promise_test(async t => {
   const element = document.getElementById('example');
   return promise_rejects(t, new TypeError(), element.requestPictureInPicture({ width: 0, height: 10 }));
 }, 'request Picture-in-Picture requires width/height to not be zero (height zero)');
+
+promise_test(async t => {
+  enablePictureInPictureV2ForTest(t);
+
+  const element = document.getElementById('example');
+  await test_driver.bless('request Picture-in-Picture');
+  return element.requestPictureInPicture();
+}, 'request Picture-in-Picture does not require options');
 </script>
 </body>
