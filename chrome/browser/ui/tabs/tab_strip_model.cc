@@ -781,7 +781,7 @@ const TabGroupData* TabStripModel::GetDataForGroup(TabGroupId group) const {
 }
 
 base::Optional<TabGroupId> TabStripModel::GetTabGroupForTab(int index) const {
-  return (index == kNoTab) ? base::nullopt : contents_data_[index]->group();
+  return ContainsIndex(index) ? contents_data_[index]->group() : base::nullopt;
 }
 
 std::vector<TabGroupId> TabStripModel::ListTabGroups() const {
