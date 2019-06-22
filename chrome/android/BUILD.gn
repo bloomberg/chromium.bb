@@ -1509,7 +1509,6 @@ generate_jni("test_support_jni_headers") {
     "javatests/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchTestBridge.java",
     "javatests/src/org/chromium/chrome/browser/test/MockCertVerifierRuleAndroid.java",
   ]
-  jni_package = "test_support_jni_headers"
 }
 
 # Test support code that needs access to the browser.
@@ -2732,6 +2731,4 @@ generate_jni("chrome_jni_headers") {
       "feed/core/java/src/org/chromium/chrome/browser/feed/FeedSchedulerBridge.java",
     ]
   }
-
-  jni_package = "chrome"
 }
