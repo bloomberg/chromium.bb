@@ -58,11 +58,14 @@ export interface ITestGroup {
   iterate(log: GroupRecorder): Iterable<RunCase>;
 }
 
-export class TestGroup implements ITestGroup {
+export class TestGroup<F extends Fixture> implements ITestGroup {
+  private fixture: FixtureClass<F>;
   private seen: Set<string> = new Set();
   private tests: ICase[] = [];
 
-  constructor() {}
+  constructor(fixture: FixtureClass<F>) {
+    this.fixture = fixture;
+  }
 
   *iterate(log: GroupRecorder): Iterable<RunCase> {
     for (const t of this.tests) {
@@ -70,12 +73,7 @@ export class TestGroup implements ITestGroup {
     }
   }
 
-  test<F extends Fixture>(
-    name: string,
-    params: IParamsSpec | null,
-    fixture: FixtureClass<F>,
-    fn: TestFn<F>
-  ): void {
+  test(name: string, params: IParamsSpec | null, fn: TestFn<F>): void {
     // It may be OK to add more allowed characters here.
     const validNames = new RegExp('^[' + allowedTestNameCharacters + ']+$');
     if (!validNames.test(name)) {
@@ -94,6 +92,7 @@ export class TestGroup implements ITestGroup {
     }
     this.seen.add(key);
 
+    const fixture = this.fixture;
     this.tests.push({
       name,
       params,

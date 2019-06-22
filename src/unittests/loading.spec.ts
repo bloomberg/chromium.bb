@@ -28,10 +28,10 @@ const nodesData: { [k: string]: ITestNode } = {
   'suite1/foo.spec.js': {
     description: 'desc 1b',
     group: (() => {
-      const g = new TestGroup();
-      g.test('hello', null, DefaultFixture, () => {});
-      g.test('bonjour', null, DefaultFixture, () => {});
-      g.test('hola', null, DefaultFixture, () => {});
+      const g = new TestGroup(DefaultFixture);
+      g.test('hello', null, () => {});
+      g.test('bonjour', null, () => {});
+      g.test('hola', null, () => {});
       return g;
     })(),
   },
@@ -39,28 +39,28 @@ const nodesData: { [k: string]: ITestNode } = {
   'suite1/bar/buzz.spec.js': {
     description: 'desc 1d',
     group: (() => {
-      const g = new TestGroup();
-      g.test('zap', null, DefaultFixture, () => {});
+      const g = new TestGroup(DefaultFixture);
+      g.test('zap', null, () => {});
       return g;
     })(),
   },
   'suite1/baz.spec.js': {
     description: 'desc 1e',
     group: (() => {
-      const g = new TestGroup();
-      g.test('zed', { a: 1, b: 2 }, DefaultFixture, () => {});
-      g.test('zed', { a: 1, b: 3 }, DefaultFixture, () => {});
+      const g = new TestGroup(DefaultFixture);
+      g.test('zed', { a: 1, b: 2 }, () => {});
+      g.test('zed', { a: 1, b: 3 }, () => {});
       return g;
     })(),
   },
   'suite2/foof.spec.js': {
     description: 'desc 2b',
     group: (() => {
-      const g = new TestGroup();
-      g.test('blah', null, DefaultFixture, t => {
+      const g = new TestGroup(DefaultFixture);
+      g.test('blah', null, t => {
         t.ok();
       });
-      g.test('bleh', {}, DefaultFixture, t => {
+      g.test('bleh', {}, t => {
         t.ok();
         t.ok();
       });
@@ -82,7 +82,7 @@ export class TestTestLoader extends TestLoader {
   }
 }
 
-class F extends DefaultFixture {
+class LoadingTest extends DefaultFixture {
   loader: TestTestLoader = new TestTestLoader();
 
   async load(filters: string[]) {
@@ -109,14 +109,14 @@ class F extends DefaultFixture {
   }
 }
 
-export const group = new TestGroup();
+export const group = new TestGroup(LoadingTest);
 
-group.test('whole suite', null, F, async t => {
+group.test('whole suite', null, async t => {
   t.expect((await t.load(['suite1'])).length === 5);
   t.expect((await t.load(['suite1:'])).length === 5);
 });
 
-group.test('partial suite', null, F, async t => {
+group.test('partial suite', null, async t => {
   t.expect((await t.load(['suite1:f'])).length === 1);
   t.expect((await t.load(['suite1:fo'])).length === 1);
   t.expect((await t.load(['suite1:foo'])).length === 1);
@@ -127,7 +127,7 @@ group.test('partial suite', null, F, async t => {
   t.expect((await t.load(['suite1:bar/b'])).length === 1);
 });
 
-group.test('whole group', null, F, async t => {
+group.test('whole group', null, async t => {
   await t.shouldReject(t.load(['suite1::']));
   await t.shouldReject(t.load(['suite1:bar:']));
   await t.shouldReject(t.load(['suite1:bar/:']));
@@ -146,13 +146,13 @@ group.test('whole group', null, F, async t => {
   }
 });
 
-group.test('partial group', null, F, async t => {
+group.test('partial group', null, async t => {
   t.expect((await t.singleGroup('suite1:foo:h')).length === 2);
   t.expect((await t.singleGroup('suite1:foo:he')).length === 1);
   t.expect((await t.singleGroup('suite1:baz:zed')).length === 2);
 });
 
-group.test('whole test', null, F, async t => {
+group.test('whole test', null, async t => {
   t.expect((await t.singleGroup('suite1:foo:hello:')).length === 1);
   t.expect((await t.singleGroup('suite1:baz:zed:')).length === 0);
   t.expect((await t.singleGroup('suite1:baz:zed:')).length === 0);
@@ -160,7 +160,7 @@ group.test('whole test', null, F, async t => {
   t.expect((await t.singleGroup('suite1:baz:zed:{"a":1,"b":2}')).length === 1);
 });
 
-group.test('partial test', null, F, async t => {
+group.test('partial test', null, async t => {
   t.expect((await t.singleGroup('suite1:baz:zed~')).length === 2);
   t.expect((await t.singleGroup('suite1:baz:zed~{}')).length === 2);
   t.expect((await t.singleGroup('suite1:baz:zed~{"a":1}')).length === 2);
@@ -171,7 +171,7 @@ group.test('partial test', null, F, async t => {
   t.expect((await t.singleGroup('suite1:baz:zed~{"c":3}')).length === 0);
 });
 
-group.test('end2end', null, F, async t => {
+group.test('end2end', null, async t => {
   const l = await t.load(['suite2:foof']);
   if (l.length !== 1) {
     throw new Error('listing length');

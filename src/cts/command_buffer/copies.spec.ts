@@ -5,11 +5,9 @@ copy{Buffer,Texture}To{Buffer,Texture} tests.
 import { TestGroup } from '../../framework/index.js';
 import { GPUTest } from '../gpu_test.js';
 
-export const group = new TestGroup();
+export const group = new TestGroup(GPUTest);
 
-class CopyTest extends GPUTest {}
-
-group.test('b2b', null, CopyTest, async t => {
+group.test('b2b', null, async t => {
   const data = new Uint32Array([0x01020304]);
   const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
@@ -22,7 +20,7 @@ group.test('b2b', null, CopyTest, async t => {
   await t.expectContents(dst, data);
 });
 
-group.test('b2t2b', null, CopyTest, async t => {
+group.test('b2t2b', null, async t => {
   const data = new Uint32Array([0x01020304]);
   const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
@@ -50,7 +48,7 @@ group.test('b2t2b', null, CopyTest, async t => {
   await t.expectContents(dst, data);
 });
 
-group.test('b2t2t2b', null, CopyTest, async t => {
+group.test('b2t2t2b', null, async t => {
   const data = new Uint32Array([0x01020304]);
   const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
