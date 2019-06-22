@@ -122,7 +122,6 @@ class ClientCertIdentity;
 using ClientCertIdentityList = std::vector<std::unique_ptr<ClientCertIdentity>>;
 class ClientCertStore;
 class CookieStore;
-class NetLog;
 class SSLCertRequestInfo;
 class SSLInfo;
 class URLRequest;
@@ -824,9 +823,6 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to return a TTS platform implementation.
   virtual TtsPlatform* GetTtsPlatform();
-
-  // Getter for the net logging object. This can be called on any thread.
-  virtual net::NetLog* GetNetLog();
 
   // Called by WebContents to override the WebKit preferences that are used by
   // the renderer. The content layer will add its own settings, and then it's up

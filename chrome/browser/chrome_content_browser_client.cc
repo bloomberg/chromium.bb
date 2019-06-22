@@ -3142,10 +3142,6 @@ content::TtsPlatform* ChromeContentBrowserClient::GetTtsPlatform() {
 #endif
 }
 
-net::NetLog* ChromeContentBrowserClient::GetNetLog() {
-  return g_browser_process->net_log();
-}
-
 base::Optional<ui::CaptionStyle> GetCaptionStyleFromPrefs(PrefService* prefs) {
   if (!prefs) {
     return base::nullopt;
