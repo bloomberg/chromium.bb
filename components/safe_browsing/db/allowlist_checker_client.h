@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SAFE_BROWSING_DB_WHITELIST_CHECKER_CLIENT_H_
-#define COMPONENTS_SAFE_BROWSING_DB_WHITELIST_CHECKER_CLIENT_H_
+#ifndef COMPONENTS_SAFE_BROWSING_DB_ALLOWLIST_CHECKER_CLIENT_H_
+#define COMPONENTS_SAFE_BROWSING_DB_ALLOWLIST_CHECKER_CLIENT_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -15,7 +15,7 @@ namespace safe_browsing {
 // SafeBrowsingDatabaseManager::CheckCsdWhitelistUrl() for callers that
 // don't want to track their own clients.
 
-class WhitelistCheckerClient : public SafeBrowsingDatabaseManager::Client {
+class AllowlistCheckerClient : public SafeBrowsingDatabaseManager::Client {
  public:
   using BoolCallback = base::Callback<void(bool /* is_whitelisted */)>;
 
@@ -27,10 +27,10 @@ class WhitelistCheckerClient : public SafeBrowsingDatabaseManager::Client {
       const GURL& url,
       BoolCallback callback_for_result);
 
-  WhitelistCheckerClient(
+  AllowlistCheckerClient(
       BoolCallback callback_for_result,
       scoped_refptr<SafeBrowsingDatabaseManager> database_manager);
-  ~WhitelistCheckerClient() override;
+  ~AllowlistCheckerClient() override;
 
   // SafeBrowsingDatabaseMananger::Client impl
   void OnCheckWhitelistUrlResult(bool is_whitelisted) override;
@@ -40,10 +40,10 @@ class WhitelistCheckerClient : public SafeBrowsingDatabaseManager::Client {
   base::OneShotTimer timer_;
   BoolCallback callback_for_result_;
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
-  base::WeakPtrFactory<WhitelistCheckerClient> weak_factory_;
+  base::WeakPtrFactory<AllowlistCheckerClient> weak_factory_;
 
  private:
-  WhitelistCheckerClient();
+  AllowlistCheckerClient();
 
   // Called when the call to CheckCsdWhitelistUrl times out.
   void OnCheckWhitelistUrlTimeout();
@@ -51,4 +51,4 @@ class WhitelistCheckerClient : public SafeBrowsingDatabaseManager::Client {
 
 }  // namespace safe_browsing
 
-#endif  // COMPONENTS_SAFE_BROWSING_DB_WHITELIST_CHECKER_CLIENT_H_
+#endif  // COMPONENTS_SAFE_BROWSING_DB_ALLOWLIST_CHECKER_CLIENT_H_

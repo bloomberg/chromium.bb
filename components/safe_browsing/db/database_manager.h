@@ -88,12 +88,12 @@ class SafeBrowsingDatabaseManager
 
     // Called when the result of checking a whitelist is known.
     // Currently only used for CSD whitelist.
-    virtual void OnCheckWhitelistUrlResult(bool is_whitelisted) {}
+    virtual void OnCheckWhitelistUrlResult(bool did_match_allowlist) {}
 
     // Called when the result of checking the high-confidence allowlist is
     // known.
-    virtual void OnCheckUrlForHighConfidenceAllowlist(bool is_high_confidence) {
-    }
+    virtual void OnCheckUrlForHighConfidenceAllowlist(
+        bool did_match_allowlist) {}
   };
 
   //

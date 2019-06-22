@@ -1,7 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "components/safe_browsing/db/whitelist_checker_client.h"
+#include "components/safe_browsing/db/allowlist_checker_client.h"
 
 #include <memory>
 
@@ -23,7 +23,7 @@ using testing::_;
 using testing::Return;
 using testing::SaveArg;
 
-using BoolCallback = base::Callback<void(bool /* is_whitelisted */)>;
+using BoolCallback = base::Callback<void(bool /* did_match_allowlist */)>;
 using MockBoolCallback = testing::StrictMock<base::MockCallback<BoolCallback>>;
 
 namespace {
@@ -44,9 +44,9 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 };
 }  // namespace
 
-class WhitelistCheckerClientTest : public testing::Test {
+class AllowlistCheckerClientTest : public testing::Test {
  public:
-  WhitelistCheckerClientTest()
+  AllowlistCheckerClientTest()
       : thread_bundle_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         target_url_("http://foo.bar") {}
@@ -72,54 +72,54 @@ class WhitelistCheckerClientTest : public testing::Test {
   scoped_refptr<MockSafeBrowsingDatabaseManager> database_manager_;
 };
 
-TEST_F(WhitelistCheckerClientTest, TestMatch) {
+TEST_F(AllowlistCheckerClientTest, TestMatch) {
   EXPECT_CALL(*database_manager_, CheckCsdWhitelistUrl(target_url_, _))
       .WillOnce(Return(AsyncMatch::MATCH));
 
   MockBoolCallback callback;
-  EXPECT_CALL(callback, Run(true /* is_whitelisted */));
-  WhitelistCheckerClient::StartCheckCsdWhitelist(database_manager_, target_url_,
+  EXPECT_CALL(callback, Run(true /* did_match_allowlist */));
+  AllowlistCheckerClient::StartCheckCsdWhitelist(database_manager_, target_url_,
                                                  callback.Get());
 }
 
-TEST_F(WhitelistCheckerClientTest, TestNoMatch) {
+TEST_F(AllowlistCheckerClientTest, TestNoMatch) {
   EXPECT_CALL(*database_manager_, CheckCsdWhitelistUrl(target_url_, _))
       .WillOnce(Return(AsyncMatch::NO_MATCH));
 
   MockBoolCallback callback;
-  EXPECT_CALL(callback, Run(false /* is_whitelisted */));
-  WhitelistCheckerClient::StartCheckCsdWhitelist(database_manager_, target_url_,
+  EXPECT_CALL(callback, Run(false /* did_match_allowlist */));
+  AllowlistCheckerClient::StartCheckCsdWhitelist(database_manager_, target_url_,
                                                  callback.Get());
 }
 
-TEST_F(WhitelistCheckerClientTest, TestAsyncNoMatch) {
+TEST_F(AllowlistCheckerClientTest, TestAsyncNoMatch) {
   SafeBrowsingDatabaseManager::Client* client;
   EXPECT_CALL(*database_manager_, CheckCsdWhitelistUrl(target_url_, _))
       .WillOnce(DoAll(SaveArg<1>(&client), Return(AsyncMatch::ASYNC)));
 
   MockBoolCallback callback;
-  WhitelistCheckerClient::StartCheckCsdWhitelist(database_manager_, target_url_,
+  AllowlistCheckerClient::StartCheckCsdWhitelist(database_manager_, target_url_,
                                                  callback.Get());
   // Callback should not be called yet.
 
-  EXPECT_CALL(callback, Run(false /* is_whitelisted */));
+  EXPECT_CALL(callback, Run(false /* did_match_allowlist */));
   // The self-owned client deletes itself here.
   client->OnCheckWhitelistUrlResult(false);
 }
 
-TEST_F(WhitelistCheckerClientTest, TestAsyncTimeout) {
+TEST_F(AllowlistCheckerClientTest, TestAsyncTimeout) {
   SafeBrowsingDatabaseManager::Client* client;
   EXPECT_CALL(*database_manager_, CheckCsdWhitelistUrl(target_url_, _))
       .WillOnce(DoAll(SaveArg<1>(&client), Return(AsyncMatch::ASYNC)));
   EXPECT_CALL(*database_manager_, CancelCheck(_)).Times(1);
 
   MockBoolCallback callback;
-  WhitelistCheckerClient::StartCheckCsdWhitelist(database_manager_, target_url_,
+  AllowlistCheckerClient::StartCheckCsdWhitelist(database_manager_, target_url_,
                                                  callback.Get());
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   // No callback yet.
 
-  EXPECT_CALL(callback, Run(true /* is_whitelisted */));
+  EXPECT_CALL(callback, Run(true /* did_match_allowlist */));
   thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(5));
 }
 
