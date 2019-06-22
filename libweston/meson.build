@@ -27,6 +27,7 @@ srcs_libweston = [
 	'timeline.c',
 	'touch-calibration.c',
 	'weston-log-wayland.c',
+	'weston-log-file.c',
 	'weston-log.c',
 	'zoom.c',
 	'../shared/matrix.c',

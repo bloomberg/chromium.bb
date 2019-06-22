@@ -29,6 +29,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #ifdef  __cplusplus
 extern "C" {
@@ -103,6 +105,12 @@ void
 weston_log_subscribe(struct weston_log_context *log_ctx,
 		     struct weston_log_subscriber *subscriber,
 		     const char *scope_name);
+
+struct weston_log_subscriber *
+weston_log_subscriber_create_log(FILE *dump_to);
+
+void
+weston_log_subscriber_destroy_log(struct weston_log_subscriber *sub);
 
 #ifdef  __cplusplus
 }
