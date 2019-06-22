@@ -536,6 +536,7 @@
     amd64-generic-cheets-release
     arkham-release
     asuka-release
+    atlas-kvm-release
     atlas-release
     auron_paine-release
     auron_yuna-release
@@ -824,6 +825,18 @@
   atlas-compile-only-pre-cq
   atlas-factory-atlas-11907.B-factorybranch-tryjob
   atlas-full-tryjob
+  atlas-kvm-chromium-pfq-tryjob
+  atlas-kvm-compile-only-pre-cq
+  atlas-kvm-full-tryjob
+  atlas-kvm-llvm-next-toolchain-tryjob
+  atlas-kvm-llvm-toolchain-tryjob
+  atlas-kvm-no-vmtest-pre-cq
+  atlas-kvm-paladin-tryjob
+  atlas-kvm-postsubmit-tryjob
+  atlas-kvm-pre-cq
+  atlas-kvm-release-tryjob
+  atlas-kvm-tot-chromium-pfq-informational-tryjob
+  atlas-kvm-unittest-stress
   atlas-llvm-next-toolchain-tryjob
   atlas-llvm-toolchain-tryjob
   atlas-master-factorybranch-tryjob
@@ -2860,6 +2873,7 @@
     amd64-generic-cheets-release-tryjob
     arkham-release-tryjob
     asuka-release-tryjob
+    atlas-kvm-release-tryjob
     atlas-release-tryjob
     auron_paine-release-tryjob
     auron_yuna-release-tryjob
