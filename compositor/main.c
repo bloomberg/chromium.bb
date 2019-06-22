@@ -124,7 +124,6 @@ struct wet_compositor {
 static FILE *weston_logfile = NULL;
 static struct weston_log_scope *log_scope;
 static struct weston_log_scope *protocol_scope;
-
 static int cached_tm_mday = -1;
 
 static int weston_log_timestamp(void)
@@ -197,11 +196,7 @@ weston_log_file_close(void)
 static int
 vlog(const char *fmt, va_list ap)
 {
-	int l;
 	char timestr[128];
-	va_list ap2;
-
-	va_copy(ap2, ap);
 
 	if (weston_log_scope_is_enabled(log_scope)) {
 		weston_log_scope_printf(log_scope, "%s ",
@@ -210,23 +205,14 @@ vlog(const char *fmt, va_list ap)
 		weston_log_scope_vprintf(log_scope, fmt, ap);
 	}
 
-	l = weston_log_timestamp();
-	l += vfprintf(weston_logfile, fmt, ap2);
-	va_end(ap2);
-
-	return l;
+	return 0;
 }
 
 static int
 vlog_continue(const char *fmt, va_list argp)
 {
-	va_list argp2;
-
-	va_copy(argp2, argp);
-	weston_log_scope_vprintf(log_scope, fmt, argp2);
-	va_end(argp2);
-
-	return vfprintf(weston_logfile, fmt, argp);
+	weston_log_scope_vprintf(log_scope, fmt, argp);
+	return 0;
 }
 
 static const char *
@@ -656,6 +642,9 @@ usage(int error_code)
 		"  --no-config\t\tDo not read weston.ini\n"
 		"  --wait-for-debugger\tRaise SIGSTOP on start-up\n"
 		"  --debug\t\tEnable debug extension\n"
+		"  -l, --logger-scopes=SCOPE\n\t\t\tSpecify log scopes to "
+			"subscribe to.\n\t\t\tCan specify multiple scopes, "
+			"each followed by comma\n"
 		"  -h, --help\t\tThis help message\n\n");
 
 #if defined(BUILD_DRM_COMPOSITOR)
@@ -2916,6 +2905,23 @@ wet_load_xwayland(struct weston_compositor *comp)
 }
 #endif
 
+static void
+weston_log_setup_scopes(struct weston_log_context *log_ctx,
+			struct weston_log_subscriber *subscriber,
+			const char *names)
+{
+	assert(log_ctx);
+	assert(subscriber);
+
+	char *tokenize = strdup(names);
+	char *token = strtok(tokenize, ",");
+	while (token) {
+		weston_log_subscribe(log_ctx, subscriber, token);
+		token = strtok(NULL, ",");
+	}
+	free(tokenize);
+}
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_FAILURE;
@@ -2930,6 +2936,7 @@ int main(int argc, char *argv[])
 	char *modules = NULL;
 	char *option_modules = NULL;
 	char *log = NULL;
+	char *log_scopes = NULL;
 	char *server_socket = NULL;
 	int32_t idle_time = -1;
 	int32_t help = 0;
@@ -2946,6 +2953,7 @@ int main(int argc, char *argv[])
 	struct weston_seat *seat;
 	struct wet_compositor wet = { 0 };
 	struct weston_log_context *log_ctx = NULL;
+	struct weston_log_subscriber *logger = NULL;
 	int require_input;
 	sigset_t mask;
 
@@ -2968,6 +2976,7 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_STRING, "config", 'c', &config_file },
 		{ WESTON_OPTION_BOOLEAN, "wait-for-debugger", 0, &wait_for_debugger },
 		{ WESTON_OPTION_BOOLEAN, "debug", 0, &debug_protocol },
+		{ WESTON_OPTION_STRING, "logger-scopes", 'l', &log_scopes },
 	};
 
 	wl_list_init(&wet.layoutput_list);
@@ -2994,6 +3003,12 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Failed to initialize weston debug framework.\n");
 		return EXIT_FAILURE;
 	}
+
+	logger = weston_log_subscriber_create_log(weston_logfile);
+	if (log_scopes)
+		weston_log_setup_scopes(log_ctx, logger, log_scopes);
+	else
+		weston_log_subscribe(log_ctx, logger, "log");
 
 	weston_log_set_handler(vlog, vlog_continue);
 	weston_log_file_open(log);
@@ -3203,6 +3218,7 @@ out:
 	weston_compositor_log_scope_destroy(log_scope);
 	log_scope = NULL;
 	weston_compositor_destroy(wet.compositor);
+	weston_log_subscriber_destroy_log(logger);
 
 out_signals:
 	for (i = ARRAY_LENGTH(signals) - 1; i >= 0; i--)
