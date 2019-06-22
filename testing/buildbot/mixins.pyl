@@ -282,8 +282,8 @@
     # Similar to stable, but with a newer Mesa version.
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-18.3.3',
-        'os': 'Ubuntu',
+        'gpu': '8086:5912-19.0.2',
+        'os': 'Ubuntu-19.04',
         'pool': 'Chrome-GPU',
       },
     },
