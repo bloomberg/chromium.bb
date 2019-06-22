@@ -25,6 +25,7 @@ srcs_drm = [
 	'modes.c',
 	'kms.c',
 	'state-helpers.c',
+	'state-propose.c',
 	linux_dmabuf_unstable_v1_protocol_c,
 	linux_dmabuf_unstable_v1_server_protocol_h,
 	presentation_time_server_protocol_h,

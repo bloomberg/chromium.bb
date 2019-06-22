@@ -665,3 +665,9 @@ drm_plane_state_put_back(struct drm_plane_state *state);
 bool
 drm_plane_state_coords_for_view(struct drm_plane_state *state,
 				struct weston_view *ev);
+
+void
+drm_assign_planes(struct weston_output *output_base, void *repaint_data);
+
+bool
+drm_plane_is_available(struct drm_plane *plane, struct drm_output *output);
