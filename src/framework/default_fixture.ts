@@ -24,7 +24,7 @@ export class DefaultFixture extends Fixture {
     this.log('OK' + m);
   }
 
-  async shouldReject(p: Promise<any>, msg?: string): Promise<void> {
+  async shouldReject(p: Promise<unknown>, msg?: string): Promise<void> {
     this.outstanding++;
     const m = msg ? ': ' + msg : '';
     try {
