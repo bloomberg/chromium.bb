@@ -26,7 +26,7 @@
 #ifndef UTIL_PATTERN_H
 #define UTIL_PATTERN_H
 
-#include <drm/drm_mode.h>
+#include <drm_mode.h>
 
 enum util_fill_pattern {
 	UTIL_PATTERN_TILES,
