@@ -1035,11 +1035,14 @@ void FeatureInfo::InitializeFeatures() {
     validators_.g_l_state.AddValue(GL_TEXTURE_BINDING_EXTERNAL_OES);
   }
 
-  // TODO(kainino): If we add a way to query whether ANGLE is exposing
-  // native support for ETC1 textures, require that here. Otherwise, we could
-  // co-opt the native-ETC2-support query discussed below.
+  // When running on top of ANGLE, also require the
+  // GL_CHROMIUM_compressed_texture_etc exentsion to expose
+  // GL_OES_compressed_ETC1_RGB8_texture. There is no query for native support
+  // of this texture format so assume that if ANGLE natively supports ETC2, ETC1
+  // is also supported.
   if (gfx::HasExtension(extensions, "GL_OES_compressed_ETC1_RGB8_texture") &&
-      !gl_version_info_->is_angle) {
+      (!gl_version_info_->is_angle ||
+       gfx::HasExtension(extensions, "GL_CHROMIUM_compressed_texture_etc"))) {
     AddExtensionString("GL_OES_compressed_ETC1_RGB8_texture");
     feature_flags_.oes_compressed_etc1_rgb8_texture = true;
     validators_.compressed_texture_format.AddValue(GL_ETC1_RGB8_OES);
