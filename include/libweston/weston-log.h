@@ -112,6 +112,15 @@ weston_log_subscriber_create_log(FILE *dump_to);
 void
 weston_log_subscriber_destroy_log(struct weston_log_subscriber *sub);
 
+struct weston_log_subscriber *
+weston_log_subscriber_create_flight_rec(size_t size);
+
+void
+weston_log_subscriber_destroy_flight_rec(struct weston_log_subscriber *sub);
+
+void
+weston_log_subscriber_display_flight_rec(struct weston_log_subscriber *sub);
+
 #ifdef  __cplusplus
 }
 #endif
