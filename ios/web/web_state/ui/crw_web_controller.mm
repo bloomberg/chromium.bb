@@ -616,10 +616,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [_containerView clearTransientContentView];
 }
 
-- (void)dismissModals {
-  [self.legacyNativeController dismissModals];
-}
-
 // Caller must reset the delegate before calling.
 - (void)close {
   self.webStateImpl->CancelDialogs();
