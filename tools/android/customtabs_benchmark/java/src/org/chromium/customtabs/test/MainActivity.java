@@ -109,14 +109,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private void setUpUi() {
         setContentView(R.layout.main);
 
-        mUrlEditText = (EditText) findViewById(R.id.url_text);
-        mChromeRadioButton = (RadioButton) findViewById(R.id.radio_chrome);
-        mWebViewRadioButton = (RadioButton) findViewById(R.id.radio_webview);
-        mWarmupCheckbox = (CheckBox) findViewById(R.id.warmup_checkbox);
-        mParallelUrlCheckBox = (CheckBox) findViewById(R.id.parallel_url_checkbox);
-        mParallelUrlEditText = (EditText) findViewById(R.id.parallel_url_text);
+        mUrlEditText = findViewById(R.id.url_text);
+        mChromeRadioButton = findViewById(R.id.radio_chrome);
+        mWebViewRadioButton = findViewById(R.id.radio_webview);
+        mWarmupCheckbox = findViewById(R.id.warmup_checkbox);
+        mParallelUrlCheckBox = findViewById(R.id.parallel_url_checkbox);
+        mParallelUrlEditText = findViewById(R.id.parallel_url_text);
 
-        Button goButton = (Button) findViewById(R.id.go_button);
+        Button goButton = findViewById(R.id.go_button);
 
         mUrlEditText.setOnClickListener(this);
         mChromeRadioButton.setOnClickListener(this);
@@ -392,7 +392,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             MainActivity.this.finish();
         }
 
-        /** Same as {@link logMetricsAndFinish()} with a set delay in ms. */
+        /** Same as {@link #logMetricsAndFinish()} with a set delay in ms. */
         public void logMetricsAndFinishDelayed(int delayMs) {
             mHandler.postDelayed(new Runnable() {
                 @Override
@@ -407,8 +407,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
      * Sums all the memory usage of a package, and returns (PSS, Private Dirty).
      *
      * Only works for packages where a service is exported by each process, which is the case for
-     * Chrome. Also, doesn't work on O and above, as {@link ActivityManager.getRunningServices} is
-     * restricted.
+     * Chrome. Also, doesn't work on O and above, as
+     * {@link ActivityManager#getRunningServices(int)}} is restricted.
      *
      * @param context Application context
      * @param packageName the package to query
@@ -458,7 +458,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         params.putBoolean("ignoreFragments", true);
         params.putBoolean("prerender", true);
 
-        int speculationModeValue = 0;
+        int speculationModeValue;
         switch (speculationMode) {
             case "disabled":
                 speculationModeValue = NO_SPECULATION;
