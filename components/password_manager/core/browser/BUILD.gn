@@ -397,7 +397,6 @@ jumbo_static_library("test_support") {
     "//url:url",
   ]
   deps = [
-    ":csv_unittests",
     "//base",
     "//components/autofill/core/common",
     "//net:net",
@@ -533,6 +532,7 @@ source_set("unit_tests") {
   }
 
   deps = [
+    ":csv_unittests",
     ":hash_password_manager",
     ":password_generator",
     ":password_hash_data",
