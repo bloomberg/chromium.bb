@@ -132,6 +132,7 @@ void DisableWelcomePages(const std::vector<Profile*>& profiles) {
     profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
 
 #if defined(OS_WIN)
+  // TODO(hcarmona): deprecate this pref.
   g_browser_process->local_state()->SetBoolean(prefs::kHasSeenWin10PromoPage,
                                                true);
 #endif
@@ -1263,23 +1264,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
 
   TabStripModel* tab_strip = browser->tab_strip_model();
 
-  // Windows 10 has its own Welcome page; the standard Welcome page does not
-  // appear until second run.  However, if NuxOnboarding is enabled, the
-  // standard welcome URL should still be used.
-  bool is_navi_enabled = false;
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  is_navi_enabled = nux::IsNuxOnboardingEnabled(profile1_ptr);
-#endif
-  if (IsWindows10OrNewer() && !is_navi_enabled) {
-    ASSERT_EQ(1, tab_strip->count());
-    EXPECT_EQ(chrome::kChromeUIWelcomeWin10URL,
-              tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
-
-    browser = CloseBrowserAndOpenNew(browser, profile1_ptr);
-    ASSERT_TRUE(browser);
-    tab_strip = browser->tab_strip_model();
-  }
-
   // Ensure that the standard Welcome page appears on second run on Win 10, and
   // on first run on all other platforms.
   ASSERT_EQ(1, tab_strip->count());
@@ -1434,8 +1418,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
                        WelcomeBackWin10NoPolicy) {
   ASSERT_NO_FATAL_FAILURE(StartBrowser(
       StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10, PolicyVariant()));
-  ExpectUrlInBrowserAtPosition(
-      StartupTabProviderImpl::GetWin10WelcomePageUrl(false), 0);
+  ExpectUrlInBrowserAtPosition(StartupTabProviderImpl::GetWelcomePageUrl(false),
+                               0);
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
