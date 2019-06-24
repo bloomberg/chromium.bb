@@ -19773,6 +19773,10 @@ Called by update_net_error_codes.py.-->
   <int value="1343" label="DECLARATIVENETREQUEST_GETMATCHEDRULES"/>
   <int value="1344" label="DECLARATIVENETREQUEST_SETACTIONCOUNTASBADGETEXT"/>
   <int value="1345" label="BLUETOOTHPRIVATE_RECORDDEVICESELECTION"/>
+  <int value="1346" label="LOGIN_LAUNCHMANAGEDGUESTSESSION"/>
+  <int value="1347" label="LOGIN_EXITCURRENTSESSION"/>
+  <int value="1348" label="LOGIN_ISRUNNINGINLOGINPROFILE"/>
+  <int value="1349" label="LOGIN_FETCHDATAFORNEXTLOGINATTEMPT"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -20305,6 +20309,7 @@ Called by update_net_error_codes.py.-->
   <int value="217" label="kLoginScreenUi"/>
   <int value="218" label="kDeclarativeNetRequestFeedback"/>
   <int value="219" label="kTransientBackground"/>
+  <int value="220" label="kLogin"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
