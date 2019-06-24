@@ -6,10 +6,15 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabProperties.TAB_ID;
 
+import android.util.Pair;
+
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyListModel;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.util.List;
 
 /**
  * A {@link PropertyListModel} implementation to keep information about a list of
@@ -26,5 +31,78 @@ class TabListModel extends PropertyListModel<PropertyModel, PropertyKey> {
             if (get(i).get(TAB_ID) == tabId) return i;
         }
         return TabModel.INVALID_TAB_INDEX;
+    }
+
+    /**
+     * Sync the {@link TabListModel} with updated information. Update tab id of
+     * the item in {@code index} with the current selected {@code tab} of the group.
+     * @param selectedTab   The current selected tab in the group.
+     * @param index         The index of the item in {@link TabListModel} that needs to be updated.
+     */
+    void updateTabListModelIdForGroup(Tab selectedTab, int index) {
+        get(index).set(TabProperties.TAB_ID, selectedTab.getId());
+    }
+
+    /**
+     * This method gets indexes in the {@link TabListModel} of the two tabs that are merged into one
+     * group.
+     * @param tabModel   The tabModel that owns the tabs.
+     * @param tabs       The list that contains tabs of the newly merged group.
+     * @return A Pair with its first member as the index of the tab that is selected to merge and
+     * the second member as the index of the tab that is being merged into.
+     */
+    Pair<Integer, Integer> getIndexesForMergeToGroup(TabModel tabModel, List<Tab> tabs) {
+        int desIndex = TabModel.INVALID_TAB_INDEX;
+        int srcIndex = TabModel.INVALID_TAB_INDEX;
+        int lastTabModelIndex = tabModel.indexOf(tabs.get(tabs.size() - 1));
+        for (int i = lastTabModelIndex; i >= 0; i--) {
+            Tab curTab = tabModel.getTabAt(i);
+            if (!tabs.contains(curTab)) break;
+            int index = indexFromId(curTab.getId());
+            if (index != TabModel.INVALID_TAB_INDEX && srcIndex == TabModel.INVALID_TAB_INDEX) {
+                srcIndex = index;
+            } else if (index != TabModel.INVALID_TAB_INDEX
+                    && desIndex == TabModel.INVALID_TAB_INDEX) {
+                desIndex = index;
+            }
+        }
+        return new Pair<>(desIndex, srcIndex);
+    }
+
+    /**
+     * This method updates the information in {@link TabListModel} of the selected tab when a merge
+     * related operation happens.
+     * @param index         The index of the item in {@link TabListModel} that needs to be updated.
+     * @param isSelected    Whether the tab is selected or not in a merge related operation. If
+     *         selected, update the corresponding item in {@link TabListModel} to the selected
+     *         state. If not, restore it to original state.
+     */
+    void updateSelectedTabForMergeToGroup(int index, boolean isSelected) {
+        int status = isSelected ? TabListRecyclerView.ANIMATION_STATUS_ZOOM_IN
+                                : TabListRecyclerView.ANIMATION_STATUS_ZOOM_OUT;
+        if (index < 0 || index >= size()
+                || get(index).get(TabProperties.CARD_ANIMATION_STATUS) == status)
+            return;
+
+        get(index).set(TabProperties.CARD_ANIMATION_STATUS, status);
+        get(index).set(TabProperties.ALPHA, isSelected ? 0.8f : 1f);
+    }
+
+    /**
+     * This method updates the information in {@link TabListModel} of the hovered tab when a merge
+     * related operation happens.
+     * @param index         The index of the item in {@link TabListModel} that needs to be updated.
+     * @param isHovered     Whether the tab is hovered or not in a merge related operation. If
+     *         hovered, update the corresponding item in {@link TabListModel} to the hovered state.
+     *         If not, restore it to original state.
+     */
+    void updateHoveredTabForMergeToGroup(int index, boolean isHovered) {
+        int status = isHovered ? TabListRecyclerView.ANIMATION_STATUS_ZOOM_IN
+                               : TabListRecyclerView.ANIMATION_STATUS_ZOOM_OUT;
+        if (index < 0 || index >= size()
+                || get(index).get(TabProperties.CARD_ANIMATION_STATUS) == status)
+            return;
+
+        get(index).set(TabProperties.CARD_ANIMATION_STATUS, status);
     }
 }

@@ -7,20 +7,18 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.ComponentCallbacks;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Pair;
 import android.view.View;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
@@ -31,14 +29,12 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -160,8 +156,9 @@ class TabListMediator {
     private final CreateGroupButtonProvider mCreateGroupButtonProvider;
     private final GridCardOnClickListenerProvider mGridCardOnClickListenerProvider;
     private final String mComponentName;
-    private boolean mCloseAllRelatedTabs;
+    private boolean mActionsOnAllRelatedTabs;
     private ComponentCallbacks mComponentCallbacks;
+    private TabGridItemTouchHelperCallback mTabGridItemTouchHelperCallback;
 
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
         @Override
@@ -249,8 +246,8 @@ class TabListMediator {
      * @param thumbnailProvider {@link ThumbnailProvider} to provide screenshot related details.
      * @param titleProvider {@link TitleProvider} for a given tab's title to show.
      * @param tabListFaviconProvider Provider for all favicon related drawables.
-     * @param closeRelatedTabs Whether all related tabs should be closed in {@link
-     *         TabProperties#TAB_CLOSED_LISTENER}.
+     * @param actionOnRelatedTabs Whether tab-related actions should be operated on all related
+     *         tabs.
      * @param createGroupButtonProvider {@link CreateGroupButtonProvider} to provide "Create group"
      *                                   button information. It's null when "Create group" is not
      *                                   possible.
@@ -258,7 +255,7 @@ class TabListMediator {
      */
     public TabListMediator(TabListModel model, TabModelSelector tabModelSelector,
             @Nullable ThumbnailProvider thumbnailProvider, @Nullable TitleProvider titleProvider,
-            TabListFaviconProvider tabListFaviconProvider, boolean closeRelatedTabs,
+            TabListFaviconProvider tabListFaviconProvider, boolean actionOnRelatedTabs,
             @Nullable CreateGroupButtonProvider createGroupButtonProvider,
             @Nullable GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             String componentName) {
@@ -270,7 +267,7 @@ class TabListMediator {
         mTitleProvider = titleProvider != null ? titleProvider : Tab::getTitle;
         mCreateGroupButtonProvider = createGroupButtonProvider;
         mGridCardOnClickListenerProvider = gridCardOnClickListenerProvider;
-        mCloseAllRelatedTabs = closeRelatedTabs;
+        mActionsOnAllRelatedTabs = actionOnRelatedTabs;
 
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
@@ -288,7 +285,7 @@ class TabListMediator {
 
             @Override
             public void tabClosureUndone(Tab tab) {
-                onTabAdded(tab, !mCloseAllRelatedTabs);
+                onTabAdded(tab, !mActionsOnAllRelatedTabs);
                 if (sTabClosedFromMapTabClosedFromMap.containsKey(tab.getId())) {
                     @TabClosedFrom
                     int from = sTabClosedFromMapTabClosedFromMap.get(tab.getId());
@@ -315,7 +312,7 @@ class TabListMediator {
 
             @Override
             public void didAddTab(Tab tab, int type) {
-                onTabAdded(tab, !mCloseAllRelatedTabs);
+                onTabAdded(tab, !mActionsOnAllRelatedTabs);
             }
 
             @Override
@@ -327,10 +324,9 @@ class TabListMediator {
             @Override
             public void didMoveTab(Tab tab, int newIndex, int curIndex) {
                 if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
-                                instanceof TabGroupModelFilter) {
+                                instanceof TabGroupModelFilter)
                     return;
-                }
-                onTabMoved(tab, newIndex, curIndex);
+                onTabMoved(newIndex, curIndex);
             }
         };
 
@@ -339,9 +335,6 @@ class TabListMediator {
         if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof TabGroupModelFilter) {
             mTabGroupObserver = new TabGroupModelFilter.Observer() {
-                @Override
-                public void didMergeTabToGroup(Tab movedTab, int selectedTabIdInGroup) {}
-
                 @Override
                 public void didMoveWithinGroup(
                         Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {
@@ -360,13 +353,36 @@ class TabListMediator {
                 }
 
                 @Override
+                public void didMergeTabToGroup(Tab movedTab, int selectedTabIdInGroup) {
+                    if (!mActionsOnAllRelatedTabs) return;
+                    Pair<Integer, Integer> positions =
+                            mModel.getIndexesForMergeToGroup(mTabModelSelector.getCurrentModel(),
+                                    getRelatedTabsForId(movedTab.getId()));
+                    int srcIndex = positions.second;
+                    int desIndex = positions.first;
+
+                    if (!isValidMovePosition(srcIndex) || !isValidMovePosition(desIndex)) return;
+                    mModel.removeAt(srcIndex);
+                }
+
+                @Override
                 public void didMoveTabGroup(
                         Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {
+                    if (!mActionsOnAllRelatedTabs) return;
+                    TabGroupModelFilter filter =
+                            (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
+                                    .getCurrentTabModelFilter();
                     List<Tab> relatedTabs = getRelatedTabsForId(movedTab.getId());
                     Tab currentGroupSelectedTab =
                             TabGroupUtils.getSelectedTabInGroupForTab(mTabModelSelector, movedTab);
                     TabModel tabModel = mTabModelSelector.getCurrentModel();
                     int curPosition = mModel.indexFromId(currentGroupSelectedTab.getId());
+                    if (curPosition == TabModel.INVALID_TAB_INDEX) {
+                        // Sync TabListModel with updated TabGroupModelFilter.
+                        int indexToUpdate = filter.indexOf(tabModel.getTabAt(tabModelOldIndex));
+                        mModel.updateTabListModelIdForGroup(currentGroupSelectedTab, indexToUpdate);
+                        curPosition = mModel.indexFromId(currentGroupSelectedTab.getId());
+                    }
                     if (!isValidMovePosition(curPosition)) return;
 
                     // Find the tab which was in the destination index before this move. Use that
@@ -378,6 +394,13 @@ class TabListMediator {
                     Tab destinationGroupSelectedTab = TabGroupUtils.getSelectedTabInGroupForTab(
                             mTabModelSelector, destinationTab);
                     int newPosition = mModel.indexFromId(destinationGroupSelectedTab.getId());
+                    if (newPosition == TabModel.INVALID_TAB_INDEX) {
+                        int indexToUpdate = filter.indexOf(destinationTab)
+                                + (tabModelNewIndex > tabModelOldIndex ? 1 : -1);
+                        mModel.updateTabListModelIdForGroup(
+                                destinationGroupSelectedTab, indexToUpdate);
+                        newPosition = mModel.indexFromId(destinationGroupSelectedTab.getId());
+                    }
                     if (!isValidMovePosition(newPosition)) return;
 
                     mModel.move(curPosition, newPosition);
@@ -399,7 +422,7 @@ class TabListMediator {
             public void run(int tabId) {
                 RecordUserAction.record("MobileTabClosed." + mComponentName);
 
-                if (mCloseAllRelatedTabs) {
+                if (mActionsOnAllRelatedTabs) {
                     List<Tab> related = getRelatedTabsForId(tabId);
                     if (related.size() > 1) {
                         onGroupClosedFrom(tabId);
@@ -436,6 +459,10 @@ class TabListMediator {
                 return TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), nextTabId);
             }
         };
+
+        mTabGridItemTouchHelperCallback =
+                new TabGridItemTouchHelperCallback(mModel, mTabModelSelector, mTabClosedListener,
+                        this::updateTab, mComponentName, mActionsOnAllRelatedTabs);
     }
 
     private void onTabClosedFrom(int tabId, String fromComponent) {
@@ -458,8 +485,8 @@ class TabListMediator {
         sTabClosedFromMapTabClosedFromMap.put(tabId, TabClosedFrom.GRID_TAB_SWITCHER_GROUP);
     }
 
-    public void setCloseAllRelatedTabsForTest(boolean closeAllRelatedTabs) {
-        mCloseAllRelatedTabs = closeAllRelatedTabs;
+    public void setActionOnAllRelatedTabsForTest(boolean actionOnAllRelatedTabs) {
+        mActionsOnAllRelatedTabs = actionOnAllRelatedTabs;
     }
 
     private List<Tab> getRelatedTabsForId(int id) {
@@ -485,7 +512,7 @@ class TabListMediator {
         addTabInfoToModel(tab, index, mTabModelSelector.getCurrentTab() == tab);
     }
 
-    private void onTabMoved(Tab tab, int newIndex, int curIndex) {
+    private void onTabMoved(int newIndex, int curIndex) {
         // Handle move without groups enabled.
         if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof EmptyTabModelFilter) {
@@ -558,86 +585,32 @@ class TabListMediator {
         }
     }
 
+    private void updateTab(int index, Tab tab, boolean isSelected) {
+        if (index < 0 || index >= mModel.size()) return;
+        mModel.get(index).set(TabProperties.TAB_ID, tab.getId());
+        TabActionListener tabSelectedListener;
+        if (mGridCardOnClickListenerProvider == null
+                || getRelatedTabsForId(tab.getId()).size() == 1) {
+            tabSelectedListener = mTabSelectedListener;
+        } else {
+            tabSelectedListener = mGridCardOnClickListenerProvider.getGridCardOnClickListener(tab);
+        }
+        mModel.get(index).set(TabProperties.TAB_SELECTED_LISTENER, tabSelectedListener);
+        mModel.get(index).set(TabProperties.CREATE_GROUP_LISTENER,
+                isSelected ? mCreateGroupButtonProvider.getCreateGroupButtonOnClickListener(tab)
+                           : null);
+        mModel.get(index).set(TabProperties.IS_SELECTED, isSelected);
+        mModel.get(index).set(TabProperties.TITLE, mTitleProvider.getTitle(tab));
+    }
+
     /**
      * @return The callback that hosts the logic for swipe and drag related actions.
      */
-    ItemTouchHelper.SimpleCallback getItemTouchHelperCallback(final float swipeToDismissThreshold) {
-        return new ItemTouchHelper.SimpleCallback(0, 0) {
-            @Override
-            public int getMovementFlags(
-                    RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-                final int dragFlags = FeatureUtilities.isTabGroupsAndroidEnabled()
-                                && !FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
-                        ? 0
-                        : ItemTouchHelper.START | ItemTouchHelper.END | ItemTouchHelper.UP
-                                | ItemTouchHelper.DOWN;
-                final int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
-                return makeMovementFlags(dragFlags, swipeFlags);
-            }
-
-            @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder fromViewHolder,
-                    RecyclerView.ViewHolder toViewHolder) {
-                assert fromViewHolder instanceof TabGridViewHolder;
-                assert toViewHolder instanceof TabGridViewHolder;
-
-                int currentTabId = ((TabGridViewHolder) fromViewHolder).getTabId();
-                int destinationTabId = ((TabGridViewHolder) toViewHolder).getTabId();
-                int distance =
-                        toViewHolder.getAdapterPosition() - fromViewHolder.getAdapterPosition();
-                TabModelFilter filter =
-                        mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
-                TabModel tabModel = mTabModelSelector.getCurrentModel();
-                if (filter instanceof EmptyTabModelFilter) {
-                    tabModel.moveTab(currentTabId,
-                            mModel.indexFromId(currentTabId)
-                                    + (distance > 0 ? distance + 1 : distance));
-                } else if (!mCloseAllRelatedTabs) {
-                    int destinationIndex =
-                            tabModel.indexOf(mTabModelSelector.getTabById(destinationTabId));
-                    tabModel.moveTab(
-                            currentTabId, distance > 0 ? destinationIndex + 1 : destinationIndex);
-                } else {
-                    List<Tab> destinationTabGroup = getRelatedTabsForId(destinationTabId);
-                    int newIndex = distance >= 0 ? TabGroupUtils.getLastTabModelIndexForList(
-                                                           mTabModelSelector, destinationTabGroup)
-                                    + 1
-                                                 : TabGroupUtils.getFirstTabModelIndexForList(
-                                                         mTabModelSelector, destinationTabGroup);
-                    ((TabGroupModelFilter) filter).moveRelatedTabs(currentTabId, newIndex);
-                }
-                return true;
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int i) {
-                assert viewHolder instanceof TabGridViewHolder;
-
-                mTabClosedListener.run(((TabGridViewHolder) viewHolder).getTabId());
-                RecordUserAction.record("MobileStackViewSwipeCloseTab." + mComponentName);
-            }
-
-            @Override
-            public void onChildDraw(Canvas c, RecyclerView recyclerView,
-                    RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState,
-                    boolean isCurrentlyActive) {
-                super.onChildDraw(
-                        c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
-                    float alpha =
-                            Math.max(0.2f, 1f - 0.8f * Math.abs(dX) / swipeToDismissThreshold);
-                    int index = mModel.indexFromId(((TabGridViewHolder) viewHolder).getTabId());
-                    if (index == -1) return;
-
-                    mModel.get(index).set(TabProperties.ALPHA, alpha);
-                }
-            }
-
-            @Override
-            public float getSwipeThreshold(RecyclerView.ViewHolder viewHolder) {
-                return swipeToDismissThreshold / viewHolder.itemView.getWidth();
-            }
-        };
+    ItemTouchHelper.SimpleCallback getItemTouchHelperCallback(final float swipeToDismissThreshold,
+            final float mergeThreshold, final boolean isDragEnabled) {
+        mTabGridItemTouchHelperCallback.setupCallback(
+                swipeToDismissThreshold, mergeThreshold, isDragEnabled);
+        return mTabGridItemTouchHelperCallback;
     }
 
     void registerOrientationListener(GridLayoutManager manager) {
@@ -655,11 +628,6 @@ class TabListMediator {
             public void onLowMemory() {}
         };
         ContextUtils.getApplicationContext().registerComponentCallbacks(mComponentCallbacks);
-    }
-
-    @VisibleForTesting
-    void setCloseAllRelatedTabs(boolean flag) {
-        mCloseAllRelatedTabs = flag;
     }
 
     /**
@@ -691,7 +659,7 @@ class TabListMediator {
 
     private void addTabInfoToModel(final Tab tab, int index, boolean isSelected) {
         boolean showIPH = false;
-        if (mCloseAllRelatedTabs && !mShownIPH) {
+        if (mActionsOnAllRelatedTabs && !mShownIPH) {
             showIPH = getRelatedTabsForId(tab.getId()).size() > 1;
         }
         TabActionListener tabSelectedListener;
@@ -716,6 +684,8 @@ class TabListMediator {
                         .with(TabProperties.CREATE_GROUP_LISTENER,
                                 getCreateGroupButtonListener(tab, isSelected))
                         .with(TabProperties.ALPHA, 1f)
+                        .with(TabProperties.CARD_ANIMATION_STATUS,
+                                TabListRecyclerView.ANIMATION_STATUS_RESTORE)
                         .build();
 
         if (index >= mModel.size()) {

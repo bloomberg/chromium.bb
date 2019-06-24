@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
@@ -110,25 +111,25 @@ public class TabGroupUtils {
 
     /**
      * This method gets the index in TabModel of the first tab in {@code tabs}.
-     * @param selector   The selector that owns the {@code tab}.
+     * @param tabModel   The tabModel that owns the {@code tab}.
      * @param tabs       The list of tabs among which we need to find the first tab index.
      * @return The index in TabModel of the first tab in {@code tabs}
      */
-    public static int getFirstTabModelIndexForList(TabModelSelector selector, List<Tab> tabs) {
+    public static int getFirstTabModelIndexForList(TabModel tabModel, List<Tab> tabs) {
         assert tabs != null && tabs.size() != 0;
 
-        return selector.getCurrentModel().indexOf(tabs.get(0));
+        return tabModel.indexOf(tabs.get(0));
     }
 
     /**
      * This method gets the index in TabModel of the last tab in {@code tabs}.
-     * @param selector   The selector that owns the {@code tab}.
+     * @param tabModel   The tabModel that owns the {@code tab}.
      * @param tabs       The list of tabs among which we need to find the last tab index.
      * @return The index in TabModel of the last tab in {@code tabs}
      */
-    public static int getLastTabModelIndexForList(TabModelSelector selector, List<Tab> tabs) {
+    public static int getLastTabModelIndexForList(TabModel tabModel, List<Tab> tabs) {
         assert tabs != null && tabs.size() != 0;
 
-        return selector.getCurrentModel().indexOf(tabs.get(tabs.size() - 1));
+        return tabModel.indexOf(tabs.get(tabs.size() - 1));
     }
 }
