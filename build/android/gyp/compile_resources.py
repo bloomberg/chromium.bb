@@ -459,16 +459,9 @@ def _FixManifest(options, temp_dir):
   doc, manifest_node, app_node = manifest_utils.ParseManifest(
       options.android_manifest)
 
-  manifest_utils.AssertNoUsesSdk(manifest_node)
-
-  uses_sdk_attributes = [
-      ('android:minSdkVersion', options.min_sdk_version),
-      ('android:targetSdkVersion', options.target_sdk_version),
-  ]
-  if options.max_sdk_version:
-    uses_sdk_attributes += [('android:maxSdkVersion', options.max_sdk_version)]
-  uses_sdk_node = manifest_utils.MakeElement('uses-sdk', uses_sdk_attributes)
-  manifest_node.insert(0, uses_sdk_node)
+  manifest_utils.AssertUsesSdk(manifest_node, options.min_sdk_version,
+                               options.target_sdk_version,
+                               options.max_sdk_version)
 
   manifest_node.set('platformBuildVersionCode', version_code)
   manifest_node.set('platformBuildVersionName', version_name)
@@ -727,6 +720,7 @@ def _PackageApk(options, build):
       'link',
       '--auto-add-overlay',
       '--no-version-vectors',
+      # Set SDK versions in case they are not set in the Android manifest.
       '--min-sdk-version',
       options.min_sdk_version,
       '--target-sdk-version',

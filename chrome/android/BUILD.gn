@@ -1764,9 +1764,6 @@ if (public_android_sdk) {
     android_manifest = trichrome_library_android_manifest
     android_manifest_dep = ":trichrome_library_android_manifest"
 
-    # TODO(torne): make minsdk=Q once we no longer build hacky P version
-    min_sdk_version = android_sdk_version
-    target_sdk_version = android_sdk_version
     if (trichrome_synchronized_proguard) {
       static_library_dependent_targets = [
         {
@@ -1792,9 +1789,6 @@ if (public_android_sdk) {
     android_manifest = trichrome_library_android_manifest
     android_manifest_dep = ":trichrome_library_android_manifest"
 
-    # TODO(torne): make minsdk=Q once we no longer build hacky P version
-    min_sdk_version = android_sdk_version
-    target_sdk_version = android_sdk_version
     if (trichrome_synchronized_proguard) {
       static_library_dependent_targets = [
         {
@@ -2079,13 +2073,14 @@ if (enable_arcore) {
   }
 }
 
-# Chrome smoke test is a minimal test to ensure Chrome is not DOA.  It is deigned to
-# be runnable against uninstrumented Chrome apks.
+# Chrome smoke test is a minimal test to ensure Chrome is not DOA.  It is
+# designed to be runnable against uninstrumented Chrome apks.
 instrumentation_test_apk("chrome_smoke_test") {
   apk_name = "ChromeSmokeTest"
   apk_under_test = "//chrome/android:chrome_public_apk"
   android_manifest =
       "javatests/src/org/chromium/chrome/test/smoke/AndroidManifest.xml"
+  target_sdk_version = 28
   testonly = true
   java_files =
       [ "javatests/src/org/chromium/chrome/test/smoke/ChromeSmokeTest.java" ]
