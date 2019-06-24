@@ -563,8 +563,7 @@
         },
         {
             "platforms": [
-                "android",
-                "chromeos"
+                "android"
             ],
             "experiments": [
                 {
