@@ -196,7 +196,7 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
         content::RenderProcessHost* render_process_host)
 {
     ProcessHostImpl::registerMojoInterfaces(registry);
-}            
+}
 
 void ContentBrowserClientImpl::StartInProcessRendererThread(
     mojo::OutgoingInvitation* broker_client_invitation,

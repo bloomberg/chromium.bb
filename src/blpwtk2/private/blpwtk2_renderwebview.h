@@ -242,7 +242,7 @@ class RenderWebView final : public WebView
             int                      argc,
             v8::Local<v8::Value>    *argv) override;
 #if defined(BLPWTK2_FEATURE_PRINTPDF)
-    String printToPDF(const StringRef& propertyName) override;
+    String printToPDF() override;
 #endif
 
 #if defined(BLPWTK2_FEATURE_FASTRESIZE)

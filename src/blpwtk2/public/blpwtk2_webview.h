@@ -319,7 +319,7 @@ class WebView
         // Calling this function does not modify the security token of
         // any already-loaded frames.
 
-    virtual String printToPDF(const StringRef& propertyName) = 0;
+    virtual String printToPDF() = 0;
         // TODO(imran)
 
   protected:

@@ -411,6 +411,14 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   const mojom::blink::ReportingServiceProxyPtr& GetReportingService() const;
 
+  void AllowPrint(bool value) {
+    bb_allow_print_ = value;
+  }
+
+  bool IsPrintAllowed() {
+    return bb_allow_print_;
+  }
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -538,6 +546,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // state that get updated whenever the network state changes. That way, this
   // field would be no longer necessary.
   const bool is_save_data_enabled_;
+
+  bool bb_allow_print_ = false;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

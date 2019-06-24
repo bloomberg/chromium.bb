@@ -243,5 +243,9 @@ void BBWindowHooks::Trace(blink::Visitor* visitor) {
   Supplementable<BBWindowHooks>::Trace(visitor);
 }
 
+void BBWindowHooks::allowPrint(long value) {
+    GetFrame()->AllowPrint(!!value);
+}
+
 } // namespace blink
 

@@ -286,8 +286,8 @@ class WebViewImpl final : public WebView,
     void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
 
-    // patch section: print to pdf
-    String printToPDF(const StringRef& propertyName) override;
+    // patch section: docprinter
+    String printToPDF() override;
 
 
 

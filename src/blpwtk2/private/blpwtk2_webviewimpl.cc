@@ -306,8 +306,8 @@ void WebViewImpl::drawContentsToBlob(Blob *blob, const DrawParams& params)
 }
 
 
-// patch section: print to pdf
-String WebViewImpl::printToPDF(const StringRef& propertyName)
+// patch section: docprinter
+String WebViewImpl::printToPDF()
 {
     NOTREACHED() << "printToPDF() not supported in WebViewImpl";
     return String();
