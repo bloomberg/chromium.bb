@@ -285,6 +285,10 @@ const base::Feature kMojoVideoCapture{"MojoVideoCapture",
 const base::Feature kMojoVideoCaptureSecondary{
     "MojoVideoCaptureSecondary", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enable, iframe does not implicit capture mouse event.
+const base::Feature kMouseSubframeNoImplicitCapture{
+    "MouseSubframeNoImplicitCapture", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If the network service is enabled, runs it in process.
 const base::Feature kNetworkServiceInProcess {
   "NetworkServiceInProcess",

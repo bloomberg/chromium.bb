@@ -541,6 +541,9 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnableStreamsNative(
       base::FeatureList::IsEnabled(blink::features::kStreamsNative));
+
+  WebRuntimeFeatures::EnableMouseSubframeNoImplicitCapture(
+      base::FeatureList::IsEnabled(features::kMouseSubframeNoImplicitCapture));
 }
 
 }  // namespace

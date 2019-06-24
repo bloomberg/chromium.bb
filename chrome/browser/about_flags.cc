@@ -3972,6 +3972,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFontSrcLocalMatchingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kFontSrcLocalMatching)},
 
+    {"mouse-subframe-no-implicit-capture",
+     flag_descriptions::kMouseSubframeNoImplicitCaptureName,
+     flag_descriptions::kMouseSubframeNoImplicitCaptureDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kMouseSubframeNoImplicitCapture)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

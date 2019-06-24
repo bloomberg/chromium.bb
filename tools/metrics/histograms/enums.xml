@@ -34638,6 +34638,7 @@ from previous Chrome versions.
   <int value="-339103761" label="ArcGraphicBuffersVisualizationTool:enabled"/>
   <int value="-338978205" label="NavigationMojoResponse:enabled"/>
   <int value="-334873793" label="MediaSessionNotification:enabled"/>
+  <int value="-333216449" label="MouseSubframeNoImplicitCapture:enabled"/>
   <int value="-329727402" label="disable-files-quick-view"/>
   <int value="-328361990" label="enable-experimental-extension-apis"/>
   <int value="-327272022" label="AutofillRejectCompanyBirthyearName:enabled"/>
@@ -35853,6 +35854,7 @@ from previous Chrome versions.
   <int value="1482039233" label="SearchSuggestionsOnLocalNtp:disabled"/>
   <int value="1482839038" label="AutofillCreditCardAuthentication:enabled"/>
   <int value="1486171015" label="disable-fill-on-account-select"/>
+  <int value="1486784197" label="MouseSubframeNoImplicitCapture:disabled"/>
   <int value="1487341558" label="MacViewsAutofillPopup:enabled"/>
   <int value="1488193175" label="ChromeOSAssistant:enabled"/>
   <int value="1488700164" label="password-import:disabled"/>
