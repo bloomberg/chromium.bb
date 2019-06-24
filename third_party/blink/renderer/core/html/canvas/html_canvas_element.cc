@@ -147,8 +147,6 @@ intptr_t HTMLCanvasElement::global_gpu_memory_usage_ = 0;
 unsigned HTMLCanvasElement::global_accelerated_context_count_ = 0;
 
 HTMLCanvasElement::~HTMLCanvasElement() {
-  if (surface_layer_bridge_ && surface_layer_bridge_->GetCcLayer())
-    GraphicsLayer::UnregisterContentsLayer(surface_layer_bridge_->GetCcLayer());
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
       -externally_allocated_memory_);
 }
@@ -177,6 +175,19 @@ void HTMLCanvasElement::Dispose() {
     global_accelerated_context_count_--;
   }
   global_gpu_memory_usage_ -= gpu_memory_usage_;
+
+  if (surface_layer_bridge_) {
+    if (surface_layer_bridge_->GetCcLayer()) {
+      GraphicsLayer::UnregisterContentsLayer(
+          surface_layer_bridge_->GetCcLayer());
+    }
+    // Observer has to be cleared out at this point. Otherwise the
+    // SurfaceLayerBridge may call back into the observer which is undefined
+    // behavior. In the worst case, the dead canvas element re-adds itself into
+    // a data structure which may crash at a later point in time. See
+    // https://crbug.com/976577.
+    surface_layer_bridge_->ClearObserver();
+  }
 }
 
 void HTMLCanvasElement::ParseAttribute(
