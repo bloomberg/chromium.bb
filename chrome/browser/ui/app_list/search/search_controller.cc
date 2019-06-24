@@ -215,7 +215,7 @@ void SearchController::Train(const std::string& id, RankingItemType type) {
 
   for (const auto& provider : providers_)
     provider->Train(id, type);
-  mixer_->Train(id, type);
+  mixer_->Train(base::UTF16ToUTF8(last_query_), id, type);
 }
 
 }  // namespace app_list
