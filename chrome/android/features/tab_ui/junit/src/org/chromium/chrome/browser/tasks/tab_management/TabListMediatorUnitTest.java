@@ -17,8 +17,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import static org.chromium.chrome.browser.ChromeFeatureList.TAB_GROUPS_ANDROID;
+import static org.chromium.chrome.browser.ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID;
 
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -29,7 +33,9 @@ import android.view.View;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -41,6 +47,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.tab.Tab;
@@ -53,6 +60,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
@@ -65,6 +74,9 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabListMediatorUnitTest {
+    @Rule
+    public TestRule mProcessor = new Features.JUnitProcessor();
+
     private static final String TAB1_TITLE = "Tab1";
     private static final String TAB2_TITLE = "Tab2";
     private static final String TAB3_TITLE = "Tab3";
@@ -223,22 +235,28 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @Features.DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
     public void sendsMoveTabSignalCorrectlyWithoutGroup() {
         initAndAssertAllProperties();
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(false);
 
         doReturn(mEmptyTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 
-        mMediator.getItemTouchHelperCallback(0f, 0f, true)
-                .onMove(mRecyclerView, mViewHolder1, mViewHolder2);
+        mMediator.getItemTouchHelperCallback(0f, 0f).onMove(
+                mRecyclerView, mViewHolder1, mViewHolder2);
 
         verify(mTabModel).moveTab(eq(TAB1_ID), eq(2));
     }
 
     @Test
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
     public void sendsMoveTabSignalCorrectlyWithGroup() {
         initAndAssertAllProperties();
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
         TabGridItemTouchHelperCallback itemTouchHelperCallback =
-                (TabGridItemTouchHelperCallback) mMediator.getItemTouchHelperCallback(0f, 0f, true);
+                (TabGridItemTouchHelperCallback) mMediator.getItemTouchHelperCallback(0f, 0f);
         itemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(true);
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
@@ -249,23 +267,29 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
     public void sendsMoveTabSignalCorrectlyWithinGroup() {
         initAndAssertAllProperties();
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
 
-        mMediator.getItemTouchHelperCallback(0f, 0f, true)
-                .onMove(mRecyclerView, mViewHolder1, mViewHolder2);
+        mMediator.getItemTouchHelperCallback(0f, 0f).onMove(
+                mRecyclerView, mViewHolder1, mViewHolder2);
 
         verify(mTabModel).moveTab(eq(TAB1_ID), eq(2));
     }
 
     @Test
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
     public void sendsMergeTabSignalCorrectly() {
         initAndAssertAllProperties();
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
         mMediator.setActionOnAllRelatedTabsForTest(true);
         TabGridItemTouchHelperCallback itemTouchHelperCallback =
-                (TabGridItemTouchHelperCallback) mMediator.getItemTouchHelperCallback(0f, 0f, true);
+                (TabGridItemTouchHelperCallback) mMediator.getItemTouchHelperCallback(0f, 0f);
         itemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(true);
         itemTouchHelperCallback.setHoveredTabIndexForTest(POSITION1);
         itemTouchHelperCallback.setSelectedTabIndexForTest(POSITION2);
@@ -278,6 +302,51 @@ public class TabListMediatorUnitTest {
         itemTouchHelperCallback.onSelectedChanged(mViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
 
         verify(mTabGroupModelFilter).mergeTabsToGroup(eq(TAB2_ID), eq(TAB1_ID));
+    }
+
+    @Test
+    @Features.DisableFeatures({TAB_GROUPS_ANDROID, TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
+    public void neverSendsMergeTabSignal_Without_Group() {
+        initAndAssertAllProperties();
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(false);
+        mMediator.setActionOnAllRelatedTabsForTest(true);
+        TabGridItemTouchHelperCallback itemTouchHelperCallback =
+                (TabGridItemTouchHelperCallback) mMediator.getItemTouchHelperCallback(0f, 0f);
+        itemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(true);
+        itemTouchHelperCallback.setHoveredTabIndexForTest(POSITION1);
+        itemTouchHelperCallback.setSelectedTabIndexForTest(POSITION2);
+        itemTouchHelperCallback.getMovementFlags(mRecyclerView, mViewHolder1);
+
+        doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
+        doReturn(mAdapter).when(mRecyclerView).getAdapter();
+
+        // Simulate the drop action.
+        itemTouchHelperCallback.onSelectedChanged(mViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
+
+        verify(mTabGroupModelFilter, never()).mergeTabsToGroup(anyInt(), anyInt());
+    }
+
+    @Test
+    @Features.EnableFeatures({TAB_GROUPS_ANDROID})
+    @Features.DisableFeatures({TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
+    public void neverSendsMergeTabSignal_With_Group_Without_Group_Improvement() {
+        initAndAssertAllProperties();
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+        mMediator.setActionOnAllRelatedTabsForTest(true);
+        TabGridItemTouchHelperCallback itemTouchHelperCallback =
+                (TabGridItemTouchHelperCallback) mMediator.getItemTouchHelperCallback(0f, 0f);
+        itemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(true);
+        itemTouchHelperCallback.setHoveredTabIndexForTest(POSITION1);
+        itemTouchHelperCallback.setSelectedTabIndexForTest(POSITION2);
+        itemTouchHelperCallback.getMovementFlags(mRecyclerView, mViewHolder1);
+
+        doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
+        doReturn(mAdapter).when(mRecyclerView).getAdapter();
+
+        // Simulate the drop action.
+        itemTouchHelperCallback.onSelectedChanged(mViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
+
+        verify(mTabGroupModelFilter, never()).mergeTabsToGroup(anyInt(), anyInt());
     }
 
     @Test
