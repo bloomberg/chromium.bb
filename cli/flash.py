@@ -226,7 +226,7 @@ class USBImager(object):
       device: Device to copy to.
     """
     cmd = ['dd', 'if=%s' % image, 'of=%s' % device, 'bs=4M', 'iflag=fullblock',
-           'oflag=sync']
+           'oflag=direct', 'conv=fdatasync']
     if logging.getLogger().getEffectiveLevel() <= logging.NOTICE:
       op = UsbImagerOperation(image)
       op.Run(cros_build_lib.SudoRunCommand, cmd, debug_level=logging.NOTICE,
@@ -244,7 +244,10 @@ class USBImager(object):
                                   error_code_ok=True,
                                   debug_level=self.debug_level)
 
-    cros_build_lib.SudoRunCommand(['sync'], debug_level=self.debug_level)
+    cros_build_lib.SudoRunCommand(['partx', '-u', device],
+                                  debug_level=self.debug_level)
+    cros_build_lib.SudoRunCommand(['sync', '-d', device],
+                                  debug_level=self.debug_level)
 
   def _GetImagePath(self):
     """Returns the image path to use."""

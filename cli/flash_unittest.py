@@ -210,7 +210,7 @@ class UsbImagerOperationTest(cros_test_lib.RunCommandTestCase):
   def testUsbImagerOperationCalled(self):
     """Test that flash.UsbImagerOperation is called when log level <= NOTICE."""
     expected_cmd = ['dd', 'if=foo', 'of=bar', 'bs=4M', 'iflag=fullblock',
-                    'oflag=sync']
+                    'oflag=direct', 'conv=fdatasync']
     usb_imager = flash.USBImager('dummy_device', 'board', 'foo')
     run_mock = self.PatchObject(flash.UsbImagerOperation, 'Run')
     self.PatchObject(logging.Logger, 'getEffectiveLevel',
@@ -224,7 +224,7 @@ class UsbImagerOperationTest(cros_test_lib.RunCommandTestCase):
   def testSudoRunCommandCalled(self):
     """Test that SudoRunCommand is called when log level > NOTICE."""
     expected_cmd = ['dd', 'if=foo', 'of=bar', 'bs=4M', 'iflag=fullblock',
-                    'oflag=sync']
+                    'oflag=direct', 'conv=fdatasync']
     usb_imager = flash.USBImager('dummy_device', 'board', 'foo')
     run_mock = self.PatchObject(cros_build_lib, 'SudoRunCommand')
     self.PatchObject(logging.Logger, 'getEffectiveLevel',
