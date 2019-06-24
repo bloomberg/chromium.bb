@@ -698,7 +698,7 @@
       name: "HeapIncrementalMarkingStress"
     },
     {
-      name: "HeapUnifiedGCScheduling"
+      name: "HeapUnifiedGCScheduling",
     },
     {
       name: "HrefTranslate",

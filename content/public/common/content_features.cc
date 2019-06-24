@@ -76,9 +76,6 @@ const base::Feature kBackForwardCache{"BackForwardCache",
 const base::Feature kBlinkHeapIncrementalMarking{
     "BlinkHeapIncrementalMarking", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kBlinkHeapUnifiedGCScheduling{
-    "BlinkHeapUnifiedGCScheduling", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable bloated renderer detection.
 const base::Feature kBloatedRendererDetection{
     "BloatedRendererDetection", base::FEATURE_DISABLED_BY_DEFAULT};
