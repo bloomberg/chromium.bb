@@ -59826,6 +59826,7 @@ Full version information for the fingerprint enum values:
   <int value="8" label="InstallManagerDestroyed"/>
   <int value="9" label="WindowOpened"/>
   <int value="10" label="NotValidManifestForWebApp"/>
+  <int value="11" label="IntentToPlayStore"/>
 </enum>
 
 <enum name="WebAppInstallSource">
