@@ -29,19 +29,24 @@ _MANIFEST_MERGER_JARS = [
 
 
 @contextlib.contextmanager
-def _ProcessManifest(manifest_path, min_sdk_version, target_sdk_version):
+def _ProcessManifest(manifest_path, min_sdk_version, target_sdk_version,
+                     manifest_package):
   """Patches an Android manifest to always include the 'tools' namespace
   declaration, as it is not propagated by the manifest merger from the SDK.
 
   See https://issuetracker.google.com/issues/63411481
   """
   doc, manifest, _ = manifest_utils.ParseManifest(manifest_path)
-  package = manifest_utils.GetPackage(manifest)
   manifest_utils.AssertUsesSdk(manifest, min_sdk_version, target_sdk_version)
+  assert manifest_utils.GetPackage(manifest) or manifest_package, \
+            'Must set manifest package in GN or in AndroidManifest.xml'
+  manifest_utils.AssertPackage(manifest, manifest_package)
+  if manifest_package:
+    manifest.set('package', manifest_package)
   tmp_prefix = os.path.basename(manifest_path)
   with tempfile.NamedTemporaryFile(prefix=tmp_prefix) as patched_manifest:
     manifest_utils.SaveManifest(doc, patched_manifest.name)
-    yield patched_manifest.name, package
+    yield patched_manifest.name, manifest_utils.GetPackage(manifest)
 
 
 def _BuildManifestMergerClasspath(build_vars):
@@ -74,6 +79,9 @@ def main(argv):
       '--target-sdk-version',
       required=True,
       help='android:targetSdkVersion for merging.')
+  parser.add_argument(
+      '--manifest-package',
+      help='Package name of the merged AndroidManifest.xml.')
   args = parser.parse_args(argv)
 
   classpath = _BuildManifestMergerClasspath(
@@ -94,7 +102,8 @@ def main(argv):
       cmd += ['--libs', ':'.join(extras)]
 
     with _ProcessManifest(args.root_manifest, args.min_sdk_version,
-                          args.target_sdk_version) as tup:
+                          args.target_sdk_version,
+                          args.manifest_package) as tup:
       root_manifest, package = tup
       cmd += [
           '--main',
@@ -116,6 +125,7 @@ def main(argv):
     _, manifest, _ = manifest_utils.ParseManifest(output.name)
     manifest_utils.AssertUsesSdk(manifest, args.min_sdk_version,
                                  args.target_sdk_version)
+    manifest_utils.AssertPackage(manifest, package)
 
   if args.depfile:
     inputs = extras + classpath.split(':')

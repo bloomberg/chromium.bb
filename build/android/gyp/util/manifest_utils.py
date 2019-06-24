@@ -93,6 +93,20 @@ def AssertUsesSdk(manifest_node,
         (prefix, value, sdk_version))
 
 
+def AssertPackage(manifest_node, package):
+  """Asserts that manifest package has desired value.
+
+  Will only assert if both |package| is not None and the package is set in the
+  manifest.
+  """
+  package_value = GetPackage(manifest_node)
+  if package_value is None or package is None:
+    return
+  assert package_value == package, (
+      'Package in Android manifest is %s but we expect %s' % (package_value,
+                                                              package))
+
+
 def _SortAndStripElementTree(tree, reverse_toplevel=False):
   for node in tree:
     if node.text and node.text.isspace():

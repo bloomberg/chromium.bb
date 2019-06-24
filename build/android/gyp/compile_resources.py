@@ -153,6 +153,8 @@ def _ParseArgs(args):
       help="android:targetSdkVersion for APK.")
   input_opts.add_argument(
       '--max-sdk-version', help="android:maxSdkVersion for APK.")
+  input_opts.add_argument(
+      '--manifest-package', help='Package name of the AndroidManifest.xml.')
 
   input_opts.add_argument(
       '--locale-whitelist',
@@ -462,6 +464,7 @@ def _FixManifest(options, temp_dir):
   manifest_utils.AssertUsesSdk(manifest_node, options.min_sdk_version,
                                options.target_sdk_version,
                                options.max_sdk_version)
+  manifest_utils.AssertPackage(manifest_node, options.manifest_package)
 
   manifest_node.set('platformBuildVersionCode', version_code)
   manifest_node.set('platformBuildVersionName', version_name)

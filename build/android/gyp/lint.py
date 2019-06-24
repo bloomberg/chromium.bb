@@ -35,6 +35,7 @@ def _OnStaleMd5(lint_path,
                 android_sdk_version,
                 srcjars,
                 min_sdk_version,
+                manifest_package,
                 resource_sources,
                 disable=None,
                 classpath=None,
@@ -196,16 +197,19 @@ def _OnStaleMd5(lint_path,
     lint_manifest_path = os.path.join(project_dir, 'AndroidManifest.xml')
     shutil.copyfile(os.path.abspath(manifest_path), lint_manifest_path)
 
-    # Check that minSdkVersion is correct and add it to the manifest in case it
-    # does not exist.
+    # Check that minSdkVersion and package is correct and add it to the manifest
+    # in case it does not exist.
     doc, manifest, _ = manifest_utils.ParseManifest(lint_manifest_path)
     manifest_utils.AssertUsesSdk(manifest, min_sdk_version)
+    manifest_utils.AssertPackage(manifest, manifest_package)
     uses_sdk = manifest.find('./uses-sdk')
     if uses_sdk is None:
       uses_sdk = ElementTree.Element('uses-sdk')
       manifest.insert(0, uses_sdk)
     uses_sdk.set('{%s}minSdkVersion' % manifest_utils.ANDROID_NAMESPACE,
                  min_sdk_version)
+    if manifest_package:
+      manifest.set('package', manifest_package)
     manifest_utils.SaveManifest(doc, lint_manifest_path)
 
     cmd.append(project_dir)
@@ -340,6 +344,8 @@ def main():
       '--min-sdk-version',
       required=True,
       help='Minimal SDK version to lint against.')
+  parser.add_argument(
+      '--manifest-package', help='Package name of the AndroidManifest.xml.')
 
   args = parser.parse_args(build_utils.ExpandFileArgs(sys.argv[1:]))
 
@@ -414,6 +420,7 @@ def main():
                           args.android_sdk_version,
                           args.srcjars,
                           args.min_sdk_version,
+                          args.manifest_package,
                           resource_sources,
                           disable=disable,
                           classpath=classpath,
