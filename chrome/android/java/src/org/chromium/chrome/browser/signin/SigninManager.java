@@ -178,7 +178,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     private static SigninManager sSigninManager;
     private static int sSignInAccessPoint = SigninAccessPoint.UNKNOWN;
 
-    private long mNativeSigninManagerAndroid;
+    private final long mNativeSigninManagerAndroid;
     private final Context mContext;
     private final SigninManagerDelegate mDelegate;
     private final AccountTrackerService mAccountTrackerService;
@@ -245,13 +245,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
                 SigninManagerJni.get().isSigninAllowedByPolicy(this, mNativeSigninManagerAndroid);
 
         mAccountTrackerService.addSystemAccountsSeededListener(this);
-    }
-
-    /**
-     * Perform destruction of the object, cascading destruction to delegate.
-     */
-    public void destroy() {
-        mDelegate.destroy();
     }
 
     /**
@@ -448,7 +441,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         }
 
         Log.d(TAG, "Checking if account has policy management enabled");
-        mDelegate.fetchAndApplyCloudPolicy(
+        mDelegate.fetchAndApplyCloudPolicy(this, mNativeSigninManagerAndroid,
                 mSignInState.mAccount.name, this::onPolicyFetchedBeforeSignIn);
     }
 
@@ -589,7 +582,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      * Returns the management domain if the signed in account is managed, otherwise returns null.
      */
     public String getManagementDomain() {
-        return mDelegate.getManagementDomain();
+        return mDelegate.getManagementDomain(this, mNativeSigninManagerAndroid);
     }
 
     @VisibleForTesting
@@ -617,7 +610,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             signInState.mCallback.onSignInAborted();
         }
 
-        mDelegate.stopApplyingCloudPolicy();
+        mDelegate.stopApplyingCloudPolicy(this, mNativeSigninManagerAndroid);
 
         Log.d(TAG, "Signin flow aborted.");
         notifySignInAllowedChanged();
@@ -691,7 +684,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      *                 otherwise.
      */
     public void isAccountManaged(String email, final Callback<Boolean> callback) {
-        mDelegate.isAccountManaged(email, callback);
+        mDelegate.isAccountManaged(this, mNativeSigninManagerAndroid, email, callback);
     }
 
     public static String extractDomainName(String email) {
@@ -713,11 +706,18 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
         boolean isForceSigninEnabled(@JCaller SigninManager self, long nativeSigninManagerAndroid);
 
+        void fetchAndApplyCloudPolicy(@JCaller SigninManager self, long nativeSigninManagerAndroid,
+                String username, Runnable callback);
+
+        void abortSignIn(@JCaller SigninManager self, long nativeSigninManagerAndroid);
+
         void onSignInCompleted(
                 @JCaller SigninManager self, long nativeSigninManagerAndroid, String username);
 
         void signOut(@JCaller SigninManager self, long nativeSigninManagerAndroid,
                 @SignoutReason int reason);
+
+        String getManagementDomain(@JCaller SigninManager self, long nativeSigninManagerAndroid);
 
         void wipeProfileData(
                 @JCaller SigninManager self, long nativeSigninManagerAndroid, Runnable callback);
@@ -730,6 +730,9 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         void logInSignedInUser(@JCaller SigninManager self, long nativeSigninManagerAndroid);
 
         boolean isSignedInOnNative(@JCaller SigninManager self, long nativeSigninManagerAndroid);
+
+        void isAccountManaged(@JCaller SigninManager self, long nativeSigninManagerAndroid,
+                String username, Callback<Boolean> callback);
 
         String extractDomainName(String email);
     }

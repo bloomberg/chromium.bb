@@ -11,7 +11,6 @@ import android.content.Context;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JCaller;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -22,7 +21,6 @@ import org.chromium.components.sync.AndroidSyncSettings;
  */
 public class ChromeSigninManagerDelegate implements SigninManagerDelegate {
     private final AndroidSyncSettings mAndroidSyncSettings;
-    private long mNativeChromeSigninManagerDelegate;
 
     public ChromeSigninManagerDelegate() {
         this(AndroidSyncSettings.get());
@@ -32,21 +30,12 @@ public class ChromeSigninManagerDelegate implements SigninManagerDelegate {
     ChromeSigninManagerDelegate(AndroidSyncSettings androidSyncSettings) {
         assert androidSyncSettings != null;
         mAndroidSyncSettings = androidSyncSettings;
-        mNativeChromeSigninManagerDelegate = ChromeSigninManagerDelegateJni.get().init(this);
     }
 
     @Override
-    public void destroy() {
-        if (mNativeChromeSigninManagerDelegate != 0) {
-            ChromeSigninManagerDelegateJni.get().destroy(this, mNativeChromeSigninManagerDelegate);
-            mNativeChromeSigninManagerDelegate = 0;
-        }
-    }
-
-    @Override
-    public String getManagementDomain() {
-        return ChromeSigninManagerDelegateJni.get().getManagementDomain(
-                this, mNativeChromeSigninManagerDelegate);
+    public String getManagementDomain(
+            @JCaller SigninManager self, long nativeSigninManagerAndroid) {
+        return SigninManagerJni.get().getManagementDomain(self, nativeSigninManagerAndroid);
     }
 
     @Override
@@ -63,21 +52,23 @@ public class ChromeSigninManagerDelegate implements SigninManagerDelegate {
     }
 
     @Override
-    public void isAccountManaged(String email, final Callback<Boolean> callback) {
-        ChromeSigninManagerDelegateJni.get().isAccountManaged(
-                this, mNativeChromeSigninManagerDelegate, email, callback);
+    public void isAccountManaged(@JCaller SigninManager signinManager,
+            long nativeSigninManagerAndroid, String email, final Callback<Boolean> callback) {
+        SigninManagerJni.get().isAccountManaged(
+                signinManager, nativeSigninManagerAndroid, email, callback);
     }
 
     @Override
-    public void fetchAndApplyCloudPolicy(String username, final Runnable callback) {
-        ChromeSigninManagerDelegateJni.get().fetchAndApplyCloudPolicy(
-                this, mNativeChromeSigninManagerDelegate, username, callback);
+    public void fetchAndApplyCloudPolicy(@JCaller SigninManager signinManager,
+            long nativeSigninManagerAndroid, String username, Runnable callback) {
+        SigninManagerJni.get().fetchAndApplyCloudPolicy(
+                signinManager, nativeSigninManagerAndroid, username, callback);
     }
 
     @Override
-    public void stopApplyingCloudPolicy() {
-        ChromeSigninManagerDelegateJni.get().stopApplyingCloudPolicy(
-                this, mNativeChromeSigninManagerDelegate);
+    public void stopApplyingCloudPolicy(
+            @JCaller SigninManager signinManager, long nativeSigninManagerAndroid) {
+        SigninManagerJni.get().abortSignIn(signinManager, nativeSigninManagerAndroid);
     }
 
     @Override
@@ -99,27 +90,5 @@ public class ChromeSigninManagerDelegate implements SigninManagerDelegate {
             SigninManagerJni.get().wipeGoogleServiceWorkerCaches(
                     signinManager, nativeSigninManagerAndroid, wipeDataCallback);
         }
-    }
-
-    // Native methods.
-    @NativeMethods
-    interface Natives {
-        long init(@JCaller ChromeSigninManagerDelegate self);
-
-        void destroy(
-                @JCaller ChromeSigninManagerDelegate self, long nativeChromeSigninManagerDelegate);
-
-        void fetchAndApplyCloudPolicy(@JCaller ChromeSigninManagerDelegate self,
-                long nativeChromeSigninManagerDelegate, String username, Runnable callback);
-
-        void stopApplyingCloudPolicy(
-                @JCaller ChromeSigninManagerDelegate self, long nativeChromeSigninManagerDelegate);
-
-        void isAccountManaged(@JCaller ChromeSigninManagerDelegate self,
-                long nativeChromeSigninManagerDelegate, String username,
-                Callback<Boolean> callback);
-
-        String getManagementDomain(
-                @JCaller ChromeSigninManagerDelegate self, long nativeChromeSigninManagerDelegate);
     }
 }
