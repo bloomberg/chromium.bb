@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/first_run/first_run.h"
 
-#include "ash/public/cpp/tablet_mode.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
@@ -77,7 +77,8 @@ void TryLaunchFirstRunDialog(Profile* profile) {
     return;
   }
 
-  if (ash::TabletMode::Get()->InTabletMode())
+  // TabletModeClient does not exist in some tests.
+  if (TabletModeClient::Get() && TabletModeClient::Get()->tablet_mode_enabled())
     return;
 
   if (profile->GetProfilePolicyConnector()->IsManaged())
