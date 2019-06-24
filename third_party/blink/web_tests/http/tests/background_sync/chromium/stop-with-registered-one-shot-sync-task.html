@@ -21,6 +21,6 @@ promise_test(function(t) {
     .then(_ => internals.terminateServiceWorker(registration.active))
     .then(_ => with_iframe(scope)) // Check the sanity of the SW.
     .then(_ => service_worker_unregister(t, scope));
-  }, 'Background Sync API should not cause crashes while stopping service ' +
-     'worker');
+  }, 'Background Sync API with registered one-shot sync tasks should not '+
+     ' cause crashes while stopping service worker');
 </script>

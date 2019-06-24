@@ -1166,6 +1166,7 @@
     {
       name: "PeriodicBackgroundSync",
       settable_from_internals: true,
+      status: "test",
     },
     {
       name: "PerMethodCanMakePaymentQuota",
