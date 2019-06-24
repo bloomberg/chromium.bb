@@ -34,7 +34,8 @@ public class TabGridDialogCoordinator {
     TabGridDialogCoordinator(Context context, TabModelSelector tabModelSelector,
             TabContentManager tabContentManager, TabCreatorManager tabCreatorManager,
             CompositorViewHolder compositorViewHolder,
-            GridTabSwitcherMediator.ResetHandler resetHandler) {
+            GridTabSwitcherMediator.ResetHandler resetHandler,
+            TabGridDialogMediator.AnimationOriginProvider animationOriginProvider) {
         mContext = context;
 
         mToolbarPropertyModel = new PropertyModel(TabGridSheetProperties.ALL_KEYS);
@@ -44,8 +45,9 @@ public class TabGridDialogCoordinator {
                 null, compositorViewHolder, null, false, R.layout.tab_list_recycler_view_layout,
                 COMPONENT_NAME);
 
-        mMediator = new TabGridDialogMediator(context, this::resetWithListOfTabs,
-                mToolbarPropertyModel, tabModelSelector, tabCreatorManager, resetHandler);
+        mMediator =
+                new TabGridDialogMediator(context, this::resetWithListOfTabs, mToolbarPropertyModel,
+                        tabModelSelector, tabCreatorManager, resetHandler, animationOriginProvider);
 
         mParentLayout = new TabGridDialogParent(context, compositorViewHolder);
     }

@@ -51,7 +51,8 @@ public class GridTabSwitcherCoordinator
         TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider;
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
-                    tabContentManager, tabCreatorManager, new CompositorViewHolder(context), this);
+                    tabContentManager, tabCreatorManager, new CompositorViewHolder(context), this,
+                    this::getTabGridCardPosition);
 
             mMediator = new GridTabSwitcherMediator(this, containerViewModel, tabModelSelector,
                     fullscreenManager, compositorViewHolder,
@@ -143,6 +144,10 @@ public class GridTabSwitcherCoordinator
             }
         }
         return mTabGridCoordinator.resetWithListOfTabs(tabs, quickMode);
+    }
+
+    private Rect getTabGridCardPosition(int index) {
+        return mTabGridCoordinator.getContainerView().getTabPosition(index);
     }
 
     @Override
