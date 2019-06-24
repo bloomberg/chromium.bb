@@ -968,11 +968,17 @@ const FeatureEntry::FeatureParam kResamplingInputEventsLSQEnabled[] = {
 const FeatureEntry::FeatureParam kResamplingInputEventsKalmanEnabled[] = {
     {"predictor", "kalman"}};
 
+const FeatureEntry::FeatureParam
+    kResamplingInputEventsKalmanTimeFilteredEnabled[] = {
+        {"predictor", "kalman_time_filtered"}};
+
 const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
     {{"lsq", kResamplingInputEventsLSQEnabled,
       base::size(kResamplingInputEventsLSQEnabled), nullptr},
      {"kalman", kResamplingInputEventsKalmanEnabled,
-      base::size(kResamplingInputEventsKalmanEnabled), nullptr}};
+      base::size(kResamplingInputEventsKalmanEnabled), nullptr},
+     {"kalman time filtered", kResamplingInputEventsKalmanTimeFilteredEnabled,
+      base::size(kResamplingInputEventsKalmanTimeFilteredEnabled), nullptr}};
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kBottomOfflineIndicatorEnabled[] = {
