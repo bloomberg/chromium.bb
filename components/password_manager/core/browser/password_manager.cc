@@ -24,7 +24,6 @@
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
-#include "components/password_manager/core/browser/keychain_migration_status_mac.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
@@ -374,9 +373,8 @@ void PasswordManager::RegisterProfilePrefs(
                                0.0);
 
 #if defined(OS_MACOSX)
-  registry->RegisterIntegerPref(
-      prefs::kKeychainMigrationStatus,
-      static_cast<int>(MigrationStatus::MIGRATED_DELETED));
+  registry->RegisterIntegerPref(prefs::kKeychainMigrationStatus,
+                                4 /* MIGRATED_DELETED */);
 #endif
   registry->RegisterListPref(prefs::kPasswordHashDataList,
                              PrefRegistry::NO_REGISTRATION_FLAGS);

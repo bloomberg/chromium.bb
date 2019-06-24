@@ -112,6 +112,7 @@
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
@@ -1109,4 +1110,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 6/2019.
   profile_prefs->ClearPref(kMediaCacheSize);
+#if defined(OS_MACOSX)
+  profile_prefs->ClearPref(password_manager::prefs::kKeychainMigrationStatus);
+#endif  // defined(OS_MACOSX)
 }
