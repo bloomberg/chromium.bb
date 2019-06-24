@@ -25,12 +25,9 @@
 
 OAuth2TokenService::RequestParameters::RequestParameters(
     const std::string& client_id,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const ScopeSet& scopes)
-    : client_id(client_id),
-      account_id(account_id),
-      scopes(scopes) {
-}
+    : client_id(client_id), account_id(account_id), scopes(scopes) {}
 
 OAuth2TokenService::RequestParameters::RequestParameters(
     const RequestParameters& other) = default;
@@ -54,17 +51,15 @@ bool OAuth2TokenService::RequestParameters::operator<(
 }
 
 OAuth2TokenService::RequestImpl::RequestImpl(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     OAuth2TokenService::Consumer* consumer)
-    : account_id_(account_id),
-      consumer_(consumer) {
-}
+    : account_id_(account_id), consumer_(consumer) {}
 
 OAuth2TokenService::RequestImpl::~RequestImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-std::string OAuth2TokenService::RequestImpl::GetAccountId() const {
+CoreAccountId OAuth2TokenService::RequestImpl::GetAccountId() const {
   return account_id_;
 }
 

@@ -52,7 +52,7 @@ class OAuth2AccessTokenManager::Fetcher : public OAuth2AccessTokenConsumer {
   // done.
   static std::unique_ptr<OAuth2AccessTokenManager::Fetcher> CreateAndStart(
       OAuth2AccessTokenManager* oauth2_access_token_manager,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& client_id,
       const std::string& client_secret,
@@ -76,7 +76,7 @@ class OAuth2AccessTokenManager::Fetcher : public OAuth2AccessTokenConsumer {
 
   const OAuth2TokenService::ScopeSet& GetScopeSet() const;
   const std::string& GetClientId() const;
-  const std::string& GetAccountId() const;
+  const CoreAccountId& GetAccountId() const;
 
   // The error result from this fetcher.
   const GoogleServiceAuthError& error() const { return error_; }
@@ -89,7 +89,7 @@ class OAuth2AccessTokenManager::Fetcher : public OAuth2AccessTokenConsumer {
 
  private:
   Fetcher(OAuth2AccessTokenManager* oauth2_access_token_manager,
-          const std::string& account_id,
+          const CoreAccountId& account_id,
           scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
           const std::string& client_id,
           const std::string& client_secret,
@@ -112,7 +112,7 @@ class OAuth2AccessTokenManager::Fetcher : public OAuth2AccessTokenConsumer {
   // OnGetTokenFailure/OnGetTokenSuccess (whichever comes first).
   OAuth2AccessTokenManager* const oauth2_access_token_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  const std::string account_id_;
+  const CoreAccountId account_id_;
   const OAuth2TokenService::ScopeSet scopes_;
   std::vector<base::WeakPtr<OAuth2TokenService::RequestImpl>> waiting_requests_;
 
@@ -137,7 +137,7 @@ class OAuth2AccessTokenManager::Fetcher : public OAuth2AccessTokenConsumer {
 std::unique_ptr<OAuth2AccessTokenManager::Fetcher>
 OAuth2AccessTokenManager::Fetcher::CreateAndStart(
     OAuth2AccessTokenManager* oauth2_access_token_manager,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
@@ -153,7 +153,7 @@ OAuth2AccessTokenManager::Fetcher::CreateAndStart(
 
 OAuth2AccessTokenManager::Fetcher::Fetcher(
     OAuth2AccessTokenManager* oauth2_access_token_manager,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& client_id,
     const std::string& client_secret,
@@ -305,7 +305,7 @@ const std::string& OAuth2AccessTokenManager::Fetcher::GetClientId() const {
   return client_id_;
 }
 
-const std::string& OAuth2AccessTokenManager::Fetcher::GetAccountId() const {
+const CoreAccountId& OAuth2AccessTokenManager::Fetcher::GetAccountId() const {
   return account_id_;
 }
 

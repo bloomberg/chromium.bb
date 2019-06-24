@@ -17,7 +17,7 @@ namespace chromeos {
 OAuth2LoginVerifier::OAuth2LoginVerifier(
     OAuth2LoginVerifier::Delegate* delegate,
     identity::IdentityManager* identity_manager,
-    const std::string& primary_account_id,
+    const CoreAccountId& primary_account_id,
     const std::string& oauthlogin_access_token)
     : delegate_(delegate),
       identity_manager_(identity_manager),
@@ -65,7 +65,7 @@ void OAuth2LoginVerifier::VerifyProfileTokens() {
 }
 
 void OAuth2LoginVerifier::OnAddAccountToCookieCompleted(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
   if (account_id != primary_account_id_)
     return;

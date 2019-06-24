@@ -65,7 +65,8 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   class Request {
    public:
     virtual ~Request();
-    virtual std::string GetAccountId() const = 0;
+    virtual CoreAccountId GetAccountId() const = 0;
+
    protected:
     Request();
   };
@@ -93,7 +94,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // The parameters used to fetch an OAuth2 access token.
   struct RequestParameters {
     RequestParameters(const std::string& client_id,
-                      const std::string& account_id,
+                      const CoreAccountId& account_id,
                       const ScopeSet& scopes);
     RequestParameters(const RequestParameters& other);
     ~RequestParameters();
@@ -102,7 +103,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
     // OAuth2 client id.
     std::string client_id;
     // Account id for which the request is made.
-    std::string account_id;
+    CoreAccountId account_id;
     // URL scopes for the requested access token.
     ScopeSet scopes;
   };
@@ -245,11 +246,11 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
                       public Request {
    public:
     // |consumer| is required to outlive this.
-    RequestImpl(const std::string& account_id, Consumer* consumer);
+    RequestImpl(const CoreAccountId& account_id, Consumer* consumer);
     ~RequestImpl() override;
 
     // Overridden from Request:
-    std::string GetAccountId() const override;
+    CoreAccountId GetAccountId() const override;
 
     std::string GetConsumerId() const;
 
@@ -260,7 +261,7 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
 
    private:
     // |consumer_| to call back when this request completes.
-    const std::string account_id_;
+    const CoreAccountId account_id_;
     Consumer* const consumer_;
 
     SEQUENCE_CHECKER(sequence_checker_);
