@@ -45,6 +45,7 @@ import java.util.Set;
  */
 public class MainActivity extends Activity implements View.OnClickListener {
     static final String TAG = "CUSTOMTABSBENCH";
+    static final String TAGCSV = "CUSTOMTABSBENCHCSV";
     private static final String MEMORY_TAG = "CUSTOMTABSMEMORY";
     private static final String DEFAULT_URL = "https://www.android.com";
     private static final String DEFAULT_PACKAGE = "com.google.android.apps.chrome";
@@ -386,7 +387,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     + mSpeculationMode + "," + mDelayToMayLaunchUrl + "," + mDelayToLaunchUrl + ","
                     + mIntentSentMs + "," + mPageLoadStartedMs + "," + mPageLoadFinishedMs + ","
                     + mFirstContentfulPaintMs;
-            Log.w(TAG, logLine);
+            Log.w(TAGCSV, logLine);
             logMemory(mPackageName, "AfterMetrics");
             MainActivity.this.finish();
         }
