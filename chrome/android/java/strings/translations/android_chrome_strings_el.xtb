@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">ΕΙΚΟΝΑ</translation>
 <translation id="257088987046510401">Θέματα</translation>
 <translation id="2570922361219980984">Η πρόσβαση στην Τοποθεσία είναι απενεργοποιημένη επίσης γι' αυτήν τη συσκευή. Ενεργοποιήστε τη στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Ομάδα</translation>
 <translation id="257931822824936280">Αναπτυγμένη - Κάντε κλικ για σύμπτυξη</translation>
 <translation id="2581165646603367611">Αυτό θα διαγράψει τα cookie, την κρυφή μνήμη και άλλα δεδομένα ιστοτόπων που το Chrome θεωρεί ότι δεν είναι σημαντικά.</translation>
 <translation id="2586657967955657006">Πρόχειρο</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412">Αυτός ο λογαριασμός τελεί υπό τη διαχείριση των γονέων <ph name="PARENT_NAME_1" /> και <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Έγινε εναλλαγή σε καρτέλες ανώνυμης περιήγησης</translation>
 <translation id="2968755619301702150">Πρόγρ. προβολής πιστοποιητικού</translation>
+<translation id="2977480621796371840">Κατάργηση από την ομάδα</translation>
 <translation id="2979025552038692506">Επιλεγμένη καρτέλα ανώνυμης περιήγησης</translation>
 <translation id="2989523299700148168">Πραγματοποιήθηκε επίσκεψη πρόσφατα</translation>
 <translation id="2996291259634659425">Δημιουργία φράσης πρόσβασης</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">Αυτόματη σύνδεση σε ιστότοπους με χρήση αποθηκευμένων διαπιστευτηρίων. Όταν η λειτουργία είναι απενεργοποιημένη, θα σας ζητείται επαλήθευση κάθε φορά πριν από τη σύνδεση σε έναν ιστότοπο.</translation>
 <translation id="3658159451045945436">Η επαναφορά διαγράφει το ιστορικό των αποθηκευμένων δεδομένων, συμπεριλαμβανομένης της λίστας ιστοτόπων που έχετε επισκεφτεί.</translation>
 <translation id="3662546969139119822">Δεν υπάρχει ιστορικό εδώ</translation>
+<translation id="3663367437272849150">Ομαδοποίηση <ph name="NUM_SELECTED" /> καρτελών.</translation>
 <translation id="3672452749423051839">Προτάσεις σφάλματος πλοήγησης</translation>
 <translation id="3692944402865947621">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε επειδή δεν είναι προσβάσιμη η τοποθεσία αποθήκευσης.</translation>
 <translation id="3714981814255182093">Άνοιγμα της γραμμής εύρεσης</translation>
@@ -635,6 +638,7 @@
 <translation id="557283862590186398">Το Chrome χρειάζεται άδεια, για να αποκτήσει πρόσβαση στο μικρόφωνο για αυτόν τον ιστότοπο.</translation>
 <translation id="55737423895878184">Η Τοποθεσία και οι ειδοποιήσεις επιτρέπονται</translation>
 <translation id="5578795271662203820">Αναζήτηση <ph name="SEARCH_ENGINE" /> για την εικόνα</translation>
+<translation id="5580090775658607195">Ομαδοποιήθηκαν <ph name="TAB_COUNT" /> καρτέλες</translation>
 <translation id="5581519193887989363">Μπορείτε πάντα να επιλέξετε τα στοιχεία που θέλετε να συγχρονίσετε στις <ph name="BEGIN_LINK1" />ρυθμίσεις<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Επεξεργασία διεύθυνσης</translation>
 <translation id="5596627076506792578">Περισσότερες επιλογές</translation>
@@ -715,6 +719,7 @@
 <translation id="6181444274883918285">Προσθήκη εξαίρεσης ιστότοπου</translation>
 <translation id="6192333916571137726">Αρχείο Λήψη</translation>
 <translation id="6192792657125177640">Εξαιρέσεις</translation>
+<translation id="6193448654517602979">Επιλογή καρτελών</translation>
 <translation id="6194112207524046168">Για να επιτρέψετε στο Chrome να αποκτήσει πρόσβαση στην κάμερά σας, ενεργοποιήστε επίσης την κάμερα στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Αποκλεισμός cookie τρίτων</translation>
 <translation id="6206551242102657620">Η σύνδεση είναι ασφαλής. Πληροφορίες ιστοτόπου</translation>
@@ -857,6 +862,7 @@
 <translation id="7141896414559753902">Αποκλεισμός εμφάνισης αναδυόμενων παραθύρων και ανακατευθύνσεων σε ιστοτόπους (συνιστάται)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Φόρτωση αρχικής σελίδας<ph name="END_LINK" /> από <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Τελευταίες 24 ώρες</translation>
+<translation id="7161892015146974550">Επιλογή καρτέλας <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Μπορείτε να αλλάξετε αργότερα αυτήν την επιλογή στην περιοχή "Ρυθμίσεις"</translation>
 <translation id="7180611975245234373">Ανανέωση</translation>
@@ -889,6 +895,7 @@
 <translation id="7403691278183511381">Εμπειρία πρώτης εκτέλεσης Chrome</translation>
 <translation id="741204030948306876">Ναι, συμφωνώ</translation>
 <translation id="7413229368719586778">Ημερομηνία έναρξης: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Ομαδοποίηση καρτελών…</translation>
 <translation id="7423098979219808738">Να γίνεται ερώτηση πρώτα</translation>
 <translation id="7423538860840206698">Αποκλεισμός από ανάγνωση πρόχειρου</translation>
 <translation id="7431991332293347422">Ελέγξτε τον τρόπο με τον οποίο χρησιμοποιείται το ιστορικό περιήγησής σας για την εξατομίκευση της Αναζήτησης και άλλων λειτουργιών</translation>
@@ -1027,6 +1034,7 @@
 <translation id="8339163506404995330">Οι σελίδες στα <ph name="LANGUAGE" /> δεν θα μεταφράζονται</translation>
 <translation id="8349013245300336738">Ταξινόμηση κατά όγκο δεδομένων που χρησιμοποιήθηκαν</translation>
 <translation id="8364299278605033898">Δείτε δημοφιλείς ιστοτόπους</translation>
+<translation id="8364603787714420828">Αποεπιλογή καρτέλας <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Να επιτρέπεται ο Συγχρονισμός παρασκηνίου για έναν συγκεκριμένο ιστότοπο.</translation>
 <translation id="8374821112118309944">Θα πρέπει να ενημερώσετε το TalkBack σε νεότερη έκδοση.</translation>
 <translation id="8378714024927312812">Διαχειριζόμενο από τον οργανισμό σας</translation>

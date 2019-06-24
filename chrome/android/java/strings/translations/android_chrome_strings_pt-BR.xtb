@@ -232,6 +232,7 @@ Confirme se esse site é confiável antes de conceder acesso.</translation>
 <translation id="2567385386134582609">IMAGEM</translation>
 <translation id="257088987046510401">Temas</translation>
 <translation id="2570922361219980984">O acesso ao local também está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Grupo</translation>
 <translation id="257931822824936280">Visualização expandida. Clique para recolher</translation>
 <translation id="2581165646603367611">Essa ação limpará os cookies, cache e outros dados de sites que o Chrome não acredita serem importantes.</translation>
 <translation id="2586657967955657006">Área de transferência</translation>
@@ -284,6 +285,7 @@ Confirme se esse site é confiável antes de conceder acesso.</translation>
 <translation id="2956410042958133412">Esta conta é gerenciada por <ph name="PARENT_NAME_1" /> e <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Alternada para guias anônimas</translation>
 <translation id="2968755619301702150">Leitor de certificados</translation>
+<translation id="2977480621796371840">Remover do grupo</translation>
 <translation id="2979025552038692506">Guia anônima selecionada</translation>
 <translation id="2989523299700148168">Visitados recentemente</translation>
 <translation id="2996291259634659425">Criar senha longa</translation>
@@ -368,6 +370,7 @@ Confirme se esse site é confiável antes de conceder acesso.</translation>
 <translation id="363596933471559332">Faça login automaticamente nos websites usando as credenciais armazenadas. Se o recurso estiver desativado, será preciso fazer a verificação sempre antes de fazer login em um website.</translation>
 <translation id="3658159451045945436">A redefinição limpa o histórico da economia de dados, incluindo a lista de sites visitados.</translation>
 <translation id="3662546969139119822">Não há histórico aqui</translation>
+<translation id="3663367437272849150">Agrupar <ph name="NUM_SELECTED" /> guias.</translation>
 <translation id="3672452749423051839">Sugerir opções quando houver erro de navegação</translation>
 <translation id="3692944402865947621">Falha no download do arquivo <ph name="FILE_NAME" /> porque não foi possível acessar o local do armazenamento.</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
@@ -636,6 +639,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="557283862590186398">O Chrome precisa de permissão para este site acessar seu microfone.</translation>
 <translation id="55737423895878184">A localização e as notificações são permitidas</translation>
 <translation id="5578795271662203820">Pesquisar imagem no <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Guias agrupadas: <ph name="TAB_COUNT" /></translation>
 <translation id="5581519193887989363">Nas <ph name="BEGIN_LINK1" />configurações<ph name="END_LINK1" />, é possível escolher a qualquer momento o que é sincronizado.</translation>
 <translation id="5595485650161345191">Editar endereço</translation>
 <translation id="5596627076506792578">Mais opções</translation>
@@ -716,6 +720,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="6181444274883918285">Adicionar site às exceções</translation>
 <translation id="6192333916571137726">Fazer o download do arquivo</translation>
 <translation id="6192792657125177640">Exceções</translation>
+<translation id="6193448654517602979">Selecione as guias</translation>
 <translation id="6194112207524046168">Para permitir que o Chrome acesse sua câmera, ative-a também nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
 <translation id="6206551242102657620">A conexão é segura. Informações do site</translation>
@@ -858,6 +863,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7141896414559753902">Impedir que sites exibam pop-ups e façam redirecionamentos (recomendado)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Carregar página original<ph name="END_LINK" /> de <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Últimas 24 horas</translation>
+<translation id="7161892015146974550">Selecione a guia <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Você poderá alterar isso mais tarde nas configurações</translation>
 <translation id="7180611975245234373">Atualizar</translation>
@@ -890,6 +896,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="7403691278183511381">Tela de apresentação do Chrome</translation>
 <translation id="741204030948306876">Sim</translation>
 <translation id="7413229368719586778">Data de início: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Agrupar guias…</translation>
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7423538860840206698">Leitura da área de transferência bloqueada</translation>
 <translation id="7431991332293347422">Controlar como o histórico de navegação é usado para personalizar a Pesquisa e muito mais</translation>
@@ -1028,6 +1035,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="8339163506404995330">Páginas em <ph name="LANGUAGE" /> não serão traduzidas</translation>
 <translation id="8349013245300336738">Classificar por quantidade de dados usados</translation>
 <translation id="8364299278605033898">Ver sites conhecidos</translation>
+<translation id="8364603787714420828">Desmarcar a guia <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Permite a sincronização em segundo plano para um site específico.</translation>
 <translation id="8374821112118309944">Atualize o TalkBack para receber uma versão mais nova.</translation>
 <translation id="8378714024927312812">Gerenciado pela sua organização</translation>

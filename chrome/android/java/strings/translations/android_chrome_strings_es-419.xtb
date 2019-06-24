@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">IMAGEN</translation>
 <translation id="257088987046510401">Temas</translation>
 <translation id="2570922361219980984">El acceso a la ubicación también está desactivado en este dispositivo. Actívalo en la <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Grupo</translation>
 <translation id="257931822824936280">Expandido; haz clic para contraer.</translation>
 <translation id="2581165646603367611">Esta acción borrará la caché, cookies y otros datos de sitios que Chrome no considera importantes.</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> y <ph name="PARENT_NAME_2" /> administran esta cuenta.</translation>
 <translation id="2962095958535813455">Se seleccionaron las pestañas en modo de navegación de incógnito</translation>
 <translation id="2968755619301702150">Visualizador de certificados</translation>
+<translation id="2977480621796371840">Quitar del grupo</translation>
 <translation id="2979025552038692506">Pestaña de incógnito seleccionada</translation>
 <translation id="2989523299700148168">Visitados recientemente</translation>
 <translation id="2996291259634659425">Crear frase de contraseña</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">Permite acceder automáticamente a los sitios web con las credenciales almacenadas. Si la función está desactivada, siempre se solicitará verificación antes de acceder a un sitio web.</translation>
 <translation id="3658159451045945436">Si lo haces, se borrará el historial de ahorro de datos, incluida la lista de sitios visitados.</translation>
 <translation id="3662546969139119822">Aquí no hay elementos en el historial</translation>
+<translation id="3663367437272849150">Agrupa <ph name="NUM_SELECTED" /> pestañas.</translation>
 <translation id="3672452749423051839">Sugerencias relacionadas con errores de navegación</translation>
 <translation id="3692944402865947621">Falló la descarga de <ph name="FILE_NAME" /> porque no se puede acceder a la ubicación del almacenamiento.</translation>
 <translation id="3714981814255182093">Abrir la barra de búsqueda</translation>
@@ -635,6 +638,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="557283862590186398">Chrome necesita permiso para acceder a tu micrófono para este sitio.</translation>
 <translation id="55737423895878184">La ubicación y las notificaciones están habilitadas</translation>
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Se agruparon <ph name="TAB_COUNT" /> pestañas</translation>
 <translation id="5581519193887989363">En la <ph name="BEGIN_LINK1" />configuración<ph name="END_LINK1" />, puedes elegir los datos para sincronizar en cualquier momento.</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
 <translation id="5596627076506792578">Más opciones</translation>
@@ -715,6 +719,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="6181444274883918285">Agregar excepción del sitio</translation>
 <translation id="6192333916571137726">Descargar archivo</translation>
 <translation id="6192792657125177640">Excepciones</translation>
+<translation id="6193448654517602979">Seleccionar pestañas</translation>
 <translation id="6194112207524046168">Para permitir que Chrome acceda a tu cámara, actívala también en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloquear cookies de terceros</translation>
 <translation id="6206551242102657620">La conexión es segura. Consulta la información del sitio.</translation>
@@ -857,6 +862,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7141896414559753902">Bloquea las ventanas emergentes y los redireccionamientos en los sitios (recomendado)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Cargar página original<ph name="END_LINK" /> de <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Últimas 24 horas</translation>
+<translation id="7161892015146974550">Selecciona la pestaña <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Puedes cambiar esta opción más tarde en Configuración</translation>
 <translation id="7180611975245234373">Actualizar</translation>
@@ -889,6 +895,7 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="7403691278183511381">Primera experiencia de ejecución de Chrome</translation>
 <translation id="741204030948306876">Sí, acepto</translation>
 <translation id="7413229368719586778">Fecha de inicio: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Agrupar pestañas…</translation>
 <translation id="7423098979219808738">Preguntar primero</translation>
 <translation id="7423538860840206698">Se impidió la lectura del portapapeles</translation>
 <translation id="7431991332293347422">Controla cómo se usa tu historial de navegación para personalizar la Búsqueda y mucho más</translation>
@@ -1027,6 +1034,7 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="8339163506404995330">No se traducirán las páginas en <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">Ordenar por cantidad de datos utilizados</translation>
 <translation id="8364299278605033898">Ver sitios populares</translation>
+<translation id="8364603787714420828">Quita la selección de la pestaña <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Permite la sincronización en segundo plano para un sitio específico.</translation>
 <translation id="8374821112118309944">Debes actualizar a una versión más reciente de TalkBack</translation>
 <translation id="8378714024927312812">Administrado por tu organización</translation>

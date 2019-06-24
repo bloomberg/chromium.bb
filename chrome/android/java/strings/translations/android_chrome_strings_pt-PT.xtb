@@ -232,6 +232,7 @@ Certifique-se de que confia neste site antes de permitir o acesso.</translation>
 <translation id="2567385386134582609">IMAGEM</translation>
 <translation id="257088987046510401">Temas</translation>
 <translation id="2570922361219980984">O acesso à localização também está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Grupo</translation>
 <translation id="257931822824936280">Expandido. Clique para reduzir.</translation>
 <translation id="2581165646603367611">Esta ação elimina os cookies, a cache e outros dados de sites que o Chrome não considera importantes.</translation>
 <translation id="2586657967955657006">Área de transferência</translation>
@@ -284,6 +285,7 @@ Certifique-se de que confia neste site antes de permitir o acesso.</translation>
 <translation id="2956410042958133412">Esta conta é gerida por <ph name="PARENT_NAME_1" /> e por <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Mudado para separadores de navegação anónima</translation>
 <translation id="2968755619301702150">Visualizador de certificados</translation>
+<translation id="2977480621796371840">Remover do grupo</translation>
 <translation id="2979025552038692506">Separador de navegação anónima selecionado</translation>
 <translation id="2989523299700148168">Visitados recentemente</translation>
 <translation id="2996291259634659425">Criar frase de acesso</translation>
@@ -368,6 +370,7 @@ Certifique-se de que confia neste site antes de permitir o acesso.</translation>
 <translation id="363596933471559332">Inicie automaticamente sessão em Sites com as credenciais armazenadas. Quando a funcionalidade está desativada, é-lhe sempre pedida validação antes de iniciar sessão num Website.</translation>
 <translation id="3658159451045945436">A reposição apaga o histórico da poupança de dados, incluindo a lista de sites visitados.</translation>
 <translation id="3662546969139119822">Sem histórico</translation>
+<translation id="3663367437272849150">Agrupe <ph name="NUM_SELECTED" /> separadores.</translation>
 <translation id="3672452749423051839">Sugestões de erros de navegação</translation>
 <translation id="3692944402865947621">A transferência de <ph name="FILE_NAME" /> falhou porque o local de armazenamento está fora do alcance.</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
@@ -635,6 +638,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="557283862590186398">O Chrome necessita de autorização de acesso ao microfone para este site.</translation>
 <translation id="55737423895878184">A localização e as notificações são permitidas.</translation>
 <translation id="5578795271662203820">Pesquisar a imagem no <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> separadores agrupados</translation>
 <translation id="5581519193887989363">Pode escolher o que pretende sincronizar nas <ph name="BEGIN_LINK1" />definições<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Editar morada</translation>
 <translation id="5596627076506792578">Mais opções</translation>
@@ -715,6 +719,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="6181444274883918285">Adicionar exceção de site</translation>
 <translation id="6192333916571137726">Transferir ficheiro</translation>
 <translation id="6192792657125177640">Excepções</translation>
+<translation id="6193448654517602979">Selecione os separadores</translation>
 <translation id="6194112207524046168">Para permitir que o Chrome aceda à câmara, ative também a câmara nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
 <translation id="6206551242102657620">A ligação é segura. Informações do site</translation>
@@ -857,6 +862,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7141896414559753902">Impedir que os sites apresentem pop-ups e redirecionamentos (recomendado).</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Carregar página original<ph name="END_LINK" /> do domínio <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Últimas 24 horas</translation>
+<translation id="7161892015146974550">Selecione o separador <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Pode alterar esta opção mais tarde nas Definições</translation>
 <translation id="7180611975245234373">Atualizar</translation>
@@ -889,6 +895,7 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="7403691278183511381">Experiência de primeira execução do Chrome</translation>
 <translation id="741204030948306876">Sim, aceito</translation>
 <translation id="7413229368719586778">Data de início: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Agrupar separadores</translation>
 <translation id="7423098979219808738">Perguntar primeiro</translation>
 <translation id="7423538860840206698">Leitura da área de transferência bloqueada</translation>
 <translation id="7431991332293347422">Controle a forma como o histórico de navegação é utilizado para personalizar a Pesquisa e muito mais.</translation>
@@ -1027,6 +1034,7 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="8339163506404995330">As páginas em <ph name="LANGUAGE" /> não serão traduzidas</translation>
 <translation id="8349013245300336738">Ordenar por quantidade de dados utilizados</translation>
 <translation id="8364299278605033898">Veja Websites populares</translation>
+<translation id="8364603787714420828">Desselecione o separador <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Permitir Sincronização em segundo plano num site específico.</translation>
 <translation id="8374821112118309944">Tem de atualizar o TalkBack para uma versão mais recente.</translation>
 <translation id="8378714024927312812">Gerido pela sua entidade</translation>

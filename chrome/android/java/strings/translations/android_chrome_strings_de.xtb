@@ -232,6 +232,7 @@ Geben Sie dieser Website nur Zugriff, wenn Sie ihr vertrauen.</translation>
 <translation id="2567385386134582609">BILD</translation>
 <translation id="257088987046510401">Designs</translation>
 <translation id="2570922361219980984">Der Standortzugriff ist für dieses Gerät ebenfalls deaktiviert. Sie können ihn in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
+<translation id="257674075312929031">Gruppe</translation>
 <translation id="257931822824936280">Maximiert – zum Minimieren klicken</translation>
 <translation id="2581165646603367611">Alle Cookies, der Cache und andere Daten von Websites, die Chrome nicht für wichtig hält, werden gelöscht.</translation>
 <translation id="2586657967955657006">Zwischenablage</translation>
@@ -284,6 +285,7 @@ Geben Sie dieser Website nur Zugriff, wenn Sie ihr vertrauen.</translation>
 <translation id="2956410042958133412">Dieses Konto wird von <ph name="PARENT_NAME_1" /> und <ph name="PARENT_NAME_2" /> verwaltet.</translation>
 <translation id="2962095958535813455">Zu Inkognito-Tabs gewechselt</translation>
 <translation id="2968755619301702150">Zertifikats-Viewer</translation>
+<translation id="2977480621796371840">Aus Gruppe entfernen</translation>
 <translation id="2979025552038692506">Ausgewählter Inkognito-Tab</translation>
 <translation id="2989523299700148168">Kürzlich besucht</translation>
 <translation id="2996291259634659425">Passphrase erstellen</translation>
@@ -368,6 +370,7 @@ Geben Sie dieser Website nur Zugriff, wenn Sie ihr vertrauen.</translation>
 <translation id="363596933471559332">Sie werden mit gespeicherten Anmeldedaten automatisch auf Websites angemeldet. Wenn das Kästchen nicht angeklickt ist, werden Sie jedes Mal aufgefordert, sich manuell auf einer Website anzumelden.</translation>
 <translation id="3658159451045945436">Durch das Zurücksetzen wird der Verlauf gelöscht. Dazu gehört auch die Liste der besuchten Websites.</translation>
 <translation id="3662546969139119822">Kein Verlauf vorhanden</translation>
+<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> Tabs gruppieren.</translation>
 <translation id="3672452749423051839">Vorschläge bei Navigationsfehlern</translation>
 <translation id="3692944402865947621">Download von <ph name="FILE_NAME" /> fehlgeschlagen, weil der Speicherort nicht erreichbar ist.</translation>
 <translation id="3714981814255182093">Suchleiste öffnen</translation>
@@ -635,6 +638,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="557283862590186398">Chrome benötigt für diese Website die Berechtigung, auf Ihr Mikrofon zuzugreifen.</translation>
 <translation id="55737423895878184">Standortermittlung und Benachrichtigungen sind erlaubt</translation>
 <translation id="5578795271662203820">In <ph name="SEARCH_ENGINE" /> nach dem Bild suchen</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> Tabs gruppiert</translation>
 <translation id="5581519193887989363">Sie können in den <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> auswählen, was Sie synchronisieren möchten.</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
 <translation id="5596627076506792578">Weitere Optionen</translation>
@@ -715,6 +719,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="6181444274883918285">Ausnahme für Website hinzufügen</translation>
 <translation id="6192333916571137726">Download-Datei</translation>
 <translation id="6192792657125177640">Ausnahmen</translation>
+<translation id="6193448654517602979">Tabs auswählen</translation>
 <translation id="6194112207524046168">Aktivieren Sie die Kamera auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />, damit Chrome auf sie zugreifen kann.</translation>
 <translation id="6196640612572343990">Drittanbieter-Cookies blockieren</translation>
 <translation id="6206551242102657620">Die Verbindung ist sicher. Websiteinformationen</translation>
@@ -857,6 +862,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7141896414559753902">Anzeige von Pop-ups und Weiterleitungen für Websites blockieren (empfohlen)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Originalseite<ph name="END_LINK" /> aus <ph name="DOMAIN_NAME" /> laden</translation>
 <translation id="7149893636342594995">Letzte 24 Stunden</translation>
+<translation id="7161892015146974550">Tab "<ph name="TAB_TITLE" />" auswählen.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Dies kann später in den Einstellungen geändert werden</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
@@ -889,6 +895,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="7403691278183511381">Eindruck beim ersten Ausführen von Chrome</translation>
 <translation id="741204030948306876">Ja, bitte</translation>
 <translation id="7413229368719586778">Startdatum: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Tabs gruppieren…</translation>
 <translation id="7423098979219808738">Zuerst fragen</translation>
 <translation id="7423538860840206698">Es dürfen keine Dateien aus der Zwischenablage abgerufen werden</translation>
 <translation id="7431991332293347422">Legen Sie fest, wie Ihr Browserverlauf zur Personalisierung der Google-Suche verwendet wird</translation>
@@ -1027,6 +1034,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8339163506404995330">Seiten auf <ph name="LANGUAGE" /> werden nicht übersetzt</translation>
 <translation id="8349013245300336738">Nach Menge der verwendeten Daten sortieren</translation>
 <translation id="8364299278605033898">Beliebte Websites ansehen</translation>
+<translation id="8364603787714420828">Auswahl des Tabs "<ph name="TAB_TITLE" />" aufheben.</translation>
 <translation id="8372893542064058268">Lässt die Hintergrundsynchronisierung für eine bestimmte Website zu.</translation>
 <translation id="8374821112118309944">TalkBack muss auf eine neuere Version aktualisiert werden.</translation>
 <translation id="8378714024927312812">Von Ihrer Organisation verwaltet</translation>

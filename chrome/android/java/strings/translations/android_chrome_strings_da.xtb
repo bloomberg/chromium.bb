@@ -232,6 +232,7 @@ Det er vigtigt, at du har tillid til websitet, før du giver adgang.</translatio
 <translation id="2567385386134582609">BILLEDE</translation>
 <translation id="257088987046510401">Temaer</translation>
 <translation id="2570922361219980984">Placeringsadgang er også deaktiveret for denne enhed. Aktivér det under <ph name="BEGIN_LINK" />indstillinger for Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Gruppe</translation>
 <translation id="257931822824936280">Udvidet – klik for at skjule.</translation>
 <translation id="2581165646603367611">Dette rydder cookies, cache og andre data fra websites, som ikke er vigtige ifølge Chrome.</translation>
 <translation id="2586657967955657006">Udklipsholder</translation>
@@ -284,6 +285,7 @@ Det er vigtigt, at du har tillid til websitet, før du giver adgang.</translatio
 <translation id="2956410042958133412">Denne konto administreres af <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Skiftet til inkognitofaner</translation>
 <translation id="2968755619301702150">Certifikatfremviser</translation>
+<translation id="2977480621796371840">Fjern fra gruppe</translation>
 <translation id="2979025552038692506">Valgt inkognitofane</translation>
 <translation id="2989523299700148168">Besøgt for nylig</translation>
 <translation id="2996291259634659425">Opret adgangssætning</translation>
@@ -368,6 +370,7 @@ Det er vigtigt, at du har tillid til websitet, før du giver adgang.</translatio
 <translation id="363596933471559332">Log automatisk ind på websites med gemte loginoplysninger. Når funktionen er slået fra, bliver du bedt om at bekræfte, hver gang du vil logge ind på et website.</translation>
 <translation id="3658159451045945436">En nulstilling sletter din historik for databesparelser, herunder listen over de websites, du har besøgt.</translation>
 <translation id="3662546969139119822">Der er ingen historik her</translation>
+<translation id="3663367437272849150">Gruppér <ph name="NUM_SELECTED" /> faner.</translation>
 <translation id="3672452749423051839">Forslag ved navigationsfejl</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> blev ikke downloadet, da lagerplaceringen ikke er tilgængelig.</translation>
 <translation id="3714981814255182093">Åbn søgefeltet</translation>
@@ -635,6 +638,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="557283862590186398">Chrome skal have tilladelse til at bruge din mikrofon på dette website.</translation>
 <translation id="55737423895878184">Placering og notifikationer er tilladt</translation>
 <translation id="5578795271662203820">Søg efter billedet på <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> faner blev grupperet</translation>
 <translation id="5581519193887989363">Du kan altid vælge, hvad der skal synkroniseres, i <ph name="BEGIN_LINK1" />indstillingerne<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5596627076506792578">Flere valgmuligheder</translation>
@@ -715,6 +719,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="6181444274883918285">Tilføj en undtagelse for et website</translation>
 <translation id="6192333916571137726">Download fil</translation>
 <translation id="6192792657125177640">Undtagelser</translation>
+<translation id="6193448654517602979">Vælg faner</translation>
 <translation id="6194112207524046168">Aktivér også dit kamera i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give Chrome adgang til kameraet.</translation>
 <translation id="6196640612572343990">Bloker cookies fra tredjeparter</translation>
 <translation id="6206551242102657620">Forbindelsen er sikker. Websiteoplysninger</translation>
@@ -857,6 +862,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7141896414559753902">Bloker visning af pop up-vinduer på websites og omdirigeringer (anbefales)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Indlæs den oprindelige side<ph name="END_LINK" /> fra <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">De seneste 24 timer</translation>
+<translation id="7161892015146974550">Vælg fanen <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Du kan ændre dette senere i Indstillinger</translation>
 <translation id="7180611975245234373">Opdater</translation>
@@ -889,6 +895,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="7403691278183511381">Førstegangsoplevelse af Chrome</translation>
 <translation id="741204030948306876">Ja tak</translation>
 <translation id="7413229368719586778">Startdato <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Gruppér faner...</translation>
 <translation id="7423098979219808738">Spørg først</translation>
 <translation id="7423538860840206698">Blokeret fra at læse udklipsholderen</translation>
 <translation id="7431991332293347422">Bestem selv, hvordan din browserhistorik skal bruges til at tilpasse søgeresultater m.m.</translation>
@@ -1027,6 +1034,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8339163506404995330">Sider på <ph name="LANGUAGE" /> oversættes ikke</translation>
 <translation id="8349013245300336738">Sortér efter mængden af data, der er brugt</translation>
 <translation id="8364299278605033898">Se populære websites</translation>
+<translation id="8364603787714420828">Fravælg fanen <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Tillad synkronisering i baggrunden for et bestemt website.</translation>
 <translation id="8374821112118309944">Du skal opdatere TalkBack til en nyere version.</translation>
 <translation id="8378714024927312812">Administreret af din organisation</translation>

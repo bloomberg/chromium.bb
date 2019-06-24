@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">תמונה</translation>
 <translation id="257088987046510401">ערכות נושא</translation>
 <translation id="2570922361219980984">‏גם הגישה למיקום כבויה בשביל המכשיר הזה. יש להפעיל אותה ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">קבוצה</translation>
 <translation id="257931822824936280">מורחב - לחץ כדי לכווץ.</translation>
 <translation id="2581165646603367611">‏פעולה זו תמחק את קובצי ה-Cookie, את המטמון ונתונים אחרים של אתרים ש-Chrome לא מחשיב כחשובים.</translation>
 <translation id="2586657967955657006">לוח</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME_1" /> ו-<ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">הוחלף לכרטיסיות גלישה בסתר</translation>
 <translation id="2968755619301702150">מציג האישורים</translation>
+<translation id="2977480621796371840">הסרה מהקבוצה</translation>
 <translation id="2979025552038692506">כרטיסיית הגלישה בסתר שנבחרה</translation>
 <translation id="2989523299700148168">מנועי חיפוש שהשתמשת בהם לאחרונה</translation>
 <translation id="2996291259634659425">יצירת ביטוי סיסמה</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">כניסה אוטומטית לאתרים באמצעות פרטי כניסה מאוחסנים. כשתכונה זו כבויה, יהיה עליך לבצע אימות לפני כל כניסה לאתר.</translation>
 <translation id="3658159451045945436">האיפוס גורם למחיקת ההיסטוריה של החיסכון בנתונים, כולל רשימת האתרים שביקרת בהם.</translation>
 <translation id="3662546969139119822">ההיסטוריה ריקה</translation>
+<translation id="3663367437272849150">קיבוץ <ph name="NUM_SELECTED" /> כרטיסיות.</translation>
 <translation id="3672452749423051839">הצעות לשגיאת ניווט</translation>
 <translation id="3692944402865947621">ההורדה של <ph name="FILE_NAME" /> נכשלה כי מיקום האחסון לא נגיש.</translation>
 <translation id="3714981814255182093">פתח את סרגל החיפוש</translation>
@@ -635,6 +638,7 @@
 <translation id="557283862590186398">‏Chrome זקוק להרשאת גישה אל המיקרופון בשביל האתר הזה.</translation>
 <translation id="55737423895878184">יש הרשאה לגישה אל המיקום ולהצגת הודעות</translation>
 <translation id="5578795271662203820">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> כרטיסיות מקובצות</translation>
 <translation id="5581519193887989363">אפשר לבחור מה לסנכרן בכל שלב דרך <ph name="BEGIN_LINK1" />ההגדרות<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">עריכת כתובת</translation>
 <translation id="5596627076506792578">אפשרויות נוספות</translation>
@@ -715,6 +719,7 @@
 <translation id="6181444274883918285">להוספת מקרה חריג של אתר</translation>
 <translation id="6192333916571137726">קובץ הורדה</translation>
 <translation id="6192792657125177640">יוצאי דופן</translation>
+<translation id="6193448654517602979">בחירת כרטיסיות</translation>
 <translation id="6194112207524046168">‏כדי לאפשר ל-Chrome לגשת אל המצלמה, צריך להפעיל אותה גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">‏חסום קובצי Cookie של צד שלישי</translation>
 <translation id="6206551242102657620">החיבור מאובטח. פרטי האתר</translation>
@@ -857,6 +862,7 @@
 <translation id="7141896414559753902">חסימה של חלונות קופצים והפניות אוטומטיות באתרים (מומלץ)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />טעינת הדף המקורי<ph name="END_LINK" /> מ-<ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">מהיום האחרון</translation>
+<translation id="7161892015146974550">בחירה בכרטיסייה <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">אפשר לשנות את ההגדרה הזו מאוחר יותר ב'הגדרות'</translation>
 <translation id="7180611975245234373">רענון</translation>
@@ -889,6 +895,7 @@
 <translation id="7403691278183511381">‏חוויית ההפעלה הראשונה של Chrome</translation>
 <translation id="741204030948306876">כן, אני רוצה</translation>
 <translation id="7413229368719586778">תאריך התחלה <ph name="DATE" /></translation>
+<translation id="7418565925463285788">קיבוץ כרטיסיות...</translation>
 <translation id="7423098979219808738">תופיע בקשת אישור</translation>
 <translation id="7423538860840206698">הגישה לקריאה מלוח העריכה נחסמה</translation>
 <translation id="7431991332293347422">קביעת אופן השימוש בהיסטוריית הגלישה להתאמה אישית של החיפוש ועוד</translation>
@@ -1027,6 +1034,7 @@
 <translation id="8339163506404995330">דפים ב<ph name="LANGUAGE" /> לא יתורגמו</translation>
 <translation id="8349013245300336738">מיון לפי כמות הנתונים שבהם נעשה שימוש</translation>
 <translation id="8364299278605033898">הצגת אתרים פופולריים</translation>
+<translation id="8364603787714420828">ביטול הבחירה בכרטיסייה <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">אפשר סנכרון ברקע לאתר ספציפי.</translation>
 <translation id="8374821112118309944">‏עליך לעדכן את TalkBack לגרסה חדשה יותר.</translation>
 <translation id="8378714024927312812">מנוהל על-ידי הארגון</translation>

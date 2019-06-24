@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">इमेज</translation>
 <translation id="257088987046510401">थीम</translation>
 <translation id="2570922361219980984">इस डिवाइस के लिए जगह की जानकारी का एक्सेस भी बंद है. उसे <ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में चालू करें.</translation>
+<translation id="257674075312929031">समूह</translation>
 <translation id="257931822824936280">बड़ा किया गया - छोटा करने के लिए क्‍लिक करें.</translation>
 <translation id="2581165646603367611">यह साइट की कुकी, कैश और अन्य डेटा निकाल देगा जो Chrome के विचार में महत्वपूर्ण नहीं है.</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412">यह खाता <ph name="PARENT_NAME_1" /> और <ph name="PARENT_NAME_2" /> के द्वारा प्रबंधित है.</translation>
 <translation id="2962095958535813455">गुप्त टैब पर स्विच कर दिया गया</translation>
 <translation id="2968755619301702150">प्रमाणपत्र व्यूअर</translation>
+<translation id="2977480621796371840">समूह से हटाएं</translation>
 <translation id="2979025552038692506">चयनित गुप्त टैब</translation>
 <translation id="2989523299700148168">हाल ही में देखे गए</translation>
 <translation id="2996291259634659425">'पासफ़्रेज़' बनाएं</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">स्टोर किए गए क्रेडेंशियल का इस्तेमाल करके वेबसाइटों में अपने आप साइन इन करें. सुविधा के बंद होने पर, किसी वेबसाइट में साइन इन करने से पहले आपसे हर बार पुष्टि करने को कहा जाएगा.</translation>
 <translation id="3658159451045945436">रीसेट करने से आपकी देखी गई साइटों की सूची के साथ ही, डेटा बचाने का आपका इतिहास हमेशा के लिए मिट जाता है.</translation>
 <translation id="3662546969139119822">यहां कोई इतिहास नहीं है</translation>
+<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> टैब को समूह में लगाएं.</translation>
 <translation id="3672452749423051839">नेविगेशन की गड़बड़ी से जुड़े सुझाव</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> डाउनलोड नहीं हो सकी क्योंकि स्टोर करने की जगह नहीं मिली.</translation>
 <translation id="3714981814255182093">ढूंढें बार खोलें</translation>
@@ -635,6 +638,7 @@
 <translation id="557283862590186398">Chrome को इस साइट के लिए आपका माइक्रोफ़ोन एक्सेस करने की अनुमति चाहिए.</translation>
 <translation id="55737423895878184">स्थान और सूचनाओं की अनुमति है</translation>
 <translation id="5578795271662203820">इस इमेज के लिए <ph name="SEARCH_ENGINE" /> पर खोजें</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> टैब समूह में लगाए गए</translation>
 <translation id="5581519193887989363">आप जब चाहें तब <ph name="BEGIN_LINK1" />सेटिंग<ph name="END_LINK1" /> में जाकर किसी भी चीज़ को सिंक करने का विकल्प चुन सकते हैं.</translation>
 <translation id="5595485650161345191">पते में बदलाव करें</translation>
 <translation id="5596627076506792578">ज़्यादा विकल्प</translation>
@@ -715,6 +719,7 @@
 <translation id="6181444274883918285">अपवाद वाली साइट जोड़ें</translation>
 <translation id="6192333916571137726">डाउनलोड फ़ाइल कहां सेव करें</translation>
 <translation id="6192792657125177640">अपवाद</translation>
+<translation id="6193448654517602979">टैब चुनें</translation>
 <translation id="6194112207524046168">Chrome को अपना कैमरा एक्सेस करने देने के लिए, <ph name="BEGIN_LINK" />Android की सेटिंग<ph name="END_LINK" /> में जाकर भी कैमरा चालू करें.</translation>
 <translation id="6196640612572343990">तीसरे पक्ष की कुकी ब्लॉक करें</translation>
 <translation id="6206551242102657620">कनेक्शन सुरक्षित है. साइट की जानकारी</translation>
@@ -857,6 +862,7 @@
 <translation id="7141896414559753902">साइटों को पॉप-अप और रीडायरेक्ट दिखाने से रोकें (हम इस सेटिंग को चालू रखने का सुझाव देते हैं)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> से <ph name="BEGIN_LINK" />मूल पेज लोड करें<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">पिछले 24 घंटे</translation>
+<translation id="7161892015146974550"><ph name="TAB_TITLE" /> टैब चुनें.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> केबी</translation>
 <translation id="7177466738963138057">आप इसे बाद में सेटिंग में जाकर बदल सकते हैं</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
@@ -889,6 +895,7 @@
 <translation id="7403691278183511381">Chrome पहली बार चलाने का अनुभव</translation>
 <translation id="741204030948306876">हां मैं सहमत हूं</translation>
 <translation id="7413229368719586778">शुरू होने की तारीख: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">टैब को समूह में लगाएं...</translation>
 <translation id="7423098979219808738">पहले पूछें</translation>
 <translation id="7423538860840206698">क्लिपबोर्ड पढ़ने से ब्लॉक किया गया है</translation>
 <translation id="7431991332293347422">यह नियंत्रित करें कि खोज वगैरह को मनमुताबिक बनाने के लिए आपके ब्राउज़िंग इतिहास का इस्तेमाल कैसे किया जाए</translation>
@@ -1027,6 +1034,7 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> भाषा के पेज का अनुवाद नहीं किया जाएगा</translation>
 <translation id="8349013245300336738">इस्तेमाल किए गए डेटा की मात्रा के हिसाब से क्रम में लगाएं</translation>
 <translation id="8364299278605033898">लोकप्रिय वेबसाइटें देखें</translation>
+<translation id="8364603787714420828"><ph name="TAB_TITLE" /> टैब से चुने हुए का निशान हटाएं.</translation>
 <translation id="8372893542064058268">किसी विशिष्ट साइट के लिए पृष्ठभूमि समन्वयन की अनुमति दें.</translation>
 <translation id="8374821112118309944">आपको टॉकबैक को अधिक नए वर्शन से अपडेट करने की ज़रुरत है.</translation>
 <translation id="8378714024927312812">आपके संगठन की ओर से प्रबंधित</translation>

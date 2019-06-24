@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">ИЗОБРАЖЕНИЕ</translation>
 <translation id="257088987046510401">Темы</translation>
 <translation id="2570922361219980984">Определение местоположения отключено и для самого устройства. Включите эту функцию в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Группа.</translation>
 <translation id="257931822824936280">Развернуто. Нажмите, чтобы свернуть.</translation>
 <translation id="2581165646603367611">Будет очищен кеш, а также удалены файлы cookie и другие данные, которые система сочтет маловажными.</translation>
 <translation id="2586657967955657006">Буфер обмена</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412">Этим аккаунтом управляют <ph name="PARENT_NAME_1" /> и <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Переключено на вкладки в режиме инкогнито</translation>
 <translation id="2968755619301702150">Просмотр сертификатов</translation>
+<translation id="2977480621796371840">Удалить из группы</translation>
 <translation id="2979025552038692506">Выбранная вкладка инкогнито</translation>
 <translation id="2989523299700148168">Недавние</translation>
 <translation id="2996291259634659425">Придумайте кодовую фразу</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">Входить на веб-сайты с помощью сохраненного имени пользователя и пароля. Когда функция отключена, эти данные нужно указывать при каждом входе.</translation>
 <translation id="3658159451045945436">Будет удалена вся информация о сэкономленных данных, в том числе список просмотренных сайтов.</translation>
 <translation id="3662546969139119822">Нет записей</translation>
+<translation id="3663367437272849150">Сгруппировать вкладки (всего <ph name="NUM_SELECTED" />).</translation>
 <translation id="3672452749423051839">Подсказки при ошибке навигации</translation>
 <translation id="3692944402865947621">Не удалось скачать файл <ph name="FILE_NAME" />, так как хранилище недоступно.</translation>
 <translation id="3714981814255182093">Открыть панель поиска</translation>
@@ -635,6 +638,7 @@
 <translation id="557283862590186398">Для этого сайта Chrome запрашивает разрешение на доступ к микрофону.</translation>
 <translation id="55737423895878184">Может определять местоположение и отправлять уведомления</translation>
 <translation id="5578795271662203820">Найти это изображение в <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Вкладки сгруппированы (всего <ph name="TAB_COUNT" />).</translation>
 <translation id="5581519193887989363">Вы всегда можете выбрать, что синхронизировать, в <ph name="BEGIN_LINK1" />настройках<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Изменить адрес</translation>
 <translation id="5596627076506792578">Ещё</translation>
@@ -715,6 +719,7 @@
 <translation id="6181444274883918285">Добавить исключение</translation>
 <translation id="6192333916571137726">Скачивание файла</translation>
 <translation id="6192792657125177640">Исключения</translation>
+<translation id="6193448654517602979">Выберите вкладки</translation>
 <translation id="6194112207524046168">Чтобы Chrome получил доступ к камере, включите ее в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Блокировать сторонние файлы cookie</translation>
 <translation id="6206551242102657620">Подключение защищено. Информация о сайте</translation>
@@ -857,6 +862,7 @@
 <translation id="7141896414559753902">Блокировать всплывающие окна и переадресацию на сайтах (рекомендуется)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Загрузить исходную версию страницы<ph name="END_LINK" /> из <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Последние 24 часа</translation>
+<translation id="7161892015146974550">Выбрать вкладку "<ph name="TAB_TITLE" />".</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7177466738963138057">Вы всегда можете изменить свой выбор в настройках</translation>
 <translation id="7180611975245234373">Обновить</translation>
@@ -889,6 +895,7 @@
 <translation id="7403691278183511381">Первый запуск Chrome</translation>
 <translation id="741204030948306876">ОК</translation>
 <translation id="7413229368719586778">Дата начала: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Сгруппировать вкладки…</translation>
 <translation id="7423098979219808738">Всегда спрашивать</translation>
 <translation id="7423538860840206698">Доступ к данным в буфере обмена заблокирован</translation>
 <translation id="7431991332293347422">Укажите, как Google может использовать историю браузера для персонализации Поиска и других сервисов.</translation>
@@ -1027,6 +1034,7 @@
 <translation id="8339163506404995330">Страницы на этом языке (<ph name="LANGUAGE" />) не будут переводиться автоматически</translation>
 <translation id="8349013245300336738">Сортировать по объему использованного трафика</translation>
 <translation id="8364299278605033898">Показать популярные сайты</translation>
+<translation id="8364603787714420828">Отменить выбор вкладки "<ph name="TAB_TITLE" />".</translation>
 <translation id="8372893542064058268">Разрешить фоновую синхронизацию для конкретного сайта.</translation>
 <translation id="8374821112118309944">Установите последнюю версию TalkBack.</translation>
 <translation id="8378714024927312812">Управляется вашей организацией</translation>

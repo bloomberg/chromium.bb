@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">BILDE</translation>
 <translation id="257088987046510401">Temaer</translation>
 <translation id="2570922361219980984">Posisjonstilgang er også slått av for denne enheten. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Gruppe</translation>
 <translation id="257931822824936280">Utvidet – klikk for å minimere.</translation>
 <translation id="2581165646603367611">Dette sletter informasjonskapsler, buffere og annen data fra nettsteder Chrome ikke tror er viktige.</translation>
 <translation id="2586657967955657006">Utklippstavle</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412">Denne kontoen er administrert av <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Byttet til inkognitofaner</translation>
 <translation id="2968755619301702150">Visningsprogram for sertifikater</translation>
+<translation id="2977480621796371840">Fjern fra gruppen</translation>
 <translation id="2979025552038692506">Valgt inkognitofane</translation>
 <translation id="2989523299700148168">Nylig besøkte</translation>
 <translation id="2996291259634659425">Opprett en passordfrase</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">Du logges på nettsteder automatisk ved hjelp av lagret legitimasjon. Når funksjonen er slått av, blir du bedt om å oppgi legitimasjonen din hver gang du logger på et nettsted.</translation>
 <translation id="3658159451045945436">Tilbakestilling fjerner historikken for datasparing, inkludert listen over besøkte nettsteder.</translation>
 <translation id="3662546969139119822">Her er det ingen logg</translation>
+<translation id="3663367437272849150">Gruppér <ph name="NUM_SELECTED" /> faner.</translation>
 <translation id="3672452749423051839">Forslag ved navigasjonsfeil</translation>
 <translation id="3692944402865947621">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt fordi lagringsstedet ikke kan nås.</translation>
 <translation id="3714981814255182093">Åpne søkeraden</translation>
@@ -635,6 +638,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="557283862590186398">Chrome trenger tilgang til mikrofonen din for dette nettstedet.</translation>
 <translation id="55737423895878184">Posisjon og varsler er tillatt</translation>
 <translation id="5578795271662203820">Søk etter dette bildet i <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> faner er gruppert.</translation>
 <translation id="5581519193887989363">Du kan når som helst velge hva du vil synkronisere, i <ph name="BEGIN_LINK1" />innstillingene<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5596627076506792578">Flere alternativer</translation>
@@ -715,6 +719,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="6181444274883918285">Legg til et nettsted som unntak</translation>
 <translation id="6192333916571137726">Last ned filen</translation>
 <translation id="6192792657125177640">Unntak</translation>
+<translation id="6193448654517602979">Velg faner</translation>
 <translation id="6194112207524046168">For å gi Chrome tilgang til kameraet må du også slå på kameraet i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokkér informasjonskapsler fra tredjeparter</translation>
 <translation id="6206551242102657620">Tilkoblingen er sikker. Informasjon om nettstedet</translation>
@@ -857,6 +862,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7141896414559753902">Blokkér nettsteder fra å vise forgrunnsvinduer og viderekoblinger (anbefales)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Last inn original side<ph name="END_LINK" /> fra <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Siste døgn</translation>
+<translation id="7161892015146974550">Velg <ph name="TAB_TITLE" />-fanen.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Du kan endre dette senere i Innstillinger</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
@@ -889,6 +895,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="7403691278183511381">Førsteinntrykk ved bruk av Chrome</translation>
 <translation id="741204030948306876">Ja, jeg er med</translation>
 <translation id="7413229368719586778">Startdato <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Gruppér faner...</translation>
 <translation id="7423098979219808738">Spør først.</translation>
 <translation id="7423538860840206698">Blokkert fra å lese utklippstavlen</translation>
 <translation id="7431991332293347422">Kontrollér hvordan nettleserloggen din brukes til blant annet personlig tilpasning av søk</translation>
@@ -1027,6 +1034,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="8339163506404995330">Sider på <ph name="LANGUAGE" /> oversettes ikke</translation>
 <translation id="8349013245300336738">Sortér etter mengden data som er brukt</translation>
 <translation id="8364299278605033898">Se populære nettsteder</translation>
+<translation id="8364603787714420828">Fjern merkingen av <ph name="TAB_TITLE" />-fanen.</translation>
 <translation id="8372893542064058268">Tillat bakgrunnssynkronisering for et bestemt nettsted.</translation>
 <translation id="8374821112118309944">Du må oppdatere til en nyere versjon av Talkback.</translation>
 <translation id="8378714024927312812">Administreres av organisasjonen din</translation>

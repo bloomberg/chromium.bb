@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">PICHA</translation>
 <translation id="257088987046510401">Mandhari</translation>
 <translation id="2570922361219980984">Kipengele cha mahali pia kimezimwa kwenye kifaa hiki. Kiwashe katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Kikundi</translation>
 <translation id="257931822824936280">Imepanuliwa - bofya ili ukunje.</translation>
 <translation id="2581165646603367611">Hatua hii itafuta vidakuzi, akiba na data nyingine ya tovuti ambazo Chrome haidhani kuwa muhimu.</translation>
 <translation id="2586657967955657006">Ubao wa kunakili</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412">Akaunti hii inadhibitiwa na <ph name="PARENT_NAME_1" /> na <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Inabadilisha kwenda vichupo fiche</translation>
 <translation id="2968755619301702150">Kitazamaji vyeti</translation>
+<translation id="2977480621796371840">Ondoa kwenye kikundi</translation>
 <translation id="2979025552038692506">Kichupo Fiche Kilichochaguliwa</translation>
 <translation id="2989523299700148168">Ulizotembelea hivi karibuni</translation>
 <translation id="2996291259634659425">Unda kauli ya siri</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">Ingia katika tovuti kiotomatiki kwa kutumia kitambulisho kilichohifadhiwa. Kipengele kikiwa kimezimwa, utaombwa kuthibitisha kila wakati kabla ya kuingia katika tovuti.</translation>
 <translation id="3658159451045945436">Hatua ya kuweka upya hufuta historia ya uokoaji wa data, ikiwa ni pamoja na orodha ya tovuti unazotembelea.</translation>
 <translation id="3662546969139119822">Hamna historia hapa</translation>
+<translation id="3663367437272849150">Weka pamoja vichupo <ph name="NUM_SELECTED" />.</translation>
 <translation id="3672452749423051839">Mapendekezo ya hitilafu ya kuelekea unapotaka</translation>
 <translation id="3692944402865947621">Imeshindwa kupakua <ph name="FILE_NAME" /> kwa sababu haikupata eneo la kuhifadhi.</translation>
 <translation id="3714981814255182093">Fungua Upau wa Kutafuta</translation>
@@ -635,6 +638,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="557283862590186398">Chrome inahitaji ruhusa ya kufikia maikrofoni yako kwa ajili ya tovuti hii.</translation>
 <translation id="55737423895878184">Vipengele vya mahali na arifa vinaruhusiwa</translation>
 <translation id="5578795271662203820">Tafuta picha hii kwenye <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Umeweka pamoja vichupo <ph name="TAB_COUNT" /></translation>
 <translation id="5581519193887989363">Unaweza kuchagua utakachosawazisha wakati wowote katika <ph name="BEGIN_LINK1" />mipangilio<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Badilisha anwani</translation>
 <translation id="5596627076506792578">Chaguo zaidi</translation>
@@ -715,6 +719,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="6181444274883918285">Ongeza tovuti mpya kwenye orodha ya vighairi</translation>
 <translation id="6192333916571137726">Pakua faili</translation>
 <translation id="6192792657125177640">Vighairi</translation>
+<translation id="6193448654517602979">Chagua vichupo</translation>
 <translation id="6194112207524046168">Ili uruhusu Chrome ifikie kamera yako, washa kamera pia katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Zuia vidakuzi vya tovuti nyingine</translation>
 <translation id="6206551242102657620">Muunganisho ni salama. Maelezo ya tovuti</translation>
@@ -857,6 +862,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7141896414559753902">Zuia tovuti zisionyeshe madirisha ibukizi na kuelekeza kwingine (inapendekezwa)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Pakia ukurasa halisi<ph name="END_LINK" /> kutoka <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Saa 24 zilizopita</translation>
+<translation id="7161892015146974550">Chagua kichupo cha <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254">KB <ph name="KILOBYTES" /></translation>
 <translation id="7177466738963138057">Unaweza kubadilisha hii baadaye katika Mipangilio</translation>
 <translation id="7180611975245234373">Onyesha upya</translation>
@@ -888,6 +894,7 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="7403691278183511381">Hali ya Utekelezaji wa Kwanza wa Chrome</translation>
 <translation id="741204030948306876">Ndiyo, ninakubali</translation>
 <translation id="7413229368719586778">Tarehe ya kuanza <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Vichupo vya kikundi...</translation>
 <translation id="7423098979219808738">Uliza kwanza</translation>
 <translation id="7423538860840206698">Imezuiwa kusoma ubao wa kunakili</translation>
 <translation id="7431991332293347422">Dhibiti namna historia yako ya kuvinjari inavyotumika kuweka mapendeleo kwenye huduma ya Tafuta na Google na zaidi</translation>
@@ -1026,6 +1033,7 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="8339163506404995330">Kurasa za <ph name="LANGUAGE" /> hazitatafsiriwa</translation>
 <translation id="8349013245300336738">Panga kulingana na kiasi cha data kilichotumika</translation>
 <translation id="8364299278605033898">Ona tovuti maarufu</translation>
+<translation id="8364603787714420828">Acha kuchagua kichupo cha <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Ruhusu Usawazishaji wa Chini Chini wa tovuti mahususi.</translation>
 <translation id="8374821112118309944">Unahitaji kubadilisha TalkBack kwa kupata toleo jipya.</translation>
 <translation id="8378714024927312812">Inasimamiwa na shirika lako</translation>

@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">图片</translation>
 <translation id="257088987046510401">主题背景</translation>
 <translation id="2570922361219980984">此设备的位置信息使用权也已关闭；若想开启这项权限，请转到 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />。</translation>
+<translation id="257674075312929031">群组</translation>
 <translation id="257931822824936280">已展开 - 点击此处即可收起。</translation>
 <translation id="2581165646603367611">这会清除 Chrome 认为不重要的网站的 Cookie、缓存和其他数据。</translation>
 <translation id="2586657967955657006">剪贴板</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412">该帐号由 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2962095958535813455">已切换到隐身标签页</translation>
 <translation id="2968755619301702150">证书查看器</translation>
+<translation id="2977480621796371840">从组中移除</translation>
 <translation id="2979025552038692506">所选的隐身标签页</translation>
 <translation id="2989523299700148168">最近用过的搜索引擎</translation>
 <translation id="2996291259634659425">创建密码</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">使用存储的凭据自动登录网站。当该功能处于停用状态时，您每次都要通过验证才能登录网站。</translation>
 <translation id="3658159451045945436">这项重置操作会清空流量节省情况历史记录，包括曾访问过的网站的列表。</translation>
 <translation id="3662546969139119822">此处没有任何历史记录</translation>
+<translation id="3663367437272849150">将 <ph name="NUM_SELECTED" /> 个标签页合为一组。</translation>
 <translation id="3672452749423051839">导航错误建议</translation>
 <translation id="3692944402865947621">未能成功下载“<ph name="FILE_NAME" />”，因为无法访问它的存储位置。</translation>
 <translation id="3714981814255182093">打开查找栏</translation>
@@ -635,6 +638,7 @@
 <translation id="557283862590186398">Chrome 需要获得相应权限，才能允许此网站使用您的麦克风。</translation>
 <translation id="55737423895878184">允许使用位置信息以及显示通知</translation>
 <translation id="5578795271662203820">在<ph name="SEARCH_ENGINE" />中搜索此图片</translation>
+<translation id="5580090775658607195">已将 <ph name="TAB_COUNT" /> 个标签页合为一组</translation>
 <translation id="5581519193887989363">您始终可在<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />中选择要同步的内容。</translation>
 <translation id="5595485650161345191">修改地址</translation>
 <translation id="5596627076506792578">更多选项</translation>
@@ -715,6 +719,7 @@
 <translation id="6181444274883918285">添加例外网站</translation>
 <translation id="6192333916571137726">下载文件</translation>
 <translation id="6192792657125177640">例外</translation>
+<translation id="6193448654517602979">选择标签页</translation>
 <translation id="6194112207524046168">要让 Chrome 使用您的摄像头，您还需要在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启摄像头。</translation>
 <translation id="6196640612572343990">阻止第三方 Cookie</translation>
 <translation id="6206551242102657620">连接是安全的。网站信息</translation>
@@ -857,6 +862,7 @@
 <translation id="7141896414559753902">禁止网站显示弹出式窗口和重定向（推荐）</translation>
 <translation id="7149158118503947153">从 <ph name="DOMAIN_NAME" /> <ph name="BEGIN_LINK" />加载原始网页<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">过去 24 小时</translation>
+<translation id="7161892015146974550">选择<ph name="TAB_TITLE" />标签页。</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">以后，您可以在“设置”中更改此设置。</translation>
 <translation id="7180611975245234373">刷新</translation>
@@ -889,6 +895,7 @@
 <translation id="7403691278183511381">Chrome 首次运行体验</translation>
 <translation id="741204030948306876">立即启用</translation>
 <translation id="7413229368719586778">开始日期：<ph name="DATE" /></translation>
+<translation id="7418565925463285788">将标签页分组…</translation>
 <translation id="7423098979219808738">先询问</translation>
 <translation id="7423538860840206698">已阻止读取剪贴板中的内容</translation>
 <translation id="7431991332293347422">控制 Google 如何利用您的浏览记录为您提供个性化的 Google 搜索和其他 Google 服务</translation>
@@ -1027,6 +1034,7 @@
 <translation id="8339163506404995330">系统不会自动翻译源语言为<ph name="LANGUAGE" />的网页</translation>
 <translation id="8349013245300336738">按已使用的数据流量排序</translation>
 <translation id="8364299278605033898">查看热门网站</translation>
+<translation id="8364603787714420828">取消选择<ph name="TAB_TITLE" />标签页。</translation>
 <translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
 <translation id="8374821112118309944">您需要将 TalkBack 更新到更高版本。</translation>
 <translation id="8378714024927312812">由贵单位管理</translation>

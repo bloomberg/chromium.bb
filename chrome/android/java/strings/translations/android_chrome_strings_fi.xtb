@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">KUVA</translation>
 <translation id="257088987046510401">Teemat</translation>
 <translation id="2570922361219980984">Sijainti on poissa käytöstä myös tällä laitteella. Voit ottaa sen käyttöön <ph name="BEGIN_LINK" />Android-asetuksista<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Ryhmä</translation>
 <translation id="257931822824936280">Laajennettu – tiivistä klikkaamalla.</translation>
 <translation id="2581165646603367611">Evästeet, välimuisti ja muut Chromen vähemmän tärkeinä pitämät sivustotiedot poistetaan.</translation>
 <translation id="2586657967955657006">Leikepöytä</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412">Tätä tiliä hallinnoivat <ph name="PARENT_NAME_1" /> ja <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Vaihdettiin näkyviin incognito-välilehdet.</translation>
 <translation id="2968755619301702150">Varmennetiedot</translation>
+<translation id="2977480621796371840">Poista ryhmästä</translation>
 <translation id="2979025552038692506">Valittu incognito-välilehti</translation>
 <translation id="2989523299700148168">Viimeksi käytetyt</translation>
 <translation id="2996291259634659425">Luo tunnuslause</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">Kirjaudu automaattisesti verkkosivustoille käyttämällä tallennettuja kirjautumistietoja. Jos tämä toiminto ei ole käytössä, sinua pyydetään vahvistamaan kirjautuminen aina, kun kirjaudut sivustolle.</translation>
 <translation id="3658159451045945436">Nollaaminen tyhjentää datansäästöhistoriasi, mukaan lukien luettelon paikoista, joissa olet käynyt.</translation>
 <translation id="3662546969139119822">Ei historiatietoja</translation>
+<translation id="3663367437272849150">Ryhmittele <ph name="NUM_SELECTED" /> välilehteä.</translation>
 <translation id="3672452749423051839">Selausvirheiden ehdotukset</translation>
 <translation id="3692944402865947621">Lataus epäonnistui, koska tallennussijainti ei ole saatavilla: <ph name="FILE_NAME" /></translation>
 <translation id="3714981814255182093">Avaa hakupalkki</translation>
@@ -635,6 +638,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="557283862590186398">Chrome tarvitsee oikeuden käyttää mikrofoniasi tällä sivustolla.</translation>
 <translation id="55737423895878184">Sijainti ja ilmoitukset sallitaan</translation>
 <translation id="5578795271662203820">Etsi tätä kuvaa palvelusta <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> välilehteä ryhmiteltiin</translation>
 <translation id="5581519193887989363">Voit valita synkronoitavan sisällön <ph name="BEGIN_LINK1" />asetuksissa<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Osoitteen muokkaus</translation>
 <translation id="5596627076506792578">Lisäasetukset</translation>
@@ -715,6 +719,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="6181444274883918285">Lisää sivustopoikkeus</translation>
 <translation id="6192333916571137726">Lataaminen-tiedosto</translation>
 <translation id="6192792657125177640">Poikkeukset</translation>
+<translation id="6193448654517602979">Valitse välilehdet</translation>
 <translation id="6194112207524046168">Ota kamera käyttöön myös <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />, niin Chrome voi käyttää kameraasi.</translation>
 <translation id="6196640612572343990">Estä kolmannen osapuolen evästeet</translation>
 <translation id="6206551242102657620">Yhteys on turvallinen. Sivuston tiedot</translation>
@@ -857,6 +862,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7141896414559753902">Estä ponnahdusikkunoiden näyttäminen sivustoilla (suositus)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Lataa alkuperäinen sivu<ph name="END_LINK" /> osoitteesta <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Viimeiset 24 tuntia</translation>
+<translation id="7161892015146974550">Valitse välilehti <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kt</translation>
 <translation id="7177466738963138057">Voit muuttaa tätä myöhemmin Asetuksista.</translation>
 <translation id="7180611975245234373">Päivitä</translation>
@@ -889,6 +895,7 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="7403691278183511381">Chromen ensimmäinen käyttökerta</translation>
 <translation id="741204030948306876">Kyllä</translation>
 <translation id="7413229368719586778">Alkamispäivä: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Ryhmittele välilehtiä…</translation>
 <translation id="7423098979219808738">Kysy ensin</translation>
 <translation id="7423538860840206698">Leikepöydältä lukeminen estetty</translation>
 <translation id="7431991332293347422">Määritä, miten selaushistoria personoi Hakua ja muita</translation>
@@ -1027,6 +1034,7 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="8339163506404995330">Kielellä <ph name="LANGUAGE" /> kirjoitettuja sivuja ei käännetä.</translation>
 <translation id="8349013245300336738">Lajittele käytetyn datan määrän mukaan</translation>
 <translation id="8364299278605033898">Katso suositut sivustot</translation>
+<translation id="8364603787714420828">Poista välilehden <ph name="TAB_TITLE" /> valinta.</translation>
 <translation id="8372893542064058268">Salli taustasynkronointi tietyllä sivustolla.</translation>
 <translation id="8374821112118309944">TalkBack täytyy päivittää uudempaan versioon.</translation>
 <translation id="8378714024927312812">Organisaatiosi ylläpitämä</translation>

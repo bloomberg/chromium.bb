@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">ചിത്രം</translation>
 <translation id="257088987046510401">തീമുകള്‍‌</translation>
 <translation id="2570922361219980984">ഈ ഉപകരണത്തിന്‍റെ ലൊക്കേഷൻ ആക്‌സസും ഓഫാണ്; <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> അത് ഓണാക്കുക.</translation>
+<translation id="257674075312929031">ഗ്രൂപ്പ്</translation>
 <translation id="257931822824936280">വിപുലീകരിച്ചത് - ചുരുക്കാൻ ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="2581165646603367611">ഇത്, Chrome പ്രധാനമായി കണക്കാക്കാത്ത സൈറ്റുകളുടെ കുക്കികളും കാഷെയും മറ്റ് വിവരങ്ങളും മായ്‌ക്കും.</translation>
 <translation id="2586657967955657006">ക്ലിപ്പ്ബോർഡ്</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" />, <ph name="PARENT_NAME_2" /> എന്നിവരാണ് ഈ അക്കൗണ്ട് നിയന്ത്രിക്കുന്നത്.</translation>
 <translation id="2962095958535813455">ആൾമാറാട്ട ടാബുകളിലേക്ക് മാറി</translation>
 <translation id="2968755619301702150">സർട്ടിഫിക്കറ്റ് വ്യൂവർ</translation>
+<translation id="2977480621796371840">ഗ്രൂപ്പിൽ നിന്ന് നീക്കം ചെയ്യുക</translation>
 <translation id="2979025552038692506">തിരഞ്ഞെടുത്ത അദൃശ്യ ടാബ്</translation>
 <translation id="2989523299700148168">അടുത്തിടെ സന്ദർശിച്ചവ</translation>
 <translation id="2996291259634659425">പാസ്‌ഫ്രെയ്‌സ് സൃഷ്‌ടിക്കുക</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">സൂക്ഷിച്ചിരിക്കുന്ന ക്രെഡൻഷ്യലുകൾ ഉപയോഗിച്ച് വെബ്‌സൈറ്റുകളിലേക്ക് സ്വയമേവ സൈൻ ഇൻ ചെയ്യുക. ഫീച്ചർ ഓഫായിരിക്കുമ്പോൾ, ഒരു വെബ്‌സൈറ്റിലേക്ക് സൈൻ ഇൻ ചെയ്യുന്നതിനുമുമ്പ് പരിശോധിച്ചുറപ്പിക്കാൻ ഓരോ തവണയും നിങ്ങളോടാവശ്യപ്പെടും.</translation>
 <translation id="3658159451045945436">പുനഃസജ്ജീകരിക്കുന്നത്, സന്ദർശിച്ച സൈറ്റുകളുടെ ലിസ്‌റ്റ് അടക്കമുള്ള ഡാറ്റ ലാഭിക്കൽ ചരിത്രത്തെ മായ്ക്കുന്നു.</translation>
 <translation id="3662546969139119822">ഇവിടെ ചരിത്രമൊന്നുമില്ല</translation>
+<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> ടാബുകൾ ഗ്രൂപ്പ് ചെയ്യുക.</translation>
 <translation id="3672452749423051839">നാവിഗേഷൻ പിശക് നിർദ്ദേശങ്ങൾ</translation>
 <translation id="3692944402865947621">സ്റ്റോറേജ് ലൊക്കേഷൻ കണ്ടെത്താനാകാത്തതിനാൽ <ph name="FILE_NAME" /> ഡൗൺലോഡ് ചെയ്യുന്നത് പരാജയപ്പെട്ടു.</translation>
 <translation id="3714981814255182093">കണ്ടെത്തൽ ബാർ തുറക്കുക</translation>
@@ -635,6 +638,7 @@
 <translation id="557283862590186398">Chrome-ന് ഈ സൈറ്റിനായി നിങ്ങളുടെ മൈക്രോഫോൺ ആക്‌സസ് ചെയ്യാനുള്ള അനുമതി ആവശ്യമാണ്.</translation>
 <translation id="55737423895878184">ലൊക്കേഷനും അറിയിപ്പുകളും അനുവദിച്ചിരിക്കുന്നു</translation>
 <translation id="5578795271662203820">ഈ ചിത്രത്തിനായി <ph name="SEARCH_ENGINE" />-ൽ തിരയുക</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> ടാബുകൾ ഗ്രൂപ്പ് ചെയ്‌തു</translation>
 <translation id="5581519193887989363">എന്തൊക്കെ സമന്വയിക്കണമെന്നത് <ph name="BEGIN_LINK1" />ക്രമീകരണത്തിൽ<ph name="END_LINK1" /> നിങ്ങൾക്ക് എപ്പോഴും തിരഞ്ഞെടുക്കാം.</translation>
 <translation id="5595485650161345191">വിലാസം എഡിറ്റുചെയ്യുക</translation>
 <translation id="5596627076506792578">കൂടുതൽ‍ ഓപ്‌ഷനുകൾ</translation>
@@ -715,6 +719,7 @@
 <translation id="6181444274883918285">സൈറ്റിനെ ഒഴിവാക്കൽ ലിസ്‌റ്റിൽ ചേർക്കുക</translation>
 <translation id="6192333916571137726">ഫയൽ ഡൗൺലോഡ് ചെയ്യുക</translation>
 <translation id="6192792657125177640">അപവാദങ്ങള്‍</translation>
+<translation id="6193448654517602979">ടാബുകൾ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6194112207524046168">Chrome-നെ നിങ്ങളുടെ ക്യാമറ ആക്‌സസ് ചെയ്യാൻ അനുവദിക്കുന്നതിന്, <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> ക്യാമറയും ഓണാക്കുക.</translation>
 <translation id="6196640612572343990">മൂന്നാം കക്ഷി കുക്കികള്‍ ബ്ലോക്കുചെയ്യുക</translation>
 <translation id="6206551242102657620">കണക്ഷൻ സുരക്ഷിതമാണ്. സൈറ്റ് വിവരങ്ങള്‍</translation>
@@ -857,6 +862,7 @@
 <translation id="7141896414559753902">പോപ്പ് അപ്പുകളും റീഡയറക്‌റ്റുകളും കാണിക്കുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക (ശുപാർശ ചെയ്‌തിരിക്കുന്നു)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" />-ല്‍ നിന്ന് <ph name="BEGIN_LINK" />യഥാര്‍ത്ഥ പേജ് ലോഡ് ചെയ്യുക<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">അവസാന 24 മണിക്കൂർ</translation>
+<translation id="7161892015146974550"><ph name="TAB_TITLE" /> ടാബ് തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">നിങ്ങൾക്കിത് പിന്നീട് ക്രമീകരണങ്ങളിൽ മാറ്റാനാവും</translation>
 <translation id="7180611975245234373">പുതുക്കുക</translation>
@@ -889,6 +895,7 @@
 <translation id="7403691278183511381">Chrome ആദ്യ പ്രവർത്തന അനുഭവം</translation>
 <translation id="741204030948306876">ഞാൻ തയ്യാറാണ്</translation>
 <translation id="7413229368719586778">ആരംഭിക്കുന്ന തീയതി <ph name="DATE" /></translation>
+<translation id="7418565925463285788">ടാബുകൾ ഗ്രൂപ്പ് ചെയ്യുക...</translation>
 <translation id="7423098979219808738">ആദ്യതവണ ചോദിക്കുക</translation>
 <translation id="7423538860840206698">ക്ലിപ്പ്ബോർഡ് റീഡ് ചെയ്യുന്നതിൽ നിന്ന് ബ്ലോക്ക് ചെയ്‌തു</translation>
 <translation id="7431991332293347422">തിരയലും മറ്റും വ്യക്തിപരമാക്കുന്നതിന് നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രം ഉപയോഗിക്കുന്ന വിധം നിയന്ത്രിക്കുക</translation>
@@ -1027,6 +1034,7 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> ഭാഷയിലുള്ള പേജുകൾ വിവർത്തനം ചെയ്യില്ല</translation>
 <translation id="8349013245300336738">ഉപയോഗിച്ച ഡാറ്റയുടെ അളവിനനുസരിച്ച് അടുക്കുക</translation>
 <translation id="8364299278605033898">ജനപ്രിയ വെബ്‌സൈറ്റുകൾ കാണുക</translation>
+<translation id="8364603787714420828"><ph name="TAB_TITLE" /> ടാബ് തിരഞ്ഞെടുത്തത് മാറ്റുക.</translation>
 <translation id="8372893542064058268">ഒരു പ്രത്യേക സൈറ്റിന് വേണ്ടി പശ്ചാത്തലം സമന്വയിപ്പിക്കൽ അനുവദിക്കുക.</translation>
 <translation id="8374821112118309944">നിങ്ങൾ ഏറ്റവും പുതിയ പതിപ്പിലേക്ക് TalkBack അപ്ഡേറ്റ് ചെയ്യേണ്ടതുണ്ട്.</translation>
 <translation id="8378714024927312812">നിങ്ങളുടെ സ്ഥാപനം മാനേജ് ചെയ്യുന്നത്</translation>

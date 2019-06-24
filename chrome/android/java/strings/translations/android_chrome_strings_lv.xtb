@@ -232,6 +232,7 @@ Atļaujiet piekļuvi tikai tad, ja uzticaties šai vietnei.</translation>
 <translation id="2567385386134582609">ATTĒLS</translation>
 <translation id="257088987046510401">Motīvi</translation>
 <translation id="2570922361219980984">Arī piekļuve šīs ierīces atrašanās vietai ir izslēgta. Ieslēdziet to <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Grupa</translation>
 <translation id="257931822824936280">Izvērsts — noklikšķiniet, lai sakļautu.</translation>
 <translation id="2581165646603367611">Tādējādi tiks dzēsti sīkfaili, kešatmiņa un citi vietņu dati, kas pārlūkā Chrome netiek uzskatīti par svarīgiem.</translation>
 <translation id="2586657967955657006">Starpliktuve</translation>
@@ -284,6 +285,7 @@ Atļaujiet piekļuvi tikai tad, ja uzticaties šai vietnei.</translation>
 <translation id="2956410042958133412">Šo kontu pārvalda <ph name="PARENT_NAME_1" /> un <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Notika pārslēgšanās uz inkognito režīma cilnēm</translation>
 <translation id="2968755619301702150">Sertifikātu skatītājs</translation>
+<translation id="2977480621796371840">Noņemt no grupas</translation>
 <translation id="2979025552038692506">Atlasītā inkognito cilne</translation>
 <translation id="2989523299700148168">Nesen apmeklētās</translation>
 <translation id="2996291259634659425">Ieejas frāzes izveide</translation>
@@ -368,6 +370,7 @@ Atļaujiet piekļuvi tikai tad, ja uzticaties šai vietnei.</translation>
 <translation id="363596933471559332">Automātiski pierakstīties vietnēs, izmantojot saglabātos akreditācijas datus. Ja funkcija ir izslēgta, verifikācija būs jāveic ikreiz, kad pierakstīsieties vietnē.</translation>
 <translation id="3658159451045945436">Veicot atiestatīšanu, tiek dzēsta saglabāto datu vēsture, tostarp apmeklēto vietņu saraksts.</translation>
 <translation id="3662546969139119822">Nav vēstures</translation>
+<translation id="3663367437272849150">Grupējiet <ph name="NUM_SELECTED" /> cilni(-es).</translation>
 <translation id="3672452749423051839">Navigācijas kļūdu ieteikumi</translation>
 <translation id="3692944402865947621">Faila <ph name="FILE_NAME" /> lejupielāde neizdevās, jo krātuves vieta nav sasniedzama.</translation>
 <translation id="3714981814255182093">Atvērt atrašanas joslu</translation>
@@ -635,6 +638,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="557283862590186398">Pārlūkam Chrome ir nepieciešama atļauja piekļūt jūsu mikrofonam šajā vietnē.</translation>
 <translation id="55737423895878184">Atrašanās vietas noteikšana un paziņojumi ir atļauti.</translation>
 <translation id="5578795271662203820">Meklēt šo attēlu ar <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Grupētas <ph name="TAB_COUNT" /> cilnes</translation>
 <translation id="5581519193887989363">Jūs jebkurā laikā <ph name="BEGIN_LINK1" />iestatījumos<ph name="END_LINK1" /> varat izvēlēties, ko sinhronizēt.</translation>
 <translation id="5595485650161345191">Rediģēt adresi</translation>
 <translation id="5596627076506792578">Citas opcijas</translation>
@@ -715,6 +719,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="6181444274883918285">Pievienot vietnes izņēmumu</translation>
 <translation id="6192333916571137726">Lejupielāde fails</translation>
 <translation id="6192792657125177640">Izņēmumi</translation>
+<translation id="6193448654517602979">Atlasiet cilnes</translation>
 <translation id="6194112207524046168">Lai atļautu pārlūkprogrammai Chrome piekļūt jūsu kamerai, ieslēdziet kameru arī <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloķēt trešo pušu sīkfailus</translation>
 <translation id="6206551242102657620">Savienojums ir drošs. Vietnes informācija</translation>
@@ -857,6 +862,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7141896414559753902">Neļaut vietnēm novirzīt un rādīt uznirstošos elementus (ieteicams)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Ielādēt sākotnējo lapu<ph name="END_LINK" /> no <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Pēdējās 24 stundas</translation>
+<translation id="7161892015146974550">Atlasiet cilni <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Vēlāk varēsiet to mainīt iestatījumos</translation>
 <translation id="7180611975245234373">Atsvaidzināt</translation>
@@ -889,6 +895,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="7403691278183511381">Chrome pirmās palaišanas pieredze</translation>
 <translation id="741204030948306876">Jā, piekrītu</translation>
 <translation id="7413229368719586778">Sākuma datums: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Grupēt cilnes...</translation>
 <translation id="7423098979219808738">Vispirms jautāt</translation>
 <translation id="7423538860840206698">Bloķēta starpliktuves satura lasīšana</translation>
 <translation id="7431991332293347422">Kontrolējiet, kā jūsu pārlūkošanas vēsture tiek izmantota Meklēšanas un cita satura personalizēšanai</translation>
@@ -1027,6 +1034,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="8339163506404995330">Lapas šādā valodā: <ph name="LANGUAGE" /> netiks tulkotas.</translation>
 <translation id="8349013245300336738">Kārtot pēc izmantoto datu apjoma</translation>
 <translation id="8364299278605033898">Skatīt populāras vietnes</translation>
+<translation id="8364603787714420828">Noņemiet cilnes <ph name="TAB_TITLE" /> atlasi.</translation>
 <translation id="8372893542064058268">Atļaut sinhronizāciju fonā konkrētai vietnei</translation>
 <translation id="8374821112118309944">Jums ir jāatjaunina lietotne TalkBack uz jaunāku versiju.</translation>
 <translation id="8378714024927312812">Pārvalda jūsu organizācija</translation>

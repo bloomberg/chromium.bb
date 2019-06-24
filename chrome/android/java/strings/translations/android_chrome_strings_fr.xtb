@@ -232,6 +232,7 @@ Assurez-vous que vous faites confiance à ce site avant d'autoriser l'accès.</t
 <translation id="2567385386134582609">IMAGE</translation>
 <translation id="257088987046510401">Thèmes</translation>
 <translation id="2570922361219980984">L'accès à la position est également désactivé pour cet appareil. Activez-le dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Groupe</translation>
 <translation id="257931822824936280">Développé – Cliquer pour réduire</translation>
 <translation id="2581165646603367611">Cette action aura pour effet de vider le cache et de supprimer les cookies, ainsi que d'autres données de site que Chrome ne considère pas comme importantes.</translation>
 <translation id="2586657967955657006">Presse-papiers</translation>
@@ -284,6 +285,7 @@ Assurez-vous que vous faites confiance à ce site avant d'autoriser l'accès.</t
 <translation id="2956410042958133412">Ce compte est géré par <ph name="PARENT_NAME_1" /> et <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Onglets de navigation privée sélectionnés</translation>
 <translation id="2968755619301702150">Lecteur de certificat</translation>
+<translation id="2977480621796371840">Retirer du groupe</translation>
 <translation id="2979025552038692506">Onglet de navigation privée sélectionné</translation>
 <translation id="2989523299700148168">Consultations récentes</translation>
 <translation id="2996291259634659425">Créer une phrase secrète</translation>
@@ -368,6 +370,7 @@ Assurez-vous que vous faites confiance à ce site avant d'autoriser l'accès.</t
 <translation id="363596933471559332">Connexion automatique aux sites Web à l'aide des identifiants enregistrés. Lorsque la fonctionnalité est désactivée, vous êtes invité à effectuer la validation avant chaque connexion à un site Web.</translation>
 <translation id="3658159451045945436">Le processus de réinitialisation efface l'historique de l'économiseur de données, y compris la liste des sites consultés.</translation>
 <translation id="3662546969139119822">Aucun historique ici</translation>
+<translation id="3663367437272849150">Regrouper les onglets <ph name="NUM_SELECTED" />.</translation>
 <translation id="3672452749423051839">Suggestions en cas d'erreur de navigation</translation>
 <translation id="3692944402865947621">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'espace de stockage indisponible.</translation>
 <translation id="3714981814255182093">Ouvrir la barre de recherche</translation>
@@ -635,6 +638,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="557283862590186398">Chrome a besoin de votre autorisation pour accéder à votre micro pour ce site.</translation>
 <translation id="55737423895878184">La localisation et les notifications sont autorisées</translation>
 <translation id="5578795271662203820">Rechercher l'image sur <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> onglets regroupés</translation>
 <translation id="5581519193887989363">Vous avez toujours la possibilité de sélectionner les éléments à synchroniser dans les <ph name="BEGIN_LINK1" />paramètres<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Modifier l'adresse</translation>
 <translation id="5596627076506792578">Plus d'options</translation>
@@ -715,6 +719,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6181444274883918285">Ajouter une exception pour un site</translation>
 <translation id="6192333916571137726">Télécharger le fichier</translation>
 <translation id="6192792657125177640">Exceptions</translation>
+<translation id="6193448654517602979">Sélectionner des onglets</translation>
 <translation id="6194112207524046168">Pour autoriser Chrome à accéder à votre appareil photo, activez également ce dernier dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloquer les cookies tiers</translation>
 <translation id="6206551242102657620">La connexion est sécurisée. Informations sur le site</translation>
@@ -857,6 +862,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7141896414559753902">Bloquer l'affichage de fenêtres pop-up et de redirections par les sites (recommandé)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Charger la page originale<ph name="END_LINK" /> de <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Dernières 24 heures</translation>
+<translation id="7161892015146974550">Sélectionner l'onglet <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> Ko</translation>
 <translation id="7177466738963138057">Vous pourrez modifier le moteur de recherche plus tard dans les paramètres</translation>
 <translation id="7180611975245234373">Actualiser</translation>
@@ -889,6 +895,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="7403691278183511381">Expérience de première utilisation de Chrome</translation>
 <translation id="741204030948306876">J'accepte</translation>
 <translation id="7413229368719586778">Date de début : <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Regrouper les onglets…</translation>
 <translation id="7423098979219808738">Demander d'abord</translation>
 <translation id="7423538860840206698">Accès en lecture au presse-papiers bloqué</translation>
 <translation id="7431991332293347422">Contrôler la manière dont votre historique de navigation est utilisé pour personnaliser la recherche et plus encore</translation>
@@ -1027,6 +1034,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8339163506404995330">Les pages en <ph name="LANGUAGE" /> ne seront pas traduites</translation>
 <translation id="8349013245300336738">Trier en fonction de la quantité de données utilisées</translation>
 <translation id="8364299278605033898">Affichez les sites Web populaires</translation>
+<translation id="8364603787714420828">Désélectionner l'onglet <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Autorise la synchronisation en arrière-plan pour un site spécifique.</translation>
 <translation id="8374821112118309944">Vous devez mettre à jour TalkBack vers une version plus récente</translation>
 <translation id="8378714024927312812">Géré par votre organisation</translation>

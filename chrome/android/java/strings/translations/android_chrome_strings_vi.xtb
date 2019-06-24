@@ -232,6 +232,7 @@ Nhớ kiểm tra xem trang web này có đáng tin cậy không trước khi cho
 <translation id="2567385386134582609">HÌNH ẢNH</translation>
 <translation id="257088987046510401">Chủ đề</translation>
 <translation id="2570922361219980984">Quyền truy cập vị trí cũng đã bị tắt đối với thiết bị này. Hãy bật trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Nhóm</translation>
 <translation id="257931822824936280">Đã mở rộng - nhấp để thu gọn.</translation>
 <translation id="2581165646603367611">Thao tác này sẽ xóa cookie, bộ nhớ đệm và các dữ liệu khác của các trang web mà Chrome cho rằng không quan trọng.</translation>
 <translation id="2586657967955657006">Khay nhớ tạm</translation>
@@ -284,6 +285,7 @@ Nhớ kiểm tra xem trang web này có đáng tin cậy không trước khi cho
 <translation id="2956410042958133412">Tài khoản này do <ph name="PARENT_NAME_1" /> và <ph name="PARENT_NAME_2" /> quản lý.</translation>
 <translation id="2962095958535813455">Đã chuyển sang tab ẩn danh</translation>
 <translation id="2968755619301702150">Trình xem chứng chỉ</translation>
+<translation id="2977480621796371840">Xóa khỏi nhóm</translation>
 <translation id="2979025552038692506">Tab ẩn danh được chọn</translation>
 <translation id="2989523299700148168">Đã truy cập gần đây</translation>
 <translation id="2996291259634659425">Tạo cụm mật khẩu</translation>
@@ -368,6 +370,7 @@ Nhớ kiểm tra xem trang web này có đáng tin cậy không trước khi cho
 <translation id="363596933471559332">Tự động đăng nhập vào các trang web bằng thông tin đăng nhập được lưu trữ. Khi tính năng này tắt, bạn sẽ luôn được yêu cầu xác minh trước khi đăng nhập vào trang web.</translation>
 <translation id="3658159451045945436">Việc đặt lại sẽ xóa lịch sử tiết kiệm dữ liệu, bao gồm cả danh sách các trang web bạn đã truy cập.</translation>
 <translation id="3662546969139119822">Không có lịch sử ở đây</translation>
+<translation id="3663367437272849150">Nhóm <ph name="NUM_SELECTED" /> tab.</translation>
 <translation id="3672452749423051839">Đề xuất cho lỗi điều hướng</translation>
 <translation id="3692944402865947621">Không tải <ph name="FILE_NAME" /> xuống được do không tìm thấy vị trí bộ nhớ.</translation>
 <translation id="3714981814255182093">Mở thanh Tìm kiếm</translation>
@@ -635,6 +638,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="557283862590186398">Chrome cần có quyền truy cập micrô của bạn cho trang web này.</translation>
 <translation id="55737423895878184">Cho phép vị trí và thông báo</translation>
 <translation id="5578795271662203820">Tìm ảnh này trên <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Đã nhóm <ph name="TAB_COUNT" /> tab</translation>
 <translation id="5581519193887989363">Bạn luôn có thể chọn nội dung muốn đồng bộ hóa trong phần <ph name="BEGIN_LINK1" />cài đặt<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
 <translation id="5596627076506792578">Tùy chọn khác</translation>
@@ -715,6 +719,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="6181444274883918285">Thêm ngoại lệ cho trang web</translation>
 <translation id="6192333916571137726">Tải tệp xuống</translation>
 <translation id="6192792657125177640">Ngoại lệ</translation>
+<translation id="6193448654517602979">Chọn các tab</translation>
 <translation id="6194112207524046168">Để cho phép Chrome truy cập vào máy ảnh của bạn, hãy bật cả máy ảnh trong phần <ph name="BEGIN_LINK" />Cài đặt của Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Chặn cookie của bên thứ ba</translation>
 <translation id="6206551242102657620">Kết nối an toàn. Thông tin trang web</translation>
@@ -857,6 +862,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7141896414559753902">Chặn trang web hiển thị cửa sổ bật lên và liên kết chuyển hướng (khuyên dùng)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Tải trang gốc<ph name="END_LINK" /> từ <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">24 giờ qua</translation>
+<translation id="7161892015146974550">Chọn tab <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Bạn có thể thay đổi cài đặt này sau trong Cài đặt</translation>
 <translation id="7180611975245234373">Làm mới</translation>
@@ -889,6 +895,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="7403691278183511381">Trải nghiệm lần chạy đầu tiên của Chrome</translation>
 <translation id="741204030948306876">Có, tôi đồng ý</translation>
 <translation id="7413229368719586778">Ngày bắt đầu <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Nhóm các tab...</translation>
 <translation id="7423098979219808738">Hỏi trước</translation>
 <translation id="7423538860840206698">Đã chặn quyền đọc khay nhớ tạm</translation>
 <translation id="7431991332293347422">Kiểm soát cách Google sử dụng lịch sử duyệt web của bạn để cá nhân hóa dịch vụ Tìm kiếm và các dịch vụ khác</translation>
@@ -1027,6 +1034,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8339163506404995330">Các trang viết bằng <ph name="LANGUAGE" /> sẽ không được dịch</translation>
 <translation id="8349013245300336738">Sắp xếp theo lượng dữ liệu đã dùng</translation>
 <translation id="8364299278605033898">Xem các trang web phổ biến</translation>
+<translation id="8364603787714420828">Bỏ chọn tab <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Cho phép Đồng bộ hóa dưới nền cho trang web cụ thể.</translation>
 <translation id="8374821112118309944">Bạn cần phải cập nhật TalkBack lên phiên bản mới hơn.</translation>
 <translation id="8378714024927312812">Do tổ chức của bạn quản lý</translation>

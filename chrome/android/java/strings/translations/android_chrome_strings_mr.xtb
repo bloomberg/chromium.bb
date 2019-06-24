@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">इमेज</translation>
 <translation id="257088987046510401">थीम</translation>
 <translation id="2570922361219980984">या डिव्हाइसाठी स्थान अ‍ॅक्सेस देखील बंद आहे, <ph name="BEGIN_LINK" />Android सेटिंग्‍ज<ph name="END_LINK" /> मध्‍ये हे सुरू करा.</translation>
+<translation id="257674075312929031">गट</translation>
 <translation id="257931822824936280">विस्‍तृत केले - संकुचित करण्‍यासाठी क्‍लिक करा.</translation>
 <translation id="2581165646603367611">हे सर्व कुकी, कॅशे आणि साइटचा अन्य डेटा साफ करेल जो Chrome ला महत्त्वाचा वाटत नाही.</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412">हे खाते <ph name="PARENT_NAME_1" /> आणि <ph name="PARENT_NAME_2" /> द्वारे व्यवस्थापित केले आहे.</translation>
 <translation id="2962095958535813455">गुप्त टॅबवर स्विच केले</translation>
 <translation id="2968755619301702150">सर्टिफिकेट दर्शक</translation>
+<translation id="2977480621796371840">गटामधून काढून टाका</translation>
 <translation id="2979025552038692506">निवडलेला गुप्त टॅब</translation>
 <translation id="2989523299700148168">अलीकडे भेट दिलेले</translation>
 <translation id="2996291259634659425">सांकेतिक पासफ्रेझ तयार करा</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">स्टोअर क्रेडेंशियल वापरून वेबसाइटवर आपोआप साइन इन करा. वैशिष्ट्य बंद असते तेव्हा, वेबसाइटवर साइन इन करण्यापूर्वी दरवेळी तुम्हाला पडताळणीसाठी विचारले जाईल.</translation>
 <translation id="3658159451045945436">रीसेट केल्याने तुमचा डेटा सेव्हिंग इतिहास, भेट दिलेल्या साइटच्या सूचीसह, मिटवला जातो.</translation>
 <translation id="3662546969139119822">येथे कोणताही इतिहास नाही</translation>
+<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> टॅबची गटामध्ये विभागणी करा.</translation>
 <translation id="3672452749423051839">नेव्हिगेशन एरर सूचना</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> download failed because storage location is not reachable.</translation>
 <translation id="3714981814255182093">शोध बार उघडा</translation>
@@ -635,6 +638,7 @@
 <translation id="557283862590186398">या साइटसाठी Chromeला तुमचा मायक्रोफोन अॅक्सेस करण्याची परवानगी आवश्यक आहे.</translation>
 <translation id="55737423895878184">स्‍थान आणि सूचनांना अनुमती आहे</translation>
 <translation id="5578795271662203820">या इमेजसाठी <ph name="SEARCH_ENGINE" /> शोधा</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> टॅबची गटामध्ये विभागणी केली आहे</translation>
 <translation id="5581519193887989363">तुम्ही काय सिंक करायचे हे <ph name="BEGIN_LINK1" />सेटिंग्ज<ph name="END_LINK1" /> मध्ये कधीही निवडू शकता.</translation>
 <translation id="5595485650161345191">पत्ता संपादित करा</translation>
 <translation id="5596627076506792578">अधिक पर्याय</translation>
@@ -715,6 +719,7 @@
 <translation id="6181444274883918285">साइट एक्सेप्शन जोडा</translation>
 <translation id="6192333916571137726">फाइल डाउनलोड करा</translation>
 <translation id="6192792657125177640">अपवाद</translation>
+<translation id="6193448654517602979">टॅब निवडा</translation>
 <translation id="6194112207524046168">Chrome ला तुमच्या कॅमेराचा ॲक्सेस द्या, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्ये देखील कॅमेरा सुरू करा.</translation>
 <translation id="6196640612572343990">तृतीय-पक्ष कुकीज अवरोधित करा</translation>
 <translation id="6206551242102657620">कनेक्शन सुरक्षित आहे. साइट माहिती</translation>
@@ -857,6 +862,7 @@
 <translation id="7141896414559753902">साइट पॉप-अप आणि रीडिरेक्ट दाखवण्यापासून ब्लॉक करा (शिफारस केलेले)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> वरून <ph name="BEGIN_LINK" />मुळचे पेज लोड करा<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">शेवटच्या 72 तासांमधील</translation>
+<translation id="7161892015146974550"><ph name="TAB_TITLE" /> टॅब निवडा.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">तुम्ही हे नंतर सेटिंग्ज मध्ये बदलू शकता.</translation>
 <translation id="7180611975245234373">रिफ्रेश करा</translation>
@@ -889,6 +895,7 @@
 <translation id="7403691278183511381">Chrome फर्स्ट रन अनुभव</translation>
 <translation id="741204030948306876">होय, मला मान्य आहे</translation>
 <translation id="7413229368719586778">सुरू होण्याची तारीख <ph name="DATE" /></translation>
+<translation id="7418565925463285788">गट टॅब...</translation>
 <translation id="7423098979219808738">प्रथम विचारा</translation>
 <translation id="7423538860840206698">क्लिपबोर्ड वाचणे ब्लॉक केले</translation>
 <translation id="7431991332293347422">शोध पर्सनलाइझ करण्यासाठी तुमचा ब्राउझिंग इतिहास कसा वापरला जातो ते आणि बरेच काही नियंत्रित करा</translation>
@@ -1027,6 +1034,7 @@
 <translation id="8339163506404995330"><ph name="LANGUAGE" />मधील पेज भाषांतरीत केले जाणार नाही</translation>
 <translation id="8349013245300336738">वापरलेल्या डेटानुसार क्रमाने लावा</translation>
 <translation id="8364299278605033898">लोकप्रिय वेबसाइट पाहा</translation>
+<translation id="8364603787714420828"><ph name="TAB_TITLE" /> टॅबची निवड रद्द करा.</translation>
 <translation id="8372893542064058268">विशिष्ट साइटसाठी पार्श्वभूमी संकालनासाठी अनुमती द्या.</translation>
 <translation id="8374821112118309944">तुम्हाला नवीनतम आवृत्तीवर TalkBack बदलण्याची आवश्यकता आहे.</translation>
 <translation id="8378714024927312812">तुमच्या संस्थेकडून व्यवस्थापित केलेले</translation>

@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">SLIKA</translation>
 <translation id="257088987046510401">Teme</translation>
 <translation id="2570922361219980984">Dostop do lokacije je tudi izklopljen za to napravo. Vklopite ga lahko v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Skupina</translation>
 <translation id="257931822824936280">Razširjeno – kliknite, če želite strniti.</translation>
 <translation id="2581165646603367611">S tem bodo izbrisani piškotki, predpomnilnik in drugi podatki spletnih mest, ki se Chromu ne zdijo pomembni.</translation>
 <translation id="2586657967955657006">Odložišče</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412">Ta računa upravljata <ph name="PARENT_NAME_1" /> in <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Preklopljeno na zavihke brez beleženja zgodovine</translation>
 <translation id="2968755619301702150">Pregledovalnik potrdil</translation>
+<translation id="2977480621796371840">Odstrani iz skupine</translation>
 <translation id="2979025552038692506">Izbrani zavihek brez beleženja zgodovine</translation>
 <translation id="2989523299700148168">Nedavno obiskano</translation>
 <translation id="2996291259634659425">Ustvarjanje gesla</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">Samodejna prijava v spletna mesta s shranjenimi poverilnicami. Ko je ta funkcija izklopljena, bo pri vsaki prijavi v spletno mesto potrebno preverjanje.</translation>
 <translation id="3658159451045945436">Ponastavitev izbriše zgodovino prihrankov pri prenosu podatkov, vključno s seznamom obiskanih spletnih mest.</translation>
 <translation id="3662546969139119822">Tu ni zgodovine</translation>
+<translation id="3663367437272849150">Združite toliko zavihkov: <ph name="NUM_SELECTED" />.</translation>
 <translation id="3672452749423051839">Predlogi za napake pri krmarjenju</translation>
 <translation id="3692944402865947621">Prenos datoteke <ph name="FILE_NAME" /> ni uspel, ker prostor za shranjevanje ni dosegljiv.</translation>
 <translation id="3714981814255182093">Odpiranje vrstice za iskanje</translation>
@@ -635,6 +638,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="557283862590186398">Chrome potrebuje dovoljenje za dostop do mikrofona za to spletno mesto.</translation>
 <translation id="55737423895878184">Lokacija in obvestila so dovoljeni</translation>
 <translation id="5578795271662203820">Za iskanje te slike uporabi <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Št. združenih zavihkov: <ph name="TAB_COUNT" /></translation>
 <translation id="5581519193887989363">V <ph name="BEGIN_LINK1" />nastavitvah<ph name="END_LINK1" /> lahko kadar koli izberete, kaj želite sinhronizirati.</translation>
 <translation id="5595485650161345191">Uredi naslov</translation>
 <translation id="5596627076506792578">Več možnosti</translation>
@@ -715,6 +719,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="6181444274883918285">Dodaj izjemo za spletno mesto</translation>
 <translation id="6192333916571137726">Datoteka Odjemanje</translation>
 <translation id="6192792657125177640">Izjeme</translation>
+<translation id="6193448654517602979">Izberite zavihke</translation>
 <translation id="6194112207524046168">Če želite Chromu omogočiti dostop do fotoaparata, fotoaparat vklopite tudi v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokiraj piškotke drugih spletnih mest</translation>
 <translation id="6206551242102657620">Povezava je varna. Podatki o spletnem mestu.</translation>
@@ -857,6 +862,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7141896414559753902">Preprečevanje, da spletna mesta prikazujejo pojavna okna in preusmeritve (priporočeno)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Naloži izvirno stran<ph name="END_LINK" /> iz domene <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Zadnjih 24 ur</translation>
+<translation id="7161892015146974550">Izberite zavihek <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">To lahko pozneje spremenite v nastavitvah</translation>
 <translation id="7180611975245234373">Osveži</translation>
@@ -889,6 +895,7 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="7403691278183511381">Izkušnje ob prvem izvajanju Chroma</translation>
 <translation id="741204030948306876">Da, sem za</translation>
 <translation id="7413229368719586778">Začetni datum: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Združi zavihke ...</translation>
 <translation id="7423098979219808738">Najprej vprašaj</translation>
 <translation id="7423538860840206698">Blokirano branje vsebine odložišča</translation>
 <translation id="7431991332293347422">Nadziranje, kako se zgodovina brskanja uporabi za prilagajanje Iskanja Google in drugega</translation>
@@ -1027,6 +1034,7 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="8339163506404995330">Strani v jeziku <ph name="LANGUAGE" /> ne bodo prevedene</translation>
 <translation id="8349013245300336738">Razvrsti glede na količino prenesenih podatkov</translation>
 <translation id="8364299278605033898">Ogled priljubljenih spletnih mest</translation>
+<translation id="8364603787714420828">Prekličite izbor zavihka <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Dovoli sinhroniziranje v ozadju za določeno spletno mesto.</translation>
 <translation id="8374821112118309944">TalkBack morate posodobiti na novejšo različico.</translation>
 <translation id="8378714024927312812">Upravlja vaša organizacija</translation>

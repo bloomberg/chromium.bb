@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">ИЗОБРАЖЕНИЕ</translation>
 <translation id="257088987046510401">Теми</translation>
 <translation id="2570922361219980984">Достъпът до местоположението е изключен и за това устройство. Включете го от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Група</translation>
 <translation id="257931822824936280">Разгънато – кликнете за свиване.</translation>
 <translation id="2581165646603367611">Така ще се изчистят „бисквитките“, кешът и другата информация от сайтове, която не е важна за Chrome.</translation>
 <translation id="2586657967955657006">Буферна памет</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412">Този профил се управлява от <ph name="PARENT_NAME_1" /> и <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Превключихте към разделите в режим „инкогнито“</translation>
 <translation id="2968755619301702150">Визуализатор на сертификатите</translation>
+<translation id="2977480621796371840">Премахване от групата</translation>
 <translation id="2979025552038692506">Избран раздел в режим „инкогнито“</translation>
 <translation id="2989523299700148168">Наскоро посетени</translation>
 <translation id="2996291259634659425">Създаване на пропуск</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">Автоматично влизане в уебсайтове посредством съхранявани идентификационни данни. Когато функцията е изключена, ще трябва да потвърждавате всяко влизане в профил в уебсайт.</translation>
 <translation id="3658159451045945436">Така ще изтриете историята на спестените данни, включително списъка с посетени сайтове.</translation>
 <translation id="3662546969139119822">Тук няма история</translation>
+<translation id="3663367437272849150">Групиране на <ph name="NUM_SELECTED" /> раздела.</translation>
 <translation id="3672452749423051839">Предложения в случай на грешки при сърфиране</translation>
 <translation id="3692944402865947621">Изтеглянето на <ph name="FILE_NAME" /> не бе успешно, тъй като няма достъп до местоположението за съхранение.</translation>
 <translation id="3714981814255182093">Отваряне на лентата за търсене</translation>
@@ -635,6 +638,7 @@
 <translation id="557283862590186398">Chrome се нуждае от разрешение за достъп до микрофона ви за този сайт.</translation>
 <translation id="55737423895878184">Достъпът до местоположението и известията са разрешени</translation>
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> раздела са групирани</translation>
 <translation id="5581519193887989363">Винаги можете да изберете какво да се синхронизира от <ph name="BEGIN_LINK1" />настройките<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
 <translation id="5596627076506792578">Още опции</translation>
@@ -715,6 +719,7 @@
 <translation id="6181444274883918285">Добавяне на изключение за сайт</translation>
 <translation id="6192333916571137726">Изтегляне на файл</translation>
 <translation id="6192792657125177640">Изключения</translation>
+<translation id="6193448654517602979">Избиране на раздели</translation>
 <translation id="6194112207524046168">За да разрешите на Chrome да осъществява достъп до камерата ви, тя трябва да бъде включена и от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Блокиране на „бисквитките“ на трети страни</translation>
 <translation id="6206551242102657620">Връзката е защитена. Информация за сайта</translation>
@@ -857,6 +862,7 @@
 <translation id="7141896414559753902">Блокиране на показването на изскачащи прозорци и пренасочвания от сайтовете (препоръчително)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Зареждане на оригиналната страница<ph name="END_LINK" /> от <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Последните 24 часа</translation>
+<translation id="7161892015146974550">Избиране на раздела <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7177466738963138057">Можете да промените това по-късно от настройките</translation>
 <translation id="7180611975245234373">Опресняване</translation>
@@ -889,6 +895,7 @@
 <translation id="7403691278183511381">Представяне при първо стартиране на Chrome</translation>
 <translation id="741204030948306876">Да, ще участвам</translation>
 <translation id="7413229368719586778">Начална дата: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Групиране на раздели…</translation>
 <translation id="7423098979219808738">Първо ще се извежда запитване</translation>
 <translation id="7423538860840206698">Достъпът за четене до буферната памет е блокиран</translation>
 <translation id="7431991332293347422">Контролирайте начина, по който историята ви на сърфиране се използва за персонализиране на търсенето и др.</translation>
@@ -1027,6 +1034,7 @@
 <translation id="8339163506404995330">Страниците на <ph name="LANGUAGE" /> няма да се превеждат</translation>
 <translation id="8349013245300336738">Сортиране по количеството използвани данни</translation>
 <translation id="8364299278605033898">Вижте популярните уебсайтове</translation>
+<translation id="8364603787714420828">Отмяна на избора на раздела <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Разрешаване на синхронизирането на заден план за конкретен сайт.</translation>
 <translation id="8374821112118309944">Трябва да актуализирате TalkBack до по-нова версия.</translation>
 <translation id="8378714024927312812">Управлява се от организацията ви</translation>

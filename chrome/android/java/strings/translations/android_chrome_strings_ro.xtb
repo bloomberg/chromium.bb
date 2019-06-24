@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">IMAGINE</translation>
 <translation id="257088987046510401">Teme</translation>
 <translation id="2570922361219980984">Accesul la locație este dezactivat și pentru acest dispozitiv. Activează-l în <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Grup</translation>
 <translation id="257931822824936280">Afișare extinsă – dă clic pentru a restrânge.</translation>
 <translation id="2581165646603367611">Astfel, vor fi șterse cookie-urile, memoria cache și alte date ale site-urilor pe care Chrome nu le consideră importante.</translation>
 <translation id="2586657967955657006">Clipboard</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412">Acest cont este gestionat de <ph name="PARENT_NAME_1" /> și de <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Ai comutat la filele incognito</translation>
 <translation id="2968755619301702150">Vizualizator de certificate</translation>
+<translation id="2977480621796371840">Elimină din grup</translation>
 <translation id="2979025552038692506">Fila incognito selectată</translation>
 <translation id="2989523299700148168">Accesate recent</translation>
 <translation id="2996291259634659425">Creează o expresie de acces</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">Te conectezi automat la site-uri folosind datele de conectare stocate. Când funcția este dezactivată, ți se va solicita verificarea de fiecare dată înainte de a te conecta la un site.</translation>
 <translation id="3658159451045945436">Prin resetare se șterge istoricul economisirii de date, inclusiv lista site-urilor vizitate.</translation>
 <translation id="3662546969139119822">Istoric gol</translation>
+<translation id="3663367437272849150">Grupează <ph name="NUM_SELECTED" /> file.</translation>
 <translation id="3672452749423051839">Sugestii pentru erori de navigare</translation>
 <translation id="3692944402865947621">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit, deoarece nu se poate contacta locația de stocare.</translation>
 <translation id="3714981814255182093">Deschide Bara de căutare</translation>
@@ -635,6 +638,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="557283862590186398">Chrome are nevoie de permisiune ca să acceseze microfonul pentru acest site.</translation>
 <translation id="55737423895878184">Locația și notificările sunt permise</translation>
 <translation id="5578795271662203820">Caută imaginea cu <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> file au fost grupate</translation>
 <translation id="5581519193887989363">Poți să alegi oricând ce să sincronizezi în <ph name="BEGIN_LINK1" />setări<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Editează adresa</translation>
 <translation id="5596627076506792578">Mai multe opțiuni</translation>
@@ -715,6 +719,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="6181444274883918285">Adaugă o excepție privind site-urile</translation>
 <translation id="6192333916571137726">Descarcă fișierul</translation>
 <translation id="6192792657125177640">Excepții</translation>
+<translation id="6193448654517602979">Selectează file</translation>
 <translation id="6194112207524046168">Pentru a permite Chrome să acceseze camera, activează camera și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blochează cookie-urile terță parte</translation>
 <translation id="6206551242102657620">Conexiunea este sigură. Informații despre site</translation>
@@ -857,6 +862,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7141896414559753902">Împiedică site-urile să afișeze ferestre pop-up și redirecționări (recomandat)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Încarcă pagina originală<ph name="END_LINK" /> de la <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Ultimele 24 de ore</translation>
+<translation id="7161892015146974550">Selectează fila <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Poți modifica ulterior această opțiune în Setări</translation>
 <translation id="7180611975245234373">Actualizați</translation>
@@ -889,6 +895,7 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="7403691278183511381">Experiența primei rulări Chrome</translation>
 <translation id="741204030948306876">Da, accept</translation>
 <translation id="7413229368719586778">Data de începere <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Grupează filele...</translation>
 <translation id="7423098979219808738">Mai întâi întreabă</translation>
 <translation id="7423538860840206698">Citirea clipboardului este blocată</translation>
 <translation id="7431991332293347422">Controlează modul în care istoricul de navigare este folosit pentru a personaliza Căutarea și alte servicii</translation>
@@ -1027,6 +1034,7 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="8339163506404995330">Paginile în <ph name="LANGUAGE" /> nu vor fi traduse</translation>
 <translation id="8349013245300336738">Sortează după volumul de date folosite</translation>
 <translation id="8364299278605033898">Vezi site-urile populare</translation>
+<translation id="8364603787714420828">Anulează selectarea filei <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Permite sincronizarea în fundal pentru un anumit site.</translation>
 <translation id="8374821112118309944">Trebuie să actualizați TalkBack la o versiune mai nouă.</translation>
 <translation id="8378714024927312812">Gestionat de organizația ta</translation>

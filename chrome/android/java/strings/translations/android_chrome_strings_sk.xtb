@@ -232,6 +232,7 @@ Skôr ako povolíte prístup, skontrolujte, či ide o dôveryhodný web.</trans
 <translation id="2567385386134582609">OBRÁZOK</translation>
 <translation id="257088987046510401">Motívy</translation>
 <translation id="2570922361219980984">Prístup k polohe je vypnutý aj v tomto zariadení. Zapnite ho v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Skupina</translation>
 <translation id="257931822824936280">Rozbalená (zbalíte ju kliknutím)</translation>
 <translation id="2581165646603367611">Táto akcia vymaže súbory cookie, vyrovnávaciu pamäť a ďalšie údaje webov, ktoré Chrome nepovažuje za dôležité.</translation>
 <translation id="2586657967955657006">Schránka</translation>
@@ -284,6 +285,7 @@ Skôr ako povolíte prístup, skontrolujte, či ide o dôveryhodný web.</trans
 <translation id="2956410042958133412">Tento účet je spravovaný používateľmi <ph name="PARENT_NAME_1" /> a <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Prepnuté na karty inkognito</translation>
 <translation id="2968755619301702150">Zobrazovač certifikátov</translation>
+<translation id="2977480621796371840">Odstrániť zo skupiny</translation>
 <translation id="2979025552038692506">Vybratá karta inkognito</translation>
 <translation id="2989523299700148168">Nedávno navštívené</translation>
 <translation id="2996291259634659425">Vytvorenie prístupovej frázy</translation>
@@ -368,6 +370,7 @@ Skôr ako povolíte prístup, skontrolujte, či ide o dôveryhodný web.</trans
 <translation id="363596933471559332">Povolí automatické prihlasovanie na webové stránky pomocou uložených poverení. Keď je funkcia vypnutá, zobrazí sa výzva na overenie vždy pred prihlásením na web.</translation>
 <translation id="3658159451045945436">Obnovením vymažete svoju históriu úspory dát aj zoznam navštívených webov.</translation>
 <translation id="3662546969139119822">Žiadna história</translation>
+<translation id="3663367437272849150">Zoskupiť karty (počet: <ph name="NUM_SELECTED" />)</translation>
 <translation id="3672452749423051839">Návrhy v prípade chýb navigácie</translation>
 <translation id="3692944402865947621">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť, pretože umiestnenie úložiska nie je k dispozícii.</translation>
 <translation id="3714981814255182093">Otvorenie Panela vyhľadávania</translation>
@@ -635,6 +638,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="557283862590186398">Chrome potrebuje povolenie pre tento web na prístup k vášmu mikrofónu.</translation>
 <translation id="55737423895878184">Poloha a upozornenia sú povolené</translation>
 <translation id="5578795271662203820">Hľadať obrázok v službe <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Počet zoskupených kariet: <ph name="TAB_COUNT" /></translation>
 <translation id="5581519193887989363">Položky, ktoré chcete synchronizovať, môžete vybrať v <ph name="BEGIN_LINK1" />nastaveniach<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Upraviť adresu</translation>
 <translation id="5596627076506792578">Ďalšie možnosti</translation>
@@ -715,6 +719,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="6181444274883918285">Pridať výnimku pre web</translation>
 <translation id="6192333916571137726">Sťahovanie súboru</translation>
 <translation id="6192792657125177640">Výnimky</translation>
+<translation id="6193448654517602979">Vyberte karty</translation>
 <translation id="6194112207524046168">Ak chcete povoliť Chromu používať fotoaparát, zapnite ho aj v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokovať súbory cookie tretích strán</translation>
 <translation id="6206551242102657620">Spojenie je zabezpečené. Informácie o webe</translation>
@@ -857,6 +862,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7141896414559753902">Zakázať webom otvárať vyskakovacie okná a používať presmerovania (odporúčané)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Načítať pôvodnú stránku<ph name="END_LINK" /> z domény <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Posledných 24 hodín</translation>
+<translation id="7161892015146974550">Vybrať kartu <ph name="TAB_TITLE" /></translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Zmeniť to môžete neskôr v časti Nastavenia</translation>
 <translation id="7180611975245234373">Obnoviť</translation>
@@ -889,6 +895,7 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="7403691278183511381">Skúsenosť pri prvom spustení Chromu</translation>
 <translation id="741204030948306876">Áno, súhlasím</translation>
 <translation id="7413229368719586778">Dátum začatia: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Zoskupiť karty…</translation>
 <translation id="7423098979219808738">Najprv sa opýtať</translation>
 <translation id="7423538860840206698">Blokovať čítanie schránky</translation>
 <translation id="7431991332293347422">Ovládajte, ako sa história prehliadania používa na prispôsobenie Vyhľadávania a ďalšieho obsahu</translation>
@@ -1027,6 +1034,7 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="8339163506404995330">Stránky v jazyku <ph name="LANGUAGE" /> nebudú prekladané</translation>
 <translation id="8349013245300336738">Zoradiť podľa množstva využitých dát</translation>
 <translation id="8364299278605033898">Prezrite si obľúbené weby</translation>
+<translation id="8364603787714420828">Zrušiť výber karty <ph name="TAB_TITLE" /></translation>
 <translation id="8372893542064058268">Povolenie synchronizácie na pozadí na konkrétnom webe.</translation>
 <translation id="8374821112118309944">Aplikáciu TalkBack je potrebné aktualizovať na novšiu verziu.</translation>
 <translation id="8378714024927312812">Spravované vašou organizáciou</translation>

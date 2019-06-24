@@ -232,6 +232,7 @@ Make sure that you trust this site before you allow access.</translation>
 <translation id="2567385386134582609">IMAGE</translation>
 <translation id="257088987046510401">Themes</translation>
 <translation id="2570922361219980984">Location access is also off for this device. Turn it on in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Group</translation>
 <translation id="257931822824936280">Expanded – click to collapse.</translation>
 <translation id="2581165646603367611">This will clear cookies, cache and other data of sites Chrome doesn't think is important.</translation>
 <translation id="2586657967955657006">Clipboard</translation>
@@ -284,6 +285,7 @@ Make sure that you trust this site before you allow access.</translation>
 <translation id="2956410042958133412">This account is managed by <ph name="PARENT_NAME_1" /> and <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Switched to incognito tabs</translation>
 <translation id="2968755619301702150">Certificate viewer</translation>
+<translation id="2977480621796371840">Remove from group</translation>
 <translation id="2979025552038692506">Selected Incognito Tab</translation>
 <translation id="2989523299700148168">Recently Visited</translation>
 <translation id="2996291259634659425">Create passphrase</translation>
@@ -368,6 +370,7 @@ Make sure that you trust this site before you allow access.</translation>
 <translation id="363596933471559332">Automatically sign in to websites using stored credentials. When the feature is off, you’ll be asked for verification every time before signing in to a website.</translation>
 <translation id="3658159451045945436">Resetting wipes your history of data savings, including the list of visited sites.</translation>
 <translation id="3662546969139119822">No history here</translation>
+<translation id="3663367437272849150">Group <ph name="NUM_SELECTED" /> tabs.</translation>
 <translation id="3672452749423051839">Navigation error suggestions</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> download failed because storage location is not reachable.</translation>
 <translation id="3714981814255182093">Open the Find Bar</translation>
@@ -635,6 +638,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="557283862590186398">Chrome needs permission to access your microphone for this site.</translation>
 <translation id="55737423895878184">Location and notifications are allowed</translation>
 <translation id="5578795271662203820">Search <ph name="SEARCH_ENGINE" /> for this image</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> tabs grouped</translation>
 <translation id="5581519193887989363">You can always choose what to sync in <ph name="BEGIN_LINK1" />settings<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Edit address</translation>
 <translation id="5596627076506792578">More options</translation>
@@ -715,6 +719,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="6181444274883918285">Add site exception</translation>
 <translation id="6192333916571137726">Download File</translation>
 <translation id="6192792657125177640">Exceptions</translation>
+<translation id="6193448654517602979">Select tabs</translation>
 <translation id="6194112207524046168">To let Chrome access your camera, also turn on camera in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Block third-party cookies</translation>
 <translation id="6206551242102657620">Connection is secure. Site information</translation>
@@ -857,6 +862,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7141896414559753902">Block sites from showing pop-ups and redirects (recommended)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Load original page<ph name="END_LINK" /> from <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Last 24 Hours</translation>
+<translation id="7161892015146974550">Select <ph name="TAB_TITLE" /> tab.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">You can change this later in Settings</translation>
 <translation id="7180611975245234373">Refresh</translation>
@@ -889,6 +895,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="7403691278183511381">Chrome First Run Experience</translation>
 <translation id="741204030948306876">Yes, I'm in</translation>
 <translation id="7413229368719586778">Start date <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Group tabs...</translation>
 <translation id="7423098979219808738">Ask first</translation>
 <translation id="7423538860840206698">Blocked from reading clipboard</translation>
 <translation id="7431991332293347422">Control how your browsing history is used to personalise Search and more</translation>
@@ -1027,6 +1034,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8339163506404995330">Pages in <ph name="LANGUAGE" /> will not be translated</translation>
 <translation id="8349013245300336738">Sort by amount of data used</translation>
 <translation id="8364299278605033898">See popular websites</translation>
+<translation id="8364603787714420828">Un-select <ph name="TAB_TITLE" /> tab.</translation>
 <translation id="8372893542064058268">Allow Background Sync for a specific site.</translation>
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
 <translation id="8378714024927312812">Managed by your organisation</translation>

@@ -232,6 +232,7 @@ A hozzáférés engedélyezése előtt bizonyosodjon meg arról, hogy a webhely 
 <translation id="2567385386134582609">KÉP</translation>
 <translation id="257088987046510401">Témák</translation>
 <translation id="2570922361219980984">A helyhozzáférés is ki van kapcsolva ennél az eszköznél. A funkciót az <ph name="BEGIN_LINK" />Android-beállításokban<ph name="END_LINK" /> tudja bekapcsolni.</translation>
+<translation id="257674075312929031">Csoport</translation>
 <translation id="257931822824936280">Kibontva – kattintson az összecsukáshoz.</translation>
 <translation id="2581165646603367611">Ezzel törli a cookie-kat, a gyorsítótárat, valamint a webhelyek összes olyan adatát, amelyről a Chrome úgy véli, hogy nem fontos.</translation>
 <translation id="2586657967955657006">Vágólap</translation>
@@ -284,6 +285,7 @@ A hozzáférés engedélyezése előtt bizonyosodjon meg arról, hogy a webhely 
 <translation id="2956410042958133412">A fiók kezelői: <ph name="PARENT_NAME_1" /> és <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Átváltva az inkognitómódban használt lapokra</translation>
 <translation id="2968755619301702150">Tanúsítványmegtekintő</translation>
+<translation id="2977480621796371840">Eltávolítás a csoportból</translation>
 <translation id="2979025552038692506">Kiválasztott inkognitólap</translation>
 <translation id="2989523299700148168">Legutóbb látogatott</translation>
 <translation id="2996291259634659425">Összetett jelszó létrehozása</translation>
@@ -368,6 +370,7 @@ A hozzáférés engedélyezése előtt bizonyosodjon meg arról, hogy a webhely 
 <translation id="363596933471559332">Automatikus bejelentkezés webhelyekre a tárolt hitelesítő adatokkal. Ha ez a funkció ki van kapcsolva, mindig meg kell adnia hitelesítő adatait, amikor egy webhelyre szeretne bejelentkezni.</translation>
 <translation id="3658159451045945436">A visszaállítás törli a megtakarított adatmennyiségre vonatkozó előzményeket, így a felkeresett webhelyek listáját is.</translation>
 <translation id="3662546969139119822">Nincsenek előzmények</translation>
+<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> lap csoportosítása.</translation>
 <translation id="3672452749423051839">Navigálási hibákkal kapcsolatos javaslatok</translation>
 <translation id="3692944402865947621">A(z) <ph name="FILE_NAME" /> fájl letöltése sikertelen, mert nem lehet elérni a tárhelyet.</translation>
 <translation id="3714981814255182093">A keresősáv megnyitása</translation>
@@ -635,6 +638,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="557283862590186398">A Chrome számára engedély szükséges, hogy hozzáférjen a mikrofonhoz ennél a webhelynél.</translation>
 <translation id="55737423895878184">Helyadatok és értesítések engedélyezve</translation>
 <translation id="5578795271662203820">A kép keresése a(z) <ph name="SEARCH_ENGINE" /> keresővel</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> lap csoportosítva</translation>
 <translation id="5581519193887989363">A <ph name="BEGIN_LINK1" />beállítások<ph name="END_LINK1" /> között bármikor módosíthatja a szinkronizálni kívánt elemeket.</translation>
 <translation id="5595485650161345191">Cím szerkesztése</translation>
 <translation id="5596627076506792578">További lehetőségek</translation>
@@ -715,6 +719,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="6181444274883918285">Webhelykivétel hozzáadása</translation>
 <translation id="6192333916571137726">Fájl letöltése</translation>
 <translation id="6192792657125177640">Kivételek</translation>
+<translation id="6193448654517602979">Lapok kiválasztása</translation>
 <translation id="6194112207524046168">Ahhoz, hogy a Chrome hozzáférhessen a kamerához, a kamerát az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között is be kell kapcsolni.</translation>
 <translation id="6196640612572343990">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="6206551242102657620">A kapcsolat biztonságos. Webhelyadatok</translation>
@@ -857,6 +862,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7141896414559753902">Előugró ablakok és átirányítások letiltása a webhelyeken (ajánlott)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Eredeti oldal betöltése<ph name="END_LINK" /> innen: <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Az elmúlt 24 órából</translation>
+<translation id="7161892015146974550"><ph name="TAB_TITLE" /> lap kiválasztása.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Ezt később módosíthatja a beállítások között.</translation>
 <translation id="7180611975245234373">Frissítés</translation>
@@ -889,6 +895,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="7403691278183511381">Chrome – Első futtatási élmény</translation>
 <translation id="741204030948306876">Igen, folytatom</translation>
 <translation id="7413229368719586778">Kezdés dátuma: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Lapok csoportosítása…</translation>
 <translation id="7423098979219808738">Kérdezzen rá</translation>
 <translation id="7423538860840206698">Le van tiltva a vágólap megtekintése</translation>
 <translation id="7431991332293347422">Beállíthatja, hogy a rendszer hogyan szabja személyre a Keresést és egyebeket a böngészési előzmények alapján</translation>
@@ -1027,6 +1034,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8339163506404995330">A(z) <ph name="LANGUAGE" /> nyelvű oldalak nem lesznek lefordítva</translation>
 <translation id="8349013245300336738">Rendezés a felhasznált adatmennyiség szerint</translation>
 <translation id="8364299278605033898">Tekintse meg a népszerű webhelyeket</translation>
+<translation id="8364603787714420828"><ph name="TAB_TITLE" /> lap kijelölésének visszavonása.</translation>
 <translation id="8372893542064058268">Háttérben történő szinkronizálás engedélyezése adott webhely esetében.</translation>
 <translation id="8374821112118309944">Frissítenie kell a TalkBack alkalmazást egy újabb verzióra.</translation>
 <translation id="8378714024927312812">Az Ön szervezete kezeli</translation>

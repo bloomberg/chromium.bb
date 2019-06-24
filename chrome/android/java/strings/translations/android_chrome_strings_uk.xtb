@@ -232,6 +232,7 @@
 <translation id="2567385386134582609">ЗОБРАЖЕННЯ</translation>
 <translation id="257088987046510401">Теми</translation>
 <translation id="2570922361219980984">На цьому пристрої також вимкнено доступ до геоданих. Увімкніть його в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Група</translation>
 <translation id="257931822824936280">Розгорнуто – натисніть, щоб згорнути.</translation>
 <translation id="2581165646603367611">Буде видалено файли cookie, кеш та інші дані сайтів, які Chrome визначив як неважливі.</translation>
 <translation id="2586657967955657006">Буфер обміну</translation>
@@ -284,6 +285,7 @@
 <translation id="2956410042958133412">Цим обліковим записом керують <ph name="PARENT_NAME_1" /> і <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Ви перейшли на анонімні вкладки</translation>
 <translation id="2968755619301702150">Перегляд сертифікатів</translation>
+<translation id="2977480621796371840">Вилучити з групи</translation>
 <translation id="2979025552038692506">Вибрана анонімна вкладка</translation>
 <translation id="2989523299700148168">Нещодавно відвідані</translation>
 <translation id="2996291259634659425">Створити парольну фразу</translation>
@@ -368,6 +370,7 @@
 <translation id="363596933471559332">Автоматично входити в облікові записи на веб-сайтах за допомогою збережених даних. Якщо цю функцію вимкнено, потрібно вводити облікові дані під час кожного входу.</translation>
 <translation id="3658159451045945436">Буде скинуто історію заощадження трафіку, зокрема список відвіданих веб-сайтів.</translation>
 <translation id="3662546969139119822">Немає історії</translation>
+<translation id="3663367437272849150">Згрупувати стільки вкладок: <ph name="NUM_SELECTED" />.</translation>
 <translation id="3672452749423051839">Пропозиції у випадку помилок навігації</translation>
 <translation id="3692944402865947621">Не вдалося завантажити файл <ph name="FILE_NAME" />. Місце зберігання недоступне.</translation>
 <translation id="3714981814255182093">Відкрити рядок пошуку</translation>
@@ -635,6 +638,7 @@
 <translation id="557283862590186398">Chrome потрібні дозволи, щоб використовувати мікрофон на цьому сайті.</translation>
 <translation id="55737423895878184">Геодані та сповіщення дозволено</translation>
 <translation id="5578795271662203820">Шукати зображення в <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5580090775658607195">Згруповано стільки вкладок: <ph name="TAB_COUNT" /></translation>
 <translation id="5581519193887989363">Ви можете будь-коли вибрати дані для синхронізації в <ph name="BEGIN_LINK1" />налаштуваннях<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Редагувати адресу</translation>
 <translation id="5596627076506792578">Інші опції</translation>
@@ -715,6 +719,7 @@
 <translation id="6181444274883918285">Додати сайт у список винятків</translation>
 <translation id="6192333916571137726">Завантажити файл</translation>
 <translation id="6192792657125177640">Винятки</translation>
+<translation id="6193448654517602979">Виберіть вкладки</translation>
 <translation id="6194112207524046168">Щоб надати Chrome доступ до камери, також увімкніть її в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Блокувати сторонні файли cookie</translation>
 <translation id="6206551242102657620">З’єднання безпечне. Інформація про сайт</translation>
@@ -857,6 +862,7 @@
 <translation id="7141896414559753902">Блокувати спливаючі вікна та переадресацію на сайтах (рекомендовано)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Завантажити оригінальну сторінку<ph name="END_LINK" /> з домену <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Останні 24 години</translation>
+<translation id="7161892015146974550">Вибрати вкладку "<ph name="TAB_TITLE" />".</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7177466738963138057">Це можна змінити пізніше в налаштуваннях</translation>
 <translation id="7180611975245234373">Оновити</translation>
@@ -889,6 +895,7 @@
 <translation id="7403691278183511381">Перший запуск Chrome</translation>
 <translation id="741204030948306876">Увімкнути</translation>
 <translation id="7413229368719586778">Дата початку: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Згрупувати вкладки…</translation>
 <translation id="7423098979219808738">Спершу запитувати</translation>
 <translation id="7423538860840206698">Заборонено переглядати буфер обміну</translation>
 <translation id="7431991332293347422">Указуйте, як використовувати історію веб-перегляду для персоналізації Пошуку тощо</translation>
@@ -1027,6 +1034,7 @@
 <translation id="8339163506404995330">Сторінки цією мовою (<ph name="LANGUAGE" />) не перекладатимуться</translation>
 <translation id="8349013245300336738">Сортувати за кількістю використаного трафіку</translation>
 <translation id="8364299278605033898">Перегляньте популярні сайти</translation>
+<translation id="8364603787714420828">Скасувати вибір вкладки "<ph name="TAB_TITLE" />".</translation>
 <translation id="8372893542064058268">сайті.</translation>
 <translation id="8374821112118309944">Потрібно оновити додаток TalkBack до новішої версії.</translation>
 <translation id="8378714024927312812">Профілем керує ваша організація</translation>

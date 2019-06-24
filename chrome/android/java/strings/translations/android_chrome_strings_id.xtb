@@ -232,6 +232,7 @@ Pastikan Anda memercayai situs ini sebelum mengizinkan akses.</translation>
 <translation id="2567385386134582609">GAMBAR</translation>
 <translation id="257088987046510401">Tema</translation>
 <translation id="2570922361219980984">Akses lokasi juga dinonaktifkan untuk perangkat ini. Aktifkan di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Grup</translation>
 <translation id="257931822824936280">Diperluas - klik untuk menciutkan</translation>
 <translation id="2581165646603367611">Tindakan ini akan mengosongkan cache dan menghapus cookie, serta data lain dari situs yang dianggap tidak penting oleh Chrome.</translation>
 <translation id="2586657967955657006">Papan klip</translation>
@@ -284,6 +285,7 @@ Pastikan Anda memercayai situs ini sebelum mengizinkan akses.</translation>
 <translation id="2956410042958133412">Akun ini dikelola oleh <ph name="PARENT_NAME_1" /> dan <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Beralih ke tab penyamaran</translation>
 <translation id="2968755619301702150">Penampil sertifikat</translation>
+<translation id="2977480621796371840">Hapus dari grup</translation>
 <translation id="2979025552038692506">Tab Penyamaran yang Dipilih</translation>
 <translation id="2989523299700148168">Baru saja dikunjungi</translation>
 <translation id="2996291259634659425">Buat frasa sandi</translation>
@@ -368,6 +370,7 @@ Pastikan Anda memercayai situs ini sebelum mengizinkan akses.</translation>
 <translation id="363596933471559332">Otomatis login ke situs web menggunakan kredensial yang tersimpan. Saat fitur dinonaktifkan, Anda akan dimintai verifikasi setiap kali hendak login ke situs web.</translation>
 <translation id="3658159451045945436">Penyetalan ulang akan menghapus histori penyimpanan data, termasuk daftar situs yang dibuka.</translation>
 <translation id="3662546969139119822">Tidak ada histori di sini</translation>
+<translation id="3663367437272849150">Mengelompokkan <ph name="NUM_SELECTED" /> tab.</translation>
 <translation id="3672452749423051839">Saran untuk kesalahan navigasi</translation>
 <translation id="3692944402865947621">Download <ph name="FILE_NAME" /> gagal karena lokasi penyimpanan tidak dapat dijangkau.</translation>
 <translation id="3714981814255182093">Membuka Bilah Cari</translation>
@@ -635,6 +638,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="557283862590186398">Chrome memerlukan izin akses ke mikrofon untuk situs ini.</translation>
 <translation id="55737423895878184">Lokasi dan notifikasi diizinkan</translation>
 <translation id="5578795271662203820">Telusuri <ph name="SEARCH_ENGINE" /> untuk gambar ini</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> tab dikelompokkan</translation>
 <translation id="5581519193887989363">Anda dapat memilih konten apa yang akan disinkronkan di <ph name="BEGIN_LINK1" />setelan<ph name="END_LINK1" /> kapan saja.</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
 <translation id="5596627076506792578">Opsi lainnya</translation>
@@ -715,6 +719,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="6181444274883918285">Tambahkan pengecualian situs</translation>
 <translation id="6192333916571137726">Download file</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
+<translation id="6193448654517602979">Pilih tab</translation>
 <translation id="6194112207524046168">Untuk mengizinkan Chrome mengakses kamera Anda, aktifkan juga kamera di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokir cookie pihak ketiga</translation>
 <translation id="6206551242102657620">Sambungan aman. Informasi situs</translation>
@@ -857,6 +862,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7141896414559753902">Blokir situs agar tidak menampilkan pop-up dan pengalihan (disarankan)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Muat halaman asli<ph name="END_LINK" /> dari <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">24 jam terakhir</translation>
+<translation id="7161892015146974550">Pilih tab <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Anda dapat mengubah ini nanti di Setelan</translation>
 <translation id="7180611975245234373">Perbarui</translation>
@@ -889,6 +895,7 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="7403691278183511381">Pengalaman Penggunaan Pertama Chrome</translation>
 <translation id="741204030948306876">Ya, saya ikut</translation>
 <translation id="7413229368719586778">Tanggal mulai <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Tab grup...</translation>
 <translation id="7423098979219808738">Tanyakan dulu</translation>
 <translation id="7423538860840206698">Diblokir agar tidak membaca papan klip</translation>
 <translation id="7431991332293347422">Kontrol cara histori browsing digunakan untuk mempersonalisasi Penelusuran dan lainnya</translation>
@@ -1027,6 +1034,7 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="8339163506404995330">Halaman dalam bahasa <ph name="LANGUAGE" /> tidak akan diterjemahkan</translation>
 <translation id="8349013245300336738">Urutkan menurut jumlah kuota yang digunakan</translation>
 <translation id="8364299278605033898">Lihat situs yang populer</translation>
+<translation id="8364603787714420828">Membatalkan pilihan tab <ph name="TAB_TITLE" />.</translation>
 <translation id="8372893542064058268">Mengizinkan Sinkronisasi Latar Belakang untuk situs tertentu.</translation>
 <translation id="8374821112118309944">Anda perlu memperbarui TalkBack ke versi yang lebih baru.</translation>
 <translation id="8378714024927312812">Dikelola oleh organisasi</translation>

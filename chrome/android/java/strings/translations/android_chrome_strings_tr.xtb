@@ -232,6 +232,7 @@ Erişime izin vermeden önce bu siteye güvendiğinizden emin olun.</translation
 <translation id="2567385386134582609">IMAGE</translation>
 <translation id="257088987046510401">Temalar</translation>
 <translation id="2570922361219980984">Konum erişimi bu cihaz için de kapalı. Konum erişimini <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ndan açın.</translation>
+<translation id="257674075312929031">Grup</translation>
 <translation id="257931822824936280">Genişletildi - Daraltmak için tıklayın.</translation>
 <translation id="2581165646603367611">Bu işlem Chrome'un önemli olmadığını düşündüğü çerezleri, önbelleği ve diğer site verilerini temizleyecek.</translation>
 <translation id="2586657967955657006">Pano</translation>
@@ -284,6 +285,7 @@ Erişime izin vermeden önce bu siteye güvendiğinizden emin olun.</translation
 <translation id="2956410042958133412">Bu hesap <ph name="PARENT_NAME_1" /> ve <ph name="PARENT_NAME_2" /> tarafından yönetiliyor.</translation>
 <translation id="2962095958535813455">Gizli mod sekmelerine geçildi</translation>
 <translation id="2968755619301702150">Sertifika görüntüleyici</translation>
+<translation id="2977480621796371840">Gruptan kaldır</translation>
 <translation id="2979025552038692506">Seçili Gizli Sekme</translation>
 <translation id="2989523299700148168">Son ziyaret edilenler</translation>
 <translation id="2996291259634659425">Parola oluşturun</translation>
@@ -368,6 +370,7 @@ Erişime izin vermeden önce bu siteye güvendiğinizden emin olun.</translation
 <translation id="363596933471559332">Depolanmış kimlik bilgileriyle web sitelerinde otomatik olarak oturum açın. Bu özellik kapatıldığında, bir web sitesinde oturum açmadan önce her defasında doğrulama yapmanız istenir.</translation>
 <translation id="3658159451045945436">Sıfırlama işlemi, ziyaret edilen sitelerin listesi de dahil olmak üzere veri tasarrufu geçmişinizi siler.</translation>
 <translation id="3662546969139119822">Burada geçmiş yok</translation>
+<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> sekmeyi grupla.</translation>
 <translation id="3672452749423051839">Gezinme hataları ile ilgili öneriler</translation>
 <translation id="3692944402865947621">Depolama konumuna erişilemediği için <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="3714981814255182093">Bulma Çubuğu'nu açar</translation>
@@ -635,6 +638,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="557283862590186398">Chrome'un bu sitede mikrofonunuza erişmesi için izin gerekiyor.</translation>
 <translation id="55737423895878184">Konum ve bildirimlere izin veriliyor</translation>
 <translation id="5578795271662203820">Bu resmi, <ph name="SEARCH_ENGINE" /> üzerinde ara</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> sekme gruplandı</translation>
 <translation id="5581519193887989363">Neyin senkronize edileceğini istediğiniz zaman <ph name="BEGIN_LINK1" />ayarlardan<ph name="END_LINK1" /> seçebilirsiniz.</translation>
 <translation id="5595485650161345191">Adresi düzenle</translation>
 <translation id="5596627076506792578">Diğer seçenekler</translation>
@@ -715,6 +719,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6181444274883918285">Site istisnası ekle</translation>
 <translation id="6192333916571137726">Dosyayı indir</translation>
 <translation id="6192792657125177640">İstisnalar</translation>
+<translation id="6193448654517602979">Sekmeleri seçin</translation>
 <translation id="6194112207524046168">Chrome'un kameranıza erişebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ında da kamerayı açın.</translation>
 <translation id="6196640612572343990">Üçüncü taraf çerezlerini engelle</translation>
 <translation id="6206551242102657620">Bağlantı güvenli. Site bilgileri</translation>
@@ -857,6 +862,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7141896414559753902">Sitelerin pop-up göstermesini ve yönlendirme yapmasını engelle (önerilir)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> alanından <ph name="BEGIN_LINK" />orijinal sayfayı yükle<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">Son 24 saat</translation>
+<translation id="7161892015146974550"><ph name="TAB_TITLE" /> sekmesini seç.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Bunu daha sonra Ayarlar'da değiştirebilirsiniz</translation>
 <translation id="7180611975245234373">Yenile</translation>
@@ -889,6 +895,7 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="7403691278183511381">Chrome İlk Çalıştırma Deneyimi</translation>
 <translation id="741204030948306876">Evet, istiyorum</translation>
 <translation id="7413229368719586778">Başlangıç tarihi: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Sekmeleri grupla...</translation>
 <translation id="7423098979219808738">Önce sor</translation>
 <translation id="7423538860840206698">Pano okuma engellendi</translation>
 <translation id="7431991332293347422">Göz atma geçmişinizin Arama ve diğer hizmetleri kişiselleştirmek için nasıl kullanıldığını kontrol edin</translation>
@@ -1027,6 +1034,7 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> dilindeki sayfalar çevrilmeyecek</translation>
 <translation id="8349013245300336738">Kullanılan veri miktarına göre sırala</translation>
 <translation id="8364299278605033898">Popüler web sitelerini görün</translation>
+<translation id="8364603787714420828"><ph name="TAB_TITLE" /> sekmesinin seçimini kaldır.</translation>
 <translation id="8372893542064058268">Belirli bir site için Arka Plan Senkronizasyonuna izin verin.</translation>
 <translation id="8374821112118309944">TalkBack'i daha yeni bir sürüme güncellemeniz gerekiyor.</translation>
 <translation id="8378714024927312812">Kuruluşunuz tarafından yönetiliyor</translation>

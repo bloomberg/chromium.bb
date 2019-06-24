@@ -232,6 +232,7 @@ Controleer of je de site vertrouwt voordat je deze toegang geeft.</translation>
 <translation id="2567385386134582609">AFBEELDING</translation>
 <translation id="257088987046510401">Thema's</translation>
 <translation id="2570922361219980984">Locatietoegang is ook uitgeschakeld voor dit apparaat. Schakel dit in via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Groep</translation>
 <translation id="257931822824936280">Uitgevouwen; klik om samen te vouwen.</translation>
 <translation id="2581165646603367611">Hiermee worden cookies, het cachegeheugen en andere gegevens gewist van sites waarvan Chrome denkt dat deze niet belangrijk zijn.</translation>
 <translation id="2586657967955657006">Klembord</translation>
@@ -284,6 +285,7 @@ Controleer of je de site vertrouwt voordat je deze toegang geeft.</translation>
 <translation id="2956410042958133412">Dit account wordt beheerd door <ph name="PARENT_NAME_1" /> en <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Overgeschakeld naar incognitotabbladen</translation>
 <translation id="2968755619301702150">Certificaatviewer</translation>
+<translation id="2977480621796371840">Uit groep verwijderen</translation>
 <translation id="2979025552038692506">Geselecteerd incognitotabblad</translation>
 <translation id="2989523299700148168">Onlangs bezocht</translation>
 <translation id="2996291259634659425">Wachtwoordzin maken</translation>
@@ -368,6 +370,7 @@ Controleer of je de site vertrouwt voordat je deze toegang geeft.</translation>
 <translation id="363596933471559332">Automatisch inloggen bij websites met de opgeslagen inloggegevens. Wanneer de functie is uitgeschakeld, word je elke keer om verificatie gevraagd voordat je wordt ingelogd bij een website.</translation>
 <translation id="3658159451045945436">Als je reset, wordt je databesparingsgeschiedenis gewist, waaronder de lijst met bezochte sites.</translation>
 <translation id="3662546969139119822">Geen geschiedenis hier</translation>
+<translation id="3663367437272849150"><ph name="NUM_SELECTED" /> tabbladen groeperen.</translation>
 <translation id="3672452749423051839">Suggesties bij navigatiefouten</translation>
 <translation id="3692944402865947621">Downloaden van <ph name="FILE_NAME" /> mislukt omdat de opslaglocatie niet bereikbaar is.</translation>
 <translation id="3714981814255182093">De zoekbalk openen</translation>
@@ -635,6 +638,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="557283862590186398">Chrome heeft toegangsrechten voor je microfoon nodig voor deze site.</translation>
 <translation id="55737423895878184">Locatie en meldingen zijn toegestaan</translation>
 <translation id="5578795271662203820">Zoeken op <ph name="SEARCH_ENGINE" /> naar afbeelding</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> tabbladen gegroepeerd</translation>
 <translation id="5581519193887989363">Je kunt altijd in de <ph name="BEGIN_LINK1" />instellingen<ph name="END_LINK1" /> bepalen wat je wilt synchroniseren.</translation>
 <translation id="5595485650161345191">Adres bewerken</translation>
 <translation id="5596627076506792578">Meer opties</translation>
@@ -715,6 +719,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="6181444274883918285">Site-uitzondering toevoegen</translation>
 <translation id="6192333916571137726">Bestand downloaden</translation>
 <translation id="6192792657125177640">Uitzonderingen</translation>
+<translation id="6193448654517602979">Tabbladen selecteren</translation>
 <translation id="6194112207524046168">Als je Chrome toegang wilt geven tot je camera, moet je de camera ook inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Indirecte cookies blokkeren</translation>
 <translation id="6206551242102657620">De verbinding is beveiligd. Site-informatie</translation>
@@ -857,6 +862,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7141896414559753902">Sites niet toestaan pop-ups weer te geven en omleidingen uit te voeren (aanbevolen)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Oorspronkelijke pagina laden <ph name="END_LINK" /> van <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Afgelopen 24 uur</translation>
+<translation id="7161892015146974550">Tabblad <ph name="TAB_TITLE" /> selecteren.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Je kunt dit later wijzigen in Instellingen</translation>
 <translation id="7180611975245234373">Vernieuwen</translation>
@@ -889,6 +895,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="7403691278183511381">Functionaliteit bij eerste uitvoering van Chrome</translation>
 <translation id="741204030948306876">Ja, inschakelen</translation>
 <translation id="7413229368719586778">Begindatum: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Tabbladen groeperen...</translation>
 <translation id="7423098979219808738">Eerst vragen</translation>
 <translation id="7423538860840206698">Lezen van het klembord geblokkeerd</translation>
 <translation id="7431991332293347422">Beheren hoe je browsegeschiedenis wordt gebruikt om Google Zoeken en meer te personaliseren</translation>
@@ -1027,6 +1034,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8339163506404995330">Pagina's in het <ph name="LANGUAGE" /> worden niet vertaald</translation>
 <translation id="8349013245300336738">Sorteren op hoeveelheid gebruikte data</translation>
 <translation id="8364299278605033898">Bekijk populaire websites</translation>
+<translation id="8364603787714420828">Tabblad <ph name="TAB_TITLE" /> deselecteren.</translation>
 <translation id="8372893542064058268">Synchronisatie op de achtergrond toestaan voor een specifieke site.</translation>
 <translation id="8374821112118309944">Je moet TalkBack bijwerken naar een nieuwere versie.</translation>
 <translation id="8378714024927312812">Beheerd door je organisatie</translation>

@@ -232,6 +232,7 @@ Enne juurdepääsu andmist veenduge, et usaldaksite seda saiti.</translation>
 <translation id="2567385386134582609">KUJUTIS</translation>
 <translation id="257088987046510401">Teemad</translation>
 <translation id="2570922361219980984">Ka juurdepääs asukohale on selle seadme puhul välja lülitatud. Lülitage see sisse <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
+<translation id="257674075312929031">Rühm</translation>
 <translation id="257931822824936280">Laiendatud – ahendamiseks klõpsake.</translation>
 <translation id="2581165646603367611">See tühjendab vahemälu, kustutab küpsised ja muud andmed, mis pärinevad Chrome'i arvates ebatähtsatelt saitidelt.</translation>
 <translation id="2586657967955657006">Lõikelaud</translation>
@@ -284,6 +285,7 @@ Enne juurdepääsu andmist veenduge, et usaldaksite seda saiti.</translation>
 <translation id="2956410042958133412">Seda kontot haldavad <ph name="PARENT_NAME_1" /> ja <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Inkognito režiimi vahelehed on aktiveeritud</translation>
 <translation id="2968755619301702150">Sertifikaadikuvaja</translation>
+<translation id="2977480621796371840">Grupist eemaldamine</translation>
 <translation id="2979025552038692506">Valitud inkognito vaheleht</translation>
 <translation id="2989523299700148168">Hiljuti külastatud</translation>
 <translation id="2996291259634659425">Parooli loomine</translation>
@@ -368,6 +370,7 @@ Enne juurdepääsu andmist veenduge, et usaldaksite seda saiti.</translation>
 <translation id="363596933471559332">Teid logitakse salvestatud mandaadiga veebisaitidele automaatselt sisse. Kui funktsioon on välja lülitatud, palutakse teilt kinnitust iga kord enne veebisaidile sisselogimist.</translation>
 <translation id="3658159451045945436">Lähtestamisel kustutatakse säästetud andmemahu ajalugu, sh külastatud saitide loend.</translation>
 <translation id="3662546969139119822">Ajalugu puudub</translation>
+<translation id="3663367437272849150">Grupeerige <ph name="NUM_SELECTED" /> vahekaarti.</translation>
 <translation id="3672452749423051839">Soovitused navigeerimisvigade korral</translation>
 <translation id="3692944402865947621">Faili <ph name="FILE_NAME" /> allalaadimine nurjus, kuna salvestuskoht ei ole saadaval.</translation>
 <translation id="3714981814255182093">Leiuriba avamine</translation>
@@ -635,6 +638,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="557283862590186398">Chrome vajab selle saidi puhul luba, et teie mikrofonile juurde pääseda.</translation>
 <translation id="55737423895878184">Asukoht ja märguanded on lubatud</translation>
 <translation id="5578795271662203820">Otsi otsingust <ph name="SEARCH_ENGINE" /> kujutist</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> vahekaarti grupeeriti</translation>
 <translation id="5581519193887989363">Jaotises <ph name="BEGIN_LINK1" />Seaded<ph name="END_LINK1" /> saate igal ajal valida, mida sünkroonida.</translation>
 <translation id="5595485650161345191">Muuda aadressi</translation>
 <translation id="5596627076506792578">Rohkem valikuid</translation>
@@ -715,6 +719,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="6181444274883918285">Lisa saidi erand</translation>
 <translation id="6192333916571137726">Faili allalaadimine</translation>
 <translation id="6192792657125177640">Erandid</translation>
+<translation id="6193448654517602979">Valige vahelehed</translation>
 <translation id="6194112207524046168">Selleks et anda Chrome'ile juurdepääs teie kaamerale, lülitage kaamera sisse ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokeeri kolmanda osapoole küpsisefailid</translation>
 <translation id="6206551242102657620">Ühendus on turvaline. Saidi teave</translation>
@@ -857,6 +862,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7141896414559753902">Blokeeri saitidel hüpikakende ja ümbersuunamiste kuvamine (soovitatav)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Laadi originaalleht<ph name="END_LINK" /> domeenilt <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Viimased 24 tundi</translation>
+<translation id="7161892015146974550">Valige vahekaart <ph name="TAB_TITLE" />.</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Seda saate hiljem muuta jaotises Seaded</translation>
 <translation id="7180611975245234373">Värskenda</translation>
@@ -889,6 +895,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="7403691278183511381">Chrome'i esmakordse käitamise kasutuskogemus</translation>
 <translation id="741204030948306876">Jah, sobib</translation>
 <translation id="7413229368719586778">Alguskuupäev: <ph name="DATE" /></translation>
+<translation id="7418565925463285788">Vahelehtede grupeerimine …</translation>
 <translation id="7423098979219808738">Esmalt küsib</translation>
 <translation id="7423538860840206698">Lõikelaua lugemine on blokeeritud</translation>
 <translation id="7431991332293347422">Juhtige, kuidas kasutatakse teie sirvimisajalugu otsingu ja muu isikupärastamiseks</translation>
@@ -1027,6 +1034,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> keeles olevaid lehti ei tõlgita</translation>
 <translation id="8349013245300336738">Sordi kasutatud andmemahu alusel</translation>
 <translation id="8364299278605033898">Vaadake populaarseid veebisaite</translation>
+<translation id="8364603787714420828">Tühistage vahekaardi <ph name="TAB_TITLE" /> valik.</translation>
 <translation id="8372893542064058268">Konkreetse saidi jaoks taustal sünkroonimise lubamine.</translation>
 <translation id="8374821112118309944">Peate värskendama TalkBacki uuemale versioonile.</translation>
 <translation id="8378714024927312812">Haldab teie organisatsioon</translation>
