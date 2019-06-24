@@ -15353,6 +15353,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'future': True,
       'example_value': False,
       'id': 532,
       'caption': '''Allows wilco diagnostics and telemetry controller''',
@@ -15402,6 +15403,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'future': True,
       'example_value': {
         "url": "https://example.com/wilcodtcconfig",
         "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
