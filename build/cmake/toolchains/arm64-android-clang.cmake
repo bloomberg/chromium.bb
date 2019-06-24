@@ -44,3 +44,5 @@ set(AOM_NEON_INTRIN_FLAG "")
 
 # No runtime cpu detect for arm64-android-clang.
 set(CONFIG_RUNTIME_CPU_DETECT 0 CACHE NUMBER "")
+
+set(CMAKE_SYSTEM_NAME "Android")
