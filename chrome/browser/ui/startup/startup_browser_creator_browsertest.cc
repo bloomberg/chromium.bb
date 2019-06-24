@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -1068,12 +1069,23 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBrowserCreatorTest,
 #if !defined(OS_CHROMEOS)
 
 class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
+ public:
+  StartupBrowserCreatorFirstRunTest() {
+    scoped_feature_list_.InitWithFeatures({nux::kNuxOnboardingForceEnabled},
+                                          {});
+  }
+
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpInProcessBrowserTestFixture() override;
 
   policy::MockConfigurationPolicyProvider provider_;
   policy::PolicyMap policy_map_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorFirstRunTest);
 };
 
 void StartupBrowserCreatorFirstRunTest::SetUpCommandLine(
