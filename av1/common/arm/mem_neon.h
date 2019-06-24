@@ -13,6 +13,7 @@
 
 #include <arm_neon.h>
 #include <string.h>
+#include "aom_dsp/aom_dsp_common.h"
 
 static INLINE void store_row2_u8_8x8(uint8_t *s, int p, const uint8x8_t s0,
                                      const uint8x8_t s1) {
@@ -498,6 +499,21 @@ static INLINE void store_u32_4x4(uint32_t *s, int32_t p, uint32x4_t s1,
   vst1q_u32(s, s3);
   s += p;
   vst1q_u32(s, s4);
+}
+
+static INLINE int16x8_t load_tran_low_to_s16q(const tran_low_t *buf) {
+  const int32x4_t v0 = vld1q_s32(buf);
+  const int32x4_t v1 = vld1q_s32(buf + 4);
+  const int16x4_t s0 = vmovn_s32(v0);
+  const int16x4_t s1 = vmovn_s32(v1);
+  return vcombine_s16(s0, s1);
+}
+
+static INLINE void store_s16q_to_tran_low(tran_low_t *buf, const int16x8_t a) {
+  const int32x4_t v0 = vmovl_s16(vget_low_s16(a));
+  const int32x4_t v1 = vmovl_s16(vget_high_s16(a));
+  vst1q_s32(buf, v0);
+  vst1q_s32(buf + 4, v1);
 }
 
 #endif  // AOM_AV1_COMMON_ARM_MEM_NEON_H_
