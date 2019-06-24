@@ -3215,8 +3215,11 @@ out:
 
 	weston_compositor_log_scope_destroy(protocol_scope);
 	protocol_scope = NULL;
+	weston_compositor_tear_down(wet.compositor);
+
 	weston_compositor_log_scope_destroy(log_scope);
 	log_scope = NULL;
+	weston_log_ctx_compositor_destroy(wet.compositor);
 	weston_compositor_destroy(wet.compositor);
 	weston_log_subscriber_destroy_log(logger);
 

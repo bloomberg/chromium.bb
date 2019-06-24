@@ -7569,16 +7569,19 @@ weston_load_module(const char *name, const char *entrypoint)
 }
 
 
-/** Destroys the compositor.
+/** Tear down the compositor.
  *
- * This function cleans up the compositor state and destroys it.
+ * This function cleans up the compositor state. While the compositor state has
+ * been cleaned do note that **only** weston_compositor_destroy() can be called
+ * afterwards, in order to destroy the compositor instance.
  *
- * \param compositor The compositor to be destroyed.
+ * @param compositor The compositor to be tear-down/cleaned.
  *
- * \ingroup compositor
+ * @ingroup compositor
+ * @sa weston_compositor_destroy
  */
 WL_EXPORT void
-weston_compositor_destroy(struct weston_compositor *compositor)
+weston_compositor_tear_down(struct weston_compositor *compositor)
 {
 	/* prevent further rendering while shutting down */
 	compositor->state = WESTON_COMPOSITOR_OFFSCREEN;
@@ -7600,8 +7603,20 @@ weston_compositor_destroy(struct weston_compositor *compositor)
 
 	weston_compositor_log_scope_destroy(compositor->debug_scene);
 	compositor->debug_scene = NULL;
-	weston_log_ctx_compositor_destroy(compositor);
+}
 
+/** Destroys the compositor.
+ *
+ * This function destroys the compositor. **Do not** call this before
+ * calling weston_compositor_tear_down()
+ *
+ * @param compositor The compositor to be destroyed.
+ * @ingroup compositor
+ * @sa weston_compositor_tear_down()
+ */
+WL_EXPORT void
+weston_compositor_destroy(struct weston_compositor *compositor)
+{
 	free(compositor);
 }
 
