@@ -85,12 +85,17 @@ class DisplayPanel extends HTMLElement {
                 --multi-progress-height: 92px;
               }
               @keyframes setcollapse {
-                from {
+                0% {
                   max-height: 0;
                   max-width: 0;
                   opacity: 0;
                 }
-                to {
+                75% {
+                  max-height: calc(92px * 3);;
+                  max-width: 400px;
+                  opacity: 0;
+                }
+                100% {
                   max-height: calc(92px * 3);;
                   max-width: 400px;
                   opacity: 1;
@@ -98,22 +103,27 @@ class DisplayPanel extends HTMLElement {
               }
 
               @keyframes setexpand {
-                from {
+                0% {
                   max-height: calc(92px * 3);;
                   max-width: 400px;
                   opacity: 1;
                 }
-                to {
+                25% {
+                  max-height: calc(92px * 3);;
+                  max-width: 400px;
+                  opacity: 0;
+                }
+                100% {
                   max-height: 0;
                   max-width: 0;
                   opacity: 0;
                 }
               }
               .expanded {
-                animation: setcollapse 150ms forwards;
+                animation: setcollapse 200ms forwards;
               }
               .collapsed {
-                animation: setexpand 150ms forwards;
+                animation: setexpand 200ms forwards;
               }
               .expanding {
                 overflow: hidden;
