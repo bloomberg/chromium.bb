@@ -18,10 +18,10 @@ REM ******************************************************************
 pushd %SCRIPT_LOCATION%
 
 REM ******************************************************************
-REM Register msdia120.dll.
+REM Register msdia140.dll.
 REM ******************************************************************
-SET MSG=Failed to register msdia120.dll.  Make sure to run this in elevated command prompt.
-%systemroot%\SysWoW64\regsvr32.exe /s msdia120.dll & if errorlevel 1 echo %MSG% & goto :fail
+SET MSG=Failed to register msdia140.dll.  Make sure to run this in elevated command prompt.
+%systemroot%\SysWoW64\regsvr32.exe /s msdia140.dll & if errorlevel 1 echo %MSG% & goto :fail
 
 :success
 echo Configuration was successful.

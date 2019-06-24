@@ -143,10 +143,6 @@ bool ReadModuleInfo(const wstring & pe_file, PDBModuleInfo * info) {
 
   PIMAGE_OPTIONAL_HEADER64 optional_header =
       &(reinterpret_cast<PIMAGE_NT_HEADERS64>(img->FileHeader))->OptionalHeader;
-  if (optional_header->Magic != IMAGE_NT_OPTIONAL_HDR64_MAGIC) {
-    fprintf(stderr, "Not a PE32+ image\n");
-    return false;
-  }
 
   // Search debug directories for a guid signature & age
   DWORD debug_rva = optional_header->

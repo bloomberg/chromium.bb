@@ -292,8 +292,7 @@ static bool SafeToMakeExternalRequest(const MissingSymbolInfo &missing_info,
 // Converter options derived from command line parameters.
 struct ConverterOptions {
   ConverterOptions()
-      : report_fetch_failures(true),
-        blacklist_regex(nullptr) {
+      : report_fetch_failures(true) {
   }
 
   ~ConverterOptions() {
@@ -704,6 +703,7 @@ int main(int argc, char **argv) {
   if (argc % 2 != 1) {
     return usage(argv[0]);
   }
+
   string blacklist_regex_str;
   bool have_any_msss_servers = false;
   for (int argi = 1; argi < argc; argi += 2) {
@@ -781,8 +781,9 @@ int main(int argc, char **argv) {
     FprintfFlush(stderr, "No upload symbols URL specified.\n");
     return usage(argv[0]);
   }
-  if (options.missing_symbols_url.empty()) {
-    FprintfFlush(stderr, "No missing symbols URL specified.\n");
+  if (options.missing_symbols_url.empty() &&
+      options.missing_symbols_file.empty()) {
+    FprintfFlush(stderr, "No missing symbols URL or file specified.\n");
     return usage(argv[0]);
   }
   if (options.fetch_symbol_failure_url.empty()) {

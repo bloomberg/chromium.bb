@@ -42,6 +42,7 @@
 
 #include "tools/windows/converter/ms_symbol_server_converter.h"
 #include "common/windows/pdb_source_line_writer.h"
+#include "common/windows/pe_source_line_writer.h"
 #include "common/windows/string_utils-inl.h"
 
 // SYMOPT_NO_PROMPTS is not defined in earlier platform SDKs.  Define it
@@ -445,7 +446,10 @@ MSSymbolServerConverter::LocateAndConvertSymbolFile(
   string pdb_file;
   LocateResult result = LocateSymbolFile(missing, &pdb_file);
   if (result != LOCATE_SUCCESS) {
-    return result;
+    fprintf(stderr, "Fallback to PE-only symbol generation for: %s\n",
+        missing.debug_file.c_str());
+    return LocateAndConvertPEFile(missing, keep_pe_file, converted_symbol_file,
+        out_pe_file);
   }
 
   if (symbol_file && keep_symbol_file) {
@@ -525,7 +529,7 @@ MSSymbolServerConverter::LocateAndConvertSymbolFile(
 #if _MSC_VER >= 1400  // MSVC 2005/8
   errno_t err;
   if ((err = fopen_s(&converted_output, converted_symbol_file->c_str(), "w"))
-      != 0) {
+    != 0) {
 #else  // _MSC_VER >= 1400
   // fopen_s and errno_t were introduced in MSVC8.  Use fopen for earlier
   // environments.  Don't use fopen with MSVC8 and later, because it's
@@ -536,12 +540,12 @@ MSSymbolServerConverter::LocateAndConvertSymbolFile(
     err = -1;
 #endif  // _MSC_VER >= 1400
     fprintf(stderr, "LocateAndConvertSymbolFile: "
-            "fopen_s: error %d for %s %s %s %s\n",
-            err,
-            missing.debug_file.c_str(),
-            missing.debug_identifier.c_str(),
-            missing.version.c_str(),
-            converted_symbol_file->c_str());
+        "fopen_s: error %d for %s %s %s %s\n",
+        err,
+        missing.debug_file.c_str(),
+        missing.debug_identifier.c_str(),
+        missing.version.c_str(),
+        converted_symbol_file->c_str());
     return LOCATE_FAILURE;
   }
 
@@ -562,6 +566,123 @@ MSSymbolServerConverter::LocateAndConvertSymbolFile(
 
   if (keep_symbol_file) {
     pdb_deleter.Release();
+  }
+
+  if (keep_pe_file) {
+    pe_deleter.Release();
+  }
+
+  sym_deleter.Release();
+
+  return LOCATE_SUCCESS;
+}
+
+MSSymbolServerConverter::LocateResult
+MSSymbolServerConverter::LocateAndConvertPEFile(
+    const MissingSymbolInfo &missing,
+    bool keep_pe_file,
+    string *converted_symbol_file,
+    string *out_pe_file) {
+  assert(converted_symbol_file);
+  converted_symbol_file->clear();
+
+  string pe_file;
+  MSSymbolServerConverter::LocateResult result = LocatePEFile(missing,
+      &pe_file);
+  if (result != LOCATE_SUCCESS) {
+    fprintf(stderr, "WARNING: Could not download: %s\n", pe_file.c_str());
+    return result;
+  }
+
+  if (out_pe_file && keep_pe_file) {
+    *out_pe_file = pe_file;
+  }
+
+  // Conversion may fail because the file is corrupt.  If a broken file is
+  // kept in the local cache, LocatePEFile will not hit the network again
+  // to attempt to locate it.  To guard against problems like this, the
+  // PE file in the local cache will be removed if conversion fails.
+  AutoDeleter pe_deleter(pe_file);
+
+  // Be sure that it's a .exe or .dll file, since we'll be replacing extension
+  // with .sym for the converted file's name.
+  string pe_extension = pe_file.substr(pe_file.length() - 4);
+  // strcasecmp is called _stricmp here.
+  if (_stricmp(pe_extension.c_str(), ".exe") != 0 &&
+    _stricmp(pe_extension.c_str(), ".dll") != 0) {
+    fprintf(stderr, "LocateAndConvertPEFile: "
+        "no .dll/.exe extension for %s %s %s %s\n",
+        missing.debug_file.c_str(),
+        missing.debug_identifier.c_str(),
+        missing.version.c_str(),
+        pe_file.c_str());
+    return LOCATE_FAILURE;
+  }
+
+  *converted_symbol_file = pe_file.substr(0, pe_file.length() - 4) + ".sym";
+
+  FILE *converted_output = NULL;
+#if _MSC_VER >= 1400  // MSVC 2005/8
+  errno_t err;
+  if ((err = fopen_s(&converted_output, converted_symbol_file->c_str(), "w"))
+      != 0) {
+#else  // _MSC_VER >= 1400
+  // fopen_s and errno_t were introduced in MSVC8.  Use fopen for earlier
+  // environments.  Don't use fopen with MSVC8 and later, because it's
+  // deprecated.  fopen does not provide reliable error codes, so just use
+  // -1 in the event of a failure.
+  int err;
+  if (!(converted_output = fopen(converted_symbol_file->c_str(), "w"))) {
+    err = -1;
+#endif  // _MSC_VER >= 1400
+    fprintf(stderr, "LocateAndConvertPEFile: "
+        "fopen_s: error %d for %s %s %s %s\n",
+        err,
+        missing.debug_file.c_str(),
+        missing.debug_identifier.c_str(),
+        missing.version.c_str(),
+        converted_symbol_file->c_str());
+    return LOCATE_FAILURE;
+  }
+  AutoDeleter sym_deleter(*converted_symbol_file);
+
+  wstring pe_file_w;
+  if (!WindowsStringUtils::safe_mbstowcs(pe_file, &pe_file_w)) {
+    fprintf(stderr,
+        "LocateAndConvertPEFile: "
+        "WindowsStringUtils::safe_mbstowcs failed for %s\n",
+        pe_file.c_str());
+    return LOCATE_FAILURE;
+  }
+  PESourceLineWriter writer(pe_file_w);
+  PDBModuleInfo module_info;
+  if (!writer.GetModuleInfo(&module_info)) {
+    fprintf(stderr, "LocateAndConvertPEFile: "
+        "PESourceLineWriter::GetModuleInfo failed for %s %s %s %s\n",
+        missing.debug_file.c_str(),
+        missing.debug_identifier.c_str(),
+        missing.version.c_str(),
+        pe_file.c_str());
+    return LOCATE_FAILURE;
+  }
+  if (module_info.cpu.compare(L"x86_64") != 0) {
+    // This module is not x64 so we cannot generate Breakpad symbols from the
+    // PE alone. Don't delete PE-- no need to retry download.
+    pe_deleter.Release();
+    return LOCATE_FAILURE;
+  }
+
+  bool success = writer.WriteSymbols(converted_output);
+  fclose(converted_output);
+
+  if (!success) {
+    fprintf(stderr, "LocateAndConvertPEFile: "
+        "PESourceLineWriter::WriteMap failed for %s %s %s %s\n",
+        missing.debug_file.c_str(),
+        missing.debug_identifier.c_str(),
+        missing.version.c_str(),
+        pe_file.c_str());
+    return LOCATE_FAILURE;
   }
 
   if (keep_pe_file) {
