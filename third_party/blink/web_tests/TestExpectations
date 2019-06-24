@@ -6043,6 +6043,9 @@ crbug.com/964239 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-margin
 # Workaround for bug; should be removed soon.
 crbug.com/959693 external/wpt/trusted-types/WorkerGlobalScope-importScripts.https.html [ Timeout ]
 
+# Allow failure until its appearance gets stable.
+crbug.com/972476 std-switch/switch-appearance.html [ Failure ]
+
 # Sheriff 2019-05-20
 crbug.com/963739 [ Fuchsia ] synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Timeout ]
 crbug.com/964239 external/wpt/css/css-scroll-snap/scroll-margin.html [ Pass Failure ]
