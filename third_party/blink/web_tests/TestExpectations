@@ -367,8 +367,6 @@ crbug.com/363609 external/wpt/css/css-transforms/rotateY-180deg-with-overflow-sc
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg.html [ Failure ]
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg-clip.html [ Failure ]
 
-# LayoutNG fixes this
-
 # ====== Paint team owned tests to here ======
 
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
@@ -705,11 +703,6 @@ crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.
-
-# Tests for LayoutNG to pass, but not planned to fix for pre-LayoutNG.
-crbug.com/836300 fast/css3-text/css3-text-decoration/text-decoration-skip-ink-links.html [ Pass Failure ]
-
-# ====== LayoutNG ======
 
 crbug.com/636993 external/wpt/css/css-text-decor/text-decoration-color.html [ Failure ]
 crbug.com/591099 css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html [ Failure ]
