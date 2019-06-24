@@ -541,6 +541,9 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnableConsolidatedMovementXY(
       base::FeatureList::IsEnabled(features::kConsolidatedMovementXY));
+
+  WebRuntimeFeatures::EnableStreamsNative(
+      base::FeatureList::IsEnabled(blink::features::kStreamsNative));
 }
 
 }  // namespace

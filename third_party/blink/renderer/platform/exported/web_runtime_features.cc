@@ -699,4 +699,8 @@ void WebRuntimeFeatures::EnableConsolidatedMovementXY(bool enable) {
   RuntimeEnabledFeatures::SetConsolidatedMovementXYEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableStreamsNative(bool enable) {
+  RuntimeEnabledFeatures::SetStreamsNativeEnabled(enable);
+}
+
 }  // namespace blink
