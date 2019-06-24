@@ -2548,4 +2548,65 @@ TEST_F(EventHandlerSimTest,
             GetDocument().getElementById("outside"));
 }
 
+// Test that mouse right button down and move to an iframe will route the events
+// to iframe correctly.
+TEST_F(EventHandlerSimTest, MouseRightButtonDownMoveToIFrame) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest frame_resource("https://example.com/frame.html", "text/html");
+
+  LoadURL("https://example.com/test.html");
+
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    div {
+      width: 200px;
+      height: 200px;
+    }
+    iframe {
+      width: 200px;
+      height: 200px;
+    }
+    </style>
+    <div></div>
+    <iframe id='frame' src='frame.html'></iframe>
+  )HTML");
+
+  frame_resource.Complete("<!DOCTYPE html>");
+  Compositor().BeginFrame();
+  WebMouseEvent mouse_down_outside_event(
+      WebMouseEvent::kMouseDown, WebFloatPoint(300, 29), WebFloatPoint(300, 29),
+      WebPointerProperties::Button::kRight, 0,
+      WebInputEvent::Modifiers::kRightButtonDown,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_down_outside_event.SetFrameScale(1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_down_outside_event));
+
+  WebMouseEvent mouse_move_outside_event(
+      WebMouseEvent::kMouseMove, WebFloatPoint(300, 29), WebFloatPoint(300, 29),
+      WebPointerProperties::Button::kRight, 0,
+      WebInputEvent::Modifiers::kRightButtonDown,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_move_outside_event.SetFrameScale(1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_move_outside_event));
+
+  WebMouseEvent mouse_move_inside_event(
+      WebMouseEvent::kMouseMove, WebFloatPoint(100, 229),
+      WebFloatPoint(100, 229), WebPointerProperties::Button::kRight, 0,
+      WebInputEvent::Modifiers::kRightButtonDown,
+      WebInputEvent::GetStaticTimeStampForTests());
+  mouse_move_inside_event.SetFrameScale(1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_move_inside_event));
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->GetEventHandler().IsMousePositionUnknown());
+  EXPECT_FALSE(To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild())
+                   ->GetEventHandler()
+                   .IsMousePositionUnknown());
+}
+
 }  // namespace blink
