@@ -57,6 +57,8 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 // Property defined in InfobarUIDelegate.
 @synthesize delegate = _delegate;
 // Property defined in InfobarUIDelegate.
+@synthesize hasBadge = _hasBadge;
+// Property defined in InfobarUIDelegate.
 @synthesize infobarType = _infobarType;
 // Property defined in InfobarUIDelegate.
 @synthesize presented = _presented;
@@ -68,6 +70,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   if (self) {
     _infobarDelegate = infoBarDelegate;
     _presented = YES;
+    _hasBadge = YES;
     _infobarType = infobarType;
   }
   return self;
