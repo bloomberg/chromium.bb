@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <script src="../../../resources/ahem.js"></script>
-<input id="input">
+<input id="input" value="Guy WithAVeryLongLastNameThatCouldWrap" style="width: 99px;" >
 <script>
 input.focus();
-internals.setSuggestedValue(input, 'Guy WithAVeryLongLastNameThatCouldWrap');
+input.setSelectionRange(0,0);
 internals.setAutofilled(input, true);
-input.style.width = '99px';
 </script>
