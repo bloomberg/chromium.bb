@@ -440,6 +440,7 @@ jumbo_static_library("test_support") {
     deps += [
       "//content/shell:android_shell_descriptors",
       "//mojo/public/java/system:native_support",
+      "//testing/android/native_test:native_browser_test_support",
     ]
   } else {
     sources += [
