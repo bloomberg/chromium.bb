@@ -39,7 +39,8 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
         return new GridTabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getToolbarManager(), activity.getTabModelSelector(),
                 activity.getTabContentManager(), activity.getCompositorViewHolder(),
-                activity.getFullscreenManager(), activity, activity::onBackPressed);
+                activity.getFullscreenManager(), activity,
+                activity.getMenuOrKeyboardActionController(), activity::onBackPressed);
     }
 
     @Override
