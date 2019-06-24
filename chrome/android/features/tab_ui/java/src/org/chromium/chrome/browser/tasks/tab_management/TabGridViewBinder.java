@@ -58,19 +58,12 @@ class TabGridViewBinder {
                 holder.itemView.setForeground(
                         item.get(TabProperties.IS_SELECTED) ? drawable : null);
             }
+        } else if (TabProperties.IS_HIDDEN == propertyKey) {
+            updateThumbnail(holder, item);
         } else if (TabProperties.FAVICON == propertyKey) {
             holder.favicon.setImageDrawable(item.get(TabProperties.FAVICON));
         } else if (TabProperties.THUMBNAIL_FETCHER == propertyKey) {
-            TabListMediator.ThumbnailFetcher fetcher = item.get(TabProperties.THUMBNAIL_FETCHER);
-            if (fetcher == null) return;
-            Callback<Bitmap> callback = result -> {
-                if (result == null) {
-                    holder.resetThumbnail();
-                } else {
-                    holder.thumbnail.setImageBitmap(result);
-                }
-            };
-            fetcher.fetch(callback);
+            updateThumbnail(holder, item);
         } else if (TabProperties.TAB_ID == propertyKey) {
             holder.setTabId(item.get(TabProperties.TAB_ID));
         }
@@ -124,5 +117,24 @@ class TabGridViewBinder {
     private static void onBindSelectableTab(
             TabGridViewHolder holder, PropertyModel item, PropertyKey propertyKey) {
         // TODO(meiliang): Bind SELECTABLE_TAB properties
+    }
+
+    private static void updateThumbnail(TabGridViewHolder holder, PropertyModel item) {
+        if (item.get(TabProperties.IS_HIDDEN)) {
+            // Release the thumbnail to save memory.
+            holder.resetThumbnail();
+            return;
+        }
+
+        TabListMediator.ThumbnailFetcher fetcher = item.get(TabProperties.THUMBNAIL_FETCHER);
+        if (fetcher == null) return;
+        Callback<Bitmap> callback = result -> {
+            if (result == null) {
+                holder.resetThumbnail();
+            } else {
+                holder.thumbnail.setImageBitmap(result);
+            }
+        };
+        fetcher.fetch(callback);
     }
 }

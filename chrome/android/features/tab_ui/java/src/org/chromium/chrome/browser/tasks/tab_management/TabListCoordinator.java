@@ -192,6 +192,10 @@ public class TabListCoordinator implements Destroyable {
         return mMediator.resetWithListOfTabs(tabs);
     }
 
+    void softCleanup() {
+        mMediator.softCleanup();
+    }
+
     void prepareOverview() {
         mRecyclerView.prepareOverview();
     }
