@@ -26,6 +26,13 @@ import org.chromium.chrome.R;
             R.string.accessibility_bottom_tab_strip_expand_tab_sheet,
             R.string.accessibility_bottom_tab_grid_close_tab_sheet,
             R.string.tabswitcher_create_group,
+            R.string.tab_selection_editor_group,
+            R.string.accessibility_group_selected_tabs,
+            R.string.tab_selection_editor_toolbar_select_tabs,
+            R.string.accessibility_select_tab,
+            R.string.accessibility_unselect_tab,
+            R.string.undo_bar_group_tabs_message,
+            R.string.menu_group_tabs,
     };
 
     private SilenceLintErrors() {}
