@@ -153,6 +153,12 @@ the log "log" scope will be subscribed by default. Useful to control which
 streams to write data into the logger and can be helpful in diagnosing early
 start-up code.
 .TP
+\fB\-\^f\fIscope1,scope2\fR, \fB\-\-flight-rec-scopes\fR=\fIscope1,scope2\fR
+Specify to which scopes should subscribe to. Useful to control which streams to
+write data into the flight recorder. Flight recorder has limited space, once
+the flight recorder is full new data will overwrite the old data. Without any
+scopes specified, it subscribes to 'log' and 'drm-backend' scopes.
+.TP
 .BR \-\-version
 Print the program version.
 .TP

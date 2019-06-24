@@ -66,6 +66,8 @@
 #include "../remoting/remoting-plugin.h"
 
 #define WINDOW_TITLE "Weston Compositor"
+/* flight recorder size (in bytes) */
+#define DEFAULT_FLIGHT_REC_SIZE (5 * 1024 * 1024)
 
 struct wet_output_config {
 	int width;
@@ -643,6 +645,9 @@ usage(int error_code)
 		"  --wait-for-debugger\tRaise SIGSTOP on start-up\n"
 		"  --debug\t\tEnable debug extension\n"
 		"  -l, --logger-scopes=SCOPE\n\t\t\tSpecify log scopes to "
+			"subscribe to.\n\t\t\tCan specify multiple scopes, "
+			"each followed by comma\n"
+		"  -f, --flight-rec-scopes=SCOPE\n\t\t\tSpecify log scopes to "
 			"subscribe to.\n\t\t\tCan specify multiple scopes, "
 			"each followed by comma\n"
 		"  -h, --help\t\tThis help message\n\n");
@@ -2937,6 +2942,7 @@ int main(int argc, char *argv[])
 	char *option_modules = NULL;
 	char *log = NULL;
 	char *log_scopes = NULL;
+	char *flight_rec_scopes = NULL;
 	char *server_socket = NULL;
 	int32_t idle_time = -1;
 	int32_t help = 0;
@@ -2954,6 +2960,7 @@ int main(int argc, char *argv[])
 	struct wet_compositor wet = { 0 };
 	struct weston_log_context *log_ctx = NULL;
 	struct weston_log_subscriber *logger = NULL;
+	struct weston_log_subscriber *flight_rec = NULL;
 	int require_input;
 	sigset_t mask;
 
@@ -2977,6 +2984,7 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_BOOLEAN, "wait-for-debugger", 0, &wait_for_debugger },
 		{ WESTON_OPTION_BOOLEAN, "debug", 0, &debug_protocol },
 		{ WESTON_OPTION_STRING, "logger-scopes", 'l', &log_scopes },
+		{ WESTON_OPTION_STRING, "flight-rec-scopes", 'f', &flight_rec_scopes },
 	};
 
 	wl_list_init(&wet.layoutput_list);
@@ -3015,6 +3023,15 @@ int main(int argc, char *argv[])
 		weston_log_setup_scopes(log_ctx, logger, log_scopes);
 	else
 		weston_log_subscribe(log_ctx, logger, "log");
+
+	flight_rec = weston_log_subscriber_create_flight_rec(DEFAULT_FLIGHT_REC_SIZE);
+	if (flight_rec_scopes) {
+		weston_log_setup_scopes(log_ctx, flight_rec, flight_rec_scopes);
+	} else {
+		/* subscribe to both 'log' and 'drm-backend' scope */
+		weston_log_subscribe(log_ctx, flight_rec, "log");
+		weston_log_subscribe(log_ctx, flight_rec, "drm-backend");
+	}
 
 	weston_log("%s\n"
 		   STAMP_SPACE "%s\n"
@@ -3223,6 +3240,7 @@ out:
 	weston_log_ctx_compositor_destroy(wet.compositor);
 	weston_compositor_destroy(wet.compositor);
 	weston_log_subscriber_destroy_log(logger);
+	weston_log_subscriber_destroy_flight_rec(flight_rec);
 
 out_signals:
 	for (i = ARRAY_LENGTH(signals) - 1; i >= 0; i--)
