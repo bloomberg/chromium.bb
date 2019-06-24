@@ -18,6 +18,9 @@ class DisplayPanel extends HTMLElement {
     /** @private {?Element} */
     this.panels_ = this.shadowRoot.querySelector('#panels');
 
+    /** @private {!function(!Event)} */
+    this.listener_;
+
     /**
      * True if the panel is not visible.
      * @type {boolean}
@@ -77,7 +80,46 @@ class DisplayPanel extends HTMLElement {
               /* Limit to 3 visible progress panels before scroll */
               #panels {
                   max-height: calc(92px * 3);
-                  overflow-y: auto;
+              }
+              xf-panel-item:not(:only-child) {
+                --multi-progress-height: 92px;
+              }
+              @keyframes setcollapse {
+                from {
+                  max-height: 0;
+                  max-width: 0;
+                  opacity: 0;
+                }
+                to {
+                  max-height: calc(92px * 3);;
+                  max-width: 400px;
+                  opacity: 1;
+                }
+              }
+
+              @keyframes setexpand {
+                from {
+                  max-height: calc(92px * 3);;
+                  max-width: 400px;
+                  opacity: 1;
+                }
+                to {
+                  max-height: 0;
+                  max-width: 0;
+                  opacity: 0;
+                }
+              }
+              .expanded {
+                animation: setcollapse 150ms forwards;
+              }
+              .collapsed {
+                animation: setexpand 150ms forwards;
+              }
+              .expanding {
+                overflow: hidden;
+              }
+              .expandfinished {
+                overflow-y: auto;
               }
               xf-panel-item:not(:only-child) {
                 --multi-progress-height: 92px;
@@ -88,6 +130,27 @@ class DisplayPanel extends HTMLElement {
               <div id="separator" hidden></div>
               <div id="panels"></div>
             </div>`;
+  }
+
+  /**
+   * Re-enable scrollbar visibility after expand/contract animation.
+   * @param {!Event} event
+   */
+  panelExpandFinished(event) {
+    this.classList.remove('expanding');
+    this.classList.add('expandfinished');
+    this.removeEventListener('animationend', this.listener_);
+  }
+
+  /**
+   * Hides the active panel items at end of collapse animation.
+   * @param {!Event} event
+   */
+  panelCollapseFinished(event) {
+    this.hidden = true;
+    this.classList.remove('expanding');
+    this.classList.add('expandfinished');
+    this.removeEventListener('animationend', this.listener_);
   }
 
   /**
@@ -104,11 +167,17 @@ class DisplayPanel extends HTMLElement {
       expandButton.setAttribute('data-category', 'collapse');
       panel.panels_.hidden = false;
       panel.separator_.hidden = false;
+      panel.panels_.listener_ = panel.panelExpandFinished;
+      panel.panels_.addEventListener('animationend', panel.panelExpandFinished);
+      panel.panels_.setAttribute('class', 'expanded expanding');
     } else {
       panel.collapsed_ = true;
       expandButton.setAttribute('data-category', 'expand');
-      panel.panels_.hidden = true;
       panel.separator_.hidden = true;
+      panel.panels_.listener_ = panel.panelCollapseFinished;
+      panel.panels_.addEventListener(
+          'animationend', panel.panelCollapseFinished);
+      panel.panels_.setAttribute('class', 'collapsed expanding');
     }
   }
 
@@ -149,6 +218,9 @@ class DisplayPanel extends HTMLElement {
         button.removeEventListener('click', this.toggleSummary);
       }
       summaryPanel.remove();
+      this.panels_.hidden = false;
+      this.separator_.hidden = true;
+      this.panels_.classList.remove('collapsed');
       return;
     }
     // Show summary panel if there are more than 1 progress panels.
