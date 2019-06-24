@@ -112,16 +112,6 @@ bool IsPasswordFormReappeared(const PasswordForm& observed_form,
   return false;
 }
 
-// Helper UMA reporting function for differences in URLs during form submission.
-void RecordWhetherTargetDomainDiffers(const GURL& src, const GURL& target) {
-  bool target_domain_differs =
-      !net::registry_controlled_domains::SameDomainOrHost(
-          src, target,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.SubmitNavigatesToDifferentDomain",
-                        target_domain_differs);
-}
-
 bool IsSignupForm(const PasswordForm& form) {
   return !form.new_password_element.empty() && form.password_element.empty();
 }
@@ -1183,7 +1173,6 @@ void PasswordManager::OnLoginSuccessful() {
 
   submitted_manager->GetMetricsRecorder()->LogSubmitPassed();
 
-  RecordWhetherTargetDomainDiffers(main_frame_url_, client_->GetMainFrameURL());
   UMA_HISTOGRAM_BOOLEAN(
       "PasswordManager.SuccessfulLoginHappened",
       submitted_manager->GetSubmittedForm()->origin.SchemeIsCryptographic());

@@ -46837,6 +46837,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PostSubmitNavigation">
+  <obsolete>
+    Deprecated 06/2019.
+  </obsolete>
   <int value="0" label="Same domain"/>
   <int value="1" label="Different domain"/>
 </enum>
