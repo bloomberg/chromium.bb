@@ -554,6 +554,7 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
     "//chrome/browser/android/webapk/webapk_types.h",
     "//chrome/browser/banners/app_banner_settings_helper.h",
     "//chrome/browser/notifications/notification_channels_provider_android.h",
+    "//chrome/browser/notifications/notification_handler.h",
     "//chrome/browser/notifications/notification_platform_bridge_android.cc",
     "//chrome/browser/ntp_snippets/ntp_snippets_metrics.h",
     "//chrome/browser/profiles/profile_metrics.h",
