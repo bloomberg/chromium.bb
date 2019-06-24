@@ -7438,7 +7438,9 @@ static int8_t estimate_wedge_sign(const AV1_COMP *cpi, const MACROBLOCK *x,
   int src_stride = p->src.stride;
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
-  uint32_t esq[2][4];
+  const int bw_by2 = bw >> 1;
+  const int bh_by2 = bh >> 1;
+  uint32_t esq[2][2];
   int64_t tl, br;
 
   const BLOCK_SIZE f_index = split_qtr[bsize];
@@ -7449,27 +7451,25 @@ static int8_t estimate_wedge_sign(const AV1_COMP *cpi, const MACROBLOCK *x,
     pred1 = CONVERT_TO_BYTEPTR(pred1);
   }
 
+  // Residual variance computation over relevant quandrants in order to
+  // find TL + BR, TL = sum(1st,2nd,3rd) quadrants of (pred0 - pred1),
+  // BR = sum(2nd,3rd,4th) quadrants of (pred1 - pred0)
+  // The 2nd and 3rd quadrants cancel out in TL + BR
+  // Hence TL + BR = 1st quadrant of (pred0-pred1) + 4th of (pred1-pred0)
+  // TODO(nithya): Sign estimation assumes 45 degrees (1st and 4th quadrants)
+  // for all codebooks; experiment with other quadrant combinations for
+  // 0, 90 and 135 degrees also.
   cpi->fn_ptr[f_index].vf(src, src_stride, pred0, stride0, &esq[0][0]);
-  cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, pred0 + bw / 2, stride0,
+  cpi->fn_ptr[f_index].vf(src + bh_by2 * src_stride + bw_by2, src_stride,
+                          pred0 + bh_by2 * stride0 + bw_by2, stride0,
                           &esq[0][1]);
-  cpi->fn_ptr[f_index].vf(src + bh / 2 * src_stride, src_stride,
-                          pred0 + bh / 2 * stride0, stride0, &esq[0][2]);
-  cpi->fn_ptr[f_index].vf(src + bh / 2 * src_stride + bw / 2, src_stride,
-                          pred0 + bh / 2 * stride0 + bw / 2, stride0,
-                          &esq[0][3]);
   cpi->fn_ptr[f_index].vf(src, src_stride, pred1, stride1, &esq[1][0]);
-  cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, pred1 + bw / 2, stride1,
+  cpi->fn_ptr[f_index].vf(src + bh_by2 * src_stride + bw_by2, src_stride,
+                          pred1 + bh_by2 * stride1 + bw_by2, stride0,
                           &esq[1][1]);
-  cpi->fn_ptr[f_index].vf(src + bh / 2 * src_stride, src_stride,
-                          pred1 + bh / 2 * stride1, stride0, &esq[1][2]);
-  cpi->fn_ptr[f_index].vf(src + bh / 2 * src_stride + bw / 2, src_stride,
-                          pred1 + bh / 2 * stride1 + bw / 2, stride0,
-                          &esq[1][3]);
 
-  tl = ((int64_t)esq[0][0] + esq[0][1] + esq[0][2]) -
-       ((int64_t)esq[1][0] + esq[1][1] + esq[1][2]);
-  br = ((int64_t)esq[1][3] + esq[1][1] + esq[1][2]) -
-       ((int64_t)esq[0][3] + esq[0][1] + esq[0][2]);
+  tl = ((int64_t)esq[0][0]) - ((int64_t)esq[1][0]);
+  br = ((int64_t)esq[1][1]) - ((int64_t)esq[0][1]);
   return (tl + br > 0);
 }
 
