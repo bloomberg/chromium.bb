@@ -1609,7 +1609,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis "Aktivér browserlogin" er angivet for politikken, har brugeren tilladelse til at logge ind i browseren, og brugeren logges automatisk ind i browseren, når vedkommende er logget ind i Google-webtjenester såsom Gmail. Når brugeren er logget ind i browseren, gemmes vedkommendes kontooplysninger i browseren. Det betyder dog ikke, at Chrome-synkronisering som standard aktiveres. Brugeren skal selv tilvælge denne funktion. Aktivering af denne politik forhindrer brugeren i at deaktivere den indstilling, der tillader browserlogin. Brug politikken "SyncDisabled" til at styre tilgængeligheden af Chrome-synkronisering.
 
-      Hvis "Kræv browserlogin" er angivet for politikken, får brugeren vist en dialogboks til kontovalg, hvor vedkommende skal vælge og logge ind på en konto for at benytte browseren. Dette sikrer, at politikker, der er knyttet til administrerede konti, anvendes og håndhæves. Denne indstilling aktiverer som standard Chrome-synkronisering for kontoen, undtagen i tilfælde, hvor synkronisering er deaktiveret af domæneadministratoren eller via politikken "SyncDisabled". Standardværdien for BrowserGuestModeEnabled angives som Falsk. Bemærk! Eksisterende profiler, hvor der ikke er logget ind, låses og kan ikke længere anvendes efter aktivering af denne politik. Du kan få flere oplysninger i artiklen i Hjælp: https://support.google.com/chrome/a/answer/7572556.
+      Hvis "Kræv browserlogin" er angivet for politikken, får brugeren vist en dialogboks til kontovalg, hvor vedkommende skal vælge og logge ind på en konto for at benytte browseren. Dette sikrer, at politikker, der er knyttet til mangerstyrede konti, anvendes og håndhæves. Denne indstilling aktiverer som standard Chrome-synkronisering for kontoen, undtagen i tilfælde, hvor synkronisering er deaktiveret af domæneadministratoren eller via politikken "SyncDisabled". Standardværdien for BrowserGuestModeEnabled angives som Falsk. Bemærk! Eksisterende profiler, hvor der ikke er logget ind, låses og kan ikke længere anvendes efter aktivering af denne politik. Du kan få flere oplysninger i artiklen i Hjælp: https://support.google.com/chrome/a/answer/7572556.
 
       Hvis politikken ikke konfigureres, kan brugeren selv bestemme, om muligheden for browserlogin skal aktiveres, og anvende den efter eget behov.</translation>
 <translation id="3911737181201537215">Denne politik påvirker ikke logføring udført af Android.</translation>
@@ -2788,7 +2788,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="6190367314942602985">Rapportér oplysninger om brugeridentifikation</translation>
 <translation id="6197453924249895891">Giver virksomhedsnøgler adgang til udvidelser.
 
-Nøgler er beregnet til virksomhedsbrug, hvis de er genereret ved hjælp af chrome.enterprise.platformKeys API på en administreret konto. Nøgler, der er importeret eller genereret på en anden måde, er ikke beregnet til virksomhedsbrug.
+Nøgler er beregnet til virksomhedsbrug, hvis de er genereret ved hjælp af chrome.enterprise.platformKeys API på en mangerstyret konto. Nøgler, der er importeret eller genereret på en anden måde, er ikke beregnet til virksomhedsbrug.
 
 Adgang til nøgler, der er beregnet til virksomhedsbrug, kontrolleres alene af denne politik. Brugeren kan hverken give udvidelser adgang til virksomhedsnøgler eller fjerne deres adgang.
 
@@ -3800,7 +3800,7 @@ Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver
           Hvis du angiver denne politik, kan brugerne ikke ændre eller tilsidesætte den.
 
           Hvis denne politik ikke angives, vil høj kontrast være deaktiveret, men brugeren kan når som helst slå funktionen til.</translation>
-<translation id="815061180603915310">Hvis denne politik er aktiveret, tvinger den profilen til at skifte til engangsbruger. Hvis denne politik er angivet som en OS-politik (f.eks. GPO i Windows), vil den være gældende for alle profiler i systemet. Hvis politikken er angivet som en cloudpolitik, vil den kun være gældende for en profil, der er logget ind med en administreret konto.
+<translation id="815061180603915310">Hvis denne politik er aktiveret, tvinger den profilen til at skifte til engangsbruger. Hvis denne politik er angivet som en OS-politik (f.eks. GPO i Windows), vil den være gældende for alle profiler i systemet. Hvis politikken er angivet som en cloudpolitik, vil den kun være gældende for en profil, der er logget ind med en mangerstyret konto.
 
       I denne tilstand gemmes profildataene kun på harddisken, så længe brugersessionen varer. Funktioner som f.eks. browserhistorik, udvidelser og hertil knyttede webdata som f.eks. cookies og webdatabaser gemmes ikke, når browseren lukkes. Men dette forhindrer ikke brugeren i at downloade eventuelle data til harddisken manuelt, gemme sider eller udskrive dem.
 
@@ -4012,7 +4012,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
       (uden citationstegn) til listen over domæner).
 
       Denne indstilling forhindrer brugeren i at logge ind og tilføjer en sekundær
-      konto på en administreret konto, der kræver Google-godkendelse, hvis denne
+      konto på en mangerstyret konto, der kræver Google-godkendelse, hvis denne
       konto ikke tilhører den tidligere nævnte liste over tilladte domæner.
 
       Hvis du undlader at markere/konfigurere denne indstilling, kan brugerne
