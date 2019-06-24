@@ -5811,7 +5811,6 @@ crbug.com/936165 media/autoplay-muted.html [ Timeout Pass ]
 
 # Sheriff 2019-02-27
 crbug.com/936279 external/wpt/import-maps/fallback-disallowed.sub.tentative.html [ Failure Pass Timeout ]
-crbug.com/936615 [ Win7 ] external/wpt/kv-storage/values.https.html [ Timeout Pass ]
 
 
 # Sheriff 2019-02-28
