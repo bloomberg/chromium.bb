@@ -203,7 +203,8 @@ void TabListSceneLayer::PutTabLayer(
 void TabListSceneLayer::PutBackgroundLayer(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jobj,
-    jint resource_id) {
+    jint resource_id,
+    jfloat alpha) {
   int ui_resource_id = resource_manager_->GetUIResourceId(
       ui::ANDROID_RESOURCE_TYPE_DYNAMIC, resource_id);
   if (ui_resource_id == 0)
@@ -221,6 +222,7 @@ void TabListSceneLayer::PutBackgroundLayer(
           ->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC, resource_id)
           ->size();
   background_layer_->SetBounds(size);
+  background_layer_->SetOpacity(alpha);
 }
 
 void TabListSceneLayer::OnDetach() {

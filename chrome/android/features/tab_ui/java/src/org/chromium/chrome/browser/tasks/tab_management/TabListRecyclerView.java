@@ -29,6 +29,7 @@ import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
  */
 class TabListRecyclerView extends RecyclerView {
     public static final long BASE_ANIMATION_DURATION_MS = 218;
+    public static final long FINAL_FADE_IN_DURATION_MS = 50;
     public static final long RESTORE_ANIMATION_DURATION_MS = 10;
     public static final int ANIMATION_STATUS_RESTORE = 0;
     public static final int ANIMATION_STATUS_ZOOM_OUT = 1;
@@ -106,11 +107,15 @@ class TabListRecyclerView extends RecyclerView {
         assert mFadeOutAnimator == null;
         mListener.startedShowing(animate);
 
+        long duration = ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+                ? FINAL_FADE_IN_DURATION_MS
+                : BASE_ANIMATION_DURATION_MS;
+
         setAlpha(0);
         setVisibility(View.VISIBLE);
         mFadeInAnimator = ObjectAnimator.ofFloat(this, View.ALPHA, 1);
         mFadeInAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
-        mFadeInAnimator.setDuration(BASE_ANIMATION_DURATION_MS);
+        mFadeInAnimator.setDuration(duration);
         mFadeInAnimator.start();
         mFadeInAnimator.addListener(new AnimatorListenerAdapter() {
             @Override

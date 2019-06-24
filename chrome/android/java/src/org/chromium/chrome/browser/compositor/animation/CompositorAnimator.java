@@ -13,7 +13,9 @@ import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
+import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
@@ -114,6 +116,10 @@ public class CompositorAnimator extends Animator {
             new DecelerateInterpolator();
     public static final FastOutSlowInInterpolator FAST_OUT_SLOW_IN_INTERPOLATOR =
             new FastOutSlowInInterpolator();
+    public static final LinearOutSlowInInterpolator LINEAR_OUT_SLOW_IN_INTERPOLATOR =
+            new LinearOutSlowInInterpolator();
+    public static final FastOutLinearInInterpolator FAST_OUT_LINEAR_IN_INTERPOLATOR =
+            new FastOutLinearInInterpolator();
     public static final LinearInterpolator LINEAR_INTERPOLATOR = new LinearInterpolator();
 
     /**
@@ -162,6 +168,29 @@ public class CompositorAnimator extends Animator {
      * @param handler The {@link CompositorAnimationHandler} responsible for running the animation.
      * @param target The object to modify.
      * @param property The property of the object to modify.
+     * @param startValue The {@link Supplier} of the starting animation value.
+     * @param endValue The {@link Supplier} of the end animation value.
+     * @param durationMs The duration of the animation in ms.
+     * @param interpolator The time interpolator for the animation.
+     * @return A {@link CompositorAnimator} for the property.
+     */
+    public static <T> CompositorAnimator ofFloatProperty(CompositorAnimationHandler handler,
+            final T target, final FloatProperty<T> property, Supplier<Float> startValue,
+            Supplier<Float> endValue, long durationMs, TimeInterpolator interpolator) {
+        CompositorAnimator animator = new CompositorAnimator(handler);
+        animator.setValues(startValue, endValue);
+        animator.setDuration(durationMs);
+        animator.addUpdateListener(
+                (CompositorAnimator a) -> property.setValue(target, a.getAnimatedValue()));
+        animator.setInterpolator(interpolator);
+        return animator;
+    }
+
+    /**
+     * A utility for creating a basic animator.
+     * @param handler The {@link CompositorAnimationHandler} responsible for running the animation.
+     * @param target The object to modify.
+     * @param property The property of the object to modify.
      * @param startValue The starting animation value.
      * @param endValue The end animation value.
      * @param durationMs The duration of the animation in ms.
@@ -187,12 +216,8 @@ public class CompositorAnimator extends Animator {
     public static <T> CompositorAnimator ofFloatProperty(CompositorAnimationHandler handler,
             final T target, final FloatProperty<T> property, Supplier<Float> startValue,
             Supplier<Float> endValue, long durationMs) {
-        CompositorAnimator animator = new CompositorAnimator(handler);
-        animator.setValues(startValue, endValue);
-        animator.setDuration(durationMs);
-        animator.addUpdateListener(
-                (CompositorAnimator a) -> property.setValue(target, a.getAnimatedValue()));
-        return animator;
+        return ofFloatProperty(handler, target, property, startValue, endValue, durationMs,
+                DECELERATE_INTERPOLATOR);
     }
 
     /** An interface for listening for frames of an animation. */

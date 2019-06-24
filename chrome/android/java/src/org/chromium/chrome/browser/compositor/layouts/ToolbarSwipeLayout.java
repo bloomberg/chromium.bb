@@ -403,7 +403,7 @@ public class ToolbarSwipeLayout extends Layout {
         // contentViewport is intentionally passed for both parameters below.
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
                 layerTitleCache, tabContentManager, resourceManager, fullscreenManager,
-                SceneLayer.INVALID_RESOURCE_ID);
+                SceneLayer.INVALID_RESOURCE_ID, 0);
     }
 
     /**

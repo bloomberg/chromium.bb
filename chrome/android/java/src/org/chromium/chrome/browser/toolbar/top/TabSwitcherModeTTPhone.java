@@ -146,10 +146,18 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         // TODO(twellington): Handle interrupted animations to avoid jumps to 1.0 or 0.f.
         setAlpha(inTabSwitcherMode ? 0.0f : 1.0f);
 
+        boolean showZoomingAnimation = FeatureUtilities.isGridTabSwitcherEnabled()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION);
+        long duration = showZoomingAnimation
+                ? TopToolbarCoordinator.TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS
+                : TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS;
+
         mVisiblityAnimator =
                 ObjectAnimator.ofFloat(this, View.ALPHA, inTabSwitcherMode ? 1.0f : 0.0f);
-        mVisiblityAnimator.setDuration(
-                TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS);
+        mVisiblityAnimator.setDuration(duration);
+        if (showZoomingAnimation && inTabSwitcherMode) {
+            mVisiblityAnimator.setStartDelay(duration);
+        }
         mVisiblityAnimator.setInterpolator(new LinearInterpolator());
 
         // TODO(https://crbug.com/914868): Use consistent logic here for setting clickable/enabled
