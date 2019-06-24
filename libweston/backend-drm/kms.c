@@ -44,6 +44,10 @@
 #include "pixel-formats.h"
 #include "presentation-time-server-protocol.h"
 
+#ifndef DRM_FORMAT_MOD_LINEAR
+#define DRM_FORMAT_MOD_LINEAR 0
+#endif
+
 struct drm_property_enum_info plane_type_enums[] = {
 	[WDRM_PLANE_TYPE_PRIMARY] = {
 		.name = "Primary",
@@ -399,6 +403,12 @@ drm_plane_populate_formats(struct drm_plane *plane, const drmModePlane *kplane,
 			modifiers[count_modifiers++] = mod->modifier;
 		}
 
+		if (count_modifiers == 0) {
+			modifiers = malloc(sizeof(*modifiers));
+			*modifiers = DRM_FORMAT_MOD_LINEAR;
+			count_modifiers = 1;
+		}
+
 		plane->formats[i].format = blob_formats[i];
 		plane->formats[i].modifiers = modifiers;
 		plane->formats[i].count_modifiers = count_modifiers;
@@ -412,8 +422,12 @@ fallback:
 #endif
 	/* No IN_FORMATS blob available, so just use the old. */
 	assert(plane->count_formats == kplane->count_formats);
-	for (i = 0; i < kplane->count_formats; i++)
+	for (i = 0; i < kplane->count_formats; i++) {
 		plane->formats[i].format = kplane->formats[i];
+		plane->formats[i].modifiers = malloc(sizeof(uint64_t));
+		plane->formats[i].modifiers[0] = DRM_FORMAT_MOD_LINEAR;
+		plane->formats[i].count_modifiers = 1;
+	}
 
 	return 0;
 }
