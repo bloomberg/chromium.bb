@@ -326,13 +326,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver {
   // |StartRequest| method.
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() const;
 
-  // Returns a currently valid OAuth2 access token for the given set of scopes,
-  // or NULL if none have been cached. Note the user of this method should
-  // ensure no entry with the same |client_scopes| is added before the usage of
-  // the returned entry is done.
-  const OAuth2AccessTokenConsumer::TokenResponse* GetCachedTokenResponse(
-      const RequestParameters& client_scopes);
-
   std::unique_ptr<OAuth2TokenServiceDelegate> delegate_;
 
   // The depth of batch changes.
