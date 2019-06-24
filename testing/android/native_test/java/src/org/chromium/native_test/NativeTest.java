@@ -14,7 +14,6 @@ import android.os.Process;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.test.reporter.TestStatusReporter;
 
@@ -66,7 +65,7 @@ public class NativeTest {
     }
 
     public void preCreate(Activity activity) {
-        ChromiumMultiDexInstaller.install(activity);
+        // Empty, but subclasses override.
     }
 
     public void postCreate(Activity activity) {
