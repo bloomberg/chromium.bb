@@ -1481,6 +1481,7 @@
     },
     {
       name: "TextFragmentIdentifiers",
+      origin_trial_feature_name: "TextFragmentIdentifiers",
       status: "experimental",
     },
     {
