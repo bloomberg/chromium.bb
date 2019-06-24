@@ -5375,6 +5375,8 @@ static_library("test_support") {
       "autofill/mock_address_accessory_controller.h",
       "autofill/mock_manual_filling_view.cc",
       "autofill/mock_manual_filling_view.h",
+      "autofill/mock_password_accessory_controller.cc",
+      "autofill/mock_password_accessory_controller.h",
     ]
     deps += [ "//chrome/android:test_support_jni_headers" ]
   } else {

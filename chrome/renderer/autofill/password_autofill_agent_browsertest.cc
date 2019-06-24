@@ -72,6 +72,8 @@ const char kDisplayName[] = "display-name";
 const char kCreditCardOwnerName[] = "creditcardowner";
 const char kCreditCardNumberName[] = "creditcardnumber";
 const char kCreditCardVerificationName[] = "cvc";
+const char kSearchField[] = "search";
+const char kSocialMediaTextArea[] = "new_chirp";
 
 const char kAliceUsername[] = "alice";
 const char kAlicePassword[] = "password";
@@ -87,6 +89,19 @@ const char kFormHTML[] =
     "  <INPUT type='text' id='username'/>"
     "  <INPUT type='password' id='password'/>"
     "  <INPUT type='submit' value='Login'/>"
+    "</FORM>";
+
+const char kSocialNetworkPostFormHTML[] =
+    "<FORM id='SocialMediaPostForm' action='http://www.chirper.com'>"
+    "  <TEXTAREA id='new_chirp'>"
+    "  </TEXTAREA>"
+    "  <INPUT type='submit' value='Chirp'/>"
+    "</FORM>";
+
+const char kSearchFieldHTML[] =
+    "<FORM id='SearchFieldForm' action='http://www.gewgle.de'>"
+    "  <INPUT type='search' id='search'/>"
+    "  <INPUT type='submit' value='Chirp'/>"
     "</FORM>";
 
 const char kVisibleFormWithNoUsernameHTML[] =
@@ -3047,14 +3062,14 @@ TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutUnfillableField) {
 TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutFillableFields) {
   SimulateElementClick("random_field");
   fake_driver_.Flush();
-  EXPECT_EQ(FocusedFieldType::kFillableTextField,
+  EXPECT_EQ(FocusedFieldType::kFillableNonSearchField,
             fake_driver_.last_focused_field_type());
 
   // A username field without fill data is indistinguishable from any other text
   // field.
   SimulateElementClick(kUsernameName);
   fake_driver_.Flush();
-  EXPECT_EQ(FocusedFieldType::kFillableTextField,
+  EXPECT_EQ(FocusedFieldType::kFillableNonSearchField,
             fake_driver_.last_focused_field_type());
 
   SimulateElementClick(kPasswordName);
@@ -3067,6 +3082,23 @@ TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutFillableFields) {
   SimulateElementClick(kUsernameName);
   fake_driver_.Flush();
   EXPECT_EQ(FocusedFieldType::kFillableUsernameField,
+            fake_driver_.last_focused_field_type());
+}
+
+TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutFillablSearchField) {
+  LoadHTML(kSearchFieldHTML);
+  SimulateElementClick(kSearchField);
+  fake_driver_.Flush();
+  EXPECT_EQ(FocusedFieldType::kFillableSearchField,
+            fake_driver_.last_focused_field_type());
+}
+
+TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutFillableTextArea) {
+  LoadHTML(kSocialNetworkPostFormHTML);
+
+  SimulateElementClick(kSocialMediaTextArea);
+  fake_driver_.Flush();
+  EXPECT_EQ(FocusedFieldType::kFillableTextArea,
             fake_driver_.last_focused_field_type());
 }
 
