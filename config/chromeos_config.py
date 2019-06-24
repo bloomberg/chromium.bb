@@ -3887,6 +3887,9 @@ def ApplyCustomOverrides(site_config):
           site_config.templates.lakitu_notification_emails,
           sign_types=['base'],
           paygen=False,
+          vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                            test_suite='smoke')],
+          vm_tests_override=None,
       ),
 
       'lakitu_next-release': config_lib.BuildConfig().apply(

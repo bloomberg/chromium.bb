@@ -633,6 +633,11 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'amd64-generic-goma-full': site_config.templates.tast_vm_canary_tests,
       'betty-arc64-release': site_config.templates.tast_vm_canary_tests,
       'betty-release': site_config.templates.tast_vm_canary_tests,
+
+      'kumo-pre-cq': {
+          'vm_tests': [config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                               test_suite='smoke')],
+      }
   }
 
   for config_name, overrides in overwritten_configs.iteritems():
@@ -680,6 +685,11 @@ def IncrementalBuilders(site_config):
 
   site_config['lakitu_next-incremental'].apply(
       site_config.templates.lakitu_test_customizations,
+  )
+
+  site_config['kumo-incremental'].apply(
+      vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                        test_suite='smoke')],
   )
 
 
