@@ -183,7 +183,10 @@ function basepath(path) {
       ({ suite, path, node }) => node.then(node => ({ suite, path, node }))));
   // TODO: convert listing to tree so it can be displayed as a tree?
 
-  const info = `?runnow=${runnow ? '1' : '0'}&q=` + filters.map(encodeSelectively).join('&q=');
+  let info = `?runnow=${runnow ? '1' : '0'}`;
+  for (const f of filters) {
+    info += '&q=' + encodeSelectively(f);
+  }
   document.getElementById("info").innerText = info;
 
   const log = new Logger();

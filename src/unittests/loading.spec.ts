@@ -193,7 +193,7 @@ group.test('end2end', null, async t => {
   }
 
   t.expect(rcs[0].testcase.name === 'blah');
-  t.expect(rcs[0].testcase.params === undefined);
+  t.expect(rcs[0].testcase.params === null);
   // TODO: testcase.run probably should be private
   t.expect(rcs[0].testcase.run instanceof Function);
 
@@ -213,7 +213,7 @@ group.test('end2end', null, async t => {
     }
     t.expect(res.cases[0] === res0);
     t.expect(res0.name === 'blah');
-    t.expect(res0.params === undefined);
+    t.expect(res0.params === null);
     t.expect(res0.status === 'pass');
     t.expect(res0.timems > 0);
     if (res0.logs === undefined) {

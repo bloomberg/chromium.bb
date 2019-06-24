@@ -68,8 +68,8 @@ if (!fs.existsSync('tools/lib/run.ts')) {
 
   await Promise.all(running);
 
-  console.log('** Results **');
-  console.log(JSON.stringify(log.results, undefined, 2));
+  // TODO: write results out somewhere (a file?)
+  // const resultsJSON = JSON.stringify(log.results, undefined, 2);
 
   if (warned.length) {
     console.log('');
@@ -86,9 +86,6 @@ if (!fs.existsSync('tools/lib/run.ts')) {
     }
   }
 
-  console.log('');
-  console.log('** Summary **');
-
   const total = running.length;
   const passed = total - warned.length - failed.length;
   function pct(x: number) {
@@ -98,7 +95,8 @@ if (!fs.existsSync('tools/lib/run.ts')) {
     const xs = x.toString().padStart(1 + Math.log10(total), ' ');
     return `${xs} / ${total} = ${pct(x).padStart(6, ' ')}%`;
   }
-  console.log(`
+  console.log('');
+  console.log(`** Summary **
 Passed  w/o warnings = ${rpt(passed)}
 Passed with warnings = ${rpt(warned.length)}
 Failed               = ${rpt(failed.length)}`);

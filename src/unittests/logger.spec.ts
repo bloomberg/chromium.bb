@@ -22,7 +22,7 @@ group.test('construct', null, t => {
   t.expect(testres.cases[0] === res1);
   t.expect(testres.cases[1] === res2);
   t.expect(res1.name === 'baz');
-  t.expect(res1.params === undefined);
+  t.expect(res1.params === null);
   t.expect(res1.logs === undefined);
   t.expect(res1.status === 'running');
   t.expect(res1.timems < 0);
