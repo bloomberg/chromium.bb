@@ -64,7 +64,6 @@
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
-#include "chrome/browser/chromeos/login/screens/supervision_onboarding_screen.h"
 #include "chrome/browser/chromeos/login/screens/supervision_transition_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_required_screen.h"
@@ -507,10 +506,6 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       oobe_ui->GetView<DeviceDisabledScreenHandler>()));
   append(std::make_unique<EncryptionMigrationScreen>(
       oobe_ui->GetView<EncryptionMigrationScreenHandler>()));
-  append(std::make_unique<SupervisionOnboardingScreen>(
-      oobe_ui->GetView<SupervisionOnboardingScreenHandler>(),
-      base::BindRepeating(&WizardController::OnSupervisionOnboardingScreenExit,
-                          weak_factory_.GetWeakPtr())));
   append(std::make_unique<SupervisionTransitionScreen>(
       oobe_ui->GetView<SupervisionTransitionScreenHandler>(),
       base::BindRepeating(&WizardController::OnSupervisionTransitionScreenExit,
@@ -674,10 +669,6 @@ void WizardController::ShowDeviceDisabledScreen() {
 
 void WizardController::ShowEncryptionMigrationScreen() {
   SetCurrentScreen(GetScreen(EncryptionMigrationScreenView::kScreenId));
-}
-
-void WizardController::ShowSupervisionOnboardingScreen() {
-  SetCurrentScreen(GetScreen(SupervisionOnboardingScreenView::kScreenId));
 }
 
 void WizardController::ShowSupervisionTransitionScreen() {
@@ -1078,7 +1069,15 @@ void WizardController::OnArcTermsOfServiceAccepted() {
     return;
   }
 
-  ShowSupervisionOnboardingScreen();
+  // If the recommend app screen should be shown, show it after the user
+  // accepted the Arc TOS. Otherwise, advance to the assistant opt-in flow
+  // screen.
+  if (ShouldShowRecommendAppsScreen()) {
+    ShowRecommendAppsScreen();
+    return;
+  }
+
+  ShowAssistantOptInFlowScreen();
 }
 
 void WizardController::OnRecommendAppsScreenExit(
@@ -1136,31 +1135,6 @@ void WizardController::OnDeviceModificationCanceled() {
   } else {
     ShowLoginScreen(LoginScreenContext());
   }
-}
-
-void WizardController::OnSupervisionOnboardingScreenExit(
-    SupervisionOnboardingScreen::Result result) {
-  OnScreenExit(SupervisionOnboardingScreenView::kScreenId,
-               static_cast<int>(result));
-
-  // In this case, the user went through the whole Supervision Onboarding flow
-  // successfully, so we should just finish the OOBE/Login here.
-  // Note: This intentionally skips the other screens like Assistant and
-  // recommended app downloads.
-  if (result == SupervisionOnboardingScreen::Result::kFinished) {
-    OnOobeFlowFinished();
-    return;
-  }
-
-  // If the recommend app screen should be shown, show it after the user
-  // skipped the Supervision Onboarding. Otherwise, advance to the
-  // assistant opt-in flow screen.
-  if (ShouldShowRecommendAppsScreen()) {
-    ShowRecommendAppsScreen();
-    return;
-  }
-
-  ShowAssistantOptInFlowScreen();
 }
 
 void WizardController::OnSupervisionTransitionScreenExit() {
@@ -1461,8 +1435,6 @@ void WizardController::AdvanceToScreen(OobeScreenId screen) {
     ShowFingerprintSetupScreen();
   } else if (screen == MarketingOptInScreenView::kScreenId) {
     ShowMarketingOptInScreen();
-  } else if (screen == SupervisionOnboardingScreenView::kScreenId) {
-    ShowSupervisionOnboardingScreen();
   } else if (screen == SupervisionTransitionScreenView::kScreenId) {
     ShowSupervisionTransitionScreen();
   } else if (screen != OobeScreen::SCREEN_TEST_NO_WINDOW) {
