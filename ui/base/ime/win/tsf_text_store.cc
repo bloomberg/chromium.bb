@@ -994,6 +994,19 @@ bool TSFTextStore::GetCompositionStatus(
   return true;
 }
 
+bool TSFTextStore::TerminateComposition() {
+  if (context_ && has_composition_range_) {
+    Microsoft::WRL::ComPtr<ITfContextOwnerCompositionServices> service;
+
+    if (SUCCEEDED(context_->QueryInterface(IID_PPV_ARGS(&service)))) {
+      service->TerminateComposition(nullptr);
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded() {
   if (!text_input_client_)
     return;
@@ -1102,6 +1115,10 @@ void TSFTextStore::CalculateTextandSelectionDiffAndNotifyIfNeeded() {
   }
 }
 
+void TSFTextStore::OnContextInitialized(ITfContext* context) {
+  context_ = context;
+}
+
 void TSFTextStore::SetFocusedTextInputClient(
     HWND focused_window,
     TextInputClient* text_input_client) {
@@ -1127,39 +1144,17 @@ void TSFTextStore::RemoveInputMethodDelegate() {
 }
 
 bool TSFTextStore::CancelComposition() {
-  // If there is an on-going document lock, we must not edit the text.
-  if (edit_flag_)
-    return false;
+  // This method should correspond to
+  //   ImmNotifyIME(NI_COMPOSITIONSTR, CPS_CANCEL, 0)
+  // in IMM32 hence calling falling back to |ConfirmComposition()| is not
+  // technically correct, because |ConfirmComposition()| corresponds to
+  // |CPS_COMPLETE| rather than |CPS_CANCEL|.
+  // However in Chromium it seems that |InputMethod::CancelComposition()|
+  // might have already committed composing text despite its name.
+  // TODO(IME): Check other platforms to see if |CancelComposition()| is
+  //            actually working or not.
 
-  if (string_pending_insertion_.empty())
-    return true;
-
-  // Unlike ImmNotifyIME(NI_COMPOSITIONSTR, CPS_CANCEL, 0) in IMM32, TSF does
-  // not have a dedicated method to cancel composition. However, CUAS actually
-  // has a protocol conversion from CPS_CANCEL into TSF operations. According
-  // to the observations on Windows 7, TIPs are expected to cancel composition
-  // when an on-going composition text is replaced with an empty string. So
-  // we use the same operation to cancel composition here to minimize the risk
-  // of potential compatibility issues.
-
-  previous_composition_string_.clear();
-  previous_composition_start_ = 0;
-  previous_composition_selection_range_ = gfx::Range::InvalidRange();
-  const size_t previous_buffer_size = string_buffer_document_.size();
-  string_pending_insertion_.clear();
-  composition_start_ = selection_.start();
-  if (text_store_acp_sink_mask_ & TS_AS_SEL_CHANGE)
-    text_store_acp_sink_->OnSelectionChange();
-  if (text_store_acp_sink_mask_ & TS_AS_LAYOUT_CHANGE)
-    text_store_acp_sink_->OnLayoutChange(TS_LC_CHANGE, 0);
-  if (text_store_acp_sink_mask_ & TS_AS_TEXT_CHANGE) {
-    TS_TEXTCHANGE textChange = {};
-    textChange.acpStart = 0;
-    textChange.acpOldEnd = previous_buffer_size;
-    textChange.acpNewEnd = 0;
-    text_store_acp_sink_->OnTextChange(0, &textChange);
-  }
-  return true;
+  return ConfirmComposition();
 }
 
 bool TSFTextStore::ConfirmComposition() {
@@ -1173,28 +1168,13 @@ bool TSFTextStore::ConfirmComposition() {
   if (!text_input_client_)
     return false;
 
-  // See the comment in TSFTextStore::CancelComposition.
-  // This logic is based on the observation about how to emulate
-  // ImmNotifyIME(NI_COMPOSITIONSTR, CPS_COMPLETE, 0) by CUAS.
-
   previous_composition_string_.clear();
   previous_composition_start_ = 0;
   previous_composition_selection_range_ = gfx::Range::InvalidRange();
-  const size_t previous_buffer_size = string_buffer_document_.size();
   string_pending_insertion_.clear();
-  composition_start_ = selection_.start();
-  if (text_store_acp_sink_mask_ & TS_AS_SEL_CHANGE)
-    text_store_acp_sink_->OnSelectionChange();
-  if (text_store_acp_sink_mask_ & TS_AS_LAYOUT_CHANGE)
-    text_store_acp_sink_->OnLayoutChange(TS_LC_CHANGE, 0);
-  if (text_store_acp_sink_mask_ & TS_AS_TEXT_CHANGE) {
-    TS_TEXTCHANGE textChange = {};
-    textChange.acpStart = 0;
-    textChange.acpOldEnd = previous_buffer_size;
-    textChange.acpNewEnd = 0;
-    text_store_acp_sink_->OnTextChange(0, &textChange);
-  }
-  return true;
+  composition_start_ = selection_.end();
+
+  return TerminateComposition();
 }
 
 void TSFTextStore::SendOnLayoutChange() {
