@@ -483,12 +483,12 @@
   {
     "name": "cookie-deprecation-messages",
     "owners": [ "chlily", "aarontag" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "cookies-without-same-site-must-be-secure",
     "owners": [ "chlily", "morlovich" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 83
   },
   {
     "name": "cros-regions-mode",
@@ -2677,7 +2677,7 @@
   {
     "name": "same-site-by-default-cookies",
     "owners": [ "chlily", "morlovich" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 83
   },
   {
     "name": "scheduler-configuration",
