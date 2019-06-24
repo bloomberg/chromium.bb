@@ -72,6 +72,7 @@ def main(argv):
   try:
     return router.Route(opts.service, opts.method, opts.input_json,
                         opts.output_json)
-  except router.Error as e:
-    # Handle router.Error derivatives nicely, but let anything else bubble up.
+  except router_lib.Error as e:
+    # Handle router_lib.Error derivatives nicely, but let anything else bubble
+    # up.
     cros_build_lib.Die(e.message)
