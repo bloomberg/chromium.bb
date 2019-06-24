@@ -6148,3 +6148,6 @@ crbug.com/977379 [ Mac10.10 ] fast/events/before-unload-return-value-from-listen
 crbug.com/974710 [ Win7 ] http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 crbug.com/974710 [ Win7 ] virtual/blink-cors/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 crbug.com/974710 [ Win7 ] virtual/isolated_world_csp/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
+
+# Sheriff 2019-06-24
+crbug.com/978000 inspector-protocol/page/setWebLifecycleState.js [ Pass Timeout ]
