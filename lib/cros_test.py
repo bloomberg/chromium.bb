@@ -69,6 +69,7 @@ class CrOSTest(object):
     else:
       self.chrome_test_target = None
       self.chrome_test_deploy_target_dir = None
+    self.staging_dir = None
 
     self._device = device.Device.Create(opts)
 
@@ -174,22 +175,19 @@ class CrOSTest(object):
       copy_paths: A list of chrome_utils.Path of files to be copied.
     """
     with osutils.TempDir(set_global=True) as tempdir:
-      staging_dir = tempdir
+      self.staging_dir = tempdir
       strip_bin = None
       chrome_util.StageChromeFromBuildDir(
-          staging_dir, host_src_dir, strip_bin, copy_paths=copy_paths)
+          self.staging_dir, host_src_dir, strip_bin, copy_paths=copy_paths)
 
       if self._device.remote.HasRsync():
-        self._device.remote.CopyToDevice('%s/' % os.path.abspath(staging_dir),
-                                         remote_target_dir,
-                                         mode='rsync', inplace=True,
-                                         compress=True,
-                                         debug_level=logging.INFO)
+        self._device.remote.CopyToDevice(
+            '%s/' % os.path.abspath(self.staging_dir), remote_target_dir,
+            mode='rsync', inplace=True, compress=True, debug_level=logging.INFO)
       else:
-        self._device.remote.CopyToDevice('%s/' % os.path.abspath(staging_dir),
-                                         remote_target_dir,
-                                         mode='scp',
-                                         debug_level=logging.INFO)
+        self._device.remote.CopyToDevice(
+            '%s/' % os.path.abspath(self.staging_dir), remote_target_dir,
+            mode='scp', debug_level=logging.INFO)
 
   def _RunCatapultTests(self):
     """Run catapult tests matching a pattern using run_tests.

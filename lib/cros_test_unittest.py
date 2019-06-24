@@ -292,6 +292,87 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     # Ensure that --host-cmd does not invoke ssh since it runs on the host.
     self.assertCommandContains(['ssh', 'tast'], expected=False)
 
+  def testChromeTests(self):
+    """Verify build/deploy commands and chrome test command."""
+    test_exe = 'crypto_unittests'
+    test_label = '//crypto:' + test_exe
+
+    def CreateRuntimeFiles(files, build_dir):
+      """Creates files needed for running chrome test.
+
+      Args:
+        files: List of files to touch.
+        build_dir: The directory where chrome is built.
+      """
+      file_list = files.split('\n')
+      for filename in file_list:
+        # Checks for the test_exe and makes it an executable.
+        mode = stat.S_IRWXU if filename == './%s' % test_exe else None
+        osutils.Touch(os.path.join(build_dir, filename),
+                      makedirs=True, mode=mode)
+
+    self._tester.args = [test_exe, '--test-launcher-print-test-stdio=auto']
+    self._tester.chrome_test = True
+    self._tester.build_dir = self.TempFilePath('out_amd64-generic/Release')
+    osutils.SafeMakedirs(self._tester.build_dir)
+    isolate_map = self.TempFilePath('testing/buildbot/gn_isolate_map.pyl')
+    # Add info about the chrome test we will be running to the isolate map.
+    osutils.WriteFile(isolate_map,
+                      '''{
+                      "%s": {
+    "label": "%s",
+    "type": "console_test_launcher",
+  }
+                      }''' % (test_exe, test_label), makedirs=True)
+
+    self._tester.build = True
+    self._tester.deploy = True
+
+    self._tester.chrome_test_target = test_exe
+    self._tester.chrome_test_deploy_target_dir = '/usr/local/chrome_test'
+
+    # A few files needed to run the chrome test.
+    runtime_deps = [
+        './%s' % test_exe,
+        'gen.runtime/%s/%s/%s.runtime_deps'
+        % (test_label.split(':')[0].lstrip('/'), test_exe, test_exe),
+        'test_fonts/Ahem.ttf',
+        'icudtl.dat',
+        '../../third_party/chromite']
+    CreateRuntimeFiles('\n'.join(runtime_deps), self._tester.build_dir)
+    # Mocks the output by providing necessary runtime files.
+    self.rc.AddCmdResult(
+        partial_mock.InOrder(['gn', 'desc', test_label]),
+        output='\n'.join(runtime_deps))
+
+    self._tester.Run()
+
+    # Ensure chrome is being built.
+    self.assertCommandContains(['autoninja', '-C', self._tester.build_dir,
+                                test_exe])
+    # Ensure that the runtime dependencies are checked for.
+    self.assertCommandContains(['gn', 'desc', self._tester.build_dir,
+                                test_label, 'runtime_deps'])
+    # Ensure files are being copied over to the device.
+    self.assertCommandContains(['rsync', '%s/' % self._tester.staging_dir,
+                                '[root@localhost]:/usr/local/chrome_test'])
+    # Ensure UI is stopped so the test can grab the GPU if needed.
+    self.assertCommandContains(['ssh', '-p', '9222', 'root@localhost', '--',
+                                'stop ui'])
+    # Ensure a user activity ping is sent to the device.
+    self.assertCommandContains(['ssh', '-p', '9222', 'root@localhost', '--',
+                                'dbus-send', '--system', '--type=method_call',
+                                '--dest=org.chromium.PowerManager',
+                                '/org/chromium/PowerManager',
+                                'org.chromium.PowerManager.HandleUserActivity',
+                                'int32:0'])
+    # Ensure the chrome test is run.
+    self.assertCommandContains(['ssh', '-p', '9222', 'root@localhost', '--',
+                                'cd /usr/local/chrome_test && su chronos -c -- '
+                                '"out_amd64-generic/Release/%s '
+                                '--test-launcher-print-test-stdio=auto"'
+                                % test_exe])
+
   def testParserErrorChromeTest(self):
     """Verify we get a parser error for --chrome-test when no args are given."""
     self.CheckParserError(['--chrome-test'], '--chrome-test')
