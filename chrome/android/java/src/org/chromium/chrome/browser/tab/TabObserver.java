@@ -366,4 +366,10 @@ public interface TabObserver {
      * @see View#setSystemUiVisibility(int)
      */
     void onContentViewSystemUiVisibilityChanged(Tab tab, int visibility);
+
+    /**
+     * Called when the root Id of tab is changed.
+     * @param newRootId New root ID to be set.
+     */
+    void onRootIdChanged(Tab tab, int newRootId);
 }
