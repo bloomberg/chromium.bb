@@ -18,8 +18,8 @@ xf-display-panel {
     background-color: #FFF;
     display: flex;
     flex-direction: row;
-    height: 68px;
     max-width: 400px;
+    min-height: 68px;
 }
 
 .xf-button {

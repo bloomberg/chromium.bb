@@ -74,9 +74,13 @@ class DisplayPanel extends HTMLElement {
                 background-color: rgba(60, 64, 67, 0.15);
                 height: 1px;
               }
+              /* Limit to 3 visible progress panels before scroll */
               #panels {
-                  max-height: 204px;
+                  max-height: calc(92px * 3);
                   overflow-y: auto;
+              }
+              xf-panel-item:not(:only-child) {
+                --multi-progress-height: 92px;
               }
             </style>
             <div id="container">
