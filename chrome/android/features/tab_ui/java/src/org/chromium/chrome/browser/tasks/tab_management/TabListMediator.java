@@ -535,6 +535,21 @@ class TabListMediator {
         return position != TabModel.INVALID_TAB_INDEX && position < mModel.size();
     }
 
+    /**
+     * Hide the blue border for selected tab for the Tab-to-Grid resizing stage.
+     * The selected border should re-appear in the final fading-in stage.
+     */
+    void prepareOverview() {
+        int count = 0;
+        for (int i = 0; i < mModel.size(); i++) {
+            if (mModel.get(i).get(TabProperties.IS_SELECTED)) count++;
+            mModel.get(i).set(TabProperties.IS_SELECTED, false);
+        }
+        assert (count == 1)
+            : "There should be exactly one selected tab when calling "
+              + "TabListMediator.prepareOverview()";
+    }
+
     private boolean areTabsUnchanged(@Nullable List<Tab> tabs) {
         if (tabs == null) {
             return mModel.size() == 0;
@@ -549,9 +564,10 @@ class TabListMediator {
     /**
      * Initialize the component with a list of tabs to show in a grid.
      * @param tabs The list of tabs to be shown.
+     * @param quickMode Whether to skip capturing the selected live tab for the thumbnail.
      * @return Whether the {@link TabListRecyclerView} can be shown quickly.
      */
-    public boolean resetWithListOfTabs(@Nullable List<Tab> tabs) {
+    boolean resetWithListOfTabs(@Nullable List<Tab> tabs, boolean quickMode) {
         if (areTabsUnchanged(tabs)) {
             if (tabs == null) return true;
 
@@ -563,7 +579,7 @@ class TabListMediator {
                 boolean isSelected = mTabModelSelector.getCurrentTab() == tab;
                 mModel.get(i).set(TabProperties.IS_SELECTED, isSelected);
 
-                if (mThumbnailProvider != null && isSelected) {
+                if (mThumbnailProvider != null && isSelected && !quickMode) {
                     ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, true);
                     mModel.get(i).set(TabProperties.THUMBNAIL_FETCHER, callback);
                 }

@@ -578,7 +578,7 @@ public class TabListMediatorUnitTest {
         for (int i = 0; i < mTabModel.getCount(); i++) {
             tabs.add(mTabModel.getTabAt(i));
         }
-        mMediator.resetWithListOfTabs(tabs);
+        mMediator.resetWithListOfTabs(tabs, false);
         for (Callback<Drawable> callback : mCallbackCaptor.getAllValues()) {
             callback.onResult(new ColorDrawable(Color.RED));
         }

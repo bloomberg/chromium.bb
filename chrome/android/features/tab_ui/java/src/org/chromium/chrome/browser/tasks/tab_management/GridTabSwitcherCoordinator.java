@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.Context;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -19,7 +20,6 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -96,10 +96,7 @@ public class GridTabSwitcherCoordinator
         mLifecycleDispatcher.register(this);
     }
 
-    /**
-     * @return GridController implementation that will can be used for controlling
-     *         grid visibility changes.
-     */
+    // GridTabSwitcher implementation.
     @Override
     public GridController getGridController() {
         return mMediator;
@@ -107,8 +104,9 @@ public class GridTabSwitcherCoordinator
 
     @Override
     public boolean prepareOverview() {
+        boolean quick = mMediator.prepareOverview();
         mTabGridCoordinator.prepareOverview();
-        return mMediator.prepareOverview();
+        return quick;
     }
 
     @Override
@@ -134,12 +132,9 @@ public class GridTabSwitcherCoordinator
         return mTabGridCoordinator.getLastDirtyTimeForTesting();
     }
 
-    /**
-     * Reset the tab grid with the given {@link TabModel}. Can be null.
-     * @param tabList The current {@link TabList} to show the tabs for in the grid.
-     */
+    // ResetHandler implementation.
     @Override
-    public boolean resetWithTabList(TabList tabList) {
+    public boolean resetWithTabList(@Nullable TabList tabList, boolean quickMode) {
         List<Tab> tabs = null;
         if (tabList != null) {
             tabs = new ArrayList<>();
@@ -147,7 +142,7 @@ public class GridTabSwitcherCoordinator
                 tabs.add(tabList.getTabAt(i));
             }
         }
-        return mTabGridCoordinator.resetWithListOfTabs(tabs);
+        return mTabGridCoordinator.resetWithListOfTabs(tabs, quickMode);
     }
 
     @Override
@@ -155,6 +150,7 @@ public class GridTabSwitcherCoordinator
         mTabGridCoordinator.softCleanup();
     }
 
+    // ResetHandler implementation.
     @Override
     public void destroy() {
         mTabGridCoordinator.destroy();

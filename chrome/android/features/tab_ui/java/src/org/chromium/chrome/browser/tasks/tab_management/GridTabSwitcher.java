@@ -27,6 +27,10 @@ public interface GridTabSwitcher {
      */
     interface GridVisibilityObserver extends OverviewModeBehavior.OverviewModeObserver {}
 
+    /**
+     * @return GridController implementation that can be used for controlling
+     *         grid visibility changes.
+     */
     GridController getGridController();
 
     /**
