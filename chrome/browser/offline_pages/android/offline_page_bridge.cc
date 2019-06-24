@@ -758,9 +758,8 @@ void OfflinePageBridge::PublishInternalArchive(
     return;
   }
 
-  std::unique_ptr<OfflinePageArchiver> archiver(new OfflinePageMHTMLArchiver());
   offline_page_model->PublishInternalArchive(
-      *offline_page, std::move(archiver),
+      *offline_page,
       base::BindOnce(&PublishPageDone, std::move(j_callback_obj)));
 }
 
