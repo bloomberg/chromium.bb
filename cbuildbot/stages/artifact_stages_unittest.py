@@ -663,9 +663,10 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.assertEqual('No profile directories found.', str(msg.exception))
 
     # Create profiles directory
-    out_sys_devel = os.path.abspath(
-        os.path.join(self.build_root, 'chroot', stage.SYS_DEVEL_DIR))
-    os.makedirs(os.path.join(out_sys_devel, 'profiles'))
+    cov_path = 'build/%s/build/coverage_data' % stage._current_board
+    out_cov_path = os.path.abspath(
+        os.path.join(self.build_root, 'chroot', cov_path))
+    os.makedirs(os.path.join(out_cov_path, 'raw_profiles'))
 
     # No profraw files
     with self.assertRaises(Exception) as msg:
@@ -674,7 +675,7 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
                      str(msg.exception))
 
     # Create profraw file
-    profraw = os.path.join(out_sys_devel, 'profiles', 'a.profraw')
+    profraw = os.path.join(out_cov_path, 'raw_profiles', 'a.profraw')
     with open(profraw, 'a') as f:
       f.write('123')
 
@@ -683,22 +684,14 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
     stage._CollectPGOProfiles()
     llvm_profdata = os.path.join(self.build_root, 'chroot', stage.archive_path,
                                  'llvm.profdata')
-    self.assertEqual(['llvm-profdata', 'merge', '-output', llvm_profdata,
-                      os.path.join(out_sys_devel, 'profiles', 'a.profraw')],
+    profraw_list = os.path.join(self.build_root, 'chroot', stage.archive_path,
+                                'profraw_list')
+    self.assertEqual(['llvm-profdata', 'merge',
+                      '-output', llvm_profdata,
+                      '-f', profraw_list],
                      stage._merge_cmd)
     tarball = stage.PROFDATA_TAR
     stage._upload_queue.put.assert_called_with([tarball])
-
-    # Check multiple profiles directories
-    out_sys_devel = os.path.abspath(
-        os.path.join(self.build_root, 'chroot', stage.SYS_DEVEL_DIR))
-    os.makedirs(os.path.join(out_sys_devel, 'another/profiles'))
-    with self.assertRaises(Exception) as msg:
-      stage._CollectPGOProfiles()
-    dirs = os.path.join(out_sys_devel, 'another/profiles') + ' ' + \
-           os.path.join(out_sys_devel, 'profiles')
-    self.assertEqual('More than one profile directories are found: %s' % dirs,
-                     str(msg.exception))
 
 
 class GenerateOrderfileStageTest(generic_stages_unittest.AbstractStageTestCase,
