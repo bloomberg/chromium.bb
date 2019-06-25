@@ -4814,6 +4814,11 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
       is_off_the_record, std::move(dynamic_params)));
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+  result.push_back(std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(
+      browser_context, request.resource_type, frame_tree_node_id));
+#endif
+
   return result;
 }
 
