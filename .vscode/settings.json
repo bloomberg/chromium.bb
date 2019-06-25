@@ -7,5 +7,19 @@
   "editor.tabSize": 2,
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
-  "files.trimTrailingWhitespace": true
+  "files.trimTrailingWhitespace": true,
+  "files.exclude": {
+    ".babelrc": true,
+    ".gitignore": true,
+    ".travis.yml": true,
+    ".tscache": true,
+    ".vscode": true,
+    "node_modules": true,
+    "prettier.config.js": true,
+    "tsconfig.json": true,
+    "tsconfig.web.json": true,
+    "tslint.json": true,
+    "yarn-error.log": true,
+    "yarn.lock": true
+  }
 }

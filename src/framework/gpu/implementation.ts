@@ -21,7 +21,7 @@ export function getGPU(): ImplType {
     // @ts-ignore: TS7017
     impl = navigator.gpu;
   } else if (dawn) {
-    impl = import('../../../dawn').then(mod => mod.default);
+    impl = import('../../../third_party/dawn').then(mod => mod.default);
   } else {
     // tslint:disable-next-line no-console
     console.warn('Neither navigator.gpu nor Dawn was found. Using dummy.');
