@@ -140,10 +140,8 @@ void BookmarkModelObserverImpl::OnWillRemoveAllUserBookmarks(
   for (int i = 0; i < root_node->child_count(); ++i) {
     const bookmarks::BookmarkNode* permanent_node = root_node->GetChild(i);
     for (int j = permanent_node->child_count() - 1; j >= 0; --j) {
-      if (!model->client()->CanSyncNode(permanent_node->GetChild(j))) {
-        continue;
-      }
-      ProcessDelete(permanent_node, permanent_node->GetChild(j));
+      if (model->client()->CanSyncNode(permanent_node->GetChild(j)))
+        ProcessDelete(permanent_node, permanent_node->GetChild(j));
     }
   }
   nudge_for_commit_closure_.Run();
@@ -249,7 +247,6 @@ void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
   // 4. Sort the middle, using Between (e.g. recursive implementation).
 
   syncer::UniquePosition position;
-  syncer::UniquePosition previous_position;
   for (int i = 0; i < node->child_count(); ++i) {
     const bookmarks::BookmarkNode* child = node->GetChild(i);
 
@@ -262,13 +259,8 @@ void BookmarkModelObserverImpl::BookmarkNodeChildrenReordered(
         bookmark_tracker_->model_type_state().cache_guid(), sync_id);
     const base::Time modification_time = base::Time::Now();
 
-    if (i == 0) {
-      position = syncer::UniquePosition::InitialPosition(suffix);
-    } else {
-      position = syncer::UniquePosition::After(previous_position, suffix);
-    }
-
-    previous_position = position;
+    position = (i == 0) ? syncer::UniquePosition::InitialPosition(suffix)
+                        : syncer::UniquePosition::After(position, suffix);
 
     const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
         node, model, /*force_favicon_load=*/true);

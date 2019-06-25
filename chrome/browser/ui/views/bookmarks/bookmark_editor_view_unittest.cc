@@ -158,11 +158,8 @@ TEST_F(BookmarkEditorViewTest, ModelsMatch) {
   BookmarkEditorView::EditorNode* editor_root = editor_tree_model()->GetRoot();
   // The root should have two or three children: bookmark bar, other bookmarks
   // and conditionally mobile bookmarks.
-  if (model_->mobile_node()->IsVisible()) {
-    ASSERT_EQ(3, editor_root->child_count());
-  } else {
-    ASSERT_EQ(2, editor_root->child_count());
-  }
+  ASSERT_EQ(model_->mobile_node()->IsVisible() ? 3 : 2,
+            editor_root->child_count());
 
   BookmarkEditorView::EditorNode* bb_node = editor_root->GetChild(0);
   // The root should have 2 nodes: folder F1 and F2.

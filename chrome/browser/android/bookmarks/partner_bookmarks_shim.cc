@@ -235,7 +235,7 @@ const BookmarkNode* PartnerBookmarksShim::GetNodeByID(
     if (result)
       return result;
   }
-  return NULL;
+  return nullptr;
 }
 
 void PartnerBookmarksShim::ReloadNodeMapping() {

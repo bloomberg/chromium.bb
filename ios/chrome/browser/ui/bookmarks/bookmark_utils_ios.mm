@@ -543,10 +543,8 @@ void UpdateFoldersFromNode(const BookmarkNode* folder,
   std::vector<const BookmarkNode*> directDescendants;
   for (int i = 0; i < folder->child_count(); ++i) {
     const BookmarkNode* subfolder = folder->GetChild(i);
-    if (IsObstructed(subfolder, obstructions))
-      continue;
-
-    directDescendants.push_back(subfolder);
+    if (!IsObstructed(subfolder, obstructions))
+      directDescendants.push_back(subfolder);
   }
 
   bookmark_utils_ios::SortFolders(&directDescendants);

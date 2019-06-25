@@ -2410,9 +2410,8 @@ void ProfileSyncServiceBookmarkTestWithData::GetTransactionVersions(
 
     (*node_versions)[n->id()] = version;
     for (int i = 0; i < n->child_count(); ++i) {
-      if (!CanSyncNode(n->GetChild(i)))
-        continue;
-      nodes.push(n->GetChild(i));
+      if (CanSyncNode(n->GetChild(i)))
+        nodes.push(n->GetChild(i));
     }
   }
 }

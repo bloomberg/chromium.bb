@@ -129,10 +129,8 @@ BookmarkNodeFinder::BookmarkNodeFinder(const BookmarkNode* parent_node)
     : parent_node_(parent_node) {
   for (int i = 0; i < parent_node_->child_count(); ++i) {
     const BookmarkNode* child_node = parent_node_->GetChild(i);
-
     std::string title = base::UTF16ToUTF8(child_node->GetTitle());
     ConvertTitleToSyncInternalFormat(title, &title);
-
     child_nodes_.insert(std::make_pair(title, child_node));
   }
 }
@@ -541,17 +539,14 @@ void BookmarkModelAssociator::SetNumItemsBeforeAssociation(
 int BookmarkModelAssociator::GetTotalBookmarkCountAndRecordDuplicates(
     const bookmarks::BookmarkNode* node,
     Context* context) const {
-  int count = 1;  // Start with one to include the node itself.
-
-  if (!node->is_root()) {
+  if (!node->is_root())
     context->UpdateDuplicateCount(node->GetTitle(), node->url());
-  }
 
+  int count = 1;  // Start with one to include the node itself.
   for (int i = 0; i < node->child_count(); ++i) {
     count +=
         GetTotalBookmarkCountAndRecordDuplicates(node->GetChild(i), context);
   }
-
   return count;
 }
 

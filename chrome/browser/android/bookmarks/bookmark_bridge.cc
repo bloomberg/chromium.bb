@@ -12,6 +12,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/containers/adapters.h"
 #include "base/containers/stack.h"
 #include "base/containers/stack_container.h"
 #include "base/i18n/string_compare.h"
@@ -289,53 +290,38 @@ void BookmarkBridge::GetAllFoldersWithDepths(
   std::unique_ptr<icu::Collator> collator = GetICUCollator();
 
   // Vector to temporarily contain all child bookmarks at same level for sorting
-  std::vector<const BookmarkNode*> bookmarkList;
-
-  // Stack for Depth-First Search of bookmark model. It stores nodes and their
-  // heights.
-  base::stack<std::pair<const BookmarkNode*, int>> stk;
-
-  bookmarkList.push_back(bookmark_model_->mobile_node());
-  bookmarkList.push_back(bookmark_model_->bookmark_bar_node());
-  bookmarkList.push_back(bookmark_model_->other_node());
+  std::vector<const BookmarkNode*> bookmarks = {
+      bookmark_model_->mobile_node(),
+      bookmark_model_->bookmark_bar_node(),
+      bookmark_model_->other_node(),
+  };
 
   // Push all sorted top folders in stack and give them depth of 0.
   // Note the order to push folders to stack should be opposite to the order in
   // output.
-  for (std::vector<const BookmarkNode*>::reverse_iterator it =
-           bookmarkList.rbegin();
-       it != bookmarkList.rend();
-       ++it) {
-    stk.push(std::make_pair(*it, 0));
-  }
+  base::stack<std::pair<const BookmarkNode*, int>> stk;
+  for (const auto* bookmark : base::Reversed(bookmarks))
+    stk.emplace(bookmark, 0);
 
   while (!stk.empty()) {
     const BookmarkNode* node = stk.top().first;
     int depth = stk.top().second;
     stk.pop();
-    Java_BookmarkBridge_addToBookmarkIdListWithDepth(env,
-                                                      j_folders_obj,
-                                                      node->id(),
-                                                      GetBookmarkType(node),
-                                                      j_depths_obj,
-                                                      depth);
-    bookmarkList.clear();
+    Java_BookmarkBridge_addToBookmarkIdListWithDepth(
+        env, j_folders_obj, node->id(), GetBookmarkType(node), j_depths_obj,
+        depth);
+    bookmarks.clear();
     for (int i = 0; i < node->child_count(); ++i) {
       const BookmarkNode* child = node->GetChild(i);
       if (child->is_folder() &&
           managed_bookmark_service_->CanBeEditedByUser(child)) {
-        bookmarkList.push_back(node->GetChild(i));
+        bookmarks.push_back(child);
       }
     }
-    std::stable_sort(bookmarkList.begin(),
-                     bookmarkList.end(),
+    std::stable_sort(bookmarks.begin(), bookmarks.end(),
                      BookmarkTitleComparer(this, collator.get()));
-    for (std::vector<const BookmarkNode*>::reverse_iterator it =
-             bookmarkList.rbegin();
-         it != bookmarkList.rend();
-         ++it) {
-      stk.push(std::make_pair(*it, depth + 1));
-    }
+    for (const auto* bookmark : base::Reversed(bookmarks))
+      stk.emplace(bookmark, depth + 1);
   }
 }
 
@@ -404,11 +390,8 @@ void BookmarkBridge::GetChildIDs(JNIEnv* env,
   // Get the folder contents
   for (int i = 0; i < parent->child_count(); ++i) {
     const BookmarkNode* child = parent->GetChild(i);
-    if (!IsFolderAvailable(child) || !IsReachable(child))
-      continue;
-
-    if ((child->is_folder() && get_folders) ||
-        (!child->is_folder() && get_bookmarks)) {
+    if (IsFolderAvailable(child) && IsReachable(child) &&
+        (child->is_folder() ? get_folders : get_bookmarks)) {
       Java_BookmarkBridge_addToBookmarkIdList(
           env, j_result_obj, child->id(), GetBookmarkType(child));
     }
@@ -464,11 +447,10 @@ jint BookmarkBridge::GetTotalBookmarkCount(
       const BookmarkNode* child = node->GetChild(i);
       if (GetTitle(child).empty())
         continue;
-      if (child->is_folder()) {
+      if (child->is_folder())
         nodes.push(child);
-      } else {
-        count += 1;
-      }
+      else
+        ++count;
     }
   }
 
@@ -544,9 +526,8 @@ void BookmarkBridge::GetBookmarksForFolder(
   // Get the folder contents.
   for (int i = 0; i < folder->child_count(); ++i) {
     const BookmarkNode* node = folder->GetChild(i);
-    if (!IsFolderAvailable(node))
-      continue;
-    ExtractBookmarkNodeInformation(node, j_result_obj);
+    if (IsFolderAvailable(node))
+      ExtractBookmarkNodeInformation(node, j_result_obj);
   }
 
   if (folder == bookmark_model_->mobile_node() &&

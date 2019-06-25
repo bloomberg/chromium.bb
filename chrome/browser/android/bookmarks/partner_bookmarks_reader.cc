@@ -108,7 +108,7 @@ const BookmarkNode* GetNodeByID(const BookmarkNode* parent, int64_t id) {
     if (result)
       return result;
   }
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace

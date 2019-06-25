@@ -132,26 +132,24 @@ class ManagedBookmarkServiceTest : public testing::Test {
       return false;
 
     if (node->is_folder()) {
-      const base::ListValue* children = NULL;
+      const base::ListValue* children = nullptr;
       if (!dict->GetList("children", &children) ||
           node->child_count() != static_cast<int>(children->GetSize())) {
         return false;
       }
       for (int i = 0; i < node->child_count(); ++i) {
-        const base::DictionaryValue* child = NULL;
+        const base::DictionaryValue* child = nullptr;
         if (!children->GetDictionary(i, &child) ||
             !NodeMatchesValue(node->GetChild(i), child)) {
           return false;
         }
       }
-    } else if (node->is_url()) {
-      std::string url;
-      if (!dict->GetString("url", &url) || node->url() != url)
-        return false;
-    } else {
-      return false;
+      return true;
     }
-    return true;
+    if (!node->is_url())
+      return false;
+    std::string url;
+    return dict->GetString("url", &url) && node->url() == url;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

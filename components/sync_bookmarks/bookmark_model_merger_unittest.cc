@@ -85,15 +85,16 @@ bool PositionsInTrackerMatchModel(const bookmarks::BookmarkNode* node,
   if (node->child_count() == 0) {
     return true;
   }
-  syncer::UniquePosition pos = PositionOf(node->GetChild(0), tracker);
+  syncer::UniquePosition last_pos = PositionOf(node->GetChild(0), tracker);
   for (int i = 1; i < node->child_count(); ++i) {
-    if (PositionOf(node->GetChild(i), tracker).LessThan(pos)) {
+    syncer::UniquePosition pos = PositionOf(node->GetChild(i), tracker);
+    if (pos.LessThan(last_pos)) {
       DLOG(ERROR) << "Position of " << node->GetChild(i)->GetTitle()
                   << " is less than position of "
                   << node->GetChild(i - 1)->GetTitle();
       return false;
     }
-    pos = PositionOf(node->GetChild(i), tracker);
+    last_pos = pos;
   }
   for (int i = 0; i < node->child_count(); ++i) {
     if (!PositionsInTrackerMatchModel(node->GetChild(i), tracker)) {

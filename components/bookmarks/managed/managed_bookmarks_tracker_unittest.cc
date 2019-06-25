@@ -160,14 +160,12 @@ class ManagedBookmarksTrackerTest : public testing::Test {
           return false;
         }
       }
-    } else if (node->is_url()) {
-      std::string url;
-      if (!dict->GetString("url", &url) || node->url() != url)
-        return false;
-    } else {
-      return false;
+      return true;
     }
-    return true;
+    if (!node->is_url())
+      return false;
+    std::string url;
+    return dict->GetString("url", &url) && node->url() == url;
   }
 
   base::ScopedTempDir scoped_temp_dir_;
