@@ -44,7 +44,6 @@ std::vector<std::string> CreateKernelParams() {
       {"androidboot.hardware=bertha"},
       {"androidboot.debuggable=1"},
       {"androidboot.native_bridge=libhoudini.so"},
-      {"forwarder.enable=0"},
   };
   return params;
 }
