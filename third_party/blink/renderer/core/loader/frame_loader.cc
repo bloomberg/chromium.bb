@@ -920,10 +920,8 @@ void FrameLoader::CommitNavigation(
 
   RecordLatestRequiredCSP();
 
-  if (!CancelProvisionalLoaderForNewNavigation(
-          false /* is_form_submission */)) {
+  if (!CancelProvisionalLoaderForNewNavigation())
     return;
-  }
 
   FillStaticResponseIfNeeded(navigation_params.get(), frame_);
   if (!ShouldNavigate(navigation_params.get(), frame_)) {
@@ -967,7 +965,7 @@ void FrameLoader::CommitNavigation(
 
 bool FrameLoader::WillStartNavigation(const WebNavigationInfo& info,
                                       bool is_history_navigation_in_new_frame) {
-  if (!CancelProvisionalLoaderForNewNavigation(!info.form.IsNull()))
+  if (!CancelProvisionalLoaderForNewNavigation())
     return false;
 
   progress_tracker_->ProgressStarted();
@@ -1426,12 +1424,11 @@ bool FrameLoader::ShouldReuseDefaultView(
   return frame_->GetDocument()->GetSecurityOrigin()->CanAccess(origin.get());
 }
 
-bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
-    bool is_form_submission) {
+bool FrameLoader::CancelProvisionalLoaderForNewNavigation() {
   // This seems to correspond to step 9 of the specification:
   // "9. Abort the active document of browsingContext."
   // https://html.spec.whatwg.org/C/#navigate
-  frame_->GetDocument()->Abort(is_form_submission);
+  frame_->GetDocument()->Abort();
   // document.onreadystatechange can fire in Abort(), which can:
   // 1) Detach this frame.
   // 2) Stop the provisional DocumentLoader (i.e window.stop()).
