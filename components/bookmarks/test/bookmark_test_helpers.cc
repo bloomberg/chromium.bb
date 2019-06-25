@@ -110,11 +110,10 @@ void WaitForBookmarkModelToLoad(BookmarkModel* model) {
 
 std::string ModelStringFromNode(const BookmarkNode* node) {
   std::string child_string;
-  for (int i = 0; i < node->child_count(); ++i) {
-    const BookmarkNode* child = node->GetChild(i);
+  for (const auto& child : node->children()) {
     child_string += base::UTF16ToUTF8(child->GetTitle());
     if (child->is_folder())
-      child_string += ":[ " + ModelStringFromNode(child) + "]";
+      child_string += ":[ " + ModelStringFromNode(child.get()) + "]";
     child_string += ' ';
   }
   return child_string;
