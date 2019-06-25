@@ -29,6 +29,7 @@
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state/login_state.h"
+#include "chromeos/login/session/session_termination_manager.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
@@ -137,6 +138,7 @@ class ScreenLockerUnitTest : public testing::Test {
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   TestSessionController test_session_controller_;
   std::unique_ptr<SessionControllerClientImpl> session_controller_client_;
+  chromeos::SessionTerminationManager session_termination_manager_;
 
   std::unique_ptr<audio::TestObserver> observer_;
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerUnitTest);

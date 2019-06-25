@@ -28,6 +28,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/login/login_state/login_state.h"
+#include "chromeos/login/session/session_termination_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -194,6 +195,7 @@ class SessionControllerClientImplTest : public testing::Test {
   std::unique_ptr<network::CertVerifierWithTrustAnchors> cert_verifier_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   session_manager::SessionManager session_manager_;
+  chromeos::SessionTerminationManager session_termination_manager_;
 
  private:
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
@@ -391,6 +393,24 @@ TEST_F(SessionControllerClientImplTest,
   user_manager()->AddUser(
       AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
+}
+
+// Make sure adding users to multiprofiles disabled because device is locked
+// to single user.
+TEST_F(SessionControllerClientImplTest,
+       AddUserToMultiprofileDisallowedByLockToSingleUser) {
+  InitForMultiProfile();
+
+  EXPECT_EQ(ash::AddUserSessionPolicy::ALLOWED,
+            SessionControllerClientImpl::GetAddUserSessionPolicy());
+  const AccountId account_id(
+      AccountId::FromUserEmailGaiaId(kUser, kUserGaiaId));
+  user_manager()->LoginUser(account_id);
+  session_termination_manager_.SetDeviceLockedToSingleUser();
+  user_manager()->AddUser(
+      AccountId::FromUserEmailGaiaId("bb@b.b", "4444444444"));
+  EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_LOCKED_TO_SINGLE_USER,
             SessionControllerClientImpl::GetAddUserSessionPolicy());
 }
 
