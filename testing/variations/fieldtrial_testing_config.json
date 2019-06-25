@@ -4145,24 +4145,6 @@
             ]
         }
     ],
-    "PreviewsSlowPageTriggering": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "SlowPageTriggeringFor4G_20190312",
-                    "params": {
-                        "session_max_ect_trigger": "4G"
-                    },
-                    "enable_features": [
-                        "PreviewsSlowPageTriggering"
-                    ]
-                }
-            ]
-        }
-    ],
     "PrioritizedSimpleCacheTasks": [
         {
             "platforms": [
