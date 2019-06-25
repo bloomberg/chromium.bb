@@ -160,6 +160,8 @@ static_library("browser") {
     "mice_account_reconcilor_delegate.h",
     "mirror_account_reconcilor_delegate.cc",
     "mirror_account_reconcilor_delegate.h",
+    "multilogin_parameters.cc",
+    "multilogin_parameters.h",
     "mutable_profile_oauth2_token_service_delegate.cc",
     "mutable_profile_oauth2_token_service_delegate.h",
     "signin_error_controller.cc",
