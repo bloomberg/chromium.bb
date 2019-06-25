@@ -969,6 +969,9 @@ const char kDeviceWebUsbAllowDevicesForUrls[] =
 // chrome.login API.
 const char kLoginExtensionApiDataForNextLoginAttempt[] =
     "extensions_api.login.data_for_next_login_attempt";
+
+// String containing last RSU lookup key uploaded. Empty until first upload.
+const char kLastRsuDeviceIdUploaded[] = "rsu.last_rsu_device_id_uploaded";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be
