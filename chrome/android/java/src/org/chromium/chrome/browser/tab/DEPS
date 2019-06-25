@@ -1,6 +1,8 @@
-include_rules = {
+include_rules = [
+  "-chrome",
+  "+chrome/android/java/src/org/chromium/chrome/browser/AppHooks.java",
   "+content/public/android/java/src/org/chromium/content_public",
-}
+]
 
 specific_include_rules = {
   'Tab\.java': [
