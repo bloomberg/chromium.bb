@@ -71,7 +71,7 @@ pages:
   script:
   - export PREFIX=$(pwd)/prefix-weston-build-native-meson
   - mkdir public
-  - cp -R $PREFIX/share/weston-doc/* public/
+  - cp -R $PREFIX/share/doc/weston/* public/
   artifacts:
     paths:
     - public
