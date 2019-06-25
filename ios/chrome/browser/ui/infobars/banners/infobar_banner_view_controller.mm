@@ -81,6 +81,11 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 @property(nonatomic, strong) UILabel* subTitleLabel;
 // Used to build and record metrics.
 @property(nonatomic, strong) InfobarMetricsRecorder* metricsRecorder;
+// The NSTimeInterval in which the Banner appeared on screen.
+@property(nonatomic, assign) NSTimeInterval bannerAppearedTime;
+// YES if the banner on screen time metric has already been recorded for this
+// banner.
+@property(nonatomic, assign) BOOL bannerOnScreenTimeWasRecorded;
 
 @end
 
@@ -239,6 +244,14 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
   [self.metricsRecorder recordBannerEvent:MobileMessagesBannerEvent::Presented];
+  self.bannerAppearedTime = [NSDate timeIntervalSinceReferenceDate];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+  // Call recordBannerOnScreenTime on viewWillDisappear since viewDidDisappear
+  // is called after the dismissal animation has occured.
+  [self recordBannerOnScreenTime];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -289,6 +302,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
       [self.metricsRecorder
           recordBannerDismissType:MobileMessagesBannerDismissType::
                                       ExpandedToModal];
+      [self recordBannerOnScreenTime];
       [self.delegate presentInfobarModalFromBanner];
       // Since the modal has now been presented prevent any external dismissal.
       self.shouldDismissAfterTouchesEnded = NO;
@@ -392,7 +406,21 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 - (void)presentInfobarModalAfterTap {
   [self.metricsRecorder
       recordBannerDismissType:MobileMessagesBannerDismissType::TappedToModal];
+  [self recordBannerOnScreenTime];
   [self.delegate presentInfobarModalFromBanner];
+}
+
+// Records the banner on screen time. This method should be called as soon as
+// its know that the banner will not be visible. This might happen before
+// viewWillDissapear since presenting a Modal makes the banner invisible but
+// doesn't call viewWillDissapear.
+- (void)recordBannerOnScreenTime {
+  if (!self.bannerOnScreenTimeWasRecorded) {
+    double duration =
+        [NSDate timeIntervalSinceReferenceDate] - self.bannerAppearedTime;
+    [self.metricsRecorder recordBannerOnScreenDuration:duration];
+    self.bannerOnScreenTimeWasRecorded = YES;
+  }
 }
 
 #pragma mark - Accessibility
