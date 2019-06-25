@@ -43,12 +43,6 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     return self.TempFilePath(os.path.join('cros_vm_%d' % self.ssh_port,
                                           kvm_file))
 
-  def Touch(self, path):
-    """Creates the parent directories and the file for the path."""
-    assert path.startswith(path), 'All files must be in tempdir.'
-    osutils.SafeMakedirs(os.path.dirname(path))
-    osutils.Touch(path)
-
   def FindPathInArgs(self, args, path):
     """Checks the called commands to see if the path is present.
 
@@ -107,7 +101,7 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
                                           'src/build/images/%s/latest/'
                                           'chromiumos_qemu_image.bin'
                                           % self._vm.board)
-    self.Touch(expected_vm_image_path)
+    osutils.Touch(expected_vm_image_path, makedirs=True)
     self._vm.Start()
     self.assertTrue(self.FindPathInArgs(self.rc.call_args_list,
                                         expected_vm_image_path))
@@ -119,7 +113,7 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
         self._vm.cache_dir).CreateCacheReference(self._vm.board,
                                                  constants.VM_IMAGE_TAR)
     vm_cache_path = os.path.join(cache_dir, constants.VM_IMAGE_BIN)
-    self.Touch(vm_cache_path)
+    osutils.Touch(vm_cache_path, makedirs=True)
     self._vm.Start()
     expected_vm_image_path = os.path.join(
         self._vm.cache_dir,
