@@ -10,6 +10,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/authpolicy/data_pipe_utils.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
@@ -36,6 +40,9 @@ constexpr char kKrb5Conf[] = "krb5conf";
 // Principal placeholders for the KerberosAccounts policy.
 constexpr char kLoginId[] = "LOGIN_ID";
 constexpr char kLoginEmail[] = "LOGIN_EMAIL";
+
+// Password placeholder.
+constexpr char kLoginPasswordPlaceholder[] = "${PASSWORD}";
 
 // Default encryption with strong encryption.
 constexpr char kDefaultKerberosConfig[] = R"([libdefaults]
@@ -95,14 +102,18 @@ class KerberosAddAccountRunner {
   // Kicks off the flow to add (or re-authenticate) a Kerberos account.
   // |manager| is a non-owned pointer to the owning manager.
   // |normalized_principal| is the normalized user principal name, e.g.
-  // user@REALM.COM. |is_managed| is true for accounts set by admins via policy.
-  // |password| is the password of the account. If |remember_password| is true,
-  // the password is remembered by the daemon. |krb5_conf| is set as
-  // configuration. If |allow_existing| is false and an account for
-  // |principal_name| already exists, no action is performed and the method
-  // returns with ERROR_DUPLICATE_PRINCIPAL_NAME. If true, the existing account
-  // is updated. |callback| is called by OnAddAccountRunnerDone() at the end of
-  // the flow, see class description.
+  //   user@REALM.COM.
+  // |is_managed| is true for accounts set by admins via policy.
+  // |password| is the password of the account. If it matches "${PASSWORD}" and
+  //   the account is managed, the login password is used.
+  // If |remember_password| is true, the password is remembered by the daemon.
+  //   The flag has effect when the login password is used.
+  // |krb5_conf| is set as configuration.
+  // If |allow_existing| is false and an account for |principal_name| already
+  //   exists, no action is performed and the method returns with
+  //   ERROR_DUPLICATE_PRINCIPAL_NAME. If true, the existing account is updated.
+  // |callback| is called by OnAddAccountRunnerDone() at the end of the flow,
+  //   see class description.
   KerberosAddAccountRunner(KerberosCredentialsManager* manager,
                            std::string normalized_principal,
                            bool is_managed,
@@ -171,7 +182,8 @@ class KerberosAddAccountRunner {
   }
 
   // Authenticates |normalized_principal_| using |password_| if |password_| is
-  // set. Otherwise, continues with Done().
+  // set. Otherwise, continues with Done(). If |password_| is "${PASSWORD}" and
+  // the account is managed, the login password is used.
   void MaybeAcquireKerberosTgt() {
     if (!password_) {
       Done(kerberos::ERROR_NONE);
@@ -181,6 +193,8 @@ class KerberosAddAccountRunner {
     kerberos::AcquireKerberosTgtRequest request;
     request.set_principal_name(normalized_principal_);
     request.set_remember_password(remember_password_);
+    request.set_use_login_password(is_managed_ &&
+                                   *password_ == kLoginPasswordPlaceholder);
     KerberosClient::Get()->AcquireKerberosTgt(
         request, data_pipe_utils::GetDataReadPipe(*password_).get(),
         base::BindOnce(&KerberosAddAccountRunner::OnAcquireKerberosTgt,
@@ -253,7 +267,7 @@ KerberosCredentialsManager::Observer::~Observer() = default;
 
 KerberosCredentialsManager::KerberosCredentialsManager(
     PrefService* local_state,
-    const user_manager::User* primary_user)
+    const Profile* primary_profile)
     : local_state_(local_state),
       kerberos_files_handler_(
           base::BindRepeating(&KerberosCredentialsManager::GetKerberosFiles,
@@ -261,10 +275,14 @@ KerberosCredentialsManager::KerberosCredentialsManager(
   DCHECK(!g_instance);
   g_instance = this;
 
+  DCHECK(primary_profile);
+  const user_manager::User* primary_user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(primary_profile);
+  DCHECK(primary_user);
+
   // Set up expansions:
   //   '${LOGIN_ID}'    -> 'user'
   //   '${LOGIN_EMAIL}' -> 'user@EXAMPLE.COM'
-  DCHECK(primary_user);
   std::map<std::string, std::string> substitutions;
   substitutions[kLoginId] =
       primary_user->GetAccountName(false /* use_display_email */);
@@ -300,10 +318,20 @@ KerberosCredentialsManager::KerberosCredentialsManager(
       base::BindRepeating(&KerberosCredentialsManager::UpdateAccountsFromPref,
                           weak_factory_.GetWeakPtr()));
 
-  UpdateAccountsFromPref();
+  // Update accounts if policy is already available or start observing.
+  policy_service_ =
+      primary_profile->GetProfilePolicyConnector()->policy_service();
+  const bool policy_initialized =
+      policy_service_->IsInitializationComplete(policy::POLICY_DOMAIN_CHROME);
+  VLOG(1) << "Policy service initialized at startup: " << policy_initialized;
+  if (policy_initialized)
+    UpdateAccountsFromPref();
+  else
+    policy_service_->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
 }
 
 KerberosCredentialsManager::~KerberosCredentialsManager() {
+  policy_service_->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
   DCHECK(g_instance);
   g_instance = nullptr;
 }
@@ -334,6 +362,24 @@ KerberosCredentialsManager::EmptyResultCallback() {
 // static
 const char* KerberosCredentialsManager::GetDefaultKerberosConfig() {
   return kDefaultKerberosConfig;
+}
+
+void KerberosCredentialsManager::OnPolicyUpdated(
+    const policy::PolicyNamespace& ns,
+    const policy::PolicyMap& previous,
+    const policy::PolicyMap& current) {
+  // Ignore this call. Policy changes are already observed by the registrar.
+}
+
+void KerberosCredentialsManager::OnPolicyServiceInitialized(
+    policy::PolicyDomain domain) {
+  DCHECK(domain == policy::POLICY_DOMAIN_CHROME);
+
+  if (policy_service_->IsInitializationComplete(policy::POLICY_DOMAIN_CHROME)) {
+    VLOG(1) << "Policy service initialized";
+    policy_service_->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
+    UpdateAccountsFromPref();
+  }
 }
 
 void KerberosCredentialsManager::AddObserver(Observer* observer) {
@@ -578,6 +624,7 @@ void KerberosCredentialsManager::UpdateEnabledFromPref() {
   const bool enabled = local_state_->GetBoolean(prefs::kKerberosEnabled);
   if (!enabled) {
     // Note that ClearAccounts logs an error if the operation fails.
+    VLOG(1) << "Kerberos got disabled, clearing accounts";
     ClearAccounts(base::BindOnce([](kerberos::ErrorType) {}));
   }
 }
@@ -591,13 +638,21 @@ void KerberosCredentialsManager::UpdateAddAccountsAllowedFromPref() {
 }
 
 void KerberosCredentialsManager::UpdateAccountsFromPref() {
-  if (!local_state_->GetBoolean(prefs::kKerberosEnabled))
+  if (!local_state_->GetBoolean(prefs::kKerberosEnabled)) {
+    VLOG(1) << "Kerberos disabled";
+    NotifyRequiresLoginPassword(false);
     return;
+  }
 
   const base::Value* accounts = local_state_->GetList(prefs::kKerberosAccounts);
-  if (!accounts)
+  if (!accounts) {
+    VLOG(1) << "No KerberosAccounts policy";
+    NotifyRequiresLoginPassword(false);
     return;
+  }
 
+  VLOG(1) << accounts->GetList().size() << " accounts in KerberosAccounts";
+  bool requires_login_password = false;
   for (const auto& account : accounts->GetList()) {
     // Get the principal. Should always be set.
     const base::Value* principal_value = account.FindPath(kPrincipal);
@@ -622,9 +677,9 @@ void KerberosCredentialsManager::UpdateAccountsFromPref() {
     if (password_str)
       password = std::move(*password_str);
 
-    // Note: Password supports expansion of '${PASSWORD}' into the login
-    // password. This is done in the daemon, however, since Chrome forgets the
-    // password ASAP for security reasons.
+    // Keep track of whether any account has the '${PASSWORD}' placeholder.
+    if (password == kLoginPasswordPlaceholder)
+      requires_login_password = true;
 
     // Get the remember password flag, default to false.
     bool remember_password =
@@ -650,6 +705,17 @@ void KerberosCredentialsManager::UpdateAccountsFromPref() {
         this, principal, true /* is_managed */, password, remember_password,
         krb5_conf, true /* allow_existing */, EmptyResultCallback()));
   }
+
+  // Let UserSessionManager know whether it should keep the login password.
+  NotifyRequiresLoginPassword(requires_login_password);
+}
+
+void KerberosCredentialsManager::NotifyRequiresLoginPassword(
+    bool requires_login_password) {
+  VLOG(1) << "Requires login password: " << requires_login_password;
+  UserSessionManager::GetInstance()->VoteForSavingLoginPassword(
+      UserSessionManager::PasswordConsumingService::kKerberos,
+      requires_login_password);
 }
 
 }  // namespace chromeos

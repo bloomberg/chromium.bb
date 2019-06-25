@@ -15,13 +15,16 @@
 #include "base/optional.h"
 #include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
+#include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_service.h"
 
 class PrefRegistrySimple;
 class PrefService;
 class PrefChangeRegistrar;
+class Profile;
 
-namespace user_manager {
-class User;
+namespace policy {
+class PolicyMap;
 }
 
 namespace chromeos {
@@ -29,7 +32,7 @@ namespace chromeos {
 class KerberosAddAccountRunner;
 class VariableExpander;
 
-class KerberosCredentialsManager final {
+class KerberosCredentialsManager : public policy::PolicyService::Observer {
  public:
   using ResultCallback = base::OnceCallback<void(kerberos::ErrorType)>;
   using ListAccountsCallback =
@@ -49,8 +52,8 @@ class KerberosCredentialsManager final {
   };
 
   KerberosCredentialsManager(PrefService* local_state,
-                             const user_manager::User* primary_user);
-  ~KerberosCredentialsManager();
+                             const Profile* primary_profile);
+  ~KerberosCredentialsManager() override;
 
   // Singleton accessor. Available once the primary profile is available.
   // DCHECKs if the instance has not been created yet.
@@ -64,6 +67,14 @@ class KerberosCredentialsManager final {
 
   // Returns the default Kerberos configuration (krb5.conf).
   static const char* GetDefaultKerberosConfig();
+
+  // PolicyService:
+  void OnPolicyUpdated(const policy::PolicyNamespace& ns,
+                       const policy::PolicyMap& previous,
+                       const policy::PolicyMap& current) override;
+
+  // PolicyService:
+  void OnPolicyServiceInitialized(policy::PolicyDomain domain) override;
 
   // Start observing this object. |observer| is not owned.
   void AddObserver(Observer* observer);
@@ -170,8 +181,17 @@ class KerberosCredentialsManager final {
   void UpdateAddAccountsAllowedFromPref();
   void UpdateAccountsFromPref();
 
+  // Informs session manager whether it needs to store the login password in the
+  // kernel keyring. That's the case when '${PASSWORD}' is used as password in
+  // the KerberosAccounts policy. The Kerberos daemon expands that to the login
+  // password.
+  void NotifyRequiresLoginPassword(bool requires_login_password);
+
   // Local state prefs, not owned.
   PrefService* local_state_ = nullptr;
+
+  // Policy service of the primary profile, not owned.
+  policy::PolicyService* policy_service_ = nullptr;
 
   // Called by OnSignalConnected(), puts Kerberos files where GSSAPI finds them.
   KerberosFilesHandler kerberos_files_handler_;
