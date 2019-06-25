@@ -514,9 +514,7 @@ TEST_F(CameraDeviceDelegateTest, AllocateCaptureAndStop) {
 // 2. Async IPC call OpenDevice() started
 // 3. StopAndDeAllocate()
 // 4. Async IPC call OpenDevice() finished
-// Disabled due to flakiness.
-// TODO(crbug.com/978278): Fix the flakiness and re-enable this test.
-TEST_F(CameraDeviceDelegateTest, DISABLED_StopBeforeOpened) {
+TEST_F(CameraDeviceDelegateTest, StopBeforeOpened) {
   auto* mock_client = ResetDeviceContext();
   mock_client->SetQuitCb(BindToCurrentLoop(base::BindOnce(
       &CameraDeviceDelegateTest::QuitRunLoop, base::Unretained(this))));
