@@ -48,7 +48,7 @@ static INLINE int convert_bsize_to_idx(BLOCK_SIZE bsize) {
 #if !CONFIG_REALTIME_ONLY
 // TODO(chiyotsai@google.com): This is very much a work in progress. We still
 // need to the following:
-//   -- add support for midres and hdres
+//   -- add support for hdres
 //   -- add support for pruning rectangular partitions
 //   -- use reconstructed pixels instead of source pixels for padding
 //   -- use chroma pixels in addition to luma pixels

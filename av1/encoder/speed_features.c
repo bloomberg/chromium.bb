@@ -123,6 +123,7 @@ static void set_good_speed_feature_framesize_dependent(
       sf->use_square_partition_only_threshold = BLOCK_128X128;
     } else if (is_480p_or_larger) {
       sf->use_square_partition_only_threshold = BLOCK_64X64;
+      sf->intra_cnn_split = (speed == 1);
     } else {
       sf->use_square_partition_only_threshold = BLOCK_32X32;
 
