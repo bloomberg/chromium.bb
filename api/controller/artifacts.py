@@ -195,6 +195,30 @@ def BundlePinnedGuestImages(input_proto, output_proto):
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
+def FetchPinnedGuestImages(input_proto, output_proto):
+  """Get the pinned guest image information."""
+  sysroot_path = input_proto.sysroot.path
+  if not sysroot_path:
+    cros_build_lib.Die('sysroot.path is required.')
+
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
+
+  if not chroot.exists():
+    cros_build_lib.Die('Chroot does not exist: %s', chroot.path)
+
+  if not sysroot.Exists(chroot=chroot):
+    cros_build_lib.Die('Sysroot does not exist: %s',
+                       chroot.full_path(sysroot.path))
+
+  pins = artifacts.FetchPinnedGuestImages(chroot, sysroot)
+
+  for pin in pins:
+    pinned_image = output_proto.pinned_images.add()
+    pinned_image.filename = pin.filename
+    pinned_image.uri = pin.uri
+
+
 def BundleFirmware(input_proto, output_proto):
   """Tar the firmware images for a build target.
 
