@@ -34045,6 +34045,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1206698676" label="MacV2Sandbox:disabled"/>
   <int value="-1206337150"
       label="OmniboxUIExperimentHideSuggestionUrlScheme:disabled"/>
+  <int value="-1205076560" label="EnableSearchBoxSelection:disabled"/>
   <int value="-1203955801" label="enable-password-change-support:disabled"/>
   <int value="-1203742042" label="enable-gesture-selection"/>
   <int value="-1201741587" label="DataReductionProxyDecidesTransform:disabled"/>
@@ -34273,6 +34274,7 @@ from previous Chrome versions.
   <int value="-874602599" label="HorizontalTabSwitcherAndroid:enabled"/>
   <int value="-872764392" label="ContextualSuggestionsBottomSheet:disabled"/>
   <int value="-872302695" label="PeriodicBackgroundSync:enabled"/>
+  <int value="-870120067" label="EnableSearchBoxSelection:enabled"/>
   <int value="-867087281" label="enable-virtual-keyboard"/>
   <int value="-866993841" label="OfflinePagesCTV2:disabled"/>
   <int value="-864266073" label="cros-regions-mode"/>

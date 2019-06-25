@@ -1803,6 +1803,9 @@ extern const char kEnableAppDataSearchDescription[];
 extern const char kEnableAppGridGhostName[];
 extern const char kEnableAppGridGhostDescription[];
 
+extern const char kEnableSearchBoxSelectionName[];
+extern const char kEnableSearchBoxSelectionDescription[];
+
 extern const char kEnableAppListSearchAutocompleteName[];
 extern const char kEnableAppListSearchAutocompleteDescription[];
 

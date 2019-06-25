@@ -766,6 +766,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "enable-search-box-selection",
+    "owners": [ "ginko", "newcomer" ],
+    "expiry_milestone": 78
+  },
+  {
     "name": "enable-app-list-search-autocomplete",
     "owners": [ "newcomer" ],
     "expiry_milestone": 75

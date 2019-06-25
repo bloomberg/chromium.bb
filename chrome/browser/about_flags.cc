@@ -3147,6 +3147,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-app-grid-ghost", flag_descriptions::kEnableAppGridGhostName,
      flag_descriptions::kEnableAppGridGhostDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppGridGhost)},
+
+    {"enable-search-box-selection",
+     flag_descriptions::kEnableSearchBoxSelectionName,
+     flag_descriptions::kEnableSearchBoxSelectionDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kEnableSearchBoxSelection)},
 #endif  // OS_CHROMEOS
 
     {"enable-accessibility-image-descriptions",

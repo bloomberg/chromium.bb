@@ -3027,6 +3027,11 @@ const char kEnableAppGridGhostName[] = "App Grid Ghosting";
 const char kEnableAppGridGhostDescription[] =
     "Enables ghosting during an item drag in launcher.";
 
+const char kEnableSearchBoxSelectionName[] = "Search Box Selection";
+const char kEnableSearchBoxSelectionDescription[] =
+    "Enables the ResultSelectionController in the Search Box. This alters "
+    "perceived focus traversal.";
+
 const char kEnableAppListSearchAutocompleteName[] =
     "App List Search Autocomplete";
 const char kEnableAppListSearchAutocompleteDescription[] =
