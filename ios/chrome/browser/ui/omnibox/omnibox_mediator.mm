@@ -102,13 +102,14 @@ const CGFloat kOmniboxIconSize = 16;
 
   if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
     __weak OmniboxMediator* weakSelf = self;
-    if (base::FeatureList::IsEnabled(kOmniboxUseDefaultSearchEngineFavicon) &&
-        AutocompleteMatch::IsSearchType(matchType)) {
-      // Show Default Search Engine favicon.
-      __weak __typeof(self) weakSelf = self;
-      [self loadDefaultSearchEngineFaviconWithCompletion:^(UIImage* image) {
-        [weakSelf.consumer updateAutocompleteIcon:image];
-      }];
+
+    if (AutocompleteMatch::IsSearchType(matchType)) {
+      if (base::FeatureList::IsEnabled(kOmniboxUseDefaultSearchEngineFavicon)) {
+        // Show Default Search Engine favicon.
+        [self loadDefaultSearchEngineFaviconWithCompletion:^(UIImage* image) {
+          [weakSelf.consumer updateAutocompleteIcon:image];
+        }];
+      }
     } else {
       // Show favicon.
       [self loadFaviconByPageURL:faviconURL
