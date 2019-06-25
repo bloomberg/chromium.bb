@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_WEB_STATE_UI_WK_SECURITY_ORIGIN_UTIL_H_
-#define IOS_WEB_WEB_STATE_UI_WK_SECURITY_ORIGIN_UTIL_H_
+#ifndef IOS_WEB_WEB_VIEW_WK_SECURITY_ORIGIN_UTIL_H_
+#define IOS_WEB_WEB_VIEW_WK_SECURITY_ORIGIN_UTIL_H_
 
 #include "url/gurl.h"
 
@@ -17,4 +17,4 @@ GURL GURLOriginWithWKSecurityOrigin(WKSecurityOrigin* origin);
 
 }  // namespace web
 
-#endif  // IOS_WEB_WEB_STATE_UI_WK_SECURITY_ORIGIN_UTIL_H_
+#endif  // IOS_WEB_WEB_VIEW_WK_SECURITY_ORIGIN_UTIL_H_
