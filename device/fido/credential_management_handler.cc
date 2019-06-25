@@ -8,11 +8,13 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "components/cbor/reader.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/pin.h"
+#include "device/fido/public_key_credential_descriptor.h"
 
 namespace device {
 
@@ -205,7 +207,7 @@ static void OnDeleteCredential(
 }
 
 void CredentialManagementHandler::DeleteCredential(
-    base::span<const uint8_t> credential_id,
+    const PublicKeyCredentialDescriptor& credential_id,
     DeleteCredentialCallback callback) {
   DCHECK(state_ == State::kReady && !get_credentials_callback_);
   if (!authenticator_) {
@@ -218,6 +220,61 @@ void CredentialManagementHandler::DeleteCredential(
   authenticator_->DeleteCredential(
       *pin_token_, credential_id,
       base::BindOnce(&OnDeleteCredential, std::move(callback)));
+}
+
+void CredentialManagementHandler::OnDeleteCredentials(
+    std::vector<std::vector<uint8_t>> remaining_credential_ids,
+    CredentialManagementHandler::DeleteCredentialCallback callback,
+    CtapDeviceResponseCode status,
+    base::Optional<DeleteCredentialResponse> response) {
+  if (status != CtapDeviceResponseCode::kSuccess ||
+      remaining_credential_ids.empty()) {
+    std::move(callback).Run(status);
+    return;
+  }
+
+  if (!authenticator_) {
+    // |authenticator_| could have been removed during a bulk deletion.  The
+    // observer would have already gotten an AuthenticatorRemoved() call, so no
+    // need to resolve |callback|.
+    return;
+  }
+
+  auto credential_id = *PublicKeyCredentialDescriptor::CreateFromCBORValue(
+      *cbor::Reader::Read(remaining_credential_ids.back()));
+  remaining_credential_ids.pop_back();
+  authenticator_->DeleteCredential(
+      *pin_token_, credential_id,
+      base::BindOnce(&CredentialManagementHandler::OnDeleteCredentials,
+                     weak_factory_.GetWeakPtr(),
+                     std::move(remaining_credential_ids), std::move(callback)));
+}
+
+void CredentialManagementHandler::DeleteCredentials(
+    std::vector<std::vector<uint8_t>> credential_ids,
+    DeleteCredentialCallback callback) {
+  DCHECK(state_ == State::kReady && !get_credentials_callback_);
+  if (!authenticator_) {
+    // AuthenticatorRemoved() may have been called, but the observer would have
+    // seen a FidoAuthenticatorRemoved() call.
+    NOTREACHED();
+    return;
+  }
+  DCHECK(pin_token_);
+
+  if (credential_ids.empty()) {
+    std::move(callback).Run(CtapDeviceResponseCode::kSuccess);
+    return;
+  }
+
+  auto credential_id = *PublicKeyCredentialDescriptor::CreateFromCBORValue(
+      *cbor::Reader::Read(credential_ids.back()));
+  credential_ids.pop_back();
+  authenticator_->DeleteCredential(
+      *pin_token_, credential_id,
+      base::BindOnce(&CredentialManagementHandler::OnDeleteCredentials,
+                     weak_factory_.GetWeakPtr(), std::move(credential_ids),
+                     std::move(callback)));
 }
 
 void CredentialManagementHandler::OnCredentialsMetadata(

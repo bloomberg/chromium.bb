@@ -1336,15 +1336,19 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
       const auto credential_id_it = params.find(cbor::Value(static_cast<int>(
           CredentialManagementRequestParamKey::kCredentialID)));
       if (credential_id_it == params.end() ||
-          !credential_id_it->second.is_bytestring()) {
+          !credential_id_it->second.is_map()) {
         return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
       }
-      const std::vector<uint8_t>& credential_id =
-          credential_id_it->second.GetBytestring();
-      if (!base::Contains(mutable_state()->registrations, credential_id)) {
+      auto credential_id = PublicKeyCredentialDescriptor::CreateFromCBORValue(
+          cbor::Value(credential_id_it->second.GetMap()));
+      if (!credential_id) {
+        return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+      }
+      if (!base::Contains(mutable_state()->registrations,
+                          credential_id->id())) {
         return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
       }
-      mutable_state()->registrations.erase(credential_id);
+      mutable_state()->registrations.erase(credential_id->id());
       *response = {};
       return CtapDeviceResponseCode::kSuccess;
     }
