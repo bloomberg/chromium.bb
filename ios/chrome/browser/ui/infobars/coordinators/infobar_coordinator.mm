@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
+#import "ios/chrome/browser/ui/infobars/banners/infobar_banner_presentation_state.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
@@ -81,6 +82,12 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   DCHECK(self.baseViewController);
   DCHECK(self.bannerViewController);
 
+  // If |self.baseViewController| is not part of the ViewHierarchy the banner
+  // shouldn't be presented.
+  if (!self.baseViewController.view.window) {
+    return;
+  }
+
   // Make sure to display the Toolbar/s before presenting the Banner.
   animatedFullscreenDisabler_ =
       std::make_unique<AnimatedScopedFullscreenDisabler>(
@@ -101,6 +108,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
     interactableBanner.interactionDelegate = self.bannerTransitionDriver;
   }
 
+  self.infobarBannerState = InfobarBannerPresentationState::IsAnimating;
   __weak __typeof(self) weakSelf = self;
   [self.baseViewController
       presentViewController:self.bannerViewController
@@ -110,8 +118,9 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
                        configureAccessibilityForBannerInViewController:
                            weakSelf.baseViewController
                                                             presenting:YES];
-                   weakSelf.presentingInfobarBanner = YES;
                    weakSelf.bannerWasPresented = YES;
+                   weakSelf.infobarBannerState =
+                       InfobarBannerPresentationState::Presented;
                    [weakSelf infobarBannerWasPresented];
                    if (completion)
                      completion();
@@ -120,7 +129,8 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 - (void)presentInfobarModal {
   ProceduralBlock modalPresentation = ^{
-    DCHECK(!self.bannerViewController);
+    DCHECK(self.infobarBannerState !=
+           InfobarBannerPresentationState::Presented);
     DCHECK(self.baseViewController);
     self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
         initWithTransitionMode:InfobarModalTransitionBase];
@@ -131,7 +141,9 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   };
 
   // Dismiss InfobarBanner first if being presented.
-  if (self.baseViewController.presentedViewController) {
+  if (self.baseViewController.presentedViewController &&
+      self.baseViewController.presentedViewController ==
+          self.bannerViewController) {
     [self dismissInfobarBanner:self animated:NO completion:modalPresentation];
   } else {
     modalPresentation();
@@ -187,8 +199,9 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   // Make sure the banner is completely presented before trying to dismiss it.
   [self.bannerTransitionDriver completePresentationTransitionIfRunning];
 
-  if (self.baseViewController.presentedViewController ==
-      self.bannerViewController) {
+  if (self.baseViewController.presentedViewController &&
+      self.baseViewController.presentedViewController ==
+          self.bannerViewController) {
     [self.baseViewController
         dismissViewControllerAnimated:animated
                            completion:^{
@@ -202,7 +215,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 }
 
 - (void)infobarBannerWasDismissed {
-  self.presentingInfobarBanner = NO;
+  self.infobarBannerState = InfobarBannerPresentationState::NotPresented;
   [self configureAccessibilityForBannerInViewController:self.baseViewController
                                              presenting:NO];
   [self.badgeDelegate infobarBannerWasDismissed];
@@ -292,7 +305,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   // by an InfobarBanner. If this is the case InfobarBanner will call
   // infobarWasDismissed and clean up once it gets dismissed, this prevents
   // counting the dismissal metrics twice.
-  if (!self.presentingInfobarBanner)
+  if (self.infobarBannerState != InfobarBannerPresentationState::Presented)
     [self infobarWasDismissed];
 }
 
