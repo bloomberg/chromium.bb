@@ -450,6 +450,12 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis regelen er slått av eller ikke er konfigurert, kan brukeren velge bort nettstedsisolering (f.eks. ved å bruke oppføringen «Slå av nettstedsisolering» i chrome://flags).
       </translation>
 <translation id="1767673020408652620">Slå på appanbefalinger i nulltilstanden for søkefeltet</translation>
+<translation id="17719159826324007">
+      Hvis denne regelen er satt til ArcSession og Android har startet, tvinges enheten til å starte på nytt når brukeren logger av.
+      Når regelen er satt til «Always» (Alltid), tvinges enheten til å starte på nytt hver gang brukeren logger av.
+      Hvis den ikke er angitt, har den ingen virkning, og enheten tvinges ikke til å starte på nytt når brukeren logger av. Det samme gjelder hvis den er satt til «Never» (Aldri).
+      Denne regelen har kun virkning for ikke-tilknyttede brukere.
+      </translation>
 <translation id="1781356041596378058">Denne regelen kontrollerer også tilgangen til utvikleralternativene for Android. Hvis du angir denne regelen som «true» (sann), fjerner du brukernes tilgang til utvikleralternativene. Hvis du angir denne regelen som «false» (usann) eller ikke angir den, kan brukere få tilgang til utvikleralternativene ved å trykke sju ganger på delversjonsnummeret i appen for Android-innstillinger.</translation>
 <translation id="1793346220873697538">Deaktiver utskrift med PIN-kode som standard</translation>
 <translation id="1797233582739332495">Vis brukeren en gjentakende melding om at omstart kreves</translation>
@@ -1568,11 +1574,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis regelen settes til false (usann), rapporteres ikke
       informasjonen om kioskøkten. Hvis den settes til true (sann)
       eller ikke angis, rapporteres informasjonen om kioskøkten.</translation>
-<translation id="3852924591079583104">
-      Hvis denne regelen er satt til ArcSession og Android har startet, tvinges enheten til å starte på nytt når brukeren logger av.
-      Når regelen er satt til «Always» (Alltid), tvinges enheten til å starte på nytt hver gang brukeren logger av.
-      Hvis den ikke er angitt, har den ingen virkning, og enheten tvinges ikke til å starte på nytt når brukeren logger av. Det samme gjelder hvis den er satt til «Never» (Aldri).
-      </translation>
 <translation id="3858658082795336534">Utskrift på begge sider som standard</translation>
 <translation id="3859780406608282662">Legg til en parameter i hentingen av Variasjoner-utgangsverdien i <ph name="PRODUCT_OS_NAME" />.
 

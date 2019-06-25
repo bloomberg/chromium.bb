@@ -463,6 +463,12 @@
       Ha a házirend nincs beállítva, vagy le van tiltva, a felhasználók módosíthatják ezt a beállítást (pl. a chrome://flags oldalon található „Disable site isolation” [Webhely-elszigetelés letiltása] beállítás használatával).
       </translation>
 <translation id="1767673020408652620">Alkalmazásjavaslatok engedélyezése a keresőmező alapállapotában</translation>
+<translation id="17719159826324007">
+      Az ArcSession beállítás kiválasztása esetén ez a házirend arra kényszeríti az eszközt, hogy újrainduljon, amikor a felhasználó kijelentkezik (ha az Android rendszer fut).
+      Ha a beállítás értéke Mindig, akkor az eszköz minden felhasználói kijelentkezéskor újraindul.
+      Ha nincs beállítva a házirend, akkor nincs hatása, és nem kényszeríti újraindulásra az eszközt a felhasználói kijelentkezések esetén. Ugyanez érvényes a Soha beállítás esetén is.
+      Ez a házirend csak a nem társult felhasználókat érinti.
+      </translation>
 <translation id="1781356041596378058">A házirend meghatározza az Android fejlesztői beállításokhoz való hozzáférést is. Ha igaz értékre állítja ezt a házirendet, akkor a felhasználók nem férhetnek hozzá a fejlesztői beállításokhoz. Ha hamis értékre állítja a házirendet, illetve nem ad meg beállítást, akkor a felhasználók hozzáférhetnek a fejlesztői beállításokhoz, ha hétszer a build számára koppintanak az Android Beállítások alkalmazásában.</translation>
 <translation id="1793346220873697538">PIN-kóddal való nyomtatás alapértelmezett letiltása</translation>
 <translation id="1797233582739332495">Ismétlődő értesítés megjelenítése a felhasználónak arról, hogy újraindításra van szükség</translation>
@@ -1571,11 +1577,6 @@
 <translation id="3851039766298741586">Információk (például alkalmazásazonosító és -verzió) jelentése az aktív kioszkmunkamenetről.
 
 Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet információit. Ha igaz, illetve ha nincs beállítva, a böngésző jelenti ezeket az információkat.</translation>
-<translation id="3852924591079583104">
-      Az ArcSession beállítás kiválasztása esetén ez a házirend arra kényszeríti az eszközt, hogy újrainduljon, amikor a felhasználó kijelentkezik (ha az Android rendszer fut).
-      Ha a beállítás értéke Mindig, akkor az eszköz minden felhasználói kijelentkezéskor újraindul.
-      Ha nincs beállítva a házirend, akkor nincs hatása, és nem kényszeríti újraindulásra az eszközt a felhasználói kijelentkezések esetén. Ugyanez érvényes a Soha beállítás esetén is.
-      </translation>
 <translation id="3858658082795336534">Alapértelmezett kétoldalas nyomtatási mód</translation>
 <translation id="3859780406608282662">Hozzáad egy paramétert a <ph name="PRODUCT_OS_NAME" /> rendszer változatainak lekéréséhez.
 

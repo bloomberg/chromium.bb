@@ -457,6 +457,12 @@
       Politika yapılandırılmaz veya devre dışı bırakılırsa, kullanıcı bu ayarı değiştirebilir (ör. chrome://flags'de "Site izolasyonunu devre dışı bırak" seçeneğini kullanarak).
       </translation>
 <translation id="1767673020408652620">Arama Kutusunun Sıfır Durumunda Uygulama Önerileri Politikasını Etkinleştir</translation>
+<translation id="17719159826324007">
+      Bu politika ArcSession değerine ayarlandığında, Android başlatılmışsa kullanıcı oturumu kapatıldığında cihazı yeniden başlamaya zorlar.
+      Always (Her zaman) değerine ayarlandığında, kullanıcı oturumu her kapatıldığında cihazı yeniden başlamaya zorlar.
+      Bu politika ayarlanmadan bırakılırsa hiçbir etkisi olmaz ve kullanıcı oturumu kapatıldığında cihaz yeniden başlamaya zorlanmaz. Never (Hiçbir zaman) değerine ayarlanırsa da aynısı geçerli olur.
+      Bu politika yalnızca ilişkili olmayan kullanıcılar için etkili olur.
+      </translation>
 <translation id="1781356041596378058">Ayrıca bu politika Android Geliştirici Seçenekleri'ne erişimi de kontrol eder. Bu politikayı doğru (true) seçeneğine ayarlarsanız kullanıcılar Geliştirici Seçenekleri'ne erişemez. Bu politikayı yanlış (false) seçeneğine ayarlar veya ayarlamadan bırakırsanız kullanıcılar, Android ayarları uygulamasında derleme numarasına yedi kez dokunarak Geliştirici Seçenekleri'ne erişebilir.</translation>
 <translation id="1793346220873697538">Varsayılan olarak PIN ile yazdırmayı devre dışı bırak</translation>
 <translation id="1797233582739332495">Kullanıcıya yeniden başlatmanın gerektiğini belirten yinelenen bir istem gösterme</translation>
@@ -1591,11 +1597,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3851039766298741586">Uygulama kimliği ve sürümü gibi aktif kiosk oturumuyla ilgili bilgileri rapor edin.
 
 Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edilmez. Doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa oturum bilgileri rapor edilir.</translation>
-<translation id="3852924591079583104">
-      Bu politika ArcSession değerine ayarlandığında, Android başlatılmışsa kullanıcı oturumu kapatıldığında cihazı yeniden başlamaya zorlar.
-      Always (Her zaman) değerine ayarlandığında, kullanıcı oturumu her kapatıldığında cihazı yeniden başlamaya zorlar.
-      Bu politika ayarlanmadan bırakılırsa hiçbir etkisi olmaz ve kullanıcı oturumu kapatıldığında cihaz yeniden başlamaya zorlanmaz. Never (Hiçbir zaman) değerine ayarlanırsa da aynısı geçerli olur.
-      </translation>
 <translation id="3858658082795336534">Varsayılan dupleks yazdırma modu</translation>
 <translation id="3859780406608282662"><ph name="PRODUCT_OS_NAME" /> içindeki Varyasyonlar çekirdeğini getirmek için bir parametre ekleyin.
 

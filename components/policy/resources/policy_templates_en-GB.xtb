@@ -465,6 +465,12 @@
       If the policy is not configured or disabled, the user will be able to change this setting (e.g. using 'Disable site isolation' entry in chrome://flags).
       </translation>
 <translation id="1767673020408652620">Enable App Recommendations in Zero State of Search Box</translation>
+<translation id="17719159826324007">
+      This policy, when set to ArcSession, forces the device to reboot when a user signs out if Android has started.
+      When set to Always, it forces the device to reboot on every user sign-out.
+      If left unset, it has no effect and no reboot is forced on user sign-out. The same applies if set to Never.
+      This policy has effect only for unaffiliated users.
+      </translation>
 <translation id="1781356041596378058">This policy also controls access to Android Developer Options. If you set this policy to true, users cannot access Developer Options. If you set this policy to false or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.</translation>
 <translation id="1793346220873697538">Disable PIN printing by default</translation>
 <translation id="1797233582739332495">Show a recurring prompt to the user indicating that a relaunch is required</translation>
@@ -1599,11 +1605,6 @@
       If the policy is set to false, the kiosk session information will not be
       reported. If set to true or left unset, kiosk session information will be
       reported.</translation>
-<translation id="3852924591079583104">
-      This policy, when set to ArcSession, forces the device to reboot when a user signs out if Android has started.
-      When set to Always, it forces the device to reboot on every user sign-out.
-      If left unset, it has no effect and no reboot is forced on user sign-out. The same applies if set to Never.
-      </translation>
 <translation id="3858658082795336534">Default printing duplex mode</translation>
 <translation id="3859780406608282662">Add a parameter to the fetching of the Variations seed in <ph name="PRODUCT_OS_NAME" />.
 

@@ -467,6 +467,12 @@
       Jika dasar ini tidak dikonfigurasikan atau dilumpuhkan, pengguna akan dapat menukar tetapan ini (mis. menggunakan masukan "Lumpuhkan pengasingan tapak" dalam chrome://flags).
       </translation>
 <translation id="1767673020408652620">Dayakan Cadangan Apl dalam Keadaan Sifar Kotak Carian</translation>
+<translation id="17719159826324007">
+      Jika Android telah dimulakan, dasar ini akan memaksa peranti untuk but semula apabila pengguna log keluar jika dasar ditetapkan kepada ArcSession.
+      Apabila ditetapkan kepada Sentiasa, dasar ini memaksa peranti untuk but semula setiap kali pengguna log keluar.
+      Jika dibiarkan tidak ditetapkan, dasar ini tiada sebarang kesan dan but semula tidak akan dipaksa apabila pengguna log keluar. Begitu juga halnya jika ditetapkan kepada Jangan sekali-kali.
+      Dasar ini hanya memberikan kesan terhadap pengguna yang bukan ahli gabungan.
+      </translation>
 <translation id="1781356041596378058">Dasar ini turut mengawal akses ke Pilihan Pembangun Android. Jika anda menetapkan dasar ini kepada benar, pengguna tidak dapat mengakses Pilihan Pembangun. Jika anda menetapkan dasar ini kepada palsu atau membiarkannya tidak ditetapkan, pengguna dapat mengakses Pilihan Pembangun dengan mengetik nombor binaan sebanyak tujuh kali dalam apl tetapan Android.</translation>
 <translation id="1793346220873697538">Lumpuhkan pencetakan PIN secara lalai</translation>
 <translation id="1797233582739332495">Tunjukkan gesaan berulang kepada pengguna yang menunjukkan pelancaran semula diperlukan</translation>
@@ -1604,11 +1610,6 @@
       Jika dasar ini ditetapkan kepada palsu, maklumat sesi kios tidak
       akan dilaporkan. Jika ditetapkan kepada benar atau dibiarkan
       tanpa ditetapkan, maklumat sesi kios akan dilaporkan.</translation>
-<translation id="3852924591079583104">
-      Jika Android telah dimulakan, dasar ini akan memaksa peranti untuk but semula apabila pengguna log keluar jika dasar ditetapkan kepada ArcSession.
-      Apabila ditetapkan kepada Sentiasa, dasar ini memaksa peranti untuk but semula setiap kali pengguna log keluar.
-      Jika dibiarkan tidak ditetapkan, dasar ini tiada sebarang kesan dan but semula tidak akan dipaksa apabila pengguna log keluar. Begitu juga halnya jika ditetapkan kepada Jangan sekali-kali.
-      </translation>
 <translation id="3858658082795336534">Mod dupleks pencetakan lalai</translation>
 <translation id="3859780406608282662">Tambahkan parameter untuk pengambilan benih Variasi dalam <ph name="PRODUCT_OS_NAME" />.
 
