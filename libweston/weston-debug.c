@@ -30,6 +30,8 @@
 #include "helpers.h"
 #include <libweston/libweston.h>
 
+#include "weston-log-internal.h"
+
 #include "weston-debug-server-protocol.h"
 
 #include <assert.h>
@@ -41,14 +43,27 @@
 
 /** Main weston-log context
  *
- * One per weston_compositor.
+ * One per weston_compositor. Stores list of scopes created and a list pending
+ * subscriptions.
  *
- * \internal
+ * A pending subscription is a subscription to a scope which hasn't been
+ * created. When the scope is finally created the pending subscription will be
+ * removed from the pending subscription list, but not before was added in the
+ * scope's subscription list and that of the subscriber list.
+ *
+ * Pending subscriptions only make sense for other types of streams, other than
+ * those created by weston-debug protocol. In the case of the weston-debug
+ * protocol, the subscription processes is done automatically whenever a client
+ * connects and subscribes to a scope which was previously advertised by the
+ * compositor.
+ *
+ * @internal
  */
 struct weston_log_context {
 	struct wl_listener compositor_destroy_listener;
 	struct wl_global *global;
 	struct wl_list scope_list; /**< weston_log_scope::compositor_link */
+	struct wl_list pending_subscription_list; /**< weston_log_subscription::source_link */
 };
 
 /** weston-log message scope
@@ -64,7 +79,36 @@ struct weston_log_scope {
 	void *user_data;
 	struct wl_list stream_list; /**< weston_debug_stream::scope_link */
 	struct wl_list compositor_link;
+	struct wl_list subscription_list;  /**< weston_log_subscription::source_link */
 };
+
+/** Ties a subscriber to a scope
+ *
+ * A subscription is created each time we'd want to subscribe to a scope. From
+ * the stream type we can retrieve the subscriber and from the subscriber we
+ * reach each of the streams callbacks. See also weston_log_subscriber object.
+ *
+ * When a subscription has been created we store it in the scope's subscription
+ * list and in the subscriber's subscription list. The subscription might be a
+ * pending subscription until the scope for which there's was a subscribe has
+ * been created. The scope creation will take of looking through the pending
+ * subscription list.
+ *
+ * A subscription can reached from a subscriber subscription list by using the
+ * streams base class.
+ *
+ * @internal
+ */
+struct weston_log_subscription {
+	struct weston_log_subscriber *owner;
+	struct wl_list owner_link;      /**< weston_log_subscriber::subscription_list */
+
+	char *scope_name;
+	struct weston_log_scope *source;
+	struct wl_list source_link;     /**< weston_log_scope::subscription_list  or
+					  weston_log_context::pending_subscription_list */
+};
+
 
 /** A debug stream created by a client
  *
@@ -79,6 +123,118 @@ struct weston_debug_stream {
 	struct wl_resource *resource;	/**< weston_debug_stream_v1 object */
 	struct wl_list scope_link;
 };
+
+/** Creates a new subscription using the subscriber by \c owner.
+ *
+ * The subscription created is added to the \c owner subscription list.
+ * Destroying the subscription using weston_log_subscription_destroy() will
+ * remove the link from the subscription list and free storage alloc'ed.
+ *
+ * @param owner the subscriber owner, must be created before creating a
+ * subscription
+ * @param scope_name the scope for which to create this subscription
+ * @returns a weston_log_subscription object in case of success, or NULL
+ * otherwise
+ *
+ * @internal
+ * @sa weston_log_subscription_destroy, weston_log_subscription_remove,
+ * weston_log_subscription_add
+ */
+struct weston_log_subscription *
+weston_log_subscription_create(struct weston_log_subscriber *owner,
+			       const char *scope_name)
+{
+	struct weston_log_subscription *sub;
+	assert(owner);
+	assert(scope_name);
+
+	sub = zalloc(sizeof(*sub));
+	if (!sub)
+		return NULL;
+
+	sub->owner = owner;
+	sub->scope_name = strdup(scope_name);
+
+	wl_list_insert(&sub->owner->subscription_list, &sub->owner_link);
+	return sub;
+}
+
+/** Destroys the subscription
+ *
+ * @param sub
+ * @internal
+ */
+void
+weston_log_subscription_destroy(struct weston_log_subscription *sub)
+{
+	if (sub->owner)
+		wl_list_remove(&sub->owner_link);
+	free(sub->scope_name);
+	free(sub);
+}
+
+/** Retrieve a subscription by using the subscriber
+ *
+ * This is useful when trying to find a subscription from the subscriber by
+ * having only access to the stream.
+ *
+ * @param subscriber the subscriber in question
+ * @returns a weston_log_subscription object
+ *
+ * @internal
+ */
+struct weston_log_subscription *
+weston_log_subscriber_get_only_subscription(struct weston_log_subscriber *subscriber)
+{
+	struct weston_log_subscription *sub;
+	/* unlikely, but can happen */
+	if (wl_list_length(&subscriber->subscription_list) == 0)
+		return NULL;
+
+	assert(wl_list_length(&subscriber->subscription_list) == 1);
+
+	return wl_container_of(subscriber->subscription_list.prev,
+			       sub, owner_link);
+}
+
+/** Adds the subscription \c sub to the subscription list of the
+ * scope.
+ *
+ * This should used when the scope has been created, and the subscription \c
+ * sub has be created before calling this function.
+ *
+ * @param scope the scope
+ * @param sub the subscription, it must be created before, see
+ * weston_log_subscription_create()
+ *
+ * @internal
+ */
+void
+weston_log_subscription_add(struct weston_log_scope *scope,
+			    struct weston_log_subscription *sub)
+{
+	assert(scope);
+	assert(sub);
+	/* don't allow subscriptions to have a source already! */
+	assert(!sub->source);
+
+	sub->source = scope;
+	wl_list_insert(&scope->subscription_list, &sub->source_link);
+}
+
+/** Removes the subscription from the scope's subscription list
+ *
+ * @internal
+ */
+void
+weston_log_subscription_remove(struct weston_log_subscription *sub)
+{
+	assert(sub);
+	if (sub->source)
+		wl_list_remove(&sub->source_link);
+	sub->source = NULL;
+}
+
 
 static struct weston_log_scope *
 get_scope(struct weston_log_context *log_ctx, const char *name)
