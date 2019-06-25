@@ -1230,6 +1230,8 @@ jumbo_split_static_library("browser") {
     "predictors/predictor_database_factory.h",
     "predictors/predictor_table_base.cc",
     "predictors/predictor_table_base.h",
+    "predictors/predictors_features.cc",
+    "predictors/predictors_features.h",
     "predictors/proxy_lookup_client_impl.cc",
     "predictors/proxy_lookup_client_impl.h",
     "predictors/resolve_host_client_impl.cc",
