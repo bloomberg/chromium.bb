@@ -77,6 +77,11 @@ weston_log_subscription_add(struct weston_log_scope *scope,
 void
 weston_log_subscription_remove(struct weston_log_subscription *sub);
 
+
+void
+weston_log_bind_weston_debug(struct wl_client *client,
+			     void *data, uint32_t version, uint32_t id);
+
 struct weston_log_scope *
 weston_log_get_scope(struct weston_log_context *log_ctx, const char *name);
 
