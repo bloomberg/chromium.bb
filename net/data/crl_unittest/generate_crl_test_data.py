@@ -740,7 +740,9 @@ Store(
 
 Store(
     'good_no_crldp',
-    'Leaf covered by CRLs and not revoked, leaf has no crlDistributionPoints',
+    'Leaf covered by CRLs and not revoked and has no crlDistributionPoints.\n'
+    'This tests the case where CheckCRL is called with a synthesized '
+    'distributionPoint.',
     LEAF_NO_CRLDP, CA,
     SignAsciiCRL('''
   INTEGER { 1 }

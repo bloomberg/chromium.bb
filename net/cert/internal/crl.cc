@@ -364,7 +364,7 @@ ParsedCrlTbsCertList::~ParsedCrlTbsCertList() = default;
 CRLRevocationStatus CheckCRL(base::StringPiece raw_crl,
                              const ParsedCertificateList& valid_chain,
                              size_t target_cert_index,
-                             const ParsedDistributionPoint* cert_dp,
+                             const ParsedDistributionPoint& cert_dp,
                              const base::Time& verify_time,
                              const base::TimeDelta& max_age) {
   DCHECK_LT(target_cert_index, valid_chain.size());
@@ -418,7 +418,7 @@ CRLRevocationStatus CheckCRL(base::StringPiece raw_crl,
   //               field in the complete CRL matches cRLIssuer in the DP and
   //               that the complete CRL contains an issuing distribution
   //               point extension with the indirectCRL boolean asserted.
-  if (cert_dp && cert_dp->has_crl_issuer) {
+  if (cert_dp.has_crl_issuer) {
     // Indirect CRLs are not supported.
     return CRLRevocationStatus::UNKNOWN;
   }
@@ -469,16 +469,6 @@ CRLRevocationStatus CheckCRL(base::StringPiece raw_crl,
       }
 
       if (distribution_point_names) {
-        // 6.3.3. [If the CRL was not specified in a distribution point], assume
-        //        a DP with both the reasons and the cRLIssuer fields omitted
-        //        and a distribution point name of the certificate issuer.
-        // Since only URI distribution point names are supported currently,
-        // just fail in this case.
-        // TODO(https://crbug.com/749276): update this if all distribution
-        // point name types are supported.
-        if (!cert_dp)
-          return CRLRevocationStatus::UNKNOWN;
-
         // 6.3.3. (b) (2) (i) If the distribution point name is present in the
         //                    IDP CRL extension and the distribution field is
         //                    present in the DP, then verify that one of the
@@ -488,7 +478,7 @@ CRLRevocationStatus CheckCRL(base::StringPiece raw_crl,
         //         fields of the certificate and the CRL.
         // TODO(https://crbug.com/749276): Check other name types?
         if (!ContainsExactMatchingName(
-                cert_dp->uris,
+                cert_dp.uris,
                 distribution_point_names->uniform_resource_identifiers)) {
           return CRLRevocationStatus::UNKNOWN;
         }

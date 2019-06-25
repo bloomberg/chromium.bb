@@ -203,8 +203,10 @@ GetCRLStatusForCert(const der::Input& cert_serial,
 //  * |target_cert_index|: The index into |valid_chain| of the certificate being
 //        checked for revocation.
 //  * |cert_dp|: The distribution point from the target certificate's CRL
-//        distribution points extension that |raw_crl| corresponds to. May be
-//        nullptr if |raw_crl| was not specified in a distribution point.
+//        distribution points extension that |raw_crl| corresponds to. If
+//        |raw_crl| was not specified in a distribution point, the caller must
+//        synthesize a ParsedDistributionPoint object as specified by RFC 5280
+//        6.3.3.
 //  * |verify_time|: The time to use when checking revocation status.
 //  * |max_age|: The maximum age for a CRL, implemented as time since
 //        the |thisUpdate| field in the CRL TBSCertList. Responses older than
@@ -213,7 +215,7 @@ NET_EXPORT CRLRevocationStatus
 CheckCRL(base::StringPiece raw_crl,
          const ParsedCertificateList& valid_chain,
          size_t target_cert_index,
-         const ParsedDistributionPoint* cert_dp,
+         const ParsedDistributionPoint& cert_dp,
          const base::Time& verify_time,
          const base::TimeDelta& max_age) WARN_UNUSED_RESULT;
 
