@@ -36,9 +36,6 @@ export class GroupRecorder {
 
   record(name: string, params: IParamsSpec | null): [IResult, CaseRecorder] {
     const result: IResult = { name, params, status: 'running', timems: -1 };
-    if (params) {
-      result.params = params;
-    }
     this.test.cases.push(result);
     return [result, new CaseRecorder(result)];
   }

@@ -21,26 +21,26 @@ class ParamsTest extends DefaultFixture {
   }
 }
 
-export const group = new TestGroup(ParamsTest);
+export const g = new TestGroup(ParamsTest);
 
-group.test('options', null, t => {
+g.test('options', t => {
   t.expectSpecEqual(poptions('hello', [1, 2, 3]), [{ hello: 1 }, { hello: 2 }, { hello: 3 }]);
 });
 
-// TODO: somehow "subgroup" the combine tests
+// TODO: somehow "subg" the combine tests
 
-group.test('combine/none', null, t => {
+g.test('combine/none', t => {
   t.expectSpecEqual(pcombine([]), []);
 });
 
-group.test('combine/zeroes and ones', null, t => {
+g.test('combine/zeroes and ones', t => {
   t.expectSpecEqual(pcombine([[], []]), []);
   t.expectSpecEqual(pcombine([[], [{}]]), []);
   t.expectSpecEqual(pcombine([[{}], []]), []);
   t.expectSpecEqual(pcombine([[{}], [{}]]), [{}]);
 });
 
-group.test('combine/mixed', null, t => {
+g.test('combine/mixed', t => {
   t.expectSpecEqual(
     pcombine([poptions('x', [1, 2]), poptions('y', ['a', 'b']), [{ p: 4 }, { q: 5 }], [{}]]),
     [
@@ -56,13 +56,13 @@ group.test('combine/mixed', null, t => {
   );
 });
 
-group.test('filter', null, t => {
+g.test('filter', t => {
   t.expectSpecEqual(pfilter([{ a: true, x: 1 }, { a: false, y: 2 }], p => p.a), [
     { a: true, x: 1 },
   ]);
 });
 
-group.test('exclude', null, t => {
+g.test('exclude', t => {
   t.expectSpecEqual(
     pexclude([{ a: true, x: 1 }, { a: false, y: 2 }], [{ a: true }, { a: false, y: 2 }]),
     [{ a: true, x: 1 }]

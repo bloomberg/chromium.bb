@@ -5,9 +5,9 @@ Basic tests.
 import { TestGroup } from '../../../framework/index.js';
 import { GPUTest } from '../gpu_test.js';
 
-export const group = new TestGroup(GPUTest);
+export const g = new TestGroup(GPUTest);
 
-group.test('empty', null, async t => {
+g.test('empty', async t => {
   const encoder = t.device.createCommandEncoder({});
   const cmd = encoder.finish();
   t.device.getQueue().submit([cmd]);

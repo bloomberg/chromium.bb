@@ -44,7 +44,7 @@ if (!fs.existsSync('src/tools/run.ts')) {
   for (const entry of entries) {
     const {
       path,
-      node: { group },
+      node: { g: group },
     } = entry;
     if (!group) {
       continue;

@@ -5,16 +5,16 @@ Basic unit tests for test framework.
 import { DefaultFixture } from '../../framework/default_fixture.js';
 import { TestGroup } from '../../framework/index.js';
 
-export const group = new TestGroup(DefaultFixture);
+export const g = new TestGroup(DefaultFixture);
 
-group.test('test/sync', null, t => {});
+g.test('test/sync', t => {});
 
-group.test('test/async', null, async t => {});
+g.test('test/async', async t => {});
 
-group.test('testp/sync', {}, t => {
+g.test('testp/sync', t => {
   t.log(JSON.stringify(t.params));
-});
+}).params([{}]);
 
-group.test('testp/async', {}, async t => {
+g.test('testp/async', async t => {
   t.log(JSON.stringify(t.params));
-});
+}).params([{}]);

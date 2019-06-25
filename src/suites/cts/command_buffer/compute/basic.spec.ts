@@ -5,9 +5,9 @@ Basic command buffer compute tests.
 import { TestGroup } from '../../../../framework/index.js';
 import { GPUTest } from '../../gpu_test.js';
 
-export const group = new TestGroup(GPUTest);
+export const g = new TestGroup(GPUTest);
 
-group.test('memcpy', null, async t => {
+g.test('memcpy', async t => {
   const data = new Uint32Array([0x01020304]);
   const src = t.device.createBuffer({ size: 4, usage: 8 | 128 });
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 128 });

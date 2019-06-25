@@ -14,7 +14,7 @@ export interface IListing {
 
 export interface ITestNode {
   // undefined for README.txt, defined for a test module.
-  group?: ITestGroup;
+  g?: ITestGroup;
   description: string;
 }
 
@@ -155,12 +155,12 @@ export abstract class TestLoader {
     testPrefix: string
   ): Promise<ITestNode> {
     const node = (await this.import(`${suite}/${group}.spec.js`)) as ITestNode;
-    if (!node.group) {
+    if (!node.g) {
       return node;
     }
     return {
       description: node.description,
-      group: filterTestGroup(node.group, testcase => testcase.name.startsWith(testPrefix)),
+      g: filterTestGroup(node.g, testcase => testcase.name.startsWith(testPrefix)),
     };
   }
 
@@ -171,13 +171,13 @@ export abstract class TestLoader {
     paramsMatch: IParamsAny | null
   ): Promise<ITestNode> {
     const node = (await this.import(`${suite}/${group}.spec.js`)) as ITestNode;
-    if (!node.group) {
+    if (!node.g) {
       return node;
     }
     return {
       description: node.description,
-      group: filterTestGroup(
-        node.group,
+      g: filterTestGroup(
+        node.g,
         testcase => testcase.name === test && paramsSupersets(testcase.params, paramsMatch)
       ),
     };
@@ -190,13 +190,13 @@ export abstract class TestLoader {
     paramsExact: IParamsAny | null
   ): Promise<ITestNode> {
     const node = (await this.import(`${suite}/${group}.spec.js`)) as ITestNode;
-    if (!node.group) {
+    if (!node.g) {
       return node;
     }
     return {
       description: node.description,
-      group: filterTestGroup(
-        node.group,
+      g: filterTestGroup(
+        node.g,
         testcase => testcase.name === test && paramsEquals(testcase.params, paramsExact)
       ),
     };

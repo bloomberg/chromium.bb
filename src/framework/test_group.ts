@@ -31,12 +31,12 @@ class Test<F extends Fixture> {
   *[Symbol.iterator](): IterableIterator<ICase> {
     const fixture = this.fixture;
     const fn = this.fn;
-    for (const params of this.cases || [{}]) {
+    for (const params of this.cases || [null]) {
       yield {
         name: this.name,
         params,
         async run(log) {
-          const inst = new fixture(log, params);
+          const inst = new fixture(log, params || {});
           await inst.init();
           await fn(inst);
           inst.finalize();

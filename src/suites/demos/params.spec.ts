@@ -11,8 +11,7 @@ import {
   pexclude,
 } from '../../framework/index.js';
 
-export const group = new TestGroup(DefaultFixture);
-const g = group;
+export const g = new TestGroup(DefaultFixture);
 
 function print(t: DefaultFixture) {
   t.log(JSON.stringify(t.params));

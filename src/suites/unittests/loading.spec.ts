@@ -27,43 +27,45 @@ const nodesData: { [k: string]: ITestNode } = {
   'suite1/README.txt': { description: 'desc 1a' },
   'suite1/foo.spec.js': {
     description: 'desc 1b',
-    group: (() => {
+    g: (() => {
       const g = new TestGroup(DefaultFixture);
-      g.test('hello', null, () => {});
-      g.test('bonjour', null, () => {});
-      g.test('hola', null, () => {});
+      g.test('hello', () => {});
+      g.test('bonjour', () => {});
+      g.test('hola', () => {});
       return g;
     })(),
   },
   'suite1/bar/README.txt': { description: 'desc 1c' },
   'suite1/bar/buzz.spec.js': {
     description: 'desc 1d',
-    group: (() => {
+    g: (() => {
       const g = new TestGroup(DefaultFixture);
-      g.test('zap', null, () => {});
+      g.test('zap', () => {});
       return g;
     })(),
   },
   'suite1/baz.spec.js': {
     description: 'desc 1e',
-    group: (() => {
+    g: (() => {
       const g = new TestGroup(DefaultFixture);
-      g.test('zed', { a: 1, b: 2 }, () => {});
-      g.test('zed', { a: 1, b: 3 }, () => {});
+      g.test('zed', () => {}).params([
+        { a: 1, b: 2 }, //
+        { a: 1, b: 3 },
+      ]);
       return g;
     })(),
   },
   'suite2/foof.spec.js': {
     description: 'desc 2b',
-    group: (() => {
+    g: (() => {
       const g = new TestGroup(DefaultFixture);
-      g.test('blah', null, t => {
+      g.test('blah', t => {
         t.ok();
       });
-      g.test('bleh', {}, t => {
+      g.test('bleh', t => {
         t.ok();
         t.ok();
-      });
+      }).params([{}]);
       return g;
     })(),
   },
@@ -101,7 +103,7 @@ class LoadingTest extends DefaultFixture {
     if (a.length !== 1) {
       throw new Error('more than one group');
     }
-    const g = a[0].node.group;
+    const g = a[0].node.g;
     if (g === undefined) {
       throw new Error('group undefined');
     }
@@ -109,14 +111,14 @@ class LoadingTest extends DefaultFixture {
   }
 }
 
-export const group = new TestGroup(LoadingTest);
+export const g = new TestGroup(LoadingTest);
 
-group.test('whole suite', null, async t => {
+g.test('whole suite', async t => {
   t.expect((await t.load(['suite1'])).length === 5);
   t.expect((await t.load(['suite1:'])).length === 5);
 });
 
-group.test('partial suite', null, async t => {
+g.test('partial suite', async t => {
   t.expect((await t.load(['suite1:f'])).length === 1);
   t.expect((await t.load(['suite1:fo'])).length === 1);
   t.expect((await t.load(['suite1:foo'])).length === 1);
@@ -127,7 +129,7 @@ group.test('partial suite', null, async t => {
   t.expect((await t.load(['suite1:bar/b'])).length === 1);
 });
 
-group.test('whole group', null, async t => {
+g.test('whole group', async t => {
   await t.shouldReject(t.load(['suite1::']));
   await t.shouldReject(t.load(['suite1:bar:']));
   await t.shouldReject(t.load(['suite1:bar/:']));
@@ -138,21 +140,22 @@ group.test('whole group', null, async t => {
     const foo = (await t.load(['suite1:foo:']))[0];
     t.expect(foo.suite === 'suite1');
     t.expect(foo.path === 'foo');
-    if (foo.node.group === undefined) {
+    if (foo.node.g === undefined) {
       throw new Error('foo group');
     }
     const [, rec] = new Logger().record('');
-    t.expect(Array.from(foo.node.group.iterate(rec)).length === 3);
+    t.expect(Array.from(foo.node.g.iterate(rec)).length === 3);
   }
 });
 
-group.test('partial group', null, async t => {
+g.test('partial group', async t => {
   t.expect((await t.singleGroup('suite1:foo:h')).length === 2);
   t.expect((await t.singleGroup('suite1:foo:he')).length === 1);
+  t.expect((await t.singleGroup('suite1:foo:hello')).length === 1);
   t.expect((await t.singleGroup('suite1:baz:zed')).length === 2);
 });
 
-group.test('whole test', null, async t => {
+g.test('whole test', async t => {
   t.expect((await t.singleGroup('suite1:foo:hello:')).length === 1);
   t.expect((await t.singleGroup('suite1:baz:zed:')).length === 0);
   t.expect((await t.singleGroup('suite1:baz:zed:')).length === 0);
@@ -160,7 +163,7 @@ group.test('whole test', null, async t => {
   t.expect((await t.singleGroup('suite1:baz:zed:{"a":1,"b":2}')).length === 1);
 });
 
-group.test('partial test', null, async t => {
+g.test('partial test', async t => {
   t.expect((await t.singleGroup('suite1:baz:zed~')).length === 2);
   t.expect((await t.singleGroup('suite1:baz:zed~{}')).length === 2);
   t.expect((await t.singleGroup('suite1:baz:zed~{"a":1}')).length === 2);
@@ -171,7 +174,7 @@ group.test('partial test', null, async t => {
   t.expect((await t.singleGroup('suite1:baz:zed~{"c":3}')).length === 0);
 });
 
-group.test('end2end', null, async t => {
+g.test('end2end', async t => {
   const l = await t.load(['suite2:foof']);
   if (l.length !== 1) {
     throw new Error('listing length');
@@ -180,14 +183,14 @@ group.test('end2end', null, async t => {
   t.expect(l[0].suite === 'suite2');
   t.expect(l[0].path === 'foof');
   t.expect(l[0].node.description === 'desc 2b');
-  if (l[0].node.group === undefined) {
+  if (l[0].node.g === undefined) {
     throw new Error();
   }
-  t.expect(l[0].node.group.iterate instanceof Function);
+  t.expect(l[0].node.g.iterate instanceof Function);
 
   const log = new Logger();
   const [res, rec] = log.record(l[0].path);
-  const rcs = Array.from(l[0].node.group.iterate(rec));
+  const rcs = Array.from(l[0].node.g.iterate(rec));
   if (rcs.length !== 2) {
     throw new Error('iterate length');
   }
