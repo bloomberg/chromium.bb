@@ -1,7 +1,8 @@
 specific_include_rules = {
-  # IdentityManagerFactory creates IdentityManager instances from internal
-  # dependencies. TODO(crbug.com/974198): Internalize this building and
+  # The below files create IdentityManager instances from internal
+  # dependencies. TODO(https://crbug.com/974198): Internalize this building and
   # eliminate the need for these inclusions.
+
   "identity_manager_factory.cc": [
     "+components/signin/core/browser/account_fetcher_service.h",
     "+components/signin/core/browser/account_tracker_service.h",
@@ -11,9 +12,9 @@ specific_include_rules = {
     "+components/signin/core/browser/profile_oauth2_token_service.h",
   ],
 
-  # The dependence on the Identity Service implementation should be used *only*
-  # for Identity Service creation.
-  "identity_service_creator.cc": [
-    "+services/identity/identity_service.h",
+  "profile_oauth2_token_service_builder.cc": [
+    "+components/signin/core/browser/profile_oauth2_token_service.h",
+    "+components/signin/core/browser/profile_oauth2_token_service_delegate_chromeos.h",
+    "+components/signin/core/browser/oauth2_token_service_delegate_android.h",
   ],
 }
