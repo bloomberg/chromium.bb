@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/unified/managed_device_view.h"
+#include "ash/system/unified/managed_device_tray_item_view.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -21,31 +21,32 @@
 
 namespace ash {
 
-ManagedDeviceView::ManagedDeviceView(Shelf* shelf) : TrayItemView(shelf) {
+ManagedDeviceTrayItemView::ManagedDeviceTrayItemView(Shelf* shelf)
+    : TrayItemView(shelf) {
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->system_tray_model()->enterprise_domain()->AddObserver(this);
   CreateImageView();
   Update();
 }
 
-ManagedDeviceView::~ManagedDeviceView() {
+ManagedDeviceTrayItemView::~ManagedDeviceTrayItemView() {
   Shell::Get()->system_tray_model()->enterprise_domain()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
-void ManagedDeviceView::OnLoginStatusChanged(LoginStatus status) {
+void ManagedDeviceTrayItemView::OnLoginStatusChanged(LoginStatus status) {
   Update();
 }
 
-void ManagedDeviceView::OnEnterpriseDomainChanged() {
+void ManagedDeviceTrayItemView::OnEnterpriseDomainChanged() {
   Update();
 }
 
-const char* ManagedDeviceView::GetClassName() const {
-  return "ManagedDeviceView";
+const char* ManagedDeviceTrayItemView::GetClassName() const {
+  return "ManagedDeviceTrayItemView";
 }
 
-void ManagedDeviceView::Update() {
+void ManagedDeviceTrayItemView::Update() {
   SessionControllerImpl* session = Shell::Get()->session_controller();
   if (session->IsUserPublicAccount()) {
     image_view()->SetImage(gfx::CreateVectorIcon(

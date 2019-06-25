@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_UNIFIED_MANAGED_DEVICE_VIEW_H_
-#define ASH_SYSTEM_UNIFIED_MANAGED_DEVICE_VIEW_H_
+#ifndef ASH_SYSTEM_UNIFIED_MANAGED_DEVICE_TRAY_ITEM_VIEW_H_
+#define ASH_SYSTEM_UNIFIED_MANAGED_DEVICE_TRAY_ITEM_VIEW_H_
 
 #include "ash/session/session_observer.h"
 #include "ash/system/enterprise/enterprise_domain_observer.h"
@@ -15,12 +15,12 @@ namespace ash {
 // A view to show an icon in the status tray when the device is managed by
 // an organization admin. Observes login status in order to show/hide the
 // icon reflecting the latest status.
-class ManagedDeviceView : public TrayItemView,
-                          public SessionObserver,
-                          public EnterpriseDomainObserver {
+class ManagedDeviceTrayItemView : public TrayItemView,
+                                  public SessionObserver,
+                                  public EnterpriseDomainObserver {
  public:
-  explicit ManagedDeviceView(Shelf* shelf);
-  ~ManagedDeviceView() override;
+  explicit ManagedDeviceTrayItemView(Shelf* shelf);
+  ~ManagedDeviceTrayItemView() override;
 
   // SessionObserver:
   void OnLoginStatusChanged(LoginStatus status) override;
@@ -34,9 +34,9 @@ class ManagedDeviceView : public TrayItemView,
  private:
   void Update();
 
-  DISALLOW_COPY_AND_ASSIGN(ManagedDeviceView);
+  DISALLOW_COPY_AND_ASSIGN(ManagedDeviceTrayItemView);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_UNIFIED_MANAGED_DEVICE_VIEW_H_
+#endif  // ASH_SYSTEM_UNIFIED_MANAGED_DEVICE_TRAY_ITEM_VIEW_H_
