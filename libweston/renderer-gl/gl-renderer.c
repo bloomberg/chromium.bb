@@ -1491,12 +1491,19 @@ gl_renderer_repaint_output(struct weston_output *output,
 		pixman_region32_fini(&undamaged);
 	}
 
-	pixman_region32_init(&total_damage);
+	/* previous_damage covers regions damaged in previous paints since we
+	 * last used this buffer */
 	pixman_region32_init(&previous_damage);
+	pixman_region32_init(&total_damage); /* total area to redraw */
 
+	/* Update previous_damage using buffer_age (if available), and store
+	 * current damaged region for future use. */
 	output_get_damage(output, &previous_damage, &border_status);
 	output_rotate_damage(output, output_damage, go->border_status);
 
+	/* Redraw both areas which have changed since we last used this buffer,
+	 * as well as the areas we now want to repaint, to make sure the
+	 * buffer is up to date. */
 	pixman_region32_union(&total_damage, &previous_damage, output_damage);
 	border_status |= go->border_status;
 
