@@ -3997,6 +3997,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFontSrcLocalMatchingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kFontSrcLocalMatching)},
 
+#if defined(OS_CHROMEOS)
+    {"enable-parental-controls-settings",
+     flag_descriptions::kEnableParentalControlsSettingsName,
+     flag_descriptions::kEnableParentalControlsSettingsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::switches::kParentalControlsSettings)},
+#endif  // defined(OS_CHROMEOS)
+
     {"mouse-subframe-no-implicit-capture",
      flag_descriptions::kMouseSubframeNoImplicitCaptureName,
      flag_descriptions::kMouseSubframeNoImplicitCaptureDescription, kOsAll,
