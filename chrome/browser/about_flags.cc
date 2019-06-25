@@ -184,7 +184,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
-#include "printing/printing_features.h"
+#include "printing/common/printing_features.h"
 #endif
 
 #if defined(USE_OZONE)

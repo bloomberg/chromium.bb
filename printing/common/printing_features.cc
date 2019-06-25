@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/printing_features.h"
+#include "printing/common/printing_features.h"
 
 namespace printing {
 namespace features {
