@@ -332,10 +332,6 @@ enum NotificationType {
   // The source is the browser's FullscreenController, no details.
   NOTIFICATION_MOUSE_LOCK_CHANGED,
 
-  // Sent by the PluginPrefs when there is a change of plugin enable/disable
-  // status. The source is the profile.
-  NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
-
   // Sent when a global error has changed and the error UI should update it
   // self. The source is a Source<Profile> containing the profile for the
   // error. The detail is a GlobalError object that has changed or NULL if
