@@ -840,8 +840,8 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 					(xfail ? (r == 0 ? "Unexpected Pass" : "Expected Failure")
 						   : "Failure"));
 			// on error print the table name, as it isn't always clear
-			// which table we are testing. In checkyaml for example you
-			// can define a test for multiple tables.
+			// which table we are testing. You can can define a test
+			// for multiple tables.
 			fprintf(stderr, "Table: %s\n", *table);
 			// add an empty line after each error
 			fprintf(stderr, "\n");
