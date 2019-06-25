@@ -223,6 +223,9 @@ static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
     if (tmp_sad + (num_pels_log2_lookup[bsize] << 4) > best_pred_sad) return -1;
 
     frame_mv[NEWMV][ref_frame].as_int = mi->mv[0].as_int;
+    x->best_mv.as_int = mi->mv[0].as_int;
+    x->best_mv.as_mv.row >>= 3;
+    x->best_mv.as_mv.col >>= 3;
     MV ref_mv = av1_get_ref_mv(x, 0).as_mv;
 
     *rate_mv =
@@ -237,6 +240,7 @@ static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
         cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
         x->nmv_vec_cost, x->mv_cost_stack, &dis, &x->pred_sse[ref_frame], NULL,
         NULL, 0, 0, 0, 0, 0, 1);
+    frame_mv[NEWMV][ref_frame].as_int = x->best_mv.as_int;
   } else if (!combined_motion_search(cpi, x, bsize, mi_row, mi_col,
                                      &frame_mv[NEWMV][ref_frame], rate_mv,
                                      best_rdc->rdcost, 0)) {
@@ -1057,6 +1061,8 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int use_golden_nonzeromv = 1;
   int force_skip_low_temp_var = 0;
   int skip_ref_find_pred[5] = { 0 };
+  unsigned int sse_zeromv_norm = UINT_MAX;
+  const unsigned int thresh_skip_golden = 500;
   int64_t best_sse_sofar = INT64_MAX;
   int gf_temporal_ref = 0;
   const struct segmentation *const seg = &cm->seg;
@@ -1135,25 +1141,13 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   mi->ref_frame[0] = NONE_FRAME;
   mi->ref_frame[1] = NONE_FRAME;
 
-// TODO(kyslov) Refine logic of selecting REF FRAME SET.
-// For now only LAST_FRAME is used
-#if 0
   if (cpi->rc.frames_since_golden == 0 && gf_temporal_ref) {
     usable_ref_frame = LAST_FRAME;
   } else {
     usable_ref_frame = GOLDEN_FRAME;
   }
 
-  force_skip_low_temp_var = get_force_skip_low_temp_var(&x->variance_low[0],
-                                  mi_row, mi_col, bsize);
-  // If force_skip_low_temp_var is set, and for short circuit mode = 1 and 3,
-  // skip golden reference.
-  if (force_skip_low_temp_var) {
-    usable_ref_frame = LAST_FRAME;
-  }
-
-  if (!((cpi->ref_frame_flags & flag_list[GOLDEN_FRAME]) &&
-        !force_skip_low_temp_var))
+  if (!(cpi->ref_frame_flags & flag_list[GOLDEN_FRAME]))
     use_golden_nonzeromv = 0;
 
   // If the segment reference frame feature is enabled and it's set to GOLDEN
@@ -1164,8 +1158,6 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     usable_ref_frame = GOLDEN_FRAME;
     skip_ref_find_pred[GOLDEN_FRAME] = 0;
   }
-#endif
-  usable_ref_frame = LAST_FRAME;
 
   for (MV_REFERENCE_FRAME ref_frame_iter = LAST_FRAME;
        ref_frame_iter <= usable_ref_frame; ++ref_frame_iter) {
@@ -1185,7 +1177,6 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       cpi->oxcf.rc_mode == AOM_CBR && large_block &&
       !cyclic_refresh_segment_id_boosted(xd->mi[0]->segment_id) &&
       cm->base_qindex;
-
   for (int idx = 0; idx < num_inter_modes; ++idx) {
     int rate_mv = 0;
     int mode_rd_thresh;
@@ -1222,11 +1213,19 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         get_segdata(seg, mi->segment_id, SEG_LVL_REF_FRAME) != (int)ref_frame)
       continue;
 
+    if (ref_frame == GOLDEN_FRAME && cpi->oxcf.rc_mode == AOM_CBR &&
+        sse_zeromv_norm < thresh_skip_golden && this_mode == NEWMV)
+      continue;
+
     if (!(cpi->ref_frame_flags & flag_list[ref_frame])) continue;
 
     if (!(inter_mode_mask[bsize] & (1 << this_mode))) continue;
 
     if (const_motion[ref_frame] && this_mode == NEARMV) continue;
+
+    if (ref_frame == GOLDEN_FRAME && bsize > BLOCK_16X16) continue;
+
+    if (ref_frame == GOLDEN_FRAME && this_mode == NEARMV) continue;
 
     // Skip non-zeromv mode search for golden frame if force_skip_low_temp_var
     // is set. If nearestmv for golden frame is 0, zeromv mode will be skipped
@@ -1238,19 +1237,18 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
 // TODO(kyslov) Refine logic of pruning reference .
-// For now only LAST_FRAME is used
 #if 0
         if (x->content_state_sb != kVeryHighSad &&
-            (cpi->sf.short_circuit_low_temp_var >= 2 ||
-             (cpi->sf.short_circuit_low_temp_var == 1 && bsize == BLOCK_64X64))
-       && force_skip_low_temp_var && ref_frame == LAST_FRAME && this_mode ==
-       NEWMV) { continue;
+        (cpi->sf.short_circuit_low_temp_var >= 2 ||
+        (cpi->sf.short_circuit_low_temp_var == 1 && bsize == BLOCK_64X64))
+        && force_skip_low_temp_var && ref_frame == LAST_FRAME && this_mode ==
+            NEWMV)  {
+          continue;
         }
 
         // Disable this drop out case if the ref frame segment level feature is
         // enabled for this segment. This is to prevent the possibility that we
-       end
-        // up unable to pick any mode.
+        // end up unable to pick any mode.
         if (!segfeature_active(seg, mi->segment_id, SEG_LVL_REF_FRAME)) {
           if (sf->reference_masking &&
               !(frame_mv[this_mode][ref_frame].as_int == 0 &&
@@ -1268,7 +1266,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
               int ref1 = (ref_frame == GOLDEN_FRAME) ? LAST_FRAME :
        GOLDEN_FRAME; int ref2 = (ref_frame == ALTREF_FRAME) ? LAST_FRAME :
        ALTREF_FRAME; if (((cpi->ref_frame_flags & flag_list[ref1]) &&
-                   (x->pred_mv_sad[ref_frame] > (x->pred_mv_sad[ref1] << 1))) ||
+                (x->pred_mv_sad[ref_frame] > (x->pred_mv_sad[ref1] << 1))) ||
                   ((cpi->ref_frame_flags & flag_list[ref2]) &&
                    (x->pred_mv_sad[ref_frame] > (x->pred_mv_sad[ref2] << 1))))
                 ref_frame_skip_mask |= (1 << ref_frame);
@@ -1371,6 +1369,10 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #if !_TMP_USE_CURVFIT_
     }
 #endif
+    if (ref_frame == LAST_FRAME && frame_mv[this_mode][ref_frame].as_int == 0) {
+      sse_zeromv_norm =
+          sse_y >> (b_width_log2_lookup[bsize] + b_height_log2_lookup[bsize]);
+    }
 
     if (sse_y < best_sse_sofar) best_sse_sofar = sse_y;
 
