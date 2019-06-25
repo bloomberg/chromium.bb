@@ -145,8 +145,8 @@ class TabHoverCardEventSniffer : public ui::EventHandler {
  protected:
   // ui::EventTarget:
   void OnKeyEvent(ui::KeyEvent* event) override {
-    if (!tab_strip_->pane_has_focus())
-      hover_card_->FadeOutToHide();
+    if (!tab_strip_->IsFocusInTabs())
+      tab_strip_->UpdateHoverCard(nullptr, false);
   }
 
   void OnMouseEvent(ui::MouseEvent* event) override {
@@ -1512,6 +1512,11 @@ bool TabStrip::IsFirstVisibleTab(const Tab* tab) const {
 
 bool TabStrip::IsLastVisibleTab(const Tab* tab) const {
   return GetLastVisibleTab() == tab;
+}
+
+bool TabStrip::IsFocusInTabs() const {
+  return GetFocusManager() && Contains(GetFocusManager()->GetFocusedView()) &&
+         GetFocusManager()->GetFocusedView() != new_tab_button_;
 }
 
 void TabStrip::MaybeStartDrag(
