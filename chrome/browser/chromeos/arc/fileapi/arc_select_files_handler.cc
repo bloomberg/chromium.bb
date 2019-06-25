@@ -18,9 +18,11 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
+#include "components/arc/arc_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -29,6 +31,7 @@
 #include "net/base/mime_util.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
+#include "ui/aura/window.h"
 #include "url/gurl.h"
 
 namespace arc {
@@ -185,8 +188,12 @@ void ArcSelectFilesHandler::SelectFiles(
   bool show_android_picker_apps =
       request->action_type == mojom::SelectFilesActionType::GET_CONTENT;
 
-  dialog_holder_->SelectFile(dialog_type, default_path, &file_type_info,
-                             request->task_id, show_android_picker_apps);
+  bool success =
+      dialog_holder_->SelectFile(dialog_type, default_path, &file_type_info,
+                                 request->task_id, show_android_picker_apps);
+  if (!success) {
+    std::move(callback_).Run(mojom::SelectFilesResult::New());
+  }
 }
 
 void ArcSelectFilesHandler::FileSelected(const base::FilePath& path,
@@ -301,19 +308,31 @@ SelectFileDialogHolder::~SelectFileDialogHolder() {
     select_file_dialog_->ListenerDestroyed();
 }
 
-void SelectFileDialogHolder::SelectFile(
+bool SelectFileDialogHolder::SelectFile(
     ui::SelectFileDialog::Type type,
     const base::FilePath& default_path,
     const ui::SelectFileDialog::FileTypeInfo* file_types,
     int task_id,
     bool show_android_picker_apps) {
+  aura::Window* owner_window = nullptr;
+  for (auto* window : ChromeLauncherController::instance()->GetArcWindows()) {
+    if (arc::GetWindowTaskId(window) == task_id) {
+      owner_window = window;
+      break;
+    }
+  }
+  if (!owner_window) {
+    LOG(ERROR) << "Can't find the ARC window for task ID : " << task_id;
+    return false;
+  }
+
   select_file_dialog_->SelectFileWithFileManagerParams(
       type,
       /*title=*/base::string16(), default_path, file_types,
       /*file_type_index=*/0,
-      /*default_extension=*/base::FilePath::StringType(),
-      /*owning_window=*/nullptr,
-      /*params=*/nullptr, show_android_picker_apps);
+      /*default_extension=*/base::FilePath::StringType(), owner_window,
+      /*params=*/nullptr, task_id, show_android_picker_apps);
+  return true;
 }
 
 void SelectFileDialogHolder::ExecuteJavaScript(

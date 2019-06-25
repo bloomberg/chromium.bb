@@ -82,7 +82,9 @@ class SelectFileDialogHolder {
   explicit SelectFileDialogHolder(ui::SelectFileDialog::Listener* listener);
   virtual ~SelectFileDialogHolder();
 
-  virtual void SelectFile(ui::SelectFileDialog::Type type,
+  // Obtains the owner window from |task_id| and opens the select file dialog
+  // with it. Returns false if the owner window is not found.
+  virtual bool SelectFile(ui::SelectFileDialog::Type type,
                           const base::FilePath& default_path,
                           const ui::SelectFileDialog::FileTypeInfo* file_types,
                           int task_id,
