@@ -4,60 +4,86 @@ Demos of parameterization system.
 
 import {
   DefaultFixture,
-  pcombine,
-  pexclude,
-  pfilter,
-  poptions,
   TestGroup,
+  poptions,
+  pcombine,
+  pfilter,
+  pexclude,
 } from '../../framework/index.js';
 
 export const group = new TestGroup(DefaultFixture);
+const g = group;
 
 function print(t: DefaultFixture) {
   t.log(JSON.stringify(t.params));
 }
 
-for (const params of [{ hello: 1 }, { hello: 2 }]) {
-  group.test('literal', params, print);
-}
+g.test('literal', print).params([
+  { hello: 1 }, //
+  { hello: 2 },
+]);
 
-for (const params of poptions('hello', [1, 2, 3])) {
-  group.test('options', params, print);
-}
+g.test('options', print).params(poptions('hello', [1, 2, 3]));
 
-for (const params of pcombine([])) {
-  group.test('combine none', params, t => {
-    t.fail("this test shouldn't run");
-  });
-}
+// TODO: move this test to unittests
+g.test('combine none', t => {
+  t.fail("this test shouldn't run");
+}).params(pcombine([]));
 
-for (const params of pcombine([[{}], [{}]])) {
-  group.test('combine unit unit', params, print);
-}
+g.test('combine unit unit', print).params(
+  pcombine([
+    [{}], //
+    [{}],
+  ])
+);
 
-for (const params of pcombine([poptions('x', [1, 2]), poptions('y', ['a', 'b']), [{}]])) {
-  group.test('combine lists', params, print);
-}
+g.test('combine lists', print).params(
+  pcombine([
+    poptions('x', [1, 2]), //
+    poptions('y', ['a', 'b']),
+    [{}],
+  ])
+);
 
-for (const params of pcombine([[{ x: 1, y: 2 }, { x: 10, y: 20 }], [{ z: 'z' }, { w: 'w' }]])) {
-  group.test('combine arrays', params, print);
-}
+g.test('combine arrays', print).params(
+  pcombine([
+    [{ x: 1, y: 2 }, { x: 10, y: 20 }], //
+    [{ z: 'z' }, { w: 'w' }],
+  ])
+);
 
-for (const params of pcombine([poptions('x', [1, 2]), [{ z: 'z' }, { w: 'w' }]])) {
-  group.test('combine mixed', params, print);
-}
+g.test('combine mixed', print).params(
+  pcombine([
+    poptions('x', [1, 2]), //
+    [{ z: 'z' }, { w: 'w' }],
+  ])
+);
 
-for (const params of pfilter([{ a: true, x: 1 }, { a: false, y: 2 }], p => p.a)) {
-  group.test('filter', params, t => {
-    t.expect(t.params.a);
-  });
-}
+// TODO: copy this test to unittests
+g.test('filter', t => {
+  t.expect(t.params.a);
+}).params(
+  pfilter(
+    [
+      { a: true, x: 1 }, //
+      { a: false, y: 2 },
+    ],
+    p => p.a
+  )
+);
 
-for (const params of pexclude(
-  [{ a: true, x: 1 }, { a: false, y: 2 }],
-  [{ a: true }, { a: false, y: 2 }]
-)) {
-  group.test('exclude', params, t => {
-    t.expect(t.params.a);
-  });
-}
+// TODO: copy this test to unittests
+g.test('exclude', t => {
+  t.expect(t.params.a);
+}).params(
+  pexclude(
+    [
+      { a: true, x: 1 }, //
+      { a: false, y: 2 },
+    ],
+    [
+      { a: true }, //
+      { a: false, y: 2 },
+    ]
+  )
+);

@@ -29,6 +29,11 @@ if (!fs.existsSync('src/tools/gen.ts')) {
     const specDir = path.normalize(`src/suites/${suite}/`); // Always ends in /
 
     const specSuffix = '.spec.ts';
+    if (!fs.existsSync(specDir)) {
+      console.error(`Could not find ${specDir}`);
+      process.exit(1);
+    }
+
     const specFiles = fg.sync(specDir + '**/{README.txt,*' + specSuffix + '}', {
       onlyFiles: false,
       markDirectories: true,

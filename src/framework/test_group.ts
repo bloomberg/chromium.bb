@@ -1,11 +1,49 @@
 import { CaseRecorder, GroupRecorder, IResult } from './logger.js';
-import { IParamsAny, IParamsSpec } from './params/index.js';
+import { IParamsAny, IParamsSpec, ParamSpecIterable } from './params/index.js';
 
 type TestFn<F extends Fixture> = (t: F) => Promise<void> | void;
 export interface ICase {
-  name: string;
-  params: IParamsSpec | null;
-  run: (log: CaseRecorder) => Promise<void>;
+  readonly name: string;
+  readonly params: IParamsSpec | null;
+  run(log: CaseRecorder): Promise<void>;
+}
+
+// This test is created when it's inserted, but may be parameterized afterward (.params()).
+class Test<F extends Fixture> {
+  readonly name: string;
+  readonly fixture: FixtureClass<F>;
+  readonly fn: TestFn<F>;
+  private cases: ParamSpecIterable | null = null;
+
+  constructor(name: string, fixture: FixtureClass<F>, fn: TestFn<F>) {
+    this.name = name;
+    this.fixture = fixture;
+    this.fn = fn;
+  }
+
+  params(cases: ParamSpecIterable): void {
+    if (this.cases !== null) {
+      throw new Error('test case is already parameterized');
+    }
+    this.cases = cases;
+  }
+
+  *[Symbol.iterator](): IterableIterator<ICase> {
+    const fixture = this.fixture;
+    const fn = this.fn;
+    for (const params of this.cases || [{}]) {
+      yield {
+        name: this.name,
+        params,
+        async run(log) {
+          const inst = new fixture(log, params);
+          await inst.init();
+          await fn(inst);
+          inst.finalize();
+        },
+      };
+    }
+  }
 }
 
 export class RunCase {
@@ -38,8 +76,8 @@ export abstract class Fixture {
   params: IParamsAny;
   protected rec: CaseRecorder;
 
-  constructor(log: CaseRecorder, params: IParamsAny) {
-    this.rec = log;
+  constructor(rec: CaseRecorder, params: IParamsAny) {
+    this.rec = rec;
     this.params = params;
   }
 
@@ -61,47 +99,44 @@ export interface ITestGroup {
 export class TestGroup<F extends Fixture> implements ITestGroup {
   private fixture: FixtureClass<F>;
   private seen: Set<string> = new Set();
-  private tests: ICase[] = [];
+  private tests: Array<Test<F>> = [];
 
   constructor(fixture: FixtureClass<F>) {
     this.fixture = fixture;
   }
 
   *iterate(log: GroupRecorder): Iterable<RunCase> {
-    for (const t of this.tests) {
-      yield new RunCase(log, t);
+    for (const test of this.tests) {
+      for (const c of test) {
+        yield new RunCase(log, c);
+      }
     }
   }
 
-  test(name: string, params: IParamsSpec | null, fn: TestFn<F>): void {
+  private checkName(name: string) {
     // It may be OK to add more allowed characters here.
     const validNames = new RegExp('^[' + allowedTestNameCharacters + ']+$');
     if (!validNames.test(name)) {
       throw new Error(`Invalid test name ${name}; must match ${validNames}`);
     }
-
-    const key = params ? name + ':' + JSON.stringify(params) : name;
-    // Disallow '%' so that decodeURIComponent(unencodedQuery) == unencodedQuery. Hopefully.
-    if (key.indexOf('%') !== -1) {
-      throw new Error('Invalid character % in test name or parameters');
+    if (name !== decodeURIComponent(name)) {
+      // Shouldn't happen due to the rule above. Just makes sure that treated
+      // unencoded strings as encoded strings is OK.
+      throw new Error(`Not decodeURIComponent-idempotent: ${name} !== ${decodeURIComponent(name)}`);
     }
 
-    const p = params ? params : {};
-    if (this.seen.has(key)) {
+    if (this.seen.has(name)) {
       throw new Error('Duplicate test name');
     }
-    this.seen.add(key);
+    this.seen.add(name);
+  }
 
-    const fixture = this.fixture;
-    this.tests.push({
-      name,
-      params,
-      async run(log) {
-        const inst = new fixture(log, p);
-        await inst.init();
-        await fn(inst);
-        inst.finalize();
-      },
-    });
+  // TODO: This could take a fixture, too, to override the one for the group.
+  test(name: string, fn: TestFn<F>): Test<F> {
+    this.checkName(name);
+
+    const test = new Test<F>(name, this.fixture, fn);
+    this.tests.push(test);
+    return test;
   }
 }
