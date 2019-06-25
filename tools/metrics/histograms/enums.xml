@@ -16660,11 +16660,11 @@ Called by update_net_error_codes.py.-->
   <int value="41" label="OAuth fetch: account not signed up">
     OAuth token fetch failed: account not signed up.
   </int>
-  <int value="42" label="OAuth fetch: account deleted">
-    OAuth token fetch failed: account deleted.
+  <int value="42" label="OAuth fetch: account deleted (unused)">
+    UNUSED: OAuth token fetch failed: account deleted.
   </int>
-  <int value="43" label="OAuth fetch: account disabled">
-    OAuth token fetch failed: account disabled.
+  <int value="43" label="OAuth fetch: account disabled (unused)">
+    UNUSED: OAuth token fetch failed: account disabled.
   </int>
   <int value="44" label="Re-enrollment: pre-check domain mismatch">
     Re-enrollment pre-check failed: domain does not match install attributes.
@@ -27729,8 +27729,8 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="USER_NOT_SIGNED_UP"/>
   <int value="3" label="CONNECTION_FAILED"/>
   <int value="4" label="CAPTCHA_REQUIRED (deprecated)"/>
-  <int value="5" label="ACCOUNT_DELETED"/>
-  <int value="6" label="ACCOUNT_DISABLED"/>
+  <int value="5" label="ACCOUNT_DELETED (deprecated)"/>
+  <int value="6" label="ACCOUNT_DISABLED (deprecated)"/>
   <int value="7" label="SERVICE_UNAVAILABLE"/>
   <int value="8" label="TWO_FACTOR (deprecated)"/>
   <int value="9" label="REQUEST_CANCELED"/>

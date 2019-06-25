@@ -135,8 +135,6 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
             case State.INVALID_GAIA_CREDENTIALS:
                 return false;
             case State.USER_NOT_SIGNED_UP:
-            case State.ACCOUNT_DELETED:
-            case State.ACCOUNT_DISABLED:
                 return true;
             default:
                 Log.w(TAG, "Not showing unknown Auth Error: " + mProfileSyncService.getAuthError());
