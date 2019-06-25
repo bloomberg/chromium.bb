@@ -595,6 +595,21 @@
             ]
         }
     ],
+    "AutoFetchOnNetErrorPage": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutoFetchOnNetErrorPage"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillDoNotMigrateUnsupportedLocalCards": [
         {
             "platforms": [
@@ -3353,24 +3368,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillUpstream"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OfflineContentOnDinoPage": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_AutoFetch",
-                    "enable_features": [
-                        "AutoFetchOnNetErrorPage"
-                    ],
-                    "disable_features": [
-                        "NewNetErrorPageUI"
                     ]
                 }
             ]
