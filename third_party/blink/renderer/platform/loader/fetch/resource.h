@@ -85,7 +85,7 @@ enum class ResourceType : uint8_t {
   kVideo,
   kManifest,
   kMock,  // Only for testing
-  kLast = kMock
+  kMaxValue = kMock
 };
 
 // A resource that is held in the cache. Classes who want to use this object
