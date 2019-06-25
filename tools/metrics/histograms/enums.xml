@@ -23772,6 +23772,7 @@ Called by update_net_error_codes.py.-->
   <int value="2935" label="LazyLoadImageLoadingAttributeLazy"/>
   <int value="2936" label="LazyLoadImageMissingDimensionsForLazy"/>
   <int value="2937" label="PeriodicBackgroundSyncGetTags"/>
+  <int value="2938" label="PeriodicBackgroundSyncUnregister"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
