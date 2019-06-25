@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
@@ -299,6 +301,8 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
         (self.view.center.y - self.originalCenter.y >
          kChangeInPositionForTransition);
     if (dragDownExceededThreshold) {
+      base::RecordAction(
+          base::UserMetricsAction("MobileMessagesBannerDraggedDown"));
       [self.metricsRecorder
           recordBannerDismissType:MobileMessagesBannerDismissType::
                                       ExpandedToModal];
@@ -404,6 +408,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 }
 
 - (void)presentInfobarModalAfterTap {
+  base::RecordAction(base::UserMetricsAction("MobileMessagesBannerTapped"));
   [self.metricsRecorder
       recordBannerDismissType:MobileMessagesBannerDismissType::TappedToModal];
   [self recordBannerOnScreenTime];
