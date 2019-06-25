@@ -502,9 +502,16 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
     image_complete_ = false;
     if (lazy_image_load_state_ == LazyImageLoadState::kDeferred) {
       if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
-        LazyLoadImageObserver::StartMonitoring(
-            html_image,
-            GetLoadingAttrValue(*html_image) != LoadingAttrValue::kLazy);
+        using DeferralMessage = LazyLoadImageObserver::DeferralMessage;
+        LoadingAttrValue loading_attr = GetLoadingAttrValue(*html_image);
+        DCHECK(loading_attr != LoadingAttrValue::kEager);
+        auto deferral_message = DeferralMessage::kNone;
+        if (loading_attr == LoadingAttrValue::kAuto) {
+          deferral_message = DeferralMessage::kLoadEventsDeferred;
+        } else if (!was_fully_deferred_) {
+          deferral_message = DeferralMessage::kMissingDimensionForLazy;
+        }
+        LazyLoadImageObserver::StartMonitoring(html_image, deferral_message);
       }
     }
   }
