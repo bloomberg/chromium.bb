@@ -48,6 +48,11 @@ constexpr char const* kTestParams[] = {
     "good_no_crldp.pem",
     "good_key_rollover.pem",
     "good_idp_contains_uri.pem",
+    "good_idp_onlycontainsusercerts.pem",
+    "good_idp_onlycontainsusercerts_no_basic_constraints.pem",
+    "good_idp_onlycontainscacerts.pem",
+    "good_idp_uri_and_onlycontainsusercerts.pem",
+    "good_idp_uri_and_onlycontainscacerts.pem",
     "revoked.pem",
     "revoked_no_nextupdate.pem",
     "revoked_fake_crlentryextension.pem",
@@ -64,6 +69,11 @@ constexpr char const* kTestParams[] = {
     "bad_key_rollover_signature.pem",
     "bad_idp_contains_wrong_uri.pem",
     "bad_idp_indirectcrl.pem",
+    "bad_idp_onlycontainsusercerts.pem",
+    "bad_idp_onlycontainscacerts.pem",
+    "bad_idp_onlycontainscacerts_no_basic_constraints.pem",
+    "bad_idp_uri_and_onlycontainsusercerts.pem",
+    "bad_idp_uri_and_onlycontainscacerts.pem",
     "invalid_mismatched_signature_algorithm.pem",
     "invalid_revoked_empty_sequence.pem",
     "invalid_v1_with_extension.pem",
@@ -91,6 +101,8 @@ constexpr char const* kTestParams[] = {
     "invalid_garbage_crlentry.pem",
     "invalid_idp_dpname_choice_extra_data.pem",
     "invalid_idp_empty_sequence.pem",
+    "invalid_idp_onlycontains_user_and_ca_certs.pem",
+    "invalid_idp_onlycontainsusercerts_v1_leaf.pem",
 };
 
 struct PrintTestName {

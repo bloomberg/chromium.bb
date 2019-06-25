@@ -146,22 +146,33 @@ struct NET_EXPORT_PRIVATE ParsedCrlTbsCertList {
   base::Optional<der::Input> crl_extensions_tlv;
 };
 
+// Represents the IssuingDistributionPoint certificate type constraints:
+enum class ContainedCertsType {
+  // Neither onlyContainsUserCerts or onlyContainsCACerts was present.
+  ANY_CERTS,
+  // onlyContainsUserCerts      [1] BOOLEAN DEFAULT FALSE,
+  USER_CERTS,
+  // onlyContainsCACerts        [2] BOOLEAN DEFAULT FALSE,
+  CA_CERTS,
+};
+
 // Parses a DER-encoded IssuingDistributionPoint extension value.
-// Returns true on success and sets the results in the
-// |out_distribution_point_names| parameter.
+// Returns true on success and sets the results in the |out_*| parameters.
 //
 // If the IssuingDistributionPoint contains a distributionPoint fullName field,
 // |out_distribution_point_names| will contain the parsed representation.
 // If the distributionPoint type is nameRelativeToCRLIssuer, parsing will fail.
 //
-// onlyContainsUserCerts, onlyContainsCACerts, indirectCRL and
-// onlyContainsAttributeCerts are not supported and parsing will fail if they
-// are present.
+// |out_only_contains_cert_type| will contain the logical representation of the
+// onlyContainsUserCerts and onlyContainsCACerts fields (or their absence).
+//
+// indirectCRL and onlyContainsAttributeCerts are not supported and parsing will
+// fail if they are present.
 //
 // Note that on success |out_distribution_point_names| aliases data from the
 // input |extension_value|.
 //
-// On failure |out_distribution_point_names| has undefined state.
+// On failure the |out_*| parameters have undefined state.
 //
 // IssuingDistributionPoint ::= SEQUENCE {
 //     distributionPoint          [0] DistributionPointName OPTIONAL,
@@ -172,8 +183,8 @@ struct NET_EXPORT_PRIVATE ParsedCrlTbsCertList {
 //     onlyContainsAttributeCerts [5] BOOLEAN DEFAULT FALSE }
 NET_EXPORT_PRIVATE bool ParseIssuingDistributionPoint(
     const der::Input& extension_value,
-    std::unique_ptr<GeneralNames>* out_distribution_point_names)
-    WARN_UNUSED_RESULT;
+    std::unique_ptr<GeneralNames>* out_distribution_point_names,
+    ContainedCertsType* out_only_contains_cert_type) WARN_UNUSED_RESULT;
 
 NET_EXPORT_PRIVATE CRLRevocationStatus
 GetCRLStatusForCert(const der::Input& cert_serial,

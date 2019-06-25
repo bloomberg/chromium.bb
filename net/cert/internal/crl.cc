@@ -175,7 +175,8 @@ bool ParseCrlTbsCertList(const der::Input& tbs_tlv, ParsedCrlTbsCertList* out) {
 
 bool ParseIssuingDistributionPoint(
     const der::Input& extension_value,
-    std::unique_ptr<GeneralNames>* out_distribution_point_names) {
+    std::unique_ptr<GeneralNames>* out_distribution_point_names,
+    ContainedCertsType* out_only_contains_cert_type) {
   der::Parser idp_extension_value_parser(extension_value);
   // IssuingDistributionPoint ::= SEQUENCE {
   der::Parser idp_parser;
@@ -223,14 +224,48 @@ bool ParseIssuingDistributionPoint(
     }
   }
 
+  *out_only_contains_cert_type = ContainedCertsType::ANY_CERTS;
+
   //  onlyContainsUserCerts      [1] BOOLEAN DEFAULT FALSE,
+  base::Optional<der::Input> only_contains_user_certs;
+  if (!idp_parser.ReadOptionalTag(der::kTagContextSpecific | 1,
+                                  &only_contains_user_certs)) {
+    return false;
+  }
+  if (only_contains_user_certs.has_value()) {
+    bool bool_value;
+    if (!der::ParseBool(*only_contains_user_certs, &bool_value))
+      return false;
+    if (!bool_value)
+      return false;  // DER-encoding requires DEFAULT values be omitted.
+    *out_only_contains_cert_type = ContainedCertsType::USER_CERTS;
+  }
+
   //  onlyContainsCACerts        [2] BOOLEAN DEFAULT FALSE,
+  base::Optional<der::Input> only_contains_ca_certs;
+  if (!idp_parser.ReadOptionalTag(der::kTagContextSpecific | 2,
+                                  &only_contains_ca_certs)) {
+    return false;
+  }
+  if (only_contains_ca_certs.has_value()) {
+    bool bool_value;
+    if (!der::ParseBool(*only_contains_ca_certs, &bool_value))
+      return false;
+    if (!bool_value)
+      return false;  // DER-encoding requires DEFAULT values be omitted.
+    if (*out_only_contains_cert_type != ContainedCertsType::ANY_CERTS) {
+      // 5.2.5.  at most one of onlyContainsUserCerts, onlyContainsCACerts,
+      //         and onlyContainsAttributeCerts may be set to TRUE.
+      return false;
+    }
+    *out_only_contains_cert_type = ContainedCertsType::CA_CERTS;
+  }
+
   //  onlySomeReasons            [3] ReasonFlags OPTIONAL,
   //  indirectCRL                [4] BOOLEAN DEFAULT FALSE,
   //  onlyContainsAttributeCerts [5] BOOLEAN DEFAULT FALSE }
-  // onlyContainsUserCerts, onlyContainsCACerts, onlySomeReasons, indirectCRL,
-  // and onlyContainsAttributeCerts are not supported, fail parsing if they are
-  // present.
+  // onlySomeReasons, indirectCRL, and onlyContainsAttributeCerts are not
+  // supported, fail parsing if they are present.
   if (idp_parser.HasMore())
     return false;
 
@@ -426,8 +461,10 @@ CRLRevocationStatus CheckCRL(base::StringPiece raw_crl,
     if (ConsumeExtension(IssuingDistributionPointOid(), &extensions,
                          &idp_extension)) {
       std::unique_ptr<GeneralNames> distribution_point_names;
+      ContainedCertsType only_contains_cert_type;
       if (!ParseIssuingDistributionPoint(idp_extension.value,
-                                         &distribution_point_names)) {
+                                         &distribution_point_names,
+                                         &only_contains_cert_type)) {
         return CRLRevocationStatus::UNKNOWN;
       }
 
@@ -465,11 +502,45 @@ CRLRevocationStatus CheckCRL(base::StringPiece raw_crl,
         // ParseIssuingDistributionPoint would already have failed.
       }
 
-      // 6.3.3. (b) (2) (ii - iiii): onlyContainsUserCerts,
-      // onlyContainsCACerts, onlyContainsAttributeCerts not supported.
-      // TODO(https://crbug.com/749276): handle onlyContainsUserCerts &
-      // onlyContainsCACerts. Some random sampling of public CRLs found a few
-      // that use those and it should be easy enough to implement.
+      switch (only_contains_cert_type) {
+        case ContainedCertsType::USER_CERTS:
+          // 6.3.3. (b) (2) (ii)  If the onlyContainsUserCerts boolean is
+          //                      asserted in the IDP CRL extension, verify
+          //                      that the certificate does not include the
+          //                      basic constraints extension with the cA
+          //                      boolean asserted.
+          // 5.2.5.  If either onlyContainsUserCerts or onlyContainsCACerts is
+          //         set to TRUE, then the scope of the CRL MUST NOT include any
+          //         version 1 or version 2 certificates.
+          if ((target_cert->has_basic_constraints() &&
+               target_cert->basic_constraints().is_ca) ||
+              target_cert->tbs().version == CertificateVersion::V1 ||
+              target_cert->tbs().version == CertificateVersion::V2) {
+            return CRLRevocationStatus::UNKNOWN;
+          }
+          break;
+
+        case ContainedCertsType::CA_CERTS:
+          // 6.3.3. (b) (2) (iii) If the onlyContainsCACerts boolean is asserted
+          //                      in the IDP CRL extension, verify that the
+          //                      certificate includes the basic constraints
+          //                      extension with the cA boolean asserted.
+          // The version check is not done here, as the basicConstraints
+          // extension is required, and could not be present unless it is a V3
+          // certificate.
+          if (!target_cert->has_basic_constraints() ||
+              !target_cert->basic_constraints().is_ca) {
+            return CRLRevocationStatus::UNKNOWN;
+          }
+          break;
+
+        case ContainedCertsType::ANY_CERTS:
+          //                (iv)  Verify that the onlyContainsAttributeCerts
+          //                      boolean is not asserted.
+          // If onlyContainsAttributeCerts was present,
+          // ParseIssuingDistributionPoint would already have failed.
+          break;
+      }
     }
 
     for (const auto& ext : extensions) {
