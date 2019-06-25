@@ -402,6 +402,8 @@ void HTMLVideoElement::OnPlay() {
     return;
   }
 
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
   webkitEnterFullscreen();
 }
 
