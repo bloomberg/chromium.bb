@@ -631,11 +631,6 @@ TEST_F(BackgroundSyncManagerTest, Register) {
   EXPECT_TRUE(Register(sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, FailToRegisterWithInvalidOptions) {
-  sync_options_1_.min_interval = -2000;
-  EXPECT_FALSE(Register(sync_options_1_));
-}
-
 TEST_F(BackgroundSyncManagerTest, Unregister) {
   // Not supported for One-shot syncs.
   EXPECT_TRUE(Register(sync_options_1_));
@@ -916,6 +911,19 @@ TEST_F(BackgroundSyncManagerTest, ReregisterSecond) {
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(Register(sync_options_2_));
   EXPECT_TRUE(Register(sync_options_2_));
+}
+
+TEST_F(BackgroundSyncManagerTest, ReregisterPeriodicSync) {
+  sync_options_1_.tag = sync_options_2_.tag;
+  sync_options_1_.min_interval = 1000;
+  sync_options_2_.min_interval = 2000;
+
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+
+  EXPECT_TRUE(Register(sync_options_2_));
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
+  EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterMaxTagLength) {
