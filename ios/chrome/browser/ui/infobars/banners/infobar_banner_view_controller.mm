@@ -85,6 +85,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 @end
 
 @implementation InfobarBannerViewController
+@synthesize interactionDelegate = _interactionDelegate;
 
 - (instancetype)initWithDelegate:(id<InfobarBannerDelegate>)delegate
                             type:(InfobarType)infobarType {
@@ -268,6 +269,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   CGPoint touchLocation = [gesture locationInView:self.view];
 
   if (gesture.state == UIGestureRecognizerStateBegan) {
+    [self.interactionDelegate infobarBannerStartedInteraction];
     [self.metricsRecorder recordBannerEvent:MobileMessagesBannerEvent::Handled];
     self.originalCenter = self.view.center;
     self.touchInProgress = YES;
