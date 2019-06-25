@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -52,6 +53,7 @@ public class GridTabSwitcherCoordinator
                 public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
                     if (id == R.id.menu_group_tabs) {
                         mTabSelectionEditorCoordinator.getController().show();
+                        RecordUserAction.record("MobileMenuGroupTabs");
                         return true;
                     }
                     return false;
@@ -65,6 +67,10 @@ public class GridTabSwitcherCoordinator
             TabCreatorManager tabCreatorManager,
             MenuOrKeyboardActionController menuOrKeyboardActionController, Runnable backPress) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
+
+        mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
+                context, compositorViewHolder, tabModelSelector, tabContentManager);
+
         TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider;
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
@@ -73,14 +79,16 @@ public class GridTabSwitcherCoordinator
 
             mMediator = new GridTabSwitcherMediator(this, containerViewModel, tabModelSelector,
                     fullscreenManager, compositorViewHolder,
-                    mTabGridDialogCoordinator.getResetHandler());
+                    mTabGridDialogCoordinator.getResetHandler(),
+                    mTabSelectionEditorCoordinator.getController());
 
             gridCardOnClickListenerProvider = mMediator::getGridCardOnClickListener;
         } else {
             mTabGridDialogCoordinator = null;
 
             mMediator = new GridTabSwitcherMediator(this, containerViewModel, tabModelSelector,
-                    fullscreenManager, compositorViewHolder, null);
+                    fullscreenManager, compositorViewHolder, null,
+                    mTabSelectionEditorCoordinator.getController());
 
             gridCardOnClickListenerProvider = null;
         }
@@ -101,7 +109,8 @@ public class GridTabSwitcherCoordinator
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, mMultiThumbnailCardProvider, titleProvider, true,
                 mMediator::getCreateGroupButtonOnClickListener, gridCardOnClickListenerProvider,
-                null, compositorViewHolder, compositorViewHolder.getDynamicResourceLoader(), true,
+                null, null, null, compositorViewHolder,
+                compositorViewHolder.getDynamicResourceLoader(), true,
                 org.chromium.chrome.tab_ui.R.layout.grid_tab_switcher_layout, COMPONENT_NAME);
         HistoryNavigationLayout navigation =
                 compositorViewHolder.findViewById(R.id.history_navigation);
@@ -109,9 +118,6 @@ public class GridTabSwitcherCoordinator
                 context, backPress, tabModelSelector::getCurrentTab));
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabGridCoordinator.getContainerView(), TabGridContainerViewBinder::bind);
-
-        mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
-                context, compositorViewHolder, tabModelSelector, tabContentManager);
 
         mMenuOrKeyboardActionController = menuOrKeyboardActionController;
         mMenuOrKeyboardActionController.registerMenuOrKeyboardActionHandler(
