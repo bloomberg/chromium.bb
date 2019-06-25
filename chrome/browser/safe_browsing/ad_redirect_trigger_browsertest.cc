@@ -104,8 +104,9 @@ class AdRedirectTriggerBrowserTest : public InProcessBrowserTest,
 };
 
 // Check that a report is sent when the source of a blocked redirect is an ad.
+// TODO(https://crbug.com/978405) Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(AdRedirectTriggerBrowserTest,
-                       BlockRedirectNavigation_FromAd) {
+                       DISABLED_BlockRedirectNavigation_FromAd) {
   base::HistogramTester histogram_tester;
   CreateTrigger();
   ui_test_utils::NavigateToURL(browser(),
