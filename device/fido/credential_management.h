@@ -196,7 +196,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AggregatedEnumerateCredentialsResponse {
   ~AggregatedEnumerateCredentialsResponse();
 
   PublicKeyCredentialRpEntity rp;
-  std::list<EnumerateCredentialsResponse> credentials;
+  std::vector<EnumerateCredentialsResponse> credentials;
 
  private:
   AggregatedEnumerateCredentialsResponse(

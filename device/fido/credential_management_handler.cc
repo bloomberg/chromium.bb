@@ -40,7 +40,9 @@ CredentialManagementHandler::~CredentialManagementHandler() {
 void CredentialManagementHandler::DispatchRequest(
     FidoAuthenticator* authenticator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(state_, State::kWaitingForTouch);
+  if (state_ != State::kWaitingForTouch) {
+    return;
+  }
   authenticator->GetTouch(base::BindOnce(&CredentialManagementHandler::OnTouch,
                                          weak_factory_.GetWeakPtr(),
                                          authenticator));
@@ -107,7 +109,6 @@ void CredentialManagementHandler::OnRetriesResponse(
 void CredentialManagementHandler::OnHavePIN(std::string pin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(State::kWaitingForPIN, state_);
-  DCHECK(pin::IsValid(pin));
 
   if (authenticator_ == nullptr) {
     // Authenticator was detached. The request will already have been canceled
@@ -157,7 +158,6 @@ void CredentialManagementHandler::OnHavePINToken(
   }
 
   if (status != CtapDeviceResponseCode::kSuccess) {
-    state_ = State::kFinished;
     FidoReturnCode error;
     switch (status) {
       case CtapDeviceResponseCode::kCtap2ErrPinAuthBlocked:
@@ -170,6 +170,7 @@ void CredentialManagementHandler::OnHavePINToken(
         error = FidoReturnCode::kAuthenticatorResponseInvalid;
         break;
     }
+    state_ = State::kFinished;
     std::move(finished_callback_).Run(error);
     return;
   }
@@ -245,6 +246,24 @@ void CredentialManagementHandler::OnEnumerateCredentials(
         .Run(status, base::nullopt, base::nullopt);
     return;
   }
+
+  // Sort credentials by (RP ID, username, user) ascending.
+  for (auto& response : *responses) {
+    std::sort(response.credentials.begin(), response.credentials.end(),
+              [](const EnumerateCredentialsResponse& a,
+                 const EnumerateCredentialsResponse& b) {
+                if (a.user.name == b.user.name) {
+                  return a.user.id < b.user.id;
+                }
+                return a.user.name < b.user.name;
+              });
+  }
+  std::sort(responses->begin(), responses->end(),
+            [](const AggregatedEnumerateCredentialsResponse& a,
+               const AggregatedEnumerateCredentialsResponse& b) {
+              return a.rp.id < b.rp.id;
+            });
+
   state_ = State::kReady;
   std::move(get_credentials_callback_)
       .Run(status, std::move(responses),
@@ -256,21 +275,13 @@ void CredentialManagementHandler::AuthenticatorRemoved(
     FidoAuthenticator* authenticator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   FidoRequestHandlerBase::AuthenticatorRemoved(discovery, authenticator);
-  if (authenticator != authenticator_) {
+  if (authenticator != authenticator_ || state_ == State::kFinished) {
     return;
   }
 
   authenticator_ = nullptr;
-  if (state_ == State::kWaitingForPIN) {
-    state_ = State::kFinished;
-    std::move(finished_callback_)
-        .Run(FidoReturnCode::kAuthenticatorRemovedDuringPINEntry);
-    return;
-  }
-  if (state_ == State::kReady) {
-    std::move(finished_callback_).Run(FidoReturnCode::kSuccess);
-    return;
-  }
+  state_ = State::kFinished;
+  std::move(finished_callback_).Run(FidoReturnCode::kSuccess);
 }
 
 }  // namespace device

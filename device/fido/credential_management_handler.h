@@ -40,7 +40,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
       base::OnceCallback<void(CtapDeviceResponseCode)>;
   using FinishedCallback = base::OnceCallback<void(FidoReturnCode)>;
   using GetCredentialsCallback = base::OnceCallback<void(
-      CtapDeviceResponseCode status,
+      CtapDeviceResponseCode,
       base::Optional<std::vector<AggregatedEnumerateCredentialsResponse>>,
       base::Optional<size_t>)>;
   using GetPINCallback =
@@ -61,7 +61,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialManagementHandler
   // on the device. The supplied callback receives the status returned by the
   // device and, if successful, the resident credentials stored and remaining
   // capacity left on the chosen authenticator.
+  //
+  // The returned AggregatedEnumerateCredentialsResponses will be sorted in
+  // ascending order by their RP ID. The |credentials| vector of each response
+  // will be sorted in ascending order by user name.
   void GetCredentials(GetCredentialsCallback callback);
+
+  // DeleteCredential attempts to delete the credential with the given
+  // |credential_id|.
   void DeleteCredential(base::span<const uint8_t> credential_id,
                         DeleteCredentialCallback callback);
 
