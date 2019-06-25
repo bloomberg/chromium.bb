@@ -66,7 +66,9 @@ public class TabGridDialogCoordinator {
             TabListRecyclerView recyclerView = mTabListCoordinator.getContainerView();
             mToolbarCoordinator = new TabGridSheetToolbarCoordinator(
                     mContext, recyclerView, mToolbarPropertyModel, mParentLayout);
+            mMediator.onReset(tabs.get(0).getId());
         } else {
+            mMediator.onReset(null);
             if (mToolbarCoordinator != null) {
                 mToolbarCoordinator.destroy();
             }
@@ -80,6 +82,5 @@ public class TabGridDialogCoordinator {
     public void resetWithListOfTabs(@Nullable List<Tab> tabs) {
         mTabListCoordinator.resetWithListOfTabs(tabs);
         updateDialogContent(tabs);
-        mMediator.onReset(tabs == null ? null : tabs.get(0).getId());
     }
 }
