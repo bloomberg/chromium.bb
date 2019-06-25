@@ -276,11 +276,12 @@ static bool SendFetchFailedPing(const wstring &fetch_symbol_failure_url,
 // external request unless the symbol file's debug_file string matches
 // the given blacklist regular expression.
 // The debug_file name is used from the MissingSymbolInfo struct,
-// matched against the PCRE blacklist_regex.
+// matched against the blacklist_regex.
 static bool SafeToMakeExternalRequest(const MissingSymbolInfo &missing_info,
                                       std::regex blacklist_regex) {
   string file_name = missing_info.debug_file;
-  if (std::regex_match(file_name, blacklist_regex)) {
+  // Use regex_search because we want to match substrings.
+  if (std::regex_search(file_name, blacklist_regex)) {
     FprintfFlush(stderr, "Not safe to make external request for file %s\n",
                  file_name.c_str());
     return false;
