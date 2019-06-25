@@ -1884,7 +1884,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
 }
 
 // Test that we do not retry indefinitely when a server sends an error like
-// ERR_SPDY_PING_FAILED, ERR_SPDY_SERVER_REFUSED_STREAM,
+// ERR_HTTP2_PING_FAILED, ERR_HTTP2_SERVER_REFUSED_STREAM,
 // ERR_QUIC_HANDSHAKE_FAILED or ERR_QUIC_PROTOCOL_ERROR.
 TEST_F(HttpNetworkTransactionTest, FiniteRetriesOnIOError) {
   HttpRequestInfo request;
@@ -1923,7 +1923,7 @@ TEST_F(HttpNetworkTransactionTest, FiniteRetriesOnIOError) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_THAT(rv, IsError(ERR_SPDY_SERVER_REFUSED_STREAM));
+  EXPECT_THAT(rv, IsError(ERR_HTTP2_SERVER_REFUSED_STREAM));
 }
 
 TEST_F(HttpNetworkTransactionTest, RetryTwiceOnIOError) {
