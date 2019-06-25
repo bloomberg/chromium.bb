@@ -353,7 +353,14 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ShowBubble) {
             PageInfoBubbleView::GetShownBubbleType());
 }
 
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ChromeURL) {
+// Flaky on Windows (https://crbug.com/976791)
+#if defined(OS_WIN)
+#define MAYBE_ChromeURL DISABLED_ChromeURL
+#else
+#define MAYBE_ChromeURL ChromeURL
+#endif
+
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, MAYBE_ChromeURL) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://settings"));
   OpenPageInfoBubble(browser());
   EXPECT_EQ(PageInfoBubbleView::BUBBLE_INTERNAL_PAGE,
