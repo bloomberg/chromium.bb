@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
+#include "content/browser/native_file_system/native_file_system_file_writer_impl.h"
 
 #include <limits>
 #include "base/bind.h"
@@ -31,9 +31,9 @@ using storage::FileSystemURL;
 
 namespace content {
 
-class NativeFileSystemFileHandleImplTest : public testing::Test {
+class NativeFileSystemFileWriterImplTest : public testing::Test {
  public:
-  NativeFileSystemFileHandleImplTest()
+  NativeFileSystemFileWriterImplTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO) {
     scoped_feature_list_.InitAndEnableFeature(
@@ -60,7 +60,7 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
         file_system_context_, chrome_blob_context_,
         /*permission_context=*/nullptr);
 
-    handle_ = std::make_unique<NativeFileSystemFileHandleImpl>(
+    handle_ = std::make_unique<NativeFileSystemFileWriterImpl>(
         manager_.get(),
         NativeFileSystemManagerImpl::BindingContext(
             test_url_.origin(), /*process_id=*/1,
@@ -174,6 +174,18 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
     return result_out;
   }
 
+  base::File::Error CloseSync() {
+    base::RunLoop loop;
+    base::File::Error result_out;
+    handle_->Close(base::BindLambdaForTesting(
+        [&](blink::mojom::NativeFileSystemErrorPtr result) {
+          result_out = result->error_code;
+          loop.Quit();
+        }));
+    loop.Run();
+    return result_out;
+  }
+
   virtual bool WriteUsingBlobs() { return true; }
 
   base::File::Error WriteSync(uint64_t position,
@@ -199,21 +211,21 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
   scoped_refptr<FixedNativeFileSystemPermissionGrant> permission_grant_ =
       base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
           FixedNativeFileSystemPermissionGrant::PermissionStatus::GRANTED);
-  std::unique_ptr<NativeFileSystemFileHandleImpl> handle_;
+  std::unique_ptr<NativeFileSystemFileWriterImpl> handle_;
 };
 
-class NativeFileSystemFileHandleImplWriteTest
-    : public NativeFileSystemFileHandleImplTest,
+class NativeFileSystemFileWriterImplWriteTest
+    : public NativeFileSystemFileWriterImplTest,
       public testing::WithParamInterface<bool> {
  public:
   bool WriteUsingBlobs() override { return GetParam(); }
 };
 
-INSTANTIATE_TEST_SUITE_P(NativeFileSystemFileHandleImplTest,
-                         NativeFileSystemFileHandleImplWriteTest,
+INSTANTIATE_TEST_SUITE_P(NativeFileSystemFileWriterImplTest,
+                         NativeFileSystemFileWriterImplWriteTest,
                          ::testing::Bool());
 
-TEST_F(NativeFileSystemFileHandleImplTest, WriteInvalidBlob) {
+TEST_F(NativeFileSystemFileWriterImplTest, WriteInvalidBlob) {
   blink::mojom::BlobPtr blob;
   MakeRequest(&blob);
 
@@ -225,7 +237,7 @@ TEST_F(NativeFileSystemFileHandleImplTest, WriteInvalidBlob) {
   EXPECT_EQ("", ReadFile(test_url_));
 }
 
-TEST_P(NativeFileSystemFileHandleImplWriteTest, WriteValidEmptyString) {
+TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteValidEmptyString) {
   uint64_t bytes_written;
   base::File::Error result = WriteSync(0, "", &bytes_written);
   EXPECT_EQ(result, base::File::FILE_OK);
@@ -234,7 +246,7 @@ TEST_P(NativeFileSystemFileHandleImplWriteTest, WriteValidEmptyString) {
   EXPECT_EQ("", ReadFile(test_url_));
 }
 
-TEST_P(NativeFileSystemFileHandleImplWriteTest, WriteValidNonEmpty) {
+TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteValidNonEmpty) {
   std::string test_data("abcdefghijklmnopqrstuvwxyz");
   uint64_t bytes_written;
   base::File::Error result = WriteSync(0, test_data, &bytes_written);
@@ -244,7 +256,7 @@ TEST_P(NativeFileSystemFileHandleImplWriteTest, WriteValidNonEmpty) {
   EXPECT_EQ(test_data, ReadFile(test_url_));
 }
 
-TEST_P(NativeFileSystemFileHandleImplWriteTest, WriteWithOffsetInFile) {
+TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteWithOffsetInFile) {
   uint64_t bytes_written;
   base::File::Error result;
 
@@ -259,7 +271,7 @@ TEST_P(NativeFileSystemFileHandleImplWriteTest, WriteWithOffsetInFile) {
   EXPECT_EQ("1234abc890", ReadFile(test_url_));
 }
 
-TEST_P(NativeFileSystemFileHandleImplWriteTest, WriteWithOffsetPastFile) {
+TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteWithOffsetPastFile) {
   uint64_t bytes_written;
   base::File::Error result = WriteSync(4, "abc", &bytes_written);
   EXPECT_EQ(result, base::File::FILE_ERROR_FAILED);
@@ -268,7 +280,18 @@ TEST_P(NativeFileSystemFileHandleImplWriteTest, WriteWithOffsetPastFile) {
   EXPECT_EQ("", ReadFile(test_url_));
 }
 
-TEST_F(NativeFileSystemFileHandleImplTest, TruncateShrink) {
+TEST_F(NativeFileSystemFileWriterImplTest, CloseOK) {
+  uint64_t bytes_written;
+  base::File::Error result = WriteSync(0, "abc", &bytes_written);
+  EXPECT_EQ(result, base::File::FILE_OK);
+  EXPECT_EQ(bytes_written, 3u);
+  result = CloseSync();
+  EXPECT_EQ(result, base::File::FILE_OK);
+
+  EXPECT_EQ("abc", ReadFile(test_url_));
+}
+
+TEST_F(NativeFileSystemFileWriterImplTest, TruncateShrink) {
   uint64_t bytes_written;
   base::File::Error result;
 
@@ -282,7 +305,7 @@ TEST_F(NativeFileSystemFileHandleImplTest, TruncateShrink) {
   EXPECT_EQ("12345", ReadFile(test_url_));
 }
 
-TEST_F(NativeFileSystemFileHandleImplTest, TruncateGrow) {
+TEST_F(NativeFileSystemFileWriterImplTest, TruncateGrow) {
   uint64_t bytes_written;
   base::File::Error result;
 
