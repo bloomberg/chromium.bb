@@ -117,8 +117,20 @@ message RemoveAccountResponse {
   optional ErrorType error = 1;
 }
 
+enum ClearMode {
+  // Remove all accounts.
+  CLEAR_ALL = 0;
+
+  // Remove all unmanaged accounts, leave managed accounts untouched.
+  CLEAR_ONLY_UNMANAGED_ACCOUNTS = 1;
+
+  // Remove previously remembered passwords for unmanaged accounts.
+  CLEAR_ONLY_UNMANAGED_REMEMBERED_PASSWORDS = 2;
+}
+
 message ClearAccountsRequest {
-  // Reserved for future use.
+  // What kind of data to clear.
+  optional ClearMode mode = 1 [default = CLEAR_ALL];
 }
 
 message ClearAccountsResponse {
