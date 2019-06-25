@@ -623,12 +623,9 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
   }
   response_object->setProtocol(protocol);
 
-  if (response.GetSecurityStyle() != ResourceResponse::kSecurityStyleUnknown &&
-      response.GetSecurityStyle() !=
-          ResourceResponse::kSecurityStyleUnauthenticated) {
-    const ResourceResponse::SecurityDetails* response_security_details =
-        response.GetSecurityDetails();
-
+  const base::Optional<ResourceResponse::SecurityDetails>&
+      response_security_details = response.GetSecurityDetails();
+  if (response_security_details.has_value()) {
     auto san_list = std::make_unique<protocol::Array<String>>(
         response_security_details->san_list.begin(),
         response_security_details->san_list.end());
@@ -959,11 +956,9 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
   resources_data_->ResponseReceived(request_id, frame_id, response);
   resources_data_->SetResourceType(request_id, type);
 
-  if (response.GetSecurityStyle() != ResourceResponse::kSecurityStyleUnknown &&
-      response.GetSecurityStyle() !=
-          ResourceResponse::kSecurityStyleUnauthenticated) {
-    const ResourceResponse::SecurityDetails* response_security_details =
-        response.GetSecurityDetails();
+  const base::Optional<ResourceResponse::SecurityDetails>&
+      response_security_details = response.GetSecurityDetails();
+  if (response_security_details.has_value()) {
     resources_data_->SetCertificate(request_id,
                                     response_security_details->certificate);
   }
