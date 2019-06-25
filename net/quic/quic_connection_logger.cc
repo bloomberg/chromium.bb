@@ -797,14 +797,14 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageSent(
 }
 
 void QuicConnectionLogger::OnConnectionClosed(
-    quic::QuicErrorCode error,
-    const string& error_details,
+    const quic::QuicConnectionCloseFrame& frame,
     quic::ConnectionCloseSource source) {
   if (!net_log_is_capturing_)
     return;
-  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CLOSED,
-                    base::Bind(&NetLogQuicOnConnectionClosedCallback, error,
-                               error_details, source));
+  net_log_.AddEvent(
+      NetLogEventType::QUIC_SESSION_CLOSED,
+      base::Bind(&NetLogQuicOnConnectionClosedCallback, frame.quic_error_code,
+                 frame.error_details, source));
 }
 
 void QuicConnectionLogger::OnSuccessfulVersionNegotiation(
