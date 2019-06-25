@@ -19993,36 +19993,12 @@
       },
       {
         "isolate_coverage_data": true,
-        "isolate_name": "password_manager_form_parser_generic_fuzzer",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "password_manager_form_parser_generic_fuzzer",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        }
-      },
-      {
-        "isolate_coverage_data": true,
         "isolate_name": "password_manager_form_parser_proto_fuzzer",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "password_manager_form_parser_proto_fuzzer",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        }
-      },
-      {
-        "isolate_coverage_data": true,
-        "isolate_name": "password_manager_form_parser_proto_generic_fuzzer",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "password_manager_form_parser_proto_generic_fuzzer",
         "swarming": {
           "can_use_on_swarming_builders": false
         }

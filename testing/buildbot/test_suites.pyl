@@ -1540,17 +1540,7 @@
           'can_use_on_swarming_builders': False,
         },
       },
-      'password_manager_form_parser_generic_fuzzer': {
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
       'password_manager_form_parser_proto_fuzzer': {
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
-      'password_manager_form_parser_proto_generic_fuzzer': {
         'swarming': {
           'can_use_on_swarming_builders': False,
         },
