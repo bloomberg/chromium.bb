@@ -27,6 +27,7 @@ import "rpc.proto";
 // Error codes do not need to be sequential per-call.
 // Prefixes by Request/Reply type should be used to help
 // callers know if specialized errors apply.
+// TODO(b/135984863): Rename this.
 enum CryptohomeErrorCode {
   // 0 is the default value of BaseReply::error. It
   // should never be used.
