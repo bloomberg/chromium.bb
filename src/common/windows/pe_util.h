@@ -60,7 +60,18 @@ wstring GenerateDebugIdentifier(DWORD age, DWORD signature);
 
 // Converts |machine| enum value to the corresponding string used by Breakpad.
 // The enum is IMAGE_FILE_MACHINE_*, contained in winnt.h.
-constexpr const wchar_t* FileHeaderMachineToCpuString(WORD machine);
+constexpr const wchar_t* FileHeaderMachineToCpuString(WORD machine) {
+  switch (machine) {
+    case IMAGE_FILE_MACHINE_I386: {
+      return L"x86";
+    }
+    case IMAGE_FILE_MACHINE_IA64:
+    case IMAGE_FILE_MACHINE_AMD64: {
+      return L"x86_64";
+    }
+    default: { return L"unknown"; }
+  }
+}
 
 }  // namespace google_breakpad
 
