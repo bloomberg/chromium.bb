@@ -16,6 +16,8 @@ const char kStartVmMethod[] = "StartVm";
 const char kStopVmMethod[] = "StopVm";
 const char kStopAllVmsMethod[] = "StopAllVms";
 const char kGetVmInfoMethod[] = "GetVmInfo";
+const char kGetVmEnterpriseReportingInfoMethod[] =
+    "GetVmEnterpriseReportingInfo";
 const char kCreateDiskImageMethod[] = "CreateDiskImage";
 const char kDestroyDiskImageMethod[] = "DestroyDiskImage";
 const char kExportDiskImageMethod[] = "ExportDiskImage";

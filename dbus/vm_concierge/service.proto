@@ -237,6 +237,26 @@ message GetVmInfoResponse {
   VmInfo vm_info = 2;
 }
 
+// Request for information about the VM that is specific to
+// enterprise reporting.
+message GetVmEnterpriseReportingInfoRequest {
+  // The name of the VM.
+  string vm_name = 1;
+
+  // The owner of the VM (cryptohome id).
+  string owner_id = 2;
+}
+
+// Response sent back by vm_concierge after it receives a GetEnterpriseReportingInfo
+// call. Right now this only returns the kernel version of the Termina VM.
+// The VM must be running in order for the call to deliver the kernel version.
+message GetVmEnterpriseReportingInfoResponse {
+  bool success = 1;
+  string failure_reason = 2;
+
+  string vm_kernel_version = 3;
+}
+
 // The type of storage location for a disk image.
 enum StorageLocation {
   // Subdirectory under /home/root/<id>/crosvm.
@@ -686,4 +706,4 @@ message DnsSettings {
 
   // List of search domains.
   repeated string search_domains = 2;
-};
+}
