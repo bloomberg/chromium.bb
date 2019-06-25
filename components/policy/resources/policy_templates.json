@@ -6150,7 +6150,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:75-'],
+      'supported_on': ['chrome.*:75-', 'chrome_os:75-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
