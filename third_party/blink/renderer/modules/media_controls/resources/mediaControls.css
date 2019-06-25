@@ -88,7 +88,7 @@ video::-webkit-media-controls-panel.transparent {
 
 video::-webkit-media-controls:not(.audio-only) div[pseudo="-webkit-media-controls-panel" i] {
   background:
-    -webkit-image-set(url('default_100_percent/modern/gradient_bg.png') 1x)
+    -webkit-image-set(url('default_100_percent/gradient_bg.png') 1x)
     repeat-x bottom left;
 }
 
@@ -104,9 +104,9 @@ video::-webkit-media-controls.sizing-large div[pseudo="-webkit-media-controls-pa
  * shown */
 video::-webkit-media-controls:not(.audio-only) div[pseudo="-webkit-media-controls-panel" i].scrubbing-message {
   background:
-    -webkit-image-set(url('default_100_percent/modern/top_gradient_bg.png') 1x)
+    -webkit-image-set(url('default_100_percent/top_gradient_bg.png') 1x)
     repeat-x top left,
-    -webkit-image-set(url('default_100_percent/modern/gradient_bg.png') 1x)
+    -webkit-image-set(url('default_100_percent/gradient_bg.png') 1x)
     repeat-x bottom left;
 }
 
@@ -696,14 +696,14 @@ video::-webkit-media-controls div[pseudo="-internal-media-controls-loading-panel
 div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-mask-1-background {
   left: 0;
   background-image: -webkit-image-set(
-    url(default_100_percent/modern/loading_mask_1.svg) 1x);
+    url(default_100_percent/loading_mask_1.svg) 1x);
   background-position: center left;
 }
 
 div[pseudo="-internal-media-controls-loading-panel" i]::-internal-media-controls-loading-panel-spinner-mask-2-background {
   left: -100%;
   background-image: -webkit-image-set(
-    url(default_100_percent/modern/loading_mask_2.svg) 1x);
+    url(default_100_percent/loading_mask_2.svg) 1x);
   background-position: center right;
 }
 
@@ -1258,7 +1258,7 @@ video::cue(i) {
 video::-internal-media-controls-overlay-cast-button {
     -webkit-appearance: none;
     background-image: -webkit-image-set(
-      url(default_100_percent/modern/mediaplayer_overlay_cast_off.png) 1x);
+      url(default_100_percent/mediaplayer_overlay_cast_off.png) 1x);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
@@ -1278,7 +1278,7 @@ video::-internal-media-controls-overlay-cast-button {
 
 video::-internal-media-controls-overlay-cast-button.on {
     background-image: -webkit-image-set(
-      url(default_100_percent/modern/mediaplayer_overlay_cast_on.png) 1x);
+      url(default_100_percent/mediaplayer_overlay_cast_on.png) 1x);
 }
 
 /**
@@ -1326,7 +1326,7 @@ video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-
 
   /* Taller scrim. */
   background:
-    -webkit-image-set(url('default_100_percent/modern/vr_gradient_bg.png') 1x)
+    -webkit-image-set(url('default_100_percent/vr_gradient_bg.png') 1x)
     repeat-x bottom left;
 }
 
@@ -1400,7 +1400,7 @@ video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-contr
   border-radius: 4px;
 }
 
-/* Hide modern hover background */
+/* Hide hover background */
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-play-button" i]::-internal-media-controls-button-hover-background,
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
 video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
@@ -1410,7 +1410,7 @@ video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-contr
 @media (-webkit-min-device-pixel-ratio: 2) {
   video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-panel" i] {
     background:
-      -webkit-image-set(url('default_200_percent/modern/vr_gradient_bg.png') 1x)
+      -webkit-image-set(url('default_200_percent/vr_gradient_bg.png') 1x)
       repeat-x bottom left auto 198px;
   }
 }
