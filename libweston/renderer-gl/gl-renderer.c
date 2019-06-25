@@ -1434,7 +1434,10 @@ gl_renderer_repaint_output(struct weston_output *output,
 	struct gl_renderer *gr = get_renderer(compositor);
 	EGLBoolean ret;
 	static int errored;
-	pixman_region32_t buffer_damage, total_damage;
+	/* areas we've damaged since we last used this buffer */
+	pixman_region32_t previous_damage;
+	/* total area we need to repaint this time */
+	pixman_region32_t total_damage;
 	enum gl_border_status border_status = BORDER_STATUS_CLEAN;
 	struct weston_view *view;
 
@@ -1489,18 +1492,18 @@ gl_renderer_repaint_output(struct weston_output *output,
 	}
 
 	pixman_region32_init(&total_damage);
-	pixman_region32_init(&buffer_damage);
+	pixman_region32_init(&previous_damage);
 
-	output_get_damage(output, &buffer_damage, &border_status);
+	output_get_damage(output, &previous_damage, &border_status);
 	output_rotate_damage(output, output_damage, go->border_status);
 
-	pixman_region32_union(&total_damage, &buffer_damage, output_damage);
+	pixman_region32_union(&total_damage, &previous_damage, output_damage);
 	border_status |= go->border_status;
 
 	repaint_views(output, &total_damage);
 
 	pixman_region32_fini(&total_damage);
-	pixman_region32_fini(&buffer_damage);
+	pixman_region32_fini(&previous_damage);
 
 	draw_output_borders(output, border_status);
 
