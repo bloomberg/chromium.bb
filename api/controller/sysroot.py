@@ -54,8 +54,7 @@ def InstallToolchain(input_proto, output_proto):
 
   build_target = build_target_util.BuildTarget(name=build_target_name)
   target_sysroot = sysroot_lib.Sysroot(sysroot_path)
-  run_configs = sysroot.SetupBoardRunConfig(usepkg=not compile_source,
-                                            use_parallel_binhost=True)
+  run_configs = sysroot.SetupBoardRunConfig(usepkg=not compile_source)
 
   if not target_sysroot.Exists():
     cros_build_lib.Die('Sysroot has not been created. Run Create first.')
