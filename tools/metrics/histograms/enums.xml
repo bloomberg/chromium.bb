@@ -29736,6 +29736,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="15" label="OpenCleanupBlobJournalFailed">
     Open failed because the blob journal could not be cleaned up.
   </int>
+  <int value="16" label="OpenFailedMetadataSetup">
+    Open failed because the backing store's metadata could not be set up.
+  </int>
 </enum>
 
 <enum name="IdleDeadlineCallbackType">
