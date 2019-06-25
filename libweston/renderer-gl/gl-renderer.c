@@ -1435,7 +1435,7 @@ gl_renderer_repaint_output(struct weston_output *output,
 	EGLBoolean ret;
 	static int errored;
 	pixman_region32_t buffer_damage, total_damage;
-	enum gl_border_status border_damage = BORDER_STATUS_CLEAN;
+	enum gl_border_status border_status = BORDER_STATUS_CLEAN;
 	struct weston_view *view;
 
 	if (use_output(output) < 0)
@@ -1491,18 +1491,18 @@ gl_renderer_repaint_output(struct weston_output *output,
 	pixman_region32_init(&total_damage);
 	pixman_region32_init(&buffer_damage);
 
-	output_get_damage(output, &buffer_damage, &border_damage);
+	output_get_damage(output, &buffer_damage, &border_status);
 	output_rotate_damage(output, output_damage, go->border_status);
 
 	pixman_region32_union(&total_damage, &buffer_damage, output_damage);
-	border_damage |= go->border_status;
+	border_status |= go->border_status;
 
 	repaint_views(output, &total_damage);
 
 	pixman_region32_fini(&total_damage);
 	pixman_region32_fini(&buffer_damage);
 
-	draw_output_borders(output, border_damage);
+	draw_output_borders(output, border_status);
 
 	pixman_region32_copy(&output->previous_damage, output_damage);
 	wl_signal_emit(&output->frame_signal, output);
