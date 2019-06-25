@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -24,6 +25,7 @@
 #include "components/arc/test/fake_arc_session.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/scoped_user_manager.h"
+#include "content/public/browser/notification_service.h"
 
 namespace policy {
 
@@ -64,11 +66,15 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
     chromeos::LoginState::Shutdown();
   }
 
-  void LogInUser() {
+  void LogInUser(bool is_affiliated) {
     const AccountId account_id(AccountId::FromUserEmailGaiaId(
         profile()->GetProfileUserName(), "1234567890"));
-    fake_user_manager_->AddUser(account_id);
+    fake_user_manager_->AddUserWithAffiliation(account_id, is_affiliated);
     fake_user_manager_->LoginUser(account_id);
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_PROFILE_CREATED,
+        content::Source<Profile>(profile()),
+        content::NotificationService::NoDetails());
     chromeos::LoginState::Get()->SetLoggedInState(
         chromeos::LoginState::LOGGED_IN_ACTIVE,
         chromeos::LoginState::LOGGED_IN_USER_REGULAR);
@@ -107,7 +113,7 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
 TEST_F(LockToSingleUserManagerTest, ArcSessionLockTest) {
   SetPolicyValue(
       enterprise_management::DeviceRebootOnUserSignoutProto::ARC_SESSION);
-  LogInUser();
+  LogInUser(false /* is_affiliated */);
   EXPECT_FALSE(is_device_locked());
   StartArc();
   EXPECT_TRUE(is_device_locked());
@@ -115,13 +121,13 @@ TEST_F(LockToSingleUserManagerTest, ArcSessionLockTest) {
 
 TEST_F(LockToSingleUserManagerTest, AlwaysLockTest) {
   SetPolicyValue(enterprise_management::DeviceRebootOnUserSignoutProto::ALWAYS);
-  LogInUser();
+  LogInUser(false /* is_affiliated */);
   EXPECT_TRUE(is_device_locked());
 }
 
 TEST_F(LockToSingleUserManagerTest, NeverLockTest) {
   SetPolicyValue(enterprise_management::DeviceRebootOnUserSignoutProto::NEVER);
-  LogInUser();
+  LogInUser(false /* is_affiliated */);
   EXPECT_FALSE(is_device_locked());
 }
 
@@ -129,7 +135,13 @@ TEST_F(LockToSingleUserManagerTest, DbusCallErrorTest) {
   chromeos::FakeCryptohomeClient::Get()->set_cryptohome_error(
       cryptohome::CRYPTOHOME_ERROR_KEY_NOT_FOUND);
   SetPolicyValue(enterprise_management::DeviceRebootOnUserSignoutProto::ALWAYS);
-  LogInUser();
+  LogInUser(false /* is_affiliated */);
+  EXPECT_FALSE(is_device_locked());
+}
+
+TEST_F(LockToSingleUserManagerTest, DoesNotAffectAffiliatedUsersTest) {
+  SetPolicyValue(enterprise_management::DeviceRebootOnUserSignoutProto::ALWAYS);
+  LogInUser(true /* is_affiliated */);
   EXPECT_FALSE(is_device_locked());
 }
 

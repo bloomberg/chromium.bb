@@ -11,25 +11,29 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/login/login_state/login_state.h"
+#include "components/user_manager/user_manager.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace policy {
 
 // This class observes the LoginState and ArcSessionManager and checks if the
 // device must be locked to a single user mount, if the policy forces it.
-class LockToSingleUserManager final : public chromeos::LoginState::Observer,
-                                      public arc::ArcSessionManager::Observer {
+class LockToSingleUserManager final : public arc::ArcSessionManager::Observer,
+                                      public content::NotificationObserver {
  public:
   LockToSingleUserManager();
   ~LockToSingleUserManager() override;
 
-  // chromeos::LoginState::Observer overrides
-  void LoggedInStateChanged() override;
-
+ private:
   // arc::ArcSessionManager::Observer overrides
   void OnArcStarted() override;
 
- private:
+  // content::NotificationObserver overrides
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
   // Sends D-Bus request to lock device to single user mount.
   void LockToSingleUser();
 
@@ -39,8 +43,7 @@ class LockToSingleUserManager final : public chromeos::LoginState::Observer,
 
   ScopedObserver<arc::ArcSessionManager, arc::ArcSessionManager::Observer>
       arc_session_observer_{this};
-  ScopedObserver<chromeos::LoginState, chromeos::LoginState::Observer>
-      login_state_observer_{this};
+  content::NotificationRegistrar notification_registrar_;
 
   base::WeakPtrFactory<LockToSingleUserManager> weak_factory_{this};
 
