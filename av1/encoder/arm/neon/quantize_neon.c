@@ -96,6 +96,9 @@ void av1_quantize_fp_neon(const tran_low_t *coeff_ptr, intptr_t count,
     store_s16q_to_tran_low(&qcoeff_ptr[i], v_qcoeff);
     store_s16q_to_tran_low(&dqcoeff_ptr[i], v_dqcoeff);
   }
+#ifdef __aarch64__
+  *eob_ptr = vmaxvq_s16(v_eobmax_76543210);
+#else
   {
     const int16x4_t v_eobmax_3210 = vmax_s16(vget_low_s16(v_eobmax_76543210),
                                              vget_high_s16(v_eobmax_76543210));
@@ -110,4 +113,5 @@ void av1_quantize_fp_neon(const tran_low_t *coeff_ptr, intptr_t count,
 
     *eob_ptr = (uint16_t)vget_lane_s16(v_eobmax_final, 0);
   }
+#endif  // __aarch64__
 }
