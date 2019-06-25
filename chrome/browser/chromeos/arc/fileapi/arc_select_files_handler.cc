@@ -157,6 +157,69 @@ void BuildFileTypeInfo(const mojom::SelectFilesRequestPtr& request,
 
 }  // namespace
 
+ArcSelectFilesHandlersManager::ArcSelectFilesHandlersManager(
+    content::BrowserContext* context)
+    : context_(context), weak_ptr_factory_(this) {}
+
+ArcSelectFilesHandlersManager::~ArcSelectFilesHandlersManager() = default;
+
+void ArcSelectFilesHandlersManager::SelectFiles(
+    const mojom::SelectFilesRequestPtr& request,
+    mojom::FileSystemHost::SelectFilesCallback callback) {
+  int task_id = request->task_id;
+  if (handlers_by_task_id_.find(task_id) != handlers_by_task_id_.end()) {
+    LOG(ERROR) << "SelectFileDialog is already shown for task ID : " << task_id;
+    std::move(callback).Run(mojom::SelectFilesResult::New());
+    return;
+  }
+
+  auto handler = std::make_unique<ArcSelectFilesHandler>(context_);
+  auto* handler_ptr = handler.get();
+  handlers_by_task_id_.emplace(task_id, std::move(handler));
+
+  // Make sure that the handler is erased when the SelectFileDialog is closed.
+  handler_ptr->SelectFiles(
+      std::move(request),
+      base::BindOnce(&ArcSelectFilesHandlersManager::EraseHandlerAndRunCallback,
+                     weak_ptr_factory_.GetWeakPtr(), task_id,
+                     std::move(callback)));
+}
+
+void ArcSelectFilesHandlersManager::OnFileSelectorEvent(
+    mojom::FileSelectorEventPtr event,
+    mojom::FileSystemHost::OnFileSelectorEventCallback callback) {
+  int task_id = event->creator_task_id;
+  auto iter = handlers_by_task_id_.find(task_id);
+  if (iter == handlers_by_task_id_.end()) {
+    LOG(ERROR) << "Can't find a SelectFileDialog for task ID : " << task_id;
+    std::move(callback).Run();
+    return;
+  }
+  iter->second->OnFileSelectorEvent(std::move(event), std::move(callback));
+}
+
+void ArcSelectFilesHandlersManager::GetFileSelectorElements(
+    mojom::GetFileSelectorElementsRequestPtr request,
+    mojom::FileSystemHost::GetFileSelectorElementsCallback callback) {
+  int task_id = request->creator_task_id;
+  auto iter = handlers_by_task_id_.find(task_id);
+  if (iter == handlers_by_task_id_.end()) {
+    LOG(ERROR) << "Can't find a SelectFileDialog for task ID : " << task_id;
+    std::move(callback).Run(mojom::FileSelectorElements::New());
+    return;
+  }
+  iter->second->GetFileSelectorElements(std::move(request),
+                                        std::move(callback));
+}
+
+void ArcSelectFilesHandlersManager::EraseHandlerAndRunCallback(
+    int task_id,
+    mojom::FileSystemHost::SelectFilesCallback callback,
+    mojom::SelectFilesResultPtr result) {
+  handlers_by_task_id_.erase(task_id);
+  std::move(callback).Run(std::move(result));
+}
+
 ArcSelectFilesHandler::ArcSelectFilesHandler(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)) {
   dialog_holder_ = std::make_unique<SelectFileDialogHolder>(this);
@@ -169,13 +232,6 @@ void ArcSelectFilesHandler::SelectFiles(
     mojom::FileSystemHost::SelectFilesCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!callback_.is_null()) {
-    LOG(ERROR)
-        << "There is already a ui::SelectFileDialog being shown currently. "
-        << "We can't open multiple ui::SelectFileDialogs at one time.";
-    std::move(callback).Run(mojom::SelectFilesResult::New());
-    return;
-  }
   callback_ = std::move(callback);
 
   // TODO(niwa): Convert all request options.
