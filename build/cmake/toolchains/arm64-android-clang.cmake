@@ -23,9 +23,9 @@ endif()
 
 set(AS_EXECUTABLE as)
 
-# Toolchain file doesn't have access to cached variables:
+# Toolchain files don't have access to cached variables:
 # https://gitlab.kitware.com/cmake/cmake/issues/16170. Set an intermediate
-# environment variable when loaded first time.
+# environment variable when loaded the first time.
 if(AOM_ANDROID_NDK_PATH)
   set(ENV{_AOM_ANDROID_NDK_PATH} "${AOM_ANDROID_NDK_PATH}")
 else()
