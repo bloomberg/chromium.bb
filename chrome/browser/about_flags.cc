@@ -2130,6 +2130,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordsMigrateLinuxToLoginDBName,
      flag_descriptions::kPasswordsMigrateLinuxToLoginDBDescription, kOsLinux,
      FEATURE_VALUE_TYPE(password_manager::features::kMigrateLinuxToLoginDB)},
+    {"enable-dbus-and-x11-status-icons",
+     flag_descriptions::kEnableDbusAndX11StatusIconsName,
+     flag_descriptions::kEnableDbusAndX11StatusIconsDescription, kOsLinux,
+     FEATURE_VALUE_TYPE(features::kEnableDbusAndX11StatusIcons)},
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
     {"enable-experimental-accessibility-features",
      flag_descriptions::kExperimentalAccessibilityFeaturesName,

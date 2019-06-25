@@ -1196,6 +1196,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "enable-dbus-and-x11-status-icons",
+    "owners": [ "thestig", "thomasanderson" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-implicit-root-scroller",
     "owners": [ "bokan", "input-dev" ],
     "expiry_milestone": 75

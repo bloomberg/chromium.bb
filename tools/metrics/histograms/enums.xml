@@ -34248,6 +34248,7 @@ from previous Chrome versions.
   <int value="-918618075" label="enable-service-worker"/>
   <int value="-915035507" label="ArcPrintSpoolerExperiment:enabled"/>
   <int value="-914210146" label="enable-web-based-signin"/>
+  <int value="-914097698" label="EnableDbusAndX11StatusIcons:disabled"/>
   <int value="-913294939" label="DriveFS:enabled"/>
   <int value="-912456561" label="MidiManagerWinrt:enabled"/>
   <int value="-908421850" label="PointerEvent:enabled"/>
@@ -35076,6 +35077,7 @@ from previous Chrome versions.
   <int value="336429189" label="DisallowUnsafeHttpDownloads:disabled"/>
   <int value="339671131" label="disable-per-user-timezone"/>
   <int value="341152650" label="SoundContentSetting:enabled"/>
+  <int value="341851350" label="EnableDbusAndX11StatusIcons:enabled"/>
   <int value="345664265" label="BlinkHeapIncrementalMarking:disabled"/>
   <int value="346711293" label="enable-save-password-bubble"/>
   <int value="347981012" label="TabToGTSAnimation:disabled"/>
