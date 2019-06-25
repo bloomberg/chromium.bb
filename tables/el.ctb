@@ -380,7 +380,7 @@ always \x03B5\x03B9	146	# ει Epsilon Iota
 always \x03B5\x03C5	156	# ευ Epsilon Upsilon
 always \x03B7\x03C5	1256	# ηυ Eta Upsilon
 always \x03BF\x03B9	246	# οι Omicron Iota
-always \X03BF\x03C5	136	# ου Omicron Upsilon
+always \x03BF\x03C5	136	# ου Omicron Upsilon
 always \x03C5\x03B9	12456	# υι Upsilon Iota
 
 # The Tonos accent, if present, is always on the second letter.
@@ -390,7 +390,7 @@ always \x03B5\x03AF	5-146	# εί Epsilon Iota
 always \x03B5\x03CD	5-156	# εύ Epsilon Upsilon
 always \x03B7\x03CD	5-1256	# ηύ Eta Upsilon
 always \x03BF\x03AF	5-246	# οί Omicron Iota
-always \X03BF\x03CD	5-136	# ού Omicron Upsilon
+always \x03BF\x03CD	5-136	# ού Omicron Upsilon
 always \x03C5\x03AF	5-12456	# υί Upsilon Iota
 
 # The Oxia accent, if present, is always on the second letter.
@@ -400,7 +400,7 @@ always \x03B5\x1F77	5-146	# εί Epsilon Iota
 always \x03B5\x1F7B	5-156	# εύ Epsilon Upsilon
 always \x03B7\x1F7B	5-1256	# ηύ Eta Upsilon
 always \x03BF\x1F77	5-246	# οί Omicron Iota
-always \X03BF\x1F7B	5-136	# ού Omicron Upsilon
+always \x03BF\x1F7B	5-136	# ού Omicron Upsilon
 always \x03C5\x1F77	5-12456	# υί Upsilon Iota
 
 ##############

@@ -502,4 +502,4 @@ letter \x1FF7 4-2456 GREEK SMALL LETTER OMEGA WITH PERISPOMENI AND
 # \x1FFE GREEK DASIA 0020 0314 
 
 # Miscellaneous
-noback sign \X25CF 16	# 9679 black circle
+noback sign \x25CF 16	# 9679 black circle

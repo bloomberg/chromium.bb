@@ -112,7 +112,7 @@ sign § 4-234-3						# 167 section sign \x00A7
 
 sign \x00A9 2356-6-14-2356 # 169	© copyright sign
 sign \x00AE 2356-6-1235-2356	# Registered
-sign \X2116 1345 NUMERO SIGN 
+sign \x2116 1345 NUMERO SIGN 
 punctuation \x00Ad 36			# 173	  soft hyphen
 sign \x00B0 356 degrees
 sign \x00B4 4
@@ -349,4 +349,4 @@ always $ 256-3456
 sign \x00BD 3456-1-34-12	# 1/2 fraction
 sign \x00BC 3456-1-34-145	# 1/4 fraction
 sign \x00BE 3456-14-34-145	# 3/4 fraction
-noback sign \X25CF 16	# 9679 black circle
+noback sign \x25CF 16	# 9679 black circle

@@ -1141,14 +1141,18 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 					ch = QUOTESUB;
 					break;
 				case 'X':
+				  compileWarning(nested, "\\Xhhhh (with a capital 'X') is deprecated.");
+				  break;
 				case 'x':
 					if (token->length - in > 4) {
 						ch = hexValue(nested, &token->chars[in + 1], 4);
 						in += 4;
 					}
 					break;
-				case 'y':
 				case 'Y':
+				  compileWarning(nested, "\\Yhhhhh (with a capital 'Y') is deprecated.");
+				  break;
+				case 'y':
 					if (CHARSIZE == 2) {
 					not32:
 						compileError(nested,
@@ -1160,8 +1164,10 @@ parseChars(FileInfo *nested, CharsString *result, CharsString *token) {
 						in += 5;
 					}
 					break;
-				case 'z':
 				case 'Z':
+				  compileWarning(nested, "\\Zhhhhhhhh (with a capital 'Z') is deprecated.");
+				  break;
+				case 'z':
 					if (CHARSIZE == 2) goto not32;
 					if (token->length - in > 8) {
 						ch = hexValue(nested, &token->chars[in + 1], 8);
