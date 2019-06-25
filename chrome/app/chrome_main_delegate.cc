@@ -167,8 +167,7 @@
 #include "chrome/child/pdf_child_init.h"
 #endif
 
-#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC) || \
-    BUILDFLAG(ENABLE_GWP_ASAN_PARTITIONALLOC)
+#if BUILDFLAG(ENABLE_GWP_ASAN)
 #include "components/gwp_asan/client/gwp_asan.h"  // nogncheck
 #endif
 
