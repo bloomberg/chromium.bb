@@ -768,6 +768,16 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageReceived(
           "Net.QuicSession.ConnectionTypeFromPeer",
           GetRealAddressFamily(local_address_from_shlo_.address()),
           ADDRESS_FAMILY_LAST);
+
+      int sample = GetAddressMismatch(local_address_from_shlo_,
+                                      local_address_from_self_);
+      // We are seemingly talking to an older server that does not support the
+      // feature, so we can't report the results in the histogram.
+      if (sample >= 0) {
+        UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.SelfShloAddressMismatch",
+                                  static_cast<QuicAddressMismatch>(sample),
+                                  QUIC_ADDRESS_MISMATCH_MAX);
+      }
     }
   }
   if (!net_log_is_capturing_)
