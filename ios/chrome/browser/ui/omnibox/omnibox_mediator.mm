@@ -149,7 +149,7 @@ const CGFloat kOmniboxIconSize = 16;
   // The code below mimics that in OmniboxPopupMediator.
   FaviconAttributes* faviconCacheResult = self.faviconLoader->FaviconForPageUrl(
       pageURL, kOmniboxIconSize, kOmniboxIconSize,
-      /*fallback_to_google_server=*/YES, handleFaviconResult);
+      /*fallback_to_google_server=*/false, handleFaviconResult);
   // Handle the synchronously returned cache result. If the favicon loader did
   // an async fetch, |handleFaviconResult| may be called again later.
   handleFaviconResult(faviconCacheResult);
