@@ -265,17 +265,17 @@ KerberosCredentialsManager::Observer::Observer() = default;
 
 KerberosCredentialsManager::Observer::~Observer() = default;
 
-KerberosCredentialsManager::KerberosCredentialsManager(
-    PrefService* local_state,
-    const Profile* primary_profile)
+KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state,
+                                                       Profile* primary_profile)
     : local_state_(local_state),
+      primary_profile_(primary_profile),
       kerberos_files_handler_(
           base::BindRepeating(&KerberosCredentialsManager::GetKerberosFiles,
                               base::Unretained(this))) {
   DCHECK(!g_instance);
   g_instance = this;
 
-  DCHECK(primary_profile);
+  DCHECK(primary_profile_);
   const user_manager::User* primary_user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(primary_profile);
   DCHECK(primary_user);
@@ -328,6 +328,14 @@ KerberosCredentialsManager::KerberosCredentialsManager(
     UpdateAccountsFromPref();
   else
     policy_service_->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
+
+  // Get Kerberos files if there is an active principal. This also wakes up the
+  // daemon, which is important as it starts background renewal processes.
+  if (!GetActivePrincipalName().empty()) {
+    VLOG(1) << "Waking up Kerberos (the daemon, not the 3-headed dog) and "
+               "refreshing credentials.";
+    GetKerberosFiles();
+  }
 }
 
 KerberosCredentialsManager::~KerberosCredentialsManager() {
@@ -349,6 +357,12 @@ void KerberosCredentialsManager::RegisterLocalStatePrefs(
   registry->RegisterBooleanPref(prefs::kKerberosRememberPasswordEnabled, true);
   registry->RegisterBooleanPref(prefs::kKerberosAddAccountsAllowed, true);
   registry->RegisterListPref(prefs::kKerberosAccounts);
+}
+
+void KerberosCredentialsManager::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kKerberosActivePrincipalName,
+                               std::string());
 }
 
 // static
@@ -428,13 +442,13 @@ void KerberosCredentialsManager::OnAddAccountRunnerDone(
   if (Succeeded(error)) {
     // Don't change the active account if an account is added by policy.
     if (!is_managed)
-      active_principal_name_ = updated_principal;
+      SetActivePrincipalName(updated_principal);
 
     // Set active account.
     // TODO(https://crbug.com/948121): Wait until the files have been saved.
     // This is important when this code is triggered directly through a page
     // that requires Kerberos auth.
-    if (active_principal_name_ == updated_principal)
+    if (GetActivePrincipalName() == updated_principal)
       GetKerberosFiles();
 
     // Bring the merry news to the observers, but only if there is no
@@ -466,9 +480,9 @@ void KerberosCredentialsManager::OnRemoveAccount(
   LogError("RemoveAccount", response.error());
   if (Succeeded(response.error())) {
     // Clear out active credentials.
-    if (active_principal_name_ == principal_name) {
+    if (GetActivePrincipalName() == principal_name) {
       kerberos_files_handler_.DeleteFiles();
-      active_principal_name_.clear();
+      ClearActivePrincipalName();
     }
 
     // Express our condolence to the observers.
@@ -492,7 +506,7 @@ void KerberosCredentialsManager::OnClearAccounts(
   if (Succeeded(response.error())) {
     // Clear out active credentials.
     kerberos_files_handler_.DeleteFiles();
-    active_principal_name_.clear();
+    ClearActivePrincipalName();
 
     // Tattle on the lost accounts to the observers.
     NotifyAccountsChanged();
@@ -512,6 +526,8 @@ void KerberosCredentialsManager::OnListAccounts(
     ListAccountsCallback callback,
     const kerberos::ListAccountsResponse& response) {
   LogError("ListAccounts", response.error());
+  // Lazily validate principal here.
+  ValidateActivePrincipal(response);
   std::move(callback).Run(response);
 }
 
@@ -522,7 +538,7 @@ kerberos::ErrorType KerberosCredentialsManager::SetActiveAccount(
 
   // Don't early out if names are equal, this might be required to bootstrap
   // Kerberos credentials.
-  active_principal_name_ = principal_name;
+  SetActivePrincipalName(principal_name);
   GetKerberosFiles();
   NotifyAccountsChanged();
   return kerberos::ERROR_NONE;
@@ -577,11 +593,13 @@ void KerberosCredentialsManager::OnAcquireKerberosTgt(
 }
 
 void KerberosCredentialsManager::GetKerberosFiles() {
-  if (active_principal_name_.empty())
+  if (GetActivePrincipalName().empty())
     return;
 
+  VLOG(1) << "Refreshing credentials for " << GetActivePrincipalName();
+
   kerberos::GetKerberosFilesRequest request;
-  request.set_principal_name(active_principal_name_);
+  request.set_principal_name(GetActivePrincipalName());
   KerberosClient::Get()->GetKerberosFiles(
       request,
       base::BindOnce(&KerberosCredentialsManager::OnGetKerberosFiles,
@@ -596,28 +614,67 @@ void KerberosCredentialsManager::OnGetKerberosFiles(
     return;
 
   // Ignore if the principal changed in the meantime.
-  if (active_principal_name_ != principal_name) {
+  if (GetActivePrincipalName() != principal_name) {
     VLOG(1) << "Ignoring Kerberos files. Active principal changed from "
-            << principal_name << " to " << active_principal_name_;
+            << principal_name << " to " << GetActivePrincipalName();
     return;
   }
 
-  auto nullstr = base::Optional<std::string>();
-  kerberos_files_handler_.SetFiles(
-      response.files().has_krb5cc() ? response.files().krb5cc() : nullstr,
-      response.files().has_krb5conf() ? response.files().krb5conf() : nullstr);
+  // In case the credential cache is missing, remove the files. This could
+  // happen when switching from an account with ticket to an account without
+  // ticket. In that case, the files must go.
+  if (response.files().has_krb5cc()) {
+    DCHECK(response.files().has_krb5conf());
+    kerberos_files_handler_.SetFiles(response.files().krb5cc(),
+                                     response.files().krb5conf());
+  } else {
+    kerberos_files_handler_.DeleteFiles();
+  }
 }
 
 void KerberosCredentialsManager::OnKerberosFilesChanged(
     const std::string& principal_name) {
   // Only listen to the active account.
-  if (principal_name == active_principal_name_)
+  if (principal_name == GetActivePrincipalName())
     GetKerberosFiles();
 }
 
 void KerberosCredentialsManager::NotifyAccountsChanged() {
   for (auto& observer : observers_)
     observer.OnAccountsChanged();
+}
+
+const std::string& KerberosCredentialsManager::GetActivePrincipalName() const {
+  // Using Get()->GetString() instead of GetString() directly to prevent a
+  // string copy.
+  return primary_profile_->GetPrefs()
+      ->Get(prefs::kKerberosActivePrincipalName)
+      ->GetString();
+}
+
+void KerberosCredentialsManager::SetActivePrincipalName(
+    const std::string& principal_name) {
+  primary_profile_->GetPrefs()->SetString(prefs::kKerberosActivePrincipalName,
+                                          principal_name);
+}
+
+void KerberosCredentialsManager::ClearActivePrincipalName() {
+  primary_profile_->GetPrefs()->ClearPref(prefs::kKerberosActivePrincipalName);
+}
+
+void KerberosCredentialsManager::ValidateActivePrincipal(
+    const kerberos::ListAccountsResponse& response) {
+  const std::string& active_principal = GetActivePrincipalName();
+  bool found = false;
+  for (int n = 0; n < response.accounts_size() && !found; ++n)
+    found |= response.accounts(n).principal_name() == active_principal;
+  if (!found) {
+    LOG(ERROR) << "Active principal does not exist. Restoring.";
+    if (response.accounts_size() > 0)
+      SetActivePrincipalName(response.accounts(0).principal_name());
+    else
+      ClearActivePrincipalName();
+  }
 }
 
 void KerberosCredentialsManager::UpdateEnabledFromPref() {
@@ -668,8 +725,8 @@ void KerberosCredentialsManager::UpdateAccountsFromPref() {
     }
 
     // Kickstart active principal if it's not set yet.
-    if (active_principal_name_.empty())
-      active_principal_name_ = principal;
+    if (GetActivePrincipalName().empty())
+      SetActivePrincipalName(principal);
 
     // Get the password, default to not set.
     const std::string* password_str = account.FindStringKey(kPassword);

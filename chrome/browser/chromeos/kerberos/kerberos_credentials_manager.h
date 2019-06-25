@@ -52,7 +52,7 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   };
 
   KerberosCredentialsManager(PrefService* local_state,
-                             const Profile* primary_profile);
+                             Profile* primary_profile);
   ~KerberosCredentialsManager() override;
 
   // Singleton accessor. Available once the primary profile is available.
@@ -61,6 +61,9 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
 
   // Registers prefs stored in local state.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
+  // Registers prefs stored in user profiles.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Helper method for ignoring the results of method calls.
   static ResultCallback EmptyResultCallback();
@@ -128,7 +131,9 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   kerberos::ErrorType SetActiveAccount(std::string principal_name);
 
   // Returns the currently active account or an empty string if there is none.
-  const std::string& GetActiveAccount() { return active_principal_name_; }
+  const std::string& GetActiveAccount() const {
+    return GetActivePrincipalName();
+  }
 
  private:
   friend class KerberosAddAccountRunner;
@@ -175,6 +180,17 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   // Calls OnAccountsChanged() on all observers.
   void NotifyAccountsChanged();
 
+  // Accessors for active principal (stored in user pref).
+  const std::string& GetActivePrincipalName() const;
+  void SetActivePrincipalName(const std::string& principal_name);
+  void ClearActivePrincipalName();
+
+  // Checks whether the active principal is contained in the given |response|.
+  // If not, resets it to the first principal or clears it if the list is empty.
+  // It's not expected that this ever triggers, but it provides a fail safe if
+  // the active principal should ever break for whatever reason.
+  void ValidateActivePrincipal(const kerberos::ListAccountsResponse& response);
+
   // Pref change handlers.
   void UpdateEnabledFromPref();
   void UpdateRememberPasswordEnabledFromPref();
@@ -190,6 +206,9 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   // Local state prefs, not owned.
   PrefService* local_state_ = nullptr;
 
+  // Primary profile, not owned.
+  Profile* primary_profile_ = nullptr;
+
   // Policy service of the primary profile, not owned.
   policy::PolicyService* policy_service_ = nullptr;
 
@@ -201,9 +220,6 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
 
   // Keeps track of accounts currently being added.
   std::vector<std::unique_ptr<KerberosAddAccountRunner>> add_account_runners_;
-
-  // Currently active principal.
-  std::string active_principal_name_;
 
   // Variable expander for the principal name (replaces ${LOGIN_ID} etc.).
   std::unique_ptr<VariableExpander> principal_expander_;

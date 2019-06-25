@@ -936,12 +936,19 @@ const char kDeviceWallpaperImageFilePath[] =
     "policy.device_wallpaper_image_file_path";
 
 // Boolean whether Kerberos daemon supports remembering passwords.
+// Tied to KerberosRememberPasswordEnabled policy.
 const char kKerberosRememberPasswordEnabled[] =
     "kerberos.remember_password_enabled";
 // Boolean whether users may add new Kerberos accounts.
+// Tied to KerberosAddAccountsAllowed policy.
 const char kKerberosAddAccountsAllowed[] = "kerberos.add_accounts_allowed";
 // Dictionary specifying a pre-set list of Kerberos accounts.
+// Tied to KerberosAccounts policy.
 const char kKerberosAccounts[] = "kerberos.accounts";
+// Used by KerberosCredentialsManager to remember which account is currently
+// active (empty if none) and to determine whether to wake up the Kerberos
+// daemon on session startup.
+const char kKerberosActivePrincipalName[] = "kerberos.active_principal_name";
 
 // A boolean pref for enabling/disabling App reinstall recommendations in Zero
 // State Launcher by policy.
