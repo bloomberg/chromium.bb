@@ -197,9 +197,6 @@ extern const char kExperimentalAccessibilityAutoclickDescription[];
 extern const char kExperimentalAccessibilityLanguageDetectionName[];
 extern const char kExperimentalAccessibilityLanguageDetectionDescription[];
 
-extern const char kExperimentalAccessibilitySwitchAccessName[];
-extern const char kExperimentalAccessibilitySwitchAccessDescription[];
-
 extern const char kFCMInvalidationsName[];
 extern const char kFCMInvalidationsDescription[];
 
@@ -1876,6 +1873,12 @@ extern const char
 extern const char kExperimentalAccessibilityChromeVoxRichTextIndicationName[];
 extern const char
     kExperimentalAccessibilityChromeVoxRichTextIndicationDescription[];
+
+extern const char kExperimentalAccessibilitySwitchAccessName[];
+extern const char kExperimentalAccessibilitySwitchAccessDescription[];
+
+extern const char kExperimentalAccessibilitySwitchAccessTextName[];
+extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 
 extern const char kFileManagerFeedbackPanelDescription[];
 extern const char kFileManagerFeedbackPanelName[];

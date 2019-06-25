@@ -771,11 +771,6 @@ const char kExperimentalAccessibilityLanguageDetectionDescription[] =
     "Enable language detection for in-page content which is then exposed to "
     "accessiblity technologies such as screen readers.";
 
-const char kExperimentalAccessibilitySwitchAccessName[] =
-    "Experimental feature Switch Access";
-const char kExperimentalAccessibilitySwitchAccessDescription[] =
-    "Add a setting to enable the prototype of Switch Access";
-
 const char kVizDisplayCompositorName[] = "Viz Display Compositor (OOP-D)";
 const char kVizDisplayCompositorDescription[] =
     "If enabled, the display compositor runs as part of the viz service in the"
@@ -3143,6 +3138,17 @@ const char kExperimentalAccessibilityChromeVoxRichTextIndicationName[] =
 const char kExperimentalAccessibilityChromeVoxRichTextIndicationDescription[] =
     "Enable ChromeVox rich text indication, which automatically notifies the "
     "user of text styling.";
+
+const char kExperimentalAccessibilitySwitchAccessName[] =
+    "Experimental feature Switch Access";
+const char kExperimentalAccessibilitySwitchAccessDescription[] =
+    "Add a setting to enable the prototype of Switch Access";
+
+const char kExperimentalAccessibilitySwitchAccessTextName[] =
+    "Enable enhanced Switch Access text input.";
+const char kExperimentalAccessibilitySwitchAccessTextDescription[] =
+    "Enable experimental or in-progress Switch Access features for improved "
+    "text input";
 
 const char kFileManagerFeedbackPanelDescription[] =
     "Enable feedback panel in the Files app.";
