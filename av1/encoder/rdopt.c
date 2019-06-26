@@ -7675,22 +7675,6 @@ static int64_t pick_interintra_wedge(const AV1_COMP *const cpi,
   return rd;
 }
 
-static int64_t pick_interinter_mask(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                    const BLOCK_SIZE bsize,
-                                    const uint8_t *const p0,
-                                    const uint8_t *const p1,
-                                    const int16_t *const residual1,
-                                    const int16_t *const diff10) {
-  const COMPOUND_TYPE compound_type = x->e_mbd.mi[0]->interinter_comp.type;
-  switch (compound_type) {
-    case COMPOUND_WEDGE:
-      return pick_interinter_wedge(cpi, x, bsize, p0, p1, residual1, diff10);
-    case COMPOUND_DIFFWTD:
-      return pick_interinter_seg(cpi, x, bsize, p0, p1, residual1, diff10);
-    default: assert(0); return 0;
-  }
-}
-
 static int interinter_compound_motion_search(const AV1_COMP *const cpi,
                                              MACROBLOCK *x,
                                              const int_mv *const cur_mv,
@@ -7763,8 +7747,12 @@ static int64_t build_and_cost_compound_type(
   int64_t best_rd_cur = INT64_MAX;
   int64_t rd = INT64_MAX;
   const COMPOUND_TYPE compound_type = mbmi->interinter_comp.type;
+  // This function will be called only for COMPOUND_WEDGE and COMPOUND_DIFFWTD
+  assert(compound_type == COMPOUND_WEDGE || compound_type == COMPOUND_DIFFWTD);
   int rate_sum, tmp_skip_txfm_sb;
   int64_t dist_sum, tmp_skip_sse_sb;
+  pick_interinter_mask_type pick_interinter_mask[2] = { pick_interinter_wedge,
+                                                        pick_interinter_seg };
 
   // TODO(any): Save pred and mask calculation as well into records. However
   // this may increase memory requirements as compound segment mask needs to be
@@ -7789,9 +7777,11 @@ static int64_t build_and_cost_compound_type(
       return INT64_MAX;
     }
   }
-
-  best_rd_cur =
-      pick_interinter_mask(cpi, x, bsize, *preds0, *preds1, residual1, diff10);
+  // Function pointer to pick the appropriate mask
+  // compound_type == COMPOUND_WEDGE, calls pick_interinter_wedge()
+  // compound_type == COMPOUND_DIFFWTD, calls pick_interinter_seg()
+  best_rd_cur = pick_interinter_mask[compound_type - COMPOUND_WEDGE](
+      cpi, x, bsize, *preds0, *preds1, residual1, diff10);
   *rs2 += get_interinter_compound_mask_rate(x, mbmi);
   best_rd_cur += RDCOST(x->rdmult, *rs2 + rate_mv, 0);
 
