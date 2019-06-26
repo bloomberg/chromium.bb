@@ -24,11 +24,6 @@ g.test('literal', print).params([
 
 g.test('options', print).params(poptions('hello', [1, 2, 3]));
 
-// TODO: move this test to unittests
-g.test('combine none', t => {
-  t.fail("this test shouldn't run");
-}).params(pcombine([]));
-
 g.test('combine unit unit', print).params(
   pcombine([
     [{}], //
@@ -58,7 +53,6 @@ g.test('combine mixed', print).params(
   ])
 );
 
-// TODO: copy this test to unittests
 g.test('filter', t => {
   t.expect(t.params.a);
 }).params(
@@ -71,7 +65,6 @@ g.test('filter', t => {
   )
 );
 
-// TODO: copy this test to unittests
 g.test('exclude', t => {
   t.expect(t.params.a);
 }).params(
