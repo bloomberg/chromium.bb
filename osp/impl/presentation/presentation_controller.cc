@@ -679,8 +679,8 @@ ErrorOr<size_t> Controller::TerminationListener::OnStreamMessage(
 // static
 std::string Controller::MakePresentationId(const std::string& url,
                                            const std::string& service_id) {
-  OSP_UNIMPLEMENTED();
-  // TODO(btolsch): This is just a placeholder for the demo.
+  // TODO(btolsch): This is just a placeholder for the demo. It should
+  // eventually become a GUID/unguessable token routine.
   std::string safe_id = service_id;
   for (auto& c : safe_id)
     if (c < ' ' || c > '~')

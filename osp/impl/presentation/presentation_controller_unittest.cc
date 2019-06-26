@@ -23,6 +23,9 @@ namespace presentation {
 using std::chrono::seconds;
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::NiceMock;
+
+namespace {
 
 const char kTestUrl[] = "https://example.foo";
 
@@ -67,6 +70,8 @@ class MockRequestDelegate final : public RequestDelegate {
   MOCK_METHOD1(OnConnectionMock, void(std::unique_ptr<Connection>& connection));
   MOCK_METHOD1(OnError, void(const Error& error));
 };
+
+}  // namespace
 
 class ControllerTest : public ::testing::Test {
  protected:
@@ -381,7 +386,7 @@ TEST_F(ControllerTest, ReceiverWatchCancel) {
 
 TEST_F(ControllerTest, StartPresentation) {
   MockMessageCallback mock_callback;
-  MockConnectionDelegate mock_connection_delegate;
+  NiceMock<MockConnectionDelegate> mock_connection_delegate;
   std::unique_ptr<Connection> connection;
   StartPresentation(&mock_callback, &mock_connection_delegate, &connection);
 }
@@ -461,7 +466,7 @@ TEST_F(ControllerTest, CloseConnection) {
 
 TEST_F(ControllerTest, Reconnect) {
   MockMessageCallback mock_callback;
-  MockConnectionDelegate mock_connection_delegate;
+  NiceMock<MockConnectionDelegate> mock_connection_delegate;
   std::unique_ptr<Connection> connection;
   StartPresentation(&mock_callback, &mock_connection_delegate, &connection);
 

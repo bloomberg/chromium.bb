@@ -11,7 +11,7 @@
 namespace openscreen {
 namespace presentation {
 
-class MockConnectionDelegate final : public Connection::Delegate {
+class MockConnectionDelegate : public Connection::Delegate {
  public:
   ~MockConnectionDelegate() override = default;
 

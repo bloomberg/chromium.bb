@@ -682,6 +682,7 @@ TEST_F(MdnsResponderServiceTest, ServiceQueriesStoppedPtrFirst) {
 }
 
 TEST_F(MdnsResponderServiceTest, MultipleInterfaceRemove) {
+  EXPECT_CALL(observer_, OnStarted());
   service_listener_->Start();
 
   auto* mdns_responder = mdns_responder_factory_->last_mdns_responder();

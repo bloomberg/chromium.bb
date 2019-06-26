@@ -22,8 +22,11 @@ namespace presentation {
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::NiceMock;
 
-class MockParentDelegate final : public Connection::ParentDelegate {
+namespace {
+
+class MockParentDelegate : public Connection::ParentDelegate {
  public:
   MockParentDelegate() = default;
   ~MockParentDelegate() override = default;
@@ -48,6 +51,8 @@ class MockConnectRequest final
                void(uint64_t request_id, ProtocolConnection* connection));
   MOCK_METHOD1(OnConnectionFailed, void(uint64_t request_id));
 };
+
+}  // namespace
 
 class ConnectionTest : public ::testing::Test {
  protected:
@@ -76,8 +81,8 @@ class ConnectionTest : public ::testing::Test {
       quic_bridge_.controller_demuxer.get()};
   ConnectionManager receiver_connection_manager_{
       quic_bridge_.receiver_demuxer.get()};
-  MockParentDelegate mock_controller_;
-  MockParentDelegate mock_receiver_;
+  NiceMock<MockParentDelegate> mock_controller_;
+  NiceMock<MockParentDelegate> mock_receiver_;
 };
 
 TEST_F(ConnectionTest, ConnectAndSend) {

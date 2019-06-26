@@ -14,7 +14,7 @@ namespace openscreen {
 namespace platform {
 namespace {
 
-LogLevel g_log_level = LogLevel::kInfo;
+LogLevel g_log_level = LogLevel::kWarning;
 
 std::ostream& operator<<(std::ostream& os, const LogLevel& level) {
   os << LogLevelToString(level);

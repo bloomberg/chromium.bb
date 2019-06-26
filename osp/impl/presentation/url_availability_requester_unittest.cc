@@ -24,9 +24,12 @@ namespace presentation {
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::Mock;
 using ::testing::Test;
 
-class MockReceiverObserver final : public ReceiverObserver {
+namespace {
+
+class MockReceiverObserver : public ReceiverObserver {
  public:
   ~MockReceiverObserver() override = default;
 
@@ -37,14 +40,7 @@ class MockReceiverObserver final : public ReceiverObserver {
                void(const std::string&, const std::string&));
 };
 
-class NullObserver final : public ProtocolConnectionServiceObserver {
- public:
-  ~NullObserver() override = default;
-  void OnRunning() override {}
-  void OnStopped() override {}
-  void OnMetrics(const NetworkMetrics& metrics) override {}
-  void OnError(const Error& error) override {}
-};
+}  // namespace
 
 class UrlAvailabilityRequesterTest : public Test {
  public:
@@ -367,12 +363,15 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverUrls) {
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
       .Times(0);
   quic_bridge_.RunTasksUntilIdle();
+  Mock::VerifyAndClearExpectations(&mock_observer1);
 
   MockReceiverObserver mock_observer2;
+  EXPECT_CALL(mock_observer2, OnReceiverAvailable(url1_, service_id_));
   listener_.AddObserver({url1_, url2_}, &mock_observer2);
 
   ExpectStreamMessage(&mock_callback_, &request);
   quic_bridge_.RunTasksUntilIdle();
+  Mock::VerifyAndClearExpectations(&mock_observer2);
 
   EXPECT_EQ(std::vector<std::string>{url2_}, request.urls);
 
@@ -385,6 +384,8 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverUrls) {
   EXPECT_CALL(mock_observer2, OnReceiverAvailable(_, service_id_)).Times(0);
   EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url2_, service_id_));
   quic_bridge_.RunTasksUntilIdle();
+  Mock::VerifyAndClearExpectations(&mock_observer1);
+  Mock::VerifyAndClearExpectations(&mock_observer2);
 
   SendAvailabilityEvent(
       url1_watch_id,
@@ -395,6 +396,8 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserverUrls) {
       .Times(0);
   EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url1_, service_id_));
   quic_bridge_.RunTasksUntilIdle();
+  Mock::VerifyAndClearExpectations(&mock_observer1);
+  Mock::VerifyAndClearExpectations(&mock_observer2);
 }
 
 TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
@@ -421,12 +424,15 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(url1_, service_id_))
       .Times(0);
   quic_bridge_.RunTasksUntilIdle();
+  Mock::VerifyAndClearExpectations(&mock_observer1);
 
   MockReceiverObserver mock_observer2;
+  EXPECT_CALL(mock_observer2, OnReceiverAvailable(url1_, service_id_));
   listener_.AddObserver({url1_, url2_}, &mock_observer2);
 
   ExpectStreamMessage(&mock_callback_, &request);
   quic_bridge_.RunTasksUntilIdle();
+  Mock::VerifyAndClearExpectations(&mock_observer2);
 
   uint64_t url2_watch_id = request.watch_id;
   EXPECT_EQ(std::vector<std::string>{url2_}, request.urls);
@@ -440,6 +446,8 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
   EXPECT_CALL(mock_observer2, OnReceiverAvailable(_, service_id_)).Times(0);
   EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url2_, service_id_));
   quic_bridge_.RunTasksUntilIdle();
+  Mock::VerifyAndClearExpectations(&mock_observer1);
+  Mock::VerifyAndClearExpectations(&mock_observer2);
 
   SendAvailabilityEvent(
       url1_watch_id,
@@ -450,6 +458,8 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
       .Times(0);
   EXPECT_CALL(mock_observer2, OnReceiverUnavailable(url1_, service_id_));
   quic_bridge_.RunTasksUntilIdle();
+  Mock::VerifyAndClearExpectations(&mock_observer1);
+  Mock::VerifyAndClearExpectations(&mock_observer2);
 
   listener_.RemoveObserver(&mock_observer2);
 
@@ -466,6 +476,8 @@ TEST_F(UrlAvailabilityRequesterTest, RemoveObserver) {
   EXPECT_CALL(mock_observer1, OnReceiverUnavailable(_, service_id_)).Times(0);
   EXPECT_CALL(mock_observer2, OnReceiverUnavailable(_, service_id_)).Times(0);
   quic_bridge_.RunTasksUntilIdle();
+  Mock::VerifyAndClearExpectations(&mock_observer1);
+  Mock::VerifyAndClearExpectations(&mock_observer2);
 }
 
 TEST_F(UrlAvailabilityRequesterTest, EventUpdate) {

@@ -21,7 +21,7 @@
 
 namespace openscreen {
 
-class MockServiceObserver final : public ProtocolConnectionServiceObserver {
+class MockServiceObserver : public ProtocolConnectionServiceObserver {
  public:
   ~MockServiceObserver() override = default;
 
@@ -31,7 +31,7 @@ class MockServiceObserver final : public ProtocolConnectionServiceObserver {
   MOCK_METHOD1(OnError, void(const Error& error));
 };
 
-class MockServerObserver final : public ProtocolConnectionServer::Observer {
+class MockServerObserver : public ProtocolConnectionServer::Observer {
  public:
   ~MockServerObserver() override = default;
 
@@ -65,8 +65,8 @@ class FakeQuicBridge {
   std::unique_ptr<QuicClient> quic_client;
   std::unique_ptr<QuicServer> quic_server;
   std::unique_ptr<FakeQuicConnectionFactoryBridge> fake_bridge;
-  MockServiceObserver mock_client_observer;
-  MockServerObserver mock_server_observer;
+  ::testing::NiceMock<MockServiceObserver> mock_client_observer;
+  ::testing::NiceMock<MockServerObserver> mock_server_observer;
 };
 
 }  // namespace openscreen

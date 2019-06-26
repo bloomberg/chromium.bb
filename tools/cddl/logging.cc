@@ -35,6 +35,7 @@ void Logger::VerifyInitialized() {
 Logger::Logger() {
   this->is_initialized_ = false;
   openscreen::platform::LogInit(nullptr);
+  openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kInfo);
 }
 // Static:
 Logger* Logger::Get() {
