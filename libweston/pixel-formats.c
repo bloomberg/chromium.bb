@@ -387,10 +387,6 @@ pixel_format_get_info_shm(uint32_t format)
 		return pixel_format_get_info(format);
 }
 
-/** Retrieve a pixel format information structure from a DRM FOURCC format
- *
- * \param format a DRM FOURCC format
- */
 WL_EXPORT const struct pixel_format_info *
 pixel_format_get_info(uint32_t format)
 {
