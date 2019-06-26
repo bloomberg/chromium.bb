@@ -699,15 +699,9 @@ commit_surface_list(struct ivi_layout *layout)
 			ivisurf->pending.prop.transition_type = IVI_LAYOUT_TRANSITION_NONE;
 
 			if (configured && !is_surface_transition(ivisurf)) {
-				if (weston_surface_is_desktop_surface(ivisurf->surface)) {
-					weston_desktop_surface_set_size(ivisurf->weston_desktop_surface,
-									ivisurf->prop.dest_width,
-									ivisurf->prop.dest_height);
-				} else {
-					shell_surface_send_configure(ivisurf->surface,
-								     ivisurf->prop.dest_width,
-								     ivisurf->prop.dest_height);
-				}
+				ivi_layout_surface_set_size(ivisurf,
+							    ivisurf->prop.dest_width,
+							    ivisurf->prop.dest_height);
 			}
 		} else {
 			configured = 0;
@@ -721,9 +715,9 @@ commit_surface_list(struct ivi_layout *layout)
 			ivisurf->pending.prop.transition_type = IVI_LAYOUT_TRANSITION_NONE;
 
 			if (configured && !is_surface_transition(ivisurf)) {
-				shell_surface_send_configure(ivisurf->surface,
-							     ivisurf->prop.dest_width,
-							     ivisurf->prop.dest_height);
+				ivi_layout_surface_set_size(ivisurf,
+							    ivisurf->prop.dest_width,
+							    ivisurf->prop.dest_height);
 			}
 		}
 	}
@@ -1554,6 +1548,19 @@ ivi_layout_surface_set_destination_rectangle(struct ivi_layout_surface *ivisurf,
 		prop->event_mask &= ~IVI_NOTIFICATION_DEST_RECT;
 
 	return IVI_SUCCEEDED;
+}
+
+void
+ivi_layout_surface_set_size(struct ivi_layout_surface *ivisurf,
+			    int32_t width, int32_t height)
+{
+	if (weston_surface_is_desktop_surface(ivisurf->surface)) {
+		weston_desktop_surface_set_size(ivisurf->weston_desktop_surface,
+						width, height);
+	} else {
+		shell_surface_send_configure(ivisurf->surface,
+					     width, height);
+	}
 }
 
 static int32_t

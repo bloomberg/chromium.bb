@@ -308,9 +308,9 @@ transition_move_resize_view_destroy(struct ivi_layout_transition *transition)
 		(struct move_resize_view_data *)transition->private_data;
 	struct ivi_layout_surface *layout_surface = data->surface;
 
-	shell_surface_send_configure(layout_surface->surface,
-				     layout_surface->prop.dest_width,
-				     layout_surface->prop.dest_height);
+	ivi_layout_surface_set_size(layout_surface,
+				    layout_surface->prop.dest_width,
+				    layout_surface->prop.dest_height);
 
 	if (transition->private_data) {
 		free(transition->private_data);
