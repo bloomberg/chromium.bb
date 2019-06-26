@@ -9,8 +9,6 @@
 #include <vector>
 
 #include "base/optional.h"
-#include "chrome/browser/ui/views/tabs/tab_animation_state.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/views/view_model.h"
 
 class Tab;
@@ -37,7 +35,6 @@ class TabStripLayoutHelper {
   // Generates and sets the ideal bounds for the views in |tabs| and
   // |group_headers|. Updates the cached widths in |active_tab_width_| and
   // |inactive_tab_width_|.
-  // TODO(958173): The notion of ideal bounds is going away. Delete this.
   void UpdateIdealBounds(TabStripController* controller,
                          views::ViewModelT<Tab>* tabs,
                          std::map<TabGroupId, TabGroupHeader*> group_headers,
@@ -46,14 +43,7 @@ class TabStripLayoutHelper {
   // Generates and sets the ideal bounds for |tabs|. Updates
   // the cached values in |first_non_pinned_tab_index_| and
   // |first_non_pinned_tab_x_|.
-  // TODO(958173): The notion of ideal bounds is going away. Delete this.
   void UpdateIdealBoundsForPinnedTabs(views::ViewModelT<Tab>* tabs);
-
-  // Sets the current bounds of the tabs in |tabs|. Returns the x coordinate
-  // of the trailing edge of the trailing-most tab.
-  int LayoutTabs(views::ViewModelT<Tab>* tabs,
-                 std::vector<TabAnimationState> tab_states,
-                 int available_width);
 
  private:
   // The current widths of tabs. If the space for tabs is not evenly divisible

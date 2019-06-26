@@ -187,24 +187,3 @@ void TabStripLayoutHelper::UpdateIdealBoundsForPinnedTabs(
       tabs->set_ideal_bounds(i, tab_bounds[i]);
   }
 }
-
-int TabStripLayoutHelper::LayoutTabs(views::ViewModelT<Tab>* tabs,
-                                     std::vector<TabAnimationState> tab_states,
-                                     int available_width) {
-  std::vector<gfx::Rect> tab_bounds =
-      CalculateTabBounds(GetTabSizeInfo(), tab_states, available_width,
-                         &active_tab_width_, &inactive_tab_width_);
-
-  // TODO (958173): assume for now that there are no closing tabs.
-  // TODO (958173): assume for now that there are no group headers.
-  DCHECK_EQ(tab_bounds.size(), static_cast<size_t>(tabs->view_size()));
-  int trailing_x = 0;
-  for (size_t tab_animation_index = 0; tab_animation_index < tab_bounds.size();
-       tab_animation_index++) {
-    tabs->view_at(tab_animation_index)
-        ->SetBoundsRect(tab_bounds[tab_animation_index]);
-    trailing_x = std::max(trailing_x, tab_bounds[tab_animation_index].right());
-  }
-
-  return trailing_x;
-}

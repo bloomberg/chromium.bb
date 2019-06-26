@@ -82,28 +82,27 @@ void TabStripAnimator::RemoveTab(int index) {
 void TabStripAnimator::SetActiveTab(int prev_active_index,
                                     int new_active_index) {
   // Set activeness without animating by immediately completing animations.
-  if (prev_active_index >= 0) {
-    animations_[prev_active_index].AnimateTo(
-        animations_[prev_active_index].target_state().WithActiveness(
-            TabAnimationState::TabActiveness::kInactive));
-    animations_[prev_active_index].CompleteAnimation();
-  }
-  if (new_active_index >= 0) {
-    animations_[new_active_index].AnimateTo(
-        animations_[new_active_index].target_state().WithActiveness(
-            TabAnimationState::TabActiveness::kActive));
-    animations_[new_active_index].CompleteAnimation();
-  }
+  animations_[prev_active_index].AnimateTo(
+      animations_[prev_active_index].target_state().WithActiveness(
+          TabAnimationState::TabActiveness::kInactive));
+  animations_[prev_active_index].CompleteAnimation();
+  animations_[new_active_index].AnimateTo(
+      animations_[new_active_index].target_state().WithActiveness(
+          TabAnimationState::TabActiveness::kActive));
+  animations_[new_active_index].CompleteAnimation();
 }
 
 void TabStripAnimator::CompleteAnimations() {
-  CompleteAnimationsWithoutDestroyingTabs();
+  for (size_t i = 0; i < animations_.size(); i++) {
+    animations_[i].CompleteAnimation();
+  }
   RemoveClosedTabs();
+  timer_.Stop();
 }
 
-void TabStripAnimator::CompleteAnimationsWithoutDestroyingTabs() {
+void TabStripAnimator::CancelAnimations() {
   for (TabAnimation& animation : animations_) {
-    animation.CompleteAnimation();
+    animation.CancelAnimation();
   }
   timer_.Stop();
 }

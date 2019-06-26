@@ -34,6 +34,7 @@ class TabAnimation {
   void RetargetTo(TabAnimationState target_state);
 
   void CompleteAnimation();
+  void CancelAnimation();
 
   // Notifies the owner of the animated tab that the close animation
   // has completed and the tab can be cleaned up.
