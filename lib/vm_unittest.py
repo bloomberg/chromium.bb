@@ -218,3 +218,35 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     self._vm.copy_on_write = True
     self._vm.qemu_img_path = '/invalid/qemu/img/path/'
     self.assertRaises(vm.VMError, self._vm._SetQemuPath)
+
+  def testRmVMDir(self):
+    """Verify that the vm directory is removed after calling RmVMDir."""
+    self.assertExists(self._vm.vm_dir)
+    self._vm.Stop()
+    self.assertNotExists(self._vm.vm_dir)
+
+  @mock.patch('chromite.lib.osutils.SafeMakedirs', return_value=False)
+  def testCreateVMDirError(self, make_dir_mock):
+    """Verify that an error is raised when vm_dir is not a valid directory."""
+    self._vm.vm_dir = '/not/a/valid/dir'
+    self.assertRaises(AssertionError, self._vm._CreateVMDir)
+    make_dir_mock.assert_called()
+
+  @mock.patch('chromite.lib.osutils.SafeMakedirs', return_value=False)
+  def testCreateVMDirLinkError(self, make_dir_mock):
+    """Verify that an error is raised when vm_dir is a symbolic link."""
+    # Create the symlink.
+    symlink = self.TempFilePath('symlink')
+    os.symlink(self.TempFilePath('fakepath'), symlink)
+    self._vm.vm_dir = symlink
+
+    self.assertRaises(AssertionError, self._vm._CreateVMDir)
+    make_dir_mock.assert_called()
+
+  @mock.patch('chromite.lib.osutils.SafeMakedirs', return_value=False)
+  @mock.patch('os.getuid')
+  def testCreateVMDirStatError(self, getuid_mock, make_dir_mock):
+    """Verify an error is raised  when user does not own the vm dir."""
+    self.assertRaises(AssertionError, self._vm._CreateVMDir)
+    getuid_mock.assert_called()
+    make_dir_mock.assert_called()
