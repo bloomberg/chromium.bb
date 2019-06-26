@@ -6206,3 +6206,8 @@ crbug.com/978587 external/wpt/largest-contentful-paint/observe-image.html [ Pass
 
 crbug.com/978611 http/tests/devtools/layers/layers-3d-view-hit-testing.js [ Pass Failure ]
 crbug.com/974675 http/tests/devtools/sources/debugger-frameworks/frameworks-jquery.js [ Pass Crash ]
+
+# Disable until v8 https://chromium-review.googlesource.com/c/v8/v8/+/1649174 merges
+crbug.com/967927 http/tests/devtools/startup/console-clear-arguments-on-frame-navigation.js [ Skip ]
+crbug.com/967927 http/tests/devtools/startup/console-clear-arguments-on-frame-remove.js [ Skip ]
+crbug.com/967927 http/tests/devtools/startup/console-log-before-frame-navigation.js [ Skip ]
