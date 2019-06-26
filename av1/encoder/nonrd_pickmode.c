@@ -985,6 +985,7 @@ static void estimate_block_intra(int plane, int block, int row, int col,
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
+  const BLOCK_SIZE bsize_tx = txsize_to_bsize[tx_size];
   uint8_t *const src_buf_base = p->src.buf;
   uint8_t *const dst_buf_base = pd->dst.buf;
   const int64_t src_stride = p->src.stride;
@@ -992,6 +993,7 @@ static void estimate_block_intra(int plane, int block, int row, int col,
   RD_STATS this_rdc;
 
   (void)block;
+  (void)plane_bsize;
   assert(plane == 0);
 
   p->src.buf = &src_buf_base[4 * (row * src_stride + col)];
@@ -1001,7 +1003,7 @@ static void estimate_block_intra(int plane, int block, int row, int col,
 
   if (plane == 0) {
     int64_t this_sse = INT64_MAX;
-    block_yrd(cpi, x, 0, 0, &this_rdc, &args->skippable, &this_sse, plane_bsize,
+    block_yrd(cpi, x, 0, 0, &this_rdc, &args->skippable, &this_sse, bsize_tx,
               AOMMIN(tx_size, TX_16X16));
   } else {
     return;
