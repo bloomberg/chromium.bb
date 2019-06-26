@@ -2526,7 +2526,7 @@
 <translation id="4863769717153320198">Näyttää olevan <ph name="WIDTH" /> x <ph name="HEIGHT" /> (oletus)</translation>
 <translation id="4864369630010738180">Kirjaudutaan...</translation>
 <translation id="486635084936119914">Avaa tietyn tyyppiset tiedostot automaattisesti latauksen jälkeen.</translation>
-<translation id="4869142322204669043">Google voi räätälöidä palveluitaan (esimerkiksi <ph name="IDS_SHORT_PRODUCT_NAME" />, Kääntäjä, Haku ja mainokset) avaamiesi sivustojen sisällön sekä selaus- ja muun toimintasi perusteella. Voit muuttaa tätä koska tahansa asetuksista.</translation>
+<translation id="4869142322204669043">Google voi personoida palveluitaan (esimerkiksi <ph name="IDS_SHORT_PRODUCT_NAME" />, Kääntäjä, Haku ja mainokset) avaamiesi sivustojen sisällön sekä selaus- ja muun toimintasi perusteella. Voit muuttaa tätä koska tahansa asetuksista.</translation>
 <translation id="48704129375571883">Lisää ominaisuuksia</translation>
 <translation id="4870758487381879312">Syötä ylläpitäjältä saatu salasana hakeaksesi kokoonpanotiedot</translation>
 <translation id="4870903493621965035">Ei laitepareja</translation>
@@ -3461,7 +3461,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> on harvinainen ladattava tiedosto, ja se voi olla vaarallinen.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Verkossasi on uusi tulostin}other{Verkossasi on uusia tulostimia}}</translation>
 <translation id="6286708577777130801">Tallennettujen salasanojen tiedot</translation>
-<translation id="6289452883081499048">Play ja muut räätälöidyt Google-palvelut</translation>
+<translation id="6289452883081499048">Play ja muut personoidut Google-palvelut</translation>
 <translation id="6290556621549272952">Tämän ominaisuuden avulla voit katsella Chromiumin sisältöä television ja muiden laitteiden näytöltä.</translation>
 <translation id="6291949900244949761">Kysy aina, kun sivusto pyytää USB-laitteen käyttölupaa (suositus)</translation>
 <translation id="6291953229176937411">Näytä Finderi&amp;ssä</translation>
