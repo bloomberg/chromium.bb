@@ -305,20 +305,14 @@ class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase):
 
     self.PatchObject(constants, 'SOURCE_ROOT', new=self.source_root)
 
-    def MockGeneratePayloads(image_path, archive_dir, **kwargs):
-      assert kwargs
-      osutils.WriteFile(os.path.join(archive_dir, 'payload.bin'), image_path)
+    def MockPayloads(image_path, archive_dir):
+      osutils.WriteFile(os.path.join(archive_dir, 'payload1.bin'), image_path)
+      osutils.WriteFile(os.path.join(archive_dir, 'payload2.bin'), image_path)
+      return [os.path.join(archive_dir, 'payload1.bin'),
+              os.path.join(archive_dir, 'payload2.bin')]
 
-    self.generate_payloads = self.PatchObject(
-        commands, 'GeneratePayloads', side_effect=MockGeneratePayloads)
-
-    def MockGenerateQuickProvisionPayloads(image_path, archive_dir):
-      osutils.WriteFile(os.path.join(archive_dir, 'payload-qp.bin'), image_path)
-
-    self.generate_quick_provision_payloads = self.PatchObject(
-        commands,
-        'GenerateQuickProvisionPayloads',
-        side_effect=MockGenerateQuickProvisionPayloads)
+    self.bundle_patch = self.PatchObject(
+        artifacts_svc, 'BundleTestUpdatePayloads', side_effect=MockPayloads)
 
   def testBundleTestUpdatePayloads(self):
     """BundleTestUpdatePayloads calls cbuildbot/commands with correct args."""
@@ -331,7 +325,7 @@ class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase):
         os.path.relpath(artifact.path, self.archive_root)
         for artifact in self.output_proto.artifacts
     ]
-    expected = ['payload.bin', 'payload-qp.bin']
+    expected = ['payload1.bin', 'payload2.bin']
     self.assertItemsEqual(actual, expected)
 
     actual = [
@@ -339,13 +333,6 @@ class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase):
         for path in osutils.DirectoryIterator(self.archive_root)
     ]
     self.assertItemsEqual(actual, expected)
-
-    self.assertEqual(self.generate_payloads.call_args_list, [
-        mock.call(image_path, mock.ANY, full=True, stateful=True, delta=True),
-    ])
-
-    self.assertEqual(self.generate_quick_provision_payloads.call_args_list,
-                     [mock.call(image_path, mock.ANY)])
 
   def testBundleTestUpdatePayloadsNoImageDir(self):
     """BundleTestUpdatePayloads dies if no image dir is found."""

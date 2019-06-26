@@ -40,11 +40,9 @@ from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
+from chromite.service import artifacts as artifacts_service
 
 from chromite.lib.paygen import filelib
-from chromite.lib.paygen import partition_lib
-from chromite.lib.paygen import paygen_payload_lib
-from chromite.lib.paygen import paygen_stateful_payload_lib
 
 from chromite.scripts import pushimage
 
@@ -3512,19 +3510,11 @@ def GenerateQuickProvisionPayloads(target_image_path, archive_dir):
     target_image_path: The path to the image to extract the partitions.
     archive_dir: Where to store partitions when generated.
   """
-  with osutils.TempDir() as temp_dir:
-    # These partitions are mainly used by quick_provision.
-    partition_lib.ExtractKernel(
-        target_image_path, os.path.join(temp_dir, 'full_dev_part_KERN.bin'))
-    partition_lib.ExtractRoot(
-        target_image_path,
-        os.path.join(temp_dir, 'full_dev_part_ROOT.bin'),
-        truncate=False)
-    for partition in ('KERN', 'ROOT'):
-      source = os.path.join(temp_dir, 'full_dev_part_%s.bin' % partition)
-      dest = os.path.join(archive_dir, 'full_dev_part_%s.bin.gz' % partition)
-      cros_build_lib.CompressFile(source, dest)
-
+  # TODO(saklein): Remove this function entirely in favor of a combined call to
+  #   the endpoint with GeneratePayloads when its arguments have been added to
+  #   the API.
+  artifacts_service.GenerateQuickProvisionPayloads(target_image_path,
+                                                   archive_dir)
 
 def GeneratePayloads(target_image_path,
                      archive_dir,
@@ -3540,32 +3530,12 @@ def GeneratePayloads(target_image_path,
     delta: Generate delta payloads.
     stateful: Generate stateful payload.
   """
-  real_target = os.path.realpath(target_image_path)
-  # The path to the target should look something like this:
-  # .../link/R37-5952.0.2014_06_12_2302-a1/chromiumos_test_image.bin
-  board, os_version = real_target.split('/')[-3:-1]
-  prefix = 'chromeos'
-  suffix = 'dev.bin'
-
-  if full:
-    # Names for full payloads look something like this:
-    # chromeos_R37-5952.0.2014_06_12_2302-a1_link_full_dev.bin
-    name = '_'.join([prefix, os_version, board, 'full', suffix])
-    payload_path = os.path.join(archive_dir, name)
-    paygen_payload_lib.GenerateUpdatePayload(target_image_path, payload_path)
-
-  if delta:
-    # Names for delta payloads look something like this:
-    # chromeos_R37-5952.0.2014_06_12_2302-a1_R37-
-    # 5952.0.2014_06_12_2302-a1_link_delta_dev.bin
-    name = '_'.join([prefix, os_version, os_version, board, 'delta', suffix])
-    payload_path = os.path.join(archive_dir, name)
-    paygen_payload_lib.GenerateUpdatePayload(
-        target_image_path, payload_path, src_image=target_image_path)
-
-  if stateful:
-    paygen_stateful_payload_lib.GenerateStatefulPayload(target_image_path,
-                                                        archive_dir)
+  # TODO(saklein): Change to a combined call to the endpoint with
+  #   GenerateQuickProvisionPayloads after the payload type arguments have been
+  #   added.
+  artifacts_service.GenerateTestPayloads(target_image_path, archive_dir,
+                                         full=full, delta=delta,
+                                         stateful=stateful)
 
 
 def GetChromeLKGM(revision):

@@ -19,8 +19,11 @@ from chromite.lib import autotest_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import toolchain_util
 from chromite.lib import osutils
+from chromite.lib import toolchain_util
+from chromite.lib.paygen import partition_lib
+from chromite.lib.paygen import paygen_payload_lib
+from chromite.lib.paygen import paygen_stateful_payload_lib
 
 
 # Archive type constants.
@@ -178,6 +181,98 @@ def CreateChromeRoot(chroot, build_target, output_dir):
     osutils.CopyDirContents(tempdir, output_dir, allow_nonempty=True)
 
     return files
+
+
+def BundleTestUpdatePayloads(image_path, output_dir):
+  """Generate the test update payloads.
+
+  Args:
+    image_path (str): The full path to an image file.
+    output_dir (str): The path where the payloads should be generated.
+
+  Returns:
+    list[str] - The list of generated payloads.
+  """
+  payloads = GenerateTestPayloads(image_path, output_dir, full=True,
+                                  stateful=True, delta=True)
+  payloads.extend(GenerateQuickProvisionPayloads(image_path, output_dir))
+
+  return payloads
+
+
+def GenerateTestPayloads(target_image_path, archive_dir, full=False,
+                         delta=False, stateful=False):
+  """Generates the payloads for hw testing.
+
+  Args:
+    target_image_path (str): The path to the image to generate payloads to.
+    archive_dir (str): Where to store payloads we generated.
+    full (bool): Generate full payloads.
+    delta (bool): Generate delta payloads.
+    stateful (bool): Generate stateful payload.
+
+  Returns:
+    list[str] - The list of payloads that were generated.
+  """
+  real_target = os.path.realpath(target_image_path)
+  # The path to the target should look something like this:
+  # .../link/R37-5952.0.2014_06_12_2302-a1/chromiumos_test_image.bin
+  board, os_version = real_target.split('/')[-3:-1]
+  prefix = 'chromeos'
+  suffix = 'dev.bin'
+  generated = []
+
+  if full:
+    # Names for full payloads look something like this:
+    # chromeos_R37-5952.0.2014_06_12_2302-a1_link_full_dev.bin
+    name = '_'.join([prefix, os_version, board, 'full', suffix])
+    payload_path = os.path.join(archive_dir, name)
+    paygen_payload_lib.GenerateUpdatePayload(target_image_path, payload_path)
+    generated.append(payload_path)
+
+  if delta:
+    # Names for delta payloads look something like this:
+    # chromeos_R37-5952.0.2014_06_12_2302-a1_R37-
+    # 5952.0.2014_06_12_2302-a1_link_delta_dev.bin
+    name = '_'.join([prefix, os_version, os_version, board, 'delta', suffix])
+    payload_path = os.path.join(archive_dir, name)
+    paygen_payload_lib.GenerateUpdatePayload(
+        target_image_path, payload_path, src_image=target_image_path)
+    generated.append(payload_path)
+
+  if stateful:
+    generated.append(
+        paygen_stateful_payload_lib.GenerateStatefulPayload(target_image_path,
+                                                            archive_dir))
+
+  return generated
+
+
+def GenerateQuickProvisionPayloads(target_image_path, archive_dir):
+  """Generates payloads needed for quick_provision script.
+
+  Args:
+    target_image_path (str): The path to the image to extract the partitions.
+    archive_dir (str): Where to store partitions when generated.
+
+  Returns:
+    list[str]: The artifacts that were produced.
+  """
+  payloads = []
+  with osutils.TempDir() as temp_dir:
+    # These partitions are mainly used by quick_provision.
+    partition_lib.ExtractKernel(
+        target_image_path, os.path.join(temp_dir, 'full_dev_part_KERN.bin'))
+    partition_lib.ExtractRoot(target_image_path,
+                              os.path.join(temp_dir, 'full_dev_part_ROOT.bin'),
+                              truncate=False)
+    for partition in ('KERN', 'ROOT'):
+      source = os.path.join(temp_dir, 'full_dev_part_%s.bin' % partition)
+      dest = os.path.join(archive_dir, 'full_dev_part_%s.bin.gz' % partition)
+      cros_build_lib.CompressFile(source, dest)
+      payloads.append(dest)
+
+  return payloads
 
 
 def BundleOrderfileGenerationArtifacts(chroot, build_target,

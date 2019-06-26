@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import json
+import mock
 import os
 import shutil
 
@@ -18,8 +19,12 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import partial_mock
 from chromite.lib import sysroot_lib
 from chromite.lib import toolchain_util
+from chromite.lib.paygen import partition_lib
+from chromite.lib.paygen import paygen_payload_lib
+from chromite.lib.paygen import paygen_stateful_payload_lib
 from chromite.service import artifacts
 
 
@@ -305,3 +310,60 @@ class FetchPinnedGuestImagesTest(cros_test_lib.TempDirTestCase):
     """Tests that generating a guest images tarball with no pins."""
     pins = artifacts.FetchPinnedGuestImages(self.chroot, self.sysroot)
     self.assertFalse(pins)
+
+
+class GeneratePayloadsTest(cros_test_lib.MockTempDirTestCase):
+  """Test cases for the payload generation functions."""
+
+  def setUp(self):
+    self.target_image = os.path.join(
+        self.tempdir,
+        'link/R37-5952.0.2014_06_12_2302-a1/chromiumos_test_image.bin')
+    osutils.Touch(self.target_image, makedirs=True)
+
+  def testGenerateFullTestPayloads(self):
+    """Verifies correctly generating full payloads."""
+    paygen_mock = self.PatchObject(paygen_payload_lib, 'GenerateUpdatePayload')
+    artifacts.GenerateTestPayloads(self.target_image, self.tempdir, full=True)
+    payload_path = os.path.join(
+        self.tempdir,
+        'chromeos_R37-5952.0.2014_06_12_2302-a1_link_full_dev.bin')
+    paygen_mock.assert_call_once_with(self.target_image, payload_path)
+
+  def testGenerateDeltaTestPayloads(self):
+    """Verifies correctly generating delta payloads."""
+    paygen_mock = self.PatchObject(paygen_payload_lib, 'GenerateUpdatePayload')
+    artifacts.GenerateTestPayloads(self.target_image, self.tempdir, delta=True)
+    payload_path = os.path.join(
+        self.tempdir,
+        'chromeos_R37-5952.0.2014_06_12_2302-a1_R37-'
+        '5952.0.2014_06_12_2302-a1_link_delta_dev.bin')
+    paygen_mock.assert_call_once_with(self.target_image, payload_path)
+
+  def testGenerateStatefulTestPayloads(self):
+    """Verifies correctly generating stateful payloads."""
+    paygen_mock = self.PatchObject(paygen_stateful_payload_lib,
+                                   'GenerateStatefulPayload')
+    artifacts.GenerateTestPayloads(self.target_image, self.tempdir,
+                                   stateful=True)
+    paygen_mock.assert_call_once_with(self.target_image, self.tempdir)
+
+  def testGenerateQuickProvisionPayloads(self):
+    """Verifies correct files are created for quick_provision script."""
+    extract_kernel_mock = self.PatchObject(partition_lib, 'ExtractKernel')
+    extract_root_mock = self.PatchObject(partition_lib, 'ExtractRoot')
+    compress_file_mock = self.PatchObject(cros_build_lib, 'CompressFile')
+
+    artifacts.GenerateQuickProvisionPayloads(self.target_image, self.tempdir)
+
+    extract_kernel_mock.assert_called_once_with(
+        self.target_image, partial_mock.HasString('full_dev_part_KERN.bin'))
+    extract_root_mock.assert_called_once_with(
+        self.target_image, partial_mock.HasString('full_dev_part_ROOT.bin'),
+        truncate=False)
+
+    calls = [mock.call(partial_mock.HasString('full_dev_part_KERN.bin'),
+                       partial_mock.HasString('full_dev_part_KERN.bin.gz')),
+             mock.call(partial_mock.HasString('full_dev_part_ROOT.bin'),
+                       partial_mock.HasString('full_dev_part_ROOT.bin.gz'))]
+    compress_file_mock.assert_has_calls(calls)

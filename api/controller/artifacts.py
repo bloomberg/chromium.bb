@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import functools
 import os
 
 from chromite.api import validate
@@ -18,7 +19,6 @@ from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import osutils
 from chromite.lib import sysroot_lib
 from chromite.service import artifacts
 
@@ -72,35 +72,21 @@ def BundleTestUpdatePayloads(input_proto, output_proto):
 
   # Use the first available image to create the update payload.
   img_dir = _GetImageDir(build_root, target)
-  img_types = [
-      constants.IMAGE_TYPE_TEST, constants.IMAGE_TYPE_DEV,
-      constants.IMAGE_TYPE_BASE
-  ]
-  img_paths = []
-  for img_type in img_types:
-    img_path = os.path.join(img_dir, constants.IMAGE_TYPE_TO_NAME[img_type])
-    if os.path.exists(img_path):
-      img_paths.append(img_path)
+  img_types = [constants.IMAGE_TYPE_TEST, constants.IMAGE_TYPE_DEV,
+               constants.IMAGE_TYPE_BASE]
+  img_names = [constants.IMAGE_TYPE_TO_NAME[t] for t in img_types]
+  img_paths = map(functools.partial(os.path.join, img_dir), img_names)
+  valid_images = filter(os.path.exists, img_paths)
 
-  if not img_paths:
+  if not valid_images:
     cros_build_lib.Die(
         'Expected to find an image of type among %r for target "%s" '
         'at path %s.', img_types, target, img_dir)
-  img = img_paths[0]
+  image = valid_images[0]
 
-  # Unfortunately, the relevant commands.py functions do not return
-  # a list of generated files. As a workaround, we have commands.py
-  # put the files in a separate temporary directory so we can catalog them,
-  # then move them to the output dir.
-  # TODO(crbug.com/954283): Replace with a chromite/service implementation.
-  with osutils.TempDir() as temp:
-    commands.GeneratePayloads(img, temp, full=True, stateful=True, delta=True)
-    commands.GenerateQuickProvisionPayloads(img, temp)
-    for path in osutils.DirectoryIterator(temp):
-      if os.path.isfile(path):
-        rel_path = os.path.relpath(path, temp)
-        output_proto.artifacts.add().path = os.path.join(output_dir, rel_path)
-    osutils.CopyDirContents(temp, output_dir, allow_nonempty=True)
+  payloads = artifacts.BundleTestUpdatePayloads(image, output_dir)
+  for payload in payloads:
+    output_proto.artifacts.add().path = payload
 
 
 def BundleAutotestFiles(input_proto, output_proto):
