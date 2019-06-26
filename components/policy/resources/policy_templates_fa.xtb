@@ -742,8 +742,7 @@
 
       این خط‌مشی، توانایی کاربران را برای پیکربندی چاپگر در دستگاه‌های فردی تحت تأثیر قرار نمی‌دهد.  این خط‌مشی به‌عنوان مکملی برای پیکربندی چاپگرها توسط کاربران مجزا درنظر گرفته شده است.
 
-      برای دستگاه‌های مدیریت‌شده با Active Directory، این خط‌مشی از گسترش <ph name="MACHINE_NAME_VARIABLE" /> به نام رایانه Active Directory یا رشته‌ای فرعی از آن پشتیبانی می‌کند. برای مثال، اگر نام رایانه <ph name="MACHINE_NAME_EXAMPLE" /> باشد، ۴ نویسه بعد از موقعیت ششم با جایگزین <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> می‌شوند (یعنی: <ph name="MACHINE_NAME_PART_EXAMPLE" />). توجه کنید این موقعیت برمبنای صفر است.
-      </translation>
+      برای دستگاه‌های مدیریت‌شده با Active Directory، این خط‌مشی از گسترش <ph name="MACHINE_NAME_VARIABLE" /> به نام رایانه Active Directory یا رشته‌ای فرعی از آن پشتیبانی می‌کند. برای مثال، اگر نام رایانه <ph name="MACHINE_NAME_EXAMPLE" /> باشد، ۴ نویسه بعد از موقعیت ششم با جایگزین <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> می‌شود (یعنی: <ph name="MACHINE_NAME_PART_EXAMPLE" />). توجه کنید این موقعیت برمبنای صفر است.</translation>
 <translation id="2294382669900758280">‏حتی اگر خط‌مشی روی <ph name="TRUE" /> تنظیم شده باشد، پخش ویدیو در برنامه‌های Android درنظر گرفته نشده است.</translation>
 <translation id="2299220924812062390">تعیین فهرست افزایه‌های فعال شده</translation>
 <translation id="2303795211377219696">فعال کردن تکمیل خودکار برای کارت‌های اعتباری</translation>

@@ -122,7 +122,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Der Wert für die Richtlinie sollte in Millisekunden angegeben werden.</translation>
 <translation id="1141767714195601945">Mit dieser Richtlinie werden Befehlszeilenparameter für Chrome vom Internet Explorer festgelegt.
 
-      Wenn das Add-in "Unterstützung für ältere Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keine Auswirkung.
+      Wenn das Add-in "Unterstützung älterer Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keine Auswirkung.
 
       Wenn diese Richtlinie nicht konfiguriert ist, gibt Internet Explorer die URL nur als Befehlszeilenparameter an Chrome weiter.
 
@@ -1613,7 +1613,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer selbst entscheiden
       Wird "false" festgelegt oder die Richtlinie nicht konfiguriert, werden keine
       Pakete gesendet.</translation>
 <translation id="3950239119790560549">Zeitbeschränkungen aktualisieren</translation>
-<translation id="3956686688560604829">Richtlinie "SiteList" von Internet Explorer zur Unterstützung für ältere Browser verwenden.</translation>
+<translation id="3956686688560604829">Richtlinie "SiteList" von Internet Explorer zur Unterstützung älterer Browser verwenden.</translation>
 <translation id="3958586912393694012">Verwendung von Smart Lock erlauben</translation>
 <translation id="3963602271515417124">Bei Festlegung auf "true" ist die Remote-Bestätigung für das Gerät erlaubt. Ein Zertifikat wird automatisch erstellt und auf den Device Management Server hochgeladen.
 
@@ -1621,7 +1621,7 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="3965339130942650562">Zeitlimit bis zur Abmeldung eines inaktiven Nutzers</translation>
 <translation id="3973371701361892765">Ablage nie automatisch ausblenden</translation>
 <translation id="3984028218719007910">Legt fest, ob lokale Kontodaten nach der Abmeldung in <ph name="PRODUCT_OS_NAME" /> gespeichert werden. Bei Einstellung auf "true" werden Konten nicht dauerhaft in <ph name="PRODUCT_OS_NAME" /> gespeichert und alle Daten der Nutzersitzung werden nach der Abmeldung verworfen. Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, können (verschlüsselte) lokale Nutzerdaten auf dem Gerät verbleiben.</translation>
-<translation id="398475542699441679">Mit dieser Richtlinie wird festgelegt, ob die Unterstützung für ältere Browser aktiviert wird.
+<translation id="398475542699441679">Mit dieser Richtlinie wird festgelegt, ob die Unterstützung älterer Browser aktiviert wird.
 
       Wenn die Richtlinie nicht konfiguriert oder auf "false" gesetzt ist, versucht Chrome nicht, bestimmte URLs in einem alternativen Browser zu starten.
 
@@ -4290,7 +4290,7 @@ Wenn die Richtlinie auf "true" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialog
 <translation id="924557436754151212">Gespeicherte Passwörter bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="926146562923985266">Mit dieser Richtlinie wird der Befehl konfiguriert, mit dem URLs in <ph name="PRODUCT_NAME" /> geöffnet werden, wenn von Internet Explorer dorthin gewechselt wird.
 
-      Wenn das Add-in "Unterstützung für ältere Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keinerlei Wirkung.
+      Wenn das Add-in "Unterstützung älterer Browser" für Internet Explorer nicht installiert ist, hat die Richtlinie keinerlei Wirkung.
 
       Wenn diese Richtlinie nicht konfiguriert ist, erkennt Internet Explorer den ausführbaren Pfad von <ph name="PRODUCT_NAME" /> automatisch, wenn <ph name="PRODUCT_NAME" /> über Internet Explorer geöffnet wird.
 
