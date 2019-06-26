@@ -30,6 +30,8 @@ export class GPUTest extends Fixture {
     }
   }
 
+  // TODO: add an expectContents for textures, which logs data: uris on failure
+
   async expectContents(src: GPUBuffer, expected: ArrayBufferView): Promise<void> {
     const exp = new Uint8Array(expected.buffer, expected.byteOffset, expected.byteLength);
 
@@ -45,13 +47,27 @@ export class GPUTest extends Fixture {
     this.queue.submit([c.finish()]);
 
     const actual = new Uint8Array(await dst.mapReadAsync());
+    let failedPixels = 0;
     for (let i = 0; i < size; ++i) {
       if (actual[i] !== exp[i]) {
+        if (failedPixels > 4) {
+          this.rec.fail('... and more');
+          break;
+        }
+        failedPixels++;
         this.rec.fail(`at [${i}], expected ${exp[i]}, got ${actual[i]}`);
-        // TODO: limit number of fail logs for one expectContents?
       }
     }
-    // TODO: log the actual and expected data
+    if (size <= 256) {
+      const expHex = Array.from(exp)
+        .map(x => x.toString(16).padStart(2, '0'))
+        .join('');
+      const actHex = Array.from(actual)
+        .map(x => x.toString(16).padStart(2, '0'))
+        .join('');
+      this.rec.log('^ expected: ' + expHex);
+      this.rec.log('^      got: ' + actHex);
+    }
   }
 
   private compile(type: 'f' | 'v' | 'c', source: string): Uint32Array {
