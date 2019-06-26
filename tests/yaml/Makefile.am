@@ -14,6 +14,7 @@ EXTRA_DIST =					\
 	foo.yaml				\
 	hyphenation_nocross_harness.yaml	\
 	inpos_outpos.yaml			\
+	input-length.yaml			\
 	issue-238.yaml				\
 	issue-332.yaml				\
 	issue-332_hyph.dic			\

@@ -181,6 +181,7 @@ dist_yaml_TESTS =				\
 	yaml/foo.yaml				\
 	yaml/hyphenation_nocross_harness.yaml	\
 	yaml/inpos_outpos.yaml			\
+	yaml/input-length.yaml			\
 	yaml/issue-238.yaml			\
 	yaml/issue-332.yaml			\
 	yaml/issue-35.yaml			\
