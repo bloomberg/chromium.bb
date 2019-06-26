@@ -921,7 +921,7 @@ static int cost_mv_ref(const MACROBLOCK *const x, PREDICTION_MODE mode,
 
 static void newmv_diff_bias(MACROBLOCKD *xd, PREDICTION_MODE this_mode,
                             RD_STATS *this_rdc, BLOCK_SIZE bsize, int mv_row,
-                            int mv_col, int is_last_frame) {
+                            int mv_col) {
   // Bias against MVs associated with NEWMV mode that are very different from
   // top/left neighbors.
   if (this_mode == NEWMV) {
@@ -965,9 +965,6 @@ static void newmv_diff_bias(MACROBLOCKD *xd, PREDICTION_MODE this_mode,
         this_rdc->rdcost = 5 * this_rdc->rdcost >> 2;
     }
   }
-  if (bsize >= BLOCK_16X16 && is_last_frame && mv_row < 16 && mv_row > -16 &&
-      mv_col < 16 && mv_col > -16)
-    this_rdc->rdcost = 7 * (this_rdc->rdcost >> 3);
 }
 
 struct estimate_block_intra_args {
@@ -1423,8 +1420,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (cpi->oxcf.rc_mode == AOM_CBR && cpi->oxcf.speed >= 8) {
       newmv_diff_bias(xd, this_mode, &this_rdc, bsize,
                       frame_mv[this_mode][ref_frame].as_mv.row,
-                      frame_mv[this_mode][ref_frame].as_mv.col,
-                      ref_frame == LAST_FRAME);
+                      frame_mv[this_mode][ref_frame].as_mv.col);
     }
 
     mode_checked[this_mode][ref_frame] = 1;
