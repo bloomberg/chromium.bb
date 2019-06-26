@@ -58,15 +58,15 @@ export class GPUTest extends Fixture {
         this.rec.fail(`at [${i}], expected ${exp[i]}, got ${actual[i]}`);
       }
     }
-    if (size <= 256) {
+    if (size <= 256 && failedPixels > 0) {
       const expHex = Array.from(exp)
         .map(x => x.toString(16).padStart(2, '0'))
         .join('');
       const actHex = Array.from(actual)
         .map(x => x.toString(16).padStart(2, '0'))
         .join('');
-      this.rec.log('^ expected: ' + expHex);
-      this.rec.log('^      got: ' + actHex);
+      this.rec.log('EXP: ' + expHex);
+      this.rec.log('ACT: ' + actHex);
     }
   }
 

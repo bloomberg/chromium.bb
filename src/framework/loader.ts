@@ -48,7 +48,6 @@ function filterTestGroup(group: ITestGroup, filter: TestGroupFilter) {
   };
 }
 
-// TODO: Unit test this.
 export abstract class TestLoader {
   async loadTests(outDir: string, filters: string[]): Promise<IterableIterator<IPendingEntry>> {
     const listings = [];

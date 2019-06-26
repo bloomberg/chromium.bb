@@ -21,6 +21,6 @@ export class TestLoaderWeb extends TestLoader {
   }
 
   protected import(path: string): Promise<ITestNode> {
-    return import('../' + path);
+    return import('../suites/' + path);
   }
 }

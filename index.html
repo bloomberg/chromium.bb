@@ -178,7 +178,7 @@ function basepath(path) {
 
   const filters = parseQueryString(window.location.search);
   const loader = new TestLoaderWeb();
-  const listing = await loader.loadTests('./out', filters);
+  const listing = await loader.loadTests('./out/suites', filters);
   const entries = await Promise.all(Array.from(listing,
       ({ suite, path, node }) => node.then(node => ({ suite, path, node }))));
   // TODO: convert listing to tree so it can be displayed as a tree?
@@ -192,15 +192,15 @@ function basepath(path) {
   const log = new Logger();
   const runCaseList = [];
   for (const entry of entries) {
-      const { suite, path, node: { group } } = entry;
+      const { suite, path, node: { g } } = entry;
     const testcasesVis = mkTest(path, entry.description);
 
-    if (!group) {
+    if (!g) {
         continue;
     }
 
     const [tResult, tRec] = log.record(path);
-    for (const t of group.iterate(tRec)) {
+    for (const t of g.iterate(tRec)) {
       const query = makeQueryString(entry, t.testcase);
       const runCase = mkCase(testcasesVis, query, t);
       runCaseList.push(runCase);
