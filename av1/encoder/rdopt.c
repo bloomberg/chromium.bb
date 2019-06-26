@@ -6466,18 +6466,19 @@ static int cost_mv_ref(const MACROBLOCK *const x, PREDICTION_MODE mode,
   }
 }
 
-static int get_interinter_compound_mask_rate(const MACROBLOCK *const x,
-                                             const MB_MODE_INFO *const mbmi) {
-  switch (mbmi->interinter_comp.type) {
-    case COMPOUND_AVERAGE: return 0;
-    case COMPOUND_WEDGE:
-      return get_interinter_wedge_bits(mbmi->sb_type) > 0
-                 ? av1_cost_literal(1) +
-                       x->wedge_idx_cost[mbmi->sb_type]
-                                        [mbmi->interinter_comp.wedge_index]
-                 : 0;
-    case COMPOUND_DIFFWTD: return av1_cost_literal(1);
-    default: assert(0); return 0;
+static INLINE int get_interinter_compound_mask_rate(
+    const MACROBLOCK *const x, const MB_MODE_INFO *const mbmi) {
+  const COMPOUND_TYPE compound_type = mbmi->interinter_comp.type;
+  // This function will be called only for COMPOUND_WEDGE and COMPOUND_DIFFWTD
+  if (compound_type == COMPOUND_WEDGE) {
+    return get_interinter_wedge_bits(mbmi->sb_type) > 0
+               ? av1_cost_literal(1) +
+                     x->wedge_idx_cost[mbmi->sb_type]
+                                      [mbmi->interinter_comp.wedge_index]
+               : 0;
+  } else {
+    assert(compound_type == COMPOUND_DIFFWTD);
+    return av1_cost_literal(1);
   }
 }
 
