@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.keyboard_accessory.FakeKeyboard;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper;
 import org.chromium.chrome.browser.keyboard_accessory.R;
@@ -54,14 +54,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Integration tests for address accessory views.
+ * Integration tests for credit card accessory views.
  */
+
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
 @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY,
         ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class AddressAccessoryIntegrationTest {
+public class CreditCardAccessoryIntegrationTest {
     @Rule
     public final ChromeTabbedActivityTestRule mActivityTestRule =
             new ChromeTabbedActivityTestRule();
@@ -75,39 +76,43 @@ public class AddressAccessoryIntegrationTest {
 
     private void loadTestPage(ChromeWindow.KeyboardVisibilityDelegateFactory keyboardDelegate)
             throws InterruptedException, TimeoutException {
-        mHelper.loadTestPage("/chrome/test/data/autofill/autofill_test_form.html", false, false,
-                keyboardDelegate);
-        new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
-                "Marcus McSpartangregor", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco", "",
-                "94102", "", "US", "(415) 999-0000", "marc@acme-mail.inc", "en"));
-        DOMUtils.waitForNonZeroNodeBounds(mHelper.getWebContents(), "NAME_FIRST");
+        mHelper.loadTestPage("/chrome/test/data/autofill/autofill_creditcard_form.html", false,
+                false, keyboardDelegate);
+        CreditCard card = new CreditCard();
+        card.setName("Kirby Puckett");
+        card.setNumber("4111111111111111");
+        card.setMonth("03");
+        card.setYear("2034");
+
+        new AutofillTestHelper().setCreditCard(card);
+        DOMUtils.waitForNonZeroNodeBounds(mHelper.getWebContents(), "CREDIT_CARD_NAME_FULL");
     }
 
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
-    public void testAddressSheetIsAvailable() throws InterruptedException {
+    public void testCreditCardSheetAvailable() throws InterruptedException {
         mHelper.loadTestPage(false);
 
         CriteriaHelper.pollUiThread(() -> {
-            return mHelper.getOrCreateAddressAccessorySheet() != null;
-        }, "Address sheet should be bound to accessory sheet.");
+            return mHelper.getOrCreateCreditCardAccessorySheet() != null;
+        }, "Credit Card sheet should be bound to accessory sheet.");
     }
 
     @Test
     @SmallTest
     @DisableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
-    public void testAddressSheetUnavailableWithoutFeature() throws InterruptedException {
+    public void testCreditCardSheetUnavailableWithoutFeature() throws InterruptedException {
         mHelper.loadTestPage(false);
 
-        Assert.assertNull("Address sheet should not have been created.",
-                mHelper.getOrCreateAddressAccessorySheet());
+        Assert.assertNull("Credit Card sheet should not have been created.",
+                mHelper.getOrCreateCreditCardAccessorySheet());
     }
 
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID})
-    public void testDisplaysEmptyStateMessageWithoutSavedPasswords()
+    public void testDisplaysEmptyStateMessageWithoutSavedCards()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
 
@@ -116,12 +121,12 @@ public class AddressAccessoryIntegrationTest {
         mHelper.waitForKeyboardAccessoryToBeShown();
 
         // Click the tab to show the sheet and hide the keyboard.
-        whenDisplayed(allOf(withContentDescription(R.string.address_accessory_sheet_toggle),
+        whenDisplayed(allOf(withContentDescription(R.string.credit_card_accessory_sheet_toggle),
                               not(isAssignableFrom(TextView.class))))
                 .perform(click());
         mHelper.waitForKeyboardToDisappear();
-        whenDisplayed(withId(R.id.addresses_sheet));
-        onView(withText(containsString("No saved addresses"))).check(matches(isDisplayed()));
+        whenDisplayed(withId(R.id.credit_card_sheet));
+        onView(withText(containsString("No saved payment methods"))).check(matches(isDisplayed()));
     }
 
     @Test
@@ -130,21 +135,23 @@ public class AddressAccessoryIntegrationTest {
     public void testFillsSuggestionOnClick()
             throws ExecutionException, InterruptedException, TimeoutException {
         loadTestPage(FakeKeyboard::new);
-        mHelper.clickNodeAndShowKeyboard("NAME_FIRST");
+        mHelper.clickNodeAndShowKeyboard("CREDIT_CARD_NAME_FULL");
         mHelper.waitForKeyboardAccessoryToBeShown();
+        DOMUtils.focusNode(mActivityTestRule.getWebContents(), "CREDIT_CARD_NAME_FULL");
 
         // Scroll to last element and click the second icon:
         whenDisplayed(withId(R.id.bar_items_view))
                 .perform(scrollTo(isKeyboardAccessoryTabLayout()),
-                        actionOnItem(isKeyboardAccessoryTabLayout(), selectTabAtPosition(2)));
+                        actionOnItem(isKeyboardAccessoryTabLayout(), selectTabAtPosition(1)));
 
         // Wait for the sheet to come up and be stable.
-        whenDisplayed(withId(R.id.addresses_sheet));
+        whenDisplayed(withId(R.id.credit_card_sheet));
 
         // Click a suggestion.
-        whenDisplayed(withText("McSpartangregor")).perform(click());
+        whenDisplayed(withId(R.id.cc_number)).perform(click());
 
-        CriteriaHelper.pollInstrumentationThread(
-                () -> { return mHelper.getFieldText("NAME_FIRST").equals("McSpartangregor"); });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return mHelper.getFieldText("CREDIT_CARD_NAME_FULL").equals("4111111111111111");
+        });
     }
 }
