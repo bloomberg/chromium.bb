@@ -1252,6 +1252,13 @@ void RenderWebView::move(int left, int top, int width, int height)
         0,
         left, top, width, height,
         SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+
+    // Notify the browser about our new size.  Occasionally Content will try
+    // to synchronize the size of the compositor framebuffer with the
+    // window owned by the browser.  If we don't notify the browser of the new
+    // size, the compositor's framebuffer might be reset to a default size
+    // whenever Content decides to synchronize the visual properties.
+    d_proxy->move(left, top, width, height);
 }
 
 void RenderWebView::cutSelection()
