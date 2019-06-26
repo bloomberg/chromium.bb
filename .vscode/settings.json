@@ -1,5 +1,4 @@
 {
-  "clang-format.executable": "${workspaceRoot}/node_modules/.bin/clang-format",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.detectIndentation": false,
   "editor.formatOnSave": true,

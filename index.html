@@ -1,218 +1,226 @@
 <html>
-<head>
-<title></title>
-<script src="third_party/jquery/jquery-3.3.1.min.js"></script>
-<style>
-#info {
-  font-family: monospace;
-}
-.test {
-  border-width: 1px 0 0 1px;
-  border-style: solid;
-  border-color: gray;
-}
-.testrun {
-  display: inline-block;
-  font-size: 10pt;
-  padding: 0 3pt 0 3pt;
-}
-.testname {
-  display: inline-block;
-  margin-left: 2pt;
-}
-.testdesc {
-  margin-left: 1.8em;
-}
-.testcases {
-  margin-left: 8pt;
-}
-.testcase {
-  border-width: 1px 0 0 1px;
-  border-style: solid;
-  border-color: gray;
-  background: white;
-}
-.casehead {
-  overflow: auto;
-}
-.caserun {
-  display: inline-block;
-  font-size: 10pt;
-  padding: 0 3pt 0 3pt;
-}
-.casename {
-  display: inline-block;
-  margin-left: 2pt;
-  width: 65%;
-}
-.casetime {
-  width: 20%;
-  float: right;
-}
-.caselogs {
-  margin-left: 8pt;
-  width: 100%;
-  border-width: 0 0 0 1px;
-  border-style: solid;
-  border-color: gray;
-  background: white;
-}
-.caselog {
-  margin-left: 2pt;
-  border-width: 0 0 1px 0;
-  border-style: solid;
-  border-color: #eee;
-}
-
-.fail {
-  background: #fcc;
-}
-.warn {
-  background: #ffb;
-}
-.pass {
-  background: #cfc;
-}
-</style>
-</head>
-<body>
-<div id="info"></div>
-<div id="resultsVis"></div>
-
-<script type="module">
-"use strict";
-
-import { TestLoaderWeb } from './out/framework/loader_web.js';
-import { Logger } from './out/framework/logger.js';
-import { encodeSelectively, makeQueryString, parseQueryString } from './out/framework/url_query.js';
-
-const resultsVis = document.getElementById("resultsVis");
-function mkTest(path, description) {
-  const test = $("<div>")
-    .addClass("test")
-    .appendTo(resultsVis);
-
-  const testrun = $("<button>")
-    .addClass("testrun")
-    .html("&#9654;")
-    .appendTo(test);
-
-  const testname = $("<div>")
-    .addClass("testname")
-    .text(path)
-    .appendTo(test);
-
-  const testdesc = $("<div>")
-    .addClass("testdesc")
-    .text(description)
-    .appendTo(test);
-
-  const testcases = $("<div>")
-    .addClass("testcases")
-    .appendTo(test);
-
-  testrun.click(async () => {
-    for (const el of test.find(".caserun")) {
-      await el.runCase();
-    }
-  });
-
-  return testcases;
-}
-
-function mkCase(testcasesVis, query, t) {
-  const testcase = $("<div>")
-    .addClass("testcase")
-    .appendTo(testcasesVis);
-  const casehead = $("<div>")
-    .addClass("casehead")
-    .appendTo(testcase);
-
-  const caserun = $("<button>")
-    .addClass("caserun")
-    .html("&#9654;")
-    .appendTo(casehead);
-  $("<div>")
-    .addClass("casename")
-    .appendTo(casehead)
-    .text(query);
-  const casetime = $("<div>")
-    .addClass("casetime")
-    .appendTo(casehead);
-
-  const caselogs = $("<div>", { class: "caselogs" })
-    .appendTo(testcase);
-
-  const runCase = async () => {
-    const res = await t.run();
-
-    casetime.text(res.timems.toFixed(4) + " ms");
-
-    testcase.removeClass("pass");
-    testcase.removeClass("warn");
-    testcase.removeClass("fail");
-    testcase.addClass(res.status);
-
-    if (res.logs) {
-      caselogs.empty();
-      for (const l of res.logs) {
-        $("<div>", { class: "caselog" })
-          .appendTo(caselogs)
-          .text(l);
+  <head>
+    <title></title>
+    <script src="third_party/jquery/jquery-3.3.1.min.js"></script>
+    <style>
+      #info {
+        font-family: monospace;
       }
-    }
-  };
-  caserun[0].runCase = runCase;
-  caserun.click(runCase);
-  return runCase;
-}
+      .test {
+        border-width: 1px 0 0 1px;
+        border-style: solid;
+        border-color: gray;
+      }
+      .testrun {
+        display: inline-block;
+        font-size: 10pt;
+        padding: 0 3pt 0 3pt;
+      }
+      .testname {
+        display: inline-block;
+        margin-left: 2pt;
+      }
+      .testdesc {
+        margin-left: 1.8em;
+      }
+      .testcases {
+        margin-left: 8pt;
+      }
+      .testcase {
+        border-width: 1px 0 0 1px;
+        border-style: solid;
+        border-color: gray;
+        background: white;
+      }
+      .casehead {
+        overflow: auto;
+      }
+      .caserun {
+        display: inline-block;
+        font-size: 10pt;
+        padding: 0 3pt 0 3pt;
+      }
+      .casename {
+        display: inline-block;
+        margin-left: 2pt;
+        width: 65%;
+      }
+      .casetime {
+        width: 20%;
+        float: right;
+      }
+      .caselogs {
+        margin-left: 8pt;
+        width: 100%;
+        border-width: 0 0 0 1px;
+        border-style: solid;
+        border-color: gray;
+        background: white;
+      }
+      .caselog {
+        margin-left: 2pt;
+        border-width: 0 0 1px 0;
+        border-style: solid;
+        border-color: #eee;
+      }
 
-function basepath(path) {
-  const at = path.lastIndexOf("/");
-  return path.slice(0, at);
-}
+      .fail {
+        background: #fcc;
+      }
+      .warn {
+        background: #ffb;
+      }
+      .pass {
+        background: #cfc;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="info"></div>
+    <div id="resultsVis"></div>
 
-(async () => {
-  const url = new URL(window.location);
-  const runnow = url.searchParams.get("runnow") === "1";
+    <script type="module">
+      'use strict';
 
-  const filters = parseQueryString(window.location.search);
-  const loader = new TestLoaderWeb();
-  const listing = await loader.loadTests('./out/suites', filters);
-  const entries = await Promise.all(Array.from(listing,
-      ({ suite, path, node }) => node.then(node => ({ suite, path, node }))));
-  // TODO: convert listing to tree so it can be displayed as a tree?
+      import { TestLoaderWeb } from './out/framework/loader_web.js';
+      import { Logger } from './out/framework/logger.js';
+      import {
+        encodeSelectively,
+        makeQueryString,
+        parseQueryString,
+      } from './out/framework/url_query.js';
 
-  let info = `?runnow=${runnow ? '1' : '0'}`;
-  for (const f of filters) {
-    info += '&q=' + encodeSelectively(f);
-  }
-  document.getElementById("info").innerText = info;
+      const resultsVis = document.getElementById('resultsVis');
+      function mkTest(path, description) {
+        const test = $('<div>')
+          .addClass('test')
+          .appendTo(resultsVis);
 
-  const log = new Logger();
-  const runCaseList = [];
-  for (const entry of entries) {
-      const { suite, path, node: { g } } = entry;
-    const testcasesVis = mkTest(path, entry.description);
+        const testrun = $('<button>')
+          .addClass('testrun')
+          .html('&#9654;')
+          .appendTo(test);
 
-    if (!g) {
-        continue;
-    }
+        const testname = $('<div>')
+          .addClass('testname')
+          .text(path)
+          .appendTo(test);
 
-    const [tResult, tRec] = log.record(path);
-    for (const t of g.iterate(tRec)) {
-      const query = makeQueryString(entry, t.testcase);
-      const runCase = mkCase(testcasesVis, query, t);
-      runCaseList.push(runCase);
-    }
-  }
+        const testdesc = $('<div>')
+          .addClass('testdesc')
+          .text(description)
+          .appendTo(test);
 
-  if (runnow) {
-    for (const runCase of runCaseList) {
-      await runCase();
-    }
-  }
-})();
-</script>
-</body>
+        const testcases = $('<div>')
+          .addClass('testcases')
+          .appendTo(test);
+
+        testrun.click(async () => {
+          for (const el of test.find('.caserun')) {
+            await el.runCase();
+          }
+        });
+
+        return testcases;
+      }
+
+      function mkCase(testcasesVis, query, t) {
+        const testcase = $('<div>')
+          .addClass('testcase')
+          .appendTo(testcasesVis);
+        const casehead = $('<div>')
+          .addClass('casehead')
+          .appendTo(testcase);
+
+        const caserun = $('<button>')
+          .addClass('caserun')
+          .html('&#9654;')
+          .appendTo(casehead);
+        $('<div>')
+          .addClass('casename')
+          .appendTo(casehead)
+          .text(query);
+        const casetime = $('<div>')
+          .addClass('casetime')
+          .appendTo(casehead);
+
+        const caselogs = $('<div>', { class: 'caselogs' }).appendTo(testcase);
+
+        const runCase = async () => {
+          const res = await t.run();
+
+          casetime.text(res.timems.toFixed(4) + ' ms');
+
+          testcase.removeClass('pass');
+          testcase.removeClass('warn');
+          testcase.removeClass('fail');
+          testcase.addClass(res.status);
+
+          if (res.logs) {
+            caselogs.empty();
+            for (const l of res.logs) {
+              $('<div>', { class: 'caselog' })
+                .appendTo(caselogs)
+                .text(l);
+            }
+          }
+        };
+        caserun[0].runCase = runCase;
+        caserun.click(runCase);
+        return runCase;
+      }
+
+      function basepath(path) {
+        const at = path.lastIndexOf('/');
+        return path.slice(0, at);
+      }
+
+      (async () => {
+        const url = new URL(window.location);
+        const runnow = url.searchParams.get('runnow') === '1';
+
+        const filters = parseQueryString(window.location.search);
+        const loader = new TestLoaderWeb();
+        const listing = await loader.loadTests('./out/suites', filters);
+        const entries = await Promise.all(
+          Array.from(listing, ({ suite, path, node }) => node.then(node => ({ suite, path, node })))
+        );
+        // TODO: convert listing to tree so it can be displayed as a tree?
+
+        let info = `?runnow=${runnow ? '1' : '0'}`;
+        for (const f of filters) {
+          info += '&q=' + encodeSelectively(f);
+        }
+        document.getElementById('info').innerText = info;
+
+        const log = new Logger();
+        const runCaseList = [];
+        for (const entry of entries) {
+          const {
+            suite,
+            path,
+            node: { g },
+          } = entry;
+          const testcasesVis = mkTest(path, entry.description);
+
+          if (!g) {
+            continue;
+          }
+
+          const [tResult, tRec] = log.record(path);
+          for (const t of g.iterate(tRec)) {
+            const query = makeQueryString(entry, t.testcase);
+            const runCase = mkCase(testcasesVis, query, t);
+            runCaseList.push(runCase);
+          }
+        }
+
+        if (runnow) {
+          for (const runCase of runCaseList) {
+            await runCase();
+          }
+        }
+      })();
+    </script>
+  </body>
 </html>

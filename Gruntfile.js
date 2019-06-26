@@ -6,38 +6,35 @@ module.exports = function(grunt) {
     clean: ['out/'],
 
     mkdir: {
-      'out': {
+      out: {
         options: {
-          create: ['out']
-        }
-      }
+          create: ['out'],
+        },
+      },
     },
 
     run: {
       'generate-listings': {
         cmd: 'tools/gen',
-        args: [ 'cts', 'unittests', 'demos' ]
+        args: ['cts', 'unittests', 'demos'],
       },
-      'test': {
+      test: {
         cmd: 'tools/run',
-        args: [ 'unittests' ]
+        args: ['unittests'],
       },
       'build-out': {
         cmd: 'node_modules/.bin/babel',
-        args: [
-          '--source-maps', 'true',
-          '--extensions', '.ts',
-          '--out-dir', 'out/',
-          'src/',
-        ]
+        args: ['--source-maps', 'true', '--extensions', '.ts', '--out-dir', 'out/', 'src/'],
       },
       'build-shaderc': {
         cmd: 'node_modules/.bin/babel',
         args: [
-          '--plugins', 'babel-plugin-transform-commonjs-es2015-modules',
+          '--plugins',
+          'babel-plugin-transform-commonjs-es2015-modules',
           'node_modules/@webgpu/shaderc/dist/index.js',
-          '-o', 'out/shaderc.js',
-        ]
+          '-o',
+          'out/shaderc.js',
+        ],
       },
       'gts-check': { cmd: 'node_modules/.bin/gts', args: ['check'] },
       'gts-fix': { cmd: 'node_modules/.bin/gts', args: ['fix'] },
@@ -49,11 +46,11 @@ module.exports = function(grunt) {
         port: 8080,
         host: '127.0.0.1',
         cache: 5,
-      }
+      },
     },
 
     ts: {
-      'check': {
+      check: {
         tsconfig: {
           tsconfig: 'tsconfig.json',
           passThrough: true,
@@ -74,10 +71,7 @@ module.exports = function(grunt) {
     publishedTasks.push({ name, desc });
   }
 
-  publishTask('check', 'Check types and styles', [
-    'ts:check',
-    'run:gts-check',
-  ]);
+  publishTask('check', 'Check types and styles', ['ts:check', 'run:gts-check']);
   publishTask('fix', 'Fix lint and formatting', ['run:gts-fix']);
   publishTask('build', 'Build out/', [
     'mkdir:out',
@@ -86,9 +80,7 @@ module.exports = function(grunt) {
     'run:generate-listings',
   ]);
   publishTask('test', 'Run unittests', ['run:test']);
-  publishTask('serve', 'Serve out/ on 127.0.0.1:8080', [
-    'http-server:.',
-  ]);
+  publishTask('serve', 'Serve out/ on 127.0.0.1:8080', ['http-server:.']);
   publishedTasks.push({ name: 'clean', desc: 'Clean out/' });
 
   grunt.registerTask('default', '', () => {
@@ -99,10 +91,5 @@ module.exports = function(grunt) {
     }
   });
 
-  publishTask('pre', 'Run all presubmit checks', [
-    'ts:check',
-    'build',
-    'test',
-    'run:gts-check',
-  ]);
+  publishTask('pre', 'Run all presubmit checks', ['ts:check', 'build', 'test', 'run:gts-check']);
 };
