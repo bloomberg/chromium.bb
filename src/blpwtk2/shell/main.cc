@@ -266,8 +266,11 @@ public:
         }
         else {
             while (GetMessage(&g_msg, NULL, 0, 0) > 0) {
-                TranslateMessage(&g_msg);
-                DispatchMessage(&g_msg);
+                if (!g_toolkit->preHandleMessage(&g_msg)) {
+                    TranslateMessage(&g_msg);
+                    DispatchMessage(&g_msg);
+                }
+                g_toolkit->postHandleMessage(&g_msg);
 
                 if (d_webView) {
                     break;
