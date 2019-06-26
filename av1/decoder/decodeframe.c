@@ -4925,6 +4925,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
             lock_buffer_pool(pool);
             decrease_ref_count(buf, pool);
             unlock_buffer_pool(pool);
+            cm->ref_frame_map[ref_idx] = NULL;
           }
           // If no corresponding buffer exists, allocate a new buffer with all
           // pixels set to neutral grey.
