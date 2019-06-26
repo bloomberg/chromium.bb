@@ -473,6 +473,11 @@ message MigrateKeyRequest {
   optional bytes secret = 1;
 }
 
+// Remove all keys whose labels are NOT included in exempt_key_data.
+message MassRemoveKeysRequest {
+  repeated KeyData exempt_key_data = 1;
+}
+
 // Mount the guest user partition.
 message MountGuestRequest {
 }
