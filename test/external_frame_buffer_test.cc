@@ -117,13 +117,11 @@ class ExternalFrameBufferList {
   // Checks that the aom_image_t data is contained within the external frame
   // buffer private data passed back in the aom_image_t.
   void CheckImageFrameBuffer(const aom_image_t *img) {
-    if (img->fb_priv != NULL) {
-      const struct ExternalFrameBuffer *const ext_fb =
-          reinterpret_cast<ExternalFrameBuffer *>(img->fb_priv);
+    const struct ExternalFrameBuffer *const ext_fb =
+        reinterpret_cast<ExternalFrameBuffer *>(img->fb_priv);
 
-      ASSERT_TRUE(img->planes[0] >= ext_fb->data &&
-                  img->planes[0] < (ext_fb->data + ext_fb->size));
-    }
+    ASSERT_TRUE(img->planes[0] >= ext_fb->data &&
+                img->planes[0] < (ext_fb->data + ext_fb->size));
   }
 
   int num_used_buffers() const { return num_used_buffers_; }
@@ -266,6 +264,12 @@ class ExternalFrameBufferMD5Test
     // Check md5 match.
     ASSERT_STREQ(expected_md5, actual_md5)
         << "Md5 checksums don't match: frame number = " << frame_number;
+
+    const struct ExternalFrameBuffer *const ext_fb =
+        reinterpret_cast<ExternalFrameBuffer *>(img.fb_priv);
+
+    ASSERT_TRUE(img.planes[0] >= ext_fb->data &&
+                img.planes[0] < (ext_fb->data + ext_fb->size));
   }
 
   // Callback to get a free external frame buffer. Return value < 0 is an

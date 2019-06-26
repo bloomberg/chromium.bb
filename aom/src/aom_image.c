@@ -14,7 +14,9 @@
 
 #include "aom/aom_image.h"
 #include "aom/aom_integer.h"
+#include "aom/internal/aom_image_internal.h"
 #include "aom_mem/aom_mem.h"
+#include "aom_mem/include/aom_mem_intrnl.h"
 
 static INLINE unsigned int align_image_dimension(unsigned int d,
                                                  unsigned int subsampling,
@@ -29,7 +31,8 @@ static INLINE unsigned int align_image_dimension(unsigned int d,
 static aom_image_t *img_alloc_helper(
     aom_image_t *img, aom_img_fmt_t fmt, unsigned int d_w, unsigned int d_h,
     unsigned int buf_align, unsigned int stride_align, unsigned int size_align,
-    unsigned char *img_data, unsigned int border) {
+    unsigned int border, unsigned char *img_data,
+    aom_alloc_img_data_cb_fn_t alloc_cb, void *cb_priv) {
   unsigned int h, w, s, xcs, ycs, bps;
   unsigned int stride_in_bytes;
 
@@ -118,8 +121,17 @@ static aom_image_t *img_alloc_helper(
 
     if (alloc_size != (size_t)alloc_size) goto fail;
 
-    img->img_data = (uint8_t *)aom_memalign(buf_align, (size_t)alloc_size);
-    img->img_data_owner = 1;
+    if (alloc_cb) {
+      const size_t padded_alloc_size = (size_t)alloc_size + buf_align - 1;
+      img->img_data = (uint8_t *)alloc_cb(cb_priv, padded_alloc_size);
+      if (img->img_data) {
+        img->img_data = align_addr(img->img_data, buf_align);
+      }
+      img->img_data_owner = 0;
+    } else {
+      img->img_data = (uint8_t *)aom_memalign(buf_align, (size_t)alloc_size);
+      img->img_data_owner = 1;
+    }
     img->sz = (size_t)alloc_size;
   }
 
@@ -138,8 +150,10 @@ static aom_image_t *img_alloc_helper(
   img->stride[AOM_PLANE_Y] = stride_in_bytes;
   img->stride[AOM_PLANE_U] = img->stride[AOM_PLANE_V] = stride_in_bytes >> xcs;
 
-  /* Default viewport to entire image */
-  if (!aom_img_set_rect(img, 0, 0, d_w, d_h, border)) return img;
+  /* Default viewport to entire image. (This aom_img_set_rect call always
+   * succeeds.) */
+  aom_img_set_rect(img, 0, 0, d_w, d_h, border);
+  return img;
 
 fail:
   aom_img_free(img);
@@ -149,7 +163,17 @@ fail:
 aom_image_t *aom_img_alloc(aom_image_t *img, aom_img_fmt_t fmt,
                            unsigned int d_w, unsigned int d_h,
                            unsigned int align) {
-  return img_alloc_helper(img, fmt, d_w, d_h, align, align, 1, NULL, 0);
+  return img_alloc_helper(img, fmt, d_w, d_h, align, align, 1, 0, NULL, NULL,
+                          NULL);
+}
+
+aom_image_t *aom_img_alloc_with_cb(aom_image_t *img, aom_img_fmt_t fmt,
+                                   unsigned int d_w, unsigned int d_h,
+                                   unsigned int align,
+                                   aom_alloc_img_data_cb_fn_t alloc_cb,
+                                   void *cb_priv) {
+  return img_alloc_helper(img, fmt, d_w, d_h, align, align, 1, 0, NULL,
+                          alloc_cb, cb_priv);
 }
 
 aom_image_t *aom_img_wrap(aom_image_t *img, aom_img_fmt_t fmt, unsigned int d_w,
@@ -157,7 +181,8 @@ aom_image_t *aom_img_wrap(aom_image_t *img, aom_img_fmt_t fmt, unsigned int d_w,
                           unsigned char *img_data) {
   /* Set buf_align = 1. It is ignored by img_alloc_helper because img_data is
    * not NULL. */
-  return img_alloc_helper(img, fmt, d_w, d_h, 1, stride_align, 1, img_data, 0);
+  return img_alloc_helper(img, fmt, d_w, d_h, 1, stride_align, 1, 0, img_data,
+                          NULL, NULL);
 }
 
 aom_image_t *aom_img_alloc_with_border(aom_image_t *img, aom_img_fmt_t fmt,
@@ -165,8 +190,8 @@ aom_image_t *aom_img_alloc_with_border(aom_image_t *img, aom_img_fmt_t fmt,
                                        unsigned int align,
                                        unsigned int size_align,
                                        unsigned int border) {
-  return img_alloc_helper(img, fmt, d_w, d_h, align, align, size_align, NULL,
-                          border);
+  return img_alloc_helper(img, fmt, d_w, d_h, align, align, size_align, border,
+                          NULL, NULL, NULL);
 }
 
 int aom_img_set_rect(aom_image_t *img, unsigned int x, unsigned int y,

@@ -115,6 +115,7 @@ list(APPEND AOM_SOURCES
             "${AOM_ROOT}/aom/aomcx.h"
             "${AOM_ROOT}/aom/aomdx.h"
             "${AOM_ROOT}/aom/internal/aom_codec_internal.h"
+            "${AOM_ROOT}/aom/internal/aom_image_internal.h"
             "${AOM_ROOT}/aom/src/aom_codec.c"
             "${AOM_ROOT}/aom/src/aom_decoder.c"
             "${AOM_ROOT}/aom/src/aom_encoder.c"
