@@ -178,6 +178,7 @@ static void copy_sb16_16(uint16_t *dst, int dstride, const uint16_t *src,
   }
 }
 
+#if CONFIG_DIST_8X8
 static INLINE uint64_t dist_8x8_16bit(uint16_t *dst, int dstride, uint16_t *src,
                                       int sstride, int coeff_shift) {
   uint64_t svar = 0;
@@ -205,6 +206,7 @@ static INLINE uint64_t dist_8x8_16bit(uint16_t *dst, int dstride, uint16_t *src,
                (svar + dvar + (400 << 2 * coeff_shift)) /
                (sqrt((20000 << 4 * coeff_shift) + svar * (double)dvar)));
 }
+#endif  // CONFIG_DIST_8X8
 
 static INLINE uint64_t mse_8x8_16bit(uint16_t *dst, int dstride, uint16_t *src,
                                      int sstride) {
@@ -243,8 +245,15 @@ static uint64_t compute_cdef_dist(uint16_t *dst, int dstride, uint16_t *src,
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       if (pli == 0) {
+#if CONFIG_DIST_8X8
         sum += dist_8x8_16bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
                               &src[bi << (3 + 3)], 8, coeff_shift);
+#else
+
+        sum += mse_8x8_16bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
+                             &src[bi << (3 + 3)], 8);
+#endif  // CONFIG_DIST_8X8
+
       } else {
         sum += mse_8x8_16bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
                              &src[bi << (3 + 3)], 8);
