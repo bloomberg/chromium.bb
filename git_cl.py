@@ -5367,6 +5367,12 @@ def CMDowners(parser, args):
       '--batch',
       action='store_true',
       help='Do not run interactively, just suggest some')
+  # TODO: Consider moving this to another command, since other
+  #       git-cl owners commands deal with owners for a given CL.
+  parser.add_option(
+      '--show-all',
+      action='store_true',
+      help='Show all owners for a particular file')
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
@@ -5374,6 +5380,17 @@ def CMDowners(parser, args):
   author = RunGit(['config', 'user.email']).strip() or None
 
   cl = Changelist(auth_config=auth_config)
+
+  if options.show_all:
+    for arg in args:
+      base_branch = cl.GetCommonAncestorWithUpstream()
+      change = cl.GetChange(base_branch, None)
+      database = owners.Database(change.RepositoryRoot(), file, os.path)
+      database.load_data_needed_for([arg])
+      print('Owners for %s:' % arg)
+      for owner in sorted(database.all_possible_owners([arg], None)):
+        print(' - %s' % owner)
+    return 0
 
   if args:
     if len(args) > 1:
