@@ -3157,6 +3157,10 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       av1_optimize_b(cpi, x, plane, block, tx_size, tx_type, txb_ctx,
                      cpi->sf.trellis_eob_fast, &rate_cost);
     }
+    // If rd cost based on coeff rate is more than best_rd, skip the calculation
+    // of distortion
+    int64_t tmp_rd = RDCOST(x->rdmult, rate_cost, 0);
+    if (tmp_rd > best_rd) continue;
     if (eobs_ptr[block] == 0) {
       // When eob is 0, pixel domain distortion is more efficient and accurate.
       this_rd_stats.dist = this_rd_stats.sse = block_sse;
