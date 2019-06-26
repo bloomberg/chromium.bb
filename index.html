@@ -77,6 +77,7 @@
   </head>
   <body>
     <div id="info"></div>
+    <textarea id="resultsJSON"></textarea>
     <div id="resultsVis"></div>
 
     <script type="module">
@@ -90,6 +91,7 @@
         parseQueryString,
       } from './out/framework/url_query.js';
 
+      const resultsJSON = document.getElementById('resultsJSON');
       const resultsVis = document.getElementById('resultsVis');
       function mkTest(path, description) {
         const test = $('<div>')
@@ -119,6 +121,7 @@
           for (const el of test.find('.caserun')) {
             await el.runCase();
           }
+          resultsJSON.textContent = log.asJSON(2);
         });
 
         return testcases;
@@ -219,6 +222,7 @@
           for (const runCase of runCaseList) {
             await runCase();
           }
+          resultsJSON.textContent = log.asJSON(2);
         }
       })();
     </script>

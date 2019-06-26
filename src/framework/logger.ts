@@ -1,5 +1,6 @@
 import { IParamsSpec } from './params/index.js';
 import { getStackTrace, now } from './util.js';
+import { version } from './version.js';
 
 type Status = 'running' | 'pass' | 'warn' | 'fail';
 interface ITestLog {
@@ -24,6 +25,10 @@ export class Logger {
     const test: ITestLog = { path, cases };
     this.results.push(test);
     return [test, new GroupRecorder(test)];
+  }
+
+  asJSON(space?: number): string {
+    return JSON.stringify({ version, results: this.results }, undefined, space);
   }
 }
 

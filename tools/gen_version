@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+require('../src/tools/setup-ts-in-node.js');
+const fs = require('fs');
+
+if (!fs.existsSync('tools/gen_version')) {
+  console.error('Must be run from repository root');
+  usage(1);
+}
+
+const { version } = require('../src/framework/version');
+
+fs.writeFileSync('./out/framework/version.js', `export const version = '${version}';\n`);

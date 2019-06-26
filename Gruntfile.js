@@ -18,6 +18,9 @@ module.exports = function(grunt) {
         cmd: 'tools/gen',
         args: ['cts', 'unittests', 'demos'],
       },
+      'generate-version': {
+        cmd: 'tools/gen_version',
+      },
       test: {
         cmd: 'tools/run',
         args: ['unittests'],
@@ -77,6 +80,7 @@ module.exports = function(grunt) {
     'mkdir:out',
     'run:build-shaderc',
     'run:build-out',
+    'run:generate-version',
     'run:generate-listings',
   ]);
   publishTask('test', 'Run unittests', ['run:test']);
