@@ -590,7 +590,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForBelowMinSize) {
                             jpeg_data.size()),
                         &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
-    EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedJpeg, status);
+    EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedImage, status);
   }
 }
 
@@ -639,7 +639,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForAboveMaxSize) {
                             jpeg_data.size()),
                         &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
-    EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedJpeg, status);
+    EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedImage, status);
   }
 }
 
