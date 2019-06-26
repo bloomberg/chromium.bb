@@ -1,6 +1,6 @@
 import { GroupRecorder } from './logger.js';
 import { IParamsAny, paramsEquals, paramsSupersets } from './params/index.js';
-import { allowedTestNameCharacters, ICase, ITestGroup, RunCase } from './test_group.js';
+import { allowedTestNameCharacters, ITestGroup, RunCase, ICaseID } from './test_group.js';
 
 export interface IGroupDesc {
   path: string;
@@ -35,7 +35,7 @@ function* concat(lists: IPendingEntry[][]): IterableIterator<IPendingEntry> {
   }
 }
 
-type TestGroupFilter = (testcase: ICase) => boolean;
+type TestGroupFilter = (testcase: ICaseID) => boolean;
 function filterTestGroup(group: ITestGroup, filter: TestGroupFilter) {
   return {
     *iterate(log: GroupRecorder): Iterable<RunCase> {

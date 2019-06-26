@@ -1,10 +1,13 @@
 import { CaseRecorder, GroupRecorder, IResult } from './logger.js';
 import { IParamsAny, IParamsSpec, ParamSpecIterable } from './params/index.js';
 
-type TestFn<F extends Fixture> = (t: F) => Promise<void> | void;
-export interface ICase {
+export interface ICaseID {
   readonly name: string;
   readonly params: IParamsSpec | null;
+}
+
+type TestFn<F extends Fixture> = (t: F) => Promise<void> | void;
+export interface ICase extends ICaseID {
   run(log: CaseRecorder): Promise<void>;
 }
 
@@ -47,19 +50,21 @@ class Test<F extends Fixture> {
 }
 
 export class RunCase {
-  readonly testcase: ICase;
+  readonly testcase: ICaseID;
+  private testcaseRun: (log: CaseRecorder) => Promise<void>;
   private recorder: GroupRecorder;
 
   constructor(recorder: GroupRecorder, testcase: ICase) {
     this.recorder = recorder;
-    this.testcase = testcase;
+    this.testcase = { name: testcase.name, params: testcase.params };
+    this.testcaseRun = testcase.run;
   }
 
   async run(): Promise<IResult> {
     const [res, rec] = this.recorder.record(this.testcase.name, this.testcase.params);
     rec.start();
     try {
-      await this.testcase.run(rec);
+      await this.testcaseRun(rec);
     } catch (e) {
       // tslint:disable-next-line: no-console
       console.warn(e);

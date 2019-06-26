@@ -197,12 +197,9 @@ g.test('end2end', async t => {
 
   t.expect(rcs[0].testcase.name === 'blah');
   t.expect(rcs[0].testcase.params === null);
-  // TODO: testcase.run probably should be private
-  t.expect(rcs[0].testcase.run instanceof Function);
 
   t.expect(rcs[1].testcase.name === 'bleh');
   t.expect(paramsEquals(rcs[1].testcase.params, {}));
-  t.expect(rcs[1].testcase.run instanceof Function);
 
   t.expect(log.results[0] === res);
   t.expect(res.path === 'foof');
