@@ -30,21 +30,18 @@ class DomainName {
 
   template <typename IteratorType>
   DomainName(IteratorType first, IteratorType last) {
-    for (IteratorType i = first; i != last; ++i) {
-      auto& label = *i;
-      OSP_DCHECK(IsValidDomainLabel(label));
-      // Include the label length byte in the size calculation.
-      OSP_DCHECK(max_wire_size_ + label.size() + 1 <= kMaxDomainNameLength);
-      labels_.emplace_back(label);
-      // Update the size of the full name in wire format. Include the length
-      // byte in the size calculation.
-      max_wire_size_ += label.size() + 1;
+    labels_.reserve(std::distance(first, last));
+    for (IteratorType entry = first; entry != last; ++entry) {
+      OSP_DCHECK(IsValidDomainLabel(*entry));
+      labels_.emplace_back(*entry);
+      // Include the length byte in the size calculation.
+      max_wire_size_ += entry->size() + 1;
     }
+    OSP_DCHECK(max_wire_size_ <= kMaxDomainNameLength);
   }
 
-  explicit DomainName(std::initializer_list<absl::string_view> labels)
-      : DomainName(labels.begin(), labels.end()) {}
-
+  explicit DomainName(const std::vector<absl::string_view>& labels);
+  explicit DomainName(std::initializer_list<absl::string_view> labels);
   DomainName(const DomainName& other) = default;
   DomainName(DomainName&& other) noexcept = default;
   ~DomainName() = default;
@@ -64,12 +61,12 @@ class DomainName {
   // on-the-wire format. This is an upper bound based on the length of the
   // labels that make up the domain name. It's possible that with domain name
   // compression the actual space taken in on-the-wire format is smaller.
-  size_t max_wire_size() const { return max_wire_size_; }
+  size_t MaxWireSize() const;
   bool empty() const { return labels_.empty(); }
   size_t label_count() const { return labels_.size(); }
 
  private:
-  // wire_size_ starts at 1 for the terminating character length.
+  // max_wire_size_ starts at 1 for the terminating character length.
   size_t max_wire_size_ = 1;
   std::vector<std::string> labels_;
 };
@@ -94,7 +91,7 @@ class RawRecordRdata {
   bool operator==(const RawRecordRdata& rhs) const;
   bool operator!=(const RawRecordRdata& rhs) const;
 
-  size_t max_wire_size() const { return rdata_.size(); }
+  size_t MaxWireSize() const;
   uint16_t size() const { return rdata_.size(); }
   const uint8_t* data() const { return rdata_.data(); }
 
@@ -124,7 +121,7 @@ class SrvRecordRdata {
   bool operator==(const SrvRecordRdata& rhs) const;
   bool operator!=(const SrvRecordRdata& rhs) const;
 
-  size_t max_wire_size() const;
+  size_t MaxWireSize() const;
   uint16_t priority() const { return priority_; }
   uint16_t weight() const { return weight_; }
   uint16_t port() const { return port_; }
@@ -153,11 +150,11 @@ class ARecordRdata {
   bool operator==(const ARecordRdata& rhs) const;
   bool operator!=(const ARecordRdata& rhs) const;
 
-  size_t max_wire_size() const { return IPAddress::kV4Size; };
+  size_t MaxWireSize() const;
   const IPAddress& ipv4_address() const { return ipv4_address_; }
 
  private:
-  IPAddress ipv4_address_;
+  IPAddress ipv4_address_{0, 0, 0, 0};
 };
 
 // AAAA Record format (http://www.ietf.org/rfc/rfc1035.txt):
@@ -176,11 +173,11 @@ class AAAARecordRdata {
   bool operator==(const AAAARecordRdata& rhs) const;
   bool operator!=(const AAAARecordRdata& rhs) const;
 
-  size_t max_wire_size() const { return IPAddress::kV6Size; }
+  size_t MaxWireSize() const;
   const IPAddress& ipv6_address() const { return ipv6_address_; }
 
  private:
-  IPAddress ipv6_address_;
+  IPAddress ipv6_address_{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 };
 
 // PTR record format (http://www.ietf.org/rfc/rfc1035.txt):
@@ -199,7 +196,7 @@ class PtrRecordRdata {
   bool operator==(const PtrRecordRdata& rhs) const;
   bool operator!=(const PtrRecordRdata& rhs) const;
 
-  size_t max_wire_size() const { return ptr_domain_.max_wire_size(); }
+  size_t MaxWireSize() const;
   const DomainName& ptr_domain() const { return ptr_domain_; }
 
  private:
@@ -212,7 +209,24 @@ class PtrRecordRdata {
 class TxtRecordRdata {
  public:
   TxtRecordRdata() = default;
-  explicit TxtRecordRdata(std::vector<std::string> texts);
+
+  template <typename IteratorType>
+  TxtRecordRdata(IteratorType first, IteratorType last) {
+    const size_t count = std::distance(first, last);
+    if (count > 0) {
+      texts_.reserve(count);
+      // max_wire_size includes uint16_t record length field.
+      max_wire_size_ = sizeof(uint16_t);
+      for (IteratorType entry = first; entry != last; ++entry) {
+        OSP_DCHECK(!entry->empty());
+        texts_.emplace_back(*entry);
+        // Include the length byte in the size calculation.
+        max_wire_size_ += entry->size() + 1;
+      }
+    }
+  }
+
+  explicit TxtRecordRdata(const std::vector<absl::string_view>& texts);
   explicit TxtRecordRdata(std::initializer_list<absl::string_view> texts);
   TxtRecordRdata(const TxtRecordRdata& other) = default;
   TxtRecordRdata(TxtRecordRdata&& other) noexcept = default;
@@ -224,10 +238,13 @@ class TxtRecordRdata {
   bool operator==(const TxtRecordRdata& rhs) const;
   bool operator!=(const TxtRecordRdata& rhs) const;
 
-  size_t max_wire_size() const;
+  size_t MaxWireSize() const;
   const std::vector<std::string>& texts() const { return texts_; }
 
  private:
+  // max_wire_size_ is at least 3, uint16_t record length and at the
+  // minimum a NULL byte character string is present.
+  size_t max_wire_size_ = 3;
   std::vector<std::string> texts_;
 };
 
@@ -263,7 +280,7 @@ class MdnsRecord {
   bool operator==(const MdnsRecord& other) const;
   bool operator!=(const MdnsRecord& other) const;
 
-  size_t max_wire_size() const;
+  size_t MaxWireSize() const;
   const DomainName& name() const { return name_; }
   uint16_t type() const { return type_; }
   uint16_t record_class() const { return record_class_; }
@@ -298,7 +315,7 @@ class MdnsQuestion {
   bool operator==(const MdnsQuestion& other) const;
   bool operator!=(const MdnsQuestion& other) const;
 
-  size_t max_wire_size() const;
+  size_t MaxWireSize() const;
   const DomainName& name() const { return name_; }
   uint16_t type() const { return type_; }
   uint16_t record_class() const { return record_class_; }
@@ -348,7 +365,7 @@ class MdnsMessage {
   void AddAuthorityRecord(MdnsRecord record);
   void AddAdditionalRecord(MdnsRecord record);
 
-  size_t max_wire_size() const;
+  size_t MaxWireSize() const;
   uint16_t id() const { return id_; }
   uint16_t flags() const { return flags_; }
   const std::vector<MdnsQuestion>& questions() const { return questions_; }
@@ -361,6 +378,8 @@ class MdnsMessage {
   }
 
  private:
+  // The mDNS header is 12 bytes long
+  size_t max_wire_size_ = sizeof(Header);
   uint16_t id_ = 0;
   uint16_t flags_ = 0;
   std::vector<MdnsQuestion> questions_;

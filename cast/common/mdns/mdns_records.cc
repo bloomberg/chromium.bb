@@ -10,6 +10,12 @@
 namespace cast {
 namespace mdns {
 
+DomainName::DomainName(const std::vector<absl::string_view>& labels)
+    : DomainName(labels.begin(), labels.end()) {}
+
+DomainName::DomainName(std::initializer_list<absl::string_view> labels)
+    : DomainName(labels.begin(), labels.end()) {}
+
 bool IsValidDomainLabel(absl::string_view label) {
   const size_t label_size = label.size();
   return label_size > 0 && label_size <= kMaxLabelLength;
@@ -36,6 +42,10 @@ bool DomainName::operator!=(const DomainName& rhs) const {
   return !(*this == rhs);
 }
 
+size_t DomainName::MaxWireSize() const {
+  return max_wire_size_;
+}
+
 std::ostream& operator<<(std::ostream& stream, const DomainName& domain_name) {
   return stream << domain_name.ToString();
 }
@@ -57,6 +67,11 @@ bool RawRecordRdata::operator!=(const RawRecordRdata& rhs) const {
   return !(*this == rhs);
 }
 
+size_t RawRecordRdata::MaxWireSize() const {
+  // max_wire_size includes uint16_t record length field.
+  return sizeof(uint16_t) + rdata_.size();
+}
+
 SrvRecordRdata::SrvRecordRdata(uint16_t priority,
                                uint16_t weight,
                                uint16_t port,
@@ -75,9 +90,10 @@ bool SrvRecordRdata::operator!=(const SrvRecordRdata& rhs) const {
   return !(*this == rhs);
 }
 
-size_t SrvRecordRdata::max_wire_size() const {
-  return sizeof(priority_) + sizeof(weight_) + sizeof(port_) +
-         target_.max_wire_size();
+size_t SrvRecordRdata::MaxWireSize() const {
+  // max_wire_size includes uint16_t record length field.
+  return sizeof(uint16_t) + sizeof(priority_) + sizeof(weight_) +
+         sizeof(port_) + target_.MaxWireSize();
 }
 
 ARecordRdata::ARecordRdata(IPAddress ipv4_address)
@@ -93,6 +109,11 @@ bool ARecordRdata::operator!=(const ARecordRdata& rhs) const {
   return !(*this == rhs);
 }
 
+size_t ARecordRdata::MaxWireSize() const {
+  // max_wire_size includes uint16_t record length field.
+  return sizeof(uint16_t) + IPAddress::kV4Size;
+}
+
 AAAARecordRdata::AAAARecordRdata(IPAddress ipv6_address)
     : ipv6_address_(std::move(ipv6_address)) {
   OSP_CHECK(ipv6_address_.IsV6());
@@ -106,6 +127,11 @@ bool AAAARecordRdata::operator!=(const AAAARecordRdata& rhs) const {
   return !(*this == rhs);
 }
 
+size_t AAAARecordRdata::MaxWireSize() const {
+  // max_wire_size includes uint16_t record length field.
+  return sizeof(uint16_t) + IPAddress::kV6Size;
+}
+
 PtrRecordRdata::PtrRecordRdata(DomainName ptr_domain)
     : ptr_domain_(ptr_domain) {}
 
@@ -117,19 +143,16 @@ bool PtrRecordRdata::operator!=(const PtrRecordRdata& rhs) const {
   return !(*this == rhs);
 }
 
-TxtRecordRdata::TxtRecordRdata(std::vector<std::string> texts)
-    : texts_(std::move(texts)) {
-  OSP_DCHECK(
-      std::none_of(texts_.begin(), texts_.end(),
-                   [](const std::string& entry) { return entry.empty(); }));
+size_t PtrRecordRdata::MaxWireSize() const {
+  // max_wire_size includes uint16_t record length field.
+  return sizeof(uint16_t) + ptr_domain_.MaxWireSize();
 }
 
-TxtRecordRdata::TxtRecordRdata(std::initializer_list<absl::string_view> texts) {
-  for (const absl::string_view entry : texts) {
-    OSP_DCHECK(!entry.empty());
-    texts_.emplace_back(entry);
-  }
-}
+TxtRecordRdata::TxtRecordRdata(const std::vector<absl::string_view>& texts)
+    : TxtRecordRdata(texts.begin(), texts.end()) {}
+
+TxtRecordRdata::TxtRecordRdata(std::initializer_list<absl::string_view> texts)
+    : TxtRecordRdata(texts.begin(), texts.end()) {}
 
 bool TxtRecordRdata::operator==(const TxtRecordRdata& rhs) const {
   return texts_ == rhs.texts_;
@@ -139,15 +162,8 @@ bool TxtRecordRdata::operator!=(const TxtRecordRdata& rhs) const {
   return !(*this == rhs);
 }
 
-size_t TxtRecordRdata::max_wire_size() const {
-  size_t total_size = 0;
-  for (const auto& entry : texts_) {
-    if (!entry.empty()) {
-      total_size += entry.size() + 1;  // Don't forget the length byte.
-    }
-  }
-  // We will always return at least 1 NULL byte.
-  return total_size ? total_size : 1;
+size_t TxtRecordRdata::MaxWireSize() const {
+  return max_wire_size_;
 }
 
 MdnsRecord::MdnsRecord(DomainName name,
@@ -179,9 +195,9 @@ bool MdnsRecord::operator!=(const MdnsRecord& rhs) const {
   return !(*this == rhs);
 }
 
-size_t MdnsRecord::max_wire_size() const {
-  auto wire_size_visitor = [](auto&& arg) { return arg.max_wire_size(); };
-  return name_.max_wire_size() + sizeof(type_) + sizeof(record_class_) +
+size_t MdnsRecord::MaxWireSize() const {
+  auto wire_size_visitor = [](auto&& arg) { return arg.MaxWireSize(); };
+  return name_.MaxWireSize() + sizeof(type_) + sizeof(record_class_) +
          sizeof(ttl_) + absl::visit(wire_size_visitor, rdata_);
 }
 
@@ -201,8 +217,8 @@ bool MdnsQuestion::operator!=(const MdnsQuestion& rhs) const {
   return !(*this == rhs);
 }
 
-size_t MdnsQuestion::max_wire_size() const {
-  return name_.max_wire_size() + sizeof(type_) + sizeof(record_class_);
+size_t MdnsQuestion::MaxWireSize() const {
+  return name_.MaxWireSize() + sizeof(type_) + sizeof(record_class_);
 }
 
 MdnsMessage::MdnsMessage(uint16_t id, uint16_t flags)
@@ -224,6 +240,19 @@ MdnsMessage::MdnsMessage(uint16_t id,
   OSP_DCHECK(answers_.size() < std::numeric_limits<uint16_t>::max());
   OSP_DCHECK(authority_records_.size() < std::numeric_limits<uint16_t>::max());
   OSP_DCHECK(additional_records_.size() < std::numeric_limits<uint16_t>::max());
+
+  for (const MdnsQuestion& question : questions_) {
+    max_wire_size_ += question.MaxWireSize();
+  }
+  for (const MdnsRecord& record : answers_) {
+    max_wire_size_ += record.MaxWireSize();
+  }
+  for (const MdnsRecord& record : authority_records_) {
+    max_wire_size_ += record.MaxWireSize();
+  }
+  for (const MdnsRecord& record : additional_records_) {
+    max_wire_size_ += record.MaxWireSize();
+  }
 }
 
 bool MdnsMessage::operator==(const MdnsMessage& rhs) const {
@@ -237,42 +266,32 @@ bool MdnsMessage::operator!=(const MdnsMessage& rhs) const {
   return !(*this == rhs);
 }
 
+size_t MdnsMessage::MaxWireSize() const {
+  return max_wire_size_;
+}
+
 void MdnsMessage::AddQuestion(MdnsQuestion question) {
   OSP_DCHECK(questions_.size() < std::numeric_limits<uint16_t>::max());
+  max_wire_size_ += question.MaxWireSize();
   questions_.emplace_back(std::move(question));
 }
 
 void MdnsMessage::AddAnswer(MdnsRecord record) {
   OSP_DCHECK(answers_.size() < std::numeric_limits<uint16_t>::max());
+  max_wire_size_ += record.MaxWireSize();
   answers_.emplace_back(std::move(record));
 }
 
 void MdnsMessage::AddAuthorityRecord(MdnsRecord record) {
   OSP_DCHECK(authority_records_.size() < std::numeric_limits<uint16_t>::max());
+  max_wire_size_ += record.MaxWireSize();
   authority_records_.emplace_back(std::move(record));
 }
 
 void MdnsMessage::AddAdditionalRecord(MdnsRecord record) {
   OSP_DCHECK(additional_records_.size() < std::numeric_limits<uint16_t>::max());
+  max_wire_size_ += record.MaxWireSize();
   additional_records_.emplace_back(std::move(record));
-}
-
-size_t MdnsMessage::max_wire_size() const {
-  // The mDNS header is 12 bytes long (RFC 1035, section 4).
-  size_t wire_size = sizeof(Header);
-  for (const MdnsQuestion& question : questions_) {
-    wire_size += question.max_wire_size();
-  }
-  for (const MdnsRecord& answer : answers_) {
-    wire_size += answer.max_wire_size();
-  }
-  for (const MdnsRecord& record : authority_records_) {
-    wire_size += record.max_wire_size();
-  }
-  for (const MdnsRecord& record : additional_records_) {
-    wire_size += record.max_wire_size();
-  }
-  return wire_size;
 }
 
 }  // namespace mdns

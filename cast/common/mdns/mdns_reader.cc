@@ -13,7 +13,7 @@ namespace mdns {
 MdnsReader::MdnsReader(const uint8_t* buffer, size_t length)
     : BigEndianReader(buffer, length) {}
 
-bool MdnsReader::Read(std::string* out) {
+bool MdnsReader::Read(absl::string_view* out) {
   Cursor cursor(this);
   uint8_t string_length;
   if (!Read(&string_length)) {
@@ -23,7 +23,7 @@ bool MdnsReader::Read(std::string* out) {
   if (!Skip(string_length)) {
     return false;
   }
-  *out = std::string(string_begin, string_length);
+  *out = absl::string_view(string_begin, string_length);
   cursor.Commit();
   return true;
 }
@@ -52,7 +52,7 @@ bool MdnsReader::Read(DomainName* out) {
          bytes_processed <= length()) {
     const uint8_t label_type = openscreen::ReadBigEndian<uint8_t>(position);
     if (IsTerminationLabel(label_type)) {
-      *out = DomainName(labels.begin(), labels.end());
+      *out = DomainName(labels);
       if (!bytes_consumed) {
         bytes_consumed = position + sizeof(uint8_t) - current();
       }
@@ -76,8 +76,8 @@ bool MdnsReader::Read(DomainName* out) {
       if (position + label_length >= end()) {
         return false;
       }
-      absl::string_view label(reinterpret_cast<const char*>(position),
-                              label_length);
+      const absl::string_view label(reinterpret_cast<const char*>(position),
+                                    label_length);
       domain_name_length += label_length + 1;  // including the length byte
       if (!IsValidDomainLabel(label) ||
           domain_name_length > kMaxDomainNameLength) {
@@ -175,21 +175,21 @@ bool MdnsReader::Read(TxtRecordRdata* out) {
   if (!Read(&record_length)) {
     return false;
   }
-  std::vector<std::string> texts;
+  std::vector<absl::string_view> texts;
   while (cursor.delta() < sizeof(record_length) + record_length) {
-    std::string entry;
+    absl::string_view entry;
     if (!Read(&entry)) {
       return false;
     }
     OSP_DCHECK(entry.length() <= kTXTMaxEntrySize);
     if (!entry.empty()) {
-      texts.emplace_back(std::move(entry));
+      texts.push_back(entry);
     }
   }
   if (cursor.delta() != sizeof(record_length) + record_length) {
     return false;
   }
-  *out = TxtRecordRdata(std::move(texts));
+  *out = TxtRecordRdata(texts);
   cursor.Commit();
   return true;
 }

@@ -21,7 +21,7 @@ class MdnsReader : public openscreen::BigEndianReader {
   // read the value to |out| and advances current() to point right past the read
   // data. Returns false if the method failed to read the value to |out|,
   // current() remains unchanged.
-  bool Read(std::string* out);
+  bool Read(absl::string_view* out);
   bool Read(DomainName* out);
   bool Read(RawRecordRdata* out);
   bool Read(SrvRecordRdata* out);
