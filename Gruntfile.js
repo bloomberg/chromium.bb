@@ -85,6 +85,7 @@ module.exports = function(grunt) {
     'run:build-out',
     'run:generate-listings',
   ]);
+  publishTask('test', 'Run unittests', ['run:test']);
   publishTask('serve', 'Serve out/ on 127.0.0.1:8080', [
     'http-server:.',
   ]);
@@ -98,11 +99,10 @@ module.exports = function(grunt) {
     }
   });
 
-  publishTask('presubmit', 'Run all presubmit checks', [
+  publishTask('pre', 'Run all presubmit checks', [
     'ts:check',
     'build',
-    'run:test',
-
+    'test',
     'run:gts-check',
   ]);
 };

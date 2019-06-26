@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "grunt presubmit"
+    "test": "grunt pre"
   },
   "repository": {
     "type": "git",
