@@ -155,8 +155,7 @@ ivi_view_destroy(struct ivi_layout_view *ivi_view)
 
 	if (weston_surface_is_desktop_surface(ivi_view->ivisurf->surface))
 		weston_desktop_surface_unlink_view(ivi_view->view);
-	else
-		weston_view_destroy(ivi_view->view);
+	weston_view_destroy(ivi_view->view);
 
 	free(ivi_view);
 }
