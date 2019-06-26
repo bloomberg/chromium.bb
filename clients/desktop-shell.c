@@ -52,6 +52,7 @@
 #include "weston-desktop-shell-client-protocol.h"
 
 #define DEFAULT_CLOCK_FORMAT CLOCK_FORMAT_MINUTES
+#define DEFAULT_SPACING 10
 
 extern char **environ; /* defined by libc */
 
@@ -241,6 +242,14 @@ panel_launcher_redraw_handler(struct widget *widget, void *data)
 	cr = widget_cairo_create(launcher->panel->widget);
 
 	widget_get_allocation(widget, &allocation);
+	allocation.x += allocation.width / 2 -
+		cairo_image_surface_get_width(launcher->icon) / 2;
+	if (allocation.width > allocation.height)
+		allocation.x += allocation.width / 2 - allocation.height / 2;
+	allocation.y += allocation.height / 2 -
+		cairo_image_surface_get_height(launcher->icon) / 2;
+	if (allocation.height > allocation.width)
+		allocation.y += allocation.height / 2 - allocation.width / 2;
 	if (launcher->pressed) {
 		allocation.x++;
 		allocation.y++;
@@ -377,7 +386,6 @@ panel_clock_redraw_handler(struct widget *widget, void *data)
 	cairo_t *cr;
 	struct rectangle allocation;
 	cairo_text_extents_t extents;
-	cairo_font_extents_t font_extents;
 	time_t rawtime;
 	struct tm * timeinfo;
 	char string[128];
@@ -391,19 +399,20 @@ panel_clock_redraw_handler(struct widget *widget, void *data)
 		return;
 
 	cr = widget_cairo_create(clock->panel->widget);
-	cairo_select_font_face(cr, "sans",
-			       CAIRO_FONT_SLANT_NORMAL,
-			       CAIRO_FONT_WEIGHT_NORMAL);
 	cairo_set_font_size(cr, 14);
 	cairo_text_extents(cr, string, &extents);
-	cairo_font_extents (cr, &font_extents);
-	cairo_move_to(cr, allocation.x + 5,
-		      allocation.y + 3 * (allocation.height >> 2) + 1);
-	cairo_set_source_rgb(cr, 0, 0, 0);
+	if (allocation.x > 0)
+		allocation.x +=
+			allocation.width - DEFAULT_SPACING * 1.5 - extents.width;
+	else
+		allocation.x +=
+			allocation.width / 2 - extents.width / 2;
+	allocation.y += allocation.height / 2 - 1 + extents.height / 2;
+	cairo_move_to(cr, allocation.x + 1, allocation.y + 1);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.85);
 	cairo_show_text(cr, string);
-	cairo_move_to(cr, allocation.x + 4,
-		      allocation.y + 3 * (allocation.height >> 2));
-	cairo_set_source_rgb(cr, 1, 1, 1);
+	cairo_move_to(cr, allocation.x, allocation.y);
+	cairo_set_source_rgba(cr, 1, 1, 1, 0.85);
 	cairo_show_text(cr, string);
 	cairo_destroy(cr);
 }
@@ -466,44 +475,33 @@ panel_resize_handler(struct widget *widget,
 {
 	struct panel_launcher *launcher;
 	struct panel *panel = data;
-	int bx = width / 2;
-	int by = height / 2;
-	int spacing = 10;
-	int x = spacing;
-	int y = spacing;
-	int w, h;
+	int x = 0;
+	int y = 0;
+	int w = height > width ? width : height;
+	int h = w;
 	int horizontal = panel->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP || panel->panel_position == WESTON_DESKTOP_SHELL_PANEL_POSITION_BOTTOM;
+	int first_pad_h = horizontal ? 0 : DEFAULT_SPACING / 2;
+	int first_pad_w = horizontal ? DEFAULT_SPACING / 2 : 0;
 
 	wl_list_for_each(launcher, &panel->launcher_list, link) {
-		w = cairo_image_surface_get_width(launcher->icon);
-		h = cairo_image_surface_get_height(launcher->icon);
-
+		widget_set_allocation(launcher->widget, x, y,
+				      w + first_pad_w + 1, h + first_pad_h + 1);
 		if (horizontal)
-			y = by - h / 2;
+			x += w + first_pad_w;
 		else
-			x = bx - w / 2;
-		widget_set_allocation(launcher->widget,
-				      x, y, w + 1, h + 1);
-		if (horizontal)
-			x += w + spacing;
-		else
-			y += h + spacing;
+			y += h + first_pad_h;
+		first_pad_h = first_pad_w = 0;
 	}
-
-	h = 20;
 
 	if (panel->clock_format == CLOCK_FORMAT_SECONDS)
-		w = 190;
-	else /* CLOCK_FORMAT_MINUTES */
 		w = 170;
+	else /* CLOCK_FORMAT_MINUTES */
+		w = 150;
 
-	if (horizontal) {
-		x = width - w - spacing;
-		y = by - h / 2;
-	} else {
-		x = bx - w / 2;
-		y = height - h - spacing;
-	}
+	if (horizontal)
+		x = width - w;
+	else
+		y = height - (h = DEFAULT_SPACING * 3);
 
 	if (panel->clock)
 		widget_set_allocation(panel->clock->widget,
@@ -544,10 +542,10 @@ panel_configure(void *data,
 			width = 32;
 			break;
 		case CLOCK_FORMAT_MINUTES:
-			width = 170;
+			width = 150;
 			break;
 		case CLOCK_FORMAT_SECONDS:
-			width = 190;
+			width = 170;
 			break;
 		}
 		break;

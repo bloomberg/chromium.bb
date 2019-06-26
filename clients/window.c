@@ -2053,8 +2053,9 @@ tooltip_redraw_handler(struct widget *widget, void *data)
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.4, 0.8);
 	cairo_fill(cr);
 
-	cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-	cairo_move_to(cr, 10, 16);
+	cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.85);
+	cairo_move_to(cr, 10, 17);
+	cairo_set_font_size(cr, 14);
 	cairo_show_text(cr, tooltip->entry);
 	cairo_destroy(cr);
 }
@@ -2070,6 +2071,7 @@ get_text_extents(struct display *display, struct tooltip *tooltip)
 	 * outside repaint, either.
 	 */
 	cr = cairo_create(display->dummy_surface);
+	cairo_set_font_size(cr, 14);
 	cairo_text_extents(cr, tooltip->entry, &extents);
 	cairo_destroy(cr);
 
