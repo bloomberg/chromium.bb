@@ -5836,6 +5836,29 @@ drm_backend_update_unused_outputs(struct drm_backend *b, drmModeRes *resources)
 	}
 }
 
+static void
+update_head_from_connector(struct drm_head *head,
+			   drmModeObjectProperties *props)
+{
+	const char *make = "unknown";
+	const char *model = "unknown";
+	const char *serial_number = "unknown";
+
+	find_and_parse_output_edid(head, props, &make, &model, &serial_number);
+	weston_head_set_monitor_strings(&head->base, make, model, serial_number);
+	weston_head_set_non_desktop(&head->base,
+				    check_non_desktop(head, props));
+	weston_head_set_subpixel(&head->base,
+		drm_subpixel_to_wayland(head->connector->subpixel));
+
+	weston_head_set_physical_size(&head->base, head->connector->mmWidth,
+				      head->connector->mmHeight);
+
+	/* Unknown connection status is assumed disconnected. */
+	weston_head_set_connection_status(&head->base,
+			head->connector->connection == DRM_MODE_CONNECTED);
+}
+
 /** Replace connector data and monitor information
  *
  * @param head The head to update.
@@ -5852,9 +5875,6 @@ drm_head_assign_connector_info(struct drm_head *head,
 			       drmModeConnector *connector)
 {
 	drmModeObjectProperties *props;
-	const char *make = "unknown";
-	const char *model = "unknown";
-	const char *serial_number = "unknown";
 
 	assert(connector);
 	assert(head->connector_id == connector->connector_id);
@@ -5875,21 +5895,8 @@ drm_head_assign_connector_info(struct drm_head *head,
 	drm_property_info_populate(head->backend, connector_props,
 				   head->props_conn,
 				   WDRM_CONNECTOR__COUNT, props);
-	find_and_parse_output_edid(head, props, &make, &model, &serial_number);
-	weston_head_set_monitor_strings(&head->base, make, model, serial_number);
-	weston_head_set_non_desktop(&head->base,
-				    check_non_desktop(head, props));
-	weston_head_set_subpixel(&head->base,
-		drm_subpixel_to_wayland(head->connector->subpixel));
-
-	weston_head_set_physical_size(&head->base, head->connector->mmWidth,
-				      head->connector->mmHeight);
-
+	update_head_from_connector(head, props);
 	drmModeFreeObjectProperties(props);
-
-	/* Unknown connection status is assumed disconnected. */
-	weston_head_set_connection_status(&head->base,
-			head->connector->connection == DRM_MODE_CONNECTED);
 
 	return 0;
 }
