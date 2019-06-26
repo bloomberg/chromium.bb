@@ -39,7 +39,8 @@ export function now(): number {
   return perf.now();
 }
 
-export function objectEquals(x: object, y: object): boolean {
+export function objectEquals(x: unknown, y: unknown): boolean {
+  if (typeof x !== 'object' || typeof y !== 'object') return x === y;
   if (x === null || y === null) return x === y;
   if (x.constructor !== y.constructor) return false;
   if (x instanceof Function) return x === y;
@@ -53,5 +54,5 @@ export function objectEquals(x: object, y: object): boolean {
   const x1 = x as { [k: string]: any };
   const y1 = y as { [k: string]: any };
   const p = Object.keys(x);
-  return Object.keys(y).every(i => p.indexOf(i) !== -1) && p.every(i => x1[i] === y1[i]);
+  return Object.keys(y).every(i => p.indexOf(i) !== -1) && p.every(i => objectEquals(x1[i], y1[i]));
 }

@@ -27,8 +27,6 @@ g.test('options', t => {
   t.expectSpecEqual(poptions('hello', [1, 2, 3]), [{ hello: 1 }, { hello: 2 }, { hello: 3 }]);
 });
 
-// TODO: somehow "subgroup" the combine tests
-
 g.test('combine/none', t => {
   t.expectSpecEqual(pcombine([]), []);
 });

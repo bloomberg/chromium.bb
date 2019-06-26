@@ -46,11 +46,12 @@ export class DefaultFixture extends Fixture {
     }
   }
 
-  expect(cond: boolean, msg?: string) {
+  expect(cond: boolean, msg?: string): boolean {
     if (cond) {
       this.ok(msg);
     } else {
       this.rec.fail(msg);
     }
+    return cond;
   }
 }

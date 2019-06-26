@@ -1,14 +1,16 @@
 export const description = `
-Unit tests for parameterization system.
+Unit tests for TestGroup.
 `;
 
 import { DefaultFixture, Fixture, TestGroup, poptions } from '../../framework/index.js';
+import { TestGroupTest } from './test_group_test.js';
 
-export const g = new TestGroup(DefaultFixture);
+export const g = new TestGroup(TestGroupTest);
 
-g.test('default fixture', t0 => {
+g.test('default fixture', async t0 => {
+  let seen = 0;
   function print(t: Fixture) {
-    t.log(JSON.stringify(t.params));
+    seen++;
   }
 
   const g = new TestGroup(DefaultFixture);
@@ -16,13 +18,15 @@ g.test('default fixture', t0 => {
   g.test('test', print);
   g.test('testp', print).params([{ a: 1 }]);
 
-  // TODO: check output
+  await t0.run(g);
+  t0.expect(seen === 2);
 });
 
-g.test('custom fixture', t0 => {
+g.test('custom fixture', async t0 => {
+  let seen = 0;
   class Printer extends DefaultFixture {
     print() {
-      this.log(JSON.stringify(this.params));
+      seen++;
     }
   }
 
@@ -35,7 +39,8 @@ g.test('custom fixture', t0 => {
     t.print();
   }).params([{ a: 1 }]);
 
-  // TODO: check output
+  await t0.run(g);
+  t0.expect(seen === 2);
 });
 
 g.test('duplicate test name', t => {
