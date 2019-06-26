@@ -9,6 +9,7 @@
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
   "files.exclude": {
+    "*.tmp.txt": true,
     ".babelrc": true,
     ".gitignore": true,
     ".travis.yml": true,
