@@ -9,6 +9,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryPrefetcher;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
@@ -38,6 +39,11 @@ public abstract class AsyncInitTaskRunner {
     @VisibleForTesting
     boolean shouldFetchVariationsSeedDuringFirstRun() {
         return ChromeVersionInfo.isOfficialBuild();
+    }
+
+    @VisibleForTesting
+    void prefetchLibrary() {
+        LibraryPrefetcher.asyncPrefetchLibrariesToMemory();
     }
 
     private class FetchSeedTask implements Runnable {
@@ -138,7 +144,7 @@ public abstract class AsyncInitTaskRunner {
      *
      * @return true iff loading succeeded.
      */
-    private static boolean loadNativeLibrary() {
+    private boolean loadNativeLibrary() {
         try {
             LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
             // The prefetch is done after the library load for two reasons:
@@ -151,7 +157,7 @@ public abstract class AsyncInitTaskRunner {
             // generally startup on some devices, most likely by
             // competing for IO.
             // For experimental results, see http://crbug.com/460438.
-            LibraryLoader.getInstance().asyncPrefetchLibrariesToMemory();
+            prefetchLibrary();
         } catch (ProcessInitException e) {
             return false;
         }

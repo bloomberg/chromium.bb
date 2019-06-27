@@ -23,6 +23,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryPrefetcher;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.memory.MemoryPressureUma;
@@ -360,7 +361,7 @@ public class ChromeBrowserInitializer {
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
             LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
             StrictMode.setThreadPolicy(oldPolicy);
-            LibraryLoader.getInstance().asyncPrefetchLibrariesToMemory();
+            LibraryPrefetcher.asyncPrefetchLibrariesToMemory();
             getBrowserStartupController().startBrowserProcessesSync(false);
             GoogleServicesManager.get();
         } finally {
@@ -431,6 +432,9 @@ public class ChromeBrowserInitializer {
             for (Runnable r : mTasksToRunWithNative) r.run();
             mTasksToRunWithNative = null;
         }
+
+        PostTask.postTask(
+                TaskTraits.BEST_EFFORT_MAY_BLOCK, LibraryPrefetcher::maybePinOrderedCodeInMemory);
     }
 
     private ActivityStateListener createActivityStateListener() {
