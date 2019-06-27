@@ -158,6 +158,7 @@ group("gn_all") {
       "//cc:cc_unittests",
       "//components/policy:policy_templates",
       "//components/ui_devtools/viz",
+      "//components/url_formatter/tools:format_url",
       "//components/viz:viz_perftests",
       "//components/viz:viz_unittests",
       "//components/viz/common:viz_benchmark",
