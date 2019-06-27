@@ -9,10 +9,14 @@ grunt  # show available grunt commands
 
 grunt build
 tools/run.js cts
-```
 
-After `build` and `serve`, open:
-* http://localhost:8080/?q=cts (default)
-* http://localhost:8080/?q=demos
-* http://localhost:8080/?q=unittests
-* http://localhost:8080/?runnow=1&q=unittests:basic&q=unittests:params
+grunt serve
+# Then open:
+# * http://localhost:8080/?q=cts (default)
+# * http://localhost:8080/?q=demos
+# * http://localhost:8080/?q=unittests
+# * http://localhost:8080/?runnow=1&q=unittests:basic&q=unittests:params
+
+# Before uploading, run presubmit:
+grunt pre
+```
