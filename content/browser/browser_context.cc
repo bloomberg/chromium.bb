@@ -842,4 +842,8 @@ BrowserContext::GetNativeFileSystemPermissionContext() {
   return nullptr;
 }
 
+ContentIndexProvider* BrowserContext::GetContentIndexProvider() {
+  return nullptr;
+}
+
 }  // namespace content

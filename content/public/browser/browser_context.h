@@ -80,6 +80,7 @@ class BrowsingDataRemover;
 class BrowsingDataRemoverDelegate;
 class DownloadManager;
 class ClientHintsControllerDelegate;
+class ContentIndexProvider;
 class DownloadManagerDelegate;
 class NativeFileSystemPermissionContext;
 class PermissionController;
@@ -360,6 +361,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // if any, nullptr otherwise.
   virtual NativeFileSystemPermissionContext*
   GetNativeFileSystemPermissionContext();
+
+  // Returns the ContentIndexProvider associated with that context if any,
+  // nullptr otherwise.
+  virtual ContentIndexProvider* GetContentIndexProvider();
 
  private:
   const std::string unique_id_;
