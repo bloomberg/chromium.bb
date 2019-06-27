@@ -863,7 +863,7 @@ crbug.com/591099 [ Mac ] paint/invalidation/flexbox/remove-inline-block-descenda
 crbug.com/591099 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.html [ Failure ]
 crbug.com/591099 [ Mac ] images/feature-policy-oversized-images-resize.html [ Failure ]
 crbug.com/974717 [ Linux ] images/feature-policy-oversized-images-resize.html [ Failure Pass ]
-crbug.com/591099 [ Mac10.11 ] media/track/track-cue-rendering-position-auto-rtl.html [ Failure ]
+# crbug.com/591099 [ Mac10.11 ] media/track/track-cue-rendering-position-auto-rtl.html [ Failure ]
 crbug.com/591099 [ Mac10.11 ] virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] compositing/geometry/root-layer-update.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] compositing/overlap-blending/reflection-opacity-huge.html [ Failure ]
@@ -6219,3 +6219,4 @@ crbug.com/979193 [ Mac ] paint/invalidation/svg/remove-background-property-on-ro
 crbug.com/979193 [ Mac ] external/wpt/inert/inert-retargeting-iframe.tentative.html [ Pass Failure ]
 crbug.com/979243 [ Mac ] editing/selection/inline-closest-leaf-child.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] media/controls/captions-menu-always-visible.html [ Pass Failure ]
+crbug.com/979323 [ Mac ] media/track/track-cue-rendering-position-auto-rtl.html [ Pass Failure ]
