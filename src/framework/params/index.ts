@@ -4,6 +4,7 @@ export * from './options.js';
 export * from './exclude.js';
 
 export interface IParamsAny {
+  // tslint:disable-next-line: no-any // Too annoying to force every test to type convert params
   [k: string]: any;
 }
 export type ParamAnyIterable = Iterable<IParamsAny>;

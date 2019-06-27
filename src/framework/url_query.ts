@@ -1,5 +1,5 @@
 import { IEntry } from './loader.js';
-import { ICase } from './test_group.js';
+import { ICaseID } from './test_group.js';
 
 export function encodeSelectively(s: string) {
   let ret = encodeURIComponent(s);
@@ -13,7 +13,7 @@ export function encodeSelectively(s: string) {
   return ret;
 }
 
-export function makeQueryString(entry: IEntry, testcase?: ICase): string {
+export function makeQueryString(entry: IEntry, testcase?: ICaseID): string {
   let s = entry.suite + ':';
   s += entry.path + ':';
   if (testcase) {

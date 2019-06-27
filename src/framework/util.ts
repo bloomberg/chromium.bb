@@ -51,8 +51,8 @@ export function objectEquals(x: unknown, y: unknown): boolean {
   if (!(x instanceof Object)) return false;
   if (!(y instanceof Object)) return false;
 
-  const x1 = x as { [k: string]: any };
-  const y1 = y as { [k: string]: any };
+  const x1 = x as { [k: string]: unknown };
+  const y1 = y as { [k: string]: unknown };
   const p = Object.keys(x);
   return Object.keys(y).every(i => p.indexOf(i) !== -1) && p.every(i => objectEquals(x1[i], y1[i]));
 }

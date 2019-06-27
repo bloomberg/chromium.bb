@@ -5,8 +5,11 @@ import { Fixture } from '../../framework/index.js';
 let shaderc: Promise<Shaderc.Shaderc> | undefined;
 
 export class GPUTest extends Fixture {
+  // tslint:disable-next-line: no-any
   device: GPUDevice = undefined as any;
+  // tslint:disable-next-line: no-any
   queue: GPUQueue = undefined as any;
+  // tslint:disable-next-line: no-any
   shaderc: Shaderc.Shaderc = undefined as any;
 
   async init(): Promise<void> {

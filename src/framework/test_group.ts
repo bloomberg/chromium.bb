@@ -86,6 +86,8 @@ export abstract class Fixture {
     this.params = params;
   }
 
+  // This has to be a member function instead of an async `createFixture` function, because
+  // we need to be able to ergonomically override it in subclasses.
   async init(): Promise<void> {}
 
   finalize(): void {}
