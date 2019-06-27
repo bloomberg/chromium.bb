@@ -8,6 +8,7 @@ Libweston
    libweston/compositor.rst
    libweston/head.rst
    libweston/output.rst
+   libweston/log.rst
 
 `Libweston` is an effort to separate the re-usable parts of Weston into a
 library. `Libweston` provides most of the boring and tedious bits of correctly
