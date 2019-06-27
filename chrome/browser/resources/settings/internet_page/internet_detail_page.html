@@ -72,7 +72,7 @@
       <div class="start layout horizontal center">
         <cr-network-icon
             show-technology-badge="[[showTechnologyBadge_]]"
-            network-state="[[networkProperties_]]">
+            network-state="[[getNetworkState_(networkProperties_)]]">
         </cr-network-icon>
         <div id="networkState" class="title settings-box-text"
             connected$="[[isConnectedState_(networkProperties_)]]"
