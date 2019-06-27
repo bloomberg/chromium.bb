@@ -31,24 +31,25 @@ import java.lang.annotation.RetentionPolicy;
  * {@link Delegate#isItemSupported(int)}.
  */
 public class ContextMenuManager implements OnCloseContextMenuListener {
-    @IntDef({ContextMenuItemId.OPEN_IN_NEW_WINDOW, ContextMenuItemId.OPEN_IN_NEW_TAB,
-            ContextMenuItemId.OPEN_IN_INCOGNITO_TAB, ContextMenuItemId.SAVE_FOR_OFFLINE,
-            ContextMenuItemId.ADD_TO_MY_APPS, ContextMenuItemId.REMOVE,
-            ContextMenuItemId.LEARN_MORE})
+    @IntDef({ContextMenuItemId.SEARCH, ContextMenuItemId.OPEN_IN_NEW_WINDOW,
+            ContextMenuItemId.OPEN_IN_NEW_TAB, ContextMenuItemId.OPEN_IN_INCOGNITO_TAB,
+            ContextMenuItemId.SAVE_FOR_OFFLINE, ContextMenuItemId.ADD_TO_MY_APPS,
+            ContextMenuItemId.REMOVE, ContextMenuItemId.LEARN_MORE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ContextMenuItemId {
         // The order of the items will be based on the value of their ID. So if new items are added,
         // the value of the existing ones should be modified so they stay in order.
         // Values are also used for indexing - should start from 0 and can't have gaps.
-        int OPEN_IN_NEW_WINDOW = 0;
-        int OPEN_IN_NEW_TAB = 1;
-        int OPEN_IN_INCOGNITO_TAB = 2;
-        int SAVE_FOR_OFFLINE = 3;
-        int ADD_TO_MY_APPS = 4;
-        int REMOVE = 5;
-        int LEARN_MORE = 6;
+        int SEARCH = 0;
+        int OPEN_IN_NEW_WINDOW = 1;
+        int OPEN_IN_NEW_TAB = 2;
+        int OPEN_IN_INCOGNITO_TAB = 3;
+        int SAVE_FOR_OFFLINE = 4;
+        int ADD_TO_MY_APPS = 5;
+        int REMOVE = 6;
+        int LEARN_MORE = 7;
 
-        int NUM_ENTRIES = 7;
+        int NUM_ENTRIES = 8;
     }
 
     private final NativePageNavigationDelegate mNavigationDelegate;
@@ -224,6 +225,8 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         if (!delegate.isItemSupported(itemId)) return false;
 
         switch (itemId) {
+            case ContextMenuItemId.SEARCH:
+                return false;
             case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
                 return mNavigationDelegate.isOpenInNewWindowEnabled();
             case ContextMenuItemId.OPEN_IN_NEW_TAB:
