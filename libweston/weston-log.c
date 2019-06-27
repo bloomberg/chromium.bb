@@ -40,6 +40,12 @@
 #include <errno.h>
 #include <sys/time.h>
 
+/**
+ * @defgroup log Public Logging/Debugging API
+ * @defgroup internal-log Private/Internal Logging/Debugging API
+ * @defgroup debug-protocol weston-debug protocol specific
+ */
+
 /** Main weston-log context
  *
  * One per weston_compositor. Stores list of scopes created and a list pending
@@ -56,7 +62,7 @@
  * connects and subscribes to a scope which was previously advertised by the
  * compositor.
  *
- * @internal
+ * @ingroup internal-log
  */
 struct weston_log_context {
 	struct wl_global *global;
@@ -69,6 +75,8 @@ struct weston_log_context {
  * This is used for scoping logging/debugging messages. Clients can subscribe
  * to only the scopes they are interested in. A scope is identified by its name
  * (also referred to as debug stream name).
+ *
+ * @ingroup log
  */
 struct weston_log_scope {
 	char *name;
@@ -94,7 +102,7 @@ struct weston_log_scope {
  * A subscription can reached from a subscriber subscription list by using the
  * streams base class.
  *
- * @internal
+ * @ingroup internal-log
  */
 struct weston_log_subscription {
 	struct weston_log_subscriber *owner;
@@ -163,6 +171,10 @@ weston_log_subscription_destroy_pending(struct weston_log_subscription *sub)
 	free(sub);
 }
 
+/** Write to the stream's subscription
+ *
+ * @memberof weston_log_subscription
+ */
 static void
 weston_log_subscription_write(struct weston_log_subscription *sub,
 			      const char *data, size_t len)
@@ -171,6 +183,10 @@ weston_log_subscription_write(struct weston_log_subscription *sub,
 		sub->owner->write(sub->owner, data, len);
 }
 
+/** Write a formatted string to the stream's subscription
+ *
+ * @memberof weston_log_subscription
+ */
 static void
 weston_log_subscription_vprintf(struct weston_log_subscription *sub,
 				const char *fmt, va_list ap)
@@ -207,9 +223,9 @@ weston_log_subscription_vprintf(struct weston_log_subscription *sub,
  * @returns a weston_log_subscription object in case of success, or NULL
  * otherwise
  *
- * @internal
  * @sa weston_log_subscription_destroy, weston_log_subscription_remove,
  * weston_log_subscription_add
+ * @memberof weston_log_subscription
  */
 void
 weston_log_subscription_create(struct weston_log_subscriber *owner,
@@ -260,7 +276,7 @@ weston_log_subscription_destroy(struct weston_log_subscription *sub)
  * @param subscriber the subscriber in question
  * @returns a weston_log_subscription object
  *
- * @internal
+ * @memberof weston_log_subscription
  */
 struct weston_log_subscription *
 weston_log_subscriber_get_only_subscription(struct weston_log_subscriber *subscriber)
@@ -286,7 +302,7 @@ weston_log_subscriber_get_only_subscription(struct weston_log_subscriber *subscr
  * @param sub the subscription, it must be created before, see
  * weston_log_subscription_create()
  *
- * @internal
+ * @memberof weston_log_subscription
  */
 void
 weston_log_subscription_add(struct weston_log_scope *scope,
@@ -303,7 +319,7 @@ weston_log_subscription_add(struct weston_log_scope *scope,
 
 /** Removes the subscription from the scope's subscription list
  *
- * @internal
+ * @memberof weston_log_subscription
  */
 void
 weston_log_subscription_remove(struct weston_log_subscription *sub)
@@ -321,7 +337,7 @@ weston_log_subscription_remove(struct weston_log_subscription *sub)
  * @param name the scope name, see weston_compositor_add_log_scope()
  * @returns NULL if none found, or a pointer to a weston_log_scope
  *
- * @internal
+ * @ingroup internal-log
  */
 struct weston_log_scope *
 weston_log_get_scope(struct weston_log_context *log_ctx, const char *name)
@@ -336,7 +352,7 @@ weston_log_get_scope(struct weston_log_context *log_ctx, const char *name)
 /** Wrapper to invoke the weston_log_scope_cb. Allows to call the cb new_subscriber of
  * a log scope.
  *
- * @internal
+ * @ingroup internal-log
  */
 void
 weston_log_run_cb_new_subscriber(struct weston_log_subscription *sub)
@@ -349,7 +365,7 @@ weston_log_run_cb_new_subscriber(struct weston_log_subscription *sub)
  *
  * This is only used by the weston-debug protocol!
  *
- * @internal
+ * @ingroup internal-log
  */
 void
 weston_debug_protocol_advertise_scopes(struct weston_log_context *log_ctx,
@@ -368,6 +384,8 @@ weston_debug_protocol_advertise_scopes(struct weston_log_context *log_ctx,
  * \return 0 on success, -1 on failure
  *
  * Sets weston_compositor::weston_log_ctx.
+ *
+ * @ingroup log
  */
 int
 weston_log_ctx_compositor_setup(struct weston_compositor *compositor,
@@ -386,6 +404,7 @@ weston_log_ctx_compositor_setup(struct weston_compositor *compositor,
  * success
  *
  * weston_log_context is a singleton for each weston_compositor.
+ * @ingroup log
  *
  */
 WL_EXPORT struct weston_log_context *
@@ -408,6 +427,7 @@ weston_log_ctx_compositor_create(void)
  * \param compositor The libweston compositor whose weston-debug to tear down.
  *
  * Clears weston_compositor::weston_log_ctx.
+ * @ingroup log
  *
  */
 WL_EXPORT void
@@ -456,6 +476,8 @@ weston_log_ctx_compositor_destroy(struct weston_compositor *compositor)
  *
  * The debug extension is disabled by default, and once enabled, cannot be
  * disabled again.
+ *
+ * @ingroup debug-protocol
  */
 WL_EXPORT void
 weston_compositor_enable_debug_protocol(struct weston_compositor *compositor)
@@ -478,7 +500,10 @@ weston_compositor_enable_debug_protocol(struct weston_compositor *compositor)
 
 /** Determine if the debug protocol has been enabled
  *
- * \param wc The libweston compositor to verify if debug protocol has been enabled
+ * \param wc The libweston compositor to verify if debug protocol has been
+ * enabled
+ *
+ * @ingroup debug-protocol
  */
 WL_EXPORT bool
 weston_compositor_is_debug_protocol_enabled(struct weston_compositor *wc)
@@ -657,6 +682,7 @@ weston_log_scope_is_enabled(struct weston_log_scope *scope)
 
 /** Close the stream's complete callback if one was installed/created.
  *
+ * @ingroup log
  */
 WL_EXPORT void
 weston_log_subscription_complete(struct weston_log_subscription *sub)
@@ -779,6 +805,7 @@ weston_log_scope_printf(struct weston_log_scope *scope,
  *
  * Writes to formatted string to the stream that created the subscription.
  *
+ * @ingroup log
  */
 WL_EXPORT void
 weston_log_subscription_printf(struct weston_log_subscription *sub,
@@ -801,6 +828,8 @@ weston_log_subscription_printf(struct weston_log_subscription *sub,
  * Reads the current local wall-clock time and formats it into a string.
  * and append the debug scope name to it, if a scope is available.
  * The string is NUL-terminated, even if truncated.
+ *
+ * @memberof weston_log_scope
  */
 WL_EXPORT char *
 weston_log_scope_timestamp(struct weston_log_scope *scope,
@@ -844,6 +873,8 @@ weston_log_scope_timestamp(struct weston_log_scope *scope,
  * @param subscriber the subscriber, which has to be created before
  * @param scope_name the scope name. In case the scope is not created
  * we temporarily store the subscription in the pending list.
+ *
+ * @ingroup log
  */
 WL_EXPORT void
 weston_log_subscribe(struct weston_log_context *log_ctx,

@@ -46,7 +46,7 @@ struct weston_log_subscription;
  * Passing the base class will require container retrieval type of methods
  * to be allowed to reach the opaque type (i.e., container_of()).
  *
- * @internal
+ * @ingroup internal-log
  *
  */
 struct weston_log_subscriber {
