@@ -12,6 +12,7 @@ import os
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import path_util
 
 from chromite.lib.paygen import partition_lib
 
@@ -73,6 +74,9 @@ Block count: %d
     """Tests we correctly identify a SquashFS image."""
     # Tests correct arguments are passed and SquashFS image is correctly
     # identified.
+    # Don't need to test the path util functionality, make it just give us the
+    # image path back.
+    self.PatchObject(path_util, 'ToChrootPath', side_effect=lambda x: x)
     image = '/foo/image'
     self.assertTrue(partition_lib.IsSquashfsImage(image))
     self.assertCommandCalled(['unsquashfs', '-s', image], enter_chroot=True,
@@ -86,6 +90,9 @@ Block count: %d
   def testIsExt4Image(self):
     """Tests we correctly identify an Ext4 image."""
     # Tests correct arguments are passed and Ext4 image is correctly identified.
+    # Don't need to test the path util functionality, make it just give us the
+    # image path back.
+    self.PatchObject(path_util, 'ToChrootPath', side_effect=lambda x: x)
     image = '/foo/image'
     self.assertTrue(partition_lib.IsExt4Image(image))
     self.assertCommandCalled(['sudo', '--', 'tune2fs', '-l', image],
