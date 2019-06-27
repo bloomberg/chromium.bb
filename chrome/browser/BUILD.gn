@@ -4609,6 +4609,8 @@ jumbo_split_static_library("browser") {
         "offline_pages/android/prefetch_background_task_scheduler_android.cc",
         "offline_pages/android/prefetch_configuration_impl_android.cc",
         "offline_pages/android/prefetched_pages_notifier_android.cc",
+        "offline_pages/android/request_coordinator_bridge.cc",
+        "offline_pages/android/request_coordinator_bridge.h",
         "offline_pages/android/request_coordinator_factory.cc",
       ]
     }
