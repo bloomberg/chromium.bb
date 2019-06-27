@@ -3315,6 +3315,7 @@
   orco-tot-chromium-pfq-informational-tryjob
   orco-unittest-stress
   orderfile-generate-toolchain-tryjob
+  orderfile-verify-toolchain-tryjob
   panther-chrome-pfq-tryjob
   panther-chromium-pfq-tryjob
   panther-compile-only-pre-cq

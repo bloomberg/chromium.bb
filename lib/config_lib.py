@@ -859,6 +859,11 @@ def DefaultSettings():
       # generate an orderfile for uploading as a result.
       orderfile_generate=False,
 
+      # Verify unvetted Chrome orderfile. Will use the most recent unvetted
+      # orderfile and build Chrome. Upload the orderfile to vetted bucket
+      # as a result.
+      orderfile_verify=False,
+
       # Generates AFDO data, builds the minimum amount of artifacts and
       # assumes a non-distributed builder (i.e.: the whole process in a single
       # builder).

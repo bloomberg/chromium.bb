@@ -1131,6 +1131,14 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       description='Build Chrome and generate an orderfile for better layout',
   )
 
+  site_config.AddTemplate(
+      'orderfile_verify_toolchain',
+      site_config.templates.release,
+      orderfile_verify=True,
+      useflags=config_lib.append_useflags(['orderfile_use']),
+      description='Verify the most recent orderfile is building correctly',
+  )
+
   ### Toolchain waterfall entries.
   ### Toolchain builder configs: 3 architectures {amd64,arm,arm64}
   ###                          x 1 toolchains {llvm-next}
@@ -1261,6 +1269,14 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # anything on the board.
       boards=['terra'],
       # TODO: Add a schedule to start daily or weekly
+  )
+
+  site_config.Add(
+      'orderfile-verify-toolchain',
+      site_config.templates.orderfile_verify_toolchain,
+      # Only test on X86 for now.
+      boards=['eve'],
+      # TODO: Add a schedule
   )
 
   # This config is manually run when we want to generate a 'release' AFDO
