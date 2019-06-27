@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang=en>
+<head>
+<meta charset=utf-8>
+<meta name="variant" content="?q=cts:command_buffer:">
+<meta name="variant" content="?q=demos:">
+<meta name="variant" content="?q=demos:params">
+<title></title>
+<script src=/resources/testharness.js></script>
+<script src=/resources/testharnessreport.js></script>
+<style>
+#results {
+    font-family: monospace;
+    width: 100%;
+    height: 15em;
+}
+</style>
+</head>
+<body>
+<textarea id=results></textarea>
+
+<script type=module>
+'use strict';
+import { TestLoader } from './framework/loader.js';
+import { Logger } from './framework/logger.js';
+import { makeQueryString, parseQueryString } from './framework/url_query.js';
+
+(async () => {
+    const filters = parseQueryString(window.location.search);
+    const loader = new TestLoader();
+    const listing = await loader.loadTests('./suites', filters);
+
+    const log = new Logger();
+    const running = [];
+    const entries = await Promise.all(Array.from(listing,
+        ({ suite, path, node }) => node.then(node => ({ suite, path, node }))));
+
+    for (const entry of entries) {
+        const { suite, path, node: { g } } = entry;
+        if (!g) {
+            continue;
+        }
+
+        const [result, rec] = log.record(path);
+        // TODO: don't run all tests all at once
+        for (const t of g.iterate(rec)) {
+            const run = t.run();
+            running.push(run);
+            // Note: apparently, async_tests must ALL be added within the same task.
+            async_test(async function() {
+                const r = await run;
+                this.step(() => {
+                    if (r.status === 'fail') {
+                        throw r.logs.join('\n');
+                    }
+                });
+                this.done();
+            }, makeQueryString(entry, t.testcase));
+        }
+    }
+    done(); // Only has to be after all async_test calls, not after the tests finish.
+
+    await Promise.all(running);
+    document.getElementById('results').textContent = log.asJSON(2);
+})();
+</script>
+</body>
+</html>

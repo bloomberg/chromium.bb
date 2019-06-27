@@ -43,6 +43,12 @@ module.exports = function(grunt) {
       'gts-fix': { cmd: 'node_modules/.bin/gts', args: ['fix'] },
     },
 
+    copy: {
+      wpt: {
+        files: [{ expand: true, cwd: 'wpt', src: 'cts.html', dest: 'out/' }],
+      },
+    },
+
     'http-server': {
       '.': {
         root: '.',
@@ -63,6 +69,7 @@ module.exports = function(grunt) {
   });
 
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-http-server');
   grunt.loadNpmTasks('grunt-mkdir');
   grunt.loadNpmTasks('grunt-run');
@@ -80,6 +87,7 @@ module.exports = function(grunt) {
     'mkdir:out',
     'run:build-shaderc',
     'run:build-out',
+    'copy:wpt',
     'run:generate-version',
     'run:generate-listings',
   ]);
