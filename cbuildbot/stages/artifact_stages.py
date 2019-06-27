@@ -1103,7 +1103,7 @@ class GenerateOrderfileStage(generic_stages.BoardSpecificBuilderStage,
 
   category = constants.CI_INFRA_STAGE
 
-  GS_URL = 'gs://chromeos-prebuilt/afdo-job/orderfiles'
+  GS_URL = 'gs://chromeos-prebuilt/afdo-job/orderfiles/unvetted'
 
   def __init__(self, *args, **kwargs):
     super(GenerateOrderfileStage, self).__init__(*args, **kwargs)

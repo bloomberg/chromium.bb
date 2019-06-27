@@ -1128,6 +1128,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.release,
       orderfile_generate=True,
       useflags=config_lib.append_useflags(['orderfile_generate']),
+      display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
       description='Build Chrome and generate an orderfile for better layout',
   )
 
@@ -1136,6 +1137,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.release,
       orderfile_verify=True,
       useflags=config_lib.append_useflags(['orderfile_use']),
+      display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
       description='Verify the most recent orderfile is building correctly',
   )
 
@@ -1268,7 +1270,11 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # The board should not matter much, since we are not running
       # anything on the board.
       boards=['terra'],
-      # TODO: Add a schedule to start daily or weekly
+      # 10 AM UTC is 2 AM PST (no daylight savings)
+      schedule='0 10 * * *',
+      health_alert_recipients=['c-compiler-chrome@google.com'],
+      # Send emails if this builder fails once
+      health_threshold=1,
   )
 
   site_config.Add(
