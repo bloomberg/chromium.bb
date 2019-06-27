@@ -72,16 +72,11 @@ void SelectComboboxRowForValue(views::Combobox* combobox,
 
 }  // namespace
 
-PersonalDataLoadedObserverMock::PersonalDataLoadedObserverMock() {}
-PersonalDataLoadedObserverMock::~PersonalDataLoadedObserverMock() {}
+PersonalDataLoadedObserverMock::PersonalDataLoadedObserverMock() = default;
+PersonalDataLoadedObserverMock::~PersonalDataLoadedObserverMock() = default;
 
-PaymentRequestBrowserTestBase::PaymentRequestBrowserTestBase()
-    : delegate_(nullptr),
-      is_incognito_(false),
-      is_valid_ssl_(true),
-      is_browser_window_active_(true) {}
-
-PaymentRequestBrowserTestBase::~PaymentRequestBrowserTestBase() {}
+PaymentRequestBrowserTestBase::PaymentRequestBrowserTestBase() = default;
+PaymentRequestBrowserTestBase::~PaymentRequestBrowserTestBase() = default;
 
 void PaymentRequestBrowserTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
@@ -135,6 +130,10 @@ void PaymentRequestBrowserTestBase::SetInvalidSsl() {
 
 void PaymentRequestBrowserTestBase::SetBrowserWindowInactive() {
   is_browser_window_active_ = false;
+}
+
+void PaymentRequestBrowserTestBase::SetSkipUiForForBasicCard() {
+  skip_ui_for_basic_card_ = true;
 }
 
 void PaymentRequestBrowserTestBase::OnCanMakePaymentCalled() {
@@ -504,7 +503,7 @@ void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
   std::unique_ptr<TestChromePaymentRequestDelegate> delegate =
       std::make_unique<TestChromePaymentRequestDelegate>(
           web_contents, this /* observer */, &prefs_, is_incognito_,
-          is_valid_ssl_, is_browser_window_active_);
+          is_valid_ssl_, is_browser_window_active_, skip_ui_for_basic_card_);
   delegate_ = delegate.get();
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
       ->CreatePaymentRequest(web_contents->GetMainFrame(), web_contents,
@@ -834,14 +833,6 @@ void PaymentRequestBrowserTestBase::ResetEventWaiterForDialogOpened() {
 
 void PaymentRequestBrowserTestBase::WaitForObservedEvent() {
   event_waiter_->Wait();
-}
-
-void PaymentRequestBrowserTestBase::EnableSkipUIForForBasicCard() {
-  std::vector<PaymentRequest*> requests =
-      GetPaymentRequests(GetActiveWebContents());
-  ASSERT_EQ(1U, requests.size());
-  requests.front()
-      ->set_skip_ui_for_non_url_payment_method_identifiers_for_test();
 }
 
 }  // namespace payments
