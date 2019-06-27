@@ -1551,9 +1551,9 @@ CrSettingsSecurityKeysSubpageTest.prototype = {
   ]),
 };
 
-// Disabling on Mac and Linux due to deterministic failures on some bots.
+// Disabling on dbg bots due to deterministic failures on some bots.
 // https://crbug.com/978792
-GEN('#if defined(OS_MACOSX) || defined(OS_LINUX)');
+GEN('#if !defined(NDEBUG)');
 GEN('#define MAYBE_All3 DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All3 All');
