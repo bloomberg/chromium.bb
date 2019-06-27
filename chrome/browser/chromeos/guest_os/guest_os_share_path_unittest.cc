@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
@@ -32,9 +33,9 @@
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace crostini {
+namespace guest_os {
 
-class CrostiniSharePathTest : public testing::Test {
+class GuestOsSharePathTest : public testing::Test {
  public:
   const bool PERSIST_YES = true;
   const bool PERSIST_NO = false;
@@ -59,7 +60,7 @@ class CrostiniSharePathTest : public testing::Test {
     EXPECT_TRUE(prefs->HasKey(shared_path_.value()));
     EXPECT_EQ(prefs->FindKey(shared_path_.value())->GetList().size(), 1U);
     EXPECT_EQ(prefs->FindKey(shared_path_.value())->GetList()[0].GetString(),
-              kCrostiniDefaultVmName);
+              crostini::kCrostiniDefaultVmName);
     if (expected_persist == Persist::YES) {
       EXPECT_EQ(prefs->size(), 2U);
       EXPECT_TRUE(prefs->HasKey(share_path_.value()));
@@ -177,7 +178,7 @@ class CrostiniSharePathTest : public testing::Test {
                         expected_failure_reason, success, failure_reason);
   }
 
-  CrostiniSharePathTest()
+  GuestOsSharePathTest()
       : test_browser_thread_bundle_(
             content::TestBrowserThreadBundle::REAL_IO_THREAD) {
     chromeos::DBusThreadManager::Initialize();
@@ -187,7 +188,7 @@ class CrostiniSharePathTest : public testing::Test {
         chromeos::DBusThreadManager::Get()->GetSeneschalClient());
   }
 
-  ~CrostiniSharePathTest() override { chromeos::DBusThreadManager::Shutdown(); }
+  ~GuestOsSharePathTest() override { chromeos::DBusThreadManager::Shutdown(); }
 
   void SetUpVolume() {
     // Setup Downloads and path to share, which depend on MyFilesVolume flag,
@@ -207,18 +208,19 @@ class CrostiniSharePathTest : public testing::Test {
                                 prefs::kGuestOSPathsSharedToVms);
     base::DictionaryValue* shared_paths = update.Get();
     base::Value termina(base::Value::Type::LIST);
-    termina.GetList().emplace_back(base::Value(kCrostiniDefaultVmName));
+    termina.GetList().emplace_back(
+        base::Value(crostini::kCrostiniDefaultVmName));
     shared_paths->SetKey(shared_path_.value(), std::move(termina));
     volume_downloads_ = file_manager::Volume::CreateForDownloads(root_);
-    crostini_share_path_->RegisterSharedPath(kCrostiniDefaultVmName,
+    guest_os_share_path_->RegisterSharedPath(crostini::kCrostiniDefaultVmName,
                                              shared_path_);
   }
 
   void SetUp() override {
     run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
-    crostini_share_path_ = CrostiniSharePath::GetForProfile(profile());
-    crostini_share_path_->set_no_file_watchers_for_testing();
+    guest_os_share_path_ = GuestOsSharePath::GetForProfile(profile());
+    guest_os_share_path_->set_no_file_watchers_for_testing();
 
     // Setup for DriveFS.
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
@@ -230,9 +232,8 @@ class CrostiniSharePathTest : public testing::Test {
     drivefs_ =
         base::FilePath("/media/fuse/drivefs-84675c855b63e12f384d45f033826980");
 
-
     // Create 'vm-running' VM instance which is running.
-    CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
+    crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
         "vm-running");
   }
 
@@ -263,22 +264,22 @@ class CrostiniSharePathTest : public testing::Test {
   std::unique_ptr<base::RunLoop>
       run_loop_;  // run_loop_ must be created on the UI thread.
   std::unique_ptr<TestingProfile> profile_;
-  CrostiniSharePath* crostini_share_path_;
+  GuestOsSharePath* guest_os_share_path_;
   base::test::ScopedFeatureList features_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   AccountId account_id_;
 
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  DISALLOW_COPY_AND_ASSIGN(CrostiniSharePathTest);
+  DISALLOW_COPY_AND_ASSIGN(GuestOsSharePathTest);
 };
 
-TEST_F(CrostiniSharePathTest, SuccessDownloadsRoot) {
+TEST_F(GuestOsSharePathTest, SuccessDownloadsRoot) {
   features_.InitWithFeatures({}, {chromeos::features::kMyFilesVolume});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", root_, PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::DOWNLOADS, "",
@@ -286,14 +287,14 @@ TEST_F(CrostiniSharePathTest, SuccessDownloadsRoot) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SuccessMyFilesRoot) {
+TEST_F(GuestOsSharePathTest, SuccessMyFilesRoot) {
   features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   base::FilePath my_files =
       file_manager::util::GetMyFilesFolderForProfile(profile());
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", my_files, PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::MY_FILES, "",
@@ -301,12 +302,12 @@ TEST_F(CrostiniSharePathTest, SuccessMyFilesRoot) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SuccessNoPersist) {
+TEST_F(GuestOsSharePathTest, SuccessNoPersist) {
   features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", share_path_, PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::MY_FILES,
@@ -314,12 +315,12 @@ TEST_F(CrostiniSharePathTest, SuccessNoPersist) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SuccessPersist) {
+TEST_F(GuestOsSharePathTest, SuccessPersist) {
   features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", share_path_, PERSIST_YES,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::YES,
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::MY_FILES,
@@ -327,12 +328,12 @@ TEST_F(CrostiniSharePathTest, SuccessPersist) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SuccessPluginVm) {
+TEST_F(GuestOsSharePathTest, SuccessPluginVm) {
   features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "PvmDefault", share_path_, PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "PvmDefault", Persist::NO,
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::MY_FILES,
@@ -340,12 +341,12 @@ TEST_F(CrostiniSharePathTest, SuccessPluginVm) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDrive) {
+TEST_F(GuestOsSharePathTest, SuccessDriveFsMyDrive) {
   features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("root").Append("my"), PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::DRIVEFS_MY_DRIVE,
@@ -353,24 +354,24 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDrive) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, FailureDriveFsDisabled) {
+TEST_F(GuestOsSharePathTest, FailureDriveFsDisabled) {
   features_.InitWithFeatures({}, {chromeos::features::kDriveFs});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("root").Append("my"), PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::NO, nullptr, "my", Success::NO,
                      "Path is not allowed"));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDriveRoot) {
+TEST_F(GuestOsSharePathTest, SuccessDriveFsMyDriveRoot) {
   features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("root"), PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::DRIVEFS_MY_DRIVE,
@@ -378,25 +379,25 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDriveRoot) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, FailDriveFsRoot) {
+TEST_F(GuestOsSharePathTest, FailDriveFsRoot) {
   features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", drivefs_, PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::NO, nullptr, "", Success::NO,
                      "Path is not allowed"));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SuccessDriveFsTeamDrives) {
+TEST_F(GuestOsSharePathTest, SuccessDriveFsTeamDrives) {
   features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("team_drives").Append("team"), PERSIST_NO,
       base::BindOnce(
-          &CrostiniSharePathTest::SharePathCallback, base::Unretained(this),
+          &GuestOsSharePathTest::SharePathCallback, base::Unretained(this),
           "vm-running", Persist::NO, SeneschalClientCalled::YES,
           &vm_tools::seneschal::SharePathRequest::DRIVEFS_TEAM_DRIVES, "team",
           Success::YES, ""));
@@ -404,12 +405,12 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsTeamDrives) {
 }
 
 // TODO(crbug.com/917920): Enable when DriveFS enforces allowed write paths.
-TEST_F(CrostiniSharePathTest, DISABLED_SuccessDriveFsComputersGrandRoot) {
+TEST_F(GuestOsSharePathTest, DISABLED_SuccessDriveFsComputersGrandRoot) {
   features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("Computers"), PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::DRIVEFS_COMPUTERS,
@@ -418,12 +419,12 @@ TEST_F(CrostiniSharePathTest, DISABLED_SuccessDriveFsComputersGrandRoot) {
 }
 
 // TODO(crbug.com/917920): Remove when DriveFS enforces allowed write paths.
-TEST_F(CrostiniSharePathTest, Bug917920DriveFsComputersGrandRoot) {
+TEST_F(GuestOsSharePathTest, Bug917920DriveFsComputersGrandRoot) {
   features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("Computers"), PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::NO, nullptr, "", Success::NO,
                      "Path is not allowed"));
@@ -431,12 +432,12 @@ TEST_F(CrostiniSharePathTest, Bug917920DriveFsComputersGrandRoot) {
 }
 
 // TODO(crbug.com/917920): Enable when DriveFS enforces allowed write paths.
-TEST_F(CrostiniSharePathTest, DISABLED_SuccessDriveFsComputerRoot) {
+TEST_F(GuestOsSharePathTest, DISABLED_SuccessDriveFsComputerRoot) {
   features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("Computers").Append("pc"), PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::DRIVEFS_COMPUTERS,
@@ -445,26 +446,26 @@ TEST_F(CrostiniSharePathTest, DISABLED_SuccessDriveFsComputerRoot) {
 }
 
 // TODO(crbug.com/917920): Remove when DriveFS enforces allowed write paths.
-TEST_F(CrostiniSharePathTest, Bug917920DriveFsComputerRoot) {
+TEST_F(GuestOsSharePathTest, Bug917920DriveFsComputerRoot) {
   features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append("Computers").Append("pc"), PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::NO, nullptr, "", Success::NO,
                      "Path is not allowed"));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SuccessDriveFsComputersLevel3) {
+TEST_F(GuestOsSharePathTest, SuccessDriveFsComputersLevel3) {
   features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running",
       drivefs_.Append("Computers").Append("pc").Append("SyncFolder"),
       PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::DRIVEFS_COMPUTERS,
@@ -472,24 +473,24 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsComputersLevel3) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, FailDriveFsTrash) {
+TEST_F(GuestOsSharePathTest, FailDriveFsTrash) {
   features_.InitWithFeatures({chromeos::features::kDriveFs}, {});
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", drivefs_.Append(".Trash").Append("in-the-trash"),
       PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::NO, nullptr, "", Success::NO,
                      "Path is not allowed"));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SuccessRemovable) {
+TEST_F(GuestOsSharePathTest, SuccessRemovable) {
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", base::FilePath("/media/removable/MyUSB"), PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::REMOVABLE, "MyUSB",
@@ -497,18 +498,18 @@ TEST_F(CrostiniSharePathTest, SuccessRemovable) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, FailRemovableRoot) {
+TEST_F(GuestOsSharePathTest, FailRemovableRoot) {
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", base::FilePath("/media/removable"), PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::NO, nullptr, "", Success::NO,
                      "Path is not allowed"));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SharePathErrorSeneschal) {
+TEST_F(GuestOsSharePathTest, SharePathErrorSeneschal) {
   features_.InitWithFeatures(
       {chromeos::features::kMyFilesVolume, features::kCrostini}, {});
   GetFakeUserManager()->LoginUser(account_id_);
@@ -523,9 +524,9 @@ TEST_F(CrostiniSharePathTest, SharePathErrorSeneschal) {
   share_path_response.set_failure_reason("test failure");
   fake_seneschal_client_->set_share_path_response(share_path_response);
 
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "error-seneschal", share_path_, PERSIST_YES,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "error-seneschal", Persist::YES,
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::MY_FILES,
@@ -533,50 +534,50 @@ TEST_F(CrostiniSharePathTest, SharePathErrorSeneschal) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SharePathErrorPathNotAbsolute) {
+TEST_F(GuestOsSharePathTest, SharePathErrorPathNotAbsolute) {
   SetUpVolume();
   const base::FilePath path("not/absolute/dir");
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", path, PERSIST_YES,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::NO, nullptr, "", Success::NO,
                      "Path must be absolute"));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SharePathErrorReferencesParent) {
+TEST_F(GuestOsSharePathTest, SharePathErrorReferencesParent) {
   SetUpVolume();
   const base::FilePath path("/path/../references/parent");
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", path, PERSIST_NO,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::NO, nullptr, "", Success::NO,
                      "Path must be absolute"));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SharePathErrorNotUnderDownloads) {
+TEST_F(GuestOsSharePathTest, SharePathErrorNotUnderDownloads) {
   SetUpVolume();
   const base::FilePath path("/not/under/downloads");
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-running", path, PERSIST_YES,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,
                      SeneschalClientCalled::NO, nullptr, "", Success::NO,
                      "Path is not allowed"));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SharePathVmToBeRestarted) {
+TEST_F(GuestOsSharePathTest, SharePathVmToBeRestarted) {
   features_.InitWithFeatures(
       {chromeos::features::kMyFilesVolume, features::kCrostini}, {});
   GetFakeUserManager()->LoginUser(account_id_);
   SetUpVolume();
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "vm-to-be-started", share_path_, PERSIST_YES,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-to-be-started", Persist::YES,
                      SeneschalClientCalled::YES,
                      &vm_tools::seneschal::SharePathRequest::MY_FILES,
@@ -584,48 +585,48 @@ TEST_F(CrostiniSharePathTest, SharePathVmToBeRestarted) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SharePathErrorVmCouldNotBeStarted) {
+TEST_F(GuestOsSharePathTest, SharePathErrorVmCouldNotBeStarted) {
   SetUpVolume();
   vm_tools::concierge::StartVmResponse start_vm_response;
   start_vm_response.set_status(vm_tools::concierge::VM_STATUS_FAILURE);
   fake_concierge_client_->set_start_vm_response(start_vm_response);
 
-  crostini_share_path_->SharePath(
+  guest_os_share_path_->SharePath(
       "error-vm-could-not-be-started", share_path_, PERSIST_YES,
-      base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "error-vm-could-not-be-started",
                      Persist::YES, SeneschalClientCalled::NO, nullptr, "",
                      Success::NO, "VM could not be started"));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, SharePersistedPaths) {
+TEST_F(GuestOsSharePathTest, SharePersistedPaths) {
   SetUpVolume();
   base::FilePath share_path2_ = root_.AppendASCII("path-to-share-2");
   ASSERT_TRUE(base::CreateDirectory(share_path2_));
-  CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      kCrostiniDefaultVmName);
+  crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
+      crostini::kCrostiniDefaultVmName);
   base::Value shared_paths(base::Value::Type::DICTIONARY);
   base::Value vms(base::Value::Type::LIST);
-  vms.GetList().emplace_back(base::Value(kCrostiniDefaultVmName));
+  vms.GetList().emplace_back(base::Value(crostini::kCrostiniDefaultVmName));
   shared_paths.SetKey(share_path_.value(), std::move(vms));
   base::Value vms2(base::Value::Type::LIST);
-  vms2.GetList().emplace_back(base::Value(kCrostiniDefaultVmName));
+  vms2.GetList().emplace_back(base::Value(crostini::kCrostiniDefaultVmName));
   shared_paths.SetKey(share_path2_.value(), std::move(vms2));
   profile()->GetPrefs()->Set(prefs::kGuestOSPathsSharedToVms, shared_paths);
-  crostini_share_path_->SharePersistedPaths(
-      kCrostiniDefaultVmName,
-      base::BindOnce(&CrostiniSharePathTest::SharePersistedPathsCallback,
+  guest_os_share_path_->SharePersistedPaths(
+      crostini::kCrostiniDefaultVmName,
+      base::BindOnce(&GuestOsSharePathTest::SharePersistedPathsCallback,
                      base::Unretained(this)));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, RegisterPersistedPaths) {
+TEST_F(GuestOsSharePathTest, RegisterPersistedPaths) {
   base::Value shared_paths(base::Value::Type::DICTIONARY);
   SetUpVolume();
   profile()->GetPrefs()->Set(prefs::kGuestOSPathsSharedToVms, shared_paths);
 
-  crostini_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a/a"));
+  guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a/a"));
   const base::DictionaryValue* prefs =
       profile()->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
   EXPECT_EQ(prefs->size(), 1U);
@@ -633,23 +634,23 @@ TEST_F(CrostiniSharePathTest, RegisterPersistedPaths) {
   EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList()[0].GetString(), "v1");
 
   // Adding the same path again for same VM should not cause any changes.
-  crostini_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a/a"));
+  guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a/a"));
   prefs = profile()->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
   EXPECT_EQ(prefs->size(), 1U);
   EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 1U);
 
   // Adding the same path for a new VM adds to the vm list.
-  crostini_share_path_->RegisterPersistedPath("v2", base::FilePath("/a/a/a"));
+  guest_os_share_path_->RegisterPersistedPath("v2", base::FilePath("/a/a/a"));
   EXPECT_EQ(prefs->size(), 1U);
   EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 2U);
   EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList()[0].GetString(), "v1");
   EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList()[1].GetString(), "v2");
 
   // Add more paths.
-  crostini_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a/b"));
-  crostini_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a/c"));
-  crostini_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/b/a"));
-  crostini_share_path_->RegisterPersistedPath("v1", base::FilePath("/b/a/a"));
+  guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a/b"));
+  guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a/c"));
+  guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/b/a"));
+  guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/b/a/a"));
   EXPECT_EQ(prefs->size(), 5U);
   EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 2U);
   EXPECT_EQ(prefs->FindKey("/a/a/b")->GetList().size(), 1U);
@@ -658,7 +659,7 @@ TEST_F(CrostiniSharePathTest, RegisterPersistedPaths) {
   EXPECT_EQ(prefs->FindKey("/b/a/a")->GetList().size(), 1U);
 
   // Adding /a/a should remove /a/a/a, /a/a/b, /a/a/c.
-  crostini_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a"));
+  guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a"));
   EXPECT_EQ(prefs->size(), 4U);
   EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 1U);
   EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList()[0].GetString(), "v2");
@@ -668,7 +669,7 @@ TEST_F(CrostiniSharePathTest, RegisterPersistedPaths) {
   EXPECT_EQ(prefs->FindKey("/a/a")->GetList()[0].GetString(), "v1");
 
   // Adding /a should remove /a/a, /a/b/a.
-  crostini_share_path_->RegisterPersistedPath("v1", base::FilePath("/a"));
+  guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a"));
   EXPECT_EQ(prefs->size(), 3U);
   EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 1U);
   EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList()[0].GetString(), "v2");
@@ -677,7 +678,7 @@ TEST_F(CrostiniSharePathTest, RegisterPersistedPaths) {
   EXPECT_EQ(prefs->FindKey("/a")->GetList()[0].GetString(), "v1");
 
   // Adding / should remove all others.
-  crostini_share_path_->RegisterPersistedPath("v1", base::FilePath("/"));
+  guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/"));
   EXPECT_EQ(prefs->size(), 2U);
   EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 1U);
   EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList()[0].GetString(), "v2");
@@ -685,14 +686,14 @@ TEST_F(CrostiniSharePathTest, RegisterPersistedPaths) {
   EXPECT_EQ(prefs->FindKey("/")->GetList()[0].GetString(), "v1");
 
   // Add / for v2.
-  crostini_share_path_->RegisterPersistedPath("v2", base::FilePath("/"));
+  guest_os_share_path_->RegisterPersistedPath("v2", base::FilePath("/"));
   EXPECT_EQ(prefs->size(), 1U);
   EXPECT_EQ(prefs->FindKey("/")->GetList().size(), 2U);
   EXPECT_EQ(prefs->FindKey("/")->GetList()[0].GetString(), "v1");
   EXPECT_EQ(prefs->FindKey("/")->GetList()[1].GetString(), "v2");
 }
 
-TEST_F(CrostiniSharePathTest, UnsharePathSuccess) {
+TEST_F(GuestOsSharePathTest, UnsharePathSuccess) {
   features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
   DictionaryPrefUpdate update(profile()->GetPrefs(),
@@ -701,27 +702,27 @@ TEST_F(CrostiniSharePathTest, UnsharePathSuccess) {
   base::Value vms(base::Value::Type::LIST);
   vms.GetList().emplace_back(base::Value("vm-running"));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));
-  crostini_share_path_->UnsharePath(
+  guest_os_share_path_->UnsharePath(
       "vm-running", shared_path_, true,
-      base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::UnsharePathCallback,
                      base::Unretained(this), shared_path_, Persist::NO,
                      SeneschalClientCalled::YES, "MyFiles/already-shared",
                      Success::YES, ""));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, UnsharePathRoot) {
+TEST_F(GuestOsSharePathTest, UnsharePathRoot) {
   features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
-  crostini_share_path_->UnsharePath(
+  guest_os_share_path_->UnsharePath(
       "vm-running", root_, true,
-      base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::UnsharePathCallback,
                      base::Unretained(this), root_, Persist::NO,
                      SeneschalClientCalled::YES, "MyFiles", Success::YES, ""));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, UnsharePathVmNotRunning) {
+TEST_F(GuestOsSharePathTest, UnsharePathVmNotRunning) {
   SetUpVolume();
   DictionaryPrefUpdate update(profile()->GetPrefs(),
                               prefs::kGuestOSPathsSharedToVms);
@@ -729,16 +730,16 @@ TEST_F(CrostiniSharePathTest, UnsharePathVmNotRunning) {
   base::Value vms(base::Value::Type::LIST);
   vms.GetList().emplace_back(base::Value("vm-not-running"));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));
-  crostini_share_path_->UnsharePath(
+  guest_os_share_path_->UnsharePath(
       "vm-not-running", shared_path_, true,
-      base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::UnsharePathCallback,
                      base::Unretained(this), shared_path_, Persist::NO,
                      SeneschalClientCalled::NO, "", Success::YES,
                      "VM not running"));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, UnsharePathPluginVmNotRunning) {
+TEST_F(GuestOsSharePathTest, UnsharePathPluginVmNotRunning) {
   SetUpVolume();
   DictionaryPrefUpdate update(profile()->GetPrefs(),
                               prefs::kGuestOSPathsSharedToVms);
@@ -746,28 +747,28 @@ TEST_F(CrostiniSharePathTest, UnsharePathPluginVmNotRunning) {
   base::Value vms(base::Value::Type::LIST);
   vms.GetList().emplace_back(base::Value("PvmDefault"));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));
-  crostini_share_path_->UnsharePath(
+  guest_os_share_path_->UnsharePath(
       "PvmDefault", shared_path_, true,
-      base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::UnsharePathCallback,
                      base::Unretained(this), shared_path_, Persist::NO,
                      SeneschalClientCalled::NO, "", Success::YES,
                      "PluginVm not running"));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, UnsharePathInvalidPath) {
+TEST_F(GuestOsSharePathTest, UnsharePathInvalidPath) {
   SetUpVolume();
   base::FilePath invalid("invalid/path");
-  crostini_share_path_->UnsharePath(
+  guest_os_share_path_->UnsharePath(
       "vm-running", invalid, true,
-      base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
+      base::BindOnce(&GuestOsSharePathTest::UnsharePathCallback,
                      base::Unretained(this), invalid, Persist::NO,
                      SeneschalClientCalled::NO, "", Success::NO,
                      "Invalid path to unshare"));
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, MigratePersistedPathsToMultiVM) {
+TEST_F(GuestOsSharePathTest, MigratePersistedPathsToMultiVM) {
   SetUpVolume();
   base::ListValue shared_paths = base::ListValue();
   base::FilePath downloads_file = profile()->GetPath().Append("Downloads/file");
@@ -775,7 +776,7 @@ TEST_F(CrostiniSharePathTest, MigratePersistedPathsToMultiVM) {
   base::FilePath not_downloads("/not/downloads");
   shared_paths.AppendString(not_downloads.value());
   profile()->GetPrefs()->Set(prefs::kCrostiniSharedPaths, shared_paths);
-  CrostiniSharePath::MigratePersistedPathsToMultiVM(profile()->GetPrefs());
+  GuestOsSharePath::MigratePersistedPathsToMultiVM(profile()->GetPrefs());
   EXPECT_EQ(
       profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths)->GetSize(),
       0U);
@@ -790,7 +791,7 @@ TEST_F(CrostiniSharePathTest, MigratePersistedPathsToMultiVM) {
             "termina");
 }
 
-TEST_F(CrostiniSharePathTest, GetPersistedSharedPaths) {
+TEST_F(GuestOsSharePathTest, GetPersistedSharedPaths) {
   SetUpVolume();
   // path1:['vm1'], path2:['vm2'], path3:['vm3'], path12:['vm1','vm2']
   base::Value shared_paths(base::Value::Type::DICTIONARY);
@@ -815,140 +816,140 @@ TEST_F(CrostiniSharePathTest, GetPersistedSharedPaths) {
   profile()->GetPrefs()->Set(prefs::kGuestOSPathsSharedToVms, shared_paths);
 
   std::vector<base::FilePath> paths =
-      crostini_share_path_->GetPersistedSharedPaths("vm1");
+      guest_os_share_path_->GetPersistedSharedPaths("vm1");
   std::sort(paths.begin(), paths.end());
   EXPECT_EQ(paths.size(), 2U);
   EXPECT_EQ(paths[0], path1);
   EXPECT_EQ(paths[1], path12);
 
-  paths = crostini_share_path_->GetPersistedSharedPaths("vm2");
+  paths = guest_os_share_path_->GetPersistedSharedPaths("vm2");
   std::sort(paths.begin(), paths.end());
   EXPECT_EQ(paths.size(), 2U);
   EXPECT_EQ(paths[0], path12);
   EXPECT_EQ(paths[1], path2);
 
-  paths = crostini_share_path_->GetPersistedSharedPaths("vm3");
+  paths = guest_os_share_path_->GetPersistedSharedPaths("vm3");
   EXPECT_EQ(paths.size(), 1U);
   EXPECT_EQ(paths[0], path3);
 
-  paths = crostini_share_path_->GetPersistedSharedPaths("vm4");
+  paths = guest_os_share_path_->GetPersistedSharedPaths("vm4");
   EXPECT_EQ(paths.size(), 0U);
 }
 
-TEST_F(CrostiniSharePathTest, ShareOnMountSuccessParentMount) {
+TEST_F(GuestOsSharePathTest, ShareOnMountSuccessParentMount) {
   features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
-  CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      kCrostiniDefaultVmName);
-  crostini_share_path_->set_mount_event_seneschal_callback_for_testing(
-      base::BindRepeating(&CrostiniSharePathTest::MountEventSharePathCallback,
+  crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
+      crostini::kCrostiniDefaultVmName);
+  guest_os_share_path_->set_mount_event_seneschal_callback_for_testing(
+      base::BindRepeating(&GuestOsSharePathTest::MountEventSharePathCallback,
                           base::Unretained(this), "share-on-mount",
-                          shared_path_, kCrostiniDefaultVmName, Persist::NO,
-                          SeneschalClientCalled::YES,
+                          shared_path_, crostini::kCrostiniDefaultVmName,
+                          Persist::NO, SeneschalClientCalled::YES,
                           &vm_tools::seneschal::SharePathRequest::MY_FILES,
                           "already-shared", Success::YES, ""));
-  crostini_share_path_->OnVolumeMounted(chromeos::MountError::MOUNT_ERROR_NONE,
+  guest_os_share_path_->OnVolumeMounted(chromeos::MountError::MOUNT_ERROR_NONE,
                                         *volume_downloads_);
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, ShareOnMountSuccessSelfMount) {
+TEST_F(GuestOsSharePathTest, ShareOnMountSuccessSelfMount) {
   features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
-  CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      kCrostiniDefaultVmName);
+  crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
+      crostini::kCrostiniDefaultVmName);
   auto volume_shared_path =
       file_manager::Volume::CreateForDownloads(shared_path_);
-  crostini_share_path_->set_mount_event_seneschal_callback_for_testing(
-      base::BindRepeating(&CrostiniSharePathTest::MountEventSharePathCallback,
+  guest_os_share_path_->set_mount_event_seneschal_callback_for_testing(
+      base::BindRepeating(&GuestOsSharePathTest::MountEventSharePathCallback,
                           base::Unretained(this), "share-on-mount",
-                          shared_path_, kCrostiniDefaultVmName, Persist::NO,
-                          SeneschalClientCalled::YES,
+                          shared_path_, crostini::kCrostiniDefaultVmName,
+                          Persist::NO, SeneschalClientCalled::YES,
                           &vm_tools::seneschal::SharePathRequest::MY_FILES,
                           "already-shared", Success::YES, ""));
-  crostini_share_path_->OnVolumeMounted(chromeos::MountError::MOUNT_ERROR_NONE,
+  guest_os_share_path_->OnVolumeMounted(chromeos::MountError::MOUNT_ERROR_NONE,
                                         *volume_shared_path);
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, ShareOnMountVmNotRunning) {
+TEST_F(GuestOsSharePathTest, ShareOnMountVmNotRunning) {
   SetUpVolume();
 
   // Test mount.
-  crostini_share_path_->OnVolumeMounted(chromeos::MountError::MOUNT_ERROR_NONE,
+  guest_os_share_path_->OnVolumeMounted(chromeos::MountError::MOUNT_ERROR_NONE,
                                         *volume_downloads_);
   EXPECT_EQ(fake_seneschal_client_->share_path_called(), false);
 
   // Test unmount.
-  crostini_share_path_->OnVolumeUnmounted(
+  guest_os_share_path_->OnVolumeUnmounted(
       chromeos::MountError::MOUNT_ERROR_NONE, *volume_downloads_);
   EXPECT_EQ(fake_seneschal_client_->share_path_called(), false);
 }
 
-TEST_F(CrostiniSharePathTest, ShareOnMountVolumeUnrelated) {
+TEST_F(GuestOsSharePathTest, ShareOnMountVolumeUnrelated) {
   SetUpVolume();
   auto volume_unrelated_ = file_manager::Volume::CreateForDownloads(
       base::FilePath("/unrelated/path"));
 
   // Test mount.
-  crostini_share_path_->OnVolumeMounted(chromeos::MountError::MOUNT_ERROR_NONE,
+  guest_os_share_path_->OnVolumeMounted(chromeos::MountError::MOUNT_ERROR_NONE,
                                         *volume_unrelated_);
   EXPECT_EQ(fake_seneschal_client_->share_path_called(), false);
 
   // Test unmount.
-  crostini_share_path_->OnVolumeUnmounted(
+  guest_os_share_path_->OnVolumeUnmounted(
       chromeos::MountError::MOUNT_ERROR_NONE, *volume_unrelated_);
   EXPECT_EQ(fake_seneschal_client_->share_path_called(), false);
 }
 
-TEST_F(CrostiniSharePathTest, UnshareOnUnmountSuccessParentMount) {
+TEST_F(GuestOsSharePathTest, UnshareOnUnmountSuccessParentMount) {
   features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
-  CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      kCrostiniDefaultVmName);
-  crostini_share_path_->set_mount_event_seneschal_callback_for_testing(
-      base::BindRepeating(&CrostiniSharePathTest::MountEventUnsharePathCallback,
+  crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
+      crostini::kCrostiniDefaultVmName);
+  guest_os_share_path_->set_mount_event_seneschal_callback_for_testing(
+      base::BindRepeating(&GuestOsSharePathTest::MountEventUnsharePathCallback,
                           base::Unretained(this), "unshare-on-unmount",
                           shared_path_, Persist::YES,
                           SeneschalClientCalled::YES, "MyFiles/already-shared",
                           Success::YES, ""));
-  crostini_share_path_->OnVolumeUnmounted(
+  guest_os_share_path_->OnVolumeUnmounted(
       chromeos::MountError::MOUNT_ERROR_NONE, *volume_downloads_);
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, UnshareOnUnmountSuccessSelfMount) {
+TEST_F(GuestOsSharePathTest, UnshareOnUnmountSuccessSelfMount) {
   features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
-  CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      kCrostiniDefaultVmName);
+  crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
+      crostini::kCrostiniDefaultVmName);
   auto volume_shared_path =
       file_manager::Volume::CreateForDownloads(shared_path_);
-  crostini_share_path_->set_mount_event_seneschal_callback_for_testing(
-      base::BindRepeating(&CrostiniSharePathTest::MountEventUnsharePathCallback,
+  guest_os_share_path_->set_mount_event_seneschal_callback_for_testing(
+      base::BindRepeating(&GuestOsSharePathTest::MountEventUnsharePathCallback,
                           base::Unretained(this), "unshare-on-unmount",
                           shared_path_, Persist::YES,
                           SeneschalClientCalled::YES, "MyFiles/already-shared",
                           Success::YES, ""));
-  crostini_share_path_->OnVolumeUnmounted(
+  guest_os_share_path_->OnVolumeUnmounted(
       chromeos::MountError::MOUNT_ERROR_NONE, *volume_shared_path);
   run_loop()->Run();
 }
 
-TEST_F(CrostiniSharePathTest, UnshareOnDelete) {
+TEST_F(GuestOsSharePathTest, UnshareOnDelete) {
   features_.InitWithFeatures({chromeos::features::kMyFilesVolume}, {});
   SetUpVolume();
-  CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      kCrostiniDefaultVmName);
+  crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
+      crostini::kCrostiniDefaultVmName);
   auto volume_shared_path =
       file_manager::Volume::CreateForDownloads(shared_path_);
-  crostini_share_path_->set_mount_event_seneschal_callback_for_testing(
-      base::BindRepeating(&CrostiniSharePathTest::MountEventUnsharePathCallback,
+  guest_os_share_path_->set_mount_event_seneschal_callback_for_testing(
+      base::BindRepeating(&GuestOsSharePathTest::MountEventUnsharePathCallback,
                           base::Unretained(this), "unshare-on-delete",
                           shared_path_, Persist::NO, SeneschalClientCalled::YES,
                           "MyFiles/already-shared", Success::YES, ""));
-  crostini_share_path_->PathDeleted(shared_path_);
+  guest_os_share_path_->PathDeleted(shared_path_);
   run_loop()->Run();
 }
 
-}  // namespace crostini
+}  // namespace guest_os

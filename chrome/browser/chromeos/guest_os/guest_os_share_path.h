@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_SHARE_PATH_H_
-#define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_SHARE_PATH_H_
+#ifndef CHROME_BROWSER_CHROMEOS_GUEST_OS_GUEST_OS_SHARE_PATH_H_
+#define CHROME_BROWSER_CHROMEOS_GUEST_OS_GUEST_OS_SHARE_PATH_H_
 
 #include <map>
 #include <memory>
@@ -23,7 +23,7 @@
 
 class Profile;
 
-namespace crostini {
+namespace guest_os {
 
 struct SharedPathInfo {
   explicit SharedPathInfo(const std::string& vm_name);
@@ -36,9 +36,9 @@ struct SharedPathInfo {
 
 // Handles sharing and unsharing paths from the Chrome OS host to the crostini
 // VM via seneschal.
-class CrostiniSharePath : public KeyedService,
-                          public file_manager::VolumeManagerObserver,
-                          public drivefs::DriveFsHostObserver {
+class GuestOsSharePath : public KeyedService,
+                         public file_manager::VolumeManagerObserver,
+                         public drivefs::DriveFsHostObserver {
  public:
   using SharePathCallback =
       base::OnceCallback<void(const base::FilePath&, bool, std::string)>;
@@ -60,9 +60,9 @@ class CrostiniSharePath : public KeyedService,
   // after M77.
   static void MigratePersistedPathsToMultiVM(PrefService* profile_prefs);
 
-  static CrostiniSharePath* GetForProfile(Profile* profile);
-  explicit CrostiniSharePath(Profile* profile);
-  ~CrostiniSharePath() override;
+  static GuestOsSharePath* GetForProfile(Profile* profile);
+  explicit GuestOsSharePath(Profile* profile);
+  ~GuestOsSharePath() override;
 
   // Observer receives unshare events.
   void AddObserver(Observer* obs);
@@ -171,9 +171,9 @@ class CrostiniSharePath : public KeyedService,
   std::map<base::FilePath, SharedPathInfo> shared_paths_;
   bool no_file_watchers_for_testing_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(CrostiniSharePath);
+  DISALLOW_COPY_AND_ASSIGN(GuestOsSharePath);
 };  // class
 
-}  // namespace crostini
+}  // namespace guest_os
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_SHARE_PATH_H_
+#endif  // CHROME_BROWSER_CHROMEOS_GUEST_OS_GUEST_OS_SHARE_PATH_H_

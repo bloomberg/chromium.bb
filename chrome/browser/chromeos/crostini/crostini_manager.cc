@@ -24,9 +24,9 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
 #include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/usb/cros_usb_detector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1833,7 +1833,7 @@ void CrostiniManager::OnStartTerminaVm(
                               std::move(callback)));
 
   // Share folders from Downloads, etc with VM.
-  CrostiniSharePath::GetForProfile(profile_)->SharePersistedPaths(
+  guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePersistedPaths(
       vm_name, base::DoNothing());
 }
 

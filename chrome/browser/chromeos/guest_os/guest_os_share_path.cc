@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/crostini/crostini_share_path.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 
 #include "base/atomic_ref_count.h"
 #include "base/bind.h"
@@ -10,12 +10,12 @@
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/browser/chromeos/crostini/crostini_share_path_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,7 +35,7 @@
 namespace {
 
 void OnSeneschalSharePathResponse(
-    crostini::CrostiniSharePath::SharePathCallback callback,
+    guest_os::GuestOsSharePath::SharePathCallback callback,
     base::Optional<vm_tools::seneschal::SharePathResponse> response) {
   if (!response) {
     std::move(callback).Run(base::FilePath(), false, "System error");
@@ -50,7 +50,7 @@ void OnSeneschalSharePathResponse(
 void OnVmRestartedForSeneschal(
     Profile* profile,
     const std::string& vm_name,
-    crostini::CrostiniSharePath::SharePathCallback callback,
+    guest_os::GuestOsSharePath::SharePathCallback callback,
     vm_tools::seneschal::SharePathRequest request,
     crostini::CrostiniResult result) {
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
@@ -151,7 +151,7 @@ void RemovePersistedPathFromPrefs(base::DictionaryValue* shared_paths,
 
 }  // namespace
 
-namespace crostini {
+namespace guest_os {
 
 SharedPathInfo::SharedPathInfo(const std::string& vm_name) {
   vm_names.insert(vm_name);
@@ -159,11 +159,11 @@ SharedPathInfo::SharedPathInfo(const std::string& vm_name) {
 SharedPathInfo::SharedPathInfo(SharedPathInfo&&) = default;
 SharedPathInfo::~SharedPathInfo() = default;
 
-CrostiniSharePath* CrostiniSharePath::GetForProfile(Profile* profile) {
-  return CrostiniSharePathFactory::GetForProfile(profile);
+GuestOsSharePath* GuestOsSharePath::GetForProfile(Profile* profile) {
+  return GuestOsSharePathFactory::GetForProfile(profile);
 }
 
-CrostiniSharePath::CrostiniSharePath(Profile* profile)
+GuestOsSharePath::GuestOsSharePath(Profile* profile)
     : profile_(profile),
       sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
@@ -182,7 +182,7 @@ CrostiniSharePath::CrostiniSharePath(Profile* profile)
   }
 }
 
-CrostiniSharePath::~CrostiniSharePath() {
+GuestOsSharePath::~GuestOsSharePath() {
   for (auto& shared_path : shared_paths_) {
     if (shared_path.second.watcher) {
       sequenced_task_runner_->DeleteSoon(FROM_HERE,
@@ -191,14 +191,14 @@ CrostiniSharePath::~CrostiniSharePath() {
   }
 }
 
-void CrostiniSharePath::AddObserver(Observer* obs) {
+void GuestOsSharePath::AddObserver(Observer* obs) {
   observers_.AddObserver(obs);
 }
 
-void CrostiniSharePath::CallSeneschalSharePath(const std::string& vm_name,
-                                               const base::FilePath& path,
-                                               bool persist,
-                                               SharePathCallback callback) {
+void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
+                                              const base::FilePath& path,
+                                              bool persist,
+                                              SharePathCallback callback) {
   // Verify path is in one of the allowable mount points.
   // This logic is similar to DownloadPrefs::SanitizeDownloadTargetPath().
   if (!path.IsAbsolute() || path.ReferencesParent()) {
@@ -232,7 +232,7 @@ void CrostiniSharePath::CallSeneschalSharePath(const std::string& vm_name,
       request.set_storage_location(
           vm_tools::seneschal::SharePathRequest::DOWNLOADS);
     }
-    request.set_owner_id(CryptohomeIdForProfile(profile_));
+    request.set_owner_id(crostini::CryptohomeIdForProfile(profile_));
   } else if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs) &&
              integration_service &&
              (drivefs_mount_point_path =
@@ -335,7 +335,7 @@ void CrostiniSharePath::CallSeneschalSharePath(const std::string& vm_name,
       base::BindOnce(&OnSeneschalSharePathResponse, std::move(callback)));
 }
 
-void CrostiniSharePath::CallSeneschalUnsharePath(
+void GuestOsSharePath::CallSeneschalUnsharePath(
     const std::string& vm_name,
     const base::FilePath& path,
     base::OnceCallback<void(bool, std::string)> callback) {
@@ -388,15 +388,15 @@ void CrostiniSharePath::CallSeneschalUnsharePath(
       base::BindOnce(&OnSeneschalUnsharePathResponse, std::move(callback)));
 }
 
-void CrostiniSharePath::SharePath(const std::string& vm_name,
-                                  const base::FilePath& path,
-                                  bool persist,
-                                  SharePathCallback callback) {
+void GuestOsSharePath::SharePath(const std::string& vm_name,
+                                 const base::FilePath& path,
+                                 bool persist,
+                                 SharePathCallback callback) {
   DCHECK(callback);
   CallSeneschalSharePath(vm_name, path, persist, std::move(callback));
 }
 
-void CrostiniSharePath::SharePaths(
+void GuestOsSharePath::SharePaths(
     const std::string& vm_name,
     std::vector<base::FilePath> paths,
     bool persist,
@@ -412,7 +412,7 @@ void CrostiniSharePath::SharePaths(
   }
 }
 
-void CrostiniSharePath::UnsharePath(
+void GuestOsSharePath::UnsharePath(
     const std::string& vm_name,
     const base::FilePath& path,
     bool unpersist,
@@ -429,8 +429,7 @@ void CrostiniSharePath::UnsharePath(
 
   if (unpersist) {
     PrefService* pref_service = profile_->GetPrefs();
-    DictionaryPrefUpdate update(pref_service,
-                                crostini::prefs::kGuestOSPathsSharedToVms);
+    DictionaryPrefUpdate update(pref_service, prefs::kGuestOSPathsSharedToVms);
     base::DictionaryValue* shared_paths = update.Get();
     RemovePersistedPathFromPrefs(shared_paths, vm_name, path);
   }
@@ -441,13 +440,13 @@ void CrostiniSharePath::UnsharePath(
   }
 }
 
-bool CrostiniSharePath::GetAndSetFirstForSession() {
+bool GuestOsSharePath::GetAndSetFirstForSession() {
   bool result = first_for_session_;
   first_for_session_ = false;
   return result;
 }
 
-std::vector<base::FilePath> CrostiniSharePath::GetPersistedSharedPaths(
+std::vector<base::FilePath> GuestOsSharePath::GetPersistedSharedPaths(
     const std::string& vm_name) {
   std::vector<base::FilePath> result;
   // |shared_paths| format is {'path': ['vm1', vm2']}.
@@ -469,18 +468,17 @@ std::vector<base::FilePath> CrostiniSharePath::GetPersistedSharedPaths(
   return result;
 }
 
-void CrostiniSharePath::SharePersistedPaths(
+void GuestOsSharePath::SharePersistedPaths(
     const std::string& vm_name,
     base::OnceCallback<void(bool, std::string)> callback) {
   SharePaths(vm_name, GetPersistedSharedPaths(vm_name),
              /*persist=*/false, std::move(callback));
 }
 
-void CrostiniSharePath::RegisterPersistedPath(const std::string& vm_name,
-                                              const base::FilePath& path) {
+void GuestOsSharePath::RegisterPersistedPath(const std::string& vm_name,
+                                             const base::FilePath& path) {
   PrefService* pref_service = profile_->GetPrefs();
-  DictionaryPrefUpdate update(pref_service,
-                              crostini::prefs::kGuestOSPathsSharedToVms);
+  DictionaryPrefUpdate update(pref_service, prefs::kGuestOSPathsSharedToVms);
   base::DictionaryValue* shared_paths = update.Get();
   // Check if path is already shared so we know whether we need to add it.
   bool already_shared = false;
@@ -512,7 +510,7 @@ void CrostiniSharePath::RegisterPersistedPath(const std::string& vm_name,
   }
 }
 
-void CrostiniSharePath::MigratePersistedPathsToMultiVM(
+void GuestOsSharePath::MigratePersistedPathsToMultiVM(
     PrefService* profile_prefs) {
   const base::ListValue* shared_paths =
       profile_prefs->GetList(prefs::kCrostiniSharedPaths);
@@ -523,7 +521,8 @@ void CrostiniSharePath::MigratePersistedPathsToMultiVM(
   base::Value dict(base::Value::Type::DICTIONARY);
   for (const auto& shared_path : *shared_paths) {
     base::Value termina(base::Value::Type::LIST);
-    termina.GetList().emplace_back(base::Value(kCrostiniDefaultVmName));
+    termina.GetList().emplace_back(
+        base::Value(crostini::kCrostiniDefaultVmName));
     dict.SetKey(shared_path.GetString(), std::move(termina));
   }
   profile_prefs->Set(prefs::kGuestOSPathsSharedToVms, std::move(dict));
@@ -531,8 +530,8 @@ void CrostiniSharePath::MigratePersistedPathsToMultiVM(
   profile_prefs->ClearPref(prefs::kCrostiniSharedPaths);
 }
 
-void CrostiniSharePath::OnVolumeMounted(chromeos::MountError error_code,
-                                        const file_manager::Volume& volume) {
+void GuestOsSharePath::OnVolumeMounted(chromeos::MountError error_code,
+                                       const file_manager::Volume& volume) {
   if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
     return;
   }
@@ -549,7 +548,7 @@ void CrostiniSharePath::OnVolumeMounted(chromeos::MountError error_code,
     const auto& vms = it.second.GetList();
     for (const auto& vm : vms) {
       RegisterSharedPath(vm.GetString(), path);
-      if (CrostiniManager::GetForProfile(profile_)->IsVmRunning(
+      if (crostini::CrostiniManager::GetForProfile(profile_)->IsVmRunning(
               vm.GetString())) {
         CallSeneschalSharePath(vm.GetString(), path, false,
                                base::BindOnce(mount_event_seneschal_callback_,
@@ -559,8 +558,8 @@ void CrostiniSharePath::OnVolumeMounted(chromeos::MountError error_code,
   }
 }
 
-void CrostiniSharePath::OnVolumeUnmounted(chromeos::MountError error_code,
-                                          const file_manager::Volume& volume) {
+void GuestOsSharePath::OnVolumeUnmounted(chromeos::MountError error_code,
+                                         const file_manager::Volume& volume) {
   if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
     return;
   }
@@ -584,19 +583,19 @@ void CrostiniSharePath::OnVolumeUnmounted(chromeos::MountError error_code,
   }
 }
 
-void CrostiniSharePath::StartFileWatcher(const base::FilePath& path) {
+void GuestOsSharePath::StartFileWatcher(const base::FilePath& path) {
   auto* info = FindSharedPathInfo(path);
   if (!info || info->watcher) {
     return;
   }
   info->watcher = std::make_unique<base::FilePathWatcher>();
   info->watcher->Watch(path, false,
-                       base::BindRepeating(&CrostiniSharePath::OnFileChanged,
+                       base::BindRepeating(&GuestOsSharePath::OnFileChanged,
                                            base::Unretained(this)));
 }
 
-void CrostiniSharePath::RegisterSharedPath(const std::string& vm_name,
-                                           const base::FilePath& path) {
+void GuestOsSharePath::RegisterSharedPath(const std::string& vm_name,
+                                          const base::FilePath& path) {
   // Paths may be called to be shared multiple times for the same or different
   // vm.  If path is already registered, add vm_name to list of VMs shared with
   // and return.
@@ -608,12 +607,12 @@ void CrostiniSharePath::RegisterSharedPath(const std::string& vm_name,
   shared_paths_.emplace(path, SharedPathInfo(vm_name));
   if (!no_file_watchers_for_testing_) {
     sequenced_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&CrostiniSharePath::StartFileWatcher,
+        FROM_HERE, base::BindOnce(&GuestOsSharePath::StartFileWatcher,
                                   base::Unretained(this), path));
   }
 }
 
-void CrostiniSharePath::OnFileChanged(const base::FilePath& path, bool error) {
+void GuestOsSharePath::OnFileChanged(const base::FilePath& path, bool error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (shared_paths_.find(path) == shared_paths_.end()) {
     return;
@@ -622,13 +621,12 @@ void CrostiniSharePath::OnFileChanged(const base::FilePath& path, bool error) {
     shared_paths_.erase(path);
     return;
   }
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&CrostiniSharePath::CheckIfPathDeleted,
-                     base::Unretained(this), path));
+  base::PostTaskWithTraits(FROM_HERE, {base::MayBlock()},
+                           base::BindOnce(&GuestOsSharePath::CheckIfPathDeleted,
+                                          base::Unretained(this), path));
 }
 
-void CrostiniSharePath::CheckIfPathDeleted(const base::FilePath& path) {
+void GuestOsSharePath::CheckIfPathDeleted(const base::FilePath& path) {
   if (base::PathExists(path)) {
     return;
   }
@@ -650,11 +648,11 @@ void CrostiniSharePath::CheckIfPathDeleted(const base::FilePath& path) {
   }
 
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&CrostiniSharePath::PathDeleted,
+                           base::BindOnce(&GuestOsSharePath::PathDeleted,
                                           base::Unretained(this), path));
 }
 
-void CrostiniSharePath::PathDeleted(const base::FilePath& path) {
+void GuestOsSharePath::PathDeleted(const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* info = FindSharedPathInfo(path);
   if (!info) {
@@ -670,7 +668,7 @@ void CrostiniSharePath::PathDeleted(const base::FilePath& path) {
   }
 }
 
-void CrostiniSharePath::OnFilesChanged(
+void GuestOsSharePath::OnFilesChanged(
     const std::vector<drivefs::mojom::FileChange>& changes) {
   auto* integration_service =
       drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
@@ -688,7 +686,7 @@ void CrostiniSharePath::OnFilesChanged(
   }
 }
 
-SharedPathInfo* CrostiniSharePath::FindSharedPathInfo(
+SharedPathInfo* GuestOsSharePath::FindSharedPathInfo(
     const base::FilePath& path) {
   auto it = shared_paths_.find(path);
   if (it == shared_paths_.end()) {
@@ -697,4 +695,4 @@ SharedPathInfo* CrostiniSharePath::FindSharedPathInfo(
   return &it->second;
 }
 
-}  // namespace crostini
+}  // namespace guest_os
