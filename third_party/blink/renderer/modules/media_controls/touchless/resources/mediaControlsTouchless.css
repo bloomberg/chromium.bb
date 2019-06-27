@@ -2,6 +2,12 @@
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file. */
 
+audio {
+  width: 300px;
+  height: 180px;
+}
+
+audio::-webkit-media-controls-touchless,
 video::-webkit-media-controls-touchless {
   width: inherit;
   height: inherit;
@@ -18,6 +24,45 @@ video::-webkit-media-controls-touchless {
   margin-bottom: env(safe-area-inset-bottom);
 }
 
+<<<<<<< HEAD   (92aae3 Block download home from opening on touchless)
+=======
+audio::-webkit-media-controls-touchless,
+video::-webkit-media-controls-touchless.use-default-poster {
+  background: #333;
+}
+
+audio::-internal-media-controls-touchless-info,
+video::-internal-media-controls-touchless-info {
+  display: none;
+  height: 72px;
+  width: 72px;
+  border-radius: 50%;
+  opacity: 0.3;
+  background-color: rgba(255, 255, 255, 0.9);
+  background-size: 50%;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: absolute;
+  margin: auto;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+audio::-internal-media-controls-touchless-info {
+  background-image: -webkit-image-set(url(ic_music_note.svg) 1x);
+  display: block;
+}
+
+audio::-webkit-media-controls-touchless.state-no-source [pseudo="-internal-media-controls-touchless-info"],
+video::-webkit-media-controls-touchless.state-no-source [pseudo="-internal-media-controls-touchless-info"] {
+  background-image: -webkit-image-set(url(ic_no_source.svg) 1x);
+  display: block;
+}
+
+audio::-internal-media-controls-touchless-overlay,
+>>>>>>> CHANGE (a05452 [Media Controls] audio controls)
 video::-internal-media-controls-touchless-overlay {
   width: 104px;
   height: 104px;
@@ -35,15 +80,26 @@ video::-internal-media-controls-touchless-overlay {
   right: 0;
 }
 
+<<<<<<< HEAD   (92aae3 Block download home from opening on touchless)
+=======
+audio::-webkit-media-controls-touchless.state-no-source [pseudo="-internal-media-controls-touchless-overlay"],
+video::-webkit-media-controls-touchless.state-no-source [pseudo="-internal-media-controls-touchless-overlay"] {
+  display: none;
+}
+
+audio::-internal-media-controls-touchless-overlay.transparent,
+>>>>>>> CHANGE (a05452 [Media Controls] audio controls)
 video::-internal-media-controls-touchless-overlay.transparent {
   opacity: 0;
   transition: opacity .5s;
 }
 
+audio::-internal-media-controls-touchless-overlay.transparent-immediate,
 video::-internal-media-controls-touchless-overlay.transparent-immediate {
   opacity: 0;
 }
 
+audio::-internal-media-controls-touchless-volume-up-button,
 video::-internal-media-controls-touchless-volume-up-button {
   width: 30px;
   height: 30px;
@@ -54,7 +110,7 @@ video::-internal-media-controls-touchless-volume-up-button {
   background-repeat: no-repeat;
 }
 
-
+audio::-internal-media-controls-touchless-seek-backward-button,
 video::-internal-media-controls-touchless-seek-backward-button {
   width: 30px;
   height: 30px;
@@ -66,7 +122,7 @@ video::-internal-media-controls-touchless-seek-backward-button {
   background-repeat: no-repeat;
 }
 
-
+audio::-internal-media-controls-touchless-play-button,
 video::-internal-media-controls-touchless-play-button {
   width: 44px;
   height: 44px;
@@ -76,14 +132,17 @@ video::-internal-media-controls-touchless-play-button {
   float: left;
 }
 
+audio::-internal-media-controls-touchless-play-button.playing,
 video::-internal-media-controls-touchless-play-button.playing {
   background-image: -webkit-image-set(url(ic_pause.svg) 1x);
 }
 
+audio::-internal-media-controls-touchless-play-button.paused,
 video::-internal-media-controls-touchless-play-button.paused {
   background-image: -webkit-image-set(url(ic_play_arrow.svg) 1x);
 }
 
+audio::-internal-media-controls-touchless-seek-forward-button,
 video::-internal-media-controls-touchless-seek-forward-button {
   width: 30px;
   height: 30px;
@@ -95,6 +154,7 @@ video::-internal-media-controls-touchless-seek-forward-button {
   background-repeat: no-repeat;
 }
 
+audio::-internal-media-controls-touchless-volume-down-button,
 video::-internal-media-controls-touchless-volume-down-button {
   width: 30px;
   height: 30px;
@@ -107,6 +167,7 @@ video::-internal-media-controls-touchless-volume-down-button {
   background-repeat: no-repeat;
 }
 
+audio::-internal-media-controls-touchless-bottom-container,
 video::-internal-media-controls-touchless-bottom-container {
   position: absolute;
   display: flex;
@@ -122,11 +183,13 @@ video::-internal-media-controls-touchless-bottom-container {
   background-size: auto 48px;
 }
 
+audio::-internal-media-controls-touchless-bottom-container.transparent,
 video::-internal-media-controls-touchless-bottom-container.transparent {
   opacity: 0;
   transition: opacity .5s;
 }
 
+audio::-internal-media-controls-touchless-time-display,
 video::-internal-media-controls-touchless-time-display {
   color: #ffffff;
   font-family: Roboto-Regular, Roboto, sans-serif;
@@ -137,6 +200,7 @@ video::-internal-media-controls-touchless-time-display {
   padding-bottom: 8px;
 }
 
+audio::-internal-media-controls-touchless-timeline,
 video::-internal-media-controls-touchless-timeline {
   width: 100%;
   bottom: auto;
@@ -144,18 +208,21 @@ video::-internal-media-controls-touchless-timeline {
   background-color: rgba(0, 0, 0, 0.2);
 }
 
+audio::-internal-media-controls-touchless-timeline-loaded,
 video::-internal-media-controls-touchless-timeline-loaded {
   height: 100%;
   border-radius: 0 2px 2px 0;
   background-color: rgba(255, 255, 255, 0.54);
 }
 
+audio::-internal-media-controls-touchless-timeline-progress,
 video::-internal-media-controls-touchless-timeline-progress {
   height: 100%;
   border-radius: 0 2px 2px 0;
   background-color: rgba(255, 255, 255, 1.0);
 }
 
+audio::-internal-media-controls-touchless-volume-container,
 video::-internal-media-controls-touchless-volume-container {
   width: 44px;
   max-height: 152px;
@@ -174,15 +241,18 @@ video::-internal-media-controls-touchless-volume-container {
   justify-content: flex-end;
 }
 
+audio::-internal-media-controls-touchless-volume-container.transparent,
 video::-internal-media-controls-touchless-volume-container.transparent {
   opacity: 0;
   transition: opacity .5s;
 }
 
+audio::-internal-media-controls-touchless-volume-container.transparent-immediate,
 video::-internal-media-controls-touchless-volume-container.transparent-immediate {
   opacity: 0;
 }
 
+audio::-internal-media-controls-touchless-volume-bar-background,
 video::-internal-media-controls-touchless-volume-bar-background {
   width: 4px;
   margin-left: 20px;
@@ -196,15 +266,18 @@ video::-internal-media-controls-touchless-volume-bar-background {
   justify-content: flex-end;
 }
 
+audio::-webkit-media-controls-touchless.inline [pseudo="-internal-media-controls-touchless-volume-bar-background"],
 video::-webkit-media-controls-touchless.inline [pseudo="-internal-media-controls-touchless-volume-bar-background"] {
   margin-bottom: 12px;
 }
 
+audio::-internal-media-controls-touchless-volume-bar,
 video::-internal-media-controls-touchless-volume-bar {
   background-color: #FFFFFF;
   border-radius: 2px;
 }
 
+audio::-internal-media-controls-touchless-volume-icon,
 video::-internal-media-controls-touchless-volume-icon {
   width: 24px;
   height: 24px;
@@ -214,10 +287,12 @@ video::-internal-media-controls-touchless-volume-icon {
   background-image: -webkit-image-set(url(ic_volume_on.svg) 1x);
 }
 
+audio::-internal-media-controls-touchless-volume-icon.muted,
 video::-internal-media-controls-touchless-volume-icon.muted {
   background-image: -webkit-image-set(url(ic_volume_off.svg) 1x);
 }
 
+audio::-webkit-media-controls-touchless.inline div[pseudo="-internal-media-controls-touchless-volume-icon" i],
 video::-webkit-media-controls-touchless.inline div[pseudo="-internal-media-controls-touchless-volume-icon" i] {
   display: none;
 }

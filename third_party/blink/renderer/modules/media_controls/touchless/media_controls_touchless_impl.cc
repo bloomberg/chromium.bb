@@ -87,6 +87,12 @@ MediaControlsTouchlessImpl* MediaControlsTouchlessImpl::Create(
       MakeGarbageCollected<MediaControlsTouchlessVolumeContainerElement>(
           *controls);
 
+<<<<<<< HEAD   (92aae3 Block download home from opening on touchless)
+=======
+  MediaControlElementsHelper::CreateDiv(
+      "-internal-media-controls-touchless-info", controls);
+
+>>>>>>> CHANGE (a05452 [Media Controls] audio controls)
   controls->ParserAppendChild(controls->bottom_container_);
   controls->ParserAppendChild(controls->overlay_);
   controls->ParserAppendChild(controls->volume_container_);
