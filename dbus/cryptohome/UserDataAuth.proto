@@ -395,13 +395,24 @@ message GetSupportedKeyPoliciesReply {
   bool low_entropy_credentials_supported = 1;
 }
 
+// Input parameters to GetAccountDiskUsage().
 message GetAccountDiskUsageRequest {
+  // The owner of the home directory that we are going to compute the
+  // size for.
   cryptohome.AccountIdentifier identifier = 1;
 }
 
+// Output parameters for GetAccountDiskUsage().
 message GetAccountDiskUsageReply {
+  // Indicates an error if not empty.
+  // Note that for this API call, it is not an error to supply a non-existent
+  // user in the |GetAccountDiskUsageRequest.identifier| parameter.
   CryptohomeErrorCode error = 1;
-  // The size of cryptohome in bytes.
+
+  // The size of cryptohome in bytes. If a non-existent user is given in the
+  // request, size will be 0.
+  // Negative values are reserved, see HomeDir::ComputeSize() for more
+  // information.
   int64 size = 2;
 }
 
