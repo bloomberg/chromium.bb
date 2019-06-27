@@ -18,7 +18,8 @@ SIGNING_DIR = os.path.join(constants.CHROMITE_DIR, 'signing')
 INPUT_INSN_DIR_REL = os.path.join('crostools', 'signer_instructions')
 TEST_INPUT_INSN_DIR = os.path.join(SIGNING_DIR, 'signer_instructions')
 
-CROS_SIGNING_BASE_DIR = os.path.join(constants.SOURCE_ROOT, 'cros-signing')
+CROS_SIGNING_BASE_DIR = os.path.join(constants.SOURCE_ROOT, 'src', 'platform',
+                                     'signing', 'signer-production')
 CROS_SIGNING_CONFIG = os.path.join(CROS_SIGNING_BASE_DIR,
                                    'signer/configs/cros_common.config')
 SECURITY_BASELINES_DIR = os.path.join(CROS_SIGNING_BASE_DIR,

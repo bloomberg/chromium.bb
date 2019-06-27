@@ -572,8 +572,14 @@ def RunCrosSigningTests(buildroot, network=False):
     buildroot: The buildroot of the current build.
     network: Whether to run network based tests.
   """
+  # TODO(lamontjones): This test should run against the branch that is being
+  # modified by the CL.
   test_runner = path_util.ToChrootPath(
-      os.path.join(buildroot, 'cros-signing', 'signer', 'run_tests.py'))
+      os.path.join(buildroot, 'src', 'platform', 'signing',
+                   'signer-production', 'signer', 'run_tests.py'))
+  if not os.exists(test_runner):
+    test_runner = path_util.ToChrootPath(
+        os.path.join(buildroot, 'cros-signing', 'signer', 'run_tests.py'))
   cmd = [test_runner]
   if network:
     cmd.append('--network')
