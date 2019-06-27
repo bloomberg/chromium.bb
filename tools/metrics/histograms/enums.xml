@@ -32902,6 +32902,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="LibraryLoadFromApkStatus">
+  <obsolete>
+    Deprecated as of 06/2019.
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="Not supported">obsolete</int>
   <int value="2" label="Supported">obsolete</int>
