@@ -76,6 +76,18 @@ class TemplateURLRef {
     SearchTermsArgs(const SearchTermsArgs& other);
     ~SearchTermsArgs();
 
+    // If the search request is from the omnibox, this enum may specify details
+    // about how the user last interacted with the omnibox.
+    enum class OmniboxFocusType {
+      // The default value. This is used for any search requests without any
+      // special interaction annotation, including: normal omnibox searches,
+      // as-you-type omnibox suggestions, as well as non-omnibox searches.
+      DEFAULT = 0,
+
+      // This search request is triggered by the user focusing the omnibox.
+      ON_FOCUS = 1,
+    };
+
     struct ContextualSearchParams {
       ContextualSearchParams();
       // Modern constructor, used when the content is sent in the HTTP header
@@ -137,6 +149,10 @@ class TemplateURLRef {
 
     // The type the original input query was identified as.
     metrics::OmniboxInputType input_type = metrics::OmniboxInputType::INVALID;
+
+    // If the search request is from the omnibox, this may specify how the user
+    // last interacted with the omnibox.
+    OmniboxFocusType omnibox_focus_type = OmniboxFocusType::DEFAULT;
 
     // The optional assisted query stats, aka AQS, used for logging purposes.
     // This string contains impressions of all autocomplete matches shown
