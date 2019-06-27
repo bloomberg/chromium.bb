@@ -4,9 +4,6 @@
 # TODO(crbug.com/977738): Enable this.
 -ChromePluginTest.InstalledPlugins
 
-# TODO(crbug.com/977739): Enable this.
--CrSettingsPeoplePageAccountManagerTest.All
-
 # TODO(crbug.com/977740): Enable this.
 -LoginUIKeyboardTest.CheckPODScreenDefault
 -LoginUIKeyboardTestWithUsersAndOwner.CheckPODScreenKeyboard
