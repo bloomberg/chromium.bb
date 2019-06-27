@@ -200,49 +200,6 @@ class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):
       self.assertExists(f)
 
 
-class BuildFirmwareArchiveTest(cros_test_lib.TempDirTestCase):
-  """BuildFirmwareArchive tests."""
-
-  def testBuildFirmwareArchive(self):
-    """Verifies that firmware archiver includes proper files"""
-    # Assorted set of file names, some of which are supposed to be included in
-    # the archive.
-    fw_files = (
-        'dts/emeraldlake2.dts',
-        'image-link.rw.bin',
-        'nv_image-link.bin',
-        'pci8086,0166.rom',
-        'seabios.cbfs',
-        'u-boot.elf',
-        'u-boot_netboot.bin',
-        'updater-link.rw.sh',
-        'x86-memtest',
-    )
-
-    # Files which should be included in the archive.
-    fw_archived_files = fw_files + ('dts/',)
-    board = 'link'
-    # fw_test_root = os.path.join(self.tempdir, os.path.basename(__file__))
-    fw_test_root = self.tempdir
-    fw_files_root = os.path.join(fw_test_root,
-                                 'chroot/build/%s/firmware' % board)
-    # Generate a representative set of files produced by a typical build.
-    cros_test_lib.CreateOnDiskHierarchy(fw_files_root, fw_files)
-
-    # Create the chroot and sysroot instances.
-    chroot_path = os.path.join(self.tempdir, 'chroot')
-    chroot = chroot_lib.Chroot(path=chroot_path)
-    sysroot = sysroot_lib.Sysroot('/build/link')
-
-    # Create an archive from the simulated firmware directory
-    tarball = os.path.join(
-        fw_test_root,
-        artifacts.BuildFirmwareArchive(chroot, sysroot, fw_test_root))
-
-    # Verify the tarball contents.
-    cros_test_lib.VerifyTarball(tarball, fw_archived_files)
-
-
 class BundleOrderfileGenerationArtifactsTest(cros_test_lib.MockTempDirTestCase):
   """BundleOrderfileGenerationArtifacts tests."""
 

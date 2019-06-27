@@ -73,8 +73,6 @@ class FirmwareArchiveStageTest(BranchArchiveStageTestBase):
 
   def testProd(self):
     """Tests sync command used by default."""
-    self.PatchObject(commands, 'BuildFirmwareArchive',
-                     return_value='/tempdir/firmware_from_source.tar.bz2')
     self._Prepare(
         'test-firmwarebranch',
         site_config=workspace_builders_unittest.CreateMockSiteConfig())
@@ -140,8 +138,6 @@ class FirmwareArchiveStageTest(BranchArchiveStageTestBase):
 
   def testDebug(self):
     """Tests sync command used by default."""
-    self.PatchObject(commands, 'BuildFirmwareArchive',
-                     return_value='/tempdir/firmware_from_source.tar.bz2')
     self._Prepare(
         'test-firmwarebranch',
         site_config=workspace_builders_unittest.CreateMockSiteConfig(),

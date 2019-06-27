@@ -227,20 +227,16 @@ def BundleFirmware(input_proto, output_proto):
     input_proto (BundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
   """
+  target = input_proto.build_target.name
   output_dir = input_proto.output_dir
-  if not output_dir:
-    cros_build_lib.Die('output_dir is required.')
-  chroot = controller_util.ParseChroot(input_proto.chroot)
-  sysroot_path = input_proto.sysroot.path
-  if not sysroot_path:
-    cros_build_lib.Die('sysroot.path is required.')
-  sysroot = sysroot_lib.Sysroot(sysroot_path)
-  archive = artifacts.BuildFirmwareArchive(chroot, sysroot, output_dir)
+  build_root = constants.SOURCE_ROOT
+
+  # TODO(crbug.com/954300): Replace with a chromite/service implementation.
+  archive = commands.BuildFirmwareArchive(build_root, target, output_dir)
 
   if archive is None:
     cros_build_lib.Die(
-        'Could not create firmware archive. No firmware found for %s.',
-        sysroot_path)
+        'Could not create firmware archive. No firmware found for %s.', target)
 
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
