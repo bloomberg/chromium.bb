@@ -15,7 +15,6 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -223,22 +222,8 @@ class CrostiniManager::CrostiniRestarter
       return;
     }
 
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
-                       base::FilePath(kHomeDirectory)),
-        base::BindOnce(&CrostiniRestarter::CreateDiskImageAfterSizeCheck,
-                       this));
-  }
-
-  void CreateDiskImageAfterSizeCheck(int64_t free_disk_bytes) {
-    // Unlike other functions, this isn't called from a crostini_manager_
-    // function, so crostini_manager_ could have been deleted.
-    if (!crostini_manager_) {
-      return;
-    }
-
-    int64_t disk_size_available = (free_disk_bytes * 9) / 10;
+    // Allow concierge to choose an appropriate disk image size.
+    int64_t disk_size_available = 0;
     // If we have an already existing disk, CreateDiskImage will just return its
     // path so we can pass it to StartTerminaVm.
     crostini_manager_->CreateDiskImage(
