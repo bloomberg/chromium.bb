@@ -1041,6 +1041,17 @@ Polymer({
   },
 
   /**
+   * @return {boolean}
+   * @private
+   */
+  showHiddenNetworkWarning_: function() {
+    return loadTimeData.getBoolean('showHiddenNetworkWarning') &&
+        !!this.autoConnect_ && !!this.autoConnect_.value &&
+        !!this.networkProperties_ && !!this.networkProperties_.WiFi &&
+        !!CrOnc.getActiveValue(this.networkProperties_.WiFi.HiddenSSID);
+  },
+
+  /**
    * Event triggered for elements associated with network properties.
    * @param {!CustomEvent<!{
    *     field: string,
