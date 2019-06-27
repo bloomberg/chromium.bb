@@ -208,7 +208,7 @@ void av1_intra_mode_cnn_partition(const AV1_COMMON *const cm, MACROBLOCK *x,
   }
 
   // Make decision
-  av1_nn_predict(dnn_features, dnn_config, logits);
+  av1_nn_predict(dnn_features, dnn_config, 1, logits);
   aom_clear_system_state();
 
   const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
@@ -287,7 +287,7 @@ void av1_simple_motion_search_based_split(
 
   float score = 0.0f;
 
-  av1_nn_predict(features, nn_config, &score);
+  av1_nn_predict(features, nn_config, 1, &score);
   aom_clear_system_state();
 
   if (score > split_only_thresh) {
@@ -568,7 +568,7 @@ void av1_simple_motion_search_prune_part(
                               ? PARTITION_TYPES
                               : EXT_PARTITION_TYPES;
 
-  av1_nn_predict(features, nn_config, scores);
+  av1_nn_predict(features, nn_config, 1, scores);
   aom_clear_system_state();
 
   av1_nn_softmax(scores, probs, num_classes);
@@ -758,7 +758,7 @@ BLOCK_SIZE av1_predict_max_partition(AV1_COMP *const cpi, MACROBLOCK *const x,
   assert(cpi->sf.auto_max_partition_based_on_simple_motion != NOT_IN_USE);
 
   aom_clear_system_state();
-  av1_nn_predict(features, nn_config, scores);
+  av1_nn_predict(features, nn_config, 1, scores);
   av1_nn_softmax(scores, probs, MAX_NUM_CLASSES_MAX_MIN_PART_PRED);
 
   int result = MAX_NUM_CLASSES_MAX_MIN_PART_PRED - 1;
@@ -929,7 +929,7 @@ void av1_ml_early_term_after_split(AV1_COMP *const cpi, MACROBLOCK *const x,
   assert(f_idx == FEATURES);
 
   float score = 0.0f;
-  av1_nn_predict(features, nn_config, &score);
+  av1_nn_predict(features, nn_config, 1, &score);
   // Score is indicator of confidence that we should NOT terminate.
   if (score < thresh) *terminate_partition_search = 1;
 }
@@ -1017,7 +1017,7 @@ void av1_ml_prune_rect_partition(const AV1_COMP *const cpi,
 
   // 2. Do the prediction and prune 0-2 partitions based on their probabilities
   float raw_scores[3] = { 0.0f };
-  av1_nn_predict(features, nn_config, raw_scores);
+  av1_nn_predict(features, nn_config, 1, raw_scores);
   aom_clear_system_state();
   float probs[3] = { 0.0f };
   av1_nn_softmax(raw_scores, probs, 3);
@@ -1085,7 +1085,7 @@ void av1_ml_prune_ab_partition(BLOCK_SIZE bsize, int part_ctx, int var_ctx,
 
   // Calculate scores using the NN model.
   float score[16] = { 0.0f };
-  av1_nn_predict(features, nn_config, score);
+  av1_nn_predict(features, nn_config, 1, score);
   aom_clear_system_state();
   int int_score[16];
   int max_score = -1000;
@@ -1225,7 +1225,7 @@ void av1_ml_prune_4_partition(const AV1_COMP *const cpi, MACROBLOCK *const x,
 
   // Calculate scores using the NN model.
   float score[LABELS] = { 0.0f };
-  av1_nn_predict(features, nn_config, score);
+  av1_nn_predict(features, nn_config, 1, score);
   aom_clear_system_state();
   int int_score[LABELS];
   int max_score = -1000;
@@ -1309,7 +1309,7 @@ int av1_ml_predict_breakout(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
   // Calculate score using the NN model.
   float score = 0.0f;
-  av1_nn_predict(features, nn_config, &score);
+  av1_nn_predict(features, nn_config, 1, &score);
   aom_clear_system_state();
 
   // Make decision.

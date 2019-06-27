@@ -1178,7 +1178,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     /* clang-format on */
     // Infer using ML model.
     float score;
-    av1_nn_predict(features, &av1_use_flat_gop_nn_config, &score);
+    av1_nn_predict(features, &av1_use_flat_gop_nn_config, 1, &score);
     use_alt_ref = (score <= 0.0);
   }
 

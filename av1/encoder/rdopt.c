@@ -1656,11 +1656,11 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
                                   &vfeatures[vfeatures_num - 1]);
   aom_clear_system_state();
 #if CONFIG_NN_V2
-  av1_nn_predict_v2(hfeatures, nn_config_hor, hscores);
-  av1_nn_predict_v2(vfeatures, nn_config_ver, vscores);
+  av1_nn_predict_v2(hfeatures, nn_config_hor, 0, hscores);
+  av1_nn_predict_v2(vfeatures, nn_config_ver, 0, vscores);
 #else
-  av1_nn_predict(hfeatures, nn_config_hor, hscores);
-  av1_nn_predict(vfeatures, nn_config_ver, vscores);
+  av1_nn_predict(hfeatures, nn_config_hor, 1, hscores);
+  av1_nn_predict(vfeatures, nn_config_ver, 1, vscores);
 #endif
   aom_clear_system_state();
 
@@ -2660,8 +2660,8 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi,
   features[7] = (float)vert_corr;
 
   float rate_f, dist_by_sse_norm_f;
-  av1_nn_predict(features, &av1_pustats_dist_nnconfig, &dist_by_sse_norm_f);
-  av1_nn_predict(features, &av1_pustats_rate_nnconfig, &rate_f);
+  av1_nn_predict(features, &av1_pustats_dist_nnconfig, 1, &dist_by_sse_norm_f);
+  av1_nn_predict(features, &av1_pustats_rate_nnconfig, 1, &rate_f);
   aom_clear_system_state();
   const float dist_f = (float)((double)dist_by_sse_norm_f * (1.0 + sse_norm));
   int rate_i = (int)(AOMMAX(0.0, rate_f * num_samples) + 0.5);
@@ -5019,7 +5019,7 @@ static int ml_predict_tx_split(MACROBLOCK *x, BLOCK_SIZE bsize, int blk_row,
   get_mean_dev_features(diff, diff_stride, bw, bh, 2, features);
 
   float score = 0.0f;
-  av1_nn_predict(features, nn_config, &score);
+  av1_nn_predict(features, nn_config, 1, &score);
   aom_clear_system_state();
   if (score > 8.0f) return 100;
   if (score < -8.0f) return 0;
