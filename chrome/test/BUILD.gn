@@ -2197,10 +2197,7 @@ if (!is_android) {
             [ "../browser/ui/ash/assistant/assistant_context_browsertest.cc" ]
       }
       if (enable_kiosk_next) {
-        sources += [
-          "../browser/chromeos/kiosk_next/kiosk_next_browser_factory_browsertest.cc",
-          "../browser/chromeos/kiosk_next_home/kiosk_next_home_browsertest.cc",
-        ]
+        sources += [ "../browser/chromeos/kiosk_next/kiosk_next_browser_factory_browsertest.cc" ]
       }
       sources -= [
         "../../apps/load_and_launch_browsertest.cc",
