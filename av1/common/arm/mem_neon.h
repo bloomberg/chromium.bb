@@ -316,6 +316,26 @@ static INLINE void load_s16_8x4(const int16_t *s, ptrdiff_t p,
   *s3 = vld1q_s16(s);
 }
 
+// Load 4 sets of 4 bytes when alignment is not guaranteed.
+static INLINE uint8x16_t load_unaligned_u8q(const uint8_t *buf, int stride) {
+  uint32_t a;
+  uint32x4_t a_u32 = vdupq_n_u32(0);
+  if (stride == 4) return vld1q_u8(buf);
+  memcpy(&a, buf, 4);
+  buf += stride;
+  a_u32 = vsetq_lane_u32(a, a_u32, 0);
+  memcpy(&a, buf, 4);
+  buf += stride;
+  a_u32 = vsetq_lane_u32(a, a_u32, 1);
+  memcpy(&a, buf, 4);
+  buf += stride;
+  a_u32 = vsetq_lane_u32(a, a_u32, 2);
+  memcpy(&a, buf, 4);
+  buf += stride;
+  a_u32 = vsetq_lane_u32(a, a_u32, 3);
+  return vreinterpretq_u8_u32(a_u32);
+}
+
 static INLINE void load_unaligned_u8_4x8(const uint8_t *buf, int stride,
                                          uint32x2_t *tu0, uint32x2_t *tu1,
                                          uint32x2_t *tu2, uint32x2_t *tu3) {
