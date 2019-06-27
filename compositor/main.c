@@ -2927,6 +2927,15 @@ weston_log_setup_scopes(struct weston_log_context *log_ctx,
 	free(tokenize);
 }
 
+static void
+flight_rec_key_binding_handler(struct weston_keyboard *keyboard,
+			       const struct timespec *time, uint32_t key,
+			       void *data)
+{
+	struct weston_log_subscriber *flight_rec = data;
+	weston_log_subscriber_display_flight_rec(flight_rec);
+}
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_FAILURE;
@@ -3117,6 +3126,10 @@ int main(int argc, char *argv[])
 							     NULL);
 		weston_compositor_enable_debug_protocol(wet.compositor);
 	}
+
+	weston_compositor_add_debug_binding(wet.compositor, KEY_D,
+					    flight_rec_key_binding_handler,
+					    flight_rec);
 
 	if (weston_compositor_init_config(wet.compositor, config) < 0)
 		goto out;
