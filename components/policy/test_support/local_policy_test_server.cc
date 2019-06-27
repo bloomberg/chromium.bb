@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/test/local_policy_test_server.h"
+#include "components/policy/test_support/local_policy_test_server.h"
 
 #include <ctype.h>
 #include <stdint.h>
@@ -76,24 +76,21 @@ LocalPolicyTestServer::LocalPolicyTestServer(const base::FilePath& config_file)
   client_state_file_ = server_data_dir_.GetPath().Append(kClientStateFileName);
 }
 
-LocalPolicyTestServer::LocalPolicyTestServer(const std::string& test_name)
+LocalPolicyTestServer::LocalPolicyTestServer(
+    const std::string& source_root_relative_config_file)
     : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP, base::FilePath()) {
-  // Read configuration from a file in chrome/test/data/policy.
+  // Read configuration from a file under |source_root|.
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath source_root;
   CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
-  config_file_ = source_root
-      .AppendASCII("chrome")
-      .AppendASCII("test")
-      .AppendASCII("data")
-      .AppendASCII("policy")
-      .AppendASCII(base::StringPrintf("policy_%s.json", test_name.c_str()));
+  config_file_ = source_root.AppendASCII(source_root_relative_config_file);
 }
 
 LocalPolicyTestServer::~LocalPolicyTestServer() {}
 
 bool LocalPolicyTestServer::SetSigningKeyAndSignature(
-    const crypto::RSAPrivateKey* key, const std::string& signature) {
+    const crypto::RSAPrivateKey* key,
+    const std::string& signature) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   CHECK(server_data_dir_.IsValid());
 
@@ -239,13 +236,6 @@ LocalPolicyTestServer::GetPythonPath() const {
   ret->push_back(pyproto_dir.AppendASCII("components")
                      .AppendASCII("policy")
                      .AppendASCII("proto"));
-#if defined(OS_CHROMEOS)
-  ret->push_back(pyproto_dir.AppendASCII("chrome")
-                     .AppendASCII("browser")
-                     .AppendASCII("chromeos")
-                     .AppendASCII("policy")
-                     .AppendASCII("proto"));
-#endif
 
   return ret;
 }
@@ -258,12 +248,10 @@ bool LocalPolicyTestServer::GetTestServerPath(
     LOG(ERROR) << "Failed to get DIR_SOURCE_ROOT";
     return false;
   }
-  *testserver_path = source_root
-      .AppendASCII("chrome")
-      .AppendASCII("browser")
-      .AppendASCII("policy")
-      .AppendASCII("test")
-      .AppendASCII("policy_testserver.py");
+  *testserver_path = source_root.AppendASCII("components")
+                         .AppendASCII("policy")
+                         .AppendASCII("test_support")
+                         .AppendASCII("policy_testserver.py");
   return true;
 }
 

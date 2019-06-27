@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_TEST_LOCAL_POLICY_TEST_SERVER_H_
-#define CHROME_BROWSER_POLICY_TEST_LOCAL_POLICY_TEST_SERVER_H_
+#ifndef COMPONENTS_POLICY_TEST_SUPPORT_LOCAL_POLICY_TEST_SERVER_H_
+#define COMPONENTS_POLICY_TEST_SUPPORT_LOCAL_POLICY_TEST_SERVER_H_
 
 #include <string>
 #include <vector>
@@ -34,8 +34,9 @@ class LocalPolicyTestServer : public net::LocalTestServer {
   explicit LocalPolicyTestServer(const base::FilePath& config_file);
 
   // Initializes the test server with the configuration read from
-  // chrome/test/data/policy/policy_|test_name|.json.
-  explicit LocalPolicyTestServer(const std::string& test_name);
+  // {source_root}/|source_root_relative_config_file|.
+  explicit LocalPolicyTestServer(
+      const std::string& source_root_relative_config_file);
 
   ~LocalPolicyTestServer() override;
 
@@ -111,4 +112,4 @@ class LocalPolicyTestServer : public net::LocalTestServer {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_TEST_LOCAL_POLICY_TEST_SERVER_H_
+#endif  // COMPONENTS_POLICY_TEST_SUPPORT_LOCAL_POLICY_TEST_SERVER_H_

@@ -696,8 +696,6 @@ if (!is_android) {
 
     data = [
       "data/",
-      "//chrome/browser/policy/test/asn1der.py",
-      "//chrome/browser/policy/test/policy_testserver.py",
       "//chrome/common/extensions/docs/examples/apps/calculator/",
       "//chrome/third_party/mock4js/",
       "//components/test/data/arc/",

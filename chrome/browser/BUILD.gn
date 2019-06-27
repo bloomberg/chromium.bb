@@ -5384,10 +5384,7 @@ static_library("test_support") {
   ]
 
   if (!is_android && !is_fuchsia) {
-    sources += [
-      "policy/test/local_policy_test_server.cc",
-      "policy/test/local_policy_test_server.h",
-    ]
+    deps += [ "//components/policy/test_support" ]
   }
 
   if (is_android) {
