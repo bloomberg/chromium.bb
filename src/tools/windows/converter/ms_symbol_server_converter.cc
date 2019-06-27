@@ -154,7 +154,7 @@ class AutoSymSrv {
     if (!Cleanup()) {
       // Print the error message here, because destructors have no return
       // value.
-      fprintf(stderr, "~AutoSymSrv: SymCleanup: error %d\n", GetLastError());
+      fprintf(stderr, "~AutoSymSrv: SymCleanup: error %lu\n", GetLastError());
     }
   }
 
@@ -238,7 +238,7 @@ MSSymbolServerConverter::LocateFile(const string &debug_or_code_file,
   if (!symsrv.Initialize(process,
                          const_cast<char *>(symbol_path_.c_str()),
                          false)) {
-    fprintf(stderr, "LocateFile: SymInitialize: error %d for %s %s %s\n",
+    fprintf(stderr, "LocateFile: SymInitialize: error %lu for %s %s %s\n",
             GetLastError(),
             debug_or_code_file.c_str(),
             debug_or_code_id.c_str(),
@@ -249,7 +249,7 @@ MSSymbolServerConverter::LocateFile(const string &debug_or_code_file,
   if (!SymRegisterCallback64(process, SymCallback,
                              reinterpret_cast<ULONG64>(this))) {
     fprintf(stderr,
-            "LocateFile: SymRegisterCallback64: error %d for %s %s %s\n",
+            "LocateFile: SymRegisterCallback64: error %lu for %s %s %s\n",
             GetLastError(),
             debug_or_code_file.c_str(),
             debug_or_code_id.c_str(),
@@ -304,7 +304,7 @@ MSSymbolServerConverter::LocateFile(const string &debug_or_code_file,
     }
 
     fprintf(stderr,
-            "LocateFile: SymFindFileInPath: error %d for %s %s %s\n",
+            "LocateFile: SymFindFileInPath: error %lu for %s %s %s\n",
             error,
             debug_or_code_file.c_str(),
             debug_or_code_id.c_str(),
@@ -322,7 +322,7 @@ MSSymbolServerConverter::LocateFile(const string &debug_or_code_file,
   // Do the cleanup here even though it will happen when symsrv goes out of
   // scope, to allow it to influence the return value.
   if (!symsrv.Cleanup()) {
-    fprintf(stderr, "LocateFile: SymCleanup: error %d for %s %s %s\n",
+    fprintf(stderr, "LocateFile: SymCleanup: error %lu for %s %s %s\n",
             GetLastError(),
             debug_or_code_file.c_str(),
             debug_or_code_id.c_str(),
@@ -405,7 +405,8 @@ BOOL CALLBACK MSSymbolServerConverter::SymCallback(HANDLE process,
       };
 
       for (int desc_action_index = 0;
-           desc_action_index < sizeof(desc_actions) / sizeof(desc_action);
+           desc_action_index <
+           static_cast<int>(sizeof(desc_actions) / sizeof(desc_action));
            ++desc_action_index) {
         if (desc.find(desc_actions[desc_action_index].desc) != string::npos) {
           *(desc_actions[desc_action_index].action) = true;

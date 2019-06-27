@@ -66,8 +66,6 @@ const char *kMissingStringDelimiters = "|";
 const char *kLocalCachePath = "c:\\symbols";
 const char *kNoExeMSSSServer = "http://msdl.microsoft.com/download/symbols/";
 
-const int kMatchArrSize = 64;
-
 // Windows stdio doesn't do line buffering.  Use this function to flush after
 // writing to stdout and stderr so that a log will be available if the
 // converter crashes.
@@ -81,7 +79,7 @@ static int FprintfFlush(FILE *file, const char *format, ...) {
 }
 
 static string CurrentDateAndTime() {
-  const string kUnknownDateAndTime = "????-??-?? ??:??:??";
+  const string kUnknownDateAndTime = R"(????-??-?? ??:??:??)";
 
   time_t current_time;
   time(&current_time);

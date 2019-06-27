@@ -259,10 +259,10 @@ int Base64UnescapeInternal(const char *src, int szsrc,
       // szsrc claims the string is).
 
       if (!src[0] || !src[1] || !src[2] ||
-          (temp = ((unbase64[src[0]] << 18) |
-                   (unbase64[src[1]] << 12) |
-                   (unbase64[src[2]] << 6) |
-                   (unbase64[src[3]]))) & 0x80000000) {
+          (temp = ((unbase64[static_cast<int>(src[0])] << 18) |
+                   (unbase64[static_cast<int>(src[1])] << 12) |
+                   (unbase64[static_cast<int>(src[2])] << 6) |
+                   (unbase64[static_cast<int>(src[3])]))) & 0x80000000) {
         // Iff any of those four characters was bad (null, illegal,
         // whitespace, padding), then temp's high bit will be set
         // (because unbase64[] is -1 for all bad characters).
@@ -301,10 +301,10 @@ int Base64UnescapeInternal(const char *src, int szsrc,
   } else {
     while (szsrc >= 4)  {
       if (!src[0] || !src[1] || !src[2] ||
-          (temp = ((unbase64[src[0]] << 18) |
-                   (unbase64[src[1]] << 12) |
-                   (unbase64[src[2]] << 6) |
-                   (unbase64[src[3]]))) & 0x80000000) {
+          (temp = ((unbase64[static_cast<int>(src[0])] << 18) |
+                   (unbase64[static_cast<int>(src[1])] << 12) |
+                   (unbase64[static_cast<int>(src[2])] << 6) |
+                   (unbase64[static_cast<int>(src[3])]))) & 0x80000000) {
         GET_INPUT(first_no_dest, 4);
         GET_INPUT(second_no_dest, 3);
         GET_INPUT(third_no_dest, 2);

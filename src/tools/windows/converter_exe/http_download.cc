@@ -170,7 +170,7 @@ bool HTTPDownload::Download(const wstring &url,
                              sizeof(path)/sizeof(path[0]),
                              &port)) {
     fprintf(stderr,
-            "HTTPDownload::Download: InternetCrackUrl: error %d for %ws\n",
+            "HTTPDownload::Download: InternetCrackUrl: error %lu for %ws\n",
             GetLastError(), url.c_str());
     return false;
   }
@@ -192,7 +192,7 @@ bool HTTPDownload::Download(const wstring &url,
                          NULL,  // proxy bypass
                          internet.get_handle_addr())) {
     fprintf(stderr,
-            "HTTPDownload::Download: Open: error %d for %ws\n",
+            "HTTPDownload::Download: Open: error %lu for %ws\n",
             GetLastError(), url.c_str());
     return false;
   }
@@ -203,7 +203,7 @@ bool HTTPDownload::Download(const wstring &url,
                             port,
                             connection.get_handle_addr())) {
     fprintf(stderr,
-            "HTTPDownload::Download: InternetConnect: error %d for %ws\n",
+            "HTTPDownload::Download: InternetConnect: error %lu for %ws\n",
             GetLastError(), url.c_str());
     return false;
   }
@@ -239,21 +239,21 @@ bool HTTPDownload::Download(const wstring &url,
                                 secure,
                                 request.get_handle_addr())) {
     fprintf(stderr,
-            "HttpClient::OpenRequest: error %d for %ws, request: %ws\n",
+            "HttpClient::OpenRequest: error %lu for %ws, request: %ws\n",
             GetLastError(), url.c_str(), request_string.c_str());
     return false;
   }
 
   if (!http_client->SendRequest(request.get(), NULL, 0)) {
     fprintf(stderr,
-            "HttpClient::SendRequest: error %d for %ws\n",
+            "HttpClient::SendRequest: error %lu for %ws\n",
             GetLastError(), url.c_str());
     return false;
   }
 
   if (!http_client->ReceiveResponse(request.get())) {
     fprintf(stderr,
-            "HttpClient::ReceiveResponse: error %d for %ws\n",
+            "HttpClient::ReceiveResponse: error %lu for %ws\n",
             GetLastError(), url.c_str());
     return false;
   }
@@ -261,7 +261,7 @@ bool HTTPDownload::Download(const wstring &url,
   int http_status = 0;
   if (!http_client->GetHttpStatusCode(request.get(), &http_status)) {
     fprintf(stderr,
-            "HttpClient::GetHttpStatusCode: error %d for %ws\n",
+            "HttpClient::GetHttpStatusCode: error %lu for %ws\n",
             GetLastError(), url.c_str());
     return false;
   }
@@ -304,13 +304,13 @@ bool HTTPDownload::Download(const wstring &url,
 
     if (!read_result) {
       fprintf(stderr,
-              "HttpClient::ReadData: error %d for %ws\n",
+              "HttpClient::ReadData: error %lu for %ws\n",
               GetLastError(),
               url.c_str());
       return false;
     } else if (size_read != 0) {
       fprintf(stderr,
-              "HttpClient::ReadData: error %d/%d for %ws\n",
+              "HttpClient::ReadData: error %lu/%lu for %ws\n",
               total_read,
               content_length,
               url.c_str());
