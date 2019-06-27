@@ -79,6 +79,9 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // Tell all managing windows not to handle WM events.
   void SetIgnoreWmEventsForExit();
 
+  // Stops animations on windows managed by this TabletModeWindowManager.
+  void StopWindowAnimations();
+
   // OverviewObserver:
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 

@@ -261,6 +261,11 @@ void TabletModeWindowManager::SetIgnoreWmEventsForExit() {
     pair.second->set_ignore_wm_events(true);
 }
 
+void TabletModeWindowManager::StopWindowAnimations() {
+  for (auto& pair : window_state_map_)
+    pair.first->layer()->GetAnimator()->StopAnimating();
+}
+
 void TabletModeWindowManager::OnOverviewModeEndingAnimationComplete(
     bool canceled) {
   if (canceled)
