@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WM_SNAP_TO_PIXEL_LAYOUT_MANAGER_H_
-#define ASH_WM_WM_SNAP_TO_PIXEL_LAYOUT_MANAGER_H_
+#ifndef ASH_WM_WM_DEFAULT_LAYOUT_MANAGER_H_
+#define ASH_WM_WM_DEFAULT_LAYOUT_MANAGER_H_
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
@@ -14,12 +14,14 @@ namespace wm {
 
 // A layout manager that places children's layer at the physical pixel
 // boundaries.
-class ASH_EXPORT WmSnapToPixelLayoutManager : public aura::LayoutManager {
+// TODO(malaykeshav): This is essentially a skeleton class, so remove it
+// alltogether.
+class ASH_EXPORT WmDefaultLayoutManager : public aura::LayoutManager {
  public:
-  WmSnapToPixelLayoutManager();
-  ~WmSnapToPixelLayoutManager() override;
+  WmDefaultLayoutManager();
+  ~WmDefaultLayoutManager() override;
 
-  // Sets WmSnapToPixelLayoutManager as the LayoutManager on the appropriate
+  // Sets WmDefaultLayoutManager as the LayoutManager on the appropriate
   // descendants of |window|.
   static void InstallOnContainers(aura::Window* window);
 
@@ -35,10 +37,10 @@ class ASH_EXPORT WmSnapToPixelLayoutManager : public aura::LayoutManager {
                       const gfx::Rect& requested_bounds) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WmSnapToPixelLayoutManager);
+  DISALLOW_COPY_AND_ASSIGN(WmDefaultLayoutManager);
 };
 
 }  // namespace wm
 }  // namespace ash
 
-#endif  // ASH_WM_WM_SNAP_TO_PIXEL_LAYOUT_MANAGER_H_
+#endif  // ASH_WM_WM_DEFAULT_LAYOUT_MANAGER_H_
