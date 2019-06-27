@@ -78,6 +78,9 @@ class TemplateURLRef {
 
     // If the search request is from the omnibox, this enum may specify details
     // about how the user last interacted with the omnibox.
+    //
+    // These values are used as HTTP GET parameter values. Entries should not be
+    // renumbered and numeric values should never be reused.
     enum class OmniboxFocusType {
       // The default value. This is used for any search requests without any
       // special interaction annotation, including: normal omnibox searches,
@@ -341,6 +344,8 @@ class TemplateURLRef {
     GOOGLE_ASSISTED_QUERY_STATS,
     GOOGLE_BASE_URL,
     GOOGLE_BASE_SUGGEST_URL,
+    GOOGLE_CONTEXTUAL_SEARCH_VERSION,
+    GOOGLE_CONTEXTUAL_SEARCH_CONTEXT_DATA,
     GOOGLE_CURRENT_PAGE_URL,
     GOOGLE_CURSOR_POSITION,
     GOOGLE_IMAGE_ORIGINAL_HEIGHT,
@@ -352,8 +357,7 @@ class TemplateURLRef {
     GOOGLE_INPUT_TYPE,
     GOOGLE_IOS_SEARCH_LANGUAGE,
     GOOGLE_NTP_IS_THEMED,
-    GOOGLE_CONTEXTUAL_SEARCH_VERSION,
-    GOOGLE_CONTEXTUAL_SEARCH_CONTEXT_DATA,
+    GOOGLE_OMNIBOX_FOCUS_TYPE,
     GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
     GOOGLE_PAGE_CLASSIFICATION,
     GOOGLE_PREFETCH_QUERY,
