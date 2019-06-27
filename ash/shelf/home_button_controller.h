@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHELF_APP_LIST_BUTTON_CONTROLLER_H_
-#define ASH_SHELF_APP_LIST_BUTTON_CONTROLLER_H_
+#ifndef ASH_SHELF_HOME_BUTTON_CONTROLLER_H_
+#define ASH_SHELF_HOME_BUTTON_CONTROLLER_H_
 
 #include <memory>
 
@@ -25,26 +25,26 @@ class GestureEvent;
 namespace ash {
 
 class AssistantOverlay;
-class AppListButton;
+class HomeButton;
 class Shelf;
 class ShelfView;
 
-// Controls behavior of the AppListButton, including a possible long-press
+// Controls behavior of the HomeButton, including a possible long-press
 // action (for Assistant).
-// Behavior is tested indirectly in AppListButtonTest and ShelfViewInkDropTest.
-class AppListButtonController : public AppListControllerObserver,
-                                public SessionObserver,
-                                public TabletModeObserver,
-                                public DefaultVoiceInteractionObserver {
+// Behavior is tested indirectly in HomeButtonTest and ShelfViewInkDropTest.
+class HomeButtonController : public AppListControllerObserver,
+                             public SessionObserver,
+                             public TabletModeObserver,
+                             public DefaultVoiceInteractionObserver {
  public:
-  AppListButtonController(AppListButton* button, Shelf* shelf);
-  ~AppListButtonController() override;
+  HomeButtonController(HomeButton* button, Shelf* shelf);
+  ~HomeButtonController() override;
 
   // Maybe handles a gesture event based on the event and whether voice
   // interaction is available.
   // |shelf_view| is used to determine whether it is safe to animate the ripple.
   //
-  // Returns true if the event is consumed; otherwise, AppListButton should pass
+  // Returns true if the event is consumed; otherwise, HomeButton should pass
   // the event along to Button to consume.
   bool MaybeHandleGestureEvent(ui::GestureEvent* event, ShelfView* shelf_view);
 
@@ -86,7 +86,7 @@ class AppListButtonController : public AppListControllerObserver,
   bool is_showing_app_list_ = false;
 
   // The button that owns this controller.
-  AppListButton* const button_;
+  HomeButton* const button_;
 
   // The shelf the button resides in.
   Shelf* const shelf_;
@@ -98,9 +98,9 @@ class AppListButtonController : public AppListControllerObserver,
   std::unique_ptr<base::OneShotTimer> assistant_animation_hide_delay_timer_;
   base::TimeTicks voice_interaction_start_timestamp_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListButtonController);
+  DISALLOW_COPY_AND_ASSIGN(HomeButtonController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SHELF_APP_LIST_BUTTON_CONTROLLER_H_
+#endif  // ASH_SHELF_HOME_BUTTON_CONTROLLER_H_

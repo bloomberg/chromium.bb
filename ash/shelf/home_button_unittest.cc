@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/app_list_button.h"
+#include "ash/shelf/home_button.h"
 
 #include <memory>
 #include <string>
@@ -41,21 +41,18 @@ ui::GestureEvent CreateGestureEvent(ui::GestureEventDetails details) {
   return ui::GestureEvent(0, 0, ui::EF_NONE, base::TimeTicks(), details);
 }
 
-// TODO(michaelpg): Rename AppListButtonTest => HomeButtonTest.
-class AppListButtonTest : public AshTestBase {
+class HomeButtonTest : public AshTestBase {
  public:
-  AppListButtonTest() = default;
-  ~AppListButtonTest() override = default;
+  HomeButtonTest() = default;
+  ~HomeButtonTest() override = default;
 
   // AshTestBase:
-  void SetUp() override {
-    AshTestBase::SetUp();
-  }
+  void SetUp() override { AshTestBase::SetUp(); }
 
   void SendGestureEvent(ui::GestureEvent* event) {
     GetPrimaryShelf()
         ->GetShelfViewForTesting()
-        ->GetAppListButton()
+        ->GetHomeButton()
         ->OnGestureEvent(event);
   }
 
@@ -65,25 +62,25 @@ class AppListButtonTest : public AshTestBase {
     // Send the gesture event to the secondary display.
     Shelf::ForWindow(Shell::GetAllRootWindows()[1])
         ->GetShelfViewForTesting()
-        ->GetAppListButton()
+        ->GetHomeButton()
         ->OnGestureEvent(event);
   }
 
-  const AppListButton* app_list_button() const {
-    return GetPrimaryShelf()->GetShelfViewForTesting()->GetAppListButton();
+  const HomeButton* home_button() const {
+    return GetPrimaryShelf()->GetShelfViewForTesting()->GetHomeButton();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AppListButtonTest);
+  DISALLOW_COPY_AND_ASSIGN(HomeButtonTest);
 };
 
-TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
+TEST_F(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
 
-  // Start the drags from the center of the app list button.
-  gfx::Point start = app_list_button()->GetCenterPoint();
-  views::View::ConvertPointToScreen(app_list_button(), &start);
+  // Start the drags from the center of the home button.
+  gfx::Point start = home_button()->GetCenterPoint();
+  views::View::ConvertPointToScreen(home_button(), &start);
   // Swiping up less than the threshold should trigger a peeking app list.
   gfx::Point end = start;
   end.set_y(shelf->GetIdealBounds().bottom() -
@@ -110,15 +107,15 @@ TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
   GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
 }
 
-TEST_F(AppListButtonTest, ClickToOpenAppList) {
+TEST_F(HomeButtonTest, ClickToOpenAppList) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
 
-  gfx::Point center = app_list_button()->GetCenterPoint();
-  views::View::ConvertPointToScreen(app_list_button(), &center);
+  gfx::Point center = home_button()->GetCenterPoint();
+  views::View::ConvertPointToScreen(home_button(), &center);
   GetEventGenerator()->MoveMouseTo(center);
 
-  // Click on the app list button should toggle the app list.
+  // Click on the home button should toggle the app list.
   GetEventGenerator()->ClickLeftButton();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
@@ -145,7 +142,7 @@ TEST_F(AppListButtonTest, ClickToOpenAppList) {
   GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
 }
 
-TEST_F(AppListButtonTest, ButtonPositionInTabletMode) {
+TEST_F(HomeButtonTest, ButtonPositionInTabletMode) {
   // Finish all setup tasks. In particular we want to finish the
   // GetSwitchStates post task in (Fake)PowerManagerClient which is triggered
   // by TabletModeController otherwise this will cause tablet mode to exit
@@ -155,14 +152,14 @@ TEST_F(AppListButtonTest, ButtonPositionInTabletMode) {
   ShelfViewTestAPI test_api(GetPrimaryShelf()->GetShelfViewForTesting());
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   test_api.RunMessageLoopUntilAnimationsDone();
-  EXPECT_GT(app_list_button()->bounds().x(), 0);
+  EXPECT_GT(home_button()->bounds().x(), 0);
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api.RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(ShelfConstants::button_spacing(), app_list_button()->bounds().x());
+  EXPECT_EQ(ShelfConstants::button_spacing(), home_button()->bounds().x());
 }
 
-TEST_F(AppListButtonTest, LongPressGesture) {
+TEST_F(HomeButtonTest, LongPressGesture) {
   ui::ScopedAnimationDurationScaleMode animation_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   // Simulate two user with primary user as active.
@@ -197,7 +194,7 @@ TEST_F(AppListButtonTest, LongPressGesture) {
                                                ->visibility());
 }
 
-TEST_F(AppListButtonTest, LongPressGestureWithSecondaryUser) {
+TEST_F(HomeButtonTest, LongPressGestureWithSecondaryUser) {
   // Disallowed by secondary user.
   VoiceInteractionController::Get()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER);
@@ -224,7 +221,7 @@ TEST_F(AppListButtonTest, LongPressGestureWithSecondaryUser) {
                                                ->visibility());
 }
 
-TEST_F(AppListButtonTest, LongPressGestureWithSettingsDisabled) {
+TEST_F(HomeButtonTest, LongPressGestureWithSettingsDisabled) {
   // Simulate two user with primary user as active.
   CreateUserSessions(2);
 
@@ -252,7 +249,7 @@ TEST_F(AppListButtonTest, LongPressGestureWithSettingsDisabled) {
                                                ->visibility());
 }
 
-class KioskNextHomeButtonTest : public AppListButtonTest {
+class KioskNextHomeButtonTest : public HomeButtonTest {
  public:
   KioskNextHomeButtonTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
@@ -260,13 +257,13 @@ class KioskNextHomeButtonTest : public AppListButtonTest {
 
   void SetUp() override {
     set_start_session(false);
-    AppListButtonTest::SetUp();
+    HomeButtonTest::SetUp();
     client_ = std::make_unique<MockKioskNextShellClient>();
   }
 
   void TearDown() override {
     client_.reset();
-    AppListButtonTest::TearDown();
+    HomeButtonTest::TearDown();
   }
 
  private:
@@ -289,8 +286,8 @@ TEST_F(KioskNextHomeButtonTest, TapToGoHome) {
   test_api.RunMessageLoopUntilAnimationsDone();
 
   // Tapping the home button should exit Overview mode.
-  gfx::Point center = app_list_button()->GetCenterPoint();
-  views::View::ConvertPointToScreen(app_list_button(), &center);
+  gfx::Point center = home_button()->GetCenterPoint();
+  views::View::ConvertPointToScreen(home_button(), &center);
   GetEventGenerator()->GestureTapDownAndUp(center);
   test_api.RunMessageLoopUntilAnimationsDone();
   EXPECT_FALSE(overview_controller->InOverviewSession());

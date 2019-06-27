@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/app_list_button_controller.h"
+#include "ash/shelf/home_button_controller.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/assistant_overlay.h"
+#include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
@@ -42,8 +42,7 @@ bool CanActivate() {
 
 }  // namespace
 
-AppListButtonController::AppListButtonController(AppListButton* button,
-                                                 Shelf* shelf)
+HomeButtonController::HomeButtonController(HomeButton* button, Shelf* shelf)
     : button_(button), shelf_(shelf) {
   DCHECK(button_);
   DCHECK(shelf_);
@@ -64,7 +63,7 @@ AppListButtonController::AppListButtonController(AppListButton* button,
   }
 }
 
-AppListButtonController::~AppListButtonController() {
+HomeButtonController::~HomeButtonController() {
   Shell* shell = Shell::Get();
 
   // AppListController and TabletModeController are destroyed early when Shell
@@ -77,8 +76,8 @@ AppListButtonController::~AppListButtonController() {
   VoiceInteractionController::Get()->RemoveLocalObserver(this);
 }
 
-bool AppListButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event,
-                                                      ShelfView* shelf_view) {
+bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event,
+                                                   ShelfView* shelf_view) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
@@ -106,7 +105,7 @@ bool AppListButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event,
             base::TimeDelta::FromMilliseconds(
                 kVoiceInteractionAnimationDelayMs),
             base::BindOnce(
-                &AppListButtonController::StartVoiceInteractionAnimation,
+                &HomeButtonController::StartVoiceInteractionAnimation,
                 base::Unretained(this)));
       }
 
@@ -120,7 +119,7 @@ bool AppListButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event,
         return false;
 
       base::RecordAction(base::UserMetricsAction(
-          "VoiceInteraction.Started.AppListButtonLongPress"));
+          "VoiceInteraction.Started.HomeButtonLongPress"));
       assistant_overlay_->BurstAnimation();
       event->SetHandled();
       Shell::Get()->shell_state()->SetRootWindowForNewWindows(
@@ -145,7 +144,7 @@ bool AppListButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event,
   }
 }
 
-bool AppListButtonController::IsVoiceInteractionAvailable() {
+bool HomeButtonController::IsVoiceInteractionAvailable() {
   VoiceInteractionController* controller = VoiceInteractionController::Get();
   bool settings_enabled = controller->settings_enabled().value_or(false);
   bool consent_given = controller->consent_status() ==
@@ -157,14 +156,14 @@ bool AppListButtonController::IsVoiceInteractionAvailable() {
          (settings_enabled || !consent_given);
 }
 
-bool AppListButtonController::IsVoiceInteractionRunning() {
+bool HomeButtonController::IsVoiceInteractionRunning() {
   return VoiceInteractionController::Get()->voice_interaction_state().value_or(
              mojom::VoiceInteractionState::STOPPED) ==
          mojom::VoiceInteractionState::RUNNING;
 }
 
-void AppListButtonController::OnAppListVisibilityChanged(bool shown,
-                                                         int64_t display_id) {
+void HomeButtonController::OnAppListVisibilityChanged(bool shown,
+                                                      int64_t display_id) {
   if (display::Screen::GetScreen()
           ->GetDisplayNearestWindow(button_->GetWidget()->GetNativeWindow())
           .id() != display_id) {
@@ -176,7 +175,7 @@ void AppListButtonController::OnAppListVisibilityChanged(bool shown,
     OnAppListDismissed();
 }
 
-void AppListButtonController::OnActiveUserSessionChanged(
+void HomeButtonController::OnActiveUserSessionChanged(
     const AccountId& account_id) {
   button_->OnVoiceInteractionAvailabilityChanged();
   // Initialize voice interaction overlay when primary user session becomes
@@ -187,11 +186,11 @@ void AppListButtonController::OnActiveUserSessionChanged(
   }
 }
 
-void AppListButtonController::OnTabletModeStarted() {
+void HomeButtonController::OnTabletModeStarted() {
   button_->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
 }
 
-void AppListButtonController::OnVoiceInteractionStatusChanged(
+void HomeButtonController::OnVoiceInteractionStatusChanged(
     mojom::VoiceInteractionState state) {
   button_->OnVoiceInteractionAvailabilityChanged();
 
@@ -230,20 +229,20 @@ void AppListButtonController::OnVoiceInteractionStatusChanged(
   }
 }
 
-void AppListButtonController::OnVoiceInteractionSettingsEnabled(bool enabled) {
+void HomeButtonController::OnVoiceInteractionSettingsEnabled(bool enabled) {
   button_->OnVoiceInteractionAvailabilityChanged();
 }
 
-void AppListButtonController::OnVoiceInteractionConsentStatusUpdated(
+void HomeButtonController::OnVoiceInteractionConsentStatusUpdated(
     mojom::ConsentStatus consent_status) {
   button_->OnVoiceInteractionAvailabilityChanged();
 }
 
-void AppListButtonController::StartVoiceInteractionAnimation() {
+void HomeButtonController::StartVoiceInteractionAnimation() {
   assistant_overlay_->StartAnimation(false);
 }
 
-void AppListButtonController::OnAppListShown() {
+void HomeButtonController::OnAppListShown() {
   // Do not show a highlight if the home screen is available, since the home
   // screen view is always open in the background.
   if (!Shell::Get()->home_screen_controller()->IsHomeScreenAvailable())
@@ -252,13 +251,13 @@ void AppListButtonController::OnAppListShown() {
   shelf_->UpdateAutoHideState();
 }
 
-void AppListButtonController::OnAppListDismissed() {
+void HomeButtonController::OnAppListDismissed() {
   button_->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
   is_showing_app_list_ = false;
   shelf_->UpdateAutoHideState();
 }
 
-void AppListButtonController::InitializeVoiceInteractionOverlay() {
+void HomeButtonController::InitializeVoiceInteractionOverlay() {
   assistant_overlay_ = new AssistantOverlay(button_);
   button_->AddChildView(assistant_overlay_);
   assistant_overlay_->SetVisible(false);

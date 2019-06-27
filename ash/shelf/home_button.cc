@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shelf/app_list_button.h"
+#include "ash/shelf/home_button.h"
 
 #include <math.h>  // std::ceil
 
@@ -30,9 +30,9 @@ constexpr uint8_t kVoiceInteractionNotRunningAlpha = 138;  // 54% alpha
 }  // namespace
 
 // static
-const char AppListButton::kViewClassName[] = "ash/AppListButton";
+const char HomeButton::kViewClassName[] = "ash/HomeButton";
 
-AppListButton::AppListButton(ShelfView* shelf_view, Shelf* shelf)
+HomeButton::HomeButton(ShelfView* shelf_view, Shelf* shelf)
     : ShelfControlButton(shelf_view), controller_(this, shelf) {
   DCHECK(shelf_view);
   DCHECK(shelf);
@@ -44,29 +44,29 @@ AppListButton::AppListButton(ShelfView* shelf_view, Shelf* shelf)
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
-AppListButton::~AppListButton() = default;
+HomeButton::~HomeButton() = default;
 
-void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
+void HomeButton::OnGestureEvent(ui::GestureEvent* event) {
   if (!controller_.MaybeHandleGestureEvent(event, shelf_view()))
     Button::OnGestureEvent(event);
 }
 
-const char* AppListButton::GetClassName() const {
+const char* HomeButton::GetClassName() const {
   return kViewClassName;
 }
 
-void AppListButton::OnVoiceInteractionAvailabilityChanged() {
+void HomeButton::OnVoiceInteractionAvailabilityChanged() {
   SchedulePaint();
 }
 
-bool AppListButton::IsShowingAppList() const {
+bool HomeButton::IsShowingAppList() const {
   return controller_.is_showing_app_list();
 }
 
-void AppListButton::OnPressed(app_list::AppListShowSource show_source,
-                              base::TimeTicks time_stamp) {
+void HomeButton::OnPressed(app_list::AppListShowSource show_source,
+                           base::TimeTicks time_stamp) {
   ShelfAction shelf_action =
-      Shell::Get()->app_list_controller()->OnAppListButtonPressed(
+      Shell::Get()->app_list_controller()->OnHomeButtonPressed(
           shelf_view()->GetDisplayId(), show_source, time_stamp);
   if (shelf_action == SHELF_ACTION_APP_LIST_DISMISSED) {
     GetInkDrop()->SnapToActivated();
@@ -74,7 +74,7 @@ void AppListButton::OnPressed(app_list::AppListShowSource show_source,
   }
 }
 
-void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
+void HomeButton::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::PointF circle_center(GetCenterPoint());
 
   // Paint a white ring as the foreground for the app list circle. The ceil/dsf
@@ -118,8 +118,8 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
   }
 }
 
-bool AppListButton::DoesIntersectRect(const views::View* target,
-                                      const gfx::Rect& rect) const {
+bool HomeButton::DoesIntersectRect(const views::View* target,
+                                   const gfx::Rect& rect) const {
   DCHECK_EQ(target, this);
   gfx::Rect button_bounds = target->GetLocalBounds();
   // Increase clickable area for the button from
