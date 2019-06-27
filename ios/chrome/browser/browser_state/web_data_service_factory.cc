@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/web_data_service_factory.h"
+#include "ios/chrome/browser/browser_state/web_data_service_factory.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -93,11 +93,9 @@ WebDataServiceFactory* WebDataServiceFactory::GetInstance() {
 WebDataServiceFactory::WebDataServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "WebDataService",
-          BrowserStateDependencyManager::GetInstance()) {
-}
+          BrowserStateDependencyManager::GetInstance()) {}
 
-WebDataServiceFactory::~WebDataServiceFactory() {
-}
+WebDataServiceFactory::~WebDataServiceFactory() {}
 
 std::unique_ptr<KeyedService> WebDataServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
