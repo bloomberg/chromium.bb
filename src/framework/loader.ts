@@ -48,7 +48,7 @@ function filterTestGroup(group: ITestGroup, filter: TestGroupFilter) {
   };
 }
 
-export abstract class TestLoader {
+export class TestLoader {
   async loadTests(outDir: string, filters: string[]): Promise<IterableIterator<IPendingEntry>> {
     const listings = [];
     for (const filter of filters) {
@@ -58,15 +58,20 @@ export abstract class TestLoader {
     return concat(await Promise.all(listings));
   }
 
-  protected abstract fetch(outDir: string, suite: string): Promise<IListing>;
-  protected abstract import(path: string): Promise<ITestNode>;
+  protected async listing(suite: string): Promise<IListing> {
+    return { suite, groups: await (await import(`../suites/${suite}/index.js`)).listing };
+  }
+
+  protected import(path: string): Promise<ITestNode> {
+    return import('../suites/' + path);
+  }
 
   // Each filter is of one of the forms below (urlencoded).
   private async loadFilter(outDir: string, filter: string): Promise<IPendingEntry[]> {
     const i1 = filter.indexOf(':');
     if (i1 === -1) {
       // - cts
-      return this.filterByGroup(await this.fetch(outDir, filter), '');
+      return this.filterByGroup(await this.listing(filter), '');
     }
 
     const suite = filter.substring(0, i1);
@@ -77,7 +82,7 @@ export abstract class TestLoader {
       // - cts:buffers/
       // - cts:buffers/map
       const groupPrefix = filter.substring(i1 + 1);
-      return this.filterByGroup(await this.fetch(outDir, suite), groupPrefix);
+      return this.filterByGroup(await this.listing(suite), groupPrefix);
     }
 
     const group = filter.substring(i1 + 1, i2);

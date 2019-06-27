@@ -9,4 +9,12 @@ if (!fs.existsSync('tools/gen_version')) {
 
 const { version } = require('../src/framework/version');
 
-fs.writeFileSync('./out/framework/version.js', `export const version = '${version}';\n`);
+fs.writeFileSync(
+  './out/framework/version.js',
+  `\
+export const version = '${version}';
+`
+);
+try {
+  fs.unlinkSync('./out/framework/version.js.map');
+} catch (ex) {}

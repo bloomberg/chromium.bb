@@ -3,15 +3,14 @@
 import * as fs from 'fs';
 import * as process from 'process';
 
-import { ITestNode } from '../framework/loader';
+import { ITestNode, TestLoader } from '../framework/loader';
 import { Logger, IResult } from '../framework/logger';
 import { parseFilters } from '../framework/url_query';
-import { TestLoaderNode } from './loader_node';
 
 function usage(rc: number) {
   console.log('Usage:');
-  console.log('  node tools/run [FILTERS...]');
-  console.log('  node tools/run unittests: demos:params:');
+  console.log('  tools/run [FILTERS...]');
+  console.log('  tools/run unittests: demos:params:');
   process.exit(rc);
 }
 
@@ -41,7 +40,7 @@ for (const a of process.argv.slice(2)) {
 (async () => {
   try {
     const filters = parseFilters(filterArgs);
-    const loader = new TestLoaderNode();
+    const loader = new TestLoader();
     const listing = await loader.loadTests('./out/suites', filters);
 
     const log = new Logger();
@@ -79,6 +78,10 @@ for (const a of process.argv.slice(2)) {
           })()
         );
       }
+    }
+
+    if (running.length === 0) {
+      throw new Error('found no tests!');
     }
 
     await Promise.all(running);
@@ -122,6 +125,6 @@ Failed               = ${rpt(failed.length)}`);
       process.exit(1);
     }
   } catch (ex) {
-    console.log(ex.toString());
+    console.log(ex);
   }
 })();

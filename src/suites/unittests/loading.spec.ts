@@ -72,7 +72,7 @@ const nodesData: { [k: string]: ITestNode } = {
 };
 
 export class TestTestLoader extends TestLoader {
-  protected async fetch(_outDir: string, suite: string): Promise<IListing> {
+  protected async listing(suite: string): Promise<IListing> {
     return { suite, groups: listingData[suite] };
   }
 
