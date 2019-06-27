@@ -1241,7 +1241,19 @@
     Dock has an issue
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_ERROR_MESSAGE" desc="The message of the notification shown to inform the user that attached dock presents hardware failures.">
-    Try disconnecting and reconnecting your docking station cable. If that doesn't help, have your dock serviced.
+    Your dock needs to be serviced. Without a working fan your dock will shut down.
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_TITLE" desc="The title of the notification shown to inform the user that HDMI and USB Type-C cannot be used for displays at the same time with the attached dock.">
+    Display connected to the dock has an issue
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_DOCK_DISPLAY_MESSAGE" desc="The message of the notification shown to inform the user that HDMI and USB Type-C cannot be used for displays at the same time with the attached dock.">
+    Your dock's HDMI port can't be used when the USB Type-C port is used for video output. Please use a different port for one of the displays.
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_TITLE" desc="The title of the notification shown to inform the user that attached dock will operate in USB Type-C compatible mode.">
+    Thunderbolt is not supported
+  </message>
+  <message name="IDS_WILCO_NOTIFICATION_DOCK_THUNDERBOLT_MESSAGE" desc="The message of the notification shown to inform the user that attached dock will operate in USB Type-C compatible mode.">
+    Your docking station will operate in USB Type-C compatible mode.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_LEARN_MORE" desc="Label on button in various Wilco notification.">
     Learn More
