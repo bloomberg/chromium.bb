@@ -187,21 +187,21 @@ class OncMojo {
   }
 
   /**
-   * @param {!chromeos.networkConfig.mojom.ONCSource} value
+   * @param {!chromeos.networkConfig.mojom.OncSource} value
    * @return {string}
    */
-  static getONCSourceString(value) {
-    const ONCSource = chromeos.networkConfig.mojom.ONCSource;
+  static getOncSourceString(value) {
+    const OncSource = chromeos.networkConfig.mojom.OncSource;
     switch (value) {
-      case ONCSource.kUnknown:
-        return 'Unknown';
-      case ONCSource.kNone:
+      case OncSource.kNone:
         return 'None';
-      case ONCSource.kUserImport:
-        return 'UserImport';
-      case ONCSource.kDevicePolicy:
+      case OncSource.kDevice:
+        return 'Device';
+      case OncSource.kDevicePolicy:
         return 'DevicePolicy';
-      case ONCSource.kUserPolicy:
+      case OncSource.kUser:
+        return 'User';
+      case OncSource.kUserPolicy:
         return 'UserPolicy';
     }
     assertNotReached();
@@ -259,8 +259,8 @@ class OncMojo {
           /** @type {!chromeos.networkConfig.mojom.NetworkType} */ (value));
     }
     if (key == 'source') {
-      return this.getONCSourceString(
-          /** @type {!chromeos.networkConfig.mojom.ONCSource} */ (value));
+      return this.getOncSourceString(
+          /** @type {!chromeos.networkConfig.mojom.OncSource} */ (value));
     }
     if (key == 'security') {
       return this.getSecurityTypeString(
