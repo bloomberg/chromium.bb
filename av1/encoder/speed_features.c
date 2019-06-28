@@ -606,7 +606,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   }
   if (speed >= 8) {
     sf->use_fast_nonrd_pick_mode = 1;
-    sf->mv.subpel_search_method = SUBPEL_TREE;
+    sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
     sf->tx_size_search_method = USE_FAST_RD;
     sf->estimate_motion_for_var_based_partition = 0;
   }
