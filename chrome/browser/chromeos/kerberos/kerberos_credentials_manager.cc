@@ -143,6 +143,7 @@ class KerberosAddAccountRunner {
   void AddAccount() {
     kerberos::AddAccountRequest request;
     request.set_principal_name(normalized_principal_);
+    request.set_is_managed(is_managed_);
     KerberosClient::Get()->AddAccount(
         request, base::BindOnce(&KerberosAddAccountRunner::OnAddAccount,
                                 weak_factory_.GetWeakPtr()));

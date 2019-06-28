@@ -73,6 +73,12 @@ Polymer({
     },
 
     /** @private */
+    isManaged_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
     showAdvancedConfig_: {
       type: Boolean,
       value: false,
@@ -93,10 +99,11 @@ Polymer({
       // Preset username and make UI read-only.
       // Note: At least the focus() part needs to be after showModal.
       this.username_ = this.presetAccount.principalName;
+      this.isManaged_ = this.presetAccount.isManaged;
       this.$.username.readonly = true;
       this.$.password.focus();
 
-      if (this.presetAccount.hasRememberedPassword) {
+      if (this.presetAccount.passwordWasRemembered) {
         // The daemon knows the user's password, so prefill the password field
         // with some string (Chrome does not know the actual password for
         // security reasons). If the user does not change it, an empty password
