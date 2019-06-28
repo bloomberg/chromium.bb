@@ -169,6 +169,7 @@ class FragmentPaintPropertyTreeBuilder {
  private:
   ALWAYS_INLINE void UpdatePaintOffset();
   ALWAYS_INLINE void UpdateForPaintOffsetTranslation(base::Optional<IntPoint>&);
+  ALWAYS_INLINE bool IsAffectedByOuterViewportBoundsDelta() const;
   ALWAYS_INLINE void UpdatePaintOffsetTranslation(
       const base::Optional<IntPoint>&);
   ALWAYS_INLINE void SetNeedsPaintPropertyUpdateIfNeeded();
@@ -456,6 +457,18 @@ void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
   context_.current.paint_offset = subpixel_accumulation;
 }
 
+bool FragmentPaintPropertyTreeBuilder::IsAffectedByOuterViewportBoundsDelta()
+    const {
+  if (object_.StyleRef().GetPosition() != EPosition::kFixed ||
+      !object_.StyleRef().IsFixedToBottom() ||
+      !object_.GetFrame()->IsMainFrame())
+    return false;
+
+  // It's affected by viewport only if the container is the LayoutView.
+  DCHECK_EQ(full_context_.container_for_fixed_position, object_.Container());
+  return full_context_.container_for_fixed_position->IsLayoutView();
+}
+
 void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
     const base::Optional<IntPoint>& paint_offset_translation) {
   DCHECK(properties_);
@@ -465,11 +478,8 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
         FloatSize(ToIntSize(*paint_offset_translation))};
     state.flattens_inherited_transform =
         context_.current.should_flatten_inherited_transform;
-
     state.affected_by_outer_viewport_bounds_delta =
-        object_.StyleRef().GetPosition() == EPosition::kFixed &&
-        object_.StyleRef().IsFixedToBottom();
-
+        IsAffectedByOuterViewportBoundsDelta();
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
       state.rendering_context_id = context_.current.rendering_context_id;
