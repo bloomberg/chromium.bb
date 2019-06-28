@@ -15,6 +15,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/AssistStatusHandler.java",
   "java/src/org/chromium/chrome/browser/BackgroundSyncLauncher.java",
   "java/src/org/chromium/chrome/browser/BluetoothChooserDialog.java",
+  "java/src/org/chromium/chrome/browser/BluetoothScanningPermissionDialog.java",
   "java/src/org/chromium/chrome/browser/BrowserRestartActivity.java",
   "java/src/org/chromium/chrome/browser/ChromeActionModeCallback.java",
   "java/src/org/chromium/chrome/browser/ChromeActivity.java",

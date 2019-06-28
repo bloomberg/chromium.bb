@@ -635,6 +635,8 @@ jumbo_split_static_library("ui") {
       "android/autofill/credit_card_scanner_view_android.h",
       "android/bluetooth_chooser_android.cc",
       "android/bluetooth_chooser_android.h",
+      "android/bluetooth_scanning_prompt_android.cc",
+      "android/bluetooth_scanning_prompt_android.h",
       "android/chrome_http_auth_handler.cc",
       "android/chrome_http_auth_handler.h",
       "android/color_chooser_dialog_android.cc",
