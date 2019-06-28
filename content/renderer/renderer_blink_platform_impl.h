@@ -100,17 +100,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebString& cacheStorageCacheName) override;
   blink::WebString DefaultLocale() override;
   void SuddenTerminationChanged(bool enabled) override;
-  base::File DatabaseOpenFile(const blink::WebString& vfs_file_name,
-                              int desired_flags) override;
-  int DatabaseDeleteFile(const blink::WebString& vfs_file_name,
-                         bool sync_dir) override;
-  int32_t DatabaseGetFileAttributes(
-      const blink::WebString& vfs_file_name) override;
-  int64_t DatabaseGetFileSize(const blink::WebString& vfs_file_name) override;
-  int64_t DatabaseGetSpaceAvailableForOrigin(
-      const blink::WebSecurityOrigin& origin) override;
-  bool DatabaseSetFileSize(const blink::WebString& vfs_file_name,
-                           int64_t size) override;
   blink::WebString DatabaseCreateOriginIdentifier(
       const blink::WebSecurityOrigin& origin) override;
   viz::FrameSinkId GenerateFrameSinkId() override;

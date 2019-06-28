@@ -454,51 +454,6 @@ WebString RendererBlinkPlatformImpl::FileSystemCreateOriginIdentifier(
 
 //------------------------------------------------------------------------------
 
-base::File RendererBlinkPlatformImpl::DatabaseOpenFile(
-    const WebString& vfs_file_name,
-    int desired_flags) {
-  base::File file;
-  GetWebDatabaseHost().OpenFile(vfs_file_name.Utf16(), desired_flags, &file);
-  return file;
-}
-
-int RendererBlinkPlatformImpl::DatabaseDeleteFile(
-    const WebString& vfs_file_name,
-    bool sync_dir) {
-  int rv = SQLITE_IOERR_DELETE;
-  GetWebDatabaseHost().DeleteFile(vfs_file_name.Utf16(), sync_dir, &rv);
-  return rv;
-}
-
-int32_t RendererBlinkPlatformImpl::DatabaseGetFileAttributes(
-    const WebString& vfs_file_name) {
-  int32_t rv = -1;
-  GetWebDatabaseHost().GetFileAttributes(vfs_file_name.Utf16(), &rv);
-  return rv;
-}
-
-int64_t RendererBlinkPlatformImpl::DatabaseGetFileSize(
-    const WebString& vfs_file_name) {
-  int64_t rv = 0LL;
-  GetWebDatabaseHost().GetFileSize(vfs_file_name.Utf16(), &rv);
-  return rv;
-}
-
-int64_t RendererBlinkPlatformImpl::DatabaseGetSpaceAvailableForOrigin(
-    const blink::WebSecurityOrigin& origin) {
-  int64_t rv = 0LL;
-  GetWebDatabaseHost().GetSpaceAvailable(origin, &rv);
-  return rv;
-}
-
-bool RendererBlinkPlatformImpl::DatabaseSetFileSize(
-    const WebString& vfs_file_name,
-    int64_t size) {
-  bool rv = false;
-  GetWebDatabaseHost().SetFileSize(vfs_file_name.Utf16(), size, &rv);
-  return rv;
-}
-
 WebString RendererBlinkPlatformImpl::DatabaseCreateOriginIdentifier(
     const blink::WebSecurityOrigin& origin) {
   return WebString::FromUTF8(
@@ -993,11 +948,6 @@ void RendererBlinkPlatformImpl::InitializeWebDatabaseHostIfNeeded() {
         base::CreateSequencedTaskRunnerWithTraits(
             {base::WithBaseSyncPrimitives()}));
   }
-}
-
-blink::mojom::WebDatabaseHost& RendererBlinkPlatformImpl::GetWebDatabaseHost() {
-  InitializeWebDatabaseHostIfNeeded();
-  return **web_database_host_;
 }
 
 blink::mojom::CodeCacheHost& RendererBlinkPlatformImpl::GetCodeCacheHost() {
