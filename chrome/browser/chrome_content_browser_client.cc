@@ -3464,6 +3464,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
             ? content::AutoplayPolicy::kDocumentUserActivationRequired
             : content::AutoplayPolicy::kNoUserGestureRequired;
   }
+  web_prefs->forced_colors = native_theme->UsesHighContrastColors()
+                                 ? blink::ForcedColors::kActive
+                                 : blink::ForcedColors::kNone;
   web_prefs->preferred_color_scheme = native_theme->SystemDarkModeEnabled()
                                           ? blink::PreferredColorScheme::kDark
                                           : blink::PreferredColorScheme::kLight;

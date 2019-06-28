@@ -6,11 +6,8 @@
 
 #include <cstring>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/native_theme/dark_mode_observer.h"
-#include "ui/native_theme/native_theme_observer.h"
 
 namespace ui {
 
@@ -39,10 +36,7 @@ NativeTheme::NativeTheme()
     : is_dark_mode_(IsForcedDarkMode()),
       is_high_contrast_(IsForcedHighContrast()) {}
 
-NativeTheme::~NativeTheme() {
-  if (dark_mode_parent_observer_)
-    dark_mode_parent_observer_->Stop();
-}
+NativeTheme::~NativeTheme() = default;
 
 bool NativeTheme::SystemDarkModeEnabled() const {
   return is_dark_mode_;
@@ -74,16 +68,6 @@ base::Optional<CaptionStyle> NativeTheme::GetSystemCaptionStyle() const {
   return CaptionStyle::FromSystemSettings();
 }
 
-void NativeTheme::SetDarkModeParent(NativeTheme* dark_mode_parent) {
-  dark_mode_parent_observer_ = std::make_unique<DarkModeObserver>(
-      dark_mode_parent,
-      base::BindRepeating(&NativeTheme::OnParentDarkModeChanged,
-                          base::Unretained(this)));
-  dark_mode_parent_observer_->Start();
-}
+void NativeTheme::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {}
 
-void NativeTheme::OnParentDarkModeChanged(bool is_dark_mode) {
-  set_dark_mode(is_dark_mode);
-  NotifyObservers();
-}
 }  // namespace ui

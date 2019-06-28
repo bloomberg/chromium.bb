@@ -24,7 +24,7 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
   static NativeThemeAura* instance();
   static NativeThemeAura* web_instance();
 
-  // Overridden from NativeThemeBase:
+  // NativeThemeBase:
   SkColor GetSystemColor(ColorId color_id) const override;
   void PaintMenuPopupBackground(
       cc::PaintCanvas* canvas,
@@ -66,6 +66,9 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
   bool SupportsNinePatch(Part part) const override;
   gfx::Size GetNinePatchCanvasSize(Part part) const override;
   gfx::Rect GetNinePatchAperture(Part part) const override;
+
+  // ui::NativeThemeObserver:
+  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
  private:
   // Paint the common parts of the checkboxes and radio buttons.
