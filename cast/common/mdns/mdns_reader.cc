@@ -10,9 +10,6 @@
 namespace cast {
 namespace mdns {
 
-MdnsReader::MdnsReader(const uint8_t* buffer, size_t length)
-    : BigEndianReader(buffer, length) {}
-
 bool MdnsReader::Read(absl::string_view* out) {
   Cursor cursor(this);
   uint8_t string_length;
@@ -199,13 +196,14 @@ bool MdnsReader::Read(MdnsRecord* out) {
   Cursor cursor(this);
   DomainName name;
   uint16_t type;
-  uint16_t record_class;
+  uint16_t rrclass;
   uint32_t ttl;
   Rdata rdata;
-  if (Read(&name) && Read(&type) && Read(&record_class) && Read(&ttl) &&
-      Read(type, &rdata)) {
-    *out =
-        MdnsRecord(std::move(name), type, record_class, ttl, std::move(rdata));
+  if (Read(&name) && Read(&type) && Read(&rrclass) && Read(&ttl) &&
+      Read(static_cast<DnsType>(type), &rdata)) {
+    *out = MdnsRecord(std::move(name), static_cast<DnsType>(type),
+                      GetDnsClass(rrclass), GetCacheFlush(rrclass), ttl,
+                      std::move(rdata));
     cursor.Commit();
     return true;
   }
@@ -217,9 +215,10 @@ bool MdnsReader::Read(MdnsQuestion* out) {
   Cursor cursor(this);
   DomainName name;
   uint16_t type;
-  uint16_t record_class;
-  if (Read(&name) && Read(&type) && Read(&record_class)) {
-    *out = MdnsQuestion(std::move(name), type, record_class);
+  uint16_t rrclass;
+  if (Read(&name) && Read(&type) && Read(&rrclass)) {
+    *out = MdnsQuestion(std::move(name), static_cast<DnsType>(type),
+                        GetDnsClass(rrclass), GetUnicastResponse(rrclass));
     cursor.Commit();
     return true;
   }
@@ -259,18 +258,18 @@ bool MdnsReader::Read(IPAddress::Version version, IPAddress* out) {
   return false;
 }
 
-bool MdnsReader::Read(uint16_t type, Rdata* out) {
+bool MdnsReader::Read(DnsType type, Rdata* out) {
   OSP_DCHECK(out);
   switch (type) {
-    case kTypeSRV:
+    case DnsType::kSRV:
       return Read<SrvRecordRdata>(out);
-    case kTypeA:
+    case DnsType::kA:
       return Read<ARecordRdata>(out);
-    case kTypeAAAA:
+    case DnsType::kAAAA:
       return Read<AAAARecordRdata>(out);
-    case kTypePTR:
+    case DnsType::kPTR:
       return Read<PtrRecordRdata>(out);
-    case kTypeTXT:
+    case DnsType::kTXT:
       return Read<TxtRecordRdata>(out);
     default:
       return Read<RawRecordRdata>(out);

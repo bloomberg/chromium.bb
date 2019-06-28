@@ -375,10 +375,10 @@ TEST(MdnsReaderTest, ReadMdnsRecord_ARecordRdata) {
       0x08, 0x08, 0x08, 0x08,  // RDATA = 8.8.8.8
   };
   // clang-format on
-  TestReadEntrySucceeds(kTestRecord, sizeof(kTestRecord),
-                        MdnsRecord(DomainName{"testing", "local"}, kTypeA,
-                                   kClassIN | kCacheFlushBit, 120,
-                                   ARecordRdata(IPAddress{8, 8, 8, 8})));
+  TestReadEntrySucceeds(
+      kTestRecord, sizeof(kTestRecord),
+      MdnsRecord(DomainName{"testing", "local"}, DnsType::kA, DnsClass::kIN,
+                 true, 120, ARecordRdata(IPAddress{8, 8, 8, 8})));
 }
 
 TEST(MdnsReaderTest, ReadMdnsRecord_UnknownRecordType) {
@@ -399,9 +399,9 @@ TEST(MdnsReaderTest, ReadMdnsRecord_UnknownRecordType) {
   // clang-format on
   TestReadEntrySucceeds(
       kTestRecord, sizeof(kTestRecord),
-      MdnsRecord(DomainName{"testing", "local"}, kTypeCNAME,
-                 kClassIN | kCacheFlushBit, 120,
-                 RawRecordRdata(kCnameRdata, sizeof(kCnameRdata))));
+      MdnsRecord(DomainName{"testing", "local"},
+                 static_cast<DnsType>(5) /*CNAME class*/, DnsClass::kIN, true,
+                 120, RawRecordRdata(kCnameRdata, sizeof(kCnameRdata))));
 }
 
 TEST(MdnsReaderTest, ReadMdnsRecord_CompressedNames) {
@@ -433,11 +433,12 @@ TEST(MdnsReaderTest, ReadMdnsRecord_CompressedNames) {
   MdnsRecord record;
   EXPECT_TRUE(reader.Read(&record));
   EXPECT_EQ(record,
-            MdnsRecord(DomainName{"testing", "local"}, kTypePTR, kClassIN, 120,
+            MdnsRecord(DomainName{"testing", "local"}, DnsType::kPTR,
+                       DnsClass::kIN, false, 120,
                        PtrRecordRdata(DomainName{"ptr", "testing", "local"})));
   EXPECT_TRUE(reader.Read(&record));
   EXPECT_EQ(record, MdnsRecord(DomainName{"one", "two", "testing", "local"},
-                               kTypeA, kClassIN | kCacheFlushBit, 120,
+                               DnsType::kA, DnsClass::kIN, true, 120,
                                ARecordRdata(IPAddress{8, 8, 8, 8})));
 }
 
@@ -483,8 +484,8 @@ TEST(MdnsReaderTest, ReadMdnsQuestion) {
   };
   // clang-format on
   TestReadEntrySucceeds(kTestQuestion, sizeof(kTestQuestion),
-                        MdnsQuestion(DomainName{"testing", "local"}, kTypeA,
-                                     kClassIN | kUnicastResponseBit));
+                        MdnsQuestion(DomainName{"testing", "local"},
+                                     DnsType::kA, DnsClass::kIN, true));
 }
 
 TEST(MdnsReaderTest, ReadMdnsQuestion_CompressedNames) {
@@ -506,11 +507,11 @@ TEST(MdnsReaderTest, ReadMdnsQuestion_CompressedNames) {
   MdnsReader reader(kTestQuestions, sizeof(kTestQuestions));
   MdnsQuestion question;
   EXPECT_TRUE(reader.Read(&question));
-  EXPECT_EQ(question, MdnsQuestion(DomainName{"first", "local"}, kTypeA,
-                                   kClassIN | kUnicastResponseBit));
+  EXPECT_EQ(question, MdnsQuestion(DomainName{"first", "local"}, DnsType::kA,
+                                   DnsClass::kIN, true));
   EXPECT_TRUE(reader.Read(&question));
-  EXPECT_EQ(question,
-            MdnsQuestion(DomainName{"second", "local"}, kTypePTR, kClassIN));
+  EXPECT_EQ(question, MdnsQuestion(DomainName{"second", "local"}, DnsType::kPTR,
+                                   DnsClass::kIN, false));
   EXPECT_EQ(reader.remaining(), UINT64_C(0));
 }
 
@@ -558,10 +559,10 @@ TEST(MdnsReaderTest, ReadMdnsMessage) {
   };
   // clang-format on
 
-  MdnsRecord record1(DomainName{"record1"}, kTypePTR, kClassIN, 120,
-                     PtrRecordRdata(DomainName{"testing", "local"}));
-  MdnsRecord record2(DomainName{"record2"}, kTypeA, kClassIN, 120,
-                     ARecordRdata(IPAddress{172, 0, 0, 1}));
+  MdnsRecord record1(DomainName{"record1"}, DnsType::kPTR, DnsClass::kIN, false,
+                     120, PtrRecordRdata(DomainName{"testing", "local"}));
+  MdnsRecord record2(DomainName{"record2"}, DnsType::kA, DnsClass::kIN, false,
+                     120, ARecordRdata(IPAddress{172, 0, 0, 1}));
   MdnsMessage message(
       1, 0x8400, std::vector<MdnsQuestion>{}, std::vector<MdnsRecord>{record1},
       std::vector<MdnsRecord>{}, std::vector<MdnsRecord>{record2});

@@ -16,9 +16,8 @@ namespace mdns {
 
 class MdnsWriter : public openscreen::BigEndianWriter {
  public:
+  using BigEndianWriter::BigEndianWriter;
   using BigEndianWriter::Write;
-
-  MdnsWriter(uint8_t* buffer, size_t length);
 
   // The following methods return true if the method was able to successfully
   // write the value to the underlying buffer and advances current() to point

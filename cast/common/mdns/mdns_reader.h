@@ -13,9 +13,8 @@ namespace mdns {
 
 class MdnsReader : public openscreen::BigEndianReader {
  public:
+  using BigEndianReader::BigEndianReader;
   using BigEndianReader::Read;
-
-  MdnsReader(const uint8_t* buffer, size_t length);
 
   // The following methods return true if the method was able to successfully
   // read the value to |out| and advances current() to point right past the read
@@ -40,7 +39,7 @@ class MdnsReader : public openscreen::BigEndianReader {
 
  private:
   bool Read(IPAddress::Version version, IPAddress* out);
-  bool Read(uint16_t type, Rdata* out);
+  bool Read(DnsType type, Rdata* out);
   bool Read(Header* out);
 
   template <class ItemType>

@@ -167,28 +167,35 @@ size_t TxtRecordRdata::MaxWireSize() const {
 }
 
 MdnsRecord::MdnsRecord(DomainName name,
-                       uint16_t type,
-                       uint16_t record_class,
+                       DnsType type,
+                       DnsClass record_class,
+                       bool cache_flush,
                        uint32_t ttl,
                        Rdata rdata)
     : name_(std::move(name)),
       type_(type),
       record_class_(record_class),
+      cache_flush_(cache_flush),
       ttl_(ttl),
       rdata_(std::move(rdata)) {
   OSP_DCHECK(!name_.empty());
   OSP_DCHECK(
-      (type == kTypeSRV && absl::holds_alternative<SrvRecordRdata>(rdata_)) ||
-      (type == kTypeA && absl::holds_alternative<ARecordRdata>(rdata_)) ||
-      (type == kTypeAAAA && absl::holds_alternative<AAAARecordRdata>(rdata_)) ||
-      (type == kTypePTR && absl::holds_alternative<PtrRecordRdata>(rdata_)) ||
-      (type == kTypeTXT && absl::holds_alternative<TxtRecordRdata>(rdata_)) ||
+      (type == DnsType::kSRV &&
+       absl::holds_alternative<SrvRecordRdata>(rdata_)) ||
+      (type == DnsType::kA && absl::holds_alternative<ARecordRdata>(rdata_)) ||
+      (type == DnsType::kAAAA &&
+       absl::holds_alternative<AAAARecordRdata>(rdata_)) ||
+      (type == DnsType::kPTR &&
+       absl::holds_alternative<PtrRecordRdata>(rdata_)) ||
+      (type == DnsType::kTXT &&
+       absl::holds_alternative<TxtRecordRdata>(rdata_)) ||
       absl::holds_alternative<RawRecordRdata>(rdata_));
 }
 
 bool MdnsRecord::operator==(const MdnsRecord& rhs) const {
   return type_ == rhs.type_ && record_class_ == rhs.record_class_ &&
-         ttl_ == rhs.ttl_ && name_ == rhs.name_ && rdata_ == rhs.rdata_;
+         cache_flush_ == rhs.cache_flush_ && ttl_ == rhs.ttl_ &&
+         name_ == rhs.name_ && rdata_ == rhs.rdata_;
 }
 
 bool MdnsRecord::operator!=(const MdnsRecord& rhs) const {
@@ -202,15 +209,19 @@ size_t MdnsRecord::MaxWireSize() const {
 }
 
 MdnsQuestion::MdnsQuestion(DomainName name,
-                           uint16_t type,
-                           uint16_t record_class)
-    : name_(std::move(name)), type_(type), record_class_(record_class) {
+                           DnsType type,
+                           DnsClass record_class,
+                           bool unicast_response)
+    : name_(std::move(name)),
+      type_(type),
+      record_class_(record_class),
+      unicast_response_(unicast_response) {
   OSP_CHECK(!name_.empty());
 }
 
 bool MdnsQuestion::operator==(const MdnsQuestion& rhs) const {
   return type_ == rhs.type_ && record_class_ == rhs.record_class_ &&
-         name_ == rhs.name_;
+         unicast_response_ == rhs.unicast_response_ && name_ == rhs.name_;
 }
 
 bool MdnsQuestion::operator!=(const MdnsQuestion& rhs) const {

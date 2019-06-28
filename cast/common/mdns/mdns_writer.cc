@@ -55,9 +55,6 @@ bool UpdateRecordLength(const uint8_t* end, uint8_t* begin) {
 
 }  // namespace
 
-MdnsWriter::MdnsWriter(uint8_t* buffer, size_t length)
-    : BigEndianWriter(buffer, length) {}
-
 bool MdnsWriter::Write(absl::string_view value) {
   if (value.length() > std::numeric_limits<uint8_t>::max()) {
     return false;
@@ -207,9 +204,9 @@ bool MdnsWriter::Write(const TxtRecordRdata& rdata) {
 
 bool MdnsWriter::Write(const MdnsRecord& record) {
   Cursor cursor(this);
-  if (Write(record.name()) && Write(record.type()) &&
-      Write(record.record_class()) && Write(record.ttl()) &&
-      Write(record.rdata())) {
+  if (Write(record.name()) && Write(static_cast<uint16_t>(record.type())) &&
+      Write(MakeRecordClass(record.record_class(), record.cache_flush())) &&
+      Write(record.ttl()) && Write(record.rdata())) {
     cursor.Commit();
     return true;
   }
@@ -218,8 +215,9 @@ bool MdnsWriter::Write(const MdnsRecord& record) {
 
 bool MdnsWriter::Write(const MdnsQuestion& question) {
   Cursor cursor(this);
-  if (Write(question.name()) && Write(question.type()) &&
-      Write(question.record_class())) {
+  if (Write(question.name()) && Write(static_cast<uint16_t>(question.type())) &&
+      Write(MakeQuestionClass(question.record_class(),
+                              question.unicast_response()))) {
     cursor.Commit();
     return true;
   }

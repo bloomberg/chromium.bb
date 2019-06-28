@@ -266,8 +266,9 @@ class MdnsRecord {
  public:
   MdnsRecord() = default;
   MdnsRecord(DomainName name,
-             uint16_t type,
-             uint16_t record_class,
+             DnsType type,
+             DnsClass record_class,
+             bool cache_flush,
              uint32_t ttl,
              Rdata rdata);
   MdnsRecord(const MdnsRecord& other) = default;
@@ -282,15 +283,17 @@ class MdnsRecord {
 
   size_t MaxWireSize() const;
   const DomainName& name() const { return name_; }
-  uint16_t type() const { return type_; }
-  uint16_t record_class() const { return record_class_; }
+  DnsType type() const { return type_; }
+  DnsClass record_class() const { return record_class_; }
+  bool cache_flush() const { return cache_flush_; }
   uint32_t ttl() const { return ttl_; }
   const Rdata& rdata() const { return rdata_; }
 
  private:
   DomainName name_;
-  uint16_t type_ = 0;
-  uint16_t record_class_ = 0;
+  DnsType type_ = static_cast<DnsType>(0);
+  DnsClass record_class_ = static_cast<DnsClass>(0);
+  bool cache_flush_ = false;
   uint32_t ttl_ = kDefaultRecordTTL;
   // Default-constructed Rdata contains default-constructed RawRecordRdata
   // as it is the first alternative type and it is default-constructible.
@@ -304,7 +307,10 @@ class MdnsRecord {
 class MdnsQuestion {
  public:
   MdnsQuestion() = default;
-  MdnsQuestion(DomainName name, uint16_t type, uint16_t record_class);
+  MdnsQuestion(DomainName name,
+               DnsType type,
+               DnsClass record_class,
+               bool unicast_response);
   MdnsQuestion(const MdnsQuestion& other) = default;
   MdnsQuestion(MdnsQuestion&& other) noexcept = default;
   ~MdnsQuestion() = default;
@@ -317,15 +323,17 @@ class MdnsQuestion {
 
   size_t MaxWireSize() const;
   const DomainName& name() const { return name_; }
-  uint16_t type() const { return type_; }
-  uint16_t record_class() const { return record_class_; }
+  DnsType type() const { return type_; }
+  DnsClass record_class() const { return record_class_; }
+  bool unicast_response() const { return unicast_response_; }
 
  private:
   void CopyFrom(const MdnsQuestion& other);
 
   DomainName name_;
-  uint16_t type_ = 0;
-  uint16_t record_class_ = 0;
+  DnsType type_ = static_cast<DnsType>(0);
+  DnsClass record_class_ = static_cast<DnsClass>(0);
+  bool unicast_response_ = false;
 };
 
 // Message top level format (http://www.ietf.org/rfc/rfc1035.txt):

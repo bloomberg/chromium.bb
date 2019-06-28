@@ -306,10 +306,10 @@ TEST(MdnsWriterTest, WriteMdnsRecord_ARecordRdata) {
       0xac, 0x00, 0x00, 0x01,  // 172.0.0.1
   };
   // clang-format on
-  TestWriteEntrySucceeds(MdnsRecord(DomainName{"testing", "local"}, kTypeA,
-                                    kClassIN | kCacheFlushBit, 120,
-                                    ARecordRdata(IPAddress{172, 0, 0, 1})),
-                         kExpectedResult, sizeof(kExpectedResult));
+  TestWriteEntrySucceeds(
+      MdnsRecord(DomainName{"testing", "local"}, DnsType::kA, DnsClass::kIN,
+                 true, 120, ARecordRdata(IPAddress{172, 0, 0, 1})),
+      kExpectedResult, sizeof(kExpectedResult));
 }
 
 TEST(MdnsWriterTest, WriteMdnsRecord_PtrRecordRdata) {
@@ -327,15 +327,16 @@ TEST(MdnsWriterTest, WriteMdnsRecord_PtrRecordRdata) {
   };
   // clang-format on
   TestWriteEntrySucceeds(
-      MdnsRecord(DomainName{"_service", "testing", "local"}, kTypePTR, kClassIN,
-                 120, PtrRecordRdata(DomainName{"testing", "local"})),
+      MdnsRecord(DomainName{"_service", "testing", "local"}, DnsType::kPTR,
+                 DnsClass::kIN, false, 120,
+                 PtrRecordRdata(DomainName{"testing", "local"})),
       kExpectedResult, sizeof(kExpectedResult));
 }
 
 TEST(MdnsWriterTest, WriteMdnsRecord_InsufficientBuffer) {
-  TestWriteEntryInsufficientBuffer(MdnsRecord(
-      DomainName{"testing", "local"}, kTypeA, kClassIN | kCacheFlushBit, 120,
-      ARecordRdata(IPAddress{172, 0, 0, 1})));
+  TestWriteEntryInsufficientBuffer(
+      MdnsRecord(DomainName{"testing", "local"}, DnsType::kA, DnsClass::kIN,
+                 true, 120, ARecordRdata(IPAddress{172, 0, 0, 1})));
 }
 
 TEST(MdnsWriterTest, WriteMdnsQuestion) {
@@ -350,14 +351,14 @@ TEST(MdnsWriterTest, WriteMdnsQuestion) {
   };
   // clang-format on
   TestWriteEntrySucceeds(MdnsQuestion(DomainName{"wire", "format", "local"},
-                                      kTypePTR, kClassIN | kUnicastResponseBit),
+                                      DnsType::kPTR, DnsClass::kIN, true),
                          kExpectedResult, sizeof(kExpectedResult));
 }
 
 TEST(MdnsWriterTest, WriteMdnsQuestion_InsufficientBuffer) {
   TestWriteEntryInsufficientBuffer(
-      MdnsQuestion(DomainName{"wire", "format", "local"}, kTypePTR,
-                   kClassIN | kUnicastResponseBit));
+      MdnsQuestion(DomainName{"wire", "format", "local"}, DnsType::kPTR,
+                   DnsClass::kIN, true));
 }
 
 TEST(MdnsWriterTest, WriteMdnsMessage) {
@@ -385,10 +386,11 @@ TEST(MdnsWriterTest, WriteMdnsMessage) {
       0x05, 'b', 'a', 'r', '=', '2',
   };
   // clang-format on
-  MdnsQuestion question(DomainName{"question"}, kTypePTR, kClassIN);
+  MdnsQuestion question(DomainName{"question"}, DnsType::kPTR, DnsClass::kIN,
+                        false);
 
-  MdnsRecord auth_record(DomainName{"auth"}, kTypeTXT, kClassIN, 120,
-                         TxtRecordRdata{"foo=1", "bar=2"});
+  MdnsRecord auth_record(DomainName{"auth"}, DnsType::kTXT, DnsClass::kIN,
+                         false, 120, TxtRecordRdata{"foo=1", "bar=2"});
 
   MdnsMessage message(1, 0x0400);
   message.AddQuestion(question);
@@ -402,10 +404,11 @@ TEST(MdnsWriterTest, WriteMdnsMessage) {
 }
 
 TEST(MdnsWriterTest, WriteMdnsMessage_InsufficientBuffer) {
-  MdnsQuestion question(DomainName{"question"}, kTypePTR, kClassIN);
+  MdnsQuestion question(DomainName{"question"}, DnsType::kPTR, DnsClass::kIN,
+                        false);
 
-  MdnsRecord auth_record(DomainName{"auth"}, kTypeTXT, kClassIN, 120,
-                         TxtRecordRdata{"foo=1", "bar=2"});
+  MdnsRecord auth_record(DomainName{"auth"}, DnsType::kTXT, DnsClass::kIN, 120,
+                         false, TxtRecordRdata{"foo=1", "bar=2"});
 
   MdnsMessage message(1, 0x0400);
   message.AddQuestion(question);
