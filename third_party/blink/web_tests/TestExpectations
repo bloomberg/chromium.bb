@@ -190,8 +190,6 @@ crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-
 crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform-2.html [ Pass Crash ]
 crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform.html [ Pass Crash ]
 
-crbug.com/978436 external/wpt/svg/coordinate-systems/viewBox-scaling-text-001.html [ Failure ]
-
 # Flakily timing out or failing.
 # TODO(ccameron): Investigate this.
 crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pass Timeout Failure ]
