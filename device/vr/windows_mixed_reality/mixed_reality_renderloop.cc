@@ -144,6 +144,16 @@ MixedRealityRenderLoop::~MixedRealityRenderLoop() {
   Stop();
 }
 
+const WMRCoordinateSystem* MixedRealityRenderLoop::GetOrigin() {
+  return anchor_origin_.get();
+}
+
+void MixedRealityRenderLoop::OnInputSourceEvent(
+    mojom::XRInputSourceStatePtr input_state) {
+  if (input_event_listener_)
+    input_event_listener_->OnButtonEvent(std::move(input_state));
+}
+
 bool MixedRealityRenderLoop::PreComposite() {
   if (rendering_params_) {
     ComPtr<ID3D11Texture2D> texture =
@@ -212,7 +222,8 @@ bool MixedRealityRenderLoop::StartRuntime() {
   if (!holographic_space_)
     return false;
 
-  input_helper_ = std::make_unique<MixedRealityInputHelper>(window_->hwnd());
+  input_helper_ = std::make_unique<MixedRealityInputHelper>(
+      window_->hwnd(), weak_ptr_factory_.GetWeakPtr());
 
   ABI::Windows::Graphics::Holographic::HolographicAdapterId id =
       holographic_space_->PrimaryAdapterId();
@@ -279,6 +290,10 @@ void MixedRealityRenderLoop::StopRuntime() {
       hook.GetHook()->DetachCurrentThread();
     }
   }
+}
+
+bool MixedRealityRenderLoop::UsesInputEventing() {
+  return true;
 }
 
 void MixedRealityRenderLoop::InitializeOrigin() {

@@ -116,6 +116,7 @@ XRSession::XRSession(
     device::mojom::blink::XRSessionClientRequest client_request,
     XRSession::SessionMode mode,
     EnvironmentBlendMode environment_blend_mode,
+    bool uses_input_eventing,
     bool sensorless_session)
     : xr_(xr),
       mode_(mode),
@@ -124,9 +125,11 @@ XRSession::XRSession(
       world_information_(MakeGarbageCollected<XRWorldInformation>(this)),
       input_sources_(MakeGarbageCollected<XRInputSourceArray>()),
       client_binding_(this, std::move(client_request)),
+      input_binding_(this),
       callback_collection_(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(
               xr_->GetExecutionContext())),
+      uses_input_eventing_(uses_input_eventing),
       sensorless_session_(sensorless_session) {
   render_state_ = MakeGarbageCollected<XRRenderState>(immersive());
   blurred_ = !HasAppropriateFocus();
@@ -157,6 +160,15 @@ ExecutionContext* XRSession::GetExecutionContext() const {
 
 const AtomicString& XRSession::InterfaceName() const {
   return event_target_names::kXRSession;
+}
+
+device::mojom::blink::XRInputSourceButtonListenerAssociatedPtrInfo
+XRSession::GetInputClickListener() {
+  DCHECK(!input_binding_);
+  device::mojom::blink::XRInputSourceButtonListenerAssociatedPtrInfo
+      input_listener;
+  input_binding_.Bind(MakeRequest(&input_listener));
+  return input_listener;
 }
 
 void XRSession::updateRenderState(XRRenderStateInit* init,
@@ -732,12 +744,27 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
   }
 }
 
+void XRSession::OnButtonEvent(
+    device::mojom::blink::XRInputSourceStatePtr input_state) {
+  DCHECK(uses_input_eventing_);
+  OnInputStateChangeInternal(last_frame_id_, base::make_span(&input_state, 1),
+                             true /* from_eventing */);
+}
+
 void XRSession::OnInputStateChange(
     int16_t frame_id,
-    const WTF::Vector<device::mojom::blink::XRInputSourceStatePtr>&
+    base::span<const device::mojom::blink::XRInputSourceStatePtr>
         input_states) {
+  OnInputStateChangeInternal(frame_id, input_states, false /* from_eventing */);
+}
+
+void XRSession::OnInputStateChangeInternal(
+    int16_t frame_id,
+    base::span<const device::mojom::blink::XRInputSourceStatePtr> input_states,
+    bool from_eventing) {
   HeapVector<Member<XRInputSource>> added;
   HeapVector<Member<XRInputSource>> removed;
+  last_frame_id_ = frame_id;
 
   // Build up our added array, and update the frame id of any active input
   // sources so we can flag the ones that are no longer active.
@@ -797,6 +824,12 @@ void XRSession::OnInputStateChange(
     // to end our session, we should stop processing select state updates.
     if (ended_)
       break;
+
+    // If this data is not from eventing and we support it, ignore it's click
+    // states.
+    // If this data is from eventing, but we don't support it, then ignore it
+    if (from_eventing != uses_input_eventing_)
+      continue;
 
     XRInputSource* input_source =
         input_sources_->GetWithSourceId(input_state->source_id);

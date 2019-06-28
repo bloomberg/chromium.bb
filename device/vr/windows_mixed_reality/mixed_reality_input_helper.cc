@@ -14,9 +14,11 @@
 #include <vector>
 
 #include "base/strings/safe_sprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/util/gamepad_builder.h"
+#include "device/vr/windows_mixed_reality/mixed_reality_renderloop.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_location.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_manager.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_source.h"
@@ -388,7 +390,13 @@ uint32_t GetSourceId(const WMRInputSource* source) {
 }
 }  // namespace
 
-MixedRealityInputHelper::MixedRealityInputHelper(HWND hwnd) : hwnd_(hwnd) {}
+MixedRealityInputHelper::MixedRealityInputHelper(
+    HWND hwnd,
+    const base::WeakPtr<MixedRealityRenderLoop>& weak_render_loop)
+    : hwnd_(hwnd),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      weak_render_loop_(weak_render_loop),
+      weak_ptr_factory_(this) {}
 
 MixedRealityInputHelper::~MixedRealityInputHelper() {
   // Dispose must be called before destruction, which ensures that we're
@@ -427,30 +435,14 @@ MixedRealityInputHelper::GetInputState(const WMRCoordinateSystem* origin,
 
   auto source_states =
       input_manager_->GetDetectedSourcesAtTimestamp(timestamp->GetRawPtr());
-  // This can't be acquired until after GetDetectedSourcesAtTimestamp() because
-  // otherwise the tests will deadlock when triggering pressed/released
-  // callbacks.
-  base::AutoLock scoped_lock(lock_);
+
   for (const auto& state : source_states) {
-    auto parsed_source_state =
-        LockedParseWindowsSourceState(state.get(), origin);
+    auto parsed_source_state = ParseWindowsSourceState(state.get(), origin);
 
     if (parsed_source_state.source_state) {
-      parsed_source_state.source_state->gamepad =
-          GetWebXRGamepad(parsed_source_state);
       input_states.push_back(std::move(parsed_source_state.source_state));
     }
   }
-
-  for (const auto& state : pending_voice_states_) {
-    auto parsed_source_state =
-        LockedParseWindowsSourceState(state.get(), origin);
-
-    if (parsed_source_state.source_state)
-      input_states.push_back(std::move(parsed_source_state.source_state));
-  }
-
-  pending_voice_states_.clear();
 
   return input_states;
 }
@@ -465,13 +457,9 @@ mojom::XRGamepadDataPtr MixedRealityInputHelper::GetWebVRGamepadData(
 
   auto source_states =
       input_manager_->GetDetectedSourcesAtTimestamp(timestamp->GetRawPtr());
-  // This can't be acquired until after GetDetectedSourcesAtTimestamp() because
-  // otherwise the tests will deadlock when triggering pressed/released
-  // callbacks.
-  base::AutoLock scoped_lock(lock_);
+
   for (const auto& state : source_states) {
-    auto parsed_source_state =
-        LockedParseWindowsSourceState(state.get(), origin);
+    auto parsed_source_state = ParseWindowsSourceState(state.get(), origin);
 
     // If we have a source_state, then we should have enough data.
     if (parsed_source_state.source_state)
@@ -481,7 +469,7 @@ mojom::XRGamepadDataPtr MixedRealityInputHelper::GetWebVRGamepadData(
   return ret;
 }
 
-ParsedInputState MixedRealityInputHelper::LockedParseWindowsSourceState(
+ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
     const WMRInputSourceState* state,
     const WMRCoordinateSystem* origin) {
   ParsedInputState input_state;
@@ -550,7 +538,6 @@ ParsedInputState MixedRealityInputHelper::LockedParseWindowsSourceState(
   source_state->source_id = id;
   source_state->primary_input_pressed = controller_states_[id].pressed;
   source_state->primary_input_clicked = controller_states_[id].clicked;
-  controller_states_[id].clicked = false;
 
   // Grip position should *only* be specified if the controller is tracked.
   if (is_tracked)
@@ -577,32 +564,37 @@ ParsedInputState MixedRealityInputHelper::LockedParseWindowsSourceState(
 
   input_state.source_state = std::move(source_state);
 
+  input_state.source_state->gamepad = GetWebXRGamepad(input_state);
+
   return input_state;
 }
 
 void MixedRealityInputHelper::OnSourcePressed(
     const WMRInputSourceEventArgs& args) {
-  ProcessSourceEvent(args, true /* is_pressed */);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MixedRealityInputHelper::ProcessSourceEvent,
+                     weak_ptr_factory_.GetWeakPtr(), args.PressKind(),
+                     args.State(), true /* is_pressed */));
 }
 
 void MixedRealityInputHelper::OnSourceReleased(
     const WMRInputSourceEventArgs& args) {
-  ProcessSourceEvent(args, false /* is_pressed */);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MixedRealityInputHelper::ProcessSourceEvent,
+                     weak_ptr_factory_.GetWeakPtr(), args.PressKind(),
+                     args.State(), false /* is_pressed */));
 }
 
 void MixedRealityInputHelper::ProcessSourceEvent(
-    const WMRInputSourceEventArgs& args,
+    PressKind press_kind,
+    std::unique_ptr<WMRInputSourceState> state,
     bool is_pressed) {
-  base::AutoLock scoped_lock(lock_);
-
-  PressKind press_kind = args.PressKind();
-
   if (press_kind != PressKind::SpatialInteractionPressKind_Select)
     return;
 
-  std::unique_ptr<WMRInputSourceState> state = args.State();
   std::unique_ptr<WMRInputSource> source = state->GetSource();
-
   SourceKind source_kind = source->Kind();
 
   if (source_kind != SourceKind::SpatialInteractionSourceKind_Controller &&
@@ -612,15 +604,24 @@ void MixedRealityInputHelper::ProcessSourceEvent(
   uint32_t id = GetSourceId(source.get());
 
   bool wasPressed = controller_states_[id].pressed;
-  bool wasClicked = controller_states_[id].clicked;
   controller_states_[id].pressed = is_pressed;
-  controller_states_[id].clicked = wasClicked || (wasPressed && !is_pressed);
+  controller_states_[id].clicked = (wasPressed && !is_pressed);
 
-  // Tracked controllers show up when we poll for DetectedSources, but voice
-  // does not.
-  if (source_kind == SourceKind::SpatialInteractionSourceKind_Voice &&
-      !is_pressed)
-    pending_voice_states_.push_back(std::move(state));
+  if (!weak_render_loop_)
+    return;
+
+  auto* origin = weak_render_loop_->GetOrigin();
+  if (!origin)
+    return;
+
+  auto parsed_source_state = ParseWindowsSourceState(state.get(), origin);
+  if (parsed_source_state.source_state) {
+    weak_render_loop_->OnInputSourceEvent(
+        std::move(parsed_source_state.source_state));
+  }
+
+  // We've sent up the click, so clear it.
+  controller_states_[id].clicked = false;
 }
 
 void MixedRealityInputHelper::SubscribeEvents() {

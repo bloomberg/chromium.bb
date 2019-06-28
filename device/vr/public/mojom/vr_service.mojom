@@ -73,6 +73,10 @@ struct XRSession {
   // info to more sensible places so that this doesn't need to be sent here.
   VRDisplayInfo display_info;
   XRPresentationConnection? submit_frame_sink;
+
+  // Indicates whether the device backing this session sends input events solely
+  // via eventing (as opposed to polling).
+  bool uses_input_eventing;
 };
 
 // This structure contains the infomation and interfaces needed to create a two
@@ -386,6 +390,13 @@ interface XREnvironmentIntegrationProvider {
   RequestHitTest(XRRay ray) => (array<XRHitResult>? results);
 };
 
+// Provides a mechanism for a channel to plumb up any button click events
+// separately from polling, to provide better latency/position tracking for
+// those events.
+interface XRInputSourceButtonListener {
+  OnButtonEvent(XRInputSourceState input_source);
+};
+
 struct XRFrameDataRequestOptions {
   // Controls whether XRFrameData.detected_planes should be populated by the
   // request to XRFrameDataProvider.GetFrameData().
@@ -403,6 +414,8 @@ interface XRFrameDataProvider {
   GetFrameData(XRFrameDataRequestOptions? options) => (XRFrameData? frame_data);
   GetEnvironmentIntegrationProvider(
       associated XREnvironmentIntegrationProvider& environment_provider);
+  SetInputSourceButtonListener(
+      associated XRInputSourceButtonListener? event_listener);
 };
 
 // Provides the necessary functionality for sending frames to a headset.
