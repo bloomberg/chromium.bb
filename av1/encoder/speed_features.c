@@ -123,12 +123,10 @@ static void set_good_speed_feature_framesize_dependent(
       sf->use_square_partition_only_threshold = BLOCK_128X128;
     } else if (is_480p_or_larger) {
       sf->use_square_partition_only_threshold = BLOCK_64X64;
-      sf->intra_cnn_split = (speed == 1);
     } else {
       sf->use_square_partition_only_threshold = BLOCK_32X32;
 
       sf->simple_motion_search_split = 1;
-      sf->intra_cnn_split = (speed == 1);
     }
 
     if (!is_720p_or_larger) {
@@ -266,6 +264,7 @@ static void set_good_speed_features_framesize_independent(
         (frame_is_intra_only(&cpi->common) || (cm->allow_screen_content_tools))
             ? 0
             : (boosted ? 1 : 2);
+    sf->intra_cnn_split = (speed == 1);
   }
 
   if (speed >= 2) {
