@@ -9,8 +9,8 @@ Example:
   - my_activity.py  for stats for the current week (last week on mondays).
   - my_activity.py -Q  for stats for last quarter.
   - my_activity.py -Y  for stats for this year.
-  - my_activity.py -b 4/5/12  for stats since 4/5/12.
-  - my_activity.py -b 4/5/12 -e 6/7/12 for stats between 4/5/12 and 6/7/12.
+  - my_activity.py -b 4/24/19  for stats since April 24th 2019.
+  - my_activity.py -b 4/24/19 -e 6/16/19 stats between April 24th and June 16th.
   - my_activity.py -jd to output stats for the week to json with deltas data.
 """
 
