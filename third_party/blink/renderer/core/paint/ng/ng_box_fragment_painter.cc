@@ -988,6 +988,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(
     const HitTestLocation& location_in_container,
     const LayoutPoint& physical_offset,
     HitTestAction action) {
+  const NGPhysicalBoxFragment& fragment = PhysicalFragment();
   // TODO(eae): Switch to using NG geometry types.
   LayoutSize size(box_fragment_.Size().width, box_fragment_.Size().height);
   const ComputedStyle& style = box_fragment_.Style();
@@ -1044,6 +1045,10 @@ bool NGBoxFragmentPainter::NodeAtPoint(
       bounds_rect = box_fragment_.SelfInkOverflow().ToLayoutRect();
       bounds_rect.MoveBy(physical_offset);
     }
+    // TODO(kojii): Don't have good explanation why only inline box needs to
+    // snap, but matches to legacy and fixes crbug.com/976606.
+    if (fragment.IsInlineBox())
+      bounds_rect = LayoutRect(PixelSnappedIntRect(bounds_rect));
     if (location_in_container.Intersects(bounds_rect)) {
       Node* node = box_fragment_.NodeForHitTest();
       if (!result.InnerNode() && node) {
