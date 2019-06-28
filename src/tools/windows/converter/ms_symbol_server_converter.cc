@@ -36,6 +36,7 @@
 
 #include <windows.h>
 #include <dbghelp.h>
+#include <pathcch.h>
 
 #include <cassert>
 #include <cstdio>
@@ -52,6 +53,31 @@
 #ifndef SYMOPT_NO_PROMPTS
 #define SYMOPT_NO_PROMPTS 0x00080000
 #endif  // SYMOPT_NO_PROMPTS
+
+namespace {
+
+std::wstring GetExeDirectory() {
+  wchar_t directory[MAX_PATH];
+
+  // Get path to this process exe.
+  DWORD result = GetModuleFileName(/*hModule=*/nullptr, directory, MAX_PATH);
+  if (result <= 0 || result == MAX_PATH) {
+    fprintf(stderr,
+        "GetExeDirectory: failed to get path to process exe.\n");
+    return L"";
+  }
+  HRESULT hr = PathCchRemoveFileSpec(directory, result + 1);
+  if (hr != S_OK) {
+    fprintf(stderr,
+        "GetExeDirectory: failed to remove basename from path '%ls'.\n",
+        directory);
+    return L"";
+  }
+
+  return std::wstring(directory);
+}
+
+}  // namespace
 
 namespace google_breakpad {
 
@@ -160,6 +186,34 @@ class AutoSymSrv {
 
   bool Initialize(HANDLE process, char *path, bool invade_process) {
     process_ = process;
+
+    // TODO(nbilling): Figure out why dbghelp.dll is being loaded from
+    // system32/SysWOW64 before exe folder.
+
+    // Attempt to locate and load dbghelp.dll beside the process exe. This is
+    // somewhat of a workaround to loader delay load behavior that is occurring
+    // when we call into symsrv APIs. dbghelp.dll must be loaded from beside
+    // the process exe so that we are guaranteed to find symsrv.dll alongside
+    // dbghelp.dll (a security requirement of dbghelp.dll) and so that the
+    // symsrv.dll file that is loaded has a symsrv.yes file alongside it (a
+    // requirement of symsrv.dll when accessing Microsoft-owned symbol
+    // servers).
+    // 'static local' because we don't care about the value but we need the
+    // initialization to happen exactly once.
+    static HMODULE dbghelp_module = [] () -> HMODULE {
+      std::wstring exe_directory = GetExeDirectory();
+      if (exe_directory.empty()) {
+        return nullptr;
+      }
+      std::wstring dbghelp_path = exe_directory + L"\\dbghelp.dll";
+      return LoadLibrary(dbghelp_path.c_str());
+    }();
+    if (dbghelp_module == nullptr) {
+      fprintf(stderr,
+          "AutoSymSrv::Initialize: failed to load dbghelp.dll beside exe.");
+      return false;
+    }
+
     initialized_ = SymInitialize(process, path, invade_process) == TRUE;
     return initialized_;
   }
