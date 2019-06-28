@@ -1812,6 +1812,9 @@ weston_compositor_set_xkb_rule_names(struct weston_compositor *ec,
 /* String literal of spaces, the same width as the timestamp. */
 #define STAMP_SPACE "               "
 
+/**
+ * \ingroup wlog
+ */
 typedef int (*log_func_t)(const char *fmt, va_list ap);
 void
 weston_log_set_handler(log_func_t log, log_func_t cont);
