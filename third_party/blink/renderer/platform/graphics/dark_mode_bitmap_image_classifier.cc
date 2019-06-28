@@ -95,15 +95,22 @@ bool DarkModeBitmapImageClassifier::GetBitmap(Image& image,
   if (!src_rect.Width() || !src_rect.Height())
     return false;
 
+  DCHECK(bitmap);
+
   SkScalar sx = SkFloatToScalar(src_rect.X());
   SkScalar sy = SkFloatToScalar(src_rect.Y());
   SkScalar sw = SkFloatToScalar(src_rect.Width());
   SkScalar sh = SkFloatToScalar(src_rect.Height());
   SkRect src = {sx, sy, sx + sw, sy + sh};
   SkRect dest = {0, 0, sw, sh};
-  bitmap->allocPixels(SkImageInfo::MakeN32(static_cast<int>(src_rect.Width()),
-                                           static_cast<int>(src_rect.Height()),
-                                           kPremul_SkAlphaType));
+
+  if (!bitmap ||
+      !bitmap->tryAllocPixels(SkImageInfo::MakeN32(
+          static_cast<int>(src_rect.Width()),
+          static_cast<int>(src_rect.Height()), kPremul_SkAlphaType))) {
+    return false;
+  }
+
   SkCanvas canvas(*bitmap);
   canvas.clear(SK_ColorTRANSPARENT);
   canvas.drawImageRect(image.PaintImageForCurrentFrame().GetSkImage(), src,
