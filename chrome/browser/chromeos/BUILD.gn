@@ -1090,8 +1090,6 @@ source_set("chromeos") {
     "kerberos/kerberos_credentials_manager.h",
     "kerberos/kerberos_ticket_expiry_notification.cc",
     "kerberos/kerberos_ticket_expiry_notification.h",
-    "kiosk_next/kiosk_next_browser_factory.cc",
-    "kiosk_next/kiosk_next_browser_factory.h",
     "language_preferences.cc",
     "language_preferences.h",
     "launcher_search_provider/error_reporter.cc",

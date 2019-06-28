@@ -2195,9 +2195,6 @@ if (!is_android) {
         sources +=
             [ "../browser/ui/ash/assistant/assistant_context_browsertest.cc" ]
       }
-      if (enable_kiosk_next) {
-        sources += [ "../browser/chromeos/kiosk_next/kiosk_next_browser_factory_browsertest.cc" ]
-      }
       sources -= [
         "../../apps/load_and_launch_browsertest.cc",
         "../browser/policy/policy_startup_browsertest.cc",
