@@ -247,7 +247,9 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCountWithSource(
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCompleted(
     int64_t download_len,
     bool is_parallelizable,
-    DownloadSource download_source);
+    DownloadSource download_source,
+    bool has_resumed,
+    bool has_strong_validators);
 
 // Record download deletion event.
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadDeletion(
@@ -437,6 +439,10 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordResumptionStrongValidators(
 
 COMPONENTS_DOWNLOAD_EXPORT void RecordResumptionRestartCount(
     ResumptionRestartCountTypes type);
+
+// Records that download was resumed.
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadResumed(
+    bool has_strong_validators);
 
 #if defined(OS_ANDROID)
 // Records the download interrupt reason for the first background download.

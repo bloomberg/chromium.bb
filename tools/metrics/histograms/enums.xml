@@ -5789,6 +5789,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Has slow paths with non-AA paint"/>
 </enum>
 
+<enum name="BooleanHasStrongValidators">
+  <int value="0" label="Lacks strong validators"/>
+  <int value="1" label="Has strong validators"/>
+</enum>
+
 <enum name="BooleanHasWithheldHosts">
   <int value="0" label="Does not have withheld hosts"/>
   <int value="1" label="Has withheld hosts"/>
