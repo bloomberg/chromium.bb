@@ -98,7 +98,7 @@ MediaControlsTouchlessImpl* MediaControlsTouchlessImpl::Create(
           *controls);
 
   MediaControlElementsHelper::CreateDiv(
-      "-internal-media-controls-touchless-error-info", controls);
+      "-internal-media-controls-touchless-info", controls);
 
   controls->ParserAppendChild(controls->bottom_container_);
   controls->ParserAppendChild(controls->overlay_);
@@ -468,8 +468,7 @@ MediaControlsTouchlessImpl::ControlsState MediaControlsTouchlessImpl::State() {
     case HTMLMediaElement::kNetworkLoading:
       if (ready_state == HTMLMediaElement::kHaveNothing)
         return ControlsState::kPreReady;
-      else
-        return ControlsState::kReady;
+      return ControlsState::kReady;
     case HTMLMediaElement::kNetworkIdle:
       if (ready_state == HTMLMediaElement::kHaveNothing)
         return ControlsState::kPreReady;
