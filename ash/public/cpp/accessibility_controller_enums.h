@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module ash.mojom;
+#ifndef ASH_PUBLIC_CPP_ACCESSIBILITY_CONTROLLER_ENUMS_H_
+#define ASH_PUBLIC_CPP_ACCESSIBILITY_CONTROLLER_ENUMS_H_
+
+namespace ash {
 
 // Alert sent to the accessibility api.
-enum AccessibilityAlert {
+enum class AccessibilityAlert {
   // Default value, indicates no accessibility alert.
   NONE,
 
@@ -39,7 +42,7 @@ enum AccessibilityAlert {
   WORKSPACE_FULLSCREEN_STATE_EXITED
 };
 
-enum AccessibilityPanelState {
+enum class AccessibilityPanelState {
   // Window bounds are set explicitly.
   BOUNDED,
 
@@ -52,7 +55,7 @@ enum AccessibilityPanelState {
 
 // These values are persisted to logs and should not be renumbered or re-used.
 // See tools/metrics/histograms/enums.xml.
-enum DictationToggleSource {
+enum class DictationToggleSource {
   // Toggled by the keyboard command (Search + D).
   kKeyboard,
 
@@ -63,10 +66,12 @@ enum DictationToggleSource {
   kSwitchAccess,
 
   // Chromevox chrome extension.
-  kChromevox
+  kChromevox,
+
+  kMaxValue = kChromevox
 };
 
-enum SelectToSpeakState {
+enum class SelectToSpeakState {
   // Select to Speak is not actively selecting text or speaking.
   kSelectToSpeakStateInactive,
 
@@ -78,7 +83,7 @@ enum SelectToSpeakState {
   kSelectToSpeakStateSpeaking,
 };
 
-enum SwitchAccessCommand {
+enum class SwitchAccessCommand {
   // Do not perform a command.
   kNone,
   // Command to select the focused element.
@@ -93,7 +98,7 @@ enum SwitchAccessCommand {
 // dwelling. These values are written to prefs and correspond to
 // AutoclickActionType in enums.xml, so should not be changed. New values
 // should be added at the end.
-enum AutoclickEventType {
+enum class AutoclickEventType {
   // Perform a left click.
   kLeftClick = 0,
 
@@ -113,12 +118,14 @@ enum AutoclickEventType {
   // A mousewheel scroll action. An additional menu will be shown for the user
   // to pick whether they want to scroll up/down/left/right.
   kScroll = 5,
+
+  kMaxValue = kScroll
 };
 
 // The Automatic Clicks feature's on-screen menu display location. These values
 // are written to prefs so they should not be changed. New values should be
 // added at the end.
-enum AutoclickMenuPosition {
+enum class AutoclickMenuPosition {
   // The bottom right of the screen.
   kBottomRight,
 
@@ -136,3 +143,7 @@ enum AutoclickMenuPosition {
   // a position it will no longer change with language direction.
   kSystemDefault,
 };
+
+}  // namespace ash
+
+#endif  // ASH_PUBLIC_CPP_ACCESSIBILITY_CONTROLLER_ENUMS_H_

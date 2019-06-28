@@ -2,25 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCESSIBILITY_ACCESSIBILITY_CONTROLLER_H_
-#define ASH_ACCESSIBILITY_ACCESSIBILITY_CONTROLLER_H_
+#ifndef ASH_ACCESSIBILITY_ACCESSIBILITY_CONTROLLER_IMPL_H_
+#define ASH_ACCESSIBILITY_ACCESSIBILITY_CONTROLLER_IMPL_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
 class PrefService;
+
+namespace ax {
+namespace mojom {
+enum class Gesture;
+}  // namespace mojom
+}  // namespace ax
 
 namespace ash {
 
@@ -38,22 +42,18 @@ enum AccessibilityNotificationVisibility {
 // The controller for accessibility features in ash. Features can be enabled
 // in chrome's webui settings or the system tray menu (see TrayAccessibility).
 // Uses preferences to communicate with chrome to support mash.
-class ASH_EXPORT AccessibilityController
-    : public mojom::AccessibilityController,
-      public SessionObserver,
-      public TabletModeObserver {
+class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
+                                               public SessionObserver,
+                                               public TabletModeObserver {
  public:
-  AccessibilityController();
-  ~AccessibilityController() override;
+  AccessibilityControllerImpl();
+  ~AccessibilityControllerImpl() override;
 
   // See Shell::RegisterProfilePrefs().
   static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
   void AddObserver(AccessibilityObserver* observer);
   void RemoveObserver(AccessibilityObserver* observer);
-
-  // Binds the mojom::AccessibilityController interface to this object.
-  void BindRequest(mojom::AccessibilityControllerRequest request);
 
   // The following functions read and write to their associated preference.
   // These values are then used to determine whether the accelerator
@@ -71,10 +71,10 @@ class ASH_EXPORT AccessibilityController
 
   void SetAutoclickEnabled(bool enabled);
   bool autoclick_enabled() const { return autoclick_enabled_; }
-  void SetAutoclickEventType(mojom::AutoclickEventType event_type);
-  mojom::AutoclickEventType GetAutoclickEventType();
-  void SetAutoclickMenuPosition(mojom::AutoclickMenuPosition position);
-  mojom::AutoclickMenuPosition GetAutoclickMenuPosition();
+  void SetAutoclickEventType(AutoclickEventType event_type);
+  AutoclickEventType GetAutoclickEventType();
+  void SetAutoclickMenuPosition(AutoclickMenuPosition position);
+  AutoclickMenuPosition GetAutoclickMenuPosition();
 
   // Update the autoclick menu bounds if necessary. This may need to happen when
   // the display work area changes, or if system ui regions change (like the
@@ -112,7 +112,7 @@ class ASH_EXPORT AccessibilityController
   bool select_to_speak_enabled() const { return select_to_speak_enabled_; }
 
   void RequestSelectToSpeakStateChange();
-  mojom::SelectToSpeakState GetSelectToSpeakState() const;
+  SelectToSpeakState GetSelectToSpeakState() const;
 
   void SetStickyKeysEnabled(bool enabled);
   bool sticky_keys_enabled() const { return sticky_keys_enabled_; }
@@ -125,20 +125,18 @@ class ASH_EXPORT AccessibilityController
   void SetVirtualKeyboardEnabled(bool enabled);
   bool virtual_keyboard_enabled() const { return virtual_keyboard_enabled_; }
 
-  void SetDictationActive(bool is_active);
   bool dictation_active() const { return dictation_active_; }
 
   // Triggers an accessibility alert to give the user feedback.
-  void TriggerAccessibilityAlert(mojom::AccessibilityAlert alert);
+  void TriggerAccessibilityAlert(AccessibilityAlert alert);
 
   // Plays an earcon. Earcons are brief and distinctive sounds that indicate
   // that their mapped event has occurred. The |sound_key| enums can be found in
   // chromeos/audio/chromeos_sounds.h.
-  void PlayEarcon(int32_t sound_key);
+  void PlayEarcon(int sound_key);
 
-  // Initiates play of shutdown sound. The base::TimeDelta parameter gets the
-  // shutdown duration.
-  void PlayShutdownSound(base::OnceCallback<void(base::TimeDelta)> callback);
+  // Initiates play of shutdown sound. Returns the TimeDelta duration.
+  base::TimeDelta PlayShutdownSound();
 
   // Forwards an accessibility gesture from the touch exploration controller to
   // ChromeVox.
@@ -160,45 +158,40 @@ class ASH_EXPORT AccessibilityController
 
   // Whether or not to enable toggling spoken feedback via holding down two
   // fingers on the screen.
-  void ShouldToggleSpokenFeedbackViaTouch(
-      base::OnceCallback<void(bool)> callback);
+  bool ShouldToggleSpokenFeedbackViaTouch() const;
 
   // Plays tick sound indicating spoken feedback will be toggled after
   // countdown.
   void PlaySpokenFeedbackToggleCountdown(int tick_count);
 
-  // Public because a11y features like screen magnifier are managed outside of
-  // this controller.
-  void NotifyAccessibilityStatusChanged();
-
-  // mojom::AccessibilityController:
-  void SetClient(mojom::AccessibilityControllerClientPtr client) override;
+  // AccessibilityController:
+  void SetClient(AccessibilityControllerClient* client) override;
   void SetDarkenScreen(bool darken) override;
   void BrailleDisplayStateChanged(bool connected) override;
   void SetFocusHighlightRect(const gfx::Rect& bounds_in_screen) override;
   void SetCaretBounds(const gfx::Rect& bounds_in_screen) override;
   void SetAccessibilityPanelAlwaysVisible(bool always_visible) override;
-  void SetAccessibilityPanelBounds(
-      const gfx::Rect& bounds,
-      mojom::AccessibilityPanelState state) override;
-  void SetSelectToSpeakState(mojom::SelectToSpeakState state) override;
+  void SetAccessibilityPanelBounds(const gfx::Rect& bounds,
+                                   AccessibilityPanelState state) override;
+  void SetSelectToSpeakState(SelectToSpeakState state) override;
   void SetSelectToSpeakEventHandlerDelegate(
-      mojom::SelectToSpeakEventHandlerDelegatePtr delegate) override;
+      SelectToSpeakEventHandlerDelegate* delegate) override;
   void SetSwitchAccessKeysToCapture(
       const std::vector<int>& keys_to_capture) override;
   void SetSwitchAccessEventHandlerDelegate(
-      mojom::SwitchAccessEventHandlerDelegatePtr delegate) override;
-  void ToggleDictationFromSource(mojom::DictationToggleSource source) override;
+      SwitchAccessEventHandlerDelegate* delegate) override;
+  void SetDictationActive(bool is_active) override;
+  void ToggleDictationFromSource(DictationToggleSource source) override;
   void ForwardKeyEventsToSwitchAccess(bool should_forward) override;
-  void GetBatteryDescription(GetBatteryDescriptionCallback callback) override;
+  base::string16 GetBatteryDescription() const override;
   void SetVirtualKeyboardVisible(bool is_visible) override;
+  void NotifyAccessibilityStatusChanged() override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
   void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
 
   // Test helpers:
-  void FlushMojoForTest();
   SwitchAccessEventHandler* GetSwitchAccessEventHandlerForTest();
 
  private:
@@ -228,7 +221,7 @@ class ASH_EXPORT AccessibilityController
   void UpdateSelectToSpeakFromPref();
   void UpdateStickyKeysFromPref();
   void UpdateSwitchAccessFromPref();
-  void UpdateSwitchAccessKeyCodesFromPref(mojom::SwitchAccessCommand command);
+  void UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand command);
   void UpdateVirtualKeyboardFromPref();
   void UpdateAccessibilityHighlightingFromPrefs();
 
@@ -241,11 +234,8 @@ class ASH_EXPORT AccessibilityController
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  // Binding for mojom::AccessibilityController interface.
-  mojo::BindingSet<mojom::AccessibilityController> bindings_;
-
   // Client interface in chrome browser.
-  mojom::AccessibilityControllerClientPtr client_;
+  AccessibilityControllerClient* client_ = nullptr;
 
   bool autoclick_enabled_ = false;
   base::TimeDelta autoclick_delay_;
@@ -264,17 +254,17 @@ class ASH_EXPORT AccessibilityController
   bool virtual_keyboard_enabled_ = false;
   bool dictation_active_ = false;
 
-  mojom::SelectToSpeakState select_to_speak_state_ =
-      mojom::SelectToSpeakState::kSelectToSpeakStateInactive;
+  SelectToSpeakState select_to_speak_state_ =
+      SelectToSpeakState::kSelectToSpeakStateInactive;
   std::unique_ptr<SelectToSpeakEventHandler> select_to_speak_event_handler_;
-  mojom::SelectToSpeakEventHandlerDelegatePtr
-      select_to_speak_event_handler_delegate_ptr_;
+  SelectToSpeakEventHandlerDelegate* select_to_speak_event_handler_delegate_ =
+      nullptr;
 
   // List of key codes that Switch Access should capture.
   std::vector<int> switch_access_keys_to_capture_;
   std::unique_ptr<SwitchAccessEventHandler> switch_access_event_handler_;
-  mojom::SwitchAccessEventHandlerDelegatePtr
-      switch_access_event_handler_delegate_ptr_;
+  SwitchAccessEventHandlerDelegate* switch_access_event_handler_delegate_ =
+      nullptr;
 
   // Used to control the highlights of caret, cursor and focus.
   std::unique_ptr<AccessibilityHighlightController>
@@ -285,9 +275,9 @@ class ASH_EXPORT AccessibilityController
 
   base::ObserverList<AccessibilityObserver>::Unchecked observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityController);
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerImpl);
 };
 
 }  // namespace ash
 
-#endif  // ASH_ACCESSIBILITY_ACCESSIBILITY_CONTROLLER_H_
+#endif  // ASH_ACCESSIBILITY_ACCESSIBILITY_CONTROLLER_IMPL_H_
