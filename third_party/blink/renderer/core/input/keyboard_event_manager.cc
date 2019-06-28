@@ -340,7 +340,8 @@ void KeyboardEventManager::DefaultKeyboardEventHandler(
       DefaultEscapeEventHandler(event);
     } else if (event->key() == "Enter") {
       DefaultEnterEventHandler(event);
-    } else if (static_cast<int>(event->KeyEvent()->dom_key) == 0x00200310) {
+    } else if (event->KeyEvent() &&
+               static_cast<int>(event->KeyEvent()->dom_key) == 0x00200310) {
       // TODO(bokan): Cleanup magic numbers once https://crbug.com/949766 lands.
       DefaultImeSubmitHandler(event);
     } else {
