@@ -963,6 +963,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnSchedulerTrackedFeatureUsed(
       blink::scheduler::WebSchedulerTrackedFeature feature);
 
+  // Returns true if frame is frozen.
+  bool IsFrozen();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -1249,6 +1252,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
   void FullscreenStateChanged(bool is_fullscreen) override;
+  void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
   void DocumentOnLoadCompleted() override;
   void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
   void DidAddMessageToConsole(blink::mojom::ConsoleMessageLevel log_level,
@@ -2192,6 +2196,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   base::circular_deque<size_t> cookie_no_samesite_deprecation_url_hashes_;
   base::circular_deque<size_t>
       cookie_samesite_none_insecure_deprecation_url_hashes_;
+
+  // The lifecycle state of the frame.
+  blink::mojom::FrameLifecycleState frame_lifecycle_state_ =
+      blink::mojom::FrameLifecycleState::kRunning;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

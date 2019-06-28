@@ -2289,6 +2289,10 @@ void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
       1 << static_cast<uint64_t>(feature);
 }
 
+bool RenderFrameHostImpl::IsFrozen() {
+  return frame_lifecycle_state_ != blink::mojom::FrameLifecycleState::kRunning;
+}
+
 void RenderFrameHostImpl::DidFailProvisionalLoadWithError(
     const GURL& url,
     int error_code,
@@ -3182,6 +3186,11 @@ void RenderFrameHostImpl::FullscreenStateChanged(bool is_fullscreen) {
   if (!is_active())
     return;
   delegate_->FullscreenStateChanged(this, is_fullscreen);
+}
+
+void RenderFrameHostImpl::LifecycleStateChanged(
+    blink::mojom::FrameLifecycleState state) {
+  frame_lifecycle_state_ = state;
 }
 
 #if defined(OS_ANDROID)

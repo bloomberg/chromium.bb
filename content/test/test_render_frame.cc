@@ -166,6 +166,9 @@ class MockFrameHost : public mojom::FrameHost {
 
   void FullscreenStateChanged(bool is_fullscreen) override {}
 
+  void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override {
+  }
+
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override {}
 
   void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override {}
