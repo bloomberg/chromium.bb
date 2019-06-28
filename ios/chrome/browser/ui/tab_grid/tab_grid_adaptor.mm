@@ -50,11 +50,11 @@
     tabIndex = targetModel.count;
 
   // Create the new tab.
-  [targetModel insertTabWithLoadParams:urlLoadParams.web_params
-                                opener:nil
-                           openedByDOM:NO
-                               atIndex:tabIndex
-                          inBackground:NO];
+  [targetModel insertWebStateWithLoadParams:urlLoadParams.web_params
+                                     opener:nil
+                                openedByDOM:NO
+                                    atIndex:tabIndex
+                               inBackground:NO];
 
   // Tell the delegate to display the tab.
   DCHECK(self.delegate);
