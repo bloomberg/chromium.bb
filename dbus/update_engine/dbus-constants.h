@@ -16,6 +16,7 @@ const char kUpdateEngineServiceErrorFailed[] =
 
 // Methods.
 const char kAttemptUpdate[] = "AttemptUpdate";
+const char kAttemptUpdateWithFlags[] = "AttemptUpdateWithFlags";
 const char kGetLastAttemptError[] = "GetLastAttemptError";
 // TODO(crbug.com/977320): Deprecate |GetStatus| method.
 const char kGetStatus[] = "GetStatus";
@@ -38,6 +39,9 @@ const char kSetUpdateOverCellularTarget[] =
 const char kStatusUpdate[] = "StatusUpdate";
 const char kStatusUpdateAdvanced[] = "StatusUpdateAdvanced";
 
+// TODO(crbug.com/978672): Move to update_engine.proto and add other values from
+// update_status.h:UpdateAttemptFlags to this enum.
+//
 // Flags used in the AttemptUpdateWithFlags() D-Bus method.
 typedef enum {
   kAttemptUpdateFlagNonInteractive = (1 << 0)
