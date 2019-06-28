@@ -57,11 +57,11 @@ static aom_image_t *img_alloc_helper(
     case AOM_IMG_FMT_YV12:
     case AOM_IMG_FMT_AOMI420:
     case AOM_IMG_FMT_AOMYV12: bps = 12; break;
-    case AOM_IMG_FMT_I422:
+    case AOM_IMG_FMT_I422: bps = 16; break;
     case AOM_IMG_FMT_I444: bps = 24; break;
     case AOM_IMG_FMT_YV1216:
     case AOM_IMG_FMT_I42016: bps = 24; break;
-    case AOM_IMG_FMT_I42216:
+    case AOM_IMG_FMT_I42216: bps = 32; break;
     case AOM_IMG_FMT_I44416: bps = 48; break;
     default: bps = 16; break;
   }
