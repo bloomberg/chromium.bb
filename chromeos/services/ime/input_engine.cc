@@ -84,7 +84,7 @@ bool InputEngine::BindRequest(
     mojo::PendingReceiver<mojom::InputChannel> receiver,
     mojo::PendingRemote<mojom::InputChannel> remote,
     const std::vector<uint8_t>& extra) {
-  if (!IsImeSupported(ime_spec))
+  if (!IsImeSupportedByRulebased(ime_spec))
     return false;
 
   channel_receivers_.Add(this, std::move(receiver),
@@ -94,7 +94,7 @@ bool InputEngine::BindRequest(
   // TODO(https://crbug.com/837156): Registry connection error handler.
 }
 
-bool InputEngine::IsImeSupported(const std::string& ime_spec) {
+bool InputEngine::IsImeSupportedByRulebased(const std::string& ime_spec) {
   return rulebased::Engine::IsImeSupported(GetIdFromImeSpec(ime_spec));
 }
 
