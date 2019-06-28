@@ -391,10 +391,11 @@ void OverviewGrid::Shutdown() {
         root_window_->layer()->GetCompositor(), single_animation_in_clamshell);
   }
 
-  overview_session_ = nullptr;
-
   while (!window_list_.empty())
     RemoveItem(window_list_.back().get());
+
+  // RemoveItem() uses `overview_session_`, so clear it at the end.
+  overview_session_ = nullptr;
 }
 
 void OverviewGrid::PrepareForOverview() {
@@ -542,7 +543,7 @@ bool OverviewGrid::Move(bool reverse, bool animate) {
 OverviewItem* OverviewGrid::SelectedWindow() const {
   if (!selection_widget_)
     return nullptr;
-  CHECK(selected_index_ < window_list_.size());
+  CHECK_LT(selected_index_, window_list_.size());
   return window_list_[selected_index_].get();
 }
 
@@ -592,12 +593,24 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item) {
                              return item->GetWindow() == window;
                            });
   DCHECK(iter != window_list_.rend());
+  const size_t removed_index = GetOverviewItemIndex(overview_item);
   window_observer_.Remove(window);
   window_state_observer_.Remove(wm::GetWindowState(window));
   // Erase from the list first because deleting OverviewItem can lead to
   // iterating through the |window_list_|.
   std::unique_ptr<OverviewItem> tmp = std::move(*iter);
   window_list_.erase(std::next(iter).base());
+
+  if (empty()) {
+    selected_index_ = 0;
+    selection_widget_.reset();
+  } else if (selection_widget_ && !overview_session_->is_shutting_down()) {
+    const bool send_focus_alert = selected_index_ == removed_index;
+    if (selected_index_ >= removed_index && selected_index_ != 0)
+      --selected_index_;
+    if (send_focus_alert)
+      SelectedWindow()->SendAccessibleSelectionEvent();
+  }
 }
 
 void OverviewGrid::AddDropTargetForDraggingFromOverview(
@@ -623,8 +636,6 @@ void OverviewGrid::AddDropTargetForDraggingFromOverview(
 void OverviewGrid::RemoveDropTarget() {
   DCHECK(drop_target_widget_);
   OverviewItem* drop_target = GetDropTarget();
-  if (selection_widget_ && selected_index_ >= GetOverviewItemIndex(drop_target))
-    --selected_index_;
   overview_session_->RemoveItem(drop_target);
   drop_target_widget_.reset();
 }
@@ -832,6 +843,7 @@ OverviewItem* OverviewGrid::GetDropTarget() {
 }
 
 void OverviewGrid::OnWindowDestroying(aura::Window* window) {
+  // TODO(sammiequon): Consider making this use `RemoveItem()`.
   window_observer_.Remove(window);
   window_state_observer_.Remove(wm::GetWindowState(window));
   auto iter = GetOverviewItemIterContainingWindow(window);
@@ -1330,12 +1342,6 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
       return false;
 
     desks_controller->MoveWindowFromActiveDeskTo(dragged_window, target_desk);
-    // Restore the dragged item window, so that its transform is reset to
-    // identity.
-    drag_item->RestoreWindow(/*reset_transform=*/true);
-
-    // The item no longer needs to be in the overview grid.
-    overview_session_->RemoveItem(drag_item);
     return true;
   }
 
