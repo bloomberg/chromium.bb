@@ -6081,3 +6081,6 @@ crbug.com/979243 [ Mac ] editing/selection/inline-closest-leaf-child.html [ Pass
 crbug.com/979298 [ Mac ] media/controls/captions-menu-always-visible.html [ Pass Failure ]
 crbug.com/979323 [ Mac ] media/track/track-cue-rendering-position-auto-rtl.html [ Pass Failure ]
 crbug.com/979336 [ Mac ] fast/dynamic/anonymous-block-orphaned-lines.html [ Pass Failure ]
+
+# Sheriff 2019-06-28
+crbug.com/979565 [ Mac ] virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-fullscreen-video.html [ Pass Failure ]
