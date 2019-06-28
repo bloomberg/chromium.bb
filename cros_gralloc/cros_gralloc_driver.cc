@@ -333,6 +333,26 @@ int32_t cros_gralloc_driver::get_backing_store(buffer_handle_t handle, uint64_t 
 	return 0;
 }
 
+int32_t cros_gralloc_driver::resource_info(buffer_handle_t handle, uint32_t strides[DRV_MAX_PLANES],
+					   uint32_t offsets[DRV_MAX_PLANES])
+{
+	std::lock_guard<std::mutex> lock(mutex_);
+
+	auto hnd = cros_gralloc_convert_handle(handle);
+	if (!hnd) {
+		drv_log("Invalid handle.\n");
+		return -EINVAL;
+	}
+
+	auto buffer = get_buffer(hnd);
+	if (!buffer) {
+		drv_log("Invalid Reference.\n");
+		return -EINVAL;
+	}
+
+	return buffer->resource_info(strides, offsets);
+}
+
 cros_gralloc_buffer *cros_gralloc_driver::get_buffer(cros_gralloc_handle_t hnd)
 {
 	/* Assumes driver mutex is held. */

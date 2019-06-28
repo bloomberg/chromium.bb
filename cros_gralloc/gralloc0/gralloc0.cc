@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include "../../util.h"
 #include "../cros_gralloc_driver.h"
 
 #include <cassert>
@@ -261,6 +262,8 @@ static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
 	uint64_t *out_store;
 	buffer_handle_t handle;
 	uint32_t *out_width, *out_height, *out_stride;
+	uint32_t strides[DRV_MAX_PLANES] = { 0, 0, 0, 0 };
+	uint32_t offsets[DRV_MAX_PLANES] = { 0, 0, 0, 0 };
 	auto mod = (struct gralloc0_module const *)module;
 
 	switch (op) {
@@ -286,7 +289,17 @@ static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
 	switch (op) {
 	case GRALLOC_DRM_GET_STRIDE:
 		out_stride = va_arg(args, uint32_t *);
-		*out_stride = hnd->pixel_stride;
+		ret = mod->driver->resource_info(handle, strides, offsets);
+		if (ret)
+			break;
+
+		if (strides[0] != hnd->strides[0]) {
+			uint32_t bytes_per_pixel = drv_bytes_per_pixel_from_format(hnd->format, 0);
+			*out_stride = DIV_ROUND_UP(strides[0], bytes_per_pixel);
+		} else {
+			*out_stride = hnd->pixel_stride;
+		}
+
 		break;
 	case GRALLOC_DRM_GET_FORMAT:
 		out_format = va_arg(args, int32_t *);
@@ -364,6 +377,8 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 {
 	int32_t ret;
 	uint32_t map_flags;
+	uint32_t strides[DRV_MAX_PLANES] = { 0, 0, 0, 0 };
+	uint32_t offsets[DRV_MAX_PLANES] = { 0, 0, 0, 0 };
 	uint8_t *addr[DRV_MAX_PLANES] = { nullptr, nullptr, nullptr, nullptr };
 	auto mod = (struct gralloc0_module const *)module;
 	struct rectangle rect = { .x = static_cast<uint32_t>(l),
@@ -393,13 +408,22 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 	if (ret)
 		return ret;
 
+	if (!map_flags) {
+		ret = mod->driver->resource_info(handle, strides, offsets);
+		if (ret)
+			return ret;
+
+		for (uint32_t plane = 0; plane < DRV_MAX_PLANES; plane++)
+			addr[plane] = static_cast<uint8_t *>(nullptr) + offsets[plane];
+	}
+
 	switch (hnd->format) {
 	case DRM_FORMAT_NV12:
 		ycbcr->y = addr[0];
 		ycbcr->cb = addr[1];
 		ycbcr->cr = addr[1] + 1;
-		ycbcr->ystride = hnd->strides[0];
-		ycbcr->cstride = hnd->strides[1];
+		ycbcr->ystride = (!map_flags) ? strides[0] : hnd->strides[0];
+		ycbcr->cstride = (!map_flags) ? strides[1] : hnd->strides[1];
 		ycbcr->chroma_step = 2;
 		break;
 	case DRM_FORMAT_YVU420:
@@ -407,8 +431,8 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 		ycbcr->y = addr[0];
 		ycbcr->cb = addr[2];
 		ycbcr->cr = addr[1];
-		ycbcr->ystride = hnd->strides[0];
-		ycbcr->cstride = hnd->strides[1];
+		ycbcr->ystride = (!map_flags) ? strides[0] : hnd->strides[0];
+		ycbcr->cstride = (!map_flags) ? strides[1] : hnd->strides[1];
 		ycbcr->chroma_step = 1;
 		break;
 	default:

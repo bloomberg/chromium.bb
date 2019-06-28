@@ -691,3 +691,17 @@ void drv_log_prefix(const char *prefix, const char *file, int line, const char *
 #endif
 	va_end(args);
 }
+
+int drv_resource_info(struct bo *bo, uint32_t strides[DRV_MAX_PLANES],
+		      uint32_t offsets[DRV_MAX_PLANES])
+{
+	for (uint32_t plane = 0; plane < bo->meta.num_planes; plane++) {
+		strides[plane] = bo->meta.strides[plane];
+		offsets[plane] = bo->meta.offsets[plane];
+	}
+
+	if (bo->drv->backend->resource_info)
+		return bo->drv->backend->resource_info(bo, strides, offsets);
+
+	return 0;
+}

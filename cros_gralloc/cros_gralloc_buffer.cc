@@ -108,3 +108,9 @@ int32_t cros_gralloc_buffer::unlock()
 
 	return 0;
 }
+
+int32_t cros_gralloc_buffer::resource_info(uint32_t strides[DRV_MAX_PLANES],
+					   uint32_t offsets[DRV_MAX_PLANES])
+{
+	return drv_resource_info(bo_, strides, offsets);
+}

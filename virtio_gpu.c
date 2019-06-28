@@ -505,6 +505,38 @@ static uint32_t virtio_gpu_resolve_format(struct driver *drv, uint32_t format, u
 	}
 }
 
+static int virtio_gpu_resource_info(struct bo *bo, uint32_t strides[DRV_MAX_PLANES],
+				    uint32_t offsets[DRV_MAX_PLANES])
+{
+	int ret;
+	struct drm_virtgpu_resource_info res_info;
+	struct virtio_gpu_priv *priv = (struct virtio_gpu_priv *)bo->drv->priv;
+
+	if (!priv->has_3d)
+		return 0;
+
+	memset(&res_info, 0, sizeof(res_info));
+	res_info.bo_handle = bo->handles[0].u32;
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VIRTGPU_RESOURCE_INFO, &res_info);
+	if (ret) {
+		drv_log("DRM_IOCTL_VIRTGPU_RESOURCE_INFO failed with %s\n", strerror(errno));
+		return ret;
+	}
+
+	for (uint32_t plane = 0; plane < bo->meta.num_planes; plane++) {
+		/*
+		 * Currently, kernel v4.14 (Betty) doesn't have the extended resource info
+		 * ioctl.
+		 */
+		if (res_info.strides[plane]) {
+			strides[plane] = res_info.strides[plane];
+			offsets[plane] = res_info.offsets[plane];
+		}
+	}
+
+	return 0;
+}
+
 const struct backend backend_virtio_gpu = {
 	.name = "virtio_gpu",
 	.init = virtio_gpu_init,
@@ -517,4 +549,5 @@ const struct backend backend_virtio_gpu = {
 	.bo_invalidate = virtio_gpu_bo_invalidate,
 	.bo_flush = virtio_gpu_bo_flush,
 	.resolve_format = virtio_gpu_resolve_format,
+	.resource_info = virtio_gpu_resource_info,
 };
