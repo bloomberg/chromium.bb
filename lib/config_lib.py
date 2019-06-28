@@ -1203,6 +1203,7 @@ def DefaultSiteParameters():
   chromium_remote = 'chromium'
   chrome_remote = 'chrome'
   aosp_remote = 'aosp'
+  weave_remote = 'weave'
 
   internal_change_prefix = 'chrome-internal:'
   external_change_prefix = 'chromium:'
@@ -1212,6 +1213,8 @@ def DefaultSiteParameters():
   default_site_params.update(
       GerritInstanceParameters('INTERNAL', 'chrome-internal'))
   default_site_params.update(GerritInstanceParameters('AOSP', 'android'))
+  default_site_params.update(
+      GerritInstanceParameters('WEAVE', 'weave'))
 
   default_site_params.update(
       # Parameters to define which manifests to use.
@@ -1233,6 +1236,7 @@ def DefaultSiteParameters():
       CHROMIUM_REMOTE=chromium_remote,
       CHROME_REMOTE=chrome_remote,
       AOSP_REMOTE=aosp_remote,
+      WEAVE_REMOTE=weave_remote,
 
       # Only remotes listed in CROS_REMOTES are considered branchable.
       # CROS_REMOTES and BRANCHABLE_PROJECTS must be kept in sync.
@@ -1240,11 +1244,13 @@ def DefaultSiteParameters():
           external_remote: default_site_params['EXTERNAL_GERRIT_HOST'],
           internal_remote: default_site_params['INTERNAL_GERRIT_HOST'],
           aosp_remote: default_site_params['AOSP_GERRIT_HOST'],
+          weave_remote: default_site_params['WEAVE_GERRIT_HOST'],
       },
       CROS_REMOTES={
           external_remote: default_site_params['EXTERNAL_GOB_URL'],
           internal_remote: default_site_params['INTERNAL_GOB_URL'],
           aosp_remote: default_site_params['AOSP_GOB_URL'],
+          weave_remote: default_site_params['WEAVE_GOB_URL'],
       },
       GIT_REMOTES={
           chromium_remote: default_site_params['EXTERNAL_GOB_URL'],
@@ -1252,6 +1258,7 @@ def DefaultSiteParameters():
           external_remote: default_site_params['EXTERNAL_GOB_URL'],
           internal_remote: default_site_params['INTERNAL_GOB_URL'],
           aosp_remote: default_site_params['AOSP_GOB_URL'],
+          weave_remote: default_site_params['WEAVE_GOB_URL'],
       },
 
       # Prefix to distinguish internal and external changes. This is used
@@ -1266,7 +1273,9 @@ def DefaultSiteParameters():
       },
 
       # List of remotes that are okay to include in the external manifest.
-      EXTERNAL_REMOTES=(external_remote, chromium_remote, aosp_remote),
+      EXTERNAL_REMOTES=(
+          external_remote, chromium_remote, aosp_remote, weave_remote,
+      ),
 
       # Mapping 'remote name' -> regexp that matches names of repositories on
       # that remote that can be branched when creating CrOS branch.
