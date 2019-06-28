@@ -1493,7 +1493,7 @@ BrowserContext* AuthenticatorCommon::browser_context() const {
 namespace {
 std::unique_ptr<device::fido::mac::TouchIdAuthenticator>
 CreateTouchIdAuthenticatorIfAvailable(
-    const AuthenticatorRequestClientDelegate* request_delegate) {
+    AuthenticatorRequestClientDelegate* request_delegate) {
   // Not all embedders may provide an authenticator config.
   auto opt_authenticator_config =
       request_delegate->GetTouchIdAuthenticatorConfig();
