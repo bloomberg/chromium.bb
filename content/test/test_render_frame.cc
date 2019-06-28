@@ -237,7 +237,8 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
                                const CommonNavigationParams& common_params,
                                const CommitNavigationParams& commit_params) {
   if (!IsPerNavigationMojoInterfaceEnabled()) {
-    CommitNavigation(head, common_params, commit_params,
+    CommitNavigation(common_params, commit_params, head,
+                     mojo::ScopedDataPipeConsumerHandle(),
                      network::mojom::URLLoaderClientEndpointsPtr(),
                      std::make_unique<blink::URLLoaderFactoryBundleInfo>(),
                      base::nullopt,
@@ -249,7 +250,8 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
     BindNavigationClient(
         mojo::MakeRequestAssociatedWithDedicatedPipe(&mock_navigation_client_));
     CommitPerNavigationMojoInterfaceNavigation(
-        head, common_params, commit_params,
+        common_params, commit_params, head,
+        mojo::ScopedDataPipeConsumerHandle(),
         network::mojom::URLLoaderClientEndpointsPtr(),
         std::make_unique<blink::URLLoaderFactoryBundleInfo>(), base::nullopt,
         blink::mojom::ControllerServiceWorkerInfoPtr(),

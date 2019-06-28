@@ -669,10 +669,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // process, e.g. by AppCache etc.
   void CommitNavigation(
       NavigationRequest* navigation_request,
-      network::ResourceResponse* response,
-      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       const CommonNavigationParams& common_params,
       const CommitNavigationParams& commit_params,
+      network::ResourceResponse* response_head,
+      mojo::ScopedDataPipeConsumerHandle response_body,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       bool is_view_source,
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
       base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
@@ -986,9 +987,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   virtual void SendCommitNavigation(
       mojom::NavigationClient* navigation_client,
       NavigationRequest* navigation_request,
-      const network::ResourceResponseHead& head,
       const content::CommonNavigationParams& common_params,
       const content::CommitNavigationParams& commit_params,
+      const network::ResourceResponseHead& response_head,
+      mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,

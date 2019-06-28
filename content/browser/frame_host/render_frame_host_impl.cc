@@ -4386,12 +4386,12 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       base::Optional<SourceLocation>(), false /* started_from_context_menu */,
       false /* has_user_gesture */, InitiatorCSPInfo(), std::vector<int>(),
       std::string(), false /* is_history_navigation_in_new_child_frame */);
-  CommitNavigation(nullptr /* navigation_request */, nullptr /* response */,
-                   network::mojom::URLLoaderClientEndpointsPtr(), common_params,
-                   CommitNavigationParams(), false, base::nullopt,
-                   base::nullopt /* subresource_overrides */,
-                   nullptr /* provider_info */,
-                   base::UnguessableToken::Create() /* not traced */);
+  CommitNavigation(
+      nullptr /* navigation_request */, common_params, CommitNavigationParams(),
+      nullptr /* response_head */, mojo::ScopedDataPipeConsumerHandle(),
+      network::mojom::URLLoaderClientEndpointsPtr(), false, base::nullopt,
+      base::nullopt /* subresource_overrides */, nullptr /* provider_info */,
+      base::UnguessableToken::Create() /* not traced */);
 }
 
 void RenderFrameHostImpl::Stop() {
@@ -4734,10 +4734,11 @@ void RenderFrameHostImpl::SendJavaScriptDialogReply(
 
 void RenderFrameHostImpl::CommitNavigation(
     NavigationRequest* navigation_request,
-    network::ResourceResponse* response,
-    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     const CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params,
+    network::ResourceResponse* response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
+    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     bool is_view_source,
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
@@ -4755,7 +4756,7 @@ void RenderFrameHostImpl::CommitNavigation(
   // A |response| and a |url_loader_client_endpoints| must always be provided,
   // except for edge cases, where another way to load the document exist.
   DCHECK(
-      (response && url_loader_client_endpoints) ||
+      (response_head && url_loader_client_endpoints) ||
       common_params.url.SchemeIs(url::kDataScheme) ||
       FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type) ||
       !IsURLHandledByNetworkStack(common_params.url) || is_mhtml_iframe);
@@ -4768,7 +4769,7 @@ void RenderFrameHostImpl::CommitNavigation(
     if (root->is_mhtml_document_ &&
         !common_params.url.SchemeIs(url::kDataScheme)) {
       bool loaded_from_outside_the_archive =
-          response || url_loader_client_endpoints;
+          response_head || url_loader_client_endpoints;
       CHECK(!loaded_from_outside_the_archive);
       CHECK(is_mhtml_iframe);
       CHECK_EQ(GetSiteInstance(), root->GetSiteInstance());
@@ -4835,7 +4836,7 @@ void RenderFrameHostImpl::CommitNavigation(
   }
 
   const network::ResourceResponseHead head =
-      response ? response->head : network::ResourceResponseHead();
+      response_head ? response_head->head : network::ResourceResponseHead();
   const bool is_same_document =
       FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type);
 
@@ -5113,8 +5114,8 @@ void RenderFrameHostImpl::CommitNavigation(
     }
 
     SendCommitNavigation(
-        navigation_client, navigation_request, head, common_params,
-        commit_params, std::move(url_loader_client_endpoints),
+        navigation_client, navigation_request, common_params, commit_params,
+        head, std::move(response_body), std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
         std::move(provider_info), std::move(prefetch_loader_factory),
@@ -6912,9 +6913,10 @@ void RenderFrameHostImpl::MaybeGenerateCrashReport(
 void RenderFrameHostImpl::SendCommitNavigation(
     mojom::NavigationClient* navigation_client,
     NavigationRequest* navigation_request,
-    const network::ResourceResponseHead& head,
     const content::CommonNavigationParams& common_params,
     const content::CommitNavigationParams& commit_params,
+    const network::ResourceResponseHead& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
@@ -6926,7 +6928,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
     const base::UnguessableToken& devtools_navigation_token) {
   if (navigation_client) {
     navigation_client->CommitNavigation(
-        head, common_params, commit_params,
+        common_params, commit_params, response_head, std::move(response_body),
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
@@ -6935,7 +6937,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
         BuildNavigationClientCommitNavigationCallback(navigation_request));
   } else {
     GetNavigationControl()->CommitNavigation(
-        head, common_params, commit_params,
+        common_params, commit_params, response_head, std::move(response_body),
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
