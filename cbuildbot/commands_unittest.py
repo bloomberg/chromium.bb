@@ -1442,9 +1442,8 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
   """Test cases which really run tests, instead of using mocks."""
 
   def testBuildFirmwareArchive(self):
-    """Verifies that firmware archiver includes proper files"""
-    # Assorted set of file names, some of which are supposed to be included in
-    # the archive.
+    """Verifies that the archiver creates a tarfile with the expected files."""
+    # Set of files to tar up
     fw_files = (
         'dts/emeraldlake2.dts',
         'image-link.rw.bin',
@@ -1456,20 +1455,29 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
         'updater-link.rw.sh',
         'x86-memtest',
     )
-    # Files which should be included in the archive.
-    fw_archived_files = fw_files + ('dts/',)
     board = 'link'
+    chroot_path = 'chroot/build/%s/firmware' % board
     fw_test_root = os.path.join(self.tempdir, os.path.basename(__file__))
-    fw_files_root = os.path.join(fw_test_root,
-                                 'chroot/build/%s/firmware' % board)
-    # Generate a representative set of files produced by a typical build.
+    fw_files_root = os.path.join(fw_test_root, chroot_path)
+
+    # Generate the fw_files in fw_files_root.
     cros_test_lib.CreateOnDiskHierarchy(fw_files_root, fw_files)
-    # Create an archive from the simulated firmware directory
-    tarball = os.path.join(
-        fw_test_root,
-        commands.BuildFirmwareArchive(fw_test_root, board, fw_test_root))
-    # Verify the tarball contents.
-    cros_test_lib.VerifyTarball(tarball, fw_archived_files)
+
+    # Create an archive from the specified test directory.
+    returned_archive_name = commands.BuildFirmwareArchive(fw_test_root, board,
+                                                          fw_test_root)
+    # Verify we get a valid tarball returned whose name uses the default name.
+    self.assertTrue(returned_archive_name is not None)
+    self.assertEquals(returned_archive_name, constants.FIRMWARE_ARCHIVE_NAME)
+
+    # Create an archive and specify that archive filename.
+    archive_name = "alternative_archive.tar.bz2"
+    returned_archive_name = commands.BuildFirmwareArchive(fw_test_root, board,
+                                                          fw_test_root,
+                                                          archive_name)
+    # Verify that we get back an archive file using the specified name.
+    self.assertEquals(archive_name, returned_archive_name)
+
 
   def findFilesWithPatternExpectedResults(self, root, files):
     """Generate the expected results for testFindFilesWithPattern"""

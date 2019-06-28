@@ -206,6 +206,7 @@ def FetchPinnedGuestImages(input_proto, output_proto):
     pinned_image.uri = pin.uri
 
 
+@validate.require('output_dir', 'sysroot.path')
 def BundleFirmware(input_proto, output_proto):
   """Tar the firmware images for a build target.
 
@@ -213,16 +214,16 @@ def BundleFirmware(input_proto, output_proto):
     input_proto (BundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
   """
-  target = input_proto.build_target.name
   output_dir = input_proto.output_dir
-  build_root = constants.SOURCE_ROOT
-
-  # TODO(crbug.com/954300): Replace with a chromite/service implementation.
-  archive = commands.BuildFirmwareArchive(build_root, target, output_dir)
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  sysroot_path = input_proto.sysroot.path
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
+  archive = artifacts.BuildFirmwareArchive(chroot, sysroot, output_dir)
 
   if archive is None:
     cros_build_lib.Die(
-        'Could not create firmware archive. No firmware found for %s.', target)
+        'Could not create firmware archive. No firmware found for %s.',
+        sysroot_path)
 
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 

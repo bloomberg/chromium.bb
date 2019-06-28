@@ -54,6 +54,33 @@ class NoFilesException(Error):
   """When there are no files to archive."""
 
 
+def BuildFirmwareArchive(chroot, sysroot, output_directory):
+  """Build firmware_from_source.tar.bz2 in chroot's sysroot firmware directory.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot to be used.
+    sysroot (sysroot_lib.Sysroot): The sysroot whose artifacts are being
+      archived.
+    output_directory (str): The path were the completed archives should be put.
+
+  Returns:
+    str|None - The archive file path if created, None otherwise.
+  """
+  firmware_root = os.path.join(chroot.path, sysroot.path.lstrip(os.sep),
+                               'firmware')
+  source_list = [os.path.relpath(f, firmware_root)
+                 for f in glob.iglob(os.path.join(firmware_root, '*'))]
+  if not source_list:
+    return None
+
+  archive_file = os.path.join(output_directory, constants.FIRMWARE_ARCHIVE_NAME)
+  cros_build_lib.CreateTarball(
+      archive_file, firmware_root, compression=cros_build_lib.COMP_BZIP2,
+      chroot=chroot.path, inputs=source_list)
+
+  return archive_file
+
+
 def BundleAutotestFiles(sysroot, output_directory):
   """Create the Autotest Hardware Test archives.
 

@@ -30,6 +30,9 @@ class BundleTestCase(cros_test_lib.MockTestCase):
     self.input_proto.build_target.name = 'target'
     self.input_proto.output_dir = '/tmp/artifacts'
     self.output_proto = artifacts_pb2.BundleResponse()
+    self.sysroot_input_proto = artifacts_pb2.BundleRequest()
+    self.sysroot_input_proto.sysroot.path = '/tmp/sysroot'
+    self.sysroot_input_proto.output_dir = '/tmp/artifacts'
 
     self.PatchObject(constants, 'SOURCE_ROOT', new='/cros')
 
@@ -244,16 +247,25 @@ class BundlePinnedGuestImagesTest(BundleTestCase):
 class BundleFirmwareTest(BundleTestCase):
   """Unittests for BundleFirmware."""
 
+  def setUp(self):
+    self.sysroot_path = '/build/target'
+    # Empty input_proto object.
+    self.input_proto = artifacts_pb2.BundleRequest()
+    # Input proto object with sysroot.path and output_dir set up when invoking
+    # the controller BundleFirmware method which will validate proto fields.
+    self.sysroot_input_proto = artifacts_pb2.BundleRequest()
+    self.sysroot_input_proto.sysroot.path = '/tmp/sysroot'
+    self.sysroot_input_proto.output_dir = '/tmp/artifacts'
+    self.output_proto = artifacts_pb2.BundleResponse()
+
   def testBundleFirmware(self):
     """BundleFirmware calls cbuildbot/commands with correct args."""
-    build_firmware_archive = self.PatchObject(
-        commands, 'BuildFirmwareArchive', return_value='firmware.tar.gz')
-    artifacts.BundleFirmware(self.input_proto, self.output_proto)
+    self.PatchObject(artifacts_svc,
+                     'BuildFirmwareArchive', return_value='firmware.tar.gz')
+    artifacts.BundleFirmware(self.sysroot_input_proto, self.output_proto)
     self.assertEqual(
         [artifact.path for artifact in self.output_proto.artifacts],
         ['/tmp/artifacts/firmware.tar.gz'])
-    self.assertEqual(build_firmware_archive.call_args_list,
-                     [mock.call('/cros', 'target', '/tmp/artifacts')])
 
   def testBundleFirmwareNoLogs(self):
     """BundleFirmware dies when no firmware found."""

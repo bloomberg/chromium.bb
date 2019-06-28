@@ -24,12 +24,13 @@ from chromite.cbuildbot import swarming_lib
 from chromite.cbuildbot import topology
 
 from chromite.lib import buildbot_annotations
+from chromite.lib import chroot_lib
+from chromite.lib import cipd
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import failures_lib
-from chromite.lib import cipd
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import failures_lib
 from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import image_lib
@@ -39,12 +40,13 @@ from chromite.lib import parallel
 from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import retry_util
+from chromite.lib import sysroot_lib
 from chromite.lib import timeout_util
-from chromite.service import artifacts as artifacts_service
 
 from chromite.lib.paygen import filelib
 
 from chromite.scripts import pushimage
+from chromite.service import artifacts as artifacts_service
 
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
@@ -2223,23 +2225,15 @@ def ExtractBuildDepsGraph(buildroot, board):
     buildroot: The root directory where the build occurs.
     board: Board type that was built on this machine.
   """
-  cmd = ['build_api', 'chromite.api.DependencyService/GetBuildDependencyGraph']
-  with osutils.TempDir() as tmpdir:
-    input_proto_file = os.path.join(tmpdir, 'input.json')
-    output_proto_file = os.path.join(tmpdir, 'output.json')
-    with open(input_proto_file, 'w') as f:
-      input_proto = {
-          'build_target': {
-              'name': board,
-          },
-      }
-      json.dump(input_proto, f)
-    cmd += [
-        '--input-json', input_proto_file, '--output-json', output_proto_file
-    ]
-    RunBuildScript(buildroot, cmd, chromite_cmd=True, redirect_stdout=True)
-    output = json.loads(osutils.ReadFile(output_proto_file))
-    return output['depGraph']
+  input_proto = {
+      'build_target': {
+          'name': board,
+      },
+  }
+  json_output = CallBuildApiWithInputProto(
+      buildroot, 'chromite.api.DependencyService/GetBuildDependencyGraph',
+      input_proto)
+  return json_output['depGraph']
 
 
 def GenerateBuildConfigs(board, config_useflags):
@@ -3390,17 +3384,41 @@ def BuildFirmwareArchive(buildroot,
     The basename of the archived file, or None if the target board does
     not have firmware from source.
   """
-  firmware_root = os.path.join(buildroot, 'chroot', 'build', board, 'firmware')
-  source_list = [
-      os.path.relpath(f, firmware_root)
-      for f in glob.iglob(os.path.join(firmware_root, '*'))
-  ]
-  if not source_list:
-    return None
+  sysroot = sysroot_lib.Sysroot(os.path.join('build', board))
+  chroot = chroot_lib.Chroot(path=os.path.join(buildroot, 'chroot'))
 
-  archive_file = os.path.join(archive_dir, archive_name)
-  BuildTarball(buildroot, source_list, archive_file, cwd=firmware_root)
-  return archive_name
+  archive_file = artifacts_service.BuildFirmwareArchive(
+      chroot, sysroot, archive_dir
+  )
+  if archive_file is None:
+    return None
+  else:
+    shutil.move(archive_file, os.path.join(archive_dir, archive_name))
+    return archive_name
+
+
+def CallBuildApiWithInputProto(buildroot, build_api_command, input_proto):
+  """Call BuildApi with the input_proto and buildroot.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    build_api_command: Service (command) to execute.
+    input_proto (BundleRequest): The input proto.
+
+  Returns:
+    The json-encoded output proto.
+  """
+  cmd = ['build_api', build_api_command]
+  with osutils.TempDir() as tmpdir:
+    input_proto_file = os.path.join(tmpdir, 'input.json')
+    output_proto_file = os.path.join(tmpdir, 'output.json')
+    with open(input_proto_file, 'w') as f:
+      json.dump(input_proto, f)
+    cmd += [
+        '--input-json', input_proto_file, '--output-json', output_proto_file
+    ]
+    RunBuildScript(buildroot, cmd, chromite_cmd=True, redirect_stdout=True)
+    return json.loads(osutils.ReadFile(output_proto_file))
 
 
 def BuildFactoryZip(buildroot,
