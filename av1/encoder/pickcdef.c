@@ -374,7 +374,6 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   const int nvfb = (cm->mi_rows + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   const int nhfb = (cm->mi_cols + MI_SIZE_64X64 - 1) / MI_SIZE_64X64;
   int *sb_index = aom_malloc(nvfb * nhfb * sizeof(*sb_index));
-  int *selected_strength = aom_malloc(nvfb * nhfb * sizeof(*sb_index));
   const int damping = 3 + (cm->base_qindex >> 6);
   const int fast = pick_method == CDEF_FAST_SEARCH;
   const int total_strengths = fast ? REDUCED_TOTAL_STRENGTHS : TOTAL_STRENGTHS;
@@ -532,7 +531,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
     int best_lev1[CDEF_MAX_STRENGTHS] = { 0 };
     const int nb_strengths = 1 << i;
     uint64_t tot_mse;
-    if (num_planes >= 3) {
+    if (num_planes > 1) {
       tot_mse = joint_strength_search_dual(best_lev0, best_lev1, nb_strengths,
                                            mse, sb_count, fast);
     } else {
@@ -570,7 +569,6 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
         best_mse = curr;
       }
     }
-    selected_strength[i] = best_gi;
     cm->mi_grid_visible[sb_index[i]]->cdef_strength = best_gi;
   }
 
@@ -596,5 +594,4 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
     aom_free(ref_coeff[pli]);
   }
   aom_free(sb_index);
-  aom_free(selected_strength);
 }
