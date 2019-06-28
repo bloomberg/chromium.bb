@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_MOJO_CLIPBOARD_BLINK_STRUCT_TRAITS_H_
-#define UI_BASE_MOJO_CLIPBOARD_BLINK_STRUCT_TRAITS_H_
+#ifndef UI_BASE_MOJOM_CLIPBOARD_BLINK_MOJOM_TRAITS_H_
+#define UI_BASE_MOJOM_CLIPBOARD_BLINK_MOJOM_TRAITS_H_
 
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-shared.h"
 #include "ui/base/clipboard/clipboard_types.h"
@@ -40,4 +40,4 @@ struct EnumTraits<blink::mojom::ClipboardBuffer, ui::ClipboardType> {
 
 }  // namespace mojo
 
-#endif  // UI_BASE_MOJO_CLIPBOARD_BLINK_STRUCT_TRAITS_H_
+#endif  // UI_BASE_MOJOM_CLIPBOARD_BLINK_MOJOM_TRAITS_H_

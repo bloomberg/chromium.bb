@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//ui/base/mojo/cursor.mojom"
+mojom = "//ui/base/mojom/cursor.mojom"
 public_headers = [
   "//ui/base/cursor/cursor_size.h",
   "//ui/base/cursor/cursor.h",
   "//ui/base/cursor/types/cursor_types.h",
 ]
-traits_headers = [ "//ui/base/mojo/cursor_struct_traits.h" ]
+traits_headers = [ "//ui/base/mojom/cursor_mojom_traits.h" ]
 sources = [
-  "//ui/base/mojo/cursor_struct_traits.cc",
+  "//ui/base/mojom/cursor_mojom_traits.cc",
 ]
 public_deps = [
   "//ui/base",

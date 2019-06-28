@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_MOJO_CLIPBOARD_HOST_H_
-#define UI_BASE_MOJO_CLIPBOARD_HOST_H_
+#ifndef UI_BASE_MOJOM_CLIPBOARD_HOST_H_
+#define UI_BASE_MOJOM_CLIPBOARD_HOST_H_
 
 #include <memory>
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "ui/base/mojo/clipboard.mojom.h"
+#include "ui/base/mojom/clipboard.mojom.h"
 
 namespace ui {
 
@@ -72,4 +72,4 @@ class ClipboardHost : public mojom::ClipboardHost {
 
 }  // namespace ui
 
-#endif  // UI_BASE_MOJO_CLIPBOARD_HOST_H_
+#endif  // UI_BASE_MOJOM_CLIPBOARD_HOST_H_

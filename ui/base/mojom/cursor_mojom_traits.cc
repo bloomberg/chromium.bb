@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/mojo/cursor_struct_traits.h"
+#include "ui/base/mojom/cursor_mojom_traits.h"
 
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/mojo/cursor.mojom.h"
+#include "ui/base/mojom/cursor.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
 namespace mojo {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_MOJO_UI_BASE_TYPES_STRUCT_TRAITS_H_
-#define UI_BASE_MOJO_UI_BASE_TYPES_STRUCT_TRAITS_H_
+#ifndef UI_BASE_MOJOM_UI_BASE_TYPES_MOJOM_TRAITS_H_
+#define UI_BASE_MOJOM_UI_BASE_TYPES_MOJOM_TRAITS_H_
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -13,7 +13,7 @@
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "ui/base/mojo/ui_base_types.mojom.h"
+#include "ui/base/mojom/ui_base_types.mojom.h"
 #include "ui/base/ui_base_types.h"
 
 namespace mojo {
@@ -304,4 +304,4 @@ struct EnumTraits<ui::mojom::WindowShowState, ui::WindowShowState> {
 
 }  // namespace mojo
 
-#endif  // UI_BASE_MOJO_WINDOW_OPEN_DISPOSITION_STRUCT_TRAITS_H_
+#endif  // UI_BASE_MOJOM_UI_BASE_TYPES_MOJOM_TRAITS_H_

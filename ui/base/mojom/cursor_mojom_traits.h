@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_MOJO_CURSOR_STRUCT_TRAITS_H_
-#define UI_BASE_MOJO_CURSOR_STRUCT_TRAITS_H_
+#ifndef UI_BASE_MOJOM_CURSOR_MOJOM_TRAITS_H_
+#define UI_BASE_MOJOM_CURSOR_MOJOM_TRAITS_H_
 
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/mojo/cursor.mojom-shared.h"
+#include "ui/base/mojom/cursor.mojom-shared.h"
 
 namespace mojo {
 
@@ -37,4 +37,4 @@ struct StructTraits<ui::mojom::CursorDataView, ui::Cursor> {
 
 }  // namespace mojo
 
-#endif  // UI_BASE_MOJO_CURSOR_STRUCT_TRAITS_H_
+#endif  // UI_BASE_MOJOM_CURSOR_MOJOM_TRAITS_H_

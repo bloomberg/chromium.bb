@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_MOJO_CLIPBOARD_STRUCT_TRAITS_H_
-#define UI_BASE_MOJO_CLIPBOARD_STRUCT_TRAITS_H_
+#ifndef UI_BASE_MOJOM_CLIPBOARD_MOJOM_TRAITS_H_
+#define UI_BASE_MOJOM_CLIPBOARD_MOJOM_TRAITS_H_
 
 #include "ui/base/clipboard/clipboard_types.h"
-#include "ui/base/mojo/clipboard.mojom.h"
+#include "ui/base/mojom/clipboard.mojom.h"
 
 namespace mojo {
 
@@ -42,4 +42,4 @@ struct EnumTraits<ui::mojom::ClipboardType, ui::ClipboardType> {
 
 }  // namespace mojo
 
-#endif  // UI_BASE_MOJO_CLIPBOARD_STRUCT_TRAITS_H_
+#endif  // UI_BASE_MOJOM_CLIPBOARD_MOJOM_TRAITS_H_

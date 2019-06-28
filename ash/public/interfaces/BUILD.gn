@@ -30,7 +30,7 @@ mojom("interfaces") {
     "//services/preferences/public/mojom",
     "//skia/public/interfaces",
     "//ui/base/ime/chromeos/public/interfaces",
-    "//ui/base/mojo",
+    "//ui/base/mojom",
     "//ui/display/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/image/mojo:interfaces",

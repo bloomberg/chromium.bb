@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("mojo") {
+mojom("mojom") {
   sources = [
     "clipboard.mojom",
     "cursor.mojom",
@@ -30,7 +30,7 @@ source_set("lib") {
   ]
 
   public_deps = [
-    ":mojo",
+    ":mojom",
     "//base",
     "//mojo/public/cpp/bindings",
     "//ui/base",
@@ -41,10 +41,10 @@ source_set("lib") {
 source_set("unittests") {
   testonly = true
   sources = [
-    "cursor_struct_traits_unittest.cc",
+    "cursor_mojom_traits_unittest.cc",
   ]
   deps = [
-    ":mojo",
+    ":mojom",
     "//skia/public/interfaces",
     "//testing/gtest",
     "//ui/base",

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/mojo/cursor_struct_traits.h"
+#include "ui/base/mojom/cursor_mojom_traits.h"
 
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/mojo/cursor.mojom.h"
+#include "ui/base/mojom/cursor.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/gfx/skia_util.h"
 
