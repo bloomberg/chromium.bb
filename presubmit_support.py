@@ -306,7 +306,7 @@ class _PresubmitResult(object):
   def json_format(self):
     return {
         'message': self._message,
-        'items': self._items,
+        'items': [str(item) for item in self._items],
         'long_text': self._long_text,
         'fatal': self.fatal
     }
