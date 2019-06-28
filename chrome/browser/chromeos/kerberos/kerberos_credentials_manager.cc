@@ -704,20 +704,41 @@ void KerberosCredentialsManager::ValidateActivePrincipal(
 }
 
 void KerberosCredentialsManager::UpdateEnabledFromPref() {
-  const bool enabled = local_state_->GetBoolean(prefs::kKerberosEnabled);
-  if (!enabled) {
-    // Note that ClearAccounts logs an error if the operation fails.
-    VLOG(1) << "Kerberos got disabled, clearing accounts";
-    ClearAccounts(base::BindOnce([](kerberos::ErrorType) {}));
+  if (local_state_->GetBoolean(prefs::kKerberosEnabled)) {
+    // Kerberos got enabled, re-populate managed accounts.
+    UpdateAccountsFromPref();
+    return;
   }
+
+  // Note that ClearAccounts logs an error if the operation fails.
+  VLOG(1) << "Kerberos got disabled, clearing accounts";
+  ClearAccounts(base::BindOnce([](kerberos::ErrorType) {}));
 }
 
 void KerberosCredentialsManager::UpdateRememberPasswordEnabledFromPref() {
-  // TODO(https://crbug.com/952239): Implement
+  if (local_state_->GetBoolean(prefs::kKerberosRememberPasswordEnabled))
+    return;
+
+  VLOG(1) << "'Remember password' got disabled, clearing remembered passwords";
+  kerberos::ClearAccountsRequest request;
+  request.set_mode(kerberos::CLEAR_ONLY_UNMANAGED_REMEMBERED_PASSWORDS);
+  KerberosClient::Get()->ClearAccounts(
+      request,
+      base::BindOnce(&KerberosCredentialsManager::OnClearAccounts,
+                     weak_factory_.GetWeakPtr(), EmptyResultCallback()));
 }
 
 void KerberosCredentialsManager::UpdateAddAccountsAllowedFromPref() {
-  // TODO(https://crbug.com/952239): Implement
+  if (local_state_->GetBoolean(prefs::kKerberosAddAccountsAllowed))
+    return;
+
+  VLOG(1) << "'Add accounts allowed' got disabled, clearing unmanaged accounts";
+  kerberos::ClearAccountsRequest request;
+  request.set_mode(kerberos::CLEAR_ONLY_UNMANAGED_ACCOUNTS);
+  KerberosClient::Get()->ClearAccounts(
+      request,
+      base::BindOnce(&KerberosCredentialsManager::OnClearAccounts,
+                     weak_factory_.GetWeakPtr(), EmptyResultCallback()));
 }
 
 void KerberosCredentialsManager::UpdateAccountsFromPref() {

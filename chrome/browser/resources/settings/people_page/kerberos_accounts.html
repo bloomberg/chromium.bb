@@ -34,8 +34,12 @@
         padding-bottom: 1em;
       }
 
-      cr-policy-indicator {
+      .account-policy-indicator {
         margin-inline-start: 1em;
+      }
+
+      #add-account-policy-indicator {
+        margin-inline-end: 1em;
       }
 
       #add-account-icon {
@@ -68,7 +72,13 @@
       <div id="account-list-header" class="flex">
         <h2>$i18n{kerberosAccountsListHeader}</h2>
       </div>
-      <cr-button id="add-account-button" on-click="onAddAccountClick_">
+      <template is="dom-if" if="[[!addAccountsAllowed_]]">
+        <cr-policy-indicator id="add-account-policy-indicator"
+            indicator-type="userPolicy">
+        </cr-policy-indicator>
+      </template>
+      <cr-button id="add-account-button" on-click="onAddAccountClick_"
+          disabled="[[!addAccountsAllowed_]]">
         <div id="add-account-icon"></div>
         $i18n{kerberosAccountsAddAccountLabel}
       </cr-button>
@@ -103,13 +113,15 @@
           </cr-button>
 
           <template is="dom-if" if="[[item.isManaged]]">
-            <cr-policy-indicator indicator-type="userPolicy">
+            <cr-policy-indicator class="account-policy-indicator"
+                indicator-type="userPolicy">
             </cr-policy-indicator>
           </template>
 
           <!-- Hamburger menu -->
-          <cr-icon-button class="icon-more-vert" title="$i18n{moreActions}"
-              id="more-actions" on-click="onAccountActionsMenuButtonClick_">
+          <cr-icon-button class="icon-more-vert more-actions"
+              title="$i18n{moreActions}"
+              on-click="onAccountActionsMenuButtonClick_">
           </cr-icon-button>
         </div>
       </template>

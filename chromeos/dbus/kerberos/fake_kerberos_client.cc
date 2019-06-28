@@ -92,7 +92,26 @@ void FakeKerberosClient::RemoveAccount(
 void FakeKerberosClient::ClearAccounts(
     const kerberos::ClearAccountsRequest& request,
     ClearAccountsCallback callback) {
-  accounts_.clear();
+  switch (request.mode()) {
+    case kerberos::CLEAR_ALL:
+      accounts_.clear();
+      break;
+
+    case kerberos::CLEAR_ONLY_UNMANAGED_ACCOUNTS:
+      accounts_.erase(std::remove_if(accounts_.begin(), accounts_.end(),
+                                     [](const AccountData& account) {
+                                       return !account.is_managed;
+                                     }),
+                      accounts_.end());
+      break;
+
+    case kerberos::CLEAR_ONLY_UNMANAGED_REMEMBERED_PASSWORDS:
+      for (auto& account : accounts_) {
+        if (!account.is_managed)
+          account.password.clear();
+      }
+      break;
+  }
   PostResponse(std::move(callback), kerberos::ERROR_NONE);
 }
 

@@ -2078,11 +2078,22 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddBoolean("isAccountManagerEnabled",
                           chromeos::IsAccountManagerAvailable(profile));
 
+  PrefService* local_state = g_browser_process->local_state();
+
   // Toggles the Chrome OS Kerberos Accounts submenu in the People section.
   // Note that the handler is also dependent on this pref.
+  html_source->AddBoolean("isKerberosEnabled",
+                          local_state->GetBoolean(prefs::kKerberosEnabled));
+
+  // Whether the 'Remember password' checkbox is enabled.
   html_source->AddBoolean(
-      "isKerberosEnabled",
-      g_browser_process->local_state()->GetBoolean(prefs::kKerberosEnabled));
+      "kerberosRememberPasswordEnabled",
+      local_state->GetBoolean(prefs::kKerberosRememberPasswordEnabled));
+
+  // Whether new Kerberos accounts may be added.
+  html_source->AddBoolean(
+      "kerberosAddAccountsAllowed",
+      local_state->GetBoolean(prefs::kKerberosAddAccountsAllowed));
 
   // Kerberos default configuration.
   html_source->AddString(

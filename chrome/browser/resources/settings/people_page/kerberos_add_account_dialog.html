@@ -30,7 +30,8 @@
         height: 48px;
       }
 
-      #advancedConfigDesc {
+      #advancedConfigDesc,
+      #rememberPasswordContainer {
         align-items: center;
         display: flex;
         margin-bottom: 32px;
@@ -38,6 +39,10 @@
 
       #advancedConfigDescLabel {
         margin-inline-start: 1em;
+      }
+
+      #rememberPassword {
+        margin-inline-end: 1em;
       }
     </style>
 
@@ -55,15 +60,26 @@
               value="{{username_}}" invalid="[[showError_(usernameErrorText_)]]"
               error-message="[[usernameErrorText_]]">
           </cr-input>
+
           <cr-input id="password" type="password"
               label="$i18n{kerberosPassword}" value="{{password_}}"
               invalid="[[showError_(passwordErrorText_)]]"
               error-message="[[passwordErrorText_]]"
               on-input="onPasswordInput_">
           </cr-input>
-          <cr-checkbox id="rememberPassword" checked="{{rememberPassword_}}">
-            $i18n{addKerberosAccountRememberPassword}
-          </cr-checkbox>
+
+          <div id="rememberPasswordContainer">
+            <cr-checkbox id="rememberPassword" checked="{{rememberPassword_}}"
+                disabled="[[!rememberPasswordEnabled_]]">
+              $i18n{addKerberosAccountRememberPassword}
+            </cr-checkbox>
+            <template is="dom-if" if="[[!rememberPasswordEnabled_]]">
+              <cr-policy-indicator id="rememberPasswordPolicyIndicator"
+                  indicator-type="userPolicy">
+              </cr-policy-indicator>
+            </template>
+          </div>
+
           <a is="action-link" id="advancedConfigButton"
               on-click="onAdvancedConfigClick_">
             $i18n{kerberosAdvancedConfigLabel}

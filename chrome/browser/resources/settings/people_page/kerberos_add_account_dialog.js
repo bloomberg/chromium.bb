@@ -83,6 +83,14 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private */
+    rememberPasswordEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('kerberosRememberPasswordEnabled');
+      },
+    },
   },
 
   /** @private {boolean} */
@@ -103,7 +111,8 @@ Polymer({
       this.$.username.readonly = true;
       this.$.password.focus();
 
-      if (this.presetAccount.passwordWasRemembered) {
+      if (this.presetAccount.passwordWasRemembered &&
+          this.rememberPasswordEnabled_) {
         // The daemon knows the user's password, so prefill the password field
         // with some string (Chrome does not know the actual password for
         // security reasons). If the user does not change it, an empty password

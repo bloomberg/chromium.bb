@@ -100,23 +100,29 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       browserProxy = new TestKerberosAccountsBrowserProxy();
       settings.KerberosAccountsBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
-
-      kerberosAccounts = document.createElement('settings-kerberos-accounts');
-      document.body.appendChild(kerberosAccounts);
-      accountList = kerberosAccounts.$$('#account-list');
-      assertTrue(!!accountList);
-
-      settings.navigateTo(settings.routes.KERBEROS_ACCOUNTS);
+      createDialog();
     });
 
     teardown(function() {
       kerberosAccounts.remove();
     });
 
+    function createDialog() {
+      if (kerberosAccounts) {
+        kerberosAccounts.remove();
+      }
+
+      kerberosAccounts = document.createElement('settings-kerberos-accounts');
+      document.body.appendChild(kerberosAccounts);
+
+      accountList = kerberosAccounts.$$('#account-list');
+      assertTrue(!!accountList);
+    }
+
     function clickMoreActions(accountIndex, moreActionsIndex) {
       // Click 'More actions' for the given account.
       kerberosAccounts.shadowRoot
-          .querySelectorAll('#more-actions')[accountIndex]
+          .querySelectorAll('.more-actions')[accountIndex]
           .click();
       // Click on the given action.
       kerberosAccounts.$$('cr-action-menu')
@@ -134,7 +140,6 @@ cr.define('settings_people_page_kerberos_accounts', function() {
 
     test('AddAccount', function() {
       assertTrue(!kerberosAccounts.$$('kerberos-add-account-dialog'));
-      assertFalse(kerberosAccounts.$$('#add-account-button').disabled);
       kerberosAccounts.$$('#add-account-button').click();
       Polymer.dom.flush();
       const addDialog = kerberosAccounts.$$('kerberos-add-account-dialog');
@@ -249,11 +254,11 @@ cr.define('settings_people_page_kerberos_accounts', function() {
         for (let i = 0; i < testAccounts.length; i++) {
           // Assert account has policy indicator iff account is managed.
           const hasPolicyIndicator =
-              !!accountList[i].querySelector('cr-policy-indicator');
+              !!accountList[i].querySelector('.account-policy-indicator');
           assertEquals(testAccounts[i].isManaged, hasPolicyIndicator);
 
           // Assert 'Remove' button is disabled iff account is managed.
-          accountList[i].querySelector('#more-actions').click();
+          accountList[i].querySelector('.more-actions').click();
           const moreActions =
               kerberosAccounts.$$('cr-action-menu').querySelectorAll('button');
           const removeAccountDisabled =
@@ -262,6 +267,24 @@ cr.define('settings_people_page_kerberos_accounts', function() {
           kerberosAccounts.$$('cr-action-menu').close();
         }
       });
+    });
+
+    test('AddAccountsAllowed', function() {
+      assertTrue(loadTimeData.getBoolean('kerberosAddAccountsAllowed'));
+      createDialog();
+      assertTrue(!kerberosAccounts.$$('#add-account-policy-indicator'));
+      assertFalse(kerberosAccounts.$$('#add-account-button').disabled);
+    });
+
+    test('AddAccountsNotAllowed', function() {
+      loadTimeData.overrideValues({kerberosAddAccountsAllowed: false});
+      createDialog();
+      Polymer.dom.flush();
+      assertTrue(!!kerberosAccounts.$$('#add-account-policy-indicator'));
+      assertTrue(kerberosAccounts.$$('#add-account-button').disabled);
+
+      // Reset for further tests.
+      loadTimeData.overrideValues({kerberosAddAccountsAllowed: true});
     });
   });
 
@@ -403,6 +426,32 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       createDialog(testAccounts[1]);
       assertNotEquals('', password.value);
       assertTrue(rememberPassword.checked);
+    });
+
+    test('RememberPasswordEnabled', function() {
+      assertTrue(loadTimeData.getBoolean('kerberosRememberPasswordEnabled'));
+      assertTrue(testAccounts[1].passwordWasRemembered);
+      createDialog(testAccounts[1]);
+
+      assertTrue(!dialog.$$('#rememberPasswordPolicyIndicator'));
+      assertFalse(rememberPassword.disabled);
+      assertTrue(rememberPassword.checked);
+      assertNotEquals('', password.value);
+    });
+
+    test('RememberPasswordDisabled', function() {
+      loadTimeData.overrideValues({kerberosRememberPasswordEnabled: false});
+      assertTrue(testAccounts[1].passwordWasRemembered);
+      createDialog(testAccounts[1]);
+      Polymer.dom.flush();
+
+      assertTrue(!!dialog.$$('#rememberPasswordPolicyIndicator'));
+      assertTrue(rememberPassword.disabled);
+      assertFalse(rememberPassword.checked);
+      assertEquals('', password.value);
+
+      // Reset for further tests.
+      loadTimeData.overrideValues({kerberosRememberPasswordEnabled: true});
     });
 
     // By clicking the "Add account", all field values are passed to the

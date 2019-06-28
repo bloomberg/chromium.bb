@@ -38,6 +38,14 @@ Polymer({
 
     /** @private */
     showAddAccountDialog_: Boolean,
+
+    /** @private */
+    addAccountsAllowed_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('kerberosAddAccountsAllowed');
+      },
+    },
   },
 
   /** @private {?settings.KerberosAccountsBrowserProxy} */
