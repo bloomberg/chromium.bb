@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/worker/service_worker_network_provider_for_worker.h"
+#include "content/renderer/worker/service_worker_network_provider_for_shared_worker.h"
 
 #include <utility>
 
@@ -21,8 +21,8 @@
 
 namespace content {
 
-std::unique_ptr<ServiceWorkerNetworkProviderForWorker>
-ServiceWorkerNetworkProviderForWorker::Create(
+std::unique_ptr<ServiceWorkerNetworkProviderForSharedWorker>
+ServiceWorkerNetworkProviderForSharedWorker::Create(
     blink::mojom::ServiceWorkerProviderInfoForWorkerPtr info,
     network::mojom::URLLoaderFactoryPtr script_loader_factory,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
@@ -30,8 +30,9 @@ ServiceWorkerNetworkProviderForWorker::Create(
     bool is_secure_context,
     std::unique_ptr<NavigationResponseOverrideParameters> response_override) {
   DCHECK(info);
-  auto provider = base::WrapUnique(new ServiceWorkerNetworkProviderForWorker(
-      is_secure_context, std::move(response_override)));
+  auto provider =
+      base::WrapUnique(new ServiceWorkerNetworkProviderForSharedWorker(
+          is_secure_context, std::move(response_override)));
   provider->context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
       blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
       std::move(info->client_request), std::move(info->host_ptr_info),
@@ -42,13 +43,13 @@ ServiceWorkerNetworkProviderForWorker::Create(
   return provider;
 }
 
-ServiceWorkerNetworkProviderForWorker::
-    ~ServiceWorkerNetworkProviderForWorker() {
+ServiceWorkerNetworkProviderForSharedWorker::
+    ~ServiceWorkerNetworkProviderForSharedWorker() {
   if (context())
     context()->OnNetworkProviderDestroyed();
 }
 
-void ServiceWorkerNetworkProviderForWorker::WillSendRequest(
+void ServiceWorkerNetworkProviderForSharedWorker::WillSendRequest(
     blink::WebURLRequest& request) {
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_initiated_in_secure_context(is_secure_context_);
@@ -60,7 +61,7 @@ void ServiceWorkerNetworkProviderForWorker::WillSendRequest(
 }
 
 std::unique_ptr<blink::WebURLLoader>
-ServiceWorkerNetworkProviderForWorker::CreateURLLoader(
+ServiceWorkerNetworkProviderForSharedWorker::CreateURLLoader(
     const blink::WebURLRequest& request,
     std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
         task_runner_handle) {
@@ -95,23 +96,25 @@ ServiceWorkerNetworkProviderForWorker::CreateURLLoader(
 }
 
 blink::mojom::ControllerServiceWorkerMode
-ServiceWorkerNetworkProviderForWorker::GetControllerServiceWorkerMode() {
+ServiceWorkerNetworkProviderForSharedWorker::GetControllerServiceWorkerMode() {
   if (!context())
     return blink::mojom::ControllerServiceWorkerMode::kNoController;
   return context()->GetControllerServiceWorkerMode();
 }
 
-int64_t ServiceWorkerNetworkProviderForWorker::ControllerServiceWorkerID() {
+int64_t
+ServiceWorkerNetworkProviderForSharedWorker::ControllerServiceWorkerID() {
   if (!context())
     return blink::mojom::kInvalidServiceWorkerVersionId;
   return context()->GetControllerVersionId();
 }
 
-void ServiceWorkerNetworkProviderForWorker::DispatchNetworkQuiet() {}
+void ServiceWorkerNetworkProviderForSharedWorker::DispatchNetworkQuiet() {}
 
-ServiceWorkerNetworkProviderForWorker::ServiceWorkerNetworkProviderForWorker(
-    bool is_secure_context,
-    std::unique_ptr<NavigationResponseOverrideParameters> response_override)
+ServiceWorkerNetworkProviderForSharedWorker::
+    ServiceWorkerNetworkProviderForSharedWorker(
+        bool is_secure_context,
+        std::unique_ptr<NavigationResponseOverrideParameters> response_override)
     : is_secure_context_(is_secure_context),
       response_override_(std::move(response_override)) {}
 

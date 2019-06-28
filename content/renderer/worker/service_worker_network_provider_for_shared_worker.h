@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_FOR_WORKER_H_
-#define CONTENT_RENDERER_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_FOR_WORKER_H_
+#ifndef CONTENT_RENDERER_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_FOR_SHARED_WORKER_H_
+#define CONTENT_RENDERER_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_FOR_SHARED_WORKER_H_
 
 #include <memory>
 
@@ -23,7 +23,7 @@ struct NavigationResponseOverrideParameters;
 //
 // This class is only used for the main script request from the shadow page.
 // Remove it when the shadow page is removed (https://crbug.com/538751).
-class ServiceWorkerNetworkProviderForWorker final
+class ServiceWorkerNetworkProviderForSharedWorker final
     : public blink::WebServiceWorkerNetworkProvider {
  public:
   // Creates a new instance.
@@ -36,7 +36,7 @@ class ServiceWorkerNetworkProviderForWorker final
   //   AppCache)
   // - |is_secure_context|: whether this context is secure
   // - |response_override|: the main script response
-  static std::unique_ptr<ServiceWorkerNetworkProviderForWorker> Create(
+  static std::unique_ptr<ServiceWorkerNetworkProviderForSharedWorker> Create(
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr info,
       network::mojom::URLLoaderFactoryPtr script_loader_factory,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
@@ -44,10 +44,10 @@ class ServiceWorkerNetworkProviderForWorker final
       bool is_secure_context,
       std::unique_ptr<NavigationResponseOverrideParameters> response_override);
 
-  ServiceWorkerNetworkProviderForWorker(
+  ServiceWorkerNetworkProviderForSharedWorker(
       bool is_secure_context,
       std::unique_ptr<NavigationResponseOverrideParameters> response_override);
-  ~ServiceWorkerNetworkProviderForWorker() override;
+  ~ServiceWorkerNetworkProviderForSharedWorker() override;
 
   // Implements WebServiceWorkerNetworkProvider.
   void WillSendRequest(blink::WebURLRequest& request) override;
@@ -76,4 +76,4 @@ class ServiceWorkerNetworkProviderForWorker final
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_FOR_WORKER_H_
+#endif  // CONTENT_RENDERER_WORKER_SERVICE_WORKER_NETWORK_PROVIDER_FOR_SHARED_WORKER_H_
