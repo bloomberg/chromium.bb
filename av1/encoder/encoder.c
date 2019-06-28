@@ -4226,7 +4226,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif
     // Find CDEF parameters
     av1_cdef_search(&cm->cur_frame->buf, cpi->source, cm, xd,
-                    cpi->sf.cdef_pick_method);
+                    cpi->sf.cdef_pick_method, cpi->td.mb.rdmult);
 
     // Apply the filter
     av1_cdef_frame(&cm->cur_frame->buf, cm, xd);

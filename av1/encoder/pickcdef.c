@@ -359,7 +359,8 @@ static void pick_cdef_from_qp(AV1_COMMON *const cm) {
 }
 
 void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
-                     AV1_COMMON *cm, MACROBLOCKD *xd, int pick_method) {
+                     AV1_COMMON *cm, MACROBLOCKD *xd, int pick_method,
+                     int rdmult) {
   if (pick_method == CDEF_PICK_FROM_Q) {
     pick_cdef_from_qp(cm);
     return;
@@ -524,12 +525,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
 
   /* Search for different number of signalling bits. */
   int nb_strength_bits = 0;
-  uint64_t best_tot_mse = UINT64_MAX;
-  const int quantizer =
-      av1_ac_quant_QTX(cm->base_qindex, 0, cm->seq_params.bit_depth) >>
-      (cm->seq_params.bit_depth - 8);
-  aom_clear_system_state();
-  const double lambda = .12 * quantizer * quantizer / 256.;
+  uint64_t best_rd = UINT64_MAX;
   CdefInfo *const cdef_info = &cm->cdef_info;
   for (int i = 0; i <= 3; i++) {
     int best_lev0[CDEF_MAX_STRENGTHS];
@@ -543,13 +539,14 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       tot_mse = joint_strength_search(best_lev0, nb_strengths, mse[0], sb_count,
                                       fast);
     }
-    /* Count superblock signalling cost. */
-    tot_mse += (uint64_t)(sb_count * lambda * i);
-    /* Count header signalling cost. */
-    tot_mse += (uint64_t)(nb_strengths * lambda * CDEF_STRENGTH_BITS *
-                          (num_planes > 1 ? 2 : 1));
-    if (tot_mse < best_tot_mse) {
-      best_tot_mse = tot_mse;
+
+    const int total_bits = sb_count * i + nb_strengths * CDEF_STRENGTH_BITS *
+                                              (num_planes > 1 ? 2 : 1);
+    const int rate_cost = av1_cost_literal(total_bits);
+    const uint64_t dist = tot_mse * 16;
+    const uint64_t rd = RDCOST(rdmult, rate_cost, dist);
+    if (rd < best_rd) {
+      best_rd = rd;
       nb_strength_bits = i;
       memcpy(cdef_info->cdef_strengths, best_lev0,
              nb_strengths * sizeof(best_lev0[0]));
