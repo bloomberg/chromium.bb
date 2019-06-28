@@ -2030,7 +2030,8 @@ buildflag_header("anchor_functions_buildflags") {
   header = "anchor_functions_buildflags.h"
   header_dir = "base/android/library_loader"
   _supports_code_ordering =
-      is_android && (current_cpu == "arm" || current_cpu == "arm64")
+      is_android && (current_cpu == "arm" || current_cpu == "arm64" ||
+                     current_cpu == "x86" || current_cpu == "x64")
 
   flags = [
     "USE_LLD=$use_lld",
