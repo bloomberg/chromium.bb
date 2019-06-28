@@ -205,12 +205,12 @@ dist_yaml_TESTS =				\
 	yaml/multipass-vs-match.yaml		\
 	yaml/new_emph.yaml			\
 	yaml/noletsignafter.yaml		\
-	yaml/noUndefinedDots.yaml		\
 	yaml/partialTrans.yaml			\
 	yaml/pass0_typebuf.yaml			\
 	yaml/present_progressive.yaml		\
 	yaml/squash_space.yaml			\
-	yaml/syllable.yaml
+	yaml/syllable.yaml			\
+	yaml/undefined-dots.yaml
 
 YAML_LOG_COMPILER_SCRIPT = yaml-log-compiler.sh
 TEST_EXTENSIONS = .yaml

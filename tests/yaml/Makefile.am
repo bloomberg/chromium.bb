@@ -42,4 +42,5 @@ EXTRA_DIST =					\
 	pass0_typebuf.yaml			\
 	present_progressive.yaml		\
 	squash_space.yaml			\
-	syllable.yaml
+	syllable.yaml				\
+	undefined-dots.yaml
