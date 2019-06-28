@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/display/output_protection_delegate.h"
+#include "ash/display/output_protection_delegate.h"
 
+#include "ash/display/output_protection_controller_ash.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/chromeos/display/output_protection_controller_ash.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 OutputProtectionDelegate::Controller::Controller() = default;
 OutputProtectionDelegate::Controller::~Controller() = default;
@@ -115,4 +115,4 @@ bool OutputProtectionDelegate::InitializeControllerIfNecessary() {
   return true;
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DISPLAY_OUTPUT_PROTECTION_DELEGATE_H_
-#define CHROME_BROWSER_CHROMEOS_DISPLAY_OUTPUT_PROTECTION_DELEGATE_H_
+#ifndef ASH_DISPLAY_OUTPUT_PROTECTION_DELEGATE_H_
+#define ASH_DISPLAY_OUTPUT_PROTECTION_DELEGATE_H_
 
 #include <stdint.h>
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/window.h"
@@ -16,12 +17,12 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/types/display_constants.h"
 
-namespace chromeos {
+namespace ash {
 
 // A class to query output protection status and/or enable output protection.
 // All methods except constructor should be invoked in UI thread.
-class OutputProtectionDelegate : public aura::WindowObserver,
-                                 public display::DisplayObserver {
+class ASH_EXPORT OutputProtectionDelegate : public aura::WindowObserver,
+                                            public display::DisplayObserver {
  public:
   class Controller {
    public:
@@ -80,6 +81,6 @@ class OutputProtectionDelegate : public aura::WindowObserver,
   DISALLOW_COPY_AND_ASSIGN(OutputProtectionDelegate);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_DISPLAY_OUTPUT_PROTECTION_DELEGATE_H_
+#endif  // ASH_DISPLAY_OUTPUT_PROTECTION_DELEGATE_H_

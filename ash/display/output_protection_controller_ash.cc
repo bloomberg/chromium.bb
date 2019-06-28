@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/display/output_protection_controller_ash.h"
+#include "ash/display/output_protection_controller_ash.h"
 #include "ui/display/manager/display_configurator.h"
 
-#include "ash/shell.h"  // mash-ok
+#include "ash/shell.h"
 
 namespace {
 
@@ -17,7 +17,7 @@ display::ContentProtectionManager* manager() {
 
 }  // namespace
 
-namespace chromeos {
+namespace ash {
 
 OutputProtectionControllerAsh::OutputProtectionControllerAsh()
     : client_id_(manager()->RegisterClient()) {}
@@ -43,4 +43,4 @@ void OutputProtectionControllerAsh::SetProtection(
                                     std::move(callback));
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DISPLAY_OUTPUT_PROTECTION_CONTROLLER_ASH_H_
-#define CHROME_BROWSER_CHROMEOS_DISPLAY_OUTPUT_PROTECTION_CONTROLLER_ASH_H_
+#ifndef ASH_DISPLAY_OUTPUT_PROTECTION_CONTROLLER_ASH_H_
+#define ASH_DISPLAY_OUTPUT_PROTECTION_CONTROLLER_ASH_H_
 
+#include "ash/display/output_protection_delegate.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/chromeos/display/output_protection_delegate.h"
 #include "ui/display/manager/content_protection_manager.h"
 
-namespace chromeos {
+namespace ash {
 
 // Display content protection controller for running with ash.
 class OutputProtectionControllerAsh
@@ -32,6 +32,6 @@ class OutputProtectionControllerAsh
   DISALLOW_COPY_AND_ASSIGN(OutputProtectionControllerAsh);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_DISPLAY_OUTPUT_PROTECTION_CONTROLLER_ASH_H_
+#endif  // ASH_DISPLAY_OUTPUT_PROTECTION_CONTROLLER_ASH_H_
