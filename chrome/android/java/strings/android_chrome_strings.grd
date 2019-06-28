@@ -3062,7 +3062,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Close incognito tabs
       </message>
       <message name="IDS_MENU_GROUP_TABS" desc="Menu item for grouping tabs. [CHAR-LIMIT=27]">
-        Group tabs...
+        Group tabs
       </message>
 
       <!-- Bookmarks strings -->
