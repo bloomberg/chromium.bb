@@ -267,7 +267,7 @@ PUBLIC void *gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t widt
 	*stride = ((struct mapping *)*map_data)->vma->map_strides[plane];
 
 	offset = *stride * rect.y;
-	offset += drv_stride_from_format(bo->gbm_format, rect.x, plane);
+	offset += rect.x * drv_bytes_per_pixel_from_format(bo->gbm_format, plane);
 	return (void *)((uint8_t *)addr + offset);
 }
 
