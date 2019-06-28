@@ -754,6 +754,10 @@ void RenderWidget::OnClose() {
 
 void RenderWidget::OnSynchronizeVisualProperties(
     const VisualProperties& original_params) {
+  if (bb_ignore_synchronize_visual_properties_ipc_) {
+    return;
+  }
+
   TRACE_EVENT0("renderer", "RenderWidget::OnSynchronizeVisualProperties");
 
   VisualProperties params = original_params;
@@ -1212,6 +1216,12 @@ void RenderWidget::bbHandleInputEvent(const blink::WebInputEvent& event) {
   input_handler_->HandleInputEvent(blink::WebCoalescedInputEvent(event),
                                    latency_info, {});
   bb_OnHandleInputEvent_no_ack_ = false;
+}
+
+void RenderWidget::bbIgnoreSynchronizeVisualPropertiesIPC(
+                               bool ignore_synchronize_visual_properties_ipc) {
+  bb_ignore_synchronize_visual_properties_ipc_ =
+    ignore_synchronize_visual_properties_ipc;
 }
 
 void RenderWidget::SetShowPaintRects(bool show) {
