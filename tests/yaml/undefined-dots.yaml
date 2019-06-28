@@ -3,8 +3,9 @@ flags: {testmode: backward}
 tests:
   - - " _ "
     - " \\\\456/ "
+    - outputPos: [0, 1, 6]
   - - " _ "
     - "  "
-    - mode: [noUndefinedDots]
-      outputPos: [0, 1, 1]
+    - outputPos: [0, 1, 1]
+      mode: [noUndefinedDots]
 
