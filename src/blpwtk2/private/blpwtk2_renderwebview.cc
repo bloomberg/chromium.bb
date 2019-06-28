@@ -97,17 +97,12 @@ namespace blpwtk2 {
 class RenderWebView::RenderViewObserver : public content::RenderViewObserver {
     RenderWebView *d_renderWebView;
 
-    bool d_dispatchingSynchronizeVisualProperties = false;
-
   public:
 
     RenderViewObserver(content::RenderViewImpl *rv, RenderWebView *renderWebView);
     ~RenderViewObserver() override;
 
     void OnDestruct() override;
-    bool OnMessageReceived(const IPC::Message& message) override;
-
-    void DispatchSynchronizeVisualProperties(content::VisualProperties);
 };
 
 RenderWebView::RenderViewObserver::RenderViewObserver(
@@ -128,27 +123,6 @@ void RenderWebView::RenderViewObserver::OnDestruct()
 {
     LOG(INFO) << "Destroyed RenderView, routingId=" << routing_id();
     delete this;
-}
-
-void RenderWebView::RenderViewObserver::DispatchSynchronizeVisualProperties(content::VisualProperties params)
-{
-    d_dispatchingSynchronizeVisualProperties = true;
-
-    d_renderWebView->dispatchToRenderWidget(
-        WidgetMsg_SynchronizeVisualProperties(
-            d_renderWebView->d_renderWidgetRoutingId,
-            params));
-
-    d_dispatchingSynchronizeVisualProperties = false;
-}
-
-bool RenderWebView::RenderViewObserver::OnMessageReceived(const IPC::Message& message)
-{
-    if (message.type() == WidgetMsg_SynchronizeVisualProperties::ID) {
-        return !d_dispatchingSynchronizeVisualProperties;
-    }
-
-    return false;
 }
 
                         // -------------------
@@ -808,16 +782,19 @@ void RenderWebView::updateGeometry()
     params.local_surface_id_allocation = d_compositor->GetLocalSurfaceIdAllocation();
     GetNativeViewScreenInfo(&params.screen_info, d_hwnd.get());
 
-    // Renderer-driven popups do not have a 'd_renderViewObserver', so check
-    // its value before dereferencing it:
-    if (d_renderViewObserver) {
-        d_renderViewObserver->DispatchSynchronizeVisualProperties(params);
-    }
-    else {
-        dispatchToRenderWidget(
+    // `WidgetMsg_SynchronizeVisualProperties` is ignored most of the time,
+    // but needs to be allowed here:
+    content::RenderViewImpl *rv =
+            content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
+    content::RenderWidget *rw = rv->GetWidget();
+
+    rw->bbIgnoreSynchronizeVisualPropertiesIPC(false);
+
+    dispatchToRenderWidget(
             WidgetMsg_SynchronizeVisualProperties(d_renderWidgetRoutingId,
                 params));
-    }
+
+    rw->bbIgnoreSynchronizeVisualPropertiesIPC(true);
 }
 
 void RenderWebView::updateFocus()
@@ -1252,13 +1229,6 @@ void RenderWebView::move(int left, int top, int width, int height)
         0,
         left, top, width, height,
         SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOOWNERZORDER);
-
-    // Notify the browser about our new size.  Occasionally Content will try
-    // to synchronize the size of the compositor framebuffer with the
-    // window owned by the browser.  If we don't notify the browser of the new
-    // size, the compositor's framebuffer might be reset to a default size
-    // whenever Content decides to synchronize the visual properties.
-    d_proxy->move(left, top, width, height);
 }
 
 void RenderWebView::cutSelection()
@@ -1558,6 +1528,9 @@ void RenderWebView::notifyRoutingId(int id)
         d_mainFrameRoutingId, this);
 
     d_renderViewObserver = new RenderViewObserver(rv, this);
+
+    // Ignore `WidgetMsg_SynchronizeVisualProperties` sent from the browser:
+    rv->GetWidget()->bbIgnoreSynchronizeVisualPropertiesIPC(true);
 
     // Create a RenderCompositor that is associated with this
     // content::RenderWidget:
