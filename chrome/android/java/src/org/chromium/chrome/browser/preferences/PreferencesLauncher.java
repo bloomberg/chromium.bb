@@ -178,7 +178,7 @@ public class PreferencesLauncher {
             }
         }
 
-        launchSettingsPage(activity, SavePasswordsPreferences.class);
+        launchSettingsPageCompat(activity, SavePasswordsPreferences.class);
     }
 
     @CalledByNative
