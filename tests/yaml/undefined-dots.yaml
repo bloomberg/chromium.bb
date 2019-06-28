@@ -1,0 +1,10 @@
+table: [tables/en-ueb-g2.ctb]
+flags: {testmode: backward}
+tests:
+  - - " _ "
+    - " \\\\456/ "
+  - - " _ "
+    - "  "
+    - mode: [noUndefinedDots]
+      outputPos: [0, 1, 1]
+
