@@ -87,43 +87,47 @@ void AddButtonWithAxes(mojom::XRGamepadPtr& gamepad,
   AddAxes(gamepad, data);
 }
 
-std::vector<float> ConvertToVector(GamepadVector vector) {
-  return {vector.x, vector.y, vector.z};
+gfx::Point3F ConvertToPoint3F(const GamepadVector& vector) {
+  return gfx::Point3F(vector.x, vector.y, vector.z);
 }
 
-std::vector<float> ConvertToVector(GamepadQuaternion quat) {
-  return {quat.x, quat.y, quat.z, quat.w};
+gfx::Vector3dF ConvertToVector3dF(const GamepadVector& vector) {
+  return gfx::Vector3dF(vector.x, vector.y, vector.z);
 }
 
-mojom::VRPosePtr ConvertToVRPose(GamepadPose gamepad_pose) {
+gfx::Quaternion ConvertToQuaternion(const GamepadQuaternion& quat) {
+  return gfx::Quaternion(quat.x, quat.y, quat.z, quat.w);
+}
+
+mojom::VRPosePtr ConvertToVRPose(const GamepadPose& gamepad_pose) {
   if (!gamepad_pose.not_null)
     return nullptr;
 
   auto pose = mojom::VRPose::New();
   if (gamepad_pose.orientation.not_null)
-    pose->orientation = ConvertToVector(gamepad_pose.orientation);
+    pose->orientation = ConvertToQuaternion(gamepad_pose.orientation);
 
   if (gamepad_pose.position.not_null)
-    pose->position = ConvertToVector(gamepad_pose.position);
+    pose->position = ConvertToPoint3F(gamepad_pose.position);
 
   if (gamepad_pose.angular_velocity.not_null)
-    pose->angularVelocity = ConvertToVector(gamepad_pose.angular_velocity);
+    pose->angularVelocity = ConvertToVector3dF(gamepad_pose.angular_velocity);
 
   if (gamepad_pose.linear_velocity.not_null)
-    pose->linearVelocity = ConvertToVector(gamepad_pose.linear_velocity);
+    pose->linearVelocity = ConvertToVector3dF(gamepad_pose.linear_velocity);
 
   if (gamepad_pose.angular_acceleration.not_null)
     pose->angularAcceleration =
-        ConvertToVector(gamepad_pose.angular_acceleration);
+        ConvertToVector3dF(gamepad_pose.angular_acceleration);
 
   if (gamepad_pose.linear_acceleration.not_null)
     pose->linearAcceleration =
-        ConvertToVector(gamepad_pose.linear_acceleration);
+        ConvertToVector3dF(gamepad_pose.linear_acceleration);
 
   return pose;
 }
 
-GamepadQuaternion ConvertToGamepadQuaternion(WFN::Quaternion quat) {
+GamepadQuaternion ConvertToGamepadQuaternion(const WFN::Quaternion& quat) {
   GamepadQuaternion gamepad_quaternion;
   gamepad_quaternion.not_null = true;
   gamepad_quaternion.x = quat.X;
@@ -133,7 +137,7 @@ GamepadQuaternion ConvertToGamepadQuaternion(WFN::Quaternion quat) {
   return gamepad_quaternion;
 }
 
-GamepadVector ConvertToGamepadVector(WFN::Vector3 vec3) {
+GamepadVector ConvertToGamepadVector(const WFN::Vector3& vec3) {
   GamepadVector gamepad_vector;
   gamepad_vector.not_null = true;
   gamepad_vector.x = vec3.X;

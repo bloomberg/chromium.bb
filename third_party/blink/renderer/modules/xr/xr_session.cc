@@ -82,7 +82,7 @@ void UpdateViewFromEyeParameters(
       fov->leftDegrees * kDegToRad, fov->rightDegrees * kDegToRad, depth_near,
       depth_far);
 
-  view.UpdateOffset(eye->offset[0], eye->offset[1], eye->offset[2]);
+  view.UpdateOffset(eye->offset.x(), eye->offset.y(), eye->offset.z());
 }
 
 }  // namespace
@@ -416,16 +416,8 @@ void XRSession::OnHitTestResults(
 
   HeapVector<Member<XRHitResult>> hit_results;
   for (const auto& mojom_result : results.value()) {
-    XRHitResult* hit_result =
-        MakeGarbageCollected<XRHitResult>(TransformationMatrix(
-            mojom_result->hit_matrix[0], mojom_result->hit_matrix[1],
-            mojom_result->hit_matrix[2], mojom_result->hit_matrix[3],
-            mojom_result->hit_matrix[4], mojom_result->hit_matrix[5],
-            mojom_result->hit_matrix[6], mojom_result->hit_matrix[7],
-            mojom_result->hit_matrix[8], mojom_result->hit_matrix[9],
-            mojom_result->hit_matrix[10], mojom_result->hit_matrix[11],
-            mojom_result->hit_matrix[12], mojom_result->hit_matrix[13],
-            mojom_result->hit_matrix[14], mojom_result->hit_matrix[15]));
+    XRHitResult* hit_result = MakeGarbageCollected<XRHitResult>(
+        TransformationMatrix(mojom_result->hit_matrix.matrix()));
     hit_results.push_back(hit_result);
   }
   resolver->Resolve(hit_results);
