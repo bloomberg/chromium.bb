@@ -990,6 +990,7 @@ if (!is_android) {
       "../browser/previews/lazyload_browsertest.cc",
       "../browser/previews/previews_browsertest.cc",
       "../browser/previews/previews_lite_page_browsertest.cc",
+      "../browser/previews/previews_prober_browsertest.cc",
       "../browser/previews/previews_service_browser_test.cc",
       "../browser/previews/resource_loading_hints/resource_loading_hints_browsertest.cc",
       "../browser/process_singleton_browsertest.cc",
