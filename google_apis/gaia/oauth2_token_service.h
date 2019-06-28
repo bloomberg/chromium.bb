@@ -71,6 +71,10 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
   bool FixRequestErrorIfPossible() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
+  void OnAccessTokenInvalidated(const CoreAccountId& account_id,
+                                const std::string& client_id,
+                                const std::set<std::string>& scopes,
+                                const std::string& access_token) override;
 
   // Add or remove observers of this token service.
   void AddObserver(OAuth2TokenServiceObserver* observer);

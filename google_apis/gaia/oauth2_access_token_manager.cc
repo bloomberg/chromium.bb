@@ -563,8 +563,8 @@ void OAuth2AccessTokenManager::InvalidateAccessTokenImpl(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RemoveCachedTokenResponse(RequestParameters(client_id, account_id, scopes),
                             access_token);
-  token_service_delegate_->InvalidateAccessToken(account_id, client_id, scopes,
-                                                 access_token);
+  delegate_->OnAccessTokenInvalidated(account_id, client_id, scopes,
+                                      access_token);
 }
 
 void OAuth2AccessTokenManager::

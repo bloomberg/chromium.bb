@@ -79,6 +79,15 @@ OAuth2TokenService::GetURLLoaderFactory() const {
   return delegate_->GetURLLoaderFactory();
 }
 
+void OAuth2TokenService::OnAccessTokenInvalidated(
+    const CoreAccountId& account_id,
+    const std::string& client_id,
+    const std::set<std::string>& scopes,
+    const std::string& access_token) {
+  delegate_->OnAccessTokenInvalidated(account_id, client_id, scopes,
+                                      access_token);
+}
+
 void OAuth2TokenService::AddObserver(OAuth2TokenServiceObserver* observer) {
   delegate_->AddObserver(observer);
 }
