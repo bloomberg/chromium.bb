@@ -45242,6 +45242,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PasswordManagerAndroidExportPasswordsProgressBarUsage">
+  <obsolete>
+    No longer recorded as of June 2019.
+  </obsolete>
   <int value="0" label="Not hidden because not shown"/>
   <int value="1" label="Hidden directly"/>
   <int value="2" label="Hidden with a delay"/>
