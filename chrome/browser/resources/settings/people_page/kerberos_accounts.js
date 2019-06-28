@@ -53,7 +53,20 @@ Polymer({
   ready: function() {
     this.browserProxy_ =
         settings.KerberosAccountsBrowserProxyImpl.getInstance();
-    this.refreshAccounts_();
+
+    // Grab account list and - when done - pop up the reauthentication dialog if
+    // there is a kerberos_reauth param.
+    this.refreshAccounts_().then(() => {
+      const queryParams = settings.getQueryParameters();
+      const reauthPrincipal = queryParams.get('kerberos_reauth');
+      const reauthAccount = this.accounts_.find(account => {
+        return account.principalName == reauthPrincipal;
+      });
+      if (reauthAccount) {
+        this.selectedAccount_ = reauthAccount;
+        this.showAddAccountDialog_ = true;
+      }
+    });
   },
 
   /**
@@ -90,9 +103,12 @@ Polymer({
     this.closeActionMenu_();
   },
 
-  /** @private */
+  /**
+   * @return {!Promise}
+   * @private
+   */
   refreshAccounts_: function() {
-    this.browserProxy_.getAccounts().then(accounts => {
+    return this.browserProxy_.getAccounts().then(accounts => {
       this.accounts_ = accounts;
     });
   },

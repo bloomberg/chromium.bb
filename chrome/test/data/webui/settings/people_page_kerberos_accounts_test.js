@@ -155,6 +155,27 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       });
     });
 
+    // Appending '?kerberos_reauth=<principal>' to the URL opens the reauth
+    // dialog for that account.
+    test('HandleReauthQueryParameter', function(done) {
+      const principal_name = testAccounts[Account.FIRST].principalName;
+      const params = new URLSearchParams;
+      params.append('kerberos_reauth', principal_name);
+      settings.navigateTo(settings.routes.KERBEROS_ACCOUNTS, params);
+
+      // The setTimeout is necessary since the kerberos_reauth param would
+      // otherwise be handled AFTER the callback below is executed.
+      browserProxy.whenCalled('getAccounts').then(() => {
+        setTimeout(() => {
+          Polymer.dom.flush();
+          const addDialog = kerberosAccounts.$$('kerberos-add-account-dialog');
+          assertTrue(!!addDialog);
+          assertEquals(principal_name, addDialog.$.username.value);
+          done();
+        });
+      });
+    });
+
     test('RefreshNow', function() {
       return browserProxy.whenCalled('getAccounts').then(() => {
         Polymer.dom.flush();

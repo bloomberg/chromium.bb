@@ -192,6 +192,12 @@ void FakeKerberosClient::ConnectToKerberosFileChangedSignal(
   kerberos_files_changed_callback_ = callback;
 }
 
+void FakeKerberosClient::ConnectToKerberosTicketExpiringSignal(
+    KerberosTicketExpiringCallback callback) {
+  DCHECK(!kerberos_ticket_expiring_callback_);
+  kerberos_ticket_expiring_callback_ = callback;
+}
+
 FakeKerberosClient::AccountData* FakeKerberosClient::GetAccountData(
     const std::string& principal_name) {
   auto it = accounts_.find(principal_name);

@@ -10,11 +10,15 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/authpolicy/data_pipe_utils.h"
+#include "chrome/browser/chromeos/kerberos/kerberos_ticket_expiry_notification.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/kerberos/kerberos_service.pb.h"
 #include "chromeos/network/onc/variable_expander.h"
@@ -23,6 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "dbus/message.h"
+#include "net/base/escape.h"
 #include "third_party/cros_system_api/dbus/kerberos/dbus-constants.h"
 
 namespace chromeos {
@@ -294,6 +299,12 @@ KerberosCredentialsManager::KerberosCredentialsManager(PrefService* local_state,
   // causes the daemon to start.
   KerberosClient::Get()->ConnectToKerberosFileChangedSignal(
       base::BindRepeating(&KerberosCredentialsManager::OnKerberosFilesChanged,
+                          weak_factory_.GetWeakPtr()));
+
+  // Connect to a signal that indicates when a Kerberos ticket is about to
+  // expire.
+  KerberosClient::Get()->ConnectToKerberosTicketExpiringSignal(
+      base::BindRepeating(&KerberosCredentialsManager::OnKerberosTicketExpiring,
                           weak_factory_.GetWeakPtr()));
 
   // Listen to pref changes.
@@ -635,8 +646,22 @@ void KerberosCredentialsManager::OnGetKerberosFiles(
 void KerberosCredentialsManager::OnKerberosFilesChanged(
     const std::string& principal_name) {
   // Only listen to the active account.
+  VLOG(1) << "Got KerberosFilesChanged for " << principal_name;
   if (principal_name == GetActivePrincipalName())
     GetKerberosFiles();
+}
+
+void KerberosCredentialsManager::OnKerberosTicketExpiring(
+    const std::string& principal_name) {
+  // Only listen to the active account.
+  VLOG(1) << "Got KerberosTicketExpiring for " << principal_name;
+  if (principal_name == GetActivePrincipalName()) {
+    kerberos_ticket_expiry_notification::Show(
+        primary_profile_, GetActivePrincipalName(),
+        base::BindRepeating(
+            &KerberosCredentialsManager::OnTicketExpiryNotificationClick,
+            weak_factory_.GetWeakPtr()));
+  }
 }
 
 void KerberosCredentialsManager::NotifyAccountsChanged() {
@@ -773,6 +798,17 @@ void KerberosCredentialsManager::NotifyRequiresLoginPassword(
   UserSessionManager::GetInstance()->VoteForSavingLoginPassword(
       UserSessionManager::PasswordConsumingService::kKerberos,
       requires_login_password);
+}
+
+void KerberosCredentialsManager::OnTicketExpiryNotificationClick(
+    const std::string& principal_name) {
+  // TODO(https://crbug.com/952245): Right now, the reauth dialog is tied to the
+  // settings. Consider creating a standalone reauth dialog.
+  kerberos_ticket_expiry_notification::Close(primary_profile_);
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      primary_profile_,
+      chrome::kKerberosAccountsSubPage + std::string("?kerberos_reauth=") +
+          net::EscapeQueryParamValue(principal_name, false /* use_plus */));
 }
 
 }  // namespace chromeos

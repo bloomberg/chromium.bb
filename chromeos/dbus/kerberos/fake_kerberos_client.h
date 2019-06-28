@@ -39,6 +39,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
                         GetKerberosFilesCallback callback) override;
   void ConnectToKerberosFileChangedSignal(
       KerberosFilesChangedCallback callback) override;
+  void ConnectToKerberosTicketExpiringSignal(
+      KerberosTicketExpiringCallback callback) override;
 
  private:
   struct AccountData {
@@ -64,6 +66,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
   AccountsMap accounts_;
 
   KerberosFilesChangedCallback kerberos_files_changed_callback_;
+  KerberosTicketExpiringCallback kerberos_ticket_expiring_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeKerberosClient);
 };
