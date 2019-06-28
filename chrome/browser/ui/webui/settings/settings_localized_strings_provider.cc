@@ -1367,6 +1367,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"networkPrefer", IDS_SETTINGS_INTERNET_NETWORK_PREFER},
       {"networkPrimaryUserControlled",
        IDS_SETTINGS_INTERNET_NETWORK_PRIMARY_USER_CONTROLLED},
+      {"networkScanningLabel", IDS_NETWORK_SCANNING_MESSAGE},
       {"networkSectionAdvanced",
        IDS_SETTINGS_INTERNET_NETWORK_SECTION_ADVANCED},
       {"networkSectionAdvancedA11yLabel",
