@@ -10,12 +10,13 @@ from __future__ import print_function
 import os
 
 from chromite.api import validate
+from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import android_pb2
-# TODO(crbug/904939): implement service/android.
-from chromite.cbuildbot import commands
+from chromite.lib import build_target_util
 from chromite.lib import constants
 from chromite.lib import osutils
 from chromite.lib import portage_util
+from chromite.service import packages
 
 
 ANDROIDPIN_MASK_PATH = os.path.join(constants.SOURCE_ROOT,
@@ -35,30 +36,31 @@ def MarkStable(input_proto, output_proto):
 
   Args:
     input_proto (MarkStableRequest): The input proto.
-    output_proto (MarkStableReSponse): The output proto.
+    output_proto (MarkStableResponse): The output proto.
   """
+  chroot = controller_util.ParseChroot(input_proto.chroot)
   tracking_branch = input_proto.tracking_branch
   package_name = input_proto.package_name
   android_build_branch = input_proto.android_build_branch
   android_version = input_proto.android_version
   android_gts_build_branch = input_proto.android_gts_build_branch
-  boards = input_proto.boards
-  buildroot = input_proto.buildroot
+
+  build_targets = []
+  for build_target in input_proto.build_targets:
+    build_targets.append(build_target_util.BuildTarget(build_target.name))
 
   # Assume success.
   output_proto.status = android_pb2.MARK_STABLE_STATUS_SUCCESS
-  # TODO(crbug/904939): This should move to service/android.py and the port
-  # should be finished.
   try:
-    android_atom_to_build = commands.MarkAndroidAsStable(
-        buildroot=buildroot,
+    android_atom_to_build = packages.uprev_android(
         tracking_branch=tracking_branch,
         android_package=package_name,
         android_build_branch=android_build_branch,
-        boards=boards,
+        chroot=chroot,
+        build_targets=build_targets,
         android_version=android_version,
         android_gts_build_branch=android_gts_build_branch)
-  except commands.AndroidIsPinnedUprevError as e:
+  except packages.AndroidIsPinnedUprevError as e:
     # If the uprev failed due to a pin, CI needs to unpin and retry.
     android_atom_to_build = e.new_android_atom
     output_proto.status = android_pb2.MARK_STABLE_STATUS_PINNED
@@ -81,5 +83,4 @@ def UnpinVersion(_input_proto, _output_proto):
     _input_proto (UnpinVersionRequest): The input proto. (not used.)
     _output_proto (google.protobuf.Empty): The output proto. (not used.)
   """
-
   osutils.SafeUnlink(ANDROIDPIN_MASK_PATH)
