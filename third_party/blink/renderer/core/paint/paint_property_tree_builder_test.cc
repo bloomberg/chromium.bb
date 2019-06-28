@@ -4842,7 +4842,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ChangePositionUpdateDescendantProperties) {
   EXPECT_EQ(ancestor->FirstFragment().PaintProperties()->OverflowClip(),
             &descendant->FirstFragment().LocalBorderBoxProperties().Clip());
 
-  ToElement(ancestor->GetNode())
+  To<Element>(ancestor->GetNode())
       ->setAttribute(html_names::kStyleAttr, "position: static");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_NE(ancestor->FirstFragment().PaintProperties()->OverflowClip(),
@@ -5360,7 +5360,7 @@ TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
     EXPECT_EQ(nullptr, transform);
   }
 
-  ToElement(target->GetNode())->setAttribute(html_names::kStyleAttr, "");
+  To<Element>(target->GetNode())->setAttribute(html_names::kStyleAttr, "");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(PhysicalOffset(60, 50), target->FirstFragment().PaintOffset());
   EXPECT_EQ(nullptr, target->FirstFragment().PaintProperties());
