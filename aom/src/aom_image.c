@@ -155,8 +155,8 @@ aom_image_t *aom_img_alloc(aom_image_t *img, aom_img_fmt_t fmt,
 aom_image_t *aom_img_wrap(aom_image_t *img, aom_img_fmt_t fmt, unsigned int d_w,
                           unsigned int d_h, unsigned int stride_align,
                           unsigned char *img_data) {
-  /* By setting buf_align = 1, we don't change buffer alignment in this
-   * function. */
+  /* Set buf_align = 1. It is ignored by img_alloc_helper because img_data is
+   * not NULL. */
   return img_alloc_helper(img, fmt, d_w, d_h, 1, stride_align, 1, img_data, 0);
 }
 
