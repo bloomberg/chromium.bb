@@ -59,7 +59,6 @@ source_set("chromeos") {
     "//chrome/browser/apps/platform_apps",
     "//chrome/browser/apps/platform_apps/api",
     "//chrome/browser/chromeos/power/ml/smart_dim",
-    "//chrome/browser/chromeos/supervision/mojom",
     "//chrome/browser/devtools",
     "//chrome/browser/extensions",
     "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
