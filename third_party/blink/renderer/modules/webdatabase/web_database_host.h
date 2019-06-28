@@ -14,6 +14,10 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
 
 namespace mojom {
@@ -47,8 +51,20 @@ class WebDatabaseHost {
   bool SetFileSize(const String& vfs_file_name, int64_t size);
   int64_t GetSpaceAvailableForOrigin(const SecurityOrigin& origin);
 
+  void DatabaseOpened(const SecurityOrigin& origin,
+                      const String& database_name,
+                      const String& database_display_name,
+                      uint32_t estimated_size);
+  void DatabaseModified(const SecurityOrigin& origin,
+                        const String& database_name);
+  void DatabaseClosed(const SecurityOrigin& origin,
+                      const String& database_name);
+  void ReportSqliteError(const SecurityOrigin& origin,
+                         const String& database_name,
+                         int error);
+
  private:
-  WebDatabaseHost() = default;
+  WebDatabaseHost();
   ~WebDatabaseHost() = default;
 
   // Returns an initialized mojom::blink::WebDatabaseHost remote. A connection
@@ -60,6 +76,10 @@ class WebDatabaseHost {
 
   // Need a SharedRemote as method calls will happen from the Database thread.
   mojo::SharedRemote<mojom::blink::WebDatabaseHost> shared_remote_;
+
+  // Used to ensure that the database gets opened from the main thread, but that
+  // other database-related event is reported from the database thread instead.
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   static WebDatabaseHost* instance_;
 

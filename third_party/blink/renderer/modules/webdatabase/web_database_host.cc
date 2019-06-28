@@ -6,11 +6,13 @@
 
 #include <utility>
 
+#include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "third_party/blink/public/mojom/webdatabase/web_database.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -28,6 +30,9 @@ void WebDatabaseHost::Init() {
   Platform::Current()->GetInterfaceProvider()->GetInterface(
       pending_remote_.InitWithNewPipeAndPassReceiver());
 }
+
+WebDatabaseHost::WebDatabaseHost()
+    : main_thread_task_runner_(Thread::MainThread()->GetTaskRunner()) {}
 
 mojom::blink::WebDatabaseHost& WebDatabaseHost::GetWebDatabaseHost() {
   if (!shared_remote_) {
@@ -78,4 +83,38 @@ int64_t WebDatabaseHost::GetSpaceAvailableForOrigin(
   return rv;
 }
 
+void WebDatabaseHost::DatabaseOpened(const SecurityOrigin& origin,
+                                     const String& database_name,
+                                     const String& database_display_name,
+                                     uint32_t estimated_size) {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  GetWebDatabaseHost().Opened(&origin, database_name, database_display_name,
+                              estimated_size);
+}
+
+void WebDatabaseHost::DatabaseModified(const SecurityOrigin& origin,
+                                       const String& database_name) {
+  DCHECK(!main_thread_task_runner_->RunsTasksInCurrentSequence());
+  GetWebDatabaseHost().Modified(&origin, database_name);
+}
+
+void WebDatabaseHost::DatabaseClosed(const SecurityOrigin& origin,
+                                     const String& database_name) {
+  DCHECK(!main_thread_task_runner_->RunsTasksInCurrentSequence());
+  GetWebDatabaseHost().Closed(&origin, database_name);
+}
+
+void WebDatabaseHost::ReportSqliteError(const SecurityOrigin& origin,
+                                        const String& database_name,
+                                        int error) {
+  DCHECK(!main_thread_task_runner_->RunsTasksInCurrentSequence());
+
+  // We filter out errors which the backend doesn't act on to avoid a
+  // unnecessary ipc traffic, this method can get called at a fairly high
+  // frequency (per-sqlstatement).
+  if (error != SQLITE_CORRUPT && error != SQLITE_NOTADB)
+    return;
+
+  GetWebDatabaseHost().HandleSqliteError(&origin, database_name, error);
+}
 }  // namespace blink

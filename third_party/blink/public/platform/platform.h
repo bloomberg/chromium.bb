@@ -112,7 +112,6 @@ class WebAudioBus;
 class WebAudioLatencyHint;
 class WebBlobRegistry;
 class WebCrypto;
-class WebDatabaseObserver;
 class WebDedicatedWorker;
 class WebGraphicsContext3DProvider;
 class WebLocalFrame;
@@ -638,10 +637,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual InterfaceProvider* GetInterfaceProvider();
 
   virtual const char* GetBrowserServiceName() const { return ""; }
-
-  // WebDatabase --------------------------------------------------------
-
-  virtual WebDatabaseObserver* DatabaseObserver() { return nullptr; }
 
   // Media Capabilities --------------------------------------------------
 
