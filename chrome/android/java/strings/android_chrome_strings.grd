@@ -1129,6 +1129,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_MIC_ASK" desc="Summary text explaining that sites need to ask for permission before accessing the microphone and that it is the recommended setting.">
         Ask first before allowing sites to use your microphone (recommended)
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLUETOOTH_SCANNING_ASK" desc="Summary text explaining that the Bluetooth scanning permission is set to ask the user for permission to do Bluetooth scanning. To be shown in the list of permission categories.">
+        Ask when a site wants to discover nearby Bluetooth devices (recommended)
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ALLOW" desc="Summary text explaining that Chrome will allow a website to access some permission, e.g. JavaScript: allow.">
         Allow
       </message>
@@ -1285,6 +1288,11 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_WEBSITE_SETTINGS_REVOKE_ALL_PERMISSIONS_FOR_DEVICE" desc="Content description for revoking all of the website permissions for a device.">
         Revoke all permissions for device
+      </message>
+
+      <!-- Bluetooth scanning preferences -->
+      <message name="IDS_WEBSITE_SETTINGS_BLUETOOTH_SCANNING" desc="Title for Bluetooth scanning settings, which control whether websites can do Bluetooth scanning.">
+        Bluetooth scanning
       </message>
 
       <!-- Lite Mode-->

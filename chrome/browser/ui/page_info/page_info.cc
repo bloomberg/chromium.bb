@@ -128,10 +128,8 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_USB_GUARD,
 #if !defined(OS_ANDROID)
     CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
-    // TODO(https://crbug.com/960962): Implement Bluetooth scanning API content
-    // settings and page info on Android.
-    CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
 #endif
+    CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
 };
 
 // Checks whether this permission is currently the factory default, as set by
