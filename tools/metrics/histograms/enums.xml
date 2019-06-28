@@ -5344,6 +5344,56 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Attempted"/>
 </enum>
 
+<enum name="BooleanAutofillFillAfterSuggestion">
+  <int value="0" label="User chose to fill"/>
+  <int value="1" label="User did not choose to fill"/>
+</enum>
+
+<enum name="BooleanAutofillFillingAcceptance">
+  <int value="0" label="No suggestion accepted"/>
+  <int value="1" label="At least one suggestion accepted"/>
+</enum>
+
+<enum name="BooleanAutofillFillingAssistance">
+  <int value="0" label="No assistance"/>
+  <int value="1" label="Fields were filled"/>
+</enum>
+
+<enum name="BooleanAutofillFillingCorrectness">
+  <int value="0" label="User edited filled fields"/>
+  <int value="1" label="No filled fields were edited"/>
+</enum>
+
+<enum name="BooleanAutofillFillingReadiness">
+  <int value="0" label="No data available to fill"/>
+  <int value="1" label="Some data available to fill"/>
+</enum>
+
+<enum name="BooleanAutofillInteractionAfterParsedAsType">
+  <int value="0" label="No interaction"/>
+  <int value="1" label="Interaction observed"/>
+</enum>
+
+<enum name="BooleanAutofillParsedAsType">
+  <int value="0" label="Different type"/>
+  <int value="1" label="This type"/>
+</enum>
+
+<enum name="BooleanAutofillSubmission">
+  <int value="0" label="Form was abandoned"/>
+  <int value="1" label="Form was submitted"/>
+</enum>
+
+<enum name="BooleanAutofillSubmissionAfterFill">
+  <int value="0" label="Not submitted"/>
+  <int value="1" label="Submitted"/>
+</enum>
+
+<enum name="BooleanAutofillSuggestionAfterInteraction">
+  <int value="0" label="Not shown"/>
+  <int value="1" label="Shown"/>
+</enum>
+
 <enum name="BooleanAvailable">
   <int value="0" label="Not Available"/>
   <int value="1" label="Available"/>
