@@ -65,6 +65,18 @@ class IdentifierIRMap(object):
             PARTIAL_NAMESPACE = 'partial namespace'
             TYPEDEF = 'typedef'
 
+            _MULTI_VALUE_KINDS = (
+                INCLUDES,
+                PARTIAL_DICTIONARY,
+                PARTIAL_INTERFACE,
+                PARTIAL_INTERFACE_MIXIN,
+                PARTIAL_NAMESPACE,
+            )
+
+            @classmethod
+            def does_support_multiple_defs(cls, kind):
+                return kind in cls._MULTI_VALUE_KINDS
+
         def __init__(self, identifier, kind):
             WithIdentifier.__init__(self, identifier)
             self._kind = kind
@@ -83,13 +95,8 @@ class IdentifierIRMap(object):
             identifier for some kinds, e.g. partial interface and includes.
             This function returns True for such kinds.
             """
-            return self.kind in (
-                IdentifierIRMap.IR.Kind.INCLUDES,
-                IdentifierIRMap.IR.Kind.PARTIAL_DICTIONARY,
-                IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE,
-                IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN,
-                IdentifierIRMap.IR.Kind.PARTIAL_NAMESPACE,
-            )
+            return IdentifierIRMap.IR.Kind.does_support_multiple_defs(
+                self.kind)
 
     def __init__(self):
         # IRs whose does_support_multiple_defs is False
@@ -173,9 +180,10 @@ class IdentifierIRMap(object):
         for the kind.
         """
         start_phase = self._current_phase - (1 if skip_current_phase else 0)
-        for phase in range(start_phase, -1, -1):
-            if kind in self._single_value_irs[phase]:
-                return self._single_value_irs[phase][kind]
-            if kind in self._multiple_value_irs[phase]:
-                return self._multiple_value_irs[phase][kind]
+        ir_map = (self._multiple_value_irs
+                  if IdentifierIRMap.IR.Kind.does_support_multiple_defs(kind)
+                  else self._single_value_irs)
+        for irs_per_phase in ir_map[start_phase::-1]:
+            if kind in irs_per_phase:
+                return irs_per_phase[kind]
         return dict()
