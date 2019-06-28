@@ -155,11 +155,17 @@ mr.mirror.MirrorMediaStream = class {
    * Requests a screen capture source from the user via a native dialog and
    * returns the source ID, or rejects if a timeout is reached or the user
    * cancels.
+   * @param {boolean=} showAudioCheckbox If false, an audio-sharing checkbox
+   *     is not shown, and audio is shared on supported platforms (Windows,
+   *     CrOS).
    * @return {!Promise<string>} Fulfilled with the source ID.
    */
-  static requestScreenCaptureSourceId() {
+  static requestScreenCaptureSourceId(showAudioCheckbox = true) {
     return new Promise((resolve, reject) => {
-      const desktopChooserConfig = ['screen', 'audio'];
+      const desktopChooserConfig = ['screen'];
+      if (showAudioCheckbox) {
+        desktopChooserConfig.push('audio');
+      }
       if (mr.PlatformUtils.getCurrentOS() == mr.PlatformUtils.OS.LINUX) {
         desktopChooserConfig.push('window');
       }
