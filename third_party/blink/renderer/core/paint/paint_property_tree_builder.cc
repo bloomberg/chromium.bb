@@ -542,7 +542,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
         constraint->top_offset = layout_constraint.top_offset;
         constraint->bottom_offset = layout_constraint.bottom_offset;
         constraint->constraint_box_rect =
-            box_model.ComputeStickyConstrainingRect();
+            RoundedIntRect(box_model.ComputeStickyConstrainingRect());
         constraint->scroll_container_relative_sticky_box_rect = RoundedIntRect(
             layout_constraint.scroll_container_relative_sticky_box_rect);
         constraint
