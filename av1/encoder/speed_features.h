@@ -433,12 +433,6 @@ typedef struct SPEED_FEATURES {
   // Pattern to be used for any exhaustive mesh searches.
   MESH_PATTERN mesh_patterns[MAX_MESH_STEP];
 
-  // Allows sub 8x8 modes to use the prediction filter that was determined
-  // best for 8x8 mode. If set to 0 we always re check all the filters for
-  // sizes less than 8x8, 1 means we check all filter modes if no 8x8 filter
-  // was selected, and 2 means we use 8 tap if no 8x8 filter mode was selected.
-  int adaptive_pred_interp_filter;
-
   // Adaptive prediction mode search
   int adaptive_mode_search;
 

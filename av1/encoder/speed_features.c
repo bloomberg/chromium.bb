@@ -150,7 +150,6 @@ static void set_good_speed_feature_framesize_dependent(
     }
 
     if (is_720p_or_larger) {
-      sf->adaptive_pred_interp_filter = 0;
       sf->partition_search_breakout_dist_thr = (1 << 24);
       sf->partition_search_breakout_rate_thr = 120;
     } else {
@@ -303,7 +302,6 @@ static void set_good_speed_features_framesize_independent(
   if (speed >= 3) {
     sf->tx_size_search_method = boosted ? USE_FULL_RD : USE_LARGESTALL;
     sf->less_rectangular_check_level = 2;
-    sf->adaptive_pred_interp_filter = 1;
     // adaptive_motion_search breaks encoder multi-thread tests.
     // The values in x->pred_mv[] differ for single and multi-thread cases.
     // See aomedia:1778.
@@ -336,7 +334,6 @@ static void set_good_speed_features_framesize_independent(
         (boosted || cm->allow_screen_content_tools) ? 0 : 1;
     sf->reduce_wiener_window_size = !boosted;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
-    sf->adaptive_pred_interp_filter = 0;
     sf->cb_pred_filter_search = 1;
     sf->adaptive_mode_search = 1;
     sf->alt_ref_search_fp = 1;
@@ -516,7 +513,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->selective_ref_frame = 4;
     sf->tx_size_search_method = boosted ? USE_FULL_RD : USE_LARGESTALL;
     sf->less_rectangular_check_level = 2;
-    sf->adaptive_pred_interp_filter = 1;
     // adaptive_motion_search breaks encoder multi-thread tests.
     // The values in x->pred_mv[] differ for single and multi-thread cases.
     // See aomedia:1778.
@@ -543,7 +539,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->tx_size_search_method =
         frame_is_intra_only(cm) ? USE_FULL_RD : USE_LARGESTALL;
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
-    sf->adaptive_pred_interp_filter = 0;
     sf->adaptive_mode_search = 1;
     sf->alt_ref_search_fp = 1;
     sf->skip_sharp_interp_filter_search = 1;
@@ -677,7 +672,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->reduce_inter_modes = 0;
   sf->selective_ref_gm = 1;
   sf->adaptive_motion_search = 0;
-  sf->adaptive_pred_interp_filter = 0;
   sf->adaptive_mode_search = 0;
   sf->alt_ref_search_fp = 0;
   sf->partition_search_type = SEARCH_PARTITION;
