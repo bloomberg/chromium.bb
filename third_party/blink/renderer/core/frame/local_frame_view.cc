@@ -1976,8 +1976,10 @@ void LocalFrameView::WillBeRemovedFromFrame() {
 
   if (Settings* settings = frame_->GetSettings()) {
     DCHECK(frame_->GetPage());
-    if (settings->GetSpatialNavigationEnabled())
-      frame_->GetPage()->GetSpatialNavigationController().DidDetachFrameView();
+    if (settings->GetSpatialNavigationEnabled()) {
+      frame_->GetPage()->GetSpatialNavigationController().DidDetachFrameView(
+          *this);
+    }
   }
 }
 
