@@ -465,7 +465,7 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
     return;
   bool reset_selection = false;
   for (size_t i = 0; i < count; ++i) {
-    InternalNode* child_removing = parent_node->GetChild(start);
+    InternalNode* child_removing = parent_node->children()[start].get();
     if (selected_node_ && selected_node_->HasAncestor(child_removing))
       reset_selection = true;
     parent_node->Remove(start);
@@ -892,8 +892,9 @@ TreeView::InternalNode* TreeView::GetInternalNodeForModelNode(
       return nullptr;
     LoadChildren(parent_internal_node);
   }
-  return parent_internal_node->GetChild(
-      model_->GetIndexOf(parent_internal_node->model_node(), model_node));
+  size_t index =
+      model_->GetIndexOf(parent_internal_node->model_node(), model_node);
+  return parent_internal_node->children()[index].get();
 }
 
 gfx::Rect TreeView::GetBoundsForNode(InternalNode* node) {
@@ -960,11 +961,11 @@ int TreeView::GetRowForInternalNode(InternalNode* node, int* depth) {
   int row = -1;
   InternalNode* tmp_node = node;
   while (tmp_node->parent()) {
-    int index_in_parent = tmp_node->parent()->GetIndexOf(tmp_node);
+    size_t index_in_parent = tmp_node->parent()->GetIndexOf(tmp_node);
     (*depth)++;
     row++;  // For node.
-    for (int i = 0; i < index_in_parent; ++i)
-      row += tmp_node->parent()->GetChild(i)->NumExpandedNodes();
+    for (size_t i = 0; i < index_in_parent; ++i)
+      row += tmp_node->parent()->children()[i]->NumExpandedNodes();
     tmp_node = tmp_node->parent();
   }
   if (root_shown_) {
@@ -1034,7 +1035,7 @@ void TreeView::IncrementSelection(IncrementType type) {
     } else if (root_shown_) {
       SetSelectedNode(root_.model_node());
     } else {
-      SetSelectedNode(root_.GetChild(0)->model_node());
+      SetSelectedNode(root_.children().front()->model_node());
     }
     return;
   }
@@ -1062,7 +1063,7 @@ void TreeView::ExpandOrSelectChild() {
     if (!selected_node_->is_expanded())
       Expand(selected_node_->model_node());
     else if (!selected_node_->children().empty())
-      SetSelectedNode(selected_node_->GetChild(0)->model_node());
+      SetSelectedNode(selected_node_->children().front()->model_node());
   }
 }
 
