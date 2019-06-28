@@ -1032,14 +1032,10 @@ void OverviewGrid::CalculateWindowListAnimationStates(
   // Preserves ordering if the category is the same.
   std::sort(items.begin(), items.end(),
             [&selected_item](OverviewItem* a, OverviewItem* b) {
-              // NB: This treats all non-normal z-ordered windows the same. If
-              // Aura ever adopts z-order levels, this will need to be changed.
               const bool a_on_top =
-                  a->GetWindow()->GetProperty(aura::client::kZOrderingKey) !=
-                  ui::ZOrderLevel::kNormal;
+                  a->GetWindow()->GetProperty(aura::client::kAlwaysOnTopKey);
               const bool b_on_top =
-                  b->GetWindow()->GetProperty(aura::client::kZOrderingKey) !=
-                  ui::ZOrderLevel::kNormal;
+                  b->GetWindow()->GetProperty(aura::client::kAlwaysOnTopKey);
               if (selected_item && a_on_top && b_on_top)
                 return a == selected_item;
               if (a_on_top)
@@ -1370,7 +1366,7 @@ void OverviewGrid::InitSelectionWidget(bool reverse) {
   selection_widget_ = std::make_unique<views::Widget>();
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
-  params.z_order = ui::ZOrderLevel::kNormal;
+  params.keep_on_top = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.layer_type = ui::LAYER_SOLID_COLOR;
