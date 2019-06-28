@@ -50,11 +50,12 @@ ErrorOr<int> CreateNonBlockingUdpSocket(int domain) {
 
 }  // namespace
 
-UdpSocket::UdpSocket() = default;
-UdpSocket::~UdpSocket() = default;
-
 UdpSocketPosix::UdpSocketPosix(int fd, UdpSocket::Version version)
-    : fd(fd), version(version) {}
+    : fd_(fd), version_(version) {}
+
+UdpSocketPosix::~UdpSocketPosix() {
+  close(fd_);
+}
 
 // static
 ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(UdpSocket::Version version) {
@@ -75,40 +76,32 @@ ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(UdpSocket::Version version) {
       static_cast<UdpSocket*>(new UdpSocketPosix(fd.value(), version)));
 }
 
-bool UdpSocket::IsIPv4() const {
-  return UdpSocketPosix::From(this)->version == UdpSocket::Version::kV4;
+bool UdpSocketPosix::IsIPv4() const {
+  return version_ == UdpSocket::Version::kV4;
 }
 
-bool UdpSocket::IsIPv6() const {
-  return UdpSocketPosix::From(this)->version == UdpSocket::Version::kV6;
+bool UdpSocketPosix::IsIPv6() const {
+  return version_ == UdpSocket::Version::kV6;
 }
 
-void UdpSocketDeleter::operator()(UdpSocket* socket_api) const {
-  auto* const socket = UdpSocketPosix::From(socket_api);
-  close(socket->fd);
-  delete socket;
-}
-
-Error UdpSocket::Bind(const IPEndpoint& endpoint) {
-  auto* const socket = UdpSocketPosix::From(this);
-
+Error UdpSocketPosix::Bind(const IPEndpoint& endpoint) {
   // This is effectively a boolean passed to setsockopt() to allow a future
   // bind() on the same socket to succeed, even if the address is already in
   // use. This is pretty much universally the desired behavior.
   const int reuse_addr = 1;
-  if (setsockopt(socket->fd, SOL_SOCKET, SO_REUSEADDR, &reuse_addr,
+  if (setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, &reuse_addr,
                  sizeof(reuse_addr)) == -1) {
     return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
   }
 
-  switch (socket->version) {
+  switch (version_) {
     case UdpSocket::Version::kV4: {
       struct sockaddr_in address;
       address.sin_family = AF_INET;
       address.sin_port = htons(endpoint.port);
       endpoint.address.CopyToV4(
           reinterpret_cast<uint8_t*>(&address.sin_addr.s_addr));
-      if (bind(socket->fd, reinterpret_cast<struct sockaddr*>(&address),
+      if (bind(fd_, reinterpret_cast<struct sockaddr*>(&address),
                sizeof(address)) == -1) {
         return Error(Error::Code::kSocketBindFailure, strerror(errno));
       }
@@ -122,7 +115,7 @@ Error UdpSocket::Bind(const IPEndpoint& endpoint) {
       address.sin6_port = htons(endpoint.port);
       endpoint.address.CopyToV6(reinterpret_cast<uint8_t*>(&address.sin6_addr));
       address.sin6_scope_id = 0;
-      if (bind(socket->fd, reinterpret_cast<struct sockaddr*>(&address),
+      if (bind(fd_, reinterpret_cast<struct sockaddr*>(&address),
                sizeof(address)) == -1) {
         return Error(Error::Code::kSocketBindFailure, strerror(errno));
       }
@@ -134,10 +127,9 @@ Error UdpSocket::Bind(const IPEndpoint& endpoint) {
   return Error::Code::kGenericPlatformError;
 }
 
-Error UdpSocket::SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) {
-  auto* const socket = UdpSocketPosix::From(this);
-
-  switch (socket->version) {
+Error UdpSocketPosix::SetMulticastOutboundInterface(
+    NetworkInterfaceIndex ifindex) {
+  switch (version_) {
     case UdpSocket::Version::kV4: {
       struct ip_mreqn multicast_properties;
       // Appropriate address is set based on |imr_ifindex| when set.
@@ -145,8 +137,7 @@ Error UdpSocket::SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) {
       multicast_properties.imr_multiaddr.s_addr = INADDR_ANY;
       multicast_properties.imr_ifindex =
           static_cast<IPv4NetworkInterfaceIndex>(ifindex);
-      if (setsockopt(socket->fd, IPPROTO_IP, IP_MULTICAST_IF,
-                     &multicast_properties,
+      if (setsockopt(fd_, IPPROTO_IP, IP_MULTICAST_IF, &multicast_properties,
                      sizeof(multicast_properties)) == -1) {
         return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
       }
@@ -155,7 +146,7 @@ Error UdpSocket::SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) {
 
     case UdpSocket::Version::kV6: {
       const auto index = static_cast<IPv6NetworkInterfaceIndex>(ifindex);
-      if (setsockopt(socket->fd, IPPROTO_IPV6, IPV6_MULTICAST_IF, &index,
+      if (setsockopt(fd_, IPPROTO_IPV6, IPV6_MULTICAST_IF, &index,
                      sizeof(index)) == -1) {
         return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
       }
@@ -167,16 +158,14 @@ Error UdpSocket::SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) {
   return Error::Code::kGenericPlatformError;
 }
 
-Error UdpSocket::JoinMulticastGroup(const IPAddress& address,
-                                    NetworkInterfaceIndex ifindex) {
-  auto* const socket = UdpSocketPosix::From(this);
-
-  switch (socket->version) {
+Error UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
+                                         NetworkInterfaceIndex ifindex) {
+  switch (version_) {
     case UdpSocket::Version::kV4: {
       // Passed as data to setsockopt().  1 means return IP_PKTINFO control data
       // in recvmsg() calls.
       const int enable_pktinfo = 1;
-      if (setsockopt(socket->fd, IPPROTO_IP, IP_PKTINFO, &enable_pktinfo,
+      if (setsockopt(fd_, IPPROTO_IP, IP_PKTINFO, &enable_pktinfo,
                      sizeof(enable_pktinfo)) == -1) {
         return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
       }
@@ -189,8 +178,7 @@ Error UdpSocket::JoinMulticastGroup(const IPAddress& address,
                     "IPv4 address requires exactly 4 bytes");
       address.CopyToV4(
           reinterpret_cast<uint8_t*>(&multicast_properties.imr_multiaddr));
-      if (setsockopt(socket->fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-                     &multicast_properties,
+      if (setsockopt(fd_, IPPROTO_IP, IP_ADD_MEMBERSHIP, &multicast_properties,
                      sizeof(multicast_properties)) == -1) {
         return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
       }
@@ -201,8 +189,8 @@ Error UdpSocket::JoinMulticastGroup(const IPAddress& address,
       // Passed as data to setsockopt().  1 means return IPV6_PKTINFO control
       // data in recvmsg() calls.
       const int enable_pktinfo = 1;
-      if (setsockopt(socket->fd, IPPROTO_IPV6, IPV6_RECVPKTINFO,
-                     &enable_pktinfo, sizeof(enable_pktinfo)) == -1) {
+      if (setsockopt(fd_, IPPROTO_IPV6, IPV6_RECVPKTINFO, &enable_pktinfo,
+                     sizeof(enable_pktinfo)) == -1) {
         return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
       }
       struct ipv6_mreq multicast_properties = {
@@ -215,8 +203,7 @@ Error UdpSocket::JoinMulticastGroup(const IPAddress& address,
           reinterpret_cast<uint8_t*>(&multicast_properties.ipv6mr_multiaddr));
       // Portability note: All platforms support IPV6_JOIN_GROUP, which is
       // synonymous with IPV6_ADD_MEMBERSHIP.
-      if (setsockopt(socket->fd, IPPROTO_IPV6, IPV6_JOIN_GROUP,
-                     &multicast_properties,
+      if (setsockopt(fd_, IPPROTO_IPV6, IPV6_JOIN_GROUP, &multicast_properties,
                      sizeof(multicast_properties)) == -1) {
         return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
       }
@@ -242,18 +229,17 @@ Error ChooseError(decltype(errno) posix_errno, Error::Code hard_error_code) {
 
 }  // namespace
 
-ErrorOr<size_t> UdpSocket::ReceiveMessage(void* data,
-                                          size_t length,
-                                          IPEndpoint* src,
-                                          IPEndpoint* original_destination) {
-  auto* const socket = UdpSocketPosix::From(this);
-
+ErrorOr<size_t> UdpSocketPosix::ReceiveMessage(
+    void* data,
+    size_t length,
+    IPEndpoint* src,
+    IPEndpoint* original_destination) {
   struct iovec iov = {data, length};
   char control_buf[1024];
   size_t cmsg_size = sizeof(control_buf) - sizeof(struct cmsghdr) + 1;
   void* cmsg_buf = control_buf;
   std::align(alignof(struct cmsghdr), sizeof(cmsg_buf), cmsg_buf, cmsg_size);
-  switch (socket->version) {
+  switch (version_) {
     case UdpSocket::Version::kV4: {
       struct sockaddr_in sa;
       struct msghdr msg;
@@ -265,7 +251,7 @@ ErrorOr<size_t> UdpSocket::ReceiveMessage(void* data,
       msg.msg_controllen = cmsg_size;
       msg.msg_flags = 0;
 
-      ssize_t num_bytes_received = recvmsg(socket->fd, &msg, 0);
+      ssize_t num_bytes_received = recvmsg(fd_, &msg, 0);
       if (num_bytes_received == -1) {
         return ChooseError(errno, Error::Code::kSocketReadFailure);
       }
@@ -292,8 +278,7 @@ ErrorOr<size_t> UdpSocket::ReceiveMessage(void* data,
 
             struct sockaddr_in addr;
             socklen_t addr_len = sizeof(addr);
-            if (getsockname(socket->fd,
-                            reinterpret_cast<struct sockaddr*>(&addr),
+            if (getsockname(fd_, reinterpret_cast<struct sockaddr*>(&addr),
                             &addr_len) == -1) {
               break;
             }
@@ -325,7 +310,7 @@ ErrorOr<size_t> UdpSocket::ReceiveMessage(void* data,
       msg.msg_controllen = cmsg_size;
       msg.msg_flags = 0;
 
-      ssize_t num_bytes_received = recvmsg(socket->fd, &msg, 0);
+      ssize_t num_bytes_received = recvmsg(fd_, &msg, 0);
       if (num_bytes_received == -1) {
         return ChooseError(errno, Error::Code::kSocketReadFailure);
       }
@@ -353,8 +338,7 @@ ErrorOr<size_t> UdpSocket::ReceiveMessage(void* data,
             }
             struct sockaddr_in6 addr;
             socklen_t addr_len = sizeof(addr);
-            if (getsockname(socket->fd,
-                            reinterpret_cast<struct sockaddr*>(&addr),
+            if (getsockname(fd_, reinterpret_cast<struct sockaddr*>(&addr),
                             &addr_len) == -1) {
               break;
             }
@@ -380,11 +364,9 @@ ErrorOr<size_t> UdpSocket::ReceiveMessage(void* data,
   return Error::Code::kGenericPlatformError;
 }
 
-Error UdpSocket::SendMessage(const void* data,
-                             size_t length,
-                             const IPEndpoint& dest) {
-  auto* const socket = UdpSocketPosix::From(this);
-
+Error UdpSocketPosix::SendMessage(const void* data,
+                                  size_t length,
+                                  const IPEndpoint& dest) {
   struct iovec iov = {const_cast<void*>(data), length};
   struct msghdr msg;
   msg.msg_iov = &iov;
@@ -394,7 +376,7 @@ Error UdpSocket::SendMessage(const void* data,
   msg.msg_flags = 0;
 
   ssize_t num_bytes_sent = -2;
-  switch (socket->version) {
+  switch (version_) {
     case UdpSocket::Version::kV4: {
       struct sockaddr_in sa = {
           .sin_family = AF_INET,
@@ -403,7 +385,7 @@ Error UdpSocket::SendMessage(const void* data,
       dest.address.CopyToV4(reinterpret_cast<uint8_t*>(&sa.sin_addr.s_addr));
       msg.msg_name = &sa;
       msg.msg_namelen = sizeof(sa);
-      num_bytes_sent = sendmsg(socket->fd, &msg, 0);
+      num_bytes_sent = sendmsg(fd_, &msg, 0);
       break;
     }
 
@@ -416,7 +398,7 @@ Error UdpSocket::SendMessage(const void* data,
       dest.address.CopyToV6(reinterpret_cast<uint8_t*>(&sa.sin6_addr.s6_addr));
       msg.msg_name = &sa;
       msg.msg_namelen = sizeof(sa);
-      num_bytes_sent = sendmsg(socket->fd, &msg, 0);
+      num_bytes_sent = sendmsg(fd_, &msg, 0);
       break;
     }
   }
@@ -429,13 +411,11 @@ Error UdpSocket::SendMessage(const void* data,
   return Error::Code::kNone;
 }
 
-Error UdpSocket::SetDscp(UdpSocket::DscpMode state) {
-  auto* const socket = UdpSocketPosix::From(this);
-
+Error UdpSocketPosix::SetDscp(UdpSocket::DscpMode state) {
   constexpr auto kSettingLevel = IPPROTO_IP;
   uint8_t code_array[1] = {static_cast<uint8_t>(state)};
-  auto code = setsockopt(socket->fd, kSettingLevel, IP_TOS, code_array,
-                         sizeof(uint8_t));
+  auto code =
+      setsockopt(fd_, kSettingLevel, IP_TOS, code_array, sizeof(uint8_t));
 
   if (code == EBADF || code == ENOTSOCK || code == EFAULT) {
     OSP_VLOG << "BAD SOCKET PROVIDED. CODE: " << code;

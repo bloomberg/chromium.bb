@@ -19,6 +19,7 @@ source_set("platform") {
     "api/time.h",
     "api/tls_socket.h",
     "api/tls_socket_creds.h",
+    "api/udp_socket.cc",
     "api/udp_socket.h",
     "api/upd_callbacks.h",
     "base/ssl_context.cc",
@@ -76,12 +77,15 @@ source_set("test") {
     "test/fake_clock.h",
     "test/fake_task_runner.cc",
     "test/fake_task_runner.h",
+    "test/mock_udp_socket.cc",
+    "test/mock_udp_socket.h",
   ]
 
   configs += [ "../build:allow_build_from_embedder" ]
 
   deps = [
     ":platform",
+    "../third_party/googletest:gmock",
   ]
 }
 
@@ -107,6 +111,7 @@ source_set("platform_unittests") {
 
   sources = [
     "api/time_unittest.cc",
+    "api/udp_socket_unittest.cc",
     "base/ssl_context_unittest.cc",
   ]
 
@@ -121,6 +126,7 @@ source_set("platform_unittests") {
 
   deps = [
     ":platform",
+    "../third_party/googletest:gmock",
     "../third_party/googletest:gtest",
   ]
 

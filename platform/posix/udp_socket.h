@@ -11,18 +11,31 @@ namespace openscreen {
 namespace platform {
 
 struct UdpSocketPosix : public UdpSocket {
-  const int fd;
-  const UdpSocket::Version version;
-
+ public:
   UdpSocketPosix(int fd, Version version);
+  ~UdpSocketPosix() final;
 
-  static const UdpSocketPosix* From(const UdpSocket* socket) {
-    return static_cast<const UdpSocketPosix*>(socket);
-  }
+  // Implementations of UdpSocket methods.
+  bool IsIPv4() const final;
+  bool IsIPv6() const final;
+  Error Bind(const IPEndpoint& local_endpoint) final;
+  Error SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) final;
+  Error JoinMulticastGroup(const IPAddress& address,
+                           NetworkInterfaceIndex ifindex) final;
+  ErrorOr<size_t> ReceiveMessage(void* data,
+                                 size_t length,
+                                 IPEndpoint* src,
+                                 IPEndpoint* original_destination) final;
+  Error SendMessage(const void* data,
+                    size_t length,
+                    const IPEndpoint& dest) final;
+  Error SetDscp(DscpMode state) final;
 
-  static UdpSocketPosix* From(UdpSocket* socket) {
-    return static_cast<UdpSocketPosix*>(socket);
-  }
+  int GetFd() const { return fd_; }
+
+ private:
+  const int fd_;
+  const UdpSocket::Version version_;
 };
 
 }  // namespace platform

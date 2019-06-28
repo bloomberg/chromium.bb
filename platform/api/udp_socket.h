@@ -6,6 +6,7 @@
 #define PLATFORM_API_UDP_SOCKET_H_
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 
 #include "osp_base/error.h"
@@ -18,13 +19,7 @@ namespace platform {
 
 class UdpSocket;
 
-// Platform-specific deleter of a UdpSocket instance returned by
-// UdpSocket::Create().
-struct UdpSocketDeleter {
-  void operator()(UdpSocket* socket) const;
-};
-
-using UdpSocketUniquePtr = std::unique_ptr<UdpSocket, UdpSocketDeleter>;
+using UdpSocketUniquePtr = std::unique_ptr<UdpSocket>;
 
 // An open UDP socket for sending/receiving datagrams to/from either specific
 // endpoints or over IP multicast.
@@ -41,6 +36,8 @@ using UdpSocketUniquePtr = std::unique_ptr<UdpSocket, UdpSocketDeleter>;
 // reference implementation.
 class UdpSocket {
  public:
+  virtual ~UdpSocket();
+
   // Constants used to specify how we want packets sent from this socket.
   enum class DscpMode : uint8_t {
     // Default value set by the system on creation of a new socket.
@@ -58,23 +55,25 @@ class UdpSocket {
 
   using Version = IPAddress::Version;
 
-  // Creates a new, scoped UdpSocket within the IPv4 or IPv6 family.
+  // Creates a new, scoped UdpSocket within the IPv4 or IPv6 family. This method
+  // must be defined in the platform-level implementation.
   static ErrorOr<UdpSocketUniquePtr> Create(Version version);
 
   // Returns true if |socket| belongs to the IPv4/IPv6 address family.
-  bool IsIPv4() const;
-  bool IsIPv6() const;
+  virtual bool IsIPv4() const = 0;
+  virtual bool IsIPv6() const = 0;
 
   // Sets the socket for address reuse, binds to the address/port.
-  Error Bind(const IPEndpoint& local_endpoint);
+  virtual Error Bind(const IPEndpoint& local_endpoint) = 0;
 
   // Sets the device to use for outgoing multicast packets on the socket.
-  Error SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex);
+  virtual Error SetMulticastOutboundInterface(
+      NetworkInterfaceIndex ifindex) = 0;
 
   // Joins to the multicast group at the given address, using the specified
   // interface.
-  Error JoinMulticastGroup(const IPAddress& address,
-                           NetworkInterfaceIndex ifindex);
+  virtual Error JoinMulticastGroup(const IPAddress& address,
+                                   NetworkInterfaceIndex ifindex) = 0;
 
   // Performs a non-blocking read on the socket, returning the number of bytes
   // received. Note that a non-Error return value of 0 is a valid result,
@@ -83,24 +82,34 @@ class UdpSocket {
   // ready for receive, which can be expected during normal operation. |src| and
   // |original_destination| are optional output arguments that provide the
   // source of the message and its intended destination, respectively.
-  ErrorOr<size_t> ReceiveMessage(void* data,
-                                 size_t length,
-                                 IPEndpoint* src,
-                                 IPEndpoint* original_destination);
+  virtual ErrorOr<size_t> ReceiveMessage(void* data,
+                                         size_t length,
+                                         IPEndpoint* src,
+                                         IPEndpoint* original_destination) = 0;
 
   // Sends a message and returns the number of bytes sent, on success.
   // Error::Code::kAgain might be returned to indicate the operation would
   // block, which can be expected during normal operation.
-  Error SendMessage(const void* data, size_t length, const IPEndpoint& dest);
+  virtual Error SendMessage(const void* data,
+                            size_t length,
+                            const IPEndpoint& dest) = 0;
 
   // Sets the DSCP value to use for all messages sent from this socket.
-  Error SetDscp(DscpMode state);
+  virtual Error SetDscp(DscpMode state) = 0;
+
+  // Sets the callback that should be called upon deletion of this socket. This
+  // allows other objects to observe the socket's destructor and act when it is
+  // called.
+  void SetDeletionCallback(std::function<void(UdpSocket*)> callback);
 
  protected:
   UdpSocket();
-  ~UdpSocket();
 
  private:
+  // This callback allows other objects to observe the socket's destructor and
+  // act when it is called.
+  std::function<void(UdpSocket*)> deletion_callback_;
+
   OSP_DISALLOW_COPY_AND_ASSIGN(UdpSocket);
 };
 

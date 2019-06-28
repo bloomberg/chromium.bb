@@ -20,7 +20,7 @@ namespace {
 Error AddToVectorIfMissing(UdpSocketPosix* socket,
                            std::vector<UdpSocketPosix*>* watched_sockets) {
   for (const auto* s : *watched_sockets) {
-    if (s->fd == socket->fd)
+    if (s->GetFd() == socket->GetFd())
       return Error::Code::kAlreadyListening;
   }
   watched_sockets->push_back(socket);
@@ -29,9 +29,9 @@ Error AddToVectorIfMissing(UdpSocketPosix* socket,
 
 Error RemoveFromVectorIfPresent(UdpSocketPosix* socket,
                                 std::vector<UdpSocketPosix*>* watched_sockets) {
-  const auto it =
-      std::find_if(watched_sockets->begin(), watched_sockets->end(),
-                   [socket](UdpSocketPosix* s) { return s->fd == socket->fd; });
+  const auto it = std::find_if(
+      watched_sockets->begin(), watched_sockets->end(),
+      [socket](UdpSocketPosix* s) { return s->GetFd() == socket->GetFd(); });
   if (it == watched_sockets->end())
     return Error::Code::kNoItemFound;
 
@@ -55,22 +55,22 @@ void DestroyEventWaiter(EventWaiterPtr waiter) {
 }
 
 Error WatchUdpSocketReadable(EventWaiterPtr waiter, UdpSocket* socket) {
-  return AddToVectorIfMissing(UdpSocketPosix::From(socket),
+  return AddToVectorIfMissing(static_cast<UdpSocketPosix*>(socket),
                               &waiter->read_sockets);
 }
 
 Error StopWatchingUdpSocketReadable(EventWaiterPtr waiter, UdpSocket* socket) {
-  return RemoveFromVectorIfPresent(UdpSocketPosix::From(socket),
+  return RemoveFromVectorIfPresent(static_cast<UdpSocketPosix*>(socket),
                                    &waiter->read_sockets);
 }
 
 Error WatchUdpSocketWritable(EventWaiterPtr waiter, UdpSocket* socket) {
-  return AddToVectorIfMissing(UdpSocketPosix::From(socket),
+  return AddToVectorIfMissing(static_cast<UdpSocketPosix*>(socket),
                               &waiter->write_sockets);
 }
 
 Error StopWatchingUdpSocketWritable(EventWaiterPtr waiter, UdpSocket* socket) {
-  return RemoveFromVectorIfPresent(UdpSocketPosix::From(socket),
+  return RemoveFromVectorIfPresent(static_cast<UdpSocketPosix*>(socket),
                                    &waiter->write_sockets);
 }
 
@@ -93,12 +93,12 @@ ErrorOr<Events> WaitForEvents(EventWaiterPtr waiter) {
   FD_ZERO(&readfds);
   FD_ZERO(&writefds);
   for (const auto* read_socket : waiter->read_sockets) {
-    FD_SET(read_socket->fd, &readfds);
-    max_fd = std::max(max_fd, read_socket->fd);
+    FD_SET(read_socket->GetFd(), &readfds);
+    max_fd = std::max(max_fd, read_socket->GetFd());
   }
   for (const auto* write_socket : waiter->write_sockets) {
-    FD_SET(write_socket->fd, &writefds);
-    max_fd = std::max(max_fd, write_socket->fd);
+    FD_SET(write_socket->GetFd(), &writefds);
+    max_fd = std::max(max_fd, write_socket->GetFd());
   }
   if (max_fd == -1)
     return Error::Code::kIOFailure;
@@ -110,11 +110,11 @@ ErrorOr<Events> WaitForEvents(EventWaiterPtr waiter) {
 
   Events events;
   for (auto* read_socket : waiter->read_sockets) {
-    if (FD_ISSET(read_socket->fd, &readfds))
+    if (FD_ISSET(read_socket->GetFd(), &readfds))
       events.udp_readable_events.push_back({read_socket});
   }
   for (auto* write_socket : waiter->write_sockets) {
-    if (FD_ISSET(write_socket->fd, &writefds))
+    if (FD_ISSET(write_socket->GetFd(), &writefds))
       events.udp_writable_events.push_back({write_socket});
   }
 
