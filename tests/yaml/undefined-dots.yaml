@@ -1,4 +1,18 @@
-table: [tables/en-ueb-g2.ctb]
+table: |
+  include tables/unicode.dis
+flags: {testmode: backward}
+tests:
+  - - ⠸
+    - \\456/
+  - - ⠸
+    - ""
+    - mode: [noUndefinedDots]
+
+table: |
+  include tables/spaces.uti
+  include tables/latinLetterDef8Dots.uti
+  display _ 456
+  sign _ 46-36
 flags: {testmode: backward}
 tests:
   - - " _ "
@@ -8,4 +22,3 @@ tests:
     - "  "
     - outputPos: [0, 1, 1]
       mode: [noUndefinedDots]
-
