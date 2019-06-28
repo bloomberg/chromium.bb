@@ -14,6 +14,8 @@ issues]].
   Frees.
 - Never convert to lowercase if capsletter is not defined. Thanks to
   Bert Frees.
+- Fix position mapping for back-translation when noUndefinedDots mode
+  is active. Thanks to Dave Mielke.
 
 ** Braille table improvements
 - Fix an issue with ordinal numbers inside caps passages in Dutch
