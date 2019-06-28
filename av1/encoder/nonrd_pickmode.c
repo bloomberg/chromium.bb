@@ -991,21 +991,13 @@ static void estimate_block_intra(int plane, int block, int row, int col,
   const int64_t dst_stride = pd->dst.stride;
   RD_STATS this_rdc;
 
+  (void)block;
+  assert(plane == 0);
+
   p->src.buf = &src_buf_base[4 * (row * src_stride + col)];
   pd->dst.buf = &dst_buf_base[4 * (row * dst_stride + col)];
 
-  const int stepr = tx_size_high_unit[tx_size];
-  const int stepc = tx_size_wide_unit[tx_size];
-  const int max_blocks_wide = max_block_wide(xd, block, 0);
-  const int max_blocks_high = max_block_high(xd, block, 0);
-  // Prediction.
-  for (int trow = 0; trow < max_blocks_high; trow += stepr) {
-    for (int tcol = 0; tcol < max_blocks_wide; tcol += stepc) {
-      av1_predict_intra_block_facade(cm, xd, 0, tcol, trow, tx_size);
-    }
-  }
-
-  assert(plane == 0);
+  av1_predict_intra_block_facade(cm, xd, 0, col, row, tx_size);
 
   if (plane == 0) {
     int64_t this_sse = INT64_MAX;
