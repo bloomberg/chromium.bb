@@ -16,7 +16,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/native_theme/caption_style.h"
 #include "ui/native_theme/native_theme_export.h"
-#include "ui/native_theme/native_theme_observer.h"
 
 namespace gfx {
 class Rect;
@@ -24,6 +23,9 @@ class Size;
 }
 
 namespace ui {
+class DarkModeObserver;
+class NativeThemeObserver;
+
 // This class supports drawing UI controls (like buttons, text fields, lists,
 // comboboxes, etc) that look like the native UI controls of the underlying
 // platform, such as Windows or Linux. It also supplies default colors for
@@ -41,12 +43,7 @@ namespace ui {
 //
 // NativeTheme also supports getting the default size of a given part with
 // the GetPartSize() method.
-//
-// NativeTheme implements NativeThemeObserver to allow one native theme to
-// observe changes in another. For example, the web native theme for Windows
-// observes the corresponding ui native theme in order to receive changes
-// regarding the state of dark mode/high contrast.
-class NATIVE_THEME_EXPORT NativeTheme : public NativeThemeObserver {
+class NATIVE_THEME_EXPORT NativeTheme {
  public:
   // The part to be painted / sized.
   enum Part {
@@ -419,9 +416,13 @@ class NATIVE_THEME_EXPORT NativeTheme : public NativeThemeObserver {
   // Returns the system's caption style.
   virtual base::Optional<CaptionStyle> GetSystemCaptionStyle() const;
 
+  // Observes |dark_mode_parent| for dark mode changes and propagates them to
+  // self.
+  void SetDarkModeParent(NativeTheme* dark_mode_parent);
+
  protected:
   NativeTheme();
-  ~NativeTheme() override;
+  virtual ~NativeTheme();
 
   // Whether high contrast is forced via command-line flag.
   bool IsForcedHighContrast() const;
@@ -433,12 +434,13 @@ class NATIVE_THEME_EXPORT NativeTheme : public NativeThemeObserver {
     is_high_contrast_ = is_high_contrast;
   }
 
-  // ui::NativeThemeObserver:
-  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
-
  private:
+  // DarkModeObserver callback.
+  void OnParentDarkModeChanged(bool is_dark_mode);
   // Observers to notify when the native theme changes.
   base::ObserverList<NativeThemeObserver>::Unchecked native_theme_observers_;
+
+  std::unique_ptr<DarkModeObserver> dark_mode_parent_observer_;
 
   bool is_dark_mode_ = false;
   bool is_high_contrast_ = false;

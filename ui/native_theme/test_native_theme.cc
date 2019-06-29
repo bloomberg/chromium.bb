@@ -38,7 +38,7 @@ gfx::Rect TestNativeTheme::GetNinePatchAperture(Part part) const {
 }
 
 bool TestNativeTheme::UsesHighContrastColors() const {
-  return high_contrast_;
+  return false;
 }
 
 bool TestNativeTheme::SystemDarkModeEnabled() const {

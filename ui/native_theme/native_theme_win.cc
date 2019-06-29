@@ -254,14 +254,11 @@ NativeThemeWin::NativeThemeWin()
         GetProcAddress(theme_dll_, "CloseThemeData"));
   }
 
-  // If there's no sequenced task runner handle, we can't be called back for
-  // dark mode changes. This generally happens in tests. As a result, ignore
-  // dark mode in this case.
   if (!IsForcedDarkMode() && !IsForcedHighContrast() &&
       base::SequencedTaskRunnerHandle::IsSet()) {
-    // Add the web native theme as an observer to stay in sync with dark mode/
-    // high contrast changes.
-    AddObserver(NativeTheme::GetInstanceForWeb());
+    // If there's no sequenced task runner handle, we can't be called back for
+    // dark mode changes. This generally happens in tests. As a result, ignore
+    // dark mode in this case.
 
     // Dark Mode currently targets UWP apps, which means Win32 apps need to use
     // alternate, less reliable means of detecting the state. The following
@@ -273,6 +270,7 @@ NativeThemeWin::NativeThemeWin()
             L"Themes\\Personalize",
             KEY_READ | KEY_NOTIFY) == ERROR_SUCCESS;
     if (key_open_succeeded) {
+      NativeTheme::GetInstanceForWeb()->SetDarkModeParent(this);
       UpdateDarkModeStatus();
       RegisterThemeRegkeyObserver();
     }

@@ -1035,7 +1035,7 @@
     {
       name: "forcedColors",
       initial: "ForcedColors::kNone",
-      invalidate: "ColorScheme",
+      invalidate: "MediaQuery",
       type: "ForcedColors",
     },
   ],

@@ -492,22 +492,4 @@ gfx::Rect NativeThemeAura::GetNinePatchAperture(Part part) const {
       kOverlayScrollbarCenterPatchSize, kOverlayScrollbarCenterPatchSize);
 }
 
-void NativeThemeAura::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
-  bool is_dark_mode = observed_theme->SystemDarkModeEnabled();
-  bool is_high_contrast = observed_theme->UsesHighContrastColors();
-  bool notify_observers = false;
-
-  if (SystemDarkModeEnabled() != is_dark_mode) {
-    set_dark_mode(is_dark_mode);
-    notify_observers = true;
-  }
-  if (UsesHighContrastColors() != is_high_contrast) {
-    set_high_contrast(is_high_contrast);
-    notify_observers = true;
-  }
-
-  if (notify_observers)
-    NotifyObservers();
-}
-
 }  // namespace ui

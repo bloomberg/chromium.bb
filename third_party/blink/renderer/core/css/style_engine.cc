@@ -95,10 +95,8 @@ StyleEngine::StyleEngine(Document& document)
     global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
   // Document is initially style dirty.
   style_recalc_root_.Update(nullptr, &document);
-  if (auto* settings = GetDocument().GetSettings()) {
+  if (auto* settings = GetDocument().GetSettings())
     preferred_color_scheme_ = settings->GetPreferredColorScheme();
-    forced_colors_ = settings->GetForcedColors();
-  }
 }
 
 StyleEngine::~StyleEngine() = default;
@@ -1865,10 +1863,6 @@ bool StyleEngine::SupportsDarkColorScheme() {
 void StyleEngine::UpdateColorScheme() {
   auto* settings = GetDocument().GetSettings();
   DCHECK(settings);
-
-  ForcedColors old_forced_colors = forced_colors_;
-  forced_colors_ = settings->GetForcedColors();
-
   PreferredColorScheme old_preferred_color_scheme = preferred_color_scheme_;
   preferred_color_scheme_ = settings->GetPreferredColorScheme();
   bool use_dark_scheme =
@@ -1879,9 +1873,7 @@ void StyleEngine::UpdateColorScheme() {
     // darkening is enabled.
     preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
   }
-
-  if (forced_colors_ != old_forced_colors ||
-      preferred_color_scheme_ != old_preferred_color_scheme)
+  if (preferred_color_scheme_ != old_preferred_color_scheme)
     PlatformColorsChanged();
   UpdateColorSchemeBackground();
 }
@@ -1906,8 +1898,7 @@ void StyleEngine::UpdateColorSchemeBackground() {
 
   bool use_dark_background = false;
 
-  if (preferred_color_scheme_ == PreferredColorScheme::kDark &&
-      forced_colors_ != ForcedColors::kActive) {
+  if (preferred_color_scheme_ == PreferredColorScheme::kDark) {
     const ComputedStyle* style = nullptr;
     if (auto* root_element = GetDocument().documentElement())
       style = root_element->GetComputedStyle();
