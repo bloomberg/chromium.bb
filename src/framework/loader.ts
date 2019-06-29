@@ -3,28 +3,30 @@ import { IParamsAny, paramsEquals, paramsSupersets } from './params/index.js';
 import { allowedTestNameCharacters, ITestGroup, RunCase, ICaseID } from './test_group.js';
 
 export interface IGroupDesc {
-  path: string;
-  description: string;
+  readonly path: string;
+  readonly description: string;
 }
 
 export interface IListing {
-  suite: string;
-  groups: Iterable<IGroupDesc>;
+  readonly suite: string;
+  readonly groups: Iterable<IGroupDesc>;
 }
 
 export interface ITestNode {
   // undefined for README.txt, defined for a test module.
-  g?: ITestGroup;
-  description: string;
+  readonly g?: ITestGroup;
+  readonly description: string;
 }
 
 export interface IEntry {
-  suite: string;
-  path: string;
+  // a suite, e.g. "cts".
+  readonly suite: string;
+  // a path within a suite, e.g. "command_buffer/compute/basic".
+  readonly path: string;
 }
 
 interface IPendingEntry extends IEntry {
-  node: Promise<ITestNode>;
+  readonly node: Promise<ITestNode>;
 }
 
 function* concat(lists: IPendingEntry[][]): IterableIterator<IPendingEntry> {
@@ -49,10 +51,20 @@ function filterTestGroup(group: ITestGroup, filter: TestGroupFilter) {
 }
 
 export class TestLoader {
-  async loadTests(outDir: string, filters: string[]): Promise<IterableIterator<IPendingEntry>> {
+  async loadTestsFromQuery(query: string): Promise<IterableIterator<IPendingEntry>> {
+    return this.loadTests(new URLSearchParams(query).getAll('q'));
+  }
+
+  async loadTestsFromCmdLine(filters: string[]): Promise<IterableIterator<IPendingEntry>> {
+    // In actual URL queries (?q=...), + represents a space. But decodeURIComponent doesn't do this,
+    // so do it manually. (+ is used over %20 for readability.) (See also encodeSelectively.)
+    return this.loadTests(filters.map(f => decodeURIComponent(f.replace(/\+/g, '%20'))));
+  }
+
+  async loadTests(filters: string[]): Promise<IterableIterator<IPendingEntry>> {
     const listings = [];
     for (const filter of filters) {
-      listings.push(this.loadFilter(outDir, filter));
+      listings.push(this.loadFilter(filter));
     }
 
     return concat(await Promise.all(listings));
@@ -67,7 +79,7 @@ export class TestLoader {
   }
 
   // Each filter is of one of the forms below (urlencoded).
-  private async loadFilter(outDir: string, filter: string): Promise<IPendingEntry[]> {
+  private async loadFilter(filter: string): Promise<IPendingEntry[]> {
     const i1 = filter.indexOf(':');
     if (i1 === -1) {
       // - cts

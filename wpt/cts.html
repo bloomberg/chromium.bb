@@ -2,9 +2,12 @@
 <html lang=en>
 <head>
 <meta charset=utf-8>
-<meta name="variant" content="?q=cts:command_buffer:">
-<meta name="variant" content="?q=demos:">
-<meta name="variant" content="?q=demos:params">
+<meta name="variant" content="?q=cts:buffers/mapWriteAsync:">
+<meta name="variant" content="?q=cts:buffers/setSubData:">
+<meta name="variant" content="?q=cts:command_buffer/basic:">
+<meta name="variant" content="?q=cts:command_buffer/compute/basic:">
+<meta name="variant" content="?q=cts:command_buffer/copies:">
+<meta name="variant" content="?q=cts:command_buffer/render/basic:">
 <title></title>
 <script src=/resources/testharness.js></script>
 <script src=/resources/testharnessreport.js></script>
@@ -23,12 +26,11 @@
 'use strict';
 import { TestLoader } from './framework/loader.js';
 import { Logger } from './framework/logger.js';
-import { makeQueryString, parseQueryString } from './framework/url_query.js';
+import { makeQueryString } from './framework/url_query.js';
 
 (async () => {
-    const filters = parseQueryString(window.location.search);
     const loader = new TestLoader();
-    const listing = await loader.loadTests('./suites', filters);
+    const listing = await loader.loadTestsFromQuery(window.location.search);
 
     const log = new Logger();
     const running = [];
@@ -58,7 +60,6 @@ import { makeQueryString, parseQueryString } from './framework/url_query.js';
             }, makeQueryString(entry, t.testcase));
         }
     }
-    done(); // Only has to be after all async_test calls, not after the tests finish.
 
     await Promise.all(running);
     document.getElementById('results').textContent = log.asJSON(2);

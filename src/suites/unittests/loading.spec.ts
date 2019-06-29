@@ -88,7 +88,7 @@ class LoadingTest extends DefaultFixture {
   loader: TestTestLoader = new TestTestLoader();
 
   async load(filters: string[]) {
-    const listing = await this.loader.loadTests('./out', filters);
+    const listing = await this.loader.loadTests(filters);
     const entries = Promise.all(
       Array.from(listing, ({ suite, path, node }) =>
         node.then((n: ITestNode) => ({ suite, path, node: n }))
@@ -155,7 +155,7 @@ g.test('partial group', async t => {
   t.expect((await t.singleGroup('suite1:baz:zed')).length === 2);
 });
 
-g.test('whole test', async t => {
+g.test('partial test/exact', async t => {
   t.expect((await t.singleGroup('suite1:foo:hello:')).length === 1);
   t.expect((await t.singleGroup('suite1:baz:zed:')).length === 0);
   t.expect((await t.singleGroup('suite1:baz:zed:')).length === 0);
@@ -163,7 +163,7 @@ g.test('whole test', async t => {
   t.expect((await t.singleGroup('suite1:baz:zed:{"a":1,"b":2}')).length === 1);
 });
 
-g.test('partial test', async t => {
+g.test('partial test/match', async t => {
   t.expect((await t.singleGroup('suite1:baz:zed~')).length === 2);
   t.expect((await t.singleGroup('suite1:baz:zed~{}')).length === 2);
   t.expect((await t.singleGroup('suite1:baz:zed~{"a":1}')).length === 2);

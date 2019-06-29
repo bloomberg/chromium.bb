@@ -1,5 +1,6 @@
 import { CaseRecorder } from './logger.js';
 
+// TODO: test this
 export function getStackTrace(e: Error): string {
   if (!e.stack) {
     return '';
@@ -32,6 +33,7 @@ export function getStackTrace(e: Error): string {
   return stack.join('\n');
 }
 
+// performance.now() is available in all browsers, but not in scope by default in Node.
 // tslint:disable-next-line no-var-requires
 const perf = typeof performance !== 'undefined' ? performance : require('perf_hooks').performance;
 

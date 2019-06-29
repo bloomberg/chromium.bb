@@ -1,9 +1,8 @@
 /// <reference types="@webgpu/types" />
 
-type ImplType = Promise<GPU>;
-let impl: ImplType;
+let impl: Promise<GPU>;
 
-export function getGPU(): ImplType {
+export function getGPU(): Promise<GPU> {
   if (impl) {
     return impl;
   }
@@ -17,9 +16,7 @@ export function getGPU(): ImplType {
   }
 
   if (typeof navigator !== 'undefined' && 'gpu' in navigator) {
-    // tslint:disable-next-line: ban-ts-ignore
-    // @ts-ignore: TS7017
-    impl = navigator.gpu;
+    impl = Promise.resolve(navigator.gpu as GPU);
   } else if (dawn) {
     impl = import('../../../third_party/dawn').then(mod => mod.default);
   } else {

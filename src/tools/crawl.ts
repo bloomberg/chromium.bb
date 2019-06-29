@@ -1,4 +1,8 @@
-import * as fg from 'fast-glob';
+// Node can look at the filesystem, but JS in the browser can't.
+// This crawls the file tree under src/suites/${suite} to generate a (non-hierarchical) static
+// listing file that can then be used in the browser to load the modules containing the tests.
+
+import fg from 'fast-glob';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -13,10 +17,7 @@ export async function crawl(suite: string): Promise<IGroupDesc[]> {
     process.exit(1);
   }
 
-  const specFiles = fg.sync(specDir + '**/{README.txt,*' + specSuffix + '}', {
-    onlyFiles: false,
-    markDirectories: true,
-  });
+  const specFiles = await fg(specDir + '**/{README.txt,*' + specSuffix + '}', { onlyFiles: true });
 
   const groups: IGroupDesc[] = [];
   for (const file of specFiles) {
@@ -29,16 +30,12 @@ export async function crawl(suite: string): Promise<IGroupDesc[]> {
         description: mod.description.trim(),
       });
     } else if (path.basename(file) === 'README.txt') {
-      const readme = file;
-      if (fs.existsSync(readme)) {
-        const group = f.substring(0, f.length - 'README.txt'.length);
-        const description = fs.readFileSync(readme, 'utf8').trim();
-        groups.push({
-          path: group,
-          description,
-        });
-      }
-      // ignore
+      const group = f.substring(0, f.length - 'README.txt'.length);
+      const description = fs.readFileSync(file, 'utf8').trim();
+      groups.push({
+        path: group,
+        description,
+      });
     } else {
       console.error('Unrecognized file: ' + file);
       process.exit(1);

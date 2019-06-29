@@ -95,6 +95,8 @@ module.exports = function(grunt) {
   publishTask('serve', 'Serve out/ on 127.0.0.1:8080', ['http-server:.']);
   publishedTasks.push({ name: 'clean', desc: 'Clean out/' });
 
+  publishTask('pre', 'Run all presubmit checks', ['ts:check', 'build', 'test', 'run:gts-check']);
+
   grunt.registerTask('default', '', () => {
     console.log('Available tasks (see grunt --help for info):');
     for (const { name, desc } of publishedTasks) {
@@ -102,6 +104,4 @@ module.exports = function(grunt) {
       console.log(`  ${desc}`);
     }
   });
-
-  publishTask('pre', 'Run all presubmit checks', ['ts:check', 'build', 'test', 'run:gts-check']);
 };

@@ -1,5 +1,5 @@
 import { CaseRecorder, GroupRecorder, IResult } from './logger.js';
-import { IParamsAny, IParamsSpec, ParamSpecIterable } from './params/index.js';
+import { IParamsAny, IParamsSpec, ParamSpecIterable, paramsEquals } from './params/index.js';
 
 export interface ICaseID {
   readonly name: string;
@@ -24,9 +24,18 @@ class Test<F extends Fixture> {
     this.fn = fn;
   }
 
-  params(cases: ParamSpecIterable): void {
+  params(specs: ParamSpecIterable): void {
     if (this.cases !== null) {
       throw new Error('test case is already parameterized');
+    }
+    const cases = Array.from(specs);
+    const seen: IParamsAny[] = [];
+    // This is n^2.
+    for (const spec of cases) {
+      if (seen.some(x => paramsEquals(x, spec))) {
+        throw new Error('Duplicate test case params');
+      }
+      seen.push(spec);
     }
     this.cases = cases;
   }
@@ -97,7 +106,9 @@ export abstract class Fixture {
   }
 }
 
+// It may be OK to add more allowed characters here.
 export const allowedTestNameCharacters = 'a-zA-Z0-9/_ ';
+const validNames = new RegExp('^[' + allowedTestNameCharacters + ']+$');
 
 export interface ITestGroup {
   iterate(log: GroupRecorder): Iterable<RunCase>;
@@ -121,10 +132,8 @@ export class TestGroup<F extends Fixture> implements ITestGroup {
   }
 
   private checkName(name: string) {
-    // It may be OK to add more allowed characters here.
-    const validNames = new RegExp('^[' + allowedTestNameCharacters + ']+$');
     if (!validNames.test(name)) {
-      throw new Error(`Invalid test name ${name}; must match ${validNames}`);
+      throw new Error(`Invalid test name ${name}; must match [${validNames}]+`);
     }
     if (name !== decodeURIComponent(name)) {
       // Shouldn't happen due to the rule above. Just makes sure that treated

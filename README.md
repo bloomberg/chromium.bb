@@ -8,7 +8,7 @@ yarn global add grunt-cli  # install grunt globally
 grunt  # show available grunt commands
 
 grunt build
-tools/run.js cts
+tools/run cts
 
 grunt serve
 # Then open:

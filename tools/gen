@@ -1,3 +1,7 @@
 #!/usr/bin/env node
+
+// Crawl the src/suites/ directory to generate out/suites/*/index.js containing
+// the listing of test files in the suite.
+
 require('../src/tools/setup-ts-in-node.js');
-require('../src/tools/gen');
+require('../src/tools/gen.ts');

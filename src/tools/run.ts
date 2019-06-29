@@ -5,7 +5,6 @@ import * as process from 'process';
 
 import { ITestNode, TestLoader } from '../framework/loader';
 import { Logger, IResult } from '../framework/logger';
-import { parseFilters } from '../framework/url_query';
 
 function usage(rc: number) {
   console.log('Usage:');
@@ -39,9 +38,8 @@ for (const a of process.argv.slice(2)) {
 
 (async () => {
   try {
-    const filters = parseFilters(filterArgs);
     const loader = new TestLoader();
-    const listing = await loader.loadTests('./out/suites', filters);
+    const listing = await loader.loadTestsFromCmdLine(filterArgs);
 
     const log = new Logger();
     const entries = await Promise.all(
