@@ -25,6 +25,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -58,6 +59,14 @@ static constexpr int kIndent = 20;
 
 namespace {
 
+void PaintRowIcon(gfx::Canvas* canvas,
+                  const gfx::ImageSkia& icon,
+                  int x,
+                  const gfx::Rect& rect) {
+  canvas->DrawImageInt(icon, rect.x() + x,
+                       rect.y() + (rect.height() - icon.height()) / 2);
+}
+
 bool EventIsDoubleTapOrClick(const ui::LocatedEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP)
     return event.AsGestureEvent()->details().tap_count() == 2;
@@ -81,14 +90,11 @@ TreeView::TreeView()
   } else {
     // TODO(ellyjones): if the pre-Harmony codepath goes away, merge
     // closed_icon_ and open_icon_.
-    closed_icon_ =
-        *ui::ResourceBundle::GetSharedInstance()
-             .GetImageNamed((base::i18n::IsRTL() ? IDR_FOLDER_CLOSED_RTL
-                                                 : IDR_FOLDER_CLOSED))
-             .ToImageSkia();
+    closed_icon_ = *ui::ResourceBundle::GetSharedInstance()
+                        .GetImageNamed(IDR_FOLDER_CLOSED)
+                        .ToImageSkia();
     open_icon_ = *ui::ResourceBundle::GetSharedInstance()
-                      .GetImageNamed((base::i18n::IsRTL() ? IDR_FOLDER_OPEN_RTL
-                                                          : IDR_FOLDER_OPEN))
+                      .GetImageNamed(IDR_FOLDER_OPEN)
                       .ToImageSkia();
   }
   text_offset_ = closed_icon_.width() + kImagePadding + kImagePadding +
@@ -860,22 +866,24 @@ void TreeView::PaintExpandControl(gfx::Canvas* canvas,
 void TreeView::PaintNodeIcon(gfx::Canvas* canvas,
                              InternalNode* node,
                              const gfx::Rect& bounds) {
-  gfx::ImageSkia icon;
   int icon_index = model_->GetIconIndex(node->model_node());
-  if (icon_index != -1)
-    icon = icons_[icon_index];
-  else if (node->is_expanded())
-    icon = open_icon_;
-  else
-    icon = closed_icon_;
-  int icon_x = kArrowRegionSize + kImagePadding +
-               (open_icon_.width() - icon.width()) / 2;
-  if (base::i18n::IsRTL())
-    icon_x = bounds.right() - icon_x - open_icon_.width();
-  else
-    icon_x += bounds.x();
-  canvas->DrawImageInt(icon, icon_x,
-                       bounds.y() + (bounds.height() - icon.height()) / 2);
+  int icon_x = kArrowRegionSize + kImagePadding;
+  if (icon_index == -1) {
+    // Flip just the |bounds| region of |canvas|.
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    canvas->Translate(gfx::Vector2d(bounds.x(), 0));
+    scoped_canvas.FlipIfRTL(bounds.width());
+    // Now paint the icon local to that flipped region.
+    PaintRowIcon(canvas, node->is_expanded() ? open_icon_ : closed_icon_,
+                 icon_x,
+                 gfx::Rect(0, bounds.y(), bounds.width(), bounds.height()));
+  } else {
+    const gfx::ImageSkia& icon = icons_[icon_index];
+    icon_x += (open_icon_.width() - icon.width()) / 2;
+    if (base::i18n::IsRTL())
+      icon_x = bounds.width() - icon_x - icon.width();
+    PaintRowIcon(canvas, icon, icon_x, bounds);
+  }
 }
 
 TreeView::InternalNode* TreeView::GetInternalNodeForModelNode(
