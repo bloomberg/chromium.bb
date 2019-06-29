@@ -430,11 +430,6 @@ allocateSpaceInTable(FileInfo *nested, TranslationTableOffset *offset, int count
 }
 
 static int
-reserveSpaceInTable(FileInfo *nested, int count, TranslationTableHeader **table) {
-	return (allocateSpaceInTable(nested, NULL, count, table));
-}
-
-static int
 allocateHeader(FileInfo *nested, TranslationTableHeader **table) {
 	/* Allocate memory for the table header and a guess on the number of
 	 * rules */
@@ -2374,7 +2369,7 @@ compileHyphenation(FileInfo *nested, CharsString *encoding, int *lastToken,
 	TranslationTableOffset holdOffset;
 	/* Set aside enough space for hyphenation states and transitions in
 	 * translation table. Must be done before anything else */
-	reserveSpaceInTable(nested, 250000, table);
+	allocateSpaceInTable(nested, NULL, 250000, table);
 	hashTab = hyphenHashNew();
 	dict.numStates = 1;
 	dict.states = malloc(sizeof(HyphenationState));
