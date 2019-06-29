@@ -121,9 +121,11 @@ void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
 
   if (context_provider_->BindToCurrentThread() !=
       gpu::ContextResult::kSuccess) {
-    SetContextProviderLost();
+    OnContextLost();
     return;
   }
+
+  context_provider_->AddObserver(this);
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
   if (base::FeatureList::IsEnabled(media::kMojoVideoDecoder)) {
@@ -153,7 +155,7 @@ bool GpuVideoAcceleratorFactoriesImpl::CheckContextLost() {
     return true;
   if (context_provider_->ContextGL()->GetGraphicsResetStatusKHR() !=
       GL_NO_ERROR) {
-    SetContextProviderLost();
+    OnContextLost();
     return true;
   }
   return false;
@@ -165,6 +167,8 @@ void GpuVideoAcceleratorFactoriesImpl::DestroyContext() {
 
   if (!context_provider_)
     return;
+
+  context_provider_->RemoveObserver(this);
   context_provider_ = nullptr;
   RecordContextProviderPhaseUmaEnum(
       ContextProviderPhase::CONTEXT_PROVIDER_RELEASED);
@@ -518,8 +522,9 @@ bool GpuVideoAcceleratorFactoriesImpl::CheckContextProviderLostOnMainThread() {
   return context_provider_lost_;
 }
 
-void GpuVideoAcceleratorFactoriesImpl::SetContextProviderLost() {
+void GpuVideoAcceleratorFactoriesImpl::OnContextLost() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT0("media", "GpuVideoAcceleratorFactoriesImpl::OnContextLost");
 
   // Don't delete the |context_provider_| here, we could be in the middle of
   // it notifying about the loss, and we'd be destroying it while it's on
