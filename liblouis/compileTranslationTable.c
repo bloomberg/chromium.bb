@@ -89,9 +89,6 @@ static int warningCount;
 
 static TranslationTableHeader *gTable;
 
-static TranslationTableOffset tableSize;
-static TranslationTableOffset tableUsed;
-
 typedef struct ChainEntry {
 	struct ChainEntry *next;
 	TranslationTableHeader *table;
@@ -404,16 +401,17 @@ allocateSpaceInTable(FileInfo *nested, TranslationTableOffset *offset, int count
 	/* allocate memory for translation table and expand previously allocated
 	 * memory if necessary */
 	int spaceNeeded = ((count + OFFSETSIZE - 1) / OFFSETSIZE) * OFFSETSIZE;
-	TranslationTableOffset size = tableUsed + spaceNeeded;
-	if (size > tableSize) {
+	TranslationTableOffset newSize = (*table)->bytesUsed + spaceNeeded;
+	TranslationTableOffset size = (*table)->tableSize;
+	if (newSize > size) {
 		TranslationTableHeader *newTable;
-		size += (size / OFFSETSIZE);
-		newTable = realloc(*table, size);
+		newSize += (newSize / OFFSETSIZE);
+		newTable = realloc(*table, newSize);
 		if (!newTable) {
 			compileError(nested, "Not enough memory for translation table.");
 			_lou_outOfMemory();
 		}
-		memset(((unsigned char *)newTable) + tableSize, 0, size - tableSize);
+		memset(((unsigned char *)newTable) + size, 0, newSize - size);
 		/* update references to the old table */
 		{
 			ChainEntry *entry;
@@ -422,11 +420,11 @@ allocateSpaceInTable(FileInfo *nested, TranslationTableOffset *offset, int count
 					entry->table = (TranslationTableHeader *)newTable;
 		}
 		*table = (TranslationTableHeader *)newTable;
-		tableSize = size;
+		(*table)->tableSize = newSize;
 	}
 	if (offset != NULL) {
-		*offset = (tableUsed - sizeof(**table)) / OFFSETSIZE;
-		tableUsed += spaceNeeded;
+		*offset = ((*table)->bytesUsed - sizeof(**table)) / OFFSETSIZE;
+		(*table)->bytesUsed += spaceNeeded;
 	}
 	return 1;
 }
@@ -442,7 +440,7 @@ allocateHeader(FileInfo *nested, TranslationTableHeader **table) {
 	 * rules */
 	const TranslationTableOffset startSize = 2 * sizeof(**table);
 	if (*table) return 1;
-	tableUsed = sizeof(**table) + OFFSETSIZE; /* So no offset is ever zero */
+	TranslationTableOffset bytesUsed = sizeof(**table) + OFFSETSIZE; /* So no offset is ever zero */
 	if (!(*table = malloc(startSize))) {
 		compileError(nested, "Not enough memory");
 		if (*table != NULL) free(*table);
@@ -450,7 +448,8 @@ allocateHeader(FileInfo *nested, TranslationTableHeader **table) {
 		_lou_outOfMemory();
 	}
 	memset(*table, 0, startSize);
-	tableSize = startSize;
+	(*table)->tableSize = startSize;
+	(*table)->bytesUsed = bytesUsed;
 	return 1;
 }
 
@@ -4079,8 +4078,6 @@ cleanup:
 	if (warningCount) _lou_logMessage(LOU_LOG_WARN, "%d warnings issued", warningCount);
 	if (!errorCount) {
 		setDefaults(table);
-		table->tableSize = tableSize;
-		table->bytesUsed = tableUsed;
 	} else {
 		_lou_logMessage(LOU_LOG_ERROR, "%d errors found.", errorCount);
 		if (table) free(table);
