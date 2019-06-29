@@ -223,6 +223,7 @@ static void set_good_speed_features_framesize_independent(
   sf->use_fast_interpolation_filter_search = 1;
   sf->intra_tx_size_search_init_depth_sqr = 1;
   sf->intra_angle_estimation = 1;
+  sf->tx_type_search.use_reduced_intra_txset = 1;
   sf->selective_ref_frame = 1;
   sf->prune_wedge_pred_diff_based = 1;
   sf->disable_wedge_search_var_thresh = 0;
@@ -432,6 +433,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->use_fast_interpolation_filter_search = 1;
   sf->intra_tx_size_search_init_depth_sqr = 1;
   sf->intra_angle_estimation = 1;
+  sf->tx_type_search.use_reduced_intra_txset = 1;
   sf->selective_ref_frame = 1;
   sf->prune_wedge_pred_diff_based = 1;
   sf->disable_wedge_search_var_thresh = 0;
@@ -677,6 +679,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->tx_type_search.prune_mode = PRUNE_2D_ACCURATE;
   sf->tx_type_search.ml_tx_split_thresh = 30;
   sf->tx_type_search.use_skip_flag_prediction = 1;
+  sf->tx_type_search.use_reduced_intra_txset = 0;
   sf->tx_type_search.fast_intra_tx_type_search = 0;
   sf->tx_type_search.fast_inter_tx_type_search = 0;
   sf->tx_type_search.skip_tx_search = 0;

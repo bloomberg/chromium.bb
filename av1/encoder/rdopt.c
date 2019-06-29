@@ -3051,7 +3051,15 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         av1_get_tx_type(get_plane_type(plane), xd, blk_row, blk_col, tx_size,
                         cm->reduced_tx_set_used);
   }
-  const uint16_t ext_tx_used_flag = av1_ext_tx_used_flag[tx_set_type];
+  PREDICTION_MODE intra_dir =
+      mbmi->filter_intra_mode_info.use_filter_intra
+          ? fimode_to_intradir[mbmi->filter_intra_mode_info.filter_intra_mode]
+          : mbmi->mode;
+  const uint16_t ext_tx_used_flag =
+      cpi->sf.tx_type_search.use_reduced_intra_txset &&
+              tx_set_type == EXT_TX_SET_DTT4_IDTX_1DDCT
+          ? av1_reduced_intra_tx_used_flag[intra_dir]
+          : av1_ext_tx_used_flag[tx_set_type];
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_up_map[tx_size] > TX_32X32 ||
       ext_tx_used_flag == 0x0001 ||
       (is_inter && cpi->oxcf.use_inter_dct_only) ||
