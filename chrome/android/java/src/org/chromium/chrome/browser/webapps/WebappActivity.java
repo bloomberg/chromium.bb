@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -188,6 +189,9 @@ public class WebappActivity extends SingleTabActivity {
     public void initializeState() {
         super.initializeState();
         initializeUI(getSavedInstanceState());
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            getActivityTab().setWebappManifestScope(getWebappInfo().scopeUri().toString());
+        }
     }
 
     @Override
