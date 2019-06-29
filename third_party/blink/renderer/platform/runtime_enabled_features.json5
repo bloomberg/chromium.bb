@@ -694,6 +694,10 @@
       status: "stable",
     },
     {
+      name: "GroupEffect",
+      status: "test",
+    },
+    {
       name: "HeapCompaction",
     },
     {
