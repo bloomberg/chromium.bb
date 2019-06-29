@@ -1160,6 +1160,9 @@
       status: "experimental",
     },
     {
+      name: "RedirectBlankNavigationToTop",
+    },
+    {
       name: "ReducedReferrerGranularity",
     },
     {
