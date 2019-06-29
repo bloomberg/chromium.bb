@@ -108,16 +108,23 @@ tree:focus .tree-row[selected] {
 
 .tree-label-icon,
 .tree-row[may-have-children] > .tree-label-icon {
-  background-image: -webkit-image-set(
-      url(../../../resources/default_100_percent/common/folder_closed.png) 1x,
-      url(../../../resources/default_200_percent/common/folder_closed.png) 2x);
+  background-image: url(chrome://theme/IDR_FOLDER_CLOSED);
 }
 
-.tree-item[expanded] > .tree-row > .tree-label-icon {
-  background-image: -webkit-image-set(
-      url(../../../views/resources/default_100_percent/common/folder_open.png) 1x,
-      url(../../../views/resources/default_200_percent/common/folder_open.png) 2x);
+<if expr="is_macosx or is_ios">
+@media (prefers-color-scheme: dark) {
+  .tree-label-icon,
+  .tree-row[may-have-children] > .tree-label-icon {
+    background-image: url(chrome://theme/IDR_FOLDER_CLOSED_WHITE);
+  }
 }
+</if>
+
+<if expr="not is_macosx and not is_ios">
+.tree-item[expanded] > .tree-row > .tree-label-icon {
+  background-image: url(chrome://theme/IDR_FOLDER_OPEN);
+}
+</if>
 
 html[dir=rtl] .tree-label-icon,
 html[dir=rtl] .tree-row[may-have-children] > .tree-label-icon,

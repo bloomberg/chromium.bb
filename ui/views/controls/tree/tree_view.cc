@@ -36,7 +36,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view_controller.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/vector_icons.h"
 
