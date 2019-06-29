@@ -238,6 +238,10 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
       if (initial_key_event.dom_key == dom_key && !IsEditableElement(*node))
         event_cancellable = false;
     }
+  } else {
+    // TODO(bokan) Should cleanup these magic numbers. https://crbug.com/949766.
+    const int kDomKeyNeverSend = 0x00200309;
+    send_key_event = initial_key_event.dom_key != kDomKeyNeverSend;
   }
 
   // TODO: it would be fair to let an input method handle KeyUp events
