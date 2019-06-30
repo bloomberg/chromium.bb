@@ -399,13 +399,15 @@ x11_input_destroy(struct x11_backend *b)
 	weston_seat_release(&b->core_seat);
 }
 
-static void
+static int
 x11_output_start_repaint_loop(struct weston_output *output)
 {
 	struct timespec ts;
 
 	weston_compositor_read_presentation_clock(output->compositor, &ts);
 	weston_output_finish_frame(output, &ts, WP_PRESENTATION_FEEDBACK_INVALID);
+
+	return 0;
 }
 
 static int

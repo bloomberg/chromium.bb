@@ -93,7 +93,7 @@ struct remoted_output {
 	void (*saved_destroy)(struct weston_output *output);
 	int (*saved_enable)(struct weston_output *output);
 	int (*saved_disable)(struct weston_output *output);
-	void (*saved_start_repaint_loop)(struct weston_output *output);
+	int (*saved_start_repaint_loop)(struct weston_output *output);
 
 	char *host;
 	int port;
@@ -647,7 +647,7 @@ remoting_output_destroy(struct weston_output *output)
 	free(remoted_output);
 }
 
-static void
+static int
 remoting_output_start_repaint_loop(struct weston_output *output)
 {
 	struct remoted_output *remoted_output = lookup_remoted_output(output);
@@ -658,6 +658,8 @@ remoting_output_start_repaint_loop(struct weston_output *output)
 	msec = millihz_to_nsec(remoted_output->output->current_mode->refresh)
 			/ 1000000;
 	wl_event_source_timer_update(remoted_output->finish_frame_timer, msec);
+
+	return 0;
 }
 
 static int

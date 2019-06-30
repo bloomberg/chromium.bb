@@ -301,7 +301,7 @@ struct weston_output {
 	enum weston_hdcp_protection current_protection;
 	bool allow_protection;
 
-	void (*start_repaint_loop)(struct weston_output *output);
+	int (*start_repaint_loop)(struct weston_output *output);
 	int (*repaint)(struct weston_output *output,
 			pixman_region32_t *damage,
 			void *repaint_data);
@@ -1053,8 +1053,8 @@ struct weston_backend {
 	 *
 	 * @param repaint_data Data returned by repaint_begin
 	 */
-	void (*repaint_flush)(struct weston_compositor *compositor,
-			      void *repaint_data);
+	int (*repaint_flush)(struct weston_compositor *compositor,
+			     void *repaint_data);
 
 	/** Allocate a new output
 	 *

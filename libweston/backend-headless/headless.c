@@ -80,13 +80,15 @@ to_headless_backend(struct weston_compositor *base)
 	return container_of(base->backend, struct headless_backend, base);
 }
 
-static void
+static int
 headless_output_start_repaint_loop(struct weston_output *output)
 {
 	struct timespec ts;
 
 	weston_compositor_read_presentation_clock(output->compositor, &ts);
 	weston_output_finish_frame(output, &ts, WP_PRESENTATION_FEEDBACK_INVALID);
+
+	return 0;
 }
 
 static int

@@ -131,13 +131,15 @@ fbdev_output_get_head(struct fbdev_output *output)
 			    struct fbdev_head, base.output_link);
 }
 
-static void
+static int
 fbdev_output_start_repaint_loop(struct weston_output *output)
 {
 	struct timespec ts;
 
 	weston_compositor_read_presentation_clock(output->compositor, &ts);
 	weston_output_finish_frame(output, &ts, WP_PRESENTATION_FEEDBACK_INVALID);
+
+	return 0;
 }
 
 static int

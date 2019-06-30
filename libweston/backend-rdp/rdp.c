@@ -382,13 +382,15 @@ rdp_peer_refresh_region(pixman_region32_t *region, freerdp_peer *peer)
 		rdp_peer_refresh_raw(region, output->shadow_surface, peer);
 }
 
-static void
+static int
 rdp_output_start_repaint_loop(struct weston_output *output)
 {
 	struct timespec ts;
 
 	weston_compositor_read_presentation_clock(output->compositor, &ts);
 	weston_output_finish_frame(output, &ts, WP_PRESENTATION_FEEDBACK_INVALID);
+
+	return 0;
 }
 
 static int

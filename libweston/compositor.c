@@ -2790,17 +2790,19 @@ output_repaint_timer_handler(void *data)
 
 	if (ret == 0) {
 		if (compositor->backend->repaint_flush)
-			compositor->backend->repaint_flush(compositor,
-							   repaint_data);
+			ret = compositor->backend->repaint_flush(compositor,
+							 repaint_data);
 	} else {
+		if (compositor->backend->repaint_cancel)
+			compositor->backend->repaint_cancel(compositor,
+							    repaint_data);
+	}
+
+	if (ret != 0) {
 		wl_list_for_each(output, &compositor->output_list, link) {
 			if (output->repainted)
 				weston_output_schedule_repaint_reset(output);
 		}
-
-		if (compositor->backend->repaint_cancel)
-			compositor->backend->repaint_cancel(compositor,
-							    repaint_data);
 	}
 
 	wl_list_for_each(output, &compositor->output_list, link)
@@ -2887,11 +2889,14 @@ static void
 idle_repaint(void *data)
 {
 	struct weston_output *output = data;
+	int ret;
 
 	assert(output->repaint_status == REPAINT_BEGIN_FROM_IDLE);
 	output->repaint_status = REPAINT_AWAITING_COMPLETION;
 	output->idle_repaint_source = NULL;
-	output->start_repaint_loop(output);
+	ret = output->start_repaint_loop(output);
+	if (ret != 0)
+		weston_output_schedule_repaint_reset(output);
 }
 
 WL_EXPORT void

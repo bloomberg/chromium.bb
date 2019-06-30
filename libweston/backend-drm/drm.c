@@ -463,7 +463,7 @@ drm_waitvblank_pipe(struct drm_output *output)
 		return 0;
 }
 
-static void
+static int
 drm_output_start_repaint_loop(struct weston_output *output_base)
 {
 	struct drm_output *output = to_drm_output(output_base);
@@ -482,7 +482,7 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	};
 
 	if (output->disable_pending || output->destroy_pending)
-		return;
+		return 0;
 
 	if (!output->scanout_plane->state_cur->fb) {
 		/* We can't page flip if there's no mode set */
@@ -519,7 +519,7 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 			drm_output_update_msc(output, vbl.reply.sequence);
 			weston_output_finish_frame(output_base, &ts,
 						WP_PRESENTATION_FEEDBACK_INVALID);
-			return;
+			return 0;
 		}
 	}
 
@@ -538,15 +538,18 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	if (ret != 0) {
 		weston_log("applying repaint-start state failed: %s\n",
 			   strerror(errno));
+		if (ret == -EACCES)
+			return -1;
 		goto finish_frame;
 	}
 
-	return;
+	return 0;
 
 finish_frame:
 	/* if we cannot page-flip, immediately finish frame */
 	weston_output_finish_frame(output_base, NULL,
 				   WP_PRESENTATION_FEEDBACK_INVALID);
+	return 0;
 }
 
 /**
@@ -585,15 +588,21 @@ drm_repaint_begin(struct weston_compositor *compositor)
  * the update completes (see drm_output_update_complete), the output
  * state will be freed.
  */
-static void
+static int
 drm_repaint_flush(struct weston_compositor *compositor, void *repaint_data)
 {
 	struct drm_backend *b = to_drm_backend(compositor);
 	struct drm_pending_state *pending_state = repaint_data;
+	int ret;
 
-	drm_pending_state_apply(pending_state);
+	ret = drm_pending_state_apply(pending_state);
+	if (ret != 0)
+		weston_log("repaint-flush failed: %s\n", strerror(errno));
+
 	drm_debug(b, "[repaint] flushed pending_state %p\n", pending_state);
 	b->repaint_data = NULL;
+
+	return (ret == -EACCES) ? -1 : 0;
 }
 
 /**
@@ -2928,11 +2937,13 @@ renderer_switch_binding(struct weston_keyboard *keyboard,
 	switch_to_gl_renderer(b);
 }
 
-static void
+static int
 drm_virtual_output_start_repaint_loop(struct weston_output *output_base)
 {
 	weston_output_finish_frame(output_base, NULL,
 				   WP_PRESENTATION_FEEDBACK_INVALID);
+
+	return 0;
 }
 
 static int
