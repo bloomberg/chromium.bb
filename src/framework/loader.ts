@@ -38,7 +38,7 @@ function* concat(lists: IPendingEntry[][]): IterableIterator<IPendingEntry> {
 }
 
 type TestGroupFilter = (testcase: ICaseID) => boolean;
-function filterTestGroup(group: ITestGroup, filter: TestGroupFilter) {
+function filterTestGroup(group: ITestGroup, filter: TestGroupFilter): ITestGroup {
   return {
     *iterate(log: GroupRecorder): Iterable<RunCase> {
       for (const rc of group.iterate(log)) {
