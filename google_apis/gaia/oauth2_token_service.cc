@@ -289,3 +289,8 @@ size_t OAuth2TokenService::GetNumPendingRequestsForTesting(
   return token_manager_->GetNumPendingRequestsForTesting(client_id, account_id,
                                                          scopes);
 }
+
+void OAuth2TokenService::OverrideAccessTokenManagerForTesting(
+    std::unique_ptr<OAuth2AccessTokenManager> token_manager) {
+  token_manager_ = std::move(token_manager);
+}

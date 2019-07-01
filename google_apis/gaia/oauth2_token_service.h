@@ -183,6 +183,9 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
       const std::string& client_id,
       const CoreAccountId& account_id,
       const OAuth2AccessTokenManager::ScopeSet& scopes) const;
+  // Override |token_manager_| for testing.
+  void OverrideAccessTokenManagerForTesting(
+      std::unique_ptr<OAuth2AccessTokenManager> token_manager);
 
   OAuth2TokenServiceDelegate* GetDelegate();
   const OAuth2TokenServiceDelegate* GetDelegate() const;
