@@ -1610,7 +1610,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3450157232394774192">Inaktiver Zustand – Auslastung in Prozent</translation>
 <translation id="3453612417627951340">Autorisierung erforderlich</translation>
 <translation id="3454157711543303649">Aktivierung abgeschlossen</translation>
-<translation id="3454213325559396544">Das ist das letzte automatische Software- und Sicherheitsupdate für dieses <ph name="DEVICE_TYPE" />. Wenn Sie weiter Updates erhalten möchten, ist ein neueres Modell erforderlich.</translation>
+<translation id="3454213325559396544">Das ist das letzte automatische Software- und Sicherheitsupdate für dieses <ph name="DEVICE_TYPE" />. Um weiter Updates zu erhalten, ist ein neueres Modell erforderlich.</translation>
 <translation id="345693547134384690">Bil&amp;d in neuem Tab öffnen</translation>
 <translation id="3457500881955698515">Ihr Unternehmen bzw. Ihre Organisation verlangt, dass dieses Gerät umgehend aktualisiert wird</translation>
 <translation id="3459509316159669723">Drucken</translation>

@@ -278,6 +278,7 @@ Skôr ako povolíte prístup, skontrolujte, či ide o dôveryhodný web.</trans
 <translation id="2900528713135656174">Vytvorte udalosť</translation>
 <translation id="2902702728133930130">Prehliadač Chrome sa nepodarilo spustiť, pretože sa vyskytla neočakávaná chyba</translation>
 <translation id="290376772003165898">Stránka nie je v jazyku <ph name="LANGUAGE" />?</translation>
+<translation id="2904414404539560095">Zoznam zariadení, s ktorými sa má zdieľať karta, je otvorený na plnú výšku.</translation>
 <translation id="2910701580606108292">Pýtať sa, či chcete povoliť webu prehrávať chránený obsah</translation>
 <translation id="2913331724188855103">Povoliť webom ukladať a čítať súbory cookie (odporučané)</translation>
 <translation id="2923908459366352541">Názov je neplatný</translation>
@@ -429,6 +430,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4099578267706723511">Odosielať štatistiky používania a prehľady chýb Googlu a pomáhať tak zlepšovať Chrome</translation>
 <translation id="410351446219883937">Automatické prehrávanie</translation>
 <translation id="4116038641877404294">Stiahnite si stránky na použitie offline</translation>
+<translation id="4135200667068010335">Zoznam zariadení, s ktorými sa má zdieľať karta, je zavretý.</translation>
 <translation id="4149994727733219643">Jednoduché zobrazenie webových stránok</translation>
 <translation id="4165986682804962316">Nastavenia webu</translation>
 <translation id="4169535189173047238">Nepovoliť</translation>
@@ -806,6 +808,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6746124502594467657">Presunúť nadol</translation>
 <translation id="6766622839693428701">Zatvorte potiahnutím dole.</translation>
 <translation id="6766758767654711248">Kliknutím prejdite na web</translation>
+<translation id="6767294960381293877">Zoznam zariadení, s ktorými sa má zdieľať karta, je otvorený na polovičnú výšku.</translation>
 <translation id="6782111308708962316">Brániť webom tretích strán ukladať a čítať súbory cookie</translation>
 <translation id="6790428901817661496">Prehrať</translation>
 <translation id="679325081238418596">Používajte svoje záložky, históriu, heslá a ďalšie nastavenia vo všetkých svojich zariadeniach</translation>
@@ -1131,6 +1134,7 @@ Web NEZÍSKA prístup k fotoaparátu. Obrázky fotoaparátu sú viditeľné iba
 <translation id="9099018167121903954">Stiahnuté: <ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">Ponúkať zjednodušené zobrazenie článkov (ak je podporované)</translation>
 <translation id="9100610230175265781">Vyžaduje sa prístupová fráza</translation>
+<translation id="9104217018994036254">Zoznam zariadení, s ktorými sa má zdieľať karta.</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>
 <translation id="9139068048179869749">Pýtať sa, či chcete povoliť webu odosielať upozornenia (odporúčané)</translation>

@@ -278,6 +278,7 @@
 <translation id="2900528713135656174">इव्हेंट तयार करा</translation>
 <translation id="2902702728133930130">सुरू करताना अनपेक्षित एररमुळे Chrome अयशस्वी झाले.</translation>
 <translation id="290376772003165898">पेज <ph name="LANGUAGE" />मध्ये नाही?</translation>
+<translation id="2904414404539560095">पूर्ण उंचीवर उघडलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="2910701580606108292">सायटींना संरक्षित आशय प्ले करू देण्याआधी विचारा</translation>
 <translation id="2913331724188855103">कुकी डेटा सेव्ह करणे आणि वाचण्यासाठी साइटना अनुमती द्या (शिफारस केलेले)</translation>
 <translation id="2923908459366352541">नाव अवैध आहे</translation>
@@ -429,6 +430,7 @@
 <translation id="4099578267706723511">वापर आकडेवारी आणि क्रॅश अहवाल Google कडे पाठवून Chrome अधिक चांगले करण्यास मदत करा.</translation>
 <translation id="410351446219883937">ऑटोप्ले</translation>
 <translation id="4116038641877404294">पेज ऑफलाइन वापरण्यासाठी ती डाउनलोड करा</translation>
+<translation id="4135200667068010335">बंद केलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="4149994727733219643">वेब पेजसाठी सोपा केलेला व्ह्यू</translation>
 <translation id="4165986682804962316">साइट सेटिंग्ज</translation>
 <translation id="4169535189173047238">अनुमती देऊ नका</translation>
@@ -806,6 +808,7 @@
 <translation id="6746124502594467657">खाली हलवा</translation>
 <translation id="6766622839693428701">बंद करण्यासाठी खाली स्वाइप करा.</translation>
 <translation id="6766758767654711248">साइटवर जाण्यासाठी टॅप करा</translation>
+<translation id="6767294960381293877">अर्ध्या उंचीवर उघडलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="6782111308708962316">तृतीय-पक्ष वेबसाइटना कुकी डेटा सेव्ह करण्यास आणि वाचण्यास प्रतिबंधित करा</translation>
 <translation id="6790428901817661496">प्ले करा</translation>
 <translation id="679325081238418596">आपल्या सर्व डिव्हाइसेसवर तुमचे बुकमार्क, इतिहास, पासवर्ड आणि इतर सेटिंग्ज मिळवा</translation>
@@ -1131,6 +1134,7 @@
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB डाउनलोड केले</translation>
 <translation id="9100505651305367705">सपोर्ट असताना सोप्या पद्धतीने लेख दाखवण्याची ऑफर</translation>
 <translation id="9100610230175265781">सांकेतिक पासफ्रेझ आवश्यक</translation>
+<translation id="9104217018994036254">टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">मूळ दर्शवा</translation>
 <translation id="9139068048179869749">साइटना सूचना पाठविण्याची अनुमती देण्यापूर्वी प्रथम विचारा (शिफारस केलेले)</translation>

@@ -1587,7 +1587,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Cada entrada da lista contém um dicionário que deve incluir a identificação de extensão no campo 'extensão-id', e o URL de atualização no campo 'update-url'.</translation>
 <translation id="3874773863217952418">Ativar "Tocar para pesquisar"</translation>
 <translation id="3877517141460819966">Modo de autenticação de segundo fator integrado</translation>
-<translation id="3879208481373875102">Configura a lista de apps da Web de instalação forçada</translation>
+<translation id="3879208481373875102">Configurar a lista de apps da Web de instalação forçada</translation>
 <translation id="388237772682176890">O uso dessa política foi suspenso no M53 e removido no M54, porque a compatibilidade com o SPDY/3.1 foi removida.
 
       Desativa o uso do protocolo SPDY no <ph name="PRODUCT_NAME" />.

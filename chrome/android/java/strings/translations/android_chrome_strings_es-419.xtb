@@ -278,6 +278,7 @@
 <translation id="2900528713135656174">Crear evento</translation>
 <translation id="2902702728133930130">Se produjo un error inesperado durante el inicio de Chrome.</translation>
 <translation id="290376772003165898">¿La página no está en <ph name="LANGUAGE" />?</translation>
+<translation id="2904414404539560095">La lista de dispositivos con los que se comparte una pestaña está abierta en tamaño completo.</translation>
 <translation id="2910701580606108292">Preguntar antes de permitir que los sitios reproduzcan contenido protegido</translation>
 <translation id="2913331724188855103">Permitir que todos los sitios guarden y lean datos de cookies (recomendado)</translation>
 <translation id="2923908459366352541">El nombre no es válido</translation>
@@ -429,6 +430,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4099578267706723511">Envía las estadísticas de uso y los informes de fallos a Google para ayudarnos a mejorar Chrome.</translation>
 <translation id="410351446219883937">Reproducción automática</translation>
 <translation id="4116038641877404294">Descarga las páginas para usarlas sin conexión</translation>
+<translation id="4135200667068010335">Está cerrada la lista de dispositivos con los que se comparte una pestaña.</translation>
 <translation id="4149994727733219643">Vista simplificada para páginas web</translation>
 <translation id="4165986682804962316">Configuración del sitio</translation>
 <translation id="4169535189173047238">No permitir</translation>
@@ -806,6 +808,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6746124502594467657">Mover hacia abajo</translation>
 <translation id="6766622839693428701">Desliza hacia abajo para cerrar.</translation>
 <translation id="6766758767654711248">Presiona para ir al sitio</translation>
+<translation id="6767294960381293877">La lista de dispositivos con los que se comparte una pestaña está abierta a media altura.</translation>
 <translation id="6782111308708962316">Evitar que los sitios web de terceros guarden y lean datos de cookies</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="679325081238418596">Accede a tus favoritos, historial, contraseñas y otras opciones de configuración en todos los dispositivos</translation>
@@ -1131,6 +1134,7 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="9099018167121903954">Contenido descargado: <ph name="KILOBYTES" /> kilobytes</translation>
 <translation id="9100505651305367705">Se ofrece mostrar artículos en una vista simplificada, cuando es compatible</translation>
 <translation id="9100610230175265781">Se necesita una frase de contraseña.</translation>
+<translation id="9104217018994036254">Lista de dispositivos con los que se comparte una pestaña.</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9139068048179869749">Preguntar antes de permitir que los sitios envíen notificaciones (recomendado)</translation>

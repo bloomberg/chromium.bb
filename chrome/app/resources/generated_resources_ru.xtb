@@ -1051,7 +1051,7 @@
 <translation id="2572032849266859634">Предоставлен доступ к тому <ph name="VOLUME_NAME" /> (только чтение).</translation>
 <translation id="2575247648642144396">Значок будет отображаться, если расширение может работать на загруженной странице. Активируйте его, нажав на значок или с помощью комбинации клавиш <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Использовать в качестве Chromebox для видеоконференций</translation>
-<translation id="2580889980133367162">Всегда разрешать <ph name="HOST" /> скачивать нескольких файлов</translation>
+<translation id="2580889980133367162">Всегда разрешать <ph name="HOST" /> скачивать несколько файлов</translation>
 <translation id="2580924999637585241">Всего: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">долгая</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -3773,7 +3773,7 @@
 <translation id="6788210894632713004">Распакованное расширение</translation>
 <translation id="6790428901817661496">Воспроизвести</translation>
 <translation id="6790497603648687708">Расширение "<ph name="EXTENSION_NAME" />" было добавлено удаленно</translation>
-<translation id="6790820461102226165">Добавление пользователя</translation>
+<translation id="6790820461102226165">Добавить пользователя</translation>
 <translation id="6792072150955115067">Приложение "<ph name="APP_NAME" />" хочет предоставить сайту <ph name="TARGET_NAME" /> доступ к вашему экрану. Выберите, что можно показать.</translation>
 <translation id="6793604637258913070">Выделять курсор при его появлении или перемещении</translation>
 <translation id="6795884519221689054">Панда</translation>

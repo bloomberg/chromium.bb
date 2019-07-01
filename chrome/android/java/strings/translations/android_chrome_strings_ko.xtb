@@ -278,6 +278,7 @@
 <translation id="2900528713135656174">일정 만들기</translation>
 <translation id="2902702728133930130">예기치 않은 오류로 인해 Chrome을 시작하지 못했습니다.</translation>
 <translation id="290376772003165898">페이지 언어가 <ph name="LANGUAGE" />가 아닌가요?</translation>
+<translation id="2904414404539560095">탭을 공유할 기기 목록이 전체 높이로 열렸습니다.</translation>
 <translation id="2910701580606108292">사이트에서 보호된 콘텐츠를 재생하도록 허용하기 전에 확인</translation>
 <translation id="2913331724188855103">사이트에서 쿠키 데이터를 저장하고 읽도록 허용(권장)</translation>
 <translation id="2923908459366352541">잘못된 이름</translation>
@@ -429,6 +430,7 @@
 <translation id="4099578267706723511">사용 통계와 비정상 종료 보고서를 Google로 전송하여 Chrome을 개선하는 데 동참하세요.</translation>
 <translation id="410351446219883937">자동재생</translation>
 <translation id="4116038641877404294">페이지를 다운로드하여 오프라인에서 사용하세요.</translation>
+<translation id="4135200667068010335">탭을 공유할 기기 목록이 닫혔습니다.</translation>
 <translation id="4149994727733219643">웹페이지 간단히 보기</translation>
 <translation id="4165986682804962316">사이트 설정</translation>
 <translation id="4169535189173047238">허용 안함</translation>
@@ -806,6 +808,7 @@
 <translation id="6746124502594467657">아래로 이동</translation>
 <translation id="6766622839693428701">닫으려면 아래로 스와이프하세요.</translation>
 <translation id="6766758767654711248">탭하여 사이트로 이동</translation>
+<translation id="6767294960381293877">탭을 공유할 기기 목록이 절반 높이로 열렸습니다.</translation>
 <translation id="6782111308708962316">타사 웹사이트에서 쿠키 데이터를 저장하거나 읽을 수 없도록 방지</translation>
 <translation id="6790428901817661496">재생</translation>
 <translation id="679325081238418596">모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 동기화합니다.</translation>
@@ -1131,6 +1134,7 @@
 <translation id="9099018167121903954"><ph name="KILOBYTES" />KB가 다운로드됨</translation>
 <translation id="9100505651305367705">지원되는 경우 간단히 보기로 기사를 표시하는 기능 제공</translation>
 <translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
+<translation id="9104217018994036254">탭을 공유할 기기 목록입니다.</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />(<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">원본 보기</translation>
 <translation id="9139068048179869749">사이트에서 알림을 보내도록 허용하기 전에 확인(권장)</translation>

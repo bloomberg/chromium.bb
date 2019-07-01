@@ -278,6 +278,7 @@
 <translation id="2900528713135656174">建立活動</translation>
 <translation id="2902702728133930130">發生未預期的錯誤，Chrome 啟動失敗。</translation>
 <translation id="290376772003165898">不是<ph name="LANGUAGE" />網頁嗎？</translation>
+<translation id="2904414404539560095">要共用分頁的裝置清單已開啟，顯示於整個畫面。</translation>
 <translation id="2910701580606108292">允許網站播放受保護的內容前，必須先詢問你</translation>
 <translation id="2913331724188855103">允許網站儲存及讀取 Cookie 資料 (建議)</translation>
 <translation id="2923908459366352541">名稱無效</translation>
@@ -429,6 +430,7 @@
 <translation id="4099578267706723511">將使用統計資料及當機報告傳送給 Google，助我們一臂之力，讓 Chrome 更臻完美。</translation>
 <translation id="410351446219883937">自動播放</translation>
 <translation id="4116038641877404294">下載網頁以便離線存取</translation>
+<translation id="4135200667068010335">要共用分頁的裝置清單已關閉。</translation>
 <translation id="4149994727733219643">使用簡易檢視模式查看網頁</translation>
 <translation id="4165986682804962316">網站設定</translation>
 <translation id="4169535189173047238">不允許</translation>
@@ -806,6 +808,7 @@
 <translation id="6746124502594467657">下移</translation>
 <translation id="6766622839693428701">向下滑動即可關閉。</translation>
 <translation id="6766758767654711248">輕觸即可前往網站</translation>
+<translation id="6767294960381293877">要共用分頁的裝置清單已開啟，顯示在畫面下半部。</translation>
 <translation id="6782111308708962316">禁止第三方網站儲存及讀取 Cookie 資料</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="679325081238418596">你在任何裝置上都能取得自己的書籤、歷史記錄、密碼和其他設定</translation>
@@ -895,7 +898,7 @@
 <translation id="7403691278183511381">Chrome 初次使用體驗</translation>
 <translation id="741204030948306876">是，我要啟用</translation>
 <translation id="7413229368719586778">開始日期：<ph name="DATE" /></translation>
-<translation id="7418565925463285788">將分頁加入群組...</translation>
+<translation id="7418565925463285788">將分頁加入群組</translation>
 <translation id="7423098979219808738">先詢問我</translation>
 <translation id="7423538860840206698">禁止讀取剪貼簿</translation>
 <translation id="7431991332293347422">控制 Google 使用瀏覽記錄提供個人化搜尋服務和其他內容的方式</translation>
@@ -1131,6 +1134,7 @@
 <translation id="9099018167121903954">下載內容佔 <ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">詢問是否以簡易模式顯示支援這項功能的文章</translation>
 <translation id="9100610230175265781">請提供通關密語</translation>
+<translation id="9104217018994036254">要共用分頁的裝置清單。</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9139068048179869749">允許網站傳送通知前，必須先詢問你 (建議)</translation>

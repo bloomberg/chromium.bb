@@ -278,6 +278,7 @@
 <translation id="2900528713135656174">创建活动</translation>
 <translation id="2902702728133930130">由于出现意外错误，Chrome 启动失败。</translation>
 <translation id="290376772003165898">网页的源语言不是<ph name="LANGUAGE" />？</translation>
+<translation id="2904414404539560095">要与之分享标签页的设备的列表已全屏打开。</translation>
 <translation id="2910701580606108292">网站需先询问并得到许可才能播放受保护内容</translation>
 <translation id="2913331724188855103">允许网站保存和读取 Cookie 数据（推荐）</translation>
 <translation id="2923908459366352541">名称无效</translation>
@@ -429,6 +430,7 @@
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
 <translation id="410351446219883937">自动播放</translation>
 <translation id="4116038641877404294">下载网页以便离线查看</translation>
+<translation id="4135200667068010335">要与之分享标签页的设备的列表已关闭。</translation>
 <translation id="4149994727733219643">使用简化版视图查看网页</translation>
 <translation id="4165986682804962316">网站设置</translation>
 <translation id="4169535189173047238">不允许</translation>
@@ -806,6 +808,7 @@
 <translation id="6746124502594467657">下移</translation>
 <translation id="6766622839693428701">向下滑动即可关闭。</translation>
 <translation id="6766758767654711248">点按即可转到网站</translation>
+<translation id="6767294960381293877">要与之分享标签页的设备的列表已半屏打开。</translation>
 <translation id="6782111308708962316">阻止第三方网站保存和读取 Cookie 数据</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="679325081238418596">获取您在所有设备上保存的书签、历史记录、密码和其他设置</translation>
@@ -1131,6 +1134,7 @@
 <translation id="9099018167121903954">下载内容已占用的空间：<ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">询问是否使用简化版视图显示支持这一功能的文章</translation>
 <translation id="9100610230175265781">必须提供密码</translation>
+<translation id="9104217018994036254">要与之分享标签页的设备的列表。</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9139068048179869749">网站发送通知前需先询问并获得许可（推荐）</translation>

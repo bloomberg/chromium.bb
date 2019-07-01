@@ -278,6 +278,7 @@
 <translation id="2900528713135656174">予定を作成</translation>
 <translation id="2902702728133930130">Chrome の起動時に予期しないエラーが発生し、起動できませんでした。</translation>
 <translation id="290376772003165898"><ph name="LANGUAGE" />のページではない場合</translation>
+<translation id="2904414404539560095">タブを共有するデバイスのリストが画面全体に表示されました。</translation>
 <translation id="2910701580606108292">保護されたコンテンツの再生をサイトに許可する前に確認する</translation>
 <translation id="2913331724188855103">サイトに Cookie データの保存と読み取りを許可する（推奨）</translation>
 <translation id="2923908459366352541">名前が無効です</translation>
@@ -429,6 +430,7 @@
 <translation id="4099578267706723511">使用統計情報と障害レポートを Google に送信して、Chrome の品質向上にご協力ください。</translation>
 <translation id="410351446219883937">自動再生</translation>
 <translation id="4116038641877404294">ページをダウンロードするとオフラインで使用できるようになります</translation>
+<translation id="4135200667068010335">タブを共有するデバイスのリストが閉じられました。</translation>
 <translation id="4149994727733219643">ウェブページの簡易表示</translation>
 <translation id="4165986682804962316">サイトの設定</translation>
 <translation id="4169535189173047238">許可しない</translation>
@@ -806,6 +808,7 @@
 <translation id="6746124502594467657">下に移動</translation>
 <translation id="6766622839693428701">閉じるには下にスワイプします。</translation>
 <translation id="6766758767654711248">タップしてサイトに移動する</translation>
+<translation id="6767294960381293877">タブを共有するデバイスのリストが画面の下半分に表示されました。</translation>
 <translation id="6782111308708962316">サードパーティのウェブサイトが Cookie データを保存したり読み取ったりできないようにします</translation>
 <translation id="6790428901817661496">再生</translation>
 <translation id="679325081238418596">ブックマーク、履歴、パスワードなどの設定をどのデバイスでも利用できるようにします</translation>
@@ -1131,6 +1134,7 @@
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB をダウンロードで使用中</translation>
 <translation id="9100505651305367705">記事の簡易表示がサポートされている場合、簡易表示を提案します</translation>
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>
+<translation id="9104217018994036254">タブを共有するデバイスのリストです。</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />（<ph name="ITEM_ID" />）</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9139068048179869749">サイトに通知の送信を許可する前に確認する（推奨）</translation>

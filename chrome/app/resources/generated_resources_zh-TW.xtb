@@ -1027,7 +1027,7 @@
 <translation id="253434972992662860">暫停(&amp;P)</translation>
 <translation id="2534460670861217804">安全 HTTP Proxy</translation>
 <translation id="253557089021624350">Keepalive 數量</translation>
-<translation id="2535799430745250929">沒有行動網路</translation>
+<translation id="2535799430745250929">沒有行動數據網路</translation>
 <translation id="2538361623464451692">同步處理已停用</translation>
 <translation id="2540449034743108469">按下 [開始] 即可監聽擴充功能活動</translation>
 <translation id="2541002089857695151">要讓全螢幕投放最佳化嗎？</translation>
@@ -2171,7 +2171,7 @@
 <translation id="4258348331913189841">檔案系統</translation>
 <translation id="4263757076580287579">已取消註冊印表機。</translation>
 <translation id="426564820080660648">如要檢查更新，請使用 Wi-Fi 或行動數據。</translation>
-<translation id="4267953847983678297">自動連線至行動網路</translation>
+<translation id="4267953847983678297">自動連線至行動數據網路</translation>
 <translation id="4268025649754414643">金鑰編密</translation>
 <translation id="4270393598798225102">第 <ph name="NUMBER" /> 版</translation>
 <translation id="4271396100647220620">找不到相符的項目</translation>
