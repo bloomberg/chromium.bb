@@ -1244,6 +1244,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchUnityIntegrationDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchUnityIntegration)},
+    {"direct-actions", flag_descriptions::kDirectActionsName,
+     flag_descriptions::kDirectActionsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kDirectActions)},
     {"explore-sites", flag_descriptions::kExploreSitesName,
      flag_descriptions::kExploreSitesDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kExploreSites,
@@ -3668,6 +3671,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillAssistantChromeEntryDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          autofill_assistant::features::kAutofillAssistantChromeEntry)},
+
+    {"autofill-assistant-direct-actions",
+     flag_descriptions::kAutofillAssistantDirectActionsName,
+     flag_descriptions::kAutofillAssistantDirectActionsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill_assistant::features::kAutofillAssistantDirectActions)},
 #endif  // defined(OS_ANDROID)
 
     {"disable-best-effort-tasks",

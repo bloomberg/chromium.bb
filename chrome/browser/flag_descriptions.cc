@@ -132,6 +132,11 @@ extern const char kAutofillAssistantChromeEntryName[] =
 extern const char kAutofillAssistantChromeEntryDescription[] =
     "Initiate autofill assistant from within Chrome.";
 
+extern const char kAutofillAssistantDirectActionsName[] =
+    "Autofill Assistant direct actions";
+extern const char kAutofillAssistantDirectActionsDescription[] =
+    "When enabled, expose direct actions from the Autofill Assistant.";
+
 const char kAutofillCacheQueryResponsesName[] =
     "Cache Autofill Query Responses";
 const char kAutofillCacheQueryResponsesDescription[] =
@@ -2238,6 +2243,10 @@ const char kContextualSearchUnityIntegrationName[] =
     "Contextual Search integration with Unified Consent";
 const char kContextualSearchUnityIntegrationDescription[] =
     "Enables integration of Tap to Search with Unified Consent.";
+
+const char kDirectActionsName[] = "Direct actions";
+const char kDirectActionsDescription[] =
+    "Enables direct actions (Android Q and more).";
 
 const char kDownloadProgressInfoBarName[] = "Enable download progress infobar";
 const char kDownloadProgressInfoBarDescription[] =
