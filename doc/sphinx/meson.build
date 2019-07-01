@@ -56,13 +56,6 @@ script_doxy_sphinx = configure_file(
 	configuration: script_data
 )
 
-doxygen_target = custom_target(
-			'weston-doc-doxygen',
-			command: [ doxygen, doxygen_conf_weston ],
-			output: 'doxygen_doc',
-			build_by_default: false
-)
-
 # copy everything to build_dir, if you plan on adding other files in the top
 # rootdir of sourcedir, please add them here as well, otherwise use 'toc/'s
 # meson.build file
@@ -79,7 +72,6 @@ sphinx_doc = custom_target(
 		command: script_doxy_sphinx,
 		output: 'doc',
 		build_by_default: true,
-		depends: doxygen_target
 )
 
 # we need this because we will have a stale 'doc' directory
