@@ -18423,6 +18423,8 @@ Called by update_net_error_codes.py.-->
   <int value="437" label="RUNTIME_ON_CONNECT_NATIVE"/>
   <int value="438" label="ACTION_ON_CLICKED"/>
   <int value="439" label="ACCESSIBILITY_PRIVATE_ON_SWITCH_ACCESS_COMMAND"/>
+  <int value="440"
+      label="ACCESSIBILITY_PRIVATE_FIND_SCROLLABLE_BOUNDS_FOR_POINT"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -19837,6 +19839,8 @@ Called by update_net_error_codes.py.-->
   <int value="1349" label="LOGIN_FETCHDATAFORNEXTLOGINATTEMPT"/>
   <int value="1350" label="ACTION_SETICON"/>
   <int value="1351" label="AUTOTESTPRIVATE_GETALLENTERPRISEPOLICIES"/>
+  <int value="1352"
+      label="ACCESSIBILITY_PRIVATE_ONSCROLLABLEBOUNDSFORPOINTFOUND"/>
 </enum>
 
 <enum name="ExtensionIconState">
