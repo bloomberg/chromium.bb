@@ -1114,6 +1114,14 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogSensitiveResponseProtection(
         UMA_HISTOGRAM_ENUMERATION(
             "SiteIsolation.CORBProtection.CORSHeuristic.ProtectedMimeType",
             protection_decision);
+        if (protection_decision == CrossOriginProtectionDecision::kBlock) {
+          UMA_HISTOGRAM_BOOLEAN(
+              "SiteIsolation.CORBProtection.CORSHeuristic.ProtectedMimeType."
+              "BlockedWithRangeSupport",
+              SupportsRangeRequests(response));
+        }
+        // TODO(krstnmnlsn): Once the CORB protection logging includes sniffing,
+        // add a histogram here and below for the |kBlockedAfterSniffing| case.
         break;
       case kPublic:
         UMA_HISTOGRAM_ENUMERATION(
@@ -1132,6 +1140,12 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogSensitiveResponseProtection(
         UMA_HISTOGRAM_ENUMERATION(
             "SiteIsolation.CORBProtection.CacheHeuristic.ProtectedMimeType",
             protection_decision);
+        if (protection_decision == CrossOriginProtectionDecision::kBlock) {
+          UMA_HISTOGRAM_BOOLEAN(
+              "SiteIsolation.CORBProtection.CacheHeuristic.ProtectedMimeType."
+              "BlockedWithRangeSupport",
+              SupportsRangeRequests(response));
+        }
         break;
       case kPublic:
         UMA_HISTOGRAM_ENUMERATION(
