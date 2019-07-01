@@ -23526,6 +23526,10 @@ Called by update_net_error_codes.py.-->
   <int value="2916" label="CookieNoSameSite"/>
   <int value="2917" label="CookieInsecureAndSameSiteNone"/>
   <int value="2918" label="UnsizedMediaPolicy"/>
+  <int value="2932" label="LazyLoadFrameLoadingAttributeEager"/>
+  <int value="2933" label="LazyLoadFrameLoadingAttributeLazy"/>
+  <int value="2934" label="LazyLoadImageLoadingAttributeEager"/>
+  <int value="2935" label="LazyLoadImageLoadingAttributeLazy"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

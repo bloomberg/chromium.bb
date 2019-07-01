@@ -76,6 +76,17 @@ enum class LazyLoadImageEligibility {
   kEnabledAutomatic
 };
 
+enum class LoadingAttrValue { kAuto, kLazy, kEager };
+
+LoadingAttrValue GetLoadingAttrValue(const HTMLImageElement& html_image) {
+  const auto& attribute_value =
+      html_image.FastGetAttribute(html_names::kLoadingAttr);
+  return EqualIgnoringASCIICase(attribute_value, "eager")
+             ? LoadingAttrValue::kEager
+             : EqualIgnoringASCIICase(attribute_value, "lazy")
+                   ? LoadingAttrValue::kLazy
+                   : LoadingAttrValue::kAuto;
+}
 LazyLoadImageEligibility DetermineLazyLoadImageEligibility(
     const LocalFrame& frame,
     const HTMLImageElement& html_image,
@@ -83,12 +94,16 @@ LazyLoadImageEligibility DetermineLazyLoadImageEligibility(
   if (!url.ProtocolIsInHTTPFamily())
     return LazyLoadImageEligibility::kDisabled;
 
-  const String& loading_attr =
-      html_image.FastGetAttribute(html_names::kLoadingAttr);
-  if (EqualIgnoringASCIICase(loading_attr, "lazy"))
+  LoadingAttrValue loading_attr = GetLoadingAttrValue(html_image);
+  if (loading_attr == LoadingAttrValue::kLazy) {
+    UseCounter::Count(frame.GetDocument(),
+                      WebFeature::kLazyLoadImageLoadingAttributeLazy);
     return LazyLoadImageEligibility::kEnabledExplicit;
-  if (EqualIgnoringASCIICase(loading_attr, "eager") &&
+  }
+  if (loading_attr == LoadingAttrValue::kEager &&
       !frame.GetDocument()->IsLazyLoadPolicyEnforced()) {
+    UseCounter::Count(frame.GetDocument(),
+                      WebFeature::kLazyLoadImageLoadingAttributeEager);
     return LazyLoadImageEligibility::kDisabled;
   }
 
@@ -476,8 +491,13 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
     }
   } else {
     image_complete_ = false;
-    if (lazy_image_load_state_ == LazyImageLoadState::kDeferred)
-      LazyLoadImageObserver::StartMonitoring(GetElement());
+    if (lazy_image_load_state_ == LazyImageLoadState::kDeferred) {
+      if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
+        LazyLoadImageObserver::StartMonitoring(
+            html_image,
+            GetLoadingAttrValue(*html_image) != LoadingAttrValue::kLazy);
+      }
+    }
   }
   delay_until_image_notify_finished_ = nullptr;
 }

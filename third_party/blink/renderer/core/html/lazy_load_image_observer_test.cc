@@ -34,6 +34,10 @@ namespace blink {
 
 namespace {
 
+const char* kLazyLoadEventsDeferredMessage =
+    "Images loaded lazily and replaced with placeholders. Load events are "
+    "deferred. See https://crbug.com/846170";
+
 Vector<char> ReadTestImage() {
   return test::ReadFromFile(test::CoreTestDataPath("notifications/500x500.png"))
       ->CopyAs<Vector<char>>();
@@ -83,6 +87,11 @@ class LazyLoadImagesSimTest : public ::testing::WithParamInterface<bool>,
       }
     }
     EXPECT_TRUE(is_background_image_found);
+    EXPECT_FALSE(ConsoleMessages().Contains(kLazyLoadEventsDeferredMessage));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kLazyLoadImageLoadingAttributeLazy));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kLazyLoadImageLoadingAttributeEager));
   }
 
   void VerifyCSSBackgroundImageInPseudoStyleDeferred(
@@ -128,6 +137,11 @@ class LazyLoadImagesSimTest : public ::testing::WithParamInterface<bool>,
                                               false);
       }
     }
+    EXPECT_FALSE(ConsoleMessages().Contains(kLazyLoadEventsDeferredMessage));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kLazyLoadImageLoadingAttributeLazy));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kLazyLoadImageLoadingAttributeEager));
   }
 
   void VerifyImageElementWithDimensionDeferred(const char* img_attribute) {
@@ -162,6 +176,12 @@ class LazyLoadImagesSimTest : public ::testing::WithParamInterface<bool>,
       test::RunPendingTasks();
       EXPECT_TRUE(ConsoleMessages().Contains("deferred_image onload"));
     }
+    EXPECT_EQ(is_lazyload_image_enabled,
+              ConsoleMessages().Contains(kLazyLoadEventsDeferredMessage));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kLazyLoadImageLoadingAttributeLazy));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kLazyLoadImageLoadingAttributeEager));
   }
 
  private:
@@ -803,6 +823,11 @@ class LazyLoadAutomaticImagesTest : public SimTest {
 
     EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
     EXPECT_TRUE(ConsoleMessages().Contains("image onload"));
+    EXPECT_TRUE(ConsoleMessages().Contains(kLazyLoadEventsDeferredMessage));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kLazyLoadImageLoadingAttributeLazy));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kLazyLoadImageLoadingAttributeEager));
   }
 
   void TestLoadImageExpectingFullImageLoad(const char* image_attributes) {
@@ -823,6 +848,11 @@ class LazyLoadAutomaticImagesTest : public SimTest {
 
     EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
     EXPECT_TRUE(ConsoleMessages().Contains("image onload"));
+    EXPECT_FALSE(ConsoleMessages().Contains(kLazyLoadEventsDeferredMessage));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kLazyLoadImageLoadingAttributeLazy));
+    EXPECT_FALSE(GetDocument().IsUseCounted(
+        WebFeature::kLazyLoadImageLoadingAttributeEager));
   }
 
  private:
@@ -854,6 +884,11 @@ TEST_F(LazyLoadAutomaticImagesTest, AttributeChangedFromLazyToEager) {
 
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("image onload"));
+  EXPECT_FALSE(ConsoleMessages().Contains(kLazyLoadEventsDeferredMessage));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadImageLoadingAttributeLazy));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadImageLoadingAttributeEager));
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, AttributeChangedFromAutoToEager) {
@@ -877,6 +912,11 @@ TEST_F(LazyLoadAutomaticImagesTest, AttributeChangedFromAutoToEager) {
 
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("image onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains(kLazyLoadEventsDeferredMessage));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadImageLoadingAttributeLazy));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadImageLoadingAttributeEager));
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, AttributeChangedFromUnsetToEager) {
@@ -900,15 +940,30 @@ TEST_F(LazyLoadAutomaticImagesTest, AttributeChangedFromUnsetToEager) {
 
   EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
   EXPECT_TRUE(ConsoleMessages().Contains("image onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains(kLazyLoadEventsDeferredMessage));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadImageLoadingAttributeLazy));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadImageLoadingAttributeEager));
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, TinyImageWithLazyAttr) {
   TestLoadImageExpectingLazyLoad("loading='lazy' width='1px' height='1px'");
+  EXPECT_FALSE(ConsoleMessages().Contains(kLazyLoadEventsDeferredMessage));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadImageLoadingAttributeLazy));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadImageLoadingAttributeEager));
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, TinyImageViaStyleWithLazyAttr) {
   TestLoadImageExpectingLazyLoad(
       "loading='lazy' style='width:1px;height:1px;'");
+  EXPECT_FALSE(ConsoleMessages().Contains(kLazyLoadEventsDeferredMessage));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadImageLoadingAttributeLazy));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadImageLoadingAttributeEager));
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, TinyImageWidth1Height1) {
