@@ -166,16 +166,14 @@ class LayerTreeHostImplClient {
 
 // LayerTreeHostImpl owns the LayerImpl trees as well as associated rendering
 // state.
-class CC_EXPORT LayerTreeHostImpl
-    : public InputHandler,
-      public TileManagerClient,
-      public LayerTreeFrameSinkClient,
-      public BrowserControlsOffsetManagerClient,
-      public ScrollbarAnimationControllerClient,
-      public VideoFrameControllerClient,
-      public MutatorHostClient,
-      public ImageAnimationController::Client,
-      public base::SupportsWeakPtr<LayerTreeHostImpl> {
+class CC_EXPORT LayerTreeHostImpl : public InputHandler,
+                                    public TileManagerClient,
+                                    public LayerTreeFrameSinkClient,
+                                    public BrowserControlsOffsetManagerClient,
+                                    public ScrollbarAnimationControllerClient,
+                                    public VideoFrameControllerClient,
+                                    public MutatorHostClient,
+                                    public ImageAnimationController::Client {
  public:
   // This structure is used to build all the state required for producing a
   // single CompositorFrame. The |render_passes| list becomes the set of
@@ -308,6 +306,8 @@ class CC_EXPORT LayerTreeHostImpl
   // ImageAnimationController::Client implementation.
   void RequestBeginFrameForAnimatedImages() override;
   void RequestInvalidationForAnimatedImages() override;
+
+  base::WeakPtr<LayerTreeHostImpl> AsWeakPtr();
 
   void UpdateViewportContainerSizes();
 
@@ -1186,6 +1186,10 @@ class CC_EXPORT LayerTreeHostImpl
   // animation completion. ScrollEnd will get called with this deferred state
   // once the animation is over.
   base::Optional<ScrollState> deferred_scroll_end_state_;
+
+  // Must be the last member to ensure this is destroyed first in the
+  // destruction order and invalidates all weak pointers.
+  base::WeakPtrFactory<LayerTreeHostImpl> weak_factory_;
 };
 
 }  // namespace cc
