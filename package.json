@@ -9,9 +9,9 @@
     "type": "git",
     "url": "git+https://github.com/kainino0x/cts-experiment.git"
   },
-  "author": "Kai Ninomiya <kainino@chromium.org>",
+  "author": "WebGPU CTS Contributors",
   "private": true,
-  "license": "W3C 3-clause BSD License",
+  "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/kainino0x/cts-experiment/issues"
   },
