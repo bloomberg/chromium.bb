@@ -1999,6 +1999,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/large_element.html'))
     self._driver.SetWindowRect(500, 500, 0, 0)
+    # Wait for page to stabilize. See https://crbug.com/chromedriver/2986
+    time.sleep(1)
     redElement = self._driver.FindElement('css selector', '#A')
     analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
     self.assertEquals('PASS', analysisResult)
