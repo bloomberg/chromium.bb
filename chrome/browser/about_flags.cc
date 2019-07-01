@@ -1895,6 +1895,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMacViewsTaskManagerDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kViewsTaskManager)},
 #endif  // OS_MACOSX
+#if BUILDFLAG(ENABLE_VR)
     {"enable-webvr", flag_descriptions::kWebvrName,
      flag_descriptions::kWebvrDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebVR)},
@@ -1907,7 +1908,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"webxr-plane-detection", flag_descriptions::kWebXrPlaneDetectionName,
      flag_descriptions::kWebXrPlaneDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrPlaneDetection)},
-#if BUILDFLAG(ENABLE_VR)
     {"webxr-orientation-sensor-device",
      flag_descriptions::kWebXrOrientationSensorDeviceName,
      flag_descriptions::kWebXrOrientationSensorDeviceDescription, kOsDesktop,
@@ -1932,11 +1932,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOpenXRDescription, kOsWin,
      FEATURE_VALUE_TYPE(features::kOpenXR)},
 #endif  // ENABLE_OPENXR
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#if !defined(OS_ANDROID)
     {"xr-sandbox", flag_descriptions::kXRSandboxName,
      flag_descriptions::kXRSandboxDescription, kOsWin,
      FEATURE_VALUE_TYPE(service_manager::features::kXRSandbox)},
-#endif  // ENABLE_ISOLATED_XR_SERVICE
+#endif  // !defined(OS_ANDROID)
 #endif  // ENABLE_VR
 #if defined(OS_CHROMEOS)
     {"disable-accelerated-mjpeg-decode",

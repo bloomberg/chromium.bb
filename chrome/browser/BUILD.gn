@@ -4443,10 +4443,6 @@ jumbo_split_static_library("browser") {
     deps += [ "//components/feed/content:feed_content" ]
   }
 
-  if (enable_isolated_xr_service) {
-    deps += [ "//device/vr/public/mojom" ]
-  }
-
   if (enable_library_cdms) {
     sources += [
       "media/output_protection_impl.cc",
@@ -4959,18 +4955,15 @@ jumbo_split_static_library("browser") {
       allow_circular_includes_from += [ "android/vr:vr_android" ]
     }
 
-    if (is_win) {
-      # TODO(https://crbug.com/916322): Switch to a "is_desktop_vr" or
-      # "is_external_display_vr" build conditional since these files aren't
-      # inherently Windows-specific. At this time, desktop VR where the browser
-      # window shows alongside the head-mounted display is only supported on
-      # Windows, and that's the only situation where we need the UI host.
+    if (!is_android) {
       sources += [
         "vr/service/xr_session_request_consent_manager_impl.cc",
         "vr/service/xr_session_request_consent_manager_impl.h",
         "vr/ui_host/vr_ui_host_impl.cc",
         "vr/ui_host/vr_ui_host_impl.h",
       ]
+
+      deps += [ "//device/vr/public/mojom" ]
     }
 
     sources += [

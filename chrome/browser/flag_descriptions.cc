@@ -3470,11 +3470,11 @@ const char kOpenXRDescription[] =
     "If enabled, Chrome will use OpenXR Backend for VR.";
 #endif  // ENABLE_OPENXR
 
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#if !defined(OS_ANDROID)
 const char kXRSandboxName[] = "XR device sandboxing";
 const char kXRSandboxDescription[] =
     "If enabled, Chrome will host VR APIs in a restricted process on desktop.";
-#endif  // ENABLE_ISOLATED_XR_SERVICE
+#endif  // !defined(OS_ANDROID)
 
 #endif  // ENABLE_VR
 
