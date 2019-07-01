@@ -912,6 +912,7 @@ void AuthenticatorCommon::GetAssertion(
   auto ctap_request = CreateCtapGetAssertionRequest(
       client_data_json_, std::move(options), app_id_,
       browser_context()->IsOffTheRecord());
+  ctap_request.is_u2f_only = OriginIsCryptoTokenExtension(caller_origin_);
   auto opt_platform_authenticator_info =
       CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
           ctap_request);
