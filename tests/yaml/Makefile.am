@@ -12,6 +12,8 @@ EXTRA_DIST =					\
 	emphasis-no-context.yaml		\
 	example_test.yaml			\
 	foo.yaml				\
+	hyphenation.dic				\
+	hyphenation.yaml			\
 	hyphenation_nocross_harness.yaml	\
 	inpos_outpos.yaml			\
 	input-length.yaml			\
