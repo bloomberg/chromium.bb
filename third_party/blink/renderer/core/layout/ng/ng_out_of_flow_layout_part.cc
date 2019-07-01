@@ -160,6 +160,8 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
   if (only_layout)
     return;
 
+
+  wtf_size_t prev_placed_objects_size = placed_objects.size();
   while (SweepLegacyDescendants(&placed_objects)) {
     container_builder_->GetAndClearOutOfFlowDescendantCandidates(
         &descendant_candidates, current_container);
@@ -170,6 +172,19 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
 
     LayoutDescendantCandidates(&descendant_candidates, only_layout,
                                &placed_objects);
+
+    // Legacy currently has a bug where an OOF-positioned node is present
+    // within the current node's |LayoutBlock::PositionedObjects|, however it
+    // is not the containing-block for this node.
+    //
+    // This results in |LayoutDescendantCandidates| never performing layout on
+    // any additional objects.
+    wtf_size_t placed_objects_size = placed_objects.size();
+    if (prev_placed_objects_size == placed_objects_size) {
+      NOTREACHED();
+      break;
+    }
+    prev_placed_objects_size = placed_objects_size;
   }
 }
 
