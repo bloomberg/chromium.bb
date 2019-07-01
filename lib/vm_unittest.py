@@ -272,3 +272,25 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
                    '2003-2008 Fabrice Bellard')
     self.rc.AddCmdResult(partial_mock.In('--version'), output=version_str)
     self.assertRaises(vm.VMError, self._vm._SetQemuPath)
+
+  def testRunError(self):
+    """Verify that VMError is raised when no action is specified."""
+    self._vm.start = False
+    self._vm.stop = False
+    self._vm.cmd = None
+    self.assertRaises(vm.VMError, self._vm.Run)
+
+  def testIsRunningError(self):
+    """Verify that VMError is raised when VM is not running."""
+    self._vm.cmd = ['fake_command', '--test_cmd']
+    self.assertRaises(vm.VMError, self._vm.Run)
+
+  @mock.patch('chromite.lib.vm.VM.IsRunning', return_value=True)
+  def testRunRemoteCmd(self, is_running_mock):
+    """Tests that the VM runs with a specific command."""
+    self._vm.cmd = ['fake_command', '--test_cmd']
+    self._vm.Run()
+    self.assertCommandContains([
+        'ssh', '-p', '9222', 'root@localhost', '--',
+        'fake_command', '--test_cmd'])
+    is_running_mock.assert_called()
