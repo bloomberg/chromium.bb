@@ -48,6 +48,11 @@ int64_t av1_block_error_neon(const tran_low_t *coeff, const tran_low_t *dqcoeff,
     block_size -= 8;
   } while (block_size != 0);
 
+#if defined(__aarch64__)
+  *ssz = vaddvq_s64(sqcoeff);
+  return vaddvq_s64(error);
+#else
   *ssz = vgetq_lane_s64(sqcoeff, 0) + vgetq_lane_s64(sqcoeff, 1);
   return vgetq_lane_s64(error, 0) + vgetq_lane_s64(error, 1);
+#endif
 }
