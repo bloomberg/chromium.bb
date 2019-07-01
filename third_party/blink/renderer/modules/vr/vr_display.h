@@ -230,7 +230,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   double depth_far_ = 10000.0;
 
   // Current dimensions of the WebVR source canvas. May be different from
-  // the recommended renderWidth/Height if the client overrides dimensions.
+  // the recommended render width/height if the client overrides dimensions.
   int source_width_ = 0;
   int source_height_ = 0;
 

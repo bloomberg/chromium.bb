@@ -539,12 +539,12 @@ void XR::OnRequestSessionReturned(
   // If the session supports environment integration, ensure the device does
   // as well.
   DCHECK(!environment_integration || session_ptr->display_info->capabilities
-                                         ->canProvideEnvironmentIntegration);
+                                         ->can_provide_environment_integration);
   DVLOG(2) << __func__
            << ": environment_integration=" << environment_integration
-           << "canProvideEnvironmentIntegration="
+           << "can_provide_environment_integration="
            << session_ptr->display_info->capabilities
-                  ->canProvideEnvironmentIntegration;
+                  ->can_provide_environment_integration;
 
   // TODO(https://crbug.com/944936): The blend mode could be "additive".
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;

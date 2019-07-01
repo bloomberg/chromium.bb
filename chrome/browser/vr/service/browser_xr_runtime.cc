@@ -56,27 +56,28 @@ device::mojom::VREyeParametersPtr ValidateEyeParameters(
   device::mojom::VREyeParametersPtr ret = device::mojom::VREyeParameters::New();
   // FOV
   float kDefaultFOV = 45;
-  ret->fieldOfView = device::mojom::VRFieldOfView::New();
-  if (eye->fieldOfView->upDegrees < 90 && eye->fieldOfView->upDegrees > -90 &&
-      eye->fieldOfView->upDegrees > -eye->fieldOfView->downDegrees &&
-      eye->fieldOfView->downDegrees < 90 &&
-      eye->fieldOfView->downDegrees > -90 &&
-      eye->fieldOfView->downDegrees > -eye->fieldOfView->upDegrees &&
-      eye->fieldOfView->leftDegrees < 90 &&
-      eye->fieldOfView->leftDegrees > -90 &&
-      eye->fieldOfView->leftDegrees > -eye->fieldOfView->rightDegrees &&
-      eye->fieldOfView->rightDegrees < 90 &&
-      eye->fieldOfView->rightDegrees > -90 &&
-      eye->fieldOfView->rightDegrees > -eye->fieldOfView->leftDegrees) {
-    ret->fieldOfView->upDegrees = eye->fieldOfView->upDegrees;
-    ret->fieldOfView->downDegrees = eye->fieldOfView->downDegrees;
-    ret->fieldOfView->leftDegrees = eye->fieldOfView->leftDegrees;
-    ret->fieldOfView->rightDegrees = eye->fieldOfView->rightDegrees;
+  ret->field_of_view = device::mojom::VRFieldOfView::New();
+  if (eye->field_of_view->up_degrees < 90 &&
+      eye->field_of_view->up_degrees > -90 &&
+      eye->field_of_view->up_degrees > -eye->field_of_view->down_degrees &&
+      eye->field_of_view->down_degrees < 90 &&
+      eye->field_of_view->down_degrees > -90 &&
+      eye->field_of_view->down_degrees > -eye->field_of_view->up_degrees &&
+      eye->field_of_view->left_degrees < 90 &&
+      eye->field_of_view->left_degrees > -90 &&
+      eye->field_of_view->left_degrees > -eye->field_of_view->right_degrees &&
+      eye->field_of_view->right_degrees < 90 &&
+      eye->field_of_view->right_degrees > -90 &&
+      eye->field_of_view->right_degrees > -eye->field_of_view->left_degrees) {
+    ret->field_of_view->up_degrees = eye->field_of_view->up_degrees;
+    ret->field_of_view->down_degrees = eye->field_of_view->down_degrees;
+    ret->field_of_view->left_degrees = eye->field_of_view->left_degrees;
+    ret->field_of_view->right_degrees = eye->field_of_view->right_degrees;
   } else {
-    ret->fieldOfView->upDegrees = kDefaultFOV;
-    ret->fieldOfView->downDegrees = kDefaultFOV;
-    ret->fieldOfView->leftDegrees = kDefaultFOV;
-    ret->fieldOfView->rightDegrees = kDefaultFOV;
+    ret->field_of_view->up_degrees = kDefaultFOV;
+    ret->field_of_view->down_degrees = kDefaultFOV;
+    ret->field_of_view->left_degrees = kDefaultFOV;
+    ret->field_of_view->right_degrees = kDefaultFOV;
   }
 
   // Offset
@@ -93,10 +94,11 @@ device::mojom::VREyeParametersPtr ValidateEyeParameters(
   uint32_t kMinSize = 2;
   // DCHECK on debug builds to catch legitimate large sizes, but clamp on
   // release builds to ensure valid state.
-  DCHECK(eye->renderWidth < kMaxSize);
-  DCHECK(eye->renderHeight < kMaxSize);
-  ret->renderWidth = std::max(std::min(kMaxSize, eye->renderWidth), kMinSize);
-  ret->renderHeight = std::max(std::min(kMaxSize, eye->renderHeight), kMinSize);
+  DCHECK(eye->render_width < kMaxSize);
+  DCHECK(eye->render_height < kMaxSize);
+  ret->render_width = std::max(std::min(kMaxSize, eye->render_width), kMinSize);
+  ret->render_height =
+      std::max(std::min(kMaxSize, eye->render_height), kMinSize);
   return ret;
 }
 
@@ -111,22 +113,23 @@ device::mojom::VRDisplayInfoPtr ValidateVRDisplayInfo(
   // Rather than just cloning everything, we copy over each field and validate
   // individually.  This ensures new fields don't bypass validation.
   ret->id = id;
-  ret->displayName = info->displayName;
+  ret->display_name = info->display_name;
   DCHECK(info->capabilities);  // Ensured by mojo.
   ret->capabilities = device::mojom::VRDisplayCapabilities::New(
-      info->capabilities->hasPosition, info->capabilities->hasExternalDisplay,
-      info->capabilities->canPresent,
-      info->capabilities->canProvideEnvironmentIntegration);
+      info->capabilities->has_position,
+      info->capabilities->has_external_display, info->capabilities->can_present,
+      info->capabilities->can_provide_environment_integration);
 
-  if (info->stageParameters &&
-      IsValidStandingTransform(info->stageParameters->standingTransform)) {
-    ret->stageParameters = device::mojom::VRStageParameters::New(
-        info->stageParameters->standingTransform, info->stageParameters->sizeX,
-        info->stageParameters->sizeZ, info->stageParameters->bounds);
+  if (info->stage_parameters &&
+      IsValidStandingTransform(info->stage_parameters->standing_transform)) {
+    ret->stage_parameters = device::mojom::VRStageParameters::New(
+        info->stage_parameters->standing_transform,
+        info->stage_parameters->size_x, info->stage_parameters->size_z,
+        info->stage_parameters->bounds);
   }
 
-  ret->leftEye = ValidateEyeParameters(info->leftEye);
-  ret->rightEye = ValidateEyeParameters(info->rightEye);
+  ret->left_eye = ValidateEyeParameters(info->left_eye);
+  ret->right_eye = ValidateEyeParameters(info->right_eye);
 
   float kMinFramebufferScale = 0.1f;
   float kMaxFramebufferScale = 1.0f;
