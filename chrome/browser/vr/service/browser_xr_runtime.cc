@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "chrome/browser/vr/service/xr_device_impl.h"
@@ -50,7 +51,7 @@ bool IsValidStandingTransform(const gfx::Transform& transform) {
 }
 
 device::mojom::VREyeParametersPtr ValidateEyeParameters(
-    device::mojom::VREyeParametersPtr& eye) {
+    const device::mojom::VREyeParameters* eye) {
   if (!eye)
     return nullptr;
   device::mojom::VREyeParametersPtr ret = device::mojom::VREyeParameters::New();
@@ -103,7 +104,7 @@ device::mojom::VREyeParametersPtr ValidateEyeParameters(
 }
 
 device::mojom::VRDisplayInfoPtr ValidateVRDisplayInfo(
-    device::mojom::VRDisplayInfoPtr& info,
+    const device::mojom::VRDisplayInfo* info,
     device::mojom::XRDeviceId id) {
   if (!info)
     return nullptr;
@@ -128,8 +129,8 @@ device::mojom::VRDisplayInfoPtr ValidateVRDisplayInfo(
         info->stage_parameters->bounds);
   }
 
-  ret->left_eye = ValidateEyeParameters(info->left_eye);
-  ret->right_eye = ValidateEyeParameters(info->right_eye);
+  ret->left_eye = ValidateEyeParameters(info->left_eye.get());
+  ret->right_eye = ValidateEyeParameters(info->right_eye.get());
 
   float kMinFramebufferScale = 0.1f;
   float kMaxFramebufferScale = 1.0f;
@@ -156,7 +157,7 @@ BrowserXRRuntime::BrowserXRRuntime(device::mojom::XRDeviceId id,
                                    device::mojom::VRDisplayInfoPtr display_info)
     : id_(id),
       runtime_(std::move(runtime)),
-      display_info_(ValidateVRDisplayInfo(display_info, id)),
+      display_info_(ValidateVRDisplayInfo(display_info.get(), id)),
       binding_(this),
       weak_ptr_factory_(this) {
   device::mojom::XRRuntimeEventListenerAssociatedPtr listener;
@@ -182,7 +183,7 @@ void BrowserXRRuntime::ExitVrFromPresentingRendererDevice() {
 void BrowserXRRuntime::OnDisplayInfoChanged(
     device::mojom::VRDisplayInfoPtr vr_device_info) {
   bool had_display_info = !!display_info_;
-  display_info_ = ValidateVRDisplayInfo(vr_device_info, id_);
+  display_info_ = ValidateVRDisplayInfo(vr_device_info.get(), id_);
   if (had_display_info) {
     for (XRDeviceImpl* device : renderer_device_connections_) {
       device->RuntimesChanged();
@@ -265,7 +266,7 @@ void BrowserXRRuntime::ExitPresent(XRDeviceImpl* device) {
 void BrowserXRRuntime::RequestSession(
     XRDeviceImpl* device,
     const device::mojom::XRRuntimeSessionOptionsPtr& options,
-    device::mojom::XRDevice::RequestSessionCallback callback) {
+    RequestSessionCallback callback) {
   // base::Unretained is safe because we won't be called back after runtime_ is
   // destroyed.
   runtime_->RequestSession(
@@ -278,7 +279,7 @@ void BrowserXRRuntime::RequestSession(
 void BrowserXRRuntime::OnRequestSessionResult(
     base::WeakPtr<XRDeviceImpl> device,
     device::mojom::XRRuntimeSessionOptionsPtr options,
-    device::mojom::XRDevice::RequestSessionCallback callback,
+    RequestSessionCallback callback,
     device::mojom::XRSessionPtr session,
     device::mojom::XRSessionControllerPtr immersive_session_controller) {
   if (session && device) {

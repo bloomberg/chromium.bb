@@ -359,12 +359,27 @@ interface VRServiceClient {
   OnDeviceChanged();
 };
 
+enum RequestSessionError {
+  ORIGIN_NOT_SECURE = 1,
+  IMMERSIVE_SESSION_REQUEST_FROM_OFF_FOCUS_PAGE = 2,
+  EXISTING_IMMERSIVE_SESSION = 3,
+  INVALID_CLIENT = 4,
+  USER_DENIED_CONSENT = 5,
+  NO_RUNTIME_FOUND = 6,
+  UNKNOWN_RUNTIME_ERROR = 7
+};
+
+union RequestSessionResult {
+  XRSession session;
+  RequestSessionError failure_reason;
+};
+
 // Supplies XRSessions and session support information. Implemented in the
 // browser process, consumed in the renderer process.
 interface XRDevice {
   // Request to initialize a session in the browser process. If successful, the
   // XRSession struct with the requisite interfaces will be returned.
-  RequestSession(XRSessionOptions options) => (XRSession? session);
+  RequestSession(XRSessionOptions options) => (RequestSessionResult result);
   SupportsSession(XRSessionOptions options) => (bool supports_session);
 
   // WebVR 1.1 functionality compatibility method. Returns VRDisplayInfo for an

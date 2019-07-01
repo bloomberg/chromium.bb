@@ -42,8 +42,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
-#include <array>
-
 namespace blink {
 
 namespace {
@@ -564,7 +562,9 @@ ScriptPromise VRDisplay::requestPresent(
 }
 
 void VRDisplay::OnRequestImmersiveSessionReturned(
-    device::mojom::blink::XRSessionPtr session) {
+    device::mojom::blink::RequestSessionResultPtr result) {
+  device::mojom::blink::XRSessionPtr session =
+      result->is_session() ? std::move(result->get_session()) : nullptr;
   pending_present_request_ = false;
   if (session) {
     DCHECK(session->submit_frame_sink);
@@ -610,7 +610,9 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
 }
 
 void VRDisplay::OnNonImmersiveSessionRequestReturned(
-    device::mojom::blink::XRSessionPtr session) {
+    device::mojom::blink::RequestSessionResultPtr result) {
+  device::mojom::blink::XRSessionPtr session =
+      result->is_session() ? std::move(result->get_session()) : nullptr;
   non_immersive_session_initialized_ = true;
 
   // Only create the non immersive provider if we actually got a session.
