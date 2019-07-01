@@ -98,6 +98,12 @@ baz
     chroot = chroot_lib.Chroot(self.tempdir)
     self.assertTrue(self.relative_sysroot.Exists(chroot=chroot))
 
+  def testEquals(self):
+    """Sanity check for the __eq__ methods."""
+    sysroot1 = sysroot_lib.Sysroot(self.tempdir)
+    sysroot2 = sysroot_lib.Sysroot(self.tempdir)
+    self.assertEqual(sysroot1, sysroot2)
+
 
 class SysrootLibInstallConfigTest(cros_test_lib.MockTempDirTestCase):
   """Unittest for sysroot_lib.py"""

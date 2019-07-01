@@ -3063,15 +3063,12 @@ def BuildTastBundleTarball(buildroot, cwd, tarball_dir):
   Returns:
     Path of the generated tarball, or None if there is no private test bundles.
   """
-  dirs = []
-  for d in ('libexec/tast', 'share/tast'):
-    if os.path.exists(os.path.join(cwd, d)):
-      dirs.append(d)
-  if not dirs:
-    return None
-  tarball = os.path.join(tarball_dir, 'tast_bundles.tar.bz2')
-  BuildTarball(buildroot, dirs, tarball, cwd=cwd)
-  return tarball
+  chroot = chroot_lib.Chroot(os.path.join(buildroot, 'chroot'))
+  sysroot_path = cwd.replace(chroot.path, '', 1)
+  sysroot_path = sysroot_path.rstrip('build').rstrip(os.sep)
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
+
+  return artifacts_service.BundleTastFiles(chroot, sysroot, tarball_dir)
 
 
 def BuildPinnedGuestImagesTarball(buildroot, board, tarball_dir):

@@ -135,6 +135,7 @@ def BundleAutotestFiles(input_proto, output_proto):
     output_proto.artifacts.add().path = archive
 
 
+@validate.require('output_dir')
 def BundleTastFiles(input_proto, output_proto):
   """Tar the tast files for a build target.
 
@@ -145,12 +146,26 @@ def BundleTastFiles(input_proto, output_proto):
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
   build_root = constants.SOURCE_ROOT
-  cwd = os.path.join(build_root, 'chroot/build', target, 'build')
 
-  # Note that unlike the functions below, this returns the full path
-  # to the tarball.
-  # TODO(crbug.com/954294): Replace with a chromite/service implementation.
-  archive = commands.BuildTastBundleTarball(build_root, cwd, output_dir)
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  sysroot_path = input_proto.sysroot.path
+
+  # TODO(saklein) Cleanup legacy handling after it has been switched over.
+  if target:
+    # Legacy handling.
+    chroot.path = os.path.join(build_root, 'chroot')
+    sysroot_path = os.path.join('/build', target)
+
+  # New handling - chroot & sysroot based.
+  # TODO(saklein) Switch this to the require decorator when legacy is removed.
+  if not sysroot_path:
+    cros_build_lib.Die('sysroot.path is required.')
+
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
+  if not sysroot.Exists(chroot):
+    cros_build_lib.Die('Sysroot must exist.')
+
+  archive = artifacts.BundleTastFiles(chroot, sysroot, output_dir)
 
   if archive is None:
     cros_build_lib.Die(

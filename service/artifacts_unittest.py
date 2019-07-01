@@ -148,7 +148,7 @@ class ArchiveChromeEbuildEnvTest(cros_test_lib.MockTempDirTestCase):
 
   def testNoChrome(self):
     """Test no version of chrome present."""
-    with self.assertRaises(artifacts.NoFilesException):
+    with self.assertRaises(artifacts.NoFilesError):
       artifacts.ArchiveChromeEbuildEnv(self.sysroot, self.output_dir)
 
 

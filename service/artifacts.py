@@ -32,6 +32,9 @@ ARCHIVE_PACKAGES = 'packages'
 ARCHIVE_SERVER_PACKAGES = 'server_packages'
 ARCHIVE_TEST_SUITES = 'test_suites'
 
+TAST_BUNDLE_NAME = 'tast_bundles.tar.bz2'
+TAST_COMPRESSOR = cros_build_lib.COMP_BZIP2
+
 PinnedGuestImage = collections.namedtuple('PinnedGuestImage',
                                           ['filename', 'uri'])
 
@@ -50,7 +53,7 @@ class CrosGenerateSysrootError(Error):
   """Error when running CrosGenerateSysroot."""
 
 
-class NoFilesException(Error):
+class NoFilesError(Error):
   """When there are no files to archive."""
 
 
@@ -147,7 +150,7 @@ def ArchiveChromeEbuildEnv(sysroot, output_dir):
   pkg_dir = os.path.join(sysroot.path, 'var', 'db', 'pkg')
   files = glob.glob(os.path.join(pkg_dir, constants.CHROME_CP) + '-*')
   if not files:
-    raise NoFilesException('Failed to find package %s' % constants.CHROME_CP)
+    raise NoFilesError('Failed to find package %s' % constants.CHROME_CP)
 
   if len(files) > 1:
     logging.warning('Expected one package for %s, found %d',
@@ -336,6 +339,33 @@ def BundleOrderfileGenerationArtifacts(chroot, build_target,
     osutils.CopyDirContents(tempdir, output_dir, allow_nonempty=True)
 
     return files
+
+
+def BundleTastFiles(chroot, sysroot, output_dir):
+  """Tar up the Tast private test bundles.
+
+  Args:
+    chroot (chroot_lib.Chroot): Chroot containing the sysroot.
+    sysroot (sysroot_lib.Sysroot): Sysroot whose files are being archived.
+    output_dir: Location for storing the result tarball.
+
+  Returns:
+    Path of the generated tarball, or None if there is no private test bundles.
+  """
+  cwd = os.path.join(chroot.path, sysroot.path.lstrip(os.sep), 'build')
+
+  dirs = []
+  for d in ('libexec/tast', 'share/tast'):
+    if os.path.exists(os.path.join(cwd, d)):
+      dirs.append(d)
+  if not dirs:
+    return None
+
+  tarball = os.path.join(output_dir, TAST_BUNDLE_NAME)
+  cros_build_lib.CreateTarball(tarball, cwd, compression=TAST_COMPRESSOR,
+                               chroot=chroot.path, inputs=dirs)
+
+  return tarball
 
 
 def FetchPinnedGuestImages(chroot, sysroot):
