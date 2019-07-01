@@ -51,6 +51,7 @@ const char version_etc_copyright[] =
 
 #define HYPHENATION_OFF 0
 #define HYPHENATION_ON 1
+#define HYPHENATION_BRAILLE 2
 #define HYPHENATION_DEFAULT HYPHENATION_OFF
 
 static void
@@ -374,6 +375,9 @@ read_flags(yaml_parser_t *parser, int *direction, int *hyphenation) {
 				*direction = DIRECTION_BOTH;
 			} else if (!strcmp((const char *)event.data.scalar.value, "hyphenate")) {
 				*hyphenation = HYPHENATION_ON;
+			} else if (!strcmp((const char *)event.data.scalar.value,
+							   "hyphenateBraille")) {
+				*hyphenation = HYPHENATION_BRAILLE;
 			} else {
 				error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 						"Testmode '%s' not supported\n", event.data.scalar.value);
@@ -813,8 +817,9 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 	int result = 0;
 	char **table = tables;
 	while (*table) {
-		if (hyphenation == HYPHENATION_ON) {
-			result |= check_hyphenation(*table, word, translation);
+		if (hyphenation == HYPHENATION_ON || hyphenation == HYPHENATION_BRAILLE) {
+			result |= check_hyphenation(
+					*table, word, translation, hyphenation == HYPHENATION_BRAILLE);
 		} else {
 			// FIXME: Note that the typeform array was constructed using the
 			// emphasis classes mapping of the last compiled table. This
