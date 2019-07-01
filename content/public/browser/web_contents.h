@@ -91,8 +91,8 @@ struct PageImportanceSignals;
 //       content::WebContents::Create(
 //           content::WebContents::CreateParams(browser_context)));
 //   gfx::NativeView view = web_contents->GetNativeView();
-//   // |view| is an HWND, NSView*, GtkWidget*, etc.; insert it into the view
-//   // hierarchy wherever it needs to go.
+//   // |view| is an HWND, NSView*, etc.; insert it into the view hierarchy
+//   // wherever it needs to go.
 //
 // That's it; go to your kitchen, grab a scone, and chill. WebContents will do
 // all the multi-process stuff behind the scenes. More details are at
