@@ -250,6 +250,7 @@ class CORE_EXPORT Document : public ContainerNode,
                              public mojom::blink::NavigationInitiator {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Document);
+  USING_PRE_FINALIZER(Document, Dispose);
 
  public:
   // Factory for web-exposed Document constructor. The argument document must be
@@ -1727,6 +1728,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void NotifyFocusedElementChanged(Element* old_focused_element,
                                    Element* new_focused_element);
   void DisplayNoneChangedForFrame();
+
+  void Dispose();
 
   DocumentLifecycle lifecycle_;
 
