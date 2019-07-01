@@ -26,10 +26,12 @@ PerfettoTracedProcess::DataSourceBase::~DataSourceBase() = default;
 
 void PerfettoTracedProcess::DataSourceBase::StartTracingWithID(
     uint64_t data_source_id,
-    PerfettoProducer* producer_client,
+    PerfettoProducer* producer,
     const perfetto::DataSourceConfig& data_source_config) {
   data_source_id_ = data_source_id;
-  StartTracing(producer_client, data_source_config);
+  DCHECK(!producer_) << name_;
+  producer_ = producer;
+  StartTracing(producer_, data_source_config);
 }
 
 // static

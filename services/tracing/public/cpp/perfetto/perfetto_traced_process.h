@@ -36,12 +36,13 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
 
     void StartTracingWithID(
         uint64_t data_source_id,
-        PerfettoProducer* producer_client,
+        PerfettoProducer* producer,
         const perfetto::DataSourceConfig& data_source_config);
 
     virtual void StartTracing(
-        PerfettoProducer* producer_client,
+        PerfettoProducer* producer,
         const perfetto::DataSourceConfig& data_source_config) = 0;
+    // StopTracing must set |producer_| to nullptr before invoking the callback.
     virtual void StopTracing(
         base::OnceClosure stop_complete_callback = base::OnceClosure()) = 0;
 
@@ -52,6 +53,10 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
 
     const std::string& name() const { return name_; }
     uint64_t data_source_id() const { return data_source_id_; }
+    const PerfettoProducer* producer() const { return producer_; }
+
+   protected:
+    PerfettoProducer* producer_ = nullptr;
 
    private:
     uint64_t data_source_id_ = 0;

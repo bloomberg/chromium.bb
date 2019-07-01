@@ -37,10 +37,14 @@ class TestDataSource : public PerfettoTracedProcess::DataSourceBase {
 
   const perfetto::DataSourceConfig& config() { return config_; }
 
+  // In some tests we violate the assumption that only a single tracing session
+  // is alive. This allows tests to explicitly ignore the DCHECK in place to
+  // check this.
+  void SetSystemProducerToNullptr() { producer_ = nullptr; }
+
   void set_send_packet_count(size_t count) { send_packet_count_ = count; }
 
  private:
-  PerfettoProducer* producer_ = nullptr;
   size_t send_packet_count_;
   perfetto::DataSourceConfig config_;
 };

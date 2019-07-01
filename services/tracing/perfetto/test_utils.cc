@@ -43,7 +43,6 @@ void TestDataSource::WritePacketBigly() {
 void TestDataSource::StartTracing(
     PerfettoProducer* producer,
     const perfetto::DataSourceConfig& data_source_config) {
-  producer_ = producer;
   config_ = data_source_config;
 
   if (send_packet_count_ > 0) {
@@ -58,6 +57,7 @@ void TestDataSource::StartTracing(
 }
 
 void TestDataSource::StopTracing(base::OnceClosure stop_complete_callback) {
+  producer_ = nullptr;
   std::move(stop_complete_callback).Run();
 }
 

@@ -328,6 +328,11 @@ TEST_F(PerfettoIntegrationTest,
 
   client1_enabled_callback.Run();
 
+  // client2 will trigger a StartTracing call without shutting down the data
+  // source first, to prevent this hitting a DCHECK set the previous producer to
+  // null.
+  data_source_->SetSystemProducerToNullptr();
+
   auto client2 = std::make_unique<MockProducerClient>(
       /* num_data_sources = */ 1, client2_enabled_callback.QuitClosure());
 
