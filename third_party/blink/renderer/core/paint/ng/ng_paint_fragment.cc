@@ -773,6 +773,8 @@ base::Optional<PhysicalRect> NGPaintFragment::LocalVisualRectFor(
 
   PhysicalRect visual_rect;
   for (NGPaintFragment* fragment : fragments) {
+    if (fragment->PhysicalFragment().IsHiddenForPaint())
+      continue;
     PhysicalRect child_visual_rect = fragment->SelfInkOverflow();
     child_visual_rect.offset += fragment->InlineOffsetToContainerBox();
     visual_rect.Unite(child_visual_rect);
