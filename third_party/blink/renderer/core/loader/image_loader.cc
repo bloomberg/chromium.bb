@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
@@ -251,6 +252,7 @@ ImageLoader::ImageLoader(Element* element)
       image_complete_(true),
       loading_image_document_(false),
       suppress_error_events_(false),
+      was_fully_deferred_(false),
       lazy_image_load_state_(LazyImageLoadState::kNone) {
   RESOURCE_LOADING_DVLOG(1) << "new ImageLoader " << this;
 }
@@ -493,9 +495,16 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
     image_complete_ = false;
     if (lazy_image_load_state_ == LazyImageLoadState::kDeferred) {
       if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
-        LazyLoadImageObserver::StartMonitoring(
-            html_image,
-            GetLoadingAttrValue(*html_image) != LoadingAttrValue::kLazy);
+        using DeferralMessage = LazyLoadImageObserver::DeferralMessage;
+        LoadingAttrValue loading_attr = GetLoadingAttrValue(*html_image);
+        DCHECK(loading_attr != LoadingAttrValue::kEager);
+        auto deferral_message = DeferralMessage::kNone;
+        if (loading_attr == LoadingAttrValue::kAuto) {
+          deferral_message = DeferralMessage::kLoadEventsDeferred;
+        } else if (!was_fully_deferred_) {
+          deferral_message = DeferralMessage::kMissingDimensionForLazy;
+        }
+        LazyLoadImageObserver::StartMonitoring(html_image, deferral_message);
       }
     }
   }
@@ -593,8 +602,12 @@ void ImageLoader::DoUpdateFromElement(
                  LazyLoadImageEligibility::kEnabledAutomatic &&
              lazy_load_image_enabled_state ==
                  LocalFrame::LazyLoadImageEnabledState::kEnabledAutomatic)) {
-          if (IsDimensionAbsoluteLarge(*html_image)) {
+          if ((was_fully_deferred_ = IsDimensionAbsoluteLarge(*html_image))) {
             params.SetLazyImageDeferred();
+            if (frame->Client()) {
+              frame->Client()->DidObserveLazyLoadBehavior(
+                  WebLocalFrameClient::LazyLoadBehavior::kDeferredImage);
+            }
           } else {
             params.SetLazyImagePlaceholder();
           }
@@ -611,9 +624,10 @@ void ImageLoader::DoUpdateFromElement(
       }
     }
 
-    // If the image was previously set to full image, it is a full load of a
-    // placeholder image.
-    if (lazy_image_load_state_ == LazyImageLoadState::kFullImage) {
+    // If the image was previously set to full image and had no dimensions, it
+    //     // is a full load of a placeholder image.
+    if (!was_fully_deferred_ &&
+        lazy_image_load_state_ == LazyImageLoadState::kFullImage) {
       params.SetLazyImageAutoReload();
     }
 
@@ -1006,6 +1020,14 @@ void ImageLoader::LoadDeferredImage(
     return;
   DCHECK(!image_complete_);
   lazy_image_load_state_ = LazyImageLoadState::kFullImage;
+
+  // If the image has been fully deferred (no placeholder fetch), report it as
+  // fully loaded now.
+  LocalFrame* frame = element_->GetDocument().GetFrame();
+  if (was_fully_deferred_ && frame && frame->Client()) {
+    frame->Client()->DidObserveLazyLoadBehavior(
+        WebLocalFrameClient::LazyLoadBehavior::kLazyLoadedImage);
+  }
   UpdateFromElement(kUpdateNormal, referrer_policy);
 }
 
