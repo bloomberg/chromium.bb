@@ -15,6 +15,7 @@ from chromite.api.gen.chromite.api import packages_pb2
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import portage_util
 from chromite.service import packages as packages_service
 
 
@@ -73,3 +74,54 @@ class UprevTest(cros_test_lib.MockTestCase):
     # First argument (build targets) of the first (only) call.
     call_targets = uprev_patch.call_args[0][0]
     self.assertItemsEqual(targets, [t.name for t in call_targets])
+
+
+class GetBestVisibleTest(cros_test_lib.MockTestCase):
+  """GetBestVisible tests."""
+
+  def _GetRequest(self, atom=None):
+    return packages_pb2.GetBestVisibleRequest(
+        atom=atom,
+    )
+
+  def _GetResponse(self):
+    return packages_pb2.GetBestVisibleResponse()
+
+  def _MakeCpv(self, category, package, version):
+    unused = {
+        'cp': None,
+        'cpv': None,
+        'cpf': None,
+        'pv': None,
+        'version_no_rev': None,
+        'rev': None,
+    }
+    return portage_util.CPV(
+        category=category,
+        package=package,
+        version=version,
+        **unused
+    )
+
+  def testNoAtomFails(self):
+    """No atom provided should fail."""
+    request = self._GetRequest()
+    response = self._GetResponse()
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      packages_controller.GetBestVisible(request, response)
+
+  def testSuccess(self):
+    """Test overall success, argument handling, result forwarding."""
+    cpv = self._MakeCpv('category', 'package', 'version')
+    self.PatchObject(packages_service, 'get_best_visible', return_value=cpv)
+
+    request = self._GetRequest(atom='chromeos-chrome')
+    response = self._GetResponse()
+
+    packages_controller.GetBestVisible(request, response)
+
+    package_info = response.package_info
+    self.assertEqual(package_info.category, cpv.category)
+    self.assertEqual(package_info.package_name, cpv.package)
+    self.assertEqual(package_info.version, cpv.version)

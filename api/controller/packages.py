@@ -7,8 +7,10 @@
 
 from __future__ import print_function
 
+from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import binhost_pb2
+from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import build_target_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -42,3 +44,11 @@ def Uprev(input_proto, _output_proto):
   except packages.Error as e:
     # Handle module errors nicely, let everything else bubble up.
     cros_build_lib.Die(e.message)
+
+@validate.require('atom')
+def GetBestVisible(input_proto, output_proto):
+  """Returns the best visible PackageInfo for the indicated atom."""
+  cpv = packages.get_best_visible(input_proto.atom)
+  package_info = common_pb2.PackageInfo()
+  controller_util.CPVToPackageInfo(cpv, package_info)
+  output_proto.package_info.CopyFrom(package_info)

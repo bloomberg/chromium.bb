@@ -32,6 +32,15 @@ class UprevBuildTargetsTest(cros_test_lib.RunCommandTestCase):
                                    None)
 
 
+
+class GetBestVisibleTest(cros_test_lib.MockTestCase):
+  """get_best_visible tests."""
+
+  def test_empty_atom_fails(self):
+    with self.assertRaises(AssertionError):
+      packages.get_best_visible('')
+
+
 class UprevManagerTest(cros_test_lib.MockTestCase):
   """UprevManager tests."""
 

@@ -78,6 +78,12 @@ def uprev_overlays(overlays, build_targets=None, chroot=None, output_dir=None):
   return uprev_manager.modified_ebuilds
 
 
+def get_best_visible(atom):
+  """Returns the best visible CPV for the given atom."""
+  assert atom
+  return portage_util.PortageqBestVisible(atom)
+
+
 class UprevManager(object):
   """Class to handle the uprev process.
 
