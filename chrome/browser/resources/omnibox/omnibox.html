@@ -29,74 +29,61 @@
           <span class="arrow-padding"></span>
           <span class="arrow-up">▲</span>
         </div>
-        <div class="row">
-          <label class="checkbox-container"
-                 title="When checked, interacting with the real omnibox of any browser window will update the debug page's output. Incognito window omnibox results will update only debug pages open in incognito windows. Likewise, normal window omnibox results will update only debug pages open in normal windows. When unfocusing the browser omnibox, the autocomplete controller sends a response with no combined results. This response is ignored in order to prevent the previous non-empty response from being hidden and because these results wouldn't normally be displayed by the browser window omnibox.">
+        <label class="row checkbox-container"
+               title="When checked, interacting with the real omnibox of any browser window will update the debug page's output. Incognito window omnibox results will update only debug pages open in incognito windows. Likewise, normal window omnibox results will update only debug pages open in normal windows. When unfocusing the browser omnibox, the autocomplete controller sends a response with no combined results. This response is ignored in order to prevent the previous non-empty response from being hidden and because these results wouldn't normally be displayed by the browser window omnibox.">
             <input id="connect-window-omnibox" type="checkbox" accesskey="w">
             <span>
               Connect <span class="accesskey">w</span>indow omnibox
             </span>
           </label>
-        </div>
         <div class="row response-selection-container">
           <span>Quer<span class="accesskey">y</span></span>
           <input id="response-selection" type="number" accesskey="y" value="0"
                  min="0" max="0">
           <span>of <span id="responses-count">0</span></span>
         </div>
-        <div id="history-warning" class="row" hidden>
-          <span class="warning-text"
-                title="The output you are currently viewing is historical and may not reflect the current inputs.">
+        <span id="history-warning" class="row warning-text"
+              title="The output you are currently viewing is historical and may not reflect the current inputs."
+              hidden>
             Viewing historical data
           </span>
-        </div>
       </div>
 
       <div class="top-column">
         <p class="row section-header">Input parameters</p>
-        <div class="row">
-          <label class="checkbox-container">
+        <label class="row checkbox-container">
             <input id="reset-autocomplete-controller" type="checkbox"
                    accesskey="r">
             <span>
               <span class="accesskey">R</span>eset autocomplete controller
             </span>
           </label>
-        </div>
-        <div class="row">
-          <label class="checkbox-container">
+        <label class="row checkbox-container">
             <input id="lock-cursor-position" type="checkbox" accesskey="x">
             <span>
               Lock cursor position to end of input
               [<span class="accesskey">x</span>]
             </span>
           </label>
-        </div>
-        <div class="row">
-          <label class="checkbox-container">
+        <label class="row checkbox-container">
             <input id="zero-suggest" type="checkbox" accesskey="z">
             <span>
               <span class="accesskey">Z</span>ero suggest
             </span>
           </label>
-        </div>
-        <div class="row">
-          <label class="checkbox-container">
+        <label class="row checkbox-container">
             <input id="prevent-inline-autocomplete" type="checkbox"
                    accesskey="a">
             <span>
               Prevent inline <span class="accesskey">a</span>utocomplete
             </span>
           </label>
-        </div>
-        <div class="row">
-          <label class="checkbox-container">
+        <label class="row checkbox-container">
             <input id="prefer-keyword" type="checkbox" accesskey="k">
             <span>
               In <span class="accesskey">k</span>eyword mode
             </span>
           </label>
-        </div>
       </div>
 
       <div class="top-column">
@@ -125,30 +112,24 @@
 
       <div class="top-column">
         <p class="row section-header">Display paramters</p>
-        <div class="row">
-          <label class="checkbox-container">
+        <label class="row checkbox-container">
             <input id="show-incomplete-results" type="checkbox" accesskey="i">
             <span>
               Show <span class="accesskey">i</span>ncomplete results
             </span>
           </label>
-        </div>
-        <div class="row">
-          <label class="checkbox-container">
+        <label class="row checkbox-container">
             <input id="show-details" type="checkbox" accesskey="t">
             <span>
               Show all de<span class="accesskey">t</span>ails
             </span>
           </label>
-        </div>
-        <div class="row">
-          <label class="checkbox-container">
+        <label class="row checkbox-container">
             <input id="show-all-providers" type="checkbox" accesskey="p">
             <span>
               Show results per <span class="accesskey">p</span>rovider
             </span>
           </label>
-        </div>
         <div class="column-container">
           <div class="column">
             <label class="row checkbox-container">
@@ -216,12 +197,11 @@
               </label>
           </div>
         </div>
-        <div id="imported-warning" class="row" hidden>
-          <span class="warning-text"
-                title="The output you are currently viewing is imported and may not be the same as if you had entered these inputs now.">
+        <span id="imported-warning" class="row warning-text"
+              title="The output you are currently viewing is imported and may not be the same as if you had entered these inputs now."
+              hidden>
             Viewing imported data
           </span>
-        </div>
       </div>
     </div>
   </template>
