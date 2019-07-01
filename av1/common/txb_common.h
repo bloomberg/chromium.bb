@@ -386,7 +386,9 @@ static INLINE void get_txb_ctx(const BLOCK_SIZE plane_bsize,
     if (plane_bsize == txsize_to_bsize[tx_size]) {
       txb_ctx->txb_skip_ctx = 0;
     } else {
-      // This is the algorithm to generate table skip_contexts[min][max].
+      // This is the algorithm to generate table skip_contexts[top][left].
+      //    const int max = AOMMIN(top | left, 4);
+      //    const int min = AOMMIN(AOMMIN(top, left), 4);
       //    if (!max)
       //      txb_skip_ctx = 1;
       //    else if (!min)
@@ -398,10 +400,10 @@ static INLINE void get_txb_ctx(const BLOCK_SIZE plane_bsize,
       //    else
       //      txb_skip_ctx = 6;
       static const uint8_t skip_contexts[5][5] = { { 1, 2, 2, 2, 3 },
-                                                   { 1, 4, 4, 4, 5 },
-                                                   { 1, 4, 4, 4, 5 },
-                                                   { 1, 4, 4, 4, 5 },
-                                                   { 1, 4, 4, 4, 6 } };
+                                                   { 2, 4, 4, 4, 5 },
+                                                   { 2, 4, 4, 4, 5 },
+                                                   { 2, 4, 4, 4, 5 },
+                                                   { 3, 5, 5, 5, 6 } };
       int top = 0;
       int left = 0;
 
@@ -410,16 +412,16 @@ static INLINE void get_txb_ctx(const BLOCK_SIZE plane_bsize,
         top |= a[k];
       } while (++k < txb_w_unit);
       top &= COEFF_CONTEXT_MASK;
+      top = AOMMIN(top, 4);
 
       k = 0;
       do {
         left |= l[k];
       } while (++k < txb_h_unit);
       left &= COEFF_CONTEXT_MASK;
-      const int max = AOMMIN(top | left, 4);
-      const int min = AOMMIN(AOMMIN(top, left), 4);
+      left = AOMMIN(left, 4);
 
-      txb_ctx->txb_skip_ctx = skip_contexts[min][max];
+      txb_ctx->txb_skip_ctx = skip_contexts[top][left];
     }
   } else {
     const int ctx_base = get_entropy_context(tx_size, a, l);
