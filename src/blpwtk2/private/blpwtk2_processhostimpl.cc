@@ -196,6 +196,7 @@ bool ProcessHostImpl::Impl::onRenderLaunched(
                                  render_process_handle,
                                  std::move(local_channel_endpoint),
                                  base::Bind(std::move(on_invitation_error)));
+  impl_ptr->SetProcess(d_process->Duplicate());
   return true;
 }
 

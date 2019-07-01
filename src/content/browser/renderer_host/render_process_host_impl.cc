@@ -4852,4 +4852,8 @@ void RenderProcessHostImpl::SetBrowserPluginMessageFilterSubFilterForTesting(
   bp_message_filter_->SetSubFilterForTesting(std::move(message_filter));
 }
 
+void RenderProcessHostImpl::SetProcess(base::Process process) {
+  child_connection_->SetProcess(std::move(process));
+}
+
 }  // namespace content
