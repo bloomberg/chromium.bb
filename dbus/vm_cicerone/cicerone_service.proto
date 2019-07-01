@@ -874,32 +874,49 @@ message ExportLxdContainerProgressSignal {
     // One or more steps failed and the container could not be exported.
     FAILED = 2;
 
-    // Deprecated.  The container is exporting into a tar file.
-    EXPORTING_TAR = 3;
+    // Deprecated. The container is exporting into a tar file.
+    EXPORTING_TAR = 3 [deprecated = true];
 
-    // Deprecated.  The container tar file is being compressed into an image
+    // Deprecated. The container tar file is being compressed into an image
     // file.
-    EXPORTING_COMPRESS = 4;
+    EXPORTING_COMPRESS = 4 [deprecated = true];
 
-    // The exported image file is being downloaded.
-    EXPORTING_DOWNLOAD = 5;
+    // Deprecated. The exported image file is being downloaded.
+    EXPORTING_DOWNLOAD = 5 [deprecated = true];
 
-    // The exported image file is being packed.  This is equivalent to
-    // tar/compress.
-    EXPORTING_PACK = 6;
+    // Deprecated. The exported image file is being packed. This is equivalent
+    // to tar/compress.
+    EXPORTING_PACK = 6 [deprecated = true];
+
+    // EXPORTING_PACK and EXPORTING_DOWNLOAD have been combined into
+    // EXPORTING_STREAMING. The exported image file is being tar'd, compressed'd
+    // and download'd out of the container.
+    EXPORTING_STREAMING = 7;
   }
 
   // Container status.
   Status status = 4;
 
-  // Percentage progress for the current stage given in status.
-  uint32 progress_percent = 5;
+  // Deprecated. Percentage progress for the current stage given in status.
+  uint32 progress_percent = 5 [deprecated = true];
 
-  // Speed (bytes per second) for the current stage given in status.
-  uint64 progress_speed = 6;
+  // Deprecated. Speed (bytes per second) for the current stage given in status.
+  uint64 progress_speed = 6 [deprecated = true];
 
   // Details relating to the failure state.
   string failure_reason = 7;
+
+  // Total number of files in the input container.
+  uint32 total_input_files = 8;
+
+  // Total size of the files in the input container.
+  uint64 total_input_bytes = 9;
+
+  // Number of files in the input container that have been downloaded.
+  uint32 input_files_streamed = 10;
+
+  // Size of the files in the input container that have been downloaded.
+  uint64 input_bytes_streamed = 11;
 }
 
 message ImportLxdContainerRequest {
