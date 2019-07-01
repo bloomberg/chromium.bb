@@ -44,9 +44,12 @@ class TestDataSource : public PerfettoTracedProcess::DataSourceBase {
 
   void set_send_packet_count(size_t count) { send_packet_count_ = count; }
 
+  void set_start_tracing_callback(base::OnceClosure start_tracing_callback);
+
  private:
   size_t send_packet_count_;
   perfetto::DataSourceConfig config_;
+  base::OnceClosure start_tracing_callback_ = base::OnceClosure();
 };
 
 class MockProducerClient : public ProducerClient {
