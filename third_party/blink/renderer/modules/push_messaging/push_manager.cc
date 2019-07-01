@@ -68,7 +68,8 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
   if (exception_state.HadException())
     return ScriptPromise();
 
-  if (!options->IsApplicationServerKeyVapid()) {
+  if (web_options.application_server_key.size() != 65 ||
+      web_options.application_server_key[0] != 0x04) {
     ExecutionContext::From(script_state)
         ->AddConsoleMessage(ConsoleMessage::Create(
             mojom::ConsoleMessageSource::kJavaScript,
