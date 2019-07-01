@@ -259,7 +259,7 @@ aom_image_t *aom_img_wrap(aom_image_t *img, aom_img_fmt_t fmt, unsigned int d_w,
  * \param[in]    d_h        Height of the image
  * \param[in]    align      Alignment, in bytes, of the image buffer and
  *                          each row in the image (stride).
- * \param[in]    size_align Alignment, in bytes, of the image width and height.
+ * \param[in]    size_align Alignment, in pixels, of the image width and height.
  * \param[in]    border     A border that is padded on four sides of the image.
  *
  * \return Returns a pointer to the initialized image descriptor. If the img
