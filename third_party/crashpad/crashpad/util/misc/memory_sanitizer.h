@@ -1,4 +1,4 @@
-// Copyright 2017 The Crashpad Authors. All rights reserved.
+// Copyright 2019 The Crashpad Authors. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "util/net/http_transport.h"
+#ifndef CRASHPAD_UTIL_MISC_MEMORY_SANITIZER_H_
+#define CRASHPAD_UTIL_MISC_MEMORY_SANITIZER_H_
 
-#include "base/logging.h"
+#include "base/compiler_specific.h"
+#include "build/build_config.h"
 
-namespace crashpad {
+#if !defined(MEMORY_SANITIZER)
+#if HAS_FEATURE(memory_sanitizer)
+#define MEMORY_SANITIZER 1
+#endif  // HAS_FEATURE(memory_sanitizer)
+#endif  // !defined(MEMORY_SANITIZER)
 
-std::unique_ptr<HTTPTransport> HTTPTransport::Create() {
-  NOTREACHED();  // TODO(scottmg): https://crashpad.chromium.org/bug/196
-  return std::unique_ptr<HTTPTransport>();
-}
-
-}  // namespace crashpad
+#endif  // CRASHPAD_UTIL_MISC_MEMORY_SANITIZER_H_
