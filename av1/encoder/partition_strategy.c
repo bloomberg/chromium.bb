@@ -64,7 +64,7 @@ void av1_intra_mode_cnn_partition(const AV1_COMMON *const cm, MACROBLOCK *x,
   const int bsize_idx = convert_bsize_to_idx(bsize);
 
   // Precompute the CNN part and cache the result in MACROBLOCK
-  if (bsize == BLOCK_64X64) {
+  if (bsize == BLOCK_64X64 && !x->cnn_output_valid) {
     aom_clear_system_state();
     const CNN_CONFIG *cnn_config = &av1_intra_mode_cnn_partition_cnn_config;
 
@@ -121,6 +121,12 @@ void av1_intra_mode_cnn_partition(const AV1_COMMON *const cm, MACROBLOCK *x,
       av1_cnn_predict_img_multi_out(image, width, height, stride, cnn_config,
                                     &thread_data, &output);
     }
+
+    x->cnn_output_valid = 1;
+  }
+
+  if (!x->cnn_output_valid) {
+    return;
   }
 
   const NN_CONFIG *dnn_configs[5] = {

@@ -2370,6 +2370,7 @@ static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
 
   if (frame_is_intra_only(cm) && bsize == BLOCK_64X64) {
     x->quad_tree_idx = 0;
+    x->cnn_output_valid = 0;
   }
 
   if (bsize == cm->seq_params.sb_size) x->must_find_valid_partition = 0;
@@ -4007,6 +4008,9 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
         !frame_is_intra_only(cm) && !use_nonrd_mode) {
       init_simple_motion_search_mvs(pc_root);
     }
+#if !CONFIG_REALTIME_ONLY
+    td->mb.cnn_output_valid = 0;
+#endif
 
     xd->cur_frame_force_integer_mv = cm->cur_frame_force_integer_mv;
 

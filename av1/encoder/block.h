@@ -413,6 +413,7 @@ struct macroblock {
 
 #if !CONFIG_REALTIME_ONLY
   int quad_tree_idx;
+  int cnn_output_valid;
   float cnn_buffer[CNN_OUT_BUF_SIZE];
   float log_q;
 #endif
