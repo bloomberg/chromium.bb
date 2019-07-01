@@ -431,7 +431,11 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 }
 
 // A new navigation dismisses the repost dialog.
+// TODO(crbug.com/971670): Reenable for slim nav.
 - (void)testRepostFormDismissedByNewNavigation {
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EARL_GREY_TEST_SKIPPED(@"Test not running with slim nav.");
+  }
   [self setUpFormTestSimpleHttpServer];
   const GURL destinationURL = GetDestinationUrl();
 
@@ -451,10 +455,6 @@ id<GREYMatcher> ResendPostButtonMatcher() {
     [ChromeEarlGrey reload];
   }
 
-  // Repost confirmation box should be visible.
-  [ChromeEarlGrey
-      waitForSufficientlyVisibleElementWithMatcher:ResendPostButtonMatcher()];
-
   // When slim navigation manager is enabled, synchronization must be disabled
   // until after the repost confirmation is dismissed because it is presented
   // during the load. It is always disabled, but immediately re-enabled if
@@ -466,6 +466,10 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   if (![ChromeEarlGrey isSlimNavigationManagerEnabled]) {
     disabler.reset();
   }
+
+  // Repost confirmation box should be visible.
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:ResendPostButtonMatcher()];
 
   // Starting a new navigation while the repost dialog is presented should not
   // crash.
