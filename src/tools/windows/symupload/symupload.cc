@@ -147,7 +147,7 @@ static bool DumpSymbolsToTempFile(const wchar_t *file,
     return false;
   }
 
-  bool success = writer.WriteMap(temp_file);
+  bool success = writer.WriteSymbols(temp_file);
   fclose(temp_file);
   if (!success) {
     _wunlink(temp_filename);
