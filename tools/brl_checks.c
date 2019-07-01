@@ -469,7 +469,10 @@ check_hyphenation(const char *tableList, const char *str, const char *expected) 
 	int j = 0;
 	hyphenatedbuf[i++] = inbuf[j++];
 	for (; j < inlen; j++) {
-		if (hyphens[j] != '0') hyphenatedbuf[i++] = (widechar)'-';
+		if (hyphens[j] == '2')
+			hyphenatedbuf[i++] = (widechar)'|';
+		else if (hyphens[j] != '0')
+			hyphenatedbuf[i++] = (widechar)'-';
 		hyphenatedbuf[i++] = inbuf[j];
 	}
 

@@ -3679,12 +3679,26 @@ failure:
 	return 1;
 } /* first pass translation completed */
 
+static int
+isHyphen(const TranslationTableHeader *table, widechar c) {
+	TranslationTableRule *rule;
+	TranslationTableOffset offset = findCharOrDots(c, 0, table)->otherRules;
+	while (offset) {
+		rule = (TranslationTableRule *)&table->ruleArea[offset];
+		if (rule->opcode == CTO_Hyphen) return 1;
+		offset = rule->dotsnext;
+	}
+	return 0;
+}
+
 /**
  * Hyphenate an input string which can either be text (mode = 0) or braille (mode = 1). If
  * the input is braille, back-translation will be performed with `tableList'. The input
  * string can contain any character (even space), but only break points within words
- * (between letters) are considered. The string can be broken before the character at
- * index k if the value of `hyphens[k]' is '1'.
+ * (between letters) are considered. If the string can not be broken before the character
+ * at index k, the value of `hyphens[k]' is '0'. If it can be broken by inserting a hyphen
+ * at the break point, the value is '1'. If it can be broken without adding a hyphen, the
+ * value is '2'.
  */
 int EXPORT_CALL
 lou_hyphenate(const char *tableList, const widechar *inbuf, int inlen, char *hyphens,
@@ -3739,8 +3753,13 @@ lou_hyphenate(const char *tableList, const widechar *inbuf, int inlen, char *hyp
 		if (!hyphenateWord(&textBuffer[wordStart], wordEnd - wordStart,
 					&textHyphens[wordStart], table))
 			return 0;
-		// normalize to '0' and '1'
-		textHyphens[wordStart] = '0';
+		// normalize to '0', '1' or '2'
+		if (wordStart >= 2 && isHyphen(table, textBuffer[wordStart - 1]) &&
+				((findCharOrDots(textBuffer[wordStart - 2], 0, table))->attributes &
+						CTC_Letter))
+			textHyphens[wordStart] = '2';
+		else
+			textHyphens[wordStart] = '0';
 		for (k = wordStart + 1; k < wordEnd; k++)
 			if (textHyphens[k] & 1)
 				textHyphens[k] = '1';
