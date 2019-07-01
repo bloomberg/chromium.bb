@@ -1069,6 +1069,10 @@ const char kFormControlsRefreshName[] = "Web Platform Controls updated UI";
 const char kFormControlsRefreshDescription[] =
     "If enabled, HTML forms elements will be rendered using an updated style.";
 
+const char kGlobalMediaControlsName[] = "Global Media Controls";
+const char kGlobalMediaControlsDescription[] =
+    "Enables the Global Media Controls UI in the toolbar.";
+
 const char kGpuRasterizationName[] = "GPU rasterization";
 const char kGpuRasterizationDescription[] =
     "Use GPU to rasterize web content. Requires impl-side painting.";
