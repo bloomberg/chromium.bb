@@ -9,7 +9,7 @@ import { crawl } from './crawl.js';
 function usage(rc: number) {
   console.error('Usage:');
   console.error('  tools/gen [SUITES...]');
-  console.error('  tools/gen cts unittests demos');
+  console.error('  tools/gen cts unittests');
   process.exit(rc);
 }
 

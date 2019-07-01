@@ -16,7 +16,7 @@ module.exports = function(grunt) {
     run: {
       'generate-listings': {
         cmd: 'tools/gen',
-        args: ['cts', 'unittests', 'demos'],
+        args: ['cts', 'unittests'],
       },
       'generate-version': {
         cmd: 'tools/gen_version',

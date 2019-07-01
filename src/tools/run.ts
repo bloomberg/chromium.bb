@@ -9,7 +9,7 @@ import { Logger, IResult } from '../framework/logger';
 function usage(rc: number) {
   console.log('Usage:');
   console.log('  tools/run [FILTERS...]');
-  console.log('  tools/run unittests: demos:params:');
+  console.log('  tools/run unittests: cts:buffers/');
   process.exit(rc);
 }
 
