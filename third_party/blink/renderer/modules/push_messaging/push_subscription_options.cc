@@ -95,6 +95,13 @@ PushSubscriptionOptions::PushSubscriptionOptions(
           options.application_server_key.data(),
           SafeCast<unsigned>(options.application_server_key.length()))) {}
 
+bool PushSubscriptionOptions::IsApplicationServerKeyVapid() const {
+  if (!application_server_key_)
+    return false;
+  return application_server_key_->ByteLength() == 65 &&
+         static_cast<uint8_t*>(application_server_key_->Data())[0] == 0x04;
+}
+
 void PushSubscriptionOptions::Trace(blink::Visitor* visitor) {
   visitor->Trace(application_server_key_);
   ScriptWrappable::Trace(visitor);
