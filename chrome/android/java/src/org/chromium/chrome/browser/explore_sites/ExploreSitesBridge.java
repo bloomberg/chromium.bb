@@ -94,6 +94,7 @@ public class ExploreSitesBridge {
     public static void getSiteImage(Profile profile, int siteID, Callback<Bitmap> callback) {
         if (sCatalogForTesting != null) {
             callback.onResult(null);
+            return;
         }
         nativeGetIcon(profile, siteID, callback);
     }
@@ -106,6 +107,7 @@ public class ExploreSitesBridge {
             Profile profile, int categoryID, int pixelSize, Callback<Bitmap> callback) {
         if (sCatalogForTesting != null) {
             callback.onResult(null);
+            return;
         }
         nativeGetCategoryImage(profile, categoryID, pixelSize, callback);
     }
@@ -116,6 +118,7 @@ public class ExploreSitesBridge {
     public static void getSummaryImage(Profile profile, int pixelSize, Callback<Bitmap> callback) {
         if (sCatalogForTesting != null) {
             callback.onResult(null);
+            return;
         }
         nativeGetSummaryImage(profile, pixelSize, callback);
     }
