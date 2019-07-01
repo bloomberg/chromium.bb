@@ -2112,13 +2112,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordImportDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordImport)},
 #if defined(OS_ANDROID)
-    {"passwords-keyboard-accessory",
-     flag_descriptions::kPasswordsKeyboardAccessoryName,
-     flag_descriptions::kPasswordsKeyboardAccessoryDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kPasswordsKeyboardAccessory)},
-#endif  // OS_ANDROID
-#if defined(OS_ANDROID)
     {"enable-android-web-contents-dark-mode",
      flag_descriptions::kAndroidWebContentsDarkMode,
      flag_descriptions::kAndroidWebContentsDarkModeDescription, kOsAndroid,

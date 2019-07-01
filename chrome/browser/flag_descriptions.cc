@@ -1501,12 +1501,6 @@ const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
     "Import functionality in password settings.";
 
-const char kPasswordsKeyboardAccessoryName[] =
-    "Add password-related functions to keyboard accessory";
-const char kPasswordsKeyboardAccessoryDescription[] =
-    "Adds password generation button and toggle for the passwords bottom sheet "
-    "to the keyboard accessory. Replaces password generation popups.";
-
 const char kPasswordsMigrateLinuxToLoginDBName[] =
     "Migrate passwords to \"Login Data\"";
 const char kPasswordsMigrateLinuxToLoginDBDescription[] =
