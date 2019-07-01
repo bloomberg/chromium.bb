@@ -993,6 +993,7 @@ void MediaControlsImpl::MaybeShow() {
     loading_panel_->OnControlsShown();
 
   timeline_->OnControlsShown();
+  volume_slider_->OnControlsShown();
   UpdateCSSClassFromState();
   UpdateActingAsAudioControls();
 }
@@ -1016,6 +1017,7 @@ void MediaControlsImpl::Hide() {
     EndScrubbing();
   }
   timeline_->OnControlsHidden();
+  volume_slider_->OnControlsHidden();
 
   UpdateCSSClassFromState();
 

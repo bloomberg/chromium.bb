@@ -291,10 +291,12 @@ void MediaControlTimelineElement::OnControlsHidden() {
 
   // End scrubbing state.
   is_touching_ = false;
+  MediaControlSliderElement::OnControlsHidden();
 }
 
 void MediaControlTimelineElement::OnControlsShown() {
   controls_hidden_ = false;
+  MediaControlSliderElement::OnControlsShown();
 }
 
 bool MediaControlTimelineElement::EndScrubbingEvent(Event& event) {
