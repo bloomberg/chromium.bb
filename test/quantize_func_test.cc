@@ -497,6 +497,24 @@ INSTANTIATE_TEST_CASE_P(SSE2, QuantizeTest,
                         ::testing::ValuesIn(kQParamArraySSE2));
 #endif
 
+#if HAVE_NEON
+const QuantizeParam kQParamArrayNEON[] = {
+  make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_neon,
+             static_cast<TX_SIZE>(TX_16X16), TYPE_FP, AOM_BITS_8),
+  make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_neon,
+             static_cast<TX_SIZE>(TX_4X16), TYPE_FP, AOM_BITS_8),
+  make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_neon,
+             static_cast<TX_SIZE>(TX_16X4), TYPE_FP, AOM_BITS_8),
+  make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_neon,
+             static_cast<TX_SIZE>(TX_8X32), TYPE_FP, AOM_BITS_8),
+  make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_neon,
+             static_cast<TX_SIZE>(TX_32X8), TYPE_FP, AOM_BITS_8)
+};
+
+INSTANTIATE_TEST_CASE_P(NEON, QuantizeTest,
+                        ::testing::ValuesIn(kQParamArrayNEON));
+#endif
+
 #if HAVE_SSSE3 && ARCH_X86_64
 INSTANTIATE_TEST_CASE_P(
     SSSE3, QuantizeTest,
