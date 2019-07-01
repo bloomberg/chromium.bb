@@ -912,6 +912,24 @@ const FeatureEntry::FeatureParam kExploreSitesExperimental = {
 const FeatureEntry::FeatureParam kExploreSitesPersonalized = {
     chrome::android::explore_sites::kExploreSitesVariationParameterName,
     chrome::android::explore_sites::kExploreSitesVariationPersonalized};
+const FeatureEntry::FeatureParam kExploreSitesDenseTitleBottom[] = {
+    {chrome::android::explore_sites::kExploreSitesVariationParameterName,
+     chrome::android::explore_sites::kExploreSitesVariationMostLikelyTile},
+    {chrome::android::explore_sites::kExploreSitesDenseVariationParameterName,
+     chrome::android::explore_sites::
+         kExploreSitesDenseVariationDenseTitleBottom},
+    {chrome::android::explore_sites::
+         kExploreSitesMostLikelyVariationParameterName,
+     chrome::android::explore_sites::kExploreSitesMostLikelyVariationIconDots}};
+const FeatureEntry::FeatureParam kExploreSitesDenseTitleRight[] = {
+    {chrome::android::explore_sites::kExploreSitesVariationParameterName,
+     chrome::android::explore_sites::kExploreSitesVariationMostLikelyTile},
+    {chrome::android::explore_sites::kExploreSitesDenseVariationParameterName,
+     chrome::android::explore_sites::
+         kExploreSitesDenseVariationDenseTitleRight},
+    {chrome::android::explore_sites::
+         kExploreSitesMostLikelyVariationParameterName,
+     chrome::android::explore_sites::kExploreSitesMostLikelyVariationIconDots}};
 const FeatureEntry::FeatureParam kExploreSitesIconArrow[] = {
     {chrome::android::explore_sites::kExploreSitesVariationParameterName,
      chrome::android::explore_sites::kExploreSitesVariationMostLikelyTile},
@@ -940,7 +958,11 @@ const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
     {"Dots Icon", kExploreSitesIconDots, base::size(kExploreSitesIconDots),
      nullptr},
     {"Grouped Icon", kExploreSitesIconGrouped,
-     base::size(kExploreSitesIconGrouped), nullptr}};
+     base::size(kExploreSitesIconGrouped), nullptr},
+    {"Dense Title Bottom", kExploreSitesDenseTitleBottom,
+     base::size(kExploreSitesDenseTitleBottom), nullptr},
+    {"Dense Title Right", kExploreSitesDenseTitleRight,
+     base::size(kExploreSitesDenseTitleRight), nullptr}};
 
 const FeatureEntry::FeatureParam kSimplifiedServerAllCocaCards = {
     contextual_search::kContextualCardsVersionParamName,
