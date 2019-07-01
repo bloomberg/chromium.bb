@@ -2035,6 +2035,8 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
     }
   }
 
+  // TODO(cbiesinger): Shouldn't this check container->NeedsLayout, since that's
+  // the one we'll mark for NeedsOverflowRecalc()?
   if (diff.TransformChanged() && !NeedsLayout()) {
     if (LayoutBlock* container = ContainingBlock())
       container->SetNeedsOverflowRecalc();
