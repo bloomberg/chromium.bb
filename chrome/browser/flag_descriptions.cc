@@ -3524,7 +3524,7 @@ const char kEnableDbusAndX11StatusIconsName[] =
 const char kEnableDbusAndX11StatusIconsDescription[] =
     "If enabled, uses Chromium's StatusNotifierItem (DBus) and system tray "
     "(X11) implementations of status icons.  Otherwise, uses libappindicator's "
-    "and GTK's implementaitons.";
+    "and GTK's implementations.";
 
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
