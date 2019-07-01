@@ -1048,5 +1048,14 @@ constexpr char kMlDecisionServiceInterface[] = "org.chromium.MlDecisionService";
 constexpr char kShouldDeferScreenDimMethod[] = "ShouldDeferScreenDim";
 }  // namespace machine_learning
 
+namespace modemfwd {
+const char kModemfwdInterface[] = "org.chromium.Modemfwd";
+const char kModemfwdServicePath[] = "/org/chromium/Modemfwd";
+const char kModemfwdServiceName[] = "org.chromium.Modemfwd";
+
+// Methods.
+const char kSetDebugMode[] = "SetDebugMode";
+
+}  // namespace modemfwd
 
 #endif  // SYSTEM_API_DBUS_SERVICE_CONSTANTS_H_
