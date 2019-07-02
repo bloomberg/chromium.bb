@@ -2944,7 +2944,7 @@ be describing additional metrics about the same event.
   <summary>
     Logged when the FindInPage returns a user search request result.
   </summary>
-  <metric name="HasMatches">
+  <metric name="HasMatches" enum="Boolean">
     <summary>
       True if there were matches.
     </summary>
