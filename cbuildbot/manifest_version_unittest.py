@@ -154,6 +154,39 @@ class VersionInfoTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(new_info.VersionString(), '2.0.0')
     self.assertEqual(new_info.chrome_branch, '30')
 
+  def testCompareEqual(self):
+    """Verify comparisons of equal versions."""
+    lhs = manifest_version.VersionInfo(version_string='1.2.3')
+    rhs = manifest_version.VersionInfo(version_string='1.2.3')
+    self.assertFalse(lhs < rhs)
+    self.assertTrue(lhs <= rhs)
+    self.assertTrue(lhs == rhs)
+    self.assertFalse(lhs != rhs)
+    self.assertFalse(lhs > rhs)
+    self.assertTrue(lhs >= rhs)
+
+  def testCompareLess(self):
+    """Verify comparisons of less versions."""
+    lhs = manifest_version.VersionInfo(version_string='1.0.3')
+    rhs = manifest_version.VersionInfo(version_string='1.2.3')
+    self.assertTrue(lhs < rhs)
+    self.assertTrue(lhs <= rhs)
+    self.assertFalse(lhs == rhs)
+    self.assertTrue(lhs != rhs)
+    self.assertFalse(lhs > rhs)
+    self.assertFalse(lhs >= rhs)
+
+  def testCompareGreater(self):
+    """Verify comparisons of greater versions."""
+    lhs = manifest_version.VersionInfo(version_string='1.2.4')
+    rhs = manifest_version.VersionInfo(version_string='1.2.3')
+    self.assertFalse(lhs < rhs)
+    self.assertFalse(lhs <= rhs)
+    self.assertFalse(lhs == rhs)
+    self.assertTrue(lhs != rhs)
+    self.assertTrue(lhs > rhs)
+    self.assertTrue(lhs >= rhs)
+
 
 class ResolveHelpersTest(cros_test_lib.TempDirTestCase):
   """Test the buildspec resolution helper functions."""

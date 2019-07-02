@@ -380,14 +380,23 @@ class VersionInfo(object):
     """Useful method to return a comparable version of a LKGM string."""
     return cls(version_string).VersionComponents()
 
-  def __cmp__(self, other):
-    sinfo = self.VersionComponents()
-    oinfo = other.VersionComponents()
+  def __lt__(self, other):
+    return self.VersionComponents() < other.VersionComponents()
 
-    for s, o in zip(sinfo, oinfo):
-      if s != o:
-        return -1 if s < o else 1
-    return 0
+  def __le__(self, other):
+    return self.VersionComponents() <= other.VersionComponents()
+
+  def __eq__(self, other):
+    return self.VersionComponents() == other.VersionComponents()
+
+  def __ne__(self, other):
+    return self.VersionComponents() != other.VersionComponents()
+
+  def __gt__(self, other):
+    return self.VersionComponents() > other.VersionComponents()
+
+  def __ge__(self, other):
+    return self.VersionComponents() >= other.VersionComponents()
 
   __hash__ = None
 
