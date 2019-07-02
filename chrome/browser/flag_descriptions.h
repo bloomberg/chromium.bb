@@ -90,9 +90,6 @@ extern const char kAndroidSiteSettingsUIRefreshDescription[];
 extern const char kAutomaticPasswordGenerationName[];
 extern const char kAutomaticPasswordGenerationDescription[];
 
-extern const char kEnableBloatedRendererDetectionName[];
-extern const char kEnableBloatedRendererDetectionDescription[];
-
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportName[];
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportDescription[];
 

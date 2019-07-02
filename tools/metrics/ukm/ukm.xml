@@ -2056,6 +2056,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="BloatedRenderer">
+  <obsolete>
+    Deprecated as of 03/2019.
+  </obsolete>
   <owner>ulan@chromium.org</owner>
   <summary>
     Metrics related to a bloated renderer that is close to out-of-memory. They

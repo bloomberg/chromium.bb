@@ -180,15 +180,6 @@
       name: "BlinkRuntimeCallStats",
     },
     {
-      name: "BloatedRendererDetection",
-      status: "experimental",
-    },
-    {
-      // Detects bloated renderers even if the uptime is small.
-      // Useful for local testing, not intended for production.
-      name: "BloatedRendererDetectionSkipUptimeCheck",
-    },
-    {
       // Adding simpler reading methods - stream(), text(), and arrayBuffer() -
       // to the Blob interface. See: https://github.com/w3c/FileAPI/pull/117
       name: "BlobReadMethods",

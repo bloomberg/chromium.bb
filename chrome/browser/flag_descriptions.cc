@@ -118,10 +118,6 @@ const char kDrawVerticallyEdgeToEdgeName[] =
 const char kDrawVerticallyEdgeToEdgeDescription[] =
     "Draw contents vertically from edge to edge.";
 
-const char kEnableBloatedRendererDetectionName[] = "Bloated renderer detection";
-const char kEnableBloatedRendererDetectionDescription[] =
-    "Enable bloated renderer detection";
-
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportName[] =
     "AlwaysShowServerCardsInSyncTransport";
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportDescription[] =

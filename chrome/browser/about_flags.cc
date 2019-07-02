@@ -3315,10 +3315,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppReinstallZeroState)},
 #endif  // OS_CHROMEOS
 
-    {"enable-bloated-renderer-detection",
-     flag_descriptions::kEnableBloatedRendererDetectionName,
-     flag_descriptions::kEnableBloatedRendererDetectionDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kBloatedRendererDetection)},
     {"enable-sync-uss-bookmarks",
      flag_descriptions::kEnableSyncUSSBookmarksName,
      flag_descriptions::kEnableSyncUSSBookmarksDescription, kOsAll,
