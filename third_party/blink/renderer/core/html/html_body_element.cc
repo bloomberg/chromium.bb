@@ -66,7 +66,7 @@ void HTMLBodyElement::CollectStyleForPresentationAttribute(
           CSSImageValue::Create(url, GetDocument().CompleteURL(url),
                                 Referrer(GetDocument().OutgoingReferrer(),
                                          GetDocument().GetReferrerPolicy()),
-                                CSSImageValue::OriginClean::kTrue);
+                                OriginClean::kTrue);
       image_value->SetInitiator(localName());
       style->SetProperty(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));

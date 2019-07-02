@@ -79,11 +79,9 @@ ImageResourceContent* StyleFetchedImage::CachedImage() const {
 }
 
 CSSValue* StyleFetchedImage::CssValue() const {
-  return CSSImageValue::Create(url_,
-                               origin_clean_
-                                   ? CSSImageValue::OriginClean::kTrue
-                                   : CSSImageValue::OriginClean::kFalse,
-                               const_cast<StyleFetchedImage*>(this));
+  return CSSImageValue::Create(
+      url_, origin_clean_ ? OriginClean::kTrue : OriginClean::kFalse,
+      const_cast<StyleFetchedImage*>(this));
 }
 
 CSSValue* StyleFetchedImage::ComputedCSSValue() const {

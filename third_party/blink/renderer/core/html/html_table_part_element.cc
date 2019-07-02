@@ -64,7 +64,7 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
           CSSImageValue::Create(url, GetDocument().CompleteURL(url),
                                 Referrer(GetDocument().OutgoingReferrer(),
                                          GetDocument().GetReferrerPolicy()),
-                                CSSImageValue::OriginClean::kTrue);
+                                OriginClean::kTrue);
       style->SetProperty(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));
     }

@@ -1669,8 +1669,7 @@ static CSSValue* CreateCSSImageValueWithReferrer(
     const CSSParserContext* context) {
   CSSValue* image_value = CSSImageValue::Create(
       raw_value, context->CompleteURL(raw_value), context->GetReferrer(),
-      context->IsOriginClean() ? CSSImageValue::OriginClean::kTrue
-                               : CSSImageValue::OriginClean::kFalse);
+      context->IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse);
   return image_value;
 }
 

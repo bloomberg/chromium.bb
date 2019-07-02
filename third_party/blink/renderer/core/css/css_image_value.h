@@ -23,6 +23,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_origin_clean.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -38,13 +39,6 @@ class ComputedStyle;
 
 class CORE_EXPORT CSSImageValue : public CSSValue {
  public:
-  // Whether the stylesheet that requested this image is origin-clean:
-  // https://drafts.csswg.org/cssom-1/#concept-css-style-sheet-origin-clean-flag
-  //
-  // This is primarily to avoid passing a bool to the Create() methods. Move to
-  // a more central file if other classes should use it.
-  enum OriginClean { kFalse, kTrue };
-
   static CSSImageValue* Create(const KURL& url,
                                OriginClean origin_clean,
                                StyleImage* image = nullptr) {
@@ -132,6 +126,8 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   mutable AtomicString absolute_url_;
   mutable Member<StyleImage> cached_image_;
 
+  // Whether the stylesheet that requested this image is origin-clean:
+  // https://drafts.csswg.org/cssom-1/#concept-css-style-sheet-origin-clean-flag
   const OriginClean origin_clean_;
 };
 
