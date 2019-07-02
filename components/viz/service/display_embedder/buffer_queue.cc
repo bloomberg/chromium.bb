@@ -193,7 +193,7 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
   }
 
   // We don't want to allow anything more than triple buffering.
-  DCHECK_LT(allocated_count_, 4U);
+  DCHECK_LT(allocated_count_, 3U);
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
       gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
           size_, format_, gfx::BufferUsage::SCANOUT, surface_handle_));
