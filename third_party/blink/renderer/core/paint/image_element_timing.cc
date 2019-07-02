@@ -106,6 +106,12 @@ void ImageElementTiming::NotifyImagePaintedInternal(
   if (node->IsInShadowTree())
     return;
 
+  // Do not expose elements which should have effective zero opacity.
+  // We can afford to call this expensive method because this is only called
+  // once per image annotated with the elementtiming attribute.
+  if (!layout_object.HasNonZeroEffectiveOpacity())
+    return;
+
   FloatRect intersection_rect = ComputeIntersectionRect(
       frame, layout_object, current_paint_chunk_properties);
   const AtomicString attr =
