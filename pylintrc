@@ -39,6 +39,8 @@ enable=
     backtick,
     bad-python3-import,
     buffer-builtin,
+    cmp-builtin,
+    cmp-method,
     coerce-builtin,
     coerce-method,
     delslice-method,
