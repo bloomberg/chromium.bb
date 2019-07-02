@@ -100,7 +100,6 @@
         'swarming': {
           'shards': 1,
         },
-        'experiment_percentage': 100,
       },
       'android_webview_unittests': {},
       'breakpad_unittests': {},
