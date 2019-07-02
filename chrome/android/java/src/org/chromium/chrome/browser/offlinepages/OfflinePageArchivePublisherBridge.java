@@ -20,9 +20,9 @@ import org.chromium.base.annotations.JNINamespace;
  * transfer all C++ calls over to Java land for making the call to ADM.  This is a one-way bridge,
  * from C++ to Java only.  The Java side of this bridge is not called by other Java code.
  */
-@JNINamespace("offline_pages::android")
-public class OfflinePagesDownloadManagerBridge {
-    private static final String TAG = "OfflinePagesDMBridge";
+@JNINamespace("offline_pages")
+public class OfflinePageArchivePublisherBridge {
+    private static final String TAG = "Publisher";
     /** Offline pages should not be scanned as for media content. */
     public static final boolean IS_MEDIA_SCANNER_SCANNABLE = false;
 
