@@ -84,12 +84,14 @@ TEST(WakeLockControllerTest, ReleaseUnaquiredWakeLockRejectsPromise) {
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise promise = resolver->Promise();
 
-  EXPECT_EQ(v8::Promise::kPending, GetScriptPromiseState(promise));
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(promise));
   controller.ReleaseWakeLock(WakeLockType::kScreen, resolver);
   context.WaitForPromiseRejection(promise);
 
   // The promise is always rejected, even if it is not in [[ActiveLocks]].
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(promise));
   EXPECT_FALSE(screen_lock.is_acquired());
 }
 
@@ -111,7 +113,8 @@ TEST(WakeLockControllerTest, ReleaseWakeLock) {
   context.WaitForPromiseRejection(promise);
   screen_lock.WaitForCancelation();
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(promise));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(promise));
   EXPECT_FALSE(screen_lock.is_acquired());
 }
 
@@ -140,7 +143,8 @@ TEST(WakeLockControllerTest, AbortSignal) {
   context.WaitForPromiseRejection(screen_promise);
   screen_lock.WaitForCancelation();
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(screen_promise));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(screen_promise));
   EXPECT_FALSE(screen_lock.is_acquired());
 }
 
@@ -210,9 +214,11 @@ TEST(WakeLockControllerTest, PageVisibilityHidden) {
   context.WaitForPromiseRejection(screen_promise);
   screen_lock.WaitForCancelation();
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(screen_promise));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(screen_promise));
   EXPECT_FALSE(screen_lock.is_acquired());
-  EXPECT_EQ(v8::Promise::kPending, GetScriptPromiseState(system_promise));
+  EXPECT_EQ(v8::Promise::kPending,
+            ScriptPromiseUtils::GetPromiseState(system_promise));
   EXPECT_TRUE(system_lock.is_acquired());
 }
 
@@ -241,13 +247,56 @@ TEST(WakeLockControllerTest, PageVisibilityAndAbortSignal) {
   context.WaitForPromiseRejection(screen_promise);
   screen_lock.WaitForCancelation();
 
-  EXPECT_EQ(v8::Promise::kRejected, GetScriptPromiseState(screen_promise));
+  EXPECT_EQ(v8::Promise::kRejected,
+            ScriptPromiseUtils::GetPromiseState(screen_promise));
   EXPECT_FALSE(screen_lock.is_acquired());
 
   abort_signal->SignalAbort();
   test::RunPendingTasks();
 
   EXPECT_FALSE(screen_lock.is_acquired());
+}
+
+TEST(WakeLockControllerTest, RequestPermissionGranted) {
+  MockWakeLockService wake_lock_service;
+  WakeLockTestingContext context(&wake_lock_service);
+  auto& controller = WakeLockController::From(*context.GetDocument());
+
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kSystem, mojom::blink::PermissionStatus::GRANTED);
+
+  auto* system_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
+  ScriptPromise system_promise = system_resolver->Promise();
+
+  controller.RequestPermission(WakeLockType::kSystem, system_resolver);
+  context.WaitForPromiseFulfillment(system_promise);
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            ScriptPromiseUtils::GetPromiseState(system_promise));
+  EXPECT_EQ("granted",
+            ScriptPromiseUtils::GetPromiseResolutionAsString(system_promise));
+}
+
+TEST(WakeLockControllerTest, RequestPermissionDenied) {
+  MockWakeLockService wake_lock_service;
+  WakeLockTestingContext context(&wake_lock_service);
+  auto& controller = WakeLockController::From(*context.GetDocument());
+
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kSystem, mojom::blink::PermissionStatus::DENIED);
+
+  auto* system_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
+  ScriptPromise system_promise = system_resolver->Promise();
+
+  controller.RequestPermission(WakeLockType::kSystem, system_resolver);
+  context.WaitForPromiseFulfillment(system_promise);
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            ScriptPromiseUtils::GetPromiseState(system_promise));
+  EXPECT_EQ("denied",
+            ScriptPromiseUtils::GetPromiseResolutionAsString(system_promise));
 }
 
 }  // namespace blink

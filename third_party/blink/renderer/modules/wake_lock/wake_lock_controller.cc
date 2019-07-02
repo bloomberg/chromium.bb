@@ -5,9 +5,15 @@
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_controller.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_state_record.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
+
+using mojom::blink::PermissionService;
+using mojom::blink::PermissionStatus;
 
 WakeLockController::WakeLockController(Document& document)
     : Supplement<Document>(document),
@@ -55,6 +61,23 @@ void WakeLockController::ReleaseWakeLock(WakeLockType type,
   state_record->ReleaseWakeLock(resolver);
 }
 
+void WakeLockController::RequestPermission(WakeLockType type,
+                                           ScriptPromiseResolver* resolver) {
+  // https://w3c.github.io/wake-lock/#requestpermission-static-method
+  // 2.1. Let state be the result of running and waiting for the obtain
+  //      permission steps with type.
+  // 2.2. Resolve promise with state.
+  auto permission_callback = WTF::Bind(
+      [](ScriptPromiseResolver* resolver, PermissionStatus status) {
+        DCHECK(status == PermissionStatus::GRANTED ||
+               status == PermissionStatus::DENIED);
+        DCHECK(resolver);
+        resolver->Resolve(PermissionStatusToString(status));
+      },
+      WrapPersistent(resolver));
+  ObtainPermission(type, std::move(permission_callback));
+}
+
 void WakeLockController::ContextDestroyed(ExecutionContext*) {
   // https://w3c.github.io/wake-lock/#handling-document-loss-of-full-activity
   // 1. Let document be the responsible document of the current settings object.
@@ -86,6 +109,48 @@ void WakeLockController::PageVisibilityChanged() {
       state_records_[static_cast<size_t>(WakeLockType::kScreen)];
   if (state_record)
     state_record->ClearWakeLocks();
+}
+
+void WakeLockController::ObtainPermission(
+    WakeLockType type,
+    base::OnceCallback<void(PermissionStatus)> callback) {
+  // https:w3c.github.io/wake-lock/#dfn-obtain-permission
+  // Note we actually implement a simplified version of the "obtain permission"
+  // algorithm that essentially just calls the "request permission to use"
+  // algorithm from the Permissions spec (i.e. we bypass all the steps covering
+  // calling the "query a permission" algorithm and handling its result).
+  // * Right now, we can do that because there is no way for Chromium's
+  //   permission system to get to the "prompt" state given how
+  //   WakeLockPermissionContext is currently implemented.
+  // * Even if WakeLockPermissionContext changes in the future, this Blink
+  //   implementation is unlikely to change because
+  //   WakeLockPermissionContext::RequestPermission() will take its
+  //   |user_gesture| argument into account to actually implement a slightly
+  //   altered version of "request permission to use", the behavior of which
+  //   will match the definition of "obtain permission" in the Wake Lock spec.
+  DCHECK(type == WakeLockType::kScreen || type == WakeLockType::kSystem);
+  static_assert(
+      static_cast<mojom::blink::WakeLockType>(WakeLockType::kScreen) ==
+          mojom::blink::WakeLockType::kScreen,
+      "WakeLockType and mojom::blink::WakeLockType must have identical values");
+  static_assert(
+      static_cast<mojom::blink::WakeLockType>(WakeLockType::kSystem) ==
+          mojom::blink::WakeLockType::kSystem,
+      "WakeLockType and mojom::blink::WakeLockType must have identical values");
+
+  GetPermissionService().RequestPermission(
+      CreateWakeLockPermissionDescriptor(
+          static_cast<mojom::blink::WakeLockType>(type)),
+      LocalFrame::HasTransientUserActivation(GetSupplementable()->GetFrame()),
+      std::move(callback));
+}
+
+PermissionService& WakeLockController::GetPermissionService() {
+  if (!permission_service_) {
+    ConnectToPermissionService(GetSupplementable(),
+                               mojo::MakeRequest(&permission_service_));
+  }
+  return *permission_service_;
 }
 
 }  // namespace blink

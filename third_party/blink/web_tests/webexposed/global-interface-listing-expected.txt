@@ -8178,6 +8178,7 @@ interface VisualViewport : EventTarget
     setter onscroll
 interface WakeLock
     static method request
+    static method requestPermission
     attribute @@toStringTag
     method constructor
 interface WaveShaperNode : AudioNode

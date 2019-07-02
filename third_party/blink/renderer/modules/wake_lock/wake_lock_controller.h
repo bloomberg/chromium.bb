@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_WAKE_LOCK_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_WAKE_LOCK_CONTROLLER_H_
 
+#include "base/callback.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
@@ -39,12 +41,22 @@ class MODULES_EXPORT WakeLockController final
 
   void ReleaseWakeLock(WakeLockType type, ScriptPromiseResolver*);
 
+  void RequestPermission(WakeLockType type, ScriptPromiseResolver*);
+
  private:
   // ContextLifecycleObserver implementation
   void ContextDestroyed(ExecutionContext*) override;
 
   // PageVisibilityObserver implementation
   void PageVisibilityChanged() override;
+
+  // Permission handling
+  void ObtainPermission(
+      WakeLockType type,
+      base::OnceCallback<void(mojom::blink::PermissionStatus)> callback);
+  mojom::blink::PermissionService& GetPermissionService();
+
+  mojom::blink::PermissionServicePtr permission_service_;
 
   // https://w3c.github.io/wake-lock/#concepts-and-state-record
   // Each platform wake lock (one per wake lock type) has an associated state
