@@ -425,10 +425,15 @@ void WindowPerformance::DispatchFirstInputTiming(
   first_input_timing_ = entry;
 }
 
-void WindowPerformance::AddLayoutJankFraction(double jank_fraction) {
+void WindowPerformance::AddLayoutJankFraction(double jank_fraction,
+                                              bool input_detected,
+                                              base::TimeTicks input_timestamp) {
   DCHECK(RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
       GetExecutionContext()));
-  auto* entry = MakeGarbageCollected<LayoutShift>(now(), jank_fraction);
+  auto* entry = MakeGarbageCollected<LayoutShift>(
+      now(), jank_fraction, input_detected,
+      input_detected ? MonotonicTimeToDOMHighResTimeStamp(input_timestamp)
+                     : 0.0);
   if (HasObserverFor(PerformanceEntry::kLayoutJank))
     NotifyObserversOfEntry(*entry);
   AddLayoutJankBuffer(*entry);
