@@ -724,6 +724,9 @@ typedef struct SPEED_FEATURES {
   // Use CNN with luma pixels on source frame on each of the 64x64 subblock to
   // perform split/no_split decision on intra-frames.
   int intra_cnn_split;
+
+  // Use modeled (currently CurvFit model) RDCost for fast non-RD mode
+  int use_modeled_non_rd_cost;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

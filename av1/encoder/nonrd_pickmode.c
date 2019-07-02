@@ -34,8 +34,6 @@
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/reconinter_enc.h"
 
-#define _TMP_USE_CURVFIT_ 0
-
 extern int g_pick_inter_mode_cnt;
 typedef struct {
   uint8_t *data;
@@ -451,7 +449,6 @@ static void estimate_comp_ref_frame_costs(
   }
 }
 
-#if _TMP_USE_CURVFIT_
 static void model_rd_with_curvfit(const AV1_COMP *const cpi,
                                   const MACROBLOCK *const x,
                                   BLOCK_SIZE plane_bsize, int plane,
@@ -477,7 +474,9 @@ static void model_rd_with_curvfit(const AV1_COMP *const cpi,
   double rate_f, dist_by_sse_norm_f;
   av1_model_rd_curvfit(plane_bsize, sse_norm, xqr, &rate_f,
                        &dist_by_sse_norm_f);
-
+  // 9.0 gives the best quality gain on a test video
+  // but it likely shall be qstep dependent
+  if (rate_f < 9.0) rate_f = 0.0;
   const double dist_f = dist_by_sse_norm_f * sse_norm;
   int rate_i = (int)(AOMMAX(0.0, rate_f * num_samples) + 0.5);
   int64_t dist_i = (int64_t)(AOMMAX(0.0, dist_f * num_samples) + 0.5);
@@ -495,7 +494,6 @@ static void model_rd_with_curvfit(const AV1_COMP *const cpi,
   if (rate) *rate = rate_i;
   if (dist) *dist = dist_i;
 }
-#endif
 
 static TX_SIZE calculate_tx_size(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
                                  MACROBLOCKD *const xd, unsigned int var,
@@ -704,13 +702,15 @@ static void model_rd_for_sb_y(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
                                            pd->dst.buf, pd->dst.stride, &sse);
   xd->mi[0]->tx_size = calculate_tx_size(cpi, bsize, xd, var, sse);
 
-#if _TMP_USE_CURVFIT_
-  model_rd_with_curvfit(cpi, x, plane_bsize, plane, sse, bw * bh, &rate, &dist);
-#else
-  (void)cpi;
-  rate = INT_MAX;  // this will be overwritten later with block_yrd
-  dist = INT_MAX;
-#endif
+  if (cpi->sf.use_modeled_non_rd_cost) {
+    const int bwide = block_size_wide[bsize];
+    const int bhigh = block_size_high[bsize];
+    model_rd_with_curvfit(cpi, x, bsize, AOM_PLANE_Y, sse, bwide * bhigh, &rate,
+                          &dist);
+  } else {
+    rate = INT_MAX;  // this will be overwritten later with block_yrd
+    dist = INT_MAX;
+  }
   *var_y = var;
   *sse_y = sse;
   x->pred_sse[ref] = (unsigned int)AOMMIN(sse, UINT_MAX);
@@ -1172,10 +1172,8 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     int rate_mv = 0;
     int mode_rd_thresh;
     int mode_index;
-#if !_TMP_USE_CURVFIT_
     int64_t this_sse;
     int is_skippable;
-#endif
     int this_early_term = 0;
     int skip_this_mv = 0;
     int comp_pred = 0;
@@ -1349,17 +1347,20 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                              : av1_broadcast_interp_filter(filter_ref);
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
                                   AOM_PLANE_Y, AOM_PLANE_Y);
-#if !_TMP_USE_CURVFIT_
-    if (use_model_yrd_large) {
-      model_skip_for_sb_y_large(cpi, bsize, x, xd, &var_y, &sse_y,
-                                &this_early_term);
-    } else {
-#endif
+    if (cpi->sf.use_modeled_non_rd_cost) {
       model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
                         &this_rdc.skip, NULL, &var_y, &sse_y);
-#if !_TMP_USE_CURVFIT_
+
+    } else {
+      if (use_model_yrd_large) {
+        model_skip_for_sb_y_large(cpi, bsize, x, xd, &var_y, &sse_y,
+                                  &this_early_term);
+      } else {
+        model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
+                          &this_rdc.skip, NULL, &var_y, &sse_y);
+      }
     }
-#endif
+
     if (ref_frame == LAST_FRAME && frame_mv[this_mode][ref_frame].as_int == 0) {
       sse_zeromv_norm =
           sse_y >> (b_width_log2_lookup[bsize] + b_height_log2_lookup[bsize]);
@@ -1371,29 +1372,31 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     const int skip_cost = x->skip_cost[skip_ctx][1];
     const int no_skip_cost = x->skip_cost[skip_ctx][0];
     if (!this_early_term) {
-#if !_TMP_USE_CURVFIT_
-      this_sse = (int64_t)sse_y;
-      block_yrd(cpi, x, mi_row, mi_col, &this_rdc, &is_skippable, &this_sse,
-                bsize, mi->tx_size);
-#endif
-
-      x->skip = this_rdc.skip;
-      if (this_rdc.skip) {
-        this_rdc.rate = skip_cost;
-      } else {
-#if !_TMP_USE_CURVFIT_
-        // on CurvFit this condition is checked inside curvfit modeling
-        if (RDCOST(x->rdmult, this_rdc.rate, this_rdc.dist) >=
-            RDCOST(
-                x->rdmult, 0,
-                this_sse)) {  // this_sse already multiplied by 16 in block_yrd
-          x->skip = 1;
+      if (cpi->sf.use_modeled_non_rd_cost) {
+        x->skip = this_rdc.skip;
+        if (this_rdc.skip) {
           this_rdc.rate = skip_cost;
-          this_rdc.dist = this_sse;
-        } else
-#endif
-        {
+        } else {
           this_rdc.rate += no_skip_cost;
+        }
+      } else {
+        this_sse = (int64_t)sse_y;
+        block_yrd(cpi, x, mi_row, mi_col, &this_rdc, &is_skippable, &this_sse,
+                  bsize, mi->tx_size);
+        x->skip = this_rdc.skip;
+        if (this_rdc.skip) {
+          this_rdc.rate = skip_cost;
+        } else {
+          if (RDCOST(x->rdmult, this_rdc.rate, this_rdc.dist) >=
+              RDCOST(x->rdmult, 0,
+                     this_sse)) {  // this_sse already multiplied by 16 in
+                                   // block_yrd
+            x->skip = 1;
+            this_rdc.rate = skip_cost;
+            this_rdc.dist = this_sse;
+          } else {
+            this_rdc.rate += no_skip_cost;
+          }
         }
       }
     } else {
