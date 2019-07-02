@@ -45920,6 +45920,30 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Other Aborted"/>
 </enum>
 
+<enum name="PaymentRequestMissingContactFields">
+  <summary>
+    A bit field value that shows the missing fields of contact info section in
+    payment sheet. The cardinality is not too high since the total number of
+    used bits is less than 4.
+  </summary>
+</enum>
+
+<enum name="PaymentRequestMissingPaymentFields">
+  <summary>
+    A bit field value that shows the missing fields of payment section in
+    payment sheet. The cardinality is not too high since the total number of
+    used bits is less than 6.
+  </summary>
+</enum>
+
+<enum name="PaymentRequestMissingShippingFields">
+  <summary>
+    A bit field value that shows the missing fields of shipping section in
+    payment sheet. The cardinality is not too high since the total number of
+    used bits is less than 4.
+  </summary>
+</enum>
+
 <enum name="PaymentRequestNoShowReason">
   <int value="0" label="NoMatchingPaymentMethod"/>
   <int value="1" label="NoSupportedPaymentMethod"/>
