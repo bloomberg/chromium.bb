@@ -1375,10 +1375,6 @@
       status: "stable",
     },
     {
-      name: "ScriptedTaskQueue",
-      status: "experimental"
-    },
-    {
       name: "ScriptStreamingOnPreload",
     },
     // Serialize and restore scroll anchors.
