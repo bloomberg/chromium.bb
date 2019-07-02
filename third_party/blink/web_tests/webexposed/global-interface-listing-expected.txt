@@ -4398,7 +4398,11 @@ interface KeyframeEffect : AnimationEffect
     setter target
 interface LargestContentfulPaint : PerformanceEntry
     attribute @@toStringTag
+    getter element
+    getter id
+    getter responseEnd
     getter size
+    getter url
     method constructor
     method toJSON
 interface LayoutShift : PerformanceEntry

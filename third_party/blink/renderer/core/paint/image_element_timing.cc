@@ -43,10 +43,6 @@ IsExplicitlyRegisteredForTiming(const LayoutObject* layout_object) {
 
 }  // namespace internal
 
-// The maximum amount of characters included in Element Timing for inline
-// images.
-constexpr const unsigned kInlineImageMaxChars = 100u;
-
 // static
 const char ImageElementTiming::kSupplementName[] = "ImageElementTiming";
 
