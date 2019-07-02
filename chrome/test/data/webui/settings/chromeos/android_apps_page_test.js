@@ -187,5 +187,4 @@ suite('AndroidAppsPageTests', function() {
       return promise;
     });
   });
-
 });

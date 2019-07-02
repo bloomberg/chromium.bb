@@ -148,6 +148,7 @@ TEST_F('OSSettingsPeoplePageTest', 'MAYBE_AllJavascriptTests', function() {
   mocha.run();
 });
 
+// Tests for the About section.
 // eslint-disable-next-line no-var
 var OSSettingsAboutPageTest = class extends OSSettingsBrowserTest {
   /** @override */
@@ -179,9 +180,178 @@ TEST_F('OSSettingsAboutPageTest', 'AboutPage_OfficialBuild', function() {
 });
 GEN('#endif');
 
+// Tests for the App section.
+// eslint-disable-next-line no-var
+var OSSettingsAndroidAppsPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'android_apps_page/android_apps_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '//ui/webui/resources/js/promise_resolver.js',
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'test_android_apps_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'android_apps_page_test.js',
+      'android_apps_page_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsAndroidAppsPageTest', 'DISABLED_All', function() {
+  mocha.run();
+});
+
+// Tests for the Device page.
+// eslint-disable-next-line no-var
+var OSSettingsBluetoothPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'bluetooth_page/bluetooth_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '//ui/webui/resources/js/assert.js',
+      BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
+      'fake_bluetooth.js',
+      'fake_bluetooth_private.js',
+      'bluetooth_page_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsBluetoothPageTest', 'AllJavascriptTests', function() {
+  mocha.run();
+});
+
+// Tests for the Crostini page.
+// eslint-disable-next-line no-var
+var OSSettingsCrostiniPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'crostini_page/crostini_page.html';
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['features::kCrostini']};
+  }
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '//ui/webui/resources/js/promise_resolver.js',
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'test_crostini_browser_proxy.js',
+      'crostini_page_test.js',
+    ]);
+  }
+};
+
+// TODO(crbug.com/962114): Disabled due to flakes on linux-chromeos-rel.
+TEST_F('OSSettingsCrostiniPageTest', 'DISABLED_AllJavascriptTests', function() {
+  mocha.run();
+});
+
+// Tests for the CUPS page.
+// eslint-disable-next-line no-var
+var OSSettingsPrintingPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'printing_page/cups_printers.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '//ui/webui/resources/js/assert.js',
+      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'cups_printer_page_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsPrintingPageTest', 'AllJavascriptTests', function() {
+  mocha.run();
+});
+
+// Tests for the Device page.
+// eslint-disable-next-line no-var
+var OSSettingsDevicePageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'device_page/device_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '//ui/webui/resources/js/assert.js',
+      BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
+      BROWSER_SETTINGS_PATH + 'fake_settings_private.js',
+      'fake_system_display.js',
+      'device_page_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsDevicePageTest', 'DevicePageTest', function() {
+  mocha.grep(assert(device_page_tests.TestNames.DevicePage)).run();
+});
+
+TEST_F('OSSettingsDevicePageTest', 'DisplayTest', function() {
+  mocha.grep(assert(device_page_tests.TestNames.Display)).run();
+});
+
+TEST_F('OSSettingsDevicePageTest', 'KeyboardTest', function() {
+  mocha.grep(assert(device_page_tests.TestNames.Keyboard)).run();
+});
+
+TEST_F('OSSettingsDevicePageTest', 'PointersTest', function() {
+  mocha.grep(assert(device_page_tests.TestNames.Pointers)).run();
+});
+
+TEST_F('OSSettingsDevicePageTest', 'PowerTest', function() {
+  mocha.grep(assert(device_page_tests.TestNames.Power)).run();
+});
+
+TEST_F('OSSettingsDevicePageTest', 'StylusTest', function() {
+  mocha.grep(assert(device_page_tests.TestNames.Stylus)).run();
+});
+
+// Tests for the Fingerprint page.
+// eslint-disable-next-line no-var
+var OSSettingsFingerprintListTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'people_page/fingerprint_list.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'fingerprint_browsertest_chromeos.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsFingerprintListTest', 'AllJavascriptTests', function() {
+  mocha.run();
+});
+
 // Tests for the Reset section.
 // eslint-disable-next-line no-var
 var OSSettingsResetPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'reset_page/reset_page.html';
+  }
+
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
