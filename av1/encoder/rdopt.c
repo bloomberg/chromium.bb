@@ -711,13 +711,13 @@ typedef struct InterModeSearchState {
   int angle_stats_ready;
   uint8_t directional_mode_skip_mask[INTRA_MODES];
   unsigned int best_pred_sse;
-  int rate_uv_intra[TX_SIZES_ALL];
-  int rate_uv_tokenonly[TX_SIZES_ALL];
-  int64_t dist_uvs[TX_SIZES_ALL];
-  int skip_uvs[TX_SIZES_ALL];
-  UV_PREDICTION_MODE mode_uv[TX_SIZES_ALL];
-  PALETTE_MODE_INFO pmi_uv[TX_SIZES_ALL];
-  int8_t uv_angle_delta[TX_SIZES_ALL];
+  int rate_uv_intra;
+  int rate_uv_tokenonly;
+  int64_t dist_uvs;
+  int skip_uvs;
+  UV_PREDICTION_MODE mode_uv;
+  PALETTE_MODE_INFO pmi_uv;
+  int8_t uv_angle_delta;
   int64_t best_pred_rd[REFERENCE_MODES];
   int64_t best_pred_diff[REFERENCE_MODES];
   // Save a set of single_newmv for each checked ref_mv.
@@ -11538,31 +11538,30 @@ static void search_palette_mode(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
   rate2 += ref_costs_single[INTRA_FRAME];
   if (num_planes > 1) {
     uv_tx = av1_get_tx_size(AOM_PLANE_U, xd);
-    if (search_state->rate_uv_intra[uv_tx] == INT_MAX) {
-      choose_intra_uv_mode(
-          cpi, x, bsize, uv_tx, &search_state->rate_uv_intra[uv_tx],
-          &search_state->rate_uv_tokenonly[uv_tx],
-          &search_state->dist_uvs[uv_tx], &search_state->skip_uvs[uv_tx],
-          &search_state->mode_uv[uv_tx]);
-      search_state->pmi_uv[uv_tx] = *pmi;
-      search_state->uv_angle_delta[uv_tx] = mbmi->angle_delta[PLANE_TYPE_UV];
+    if (search_state->rate_uv_intra == INT_MAX) {
+      choose_intra_uv_mode(cpi, x, bsize, uv_tx, &search_state->rate_uv_intra,
+                           &search_state->rate_uv_tokenonly,
+                           &search_state->dist_uvs, &search_state->skip_uvs,
+                           &search_state->mode_uv);
+      search_state->pmi_uv = *pmi;
+      search_state->uv_angle_delta = mbmi->angle_delta[PLANE_TYPE_UV];
     }
-    mbmi->uv_mode = search_state->mode_uv[uv_tx];
-    pmi->palette_size[1] = search_state->pmi_uv[uv_tx].palette_size[1];
+    mbmi->uv_mode = search_state->mode_uv;
+    pmi->palette_size[1] = search_state->pmi_uv.palette_size[1];
     if (pmi->palette_size[1] > 0) {
       memcpy(pmi->palette_colors + PALETTE_MAX_SIZE,
-             search_state->pmi_uv[uv_tx].palette_colors + PALETTE_MAX_SIZE,
+             search_state->pmi_uv.palette_colors + PALETTE_MAX_SIZE,
              2 * PALETTE_MAX_SIZE * sizeof(pmi->palette_colors[0]));
     }
-    mbmi->angle_delta[PLANE_TYPE_UV] = search_state->uv_angle_delta[uv_tx];
-    skippable = skippable && search_state->skip_uvs[uv_tx];
-    distortion2 += search_state->dist_uvs[uv_tx];
-    rate2 += search_state->rate_uv_intra[uv_tx];
+    mbmi->angle_delta[PLANE_TYPE_UV] = search_state->uv_angle_delta;
+    skippable = skippable && search_state->skip_uvs;
+    distortion2 += search_state->dist_uvs;
+    rate2 += search_state->rate_uv_intra;
   }
 
   if (skippable) {
     rate2 -= rd_stats_y.rate;
-    if (num_planes > 1) rate2 -= search_state->rate_uv_tokenonly[uv_tx];
+    if (num_planes > 1) rate2 -= search_state->rate_uv_tokenonly;
     rate2 += x->skip_cost[av1_get_skip_context(xd)][1];
   } else {
     rate2 += x->skip_cost[av1_get_skip_context(xd)][0];
@@ -11628,9 +11627,7 @@ static void init_inter_mode_search_state(InterModeSearchState *search_state,
   av1_zero(search_state->directional_mode_skip_mask);
 
   search_state->best_pred_sse = UINT_MAX;
-
-  for (int i = 0; i < TX_SIZES_ALL; i++)
-    search_state->rate_uv_intra[i] = INT_MAX;
+  search_state->rate_uv_intra = INT_MAX;
 
   av1_zero(search_state->pmi_uv);
 
@@ -11964,6 +11961,7 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
     super_block_yrd(cpi, x, rd_stats_y, bsize, search_state->best_rd);
   }
 
+  // Pick filter intra modes.
   if (mode == DC_PRED && av1_filter_intra_allowed_bsize(cm, bsize)) {
     int try_filter_intra = 0;
     int64_t best_rd_so_far = INT64_MAX;
@@ -11987,7 +11985,6 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
       uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
       memcpy(best_blk_skip, x->blk_skip,
              sizeof(best_blk_skip[0]) * ctx->num_4x4_blk);
-
       mbmi->filter_intra_mode_info.use_filter_intra = 1;
       for (FILTER_INTRA_MODE fi_mode = FILTER_DC_PRED;
            fi_mode < FILTER_INTRA_MODES; ++fi_mode) {
@@ -12045,7 +12042,7 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
         cpi->oxcf.enable_palette &&
         av1_allow_palette(cm->allow_screen_content_tools, mbmi->sb_type);
     const TX_SIZE uv_tx = av1_get_tx_size(AOM_PLANE_U, xd);
-    if (search_state->rate_uv_intra[uv_tx] == INT_MAX) {
+    if (search_state->rate_uv_intra == INT_MAX) {
       const int rate_y =
           rd_stats_y->skip ? x->skip_cost[skip_ctx][1] : rd_stats_y->rate;
       const int64_t rdy =
@@ -12055,16 +12052,15 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
         search_state->skip_intra_modes = 1;
         return INT64_MAX;
       }
-      choose_intra_uv_mode(
-          cpi, x, bsize, uv_tx, &search_state->rate_uv_intra[uv_tx],
-          &search_state->rate_uv_tokenonly[uv_tx],
-          &search_state->dist_uvs[uv_tx], &search_state->skip_uvs[uv_tx],
-          &search_state->mode_uv[uv_tx]);
-      if (try_palette) search_state->pmi_uv[uv_tx] = *pmi;
-      search_state->uv_angle_delta[uv_tx] = mbmi->angle_delta[PLANE_TYPE_UV];
+      choose_intra_uv_mode(cpi, x, bsize, uv_tx, &search_state->rate_uv_intra,
+                           &search_state->rate_uv_tokenonly,
+                           &search_state->dist_uvs, &search_state->skip_uvs,
+                           &search_state->mode_uv);
+      if (try_palette) search_state->pmi_uv = *pmi;
+      search_state->uv_angle_delta = mbmi->angle_delta[PLANE_TYPE_UV];
 
-      const int uv_rate = search_state->rate_uv_tokenonly[uv_tx];
-      const int64_t uv_dist = search_state->dist_uvs[uv_tx];
+      const int uv_rate = search_state->rate_uv_tokenonly;
+      const int64_t uv_dist = search_state->dist_uvs;
       const int64_t uv_rd = RDCOST(x->rdmult, uv_rate, uv_dist);
       if (uv_rd > search_state->best_rd) {
         search_state->skip_intra_modes = 1;
@@ -12072,18 +12068,18 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
       }
     }
 
-    rd_stats_uv->rate = search_state->rate_uv_tokenonly[uv_tx];
-    rd_stats_uv->dist = search_state->dist_uvs[uv_tx];
-    rd_stats_uv->skip = search_state->skip_uvs[uv_tx];
+    rd_stats_uv->rate = search_state->rate_uv_tokenonly;
+    rd_stats_uv->dist = search_state->dist_uvs;
+    rd_stats_uv->skip = search_state->skip_uvs;
     rd_stats->skip = rd_stats_y->skip && rd_stats_uv->skip;
-    mbmi->uv_mode = search_state->mode_uv[uv_tx];
+    mbmi->uv_mode = search_state->mode_uv;
     if (try_palette) {
-      pmi->palette_size[1] = search_state->pmi_uv[uv_tx].palette_size[1];
+      pmi->palette_size[1] = search_state->pmi_uv.palette_size[1];
       memcpy(pmi->palette_colors + PALETTE_MAX_SIZE,
-             search_state->pmi_uv[uv_tx].palette_colors + PALETTE_MAX_SIZE,
+             search_state->pmi_uv.palette_colors + PALETTE_MAX_SIZE,
              2 * PALETTE_MAX_SIZE * sizeof(pmi->palette_colors[0]));
     }
-    mbmi->angle_delta[PLANE_TYPE_UV] = search_state->uv_angle_delta[uv_tx];
+    mbmi->angle_delta[PLANE_TYPE_UV] = search_state->uv_angle_delta;
   }
 
   rd_stats->rate = rd_stats_y->rate + mode_cost_y;
