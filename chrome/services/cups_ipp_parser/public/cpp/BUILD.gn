@@ -8,7 +8,7 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 if (use_cups) {
   source_set("cpp") {
     sources = [
-      "ipp_converter.cpp",
+      "ipp_converter.cc",
       "ipp_converter.h",
     ]
 
