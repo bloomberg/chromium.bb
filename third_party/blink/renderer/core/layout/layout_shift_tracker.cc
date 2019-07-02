@@ -336,9 +336,7 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
       frame.DomWindow()) {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*frame.DomWindow());
-    if (performance &&
-        (performance->HasObserverFor(PerformanceEntry::kLayoutJank) ||
-         performance->ShouldBufferEntries())) {
+    if (performance) {
       performance->AddLayoutJankFraction(
           RuntimeEnabledFeatures::LayoutInstabilityMoveDistanceEnabled()
               ? jank_fraction_with_move_distance
