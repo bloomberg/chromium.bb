@@ -1278,8 +1278,23 @@ class TargetState(object):
     self.score = None
     self.update_score()
 
-  def __cmp__(self, other):
-    return cmp(self.score, other.score)
+  def __lt__(self, other):
+    return self.score < other.score
+
+  def __le__(self, other):
+    return self.score <= other.score
+
+  def __eq__(self, other):
+    return self.score == other.score
+
+  def __ne__(self, other):
+    return self.score != other.score
+
+  def __gt__(self, other):
+    return self.score > other.score
+
+  def __ge__(self, other):
+    return self.score >= other.score
 
   def update_score(self):
     self.score = (
