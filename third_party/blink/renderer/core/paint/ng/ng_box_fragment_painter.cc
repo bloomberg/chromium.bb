@@ -1148,6 +1148,21 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
   if (!location_in_container.Intersects(bounds_rect))
     return false;
 
+  // Floats will be hit-tested in |kHitTestFloat| phase, but
+  // |LayoutObject::HitTestAllPhases| does not try it if |kHitTestForeground|
+  // succeeds. Pretend the location is not in this linebox if it hits floating
+  // descendants. TODO(kojii): Computing this is redundant, consider
+  // restructuring. Changing the caller logic isn't easy because currently
+  // floats are in the bounds of line boxes only in NG.
+  const auto& line = To<NGPhysicalLineBoxFragment>(fragment.PhysicalFragment());
+  if (line.HasFloatingDescendants()) {
+    DCHECK_NE(action, kHitTestFloat);
+    if (HitTestChildren(result, fragment.Children(), location_in_container,
+                        physical_offset, kHitTestFloat)) {
+      return false;
+    }
+  }
+
   Node* node = fragment.NodeForHitTest();
   if (!result.InnerNode() && node) {
     const LayoutPoint point =
