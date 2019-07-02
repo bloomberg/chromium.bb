@@ -32,7 +32,6 @@ class BrowserContext;
 namespace extensions {
 
 class Extension;
-class ManagementPolicy;
 
 // Used for managing overall content verification - both fetching content
 // hashes as needed, and supplying job objects to verify file contents as they
@@ -45,11 +44,6 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
     virtual void OnFetchComplete(const std::string& extension_id,
                                  bool success) = 0;
   };
-  // Returns true if content verifier should repair the extension (|id|) if it
-  // became courrpted.
-  // Note that this method doesn't check whether |id| is corrupted or not.
-  static bool ShouldRepairIfCorrupted(const ManagementPolicy* management_policy,
-                                      const Extension* id);
 
   static void SetObserverForTests(TestObserver* observer);
 

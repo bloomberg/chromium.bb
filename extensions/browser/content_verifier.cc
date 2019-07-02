@@ -26,7 +26,6 @@
 #include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/file_util.h"
@@ -383,14 +382,6 @@ class ContentVerifier::HashHelper {
 
   DISALLOW_COPY_AND_ASSIGN(HashHelper);
 };
-
-// static
-bool ContentVerifier::ShouldRepairIfCorrupted(
-    const ManagementPolicy* management_policy,
-    const Extension* extension) {
-  return management_policy->MustRemainEnabled(extension, nullptr) ||
-         management_policy->MustRemainInstalled(extension, nullptr);
-}
 
 // static
 void ContentVerifier::SetObserverForTests(TestObserver* observer) {
