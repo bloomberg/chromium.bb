@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_selector_watch.h"
@@ -5407,8 +5408,8 @@ void Element::SetInlineStyleProperty(CSSPropertyID property_id,
                                      double value,
                                      CSSPrimitiveValue::UnitType unit,
                                      bool important) {
-  SetInlineStyleProperty(property_id, *CSSPrimitiveValue::Create(value, unit),
-                         important);
+  SetInlineStyleProperty(
+      property_id, *CSSNumericLiteralValue::Create(value, unit), important);
 }
 
 void Element::SetInlineStyleProperty(CSSPropertyID property_id,
@@ -5485,7 +5486,7 @@ void Element::AddPropertyToPresentationAttributeStyle(
     double value,
     CSSPrimitiveValue::UnitType unit) {
   DCHECK(IsStyledElement());
-  style->SetProperty(property_id, *CSSPrimitiveValue::Create(value, unit));
+  style->SetProperty(property_id, *CSSNumericLiteralValue::Create(value, unit));
 }
 
 void Element::AddPropertyToPresentationAttributeStyle(
