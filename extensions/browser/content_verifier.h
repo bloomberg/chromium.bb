@@ -64,11 +64,6 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
                                  const base::FilePath& extension_root,
                                  const base::FilePath& relative_path);
 
-  // Called (typically by a verification job) to indicate that verification
-  // failed while reading some file in |extension_id|.
-  void VerifyFailed(const ExtensionId& extension_id,
-                    ContentVerifyJob::FailureReason reason);
-
   // ExtensionRegistryObserver interface
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const Extension* extension) override;
@@ -97,6 +92,10 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
 
   GURL GetSignatureFetchUrlForTest(const ExtensionId& extension_id,
                                    const base::Version& extension_version);
+
+  // Exposes VerifyFailed for tests.
+  void VerifyFailedForTest(const ExtensionId& extension_id,
+                           ContentVerifyJob::FailureReason reason);
 
   // Test helper to recompute |io_data_| for |extension| without having to
   // call |OnExtensionLoaded|.
@@ -148,6 +147,11 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
       const std::string& extension_id,
       const base::FilePath& extension_root,
       const std::set<base::FilePath>& relative_unix_paths);
+
+  // Called (typically by a verification job) to indicate that verification
+  // failed while reading some file in |extension_id|.
+  void VerifyFailed(const ExtensionId& extension_id,
+                    ContentVerifyJob::FailureReason reason);
 
   // Returns the HashHelper instance, making sure we create it at most once.
   // Must *not* be called after |shutdown_on_io_| is set to true.

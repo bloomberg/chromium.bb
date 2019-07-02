@@ -591,6 +591,12 @@ GURL ContentVerifier::GetSignatureFetchUrlForTest(
   return delegate_->GetSignatureFetchUrl(extension_id, extension_version);
 }
 
+void ContentVerifier::VerifyFailedForTest(
+    const ExtensionId& extension_id,
+    ContentVerifyJob::FailureReason reason) {
+  VerifyFailed(extension_id, reason);
+}
+
 void ContentVerifier::OnExtensionUnloadedOnIO(
     const ExtensionId& extension_id,
     const base::Version& extension_version) {
