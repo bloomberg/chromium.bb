@@ -145,8 +145,8 @@ message LocalData {
 
 // The format of the ownership taken signal payload.
 message OwnershipTakenSignal {
-  optional bytes owner_password = 1;
-  optional bytes endorsement_password = 2;
+  // A copy of LocalData right before sending the signal.
+  optional LocalData local_data = 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
