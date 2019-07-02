@@ -829,25 +829,12 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
       frame_->GetSettings()->GetBarrelButtonForDragEnabled())
     pen_drag_button = WebPointerProperties::Button::kBarrel;
 
-  // While resetting m_mousePressed here may seem out of place, it turns out
-  // to be needed to handle some bugs^Wfeatures in Blink mouse event handling:
-  // 1. Certain elements, such as <embed>, capture mouse events. They do not
-  //    bubble back up. One way for a <embed> to start capturing mouse events
-  //    is on a mouse press. The problem is the <embed> node only starts
-  //    capturing mouse events *after* m_mousePressed for the containing frame
-  //    has already been set to true. As a result, the frame's EventHandler
-  //    never sees the mouse release event, which is supposed to reset
-  //    m_mousePressed... so m_mousePressed ends up remaining true until the
-  //    event handler finally gets another mouse released event. Oops.
-  // 2. Dragging doesn't start until after a mouse press event, but a drag
-  //    that ends as a result of a mouse release does not send a mouse release
-  //    event. As a result, m_mousePressed also ends up remaining true until
-  //    the next mouse release event seen by the EventHandler.
+  // Only handles dragging for mouse left button drag and pen drag button.
   if ((!is_pen &&
        event.Event().button != WebPointerProperties::Button::kLeft) ||
       (is_pen && event.Event().button != pen_drag_button)) {
-    mouse_pressed_ = false;
     mouse_down_may_start_drag_ = false;
+    return WebInputEventResult::kNotHandled;
   }
 
   //  When pressing Esc key while dragging and the object is outside of the
