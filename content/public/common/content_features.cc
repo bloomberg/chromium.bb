@@ -732,6 +732,10 @@ const base::Feature kWebXrPlaneDetection{"WebXRPlaneDetection",
 const base::Feature kScriptStreamingOnPreload{
     "ScriptStreamingOnPreload", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether the Trusted Types API is available.
+const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Autofill Accessibility in Android.
 // crbug.com/627860
