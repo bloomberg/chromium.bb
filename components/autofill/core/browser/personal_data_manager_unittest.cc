@@ -2624,7 +2624,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ForContactForm) {
               &Suggestion::label,
               ConstructLabelLine({base::ASCIIToUTF16("(978) 674-4120"),
                                   base::ASCIIToUTF16("hoa.pham@comcast.net")})),
-          testing::Field(&Suggestion::icon, "accountBoxIcon"))));
+          testing::Field(&Suggestion::icon, ""))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
@@ -2649,7 +2649,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressForm) {
                   testing::Field(
                       &Suggestion::label,
                       base::ASCIIToUTF16("401 Merrimack St, Lowell, MA 01852")),
-                  testing::Field(&Suggestion::icon, "accountBoxIcon"))));
+                  testing::Field(&Suggestion::icon, ""))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
@@ -2675,7 +2675,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressPhoneForm) {
               &Suggestion::label,
               ConstructLabelLine({base::ASCIIToUTF16("(978) 674-4120"),
                                   base::ASCIIToUTF16("401 Merrimack St")})),
-          testing::Field(&Suggestion::icon, "accountBoxIcon"))));
+          testing::Field(&Suggestion::icon, ""))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
@@ -2701,7 +2701,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressEmailForm) {
               &Suggestion::label,
               ConstructLabelLine({base::ASCIIToUTF16("401 Merrimack St"),
                                   base::ASCIIToUTF16("hoa.pham@comcast.net")})),
-          testing::Field(&Suggestion::icon, "accountBoxIcon"))));
+          testing::Field(&Suggestion::icon, ""))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
@@ -2722,11 +2722,10 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_FormWithOneProfile) {
           AutofillType(NAME_FULL), base::string16(), false,
           std::vector<ServerFieldType>{NAME_FULL, ADDRESS_HOME_STREET_ADDRESS,
                                        EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(AllOf(
-          testing::Field(
-              &Suggestion::label,
-              ConstructLabelLine({base::ASCIIToUTF16("401 Merrimack St")})),
-          testing::Field(&Suggestion::icon, "accountBoxIcon"))));
+      ElementsAre(AllOf(testing::Field(&Suggestion::label,
+                                       ConstructLabelLine({base::ASCIIToUTF16(
+                                           "401 Merrimack St")})),
+                        testing::Field(&Suggestion::icon, ""))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
@@ -2774,13 +2773,13 @@ TEST_F(PersonalDataManagerTest,
                                  {base::ASCIIToUTF16("401 Merrimack St"),
                                   base::ASCIIToUTF16("(978) 674-4120"),
                                   base::ASCIIToUTF16("hoa.pham@comcast.net")})),
-              testing::Field(&Suggestion::icon, "accountBoxIcon")),
+              testing::Field(&Suggestion::icon, "")),
           AllOf(testing::Field(
                     &Suggestion::label,
                     ConstructLabelLine({base::ASCIIToUTF16("216 Broadway St"),
                                         base::ASCIIToUTF16("(978) 452-3366"),
                                         base::ASCIIToUTF16("hp@aol.com")})),
-                testing::Field(&Suggestion::icon, "accountBoxIcon"))));
+                testing::Field(&Suggestion::icon, ""))));
 }
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
