@@ -574,19 +574,6 @@
                     ]
                 }
             ]
-        },
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "AudioServiceStreams",
-                    "enable_features": [
-                        "AudioServiceAudioStreams"
-                    ]
-                }
-            ]
         }
     ],
     "AudioServiceOutOfProcessSandboxApmMac": [

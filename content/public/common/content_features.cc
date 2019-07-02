@@ -42,10 +42,10 @@ const base::Feature kAppCacheIncludePaddingInQuota{
 // Creates audio output and input streams using the audio service.
 const base::Feature kAudioServiceAudioStreams{
   "AudioServiceAudioStreams",
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
+#if defined(OS_WIN)
       base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
 
