@@ -51324,6 +51324,16 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Duplicate"/>
 </enum>
 
+<enum name="SendTabToSelfApplySyncChanges">
+  <int value="0" label="Total number of EntityChanges."/>
+  <int value="1" label="Number of EntityChanges that are deletions."/>
+  <int value="2" label="Number of EntityChanges that are invaled."/>
+  <int value="3" label="Number of EntityChanges that are expired."/>
+  <int value="4" label="Number of EntityChanges that are added."/>
+  <int value="5" label="Number of EntityChanges that are opened."/>
+  <int value="6" label="Number of EntityChanges that are removed."/>
+</enum>
+
 <enum name="SendTabToSelfClickResult">
   <int value="0" label="SendTabToSelf entry point is shown."/>
   <int value="1" label="SendTabToSelf target device is clicked."/>
@@ -51335,6 +51345,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Dismissed"/>
   <int value="2" label="Shown"/>
   <int value="3" label="DismissedRemotely"/>
+</enum>
+
+<enum name="SendTabToSelfNotifyLocalDevice">
+  <int value="0" label="Local"/>
+  <int value="1" label="Remote"/>
 </enum>
 
 <enum name="ServiceProcessEventType">
