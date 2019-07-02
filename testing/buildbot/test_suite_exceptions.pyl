@@ -26,7 +26,6 @@
       'Lollipop Tablet Tester',
       'Marshmallow 64 bit Tester',
       'Marshmallow Tablet Tester',
-      'android-marshmallow-arm64-rel',
       # chromium.clang.json
       'ToTAndroid',
       'ToTAndroidCFI',
