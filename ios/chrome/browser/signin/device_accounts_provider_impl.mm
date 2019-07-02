@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_ios_provider_impl.h"
+#include "ios/chrome/browser/signin/device_accounts_provider_impl.h"
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
@@ -20,9 +20,8 @@
 namespace {
 // Returns the account info for |identity|.
 // Returns an empty account info if |identity| is nil.
-ProfileOAuth2TokenServiceIOSProvider::AccountInfo GetAccountInfo(
-    ChromeIdentity* identity) {
-  ProfileOAuth2TokenServiceIOSProvider::AccountInfo account_info;
+DeviceAccountsProvider::AccountInfo GetAccountInfo(ChromeIdentity* identity) {
+  DeviceAccountsProvider::AccountInfo account_info;
   if (identity) {
     account_info.gaia = base::SysNSStringToUTF8([identity gaiaID]);
     account_info.email = base::SysNSStringToUTF8([identity userEmail]);
@@ -31,13 +30,11 @@ ProfileOAuth2TokenServiceIOSProvider::AccountInfo GetAccountInfo(
 }
 }
 
-ProfileOAuth2TokenServiceIOSProviderImpl::
-    ProfileOAuth2TokenServiceIOSProviderImpl() {}
+DeviceAccountsProviderImpl::DeviceAccountsProviderImpl() {}
 
-ProfileOAuth2TokenServiceIOSProviderImpl::
-    ~ProfileOAuth2TokenServiceIOSProviderImpl() {}
+DeviceAccountsProviderImpl::~DeviceAccountsProviderImpl() {}
 
-void ProfileOAuth2TokenServiceIOSProviderImpl::GetAccessToken(
+void DeviceAccountsProviderImpl::GetAccessToken(
     const std::string& gaia_id,
     const std::string& client_id,
     const std::set<std::string>& scopes,
@@ -53,8 +50,8 @@ void ProfileOAuth2TokenServiceIOSProviderImpl::GetAccessToken(
       });
 }
 
-std::vector<ProfileOAuth2TokenServiceIOSProvider::AccountInfo>
-ProfileOAuth2TokenServiceIOSProviderImpl::GetAllAccounts() const {
+std::vector<DeviceAccountsProvider::AccountInfo>
+DeviceAccountsProviderImpl::GetAllAccounts() const {
   std::vector<AccountInfo> accounts;
   NSArray* identities = ios::GetChromeBrowserProvider()
                             ->GetChromeIdentityService()
@@ -66,7 +63,7 @@ ProfileOAuth2TokenServiceIOSProviderImpl::GetAllAccounts() const {
 }
 
 AuthenticationErrorCategory
-ProfileOAuth2TokenServiceIOSProviderImpl::GetAuthenticationErrorCategory(
+DeviceAccountsProviderImpl::GetAuthenticationErrorCategory(
     const std::string& gaia_id,
     NSError* error) const {
   DCHECK(error);

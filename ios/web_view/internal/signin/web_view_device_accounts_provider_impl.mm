@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web_view/internal/signin/web_view_profile_oauth2_token_service_ios_provider_impl.h"
+#include "ios/web_view/internal/signin/web_view_device_accounts_provider_impl.h"
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
@@ -14,15 +14,14 @@
 #error "This file requires ARC support."
 #endif
 
-WebViewProfileOAuth2TokenServiceIOSProviderImpl::
-    WebViewProfileOAuth2TokenServiceIOSProviderImpl(
-        IOSWebViewSigninClient* signin_client)
+WebViewDeviceAccountsProviderImpl::WebViewDeviceAccountsProviderImpl(
+    IOSWebViewSigninClient* signin_client)
     : signin_client_(signin_client) {}
 
-WebViewProfileOAuth2TokenServiceIOSProviderImpl::
-    ~WebViewProfileOAuth2TokenServiceIOSProviderImpl() = default;
+WebViewDeviceAccountsProviderImpl::~WebViewDeviceAccountsProviderImpl() =
+    default;
 
-void WebViewProfileOAuth2TokenServiceIOSProviderImpl::GetAccessToken(
+void WebViewDeviceAccountsProviderImpl::GetAccessToken(
     const std::string& gaia_id,
     const std::string& client_id,
     const std::set<std::string>& scopes,
@@ -34,8 +33,8 @@ void WebViewProfileOAuth2TokenServiceIOSProviderImpl::GetAccessToken(
   [sync_controller fetchAccessTokenForScopes:scopes callback:callback];
 }
 
-std::vector<ProfileOAuth2TokenServiceIOSProvider::AccountInfo>
-WebViewProfileOAuth2TokenServiceIOSProviderImpl::GetAllAccounts() const {
+std::vector<DeviceAccountsProvider::AccountInfo>
+WebViewDeviceAccountsProviderImpl::GetAllAccounts() const {
   // |sync_controller| may still be nil if this is called too early. That's OK
   // because this will be called again after it has been set.
   CWVSyncController* sync_controller = signin_client_->GetSyncController();
@@ -50,7 +49,7 @@ WebViewProfileOAuth2TokenServiceIOSProviderImpl::GetAllAccounts() const {
 }
 
 AuthenticationErrorCategory
-WebViewProfileOAuth2TokenServiceIOSProviderImpl::GetAuthenticationErrorCategory(
+WebViewDeviceAccountsProviderImpl::GetAuthenticationErrorCategory(
     const std::string& gaia_id,
     NSError* error) const {
   // TODO(crbug.com/780937): Implement fully.

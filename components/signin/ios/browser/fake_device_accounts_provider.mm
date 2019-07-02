@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
+#include "components/signin/ios/browser/fake_device_accounts_provider.h"
 
 #import <Foundation/Foundation.h>
 
@@ -13,15 +13,11 @@
 #error "This file requires ARC support."
 #endif
 
-FakeProfileOAuth2TokenServiceIOSProvider::
-    FakeProfileOAuth2TokenServiceIOSProvider() {
-}
+FakeDeviceAccountsProvider::FakeDeviceAccountsProvider() {}
 
-FakeProfileOAuth2TokenServiceIOSProvider::
-    ~FakeProfileOAuth2TokenServiceIOSProvider() {
-}
+FakeDeviceAccountsProvider::~FakeDeviceAccountsProvider() {}
 
-void FakeProfileOAuth2TokenServiceIOSProvider::GetAccessToken(
+void FakeDeviceAccountsProvider::GetAccessToken(
     const std::string& account_id,
     const std::string& client_id,
     const std::set<std::string>& scopes,
@@ -29,27 +25,26 @@ void FakeProfileOAuth2TokenServiceIOSProvider::GetAccessToken(
   requests_.push_back(AccessTokenRequest(account_id, callback));
 }
 
-std::vector<ProfileOAuth2TokenServiceIOSProvider::AccountInfo>
-FakeProfileOAuth2TokenServiceIOSProvider::GetAllAccounts() const {
+std::vector<DeviceAccountsProvider::AccountInfo>
+FakeDeviceAccountsProvider::GetAllAccounts() const {
   return accounts_;
 }
 
-ProfileOAuth2TokenServiceIOSProvider::AccountInfo
-FakeProfileOAuth2TokenServiceIOSProvider::AddAccount(const std::string& gaia,
-                                                     const std::string& email) {
-  ProfileOAuth2TokenServiceIOSProvider::AccountInfo account;
+DeviceAccountsProvider::AccountInfo FakeDeviceAccountsProvider::AddAccount(
+    const std::string& gaia,
+    const std::string& email) {
+  DeviceAccountsProvider::AccountInfo account;
   account.gaia = gaia;
   account.email = email;
   accounts_.push_back(account);
   return account;
 }
 
-void FakeProfileOAuth2TokenServiceIOSProvider::ClearAccounts() {
+void FakeDeviceAccountsProvider::ClearAccounts() {
   accounts_.clear();
 }
 
-void FakeProfileOAuth2TokenServiceIOSProvider::
-    IssueAccessTokenForAllRequests() {
+void FakeDeviceAccountsProvider::IssueAccessTokenForAllRequests() {
   for (auto i = requests_.begin(); i != requests_.end(); ++i) {
     std::string account_id = i->first;
     AccessTokenCallback callback = i->second;
@@ -61,8 +56,7 @@ void FakeProfileOAuth2TokenServiceIOSProvider::
   requests_.clear();
 }
 
-void FakeProfileOAuth2TokenServiceIOSProvider::
-    IssueAccessTokenErrorForAllRequests() {
+void FakeDeviceAccountsProvider::IssueAccessTokenErrorForAllRequests() {
   for (auto i = requests_.begin(); i != requests_.end(); ++i) {
     std::string account_id = i->first;
     AccessTokenCallback callback = i->second;
@@ -75,7 +69,7 @@ void FakeProfileOAuth2TokenServiceIOSProvider::
 }
 
 AuthenticationErrorCategory
-FakeProfileOAuth2TokenServiceIOSProvider::GetAuthenticationErrorCategory(
+FakeDeviceAccountsProvider::GetAuthenticationErrorCategory(
     const std::string& gaia_id,
     NSError* error) const {
   DCHECK(error);

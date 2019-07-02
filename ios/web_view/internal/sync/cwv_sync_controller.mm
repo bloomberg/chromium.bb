@@ -203,15 +203,16 @@ class WebViewSyncControllerObserverBridge
 
 #pragma mark - Internal Methods
 
-- (void)fetchAccessTokenForScopes:(const std::set<std::string>&)scopes
-                         callback:(const ProfileOAuth2TokenServiceIOSProvider::
-                                       AccessTokenCallback&)callback {
+- (void)
+    fetchAccessTokenForScopes:(const std::set<std::string>&)scopes
+                     callback:
+                         (const DeviceAccountsProvider::AccessTokenCallback&)
+                             callback {
   NSMutableArray<NSString*>* scopesArray = [NSMutableArray array];
   for (const auto& scope : scopes) {
     [scopesArray addObject:base::SysUTF8ToNSString(scope)];
   }
-  ProfileOAuth2TokenServiceIOSProvider::AccessTokenCallback scopedCallback =
-      callback;
+  DeviceAccountsProvider::AccessTokenCallback scopedCallback = callback;
   [_dataSource syncController:self
       getAccessTokenForScopes:[scopesArray copy]
             completionHandler:^(NSString* accessToken, NSDate* expirationDate,

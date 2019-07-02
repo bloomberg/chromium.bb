@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_PROVIDER_H_
-#define COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_PROVIDER_H_
+#ifndef COMPONENTS_SIGNIN_IOS_BROWSER_DEVICE_ACCOUNTS_PROVIDER_H_
+#define COMPONENTS_SIGNIN_IOS_BROWSER_DEVICE_ACCOUNTS_PROVIDER_H_
 
 #if defined(__OBJC__)
 @class NSDate;
@@ -37,8 +37,9 @@ enum AuthenticationErrorCategory {
   kAuthenticationErrorCategoryUnknownIdentityErrors,
 };
 
-// Interface that provides support for ProfileOAuth2TokenServiceIOS.
-class ProfileOAuth2TokenServiceIOSProvider {
+// Interface that provides a mechanism for interacting with the underlying
+// device accounts support.
+class DeviceAccountsProvider {
  public:
   // Account information.
   struct AccountInfo {
@@ -46,12 +47,12 @@ class ProfileOAuth2TokenServiceIOSProvider {
     std::string email;
   };
 
-  typedef base::Callback<void(NSString* token,
-                              NSDate* expiration,
-                              NSError* error)> AccessTokenCallback;
+  typedef base::Callback<
+      void(NSString* token, NSDate* expiration, NSError* error)>
+      AccessTokenCallback;
 
-  ProfileOAuth2TokenServiceIOSProvider() {}
-  virtual ~ProfileOAuth2TokenServiceIOSProvider() {}
+  DeviceAccountsProvider() {}
+  virtual ~DeviceAccountsProvider() {}
 
   // Returns the ids of all accounts.
   virtual std::vector<AccountInfo> GetAllAccounts() const;
@@ -70,4 +71,4 @@ class ProfileOAuth2TokenServiceIOSProvider {
       NSError* error) const;
 };
 
-#endif  // COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_PROVIDER_H_
+#endif  // COMPONENTS_SIGNIN_IOS_BROWSER_DEVICE_ACCOUNTS_PROVIDER_H_

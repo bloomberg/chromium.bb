@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_TEST_MOCK_PROFILE_OAUTH2_TOKEN_SERVICE_PROVIDER_IOS_H_
-#define IOS_TEST_MOCK_PROFILE_OAUTH2_TOKEN_SERVICE_PROVIDER_IOS_H_
+#ifndef COMPONENTS_SIGNIN_IOS_BROWSER_FAKE_DEVICE_ACCOUNTS_PROVIDER_H_
+#define COMPONENTS_SIGNIN_IOS_BROWSER_FAKE_DEVICE_ACCOUNTS_PROVIDER_H_
 
 #include <memory>
 #include <string>
@@ -11,16 +11,15 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
+#include "components/signin/ios/browser/device_accounts_provider.h"
 
-// Mock class of ProfileOAuth2TokenServiceIOSProvider for testing.
-class FakeProfileOAuth2TokenServiceIOSProvider
-    : public ProfileOAuth2TokenServiceIOSProvider {
+// Mock class of DeviceAccountsProvider for testing.
+class FakeDeviceAccountsProvider : public DeviceAccountsProvider {
  public:
-  FakeProfileOAuth2TokenServiceIOSProvider();
-  ~FakeProfileOAuth2TokenServiceIOSProvider() override;
+  FakeDeviceAccountsProvider();
+  ~FakeDeviceAccountsProvider() override;
 
-  // ProfileOAuth2TokenServiceIOSProvider
+  // DeviceAccountsProvider
   void GetAccessToken(const std::string& account_id,
                       const std::string& client_id,
                       const std::set<std::string>& scopes,
@@ -44,7 +43,7 @@ class FakeProfileOAuth2TokenServiceIOSProvider
   std::vector<AccountInfo> accounts_;
   std::vector<AccessTokenRequest> requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeProfileOAuth2TokenServiceIOSProvider);
+  DISALLOW_COPY_AND_ASSIGN(FakeDeviceAccountsProvider);
 };
 
-#endif  // IOS_TEST_PROVIDER_CHROME_BROWSER_SIGNIN_MOCK_PROFILE_OAUTH2_TOKEN_SERVICE_PROVIDER_IOS_H_
+#endif  // COMPONENTS_SIGNIN_IOS_BROWSER_FAKE_DEVICE_ACCOUNTS_PROVIDER_H_
