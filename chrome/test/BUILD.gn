@@ -1534,7 +1534,6 @@ if (!is_android) {
         "../browser/extensions/api/metrics_private/metrics_apitest.cc",
         "../browser/extensions/api/module/module_apitest.cc",
         "../browser/extensions/api/networking_config_chromeos_apitest_chromeos.cc",
-        "../browser/extensions/api/omnibox/omnibox_api_browsertest.cc",
         "../browser/extensions/api/page_capture/page_capture_apitest.cc",
         "../browser/extensions/api/passwords_private/passwords_private_apitest.cc",
         "../browser/extensions/api/permissions/permissions_apitest.cc",

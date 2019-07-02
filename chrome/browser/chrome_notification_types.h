@@ -180,14 +180,6 @@ enum NotificationType {
   // The details are none and the source is a Profile*.
   NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
 
-  // Non-history storage services --------------------------------------------
-
-  // Autocomplete ------------------------------------------------------------
-
-  // Sent by the autocomplete controller when done.  The source is the
-  // AutocompleteController, the details not used.
-  NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-
   // Printing ----------------------------------------------------------------
 
   // Notification from PrintJob that an event occurred. It can be that a page
