@@ -287,6 +287,9 @@ crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/overflow/c
 crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/video/video-controls-layer-creation-squashing.html [ Failure ]
 
+# Broken pre-BGPT after removing tiled masks code.
+crbug.com/979679 virtual/disable-blink-gen-property-trees/compositing/masks/broken-mask.html [ Failure ]
+
 # These fail when device_scale_factor is changed, but only for anti-aliasing:
 crbug.com/968791 virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Failure ]
 crbug.com/968791 virtual/scalefactor200/css3/filters/filterRegions.html [ Failure ]
