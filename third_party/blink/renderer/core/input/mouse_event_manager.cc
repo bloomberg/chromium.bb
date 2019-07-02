@@ -31,9 +31,11 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/drag_state.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
@@ -63,21 +65,40 @@ String CanvasRegionId(Node* node, const WebMouseEvent& mouse_event) {
 
 void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
                            const FloatPoint* last_position,
+                           LocalDOMWindow* dom_window,
                            MouseEventInit* initializer) {
   if (RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled() &&
       mouse_event.GetType() == WebInputEvent::kMouseMove && last_position) {
+    // TODO(crbug.com/907309): Current movementX/Y is in physical pixel when
+    // zoom-for-dsf is enabled. Here we apply the device-scale-factor to align
+    // with the current behavior. We need to figure out what is the best
+    // behavior here.
+    float device_scale_factor = 1;
+    if (dom_window && dom_window->GetFrame()) {
+      LocalFrame* frame = dom_window->GetFrame();
+      if (frame->GetPage()->DeviceScaleFactorDeprecated() == 1) {
+        device_scale_factor = frame->GetPage()
+                                  ->GetChromeClient()
+                                  .GetScreenInfo()
+                                  .device_scale_factor;
+      }
+    }
     if (RuntimeEnabledFeatures::FractionalMouseEventEnabled()) {
-      initializer->setMovementX(mouse_event.PositionInScreen().x -
-                                last_position->X());
-      initializer->setMovementY(mouse_event.PositionInScreen().y -
-                                last_position->Y());
+      initializer->setMovementX(
+          (mouse_event.PositionInScreen().x - last_position->X()) *
+          device_scale_factor);
+      initializer->setMovementY(
+          (mouse_event.PositionInScreen().y - last_position->Y()) *
+          device_scale_factor);
     } else {
       initializer->setMovementX(
-          static_cast<int>(mouse_event.PositionInScreen().x) -
-          static_cast<int>(last_position->X()));
+          static_cast<int>(mouse_event.PositionInScreen().x *
+                           device_scale_factor) -
+          static_cast<int>(last_position->X() * device_scale_factor));
       initializer->setMovementY(
-          static_cast<int>(mouse_event.PositionInScreen().y) -
-          static_cast<int>(last_position->Y()));
+          static_cast<int>(mouse_event.PositionInScreen().y *
+                           device_scale_factor) -
+          static_cast<int>(last_position->Y() * device_scale_factor));
     }
   }
 }
@@ -255,7 +276,8 @@ WebInputEventResult MouseEventManager::DispatchMouseEvent(
     MouseEvent::SetCoordinatesFromWebPointerProperties(
         mouse_event.FlattenTransform(), target_node->GetDocument().domWindow(),
         initializer);
-    UpdateMouseMovementXY(mouse_event, last_position, initializer);
+    UpdateMouseMovementXY(mouse_event, last_position,
+                          target_node->GetDocument().domWindow(), initializer);
     initializer->setButton(static_cast<int16_t>(mouse_event.button));
     initializer->setButtons(MouseEvent::WebInputEventModifiersToButtons(
         mouse_event.GetModifiers()));
@@ -391,6 +413,10 @@ void MouseEventManager::RecomputeMouseHoverState() {
   // Don't dispatch a synthetic mouse move event if the mouse cursor is not
   // visible to the user.
   if (!frame_->GetPage()->IsCursorVisible())
+    return;
+
+  // Don't dispatch a synthetic event if pointer is locked.
+  if (frame_->GetPage()->GetPointerLockController().GetElement())
     return;
 
   WebPointerEvent::Button button = WebPointerProperties::Button::kNoButton;
