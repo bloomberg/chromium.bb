@@ -448,9 +448,6 @@ void LogDeleteUndecryptableLoginsReturnValue(
 // present encryption key on MacOS.
 void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result);
 
-// Log whether a saved password was generated.
-void LogNewlySavedPasswordIsGenerated(bool value);
-
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 // Log a save sync password change event.
 void LogSyncPasswordHashChange(SyncPasswordHashChange event);
@@ -463,7 +460,6 @@ void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,
 // password hashes saved.
 void LogProtectedPasswordHashCounts(size_t gaia_hash_count,
                                     size_t enterprise_hash_count);
-
 #endif
 
 }  // namespace metrics_util
