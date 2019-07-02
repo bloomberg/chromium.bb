@@ -279,15 +279,14 @@ public class ChromeBrowserInitializer {
         // launch its required components.
         if (!delegate.startServiceManagerOnly()
                 && !ProcessInitializationHandler.getInstance().postNativeInitializationComplete()) {
-            tasks.add(UiThreadTaskTraits.BOOTSTRAP,
-                    () -> ProcessInitializationHandler.getInstance().initializePostNative());
+            tasks.add(() -> ProcessInitializationHandler.getInstance().initializePostNative());
         }
 
         if (!mNetworkChangeNotifierInitializationComplete) {
-            tasks.add(UiThreadTaskTraits.BOOTSTRAP, this::initNetworkChangeNotifier);
+            tasks.add(this::initNetworkChangeNotifier);
         }
 
-        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+        tasks.add(() -> {
             // This is not broken down as a separate task, since this:
             // 1. Should happen as early as possible
             // 2. Only submits asynchronous work
@@ -300,24 +299,22 @@ public class ChromeBrowserInitializer {
             onStartNativeInitialization();
         });
 
-        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+        tasks.add(() -> {
             if (delegate.isActivityFinishingOrDestroyed()) return;
             delegate.initializeCompositor();
         });
 
-        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+        tasks.add(() -> {
             if (delegate.isActivityFinishingOrDestroyed()) return;
             delegate.initializeState();
         });
 
-        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+        if (!mNativeInitializationComplete) tasks.add(this::onFinishNativeInitialization);
+
+        tasks.add(() -> {
             if (delegate.isActivityFinishingOrDestroyed()) return;
-            // Some tasks posted by this are on the critical path.
             delegate.startNativeInitialization();
         });
-
-        if (!mNativeInitializationComplete)
-            tasks.add(UiThreadTaskTraits.DEFAULT, this::onFinishNativeInitialization);
 
         if (isAsync) {
             // We want to start this queue once the C++ startup tasks have run; allow the

@@ -415,7 +415,7 @@ public class CustomTabsConnection {
 
         // (1)
         if (!initialized) {
-            tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+            tasks.add(() -> {
                 try (TraceEvent e = TraceEvent.scoped("CustomTabsConnection.initializeBrowser()")) {
                     initializeBrowser(ContextUtils.getApplicationContext());
                     ChromeBrowserInitializer.getInstance().initNetworkChangeNotifier();
@@ -426,7 +426,7 @@ public class CustomTabsConnection {
 
         // (2)
         if (mayCreateSpareWebContents && !mHiddenTabHolder.hasHiddenTab()) {
-            tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+            tasks.add(() -> {
                 // Temporary fix for https://crbug.com/797832.
                 // TODO(lizeb): Properly fix instead of papering over the bug, this code should
                 // not be scheduled unless startup is done. See https://crbug.com/797832.
@@ -441,7 +441,7 @@ public class CustomTabsConnection {
         }
 
         // (3)
-        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+        tasks.add(() -> {
             try (TraceEvent e = TraceEvent.scoped("InitializeViewHierarchy")) {
                 WarmupManager.getInstance().initializeViewHierarchy(
                         ContextUtils.getApplicationContext(),
@@ -450,7 +450,7 @@ public class CustomTabsConnection {
         });
 
         if (!initialized) {
-            tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> {
+            tasks.add(() -> {
                 try (TraceEvent e = TraceEvent.scoped("WarmupInternalFinishInitialization")) {
                     // (4)
                     Profile profile = Profile.getLastUsedProfile();
@@ -465,7 +465,7 @@ public class CustomTabsConnection {
             });
         }
 
-        tasks.add(UiThreadTaskTraits.BOOTSTRAP, () -> notifyWarmupIsDone(uid));
+        tasks.add(() -> notifyWarmupIsDone(uid));
         tasks.start(false);
         mWarmupTasks = tasks;
         return true;
