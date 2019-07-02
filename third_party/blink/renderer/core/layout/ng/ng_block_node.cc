@@ -1031,6 +1031,22 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
     layout_result = builder.ToBoxFragment();
 
     box_->SetCachedLayoutResult(*layout_result, /* break_token */ nullptr);
+  } else if (layout_result) {
+    // OOF-positioned nodes have a two-tier cache, and their layout results
+    // must always contain the correct percentage resolution size.
+    // See |NGBlockNode::CachedLayoutResultForOutOfFlowPositioned|.
+    const NGConstraintSpace& old_space =
+        layout_result->GetConstraintSpaceForCaching();
+    bool needs_cached_result_update =
+        IsOutOfFlowPositioned() &&
+        constraint_space.PercentageResolutionSize() !=
+            old_space.PercentageResolutionSize();
+    if (needs_cached_result_update) {
+      layout_result = base::AdoptRef(new NGLayoutResult(
+          *layout_result, constraint_space, layout_result->BfcLineOffset(),
+          layout_result->BfcBlockOffset()));
+      box_->SetCachedLayoutResult(*layout_result, /* break_token */ nullptr);
+    }
   }
 
   UpdateShapeOutsideInfoIfNeeded(
