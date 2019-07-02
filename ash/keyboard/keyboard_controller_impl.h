@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_KEYBOARD_ASH_KEYBOARD_CONTROLLER_H_
-#define ASH_KEYBOARD_ASH_KEYBOARD_CONTROLLER_H_
+#ifndef ASH_KEYBOARD_KEYBOARD_CONTROLLER_IMPL_H_
+#define ASH_KEYBOARD_KEYBOARD_CONTROLLER_IMPL_H_
 
 #include <memory>
 #include <set>
@@ -25,7 +25,7 @@ class Rect;
 namespace keyboard {
 class KeyboardController;
 class KeyboardUIFactory;
-}
+}  // namespace keyboard
 
 namespace ash {
 
@@ -35,17 +35,16 @@ class VirtualKeyboardController;
 // Contains and observes a keyboard::KeyboardController instance. Ash specific
 // behavior, including implementing the public interface, is implemented in this
 // class. TODO(shend): Consider re-factoring keyboard::KeyboardController so
-// that this can inherit from that class instead. Rename this to
-// KeyboardControllerImpl.
-class ASH_EXPORT AshKeyboardController
+// that this can inherit from that class instead.
+class ASH_EXPORT KeyboardControllerImpl
     : public KeyboardController,
       public keyboard::KeyboardLayoutDelegate,
       public KeyboardControllerObserver,
       public SessionObserver {
  public:
-  // |session_controller| is expected to outlive AshKeyboardController.
-  explicit AshKeyboardController(SessionControllerImpl* session_controller);
-  ~AshKeyboardController() override;
+  // |session_controller| is expected to outlive KeyboardControllerImpl.
+  explicit KeyboardControllerImpl(SessionControllerImpl* session_controller);
+  ~KeyboardControllerImpl() override;
 
   // Create or destroy the virtual keyboard. Called from Shell. TODO(stevenjb):
   // Fix dependencies so that the virtual keyboard can be created with the
@@ -118,9 +117,9 @@ class ASH_EXPORT AshKeyboardController
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   base::ObserverList<KeyboardControllerObserver>::Unchecked observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(AshKeyboardController);
+  DISALLOW_COPY_AND_ASSIGN(KeyboardControllerImpl);
 };
 
 }  // namespace ash
 
-#endif  // ASH_KEYBOARD_ASH_KEYBOARD_CONTROLLER_H_
+#endif  // ASH_KEYBOARD_KEYBOARD_CONTROLLER_IMPL_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 
 #include <utility>
 
@@ -38,7 +38,7 @@ base::Optional<display::Display> GetFirstTouchDisplay() {
 
 }  // namespace
 
-AshKeyboardController::AshKeyboardController(
+KeyboardControllerImpl::KeyboardControllerImpl(
     SessionControllerImpl* session_controller)
     : session_controller_(session_controller),
       keyboard_controller_(std::make_unique<keyboard::KeyboardController>()) {
@@ -47,13 +47,13 @@ AshKeyboardController::AshKeyboardController(
   keyboard_controller_->AddObserver(this);
 }
 
-AshKeyboardController::~AshKeyboardController() {
+KeyboardControllerImpl::~KeyboardControllerImpl() {
   keyboard_controller_->RemoveObserver(this);
   if (session_controller_)  // May be null in tests.
     session_controller_->RemoveObserver(this);
 }
 
-void AshKeyboardController::CreateVirtualKeyboard(
+void KeyboardControllerImpl::CreateVirtualKeyboard(
     std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory) {
   DCHECK(keyboard_ui_factory);
   virtual_keyboard_controller_ = std::make_unique<VirtualKeyboardController>();
@@ -66,82 +66,81 @@ void AshKeyboardController::CreateVirtualKeyboard(
   }
 }
 
-void AshKeyboardController::DestroyVirtualKeyboard() {
+void KeyboardControllerImpl::DestroyVirtualKeyboard() {
   virtual_keyboard_controller_.reset();
   keyboard_controller_->Shutdown();
 }
 
-void AshKeyboardController::SendOnKeyboardVisibleBoundsChanged(
+void KeyboardControllerImpl::SendOnKeyboardVisibleBoundsChanged(
     const gfx::Rect& screen_bounds) {
   DVLOG(1) << "OnKeyboardVisibleBoundsChanged: " << screen_bounds.ToString();
   for (auto& observer : observers_)
     observer.OnKeyboardVisibleBoundsChanged(screen_bounds);
 }
 
-void AshKeyboardController::SendOnLoadKeyboardContentsRequested() {
+void KeyboardControllerImpl::SendOnLoadKeyboardContentsRequested() {
   for (auto& observer : observers_)
     observer.OnLoadKeyboardContentsRequested();
 }
 
-void AshKeyboardController::SendOnKeyboardUIDestroyed() {
+void KeyboardControllerImpl::SendOnKeyboardUIDestroyed() {
   for (auto& observer : observers_)
     observer.OnKeyboardUIDestroyed();
 }
 
 // ash::KeyboardController
 
-void AshKeyboardController::KeyboardContentsLoaded(
-    const gfx::Size& size) {
+void KeyboardControllerImpl::KeyboardContentsLoaded(const gfx::Size& size) {
   keyboard_controller()->KeyboardContentsLoaded(size);
 }
 
-keyboard::KeyboardConfig AshKeyboardController::GetKeyboardConfig() {
+keyboard::KeyboardConfig KeyboardControllerImpl::GetKeyboardConfig() {
   return keyboard_controller_->keyboard_config();
 }
 
-void AshKeyboardController::SetKeyboardConfig(
+void KeyboardControllerImpl::SetKeyboardConfig(
     const KeyboardConfig& keyboard_config) {
   keyboard_controller_->UpdateKeyboardConfig(keyboard_config);
 }
 
-bool AshKeyboardController::IsKeyboardEnabled() {
+bool KeyboardControllerImpl::IsKeyboardEnabled() {
   return keyboard_controller_->IsEnabled();
 }
 
-void AshKeyboardController::SetEnableFlag(KeyboardEnableFlag flag) {
+void KeyboardControllerImpl::SetEnableFlag(KeyboardEnableFlag flag) {
   keyboard_controller_->SetEnableFlag(flag);
 }
 
-void AshKeyboardController::ClearEnableFlag(KeyboardEnableFlag flag) {
+void KeyboardControllerImpl::ClearEnableFlag(KeyboardEnableFlag flag) {
   keyboard_controller_->ClearEnableFlag(flag);
 }
 
 const std::set<keyboard::KeyboardEnableFlag>&
-AshKeyboardController::GetEnableFlags() {
+KeyboardControllerImpl::GetEnableFlags() {
   return keyboard_controller_->keyboard_enable_flags();
 }
 
-void AshKeyboardController::ReloadKeyboardIfNeeded() {
+void KeyboardControllerImpl::ReloadKeyboardIfNeeded() {
   keyboard_controller_->Reload();
 }
 
-void AshKeyboardController::RebuildKeyboardIfEnabled() {
+void KeyboardControllerImpl::RebuildKeyboardIfEnabled() {
   // Test IsKeyboardEnableRequested in case of an unlikely edge case where this
   // is called while after the enable state changed to disabled (in which case
   // we do not want to override the requested state).
   keyboard_controller_->RebuildKeyboardIfEnabled();
 }
 
-bool AshKeyboardController::IsKeyboardVisible() {
+bool KeyboardControllerImpl::IsKeyboardVisible() {
   return keyboard_controller_->IsKeyboardVisible();
 }
 
-void AshKeyboardController::ShowKeyboard() {
+void KeyboardControllerImpl::ShowKeyboard() {
   if (keyboard_controller_->IsEnabled())
     keyboard_controller_->ShowKeyboard(false /* lock */);
 }
 
-void AshKeyboardController::HideKeyboard(HideReason reason) {
+void KeyboardControllerImpl::HideKeyboard(HideReason reason) {
   if (!keyboard_controller_->IsEnabled())
     return;
   switch (reason) {
@@ -154,7 +153,7 @@ void AshKeyboardController::HideKeyboard(HideReason reason) {
   }
 }
 
-void AshKeyboardController::SetContainerType(
+void KeyboardControllerImpl::SetContainerType(
     keyboard::ContainerType container_type,
     const base::Optional<gfx::Rect>& target_bounds,
     SetContainerTypeCallback callback) {
@@ -162,11 +161,11 @@ void AshKeyboardController::SetContainerType(
                                          std::move(callback));
 }
 
-void AshKeyboardController::SetKeyboardLocked(bool locked) {
+void KeyboardControllerImpl::SetKeyboardLocked(bool locked) {
   keyboard_controller_->set_keyboard_locked(locked);
 }
 
-void AshKeyboardController::SetOccludedBounds(
+void KeyboardControllerImpl::SetOccludedBounds(
     const std::vector<gfx::Rect>& bounds) {
   // TODO(https://crbug.com/826617): Support occluded bounds with multiple
   // rectangles.
@@ -174,21 +173,21 @@ void AshKeyboardController::SetOccludedBounds(
                                                          : bounds[0]);
 }
 
-void AshKeyboardController::SetHitTestBounds(
+void KeyboardControllerImpl::SetHitTestBounds(
     const std::vector<gfx::Rect>& bounds) {
   keyboard_controller_->SetHitTestBounds(bounds);
 }
 
-void AshKeyboardController::SetDraggableArea(const gfx::Rect& bounds) {
+void KeyboardControllerImpl::SetDraggableArea(const gfx::Rect& bounds) {
   keyboard_controller_->SetDraggableArea(bounds);
 }
 
-void AshKeyboardController::AddObserver(KeyboardControllerObserver* observer) {
+void KeyboardControllerImpl::AddObserver(KeyboardControllerObserver* observer) {
   observers_.AddObserver(observer);
 }
 
 // SessionObserver
-void AshKeyboardController::OnSessionStateChanged(
+void KeyboardControllerImpl::OnSessionStateChanged(
     session_manager::SessionState state) {
   if (!keyboard_controller_->IsEnabled())
     return;
@@ -208,7 +207,7 @@ void AshKeyboardController::OnSessionStateChanged(
   }
 }
 
-void AshKeyboardController::OnRootWindowClosing(aura::Window* root_window) {
+void KeyboardControllerImpl::OnRootWindowClosing(aura::Window* root_window) {
   if (keyboard_controller_->GetRootWindow() == root_window) {
     aura::Window* new_parent = GetContainerForDefaultDisplay();
     DCHECK_NE(root_window, new_parent);
@@ -216,7 +215,7 @@ void AshKeyboardController::OnRootWindowClosing(aura::Window* root_window) {
   }
 }
 
-aura::Window* AshKeyboardController::GetContainerForDisplay(
+aura::Window* KeyboardControllerImpl::GetContainerForDisplay(
     const display::Display& display) {
   DCHECK(display.is_valid());
 
@@ -228,7 +227,7 @@ aura::Window* AshKeyboardController::GetContainerForDisplay(
   return container;
 }
 
-aura::Window* AshKeyboardController::GetContainerForDefaultDisplay() {
+aura::Window* KeyboardControllerImpl::GetContainerForDefaultDisplay() {
   const display::Screen* screen = display::Screen::GetScreen();
   const base::Optional<display::Display> first_touch_display =
       GetFirstTouchDisplay();
@@ -252,36 +251,36 @@ aura::Window* AshKeyboardController::GetContainerForDefaultDisplay() {
       has_touch_display ? *first_touch_display : screen->GetPrimaryDisplay());
 }
 
-void AshKeyboardController::OnKeyboardConfigChanged(
+void KeyboardControllerImpl::OnKeyboardConfigChanged(
     const keyboard::KeyboardConfig& config) {
   for (auto& observer : observers_)
     observer.OnKeyboardConfigChanged(config);
 }
 
-void AshKeyboardController::OnKeyboardVisibilityChanged(bool is_visible) {
+void KeyboardControllerImpl::OnKeyboardVisibilityChanged(bool is_visible) {
   for (auto& observer : observers_)
     observer.OnKeyboardVisibilityChanged(is_visible);
 }
 
-void AshKeyboardController::OnKeyboardVisibleBoundsChanged(
+void KeyboardControllerImpl::OnKeyboardVisibleBoundsChanged(
     const gfx::Rect& screen_bounds) {
   SendOnKeyboardVisibleBoundsChanged(screen_bounds);
 }
 
-void AshKeyboardController::OnKeyboardOccludedBoundsChanged(
+void KeyboardControllerImpl::OnKeyboardOccludedBoundsChanged(
     const gfx::Rect& screen_bounds) {
   DVLOG(1) << "OnKeyboardOccludedBoundsChanged: " << screen_bounds.ToString();
   for (auto& observer : observers_)
     observer.OnKeyboardOccludedBoundsChanged(screen_bounds);
 }
 
-void AshKeyboardController::OnKeyboardEnableFlagsChanged(
+void KeyboardControllerImpl::OnKeyboardEnableFlagsChanged(
     const std::set<keyboard::KeyboardEnableFlag>& flags) {
   for (auto& observer : observers_)
     observer.OnKeyboardEnableFlagsChanged(flags);
 }
 
-void AshKeyboardController::OnKeyboardEnabledChanged(bool is_enabled) {
+void KeyboardControllerImpl::OnKeyboardEnabledChanged(bool is_enabled) {
   for (auto& observer : observers_)
     observer.OnKeyboardEnabledChanged(is_enabled);
 }

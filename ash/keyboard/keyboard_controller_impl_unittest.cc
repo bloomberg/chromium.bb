@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 
 #include <memory>
 #include <set>
@@ -96,27 +96,25 @@ class TestContainerBehavior : public keyboard::ContainerBehavior {
   gfx::Rect draggable_area_;
 };
 
-class AshKeyboardControllerTest : public AshTestBase {
+class KeyboardControllerImplTest : public AshTestBase {
  public:
-  AshKeyboardControllerTest() = default;
-  ~AshKeyboardControllerTest() override = default;
+  KeyboardControllerImplTest() = default;
+  ~KeyboardControllerImplTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
 
     // Set the initial observer config to the default config.
-    test_observer()->set_config(ash_keyboard_controller()->GetKeyboardConfig());
+    test_observer()->set_config(keyboard_controller()->GetKeyboardConfig());
   }
 
-  void TearDown() override {
-    AshTestBase::TearDown();
-  }
+  void TearDown() override { AshTestBase::TearDown(); }
 
-  AshKeyboardController* ash_keyboard_controller() {
-    return Shell::Get()->ash_keyboard_controller();
+  KeyboardControllerImpl* keyboard_controller() {
+    return Shell::Get()->keyboard_controller();
   }
-  keyboard::KeyboardController* keyboard_controller() {
-    return ash_keyboard_controller()->keyboard_controller();
+  keyboard::KeyboardController* keyboard_ui_controller() {
+    return keyboard_controller()->keyboard_controller();
   }
   TestKeyboardControllerObserver* test_observer() {
     return ash_test_helper()->test_keyboard_controller_observer();
@@ -127,7 +125,7 @@ class AshKeyboardControllerTest : public AshTestBase {
                         const base::Optional<gfx::Rect>& target_bounds) {
     bool result = false;
     base::RunLoop run_loop;
-    ash_keyboard_controller()->SetContainerType(
+    keyboard_controller()->SetContainerType(
         container_type, target_bounds,
         base::BindLambdaForTesting([&](bool success) {
           result = success;
@@ -153,243 +151,230 @@ class AshKeyboardControllerTest : public AshTestBase {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AshKeyboardControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(KeyboardControllerImplTest);
 };
 
 }  // namespace
 
-TEST_F(AshKeyboardControllerTest, SetKeyboardConfig) {
+TEST_F(KeyboardControllerImplTest, SetKeyboardConfig) {
   // Enable the keyboard so that config changes trigger observer events.
-  ash_keyboard_controller()->SetEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
 
-  ash_keyboard_controller()->GetKeyboardConfig();
-  KeyboardConfig config = ash_keyboard_controller()->GetKeyboardConfig();
+  keyboard_controller()->GetKeyboardConfig();
+  KeyboardConfig config = keyboard_controller()->GetKeyboardConfig();
   // Set the observer config to the default config.
   test_observer()->set_config(config);
 
   // Change the keyboard config.
   bool old_auto_complete = config.auto_complete;
   config.auto_complete = !config.auto_complete;
-  ash_keyboard_controller()->SetKeyboardConfig(std::move(config));
+  keyboard_controller()->SetKeyboardConfig(std::move(config));
 
   // Test that the config changes.
-  ash_keyboard_controller()->GetKeyboardConfig();
+  keyboard_controller()->GetKeyboardConfig();
   EXPECT_NE(old_auto_complete,
-            ash_keyboard_controller()->GetKeyboardConfig().auto_complete);
+            keyboard_controller()->GetKeyboardConfig().auto_complete);
 
   // Test that the test observer received the change.
   EXPECT_NE(old_auto_complete, test_observer()->config().auto_complete);
 }
 
-TEST_F(AshKeyboardControllerTest, EnableFlags) {
-  EXPECT_FALSE(ash_keyboard_controller()->IsKeyboardEnabled());
+TEST_F(KeyboardControllerImplTest, EnableFlags) {
+  EXPECT_FALSE(keyboard_controller()->IsKeyboardEnabled());
   // Enable the keyboard.
-  ash_keyboard_controller()->SetEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
   std::set<keyboard::KeyboardEnableFlag> enable_flags =
-      ash_keyboard_controller()->GetEnableFlags();
+      keyboard_controller()->GetEnableFlags();
   EXPECT_TRUE(
       base::Contains(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
   EXPECT_EQ(enable_flags, test_observer()->enable_flags());
-  EXPECT_TRUE(ash_keyboard_controller()->IsKeyboardEnabled());
+  EXPECT_TRUE(keyboard_controller()->IsKeyboardEnabled());
 
   // Set the enable override to disable the keyboard.
-  ash_keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
-  enable_flags = ash_keyboard_controller()->GetEnableFlags();
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
+  enable_flags = keyboard_controller()->GetEnableFlags();
   EXPECT_TRUE(
       base::Contains(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
   EXPECT_TRUE(
       base::Contains(enable_flags, KeyboardEnableFlag::kPolicyDisabled));
   EXPECT_EQ(enable_flags, test_observer()->enable_flags());
-  EXPECT_FALSE(ash_keyboard_controller()->IsKeyboardEnabled());
+  EXPECT_FALSE(keyboard_controller()->IsKeyboardEnabled());
 
   // Clear the enable override; should enable the keyboard.
-  ash_keyboard_controller()->ClearEnableFlag(
-      KeyboardEnableFlag::kPolicyDisabled);
-  enable_flags = ash_keyboard_controller()->GetEnableFlags();
+  keyboard_controller()->ClearEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
+  enable_flags = keyboard_controller()->GetEnableFlags();
   EXPECT_TRUE(
       base::Contains(enable_flags, KeyboardEnableFlag::kExtensionEnabled));
   EXPECT_FALSE(
       base::Contains(enable_flags, KeyboardEnableFlag::kPolicyDisabled));
   EXPECT_EQ(enable_flags, test_observer()->enable_flags());
-  EXPECT_TRUE(ash_keyboard_controller()->IsKeyboardEnabled());
+  EXPECT_TRUE(keyboard_controller()->IsKeyboardEnabled());
 }
 
-TEST_F(AshKeyboardControllerTest, RebuildKeyboardIfEnabled) {
+TEST_F(KeyboardControllerImplTest, RebuildKeyboardIfEnabled) {
   EXPECT_EQ(0, test_observer()->destroyed_count());
 
   // Enable the keyboard.
-  ash_keyboard_controller()->SetEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
   EXPECT_EQ(0, test_observer()->destroyed_count());
 
   // Enable the keyboard again; this should not reload the keyboard.
-  ash_keyboard_controller()->SetEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
   EXPECT_EQ(0, test_observer()->destroyed_count());
 
   // Rebuild the keyboard. This should destroy the previous keyboard window.
-  ash_keyboard_controller()->RebuildKeyboardIfEnabled();
+  keyboard_controller()->RebuildKeyboardIfEnabled();
   EXPECT_EQ(1, test_observer()->destroyed_count());
 
   // Disable the keyboard. The keyboard window should be destroyed.
-  ash_keyboard_controller()->ClearEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
+  keyboard_controller()->ClearEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
   EXPECT_EQ(2, test_observer()->destroyed_count());
 }
 
-TEST_F(AshKeyboardControllerTest, ShowAndHideKeyboard) {
+TEST_F(KeyboardControllerImplTest, ShowAndHideKeyboard) {
   // Enable the keyboard. This will create the keyboard window but not show it.
-  ash_keyboard_controller()->SetEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
 
-  ASSERT_TRUE(keyboard_controller()->GetKeyboardWindow());
-  EXPECT_FALSE(keyboard_controller()->GetKeyboardWindow()->IsVisible());
+  ASSERT_TRUE(keyboard_ui_controller()->GetKeyboardWindow());
+  EXPECT_FALSE(keyboard_ui_controller()->GetKeyboardWindow()->IsVisible());
 
   // The keyboard needs to be in a loaded state before being shown.
   ASSERT_TRUE(keyboard::test::WaitUntilLoaded());
 
-  ash_keyboard_controller()->ShowKeyboard();
-  EXPECT_TRUE(keyboard_controller()->GetKeyboardWindow()->IsVisible());
+  keyboard_controller()->ShowKeyboard();
+  EXPECT_TRUE(keyboard_ui_controller()->GetKeyboardWindow()->IsVisible());
 
-  ash_keyboard_controller()->HideKeyboard(HideReason::kUser);
-  EXPECT_FALSE(keyboard_controller()->GetKeyboardWindow()->IsVisible());
+  keyboard_controller()->HideKeyboard(HideReason::kUser);
+  EXPECT_FALSE(keyboard_ui_controller()->GetKeyboardWindow()->IsVisible());
 
   // TODO(stevenjb): Also use TestKeyboardControllerObserver and
   // IsKeyboardVisible to test visibility changes. https://crbug.com/849995.
 }
 
-TEST_F(AshKeyboardControllerTest, SetContainerType) {
+TEST_F(KeyboardControllerImplTest, SetContainerType) {
   // Enable the keyboard.
-  ash_keyboard_controller()->SetEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
   const auto default_behavior = keyboard::ContainerType::kFullWidth;
-  EXPECT_EQ(default_behavior, keyboard_controller()->GetActiveContainerType());
+  EXPECT_EQ(default_behavior,
+            keyboard_ui_controller()->GetActiveContainerType());
 
   gfx::Rect target_bounds(0, 0, 10, 10);
   // Set the container type to kFloating.
   EXPECT_TRUE(
       SetContainerType(keyboard::ContainerType::kFloating, target_bounds));
   EXPECT_EQ(keyboard::ContainerType::kFloating,
-            keyboard_controller()->GetActiveContainerType());
+            keyboard_ui_controller()->GetActiveContainerType());
   // Ensure that the window size is correct (position is determined by Ash).
   EXPECT_EQ(
       target_bounds.size(),
-      keyboard_controller()->GetKeyboardWindow()->GetTargetBounds().size());
+      keyboard_ui_controller()->GetKeyboardWindow()->GetTargetBounds().size());
 
   // Setting the container type to the current type should fail.
   EXPECT_FALSE(
       SetContainerType(keyboard::ContainerType::kFloating, base::nullopt));
   EXPECT_EQ(keyboard::ContainerType::kFloating,
-            keyboard_controller()->GetActiveContainerType());
+            keyboard_ui_controller()->GetActiveContainerType());
 }
 
-TEST_F(AshKeyboardControllerTest, SetKeyboardLocked) {
-  ASSERT_FALSE(keyboard_controller()->keyboard_locked());
-  ash_keyboard_controller()->SetKeyboardLocked(true);
-  EXPECT_TRUE(keyboard_controller()->keyboard_locked());
-  ash_keyboard_controller()->SetKeyboardLocked(false);
-  EXPECT_FALSE(keyboard_controller()->keyboard_locked());
+TEST_F(KeyboardControllerImplTest, SetKeyboardLocked) {
+  ASSERT_FALSE(keyboard_ui_controller()->keyboard_locked());
+  keyboard_controller()->SetKeyboardLocked(true);
+  EXPECT_TRUE(keyboard_ui_controller()->keyboard_locked());
+  keyboard_controller()->SetKeyboardLocked(false);
+  EXPECT_FALSE(keyboard_ui_controller()->keyboard_locked());
 }
 
-TEST_F(AshKeyboardControllerTest, SetOccludedBounds) {
+TEST_F(KeyboardControllerImplTest, SetOccludedBounds) {
   // Enable the keyboard.
-  ash_keyboard_controller()->SetEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
 
   // Override the container behavior.
   auto scoped_behavior = std::make_unique<TestContainerBehavior>();
   TestContainerBehavior* behavior = scoped_behavior.get();
-  keyboard_controller()->set_container_behavior_for_test(
+  keyboard_ui_controller()->set_container_behavior_for_test(
       std::move(scoped_behavior));
 
   gfx::Rect bounds(10, 20, 30, 40);
-  ash_keyboard_controller()->SetOccludedBounds({bounds});
+  keyboard_controller()->SetOccludedBounds({bounds});
   EXPECT_EQ(bounds, behavior->occluded_bounds());
 }
 
-TEST_F(AshKeyboardControllerTest, SetHitTestBounds) {
+TEST_F(KeyboardControllerImplTest, SetHitTestBounds) {
   // Enable the keyboard.
-  ash_keyboard_controller()->SetEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
-  ASSERT_FALSE(keyboard_controller()->GetKeyboardWindow()->targeter());
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+  ASSERT_FALSE(keyboard_ui_controller()->GetKeyboardWindow()->targeter());
 
   // Setting the hit test bounds should set a WindowTargeter.
-  ash_keyboard_controller()->SetHitTestBounds({gfx::Rect(10, 20, 30, 40)});
-  ASSERT_TRUE(keyboard_controller()->GetKeyboardWindow()->targeter());
+  keyboard_ui_controller()->SetHitTestBounds({gfx::Rect(10, 20, 30, 40)});
+  ASSERT_TRUE(keyboard_ui_controller()->GetKeyboardWindow()->targeter());
 }
 
-TEST_F(AshKeyboardControllerTest, SetDraggableArea) {
+TEST_F(KeyboardControllerImplTest, SetDraggableArea) {
   // Enable the keyboard.
-  ash_keyboard_controller()->SetEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
 
   // Override the container behavior.
   auto scoped_behavior = std::make_unique<TestContainerBehavior>();
   TestContainerBehavior* behavior = scoped_behavior.get();
-  keyboard_controller()->set_container_behavior_for_test(
+  keyboard_ui_controller()->set_container_behavior_for_test(
       std::move(scoped_behavior));
 
   gfx::Rect bounds(10, 20, 30, 40);
-  ash_keyboard_controller()->SetDraggableArea(bounds);
+  keyboard_ui_controller()->SetDraggableArea(bounds);
   EXPECT_EQ(bounds, behavior->draggable_area());
 }
 
-TEST_F(AshKeyboardControllerTest, ChangingSessionRebuildsKeyboard) {
+TEST_F(KeyboardControllerImplTest, ChangingSessionRebuildsKeyboard) {
   // Enable the keyboard.
-  ash_keyboard_controller()->SetEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
 
   // LOGGED_IN_NOT_ACTIVE session state needs to rebuild keyboard for supervised
   // user profile.
-  Shell::Get()->ash_keyboard_controller()->OnSessionStateChanged(
+  Shell::Get()->keyboard_controller()->OnSessionStateChanged(
       session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
   EXPECT_EQ(1, test_observer()->destroyed_count());
 
   // ACTIVE session state also needs to rebuild keyboard for guest user profile.
-  Shell::Get()->ash_keyboard_controller()->OnSessionStateChanged(
+  Shell::Get()->keyboard_controller()->OnSessionStateChanged(
       session_manager::SessionState::ACTIVE);
   EXPECT_EQ(2, test_observer()->destroyed_count());
 }
 
-TEST_F(AshKeyboardControllerTest, VisualBoundsInMultipleDisplays) {
+TEST_F(KeyboardControllerImplTest, VisualBoundsInMultipleDisplays) {
   UpdateDisplay("800x600,1024x768");
 
-  ash_keyboard_controller()->SetEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
 
   // Show the keyboard in the second display.
-  keyboard_controller()->ShowKeyboardInDisplay(
+  keyboard_ui_controller()->ShowKeyboardInDisplay(
       Shell::Get()->display_manager()->GetSecondaryDisplay());
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
-  gfx::Rect root_bounds = keyboard_controller()->visual_bounds_in_root();
+  gfx::Rect root_bounds = keyboard_ui_controller()->visual_bounds_in_root();
   EXPECT_EQ(0, root_bounds.x());
 
-  gfx::Rect screen_bounds = keyboard_controller()->GetVisualBoundsInScreen();
+  gfx::Rect screen_bounds = keyboard_ui_controller()->GetVisualBoundsInScreen();
   EXPECT_EQ(800, screen_bounds.x());
 }
 
-TEST_F(AshKeyboardControllerTest, OccludedBoundsInMultipleDisplays) {
+TEST_F(KeyboardControllerImplTest, OccludedBoundsInMultipleDisplays) {
   UpdateDisplay("800x600,1024x768");
 
-  ash_keyboard_controller()->SetEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
 
   // Show the keyboard in the second display.
-  keyboard_controller()->ShowKeyboardInDisplay(
+  keyboard_ui_controller()->ShowKeyboardInDisplay(
       Shell::Get()->display_manager()->GetSecondaryDisplay());
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   gfx::Rect screen_bounds =
-      keyboard_controller()->GetWorkspaceOccludedBoundsInScreen();
+      keyboard_ui_controller()->GetWorkspaceOccludedBoundsInScreen();
   EXPECT_EQ(800, screen_bounds.x());
 }
 
 // Test for http://crbug.com/303429. |GetContainerForDisplay| should move
 // keyboard to specified display even when it's not touchable.
-TEST_F(AshKeyboardControllerTest, GetContainerForDisplay) {
+TEST_F(KeyboardControllerImplTest, GetContainerForDisplay) {
   UpdateDisplay("500x500,500x500");
 
   // Make primary display touchable.
@@ -404,13 +389,13 @@ TEST_F(AshKeyboardControllerTest, GetContainerForDisplay) {
 
   // Move to primary display.
   EXPECT_EQ(GetPrimaryRootWindow(),
-            ash_keyboard_controller()
+            keyboard_controller()
                 ->GetContainerForDisplay(GetPrimaryDisplay())
                 ->GetRootWindow());
 
   // Move to secondary display.
   EXPECT_EQ(GetSecondaryRootWindow(),
-            ash_keyboard_controller()
+            keyboard_controller()
                 ->GetContainerForDisplay(GetSecondaryDisplay())
                 ->GetRootWindow());
 }
@@ -418,7 +403,7 @@ TEST_F(AshKeyboardControllerTest, GetContainerForDisplay) {
 // Test for http://crbug.com/297858. |GetContainerForDefaultDisplay| should
 // return the primary display if no display has touch capability and
 // no window is focused.
-TEST_F(AshKeyboardControllerTest,
+TEST_F(KeyboardControllerImplTest,
        DefaultContainerInPrimaryDisplayWhenNoDisplayHasTouch) {
   UpdateDisplay("500x500,500x500");
 
@@ -427,14 +412,14 @@ TEST_F(AshKeyboardControllerTest,
   EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
             GetSecondaryDisplay().touch_support());
 
-  EXPECT_EQ(GetPrimaryRootWindow(), ash_keyboard_controller()
-                                        ->GetContainerForDefaultDisplay()
-                                        ->GetRootWindow());
+  EXPECT_EQ(
+      GetPrimaryRootWindow(),
+      keyboard_controller()->GetContainerForDefaultDisplay()->GetRootWindow());
 }
 
 // Test for http://crbug.com/297858. |GetContainerForDefaultDisplay| should
 // move keyboard to focused display if no display has touch capability.
-TEST_F(AshKeyboardControllerTest,
+TEST_F(KeyboardControllerImplTest,
        DefaultContainerIsInFocusedDisplayWhenNoDisplayHasTouch) {
   UpdateDisplay("500x500,500x500");
 
@@ -444,14 +429,14 @@ TEST_F(AshKeyboardControllerTest,
             GetSecondaryDisplay().touch_support());
 
   CreateFocusedTestWindowInRootWindow(GetSecondaryRootWindow());
-  EXPECT_EQ(GetSecondaryRootWindow(), ash_keyboard_controller()
-                                          ->GetContainerForDefaultDisplay()
-                                          ->GetRootWindow());
+  EXPECT_EQ(
+      GetSecondaryRootWindow(),
+      keyboard_controller()->GetContainerForDefaultDisplay()->GetRootWindow());
 }
 
 // Test for http://crbug.com/303429. |GetContainerForDefaultDisplay| should
 // move keyboard to first touchable display when there is one.
-TEST_F(AshKeyboardControllerTest, DefaultContainerIsInFirstTouchableDisplay) {
+TEST_F(KeyboardControllerImplTest, DefaultContainerIsInFirstTouchableDisplay) {
   UpdateDisplay("500x500,500x500");
 
   // Make secondary display touchable.
@@ -464,16 +449,16 @@ TEST_F(AshKeyboardControllerTest, DefaultContainerIsInFirstTouchableDisplay) {
   EXPECT_EQ(display::Display::TouchSupport::AVAILABLE,
             GetSecondaryDisplay().touch_support());
 
-  EXPECT_EQ(GetSecondaryRootWindow(), ash_keyboard_controller()
-                                          ->GetContainerForDefaultDisplay()
-                                          ->GetRootWindow());
+  EXPECT_EQ(
+      GetSecondaryRootWindow(),
+      keyboard_controller()->GetContainerForDefaultDisplay()->GetRootWindow());
 }
 
 // Test for http://crbug.com/303429. |GetContainerForDefaultDisplay| should
 // move keyboard to first touchable display when the focused display is not
 // touchable.
 TEST_F(
-    AshKeyboardControllerTest,
+    KeyboardControllerImplTest,
     DefaultContainerIsInFirstTouchableDisplayIfFocusedDisplayIsNotTouchable) {
   UpdateDisplay("500x500,500x500");
 
@@ -490,14 +475,14 @@ TEST_F(
   // Focus on primary display.
   CreateFocusedTestWindowInRootWindow(GetPrimaryRootWindow());
 
-  EXPECT_EQ(GetSecondaryRootWindow(), ash_keyboard_controller()
-                                          ->GetContainerForDefaultDisplay()
-                                          ->GetRootWindow());
+  EXPECT_EQ(
+      GetSecondaryRootWindow(),
+      keyboard_controller()->GetContainerForDefaultDisplay()->GetRootWindow());
 }
 
 // Test for http://crbug.com/303429. |GetContainerForDefaultDisplay| should
 // move keyborad to first touchable display when there is one.
-TEST_F(AshKeyboardControllerTest,
+TEST_F(KeyboardControllerImplTest,
        DefaultContainerIsInFocusedDisplayIfTouchable) {
   UpdateDisplay("500x500,500x500");
 
@@ -516,29 +501,30 @@ TEST_F(AshKeyboardControllerTest,
 
   // Focus on secondary display.
   CreateFocusedTestWindowInRootWindow(GetSecondaryRootWindow());
-  EXPECT_EQ(GetSecondaryRootWindow(), ash_keyboard_controller()
-                                          ->GetContainerForDefaultDisplay()
-                                          ->GetRootWindow());
+  EXPECT_EQ(
+      GetSecondaryRootWindow(),
+      keyboard_controller()->GetContainerForDefaultDisplay()->GetRootWindow());
 
   // Focus on primary display.
   CreateFocusedTestWindowInRootWindow(GetPrimaryRootWindow());
-  EXPECT_EQ(GetPrimaryRootWindow(), ash_keyboard_controller()
-                                        ->GetContainerForDefaultDisplay()
-                                        ->GetRootWindow());
+  EXPECT_EQ(
+      GetPrimaryRootWindow(),
+      keyboard_controller()->GetContainerForDefaultDisplay()->GetRootWindow());
 }
 
 // Test for https://crbug.com/897007.
-TEST_F(AshKeyboardControllerTest, ShowKeyboardInSecondaryDisplay) {
+TEST_F(KeyboardControllerImplTest, ShowKeyboardInSecondaryDisplay) {
   UpdateDisplay("500x500,500x500");
 
-  ash_keyboard_controller()->SetEnableFlag(
-      KeyboardEnableFlag::kExtensionEnabled);
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
 
   // Show in secondary display.
-  keyboard_controller()->ShowKeyboardInDisplay(GetSecondaryDisplay());
-  EXPECT_EQ(GetSecondaryRootWindow(), keyboard_controller()->GetRootWindow());
+  keyboard_ui_controller()->ShowKeyboardInDisplay(GetSecondaryDisplay());
+  EXPECT_EQ(GetSecondaryRootWindow(),
+            keyboard_ui_controller()->GetRootWindow());
   ASSERT_TRUE(keyboard::WaitUntilShown());
-  EXPECT_TRUE(!keyboard_controller()->GetKeyboardWindow()->bounds().IsEmpty());
+  EXPECT_TRUE(
+      !keyboard_ui_controller()->GetKeyboardWindow()->bounds().IsEmpty());
 }
 
 }  // namespace ash
