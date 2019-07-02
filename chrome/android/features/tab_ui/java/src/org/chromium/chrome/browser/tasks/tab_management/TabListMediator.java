@@ -420,6 +420,8 @@ class TabListMediator {
                 @Override
                 public void didMoveWithinGroup(
                         Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {
+                    if (tabModelNewIndex == tabModelOldIndex) return;
+
                     int curPosition = mModel.indexFromId(movedTab.getId());
                     TabModel tabModel = mTabModelSelector.getCurrentModel();
 
@@ -449,8 +451,12 @@ class TabListMediator {
                     }
                     if (mActionsOnAllRelatedTabs) {
                         Tab currentSelectedTab = mTabModelSelector.getCurrentTab();
-                        addTabInfoToModel(movedTab, mModel.size(),
-                                currentSelectedTab.getId() == movedTab.getId());
+                        int index = TabModelUtils.getTabIndexById(
+                                mTabModelSelector.getTabModelFilterProvider()
+                                        .getCurrentTabModelFilter(),
+                                movedTab.getId());
+                        addTabInfoToModel(
+                                movedTab, index, currentSelectedTab.getId() == movedTab.getId());
                         boolean isSelected = mTabModelSelector.getCurrentTabId()
                                 == filter.getTabAt(prevFilterIndex).getId();
                         updateTab(prevFilterIndex, filter.getTabAt(prevFilterIndex), isSelected,
@@ -481,7 +487,7 @@ class TabListMediator {
                 @Override
                 public void didMoveTabGroup(
                         Tab movedTab, int tabModelOldIndex, int tabModelNewIndex) {
-                    if (!mActionsOnAllRelatedTabs) return;
+                    if (!mActionsOnAllRelatedTabs || tabModelNewIndex == tabModelOldIndex) return;
                     TabGroupModelFilter filter =
                             (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
                                     .getCurrentTabModelFilter();
@@ -518,6 +524,10 @@ class TabListMediator {
 
                     mModel.move(curPosition, newPosition);
                 }
+
+                @Override
+                public void didCreateGroup(
+                        List<Tab> tabs, List<Integer> tabOriginalIndex, boolean isSameGroup) {}
             };
 
             ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(

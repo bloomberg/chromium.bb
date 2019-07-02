@@ -53620,6 +53620,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="29" label="UMA_AUTOFILL_ASSISTANT_STOP_UNDO"/>
   <int value="30" label="UMA_TAB_CLOSE_MULTIPLE_UNDO"/>
   <int value="31" label="UMA_SEARCH_ENGINE_CHOICE_NOTIFICATION"/>
+  <int value="32" label="UMA_TAB_GROUP_MANUAL_CREATION_UNDO"/>
 </enum>
 
 <enum name="SnippetOpenMethod">

@@ -569,6 +569,7 @@ public class TabListMediatorUnitTest {
         // Assume that TabGroupModelFilter is already updated.
         doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION1);
         doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION2);
+        doReturn(2).when(mTabGroupModelFilter).getCount();
 
         mTabGroupModelFilterObserverCaptor.getValue().didMoveTabOutOfGroup(mTab1, POSITION1);
 
@@ -600,6 +601,7 @@ public class TabListMediatorUnitTest {
         // Assume that TabGroupModelFilter is already updated.
         doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
         doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION2);
+        doReturn(2).when(mTabGroupModelFilter).getCount();
 
         mTabGroupModelFilterObserverCaptor.getValue().didMoveTabOutOfGroup(mTab2, POSITION1);
 
@@ -752,6 +754,78 @@ public class TabListMediatorUnitTest {
         assertThat(mModel.size(), equalTo(2));
         assertThat(mModel.get(0).get(TabProperties.TAB_ID), equalTo(TAB2_ID));
         assertThat(mModel.get(0).get(TabProperties.TITLE), equalTo(TAB2_TITLE));
+    }
+
+    @Test
+    public void undoGrouped_One_Adjacent_Tab() {
+        setUpForTabGroupOperation();
+
+        // Assume there are 3 tabs in TabModel, mTab2 just grouped with mTab1;
+        Tab tab3 = prepareTab(TAB3_ID, TAB3_TITLE);
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, tab3));
+        mMediator.resetWithListOfTabs(tabs, false);
+        assertThat(mModel.size(), equalTo(2));
+
+        // Assume undo grouping mTab2 with mTab1.
+        doReturn(3).when(mTabGroupModelFilter).getCount();
+        doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
+        doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION2);
+        doReturn(tab3).when(mTabGroupModelFilter).getTabAt(2);
+
+        mTabGroupModelFilterObserverCaptor.getValue().didMoveTabOutOfGroup(mTab2, POSITION1);
+
+        assertThat(mModel.size(), equalTo(3));
+        assertThat(mModel.indexFromId(TAB1_ID), equalTo(0));
+        assertThat(mModel.indexFromId(TAB2_ID), equalTo(1));
+        assertThat(mModel.indexFromId(TAB3_ID), equalTo(2));
+    }
+
+    @Test
+    public void undoForwardGrouped_One_Tab() {
+        setUpForTabGroupOperation();
+
+        // Assume there are 3 tabs in TabModel, tab3 just grouped with mTab1;
+        Tab tab3 = prepareTab(TAB3_ID, TAB3_TITLE);
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, mTab2));
+        mMediator.resetWithListOfTabs(tabs, false);
+        assertThat(mModel.size(), equalTo(2));
+
+        // Assume undo grouping tab3 with mTab1.
+        doReturn(3).when(mTabGroupModelFilter).getCount();
+        doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
+        doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION2);
+        doReturn(tab3).when(mTabGroupModelFilter).getTabAt(2);
+
+        mTabGroupModelFilterObserverCaptor.getValue().didMoveTabOutOfGroup(tab3, POSITION1);
+
+        assertThat(mModel.size(), equalTo(3));
+        assertThat(mModel.indexFromId(TAB1_ID), equalTo(0));
+        assertThat(mModel.indexFromId(TAB2_ID), equalTo(1));
+        assertThat(mModel.indexFromId(TAB3_ID), equalTo(2));
+    }
+
+    @Test
+    public void undoBackwardGrouped_One_Tab() {
+        setUpForTabGroupOperation();
+
+        // Assume there are 3 tabs in TabModel, mTab1 just grouped with mTab2;
+        Tab tab3 = prepareTab(TAB3_ID, TAB3_TITLE);
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab2, tab3));
+        mMediator.resetWithListOfTabs(tabs, false);
+        assertThat(mModel.size(), equalTo(2));
+
+        // Assume undo grouping tab3 with mTab1.
+        doReturn(3).when(mTabGroupModelFilter).getCount();
+        doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
+        doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION2);
+        doReturn(tab3).when(mTabGroupModelFilter).getTabAt(2);
+
+        mTabGroupModelFilterObserverCaptor.getValue().didMoveTabOutOfGroup(mTab1, POSITION2);
+
+        assertThat(mModel.size(), equalTo(3));
+        assertThat(mModel.indexFromId(TAB1_ID), equalTo(0));
+        assertThat(mModel.indexFromId(TAB2_ID), equalTo(1));
+        assertThat(mModel.indexFromId(TAB3_ID), equalTo(2));
     }
 
     private void initAndAssertAllProperties() {
