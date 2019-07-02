@@ -87,8 +87,8 @@ void BookmarkAppPinToShelf(const Extension* extension) {
 #if defined(OS_CHROMEOS)
   // ChromeLauncherController does not exist in unit tests.
   if (ChromeLauncherController::instance()) {
-    ChromeLauncherController::instance()->shelf_model()->PinAppWithID(
-        extension->id());
+    ChromeLauncherController::instance()->PinAppWithID(extension->id());
+    ChromeLauncherController::instance()->UpdateV1AppState(extension->id());
   }
 #endif  // defined(OS_CHROMEOS)
 }
