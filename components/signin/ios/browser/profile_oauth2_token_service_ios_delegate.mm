@@ -118,8 +118,8 @@ void SSOAccessTokenFetcher::Start(const std::string& client_id,
   std::set<std::string> scopes_set(scopes.begin(), scopes.end());
   provider_->GetAccessToken(
       account_.gaia, client_id, scopes_set,
-      base::Bind(&SSOAccessTokenFetcher::OnAccessTokenResponse,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&SSOAccessTokenFetcher::OnAccessTokenResponse,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void SSOAccessTokenFetcher::CancelRequest() {

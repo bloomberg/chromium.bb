@@ -35,11 +35,9 @@ class SigninErrorController;
 
 // Called by WebViewDeviceAccountsProviderImpl to obtain
 // access tokens for |scopes| to be passed back in |callback|.
-- (void)
-    fetchAccessTokenForScopes:(const std::set<std::string>&)scopes
-                     callback:
-                         (const DeviceAccountsProvider::AccessTokenCallback&)
-                             callback;
+- (void)fetchAccessTokenForScopes:(const std::set<std::string>&)scopes
+                         callback:(DeviceAccountsProvider::AccessTokenCallback)
+                                      callback;
 
 // Called by IOSWebViewSigninClient when signing out.
 - (void)didSignoutWithSourceMetric:(signin_metrics::ProfileSignout)metric;

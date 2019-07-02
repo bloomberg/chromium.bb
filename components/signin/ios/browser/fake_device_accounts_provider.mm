@@ -21,8 +21,8 @@ void FakeDeviceAccountsProvider::GetAccessToken(
     const std::string& account_id,
     const std::string& client_id,
     const std::set<std::string>& scopes,
-    const AccessTokenCallback& callback) {
-  requests_.push_back(AccessTokenRequest(account_id, callback));
+    AccessTokenCallback callback) {
+  requests_.push_back(AccessTokenRequest(account_id, std::move(callback)));
 }
 
 std::vector<DeviceAccountsProvider::AccountInfo>
@@ -45,25 +45,21 @@ void FakeDeviceAccountsProvider::ClearAccounts() {
 }
 
 void FakeDeviceAccountsProvider::IssueAccessTokenForAllRequests() {
-  for (auto i = requests_.begin(); i != requests_.end(); ++i) {
-    std::string account_id = i->first;
-    AccessTokenCallback callback = i->second;
+  for (auto& pair : requests_) {
     NSString* access_token = [NSString
-        stringWithFormat:@"fake_access_token [account=%s]", account_id.c_str()];
+        stringWithFormat:@"fake_access_token [account=%s]", pair.first.c_str()];
     NSDate* one_hour_from_now = [NSDate dateWithTimeIntervalSinceNow:3600];
-    callback.Run(access_token, one_hour_from_now, nil);
+    std::move(pair.second).Run(access_token, one_hour_from_now, nil);
   }
   requests_.clear();
 }
 
 void FakeDeviceAccountsProvider::IssueAccessTokenErrorForAllRequests() {
-  for (auto i = requests_.begin(); i != requests_.end(); ++i) {
-    std::string account_id = i->first;
-    AccessTokenCallback callback = i->second;
+  for (auto& pair : requests_) {
     NSError* error = [[NSError alloc] initWithDomain:@"fake_access_token_error"
                                                 code:-1
                                             userInfo:nil];
-    callback.Run(nil, nil, error);
+    std::move(pair.second).Run(nil, nil, error);
   }
   requests_.clear();
 }

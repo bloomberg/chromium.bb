@@ -25,12 +25,13 @@ void WebViewDeviceAccountsProviderImpl::GetAccessToken(
     const std::string& gaia_id,
     const std::string& client_id,
     const std::set<std::string>& scopes,
-    const AccessTokenCallback& callback) {
+    AccessTokenCallback callback) {
   // |sync_controller| may still be nil if this is called too early so
   // |callback| will not be invoked. That's OK because this will be called again
   // after |sync_controller| has been set.
   CWVSyncController* sync_controller = signin_client_->GetSyncController();
-  [sync_controller fetchAccessTokenForScopes:scopes callback:callback];
+  [sync_controller fetchAccessTokenForScopes:scopes
+                                    callback:std::move(callback)];
 }
 
 std::vector<DeviceAccountsProvider::AccountInfo>

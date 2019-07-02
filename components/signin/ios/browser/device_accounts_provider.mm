@@ -13,11 +13,10 @@ DeviceAccountsProvider::GetAllAccounts() const {
   return std::vector<DeviceAccountsProvider::AccountInfo>();
 }
 
-void DeviceAccountsProvider::GetAccessToken(
-    const std::string& gaia_id,
-    const std::string& client_id,
-    const std::set<std::string>& scopes,
-    const AccessTokenCallback& callback) {}
+void DeviceAccountsProvider::GetAccessToken(const std::string& gaia_id,
+                                            const std::string& client_id,
+                                            const std::set<std::string>& scopes,
+                                            AccessTokenCallback callback) {}
 
 AuthenticationErrorCategory
 DeviceAccountsProvider::GetAuthenticationErrorCategory(

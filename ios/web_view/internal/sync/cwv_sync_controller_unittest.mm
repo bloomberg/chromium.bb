@@ -125,8 +125,8 @@ TEST_F(CWVSyncControllerTest, DataSourceCallbacks) {
     [sync_controller_ startSyncWithIdentity:identity dataSource:data_source];
 
     std::set<std::string> scopes = {kTestScope1, kTestScope2};
-    DeviceAccountsProvider::AccessTokenCallback callback;
-    [sync_controller_ fetchAccessTokenForScopes:scopes callback:callback];
+    [sync_controller_ fetchAccessTokenForScopes:scopes
+                                       callback:base::DoNothing()];
 
     [data_source verify];
   }

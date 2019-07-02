@@ -21,7 +21,7 @@ class DeviceAccountsProviderImpl : public DeviceAccountsProvider {
   void GetAccessToken(const std::string& gaia_id,
                       const std::string& client_id,
                       const std::set<std::string>& scopes,
-                      const AccessTokenCallback& callback) override;
+                      AccessTokenCallback callback) override;
   std::vector<AccountInfo> GetAllAccounts() const override;
   AuthenticationErrorCategory GetAuthenticationErrorCategory(
       const std::string& gaia_id,

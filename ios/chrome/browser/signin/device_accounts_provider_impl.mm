@@ -38,15 +38,20 @@ void DeviceAccountsProviderImpl::GetAccessToken(
     const std::string& gaia_id,
     const std::string& client_id,
     const std::set<std::string>& scopes,
-    const AccessTokenCallback& callback) {
-  AccessTokenCallback scoped_callback = callback;
+    AccessTokenCallback callback) {
+  DCHECK(!callback.is_null());
   ios::ChromeIdentityService* identity_service =
       ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+
+  // AccessTokenCallback is non-copyable. Using __block allocates the memory
+  // directly in the block object at compilation time (instead of doing a
+  // copy). This is required to have correct interaction between move-only
+  // types and Objective-C blocks.
+  __block AccessTokenCallback scopedCallback = std::move(callback);
   identity_service->GetAccessToken(
       identity_service->GetIdentityWithGaiaID(gaia_id), client_id, scopes,
       ^(NSString* token, NSDate* expiration, NSError* error) {
-        if (!scoped_callback.is_null())
-          scoped_callback.Run(token, expiration, error);
+        std::move(scopedCallback).Run(token, expiration, error);
       });
 }
 

@@ -47,9 +47,8 @@ class DeviceAccountsProvider {
     std::string email;
   };
 
-  typedef base::Callback<
-      void(NSString* token, NSDate* expiration, NSError* error)>
-      AccessTokenCallback;
+  using AccessTokenCallback = base::OnceCallback<
+      void(NSString* token, NSDate* expiration, NSError* error)>;
 
   DeviceAccountsProvider() {}
   virtual ~DeviceAccountsProvider() {}
@@ -62,7 +61,7 @@ class DeviceAccountsProvider {
   virtual void GetAccessToken(const std::string& gaia_id,
                               const std::string& client_id,
                               const std::set<std::string>& scopes,
-                              const AccessTokenCallback& callback);
+                              AccessTokenCallback callback);
 
   // Returns the authentication error category of |error| associated with the
   // account with id |gaia_id|.

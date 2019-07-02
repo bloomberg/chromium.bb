@@ -23,7 +23,7 @@ class FakeDeviceAccountsProvider : public DeviceAccountsProvider {
   void GetAccessToken(const std::string& account_id,
                       const std::string& client_id,
                       const std::set<std::string>& scopes,
-                      const AccessTokenCallback& callback) override;
+                      AccessTokenCallback callback) override;
   std::vector<AccountInfo> GetAllAccounts() const override;
   AuthenticationErrorCategory GetAuthenticationErrorCategory(
       const std::string& gaia_id,
@@ -38,7 +38,7 @@ class FakeDeviceAccountsProvider : public DeviceAccountsProvider {
   void IssueAccessTokenErrorForAllRequests();
 
  private:
-  typedef std::pair<std::string, AccessTokenCallback> AccessTokenRequest;
+  using AccessTokenRequest = std::pair<std::string, AccessTokenCallback>;
 
   std::vector<AccountInfo> accounts_;
   std::vector<AccessTokenRequest> requests_;
