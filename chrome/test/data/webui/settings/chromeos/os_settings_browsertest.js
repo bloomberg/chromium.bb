@@ -197,3 +197,24 @@ var OSSettingsResetPageTest = class extends OSSettingsBrowserTest {
 TEST_F('OSSettingsResetPageTest', 'AllJavascriptTests', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var OSSettingsAdvancedPageBrowserTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + 'test_util.js',
+      'os_advanced_page_browsertest.js',
+    ]);
+  }
+};
+
+// Times out on debug builders because the Settings page can take several
+// seconds to load in a Release build and several times that in a Debug build.
+// See https://crbug.com/558434.
+TEST_F(
+    'OSSettingsAdvancedPageBrowserTest', 'MAYBE_AllJavascriptTests',
+    function() {
+      // Run all registered tests.
+      mocha.run();
+    });
