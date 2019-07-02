@@ -478,6 +478,14 @@ class WebContents : public PageNavigator,
   // port.
   virtual bool IsConnectedToSerialPort() = 0;
 
+  // Indicates whether any frame in the WebContents has native file system
+  // directory handles.
+  virtual bool HasNativeFileSystemDirectoryHandles() = 0;
+
+  // Indicates whether any frame in the WebContents has writable native file
+  // system handles.
+  virtual bool HasWritableNativeFileSystemHandles() = 0;
+
   // Indicates whether a video is in Picture-in-Picture for |this|.
   virtual bool HasPictureInPictureVideo() = 0;
 
