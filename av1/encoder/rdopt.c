@@ -9729,6 +9729,14 @@ static INLINE void calc_masked_type_cost(MACROBLOCK *x, BLOCK_SIZE bsize,
   masked_type_cost[3] += x->compound_type_cost[bsize][1];
 }
 
+// Updates mbmi structure with the relevant compound type info
+static INLINE void update_mbmi_for_compound_type(MB_MODE_INFO *mbmi,
+                                                 COMPOUND_TYPE cur_type) {
+  mbmi->interinter_comp.type = cur_type;
+  mbmi->comp_group_idx = (cur_type >= COMPOUND_WEDGE);
+  mbmi->compound_idx = (cur_type != COMPOUND_DISTWTD);
+}
+
 static int compound_type_rd(
     const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_col,
     int mi_row, int_mv *cur_mv, int mode_search_mask, int masked_compound_used,
@@ -9809,11 +9817,8 @@ static int compound_type_rd(
       int est_rate[2];
       int64_t est_dist[2], est_rd[2];
 
-      mbmi->comp_group_idx = 0;
-
       // First find the modeled rd cost for COMPOUND_AVERAGE
-      mbmi->interinter_comp.type = COMPOUND_AVERAGE;
-      mbmi->compound_idx = 1;
+      update_mbmi_for_compound_type(mbmi, COMPOUND_AVERAGE);
       av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
                                     AOM_PLANE_Y, AOM_PLANE_Y);
       *is_luma_interp_done = 1;
@@ -9827,8 +9832,7 @@ static int compound_type_rd(
       restore_dst_buf(xd, *tmp_dst, 1);
 
       // Next find the modeled rd cost for COMPOUND_DISTWTD
-      mbmi->interinter_comp.type = COMPOUND_DISTWTD;
-      mbmi->compound_idx = 0;
+      update_mbmi_for_compound_type(mbmi, COMPOUND_DISTWTD);
       av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
                                     AOM_PLANE_Y, AOM_PLANE_Y);
       model_rd_sb_fn[MODELRD_CURVFIT](
@@ -9842,8 +9846,7 @@ static int compound_type_rd(
       // Choose the better of the two based on modeled cost and call
       // estimate_yrd_for_sb() for that one.
       if (est_rd[COMPOUND_AVERAGE] <= est_rd[COMPOUND_DISTWTD]) {
-        mbmi->interinter_comp.type = COMPOUND_AVERAGE;
-        mbmi->compound_idx = 1;
+        update_mbmi_for_compound_type(mbmi, COMPOUND_AVERAGE);
         restore_dst_buf(xd, *orig_dst, 1);
         rs2 = masked_type_cost[COMPOUND_AVERAGE];
         RD_STATS est_rd_stats;
@@ -9879,10 +9882,8 @@ static int compound_type_rd(
         }
       }
     } else {
-      mbmi->interinter_comp.type = cur_type;
       if (cur_type == COMPOUND_AVERAGE || cur_type == COMPOUND_DISTWTD) {
-        mbmi->comp_group_idx = 0;
-        mbmi->compound_idx = (cur_type == COMPOUND_AVERAGE);
+        update_mbmi_for_compound_type(mbmi, cur_type);
         rs2 = masked_type_cost[cur_type];
         const int64_t mode_rd = RDCOST(x->rdmult, rs2 + rd_stats->rate, 0);
         if (mode_rd < ref_best_rd) {
@@ -9926,8 +9927,7 @@ static int compound_type_rd(
         // use spare buffer for following compound type try
         if (cur_type == COMPOUND_AVERAGE) restore_dst_buf(xd, *tmp_dst, 1);
       } else {
-        mbmi->comp_group_idx = 1;
-        mbmi->compound_idx = 1;
+        update_mbmi_for_compound_type(mbmi, cur_type);
         rs2 = masked_type_cost[cur_type];
 
         if (((*rd / cpi->max_comp_type_rd_threshold_div) *
