@@ -432,14 +432,7 @@ AwContentBrowserClient::GetNetworkContextParams() {
 }
 
 AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {
-  base::FilePath user_data_dir;
-  if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
-    NOTREACHED() << "Failed to get app data directory for Android WebView";
-  }
-
-  browser_context_ = std::make_unique<AwBrowserContext>(
-      user_data_dir, aw_feature_list_creator_->TakePrefService(),
-      aw_feature_list_creator_->TakeBrowserPolicyConnector());
+  browser_context_ = std::make_unique<AwBrowserContext>();
   return browser_context_.get();
 }
 
