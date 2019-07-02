@@ -30,6 +30,8 @@ extern "C" {
 
 #define VLOW_MOTION_THRESHOLD 950
 
+#define MAX_ARF_LAYERS 6
+
 typedef struct {
   // Frame number in display order, if stats are for a single frame.
   // No real meaning for a collection of frames.
@@ -129,6 +131,7 @@ typedef struct {
   int ref_frame_gop_idx[MAX_STATIC_GF_GROUP_LENGTH][REF_FRAMES];
   unsigned char pyramid_height;
   unsigned char pyramid_lvl_nodes[MAX_PYRAMID_LVL];
+  int layer_depth[MAX_STATIC_GF_GROUP_LENGTH];
   // This is currently only populated for AOM_Q mode
   unsigned char q_val[MAX_STATIC_GF_GROUP_LENGTH];
   int bit_allocation[MAX_STATIC_GF_GROUP_LENGTH];

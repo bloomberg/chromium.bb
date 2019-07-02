@@ -27,7 +27,8 @@
 
 // Set parameters for frames between 'start' and 'end' (excluding both).
 static void set_multi_layer_params(GF_GROUP *const gf_group, int start, int end,
-                                   int *frame_ind, int arf_ind, int level) {
+                                   int *frame_ind, int arf_ind, int level,
+                                   int layer_depth) {
   assert(level >= MIN_PYRAMID_LVL);
   const int num_frames_to_process = end - start - 1;
   assert(num_frames_to_process >= 0);
@@ -44,6 +45,7 @@ static void set_multi_layer_params(GF_GROUP *const gf_group, int start, int end,
       gf_group->arf_update_idx[*frame_ind] = arf_ind;
       gf_group->frame_disp_idx[*frame_ind] = start;
       gf_group->pyramid_level[*frame_ind] = MIN_PYRAMID_LVL;
+      gf_group->layer_depth[*frame_ind] = MAX_ARF_LAYERS;
       ++gf_group->pyramid_lvl_nodes[MIN_PYRAMID_LVL];
       ++(*frame_ind);
     }
@@ -58,11 +60,13 @@ static void set_multi_layer_params(GF_GROUP *const gf_group, int start, int end,
     gf_group->arf_update_idx[*frame_ind] = 1;  // mark all internal ARF 1
     gf_group->frame_disp_idx[*frame_ind] = m;
     gf_group->pyramid_level[*frame_ind] = level;
+    gf_group->layer_depth[*frame_ind] = layer_depth;
     ++gf_group->pyramid_lvl_nodes[level];
     ++(*frame_ind);
 
     // Frames displayed before this internal ARF.
-    set_multi_layer_params(gf_group, start, m, frame_ind, 1, level - 1);
+    set_multi_layer_params(gf_group, start, m, frame_ind, 1, level - 1,
+                           layer_depth + 1);
 
     // Overlay for internal ARF.
     gf_group->update_type[*frame_ind] = INTNL_OVERLAY_UPDATE;
@@ -71,10 +75,12 @@ static void set_multi_layer_params(GF_GROUP *const gf_group, int start, int end,
     gf_group->arf_update_idx[*frame_ind] = 1;
     gf_group->frame_disp_idx[*frame_ind] = m;
     gf_group->pyramid_level[*frame_ind] = MIN_PYRAMID_LVL;
+    gf_group->layer_depth[*frame_ind] = layer_depth;
     ++(*frame_ind);
 
     // Frames displayed after this internal ARF.
-    set_multi_layer_params(gf_group, m, end, frame_ind, arf_ind, level - 1);
+    set_multi_layer_params(gf_group, m, end, frame_ind, arf_ind, level - 1,
+                           layer_depth + 1);
   }
 }
 
@@ -95,6 +101,7 @@ static int construct_multi_layer_gf_structure(
   gf_group->arf_pos_in_gf[frame_index] = 0;
   gf_group->arf_update_idx[frame_index] = 0;
   gf_group->pyramid_level[frame_index] = MIN_PYRAMID_LVL;
+  gf_group->layer_depth[frame_index] = 0;
   ++frame_index;
 
   // ALTREF.
@@ -106,6 +113,7 @@ static int construct_multi_layer_gf_structure(
     gf_group->arf_update_idx[frame_index] = 0;
     gf_group->frame_disp_idx[frame_index] = gf_interval;
     gf_group->pyramid_level[frame_index] = gf_group->pyramid_height;
+    gf_group->layer_depth[frame_index] = 1;
     ++frame_index;
   }
 
@@ -113,8 +121,8 @@ static int construct_multi_layer_gf_structure(
   const int next_height =
       use_altref ? gf_group->pyramid_height - 1 : gf_group->pyramid_height;
   assert(next_height >= MIN_PYRAMID_LVL);
-  set_multi_layer_params(gf_group, 0, gf_interval, &frame_index, 0,
-                         next_height);
+  set_multi_layer_params(gf_group, 0, gf_interval, &frame_index, 0, next_height,
+                         use_altref + 1);
   return frame_index;
 }
 
