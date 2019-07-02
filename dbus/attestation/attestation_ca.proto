@@ -19,6 +19,7 @@ syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
 package attestation;
+option go_package = "attestation_proto";
 
 // Enumerates various certificate profiles supported by the Attestation CA.
 enum CertificateProfile {
