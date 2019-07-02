@@ -1435,6 +1435,8 @@ pixman_region_to_egl_y_invert(struct weston_output *output,
 		*d++ = box[i].x2 - box[i].x1;
 		*d++ = box[i].y2 - box[i].y1;
 	}
+
+	pixman_region32_fini(&transformed);
 }
 
 /* NOTE: We now allow falling back to ARGB gl visuals when XRGB is
