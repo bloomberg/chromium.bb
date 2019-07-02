@@ -34,6 +34,10 @@ Then open:
 
 ### Making Changes
 
+Since this project is written in TypeScript, it integrates best with Visual
+Studio Code. There are also some default settings (in `.vscode/settings.json`)
+which will be applied automatically.
+
 To run pre-submit checks, run:
 
 ```
