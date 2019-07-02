@@ -2533,6 +2533,7 @@ GEN('#if defined(OS_CHROMEOS)');
  * Test fixture for the chrome://settings/accounts page
  * @constructor
  * @extends {CrSettingsBrowserTest}
+ * TODO(hsuregan): Remove when SplitSettings complete.
  */
 function CrSettingsAddUsersTest() {}
 
@@ -2544,12 +2545,17 @@ CrSettingsAddUsersTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'add_users_tests.js',
+    'chromeos/add_users_tests.js',
   ]),
 };
 
 // Test is consistently failing. http://crbug.com/960837
-TEST_F('CrSettingsAddUsersTest', 'DISABLED_All', function() {
+GEN('#if !defined(NDEBUG)');
+GEN('#define MAYBE_AddUsers DISABLED_AddUsers');
+GEN('#else');
+GEN('#define MAYBE_AddUsers AddUsers');
+GEN('#endif');
+TEST_F('CrSettingsAddUsersTest', 'MAYBE_AddUsers', function() {
   mocha.run();
 });
 

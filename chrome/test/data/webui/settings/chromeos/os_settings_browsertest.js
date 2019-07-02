@@ -61,12 +61,32 @@ var OSSettingsSmbPageTest = class extends OSSettingsBrowserTest {
 
 // Settings tests are flaky on debug. See https://crbug.com/968608.
 GEN('#if !defined(NDEBUG)');
-GEN('#define MAYBE_All DISABLED_All');
+GEN('#define MAYBE_AllJavascriptTests DISABLED_AllJavascriptTests');
 GEN('#else');
-GEN('#define MAYBE_All All');
+GEN('#define MAYBE_AllJavascriptTests AllJavascriptTests');
 GEN('#endif');
 
-TEST_F('OSSettingsSmbPageTest', 'MAYBE_All', function() {
+TEST_F('OSSettingsSmbPageTest', 'MAYBE_AllJavascriptTests', function() {
+  mocha.run();
+});
+
+// Test fixture for the chrome://os-settings/accounts page
+// eslint-disable-next-line no-var
+var OSSettingsAddUsersTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'accounts.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'add_users_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsAddUsersTest', 'MAYBE_AllJavascriptTests', function() {
   mocha.run();
 });
 
@@ -89,7 +109,7 @@ var OSSettingsMainTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsMainTest', 'MAYBE_All', function() {
+TEST_F('OSSettingsMainTest', 'MAYBE_AllJavascriptTests', function() {
   mocha.run();
 });
 
@@ -105,7 +125,7 @@ var OSSettingsMenuTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsMenuTest', 'MAYBE_All', function() {
+TEST_F('OSSettingsMenuTest', 'MAYBE_AllJavascriptTests', function() {
   mocha.run();
 });
 
@@ -124,7 +144,7 @@ var OSSettingsPeoplePageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsPeoplePageTest', 'MAYBE_All', function() {
+TEST_F('OSSettingsPeoplePageTest', 'MAYBE_AllJavascriptTests', function() {
   mocha.run();
 });
 
