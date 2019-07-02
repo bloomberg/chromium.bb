@@ -390,7 +390,7 @@ def FindDuplicates(symbols, status_url, api_key, timeout=DEDUPE_TIMEOUT):
       set_match = {'debugId': b.header.id.replace('-', ''),
                    'debugFile': b.header.name}
       for cs_result in result.get('pairs', []):
-        if cmp(set_match, cs_result.get('symbolId')) == 0:
+        if set_match == cs_result.get('symbolId'):
           if cs_result.get('status') == 'FOUND':
             logging.debug('Found duplicate: %s', b.display_name)
             b.status = SymbolFile.DUPLICATE

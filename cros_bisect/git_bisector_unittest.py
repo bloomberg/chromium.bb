@@ -790,7 +790,7 @@ class GitBisectorMock(partial_mock.PartialMock):
 
   def GitBisect(self, _, bisect_op):
     (expected_op, result) = self.git_bisect_args_result.pop(0)
-    assert cmp(expected_op, bisect_op) == 0
+    assert expected_op == bisect_op
     return result
 
   def BuildDeployEval(self, this):
