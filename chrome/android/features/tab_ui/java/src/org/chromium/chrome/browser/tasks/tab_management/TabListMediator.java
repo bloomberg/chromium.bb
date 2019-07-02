@@ -608,7 +608,7 @@ class TabListMediator {
         sTabClosedFromMapTabClosedFromMap.put(tabId, TabClosedFrom.GRID_TAB_SWITCHER_GROUP);
     }
 
-    public void setActionOnAllRelatedTabsForTest(boolean actionOnAllRelatedTabs) {
+    void setActionOnAllRelatedTabsForTest(boolean actionOnAllRelatedTabs) {
         mActionsOnAllRelatedTabs = actionOnAllRelatedTabs;
     }
 
@@ -619,9 +619,10 @@ class TabListMediator {
     }
 
     private void onTabAdded(Tab tab, boolean onlyShowRelatedTabs) {
-        List<Tab> related = getRelatedTabsForId(tab.getId());
         int index;
         if (onlyShowRelatedTabs) {
+            if (mModel.size() == 0) return;
+            List<Tab> related = getRelatedTabsForId(mModel.get(0).get(TabProperties.TAB_ID));
             index = related.indexOf(tab);
             if (index == -1) return;
         } else {

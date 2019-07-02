@@ -456,14 +456,14 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
-    public void tabAdditionEnd() {
+    public void tabAddition_Dialog_End() {
         initAndAssertAllProperties();
 
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         doReturn(3).when(mTabModel).getCount();
         doReturn(Arrays.asList(mTab1, mTab2, newTab))
                 .when(mTabModelFilter)
-                .getRelatedTabList(eq(TAB3_ID));
+                .getRelatedTabList(eq(TAB1_ID));
 
         mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
 
@@ -473,20 +473,33 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
-    public void tabAdditionMiddle() {
+    public void tabAddition_Dialog_Middle() {
         initAndAssertAllProperties();
 
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         doReturn(3).when(mTabModel).getCount();
         doReturn(Arrays.asList(mTab1, newTab, mTab2))
                 .when(mTabModelFilter)
-                .getRelatedTabList(eq(TAB3_ID));
+                .getRelatedTabList(eq(TAB1_ID));
 
         mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
 
         assertThat(mModel.size(), equalTo(3));
         assertThat(mModel.get(1).get(TabProperties.TAB_ID), equalTo(TAB3_ID));
         assertThat(mModel.get(1).get(TabProperties.TITLE), equalTo(TAB3_TITLE));
+    }
+
+    @Test
+    public void tabAddition_Dialog_Skip() {
+        initAndAssertAllProperties();
+
+        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        // newTab is of another group.
+        doReturn(Arrays.asList(mTab1, mTab2)).when(mTabModelFilter).getRelatedTabList(eq(TAB1_ID));
+
+        mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
+
+        assertThat(mModel.size(), equalTo(2));
     }
 
     @Test
@@ -509,7 +522,7 @@ public class TabListMediatorUnitTest {
         doReturn(3).when(mTabModel).getCount();
         doReturn(Arrays.asList(mTab1, mTab2, newTab))
                 .when(mTabModelFilter)
-                .getRelatedTabList(eq(TAB3_ID));
+                .getRelatedTabList(eq(TAB1_ID));
 
         mTabModelObserverCaptor.getValue().tabClosureUndone(newTab);
 
