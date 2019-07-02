@@ -3526,7 +3526,6 @@
                         "UIVerticalMargin": "10"
                     },
                     "enable_features": [
-                        "OmniboxDedupeGoogleDriveURLs",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
                         "OmniboxGroupSuggestionsBySearchVsUrl",
