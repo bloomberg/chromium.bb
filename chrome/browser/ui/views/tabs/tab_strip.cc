@@ -18,6 +18,7 @@
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -1365,6 +1366,11 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
   selected_tabs_ = new_selection;
 
   UpdateHoverCard(nullptr, /* should_show */ false);
+  // The hover cards seen count is reset when the active tab is changed by any
+  // event. Note TabStrip::SelectTab does not capture tab changes triggered by
+  // the keyboard.
+  if (base::FeatureList::IsEnabled(features::kTabHoverCards) && hover_card_)
+    hover_card_->reset_hover_cards_seen_count();
 
   // Notify all tabs whose selected state changed.
   for (auto tab_index :
@@ -1445,8 +1451,15 @@ bool TabStrip::MaySetClip() {
 
 void TabStrip::SelectTab(Tab* tab, const ui::Event& event) {
   int model_index = GetModelIndexOfTab(tab);
-  if (IsValidModelIndex(model_index))
+  if (IsValidModelIndex(model_index)) {
+    // Report histogram metrics for the number of tab hover cards seen before
+    // a tab is selected by mouse press.
+    if (base::FeatureList::IsEnabled(features::kTabHoverCards) && hover_card_ &&
+        event.type() == ui::ET_MOUSE_PRESSED && !tab->IsActive()) {
+      hover_card_->RecordHoverCardsSeenRatioMetric();
+    }
     controller_->SelectTab(model_index, event);
+  }
 }
 
 void TabStrip::ExtendSelectionTo(Tab* tab) {

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/metrics/tab_count_metrics.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_image.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "components/tab_count_metrics/tab_count_metrics.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -400,6 +402,9 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
     return;
   }
 
+  if (widget_->IsVisible())
+    ++hover_cards_seen_count_;
+
   if (widget_->IsVisible() && !disable_animations_for_testing_) {
     slide_animation_delegate_->AnimateToAnchorView(tab);
   } else {
@@ -439,6 +444,35 @@ void TabHoverCardBubbleView::FadeOutToHide() {
 
 bool TabHoverCardBubbleView::IsFadingOut() const {
   return fade_animation_delegate_->IsFadingOut();
+}
+
+void TabHoverCardBubbleView::RecordHoverCardsSeenRatioMetric() {
+  const char kHistogramPrefixHoverCardsSeenBeforeSelection[] =
+      "TabHoverCards.TabHoverCardsSeenBeforeTabSelection";
+  const size_t tab_count = tab_count_metrics::TabCount();
+  const size_t bucket = tab_count_metrics::BucketForTabCount(tab_count);
+  constexpr int kMinHoverCardsSeen = 0;
+  constexpr int kMaxHoverCardsSeen = 100;
+  constexpr int kHistogramBucketCount = 50;
+  STATIC_HISTOGRAM_POINTER_GROUP(
+      tab_count_metrics::HistogramName(
+          kHistogramPrefixHoverCardsSeenBeforeSelection,
+          /* live_tabs_only */ false, bucket),
+      static_cast<int>(bucket),
+      static_cast<int>(tab_count_metrics::kNumTabCountBuckets),
+      Add(hover_cards_seen_count_),
+      base::Histogram::FactoryGet(
+          tab_count_metrics::HistogramName(
+              kHistogramPrefixHoverCardsSeenBeforeSelection,
+              /* live_tabs_only */ false, bucket),
+          kMinHoverCardsSeen, kMaxHoverCardsSeen, kHistogramBucketCount,
+          base::HistogramBase::kUmaTargetedHistogramFlag));
+}
+
+void TabHoverCardBubbleView::OnWidgetVisibilityChanged(views::Widget* widget,
+                                                       bool visible) {
+  if (visible)
+    ++hover_cards_seen_count_;
 }
 
 int TabHoverCardBubbleView::GetDialogButtons() const {

@@ -3114,6 +3114,7 @@ jumbo_split_static_library("ui") {
       "//components/media_message_center",
       "//components/payments/content",
       "//components/payments/core",
+      "//components/tab_count_metrics",
       "//components/ui_devtools/views",
       "//device/vr/buildflags:buildflags",
       "//services/media_session/public/mojom",

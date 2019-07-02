@@ -40,7 +40,14 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
 
   bool IsFadingOut() const;
 
+  // Record a histogram metric of tab hover cards seen prior to a tab being
+  // selected by mouse press.
+  void RecordHoverCardsSeenRatioMetric();
+
+  void reset_hover_cards_seen_count() { hover_cards_seen_count_ = 0; }
+
   // BubbleDialogDelegateView:
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
   int GetDialogButtons() const override;
 
  private:
@@ -75,6 +82,10 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   views::Label* title_label_ = nullptr;
   views::Label* domain_label_ = nullptr;
   views::ImageView* preview_image_ = nullptr;
+
+  // Counter used to keey track of the number of tab hover cards seen before a
+  // tab is selected by mouse press.
+  size_t hover_cards_seen_count_ = 0;
 
   base::WeakPtrFactory<TabHoverCardBubbleView> weak_factory_{this};
 
