@@ -23797,6 +23797,8 @@ Called by update_net_error_codes.py.-->
   <int value="2938" label="PeriodicBackgroundSyncUnregister"/>
   <int value="2939" label="CreateObjectURLMediaSourceFromWorker"/>
   <int value="2940" label="CSSAtRuleProperty"/>
+  <int value="2941"
+      label="ServiceWorkerInterceptedRequestFromOriginDirtyStyleSheet"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

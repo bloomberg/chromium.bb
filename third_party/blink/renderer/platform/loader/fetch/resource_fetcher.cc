@@ -925,6 +925,8 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   uint64_t identifier = CreateUniqueIdentifier();
   ResourceRequest& resource_request = params.MutableResourceRequest();
   resource_request.SetInspectorId(identifier);
+  resource_request.SetFromOriginDirtyStyleSheet(
+      params.IsFromOriginDirtyStyleSheet());
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
       TRACE_DISABLED_BY_DEFAULT("network"), "ResourceLoad",
       TRACE_ID_WITH_SCOPE("BlinkResourceID", TRACE_ID_LOCAL(identifier)),
