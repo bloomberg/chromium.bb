@@ -2564,7 +2564,8 @@ drm_device_changed(struct weston_compositor *compositor,
 {
 	struct drm_backend *b = to_drm_backend(compositor);
 
-	if (b->drm.fd < 0 || b->drm.devnum != device)
+	if (b->drm.fd < 0 || b->drm.devnum != device ||
+	    compositor->session_active == added)
 		return;
 
 	compositor->session_active = added;
