@@ -238,8 +238,10 @@ ComputedStyle::Difference ComputedStyle::ComputeDifference(
   if (old_style->Display() != new_style->Display() &&
       (old_style->IsDisplayFlexibleOrGridBox() ||
        old_style->IsDisplayLayoutCustomBox() ||
+       old_style->Display() == EDisplay::kContents ||
        new_style->IsDisplayFlexibleOrGridBox() ||
-       new_style->IsDisplayLayoutCustomBox())) {
+       new_style->IsDisplayLayoutCustomBox() ||
+       new_style->Display() == EDisplay::kContents)) {
     return Difference::kDisplayAffectingDescendantStyles;
   }
   if (!old_style->NonIndependentInheritedEqual(*new_style))
