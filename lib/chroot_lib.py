@@ -21,20 +21,23 @@ from chromite.lib import constants
 class Chroot(object):
   """Chroot class."""
 
-  def __init__(self, path=None, cache_dir=None, env=None):
+  def __init__(self, path=None, cache_dir=None, chrome_root=None, env=None):
     # Strip trailing / if present for consistency.
     self.path = (path or constants.DEFAULT_CHROOT_PATH).rstrip('/')
     self._is_default_path = not bool(path)
     self._env = env
-    # cache_dir is often '' when not set, but testing and comparing is much
+    # String in proto are '' when not set, but testing and comparing is much
     # easier when the "unset" value is consistent, so do an explicit "or None".
     self.cache_dir = cache_dir or None
+    self.chrome_root = chrome_root or None
 
   def __eq__(self, other):
-    if not isinstance(other, Chroot):
+    try:
+      return (self.path == other.path and self.cache_dir == other.cache_dir
+              and self.chrome_root == other.chrome_root
+              and self.env == other.env)
+    except AttributeError:
       return False
-    return (self.path == other.path and self.cache_dir == other.cache_dir
-            and self.env == other.env)
 
   def exists(self):
     """Checks if the chroot exists."""
@@ -71,6 +74,8 @@ class Chroot(object):
       args.extend(['--chroot', self.path])
     if self.cache_dir:
       args.extend(['--cache-dir', self.cache_dir])
+    if self.chrome_root:
+      args.extend(['--chrome-root', self.chrome_root])
 
     return args
 

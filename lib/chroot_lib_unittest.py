@@ -26,8 +26,11 @@ class ChrootTest(cros_test_lib.TempDirTestCase):
     """Test complete instance behavior."""
     path = '/chroot/path'
     cache_dir = '/cache/dir'
-    expected = ['--chroot', path, '--cache-dir', cache_dir]
-    chroot = chroot_lib.Chroot(path=path, cache_dir=cache_dir)
+    chrome_root = '/chrome/root'
+    expected = ['--chroot', path, '--cache-dir', cache_dir,
+                '--chrome-root', chrome_root]
+    chroot = chroot_lib.Chroot(path=path, cache_dir=cache_dir,
+                               chrome_root=chrome_root)
 
     self.assertItemsEqual(expected, chroot.GetEnterArgs())
 

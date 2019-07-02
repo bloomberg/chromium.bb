@@ -23,15 +23,19 @@ class ChrootHandlerTest(cros_test_lib.TestCase):
   def setUp(self):
     self.path = '/chroot/dir'
     self.cache_dir = '/cache/dir'
+    self.chrome_dir = '/chrome/dir'
     self.env = {'FEATURES': 'thing'}
-    self.expected_chroot = chroot_lib.Chroot(self.path, self.cache_dir,
-                                             self.env)
+    self.expected_chroot = chroot_lib.Chroot(path=self.path,
+                                             cache_dir=self.cache_dir,
+                                             chrome_root=self.chrome_dir,
+                                             env=self.env)
 
   def test_parse_chroot_success(self):
     """Test successful Chroot message parse."""
     chroot_msg = common_pb2.Chroot()
     chroot_msg.path = self.path
     chroot_msg.cache_dir = self.cache_dir
+    chroot_msg.chrome_dir = self.chrome_dir
     chroot_msg.env.features.add().feature = 'thing'
 
     chroot_handler = field_handler.ChrootHandler(clear_field=False)
@@ -44,6 +48,7 @@ class ChrootHandlerTest(cros_test_lib.TestCase):
     message = build_api_test_pb2.TestRequestMessage()
     message.chroot.path = self.path
     message.chroot.cache_dir = self.cache_dir
+    message.chroot.chrome_dir = self.chrome_dir
     message.chroot.env.features.add().feature = 'thing'
 
     # First a no-clear parse.

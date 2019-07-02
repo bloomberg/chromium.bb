@@ -699,6 +699,7 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
       'instead, create it directly in a directory.')
 
   parser.add_argument(
+      '--chrome-root',
       '--chrome_root',
       type='path',
       help='Mount this chrome root into the SDK chroot')
