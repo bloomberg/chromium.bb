@@ -2308,6 +2308,8 @@ enum WebFeature {
   kCookieNoSameSite = 2916,
   kCookieInsecureAndSameSiteNone = 2917,
   kUnsizedMediaPolicy = 2918,
+  kFeaturePolicyCommaSeparatedDeclarations = 2922,
+  kFeaturePolicySemicolonSeparatedDeclarations = 2923,
   kLazyLoadFrameLoadingAttributeEager = 2932,
   kLazyLoadFrameLoadingAttributeLazy = 2933,
   kLazyLoadImageLoadingAttributeEager = 2934,

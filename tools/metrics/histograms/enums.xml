@@ -23526,11 +23526,25 @@ Called by update_net_error_codes.py.-->
   <int value="2916" label="CookieNoSameSite"/>
   <int value="2917" label="CookieInsecureAndSameSiteNone"/>
   <int value="2918" label="UnsizedMediaPolicy"/>
+  <int value="2922" label="FeaturePolicyCommaSeparatedDeclarations"/>
+  <int value="2923" label="FeaturePolicySemicolonSeparatedDeclarations"/>
   <int value="2932" label="LazyLoadFrameLoadingAttributeEager"/>
   <int value="2933" label="LazyLoadFrameLoadingAttributeLazy"/>
   <int value="2934" label="LazyLoadImageLoadingAttributeEager"/>
   <int value="2935" label="LazyLoadImageLoadingAttributeLazy"/>
   <int value="2936" label="LazyLoadImageMissingDimensionsForLazy"/>
+</enum>
+
+<enum name="FeaturePolicyAllowlistType">
+  <int value="0" label="Empty"/>
+  <int value="1" label="None"/>
+  <int value="2" label="Self"/>
+  <int value="3" label="Src"/>
+  <int value="4" label="Star"/>
+  <int value="5" label="Origins"/>
+  <int value="6" label="KeywordsOnly"/>
+  <int value="7" label="Mixed"/>
+>>>>>>> a5a45d7e3eb6... Add histograms to track complexity of feature policy declarations.
 </enum>
 
 <enum name="FeaturePolicyFeature">
