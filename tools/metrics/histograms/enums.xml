@@ -23799,6 +23799,14 @@ Called by update_net_error_codes.py.-->
   <int value="2940" label="CSSAtRuleProperty"/>
   <int value="2941"
       label="ServiceWorkerInterceptedRequestFromOriginDirtyStyleSheet"/>
+  <int value="2942" label="WebkitMarginBeforeCollapseDiscard"/>
+  <int value="2943" label="WebkitMarginBeforeCollapseSeparate"/>
+  <int value="2944"
+      label="WebkitMarginBeforeCollapseSeparateMaybeDoesSomething"/>
+  <int value="2945" label="WebkitMarginAfterCollapseDiscard"/>
+  <int value="2946" label="WebkitMarginAfterCollapseSeparate"/>
+  <int value="2947"
+      label="WebkitMarginAfterCollapseSeparateMaybeDoesSomething"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
