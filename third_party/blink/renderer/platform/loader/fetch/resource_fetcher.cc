@@ -2007,10 +2007,6 @@ String ResourceFetcher::GetCacheIdentifier() const {
   return MemoryCache::DefaultCacheIdentifier();
 }
 
-void ResourceFetcher::OnNetworkQuiet() {
-  scheduler_->OnNetworkQuiet();
-}
-
 void ResourceFetcher::EmulateLoadStartedForInspector(
     Resource* resource,
     const KURL& url,
