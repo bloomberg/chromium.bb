@@ -14,7 +14,7 @@ export class GPUTest extends Fixture {
 
   async init(): Promise<void> {
     super.init();
-    const gpu = await getGPU();
+    const gpu = getGPU();
     const adapter = await gpu.requestAdapter();
     this.device = await adapter.requestDevice({});
     this.queue = this.device.getQueue();

@@ -1,8 +1,7 @@
 {
   "extends": "gts/tslint.json",
   "rules": {
-    "interface-name": [true],
-    "no-default-export": false
+    "interface-name": [true]
   },
   "linterOptions": {
     "exclude": [
