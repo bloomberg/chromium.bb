@@ -131,12 +131,7 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
 
   // 6. Run the following steps in parallel, but abort when options' signal
   // member is present and its aborted flag is set:
-  // [...]
-  // 6.2. Let success be the result of awaiting acquire a wake lock with promise
-  //      and type:
-  // 6.2.1. If success is false then reject promise with a "NotAllowedError"
-  //        DOMException, and abort these steps.
-  controller.AcquireWakeLock(wake_lock_type, resolver);
+  controller.RequestWakeLock(wake_lock_type, resolver, options->signal());
 
   // 7. Return promise.
   return promise;

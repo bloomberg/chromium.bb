@@ -52,6 +52,14 @@ bool MockPermissionService::GetWakeLockTypeFromDescriptor(
   }
 }
 
+void MockPermissionService::WaitForPermissionRequest(WakeLockType type) {
+  size_t pos = static_cast<size_t>(type);
+  DCHECK(!request_permission_callbacks_[pos]);
+  base::RunLoop run_loop;
+  request_permission_callbacks_[pos] = run_loop.QuitClosure();
+  run_loop.Run();
+}
+
 void MockPermissionService::HasPermission(PermissionDescriptorPtr permission,
                                           HasPermissionCallback callback) {
   WakeLockType type;
@@ -69,7 +77,18 @@ void MockPermissionService::RequestPermission(
     PermissionDescriptorPtr permission,
     bool user_gesture,
     RequestPermissionCallback callback) {
-  HasPermission(std::move(permission), std::move(callback));
+  WakeLockType type;
+  if (!GetWakeLockTypeFromDescriptor(permission, &type)) {
+    std::move(callback).Run(PermissionStatus::DENIED);
+    return;
+  }
+
+  size_t pos = static_cast<size_t>(type);
+  DCHECK(permission_responses_[pos].has_value());
+  if (request_permission_callbacks_[pos])
+    std::move(request_permission_callbacks_[pos]).Run();
+  std::move(callback).Run(
+      permission_responses_[pos].value_or(PermissionStatus::DENIED));
 }
 
 void MockPermissionService::RequestPermissions(

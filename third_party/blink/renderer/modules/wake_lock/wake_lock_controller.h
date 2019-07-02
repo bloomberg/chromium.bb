@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_WAKE_LOCK_CONTROLLER_H_
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
@@ -16,6 +17,7 @@
 
 namespace blink {
 
+class AbortSignal;
 class ScriptPromiseResolver;
 class WakeLockStateRecord;
 
@@ -37,7 +39,9 @@ class MODULES_EXPORT WakeLockController final
 
   void Trace(blink::Visitor*) override;
 
-  void AcquireWakeLock(WakeLockType type, ScriptPromiseResolver*);
+  void RequestWakeLock(WakeLockType type,
+                       ScriptPromiseResolver* resolver,
+                       AbortSignal* signal);
 
   void ReleaseWakeLock(WakeLockType type, ScriptPromiseResolver*);
 
@@ -50,6 +54,13 @@ class MODULES_EXPORT WakeLockController final
   // PageVisibilityObserver implementation
   void PageVisibilityChanged() override;
 
+  void AcquireWakeLock(WakeLockType type, ScriptPromiseResolver*);
+
+  void DidReceivePermissionResponse(WakeLockType type,
+                                    ScriptPromiseResolver*,
+                                    AbortSignal*,
+                                    mojom::blink::PermissionStatus);
+
   // Permission handling
   void ObtainPermission(
       WakeLockType type,
@@ -61,8 +72,11 @@ class MODULES_EXPORT WakeLockController final
   // https://w3c.github.io/wake-lock/#concepts-and-state-record
   // Each platform wake lock (one per wake lock type) has an associated state
   // record per responsible document [...] internal slots.
-  Member<WakeLockStateRecord>
-      state_records_[static_cast<size_t>(WakeLockType::kMaxValue) + 1];
+  Member<WakeLockStateRecord> state_records_[kWakeLockTypeCount];
+
+  FRIEND_TEST_ALL_PREFIXES(WakeLockControllerTest, AcquireScreenWakeLock);
+  FRIEND_TEST_ALL_PREFIXES(WakeLockControllerTest, AcquireSystemWakeLock);
+  FRIEND_TEST_ALL_PREFIXES(WakeLockControllerTest, AcquireMultipleLocks);
 };
 
 }  // namespace blink

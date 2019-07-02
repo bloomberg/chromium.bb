@@ -136,8 +136,7 @@ class MockWakeLockService : public mojom::blink::WakeLockService {
     mock_wake_lock_[pos].Bind(std::move(request));
   }
 
-  MockWakeLock
-      mock_wake_lock_[static_cast<size_t>(WakeLockType::kMaxValue) + 1];
+  MockWakeLock mock_wake_lock_[kWakeLockTypeCount];
   mojo::BindingSet<mojom::blink::WakeLockService> bindings_;
 };
 
@@ -152,6 +151,8 @@ class MockPermissionService final : public mojom::blink::PermissionService {
   void BindRequest(mojo::ScopedMessagePipeHandle handle);
 
   void SetPermissionResponse(WakeLockType, mojom::blink::PermissionStatus);
+
+  void WaitForPermissionRequest(WakeLockType);
 
  private:
   bool GetWakeLockTypeFromDescriptor(
@@ -179,7 +180,11 @@ class MockPermissionService final : public mojom::blink::PermissionService {
   mojo::Binding<mojom::blink::PermissionService> binding_{this};
 
   base::Optional<mojom::blink::PermissionStatus>
-      permission_responses_[static_cast<size_t>(WakeLockType::kMaxValue) + 1];
+      permission_responses_[kWakeLockTypeCount];
+
+  base::OnceClosure request_permission_callbacks_[static_cast<size_t>(
+                                                      WakeLockType::kMaxValue) +
+                                                  1];
 };
 
 // Overrides requests for WakeLockService with MockWakeLockService instances.
