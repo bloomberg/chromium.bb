@@ -488,22 +488,20 @@ void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
 }
 
 void ChromeLauncherController::UpdateV1AppState(const std::string& app_id) {
-  BrowserList* browser_list = BrowserList::GetInstance();
-
-  for (Browser* browser : *browser_list) {
-    if (!browser->is_app() && browser->is_type_tabbed() &&
-        multi_user_util::IsProfileFromActiveUser(browser->profile())) {
-      for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-        content::WebContents* const web_contents =
-            browser->tab_strip_model()->GetWebContentsAt(i);
-        if (launcher_controller_helper_->GetAppID(web_contents) != app_id)
-          continue;
-        UpdateAppState(web_contents, false /*remove*/);
-        if (browser->tab_strip_model()->GetActiveWebContents() ==
-            web_contents) {
-          GetBrowserShortcutLauncherItemController()
-              ->SetShelfIDForBrowserWindowContents(browser, web_contents);
-        }
+  for (Browser* browser : *BrowserList::GetInstance()) {
+    if (browser->is_app() || !browser->is_type_tabbed() ||
+        !multi_user_util::IsProfileFromActiveUser(browser->profile())) {
+      continue;
+    }
+    for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
+      content::WebContents* const web_contents =
+          browser->tab_strip_model()->GetWebContentsAt(i);
+      if (launcher_controller_helper_->GetAppID(web_contents) != app_id)
+        continue;
+      UpdateAppState(web_contents, false /*remove*/);
+      if (browser->tab_strip_model()->GetActiveWebContents() == web_contents) {
+        GetBrowserShortcutLauncherItemController()
+            ->SetShelfIDForBrowserWindowContents(browser, web_contents);
       }
     }
   }

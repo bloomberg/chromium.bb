@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(InstallManagerBookmarkAppDialogTest,
   chrome::SetAutoAcceptBookmarkAppDialogForTesting(false);
 
 #if defined(OS_CHROMEOS)
-  ash::ShelfID shelf_id(installed_app_id());
+  const ash::ShelfID shelf_id(installed_app_id());
   EXPECT_TRUE(ChromeLauncherController::instance()->IsPinned(shelf_id));
   EXPECT_EQ(
       shelf_id,
