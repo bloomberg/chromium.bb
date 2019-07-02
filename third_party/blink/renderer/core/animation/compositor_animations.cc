@@ -338,29 +338,33 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
 
   LayoutObject* layout_object = target_element.GetLayoutObject();
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // We query paint property tree state below to determine whether the
-    // animation is compositable. There is a known lifecycle violation where an
-    // animation can be cancelled during style update. See
-    // CompositorAnimations::cancelAnimationOnCompositor and
-    // http://crbug.com/676456. When this is fixed we would like to enable
-    // the DCHECK below.
-    // DCHECK(document().lifecycle().state() >=
-    // DocumentLifecycle::PrePaintClean);
-    DCHECK(layout_object);
-
-    if (!layout_object->UniqueId())
+    if (!layout_object) {
       reasons |= kTargetHasInvalidCompositingState;
+    } else {
+      // We query paint property tree state below to determine whether the
+      // animation is compositable. There is a known lifecycle violation where
+      // an animation can be cancelled during style update. See
+      // CompositorAnimations::cancelAnimationOnCompositor and
+      // http://crbug.com/676456. When this is fixed we would like to enable
+      // the DCHECK below.
+      // DCHECK(document().lifecycle().state() >=
+      // DocumentLifecycle::PrePaintClean);
+      DCHECK(layout_object);
 
-    if (const auto* paint_properties =
-            layout_object->FirstFragment().PaintProperties()) {
-      const TransformPaintPropertyNode* transform_node =
-          paint_properties->Transform();
-      const EffectPaintPropertyNode* effect_node = paint_properties->Effect();
-      bool has_direct_compositing_reasons =
-          (transform_node && transform_node->HasDirectCompositingReasons()) ||
-          (effect_node && effect_node->HasDirectCompositingReasons());
-      if (!has_direct_compositing_reasons)
+      if (!layout_object->UniqueId())
         reasons |= kTargetHasInvalidCompositingState;
+
+      if (const auto* paint_properties =
+              layout_object->FirstFragment().PaintProperties()) {
+        const TransformPaintPropertyNode* transform_node =
+            paint_properties->Transform();
+        const EffectPaintPropertyNode* effect_node = paint_properties->Effect();
+        bool has_direct_compositing_reasons =
+            (transform_node && transform_node->HasDirectCompositingReasons()) ||
+            (effect_node && effect_node->HasDirectCompositingReasons());
+        if (!has_direct_compositing_reasons)
+          reasons |= kTargetHasInvalidCompositingState;
+      }
     }
   } else {
     if (!layout_object ||
