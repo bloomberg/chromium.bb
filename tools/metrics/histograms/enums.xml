@@ -34809,6 +34809,7 @@ from previous Chrome versions.
   <int value="-250822813" label="PwaImprovedSplashScreen:enabled"/>
   <int value="-250721831" label="AndroidAutofillAccessibility:disabled"/>
   <int value="-248223420" label="AutofillKeyboardAccessory:disabled"/>
+  <int value="-243323793" label="OmniboxOnDeviceHeadProvider:enabled"/>
   <int value="-241353344" label="MidiManagerWinrt:disabled"/>
   <int value="-240531943" label="ContextualSearchRankerQuery:disabled"/>
   <int value="-239616243" label="HighDynamicRange:enabled"/>
@@ -35015,6 +35016,7 @@ from previous Chrome versions.
   <int value="44088203" label="ExpensiveBackgroundTimerThrottling:enabled"/>
   <int value="48159177" label="reduced-referrer-granularity"/>
   <int value="48223610" label="SiteSettings:disabled"/>
+  <int value="49113130" label="OmniboxOnDeviceHeadProvider:disabled"/>
   <int value="51793504" label="protect-sync-credential-on-reauth:disabled"/>
   <int value="52368742" label="enable-pixel-canvas-recording:disabled"/>
   <int value="54571864" label="EnableDisplayZoomSetting:enabled"/>

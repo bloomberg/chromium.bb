@@ -2479,6 +2479,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxNewAnswerLayoutName,
      flag_descriptions::kOmniboxNewAnswerLayoutDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxNewAnswerLayout)},
+
+    {"omnibox-on-device-head-suggestions",
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsName,
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProvider)},
 #endif  // defined(OS_ANDROID)
 
     {"omnibox-rich-entity-suggestions",

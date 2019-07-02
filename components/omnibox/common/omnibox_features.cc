@@ -296,4 +296,9 @@ const base::Feature kOnFocusSuggestions{"OmniboxOnFocusSuggestions",
 const base::Feature kZeroSuggestionsOnNTP{"OmniboxZeroSuggestionsOnNTP",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature to provide non personalized head search suggestion from a compact
+// on device model.
+const base::Feature kOnDeviceHeadProvider{"OmniboxOnDeviceHeadProvider",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox

@@ -1372,6 +1372,12 @@ const char kOmniboxMaxURLMatchesDescription[] =
     "The maximum number of URL matches to show, unless there are no "
     "replacements.";
 
+const char kOmniboxOnDeviceHeadSuggestionsName[] =
+    "Omnibox on device head suggestions";
+const char kOmniboxOnDeviceHeadSuggestionsDescription[] =
+    "Google head non personalized search suggestions provided by a compact on "
+    "device model";
+
 const char kOmniboxUIShowPlaceholderWhenCaretShowingName[] =
     "Omnibox UI Show Placeholder When Caret Showing";
 const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[] =
