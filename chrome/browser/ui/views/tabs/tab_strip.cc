@@ -1173,7 +1173,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
     // like the new tab button magically appears from beyond the end of the tab
     // strip.
     bounds_animator_.StopAnimatingView(new_tab_button_);
-    new_tab_button_->SetBoundsRect(new_tab_button_bounds_);
+    new_tab_button_->SetBoundsRect(new_tab_button_ideal_bounds_);
   }
 
   SwapLayoutIfNecessary();
@@ -1993,7 +1993,7 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
                                 largest_min_tab_width);
   }
   return gfx::Size(needed_tab_width + TabToNewTabButtonSpacing() +
-                       new_tab_button_bounds_.width() + FrameGrabWidth(),
+                       new_tab_button_ideal_bounds_.width() + FrameGrabWidth(),
                    GetLayoutConstant(TAB_HEIGHT));
 }
 
@@ -2094,7 +2094,7 @@ void TabStrip::Init() {
   new_tab_button_->AddObserver(this);
 
   UpdateNewTabButtonBorder();
-  new_tab_button_bounds_.set_size(new_tab_button_->GetPreferredSize());
+  new_tab_button_ideal_bounds_.set_size(new_tab_button_->GetPreferredSize());
 
   if (g_drop_indicator_width == 0) {
     // Direction doesn't matter, both images are the same size.
@@ -2208,8 +2208,10 @@ void TabStrip::AnimateToIdealBounds() {
   }
 
   if (bounds_animator_.GetTargetBounds(new_tab_button_) !=
-      new_tab_button_bounds_)
-    bounds_animator_.AnimateViewTo(new_tab_button_, new_tab_button_bounds_);
+      new_tab_button_ideal_bounds_) {
+    bounds_animator_.AnimateViewTo(new_tab_button_,
+                                   new_tab_button_ideal_bounds_);
+  }
 }
 
 bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
@@ -2258,15 +2260,18 @@ void TabStrip::LayoutToCurrentBounds() {
 
     views::ViewModelUtils::SetViewBoundsToIdealBounds(tabs_);
     bounds_animator_.StopAnimatingView(new_tab_button_);
+    new_tab_button_->SetBoundsRect(new_tab_button_ideal_bounds_);
   } else {
     const int available_width = (available_width_for_tabs_ < 0)
                                     ? GetTabAreaWidth()
                                     : available_width_for_tabs_;
     int trailing_x = layout_helper_->LayoutTabs(available_width);
-    new_tab_button_bounds_.set_origin(gfx::Point(
+
+    gfx::Rect new_tab_button_current_bounds = new_tab_button_ideal_bounds_;
+    new_tab_button_current_bounds.set_origin(gfx::Point(
         std::min(available_width, trailing_x) + TabToNewTabButtonSpacing(), 0));
+    new_tab_button_->SetBoundsRect(new_tab_button_current_bounds);
   }
-  new_tab_button_->SetBoundsRect(new_tab_button_bounds_);
 
   SetTabVisibility();
 
@@ -2304,8 +2309,8 @@ int TabStrip::GetInactiveTabWidth() const {
 }
 
 int TabStrip::GetTabAreaWidth() const {
-  return drag_context_->TabDragAreaEndX() - new_tab_button_bounds_.width() -
-         TabToNewTabButtonSpacing();
+  return drag_context_->TabDragAreaEndX() -
+         new_tab_button_ideal_bounds_.width() - TabToNewTabButtonSpacing();
 }
 
 int TabStrip::GetNewTabButtonIdealX() const {
@@ -2729,7 +2734,8 @@ void TabStrip::UpdateIdealBounds() {
     layout_helper_->UpdateIdealBounds(available_width);
   }
 
-  new_tab_button_bounds_.set_origin(gfx::Point(GetNewTabButtonIdealX(), 0));
+  new_tab_button_ideal_bounds_.set_origin(
+      gfx::Point(GetNewTabButtonIdealX(), 0));
 }
 
 int TabStrip::UpdateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {
@@ -3088,8 +3094,8 @@ void TabStrip::OnViewFocused(views::View* observed_view) {
 
 void TabStrip::OnTouchUiChanged() {
   UpdateNewTabButtonBorder();
-  new_tab_button_bounds_.set_size(new_tab_button_->GetPreferredSize());
-  new_tab_button_->SetBoundsRect(new_tab_button_bounds_);
+  new_tab_button_ideal_bounds_.set_size(new_tab_button_->GetPreferredSize());
+  new_tab_button_->SetBoundsRect(new_tab_button_ideal_bounds_);
   StopAnimating(true);
   PreferredSizeChanged();
 }
