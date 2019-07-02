@@ -477,13 +477,19 @@ customize.setBackground = function(
  * Apply selected shortcut options.
  */
 customize.richerPicker_setShortcutOptions = function() {
-  if (customize.preselectedShortcutOptions.shortcutType !==
-      customize.selectedOptions.shortcutType) {
-    chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks();
-  }
+  const shortcutTypeChanged =
+      customize.preselectedShortcutOptions.shortcutType !==
+      customize.selectedOptions.shortcutType;
   if (customize.preselectedShortcutOptions.shortcutsAreHidden !==
       customize.selectedOptions.shortcutsAreHidden) {
-    chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility();
+    // Only trigger a notification if |toggleMostVisitedOrCustomLinks| will not
+    // be called immediately after. Successive |onmostvisitedchange| events can
+    // interfere with each other.
+    chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility(
+        !shortcutTypeChanged);
+  }
+  if (shortcutTypeChanged) {
+    chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks();
   }
 };
 

@@ -701,7 +701,7 @@ init = function() {
   const toggleMostVisitedOrCustomLinks = () => {
     test.customizeMenu.toggleMostVisitedOrCustomLinksCount++
   };
-  const toggleShortcutsVisibility = () => {
+  const toggleShortcutsVisibility = (doNotify) => {
     test.customizeMenu.toggleShortcutsVisibilityCount++
   };
   const timesCustomBackgroundWasSet = () => {
