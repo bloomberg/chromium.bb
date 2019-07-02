@@ -51984,7 +51984,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Opened"/>
   <int value="1" label="Dismissed"/>
   <int value="2" label="Shown"/>
-  <int value="3" label="DismissedRemotely"/>
+  <int value="3" label="DismissedRemotely">
+    <obsolete>
+      Obsolete because it is useless after selfshare feature changed from
+      broadcasting to sending to one target device.
+    </obsolete>
+  </int>
 </enum>
 
 <enum name="SendTabToSelfNotifyLocalDevice">
