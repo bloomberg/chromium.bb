@@ -2327,6 +2327,9 @@
           'pie',
           'walleye',
         ],
+        'additional_compile_targets': [
+          'angle_apks',
+        ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
           'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
@@ -2351,6 +2354,9 @@
           'gpu_pool',
           'pie',
           'walleye',
+        ],
+        'additional_compile_targets': [
+          'angle_apks',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',

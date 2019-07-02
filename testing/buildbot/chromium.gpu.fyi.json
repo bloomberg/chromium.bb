@@ -2369,6 +2369,9 @@
     ]
   },
   "Android FYI 32 Vk Release (Pixel 2)": {
+    "additional_compile_targets": [
+      "angle_apks"
+    ],
     "gtest_tests": [
       {
         "args": [
@@ -2727,6 +2730,9 @@
     ]
   },
   "Android FYI 64 Vk Release (Pixel 2)": {
+    "additional_compile_targets": [
+      "angle_apks"
+    ],
     "gtest_tests": [
       {
         "args": [
