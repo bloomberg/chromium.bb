@@ -145,6 +145,7 @@ proto_library("system_api-login_manager-protos") {
   proto_out_dir = "include/login_manager/proto_bindings"
   sources = [
     "${proto_in_dir}/arc.proto",
+    "${proto_in_dir}/login_screen_storage.proto",
     "${proto_in_dir}/policy_descriptor.proto",
   ]
   standalone = true

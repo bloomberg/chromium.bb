@@ -14,6 +14,9 @@ const char kSessionManagerEmitLoginPromptVisible[] = "EmitLoginPromptVisible";
 const char kSessionManagerEmitAshInitialized[] = "EmitAshInitialized";
 const char kSessionManagerEnableChromeTesting[] = "EnableChromeTesting";
 const char kSessionManagerSaveLoginPassword[] = "SaveLoginPassword";
+const char kSessionManagerLoginScreenStorageStore[] = "LoginScreenStorageStore";
+const char kSessionManagerLoginScreenStorageRetrieve[] =
+    "LoginScreenStorageRetrieve";
 const char kSessionManagerStartSession[] = "StartSession";
 const char kSessionManagerStopSession[] = "StopSession";
 const char kSessionManagerRestartJob[] = "RestartJob";
