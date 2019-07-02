@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -183,10 +184,11 @@ public class ExploreSitesPage extends BasicNativePage {
         });
 
         // We don't want to scroll to the 4th category if personalized
-        // or integrated with Most Likely.
+        // or integrated with Most Likely, or if we're on a touchless device.
         int variation = ExploreSitesBridge.getVariation();
         mInitialScrollPosition = variation == ExploreSitesVariation.PERSONALIZED
                         || ExploreSitesBridge.isIntegratedWithMostLikely(variation)
+                        || FeatureUtilities.isNoTouchModeEnabled()
                 ? INITIAL_SCROLL_POSITION_PERSONALIZED
                 : INITIAL_SCROLL_POSITION;
 
