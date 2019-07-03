@@ -23,7 +23,7 @@ module.exports = function(grunt) {
       },
       test: {
         cmd: 'tools/run',
-        args: ['unittests'],
+        args: ['unittests:'],
       },
       'build-out': {
         cmd: 'node_modules/.bin/babel',

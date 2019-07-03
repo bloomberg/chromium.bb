@@ -8,7 +8,7 @@ import { Logger, TestCaseLiveResult } from '../framework/logger.js';
 
 function usage(rc: number) {
   console.log('Usage:');
-  console.log('  tools/run [FILTERS...]');
+  console.log('  tools/run [QUERIES...]');
   console.log('  tools/run unittests: cts:buffers/');
   process.exit(rc);
 }
@@ -48,13 +48,13 @@ for (const a of process.argv.slice(2)) {
       )
     );
 
-    const failed: TestCaseLiveResult[] = [];
-    const warned: TestCaseLiveResult[] = [];
+    const failed: Array<[string, string, TestCaseLiveResult]> = [];
+    const warned: Array<[string, string, TestCaseLiveResult]> = [];
 
     // TODO: don't run all tests all at once
     const running = [];
     for (const entry of entries) {
-      const { path, g } = entry;
+      const { suite, path, g } = entry;
       if (!g) {
         continue;
       }
@@ -65,10 +65,10 @@ for (const a of process.argv.slice(2)) {
           (async () => {
             const res = await t.run();
             if (res.status === 'fail') {
-              failed.push(res);
+              failed.push([suite, path, res]);
             }
             if (res.status === 'warn') {
-              warned.push(res);
+              warned.push([suite, path, res]);
             }
           })()
         );
@@ -89,15 +89,17 @@ for (const a of process.argv.slice(2)) {
     if (warned.length) {
       console.log('');
       console.log('** Warnings **');
-      for (const r of warned) {
-        console.log(r);
+      for (const [suite, path, r] of warned) {
+        // TODO: actually print query here
+        console.log(suite + ':' + path, r);
       }
     }
     if (failed.length) {
       console.log('');
       console.log('** Failures **');
-      for (const r of failed) {
-        console.log(r);
+      for (const [suite, path, r] of failed) {
+        // TODO: actually print query here
+        console.log(suite + ':' + path, r);
       }
     }
 
@@ -121,5 +123,6 @@ Failed               = ${rpt(failed.length)}`);
     }
   } catch (ex) {
     console.log(ex);
+    process.exit(1);
   }
 })();

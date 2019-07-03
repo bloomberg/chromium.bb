@@ -119,7 +119,7 @@ class LoadingTest extends DefaultFixture {
 export const g = new TestGroup(LoadingTest);
 
 g.test('whole suite', async t => {
-  t.expect((await t.load(['suite1'])).length === 5);
+  t.shouldReject(t.load(['suite1']));
   t.expect((await t.load(['suite1:'])).length === 5);
 });
 

@@ -79,8 +79,7 @@ export class TestLoader {
   private async loadFilter(filter: string): Promise<TestQueryResult[]> {
     const i1 = filter.indexOf(':');
     if (i1 === -1) {
-      // - cts
-      return this.filterByGroup(await this.listing(filter), '');
+      throw new Error('Test queries must fully specify their suite name (e.g. "cts:")');
     }
 
     const suite = filter.substring(0, i1);
