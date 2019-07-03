@@ -39,7 +39,7 @@
 namespace {
 
 const float kApproximationScaleFactor = 4.f;
-const base::TimeDelta kCaptureMinRequestTimeMs(
+const base::TimeDelta kDefaultCaptureMinRequestTimeMs(
     base::TimeDelta::FromMilliseconds(1000));
 
 const int kCompressedKey = 0xABABABAB;
@@ -133,6 +133,7 @@ ThumbnailCache::ThumbnailCache(size_t default_cache_size,
       write_queue_max_size_(write_queue_max_size),
       use_approximation_thumbnail_(use_approximation_thumbnail),
       save_jpeg_thumbnails_(save_jpeg_thumbnails),
+      capture_min_request_time_ms_(kDefaultCaptureMinRequestTimeMs),
       compression_tasks_count_(0),
       write_tasks_count_(0),
       read_in_progress_(false),
@@ -279,7 +280,7 @@ bool ThumbnailCache::CheckAndUpdateThumbnailMetaData(TabId tab_id,
   if (meta_data_iter != thumbnail_meta_data_.end() &&
       meta_data_iter->second.url() == url &&
       (current_time - meta_data_iter->second.capture_time()) <
-          kCaptureMinRequestTimeMs) {
+          capture_min_request_time_ms_) {
     return false;
   }
 
@@ -521,6 +522,10 @@ void ThumbnailCache::OnUIResourcesWereEvicted() {
     if (approximation.get() && !approximation->ui_resource_id())
       approximation_cache_.Put(last_tab, std::move(approximation));
   }
+}
+
+void ThumbnailCache::SetCaptureMinRequestTimeForTesting(int timeMs) {
+  capture_min_request_time_ms_ = base::TimeDelta::FromMilliseconds(timeMs);
 }
 
 void ThumbnailCache::InvalidateCachedThumbnail(Thumbnail* thumbnail) {

@@ -73,6 +73,7 @@ class ThumbnailCache : ThumbnailDelegate {
   // Called when resident textures were evicted, which requires paging
   // in bitmaps.
   void OnUIResourcesWereEvicted();
+  void SetCaptureMinRequestTimeForTesting(int timeMs);
 
   // ThumbnailDelegate implementation
   void InvalidateCachedThumbnail(Thumbnail* thumbnail) override;
@@ -163,6 +164,7 @@ class ThumbnailCache : ThumbnailDelegate {
   const size_t write_queue_max_size_;
   const bool use_approximation_thumbnail_;
   const bool save_jpeg_thumbnails_;
+  base::TimeDelta capture_min_request_time_ms_;
 
   size_t compression_tasks_count_;
   size_t write_tasks_count_;
