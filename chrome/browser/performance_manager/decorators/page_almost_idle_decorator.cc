@@ -239,7 +239,7 @@ void PageAlmostIdleDecorator::TransitionToLoadedAndIdle(
 // static
 bool PageAlmostIdleDecorator::IsIdling(const PageNodeImpl* page_node) {
   // Get the frame node for the main frame associated with this page.
-  const FrameNodeImpl* main_frame_node = page_node->GetMainFrameNode();
+  const FrameNodeImpl* main_frame_node = page_node->GetMainFrameNodeImpl();
   if (!main_frame_node)
     return false;
 

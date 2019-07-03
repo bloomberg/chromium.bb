@@ -266,10 +266,10 @@ void PerformanceManager::OnStartImpl(
 
   graph_.PassToGraph(std::make_unique<FrozenFrameAggregator>());
   graph_.PassToGraph(std::make_unique<PageAlmostIdleDecorator>());
+  graph_.PassToGraph(std::make_unique<IsolationContextMetrics>());
 
   // Register new |GraphImplObserver| implementations here.
   RegisterObserver(std::make_unique<MetricsCollector>());
-  RegisterObserver(std::make_unique<IsolationContextMetrics>());
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet))
