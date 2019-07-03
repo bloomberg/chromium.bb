@@ -4058,6 +4058,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kGlobalMediaControls)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
+#if BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_WIN)
+    {"win-use-native-spellchecker",
+     flag_descriptions::kWinUseBrowserSpellCheckerName,
+     flag_descriptions::kWinUseBrowserSpellCheckerDescription, kOsWin,
+     FEATURE_VALUE_TYPE(spellcheck::kWinUseBrowserSpellChecker)},
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_WIN)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
