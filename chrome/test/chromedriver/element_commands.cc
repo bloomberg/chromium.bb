@@ -191,6 +191,18 @@ Status ExecuteClickElement(Session* session,
     else
       return SetOptionElementSelected(session, web_view, element_id, true);
   } else {
+    if (tag_name == "input") {
+      std::unique_ptr<base::Value> get_element_type;
+      status = GetElementAttribute(session, web_view, element_id, "type",
+                                   &get_element_type);
+      if (status.IsError())
+        return status;
+      std::string element_type;
+      if (get_element_type->GetAsString(&element_type))
+        element_type = base::ToLowerASCII(element_type);
+      if (element_type == "file")
+        return Status(kInvalidArgument);
+    }
     WebPoint location;
     status = GetElementClickableLocation(
         session, web_view, element_id, &location);
