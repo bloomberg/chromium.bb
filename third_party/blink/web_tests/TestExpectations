@@ -245,6 +245,8 @@ crbug.com/414283 virtual/fractional_scrolling/fast/scrolling/fractional-scroll-o
 crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure Pass ]
 
+crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
+
 # Display locking, currently only available via a virtual test.
 crbug.com/882663 wpt_internal/display-lock [ Skip ]
 
