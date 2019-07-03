@@ -43,6 +43,8 @@
 
 #include "third_party/blink/public/web/web_view_client.h"
 
+#include "base/logging.h"
+
 namespace blink {
 
 class RubberbandCandidate {
@@ -56,6 +58,8 @@ class RubberbandCandidate {
     int m_len;
     bool m_isLTR;
     bool m_useLeadingTab;
+    int m_groupId;
+    WTF::String m_groupDelimiter;
 
     bool isAllWhitespaces() const
     {
@@ -150,12 +154,15 @@ class RubberbandContext {
     const LayoutObject* m_layoutObject;
     const LayoutBlock* m_containingBlock;
     LayoutPoint m_layoutTopLeft;  // relative to the layer's top-left
+    int m_groupId;
+    WTF::String m_groupDelimiter;
 
     RubberbandContext()
     : m_parent(0)
     , m_layerContext(0)
     , m_layoutObject(0)
     , m_containingBlock(0)
+    , m_groupId(-1)
     {
     }
 
@@ -163,6 +170,8 @@ class RubberbandContext {
     : m_parent(parent)
     , m_layoutObject(layoutObject)
     , m_containingBlock(layoutObject ? layoutObject->ContainingBlock() : 0)
+    , m_groupId(parent->m_groupId)
+    , m_groupDelimiter(parent->m_groupDelimiter)
     {
         if (m_layoutObject && m_layoutObject->HasLayer()) {
             m_layerContext = new RubberbandLayerContext(parent->m_layerContext);
@@ -206,6 +215,8 @@ class RubberbandContext {
     }
 };
 
+static int s_groupId = 0;
+
 static bool isClipped(EOverflow overflow)
 {
     return overflow == EOverflow::kAuto
@@ -228,13 +239,29 @@ static bool isTextRubberbandable(const LayoutObject* layoutObject)
 {
     return !layoutObject->Style()
         || ERubberbandable::kText == layoutObject->Style()->Rubberbandable()
-        || ERubberbandable::kTextWithLeadingTab == layoutObject->Style()->Rubberbandable();
+        || ERubberbandable::kTextWithTab == layoutObject->Style()->Rubberbandable();
 }
 
-static bool isTextWithLeadingTab(const LayoutObject* layoutObject)
+static bool isTextWithTab(const LayoutObject* layoutObject)
 {
     return !layoutObject->Style()
-        || ERubberbandable::kTextWithLeadingTab == layoutObject->Style()->Rubberbandable();
+        || ERubberbandable::kTextWithTab == layoutObject->Style()->Rubberbandable();
+}
+
+static WTF::String getRubberbandGroupDelimiter(const LayoutObject* layoutObject)
+{
+    if (!layoutObject->Style()) {
+        return "";
+    }
+    return layoutObject->Style()->BbRubberbandGroupDelimiter();
+}
+
+static WTF::String getRubberbandEmptyText(const LayoutObject* layoutObject)
+{
+    if (!layoutObject->Style()) {
+        return "";
+    }
+    return layoutObject->Style()->BbRubberbandEmptyText();
 }
 
 template <typename CHAR_TYPE>
@@ -380,6 +407,9 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
 
     bool isVisible = !layoutObject->Style() || layoutObject->Style()->Visibility() == EVisibility::kVisible;
 
+    // Keep the current candidate count
+    const unsigned int candidateCnt = rubberbandState_->impl_->m_candidates.size();
+
     if (layoutObject->IsBox()) {
         const LayoutBox* layoutBox = ToLayoutBox(layoutObject);
 
@@ -427,9 +457,12 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
                 candidate.m_clipRect.Intersect(localContext.m_layerContext->m_clipRect);
                 candidate.m_text = text;
                 candidate.m_isLTR = textBox->IsLeftToRightDirection();
-                candidate.m_useLeadingTab = isTextWithLeadingTab(layoutText);
+                candidate.m_useLeadingTab = isTextWithTab(layoutText);
                 candidate.m_start = textBox->Start();
                 candidate.m_len = textBox->Len();
+                candidate.m_groupId = localContext.m_groupId;
+                candidate.m_groupDelimiter = localContext.m_groupDelimiter;
+
                 int end = candidate.m_start + candidate.m_len;
                 for (int offset = candidate.m_start; offset <= end; ++offset) {
                     LayoutUnit pos = textBox->PositionForOffset(offset) - textBox->LogicalLeft();
@@ -452,14 +485,56 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
         }
     }
 
+    // If the current node has '-bb-rubberband-group-delimiter' set,
+    // keep the group delimiter and the group id to localContext so the children use them
+    const WTF::String& groupDelimiter = getRubberbandGroupDelimiter(layoutObject);
+    if (groupDelimiter && groupDelimiter.length() > 0) {
+        localContext.m_groupDelimiter = groupDelimiter;
+        localContext.m_groupId = s_groupId++;
+    }
+
+    // Walk down the children
     for (LayoutObject* child = layoutObject->SlowFirstChild(); child; child = child->NextSibling()) {
         RubberbandWalkLayoutObject(localContext, child);
+    }
+
+    const bool candidateAdded = (candidateCnt < rubberbandState_->impl_->m_candidates.size());
+
+    // 1. Check if no candidate was created (either empty or has no text child)
+    if (!candidateAdded && isVisible && isTextWithTab(layoutObject)) {
+        // Check if the layoutObject has '-bb-rubberband-empty-text' set.
+        // If the empty text was specified, create a dummy candidate with the value
+        const WTF::String& emptyText = getRubberbandEmptyText(layoutObject);
+        if (emptyText && emptyText.length() > 0) {
+            rubberbandState_->impl_->m_candidates.push_back(RubberbandCandidate());
+            RubberbandCandidate& candidate = rubberbandState_->impl_->m_candidates.back();
+            candidate.m_absRect = localContext.m_layerContext->m_clipRect;
+            candidate.m_clipRect = localContext.m_layerContext->m_clipRect;
+            candidate.m_text = emptyText;
+            candidate.m_isLTR = true;
+            candidate.m_useLeadingTab = true;
+            candidate.m_start = 0;
+            candidate.m_len = emptyText.length();
+            candidate.m_charPositions.push_back(candidate.m_absRect.X());
+            candidate.m_groupId = -1;
+
+            {
+                const Font& font = layoutObject->Style()->GetFont();
+                UChar space = ' ';
+                candidate.m_spaceWidth = LayoutUnit(font.Width(
+                    ConstructTextRun(font, &space, 1, layoutObject->StyleRef(), candidate.m_isLTR ? TextDirection::kLtr : TextDirection::kRtl))
+                    * localContext.m_layerContext->m_scaleX);
+            }
+        }
     }
 }
 
 WTF::String WebViewImpl::GetTextInRubberbandImpl(const LayoutRect& rcOrig)
 {
     DCHECK(IsRubberbanding());
+
+    // Log the given rect for future reference
+    LOG(INFO) << "Rubberband requested with rect: (" << rcOrig << ")";
 
     LayoutRect rc(rcOrig);
 
@@ -515,7 +590,7 @@ WTF::String WebViewImpl::GetTextInRubberbandImpl(const LayoutRect& rcOrig)
                         }
                         LayoutUnit maxLeft = std::max(xtest.m_clipRect.X(), hit.m_clipRect.X());
                         LayoutUnit minRight = std::min(xtest.m_clipRect.MaxX(), hit.m_clipRect.MaxX());
-                        if (minRight > maxLeft) {
+                        if (minRight - maxLeft > 0.5) { // threshold of half pixel
                             overlapsInXDirection = true;
                             break;
                         }
@@ -562,6 +637,7 @@ WTF::String WebViewImpl::GetTextInRubberbandImpl(const LayoutRect& rcOrig)
     LayoutUnit lineBottom = hits[0].m_absRect.MaxY();
 
     std::size_t nextLineBreak = 0;
+    bool newLine = true;
     for (std::size_t i = 0; i < hits.size(); ++i) {
         const RubberbandCandidate& hit = hits[i];
 
@@ -579,17 +655,47 @@ WTF::String WebViewImpl::GetTextInRubberbandImpl(const LayoutRect& rcOrig)
 
             lineTop = hit.m_absRect.Y();
             lineBottom = hit.m_absRect.MaxY();
+            newLine = true;
         }
         else {
             lineTop = std::min(lineTop, hit.m_absRect.Y());
             lineBottom = std::max(lineBottom, hit.m_absRect.MaxY());
+            newLine = false;
         }
 
         DCHECK(lastX <= hit.m_clipRect.X() || hit.isAllWhitespaces() || lastHitWasAllWhitespaces);
 
         if (hit.m_useLeadingTab) {
-            if (hit.m_clipRect.X() > rc.X()) {
-                builder.Append('\t');
+            // Don't add a tab in front of a new line
+            if (i > 0 && !newLine) {
+                bool shouldPrependTab = true;
+
+                // If the current candidate is in the same group as the previous candidate, don't add tab.
+                if (hit.m_groupId >= 0 && (hit.m_groupId == hits[i-1].m_groupId)) {
+                    shouldPrependTab = false;
+                }
+
+                if (shouldPrependTab)
+                {
+                    builder.Append('\t');
+                }
+                else {
+                    // The current candidate is in the same group. Check the group delimiter.
+                    if (hit.m_groupDelimiter == " ") {
+                        // If the group delimiter is a space, fill the gap with spaces
+                        if (hit.m_clipRect.X() > lastX) {
+                            LayoutUnit x = lastX + hit.m_spaceWidth;
+                            while (x <= hit.m_clipRect.X()) {
+                                builder.Append(' ');
+                                x += hit.m_spaceWidth;
+                            }
+                        }
+                    }
+                    else {
+                        // If the group delimiter is not a space, just insert one delimiter
+                        builder.Append(hit.m_groupDelimiter);
+                    }
+                }
             }
         }
         else if (hit.m_clipRect.X() > lastX) {
@@ -773,6 +879,8 @@ void WebViewImpl::StartRubberbanding()
     DCHECK(!IsRubberbanding());
 
     rubberbandState_ = std::unique_ptr<RubberbandState>(new RubberbandState());
+
+    s_groupId = 0; // reset group id
 
     RubberbandContext context;
     RubberbandWalkFrame(context, AsView().page->DeprecatedLocalMainFrame(), LayoutPoint());

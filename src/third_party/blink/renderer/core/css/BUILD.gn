@@ -489,7 +489,9 @@ blink_core_sources("css") {
 
     # patch section: suppress-needs-compositing-input-update
 
-
+    # patch section: rubberband
+    "properties/longhands/bb_rubberband_empty_text.cc",
+    "properties/longhands/bb_rubberband_group_delimiter.cc",
 
     "properties/longhands/break_before_custom.cc",
     "properties/longhands/break_inside_custom.cc",
