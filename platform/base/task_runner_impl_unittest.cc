@@ -7,6 +7,7 @@
 #include <atomic>
 #include <thread>  // NOLINT
 
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/api/time.h"
 #include "platform/base/task_runner_impl.h"
@@ -16,7 +17,9 @@ namespace openscreen {
 namespace platform {
 namespace {
 
+using namespace ::testing;
 using std::chrono::milliseconds;
+using ::testing::_;
 
 const auto kTaskRunnerSleepTime = milliseconds(1);
 constexpr Clock::duration kWaitTimeout = milliseconds(1000);
@@ -279,6 +282,45 @@ TEST(TaskRunnerImplTest, WakesEventWaiterOnPostTask) {
 
   fake_waiter->WakeUpAndStop();
   t.join();
+}
+
+class RepeatedClass {
+ public:
+  RepeatedClass() { execution_count = 0; }
+
+  MOCK_METHOD0(Repeat, absl::optional<Clock::duration>());
+
+  absl::optional<Clock::duration> DoCall() {
+    auto result = Repeat();
+    execution_count++;
+    return result;
+  }
+
+  int execution_count;
+};
+
+TEST(TaskRunnerImplTest, RepeatingFunctionCalledRepeatedly) {
+  std::unique_ptr<TaskRunnerImpl> runner =
+      TaskRunnerWithWaiterFactory::Create(Clock::now);
+
+  std::thread running_thread([&runner]() { runner.get()->RunUntilStopped(); });
+
+  RepeatedClass c;
+  EXPECT_CALL(c, Repeat())
+      .Times(3)
+      .WillOnce(Return(Clock::duration(0)))
+      .WillOnce(Return(Clock::duration(1)))
+      .WillOnce(Return(absl::nullopt));
+
+  RepeatingFunction::Post(runner.get(), [&c]() { return c.DoCall(); });
+  const Clock::time_point start2 = Clock::now();
+  while ((Clock::now() - start2) < kWaitTimeout && c.execution_count < 3) {
+    std::this_thread::sleep_for(kTaskRunnerSleepTime);
+  }
+  ASSERT_EQ(c.execution_count, 3);
+
+  runner->RequestStopSoon();
+  running_thread.join();
 }
 
 }  // namespace platform

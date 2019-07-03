@@ -12,8 +12,8 @@ source_set("platform") {
     "api/logging_util.cc",
     "api/network_interface.cc",
     "api/network_interface.h",
-    "api/network_runner.cc",
     "api/network_runner.h",
+    "api/network_waiter.h",
     "api/socket.h",
     "api/task_runner.h",
     "api/time.h",
@@ -21,7 +21,7 @@ source_set("platform") {
     "api/tls_socket_creds.h",
     "api/udp_socket.cc",
     "api/udp_socket.h",
-    "api/upd_callbacks.h",
+    "api/upd_read_callback.h",
     "base/ssl_context.cc",
     "base/ssl_context.h",
     "base/time.cc",
@@ -41,6 +41,10 @@ source_set("platform") {
     sources += [
       "base/event_loop.cc",
       "base/event_loop.h",
+      "base/network_reader.cc",
+      "base/network_reader.h",
+      "base/network_runner_impl.cc",
+      "base/network_runner_impl.h",
       "base/task_runner_impl.cc",
       "base/task_runner_impl.h",
     ]
@@ -59,6 +63,8 @@ source_set("platform") {
     if (is_posix) {
       sources += [
         "posix/event_waiter.cc",
+        "posix/network_waiter.cc",
+        "posix/network_waiter.h",
         "posix/udp_socket.cc",
         "posix/udp_socket.h",
       ]
@@ -119,9 +125,13 @@ source_set("platform_unittests") {
   # Exclude them if an embedder is providing the implementation.
   if (!build_with_chromium) {
     sources += [
+      "base/network_reader_unittest.cc",
       "base/task_runner_impl_unittest.cc",
       "base/time_unittest.cc",
     ]
+    if (is_posix) {
+      sources += [ "posix/network_waiter_unittest.cc" ]
+    }
   }
 
   deps = [

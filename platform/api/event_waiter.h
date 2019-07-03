@@ -14,9 +14,6 @@
 namespace openscreen {
 namespace platform {
 
-struct EventWaiterPrivate;
-using EventWaiterPtr = EventWaiterPrivate*;
-
 struct UdpSocketReadableEvent {
   UdpSocket* socket;
 };
@@ -24,6 +21,9 @@ struct UdpSocketReadableEvent {
 struct UdpSocketWritableEvent {
   UdpSocket* socket;
 };
+
+struct EventWaiterPrivate;
+using EventWaiterPtr = EventWaiterPrivate*;
 
 // This struct represents a set of events associated with a particular
 // EventWaiterPtr and is created by WaitForEvents.  Any combination and number

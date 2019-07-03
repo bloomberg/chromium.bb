@@ -123,6 +123,8 @@ class TaskRunnerImpl final : public TaskRunner {
   // vector, use an A/B vector-swap mechanism. |running_tasks_| starts out
   // empty, and is swapped with |tasks_| when it is time to run the Tasks.
   std::vector<Task> running_tasks_;
+
+  OSP_DISALLOW_COPY_AND_ASSIGN(TaskRunnerImpl);
 };
 }  // namespace platform
 }  // namespace openscreen

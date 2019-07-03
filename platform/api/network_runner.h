@@ -14,7 +14,7 @@
 #include "osp_base/ip_address.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
-#include "platform/api/udp_callbacks.h"
+#include "platform/api/udp_read_callback.h"
 #include "platform/api/udp_socket.h"
 
 namespace openscreen {
@@ -31,13 +31,11 @@ namespace platform {
 // (3) Network callbacks shall not overlap neither any other network callbacks
 //     nor tasks submitted directly via PostTask or PostTaskWithDelay.
 // NOTE: We do not make any assumptions about what thread tasks shall run on.
+// TODO(rwkeane): Investigate having NetworkRunner not extend TaskRunner to
+// avoid a vtable lookup.
 class NetworkRunner : public TaskRunner {
  public:
   using TaskRunner::Task;
-
-  static std::unique_ptr<NetworkRunner> Create(
-      platform::ClockNowFunctionPtr now_function);
-
   ~NetworkRunner() override = default;
 
   // Waits for |socket| to be readable and then posts and then runs |callback|
@@ -49,8 +47,12 @@ class NetworkRunner : public TaskRunner {
   virtual Error ReadRepeatedly(UdpSocket* socket,
                                UdpReadCallback* callback) = 0;
 
-  // Cancels any pending wait on reading |socket|.
-  virtual void CancelRead(UdpSocket* socket) = 0;
+  // Cancels any pending wait on reading |socket|. Returns false only if the
+  // socket was not yet being watched, and true if the operation is successful
+  // and the socket is no longer watched.
+  // TODO(rwkeane): Make this return void and either include a DCHECK inside of
+  // the implementation or allow failure with no return code.
+  virtual bool CancelRead(UdpSocket* socket) = 0;
 };
 
 }  // namespace platform

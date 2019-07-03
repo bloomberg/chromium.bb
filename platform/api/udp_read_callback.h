@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file
 
-#ifndef PLATFORM_API_UDP_CALLBACKS_H_
-#define PLATFORM_API_UDP_CALLBACKS_H_
+#ifndef PLATFORM_API_UDP_READ_CALLBACK_H_
+#define PLATFORM_API_UDP_READ_CALLBACK_H_
 
 #include <array>
 #include <cstdint>
@@ -22,16 +22,20 @@ static constexpr int kUdpMaxPacketSize = 1 << 16;
 class UdpReadCallback {
  public:
   struct Packet : std::array<uint8_t, kUdpMaxPacketSize> {
-    Packet();
-    ~Packet();
+    Packet() = default;
+    ~Packet() = default;
 
     IPEndpoint source;
     IPEndpoint original_destination;
-    ssize_t length;
+    size_t length;
     // TODO(btolsch): When this gets to implementation, make sure the callback
     // is never called with a |socket| that could have been destroyed (e.g.
     // between queueing the read data and running the task).
     UdpSocket* socket;
+
+    // Override the default implementation since we want the number of elements,
+    // not kUdpMaxPacketSize.
+    size_t size() const { return length; }
   };
 
   virtual ~UdpReadCallback() = default;
@@ -43,4 +47,4 @@ class UdpReadCallback {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_API_UDP_CALLBACKS_H_
+#endif  // PLATFORM_API_UDP_READ_CALLBACK_H_
