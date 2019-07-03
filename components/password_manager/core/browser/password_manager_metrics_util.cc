@@ -222,6 +222,10 @@ void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result) {
                             result);
 }
 
+void LogNewlySavedPasswordIsGenerated(bool value) {
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.NewlySavedPasswordIsGenerated", value);
+}
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void LogSyncPasswordHashChange(SyncPasswordHashChange event) {
   UMA_HISTOGRAM_ENUMERATION(
