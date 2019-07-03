@@ -13,7 +13,11 @@
 
 namespace service_manager {
 class Connector;
-}  // namespace service_manager
+}
+
+namespace views {
+class ImageView;
+}
 
 namespace ash {
 
@@ -59,6 +63,10 @@ class ASH_EXPORT LockScreenMediaControlsView
  private:
   friend class LockScreenMediaControlsViewTest;
 
+  // Sets the media artwork to |img|. If |img| is nullopt, the default artwork
+  // is set instead.
+  void SetArtwork(base::Optional<gfx::ImageSkia> img);
+
   // Lock screen view which this view belongs to.
   LockContentsView* const view_;
 
@@ -72,9 +80,13 @@ class ASH_EXPORT LockScreenMediaControlsView
   mojo::Binding<media_session::mojom::MediaControllerObserver>
       observer_binding_{this};
 
-  // Used to receive updates to the active media's images.
+  // Used to receive updates to the active media's icon.
   mojo::Binding<media_session::mojom::MediaControllerImageObserver>
       icon_observer_binding_{this};
+
+  // Used to receive updates to the active media's artwork.
+  mojo::Binding<media_session::mojom::MediaControllerImageObserver>
+      artwork_observer_binding_{this};
 
   // The info about the current media session. It will be null if there is not
   // a current session.
@@ -92,6 +104,7 @@ class ASH_EXPORT LockScreenMediaControlsView
 
   // Container views directly attached to this view.
   MediaControlsHeaderView* header_row_ = nullptr;
+  views::ImageView* session_artwork_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsView);
 };

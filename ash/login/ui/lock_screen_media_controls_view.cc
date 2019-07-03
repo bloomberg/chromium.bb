@@ -26,6 +26,8 @@ namespace ash {
 
 namespace {
 
+constexpr SkColor kMediaControlsBackground = SkColorSetA(SK_ColorDKGRAY, 100);
+
 // Dimensions.
 constexpr int kMediaControlsTotalWidthDp = 320;
 constexpr int kMediaControlsTotalHeightDp = 400;
@@ -35,6 +37,10 @@ constexpr int kMediaControlsChildSpacing = 50;
 constexpr int kMinimumIconSize = 16;
 constexpr int kDesiredIconSize = 20;
 constexpr int kIconSize = 20;
+constexpr int kMinimumArtworkSize = 200;
+constexpr int kDesiredArtworkSize = 300;
+constexpr int kArtworkViewWidth = 270;
+constexpr int kArtworkViewHeight = 200;
 
 // How long to wait (in milliseconds) for a new media session to begin.
 constexpr base::TimeDelta kNextMediaDelay =
@@ -42,6 +48,24 @@ constexpr base::TimeDelta kNextMediaDelay =
 
 constexpr const char kLockScreenMediaControlsViewName[] =
     "LockScreenMediaControlsView";
+
+// Scales |size| to fit |view_size| while preserving proportions.
+gfx::Size ScaleSizeToFitView(const gfx::Size& size,
+                             const gfx::Size& view_size) {
+  // If |size| is too big in either dimension or two small in both
+  // dimensions, scale it appropriately.
+  if ((size.width() > view_size.width() ||
+       size.height() > view_size.height()) ||
+      (size.width() < view_size.width() &&
+       size.height() < view_size.height())) {
+    const float scale =
+        std::min(view_size.width() / static_cast<float>(size.width()),
+                 view_size.height() / static_cast<float>(size.height()));
+    return gfx::ScaleToFlooredSize(size, scale);
+  }
+
+  return size;
+}
 
 }  // namespace
 
@@ -51,7 +75,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
     : view_(view),
       connector_(connector),
       hide_controls_timer_(new base::OneShotTimer()) {
-  SetBackground(views::CreateRoundedRectBackground(SK_ColorDKGRAY,
+  SetBackground(views::CreateRoundedRectBackground(kMediaControlsBackground,
                                                    kMediaControlsCornerRadius));
   middle_spacing_ = std::make_unique<NonAccessibleView>();
   middle_spacing_->set_owned_by_client();
@@ -65,11 +89,17 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
 
   header_row_ = AddChildView(std::make_unique<MediaControlsHeaderView>());
 
+  auto session_artwork = std::make_unique<views::ImageView>();
+  session_artwork->SetPreferredSize(
+      gfx::Size(kArtworkViewWidth, kArtworkViewHeight));
+  session_artwork_ = AddChildView(std::move(session_artwork));
+
   // Set child view data to default values initially, until the media controller
-  // observers are triggered by a change in media session state.
+  // observers are triggered by a change in media session state..
   MediaSessionMetadataChanged(base::nullopt);
   MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kSourceIcon, SkBitmap());
+  SetArtwork(base::nullopt);
 
   // |connector_| can be null in tests.
   if (!connector_)
@@ -87,6 +117,12 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   media_session::mojom::MediaControllerObserverPtr media_controller_observer;
   observer_binding_.Bind(mojo::MakeRequest(&media_controller_observer));
   media_controller_ptr_->AddObserver(std::move(media_controller_observer));
+
+  media_session::mojom::MediaControllerImageObserverPtr artwork_observer;
+  artwork_observer_binding_.Bind(mojo::MakeRequest(&artwork_observer));
+  media_controller_ptr_->ObserveImages(
+      media_session::mojom::MediaSessionImageType::kArtwork,
+      kMinimumArtworkSize, kDesiredArtworkSize, std::move(artwork_observer));
 
   media_session::mojom::MediaControllerImageObserverPtr icon_observer;
   icon_observer_binding_.Bind(mojo::MakeRequest(&icon_observer));
@@ -167,12 +203,34 @@ void LockScreenMediaControlsView::MediaSessionMetadataChanged(
 void LockScreenMediaControlsView::MediaControllerImageChanged(
     media_session::mojom::MediaSessionImageType type,
     const SkBitmap& bitmap) {
-  gfx::ImageSkia session_icon = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-  if (session_icon.isNull()) {
-    session_icon = gfx::CreateVectorIcon(message_center::kProductIcon,
-                                         kIconSize, gfx::kChromeIconGrey);
+  switch (type) {
+    case media_session::mojom::MediaSessionImageType::kArtwork: {
+      base::Optional<gfx::ImageSkia> session_artwork =
+          gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+      SetArtwork(session_artwork);
+      break;
+    }
+    case media_session::mojom::MediaSessionImageType::kSourceIcon: {
+      gfx::ImageSkia session_icon = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+      if (session_icon.isNull()) {
+        session_icon = gfx::CreateVectorIcon(message_center::kProductIcon,
+                                             kIconSize, gfx::kChromeIconGrey);
+      }
+      header_row_->SetAppIcon(session_icon);
+    }
   }
-  header_row_->SetAppIcon(session_icon);
+}
+
+void LockScreenMediaControlsView::SetArtwork(
+    base::Optional<gfx::ImageSkia> img) {
+  if (!img.has_value()) {
+    session_artwork_->SetImage(nullptr);
+    return;
+  }
+
+  session_artwork_->SetImageSize(ScaleSizeToFitView(
+      img->size(), gfx::Size(kArtworkViewWidth, kArtworkViewHeight)));
+  session_artwork_->SetImage(*img);
 }
 
 }  // namespace ash
