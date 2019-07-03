@@ -3,7 +3,7 @@ import {
   TestGroup,
   Fixture,
   paramsEquals,
-  ICaseID,
+  TestCaseID,
 } from '../../framework/index.js';
 import { Logger } from '../../framework/logger.js';
 
@@ -13,16 +13,16 @@ export class TestGroupTest extends DefaultFixture {
     await Promise.all(Array.from(g.iterate(rec)).map(test => test.run()));
   }
 
-  enumerate<F extends Fixture>(g: TestGroup<F>): ICaseID[] {
+  enumerate<F extends Fixture>(g: TestGroup<F>): TestCaseID[] {
     const cases = [];
     const [, rec] = new Logger().record('');
     for (const test of g.iterate(rec)) {
-      cases.push(test.testcase);
+      cases.push(test.id);
     }
     return cases;
   }
 
-  expectCases<F extends Fixture>(g: TestGroup<F>, cases: ICaseID[]): void {
+  expectCases<F extends Fixture>(g: TestGroup<F>, cases: TestCaseID[]): void {
     const gcases = this.enumerate(g);
 
     if (this.expect(gcases.length === cases.length)) {

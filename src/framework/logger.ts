@@ -7,6 +7,7 @@ interface ITestLog {
   path: string;
   cases: IResult[];
 }
+
 export interface IResult {
   name: string;
   params: IParamsSpec | null;

@@ -6,13 +6,18 @@ import {
   DefaultFixture,
   objectEquals,
   paramsEquals,
-  RunCase,
   TestGroup,
+  RunCase,
 } from '../../framework/index.js';
-import { IGroupDesc, IListing, ITestNode, TestLoader } from '../../framework/loader.js';
+import {
+  TestGroupDesc,
+  TestSuiteListing,
+  TestSpecFile,
+  TestLoader,
+} from '../../framework/loader.js';
 import { Logger } from '../../framework/logger.js';
 
-const listingData: { [k: string]: IGroupDesc[] } = {
+const listingData: { [k: string]: TestGroupDesc[] } = {
   suite1: [
     { path: '', description: 'desc 1a' },
     { path: 'foo', description: 'desc 1b' },
@@ -23,7 +28,7 @@ const listingData: { [k: string]: IGroupDesc[] } = {
   suite2: [{ path: '', description: 'desc 2a' }, { path: 'foof', description: 'desc 2b' }],
 };
 
-const nodesData: { [k: string]: ITestNode } = {
+const nodesData: { [k: string]: TestSpecFile } = {
   'suite1/README.txt': { description: 'desc 1a' },
   'suite1/foo.spec.js': {
     description: 'desc 1b',
@@ -72,11 +77,11 @@ const nodesData: { [k: string]: ITestNode } = {
 };
 
 export class TestTestLoader extends TestLoader {
-  protected async listing(suite: string): Promise<IListing> {
+  protected async listing(suite: string): Promise<TestSuiteListing> {
     return { suite, groups: listingData[suite] };
   }
 
-  protected async import(path: string): Promise<ITestNode> {
+  protected async import(path: string): Promise<TestSpecFile> {
     if (!nodesData.hasOwnProperty(path)) {
       throw new Error('[test] mock file ' + path + ' does not exist');
     }
@@ -91,7 +96,7 @@ class LoadingTest extends DefaultFixture {
     const listing = await this.loader.loadTests(filters);
     const entries = Promise.all(
       Array.from(listing, ({ suite, path, node }) =>
-        node.then((n: ITestNode) => ({ suite, path, node: n }))
+        node.then((n: TestSpecFile) => ({ suite, path, node: n }))
       )
     );
     return entries;
@@ -195,11 +200,11 @@ g.test('end2end', async t => {
     throw new Error('iterate length');
   }
 
-  t.expect(rcs[0].testcase.name === 'blah');
-  t.expect(rcs[0].testcase.params === null);
+  t.expect(rcs[0].id.name === 'blah');
+  t.expect(rcs[0].id.params === null);
 
-  t.expect(rcs[1].testcase.name === 'bleh');
-  t.expect(paramsEquals(rcs[1].testcase.params, {}));
+  t.expect(rcs[1].id.name === 'bleh');
+  t.expect(paramsEquals(rcs[1].id.params, {}));
 
   t.expect(log.results[0] === res);
   t.expect(res.path === 'foof');

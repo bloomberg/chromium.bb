@@ -1,35 +1,34 @@
 import { GroupRecorder } from './logger.js';
 import { IParamsAny, paramsEquals, paramsSupersets } from './params/index.js';
-import { allowedTestNameCharacters, ITestGroup, RunCase, ICaseID } from './test_group.js';
+import { allowedTestNameCharacters, RunCaseIterable, TestCaseID, RunCase } from './test_group.js';
 
-export interface IGroupDesc {
+export interface TestGroupDesc {
   readonly path: string;
   readonly description: string;
 }
 
-export interface IListing {
+export interface TestSuiteListing {
   readonly suite: string;
-  readonly groups: Iterable<IGroupDesc>;
+  readonly groups: Iterable<TestGroupDesc>;
 }
 
-export interface ITestNode {
-  // undefined for README.txt, defined for a test module.
-  readonly g?: ITestGroup;
+export interface TestSpecFile {
   readonly description: string;
+  // undefined for README.txt, defined for a test module.
+  readonly g?: RunCaseIterable;
 }
 
-export interface IEntry {
+export interface TestQueryResult {
   // a suite, e.g. "cts".
   readonly suite: string;
   // a path within a suite, e.g. "command_buffer/compute/basic".
   readonly path: string;
+  readonly node: Promise<TestSpecFile>;
 }
 
-interface IPendingEntry extends IEntry {
-  readonly node: Promise<ITestNode>;
-}
+type TestQueryResults = IterableIterator<TestQueryResult>;
 
-function* concat(lists: IPendingEntry[][]): IterableIterator<IPendingEntry> {
+function* concat(lists: TestQueryResult[][]): TestQueryResults {
   for (const nodes of lists) {
     for (const node of nodes) {
       yield node;
@@ -37,12 +36,12 @@ function* concat(lists: IPendingEntry[][]): IterableIterator<IPendingEntry> {
   }
 }
 
-type TestGroupFilter = (testcase: ICaseID) => boolean;
-function filterTestGroup(group: ITestGroup, filter: TestGroupFilter): ITestGroup {
+type TestGroupFilter = (testcase: TestCaseID) => boolean;
+function filterTestGroup(group: RunCaseIterable, filter: TestGroupFilter): RunCaseIterable {
   return {
     *iterate(log: GroupRecorder): Iterable<RunCase> {
       for (const rc of group.iterate(log)) {
-        if (filter(rc.testcase)) {
+        if (filter(rc.id)) {
           yield rc;
         }
       }
@@ -51,35 +50,31 @@ function filterTestGroup(group: ITestGroup, filter: TestGroupFilter): ITestGroup
 }
 
 export class TestLoader {
-  async loadTestsFromQuery(query: string): Promise<IterableIterator<IPendingEntry>> {
+  async loadTestsFromQuery(query: string): Promise<IterableIterator<TestQueryResult>> {
     return this.loadTests(new URLSearchParams(query).getAll('q'));
   }
 
-  async loadTestsFromCmdLine(filters: string[]): Promise<IterableIterator<IPendingEntry>> {
+  async loadTestsFromCmdLine(filters: string[]): Promise<IterableIterator<TestQueryResult>> {
     // In actual URL queries (?q=...), + represents a space. But decodeURIComponent doesn't do this,
     // so do it manually. (+ is used over %20 for readability.) (See also encodeSelectively.)
     return this.loadTests(filters.map(f => decodeURIComponent(f.replace(/\+/g, '%20'))));
   }
 
-  async loadTests(filters: string[]): Promise<IterableIterator<IPendingEntry>> {
-    const listings = [];
-    for (const filter of filters) {
-      listings.push(this.loadFilter(filter));
-    }
-
-    return concat(await Promise.all(listings));
+  async loadTests(filters: string[]): Promise<IterableIterator<TestQueryResult>> {
+    const loads = filters.map(f => this.loadFilter(f));
+    return concat(await Promise.all(loads));
   }
 
-  protected async listing(suite: string): Promise<IListing> {
+  protected async listing(suite: string): Promise<TestSuiteListing> {
     return { suite, groups: await (await import(`../suites/${suite}/index.js`)).listing };
   }
 
-  protected import(path: string): Promise<ITestNode> {
+  protected import(path: string): Promise<TestSpecFile> {
     return import('../suites/' + path);
   }
 
   // Each filter is of one of the forms below (urlencoded).
-  private async loadFilter(filter: string): Promise<IPendingEntry[]> {
+  private async loadFilter(filter: string): Promise<TestQueryResult[]> {
     const i1 = filter.indexOf(':');
     if (i1 === -1) {
       // - cts
@@ -149,13 +144,16 @@ export class TestLoader {
     }
   }
 
-  private filterByGroup({ suite, groups }: IListing, groupPrefix: string): IPendingEntry[] {
-    const entries: IPendingEntry[] = [];
+  private filterByGroup(
+    { suite, groups }: TestSuiteListing,
+    groupPrefix: string
+  ): TestQueryResult[] {
+    const entries: TestQueryResult[] = [];
 
     for (const { path, description } of groups) {
       if (path.startsWith(groupPrefix)) {
         const isReadme = path === '' || path.endsWith('/');
-        const node: Promise<ITestNode> = isReadme
+        const node: Promise<TestSpecFile> = isReadme
           ? Promise.resolve({ description })
           : this.import(`${suite}/${path}.spec.js`);
         entries.push({ suite, path, node });
@@ -169,8 +167,8 @@ export class TestLoader {
     suite: string,
     group: string,
     testPrefix: string
-  ): Promise<ITestNode> {
-    const node = (await this.import(`${suite}/${group}.spec.js`)) as ITestNode;
+  ): Promise<TestSpecFile> {
+    const node = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
     if (!node.g) {
       return node;
     }
@@ -185,8 +183,8 @@ export class TestLoader {
     group: string,
     test: string,
     paramsMatch: IParamsAny | null
-  ): Promise<ITestNode> {
-    const node = (await this.import(`${suite}/${group}.spec.js`)) as ITestNode;
+  ): Promise<TestSpecFile> {
+    const node = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
     if (!node.g) {
       return node;
     }
@@ -204,8 +202,8 @@ export class TestLoader {
     group: string,
     test: string,
     paramsExact: IParamsAny | null
-  ): Promise<ITestNode> {
-    const node = (await this.import(`${suite}/${group}.spec.js`)) as ITestNode;
+  ): Promise<TestSpecFile> {
+    const node = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
     if (!node.g) {
       return node;
     }

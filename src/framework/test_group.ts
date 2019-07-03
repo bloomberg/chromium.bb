@@ -1,15 +1,21 @@
 import { CaseRecorder, GroupRecorder, IResult } from './logger.js';
 import { IParamsAny, IParamsSpec, ParamSpecIterable, paramsEquals } from './params/index.js';
 
-export interface ICaseID {
+export interface TestCaseID {
   readonly name: string;
   readonly params: IParamsSpec | null;
 }
 
-type TestFn<F extends Fixture> = (t: F) => Promise<void> | void;
-export interface ICase extends ICaseID {
-  run(log: CaseRecorder): Promise<void>;
+export interface RunCase {
+  readonly id: TestCaseID;
+  run(): Promise<IResult>;
 }
+
+export interface RunCaseIterable {
+  iterate(rec: GroupRecorder): Iterable<RunCase>;
+}
+
+type TestFn<F extends Fixture> = (t: F) => Promise<void> | void;
 
 // This test is created when it's inserted, but may be parameterized afterward (.params()).
 class Test<F extends Fixture> {
@@ -40,43 +46,35 @@ class Test<F extends Fixture> {
     this.cases = cases;
   }
 
-  *[Symbol.iterator](): IterableIterator<ICase> {
-    const fixture = this.fixture;
-    const fn = this.fn;
+  *iterate(rec: GroupRecorder): IterableIterator<RunCase> {
     for (const params of this.cases || [null]) {
-      yield {
-        name: this.name,
-        params,
-        async run(log) {
-          const inst = new fixture(log, params || {});
-          await inst.init();
-          await fn(inst);
-          inst.finalize();
-        },
-      };
+      yield new RunCaseSpecific(rec, { name: this.name, params }, this.fixture, this.fn);
     }
   }
 }
 
-export class RunCase {
-  readonly testcase: ICaseID;
-  private testcaseRun: (log: CaseRecorder) => Promise<void>;
-  private recorder: GroupRecorder;
+class RunCaseSpecific<F extends Fixture> implements RunCase {
+  readonly id: TestCaseID;
+  private readonly recorder: GroupRecorder;
+  private readonly fixture: FixtureClass<F>;
+  private readonly fn: TestFn<F>;
 
-  constructor(recorder: GroupRecorder, testcase: ICase) {
+  constructor(recorder: GroupRecorder, id: TestCaseID, fixture: FixtureClass<F>, fn: TestFn<F>) {
     this.recorder = recorder;
-    this.testcase = { name: testcase.name, params: testcase.params };
-    this.testcaseRun = testcase.run;
+    this.id = id;
+    this.fixture = fixture;
+    this.fn = fn;
   }
 
   async run(): Promise<IResult> {
-    const [res, rec] = this.recorder.record(this.testcase.name, this.testcase.params);
+    const [res, rec] = this.recorder.record(this.id.name, this.id.params);
     rec.start();
     try {
-      await this.testcaseRun(rec);
+      const inst = new this.fixture(rec, this.id.params || {});
+      await inst.init();
+      await this.fn(inst);
+      inst.finalize();
     } catch (e) {
-      // tslint:disable-next-line: no-console
-      console.warn(e);
       rec.threw(e);
     }
     rec.finish();
@@ -110,11 +108,7 @@ export abstract class Fixture {
 export const allowedTestNameCharacters = 'a-zA-Z0-9/_ ';
 const validNames = new RegExp('^[' + allowedTestNameCharacters + ']+$');
 
-export interface ITestGroup {
-  iterate(log: GroupRecorder): Iterable<RunCase>;
-}
-
-export class TestGroup<F extends Fixture> implements ITestGroup {
+export class TestGroup<F extends Fixture> implements RunCaseIterable {
   private fixture: FixtureClass<F>;
   private seen: Set<string> = new Set();
   private tests: Array<Test<F>> = [];
@@ -125,9 +119,7 @@ export class TestGroup<F extends Fixture> implements ITestGroup {
 
   *iterate(log: GroupRecorder): Iterable<RunCase> {
     for (const test of this.tests) {
-      for (const c of test) {
-        yield new RunCase(log, c);
-      }
+      yield* test.iterate(log);
     }
   }
 

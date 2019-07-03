@@ -3,7 +3,7 @@
 import * as fs from 'fs';
 import * as process from 'process';
 
-import { ITestNode, TestLoader } from '../framework/loader';
+import { TestSpecFile, TestLoader } from '../framework/loader';
 import { Logger, IResult } from '../framework/logger';
 
 function usage(rc: number) {
@@ -44,7 +44,7 @@ for (const a of process.argv.slice(2)) {
     const log = new Logger();
     const entries = await Promise.all(
       Array.from(listing, ({ suite, path, node }) =>
-        node.then((n: ITestNode) => ({ suite, path, node: n }))
+        node.then((n: TestSpecFile) => ({ suite, path, node: n }))
       )
     );
 
