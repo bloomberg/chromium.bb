@@ -974,7 +974,7 @@ class TestInput(cros_test_lib.MockOutputTestCase):
     m = self.PatchObject(cros_build_lib, 'GetInput')
 
     m.return_value = '2'
-    ret = cros_build_lib.GetChoice('title', range(3))
+    ret = cros_build_lib.GetChoice('title', list(range(3)))
     self.assertEqual(ret, 2)
 
   def testGetChoiceWindow(self):
@@ -1030,7 +1030,7 @@ class TestContextManagerStack(cros_test_lib.TestCase):
       stack.Add(_mk_kls(IndexError))
       stack.Add(_mk_kls(exception_kls=IndexError))
       stack.Add(_mk_kls())
-    self.assertEqual(invoked, list(reversed(range(6))))
+    self.assertEqual(invoked, list(range(5, -1, -1)))
 
 
 class TestManifestCheckout(cros_test_lib.TempDirTestCase):

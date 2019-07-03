@@ -120,7 +120,7 @@ class TestWaitFors(cros_test_lib.TestCase):
   def _TestWaitForSuccess(self, maxval, timeout, **kwargs):
     """Run through a test for WaitForSuccess."""
 
-    func = self.GetFunc(range(20))
+    func = self.GetFunc(list(range(20)))
     def _RetryCheck(val):
       return val < maxval
 
@@ -128,7 +128,7 @@ class TestWaitFors(cros_test_lib.TestCase):
 
   def _TestWaitForReturnValue(self, values, timeout, **kwargs):
     """Run through a test for WaitForReturnValue."""
-    func = self.GetFunc(range(20))
+    func = self.GetFunc(list(range(20)))
     return timeout_util.WaitForReturnValue(values, func, timeout, **kwargs)
 
   def testWaitForSuccessNotMainThread(self):

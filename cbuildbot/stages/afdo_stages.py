@@ -226,7 +226,7 @@ class AFDOReleaseProfileMergerStage(generic_stages.BuilderStage):
     # Generate these for the last few Chrome versions. the number was
     # arbitrarily selected, but we probably don't care after that point (and if
     # we do, we can just run a tryjob with a locally patched value of N).
-    milestones = range(chrome_major_version - 2, chrome_major_version)
+    milestones = list(range(chrome_major_version - 2, chrome_major_version))
     gs_context = gs.GSContext()
 
     skipped, merge_plan = afdo.GenerateReleaseProfileMergePlan(

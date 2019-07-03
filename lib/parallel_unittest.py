@@ -375,7 +375,7 @@ class TestParallelMock(TestBackgroundWrapper):
       self.assertEqual(10, self._calls)
       self.assertEqual([], result)
       result = parallel.RunTasksInProcessPool(self._Callback, [[]] * 10)
-      self.assertEqual(range(11, 21), result)
+      self.assertEqual(list(range(11, 21)), result)
 
 
 class TestExceptions(cros_test_lib.MockOutputTestCase):

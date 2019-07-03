@@ -308,7 +308,7 @@ def _EnumerateMostRecentProfiles(gs_context, milestones, glob_url,
 
   Args:
     gs_context: How we talk to gs://
-    milestones: An iterable of ints; each one is a major Chrome version. We'll
+    milestones: A list of ints; each one is a major Chrome version. We'll
       try to get the most recent profile for each of these.
     glob_url: A URL to query gsutil with.
     parse_profile_name: A callable that transforms a profile's filename into
@@ -412,7 +412,7 @@ def GenerateReleaseProfileMergePlan(gs_context, milestones):
 
   Args:
     gs_context: How we talk to gs://
-    milestones: An iterable of ints; Chrome milestones
+    milestones: A list of ints; Chrome milestones
 
   Returns:
     A tuple (a, b), where:

@@ -71,6 +71,7 @@ enable=
     parameter-unpacking,
     print-statement,
     raising-string,
+    range-builtin-not-iterating,
     rdiv-method,
     reload-builtin,
     setslice-method,

@@ -30,8 +30,7 @@ class ExportToCloudTraceTest(cros_test_lib.MockTempDirTestCase):
     # thread from spinning forever if there is a bug.
     self.PatchObject(
         export_to_cloud_trace, 'time',
-        mock.Mock(time=mock.Mock(
-            side_effect=range(42))))
+        mock.Mock(time=mock.Mock(side_effect=list(range(42)))))
 
     self.PatchObject(export_to_cloud_trace, '_ReadAndDeletePreexisting')
 

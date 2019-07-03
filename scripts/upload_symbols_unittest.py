@@ -263,6 +263,8 @@ class UploadSymbolsHelpersTest(cros_test_lib.TestCase):
     result = upload_symbols.BatchGenerator([], 2)
     self.assertEqual(list(result), [])
 
+    # BatchGenerator accepts iterators, so passing it here is safe.
+    # pylint: disable=range-builtin-not-iterating
     result = upload_symbols.BatchGenerator(range(6), 2)
     self.assertEqual(list(result), [[0, 1], [2, 3], [4, 5]])
 

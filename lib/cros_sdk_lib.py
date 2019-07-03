@@ -286,7 +286,7 @@ def MountChroot(chroot=None, buildroot=None, create=True,
     # and this command will fail.  When this is the case, it will succeed if
     # we retry.  If it fails three times in a row, assume there's a real error
     # and re-raise the exception.
-    try_count = range(1, 4)
+    try_count = list(range(1, 4))
     for i in try_count:
       try:
         cros_build_lib.SudoRunCommand(cmd, capture_output=True, print_cmd=False)

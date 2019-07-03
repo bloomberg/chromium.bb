@@ -152,7 +152,8 @@ class FileTypeDecoder(object):
     # Detect if the file is binary based on the presence of non-ASCII chars. We
     # include some the first 32 chars often used in text files but we exclude
     # the rest.
-    ascii_chars = '\x07\x08\t\n\x0c\r\x1b' + ''.join(map(chr, range(32, 128)))
+    ascii_chars = ('\x07\x08\t\n\x0c\r\x1b' +
+                   ''.join(chr(x) for x in range(32, 128)))
     is_binary = any(bool(chunk.translate(None, ascii_chars))
                     for chunk in iter(lambda: fmap.read(FILE_BUFFER_SIZE), ''))
 

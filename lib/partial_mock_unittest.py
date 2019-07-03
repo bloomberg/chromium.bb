@@ -77,11 +77,12 @@ class RecursiveCompareTest(cros_test_lib.TestCase):
 class ListContainsTest(cros_test_lib.TestCase):
   """Unittests for ListContains method."""
 
-  L = range(10) + range(10) + [9]
-  STRICTLY_TRUE_LISTS = [range(10), range(9, 10), range(3, 6), range(1), [],
-                         [9, 9]]
-  LOOSELY_TRUE_LISTS = [range(0, 10, 2), range(3, 6, 2), [1, 1]]
-  FALSE_LISTS = [[1.5], [-1], [1, 1, 1], [10], [22], range(6, 11), range(-1, 5)]
+  L = list(range(10)) + list(range(10)) + [9]
+  STRICTLY_TRUE_LISTS = [list(range(10)), list(range(9, 10)), list(range(3, 6)),
+                         list(range(1)), [], [9, 9]]
+  LOOSELY_TRUE_LISTS = [list(range(0, 10, 2)), list(range(3, 6, 2)), [1, 1]]
+  FALSE_LISTS = [[1.5], [-1], [1, 1, 1], [10], [22], list(range(6, 11)),
+                 list(range(-1, 5))]
 
   def testStrictContains(self):
     """Test ListContains with strict=True."""
