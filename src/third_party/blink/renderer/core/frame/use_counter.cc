@@ -1237,9 +1237,9 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 640;
 
 
-    // patch section: suppress-needs-compositing-input-update (returns 639)
+    // patch section: suppress-needs-compositing-input-update (returns 641)
     case CSSPropertyBbSuppressNeedsCompositingInputUpdate:
-      return 639;
+      return 641;
 
 
 
