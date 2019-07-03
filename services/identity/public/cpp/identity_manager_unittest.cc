@@ -72,12 +72,13 @@ const char kTestPictureUrl[] = "http://picture.example.com/picture.jpg";
 const char kTestEmailWithPeriod[] = "m.e@gmail.com";
 #endif
 
-// Subclass of FakeProfileOAuth2TokenService with bespoke behavior.
-class CustomFakeProfileOAuth2TokenService
-    : public FakeProfileOAuth2TokenService {
+// Subclass of FakeOAuth2AccessTokenManager with bespoke behavior.
+class CustomFakeOAuth2AccessTokenManager : public FakeOAuth2AccessTokenManager {
  public:
-  CustomFakeProfileOAuth2TokenService(PrefService* user_prefs)
-      : FakeProfileOAuth2TokenService(user_prefs) {}
+  CustomFakeOAuth2AccessTokenManager(
+      OAuth2TokenService* token_service,
+      OAuth2AccessTokenManager::Delegate* delegate)
+      : FakeOAuth2AccessTokenManager(token_service, delegate) {}
 
   void set_on_access_token_invalidated_info(
       CoreAccountId expected_account_id_to_invalidate,
@@ -91,7 +92,8 @@ class CustomFakeProfileOAuth2TokenService
   }
 
  private:
-  // OAuth2TokenService:
+  friend class CustomFakeProfileOAuth2TokenService;
+  // OAuth2AccessTokenManager:
   void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
                                  const std::string& client_id,
                                  const ScopeSet& scopes,
@@ -103,7 +105,7 @@ class CustomFakeProfileOAuth2TokenService
 
       // It should trigger OnAccessTokenRemovedFromCache from
       // IdentityManager::DiagnosticsObserver.
-      for (auto& observer : GetAccessTokenDiagnosticsObservers())
+      for (auto& observer : GetDiagnosticsObserversForTesting())
         observer.OnAccessTokenRemoved(account_id, scopes);
 
       std::move(on_access_token_invalidated_callback_).Run();
@@ -114,6 +116,44 @@ class CustomFakeProfileOAuth2TokenService
   std::set<std::string> expected_scopes_to_invalidate_;
   std::string expected_access_token_to_invalidate_;
   base::OnceClosure on_access_token_invalidated_callback_;
+};
+
+// Subclass of FakeProfileOAuth2TokenService with bespoke behavior.
+class CustomFakeProfileOAuth2TokenService
+    : public FakeProfileOAuth2TokenService {
+ public:
+  CustomFakeProfileOAuth2TokenService(PrefService* user_prefs)
+      : FakeProfileOAuth2TokenService(user_prefs) {
+    OverrideAccessTokenManagerForTesting(
+        std::make_unique<CustomFakeOAuth2AccessTokenManager>(
+            this /* OAuth2TokenService* */,
+            this /* OAuth2AccessTokenManager::Delegate* */));
+  }
+
+  void set_on_access_token_invalidated_info(
+      CoreAccountId expected_account_id_to_invalidate,
+      std::set<std::string> expected_scopes_to_invalidate,
+      std::string expected_access_token_to_invalidate,
+      base::OnceClosure callback) {
+    GetCustomAccessTokenManager()->set_on_access_token_invalidated_info(
+        expected_account_id_to_invalidate, expected_scopes_to_invalidate,
+        expected_access_token_to_invalidate, std::move(callback));
+  }
+
+ private:
+  // OAuth2TokenService:
+  void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
+                                 const std::string& client_id,
+                                 const ScopeSet& scopes,
+                                 const std::string& access_token) override {
+    GetCustomAccessTokenManager()->InvalidateAccessTokenImpl(
+        account_id, client_id, scopes, access_token);
+  }
+
+  CustomFakeOAuth2AccessTokenManager* GetCustomAccessTokenManager() {
+    return static_cast<CustomFakeOAuth2AccessTokenManager*>(
+        GetAccessTokenManager());
+  }
 };
 
 class TestIdentityManagerDiagnosticsObserver
