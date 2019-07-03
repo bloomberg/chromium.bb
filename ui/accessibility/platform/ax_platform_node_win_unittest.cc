@@ -226,6 +226,15 @@ void AXPlatformNodeWinTest::TearDown() {
   ASSERT_EQ(0U, AXPlatformNodeBase::GetInstanceCountForTesting());
 }
 
+AXPlatformNode* AXPlatformNodeWinTest::AXPlatformNodeFromNode(AXNode* node) {
+  const TestAXNodeWrapper* wrapper =
+      TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
+  if (!wrapper)
+    return nullptr;
+
+  return wrapper->ax_platform_node();
+}
+
 template <typename T>
 ComPtr<T> AXPlatformNodeWinTest::QueryInterfaceFromNodeId(int32_t id) {
   const TestAXNodeWrapper* wrapper =
@@ -243,12 +252,9 @@ ComPtr<T> AXPlatformNodeWinTest::QueryInterfaceFromNodeId(int32_t id) {
 
 template <typename T>
 ComPtr<T> AXPlatformNodeWinTest::QueryInterfaceFromNode(AXNode* node) {
-  const TestAXNodeWrapper* wrapper =
-      TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
-  if (!wrapper)
+  AXPlatformNode* ax_platform_node = AXPlatformNodeFromNode(node);
+  if (!ax_platform_node)
     return ComPtr<T>();
-
-  AXPlatformNode* ax_platform_node = wrapper->ax_platform_node();
   ComPtr<T> result;
   EXPECT_HRESULT_SUCCEEDED(
       ax_platform_node->GetNativeViewAccessible()->QueryInterface(__uuidof(T),
@@ -359,12 +365,12 @@ ComPtr<IAccessibleTableCell> AXPlatformNodeWinTest::GetCellInTable() {
 }
 
 void AXPlatformNodeWinTest::InitFragmentRoot() {
-  TestAXNodeWrapper* wrapper =
-      TestAXNodeWrapper::GetOrCreate(tree_.get(), GetRootNode());
+  test_fragment_root_delegate_ = std::make_unique<TestFragmentRootDelegate>();
+  test_fragment_root_delegate_->child_ =
+      AXPlatformNodeFromNode(GetRootNode())->GetNativeViewAccessible();
 
   ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(
-      gfx::kMockAcceleratedWidget,
-      static_cast<ui::AXPlatformNodeWin*>(wrapper->ax_platform_node()));
+      gfx::kMockAcceleratedWidget, test_fragment_root_delegate_.get());
 }
 
 ComPtr<IRawElementProviderFragmentRoot>
@@ -400,6 +406,19 @@ AXPlatformNodeWinTest::GetSupportedPatternsFromNodeId(int32_t id) {
     }
   }
   return supported_patterns;
+}
+
+TestFragmentRootDelegate::TestFragmentRootDelegate() = default;
+
+TestFragmentRootDelegate::~TestFragmentRootDelegate() = default;
+
+gfx::NativeViewAccessible TestFragmentRootDelegate::GetChildOfAXFragmentRoot() {
+  return child_;
+}
+
+gfx::NativeViewAccessible
+TestFragmentRootDelegate::GetParentOfAXFragmentRoot() {
+  return parent_;
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
