@@ -12,10 +12,10 @@ export const g = new TestGroup(DefaultFixture);
 
 g.test('construct', t => {
   const mylog = new Logger();
-  const [testres, testrec] = mylog.record('foo/bar');
-  const [res1] = testrec.record('baz', null);
+  const [testrec, testres] = mylog.record('foo/bar');
+  const [, res1] = testrec.record('baz', null);
   const params2 = {};
-  const [res2] = testrec.record('qux', params2);
+  const [, res2] = testrec.record('qux', params2);
 
   t.expect(testres.path === 'foo/bar');
   t.expect(testres.cases.length === 2);
@@ -35,8 +35,8 @@ g.test('construct', t => {
 
 g.test('empty', t => {
   const mylog = new Logger();
-  const [, testrec] = mylog.record('');
-  const [res, rec] = testrec.record('baz', null);
+  const [testrec] = mylog.record('');
+  const [rec, res] = testrec.record('baz', null);
 
   rec.start();
   t.expect(res.status === 'running');
@@ -47,8 +47,8 @@ g.test('empty', t => {
 
 g.test('pass', t => {
   const mylog = new Logger();
-  const [, testrec] = mylog.record('');
-  const [res, rec] = testrec.record('baz', null);
+  const [testrec] = mylog.record('');
+  const [rec, res] = testrec.record('baz', null);
 
   rec.start();
   rec.log('hello');
@@ -60,8 +60,8 @@ g.test('pass', t => {
 
 g.test('warn', t => {
   const mylog = new Logger();
-  const [, testrec] = mylog.record('');
-  const [res, rec] = testrec.record('baz', null);
+  const [testrec] = mylog.record('');
+  const [rec, res] = testrec.record('baz', null);
 
   rec.start();
   rec.warn();
@@ -73,8 +73,8 @@ g.test('warn', t => {
 
 g.test('fail', t => {
   const mylog = new Logger();
-  const [, testrec] = mylog.record('');
-  const [res, rec] = testrec.record('baz', null);
+  const [testrec] = mylog.record('');
+  const [rec, res] = testrec.record('baz', null);
 
   rec.start();
   rec.fail('bye');

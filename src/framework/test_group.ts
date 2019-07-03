@@ -1,4 +1,4 @@
-import { CaseRecorder, GroupRecorder, IResult } from './logger.js';
+import { CaseRecorder, GroupRecorder, TestCaseLiveResult } from './logger.js';
 import { IParamsAny, IParamsSpec, ParamSpecIterable, paramsEquals } from './params/index.js';
 import { Fixture } from './fixture.js';
 import { allowedTestNameCharacters } from './allowed_characters.js';
@@ -10,7 +10,7 @@ export interface TestCaseID {
 
 export interface RunCase {
   readonly id: TestCaseID;
-  run(): Promise<IResult>;
+  run(): Promise<TestCaseLiveResult>;
 }
 
 export interface RunCaseIterable {
@@ -112,8 +112,8 @@ class RunCaseSpecific<F extends Fixture> implements RunCase {
     this.fn = fn;
   }
 
-  async run(): Promise<IResult> {
-    const [res, rec] = this.recorder.record(this.id.name, this.id.params);
+  async run(): Promise<TestCaseLiveResult> {
+    const [rec, res] = this.recorder.record(this.id.name, this.id.params);
     rec.start();
     try {
       const inst = new this.fixture(rec, this.id.params || {});

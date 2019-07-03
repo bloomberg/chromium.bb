@@ -213,7 +213,7 @@
             continue;
           }
 
-          const [tResult, tRec] = log.record(path);
+          const [tRec] = log.record(path);
           for (const t of g.iterate(tRec)) {
             const query = makeQueryString(entry, t.testcase);
             const runCase = mkCase(testcasesVis, query, t);

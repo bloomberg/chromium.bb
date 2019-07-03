@@ -43,7 +43,7 @@ import { makeQueryString } from './framework/url_query.js';
             continue;
         }
 
-        const [result, rec] = log.record(path);
+        const [rec] = log.record(path);
         // TODO: don't run all tests all at once
         for (const t of g.iterate(rec)) {
             const run = t.run();

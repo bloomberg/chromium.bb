@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as process from 'process';
 
 import { TestSpecFile, TestLoader } from '../framework/loader.js';
-import { Logger, IResult } from '../framework/logger.js';
+import { Logger, TestCaseLiveResult } from '../framework/logger.js';
 
 function usage(rc: number) {
   console.log('Usage:');
@@ -48,8 +48,8 @@ for (const a of process.argv.slice(2)) {
       )
     );
 
-    const failed: IResult[] = [];
-    const warned: IResult[] = [];
+    const failed: TestCaseLiveResult[] = [];
+    const warned: TestCaseLiveResult[] = [];
 
     // TODO: don't run all tests all at once
     const running = [];
@@ -62,7 +62,7 @@ for (const a of process.argv.slice(2)) {
         continue;
       }
 
-      const [, rec] = log.record(path);
+      const [rec] = log.record(path);
       for (const t of group.iterate(rec)) {
         running.push(
           (async () => {
