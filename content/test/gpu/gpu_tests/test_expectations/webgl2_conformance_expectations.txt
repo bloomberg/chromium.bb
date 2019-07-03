@@ -303,6 +303,7 @@ crbug.com/811614 [ amd mac ] deqp/functional/gles3/negativeshaderapi.html [ Fail
 crbug.com/811614 [ intel mac ] deqp/functional/gles3/negativeshaderapi.html [ Failure ]
 
 # Mac Retina NVIDIA
+crbug.com/981101 [ mac nvidia-0xfe9 ] deqp/functional/gles3/multisample.html [ Failure ]
 crbug.com/728271 [ mac nvidia-0xfe9 ] deqp/functional/gles3/shaderindexing/mat_01.html [ Failure ]
 crbug.com/728271 [ mac nvidia-0xfe9 ] deqp/functional/gles3/shaderindexing/tmp.html [ Failure ]
 crbug.com/641209 [ mac nvidia-0xfe9 ] deqp/functional/gles3/fbomultisample* [ Failure ]
