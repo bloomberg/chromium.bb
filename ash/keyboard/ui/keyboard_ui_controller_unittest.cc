@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 
 #include <memory>
 
@@ -138,11 +138,11 @@ class SetModeCallbackInvocationCounter {
 
 }  // namespace
 
-class KeyboardControllerTest : public aura::test::AuraTestBase,
-                               public ash::KeyboardControllerObserver {
+class KeyboardUIControllerTest : public aura::test::AuraTestBase,
+                                 public ash::KeyboardControllerObserver {
  public:
-  KeyboardControllerTest() = default;
-  ~KeyboardControllerTest() override = default;
+  KeyboardUIControllerTest() = default;
+  ~KeyboardUIControllerTest() override = default;
 
   void SetUp() override {
     ui::SetUpInputMethodFactoryForTesting();
@@ -170,7 +170,7 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
     aura::test::AuraTestBase::TearDown();
   }
 
-  KeyboardController& controller() { return controller_; }
+  KeyboardUIController& controller() { return controller_; }
   KeyboardLayoutDelegate* layout_delegate() { return layout_delegate_.get(); }
 
   void ShowKeyboard() {
@@ -265,18 +265,18 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
   int is_visible_number_of_calls_ = 0;
   bool is_visible_ = false;
 
-  KeyboardController controller_;
+  KeyboardUIController controller_;
 
   std::unique_ptr<KeyboardLayoutDelegate> layout_delegate_;
   std::unique_ptr<ui::TextInputClient> test_text_input_client_;
   bool keyboard_disabled_ = false;
   wm::DefaultScreenPositionClient screen_position_client_;
-  DISALLOW_COPY_AND_ASSIGN(KeyboardControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(KeyboardUIControllerTest);
 };
 
 // TODO(https://crbug.com/849995): This is testing KeyboardLayoutManager /
 // ContainerFullWidthBehavior. Put this test there.
-TEST_F(KeyboardControllerTest, KeyboardSize) {
+TEST_F(KeyboardUIControllerTest, KeyboardSize) {
   root_window()->SetLayoutManager(new KeyboardLayoutManager(&controller()));
 
   // The keyboard window should not be visible.
@@ -307,7 +307,7 @@ TEST_F(KeyboardControllerTest, KeyboardSize) {
 
 // Tests that blur-then-focus that occur in less than the transient threshold
 // cause the keyboard to re-show.
-TEST_F(KeyboardControllerTest, TransientBlurShortDelay) {
+TEST_F(KeyboardUIControllerTest, TransientBlurShortDelay) {
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
 
@@ -349,7 +349,7 @@ TEST_F(KeyboardControllerTest, TransientBlurShortDelay) {
 
 // Tests that blur-then-focus that occur past the transient threshold do not
 // cause the keyboard to re-show.
-TEST_F(KeyboardControllerTest, TransientBlurLongDelay) {
+TEST_F(KeyboardUIControllerTest, TransientBlurLongDelay) {
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
 
@@ -383,7 +383,7 @@ TEST_F(KeyboardControllerTest, TransientBlurLongDelay) {
   EXPECT_FALSE(keyboard_window->IsVisible());
 }
 
-TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
+TEST_F(KeyboardUIControllerTest, VisibilityChangeWithTextInputTypeChange) {
   ui::DummyTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_2(ui::TEXT_INPUT_TYPE_TEXT);
@@ -424,7 +424,7 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
 
 // Test to prevent spurious overscroll boxes when changing tabs during keyboard
 // hide. Refer to crbug.com/401670 for more context.
-TEST_F(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
+TEST_F(KeyboardUIControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
 
@@ -442,7 +442,7 @@ TEST_F(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
   EXPECT_TRUE(ShouldEnableInsets(controller().GetKeyboardWindow()));
 }
 
-TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
+TEST_F(KeyboardUIControllerTest, AlwaysVisibleWhenLocked) {
   ui::DummyTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient no_input_client_0(ui::TEXT_INPUT_TYPE_NONE);
@@ -486,7 +486,7 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
 }
 
 // Tests that disabling the keyboard will get a corresponding event.
-TEST_F(KeyboardControllerTest, DisableKeyboard) {
+TEST_F(KeyboardUIControllerTest, DisableKeyboard) {
   aura::Window* keyboard_window = controller().GetKeyboardWindow();
 
   ShowKeyboard();
@@ -497,7 +497,7 @@ TEST_F(KeyboardControllerTest, DisableKeyboard) {
   EXPECT_TRUE(IsKeyboardDisabled());
 }
 
-class KeyboardControllerAnimationTest : public KeyboardControllerTest {
+class KeyboardControllerAnimationTest : public KeyboardUIControllerTest {
  public:
   KeyboardControllerAnimationTest() = default;
   ~KeyboardControllerAnimationTest() override = default;
@@ -507,14 +507,14 @@ class KeyboardControllerAnimationTest : public KeyboardControllerTest {
     ui::ScopedAnimationDurationScaleMode test_duration_mode(
         ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-    KeyboardControllerTest::SetUp();
+    KeyboardUIControllerTest::SetUp();
 
     // Wait for the keyboard contents to load.
     base::RunLoop().RunUntilIdle();
     keyboard_window()->SetBounds(root_window()->bounds());
   }
 
-  void TearDown() override { KeyboardControllerTest::TearDown(); }
+  void TearDown() override { KeyboardUIControllerTest::TearDown(); }
 
  protected:
   aura::Window* keyboard_window() { return controller().GetKeyboardWindow(); }
@@ -642,7 +642,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
   EXPECT_EQ(1.0, layer->opacity());
 }
 
-TEST_F(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
+TEST_F(KeyboardUIControllerTest, DisplayChangeShouldNotifyBoundsChange) {
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
 
   SetFocus(&input_client);
@@ -661,7 +661,7 @@ TEST_F(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
   EXPECT_EQ(1, is_visible_number_of_calls());
 }
 
-TEST_F(KeyboardControllerTest, TextInputMode) {
+TEST_F(KeyboardUIControllerTest, TextInputMode) {
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT,
                                         ui::TEXT_INPUT_MODE_TEXT);
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_TEXT,
@@ -720,7 +720,7 @@ TEST_F(KeyboardControllerAnimationTest, FloatingKeyboardEnsureCaretInWorkArea) {
 }
 
 // Checks DisableKeyboard() doesn't clear the observer list.
-TEST_F(KeyboardControllerTest, DontClearObserverList) {
+TEST_F(KeyboardUIControllerTest, DontClearObserverList) {
   ShowKeyboard();
   aura::Window* keyboard_window = controller().GetKeyboardWindow();
 
@@ -751,7 +751,7 @@ class MockKeyboardControllerObserver : public ash::KeyboardControllerObserver {
   DISALLOW_COPY_AND_ASSIGN(MockKeyboardControllerObserver);
 };
 
-TEST_F(KeyboardControllerTest, OnKeyboardEnabledChangedToEnabled) {
+TEST_F(KeyboardUIControllerTest, OnKeyboardEnabledChangedToEnabled) {
   // Start with the keyboard disabled.
   keyboard::SetTouchKeyboardEnabled(false);
 
@@ -760,7 +760,7 @@ TEST_F(KeyboardControllerTest, OnKeyboardEnabledChangedToEnabled) {
 
   EXPECT_CALL(mock_observer, OnKeyboardEnabledChanged(true))
       .WillOnce(testing::InvokeWithoutArgs([]() {
-        auto* controller = keyboard::KeyboardController::Get();
+        auto* controller = keyboard::KeyboardUIController::Get();
         ASSERT_TRUE(controller);
         EXPECT_TRUE(controller->IsEnabled());
         EXPECT_TRUE(controller->GetKeyboardWindow());
@@ -772,13 +772,13 @@ TEST_F(KeyboardControllerTest, OnKeyboardEnabledChangedToEnabled) {
   controller().RemoveObserver(&mock_observer);
 }
 
-TEST_F(KeyboardControllerTest, OnKeyboardEnabledChangedToDisabled) {
+TEST_F(KeyboardUIControllerTest, OnKeyboardEnabledChangedToDisabled) {
   MockKeyboardControllerObserver mock_observer;
   controller().AddObserver(&mock_observer);
 
   EXPECT_CALL(mock_observer, OnKeyboardEnabledChanged(false))
       .WillOnce(testing::InvokeWithoutArgs([]() {
-        auto* controller = keyboard::KeyboardController::Get();
+        auto* controller = keyboard::KeyboardUIController::Get();
         ASSERT_TRUE(controller);
         EXPECT_FALSE(controller->IsEnabled());
         EXPECT_FALSE(controller->GetKeyboardWindow());

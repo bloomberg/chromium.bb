@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_KEYBOARD_UI_KEYBOARD_CONTROLLER_H_
-#define ASH_KEYBOARD_UI_KEYBOARD_CONTROLLER_H_
+#ifndef ASH_KEYBOARD_UI_KEYBOARD_UI_CONTROLLER_H_
+#define ASH_KEYBOARD_UI_KEYBOARD_UI_CONTROLLER_H_
 
 #include <memory>
 #include <set>
@@ -53,14 +53,14 @@ class KeyboardUIFactory;
 
 // Provides control of the virtual keyboard, including enabling/disabling the
 // keyboard and controlling its visibility.
-// TODO(shend): Rename this to KeyboardUIController and move enable / disable
-// logic to KeyboardControllerImpl.
-class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
-                                           public aura::WindowObserver,
-                                           public ContainerBehavior::Delegate {
+// TODO(shend): Move non-UI related logic to KeyboardControllerImpl.
+class KEYBOARD_EXPORT KeyboardUIController
+    : public ui::InputMethodObserver,
+      public aura::WindowObserver,
+      public ContainerBehavior::Delegate {
  public:
-  KeyboardController();
-  ~KeyboardController() override;
+  KeyboardUIController();
+  ~KeyboardUIController() override;
 
   // Initialize the virtual keyboard controller with two delegates:
   // - ui_factory: Responsible for keyboard window loading.
@@ -75,9 +75,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // there is an ash::Shell.
   // TODO(stevenjb/shuchen/shend): Remove all access from src/chrome.
   // https://crbug.com/843332.
-  static KeyboardController* Get();
+  // TODO(shend): Make this not a singleton.
+  static KeyboardUIController* Get();
 
-  // Returns true if there is a valid KeyboardController instance (e.g. while
+  // Returns true if there is a valid KeyboardUIController instance (e.g. while
   // there is an ash::Shell).
   static bool HasInstance();
 
@@ -243,7 +244,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
  private:
   // For access to Observer methods for simulation.
-  friend class KeyboardControllerTest;
+  friend class KeyboardUIControllerTest;
 
   // Different ways to hide the keyboard.
   enum HideReason {
@@ -451,12 +452,13 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   bool keyboard_load_time_logged_ = false;
   base::Time keyboard_load_time_start_;
 
-  base::WeakPtrFactory<KeyboardController> weak_factory_report_lingering_state_;
-  base::WeakPtrFactory<KeyboardController> weak_factory_will_hide_;
+  base::WeakPtrFactory<KeyboardUIController>
+      weak_factory_report_lingering_state_;
+  base::WeakPtrFactory<KeyboardUIController> weak_factory_will_hide_;
 
-  DISALLOW_COPY_AND_ASSIGN(KeyboardController);
+  DISALLOW_COPY_AND_ASSIGN(KeyboardUIController);
 };
 
 }  // namespace keyboard
 
-#endif  // ASH_KEYBOARD_UI_KEYBOARD_CONTROLLER_H_
+#endif  // ASH_KEYBOARD_UI_KEYBOARD_UI_CONTROLLER_H_
