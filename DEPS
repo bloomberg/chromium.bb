@@ -1408,7 +1408,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_play_core_verification',
-              'version': 'sPjmEe18bOaRHsFxIEohCPLEibGhrlFv-_ZcpEywt7YC',
+              'version': '4hAx_nDBLvvQHfRMqLEB4ot_jERn_Wpuwxuap5Ii4PsC',
           },
       ],
       'condition': 'checkout_android',
