@@ -1020,12 +1020,8 @@ bool PointerEventManager::IsActive(const PointerId pointer_id) const {
 // pointer events are the only ones that are directly dispatched from the main
 // page managers to their target (event if target is in an iframe) and only
 // those managers will keep track of these pointer events.
-bool PointerEventManager::IsTouchPointerIdActiveOnFrame(
-    PointerId pointer_id,
-    LocalFrame* frame) const {
-  if (pointer_event_factory_.GetPointerType(pointer_id) !=
-      WebPointerProperties::PointerType::kTouch)
-    return false;
+bool PointerEventManager::IsPointerIdActiveOnFrame(PointerId pointer_id,
+                                                   LocalFrame* frame) const {
   Element* last_element_receiving_event =
       element_under_pointer_.Contains(pointer_id)
           ? element_under_pointer_.at(pointer_id).target
