@@ -34,7 +34,6 @@ mojom("mojom_platform") {
     "content_index/content_index.mojom",
     "cookie_store/cookie_store.mojom",
     "crash/crash_memory_metrics_reporter.mojom",
-    "credentialmanager/credential_manager.mojom",
     "csp/content_security_policy.mojom",
     "devtools/console_message.mojom",
     "devtools/devtools_agent.mojom",
@@ -47,9 +46,7 @@ mojom("mojom_platform") {
     "fetch/fetch_api_response.mojom",
     "file/file_utilities.mojom",
     "filesystem/file_system.mojom",
-    "frame/document_interface_broker.mojom",
     "frame/find_in_page.mojom",
-    "frame/frame_host_test_interface.mojom",
     "frame/lifecycle.mojom",
     "frame/navigation_initiator.mojom",
     "geolocation/geolocation_service.mojom",
@@ -126,7 +123,6 @@ mojom("mojom_platform") {
     "user_agent/user_agent_metadata.mojom",
     "v8_cache_options.mojom",
     "wake_lock/wake_lock.mojom",
-    "webaudio/audio_context_manager.mojom",
     "webdatabase/web_database.mojom",
     "window_features/window_features.mojom",
     "worker/shared_worker.mojom",
@@ -148,9 +144,8 @@ mojom("mojom_platform") {
   }
 
   public_deps = [
-    ":android_mojo_bindings",
-    ":authenticator_test_mojo_bindings",
     ":mojom_mhtml_load_result",
+    ":unscrambled_mojo_bindings",
     ":web_client_hints_types_mojo_bindings",
     ":web_feature_mojo_bindings",
     "//components/payments/mojom",
@@ -466,6 +461,39 @@ mojom("authenticator_test_mojo_bindings") {
   public_deps = [
     ":android_mojo_bindings",
     "//url/mojom:url_mojom_gurl",
+  ]
+
+  export_class_attribute = "BLINK_COMMON_EXPORT"
+  export_define = "BLINK_COMMON_IMPLEMENTATION=1"
+  export_header = "third_party/blink/public/common/common_export.h"
+
+  export_class_attribute_blink = "PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/renderer/platform/platform_export.h"
+
+  # Don't scramble message IDs so they are redistributable to external tests.
+  scramble_message_ids = false
+}
+
+# These would normally be under "mojom_platform" above, but are encapsulated
+# in a separate target because document_interface_broker needs unscrambled
+# message IDs.
+# Note: rather than unscramble more mojom files, use a webdriver interface
+# in the future for external tests.
+mojom("unscrambled_mojo_bindings") {
+  sources = [
+    "credentialmanager/credential_manager.mojom",
+    "frame/document_interface_broker.mojom",
+    "frame/frame_host_test_interface.mojom",
+    "webaudio/audio_context_manager.mojom",
+  ]
+
+  public_deps = [
+    ":android_mojo_bindings",
+    ":authenticator_test_mojo_bindings",
+    "//mojo/public/mojom/base",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
   ]
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
