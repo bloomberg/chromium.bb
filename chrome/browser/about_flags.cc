@@ -3824,7 +3824,8 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
 
     {"enable-skia-renderer", flag_descriptions::kSkiaRendererName,
-     flag_descriptions::kSkiaRendererDescription, kOsLinux | kOsAndroid,
+     flag_descriptions::kSkiaRendererDescription,
+     kOsLinux | kOsWin | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kUseSkiaRenderer)},
 
 #if defined(OS_CHROMEOS)
