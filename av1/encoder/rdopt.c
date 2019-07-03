@@ -9712,21 +9712,25 @@ static INLINE void calc_masked_type_cost(MACROBLOCK *x, BLOCK_SIZE bsize,
                                          int comp_index_ctx,
                                          int masked_compound_used,
                                          int *masked_type_cost) {
-  av1_zero_array(masked_type_cost, 4);
+  av1_zero_array(masked_type_cost, COMPOUND_TYPES);
   // Account for group index cost when wedge and/or diffwtd prediction are
   // enabled
   if (masked_compound_used) {
-    masked_type_cost[0] += x->comp_group_idx_cost[comp_group_idx_ctx][0];
-    masked_type_cost[1] += masked_type_cost[0];
-    masked_type_cost[2] += x->comp_group_idx_cost[comp_group_idx_ctx][1];
-    masked_type_cost[3] += masked_type_cost[2];
+    // Compound group index of average and distwtd is 0
+    // Compound group index of wedge and diffwtd is 1
+    masked_type_cost[COMPOUND_AVERAGE] +=
+        x->comp_group_idx_cost[comp_group_idx_ctx][0];
+    masked_type_cost[COMPOUND_DISTWTD] += masked_type_cost[COMPOUND_AVERAGE];
+    masked_type_cost[COMPOUND_WEDGE] +=
+        x->comp_group_idx_cost[comp_group_idx_ctx][1];
+    masked_type_cost[COMPOUND_DIFFWTD] += masked_type_cost[COMPOUND_WEDGE];
   }
 
-  // Compute the cost to signal compound type
-  masked_type_cost[0] += x->comp_idx_cost[comp_index_ctx][1];
-  masked_type_cost[1] += x->comp_idx_cost[comp_index_ctx][0];
-  masked_type_cost[2] += x->compound_type_cost[bsize][0];
-  masked_type_cost[3] += x->compound_type_cost[bsize][1];
+  // Compute the cost to signal compound index/type
+  masked_type_cost[COMPOUND_AVERAGE] += x->comp_idx_cost[comp_index_ctx][1];
+  masked_type_cost[COMPOUND_DISTWTD] += x->comp_idx_cost[comp_index_ctx][0];
+  masked_type_cost[COMPOUND_WEDGE] += x->compound_type_cost[bsize][0];
+  masked_type_cost[COMPOUND_DIFFWTD] += x->compound_type_cost[bsize][1];
 }
 
 // Updates mbmi structure with the relevant compound type info
@@ -9762,7 +9766,7 @@ static int compound_type_rd(
   const int mask_len = 2 * num_pix * sizeof(uint8_t);
   COMPOUND_TYPE cur_type;
   // Local array to store the mask cost for different compound types
-  int masked_type_cost[4];
+  int masked_type_cost[COMPOUND_TYPES];
   int best_compmode_interinter_cost = 0;
   int calc_pred_masked_compound = 1;
   int64_t comp_dist[COMPOUND_TYPES] = { INT64_MAX, INT64_MAX, INT64_MAX,
