@@ -3923,6 +3923,11 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Active today
       </message>
 
+      <!-- ClickToCall -->
+      <message name="IDS_CLICK_TO_CALL_NOTIFICATION_TEXT" desc="Text displayed in a click to call notification.">
+        Call <ph name="PHONE_NUMBER">%1$s<ex>+1234567890</ex></ph>
+      </message>
+
       <!-- Chrome Duet -->
       <message name="IDS_IPH_DUET_TITLE" desc="This string appears in an overlay that explains a new UI to users. 'Search' refers to searching the web, and 'explore' refers to Chrome's suggested content.">
         Search &amp; explore
