@@ -2,38 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FAVICON_CORE_FAVICON_REQUEST_HANDLER_H_
-#define COMPONENTS_FAVICON_CORE_FAVICON_REQUEST_HANDLER_H_
+#ifndef COMPONENTS_FAVICON_CORE_HISTORY_UI_FAVICON_REQUEST_HANDLER_IMPL_H_
+#define COMPONENTS_FAVICON_CORE_HISTORY_UI_FAVICON_REQUEST_HANDLER_IMPL_H_
 
 #include <map>
 #include <memory>
 
-#include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/cancelable_task_tracker.h"
-#include "components/favicon_base/favicon_callback.h"
+#include "components/favicon/core/history_ui_favicon_request_handler.h"
 #include "components/favicon_base/favicon_types.h"
-#include "components/keyed_service/core/keyed_service.h"
-#include "url/gurl.h"
 
 namespace favicon {
 
 class FaviconServerFetcherParams;
 class FaviconService;
 class LargeIconService;
-
-// The UI origin of an icon request.
-// TODO(victorvianna): Rename to agree with the naming style of the other enums.
-enum class FaviconRequestOrigin {
-  // Unknown origin.
-  UNKNOWN,
-  // History page.
-  HISTORY,
-  // History synced tabs page (desktop only).
-  HISTORY_SYNCED_TABS,
-  // Recently closed tabs menu.
-  RECENTLY_CLOSED_TABS,
-};
 
 // Where the icon sent in the response is coming from. Used for metrics.
 enum class FaviconAvailability {
@@ -46,18 +29,9 @@ enum class FaviconAvailability {
   kMaxValue = kNotAvailable,
 };
 
-// Platform making the request.
-enum class FaviconRequestPlatform {
-  kMobile,
-  kDesktop,
-};
-
-// Keyed service for handling favicon requests by page url, forwarding them to
-// local storage, sync or Google server accordingly.
-// TODO(victorvianna): Use a more natural order for the parameters in the API.
-// TODO(victorvianna): Remove |icon_url_for_uma| when we have access to the
-// FaviconUrlMapper.
-class FaviconRequestHandler : public KeyedService {
+// Implementation class for HistoryUiFaviconRequestHandler.
+class HistoryUiFaviconRequestHandlerImpl
+    : public HistoryUiFaviconRequestHandler {
  public:
   // Callback that requests the synced bitmap for a page url.
   using SyncedFaviconGetter =
@@ -69,40 +43,27 @@ class FaviconRequestHandler : public KeyedService {
   // enabled and no custom passphrase is set).
   using CanSendHistoryDataGetter = base::RepeatingCallback<bool()>;
 
-  FaviconRequestHandler(
+  HistoryUiFaviconRequestHandlerImpl(
       const SyncedFaviconGetter& synced_favicon_getter,
       const CanSendHistoryDataGetter& can_send_history_data_getter,
       FaviconService* favicon_service,
       LargeIconService* large_icon_service);
 
-  ~FaviconRequestHandler() override;
+  ~HistoryUiFaviconRequestHandlerImpl() override;
 
-  // Requests favicon bitmap at |page_url| of size |desired_size_in_pixel|.
-  // Tries to fetch the icon from local storage and falls back to sync, or to
-  // Google favicon server if |favicon::kEnableHistoryFaviconsGoogleServerQuery|
-  // is enabled. If a non-empty |icon_url_for_uma| (optional) is passed, it will
-  // be used to record UMA about the grouping of requests to the favicon server.
-  // |request_platform| specifies whether the caller is mobile or desktop code.
   void GetRawFaviconForPageURL(const GURL& page_url,
                                int desired_size_in_pixel,
                                favicon_base::FaviconRawBitmapCallback callback,
                                FaviconRequestOrigin request_origin,
                                FaviconRequestPlatform request_platform,
                                const GURL& icon_url_for_uma,
-                               base::CancelableTaskTracker* tracker);
+                               base::CancelableTaskTracker* tracker) override;
 
-  // Requests favicon image at |page_url|.
-  // Tries to fetch the icon from local storage and falls back to sync, or to
-  // Google favicon server if |favicon::kEnableHistoryFaviconsGoogleServerQuery|
-  // is enabled.
-  // If a non-empty |icon_url_for_uma| (optional) is passed, it will be used to
-  // record UMA about the grouping of requests to the favicon server.
-  // This method is only called by desktop code.
   void GetFaviconImageForPageURL(const GURL& page_url,
                                  favicon_base::FaviconImageCallback callback,
                                  FaviconRequestOrigin request_origin,
                                  const GURL& icon_url_for_uma,
-                                 base::CancelableTaskTracker* tracker);
+                                 base::CancelableTaskTracker* tracker) override;
 
  private:
   // Called after the first attempt to retrieve the icon bitmap from local
@@ -173,11 +134,12 @@ class FaviconRequestHandler : public KeyedService {
   // benefit of grouping.
   std::map<GURL, int> group_callbacks_count_;
 
-  base::WeakPtrFactory<FaviconRequestHandler> weak_ptr_factory_{this};
+  base::WeakPtrFactory<HistoryUiFaviconRequestHandlerImpl> weak_ptr_factory_{
+      this};
 
-  DISALLOW_COPY_AND_ASSIGN(FaviconRequestHandler);
+  DISALLOW_COPY_AND_ASSIGN(HistoryUiFaviconRequestHandlerImpl);
 };
 
 }  // namespace favicon
 
-#endif  // COMPONENTS_FAVICON_CORE_FAVICON_REQUEST_HANDLER_H_
+#endif  // COMPONENTS_FAVICON_CORE_HISTORY_UI_FAVICON_REQUEST_HANDLER_IMPL_H_

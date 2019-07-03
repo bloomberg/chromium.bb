@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/favicon/favicon_request_handler_factory.h"
+#include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 
 #include "base/memory/singleton.h"
 #include "base/task/post_task.h"
@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
-#include "components/favicon/core/favicon_request_handler.h"
+#include "components/favicon/core/history_ui_favicon_request_handler_impl.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync/driver/sync_service.h"
@@ -41,21 +41,22 @@ bool CanSendHistoryData(syncer::SyncService* sync_service) {
 }  // namespace
 
 // static
-favicon::FaviconRequestHandler*
-FaviconRequestHandlerFactory::GetForBrowserContext(
+favicon::HistoryUiFaviconRequestHandler*
+HistoryUiFaviconRequestHandlerFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<favicon::FaviconRequestHandler*>(
+  return static_cast<favicon::HistoryUiFaviconRequestHandler*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
-FaviconRequestHandlerFactory* FaviconRequestHandlerFactory::GetInstance() {
-  return base::Singleton<FaviconRequestHandlerFactory>::get();
+HistoryUiFaviconRequestHandlerFactory*
+HistoryUiFaviconRequestHandlerFactory::GetInstance() {
+  return base::Singleton<HistoryUiFaviconRequestHandlerFactory>::get();
 }
 
-FaviconRequestHandlerFactory::FaviconRequestHandlerFactory()
+HistoryUiFaviconRequestHandlerFactory::HistoryUiFaviconRequestHandlerFactory()
     : BrowserContextKeyedServiceFactory(
-          "FaviconRequestHandler",
+          "HistoryUiFaviconRequestHandler",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(FaviconServiceFactory::GetInstance());
   DependsOn(LargeIconServiceFactory::GetInstance());
@@ -63,17 +64,19 @@ FaviconRequestHandlerFactory::FaviconRequestHandlerFactory()
   DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
-FaviconRequestHandlerFactory::~FaviconRequestHandlerFactory() {}
+HistoryUiFaviconRequestHandlerFactory::
+    ~HistoryUiFaviconRequestHandlerFactory() {}
 
-content::BrowserContext* FaviconRequestHandlerFactory::GetBrowserContextToUse(
+content::BrowserContext*
+HistoryUiFaviconRequestHandlerFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-KeyedService* FaviconRequestHandlerFactory::BuildServiceInstanceFor(
+KeyedService* HistoryUiFaviconRequestHandlerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  return new favicon::FaviconRequestHandler(
+  return new favicon::HistoryUiFaviconRequestHandlerImpl(
       base::BindRepeating(&GetSyncedFaviconForPageUrl,
                           SessionSyncServiceFactory::GetForProfile(profile)),
       base::BindRepeating(&CanSendHistoryData,
@@ -83,6 +86,6 @@ KeyedService* FaviconRequestHandlerFactory::BuildServiceInstanceFor(
       LargeIconServiceFactory::GetForBrowserContext(context));
 }
 
-bool FaviconRequestHandlerFactory::ServiceIsNULLWhileTesting() const {
+bool HistoryUiFaviconRequestHandlerFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }

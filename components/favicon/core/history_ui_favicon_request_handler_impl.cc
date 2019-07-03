@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/favicon/core/favicon_request_handler.h"
+#include "components/favicon/core/history_ui_favicon_request_handler_impl.h"
 
 #include <utility>
 
@@ -11,6 +11,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/favicon_server_fetcher_params.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/features.h"
@@ -19,6 +20,7 @@
 #include "components/favicon_base/favicon_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/gfx/image/image_png_rep.h"
+#include "url/gurl.h"
 
 namespace favicon {
 
@@ -95,7 +97,7 @@ GURL GetGroupIdentifier(const GURL& page_url, const GURL& icon_url) {
 
 }  // namespace
 
-FaviconRequestHandler::FaviconRequestHandler(
+HistoryUiFaviconRequestHandlerImpl::HistoryUiFaviconRequestHandlerImpl(
     const SyncedFaviconGetter& synced_favicon_getter,
     const CanSendHistoryDataGetter& can_send_history_data_getter,
     FaviconService* favicon_service,
@@ -108,9 +110,9 @@ FaviconRequestHandler::FaviconRequestHandler(
   DCHECK(large_icon_service);
 }
 
-FaviconRequestHandler::~FaviconRequestHandler() {}
+HistoryUiFaviconRequestHandlerImpl::~HistoryUiFaviconRequestHandlerImpl() {}
 
-void FaviconRequestHandler::GetRawFaviconForPageURL(
+void HistoryUiFaviconRequestHandlerImpl::GetRawFaviconForPageURL(
     const GURL& page_url,
     int desired_size_in_pixel,
     favicon_base::FaviconRawBitmapCallback callback,
@@ -122,16 +124,16 @@ void FaviconRequestHandler::GetRawFaviconForPageURL(
   favicon_service_->GetRawFaviconForPageURL(
       page_url, GetIconTypesForLocalQuery(), desired_size_in_pixel,
       kFallbackToHost,
-      base::BindOnce(&FaviconRequestHandler::OnBitmapLocalDataAvailable,
-                     weak_ptr_factory_.GetWeakPtr(), page_url,
-                     desired_size_in_pixel,
-                     /*response_callback=*/std::move(callback), request_origin,
-                     request_platform, icon_url_for_uma,
-                     CanQueryGoogleServer(request_origin), tracker),
+      base::BindOnce(
+          &HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable,
+          weak_ptr_factory_.GetWeakPtr(), page_url, desired_size_in_pixel,
+          /*response_callback=*/std::move(callback), request_origin,
+          request_platform, icon_url_for_uma,
+          CanQueryGoogleServer(request_origin), tracker),
       tracker);
 }
 
-void FaviconRequestHandler::GetFaviconImageForPageURL(
+void HistoryUiFaviconRequestHandlerImpl::GetFaviconImageForPageURL(
     const GURL& page_url,
     favicon_base::FaviconImageCallback callback,
     FaviconRequestOrigin request_origin,
@@ -140,15 +142,15 @@ void FaviconRequestHandler::GetFaviconImageForPageURL(
   // First attempt to find the icon locally.
   favicon_service_->GetFaviconImageForPageURL(
       page_url,
-      base::BindOnce(&FaviconRequestHandler::OnImageLocalDataAvailable,
-                     weak_ptr_factory_.GetWeakPtr(), page_url,
-                     /*response_callback=*/std::move(callback), request_origin,
-                     icon_url_for_uma, CanQueryGoogleServer(request_origin),
-                     tracker),
+      base::BindOnce(
+          &HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable,
+          weak_ptr_factory_.GetWeakPtr(), page_url,
+          /*response_callback=*/std::move(callback), request_origin,
+          icon_url_for_uma, CanQueryGoogleServer(request_origin), tracker),
       tracker);
 }
 
-void FaviconRequestHandler::OnBitmapLocalDataAvailable(
+void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
     const GURL& page_url,
     int desired_size_in_pixel,
     favicon_base::FaviconRawBitmapCallback response_callback,
@@ -210,7 +212,7 @@ void FaviconRequestHandler::OnBitmapLocalDataAvailable(
   std::move(response_callback).Run(favicon_base::FaviconRawBitmapResult());
 }
 
-void FaviconRequestHandler::OnImageLocalDataAvailable(
+void HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable(
     const GURL& page_url,
     favicon_base::FaviconImageCallback response_callback,
     FaviconRequestOrigin origin,
@@ -266,7 +268,7 @@ void FaviconRequestHandler::OnImageLocalDataAvailable(
   std::move(response_callback).Run(favicon_base::FaviconImageResult());
 }
 
-void FaviconRequestHandler::RequestFromGoogleServer(
+void HistoryUiFaviconRequestHandlerImpl::RequestFromGoogleServer(
     const GURL& page_url,
     std::unique_ptr<FaviconServerFetcherParams> server_parameters,
     base::OnceClosure empty_response_callback,
@@ -274,8 +276,9 @@ void FaviconRequestHandler::RequestFromGoogleServer(
     const GURL& icon_url_for_uma,
     FaviconRequestOrigin origin) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("favicon_request_handler_get_favicon",
-                                          R"(
+      net::DefineNetworkTrafficAnnotation(
+          "history_ui_favicon_request_handler_get_favicon",
+          R"(
       semantics {
         sender: "Favicon Request Handler"
         description:
@@ -320,14 +323,14 @@ void FaviconRequestHandler::RequestFromGoogleServer(
           std::move(server_parameters),
           /*may_page_url_be_private=*/true, should_trim_url_path,
           traffic_annotation,
-          base::BindOnce(&FaviconRequestHandler::OnGoogleServerDataAvailable,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         std::move(empty_response_callback),
-                         std::move(local_lookup_callback), origin,
-                         group_to_clear));
+          base::BindOnce(
+              &HistoryUiFaviconRequestHandlerImpl::OnGoogleServerDataAvailable,
+              weak_ptr_factory_.GetWeakPtr(),
+              std::move(empty_response_callback),
+              std::move(local_lookup_callback), origin, group_to_clear));
 }
 
-void FaviconRequestHandler::OnGoogleServerDataAvailable(
+void HistoryUiFaviconRequestHandlerImpl::OnGoogleServerDataAvailable(
     base::OnceClosure empty_response_callback,
     base::OnceClosure local_lookup_callback,
     FaviconRequestOrigin origin,
@@ -358,7 +361,7 @@ void FaviconRequestHandler::OnGoogleServerDataAvailable(
   }
 }
 
-bool FaviconRequestHandler::CanQueryGoogleServer(
+bool HistoryUiFaviconRequestHandlerImpl::CanQueryGoogleServer(
     FaviconRequestOrigin origin) const {
   // TODO(victorvianna): Remove origin check once extensions don't talk to this
   // layer anymore.
