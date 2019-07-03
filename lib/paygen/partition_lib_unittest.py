@@ -115,6 +115,7 @@ Block count: %d
 
     # Tests failure to identify.
     part_info_mock.side_effect = cros_build_lib.RunCommandError("error", 1)
+    part_info_mock.return_value = []
     self.assertFalse(partition_lib.IsGptImage(image))
 
   def testLookupImageType(self):

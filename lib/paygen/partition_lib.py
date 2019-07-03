@@ -146,8 +146,7 @@ def IsExt4Image(image):
 def IsGptImage(image):
   """Returns true if the image is a GPT image."""
   try:
-    cros_build_lib.GetImageDiskPartitionInfo(image)
-    return True
+    return bool(cros_build_lib.GetImageDiskPartitionInfo(image))
   except cros_build_lib.RunCommandError:
     return False
 
