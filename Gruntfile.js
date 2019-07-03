@@ -86,7 +86,7 @@ module.exports = function(grunt) {
 
   registerTaskAndAddToHelp('check', 'Check types and styles', ['ts:check', 'run:gts-check']);
   registerTaskAndAddToHelp('fix', 'Fix lint and formatting', ['run:gts-fix']);
-  registerTaskAndAddToHelp('build', 'Build out/', [
+  registerTaskAndAddToHelp('build', 'Build out/ (without type checking)', [
     'mkdir:out',
     'run:build-shaderc',
     'run:build-out',
@@ -94,14 +94,14 @@ module.exports = function(grunt) {
     'run:generate-version',
     'run:generate-listings',
   ]);
-  registerTaskAndAddToHelp('test', 'Run unittests', ['run:test']);
+  registerTaskAndAddToHelp('test', 'Run unittests', ['build', 'run:test']);
   registerTaskAndAddToHelp('serve', 'Serve out/ on 127.0.0.1:8080', ['http-server:.']);
   addExistingTaskToHelp('clean', 'Clean out/');
 
   registerTaskAndAddToHelp('pre', 'Run all presubmit checks', [
     'ts:check',
     'build',
-    'test',
+    'run:test',
     'run:gts-check',
   ]);
 
