@@ -1375,6 +1375,37 @@ TEST_F(AXPlatformNodeWinTest,
   }
 }
 
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableQueryInterfaceOnNonTable) {
+  ComPtr<IAccessibleTable> table;
+  ComPtr<IAccessibleTable2> table2;
+
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kWebArea;
+  Init(root);
+
+  ComPtr<IAccessible> root_obj = GetRootIAccessible();
+  EXPECT_EQ(E_NOINTERFACE, root_obj->QueryInterface(IID_PPV_ARGS(&table)));
+  EXPECT_EQ(E_NOINTERFACE, root_obj->QueryInterface(IID_PPV_ARGS(&table2)));
+
+  AXTreeUpdate update = Build3X3Table();
+  update.node_id_to_clear = 1;
+  Init(update);
+
+  ComPtr<IAccessibleTableCell> cell = GetCellInTable();
+  ASSERT_NE(nullptr, cell.Get());
+  EXPECT_EQ(E_NOINTERFACE, cell->QueryInterface(IID_PPV_ARGS(&table)));
+  EXPECT_EQ(E_NOINTERFACE, cell->QueryInterface(IID_PPV_ARGS(&table2)));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableCellQueryInterfaceOnNonCell) {
+  Init(Build3X3Table());
+
+  ComPtr<IAccessible> root_obj = GetRootIAccessible();
+  ComPtr<IAccessibleTableCell> cell;
+  EXPECT_EQ(E_NOINTERFACE, root_obj->QueryInterface(IID_PPV_ARGS(&cell)));
+}
+
 TEST_F(AXPlatformNodeWinTest, TestIAccessible2ScrollToPoint) {
   AXNodeData root;
   root.id = 1;
