@@ -26,7 +26,14 @@ class Profile;
 // is available before sign-in completes.
 class SigninManagerAndroid : public identity::IdentityManager::Observer {
  public:
-  SigninManagerAndroid(JNIEnv* env, jobject obj);
+  SigninManagerAndroid(Profile* profile,
+                       identity::IdentityManager* identity_manager);
+
+  ~SigninManagerAndroid() override;
+
+  void Shutdown();
+
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // Indicates that the user has made the choice to sign-in. |username|
   // contains the email address of the account to use as primary.
@@ -60,11 +67,11 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
       const CoreAccountInfo& previous_primary_account_info) override;
 
  private:
-  ~SigninManagerAndroid() override;
-
   void OnSigninAllowedPrefChanged();
 
   Profile* profile_;
+
+  identity::IdentityManager* identity_manager_;
 
   // Java-side SigninManager object.
   base::android::ScopedJavaGlobalRef<jobject> java_signin_manager_;

@@ -177,10 +177,10 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     }
 
     @SuppressLint("StaticFieldLeak")
-    private static SigninManager sSigninManager;
+    private static SigninManager sTestingSigninManager;
     private static int sSignInAccessPoint = SigninAccessPoint.UNKNOWN;
 
-    private long mNativeSigninManagerAndroid;
+    private final long mNativeSigninManagerAndroid;
     private final Context mContext;
     private final SigninManagerDelegate mDelegate;
     private final AccountTrackerService mAccountTrackerService;
@@ -212,37 +212,48 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     private @Nullable SignOutState mSignOutState;
 
     /**
-     * A helper method for retrieving the application-wide SigninManager.
-     * <p/>
-     * Can only be accessed on the main thread.
-     *
-     * @return a singleton instance of the SigninManager.
+     * Called by native to create an instance of SigninManager.
+     * @param nativeSigninManagerAndroid A pointer to native's SigninManagerAndroid.
+     * @return
      */
-    public static SigninManager get() {
-        ThreadUtils.assertOnUiThread();
-        if (sSigninManager == null) {
-            sSigninManager = new SigninManager();
-        }
-        return sSigninManager;
-    }
-
-    private SigninManager() {
-        this(ContextUtils.getApplicationContext(), new ChromeSigninManagerDelegate(),
+    @CalledByNative
+    private static SigninManager create(long nativeSigninManagerAndroid) {
+        assert nativeSigninManagerAndroid != 0;
+        return new SigninManager(ContextUtils.getApplicationContext(), nativeSigninManagerAndroid,
+                new ChromeSigninManagerDelegate(),
                 IdentityServicesProvider.getAccountTrackerService());
     }
 
+    /**
+     * A helper method for retrieving the application-wide SigninManager.
+     * <p/>
+     * Can only be accessed on the main thread.
+     * @deprecated
+     * This method will be removed in https://crrev.com/c/1674022, use
+     * IdentityServicesProvider.getSigninManager() instead.
+     *
+     * @return a singleton instance of the SigninManager.
+     */
+    @Deprecated()
+    public static SigninManager get() {
+        if (sTestingSigninManager != null) {
+            return sTestingSigninManager;
+        }
+        return IdentityServicesProvider.getSigninManager();
+    }
+
     @VisibleForTesting
-    SigninManager(Context context, SigninManagerDelegate delegate,
+    SigninManager(Context context, long nativeSigninManagerAndroid, SigninManagerDelegate delegate,
             AccountTrackerService accountTrackerService) {
         ThreadUtils.assertOnUiThread();
         assert context != null;
         assert delegate != null;
         assert accountTrackerService != null;
-        mDelegate = delegate;
         mContext = context;
+        mNativeSigninManagerAndroid = nativeSigninManagerAndroid;
+        mDelegate = delegate;
         mAccountTrackerService = accountTrackerService;
 
-        mNativeSigninManagerAndroid = SigninManagerJni.get().init(this);
         mSigninAllowedByPolicy =
                 SigninManagerJni.get().isSigninAllowedByPolicy(this, mNativeSigninManagerAndroid);
 
@@ -252,6 +263,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     /**
      * Perform destruction of the object, cascading destruction to delegate.
      */
+    @CalledByNative
     public void destroy() {
         mDelegate.destroy();
     }
@@ -703,16 +715,22 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         return SigninManagerJni.get().extractDomainName(email);
     }
 
+    /**
+     * Override the SigninManager to be used for tests
+     * @deprecated
+     * This method will be removed in https://crrev.com/c/1674022, provide SigninManager as a
+     * parameter of your tested objects instead.
+     * @param signinManager
+     */
     @VisibleForTesting
+    @Deprecated
     public static void setInstanceForTesting(SigninManager signinManager) {
-        sSigninManager = signinManager;
+        sTestingSigninManager = signinManager;
     }
 
     // Native methods.
     @NativeMethods
     interface Natives {
-        long init(@JCaller SigninManager self);
-
         boolean isSigninAllowedByPolicy(
                 @JCaller SigninManager self, long nativeSigninManagerAndroid);
 

@@ -12,8 +12,7 @@
 #include "base/feature_list.h"
 #include "chrome/android/chrome_jni_headers/SigninManager_jni.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
@@ -32,23 +31,34 @@ void ClearLastSignedInUserForProfile(Profile* profile) {
 }
 }  // namespace
 
-SigninManagerAndroid::SigninManagerAndroid(JNIEnv* env, jobject obj)
-    : profile_(NULL) {
-  java_signin_manager_.Reset(env, obj);
-  profile_ = ProfileManager::GetActiveUserProfile();
+SigninManagerAndroid::SigninManagerAndroid(
+    Profile* profile,
+    identity::IdentityManager* identity_manager)
+    : profile_(profile), identity_manager_(identity_manager) {
   DCHECK(profile_);
-  IdentityManagerFactory::GetForProfile(profile_)->AddObserver(this);
+  DCHECK(identity_manager_);
+  identity_manager_->AddObserver(this);
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kSigninAllowed,
       base::Bind(&SigninManagerAndroid::OnSigninAllowedPrefChanged,
                  base::Unretained(this)));
+  java_signin_manager_ = Java_SigninManager_create(
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+SigninManagerAndroid::GetJavaObject() {
+  return base::android::ScopedJavaLocalRef<jobject>(java_signin_manager_);
 }
 
 SigninManagerAndroid::~SigninManagerAndroid() {
-  IdentityManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
-  // TODO(crbug.com/963408) Call SigninManager.java Destroy once ownership is
-  // reversed.
+  Java_SigninManager_destroy(base::android::AttachCurrentThread(),
+                             java_signin_manager_);
+}
+
+void SigninManagerAndroid::Shutdown() {
+  identity_manager_->RemoveObserver(this);
 }
 
 void SigninManagerAndroid::OnSignInCompleted(
@@ -59,16 +69,14 @@ void SigninManagerAndroid::OnSignInCompleted(
 
   // TODO(crbug.com/889902): Migrate to IdentityManager once there's an
   // API mapping for SigninManager::SignIn().
-  IdentityManagerFactory::GetForProfile(profile_)
-      ->GetPrimaryAccountManager()
-      ->SignIn(base::android::ConvertJavaStringToUTF8(env, username));
+  identity_manager_->GetPrimaryAccountManager()->SignIn(
+      base::android::ConvertJavaStringToUTF8(env, username));
 }
 
 void SigninManagerAndroid::SignOut(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj,
                                    jint signoutReason) {
-  auto* account_mutator = IdentityManagerFactory::GetForProfile(profile_)
-                              ->GetPrimaryAccountMutator();
+  auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
 
   // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
   DCHECK(account_mutator);
@@ -89,12 +97,10 @@ void SigninManagerAndroid::ClearLastSignedInUser(
 
 void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile_);
   // With the account consistency enabled let the account Reconcilor handles
   // everything.
   // TODO(https://crbug.com/930094): Determine the right long-term flow here.
-  identity_manager->LegacyReloadAccountsFromSystem();
+  identity_manager_->LegacyReloadAccountsFromSystem();
 }
 
 jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(
@@ -114,7 +120,7 @@ jboolean SigninManagerAndroid::IsForceSigninEnabled(
 jboolean SigninManagerAndroid::IsSignedInOnNative(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount();
+  return identity_manager_->HasPrimaryAccount();
 }
 
 void SigninManagerAndroid::OnPrimaryAccountCleared(
@@ -128,13 +134,6 @@ void SigninManagerAndroid::OnSigninAllowedPrefChanged() {
   Java_SigninManager_onSigninAllowedByPolicyChanged(
       base::android::AttachCurrentThread(), java_signin_manager_,
       profile_->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
-}
-
-static jlong JNI_SigninManager_Init(JNIEnv* env,
-                                    const JavaParamRef<jobject>& obj) {
-  SigninManagerAndroid* signin_manager_android =
-      new SigninManagerAndroid(env, obj);
-  return reinterpret_cast<intptr_t>(signin_manager_android);
 }
 
 base::android::ScopedJavaLocalRef<jstring> JNI_SigninManager_ExtractDomainName(
