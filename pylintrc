@@ -54,6 +54,7 @@ enable=
     dict-view-method,
     div-method,
     exception-message-attribute,
+    execfile-builtin,
     getslice-method,
     hex-method,
     idiv-method,

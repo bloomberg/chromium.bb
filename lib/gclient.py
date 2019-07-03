@@ -58,11 +58,13 @@ def _LoadGclientFile(path):
     solutions exists.
   """
   global_scope = {}
-  # Similar to depot_tools, we use execfile() to evaluate the gclient file,
+  # Similar to depot_tools, we use exec() to evaluate the gclient file,
   # which is essentially a Python script, and then extract the solutions
   # defined by the gclient file from the 'solutions' variable in the global
   # scope.
-  execfile(path, global_scope)
+  with open(path) as fp:
+    # pylint: disable=exec-used
+    exec(compile(fp.read(), path, 'exec'), global_scope)
   return global_scope.get('solutions', [])
 
 

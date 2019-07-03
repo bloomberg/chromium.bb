@@ -172,7 +172,9 @@ OUT_DIR = '/tmp/crosfw'
 
 rc_file = os.path.expanduser('~/.crosfwrc')
 if os.path.exists(rc_file):
-  execfile(rc_file)
+  with open(rc_file) as fp:
+    # pylint: disable=exec-used
+    exec(compile(fp.read(), rc_file, 'exec'))
 
 
 def Log(msg):
