@@ -33,7 +33,7 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
     counter = itertools.count()
     @retry_util.WithRetry(max_retry=3)
     def _run():
-      current = counter.next()
+      current = next(counter)
       # Failed twice, then success.
       if current < 2:
         raise Exception()
@@ -108,7 +108,7 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
       """Get function that fails once with ValueError, Then AssertionError."""
       source = itertools.count()
       def _TestMain():
-        if source.next() == 0:
+        if next(source) == 0:
           raise ValueError()
         else:
           raise AssertionError()

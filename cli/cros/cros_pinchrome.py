@@ -247,9 +247,6 @@ class UprevList(object):
     return self
 
   def __next__(self):
-    return self.next()
-
-  def next(self):
     before = self.last.sha if self.last else None
     try:
       self.last = ChromeUprev(self.chrome_path, before=before)
@@ -258,6 +255,9 @@ class UprevList(object):
     ver = self.last.from_parts.version + ' (%s)' % self.last.date
     self.uprevs.append(self.last)
     return ver
+
+  # Python 2 glue.
+  next = __next__
 
 
 # Tools to find the binhost updates in the private overlay which go with the

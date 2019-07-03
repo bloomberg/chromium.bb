@@ -55,9 +55,9 @@ class TruthTableTest(cros_test_lib.TestCase):
     # Check that more than one iterable can be used at once.
     iter1 = iter(tt)
     iter2 = iter(tt)
-    self.assertEquals(lines[0], iter1.next())
-    self.assertEquals(lines[0], iter2.next())
-    self.assertEquals(lines[1], iter2.next())
+    self.assertEquals(lines[0], next(iter1))
+    self.assertEquals(lines[0], next(iter2))
+    self.assertEquals(lines[1], next(iter2))
 
     # Check that iteration again works again.
     for ix, line in enumerate(tt):

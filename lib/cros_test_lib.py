@@ -357,14 +357,14 @@ class TruthTable(object):
       return self
 
     def __next__(self):
-      return self.next()
-
-    def next(self):
       if self.next_line < self.truth_table.num_lines:
         self.next_line += 1
         return self.truth_table.GetInputs(self.next_line - 1)
       else:
         raise StopIteration()
+
+    # Python 2 glue.
+    next = __next__
 
   def __init__(self, inputs, input_result=True):
     """Construct a TruthTable from given inputs.

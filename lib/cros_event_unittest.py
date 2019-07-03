@@ -20,7 +20,7 @@ class EventIdGeneratorTest(cros_test_lib.TestCase):
     expected_ids = {1, 2, 3, 4, 5}
     id_gen = ce.EventIdGenerator()
     for expected_id in expected_ids:
-      self.assertEquals(expected_id, id_gen.next())
+      self.assertEquals(expected_id, next(id_gen))
 
 
 class FailTest(cros_test_lib.TestCase):

@@ -84,7 +84,7 @@ class Event(dict):
     """
     super(Event, self).__init__()
 
-    self[EVENT_ID] = eid if eid is not None else _next_event_id.next()
+    self[EVENT_ID] = eid if eid is not None else next(_next_event_id)
 
     self[EVENT_START_TIME] = time()
 
@@ -161,7 +161,7 @@ class EventLogger(object):
 
     kind = kind if kind else self.default_kind
 
-    eid = [kind, self.idGen.next()]
+    eid = [kind, next(self.idGen)]
 
     d = self.data.copy()
     if data:

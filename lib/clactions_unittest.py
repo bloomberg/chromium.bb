@@ -52,7 +52,7 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     c = itertools.count()
 
     def next_time():
-      return start_time + datetime.timedelta(seconds=c.next())
+      return start_time + datetime.timedelta(seconds=next(c))
 
     def a(build_id, action, reason=None):
       self._Act(build_id, change, action, reason=reason, timestamp=next_time())

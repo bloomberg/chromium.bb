@@ -547,7 +547,7 @@ class DataSeries0Test(CIDBIntegrationTest):
     def is_master(m):
       return m.GetDict()['bot-config'] == 'master-paladin'
 
-    next_master = m_iter.next()
+    next_master = next(m_iter)
 
     while next_master:
       master = next_master

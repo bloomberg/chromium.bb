@@ -69,6 +69,7 @@ enable=
     long-builtin,
     map-builtin-not-iterating,
     metaclass-assignment,
+    next-method-called,
     next-method-defined,
     nonzero-method,
     oct-method,

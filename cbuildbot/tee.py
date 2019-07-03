@@ -116,7 +116,7 @@ class _TeeProcess(multiprocessing.Process):
     preserve = iter(sorted(preserve))
     fd = 0
     while fd < subprocess.MAXFD:
-      current_low = preserve.next()
+      current_low = next(preserve)
       if fd != current_low:
         os.closerange(fd, current_low)
         fd = current_low

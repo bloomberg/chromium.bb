@@ -466,7 +466,7 @@ The suite job has another 2:39:39.789250 till timeout.
     ])
     self.rc.AddCmdResult(
         self.create_cmd,
-        side_effect=lambda *args, **kwargs: create_results.next(),
+        side_effect=lambda *args, **kwargs: next(create_results),
     )
     wait_results_list = []
     if wait_retry:
@@ -485,7 +485,7 @@ The suite job has another 2:39:39.789250 till timeout.
 
     self.rc.AddCmdResult(
         self.wait_cmd,
-        side_effect=lambda *args, **kwargs: wait_results.next(),
+        side_effect=lambda *args, **kwargs: next(wait_results),
     )
 
     # Json dump will only run when wait_cmd fails
@@ -497,7 +497,7 @@ The suite job has another 2:39:39.789250 till timeout.
       ])
       self.rc.AddCmdResult(
           self.json_dump_cmd,
-          side_effect=lambda *args, **kwargs: dump_json_results.next(),
+          side_effect=lambda *args, **kwargs: next(dump_json_results),
       )
 
   def PatchJson(self, task_outputs):
@@ -532,7 +532,7 @@ The suite job has another 2:39:39.789250 till timeout.
         return_values.append(j)
       return_values_iter = iter(return_values)
       self.PatchObject(swarming_lib.SwarmingCommandResult, 'LoadJsonSummary',
-                       side_effect=lambda json_file: return_values_iter.next())
+                       side_effect=lambda json_file: next(return_values_iter))
     else:
       self.PatchObject(swarming_lib.SwarmingCommandResult, 'LoadJsonSummary',
                        return_value=None)

@@ -273,7 +273,7 @@ class UploadSymbolsHelpersTest(cros_test_lib.TestCase):
 
     # Prove that we are streaming the results, not generating them all at once.
     result = upload_symbols.BatchGenerator(itertools.repeat(0), 2)
-    self.assertEqual(result.next(), [0, 0])
+    self.assertEqual(next(result), [0, 0])
 
 
 class FindSymbolFilesTest(SymbolsTestBase):
