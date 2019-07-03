@@ -508,7 +508,6 @@ void CSSGradientValue::AddStops(
           length = stop.offset_->ComputeLength<float>(conversion_data);
         } else {
           length = To<CSSMathFunctionValue>(stop.offset_.Get())
-                       ->CssCalcValue()
                        ->ToCalcValue(conversion_data)
                        ->Evaluate(gradient_length);
         }
@@ -686,7 +685,6 @@ static float PositionFromValue(const CSSValue* value,
 
   if (primitive_value->IsCalculatedPercentageWithLength())
     return origin + sign * To<CSSMathFunctionValue>(primitive_value)
-                               ->CssCalcValue()
                                ->ToCalcValue(conversion_data)
                                ->Evaluate(edge_distance);
 

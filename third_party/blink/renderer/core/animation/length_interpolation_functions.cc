@@ -236,16 +236,16 @@ const CSSValue* LengthInterpolationFunctions::CreateCSSValue(
       continue;
     }
     CSSCalcExpressionNode* current_node =
-        CSSCalcValue::CreateExpressionNode(current_value);
+        CSSCalcPrimitiveValue::Create(current_value);
     if (!root_node) {
-      root_node = CSSCalcValue::CreateExpressionNode(first_value);
+      root_node = CSSCalcPrimitiveValue::Create(first_value);
     }
-    root_node = CSSCalcValue::CreateExpressionNode(root_node, current_node,
-                                                   CSSMathOperator::kAdd);
+    root_node = CSSCalcBinaryOperation::Create(root_node, current_node,
+                                               CSSMathOperator::kAdd);
   }
 
   if (root_node) {
-    return CSSMathFunctionValue::Create(CSSCalcValue::Create(root_node));
+    return CSSMathFunctionValue::Create(root_node);
   }
   if (first_value) {
     return first_value;

@@ -111,11 +111,11 @@ bool TransformBuilder::HasRelativeLengths(const CSSValueList& value_list) {
       const auto& primitive_value = To<CSSPrimitiveValue>(*item);
 
       if (primitive_value.IsCalculated()) {
-        // TODO(xiaochengh): Get type from CSSPrimitiveValue directly.
-        CSSCalcValue* css_calc_value =
-            To<CSSMathFunctionValue>(primitive_value).CssCalcValue();
+        // TODO(xiaochengh): Get type from CSSMathFunctionValue directly.
         CSSPrimitiveValue::UnitType resolved_type =
-            css_calc_value->ExpressionNode()->TypeWithCalcResolved();
+            To<CSSMathFunctionValue>(primitive_value)
+                .ExpressionNode()
+                ->TypeWithCalcResolved();
         if (CSSPrimitiveValue::IsRelativeUnit(resolved_type) ||
             resolved_type == CSSPrimitiveValue::UnitType::kUnknown) {
           return true;

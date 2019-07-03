@@ -5,11 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_MATH_FUNCTION_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_MATH_FUNCTION_VALUE_H_
 
+#include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 
 namespace blink {
-
-class CSSCalcValue;
 
 // Numeric values that involve math functions (calc(), min(), max(), etc). This
 // is the equivalence of CSS Typed OM's |CSSMathValue| in the |CSSValue| class
@@ -17,13 +16,29 @@ class CSSCalcValue;
 class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
  public:
   static CSSMathFunctionValue* Create(const Length&, float zoom);
-  static CSSMathFunctionValue* Create(CSSCalcValue*);
+  static CSSMathFunctionValue* Create(CSSCalcExpressionNode*,
+                                      ValueRange = kValueRangeAll);
 
-  explicit CSSMathFunctionValue(CSSCalcValue*);
+  CSSMathFunctionValue(CSSCalcExpressionNode* expression, ValueRange range);
 
-  CSSCalcValue* CssCalcValue() const { return calc_; }
+  CSSCalcExpressionNode* ExpressionNode() const { return expression_; }
+
+  scoped_refptr<CalculationValue> ToCalcValue(
+      const CSSToLengthConversionData& conversion_data) const {
+    PixelsAndPercent value(0, 0);
+    expression_->AccumulatePixelsAndPercent(conversion_data, value);
+    return CalculationValue::Create(
+        value, non_negative_ ? kValueRangeNonNegative : kValueRangeAll);
+  }
 
   UnitType TypeWithMathFunctionResolved() const;
+
+  CalculationCategory Category() const { return expression_->Category(); }
+  bool IsInt() const { return expression_->IsInteger(); }
+  bool IsNegative() const { return expression_->DoubleValue() < 0; }
+  ValueRange PermittedValueRange() {
+    return non_negative_ ? kValueRangeNonNegative : kValueRangeAll;
+  }
 
   // TODO(crbug.com/979895): Make sure these functions are called only when
   // the math expression resolves into a double value.
@@ -44,7 +59,12 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
   void TraceAfterDispatch(blink::Visitor* visitor);
 
  private:
-  Member<CSSCalcValue> calc_;
+  double ClampToPermittedRange(double) const;
+
+  Member<CSSCalcExpressionNode> expression_;
+
+  // TODO(crbug.com/979895): Move this flag to CSSValue for better packing.
+  bool non_negative_;
 };
 
 template <>

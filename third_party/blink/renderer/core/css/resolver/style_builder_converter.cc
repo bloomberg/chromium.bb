@@ -304,8 +304,7 @@ static float ComputeFontSize(const CSSToLengthConversionData& conversion_data,
     return primitive_value.ComputeLength<float>(conversion_data);
   if (primitive_value.IsCalculatedPercentageWithLength()) {
     return To<CSSMathFunctionValue>(primitive_value)
-        .CssCalcValue()
-        ->ToCalcValue(conversion_data)
+        .ToCalcValue(conversion_data)
         ->Evaluate(parent_size.value);
   }
 
@@ -1115,7 +1114,6 @@ Length StyleBuilderConverter::ConvertLineHeight(StyleResolverState& state,
     if (primitive_value->IsCalculated()) {
       Length zoomed_length =
           Length(To<CSSMathFunctionValue>(primitive_value)
-                     ->CssCalcValue()
                      ->ToCalcValue(LineHeightToLengthConversionData(state)));
       return Length::Fixed(ValueForLength(
           zoomed_length, LayoutUnit(state.Style()->ComputedFontSize())));
