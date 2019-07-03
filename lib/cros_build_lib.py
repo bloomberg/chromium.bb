@@ -1036,7 +1036,13 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
 
 def GetInput(prompt):
   """Helper function to grab input from a user.   Makes testing easier."""
-  return raw_input(prompt)
+  # We have people use GetInput() so they don't have to use these bad builtins
+  # themselves or deal with version skews.
+  # pylint: disable=bad-builtin,input-builtin,raw_input-builtin
+  if sys.version_info.major < 3:
+    return raw_input(prompt)
+  else:
+    return input(prompt)
 
 
 def GetChoice(title, options, group_size=0):

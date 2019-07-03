@@ -62,6 +62,7 @@ enable=
     idiv-method,
     import-star-module-level,
     indexing-exception,
+    input-builtin,
     intern-builtin,
     invalid-str-codec,
     long-builtin,
@@ -73,6 +74,7 @@ enable=
     print-statement,
     raising-string,
     range-builtin-not-iterating,
+    raw_input-builtin,
     rdiv-method,
     reload-builtin,
     setslice-method,
@@ -208,6 +210,7 @@ bad-functions=
     exit,
     input,
     quit,
+    raw_input,
 
 # Regular expression which should only match correct module names
 #module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
