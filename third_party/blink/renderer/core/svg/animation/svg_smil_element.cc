@@ -1151,7 +1151,8 @@ void SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
 
   float percent = CalculateAnimationPercent(elapsed);
   unsigned repeat = CalculateAnimationRepeat(elapsed);
-  bool restarted_interval = MaybeRestartInterval(elapsed);
+  bool restarted_interval =
+      MaybeRestartInterval(elapsed) == RestartedInterval::kDidRestartInterval;
 
   ActiveState old_active_state = GetActiveState();
   active_state_ = DetermineActiveState(elapsed);
