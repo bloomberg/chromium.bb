@@ -1292,7 +1292,7 @@
 <translation id="2932483646085333864">Ondoka kisha uingie katika akaunti tena ili uanze kusawazisha</translation>
 <translation id="2932883381142163287">Ripoti matumizi mabaya</translation>
 <translation id="2936851848721175671">Hifadhi nakala na urejeshe</translation>
-<translation id="2938225289965773019">Fungua viungo vya <ph name="PROTOCOL" /></translation>
+<translation id="2938225289965773019">Kufungua viungo vya <ph name="PROTOCOL" /></translation>
 <translation id="2939938020978911855">Onyesha vifaa vya Bluetooth vinavyopatikana</translation>
 <translation id="2941112035454246133">Chini</translation>
 <translation id="2942560570858569904">Inasubiri...</translation>
@@ -5067,7 +5067,7 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8734073480934656039">Kuwasha mpangilio huu huruhusu programu ya skrini nzima kuzindua kiotomatiki kifaa kinapowashwa.</translation>
 <translation id="873545264931343897"><ph name="PLUGIN_NAME" /> ikikamilisha kusasisha, pakia upya ukurasa ili kuiwasha</translation>
 <translation id="8736288397686080465">Tovuti hii imesasishwa chini chini.</translation>
-<translation id="8737685506611670901">Fungua viungo vya <ph name="PROTOCOL" /> badala ya <ph name="REPLACED_HANDLER_TITLE" /></translation>
+<translation id="8737685506611670901">Kufungua viungo vya <ph name="PROTOCOL" /> badala ya <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="8743390665131937741">Kiwango cha ukuzaji wa skrini nzima:</translation>
 <translation id="8743864605301774756">Ulisasishwa saa 1 iliyopita</translation>

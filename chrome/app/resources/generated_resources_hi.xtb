@@ -3022,7 +3022,7 @@
 <translation id="5618075537869101857">अरे नहीं, कियोस्क ऐप्स  लॉन्च नहीं किया जा सका.</translation>
 <translation id="5618333180342767515">(इसमें कुछ मिनट लग सकते हैं.)</translation>
 <translation id="56197088284879152">दूरस्थ डिवाइस के लिए कनेक्शन अत्यधिक धीमा है: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="5620568081365989559">DevTools <ph name="FOLDER_PATH" /> का पूरा एक्सेस चाहता है. पक्का करें कि आप किसी भी संवेदनशील जानकारी का खुलासा ना करें.</translation>
+<translation id="5620568081365989559">DevTools <ph name="FOLDER_PATH" /> का पूरा एक्सेस चाहता है. पक्का करें कि आप किसी भी संवेदनशील जानकारी न बताएं.</translation>
 <translation id="5620612546311710611">इस्तेमाल के आंकड़े</translation>
 <translation id="5620655347161642930">पासवर्ड निर्यात करें...</translation>
 <translation id="5623282979409330487">यह साइट आपके हलचल पकड़ने वाले सेंसर को एक्सेस कर रही है.</translation>
@@ -4376,7 +4376,7 @@
 <translation id="7704521324619958564">Play स्टोर खोलें</translation>
 <translation id="7704628569466676326">अपनी 'सुरक्षा चाबी' को इस डिवाइस से जोड़ें ताकि आप अपने खाते में साइन इन करने के लिए इसका इस्तेमाल कर सकें</translation>
 <translation id="7705276765467986571">बुकमार्क मॉडल लोड नहीं कर सका.</translation>
-<translation id="7705524343798198388">VPN</translation>
+<translation id="7705524343798198388">वीपीएन</translation>
 <translation id="7707108266051544351">इस साइट को हलचल वाले सेंसर का इस्तेमाल करने से रोक दिया गया है.</translation>
 <translation id="7707922173985738739">मोबाइल डेटा का उपयोग करें</translation>
 <translation id="7709152031285164251">विफल - <ph name="INTERRUPT_REASON" /></translation>
