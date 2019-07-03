@@ -56,6 +56,7 @@ enable=
     div-method,
     exception-message-attribute,
     execfile-builtin,
+    file-builtin,
     getslice-method,
     hex-method,
     idiv-method,

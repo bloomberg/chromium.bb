@@ -192,9 +192,8 @@ class PackageIndex(object):
     Args:
       pkgfile_path (str): The path to the file.
     """
-    f = file(pkgfile_path)
-    self.Read(f)
-    f.close()
+    with open(pkgfile_path) as f:
+      self.Read(f)
 
   def RemoveFilteredPackages(self, filter_fn):
     """Remove packages which match filter_fn.
@@ -396,10 +395,9 @@ def GrabLocalPackageIndex(package_path):
   Returns:
     A PackageIndex object.
   """
-  packages_file = file(os.path.join(package_path, 'Packages'))
-  pkgindex = PackageIndex()
-  pkgindex.Read(packages_file)
-  packages_file.close()
+  with open(os.path.join(package_path, 'Packages')) as f:
+    pkgindex = PackageIndex()
+    pkgindex.Read(f)
 
   # List all debug symbols available in package_path.
   symbols = set()

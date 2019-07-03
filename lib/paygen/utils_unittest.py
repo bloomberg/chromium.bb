@@ -22,11 +22,8 @@ class TestUtils(cros_test_lib.TempDirTestCase):
     file_a = os.path.join(self.tempdir, 'a')
     file_b = os.path.join(self.tempdir, 'b')
 
-    with file(file_a, 'w+'):
-      pass
-
-    with file(file_b, 'w+'):
-      pass
+    osutils.Touch(file_a)
+    osutils.Touch(file_b)
 
     self.assertEqual(sorted(utils.ListdirFullpath(self.tempdir)),
                      [file_a, file_b])

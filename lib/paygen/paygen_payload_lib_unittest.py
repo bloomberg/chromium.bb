@@ -607,7 +607,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
 
     gen._StoreMetadataSignatures(metadata_signatures)
 
-    with file(gen.metadata_signature_file, 'rb') as f:
+    with open(gen.metadata_signature_file, 'rb') as f:
       self.assertEqual(f.read(), encoded_metadata_signature)
 
   def testVerifyPayloadDelta(self):
