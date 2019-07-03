@@ -316,30 +316,30 @@ static void pick_cdef_from_qp(AV1_COMMON *const cm) {
   int predicted_uv_f2 = 0;
   aom_clear_system_state();
   if (!frame_is_intra_only(cm)) {
-    predicted_y_f1 = clamp((int)roundf(-q * q * 0.00000235939456f +
+    predicted_y_f1 = clamp((int)roundf(-q * q * 0.0000023593946f +
                                        q * 0.0068615186f + 0.02709886f),
                            0, 15);
-    predicted_y_f2 = clamp((int)roundf(-q * q * 0.000000576297339f +
-                                       q * 0.00139933452f + 0.03831067f),
+    predicted_y_f2 = clamp((int)roundf(-q * q * 0.00000057629734f +
+                                       q * 0.0013993345f + 0.03831067f),
                            0, 3);
-    predicted_uv_f1 = clamp((int)roundf(-q * q * 0.000000709506878f +
-                                        q * 0.00346288458f + 0.00887099f),
+    predicted_uv_f1 = clamp((int)roundf(-q * q * 0.0000007095069f +
+                                        q * 0.0034628846f + 0.00887099f),
                             0, 15);
-    predicted_uv_f2 = clamp((int)roundf(q * q * 0.000000238740853f +
-                                        q * 0.000282235851f + 0.05576307f),
+    predicted_uv_f2 = clamp((int)roundf(q * q * 0.00000023874085f +
+                                        q * 0.00028223585f + 0.05576307f),
                             0, 3);
   } else {
     predicted_y_f1 = clamp(
-        (int)roundf(q * q * 0.00000337319739f + q * 0.0080705937f + 0.0187634f),
+        (int)roundf(q * q * 0.0000033731974f + q * 0.008070594f + 0.0187634f),
         0, 15);
-    predicted_y_f2 = clamp((int)roundf(-q * q * -0.00000291673427f +
-                                       q * 0.00277986238f + 0.0079405f),
+    predicted_y_f2 = clamp((int)roundf(-q * q * -0.0000029167343f +
+                                       q * 0.0027798624f + 0.0079405f),
                            0, 3);
-    predicted_uv_f1 = clamp((int)roundf(-q * q * 0.0000130790995f +
-                                        q * 0.0128924046f - 0.00748388f),
-                            0, 15);
-    predicted_uv_f2 = clamp((int)roundf(q * q * 0.00000326517829f +
-                                        q * 0.000355201832f + 0.00228092f),
+    predicted_uv_f1 = clamp(
+        (int)roundf(-q * q * 0.0000130790995f + q * 0.012892405f - 0.00748388f),
+        0, 15);
+    predicted_uv_f2 = clamp((int)roundf(q * q * 0.0000032651783f +
+                                        q * 0.00035520183f + 0.00228092f),
                             0, 3);
   }
   cdef_info->cdef_strengths[0] =
