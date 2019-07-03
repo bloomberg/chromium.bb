@@ -1,5 +1,6 @@
 import { CaseRecorder, GroupRecorder, IResult } from './logger.js';
 import { IParamsAny, IParamsSpec, ParamSpecIterable, paramsEquals } from './params/index.js';
+import { Fixture } from './fixture.js';
 
 export interface TestCaseID {
   readonly name: string;
@@ -83,26 +84,6 @@ class RunCaseSpecific<F extends Fixture> implements RunCase {
 }
 
 type FixtureClass<F extends Fixture> = new (log: CaseRecorder, params: IParamsAny) => F;
-
-export abstract class Fixture {
-  params: IParamsAny;
-  protected rec: CaseRecorder;
-
-  constructor(rec: CaseRecorder, params: IParamsAny) {
-    this.rec = rec;
-    this.params = params;
-  }
-
-  // This has to be a member function instead of an async `createFixture` function, because
-  // we need to be able to ergonomically override it in subclasses.
-  async init(): Promise<void> {}
-
-  finalize(): void {}
-
-  log(msg: string) {
-    this.rec.log(msg);
-  }
-}
 
 // It may be OK to add more allowed characters here.
 export const allowedTestNameCharacters = 'a-zA-Z0-9/_ ';

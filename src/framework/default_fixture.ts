@@ -1,4 +1,4 @@
-import { Fixture } from './test_group.js';
+import { Fixture } from './fixture.js';
 
 export class DefaultFixture extends Fixture {
   private outstanding = 0;
