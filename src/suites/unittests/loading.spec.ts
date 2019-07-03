@@ -10,10 +10,11 @@ import {
   RunCase,
 } from '../../framework/index.js';
 import {
+  TestFileLoader,
   TestGroupDesc,
-  TestSuiteListing,
-  TestSpecFile,
   TestLoader,
+  TestSpecFile,
+  TestSuiteListing,
 } from '../../framework/loader.js';
 import { Logger } from '../../framework/logger.js';
 
@@ -76,12 +77,12 @@ const specsData: { [k: string]: TestSpecFile } = {
   },
 };
 
-export class TestTestLoader extends TestLoader {
-  protected async listing(suite: string): Promise<TestSuiteListing> {
+class FakeTestFileLoader implements TestFileLoader {
+  async listing(suite: string): Promise<TestSuiteListing> {
     return { suite, groups: listingData[suite] };
   }
 
-  protected async import(path: string): Promise<TestSpecFile> {
+  async import(path: string): Promise<TestSpecFile> {
     if (!specsData.hasOwnProperty(path)) {
       throw new Error('[test] mock file ' + path + ' does not exist');
     }
@@ -90,7 +91,7 @@ export class TestTestLoader extends TestLoader {
 }
 
 class LoadingTest extends DefaultFixture {
-  loader: TestTestLoader = new TestTestLoader();
+  loader: TestLoader = new TestLoader(new FakeTestFileLoader());
 
   async load(filters: string[]) {
     const listing = await this.loader.loadTests(filters);

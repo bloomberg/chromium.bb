@@ -51,7 +51,28 @@ function filterTestGroup(group: RunCaseIterable, filter: TestGroupFilter): RunCa
   };
 }
 
+export interface TestFileLoader {
+  listing(suite: string): Promise<TestSuiteListing>;
+  import(path: string): Promise<TestSpecFile>;
+}
+
+class DefaultTestFileLoader implements TestFileLoader {
+  async listing(suite: string): Promise<TestSuiteListing> {
+    return { suite, groups: await (await import(`../suites/${suite}/index.js`)).listing };
+  }
+
+  import(path: string): Promise<TestSpecFile> {
+    return import('../suites/' + path);
+  }
+}
+
 export class TestLoader {
+  private fileLoader: TestFileLoader;
+
+  constructor(fileLoader: TestFileLoader = new DefaultTestFileLoader()) {
+    this.fileLoader = fileLoader;
+  }
+
   async loadTestsFromQuery(query: string): Promise<IterableIterator<TestQueryResult>> {
     return this.loadTests(new URLSearchParams(query).getAll('q'));
   }
@@ -65,14 +86,6 @@ export class TestLoader {
   async loadTests(filters: string[]): Promise<IterableIterator<TestQueryResult>> {
     const loads = filters.map(f => this.loadFilter(f));
     return concat(await Promise.all(loads));
-  }
-
-  protected async listing(suite: string): Promise<TestSuiteListing> {
-    return { suite, groups: await (await import(`../suites/${suite}/index.js`)).listing };
-  }
-
-  protected import(path: string): Promise<TestSpecFile> {
-    return import('../suites/' + path);
   }
 
   // Each filter is of one of the forms below (urlencoded).
@@ -90,7 +103,7 @@ export class TestLoader {
       // - cts:buffers/
       // - cts:buffers/map
       const groupPrefix = filter.substring(i1 + 1);
-      return this.filterByGroup(await this.listing(suite), groupPrefix);
+      return this.filterByGroup(await this.fileLoader.listing(suite), groupPrefix);
     }
 
     const group = filter.substring(i1 + 1, i2);
@@ -156,7 +169,7 @@ export class TestLoader {
         const isReadme = path === '' || path.endsWith('/');
         const spec: Promise<TestSpecFile> = isReadme
           ? Promise.resolve({ description })
-          : this.import(`${suite}/${path}.spec.js`);
+          : this.fileLoader.import(`${suite}/${path}.spec.js`);
         entries.push({ suite, path, spec });
       }
     }
@@ -169,7 +182,7 @@ export class TestLoader {
     group: string,
     testPrefix: string
   ): Promise<TestSpecFile> {
-    const spec = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
+    const spec = (await this.fileLoader.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
     if (!spec.g) {
       return spec;
     }
@@ -185,7 +198,7 @@ export class TestLoader {
     test: string,
     paramsMatch: ParamsAny | null
   ): Promise<TestSpecFile> {
-    const spec = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
+    const spec = (await this.fileLoader.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
     if (!spec.g) {
       return spec;
     }
@@ -204,7 +217,7 @@ export class TestLoader {
     test: string,
     paramsExact: ParamsAny | null
   ): Promise<TestSpecFile> {
-    const spec = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
+    const spec = (await this.fileLoader.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
     if (!spec.g) {
       return spec;
     }
