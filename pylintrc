@@ -70,6 +70,7 @@ enable=
     rdiv-method,
     reload-builtin,
     setslice-method,
+    standarderror-builtin,
     sys-max-int,
     unichr-builtin,
     unpacking-in-except,

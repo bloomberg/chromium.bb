@@ -353,6 +353,6 @@ def _RmDirOnError(path, msg=None):
         logging.warning(msg)
       try:
         osutils.RmDir(path, ignore_missing=True)
-      except StandardError as e:
+      except OSError as e:
         logging.warning('Failed to clean up %r: %s', path, e)
     raise
