@@ -1228,7 +1228,7 @@
     },
     {
       name: "PointerRawUpdate",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "Portals",
