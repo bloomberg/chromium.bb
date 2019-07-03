@@ -227,6 +227,18 @@ body.alternate-logo #logo-non-white {
   background-color: rgba(255, 255, 255, 0.9);
 }
 
+@media (prefers-color-scheme: dark) {
+  #ddlsd {
+    background-color: rgb(41, 42, 45);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
+        0 4px 8px 3px rgba(0, 0, 0, 0.15);
+  }
+
+  #ddlsd::backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+}
+
 #ddlsd button {
   border: none;
   cursor: pointer;
@@ -240,6 +252,12 @@ body.alternate-logo #logo-non-white {
   color: #212121;
   font-size: 22px;
   padding: 0 40px 16px 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  #ddlsd-title {
+    color: rgb(var(--GG200-rgb));
+  }
 }
 
 #ddlsd-close {
@@ -272,6 +290,13 @@ body.alternate-logo #logo-non-white {
   font-size: 14px;
   padding: 12px;
   width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  #ddlsd-text {
+    background-color: rgba(0, 0, 0, 0.3);
+    color: rgb(var(--GG200-rgb));
+  }
 }
 
 #ddlsd-copy {
