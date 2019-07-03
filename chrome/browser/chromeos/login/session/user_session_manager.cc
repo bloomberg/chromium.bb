@@ -121,6 +121,7 @@
 #include "chromeos/dbus/cryptohome/tpm_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/login/auth/challenge_response/known_user_pref_utils.h"
 #include "chromeos/login/auth/stub_authenticator_builder.h"
 #include "chromeos/login/session/session_termination_manager.h"
 #include "chromeos/network/network_cert_loader.h"
@@ -406,6 +407,16 @@ UserSessionManager::RlzInitParams CollectRlzParams() {
 bool IsOnlineSignin(const UserContext& user_context) {
   return user_context.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITH_SAML ||
          user_context.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITHOUT_SAML;
+}
+
+// Stores the information about the challenge-response keys, that were used for
+// authentication, persistently in the known_user database for future
+// authentication attempts.
+void PersistChallengeResponseKeys(const UserContext& user_context) {
+  user_manager::known_user::SetChallengeResponseKeys(
+      user_context.GetAccountId(),
+      SerializeChallengeResponseKeysForKnownUser(
+          user_context.GetChallengeResponseKeys()));
 }
 
 }  // namespace
@@ -1600,6 +1611,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   if (user_context_.GetSyncPasswordData().has_value()) {
     login::SaveSyncPasswordDataToProfile(user_context_, profile);
   }
+
+  if (!user_context_.GetChallengeResponseKeys().empty())
+    PersistChallengeResponseKeys(user_context_);
 
   VLOG(1) << "Clearing all secrets";
   user_context_.ClearSecrets();
