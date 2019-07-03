@@ -689,18 +689,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PREFS_PRIVACY" desc="Title for the Privacy preferences. [CHAR-LIMIT=32]">
         Privacy
       </message>
-      <message name="IDS_NAVIGATION_ERROR_TITLE" desc="Title for checkbox to enable or disable navigation error suggestions.">
-        Navigation error suggestions
-      </message>
-      <message name="IDS_NAVIGATION_ERROR_SUMMARY" desc="Summary for navigation error suggestions.">
-        Show suggestions when a web address does not resolve or a connection cannot be made
-      </message>
-      <message name="IDS_SEARCH_SUGGESTIONS_TITLE" desc="Title for search and url suggestions.">
-        Search and URL suggestions
-      </message>
-      <message name="IDS_SEARCH_SUGGESTIONS_SUMMARY" desc="Summary for search and url suggestions.">
-        Use a prediction service to show related queries and popular websites as you type in the address bar
-      </message>
       <message name="IDS_SAFE_BROWSING_SCOUT_REPORTING_TITLE" desc="Title for checkbox that controls reporting data to detect bad apps/sites. Please ensure ‘Safe Browsing’ in this message matches the ‘Safe Browsing’ settings title.">
         Help improve Chrome security
       </message>
@@ -712,12 +700,6 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_SAFE_BROWSING_SUMMARY" desc="Summary for safe browsing.">
         Sends URLs of some pages you visit to Google, when your security is at risk
-      </message>
-      <message name="IDS_NETWORK_PREDICTIONS_TITLE" desc="Title of a setting in Chrome settings. Followed by a body that describes the setting. If setting is turned on, Chrome will download certain pages to the user’s phone automatically for offline reading. 'predictions' convey the idea that Chrome is using predictive models to figure out pages likely of interest to the user.">
-        Use page predictions
-      </message>
-      <message name="IDS_NETWORK_PREDICTIONS_SUMMARY" desc="Body text for the “Use page predictions” setting in Chrome settings. Describes what happens if the setting is turned on. 'Preload' conveys the idea that Chrome is getting pages for the user without their explicit interaction or consent.">
-        Preload pages for faster loading and offline reading
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_TITLE" desc="Name for the Contextual Search feature, which allows users to search for a term in a web page by tapping on it.">
         Tap to Search
@@ -1507,9 +1489,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_ACCOUNT_MANAGEMENT_TITLE" desc="Header title for the account management screen. [CHAR-LIMIT=32]">
         Signed in to Google as
-      </message>
-      <message name="IDS_ACCOUNT_MANAGEMENT_SYNC_SUMMARY" desc="Description for which account the data is being synced to">
-        Syncing to <ph name="SYNC_ACCOUNT_USER_NAME">%1$s<ex>johndoe@gmail.com</ex></ph>
       </message>
       <message name="IDS_ACCOUNT_MANAGEMENT_SIGN_OUT" desc="Button text for signing out of Chrome">
         Sign out of Chrome
