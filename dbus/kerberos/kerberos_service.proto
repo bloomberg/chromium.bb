@@ -51,8 +51,10 @@ enum ErrorType {
   ERROR_PARSE_PRINCIPAL_FAILED = 18;
   // Badly formatted Kerberos configuration.
   ERROR_BAD_CONFIG = 19;
+  // Failed to run untrusted code in container.
+  ERROR_JAIL_FAILURE = 20;
   // Should be the last. Increase when adding new enum values.
-  ERROR_COUNT = 20;
+  ERROR_COUNT = 21;
 }
 
 // Message sent to Chrome by authpolicyd as a response to a successful
