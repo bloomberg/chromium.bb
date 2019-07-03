@@ -38,7 +38,7 @@ TabSharingUI::TabSharingUI(const content::DesktopMediaID& media_id,
           media_id.web_contents_id.render_process_id,
           media_id.web_contents_id.main_render_frame_id));
   shared_tab_name_ = GetTabName(shared_tab_);
-  profile_ = Profile::FromBrowserContext(shared_tab_->GetBrowserContext());
+  profile_ = ProfileManager::GetLastUsedProfileAllowedByPolicy();
 }
 
 TabSharingUI::~TabSharingUI() {
