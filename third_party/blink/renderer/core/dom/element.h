@@ -27,7 +27,6 @@
 
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
@@ -154,16 +153,13 @@ typedef HeapVector<Member<Attr>> AttrNodeList;
 
 typedef HashMap<AtomicString, SpecificTrustedType> AttrNameToTrustedType;
 
-class CORE_EXPORT Element : public ContainerNode, public Animatable {
+class CORE_EXPORT Element : public ContainerNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static Element* Create(const QualifiedName&, Document*);
 
   Element(const QualifiedName& tag_name, Document*, ConstructionType);
-
-  // Animatable implementation.
-  Element* GetAnimationTarget() override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy, kBeforecopy)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut, kBeforecut)
