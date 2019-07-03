@@ -77,10 +77,13 @@ void TabSharingUI::OnTabStripModelChanged(
   if (change.type() == TabStripModelChange::kInserted) {
     for (const auto& contents : change.GetInsert()->contents) {
       infobars_[contents.contents] = TabSharingInfoBarDelegate::Create(
-          InfoBarService::FromWebContents(contents.contents), shared_tab_name_,
+          InfoBarService::FromWebContents(contents.contents),
+          shared_tab_ == contents.contents ? base::string16()
+                                           : shared_tab_name_,
           app_name_, this);
     }
-  } else if (change.type() == TabStripModelChange::kRemoved) {
+  } else if (change.type() == TabStripModelChange::kRemoved &&
+             change.GetRemove()->will_be_deleted) {
     bool stop_sharing = false;
     for (const auto& contents : change.GetRemove()->contents) {
       if (contents.contents == shared_tab_)

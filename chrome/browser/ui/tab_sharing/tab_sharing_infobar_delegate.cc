@@ -22,7 +22,8 @@ infobars::InfoBar* TabSharingInfoBarDelegate::Create(
   DCHECK(infobar_service);
   return infobar_service->AddInfoBar(
       infobar_service->CreateConfirmInfoBar(base::WrapUnique(
-          new TabSharingInfoBarDelegate(shared_tab_name, app_name, ui))));
+          new TabSharingInfoBarDelegate(shared_tab_name, app_name, ui))),
+      true /*replace_existing*/);
 }
 
 TabSharingInfoBarDelegate::TabSharingInfoBarDelegate(
@@ -32,6 +33,11 @@ TabSharingInfoBarDelegate::TabSharingInfoBarDelegate(
     : shared_tab_name_(std::move(shared_tab_name)),
       app_name_(std::move(app_name)),
       ui_(ui) {}
+
+bool TabSharingInfoBarDelegate::EqualsDelegate(
+    InfoBarDelegate* delegate) const {
+  return delegate && delegate->GetIdentifier() == GetIdentifier();
+}
 
 bool TabSharingInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {

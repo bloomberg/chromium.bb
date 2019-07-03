@@ -36,6 +36,7 @@ class TabSharingInfoBarDelegate : public ConfirmInfoBarDelegate {
                             TabSharingUI* ui);
 
   // ConfirmInfoBarDelegate:
+  bool EqualsDelegate(InfoBarDelegate* delegate) const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   base::string16 GetMessageText() const override;
