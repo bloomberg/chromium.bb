@@ -9,8 +9,12 @@ import android.content.res.Resources;
 import android.support.annotation.NonNull;
 
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -33,23 +37,28 @@ import org.chromium.ui.modelutil.PropertyModel;
  * <p>The browser needs Android-level camera access for using ARCore, this
  * is requested if needed after the user has granted consent for the AR session.</p>
  */
+@JNINamespace("vr")
 public class ArConsentDialog implements ModalDialogProperties.Controller {
     private static final String TAG = "ArConsentDialog";
     private static final boolean DEBUG_LOGS = false;
 
     private ModalDialogManager mModalDialogManager;
-    private ArCoreJavaUtils mArCoreJavaUtils;
-    private ChromeActivity mActivity;
+    private long mNativeArConsentDialog;
+    private WindowAndroid mWindowAndroid;
 
-    public static void showDialog(ChromeActivity activity, ArCoreJavaUtils caller) {
-        ArConsentDialog dialog = new ArConsentDialog();
-        dialog.show(activity, caller);
+    @CalledByNative
+    private static ArConsentDialog showDialog(long instance, @NonNull final Tab tab) {
+        ArConsentDialog dialog = new ArConsentDialog(instance);
+        dialog.show(tab.getActivity());
+        return dialog;
     }
 
-    public void show(@NonNull ChromeActivity activity, @NonNull ArCoreJavaUtils caller) {
-        mArCoreJavaUtils = caller;
-        mActivity = activity;
+    private ArConsentDialog(long arConsentDialog) {
+        mNativeArConsentDialog = arConsentDialog;
+    }
 
+    public void show(ChromeActivity activity) {
+        mWindowAndroid = activity.getWindowAndroid();
         Resources resources = activity.getResources();
         PropertyModel model = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                                       .with(ModalDialogProperties.CONTROLLER, this)
@@ -81,22 +90,21 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
         if (dismissalCause == DialogDismissalCause.POSITIVE_BUTTON_CLICKED) {
             onConsentGranted();
         } else {
-            onConsentDenied();
+            consentDenied();
         }
     }
 
     private void onConsentGranted() {
         if (DEBUG_LOGS) Log.i(TAG, "onConsentGranted");
 
-        WindowAndroid window = mActivity.getWindowAndroid();
-        if (!window.hasPermission(android.Manifest.permission.CAMERA)) {
+        if (!mWindowAndroid.hasPermission(android.Manifest.permission.CAMERA)) {
             // The user has agreed to proceed with the AR session, but the browser
             // application doesn't have the prerequisite Android-level camera permission
             // needed for using ARCore internally. Show the system permission prompt.
             requestCameraPermission();
             return;
         }
-        startSession();
+        consentGranted();
     }
 
     private void requestCameraPermission() {
@@ -108,32 +116,32 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     if (DEBUG_LOGS) Log.i(TAG, "onRequestPermissionsResult=granted");
-                    startSession();
+                    consentGranted();
                 } else {
                     // Didn't get permission :-(
                     if (DEBUG_LOGS) Log.i(TAG, "onRequestPermissionsResult=denied");
-                    endSession();
+                    consentDenied();
                 }
             }
         };
 
-        WindowAndroid window = mActivity.getWindowAndroid();
-        window.requestPermissions(new String[] {android.Manifest.permission.CAMERA}, callback);
+        mWindowAndroid.requestPermissions(
+                new String[] {android.Manifest.permission.CAMERA}, callback);
     }
 
-    private void onConsentDenied() {
-        if (DEBUG_LOGS) Log.i(TAG, "onConsentDenied");
-        endSession();
-    }
-
-    private void startSession() {
-        if (DEBUG_LOGS) Log.i(TAG, "startSession");
+    private void consentGranted() {
+        if (DEBUG_LOGS) Log.i(TAG, "consentGranted");
         // We have user consent to start the session.
-        mArCoreJavaUtils.onStartSession(mActivity);
+        ArConsentDialogJni.get().onUserConsentResult(mNativeArConsentDialog, true);
     }
 
-    private void endSession() {
-        if (DEBUG_LOGS) Log.i(TAG, "endSession");
-        mArCoreJavaUtils.onDrawingSurfaceDestroyed();
+    private void consentDenied() {
+        if (DEBUG_LOGS) Log.i(TAG, "consentDenied");
+        ArConsentDialogJni.get().onUserConsentResult(mNativeArConsentDialog, false);
+    }
+
+    @NativeMethods
+    /* package */ interface Natives {
+        void onUserConsentResult(long nativeArcoreConsentPrompt, boolean allowed);
     }
 }
