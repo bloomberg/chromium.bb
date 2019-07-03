@@ -89,16 +89,23 @@ Status SendKeysToElement(Session* session,
                          const std::string& element_id,
                          const bool is_text,
                          const base::ListValue* key_list) {
-  Status status = FocusToElement(session, web_view, element_id);
-  if (status.IsError())
-        return Status(kElementNotInteractable);
-  // Move cursor/caret to append the input
-  // keys if element's type is text-related
-  if (is_text) {
+  // If we were previously focused, we don't need to focus again.
+  // But also, later we don't move the carat if we were already in focus.
+  bool wasPreviouslyFocused = false;
+  IsElementFocused(session, web_view, element_id, &wasPreviouslyFocused);
+  if (!wasPreviouslyFocused) {
+    Status status = FocusToElement(session, web_view, element_id);
+    if (status.IsError())
+      return Status(kElementNotInteractable);
+  }
+
+  // Move cursor/caret to append the input if we only just focused this
+  // element. keys if element's type is text-related
+  if (is_text && !wasPreviouslyFocused) {
     base::ListValue args;
     args.Append(CreateElement(element_id));
     std::unique_ptr<base::Value> result;
-    status = web_view->CallFunction(
+    Status status = web_view->CallFunction(
         session->GetCurrentFrameId(),
         "elem => elem.setSelectionRange(elem.value.length, elem.value.length)",
         args, &result);
