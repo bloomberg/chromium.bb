@@ -96,12 +96,14 @@ static int construct_multi_layer_gf_structure(
   assert(first_frame_update_type == KF_UPDATE ||
          first_frame_update_type == OVERLAY_UPDATE ||
          first_frame_update_type == GF_UPDATE);
+
   gf_group->update_type[frame_index] = first_frame_update_type;
   gf_group->arf_src_offset[frame_index] = 0;
   gf_group->arf_pos_in_gf[frame_index] = 0;
   gf_group->arf_update_idx[frame_index] = 0;
   gf_group->pyramid_level[frame_index] = MIN_PYRAMID_LVL;
-  gf_group->layer_depth[frame_index] = 0;
+  gf_group->layer_depth[frame_index] =
+      first_frame_update_type == OVERLAY_UPDATE ? MAX_ARF_LAYERS + 1 : 0;
   ++frame_index;
 
   // ALTREF.

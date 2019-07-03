@@ -365,23 +365,17 @@ static int get_current_frame_ref_type(
   // just used to choose the primary_ref_frame (as the most recent reference
   // buffer of the same reference-type as the current frame)
 
-  const int intra_only = frame_params->frame_type == KEY_FRAME ||
-                         frame_params->frame_type == INTRA_ONLY_FRAME;
-  if (intra_only || frame_params->error_resilient_mode ||
-      cpi->ext_use_primary_ref_none)
-    return REGULAR_FRAME;
-  else if (get_frame_update_type(cpi) == INTNL_ARF_UPDATE)
-    return INTERNAL_ARF_FRAME;
-  else if (frame_params->refresh_alt_ref_frame)
-    return ARF_FRAME;
-  else if (cpi->rc.is_src_frame_alt_ref)
-    return OVERLAY_FRAME;
-  else if (frame_params->refresh_golden_frame)
-    return GLD_FRAME;
-  else if (frame_params->refresh_bwd_ref_frame)
-    return BRF_FRAME;
-  else
-    return REGULAR_FRAME;
+  (void)frame_params;
+  // TODO(jingning): This table should be a lot simpler with the new
+  // ARF system in place. Keep frame_params for the time being as we are
+  // still evaluating a few design options.
+  switch (cpi->gf_group.layer_depth[cpi->gf_group.index]) {
+    case 0: return 0;
+    case 1: return 1;
+    case MAX_ARF_LAYERS:
+    case MAX_ARF_LAYERS + 1: return 4;
+    default: return 7;
+  }
 }
 
 static int choose_primary_ref_frame(
@@ -397,7 +391,7 @@ static int choose_primary_ref_frame(
 
   // Find the most recent reference frame with the same reference type as the
   // current frame
-  const FRAME_CONTEXT_INDEX current_ref_type =
+  FRAME_CONTEXT_INDEX current_ref_type =
       get_current_frame_ref_type(cpi, frame_params);
   int wanted_fb = cpi->fb_of_context_type[current_ref_type];
 
@@ -407,6 +401,7 @@ static int choose_primary_ref_frame(
       primary_ref_frame = ref_frame - LAST_FRAME;
     }
   }
+
   return primary_ref_frame;
 }
 
@@ -414,13 +409,15 @@ static void update_fb_of_context_type(
     const AV1_COMP *const cpi, const EncodeFrameParams *const frame_params,
     int *const fb_of_context_type) {
   const AV1_COMMON *const cm = &cpi->common;
+  const int current_frame_ref_type =
+      get_current_frame_ref_type(cpi, frame_params);
 
   if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
       cpi->ext_use_primary_ref_none) {
     for (int i = 0; i < REF_FRAMES; i++) {
       fb_of_context_type[i] = -1;
     }
-    fb_of_context_type[REGULAR_FRAME] =
+    fb_of_context_type[current_frame_ref_type] =
         cm->show_frame ? get_ref_frame_map_idx(cm, GOLDEN_FRAME)
                        : get_ref_frame_map_idx(cm, ALTREF_FRAME);
   }
@@ -429,12 +426,11 @@ static void update_fb_of_context_type(
     // Refresh fb_of_context_type[]: see encoder.h for explanation
     if (cm->current_frame.frame_type == KEY_FRAME) {
       // All ref frames are refreshed, pick one that will live long enough
-      fb_of_context_type[REGULAR_FRAME] = 0;
+      fb_of_context_type[current_frame_ref_type] = 0;
     } else {
       // If more than one frame is refreshed, it doesn't matter which one we
       // pick so pick the first.  LST sometimes doesn't refresh any: this is ok
-      const int current_frame_ref_type =
-          get_current_frame_ref_type(cpi, frame_params);
+
       for (int i = 0; i < REF_FRAMES; i++) {
         if (cm->current_frame.refresh_frame_flags & (1 << i)) {
           fb_of_context_type[current_frame_ref_type] = i;

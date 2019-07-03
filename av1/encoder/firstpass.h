@@ -131,6 +131,9 @@ typedef struct {
   int ref_frame_gop_idx[MAX_STATIC_GF_GROUP_LENGTH][REF_FRAMES];
   unsigned char pyramid_height;
   unsigned char pyramid_lvl_nodes[MAX_PYRAMID_LVL];
+
+  // TODO(jingning): Unify the data structure used here after the new control
+  // mechanism is in place.
   int layer_depth[MAX_STATIC_GF_GROUP_LENGTH];
   // This is currently only populated for AOM_Q mode
   unsigned char q_val[MAX_STATIC_GF_GROUP_LENGTH];
