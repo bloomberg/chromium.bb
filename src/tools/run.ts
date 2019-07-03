@@ -3,8 +3,8 @@
 import * as fs from 'fs';
 import * as process from 'process';
 
-import { TestSpecFile, TestLoader } from '../framework/loader';
-import { Logger, IResult } from '../framework/logger';
+import { TestSpecFile, TestLoader } from '../framework/loader.js';
+import { Logger, IResult } from '../framework/logger.js';
 
 function usage(rc: number) {
   console.log('Usage:');
