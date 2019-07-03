@@ -9,6 +9,8 @@
 
 namespace blink {
 
+class CSSCalcValue;
+
 // Numeric values that involve math functions (calc(), min(), max(), etc). This
 // is the equivalence of CSS Typed OM's |CSSMathValue| in the |CSSValue| class
 // hierarchy.
@@ -20,6 +22,24 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
   explicit CSSMathFunctionValue(CSSCalcValue*);
 
   CSSCalcValue* CssCalcValue() const { return calc_; }
+
+  UnitType TypeWithMathFunctionResolved() const;
+
+  // TODO(crbug.com/979895): Make sure these functions are called only when
+  // the math expression resolves into a double value.
+  double DoubleValue() const;
+  double ComputeSeconds() const;
+  double ComputeDegrees() const;
+  double ComputeLengthPx(
+      const CSSToLengthConversionData& conversion_data) const;
+
+  void AccumulateLengthArray(CSSLengthArray& length_array,
+                             double multiplier) const;
+  Length ConvertToLength(
+      const CSSToLengthConversionData& conversion_data) const;
+
+  String CustomCSSText() const;
+  bool Equals(const CSSMathFunctionValue& other) const;
 
   void TraceAfterDispatch(blink::Visitor* visitor);
 

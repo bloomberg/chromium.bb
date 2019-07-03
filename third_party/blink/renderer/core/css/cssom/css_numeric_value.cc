@@ -7,6 +7,7 @@
 #include <numeric>
 
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_invert.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_max.h"
@@ -253,8 +254,10 @@ CSSNumericValue* CSSNumericValue::parse(const String& css_text,
 }
 
 CSSNumericValue* CSSNumericValue::FromCSSValue(const CSSPrimitiveValue& value) {
-  if (value.IsCalculated())
-    return CalcToNumericValue(*value.CssCalcValue()->ExpressionNode());
+  if (value.IsCalculated()) {
+    return CalcToNumericValue(
+        *To<CSSMathFunctionValue>(value).CssCalcValue()->ExpressionNode());
+  }
   return CSSUnitValue::FromCSSValue(value);
 }
 
