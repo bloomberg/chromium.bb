@@ -9,12 +9,14 @@
 
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "chrome/android/chrome_jni_headers/SigninManager_jni.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -141,4 +143,8 @@ base::android::ScopedJavaLocalRef<jstring> JNI_SigninManager_ExtractDomainName(
   std::string email = base::android::ConvertJavaStringToUTF8(env, j_email);
   std::string domain = gaia::ExtractDomainName(email);
   return base::android::ConvertUTF8ToJavaString(env, domain);
+}
+
+jboolean JNI_SigninManager_IsMobileIdentityConsistencyEnabled(JNIEnv* env) {
+  return base::FeatureList::IsEnabled(signin::kMiceFeature);
 }

@@ -256,6 +256,7 @@ public abstract class ChromeFeatureList {
     public static final String SEARCH_ENGINE_PROMO_EXISTING_DEVICE =
             "SearchEnginePromo.ExistingDevice";
     public static final String SEARCH_ENGINE_PROMO_NEW_DEVICE = "SearchEnginePromo.NewDevice";
+    // TODO(crbug.com/980849) Remove ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY
     public static final String MOBILE_IDENTITY_CONSISTENCY = "MobileIdentityConsistency";
     public static final String MODAL_PERMISSION_PROMPTS = "ModalPermissionPrompts";
     public static final String MODAL_PERMISSION_DIALOG_VIEW = "ModalPermissionDialogView";
