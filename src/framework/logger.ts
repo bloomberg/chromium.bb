@@ -1,11 +1,11 @@
 import { ParamsSpec } from './params/index.js';
-import { getStackTrace, now } from './util.js';
+import { getStackTrace, now } from './util/index.js';
 import { version } from './version.js';
 import { TestSpecID } from './id.js';
 import { makeQueryString } from './url_query.js';
 
 type Status = 'running' | 'pass' | 'warn' | 'fail';
-interface LiveTestRunResult {
+export interface LiveTestRunResult {
   spec: string;
   cases: LiveTestCaseResult[];
 }

@@ -1,37 +1,4 @@
-import { CaseRecorder } from './logger.js';
-
-// TODO: test this
-export function getStackTrace(e: Error): string {
-  if (!e.stack) {
-    return '';
-  }
-
-  const parts = e.stack.split('\n');
-  const stack = [];
-
-  let distanceFromTop = 0;
-  for (const part of parts) {
-    if (part.indexOf('internalTickCallback') > -1) {
-      break;
-    }
-    if (part.indexOf('Object.run') > -1) {
-      break;
-    }
-    if (part.indexOf(CaseRecorder.name) > -1) {
-      // 0: CaseRecorder.fail
-      // 1: DefaultFixture.fail
-      // 2: actual test
-      distanceFromTop = 2;
-      stack.length = 0;
-    }
-
-    if (distanceFromTop <= 0) {
-      stack.push(part.trim());
-    }
-    distanceFromTop -= 1;
-  }
-  return stack.join('\n');
-}
+export * from './stack.js';
 
 // performance.now() is available in all browsers, but not in scope by default in Node.
 // tslint:disable-next-line no-var-requires

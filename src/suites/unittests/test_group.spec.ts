@@ -43,6 +43,38 @@ g.test('custom fixture', async t0 => {
   t0.expect(seen === 2);
 });
 
+g.test('stack', async t0 => {
+  const g = new TestGroup(DefaultFixture);
+
+  const doNestedThrow1 = () => {
+    throw new Error('goodbye');
+  };
+
+  const doNestedThrow2 = () => doNestedThrow1();
+
+  g.test('fail', t => {
+    t.fail();
+  });
+  g.test('throw', t => {
+    throw new Error('hello');
+  });
+  g.test('throw nested', t => {
+    doNestedThrow2();
+  });
+
+  const res = await t0.run(g);
+
+  const searchString = 'unittests/test_group.spec.';
+  for (const { logs } of res.cases) {
+    if (logs === undefined) {
+      throw new Error('expected logs');
+    }
+    t0.expect(logs[0].indexOf(searchString) !== -1);
+    const st = logs[0].split('\n');
+    t0.expect(st.every(l => l.indexOf(searchString) !== -1));
+  }
+});
+
 g.test('duplicate test name', t => {
   const g = new TestGroup(DefaultFixture);
   g.test('abc', () => {});
