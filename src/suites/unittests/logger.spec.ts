@@ -12,12 +12,12 @@ export const g = new TestGroup(DefaultFixture);
 
 g.test('construct', t => {
   const mylog = new Logger();
-  const [testrec, testres] = mylog.record('foo/bar');
+  const [testrec, testres] = mylog.record({ suite: 'a', path: 'foo/bar' });
   const [, res1] = testrec.record('baz', null);
   const params2 = {};
   const [, res2] = testrec.record('qux', params2);
 
-  t.expect(testres.path === 'foo/bar');
+  t.expect(testres.spec === 'a:foo/bar:');
   t.expect(testres.cases.length === 2);
   t.expect(testres.cases[0] === res1);
   t.expect(testres.cases[1] === res2);
@@ -35,7 +35,7 @@ g.test('construct', t => {
 
 g.test('empty', t => {
   const mylog = new Logger();
-  const [testrec] = mylog.record('');
+  const [testrec] = mylog.record({ suite: '', path: '' });
   const [rec, res] = testrec.record('baz', null);
 
   rec.start();
@@ -47,7 +47,7 @@ g.test('empty', t => {
 
 g.test('pass', t => {
   const mylog = new Logger();
-  const [testrec] = mylog.record('');
+  const [testrec] = mylog.record({ suite: '', path: '' });
   const [rec, res] = testrec.record('baz', null);
 
   rec.start();
@@ -60,7 +60,7 @@ g.test('pass', t => {
 
 g.test('warn', t => {
   const mylog = new Logger();
-  const [testrec] = mylog.record('');
+  const [testrec] = mylog.record({ suite: '', path: '' });
   const [rec, res] = testrec.record('baz', null);
 
   rec.start();
@@ -73,7 +73,7 @@ g.test('warn', t => {
 
 g.test('fail', t => {
   const mylog = new Logger();
-  const [testrec] = mylog.record('');
+  const [testrec] = mylog.record({ suite: '', path: '' });
   const [rec, res] = testrec.record('baz', null);
 
   rec.start();

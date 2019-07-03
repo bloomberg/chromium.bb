@@ -25,7 +25,7 @@ declare function async_test(f: (this: WptTestObject) => Promise<void>, name: str
       continue;
     }
 
-    const [rec] = log.record(qr.id.path);
+    const [rec] = log.record(qr.id);
     // TODO: don't run all tests all at once
     for (const t of qr.spec.g.iterate(rec)) {
       const run = t.run();

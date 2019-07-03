@@ -97,7 +97,7 @@ class LoadingTest extends DefaultFixture {
   }
 
   async singleGroup(query: string): Promise<RunCase[]> {
-    const [rec] = new Logger().record('');
+    const [rec] = new Logger().record({ suite: '', path: '' });
     const a = await this.load([query]);
     if (a.length !== 1) {
       throw new Error('more than one group');
@@ -142,7 +142,7 @@ g.test('whole group', async t => {
     if (foo.spec.g === undefined) {
       throw new Error('foo group');
     }
-    const [rec] = new Logger().record('');
+    const [rec] = new Logger().record({ suite: '', path: '' });
     t.expect(Array.from(foo.spec.g.iterate(rec)).length === 3);
   }
 });
@@ -188,7 +188,7 @@ g.test('end2end', async t => {
   t.expect(l[0].spec.g.iterate instanceof Function);
 
   const log = new Logger();
-  const [rec, res] = log.record(l[0].id.path);
+  const [rec, res] = log.record(l[0].id);
   const rcs = Array.from(l[0].spec.g.iterate(rec));
   if (rcs.length !== 2) {
     throw new Error('iterate length');
@@ -201,7 +201,7 @@ g.test('end2end', async t => {
   t.expect(paramsEquals(rcs[1].id.params, {}));
 
   t.expect(log.results[0] === res);
-  t.expect(res.path === 'foof');
+  t.expect(res.spec === 'suite2:foof:');
   t.expect(res.cases.length === 0);
 
   {

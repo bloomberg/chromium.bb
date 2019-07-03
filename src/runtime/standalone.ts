@@ -120,7 +120,7 @@ function mkCase(testcasesVis: HTMLElement, query: string, t: RunCase) {
       continue;
     }
 
-    const [tRec] = log.record(qr.id.path);
+    const [tRec] = log.record(qr.id);
     for (const t of qr.spec.g.iterate(tRec)) {
       const query = makeQueryString(qr.id, t.id);
       const runCase = mkCase(testcasesVis, query, t);

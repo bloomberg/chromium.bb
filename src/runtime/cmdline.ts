@@ -58,7 +58,7 @@ for (const a of process.argv.slice(2)) {
         continue;
       }
 
-      const [rec] = log.record(qr.id.path);
+      const [rec] = log.record(qr.id);
       for (const t of qr.spec.g.iterate(rec)) {
         running.push(
           (async () => {
@@ -89,7 +89,6 @@ for (const a of process.argv.slice(2)) {
       console.log('');
       console.log('** Warnings **');
       for (const [id, r] of warned) {
-        // TODO: actually print query here
         console.log(makeQueryString(id), r);
       }
     }
@@ -97,7 +96,6 @@ for (const a of process.argv.slice(2)) {
       console.log('');
       console.log('** Failures **');
       for (const [id, r] of failed) {
-        // TODO: actually print query here
         console.log(makeQueryString(id), r);
       }
     }

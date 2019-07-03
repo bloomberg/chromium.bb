@@ -1,10 +1,12 @@
 import { ParamsSpec } from './params/index.js';
 import { getStackTrace, now } from './util.js';
 import { version } from './version.js';
+import { TestSpecID } from './id.js';
+import { makeQueryString } from './url_query.js';
 
 type Status = 'running' | 'pass' | 'warn' | 'fail';
 interface TestLiveResult {
-  path: string;
+  spec: string;
   cases: TestCaseLiveResult[];
 }
 
@@ -21,9 +23,9 @@ export class Logger {
 
   constructor() {}
 
-  record(path: string): [GroupRecorder, TestLiveResult] {
+  record(spec: TestSpecID): [GroupRecorder, TestLiveResult] {
     const cases: TestCaseLiveResult[] = [];
-    const result: TestLiveResult = { path, cases };
+    const result: TestLiveResult = { spec: makeQueryString(spec), cases };
     this.results.push(result);
     return [new GroupRecorder(result), result];
   }
