@@ -215,7 +215,7 @@
 
           const [tRec] = log.record(path);
           for (const t of g.iterate(tRec)) {
-            const query = makeQueryString(entry, t.testcase);
+            const query = makeQueryString(entry, t.id);
             const runCase = mkCase(testcasesVis, query, t);
             runCaseList.push(runCase);
           }

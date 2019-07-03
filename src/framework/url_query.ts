@@ -13,7 +13,7 @@ export function encodeSelectively(s: string) {
   return ret;
 }
 
-export function makeQueryString(entry: TestQueryResult, testcase?: TestCaseID): string {
+export function makeQueryString(entry: TestQueryResult, testcase: TestCaseID | null): string {
   let s = entry.suite + ':';
   s += entry.path + ':';
   if (testcase) {
