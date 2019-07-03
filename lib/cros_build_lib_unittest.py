@@ -21,6 +21,8 @@ import StringIO
 import sys
 import __builtin__
 
+import six
+
 from chromite.lib import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
@@ -1346,15 +1348,15 @@ class FrozenAttributesTest(cros_test_lib.TestCase):
 
   def testFrozenByMetaclass(self):
     """Test attribute freezing with FrozenAttributesClass."""
+    @six.add_metaclass(cros_build_lib.FrozenAttributesClass)
     class DummyByMeta(self.DummyClass):
       """Class that freezes DummyClass using metaclass construct."""
-      __metaclass__ = cros_build_lib.FrozenAttributesClass
 
     self._TestBasics(DummyByMeta)
 
+    @six.add_metaclass(cros_build_lib.FrozenAttributesClass)
     class SetattrByMeta(self.SetattrClass):
       """Class that freezes SetattrClass using metaclass construct."""
-      __metaclass__ = cros_build_lib.FrozenAttributesClass
 
     self._TestBasics(SetattrByMeta)
 

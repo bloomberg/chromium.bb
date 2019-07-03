@@ -28,6 +28,8 @@ import time
 import traceback
 import types
 
+import six
+
 from chromite.lib import constants
 from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
@@ -1686,8 +1688,8 @@ class FrozenAttributesClass(type):
   This metaclass can be used by any class to add the ability to
   freeze attribute values with the Freeze method.
 
-  Use by adding this line in a class:
-    __metaclass__ = FrozenAttributesClass
+  Use by adding this line before a class:
+    @six.add_metaclass(FrozenAttributesClass)
   """
   _FROZEN_ERR_MSG = 'Attribute values are frozen, cannot alter %s.'
 
@@ -1727,6 +1729,7 @@ class FrozenAttributesClass(type):
     return cls
 
 
+@six.add_metaclass(FrozenAttributesClass)
 class FrozenAttributesMixin(object):
   """Alternate mechanism for freezing attributes in a class.
 
@@ -1734,7 +1737,6 @@ class FrozenAttributesMixin(object):
   use the FrozenAttributesClass metaclass directly.  Simply use this class
   as a mixin instead to accomplish the same thing.
   """
-  __metaclass__ = FrozenAttributesClass
 
 
 def GetIPv4Address(dev=None, global_ip=True):

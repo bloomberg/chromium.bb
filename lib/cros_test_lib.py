@@ -27,6 +27,8 @@ import time
 import unittest
 import urllib
 
+import six
+
 from chromite.lib import cache
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -231,12 +233,12 @@ class StackedSetup(type):
        for any test classes that were partially or completely set up.
     3) All test cases time out after TEST_CASE_TIMEOUT seconds.
 
-  To use this class, set the following in your class:
-    __metaclass__ = StackedSetup
+  Use by adding this line before a class:
+    @six.add_metaclass(StackedSetup)
 
   Since cros_test_lib.TestCase uses this metaclass, all derivatives of TestCase
-  also inherit the above behavior (unless they override the __metaclass__
-  attribute manually.)
+  also inherit the above behavior (unless they override the metaclass attribute
+  manually).
   """
 
   TEST_CASE_TIMEOUT = 10 * 60
@@ -530,6 +532,7 @@ class LoggingCapturer(object):
     return self.LogsMatch(re.escape(msg))
 
 
+@six.add_metaclass(StackedSetup)
 class TestCase(unittest.TestCase):
   """Basic chromite test case.
 
@@ -540,8 +543,6 @@ class TestCase(unittest.TestCase):
 
   Also includes additional assert helpers beyond python stdlib.
   """
-
-  __metaclass__ = StackedSetup
 
   # List of vars chromite is globally sensitive to and that should
   # be suppressed for tests.

@@ -11,6 +11,8 @@ import abc
 import itertools
 import json
 
+import six
+
 
 class Annotation(object):
   """Formatted annotation for buildbot."""
@@ -41,13 +43,12 @@ class Annotation(object):
       return self.name
 
 
+@six.add_metaclass(abc.ABCMeta)
 class _NamedAnnotation(Annotation):
   """Abstract subclass for creating named annotations.
 
   Concrete subclasses should define the ANNOTATION_NAME class attribute.
   """
-
-  __metaclass__ = abc.ABCMeta
 
   def __init__(self, *args):
     super(_NamedAnnotation, self).__init__(self.ANNOTATION_NAME, args)

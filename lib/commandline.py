@@ -21,6 +21,8 @@ import signal
 import sys
 import urlparse
 
+import six
+
 # TODO(build): sort the cbuildbot.constants/lib.constants issue;
 # lib shouldn't have to import from buildbot like this.
 from chromite.lib import constants
@@ -664,9 +666,9 @@ class BaseParser(object):
     return path_util.FindCacheDir()
 
 
+@six.add_metaclass(cros_build_lib.FrozenAttributesClass)
 class ArgumentNamespace(argparse.Namespace):
   """Class to mimic argparse.Namespace with value freezing support."""
-  __metaclass__ = cros_build_lib.FrozenAttributesClass
   _FROZEN_ERR_MSG = 'Option values are frozen, cannot alter %s.'
 
 

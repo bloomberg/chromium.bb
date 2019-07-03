@@ -67,6 +67,7 @@ enable=
     intern-builtin,
     invalid-str-codec,
     long-builtin,
+    metaclass-assignment,
     next-method-defined,
     nonzero-method,
     oct-method,
