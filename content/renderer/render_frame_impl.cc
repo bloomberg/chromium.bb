@@ -495,8 +495,6 @@ void FillNavigationParamsRequest(
   navigation_params->was_discarded = commit_params.was_discarded;
 
   if (!commit_params.prefetched_signed_exchanges.empty()) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kSignedExchangeSubresourcePrefetch));
     navigation_params->prefetched_signed_exchanges = WebVector<std::unique_ptr<
         blink::WebNavigationParams::PrefetchedSignedExchange>>();
 
