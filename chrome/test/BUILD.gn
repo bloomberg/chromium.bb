@@ -1390,6 +1390,12 @@ if (!is_android) {
           [ "../browser/ssl/captive_portal_blocking_page_browsertest.cc" ]
     }
 
+    if (!is_android) {
+      sources += [
+        "../browser/external_protocol/external_protocol_handler_browsertest.cc",
+      ]
+    }
+
     if (enable_dice_support) {
       sources += [
         "../browser/signin/dice_browsertest.cc",
