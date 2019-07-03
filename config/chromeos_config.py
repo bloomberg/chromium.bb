@@ -1448,7 +1448,8 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       board_configs,
       site_config.templates.compile_only_pre_cq,
       useflags=config_lib.append_useflags(['-kernel-4_4', '-kernel-4_14',
-                                           'kernel-4_19', '-clang', 'buildtest']),
+                                           'kernel-4_19', '-clang',
+                                           'buildtest']),
       packages=['sys-kernel/chromeos-kernel-4_19'],
   )
   site_config.AddForBoards(
@@ -2254,6 +2255,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # The definition of what paladins run HW tests are in the
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
+      'drallion',
       'kumo',
       'kefka-kernelnext',
       'zork',
