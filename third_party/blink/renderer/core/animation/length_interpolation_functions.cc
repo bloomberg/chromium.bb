@@ -136,6 +136,11 @@ bool LengthInterpolationFunctions::NonInterpolableValuesAreCompatible(
   return true;
 }
 
+bool LengthInterpolationFunctions::HasPercentage(
+    const NonInterpolableValue* non_interpolable_value) {
+  return CSSLengthNonInterpolableValue::HasPercentage(non_interpolable_value);
+}
+
 void LengthInterpolationFunctions::Composite(
     std::unique_ptr<InterpolableValue>& underlying_interpolable_value,
     scoped_refptr<NonInterpolableValue>& underlying_non_interpolable_value,
