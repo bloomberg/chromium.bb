@@ -1,6 +1,7 @@
 import { GroupRecorder } from './logger.js';
 import { IParamsAny, paramsEquals, paramsSupersets } from './params/index.js';
-import { allowedTestNameCharacters, RunCaseIterable, TestCaseID, RunCase } from './test_group.js';
+import { RunCaseIterable, TestCaseID, RunCase } from './test_group.js';
+import { allowedTestNameCharacters } from './allowed_characters.js';
 
 export interface TestGroupDesc {
   readonly path: string;

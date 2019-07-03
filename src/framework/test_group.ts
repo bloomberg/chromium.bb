@@ -1,6 +1,7 @@
 import { CaseRecorder, GroupRecorder, IResult } from './logger.js';
 import { IParamsAny, IParamsSpec, ParamSpecIterable, paramsEquals } from './params/index.js';
 import { Fixture } from './fixture.js';
+import { allowedTestNameCharacters } from './allowed_characters.js';
 
 export interface TestCaseID {
   readonly name: string;
@@ -16,7 +17,51 @@ export interface RunCaseIterable {
   iterate(rec: GroupRecorder): Iterable<RunCase>;
 }
 
+type FixtureClass<F extends Fixture> = new (log: CaseRecorder, params: IParamsAny) => F;
 type TestFn<F extends Fixture> = (t: F) => Promise<void> | void;
+
+const validNames = new RegExp('^[' + allowedTestNameCharacters + ']+$');
+
+export class TestGroup<F extends Fixture> implements RunCaseIterable {
+  private fixture: FixtureClass<F>;
+  private seen: Set<string> = new Set();
+  private tests: Array<Test<F>> = [];
+
+  constructor(fixture: FixtureClass<F>) {
+    this.fixture = fixture;
+  }
+
+  *iterate(log: GroupRecorder): Iterable<RunCase> {
+    for (const test of this.tests) {
+      yield* test.iterate(log);
+    }
+  }
+
+  private checkName(name: string) {
+    if (!validNames.test(name)) {
+      throw new Error(`Invalid test name ${name}; must match [${validNames}]+`);
+    }
+    if (name !== decodeURIComponent(name)) {
+      // Shouldn't happen due to the rule above. Just makes sure that treated
+      // unencoded strings as encoded strings is OK.
+      throw new Error(`Not decodeURIComponent-idempotent: ${name} !== ${decodeURIComponent(name)}`);
+    }
+
+    if (this.seen.has(name)) {
+      throw new Error('Duplicate test name');
+    }
+    this.seen.add(name);
+  }
+
+  // TODO: This could take a fixture, too, to override the one for the group.
+  test(name: string, fn: TestFn<F>): Test<F> {
+    this.checkName(name);
+
+    const test = new Test<F>(name, this.fixture, fn);
+    this.tests.push(test);
+    return test;
+  }
+}
 
 // This test is created when it's inserted, but may be parameterized afterward (.params()).
 class Test<F extends Fixture> {
@@ -80,52 +125,5 @@ class RunCaseSpecific<F extends Fixture> implements RunCase {
     }
     rec.finish();
     return res;
-  }
-}
-
-type FixtureClass<F extends Fixture> = new (log: CaseRecorder, params: IParamsAny) => F;
-
-// It may be OK to add more allowed characters here.
-export const allowedTestNameCharacters = 'a-zA-Z0-9/_ ';
-const validNames = new RegExp('^[' + allowedTestNameCharacters + ']+$');
-
-export class TestGroup<F extends Fixture> implements RunCaseIterable {
-  private fixture: FixtureClass<F>;
-  private seen: Set<string> = new Set();
-  private tests: Array<Test<F>> = [];
-
-  constructor(fixture: FixtureClass<F>) {
-    this.fixture = fixture;
-  }
-
-  *iterate(log: GroupRecorder): Iterable<RunCase> {
-    for (const test of this.tests) {
-      yield* test.iterate(log);
-    }
-  }
-
-  private checkName(name: string) {
-    if (!validNames.test(name)) {
-      throw new Error(`Invalid test name ${name}; must match [${validNames}]+`);
-    }
-    if (name !== decodeURIComponent(name)) {
-      // Shouldn't happen due to the rule above. Just makes sure that treated
-      // unencoded strings as encoded strings is OK.
-      throw new Error(`Not decodeURIComponent-idempotent: ${name} !== ${decodeURIComponent(name)}`);
-    }
-
-    if (this.seen.has(name)) {
-      throw new Error('Duplicate test name');
-    }
-    this.seen.add(name);
-  }
-
-  // TODO: This could take a fixture, too, to override the one for the group.
-  test(name: string, fn: TestFn<F>): Test<F> {
-    this.checkName(name);
-
-    const test = new Test<F>(name, this.fixture, fn);
-    this.tests.push(test);
-    return test;
   }
 }
