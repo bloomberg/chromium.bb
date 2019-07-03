@@ -1,4 +1,4 @@
-import { TestQueryResult } from './loader.js';
+import { TestSpecPath } from './loader.js';
 import { TestCaseID } from './test_group.js';
 
 export function encodeSelectively(s: string) {
@@ -13,14 +13,12 @@ export function encodeSelectively(s: string) {
   return ret;
 }
 
-export function makeQueryString(entry: TestQueryResult, testcase: TestCaseID | null): string {
+export function makeQueryString(entry: TestSpecPath, testcase: TestCaseID): string {
   let s = entry.suite + ':';
   s += entry.path + ':';
-  if (testcase) {
-    s += testcase.name + ':';
-    if (testcase.params) {
-      s += JSON.stringify(testcase.params);
-    }
+  s += testcase.name + ':';
+  if (testcase.params) {
+    s += JSON.stringify(testcase.params);
   }
   return encodeSelectively(s);
 }

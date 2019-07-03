@@ -28,7 +28,7 @@ const listingData: { [k: string]: TestGroupDesc[] } = {
   suite2: [{ path: '', description: 'desc 2a' }, { path: 'foof', description: 'desc 2b' }],
 };
 
-const nodesData: { [k: string]: TestSpecFile } = {
+const specsData: { [k: string]: TestSpecFile } = {
   'suite1/README.txt': { description: 'desc 1a' },
   'suite1/foo.spec.js': {
     description: 'desc 1b',
@@ -82,10 +82,10 @@ export class TestTestLoader extends TestLoader {
   }
 
   protected async import(path: string): Promise<TestSpecFile> {
-    if (!nodesData.hasOwnProperty(path)) {
+    if (!specsData.hasOwnProperty(path)) {
       throw new Error('[test] mock file ' + path + ' does not exist');
     }
-    return nodesData[path];
+    return specsData[path];
   }
 }
 
@@ -95,8 +95,8 @@ class LoadingTest extends DefaultFixture {
   async load(filters: string[]) {
     const listing = await this.loader.loadTests(filters);
     const entries = Promise.all(
-      Array.from(listing, ({ suite, path, node }) =>
-        node.then((n: TestSpecFile) => ({ suite, path, node: n }))
+      Array.from(listing, ({ suite, path, spec }) =>
+        spec.then((s: TestSpecFile) => ({ suite, path, spec: s }))
       )
     );
     return entries;
@@ -108,7 +108,7 @@ class LoadingTest extends DefaultFixture {
     if (a.length !== 1) {
       throw new Error('more than one group');
     }
-    const g = a[0].node.g;
+    const g = a[0].spec.g;
     if (g === undefined) {
       throw new Error('group undefined');
     }
@@ -145,11 +145,11 @@ g.test('whole group', async t => {
     const foo = (await t.load(['suite1:foo:']))[0];
     t.expect(foo.suite === 'suite1');
     t.expect(foo.path === 'foo');
-    if (foo.node.g === undefined) {
+    if (foo.spec.g === undefined) {
       throw new Error('foo group');
     }
     const [rec] = new Logger().record('');
-    t.expect(Array.from(foo.node.g.iterate(rec)).length === 3);
+    t.expect(Array.from(foo.spec.g.iterate(rec)).length === 3);
   }
 });
 
@@ -187,15 +187,15 @@ g.test('end2end', async t => {
 
   t.expect(l[0].suite === 'suite2');
   t.expect(l[0].path === 'foof');
-  t.expect(l[0].node.description === 'desc 2b');
-  if (l[0].node.g === undefined) {
+  t.expect(l[0].spec.description === 'desc 2b');
+  if (l[0].spec.g === undefined) {
     throw new Error();
   }
-  t.expect(l[0].node.g.iterate instanceof Function);
+  t.expect(l[0].spec.g.iterate instanceof Function);
 
   const log = new Logger();
   const [rec, res] = log.record(l[0].path);
-  const rcs = Array.from(l[0].node.g.iterate(rec));
+  const rcs = Array.from(l[0].spec.g.iterate(rec));
   if (rcs.length !== 2) {
     throw new Error('iterate length');
   }

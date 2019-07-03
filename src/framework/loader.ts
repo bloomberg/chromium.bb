@@ -19,21 +19,22 @@ export interface TestSpecFile {
   readonly g?: RunCaseIterable;
 }
 
-export interface TestQueryResult {
+export interface TestSpecPath {
   // a suite, e.g. "cts".
   readonly suite: string;
   // a path within a suite, e.g. "command_buffer/compute/basic".
   readonly path: string;
-  readonly node: Promise<TestSpecFile>;
+}
+
+export interface TestQueryResult extends TestSpecPath {
+  readonly spec: Promise<TestSpecFile>;
 }
 
 type TestQueryResults = IterableIterator<TestQueryResult>;
 
 function* concat(lists: TestQueryResult[][]): TestQueryResults {
-  for (const nodes of lists) {
-    for (const node of nodes) {
-      yield node;
-    }
+  for (const specs of lists) {
+    yield* specs;
   }
 }
 
@@ -104,7 +105,7 @@ export class TestLoader {
         {
           suite,
           path: group,
-          node: this.filterByTestMatch(suite, group, testPrefix),
+          spec: this.filterByTestMatch(suite, group, testPrefix),
         },
       ];
     }
@@ -126,7 +127,7 @@ export class TestLoader {
         {
           suite,
           path: group,
-          node: this.filterByParamsMatch(suite, group, test, params),
+          spec: this.filterByParamsMatch(suite, group, test, params),
         },
       ];
     } else if (token === ':') {
@@ -137,7 +138,7 @@ export class TestLoader {
         {
           suite,
           path: group,
-          node: this.filterByParamsExact(suite, group, test, params),
+          spec: this.filterByParamsExact(suite, group, test, params),
         },
       ];
     } else {
@@ -154,10 +155,10 @@ export class TestLoader {
     for (const { path, description } of groups) {
       if (path.startsWith(groupPrefix)) {
         const isReadme = path === '' || path.endsWith('/');
-        const node: Promise<TestSpecFile> = isReadme
+        const spec: Promise<TestSpecFile> = isReadme
           ? Promise.resolve({ description })
           : this.import(`${suite}/${path}.spec.js`);
-        entries.push({ suite, path, node });
+        entries.push({ suite, path, spec });
       }
     }
 
@@ -169,13 +170,13 @@ export class TestLoader {
     group: string,
     testPrefix: string
   ): Promise<TestSpecFile> {
-    const node = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
-    if (!node.g) {
-      return node;
+    const spec = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
+    if (!spec.g) {
+      return spec;
     }
     return {
-      description: node.description,
-      g: filterTestGroup(node.g, testcase => testcase.name.startsWith(testPrefix)),
+      description: spec.description,
+      g: filterTestGroup(spec.g, testcase => testcase.name.startsWith(testPrefix)),
     };
   }
 
@@ -185,14 +186,14 @@ export class TestLoader {
     test: string,
     paramsMatch: IParamsAny | null
   ): Promise<TestSpecFile> {
-    const node = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
-    if (!node.g) {
-      return node;
+    const spec = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
+    if (!spec.g) {
+      return spec;
     }
     return {
-      description: node.description,
+      description: spec.description,
       g: filterTestGroup(
-        node.g,
+        spec.g,
         testcase => testcase.name === test && paramsSupersets(testcase.params, paramsMatch)
       ),
     };
@@ -204,14 +205,14 @@ export class TestLoader {
     test: string,
     paramsExact: IParamsAny | null
   ): Promise<TestSpecFile> {
-    const node = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
-    if (!node.g) {
-      return node;
+    const spec = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
+    if (!spec.g) {
+      return spec;
     }
     return {
-      description: node.description,
+      description: spec.description,
       g: filterTestGroup(
-        node.g,
+        spec.g,
         testcase => testcase.name === test && paramsEquals(testcase.params, paramsExact)
       ),
     };

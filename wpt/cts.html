@@ -21,49 +21,6 @@
 </head>
 <body>
 <textarea id=results></textarea>
-
-<script type=module>
-'use strict';
-import { TestLoader } from './framework/loader.js';
-import { Logger } from './framework/logger.js';
-import { makeQueryString } from './framework/url_query.js';
-
-(async () => {
-    const loader = new TestLoader();
-    const listing = await loader.loadTestsFromQuery(window.location.search);
-
-    const log = new Logger();
-    const running = [];
-    const entries = await Promise.all(Array.from(listing,
-        ({ suite, path, node }) => node.then(node => ({ suite, path, node }))));
-
-    for (const entry of entries) {
-        const { suite, path, node: { g } } = entry;
-        if (!g) {
-            continue;
-        }
-
-        const [rec] = log.record(path);
-        // TODO: don't run all tests all at once
-        for (const t of g.iterate(rec)) {
-            const run = t.run();
-            running.push(run);
-            // Note: apparently, async_tests must ALL be added within the same task.
-            async_test(async function() {
-                const r = await run;
-                this.step(() => {
-                    if (r.status === 'fail') {
-                        throw r.logs.join('\n');
-                    }
-                });
-                this.done();
-            }, makeQueryString(entry, t.id));
-        }
-    }
-
-    await Promise.all(running);
-    document.getElementById('results').textContent = log.asJSON(2);
-})();
-</script>
+<script type=module src="runtime/wpt.js"></script>
 </body>
 </html>

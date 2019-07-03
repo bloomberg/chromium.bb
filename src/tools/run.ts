@@ -43,8 +43,8 @@ for (const a of process.argv.slice(2)) {
 
     const log = new Logger();
     const entries = await Promise.all(
-      Array.from(listing, ({ suite, path, node }) =>
-        node.then((n: TestSpecFile) => ({ suite, path, node: n }))
+      Array.from(listing, ({ suite, path, spec }) =>
+        spec.then((s: TestSpecFile) => ({ suite, path, g: s.g }))
       )
     );
 
@@ -54,16 +54,13 @@ for (const a of process.argv.slice(2)) {
     // TODO: don't run all tests all at once
     const running = [];
     for (const entry of entries) {
-      const {
-        path,
-        node: { g: group },
-      } = entry;
-      if (!group) {
+      const { path, g } = entry;
+      if (!g) {
         continue;
       }
 
       const [rec] = log.record(path);
-      for (const t of group.iterate(rec)) {
+      for (const t of g.iterate(rec)) {
         running.push(
           (async () => {
             const res = await t.run();
