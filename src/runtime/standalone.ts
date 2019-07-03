@@ -1,3 +1,5 @@
+// Implements the standalone test runner (see also: index.html).
+
 import { TestLoader } from '../framework/loader.js';
 import { Logger } from '../framework/logger.js';
 import { makeQueryString } from '../framework/url_query.js';

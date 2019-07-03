@@ -6,6 +6,8 @@ declare interface WptTestObject {
   step(f: () => void): void;
   done(): void;
 }
+// Implements the wpt-embedded test runner (see also: wpt/cts.html).
+
 declare function async_test(f: (this: WptTestObject) => Promise<void>, name: string): void;
 
 (async () => {
