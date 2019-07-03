@@ -8,11 +8,11 @@ import fg from 'fast-glob';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { TestGroupDesc } from '../framework/loader.js';
+import { TestSuiteListingEntry } from '../framework/listing.js';
 
 const specSuffix = '.spec.ts';
 
-export async function crawl(suite: string): Promise<TestGroupDesc[]> {
+export async function crawl(suite: string): Promise<TestSuiteListingEntry[]> {
   const specDir = path.normalize(`src/suites/${suite}`);
   if (!fs.existsSync(specDir)) {
     console.error(`Could not find ${specDir}`);
@@ -21,7 +21,7 @@ export async function crawl(suite: string): Promise<TestGroupDesc[]> {
 
   const specFiles = await fg(specDir + '/**/{README.txt,*' + specSuffix + '}', { onlyFiles: true });
 
-  const groups: TestGroupDesc[] = [];
+  const groups: TestSuiteListingEntry[] = [];
   for (const file of specFiles) {
     const f = file.substring((specDir + '/').length);
     if (f.endsWith(specSuffix)) {
@@ -47,7 +47,7 @@ export async function crawl(suite: string): Promise<TestGroupDesc[]> {
   return groups;
 }
 
-export function makeListing(filename: string): Promise<TestGroupDesc[]> {
+export function makeListing(filename: string): Promise<TestSuiteListingEntry[]> {
   const suite = path.basename(path.dirname(filename));
   return crawl(suite);
 }

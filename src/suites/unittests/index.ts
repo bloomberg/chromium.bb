@@ -1,4 +1,4 @@
-import { TestGroupDesc } from '../../framework/loader.js';
+import { TestSuiteListing } from '../../framework/listing.js';
 import { makeListing } from '../../tools/crawl.js';
 
-export const listing: Promise<TestGroupDesc[]> = makeListing(__filename);
+export const listing: Promise<TestSuiteListing> = makeListing(__filename);

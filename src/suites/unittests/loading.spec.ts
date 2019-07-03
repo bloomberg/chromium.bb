@@ -9,16 +9,11 @@ import {
   TestGroup,
   RunCase,
 } from '../../framework/index.js';
-import {
-  TestFileLoader,
-  TestGroupDesc,
-  TestLoader,
-  TestSpecFile,
-  TestSuiteListing,
-} from '../../framework/loader.js';
+import { TestSpecFile, TestLoader, TestFileLoader } from '../../framework/loader.js';
+import { TestSuiteListingEntry, TestSuiteListing } from '../../framework/listing.js';
 import { Logger } from '../../framework/logger.js';
 
-const listingData: { [k: string]: TestGroupDesc[] } = {
+const listingData: { [k: string]: TestSuiteListingEntry[] } = {
   suite1: [
     { path: '', description: 'desc 1a' },
     { path: 'foo', description: 'desc 1b' },
@@ -79,7 +74,7 @@ const specsData: { [k: string]: TestSpecFile } = {
 
 class FakeTestFileLoader implements TestFileLoader {
   async listing(suite: string): Promise<TestSuiteListing> {
-    return { suite, groups: listingData[suite] };
+    return listingData[suite];
   }
 
   async import(path: string): Promise<TestSpecFile> {

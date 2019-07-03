@@ -2,35 +2,30 @@ import { GroupRecorder } from './logger.js';
 import { ParamsAny, paramsEquals, paramsSupersets } from './params/index.js';
 import { RunCaseIterable, TestCaseID, RunCase } from './test_group.js';
 import { allowedTestNameCharacters } from './allowed_characters.js';
+import { TestSuiteListing } from './listing.js';
 
-export interface TestGroupDesc {
-  readonly path: string;
-  readonly description: string;
-}
-
-export interface TestSuiteListing {
-  readonly suite: string;
-  readonly groups: Iterable<TestGroupDesc>;
-}
-
+// One of the following:
+// - A shell object describing a directory (from its README.txt).
+// - An actual .spec.ts file, as imported.
+// - A *filtered* list of cases from a single .spec.ts file.
 export interface TestSpecFile {
   readonly description: string;
   // undefined for README.txt, defined for a test module.
   readonly g?: RunCaseIterable;
 }
 
+// Identifies a test spec (a .spec.ts file).
 export interface TestSpecPath {
-  // a suite, e.g. "cts".
+  // The spec's suite, e.g. 'cts'.
   readonly suite: string;
-  // a path within a suite, e.g. "command_buffer/compute/basic".
+  // The spec's path within the suite, e.g. 'command_buffer/compute/basic'.
   readonly path: string;
 }
 
+type TestQueryResults = IterableIterator<TestQueryResult>;
 export interface TestQueryResult extends TestSpecPath {
   readonly spec: Promise<TestSpecFile>;
 }
-
-type TestQueryResults = IterableIterator<TestQueryResult>;
 
 function* concat(lists: TestQueryResult[][]): TestQueryResults {
   for (const specs of lists) {
@@ -58,7 +53,7 @@ export interface TestFileLoader {
 
 class DefaultTestFileLoader implements TestFileLoader {
   async listing(suite: string): Promise<TestSuiteListing> {
-    return { suite, groups: await (await import(`../suites/${suite}/index.js`)).listing };
+    return (await import(`../suites/${suite}/index.js`)).listing;
   }
 
   import(path: string): Promise<TestSpecFile> {
@@ -73,17 +68,17 @@ export class TestLoader {
     this.fileLoader = fileLoader;
   }
 
-  async loadTestsFromQuery(query: string): Promise<IterableIterator<TestQueryResult>> {
+  async loadTestsFromQuery(query: string): Promise<TestQueryResults> {
     return this.loadTests(new URLSearchParams(query).getAll('q'));
   }
 
-  async loadTestsFromCmdLine(filters: string[]): Promise<IterableIterator<TestQueryResult>> {
+  async loadTestsFromCmdLine(filters: string[]): Promise<TestQueryResults> {
     // In actual URL queries (?q=...), + represents a space. But decodeURIComponent doesn't do this,
     // so do it manually. (+ is used over %20 for readability.) (See also encodeSelectively.)
     return this.loadTests(filters.map(f => decodeURIComponent(f.replace(/\+/g, '%20'))));
   }
 
-  async loadTests(filters: string[]): Promise<IterableIterator<TestQueryResult>> {
+  async loadTests(filters: string[]): Promise<TestQueryResults> {
     const loads = filters.map(f => this.loadFilter(f));
     return concat(await Promise.all(loads));
   }
@@ -103,10 +98,10 @@ export class TestLoader {
       // - cts:buffers/
       // - cts:buffers/map
       const groupPrefix = filter.substring(i1 + 1);
-      return this.filterByGroup(await this.fileLoader.listing(suite), groupPrefix);
+      return this.filterByGroup(suite, await this.fileLoader.listing(suite), groupPrefix);
     }
 
-    const group = filter.substring(i1 + 1, i2);
+    const path = filter.substring(i1 + 1, i2);
     const endOfTestName = new RegExp('[^' + allowedTestNameCharacters + ']');
     const i3sub = filter.substring(i2 + 1).search(endOfTestName);
     if (i3sub === -1) {
@@ -116,8 +111,8 @@ export class TestLoader {
       return [
         {
           suite,
-          path: group,
-          spec: this.filterByTestMatch(suite, group, testPrefix),
+          path,
+          spec: this.filterByTestMatch(suite, path, testPrefix),
         },
       ];
     }
@@ -138,8 +133,8 @@ export class TestLoader {
       return [
         {
           suite,
-          path: group,
-          spec: this.filterByParamsMatch(suite, group, test, params),
+          path,
+          spec: this.filterByParamsMatch(suite, path, test, params),
         },
       ];
     } else if (token === ':') {
@@ -149,8 +144,8 @@ export class TestLoader {
       return [
         {
           suite,
-          path: group,
-          spec: this.filterByParamsExact(suite, group, test, params),
+          path,
+          spec: this.filterByParamsExact(suite, path, test, params),
         },
       ];
     } else {
@@ -159,12 +154,13 @@ export class TestLoader {
   }
 
   private filterByGroup(
-    { suite, groups }: TestSuiteListing,
+    suite: string,
+    specs: TestSuiteListing,
     groupPrefix: string
   ): TestQueryResult[] {
     const entries: TestQueryResult[] = [];
 
-    for (const { path, description } of groups) {
+    for (const { path, description } of specs) {
       if (path.startsWith(groupPrefix)) {
         const isReadme = path === '' || path.endsWith('/');
         const spec: Promise<TestSpecFile> = isReadme
