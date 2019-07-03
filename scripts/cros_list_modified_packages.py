@@ -190,6 +190,8 @@ def WorkonProjectsMonitor(projects):
 
 def WorkonSrcpathsMonitor(srcpaths):
   """Returns a monitor for srcpath modification times."""
+  # This class handles generators, so zip() is safe.
+  # pylint: disable=zip-builtin-not-iterating
   return ModificationTimeMonitor(zip(srcpaths, srcpaths))
 
 

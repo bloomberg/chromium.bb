@@ -78,6 +78,7 @@ enable=
     unpacking-in-except,
     using-cmp-argument,
     xrange-builtin,
+    zip-builtin-not-iterating,
 
 
 # Disable the message, report, category or checker with the given id(s). You

@@ -820,8 +820,8 @@ class EBuild(object):
 
     subdir_paths = []
     subtree_paths = []
-    rows = zip(localnames, projects, srcpaths, subdirs, subtrees)
-    for local, project, srcpath, subdir, subtree in rows:
+    for local, project, srcpath, subdir, subtree in zip(
+        localnames, projects, srcpaths, subdirs, subtrees):
 
       if srcpath:
         subdir_path = os.path.join(srcbase, srcpath)
