@@ -150,9 +150,12 @@ class CommitInfo(object):
   def __ne__(self, other):
     return not self.__eq__(other)
 
-  def __nonzero__(self):
+  def __bool__(self):
     return bool(self.sha1 or self.timestamp or self.title or self.label or
                 self.score)
+
+  # Python 2 glue.
+  __nonzero__ = __bool__
 
 
 class MissingRequiredOptionsException(Exception):

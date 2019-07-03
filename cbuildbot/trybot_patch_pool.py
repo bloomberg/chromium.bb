@@ -54,9 +54,12 @@ class TrybotPatchPool(object):
     self.local_patches = tuple(local_patches)
     self.remote_patches = tuple(remote_patches)
 
-  def __nonzero__(self):
+  def __bool__(self):
     """Returns True if the pool has any patches."""
     return any([self.gerrit_patches, self.local_patches, self.remote_patches])
+
+  # Python 2 glue.
+  __nonzero__ = __bool__
 
   def Filter(self, **kwargs):
     """Returns a new pool with only patches that match constraints.

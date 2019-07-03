@@ -131,9 +131,12 @@ class Table(object):
       ix += 1
     return text
 
-  def __nonzero__(self):
+  def __bool__(self):
     """Define boolean equivalent for this table."""
     return bool(self._columns)
+
+  # Python 2 glue.
+  __nonzero__ = __bool__
 
   def __len__(self):
     """Length of table equals the number of rows."""

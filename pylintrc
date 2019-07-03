@@ -62,6 +62,7 @@ enable=
     intern-builtin,
     invalid-str-codec,
     next-method-defined,
+    nonzero-method,
     oct-method,
     old-raise-syntax,
     parameter-unpacking,

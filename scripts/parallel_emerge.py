@@ -1341,8 +1341,11 @@ class ScoredHeap(object):
   def __contains__(self, target):
     return target in self._heap_set
 
-  def __nonzero__(self):
+  def __bool__(self):
     return bool(self.heap)
+
+  # Python 2 glue.
+  __nonzero__ = __bool__
 
   def __len__(self):
     return len(self.heap)
