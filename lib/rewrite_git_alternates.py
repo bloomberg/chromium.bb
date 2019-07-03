@@ -15,6 +15,7 @@ from __future__ import print_function
 __all__ = ('RebuildRepoCheckout',)
 
 import sys
+import math
 import os
 import shutil
 import errno
@@ -130,12 +131,13 @@ def _GetProjects(repo_root):
     if os.path.exists(path):
       times.append(os.stat(path).st_mtime)
 
-  manifest_time = long(max(times))
+  # Truncate to seconds.
+  manifest_time = math.trunc(max(times))
 
   cache_path = os.path.join(repo_root, _CACHE_NAME)
 
   try:
-    if long(os.stat(cache_path).st_mtime) == manifest_time:
+    if math.trunc(os.stat(cache_path).st_mtime) == manifest_time:
       return osutils.ReadFile(cache_path).split()
   except EnvironmentError as e:
     if e.errno != errno.ENOENT:

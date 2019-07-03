@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import errno
+import numbers
 import os
 import signal
 import time
@@ -636,7 +637,7 @@ class Cgroup(object):
     """
     if pid is None:
       pid = 'self'
-    elif not isinstance(pid, (long, int)):
+    elif not isinstance(pid, numbers.Integral):
       raise ValueError("pid must be None, or an integer/long.  Got %r" % (pid,))
 
     cpuset = None

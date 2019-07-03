@@ -19,6 +19,7 @@ from google.protobuf import timestamp_pb2
 import binascii
 import functools
 import hashlib
+import numbers
 import os
 import sys
 import threading
@@ -237,7 +238,7 @@ def datetime_to_timestamp(value):
 
 def timestamp_to_datetime(value):
   """Converts integer timestamp in microseconds since epoch to UTC datetime."""
-  if not isinstance(value, (int, long, float)):
+  if not isinstance(value, numbers.Real):
     raise ValueError(
         'Expecting a number, got %s instead' % type(value).__name__)
   return EPOCH + timedelta(microseconds=value)

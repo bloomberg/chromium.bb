@@ -10,6 +10,7 @@ from __future__ import print_function
 import copy
 import itertools
 import json
+import numbers
 import os
 import re
 
@@ -650,7 +651,7 @@ class HWTestConfig(object):
     # Only reduce priority if it's lower.
     new_priority = constants.HWTEST_PRIORITIES_MAP[constants
                                                    .HWTEST_DEFAULT_PRIORITY]
-    if isinstance(self.priority, (int, long)):
+    if isinstance(self.priority, numbers.Integral):
       self.priority = min(self.priority, new_priority)
     elif constants.HWTEST_PRIORITIES_MAP[self.priority] > new_priority:
       self.priority = new_priority

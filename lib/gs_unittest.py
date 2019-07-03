@@ -11,6 +11,7 @@ import contextlib
 import functools
 import datetime
 import mock
+import numbers
 import os
 import string
 
@@ -535,7 +536,7 @@ class UnmockedCopyTest(cros_test_lib.TempDirTestCase):
       # Verify the generation is sane.  All we can assume is that it's a valid
       # whole number greater than 0.
       self.assertNotEqual(gen, None)
-      self.assertIn(type(gen), (int, long))
+      self.assertTrue(isinstance(gen, numbers.Integral))
       self.assertGreater(gen, 0)
 
       # Verify the size is what we expect.

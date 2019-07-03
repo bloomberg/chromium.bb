@@ -13,6 +13,7 @@ from __future__ import print_function
 
 import collections
 import cStringIO
+import math
 import operator
 import os
 import tempfile
@@ -309,7 +310,7 @@ class PackageIndex(object):
 
   def _ModifiedHeaderUpdate(self):
     if self.modified:
-      self.header['TIMESTAMP'] = str(long(time.time()))
+      self.header['TIMESTAMP'] = str(math.trunc(time.time()))
       self.header['PACKAGES'] = str(len(self.packages))
       self.modified = False
 

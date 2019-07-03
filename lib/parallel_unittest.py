@@ -11,6 +11,7 @@ import contextlib
 import cPickle
 import mock
 import multiprocessing
+import numbers
 import os
 import signal
 import sys
@@ -87,7 +88,7 @@ class ParallelMock(partial_mock.PartialMock):
 
   @contextlib.contextmanager
   def ParallelTasks(self, steps, max_parallel=None, halt_on_error=False):
-    assert max_parallel is None or isinstance(max_parallel, (int, long))
+    assert max_parallel is None or isinstance(max_parallel, numbers.Integral)
     assert isinstance(halt_on_error, bool)
     try:
       yield
