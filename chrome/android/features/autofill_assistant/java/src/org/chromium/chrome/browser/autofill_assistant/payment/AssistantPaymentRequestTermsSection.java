@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant.payment;
 
 import android.content.Context;
 import android.text.style.StyleSpan;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +40,7 @@ public class AssistantPaymentRequestTermsSection {
         mTermsAgree = new TextView(context);
         ApiCompatibilityUtils.setTextAppearance(
                 mTermsAgree, org.chromium.chrome.R.style.TextAppearance_BlackCaption);
+        mTermsAgree.setGravity(Gravity.CENTER_VERTICAL);
         mTermsList.addItem(mTermsAgree, /*hasEditButton=*/false, selected -> {
             if (selected && mListener != null) {
                 mListener.onResult(AssistantTermsAndConditionsState.ACCEPTED);
@@ -48,6 +50,7 @@ public class AssistantPaymentRequestTermsSection {
         mTermsRequiresReview = new TextView(context);
         ApiCompatibilityUtils.setTextAppearance(
                 mTermsRequiresReview, org.chromium.chrome.R.style.TextAppearance_BlackCaption);
+        mTermsRequiresReview.setGravity(Gravity.CENTER_VERTICAL);
         mTermsList.addItem(mTermsRequiresReview, /*hasEditButton=*/false, selected -> {
             if (selected && mListener != null) {
                 mListener.onResult(AssistantTermsAndConditionsState.REQUIRES_REVIEW);
