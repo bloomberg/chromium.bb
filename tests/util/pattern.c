@@ -643,7 +643,7 @@ void util_smpte_c8_gamma(unsigned size, struct drm_color_lut *lut)
 		printf("Error: gamma too small: %d < %d\n", size, 7 + 7 + 8);
 		return;
 	}
-	memset(lut, size * sizeof(struct drm_color_lut), 0);
+	memset(lut, 0, size * sizeof(struct drm_color_lut));
 
 #define FILL_COLOR(idx, r, g, b) \
 	lut[idx].red = (r) << 8; \
