@@ -773,6 +773,12 @@ static void update_ref_frame_map(AV1_COMP *cpi,
                                  FRAME_UPDATE_TYPE frame_update_type) {
   AV1_COMMON *const cm = &cpi->common;
 
+  if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
+    stack_reset(cpi->lst_stack, &cpi->lst_stack_size);
+    stack_reset(cpi->gld_stack, &cpi->gld_stack_size);
+    stack_reset(cpi->arf_stack, &cpi->arf_stack_size);
+  }
+
   // If check_frame_refs_short_signaling() decided to set
   // frame_refs_short_signaling=1 then we update remapped_ref_idx[] here.  Every
   // reference will still map to the same RefCntBuffer (through ref_frame_map[])
