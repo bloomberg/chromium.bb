@@ -81,6 +81,11 @@ void GamepadPlatformDataFetcherLinux::OnDeviceRemoved(
   RefreshDevice(device.get());
 }
 
+void GamepadPlatformDataFetcherLinux::OnDeviceChanged(
+    ScopedUdevDevicePtr device) {
+  RefreshDevice(device.get());
+}
+
 void GamepadPlatformDataFetcherLinux::GetGamepadData(bool) {
   TRACE_EVENT0("GAMEPAD", "GetGamepadData");
 
