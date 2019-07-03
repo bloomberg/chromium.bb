@@ -666,9 +666,6 @@ extern const char kHorizontalTabSwitcherAndroidDescription[];
 extern const char kTabSwitcherOnReturnName[];
 extern const char kTabSwitcherOnReturnDescription[];
 
-extern const char kViewsCastDialogName[];
-extern const char kViewsCastDialogDescription[];
-
 extern const char kHideActiveAppsFromShelfName[];
 extern const char kHideActiveAppsFromShelfDescription[];
 

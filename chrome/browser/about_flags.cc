@@ -3019,12 +3019,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout)},
 
-#if defined(TOOLKIT_VIEWS)
-    {"views-cast-dialog", flag_descriptions::kViewsCastDialogName,
-     flag_descriptions::kViewsCastDialogDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kViewsCastDialog)},
-#endif  // defined(TOOLKIT_VIEWS)
-
 #if defined(OS_ANDROID)
     {"enable-horizontal-tab-switcher",
      flag_descriptions::kHorizontalTabSwitcherAndroidName,

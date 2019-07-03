@@ -1083,10 +1083,6 @@ const char kGoogleProfileInfoDescription[] =
     "Enables using Google information to populate the profile name and icon in "
     "the avatar menu.";
 
-const char kViewsCastDialogName[] = "Views Cast dialog";
-const char kViewsCastDialogDescription[] =
-    "Replace the WebUI Cast dialog with a Views toolkit dialog.";
-
 const char kHandwritingGestureName[] = "Handwriting Gestures";
 const char kHandwritingGestureDescription[] =
     "Enables handwriting gestures within the virtual keyboard";
