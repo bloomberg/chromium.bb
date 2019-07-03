@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_VR_VR_DISPLAY_IMPL_H
-#define DEVICE_VR_VR_DISPLAY_IMPL_H
+#ifndef DEVICE_VR_ORIENTATION_ORIENTATION_SESSION_H_
+#define DEVICE_VR_ORIENTATION_ORIENTATION_SESSION_H_
 
 #include <memory>
 
@@ -21,17 +21,18 @@ namespace device {
 
 class VROrientationDevice;
 
-// VR device process implementation of a XRFrameDataProvider within a WebVR
-// or WebXR site session.
-// VRDisplayImpl objects are owned by their respective XRRuntime instances.
-// TODO(http://crbug.com/842025): Rename this.
-class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::XRFrameDataProvider,
-                                       public mojom::XRSessionController {
+// VR device process implementation of a XRFrameDataProvider within a session
+// that exposes device orientation sensors.
+// VROrientationSession objects are owned by their respective
+// VROrientationDevice instances.
+class DEVICE_VR_EXPORT VROrientationSession
+    : public mojom::XRFrameDataProvider,
+      public mojom::XRSessionController {
  public:
-  VRDisplayImpl(VROrientationDevice* device,
-                mojom::XRFrameDataProviderRequest,
-                mojom::XRSessionControllerRequest);
-  ~VRDisplayImpl() override;
+  VROrientationSession(VROrientationDevice* device,
+                       mojom::XRFrameDataProviderRequest,
+                       mojom::XRSessionControllerRequest);
+  ~VROrientationSession() override;
 
   void GetEnvironmentIntegrationProvider(
       mojom::XREnvironmentIntegrationProviderAssociatedRequest
@@ -58,4 +59,4 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::XRFrameDataProvider,
 
 }  // namespace device
 
-#endif  //  DEVICE_VR_VR_DISPLAY_IMPL_H
+#endif  //  DEVICE_VR_ORIENTATION_ORIENTATION_SESSION_H_
