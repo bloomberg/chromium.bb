@@ -8,7 +8,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/android/signin/signin_manager_android.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 class Profile;
 

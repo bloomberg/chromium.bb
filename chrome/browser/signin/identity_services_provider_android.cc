@@ -7,7 +7,7 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_android_wrapper_factory.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;

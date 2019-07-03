@@ -18,8 +18,8 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/primary_account_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
 
 using base::android::JavaParamRef;
 
