@@ -3004,14 +3004,17 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
+	log_scope = weston_compositor_add_log_scope(log_ctx, "log",
+			"Weston and Wayland log\n", NULL, NULL);
+
+	weston_log_file_open(log);
+	weston_log_set_handler(vlog, vlog_continue);
+
 	logger = weston_log_subscriber_create_log(weston_logfile);
 	if (log_scopes)
 		weston_log_setup_scopes(log_ctx, logger, log_scopes);
 	else
 		weston_log_subscribe(log_ctx, logger, "log");
-
-	weston_log_set_handler(vlog, vlog_continue);
-	weston_log_file_open(log);
 
 	weston_log("%s\n"
 		   STAMP_SPACE "%s\n"
@@ -3085,8 +3088,6 @@ int main(int argc, char *argv[])
 	}
 	segv_compositor = wet.compositor;
 
-	log_scope = weston_compositor_add_log_scope(log_ctx, "log",
-			"Weston and Wayland log\n", NULL, NULL);
 	protocol_scope =
 		weston_compositor_add_log_scope(log_ctx,
 						"proto",
