@@ -76,22 +76,13 @@ class CachedImageFetcher : public ImageFetcher {
                                     const gfx::Image& image,
                                     const RequestMetadata& request_metadata);
   // Encode the given |image_data| and store it.
-  // |cache_result_needs_transcoding| is passed along for metrics purposes. It
-  // is true when the result 1) comes from cache and 2) wasn't transcoded when
-  // last time it was stored in the ImageCache.
-  // |is_image_data_transcoded| indicates whether the image to save has been
-  // transcoded. An image could be transcoded during network fetching, or loaded
-  // from the ImageCache without transcoding before.
+  // |cache_result_needs_transcoding| is passed along for metrics purposes.
   void EncodeAndStoreData(bool cache_result_needs_transcoding,
-                          bool is_image_data_transcoded,
                           CachedImageFetcherRequest request,
                           const gfx::Image& image);
   // Store the given |image_data| in the cache. |cache_result_needs_transcoding|
-  // is passed along for metrics purposes. It is true when the result 1) comes
-  // from cache and 2) wasn't transcoded when last time it was stored in the
-  // ImageCache.
+  // is passed along for metrics purposes.
   void StoreData(bool cache_result_needs_transcoding,
-                 bool is_image_data_transcoded,
                  CachedImageFetcherRequest request,
                  std::string image_data);
 

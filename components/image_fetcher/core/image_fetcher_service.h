@@ -34,12 +34,7 @@ enum class ImageFetcherConfig {
   kInMemoryOnly = 2,
   // In memory cache with disk caching. Currently only available in Java.
   kInMemoryWithDiskCache = 3,
-  // Deferring image transcoding when fetching. This is because utility process
-  // isn't created in the reduced mode, thus the image decoding in the utility
-  // process is deferred until full browser starts. The ReducedModeImageFetcher
-  // will ignore any ImageFetcherCallback which asks transcoded images.
-  kReducedMode = 4,
-  kMaxValue = kReducedMode
+  kMaxValue = kInMemoryWithDiskCache
 };
 
 // Keyed service responsible for managing the lifetime of various ImageFetcher
@@ -67,9 +62,6 @@ class ImageFetcherService : public KeyedService {
   std::unique_ptr<ImageFetcher> image_fetcher_;
   // This fetcher goes through a disk cache before going to the network.
   std::unique_ptr<ImageFetcher> cached_image_fetcher_;
-  // This fetcher goes through a disk cache before going to the network, but
-  // defers image transcoding when fetching.
-  std::unique_ptr<ImageFetcher> reduced_mode_image_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageFetcherService);
 };
