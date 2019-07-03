@@ -1,12 +1,8 @@
 import { CaseRecorder, GroupRecorder, TestCaseLiveResult } from './logger.js';
-import { ParamsAny, ParamsSpec, ParamSpecIterable, paramsEquals } from './params/index.js';
+import { ParamsAny, ParamSpecIterable, paramsEquals } from './params/index.js';
 import { Fixture } from './fixture.js';
 import { allowedTestNameCharacters } from './allowed_characters.js';
-
-export interface TestCaseID {
-  readonly name: string;
-  readonly params: ParamsSpec | null;
-}
+import { TestCaseID } from './id.js';
 
 export interface RunCase {
   readonly id: TestCaseID;

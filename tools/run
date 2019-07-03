@@ -3,4 +3,4 @@
 // Run test suites under node.
 
 require('../src/tools/setup-ts-in-node.js');
-require('../src/tools/run.ts');
+require('../src/runtime/cmdline.ts');

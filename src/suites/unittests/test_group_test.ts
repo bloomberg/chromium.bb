@@ -1,11 +1,6 @@
-import {
-  DefaultFixture,
-  TestGroup,
-  Fixture,
-  paramsEquals,
-  TestCaseID,
-} from '../../framework/index.js';
+import { DefaultFixture, TestGroup, Fixture, paramsEquals } from '../../framework/index.js';
 import { Logger } from '../../framework/logger.js';
+import { TestCaseID } from '../../framework/id.js';
 
 export class TestGroupTest extends DefaultFixture {
   async run<F extends Fixture>(g: TestGroup<F>): Promise<void> {

@@ -91,9 +91,7 @@ class LoadingTest extends DefaultFixture {
   async load(filters: string[]) {
     const listing = await this.loader.loadTests(filters);
     const entries = Promise.all(
-      Array.from(listing, ({ suite, path, spec }) =>
-        spec.then((s: TestSpecFile) => ({ suite, path, spec: s }))
-      )
+      Array.from(listing, ({ id, spec }) => spec.then((s: TestSpecFile) => ({ id, spec: s })))
     );
     return entries;
   }
@@ -139,8 +137,8 @@ g.test('whole group', async t => {
 
   {
     const foo = (await t.load(['suite1:foo:']))[0];
-    t.expect(foo.suite === 'suite1');
-    t.expect(foo.path === 'foo');
+    t.expect(foo.id.suite === 'suite1');
+    t.expect(foo.id.path === 'foo');
     if (foo.spec.g === undefined) {
       throw new Error('foo group');
     }
@@ -181,8 +179,8 @@ g.test('end2end', async t => {
     throw new Error('listing length');
   }
 
-  t.expect(l[0].suite === 'suite2');
-  t.expect(l[0].path === 'foof');
+  t.expect(l[0].id.suite === 'suite2');
+  t.expect(l[0].id.path === 'foof');
   t.expect(l[0].spec.description === 'desc 2b');
   if (l[0].spec.g === undefined) {
     throw new Error();
@@ -190,7 +188,7 @@ g.test('end2end', async t => {
   t.expect(l[0].spec.g.iterate instanceof Function);
 
   const log = new Logger();
-  const [rec, res] = log.record(l[0].path);
+  const [rec, res] = log.record(l[0].id.path);
   const rcs = Array.from(l[0].spec.g.iterate(rec));
   if (rcs.length !== 2) {
     throw new Error('iterate length');

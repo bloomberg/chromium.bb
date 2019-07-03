@@ -16,19 +16,18 @@ declare function async_test(f: (this: WptTestObject) => Promise<void>, name: str
 
   const log = new Logger();
   const running = [];
-  const entries = await Promise.all(
-    Array.from(listing, ({ suite, path, spec }) => spec.then(s => ({ suite, path, spec: s })))
+  const queryResults = await Promise.all(
+    Array.from(listing, ({ id, spec }) => spec.then(s => ({ id, spec: s })))
   );
 
-  for (const entry of entries) {
-    const { path, spec } = entry;
-    if (!spec.g) {
+  for (const qr of queryResults) {
+    if (!qr.spec.g) {
       continue;
     }
 
-    const [rec] = log.record(path);
+    const [rec] = log.record(qr.id.path);
     // TODO: don't run all tests all at once
-    for (const t of spec.g.iterate(rec)) {
+    for (const t of qr.spec.g.iterate(rec)) {
       const run = t.run();
       running.push(run);
       // Note: apparently, async_tests must ALL be added within the same task.
@@ -40,7 +39,7 @@ declare function async_test(f: (this: WptTestObject) => Promise<void>, name: str
           }
         });
         this.done();
-      }, makeQueryString(entry, t.id));
+      }, makeQueryString(qr.id, t.id));
     }
   }
 

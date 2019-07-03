@@ -5,6 +5,8 @@ import * as process from 'process';
 
 import { TestSpecFile, TestLoader } from '../framework/loader.js';
 import { Logger, TestCaseLiveResult } from '../framework/logger.js';
+import { TestSpecID } from '../framework/id.js';
+import { makeQueryString } from '../framework/url_query.js';
 
 function usage(rc: number) {
   console.log('Usage:');
@@ -17,7 +19,7 @@ if (process.argv.length <= 2) {
   usage(0);
 }
 
-if (!fs.existsSync('src/tools/run.ts')) {
+if (!fs.existsSync('src/runtime/cmdline.ts')) {
   console.log('Must be run from repository root');
   usage(1);
 }
@@ -42,33 +44,30 @@ for (const a of process.argv.slice(2)) {
     const listing = await loader.loadTestsFromCmdLine(filterArgs);
 
     const log = new Logger();
-    const entries = await Promise.all(
-      Array.from(listing, ({ suite, path, spec }) =>
-        spec.then((s: TestSpecFile) => ({ suite, path, g: s.g }))
-      )
+    const queryResults = await Promise.all(
+      Array.from(listing, ({ id, spec }) => spec.then((s: TestSpecFile) => ({ id, spec: s })))
     );
 
-    const failed: Array<[string, string, TestCaseLiveResult]> = [];
-    const warned: Array<[string, string, TestCaseLiveResult]> = [];
+    const failed: Array<[TestSpecID, TestCaseLiveResult]> = [];
+    const warned: Array<[TestSpecID, TestCaseLiveResult]> = [];
 
     // TODO: don't run all tests all at once
     const running = [];
-    for (const entry of entries) {
-      const { suite, path, g } = entry;
-      if (!g) {
+    for (const qr of queryResults) {
+      if (!qr.spec.g) {
         continue;
       }
 
-      const [rec] = log.record(path);
-      for (const t of g.iterate(rec)) {
+      const [rec] = log.record(qr.id.path);
+      for (const t of qr.spec.g.iterate(rec)) {
         running.push(
           (async () => {
             const res = await t.run();
             if (res.status === 'fail') {
-              failed.push([suite, path, res]);
+              failed.push([qr.id, res]);
             }
             if (res.status === 'warn') {
-              warned.push([suite, path, res]);
+              warned.push([qr.id, res]);
             }
           })()
         );
@@ -89,17 +88,17 @@ for (const a of process.argv.slice(2)) {
     if (warned.length) {
       console.log('');
       console.log('** Warnings **');
-      for (const [suite, path, r] of warned) {
+      for (const [id, r] of warned) {
         // TODO: actually print query here
-        console.log(suite + ':' + path, r);
+        console.log(makeQueryString(id), r);
       }
     }
     if (failed.length) {
       console.log('');
       console.log('** Failures **');
-      for (const [suite, path, r] of failed) {
+      for (const [id, r] of failed) {
         // TODO: actually print query here
-        console.log(suite + ':' + path, r);
+        console.log(makeQueryString(id), r);
       }
     }
 

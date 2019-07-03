@@ -1,8 +1,9 @@
 import { GroupRecorder } from './logger.js';
 import { ParamsAny, paramsEquals, paramsSupersets } from './params/index.js';
-import { RunCaseIterable, TestCaseID, RunCase } from './test_group.js';
+import { RunCaseIterable, RunCase } from './test_group.js';
 import { allowedTestNameCharacters } from './allowed_characters.js';
 import { TestSuiteListing } from './listing.js';
+import { TestSpecID, TestCaseID } from './id.js';
 
 // One of the following:
 // - A shell object describing a directory (from its README.txt).
@@ -14,18 +15,13 @@ export interface TestSpecFile {
   readonly g?: RunCaseIterable;
 }
 
-// Identifies a test spec (a .spec.ts file).
-export interface TestSpecPath {
-  // The spec's suite, e.g. 'cts'.
-  readonly suite: string;
-  // The spec's path within the suite, e.g. 'command_buffer/compute/basic'.
-  readonly path: string;
+// A pending loaded spec (.spec.ts) file, plus identifying information.
+export interface TestQueryResult {
+  readonly id: TestSpecID;
+  readonly spec: Promise<TestSpecFile>;
 }
 
 type TestQueryResults = IterableIterator<TestQueryResult>;
-export interface TestQueryResult extends TestSpecPath {
-  readonly spec: Promise<TestSpecFile>;
-}
 
 function* concat(lists: TestQueryResult[][]): TestQueryResults {
   for (const specs of lists) {
@@ -110,8 +106,7 @@ export class TestLoader {
       const testPrefix = filter.substring(i2 + 1);
       return [
         {
-          suite,
-          path,
+          id: { suite, path },
           spec: this.filterByTestMatch(suite, path, testPrefix),
         },
       ];
@@ -132,8 +127,7 @@ export class TestLoader {
       // - cts:buffers/mapWriteAsync:basic~{filter:"params"}
       return [
         {
-          suite,
-          path,
+          id: { suite, path },
           spec: this.filterByParamsMatch(suite, path, test, params),
         },
       ];
@@ -143,8 +137,7 @@ export class TestLoader {
       // - cts:buffers/mapWriteAsync:basic:{exact:"params"}
       return [
         {
-          suite,
-          path,
+          id: { suite, path },
           spec: this.filterByParamsExact(suite, path, test, params),
         },
       ];
@@ -166,7 +159,7 @@ export class TestLoader {
         const spec: Promise<TestSpecFile> = isReadme
           ? Promise.resolve({ description })
           : this.fileLoader.import(`${suite}/${path}.spec.js`);
-        entries.push({ suite, path, spec });
+        entries.push({ id: { suite, path }, spec });
       }
     }
 

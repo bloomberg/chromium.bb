@@ -4,6 +4,7 @@ import { TestLoader } from '../framework/loader.js';
 import { Logger } from '../framework/logger.js';
 import { makeQueryString } from '../framework/url_query.js';
 import { RunCase } from '../framework/index.js';
+import { TestSpecID } from '../framework/id.js';
 
 const log = new Logger();
 
@@ -12,7 +13,7 @@ const runButtonCallbacks = new Map<HTMLElement, runButtonCallback>();
 
 const resultsJSON = document.getElementById('resultsJSON') as HTMLElement;
 const resultsVis = document.getElementById('resultsVis') as HTMLElement;
-function makeTest(path: string, description: string): HTMLElement {
+function makeTest(spec: TestSpecID, description: string): HTMLElement {
   const test = $('<div>')
     .addClass('test')
     .appendTo(resultsVis);
@@ -24,7 +25,7 @@ function makeTest(path: string, description: string): HTMLElement {
 
   $('<div>')
     .addClass('testname')
-    .text(path)
+    .text(makeQueryString(spec))
     .appendTo(test);
 
   $('<div>')
@@ -102,23 +103,26 @@ function mkCase(testcasesVis: HTMLElement, query: string, t: RunCase) {
 
   const loader = new TestLoader();
   const listing = await loader.loadTestsFromQuery(window.location.search);
-  const entries = await Promise.all(
-    Array.from(listing, ({ suite, path, spec }) => spec.then(s => ({ suite, path, spec: s })))
+
+  // TODO: everything after this point is very similar across the three runtimes.
+
+  // TODO: start populating page before waiting for everything to load?
+  const queryResults = await Promise.all(
+    Array.from(listing, ({ id, spec }) => spec.then(s => ({ id, spec: s })))
   );
   // TODO: convert listing to tree so it can be displayed as a tree?
 
   const runCaseList = [];
-  for (const entry of entries) {
-    const { path, spec } = entry;
-    const testcasesVis = makeTest(path, spec.description);
+  for (const qr of queryResults) {
+    const testcasesVis = makeTest(qr.id, qr.spec.description);
 
-    if (!spec.g) {
+    if (!qr.spec.g) {
       continue;
     }
 
-    const [tRec] = log.record(path);
-    for (const t of spec.g.iterate(tRec)) {
-      const query = makeQueryString(entry, t.id);
+    const [tRec] = log.record(qr.id.path);
+    for (const t of qr.spec.g.iterate(tRec)) {
+      const query = makeQueryString(qr.id, t.id);
       const runCase = mkCase(testcasesVis, query, t);
       runCaseList.push(runCase);
     }
