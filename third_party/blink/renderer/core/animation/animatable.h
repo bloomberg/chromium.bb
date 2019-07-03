@@ -28,15 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://drafts.csswg.org/web-animations/#the-animatable-interface
-// https://drafts.csswg.org/web-animations/#extensions-to-the-element-interface
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_H_
 
-// TODO(dstockwell): This should be an Animatable interface, where Element
-// includes Animatable.
+#include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_animation_options.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
-[
-    ImplementedAs=ElementAnimation
-] partial interface Element {
-    [CallWith=ScriptState, Measure, RaisesException] Animation animate(object? keyframes, optional (unrestricted double or KeyframeAnimationOptions) options);
-    [RuntimeEnabled=WebAnimationsAPI] sequence<Animation> getAnimations();
+namespace blink {
+
+class Animation;
+class ExceptionState;
+class Element;
+class KeyframeEffectModelBase;
+class ScriptState;
+struct Timing;
+
+// https://drafts.csswg.org/web-animations-1/#the-animatable-interface-mixin
+class CORE_EXPORT Animatable {
+ public:
+  // Returns the target element of the animation that these methods are being
+  // called on.
+  virtual Element* GetAnimationTarget() = 0;
+
+  Animation* animate(ScriptState*,
+                     const ScriptValue&,
+                     UnrestrictedDoubleOrKeyframeAnimationOptions,
+                     ExceptionState&);
+
+  Animation* animate(ScriptState*, const ScriptValue&, ExceptionState&);
+
+  HeapVector<Member<Animation>> getAnimations();
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(AnimationSimTest, CustomPropertyBaseComputedStyle);
+
+  static Animation* animateInternal(Element&,
+                                    KeyframeEffectModelBase*,
+                                    const Timing&);
 };
+
+}  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_H_
