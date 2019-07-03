@@ -222,8 +222,7 @@ void EnsurePrimaryAccountAllowedForProfile(Profile* profile) {
   CoreAccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
   if (profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed) &&
       identity::IsUsernameAllowedByPatternFromPrefs(
-          g_browser_process->local_state(), primary_account.email,
-          prefs::kGoogleServicesUsernamePattern)) {
+          g_browser_process->local_state(), primary_account.email)) {
     return;
   }
 

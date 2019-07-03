@@ -47,8 +47,7 @@ bool CanOfferSignin(Profile* profile,
 
     // Make sure this username is not prohibited by policy.
     if (!identity::IsUsernameAllowedByPatternFromPrefs(
-            g_browser_process->local_state(), email,
-            prefs::kGoogleServicesUsernamePattern)) {
+            g_browser_process->local_state(), email)) {
       if (error_message) {
         error_message->assign(
             l10n_util::GetStringUTF8(IDS_SYNC_LOGIN_NAME_PROHIBITED));
