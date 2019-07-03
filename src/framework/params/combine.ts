@@ -1,10 +1,10 @@
-import { IParamsSpec, ParamSpecIterable, ParamSpecIterator } from './index.js';
+import { ParamsSpec, ParamSpecIterable, ParamSpecIterator } from './index.js';
 
 export function pcombine(params: ParamSpecIterable[]) {
   return new PCombine(params);
 }
 
-function merge(a: IParamsSpec, b: IParamsSpec): IParamsSpec {
+function merge(a: ParamsSpec, b: ParamsSpec): ParamsSpec {
   for (const key of Object.keys(a)) {
     if (b.hasOwnProperty(key)) {
       throw new Error('Duplicate key: ' + key);

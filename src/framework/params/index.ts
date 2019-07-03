@@ -3,21 +3,21 @@ export * from './filter.js';
 export * from './options.js';
 export * from './exclude.js';
 
-export interface IParamsAny {
+export interface ParamsAny {
   // tslint:disable-next-line: no-any // Too annoying to force every test to type convert params
   [k: string]: any;
 }
-export type ParamAnyIterable = Iterable<IParamsAny>;
-export type ParamAnyIterator = IterableIterator<IParamsAny>;
+export type ParamAnyIterable = Iterable<ParamsAny>;
+export type ParamAnyIterator = IterableIterator<ParamsAny>;
 
-export type ParamSpec = boolean | number | string;
-export interface IParamsSpec {
-  [k: string]: ParamSpec;
+export type ParamArgument = boolean | number | string;
+export interface ParamsSpec {
+  [k: string]: ParamArgument;
 }
-export type ParamSpecIterable = Iterable<IParamsSpec>;
-export type ParamSpecIterator = IterableIterator<IParamsSpec>;
+export type ParamSpecIterable = Iterable<ParamsSpec>;
+export type ParamSpecIterator = IterableIterator<ParamsSpec>;
 
-export function paramsEquals(x: IParamsSpec | null, y: IParamsSpec | null): boolean {
+export function paramsEquals(x: ParamsSpec | null, y: ParamsSpec | null): boolean {
   if (x === y) {
     return true;
   }
@@ -42,7 +42,7 @@ export function paramsEquals(x: IParamsSpec | null, y: IParamsSpec | null): bool
   return true;
 }
 
-export function paramsSupersets(sup: IParamsSpec | null, sub: IParamsSpec | null): boolean {
+export function paramsSupersets(sup: ParamsSpec | null, sub: ParamsSpec | null): boolean {
   if (sub === null) {
     return true;
   }

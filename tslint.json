@@ -1,7 +1,6 @@
 {
   "extends": "gts/tslint.json",
   "rules": {
-    "interface-name": [false]
   },
   "linterOptions": {
     "exclude": [

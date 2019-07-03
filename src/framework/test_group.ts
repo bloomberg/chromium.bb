@@ -1,11 +1,11 @@
 import { CaseRecorder, GroupRecorder, TestCaseLiveResult } from './logger.js';
-import { IParamsAny, IParamsSpec, ParamSpecIterable, paramsEquals } from './params/index.js';
+import { ParamsAny, ParamsSpec, ParamSpecIterable, paramsEquals } from './params/index.js';
 import { Fixture } from './fixture.js';
 import { allowedTestNameCharacters } from './allowed_characters.js';
 
 export interface TestCaseID {
   readonly name: string;
-  readonly params: IParamsSpec | null;
+  readonly params: ParamsSpec | null;
 }
 
 export interface RunCase {
@@ -17,7 +17,7 @@ export interface RunCaseIterable {
   iterate(rec: GroupRecorder): Iterable<RunCase>;
 }
 
-type FixtureClass<F extends Fixture> = new (log: CaseRecorder, params: IParamsAny) => F;
+type FixtureClass<F extends Fixture> = new (log: CaseRecorder, params: ParamsAny) => F;
 type TestFn<F extends Fixture> = (t: F) => Promise<void> | void;
 
 const validNames = new RegExp('^[' + allowedTestNameCharacters + ']+$');
@@ -81,7 +81,7 @@ class Test<F extends Fixture> {
       throw new Error('test case is already parameterized');
     }
     const cases = Array.from(specs);
-    const seen: IParamsAny[] = [];
+    const seen: ParamsAny[] = [];
     // This is n^2.
     for (const spec of cases) {
       if (seen.some(x => paramsEquals(x, spec))) {

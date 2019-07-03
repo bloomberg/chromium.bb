@@ -1,11 +1,11 @@
-import { IParamsAny } from './params/index.js';
+import { ParamsAny } from './params/index.js';
 import { CaseRecorder } from './logger.js';
 
 export abstract class Fixture {
-  params: IParamsAny;
+  params: ParamsAny;
   protected rec: CaseRecorder;
 
-  constructor(rec: CaseRecorder, params: IParamsAny) {
+  constructor(rec: CaseRecorder, params: ParamsAny) {
     this.rec = rec;
     this.params = params;
   }

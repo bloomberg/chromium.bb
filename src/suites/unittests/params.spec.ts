@@ -8,7 +8,7 @@ import {
   pcombine,
   pfilter,
   pexclude,
-  IParamsAny,
+  ParamsAny,
 } from '../../framework/index.js';
 import { TestGroupTest } from './test_group_test.js';
 
@@ -52,7 +52,7 @@ g.test('exclude', t => {
 g.test('generator', t0 => {
   const g = new TestGroup(DefaultFixture);
 
-  const ran: IParamsAny[] = [];
+  const ran: ParamsAny[] = [];
 
   g.test('generator', t => {
     ran.push(t.params);

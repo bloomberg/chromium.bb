@@ -1,4 +1,4 @@
-import { IParamsSpec } from './params/index.js';
+import { ParamsSpec } from './params/index.js';
 import { getStackTrace, now } from './util.js';
 import { version } from './version.js';
 
@@ -10,7 +10,7 @@ interface TestLiveResult {
 
 export interface TestCaseLiveResult {
   name: string;
-  params: IParamsSpec | null;
+  params: ParamsSpec | null;
   status: Status;
   logs?: string[];
   timems: number;
@@ -40,7 +40,7 @@ export class GroupRecorder {
     this.test = test;
   }
 
-  record(name: string, params: IParamsSpec | null): [CaseRecorder, TestCaseLiveResult] {
+  record(name: string, params: ParamsSpec | null): [CaseRecorder, TestCaseLiveResult] {
     const result: TestCaseLiveResult = { name, params, status: 'running', timems: -1 };
     this.test.cases.push(result);
     return [new CaseRecorder(result), result];

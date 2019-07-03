@@ -1,14 +1,14 @@
-import { ParamSpec, ParamSpecIterable, ParamSpecIterator } from './index.js';
+import { ParamArgument, ParamSpecIterable, ParamSpecIterator } from './index.js';
 
-export function poptions(name: string, values: ParamSpec[]) {
+export function poptions(name: string, values: ParamArgument[]) {
   return new POptions(name, values);
 }
 
 class POptions implements ParamSpecIterable {
   private name: string;
-  private values: ParamSpec[];
+  private values: ParamArgument[];
 
-  constructor(name: string, values: ParamSpec[]) {
+  constructor(name: string, values: ParamArgument[]) {
     this.name = name;
     this.values = values;
   }

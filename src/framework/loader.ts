@@ -1,5 +1,5 @@
 import { GroupRecorder } from './logger.js';
-import { IParamsAny, paramsEquals, paramsSupersets } from './params/index.js';
+import { ParamsAny, paramsEquals, paramsSupersets } from './params/index.js';
 import { RunCaseIterable, TestCaseID, RunCase } from './test_group.js';
 import { allowedTestNameCharacters } from './allowed_characters.js';
 
@@ -116,7 +116,7 @@ export class TestLoader {
 
     let params = null;
     if (i3 + 1 < filter.length) {
-      params = JSON.parse(filter.substring(i3 + 1)) as IParamsAny;
+      params = JSON.parse(filter.substring(i3 + 1)) as ParamsAny;
     }
 
     if (token === '~') {
@@ -184,7 +184,7 @@ export class TestLoader {
     suite: string,
     group: string,
     test: string,
-    paramsMatch: IParamsAny | null
+    paramsMatch: ParamsAny | null
   ): Promise<TestSpecFile> {
     const spec = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
     if (!spec.g) {
@@ -203,7 +203,7 @@ export class TestLoader {
     suite: string,
     group: string,
     test: string,
-    paramsExact: IParamsAny | null
+    paramsExact: ParamsAny | null
   ): Promise<TestSpecFile> {
     const spec = (await this.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
     if (!spec.g) {
