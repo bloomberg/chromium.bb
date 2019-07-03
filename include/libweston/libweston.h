@@ -2168,23 +2168,6 @@ int
 weston_log_continue(const char *fmt, ...)
 	__attribute__ ((format (printf, 1, 2)));
 
-enum {
-	TTY_ENTER_VT,
-	TTY_LEAVE_VT
-};
-
-struct tty *
-tty_create(struct weston_compositor *compositor, int tty_nr);
-
-void
-tty_destroy(struct tty *tty);
-
-void
-tty_reset(struct tty *tty);
-
-int
-tty_activate_vt(struct tty *tty, int vt);
-
 enum weston_screenshooter_outcome {
 	WESTON_SCREENSHOOTER_SUCCESS,
 	WESTON_SCREENSHOOTER_NO_MEMORY,
