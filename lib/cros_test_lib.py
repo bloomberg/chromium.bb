@@ -408,7 +408,7 @@ class TruthTable(object):
       # columns will produce the traditional truth table ordering.
       # For 2-dimensional example: F,F then F,T then T,F then T,T.
       for col in range(self.dimension - 1, -1, -1):
-        line_values.append(bool(inputs_index / pow(2, col) % 2))
+        line_values.append(bool(inputs_index // pow(2, col) % 2))
 
       return tuple(line_values)
 
@@ -1235,12 +1235,12 @@ class ProgressBarTestCase(MockOutputTestCase):
     skipped = 0
     for i in range(num_events):
       try:
-        self.AssertOutputContainsLine('%d%%' % (i * 100 / num_events))
+        self.AssertOutputContainsLine('%d%%' % (i * 100 // num_events))
       except AssertionError:
         skipped += 1
 
     # crbug.com/560953 It's normal to skip a few events under heavy CPU load.
-    self.assertLessEqual(skipped, num_events / 2,
+    self.assertLessEqual(skipped, num_events // 2,
                          'Skipped %s of %s progress updates' %
                          (skipped, num_events))
 

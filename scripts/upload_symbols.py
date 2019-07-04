@@ -94,7 +94,7 @@ DEDUPE_NOTIFY_TIMEOUT = 240
 # The minimum average rate (in bytes per second) that we expect to maintain
 # when uploading symbols.  This has to allow for symbols that are up to
 # CRASH_SERVER_FILE_LIMIT in size.
-UPLOAD_MIN_RATE = CRASH_SERVER_FILE_LIMIT / (30 * 60)
+UPLOAD_MIN_RATE = CRASH_SERVER_FILE_LIMIT // (30 * 60)
 
 # The lowest timeout (in seconds) we'll allow.  If the server is overloaded,
 # then there might be a delay in setting up the connection, not just with the
@@ -321,7 +321,7 @@ def GetUploadTimeout(symbol):
     Timeout length (in seconds)
   """
   # Scale the timeout based on the filesize.
-  return max(symbol.FileSize() / UPLOAD_MIN_RATE, UPLOAD_MIN_TIMEOUT)
+  return max(symbol.FileSize() // UPLOAD_MIN_RATE, UPLOAD_MIN_TIMEOUT)
 
 
 def ExecRequest(operator, url, timeout, api_key, **kwargs):

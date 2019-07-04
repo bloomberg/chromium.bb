@@ -5,6 +5,7 @@
 
 """Install/copy the image to the device."""
 
+from __future__ import division
 from __future__ import print_function
 
 import os
@@ -79,7 +80,7 @@ class UsbImagerOperation(operation.ProgressBarOperation):
     if match:
       self._transferred = match.groups()[0]
 
-    self.ProgressBar(float(self._transferred) / self._size)
+    self.ProgressBar(self._transferred / self._size)
 
 
 def _IsFilePathGPTDiskImage(file_path, require_pmbr=False):

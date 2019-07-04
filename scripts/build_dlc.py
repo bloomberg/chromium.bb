@@ -5,6 +5,7 @@
 
 """Script to generate a DLC (Downloadable Content) artifact."""
 
+from __future__ import division
 from __future__ import print_function
 
 import hashlib

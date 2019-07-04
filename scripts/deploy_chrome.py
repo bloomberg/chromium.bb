@@ -248,7 +248,7 @@ class DeployChrome(object):
     if effective_free < staging_size:
       raise DeployFailure(
           'Not enough free space on the device.  Required: %s MiB, '
-          'actual: %s MiB.' % (staging_size / 1024, effective_free / 1024))
+          'actual: %s MiB.' % (staging_size // 1024, effective_free // 1024))
     if device_info.target_fs_free < (100 * 1024):
       logging.warning('The device has less than 100MB free.  deploy_chrome may '
                       'hang during the transfer.')

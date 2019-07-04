@@ -350,7 +350,7 @@ class DepGraphGenerator(object):
 
     seconds = time.time() - start
     if '--quiet' not in emerge.opts:
-      print('Deps calculated in %dm%.1fs' % (seconds / 60, seconds % 60))
+      print('Deps calculated in %dm%.1fs' % (seconds // 60, seconds % 60))
 
     return deps_tree, deps_info
 
@@ -595,7 +595,7 @@ class DepGraphGenerator(object):
         cycles = FindCycles()
       seconds = time.time() - start
       if '--quiet' not in emerge.opts and seconds >= 0.1:
-        print('Tree sanitized in %dm%.1fs' % (seconds / 60, seconds % 60))
+        print('Tree sanitized in %dm%.1fs' % (seconds // 60, seconds % 60))
 
     def FindRecursiveProvides(pkg, seen):
       """Find all nodes that require a particular package.

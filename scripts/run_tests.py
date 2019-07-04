@@ -173,7 +173,7 @@ def RunTest(test, cmd, tmpfile, finished, total):
     except (IOError, ValueError):
       cache = {}
     if test in cache:
-      seconds = (cache[test] + seconds) / 2
+      seconds = (cache[test] + seconds) // 2
     cache[test] = seconds
     json.dump(cache, open(TIMING_CACHE_FILE, 'w'))
 

@@ -36,7 +36,7 @@ _TEST_CONFIG_JSON = {
 _IMAGE_SIZE = 4 * 1024 * 1024
 _BLOCK_SIZE = 4096
 _SECTOR_SIZE = 512
-_STATEFUL_SIZE = _IMAGE_SIZE / 2
+_STATEFUL_SIZE = _IMAGE_SIZE // 2
 _STATEFUL_OFFSET = 120 * _SECTOR_SIZE
 
 
@@ -72,12 +72,12 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
         ['cgpt', 'create', self.image],
         ['cgpt', 'add', self.image, '-t', 'data',
          '-l', str(constants.CROS_PART_STATEFUL),
-         '-b', str(_STATEFUL_OFFSET / _SECTOR_SIZE),
-         '-s', str(_STATEFUL_SIZE / _SECTOR_SIZE), '-i', '1'],
+         '-b', str(_STATEFUL_OFFSET // _SECTOR_SIZE),
+         '-s', str(_STATEFUL_SIZE // _SECTOR_SIZE), '-i', '1'],
         # Copy the stateful partition into the GPT image.
         ['dd', 'if=%s' % state, 'of=%s' % self.image, 'conv=notrunc', 'bs=4K',
-         'seek=%d' % (_STATEFUL_OFFSET / _BLOCK_SIZE),
-         'count=%s' % (_STATEFUL_SIZE / _BLOCK_SIZE)])
+         'seek=%d' % (_STATEFUL_OFFSET // _BLOCK_SIZE),
+         'count=%s' % (_STATEFUL_SIZE // _BLOCK_SIZE)])
     for cmd in commands:
       cros_build_lib.RunCommand(cmd, quiet=True)
 

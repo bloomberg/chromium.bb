@@ -656,7 +656,7 @@ class HWTestConfig(object):
 
   @property
   def timeout_mins(self):
-    return int(self.timeout / 60)
+    return self.timeout // 60
 
   def __eq__(self, other):
     return self.__dict__ == other.__dict__

@@ -62,7 +62,7 @@ class PaygenPayload(object):
 
   # What keys do we sign payloads with, and what size are they?
   PAYLOAD_SIGNATURE_KEYSETS = ('update_signer',)
-  PAYLOAD_SIGNATURE_SIZES_BYTES = (2048 / 8,)  # aka 2048 bits in bytes.
+  PAYLOAD_SIGNATURE_SIZES_BYTES = (2048 // 8,)  # aka 2048 bits in bytes.
 
   TEST_IMAGE_NAME = 'chromiumos_test_image.bin'
   RECOVERY_IMAGE_NAME = 'chromiumos_recovery_image.bin'

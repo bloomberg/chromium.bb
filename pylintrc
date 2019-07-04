@@ -80,6 +80,7 @@ enable=
     next-method-defined,
     nonzero-method,
     oct-method,
+    old-division,
     old-raise-syntax,
     parameter-unpacking,
     print-statement,

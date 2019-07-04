@@ -50,7 +50,7 @@ def CreateValidationFailureMessage(pre_cq_trybot,
   if messages:
     # Build a list of error messages. We don't want to build a ridiculously
     # long comment, as Gerrit will reject it. See https://crbug.com/236831
-    max_error_len = 20000 / max(1, len(messages))
+    max_error_len = 20000 // max(1, len(messages))
     msg.append('The following build(s) failed:')
     for message in [str(x) for x in messages]:
       if len(message) > max_error_len:

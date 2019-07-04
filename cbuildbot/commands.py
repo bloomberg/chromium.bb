@@ -2317,7 +2317,7 @@ def GenerateBreakpadSymbols(buildroot,
   cmd = [
       'cros_generate_breakpad_symbols',
       '--board=%s' % board, '--jobs',
-      str(max([1, multiprocessing.cpu_count() / 2]))
+      str(max([1, multiprocessing.cpu_count() // 2]))
   ]
   cmd += ['--exclude-dir=%s' % x for x in exclude_dirs]
   if debug:

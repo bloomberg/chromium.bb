@@ -540,7 +540,7 @@ class DepGraphGenerator(object):
 
     seconds = time.time() - start
     if '--quiet' not in emerge.opts:
-      print('Deps calculated in %dm%.1fs' % (seconds / 60, seconds % 60))
+      print('Deps calculated in %dm%.1fs' % (seconds // 60, seconds % 60))
 
     return deps_tree, deps_info
 
@@ -778,7 +778,7 @@ class DepGraphGenerator(object):
         cycles = FindCycles()
       seconds = time.time() - start
       if '--quiet' not in emerge.opts and seconds >= 0.1:
-        print('Tree sanitized in %dm%.1fs' % (seconds / 60, seconds % 60))
+        print('Tree sanitized in %dm%.1fs' % (seconds // 60, seconds % 60))
 
     def FindRecursiveProvides(pkg, seen):
       """Find all nodes that require a particular package.
@@ -1196,7 +1196,7 @@ class JobPrinter(object):
     job.last_output_timestamp = self.current_time
 
     # Note that we're starting the job
-    info = 'job %s (%dm%.1fs)' % (job.pkgname, seconds / 60, seconds % 60)
+    info = 'job %s (%dm%.1fs)' % (job.pkgname, seconds // 60, seconds % 60)
     last_output_seek = seek_locations.get(job.filename, 0)
     if last_output_seek:
       print('=== Continue output for %s ===' % info)
@@ -1623,7 +1623,8 @@ class EmergeQueue(object):
         elif (notify_interval and
               job.last_notify_timestamp + notify_interval < current_time):
           job_seconds = current_time - job.start_timestamp
-          args = (job.pkgname, job_seconds / 60, job_seconds % 60, job.filename)
+          args = (job.pkgname, job_seconds // 60, job_seconds % 60,
+                  job.filename)
           info = 'Still building %s (%dm%.1fs). Logs in %s' % args
           job.last_notify_timestamp = current_time
           self._Print(info)
@@ -1649,7 +1650,7 @@ class EmergeQueue(object):
           line += 'Retrying %s, ' % (retries,)
       load = ' '.join(str(x) for x in os.getloadavg())
       line += ('[Time %s | Elapsed %dm%.1fs | Load %s]' % (
-          time.strftime('%H:%M:%S', current_time_struct), seconds / 60,
+          time.strftime('%H:%M:%S', current_time_struct), seconds // 60,
           seconds % 60, load))
       self._Print(line)
 
@@ -1850,7 +1851,7 @@ class EmergeQueue(object):
       del self._build_jobs[target]
 
       seconds = time.time() - job.start_timestamp
-      details = '%s (in %dm%.1fs)' % (target, seconds / 60, seconds % 60)
+      details = '%s (in %dm%.1fs)' % (target, seconds // 60, seconds % 60)
 
       # Complain if necessary.
       if job.retcode != 0:

@@ -9,6 +9,7 @@ This module implements the concept of an operation, which has regular progress
 updates, verbose text display and perhaps some errors.
 """
 
+from __future__ import division
 from __future__ import print_function
 
 import collections
@@ -294,7 +295,7 @@ class ParallelEmergeOperation(ProgressBarOperation):
       self._printed_no_packages = True
 
     if self._total:
-      progress = float(self._completed) / self._total
+      progress = self._completed / self._total
       self.ProgressBar(progress)
       return progress
     else:

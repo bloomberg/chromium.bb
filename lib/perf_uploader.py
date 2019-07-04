@@ -16,6 +16,7 @@ Note: This module started off from the autotest/tko/perf_uploader.py but has
 been extended significantly since.
 """
 
+from __future__ import division
 from __future__ import print_function
 
 import collections

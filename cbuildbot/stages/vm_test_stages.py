@@ -480,7 +480,7 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
             dut_target_image=dut_target_image,
             results_dir=results_dir,
             local_image_cache=payload_dir,
-            timeout_m=(self._PERFORM_TIMEOUT_S - elapsed) / 60,
+            timeout_m=(self._PERFORM_TIMEOUT_S - elapsed) // 60,
         )
 
       vms.Stop()

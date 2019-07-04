@@ -1003,7 +1003,7 @@ class BoardSpecificBuilderStage(BuilderStage):
     """
     timeout_str = 'forever'
     if timeout is not None:
-      timeout_str = '%d minutes' % int((timeout / 60) + 0.5)
+      timeout_str = '%d minutes' % int((timeout / 60.0) + 0.5)
 
     if pretty_name is None:
       pretty_name = board_attr

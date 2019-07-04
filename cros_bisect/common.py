@@ -10,6 +10,7 @@
 * OptionsChecker: performs sanity check that every required option are given.
 """
 
+from __future__ import division
 from __future__ import print_function
 
 import math

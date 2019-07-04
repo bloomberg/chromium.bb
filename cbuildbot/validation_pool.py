@@ -478,7 +478,7 @@ class ValidationPool(object):
 
       # Iterated through all queries with no changes.
       logging.info('Waiting for %s (%d minutes left)...',
-                   cls._WaitForQuery(query), time_left / 60)
+                   cls._WaitForQuery(query), time_left // 60)
       time.sleep(cls.SLEEP_TIMEOUT)
 
     return pool

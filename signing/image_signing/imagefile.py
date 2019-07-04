@@ -253,7 +253,7 @@ class CalculateRootfsHash(object):
       return
     vroot_dev = dm_config.devices['vroot']
     # Get the verity args from the existing DmConfig.
-    rootfs_blocks = int(vroot_dev.GetVerityArg('hashstart').value) / 8
+    rootfs_blocks = int(vroot_dev.GetVerityArg('hashstart').value) // 8
     alg = vroot_dev.GetVerityArg('alg').value
     root_dev = vroot_dev.GetVerityArg('payload').value
     hash_dev = vroot_dev.GetVerityArg('hashtree').value

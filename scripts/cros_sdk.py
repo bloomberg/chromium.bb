@@ -1061,7 +1061,7 @@ snapshots will be unavailable).""" % ', '.join(missing_image_tools))
     mount_used_bytes = mount_stat.f_frsize * (
         mount_stat.f_blocks - mount_stat.f_bfree)
 
-    extra_gbs = (img_used_bytes - mount_used_bytes) / 2**30
+    extra_gbs = (img_used_bytes - mount_used_bytes) // 2**30
     if extra_gbs > MAX_UNUSED_IMAGE_GBS:
       logging.notice('%s is using %s GiB more than needed.  Running '
                      'fstrim.', img_path, extra_gbs)

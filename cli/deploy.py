@@ -5,6 +5,7 @@
 
 """Deploy packages onto a target device."""
 
+from __future__ import division
 from __future__ import print_function
 
 import bz2
@@ -77,7 +78,7 @@ class BrilloDeployOperation(operation.ProgressBarOperation):
     output = stdout + stderr
     for event in self._events:
       self._completed += output.count(event)
-    self.ProgressBar(float(self._completed) / self._total)
+    self.ProgressBar(self._completed / self._total)
 
 
 class _InstallPackageScanner(object):

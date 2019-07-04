@@ -74,7 +74,7 @@ def ParseELFSymbols(elf):
     else:
       # Get the size of DYNSYM section from section header.
       symtab_size = int(GetSymbolTableSize(elf))
-      nsymbols = symtab_size / symbol_size
+      nsymbols = symtab_size // symbol_size
 
     # The first symbol is always local undefined, unnamed so we ignore it.
     for i in range(1, nsymbols):

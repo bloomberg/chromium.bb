@@ -10,6 +10,7 @@ friendly to developers. It also provides import safety, in case ts_mon is not
 deployed with your code.
 """
 
+from __future__ import division
 from __future__ import print_function
 
 import collections
@@ -371,7 +372,7 @@ def PercentageDistribution(
   """
   # The last bucket actually covers [100, 100 + 1.0/num_buckets), so it
   # corresponds to values that exactly match 100%.
-  bucket_width = 100.0 / num_buckets
+  bucket_width = 100 / num_buckets
   b = ts_mon.FixedWidthBucketer(bucket_width, num_buckets)
   return ts_mon.CumulativeDistributionMetric(
       name, bucketer=b,
@@ -743,7 +744,7 @@ class RuntimeBreakdownTimer(object):
       fields['step_name'] = name
       # TODO(pprabhu): Convert _GetStepBreakdowns() to return ratios instead of
       # percentage when the old PercentageDistribution reporting is deleted.
-      Float('%s/duration_breakdown' % self._name).set(percent / 100.0,
+      Float('%s/duration_breakdown' % self._name).set(percent / 100,
                                                       fields=fields)
 
     unaccounted_metric = PercentageDistribution(
@@ -796,7 +797,7 @@ class RuntimeBreakdownTimer(object):
     """
     if not self._total_time_s:
       return {}
-    return {x.name: (x.time_s * 100.0) / self._total_time_s
+    return {x.name: (x.time_s * 100) / self._total_time_s
             for x in self._step_metrics}
 
   def _GetUnaccountedBreakdown(self):
@@ -814,7 +815,7 @@ class RuntimeBreakdownTimer(object):
     """
     reported = self._GetStepBreakdowns().values()
     reported.append(self._GetUnaccountedBreakdown())
-    bucket_width = 100.0 / self.PERCENT_BUCKET_COUNT
+    bucket_width = 100 / self.PERCENT_BUCKET_COUNT
     return sum(x % bucket_width for x in reported)
 
   def _RecordTotalTime(self):
