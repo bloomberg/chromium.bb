@@ -738,7 +738,7 @@ public class ShortcutHelper {
     private static void checkIfRequestPinShortcutSupported() {
         sShortcutManager =
                 ContextUtils.getApplicationContext().getSystemService(ShortcutManager.class);
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             sIsRequestPinShortcutSupported = sShortcutManager.isRequestPinShortcutSupported();
         }
     }

@@ -562,7 +562,7 @@ public class ShareHelper {
             try {
                 // TODO(dtrainor): Make asynchronous and have a callback to update the menu.
                 // https://crbug.com/729737
-                try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
                     directShareIcon = pm.getActivityIcon(component);
                     ApplicationInfo ai = pm.getApplicationInfo(component.getPackageName(), 0);
                     directShareTitle = pm.getApplicationLabel(ai);
