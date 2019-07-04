@@ -27,7 +27,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 #if defined(OS_ANDROID)
@@ -222,8 +221,7 @@ class MediaSessionImpl : public MediaSession,
 
   // Adds a mojo based observer to listen to events related to this session.
   void AddObserver(
-      mojo::PendingRemote<media_session::mojom::MediaSessionObserver> observer)
-      override;
+      media_session::mojom::MediaSessionObserverPtr observer) override;
 
   // Called by |AudioFocusDelegate| when an async audio focus request is
   // completed.
@@ -421,7 +419,7 @@ class MediaSessionImpl : public MediaSession,
   // Bindings for Mojo pointers to |this| held by media route providers.
   mojo::BindingSet<media_session::mojom::MediaSession> bindings_;
 
-  mojo::RemoteSet<media_session::mojom::MediaSessionObserver> observers_;
+  mojo::InterfacePtrSet<media_session::mojom::MediaSessionObserver> observers_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

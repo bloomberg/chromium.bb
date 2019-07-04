@@ -16,7 +16,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
@@ -115,8 +114,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   void StartDucking() override;
   void StopDucking() override;
   void GetMediaSessionInfo(GetMediaSessionInfoCallback callback) override;
-  void AddObserver(
-      mojo::PendingRemote<mojom::MediaSessionObserver> observer) override;
+  void AddObserver(mojom::MediaSessionObserverPtr observer) override;
   void GetDebugInfo(GetDebugInfoCallback callback) override;
   void PreviousTrack() override;
   void NextTrack() override;
@@ -199,7 +197,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
 
   mojo::BindingSet<mojom::MediaSession> bindings_;
 
-  mojo::RemoteSet<mojom::MediaSessionObserver> observers_;
+  mojo::InterfacePtrSet<mojom::MediaSessionObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaSession);
 };

@@ -258,8 +258,8 @@ void MediaController::SetMediaSession(AudioFocusRequest* session) {
   });
 
   // Add |this| as an observer for |session|.
-  mojo::PendingRemote<mojom::MediaSessionObserver> observer;
-  session_binding_.Bind(observer.InitWithNewPipeAndPassReceiver());
+  mojom::MediaSessionObserverPtr observer;
+  session_binding_.Bind(mojo::MakeRequest(&observer));
   session->ipc()->AddObserver(std::move(observer));
 }
 
