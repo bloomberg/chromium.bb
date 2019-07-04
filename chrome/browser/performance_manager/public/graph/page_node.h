@@ -37,6 +37,10 @@ class PageNode : public Node {
   // See PageNodeObserver::OnIsVisibleChanged.
   virtual bool IsVisible() const = 0;
 
+  // Returns the time since the last visibility change. It is always well
+  // defined as the visibility property is set at node creation.
+  virtual base::TimeDelta GetTimeSinceLastVisibilityChange() const = 0;
+
   // Returns true if this page is currently audible, false otherwise.
   // See PageNodeObserver::OnIsAudibleChanged.
   virtual bool IsAudible() const = 0;
@@ -59,6 +63,10 @@ class PageNode : public Node {
   // event for the main frame of this page.
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
   virtual int64_t GetNavigationID() const = 0;
+
+  // Returns "zero" if no navigation has happened, otherwise returns the time
+  // since the last navigation commit.
+  virtual base::TimeDelta GetTimeSinceLastNavigation() const = 0;
 
   // Returns the current main frame node (if there is one), otherwise returns
   // any of the potentially multiple main frames that currently exist. If there

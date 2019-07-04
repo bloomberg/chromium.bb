@@ -332,6 +332,11 @@ bool PageNodeImpl::IsVisible() const {
   return is_visible();
 }
 
+base::TimeDelta PageNodeImpl::GetTimeSinceLastVisibilityChange() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return TimeSinceLastVisibilityChange();
+}
+
 bool PageNodeImpl::IsAudible() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return is_audible();
@@ -355,6 +360,11 @@ PageNodeImpl::LifecycleState PageNodeImpl::GetLifecycleState() const {
 int64_t PageNodeImpl::GetNavigationID() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return navigation_id();
+}
+
+base::TimeDelta PageNodeImpl::GetTimeSinceLastNavigation() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return TimeSinceLastNavigation();
 }
 
 const FrameNode* PageNodeImpl::GetMainFrameNode() const {

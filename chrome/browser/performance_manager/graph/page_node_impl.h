@@ -137,11 +137,13 @@ class PageNodeImpl : public PublicNodeImpl<PageNodeImpl, PageNode>,
   // PageNode implementation:
   bool IsPageAlmostIdle() const override;
   bool IsVisible() const override;
+  base::TimeDelta GetTimeSinceLastVisibilityChange() const override;
   bool IsAudible() const override;
   bool IsLoading() const override;
   ukm::SourceId GetUkmSourceID() const override;
   LifecycleState GetLifecycleState() const override;
   int64_t GetNavigationID() const override;
+  base::TimeDelta GetTimeSinceLastNavigation() const override;
   const FrameNode* GetMainFrameNode() const override;
   const GURL& GetMainFrameUrl() const override;
 
