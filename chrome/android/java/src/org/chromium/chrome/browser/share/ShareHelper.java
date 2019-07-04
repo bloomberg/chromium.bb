@@ -419,7 +419,10 @@ public class ShareHelper {
     public static void captureScreenshotForContents(
             WebContents contents, int width, int height, Callback<Uri> callback) {
         RenderWidgetHostView rwhv = contents.getRenderWidgetHostView();
-        if (rwhv == null) callback.onResult(null);
+        if (rwhv == null) {
+          callback.onResult(null);
+          return;
+        }
         try {
             String path = UiUtils.getDirectoryForImageCapture(ContextUtils.getApplicationContext())
                     + File.separator + SHARE_IMAGES_DIRECTORY_NAME;
