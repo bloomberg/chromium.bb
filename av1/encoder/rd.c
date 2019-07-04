@@ -1322,10 +1322,17 @@ void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
   if (rd_thresh > 0) {
     const int top_mode = MAX_MODES;
     int mode;
+    BLOCK_SIZE min_size;
+    BLOCK_SIZE max_size;
+    if (bsize <= cm->seq_params.sb_size) {
+      min_size = AOMMAX(bsize - 1, BLOCK_4X4);
+      max_size = AOMMIN(bsize + 2, (int)cm->seq_params.sb_size);
+    } else {
+      // TODO(any): Experiment with threshold update for parent/child blocks
+      min_size = bsize;
+      max_size = bsize;
+    }
     for (mode = 0; mode < top_mode; ++mode) {
-      const BLOCK_SIZE min_size = AOMMAX(bsize - 1, BLOCK_4X4);
-      const BLOCK_SIZE max_size =
-          AOMMIN(bsize + 2, (int)cm->seq_params.sb_size);
       BLOCK_SIZE bs;
       for (bs = min_size; bs <= max_size; ++bs) {
         int *const fact = &factor_buf[bs][mode];
