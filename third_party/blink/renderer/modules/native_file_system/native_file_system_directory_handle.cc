@@ -135,27 +135,6 @@ ScriptPromise NativeFileSystemDirectoryHandle::removeEntry(
   return result;
 }
 
-ScriptPromise NativeFileSystemDirectoryHandle::removeRecursively(
-    ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise result = resolver->Promise();
-
-  mojo_ptr_->Remove(
-      true,
-      WTF::Bind(
-          [](ScriptPromiseResolver* resolver, NativeFileSystemErrorPtr result) {
-            if (result->error_code == base::File::FILE_OK) {
-              resolver->Resolve();
-            } else {
-              resolver->Reject(
-                  file_error::CreateDOMException(result->error_code));
-            }
-          },
-          WrapPersistent(resolver)));
-
-  return result;
-}
-
 // static
 ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
     ScriptState* script_state,
@@ -199,11 +178,6 @@ NativeFileSystemDirectoryHandle::Transfer() {
   mojom::blink::NativeFileSystemTransferTokenPtr result;
   mojo_ptr_->Transfer(mojo::MakeRequest(&result));
   return result;
-}
-
-void NativeFileSystemDirectoryHandle::RemoveImpl(
-    base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr)> callback) {
-  mojo_ptr_->Remove(/*recursive=*/false, std::move(callback));
 }
 
 void NativeFileSystemDirectoryHandle::QueryPermissionImpl(

@@ -58,9 +58,6 @@ interface NativeFileSystemDirectoryHandle {
   // until all entries have been retrieved.
   GetEntries() => (NativeFileSystemError result, array<NativeFileSystemEntry> entries);
 
-  // Deletes this directory. To delete recursively, set |recurse| to true.
-  Remove(bool recurse) => (NativeFileSystemError result);
-
   // Deletes an entry which is a child of this directory.
   // To delete recursively, set |recurse| to true.
   RemoveEntry(string basename, bool recurse) => (NativeFileSystemError result);

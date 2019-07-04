@@ -174,20 +174,6 @@ void NativeFileSystemDirectoryHandleImpl::GetEntries(
                  base::Owned(new ReadDirectoryState{std::move(callback)})));
 }
 
-void NativeFileSystemDirectoryHandleImpl::Remove(bool recurse,
-                                                 RemoveCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  RunWithWritePermission(
-      base::BindOnce(&NativeFileSystemDirectoryHandleImpl::RemoveEntryImpl,
-                     weak_factory_.GetWeakPtr(), url(), recurse),
-      base::BindOnce([](RemoveCallback callback) {
-        std::move(callback).Run(
-            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED));
-      }),
-      std::move(callback));
-}
-
 void NativeFileSystemDirectoryHandleImpl::RemoveEntry(
     const std::string& basename,
     bool recurse,

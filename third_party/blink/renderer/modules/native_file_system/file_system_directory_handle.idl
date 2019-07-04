@@ -13,7 +13,6 @@
     [CallWith=ScriptState] object getEntries();
 
     [CallWith=ScriptState] Promise<void> removeEntry(USVString name, optional FileSystemRemoveOptions options);
-    [CallWith=ScriptState] Promise<void> removeRecursively();
 
     [CallWith=ScriptState]
     static Promise<FileSystemDirectoryHandle> getSystemDirectory(GetSystemDirectoryOptions options);

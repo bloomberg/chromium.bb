@@ -43,7 +43,6 @@ class NativeFileSystemDirectoryHandleImpl
                     bool create,
                     GetDirectoryCallback callback) override;
   void GetEntries(GetEntriesCallback callback) override;
-  void Remove(bool recurse, RemoveCallback callback) override;
   void RemoveEntry(const std::string& basename,
                    bool recurse,
                    RemoveEntryCallback callback) override;

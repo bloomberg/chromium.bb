@@ -34,7 +34,6 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
   ScriptPromise removeEntry(ScriptState*,
                             const String& name,
                             const FileSystemRemoveOptions*);
-  ScriptPromise removeRecursively(ScriptState*);
 
   static ScriptPromise getSystemDirectory(ScriptState*,
                                           const GetSystemDirectoryOptions*);
@@ -46,9 +45,6 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
   }
 
  private:
-  void RemoveImpl(
-      base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr)>)
-      override;
   void QueryPermissionImpl(
       bool writable,
       base::OnceCallback<void(mojom::blink::PermissionStatus)>) override;
