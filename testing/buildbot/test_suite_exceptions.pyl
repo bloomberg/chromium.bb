@@ -26,9 +26,6 @@
       'Lollipop Tablet Tester',
       'Marshmallow 64 bit Tester',
       'Marshmallow Tablet Tester',
-      # chromium.clang.json
-      'ToTAndroid',
-      'ToTAndroidCFI',
       # chromium.fyi.json
       'android-code-coverage',
       # chromium.memory.json
