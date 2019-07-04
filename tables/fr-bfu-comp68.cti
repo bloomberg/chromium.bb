@@ -53,7 +53,7 @@ noback uplow \x03A7\x03C7 46-45-12345,45-12345 Χ,χ khi
 noback uplow \x03A8\x03C8 46-45-13456,45-13456 Ψ,ψ psi
 noback uplow \x03A9\x03C9 46-45-2456,45-2456 Ω,ω oméga
 noback sign \x03C2 45-234 ς var. sigma
-noback sign \x03D0 45-12 ϵ ϐ var. bêta
+noback sign \x03D0 45-12 ϐ var. bêta
 noback sign \x03D1 45-245 ϑ var. thêta
 noback sign \x03D2 46-45-136 ϒ var. upsilon majuscule
 noback sign \x03D5 45-124 ϕ var. phi
