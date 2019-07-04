@@ -8466,8 +8466,7 @@ static INLINE int find_comp_rd_in_stats(const AV1_COMP *const cpi,
 
 static INLINE void save_interp_filter_search_stat(MACROBLOCK *x,
                                                   MB_MODE_INFO *const mbmi,
-                                                  int64_t rd, int skip_txfm_sb,
-                                                  int64_t skip_sse_sb,
+                                                  int64_t rd,
                                                   unsigned int pred_sse) {
   const int comp_idx = mbmi->compound_idx;
   const int offset = x->interp_filter_stats_idx[comp_idx];
@@ -8478,8 +8477,6 @@ static INLINE void save_interp_filter_search_stat(MACROBLOCK *x,
                                           mbmi->ref_frame[1] },
                                         mbmi->interinter_comp.type,
                                         rd,
-                                        skip_txfm_sb,
-                                        skip_sse_sb,
                                         pred_sse };
     x->interp_filter_stats[comp_idx][offset] = stat;
     x->interp_filter_stats_idx[comp_idx]++;
@@ -8519,8 +8516,7 @@ static int64_t interpolation_filter_search(
     const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
     const BUFFER_SET *const tmp_dst, const BUFFER_SET *const orig_dst,
     InterpFilter (*const single_filter)[REF_FRAMES], int64_t *const rd,
-    int *const switchable_rate, int *const skip_txfm_sb,
-    int64_t *const skip_sse_sb, int *skip_build_pred, HandleInterModeArgs *args,
+    int *const switchable_rate, int *skip_build_pred, HandleInterModeArgs *args,
     int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -8545,10 +8541,6 @@ static int64_t interpolation_filter_search(
   if (match_found_idx != -1) {
     const int comp_idx = mbmi->compound_idx;
     *rd = x->interp_filter_stats[comp_idx][match_found_idx].rd;
-    *skip_txfm_sb =
-        x->interp_filter_stats[comp_idx][match_found_idx].skip_txfm_sb;
-    *skip_sse_sb =
-        x->interp_filter_stats[comp_idx][match_found_idx].skip_sse_sb;
     x->pred_sse[ref_frame] =
         x->interp_filter_stats[comp_idx][match_found_idx].pred_sse;
     return 0;
@@ -8588,8 +8580,6 @@ static int64_t interpolation_filter_search(
     assert(rd_stats.rate >= 0);
 
     *rd = RDCOST(x->rdmult, *switchable_rate + rd_stats.rate, rd_stats.dist);
-    *skip_txfm_sb = rd_stats.skip;
-    *skip_sse_sb = rd_stats.sse;
     x->pred_sse[ref_frame] = (unsigned int)(rd_stats_luma.sse >> 4);
   }
   if (assign_filter != SWITCHABLE || match_found_idx != -1) {
@@ -8752,15 +8742,12 @@ static int64_t interpolation_filter_search(
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
                                   AOM_PLANE_Y, AOM_PLANE_Y);
   }
-  *skip_txfm_sb = rd_stats.skip;
-  *skip_sse_sb = rd_stats.sse;
   x->pred_sse[ref_frame] = (unsigned int)(rd_stats_luma.sse >> 4);
 
   // save search results
   if (cpi->sf.skip_repeat_interpolation_filter_search) {
     assert(match_found_idx == -1);
-    save_interp_filter_search_stat(x, mbmi, *rd, *skip_txfm_sb, *skip_sse_sb,
-                                   x->pred_sse[ref_frame]);
+    save_interp_filter_search_stat(x, mbmi, *rd, x->pred_sse[ref_frame]);
   }
   return 0;
 }
@@ -10246,8 +10233,6 @@ static int64_t handle_inter_mode(
                                  tmp_buf + 2 * MAX_SB_SQUARE },
                                { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE } };
 
-  int skip_txfm_sb = 0;
-  int64_t skip_sse_sb = INT64_MAX;
   int16_t mode_ctx;
   const int masked_compound_used = is_any_masked_compound_used(bsize) &&
                                    cm->seq_params.enable_masked_compound;
@@ -10534,8 +10519,7 @@ static int64_t handle_inter_mode(
 #endif
       ret_val = interpolation_filter_search(
           x, cpi, tile_data, bsize, mi_row, mi_col, &tmp_dst, &orig_dst,
-          args->single_filter, &rd, &rs, &skip_txfm_sb, &skip_sse_sb,
-          &skip_build_pred, args, ref_best_rd);
+          args->single_filter, &rd, &rs, &skip_build_pred, args, ref_best_rd);
 #if CONFIG_COLLECT_COMPONENT_TIMING
       end_timing(cpi, interpolation_filter_search_time);
 #endif
