@@ -6263,10 +6263,9 @@ crbug.com/981137 [ Win ] virtual/gpu-rasterization/images/webp-no-color-profile-
 crbug.com/981210 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
 
 # Sheriff 2019-07-04
-crbug.com/981249 [ Linux Win ] fast/forms/form-submission-create-crash.xhtml [ Pass Failure ]
 crbug.com/981267 [ Linux ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure ]
 crbug.com/981303 [ Mac ] http/tests/media/controls/toggle-class-with-state-source.html [ Pass Timeout ]
-crbug.com/981331 [ Mac ] fast/forms/form-submission-create-crash.xhtml [ Pass Timeout ]
+crbug.com/981331 fast/forms/form-submission-create-crash.xhtml [ Pass Timeout ]
 
 # Temporarily disable to unblock WebRTC to roll; the -expected.txt diffs are expected to change as a result of the roll.
 crbug.com/736403 external/wpt/webrtc/RTCRtpSender-getStats.https.html [ Pass Failure ]
