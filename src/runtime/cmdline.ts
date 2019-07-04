@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as process from 'process';
 
 import { TestSpecFile, TestLoader } from '../framework/loader.js';
-import { Logger, TestCaseLiveResult } from '../framework/logger.js';
+import { Logger, LiveTestCaseResult } from '../framework/logger.js';
 import { TestSpecID } from '../framework/id.js';
 import { makeQueryString } from '../framework/url_query.js';
 
@@ -48,8 +48,8 @@ for (const a of process.argv.slice(2)) {
       Array.from(listing, ({ id, spec }) => spec.then((s: TestSpecFile) => ({ id, spec: s })))
     );
 
-    const failed: Array<[TestSpecID, TestCaseLiveResult]> = [];
-    const warned: Array<[TestSpecID, TestCaseLiveResult]> = [];
+    const failed: Array<[TestSpecID, LiveTestCaseResult]> = [];
+    const warned: Array<[TestSpecID, LiveTestCaseResult]> = [];
 
     // TODO: don't run all tests all at once
     const running = [];

@@ -5,12 +5,12 @@ import { TestSpecID } from './id.js';
 import { makeQueryString } from './url_query.js';
 
 type Status = 'running' | 'pass' | 'warn' | 'fail';
-interface TestLiveResult {
+interface LiveTestRunResult {
   spec: string;
-  cases: TestCaseLiveResult[];
+  cases: LiveTestCaseResult[];
 }
 
-export interface TestCaseLiveResult {
+export interface LiveTestCaseResult {
   name: string;
   params: ParamsSpec | null;
   status: Status;
@@ -19,13 +19,13 @@ export interface TestCaseLiveResult {
 }
 
 export class Logger {
-  readonly results: TestLiveResult[] = [];
+  readonly results: LiveTestRunResult[] = [];
 
   constructor() {}
 
-  record(spec: TestSpecID): [GroupRecorder, TestLiveResult] {
-    const cases: TestCaseLiveResult[] = [];
-    const result: TestLiveResult = { spec: makeQueryString(spec), cases };
+  record(spec: TestSpecID): [GroupRecorder, LiveTestRunResult] {
+    const cases: LiveTestCaseResult[] = [];
+    const result: LiveTestRunResult = { spec: makeQueryString(spec), cases };
     this.results.push(result);
     return [new GroupRecorder(result), result];
   }
@@ -36,27 +36,27 @@ export class Logger {
 }
 
 export class GroupRecorder {
-  private test: TestLiveResult;
+  private test: LiveTestRunResult;
 
-  constructor(test: TestLiveResult) {
+  constructor(test: LiveTestRunResult) {
     this.test = test;
   }
 
-  record(name: string, params: ParamsSpec | null): [CaseRecorder, TestCaseLiveResult] {
-    const result: TestCaseLiveResult = { name, params, status: 'running', timems: -1 };
+  record(name: string, params: ParamsSpec | null): [CaseRecorder, LiveTestCaseResult] {
+    const result: LiveTestCaseResult = { name, params, status: 'running', timems: -1 };
     this.test.cases.push(result);
     return [new CaseRecorder(result), result];
   }
 }
 
 export class CaseRecorder {
-  private result: TestCaseLiveResult;
+  private result: LiveTestCaseResult;
   private failed = false;
   private warned = false;
   private startTime = -1;
   private logs: string[] = [];
 
-  constructor(result: TestCaseLiveResult) {
+  constructor(result: LiveTestCaseResult) {
     this.result = result;
   }
 
