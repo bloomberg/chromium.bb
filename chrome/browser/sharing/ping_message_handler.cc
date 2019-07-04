@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sharing/ack_message_handler.h"
+#include "chrome/browser/sharing/ping_message_handler.h"
 
-AckMessageHandler::AckMessageHandler() = default;
+PingMessageHandler::PingMessageHandler() = default;
 
-void AckMessageHandler::OnMessage(
+void PingMessageHandler::OnMessage(
     const chrome_browser_sharing::SharingMessage& message) {
   // TODO
 }
