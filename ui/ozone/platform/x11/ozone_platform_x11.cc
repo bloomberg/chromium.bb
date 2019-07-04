@@ -79,7 +79,8 @@ class OzonePlatformX11 : public OzonePlatform {
   }
 
   std::unique_ptr<PlatformScreen> CreateScreen() override {
-    return std::make_unique<X11ScreenOzone>();
+    DCHECK(window_manager_);
+    return std::make_unique<X11ScreenOzone>(window_manager_.get());
   }
 
   PlatformClipboard* GetPlatformClipboard() override {
