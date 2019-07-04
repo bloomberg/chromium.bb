@@ -361,9 +361,6 @@ void RecordAccountsPerProfile(int total_number_accounts);
 void LogSigninAccountReconciliationDuration(base::TimeDelta duration,
                                             bool successful);
 
-// Track a successful signin.
-void LogSigninAddAccount();
-
 // Track a profile signout.
 void LogSignout(ProfileSignout source_metric, SignoutDelete delete_metric);
 
