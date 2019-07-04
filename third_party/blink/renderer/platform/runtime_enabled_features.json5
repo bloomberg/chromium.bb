@@ -1191,7 +1191,7 @@
       // flag indicates whether or not the buffered entries should be loaded
       // into the observer's buffer upon registration. See crbug.com/725567.
       name: "PerformanceObserverBufferedFlag",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "PeriodicBackgroundSync",
