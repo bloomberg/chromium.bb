@@ -133,7 +133,7 @@ static bool HasDoubleValue(CSSPrimitiveValue::UnitType type) {
 
 // static
 CSSMathExpressionNumericLiteral* CSSMathExpressionNumericLiteral::Create(
-    CSSPrimitiveValue* value,
+    CSSNumericLiteralValue* value,
     bool is_integer) {
   return MakeGarbageCollected<CSSMathExpressionNumericLiteral>(value,
                                                                is_integer);
@@ -151,7 +151,7 @@ CSSMathExpressionNumericLiteral* CSSMathExpressionNumericLiteral::Create(
 }
 
 CSSMathExpressionNumericLiteral::CSSMathExpressionNumericLiteral(
-    CSSPrimitiveValue* value,
+    CSSNumericLiteralValue* value,
     bool is_integer)
     : CSSMathExpressionNode(UnitCategory(value->TypeWithCalcResolved()),
                             is_integer),

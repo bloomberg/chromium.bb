@@ -19,7 +19,7 @@ struct UnitValue {
   UnitType unit_type;
 };
 
-CSSPrimitiveValue* Create(UnitValue v) {
+CSSNumericLiteralValue* Create(UnitValue v) {
   return CSSNumericLiteralValue::Create(v.value, v.unit_type);
 }
 

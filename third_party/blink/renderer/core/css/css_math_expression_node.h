@@ -41,6 +41,8 @@
 
 namespace blink {
 
+class CSSNumericLiteralValue;
+
 // The order of this enum should not change since its elements are used as
 // indices in the addSubtractResult matrix.
 enum CalculationCategory {
@@ -100,16 +102,16 @@ class CORE_EXPORT CSSMathExpressionNode
   bool is_nested_calc_ = false;
 };
 
-// TODO(crbug.com/825895): Make it store a CSSNumericLiteralValue
 class CORE_EXPORT CSSMathExpressionNumericLiteral final
     : public CSSMathExpressionNode {
  public:
-  static CSSMathExpressionNumericLiteral* Create(CSSPrimitiveValue* value,
+  static CSSMathExpressionNumericLiteral* Create(CSSNumericLiteralValue* value,
                                                  bool is_integer = false);
   static CSSMathExpressionNumericLiteral*
   Create(double value, CSSPrimitiveValue::UnitType type, bool is_integer);
 
-  CSSMathExpressionNumericLiteral(CSSPrimitiveValue* value, bool is_integer);
+  CSSMathExpressionNumericLiteral(CSSNumericLiteralValue* value,
+                                  bool is_integer);
 
   bool IsNumericLiteral() const final { return true; }
 
@@ -129,7 +131,7 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
   void Trace(blink::Visitor* visitor) final;
 
  private:
-  Member<CSSPrimitiveValue> value_;
+  Member<CSSNumericLiteralValue> value_;
 };
 
 template <>
