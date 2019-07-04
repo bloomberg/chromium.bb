@@ -106,9 +106,18 @@ class ImagePaintTimingDetectorTest
   }
 
   size_t CountVisibleBackgroundImageRecords() {
-    return GetPaintTimingDetector()
-        .GetImagePaintTimingDetector()
-        ->records_manager_.visible_background_image_map_.size();
+    auto& visible_background_image_map =
+        GetPaintTimingDetector()
+            .GetImagePaintTimingDetector()
+            ->records_manager_.visible_background_image_map_;
+
+    int count = 0;
+    for (auto it = visible_background_image_map.begin();
+         it != visible_background_image_map.end(); ++it) {
+      count += it->value.size();
+    }
+
+    return count;
   }
 
   size_t CountChildFrameRecords() {

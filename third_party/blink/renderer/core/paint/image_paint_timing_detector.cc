@@ -389,7 +389,46 @@ void ImageRecordsManager::RecordVisibleNode(
   std::unique_ptr<ImageRecord> record = CreateImageRecord(
       background_image_id.first, background_image_id.second, visual_size);
   size_ordered_set_.insert(record->AsWeakPtr());
-  visible_background_image_map_.insert(background_image_id, std::move(record));
+  InsertVisibleRecord(background_image_id, record);
+}
+
+void ImageRecordsManager::InsertVisibleRecord(
+    const BackgroundImageId& background_image_id,
+    std::unique_ptr<ImageRecord>& record) {
+  visible_background_image_map_
+      .insert(background_image_id.first, Vector<std::unique_ptr<ImageRecord>>())
+      .stored_value->value.push_back(std::move(record));
+}
+
+bool ImageRecordsManager::IsRecordedVisibleNode(
+    const BackgroundImageId& background_image_id) const {
+  if (!visible_background_image_map_.Contains(background_image_id.first))
+    return false;
+  auto it = visible_background_image_map_.find(background_image_id.first);
+  if (it == visible_background_image_map_.end())
+    return false;
+
+  for (auto& record : it->value) {
+    if (background_image_id.second == record->cached_image)
+      return true;
+  }
+  return false;
+}
+
+base::WeakPtr<ImageRecord> ImageRecordsManager::FindVisibleRecord(
+    const BackgroundImageId& background_image_id) const {
+  if (!visible_background_image_map_.Contains(background_image_id.first))
+    return nullptr;
+  auto it = visible_background_image_map_.find(background_image_id.first);
+  if (it == visible_background_image_map_.end())
+    return nullptr;
+
+  for (auto& record : it->value) {
+    if (background_image_id.second == record->cached_image)
+      return record->AsWeakPtr();
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
@@ -407,7 +446,7 @@ std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
 }
 
 ImageRecord* ImageRecordsManager::FindLargestPaintCandidate() const {
-  DCHECK_EQ(visible_node_map_.size() + visible_background_image_map_.size(),
+  DCHECK_LE(visible_node_map_.size() + visible_background_image_map_.size(),
             size_ordered_set_.size());
   for (auto it = size_ordered_set_.begin(); it != size_ordered_set_.end();
        ++it) {
