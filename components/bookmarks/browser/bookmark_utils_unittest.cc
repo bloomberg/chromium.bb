@@ -422,9 +422,10 @@ TEST_F(BookmarkUtilsTest, MAYBE_CutToClipboard) {
 TEST_F(BookmarkUtilsTest, PasteNonEditableNodes) {
   // Load a model with an extra node that is not editable.
   std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient());
-  auto owned_extra_node = std::make_unique<BookmarkPermanentNode>(100);
-  BookmarkPermanentNode* extra_node = owned_extra_node.get();
-  client->SetExtraNodeToLoad(std::move(owned_extra_node));
+  BookmarkPermanentNodeList extra_nodes;
+  extra_nodes.push_back(std::make_unique<BookmarkPermanentNode>(100));
+  BookmarkPermanentNode* extra_node = extra_nodes.back().get();
+  client->SetExtraNodesToLoad(std::move(extra_nodes));
 
   std::unique_ptr<BookmarkModel> model(
       TestBookmarkClient::CreateModelWithClient(std::move(client)));
@@ -572,9 +573,10 @@ TEST_F(BookmarkUtilsTest, CloneFolderResetsNonClonedKey) {
 TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
   // Load a model with an extra node that is not editable.
   std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient());
-  auto owned_extra_node = std::make_unique<BookmarkPermanentNode>(100);
-  BookmarkPermanentNode* extra_node = owned_extra_node.get();
-  client->SetExtraNodeToLoad(std::move(owned_extra_node));
+  BookmarkPermanentNodeList extra_nodes;
+  extra_nodes.push_back(std::make_unique<BookmarkPermanentNode>(100));
+  BookmarkPermanentNode* extra_node = extra_nodes.back().get();
+  client->SetExtraNodesToLoad(std::move(extra_nodes));
 
   std::unique_ptr<BookmarkModel> model(
       TestBookmarkClient::CreateModelWithClient(std::move(client)));

@@ -105,11 +105,11 @@ void ChromeBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
   base::RecordAction(action);
 }
 
-bookmarks::LoadExtraCallback ChromeBookmarkClient::GetLoadExtraNodeCallback() {
+bookmarks::LoadExtraCallback ChromeBookmarkClient::GetLoadExtraNodesCallback() {
   if (!managed_bookmark_service_)
     return bookmarks::LoadExtraCallback();
 
-  return managed_bookmark_service_->GetLoadExtraNodeCallback();
+  return managed_bookmark_service_->GetLoadExtraNodesCallback();
 }
 
 bool ChromeBookmarkClient::CanSetPermanentNodeTitle(

@@ -54,16 +54,18 @@ class ManagedBookmarksTrackerTest : public testing::Test {
 
   void CreateModel() {
     // Simulate the creation of the managed node by the BookmarkClient.
-    auto owned_managed_node = std::make_unique<BookmarkPermanentNode>(100);
-    BookmarkPermanentNode* managed_node = owned_managed_node.get();
+    BookmarkPermanentNode* managed_node = new BookmarkPermanentNode(100);
     ManagedBookmarksTracker::LoadInitial(
         managed_node, prefs_.GetList(prefs::kManagedBookmarks), 101);
     managed_node->set_visible(!managed_node->children().empty());
     managed_node->SetTitle(l10n_util::GetStringUTF16(
         IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME));
 
+    BookmarkPermanentNodeList extra_nodes;
+    extra_nodes.push_back(base::WrapUnique(managed_node));
+
     std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient);
-    client->SetExtraNodeToLoad(std::move(owned_managed_node));
+    client->SetExtraNodesToLoad(std::move(extra_nodes));
     model_.reset(new BookmarkModel(std::move(client)));
 
     model_->AddObserver(&observer_);
@@ -76,7 +78,9 @@ class ManagedBookmarksTrackerTest : public testing::Test {
 
     TestBookmarkClient* client_ptr =
         static_cast<TestBookmarkClient*>(model_->client());
-    managed_node_ = client_ptr->extra_node();
+    ASSERT_EQ(1u, client_ptr->extra_nodes().size());
+    managed_node_ = client_ptr->extra_nodes()[0];
+    ASSERT_EQ(managed_node, managed_node_);
 
     managed_bookmarks_tracker_.reset(new ManagedBookmarksTracker(
         model_.get(),

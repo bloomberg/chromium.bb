@@ -28,24 +28,26 @@ class TestBookmarkClient : public BookmarkClient {
   static std::unique_ptr<BookmarkModel> CreateModelWithClient(
       std::unique_ptr<BookmarkClient> client);
 
-  // Sets the extra node to be returned by the next call to CreateModel() or
-  // GetLoadExtraNodeCallback().
-  void SetExtraNodeToLoad(std::unique_ptr<BookmarkPermanentNode> extra_node);
+  // Sets the list of extra nodes to be returned by the next call to
+  // CreateModel() or GetLoadExtraNodesCallback().
+  void SetExtraNodesToLoad(BookmarkPermanentNodeList extra_nodes);
 
-  // Returns the current extra_node, set via SetExtraNodeToLoad().
-  BookmarkPermanentNode* extra_node() { return unowned_extra_node_; }
+  // Returns the current extra_nodes, set via SetExtraNodesToLoad().
+  const std::vector<BookmarkPermanentNode*> extra_nodes() {
+    return unowned_extra_nodes_;
+  }
 
-  // Returns true if |node| is the |extra_node_|.
+  // Returns true if |node| is one of the |extra_nodes_|.
   bool IsExtraNodeRoot(const BookmarkNode* node);
 
-  // Returns true if |node| belongs to the tree of the |extra_node_|.
+  // Returns true if |node| belongs to the tree of one of the |extra_nodes_|.
   bool IsAnExtraNode(const BookmarkNode* node);
 
  private:
   // BookmarkClient:
   bool IsPermanentNodeVisible(const BookmarkPermanentNode* node) override;
   void RecordAction(const base::UserMetricsAction& action) override;
-  LoadExtraCallback GetLoadExtraNodeCallback() override;
+  LoadExtraCallback GetLoadExtraNodesCallback() override;
   bool CanSetPermanentNodeTitle(const BookmarkNode* permanent_node) override;
   bool CanSyncNode(const BookmarkNode* node) override;
   bool CanBeEditedByUser(const BookmarkNode* node) override;
@@ -54,15 +56,13 @@ class TestBookmarkClient : public BookmarkClient {
       const std::string& metadata_str,
       const base::RepeatingClosure& schedule_save_closure) override;
 
-  // Helpers for GetLoadExtraNodeCallback().
-  static std::unique_ptr<BookmarkPermanentNode> LoadExtraNode(
-      std::unique_ptr<BookmarkPermanentNode> extra_node,
+  // Helpers for GetLoadExtraNodesCallback().
+  static BookmarkPermanentNodeList LoadExtraNodes(
+      BookmarkPermanentNodeList extra_nodes,
       int64_t* next_id);
 
-  // extra_node_ exists only until GetLoadExtraNodeCallback gets called, but
-  // unowned_extra_node_ stays around after that.
-  std::unique_ptr<BookmarkPermanentNode> extra_node_;
-  BookmarkPermanentNode* unowned_extra_node_;
+  BookmarkPermanentNodeList extra_nodes_;
+  std::vector<BookmarkPermanentNode*> unowned_extra_nodes_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkClient);
 };

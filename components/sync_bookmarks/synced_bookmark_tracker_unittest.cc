@@ -559,11 +559,12 @@ TEST(SyncedBookmarkTrackerTest,
      ShouldMatchModelWithUnsyncableNodesAndMetadata) {
   // Add a managed node with an arbitrary id 100.
   const int64_t kManagedNodeId = 100;
-  auto owned_extra_node =
-      std::make_unique<bookmarks::BookmarkPermanentNode>(kManagedNodeId);
-  bookmarks::BookmarkPermanentNode* extra_node = owned_extra_node.get();
+  bookmarks::BookmarkPermanentNodeList extra_nodes;
+  extra_nodes.push_back(
+      std::make_unique<bookmarks::BookmarkPermanentNode>(kManagedNodeId));
+  bookmarks::BookmarkPermanentNode* extra_node = extra_nodes.back().get();
   auto client = std::make_unique<bookmarks::TestBookmarkClient>();
-  client->SetExtraNodeToLoad(std::move(owned_extra_node));
+  client->SetExtraNodesToLoad(std::move(extra_nodes));
 
   std::unique_ptr<bookmarks::BookmarkModel> model =
       bookmarks::TestBookmarkClient::CreateModelWithClient(std::move(client));
