@@ -6266,9 +6266,5 @@ crbug.com/981267 [ Linux ] http/tests/devtools/persistence/persistence-move-brea
 crbug.com/981303 [ Mac ] http/tests/media/controls/toggle-class-with-state-source.html [ Pass Timeout ]
 crbug.com/981331 fast/forms/form-submission-create-crash.xhtml [ Pass Timeout ]
 
-# Temporarily disable to unblock WebRTC to roll; the -expected.txt diffs are expected to change as a result of the roll.
-crbug.com/736403 external/wpt/webrtc/RTCRtpSender-getStats.https.html [ Pass Failure ]
-crbug.com/736403 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCRtpSender-getStats.https.html [ Pass Failure ]
-
 # TODO(crbug.com/980588): reenable once WPT is fixed
 crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass Failure ]
