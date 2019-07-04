@@ -28,7 +28,7 @@ enum DifferentPrimaryAccounts {
 // Track all the ways a profile can become signed out as a histogram.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.signin
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SignoutReason
-enum ProfileSignout {
+enum ProfileSignout : int {
   // The value used within unit tests.
   SIGNOUT_TEST = 0,
   // The preference or policy controlling if signin is valid has changed.
