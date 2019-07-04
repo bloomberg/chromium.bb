@@ -84,8 +84,8 @@ class ThumbnailCache : ThumbnailDelegate {
  private:
   class ThumbnailMetaData {
    public:
-    ThumbnailMetaData();
-    ThumbnailMetaData(const base::Time& current_time, const GURL& url);
+    ThumbnailMetaData() = default;
+    ThumbnailMetaData(const base::Time& current_time, GURL url);
     const GURL& url() const { return url_; }
     base::Time capture_time() const { return capture_time_; }
 
