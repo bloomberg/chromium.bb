@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 
-#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -22,7 +22,7 @@ void CSSMathFunctionValue::TraceAfterDispatch(blink::Visitor* visitor) {
   CSSPrimitiveValue::TraceAfterDispatch(visitor);
 }
 
-CSSMathFunctionValue::CSSMathFunctionValue(CSSCalcExpressionNode* expression,
+CSSMathFunctionValue::CSSMathFunctionValue(CSSMathExpressionNode* expression,
                                            ValueRange range)
     : CSSPrimitiveValue(UnitType::kCalc, kMathFunctionClass),
       expression_(expression),
@@ -30,7 +30,7 @@ CSSMathFunctionValue::CSSMathFunctionValue(CSSCalcExpressionNode* expression,
 
 // static
 CSSMathFunctionValue* CSSMathFunctionValue::Create(
-    CSSCalcExpressionNode* expression,
+    CSSMathExpressionNode* expression,
     ValueRange range) {
   if (!expression)
     return nullptr;
@@ -41,7 +41,7 @@ CSSMathFunctionValue* CSSMathFunctionValue::Create(
 CSSMathFunctionValue* CSSMathFunctionValue::Create(const Length& length,
                                                    float zoom) {
   const CalculationValue& calc = length.GetCalculationValue();
-  return Create(CSSCalcExpressionNode::CreateFromPixelsAndPercent(
+  return Create(CSSMathExpressionNode::CreateFromPixelsAndPercent(
                     calc.Pixels() / zoom, calc.Percent()),
                 calc.GetValueRange());
 }

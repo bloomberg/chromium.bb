@@ -30,8 +30,8 @@
 
 #include "third_party/blink/renderer/core/css/resolver/transform_builder.h"
 
-#include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"

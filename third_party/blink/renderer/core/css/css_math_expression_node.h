@@ -28,10 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CALCULATION_VALUE_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CALCULATION_VALUE_H_
-
-// TODO(xiaochengh): Rename to css_math_expression_node.h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_MATH_EXPRESSION_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_MATH_EXPRESSION_NODE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_math_operator.h"
@@ -59,14 +57,14 @@ enum CalculationCategory {
   kCalcOther
 };
 
-class CORE_EXPORT CSSCalcExpressionNode
-    : public GarbageCollected<CSSCalcExpressionNode> {
+class CORE_EXPORT CSSMathExpressionNode
+    : public GarbageCollected<CSSMathExpressionNode> {
  public:
-  static CSSCalcExpressionNode* CreateFromPixelsAndPercent(double pixels,
+  static CSSMathExpressionNode* CreateFromPixelsAndPercent(double pixels,
                                                            double percent);
-  static CSSCalcExpressionNode* ParseCalc(const CSSParserTokenRange& tokens);
+  static CSSMathExpressionNode* ParseCalc(const CSSParserTokenRange& tokens);
 
-  virtual bool IsPrimitiveValue() const { return false; }
+  virtual bool IsNumericLiteral() const { return false; }
   virtual bool IsBinaryOperation() const { return false; }
 
   virtual bool IsZero() const = 0;
@@ -78,7 +76,7 @@ class CORE_EXPORT CSSCalcExpressionNode
                                           PixelsAndPercent&,
                                           float multiplier = 1) const = 0;
   virtual String CustomCSSText() const = 0;
-  virtual bool operator==(const CSSCalcExpressionNode& other) const {
+  virtual bool operator==(const CSSMathExpressionNode& other) const {
     return category_ == other.category_ && is_integer_ == other.is_integer_;
   }
 
@@ -92,7 +90,7 @@ class CORE_EXPORT CSSCalcExpressionNode
   virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
-  CSSCalcExpressionNode(CalculationCategory category, bool is_integer)
+  CSSMathExpressionNode(CalculationCategory category, bool is_integer)
       : category_(category), is_integer_(is_integer) {
     DCHECK_NE(category, kCalcOther);
   }
@@ -102,18 +100,18 @@ class CORE_EXPORT CSSCalcExpressionNode
   bool is_nested_calc_ = false;
 };
 
-// TODO(crbug.com/825895): Rename it and make it store a CSSNumericLiteralValue
-class CORE_EXPORT CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
+// TODO(crbug.com/825895): Make it store a CSSNumericLiteralValue
+class CORE_EXPORT CSSMathExpressionNumericLiteral final
+    : public CSSMathExpressionNode {
  public:
-  static CSSCalcPrimitiveValue* Create(CSSPrimitiveValue* value,
-                                       bool is_integer = false);
-  static CSSCalcPrimitiveValue* Create(double value,
-                                       CSSPrimitiveValue::UnitType type,
-                                       bool is_integer);
+  static CSSMathExpressionNumericLiteral* Create(CSSPrimitiveValue* value,
+                                                 bool is_integer = false);
+  static CSSMathExpressionNumericLiteral*
+  Create(double value, CSSPrimitiveValue::UnitType type, bool is_integer);
 
-  CSSCalcPrimitiveValue(CSSPrimitiveValue* value, bool is_integer);
+  CSSMathExpressionNumericLiteral(CSSPrimitiveValue* value, bool is_integer);
 
-  bool IsPrimitiveValue() const final { return true; }
+  bool IsNumericLiteral() const final { return true; }
 
   bool IsZero() const final;
   String CustomCSSText() const final;
@@ -126,7 +124,7 @@ class CORE_EXPORT CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
       const CSSToLengthConversionData& conversion_data) const final;
   void AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const final;
-  bool operator==(const CSSCalcExpressionNode& other) const final;
+  bool operator==(const CSSMathExpressionNode& other) const final;
   CSSPrimitiveValue::UnitType TypeWithCalcResolved() const final;
   void Trace(blink::Visitor* visitor) final;
 
@@ -135,29 +133,30 @@ class CORE_EXPORT CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
 };
 
 template <>
-struct DowncastTraits<CSSCalcPrimitiveValue> {
-  static bool AllowFrom(const CSSCalcExpressionNode& node) {
-    return node.IsPrimitiveValue();
+struct DowncastTraits<CSSMathExpressionNumericLiteral> {
+  static bool AllowFrom(const CSSMathExpressionNode& node) {
+    return node.IsNumericLiteral();
   }
 };
 
-class CORE_EXPORT CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
+class CORE_EXPORT CSSMathExpressionBinaryOperation final
+    : public CSSMathExpressionNode {
  public:
-  static CSSCalcExpressionNode* Create(CSSCalcExpressionNode* left_side,
-                                       CSSCalcExpressionNode* right_side,
+  static CSSMathExpressionNode* Create(CSSMathExpressionNode* left_side,
+                                       CSSMathExpressionNode* right_side,
                                        CSSMathOperator op);
-  static CSSCalcExpressionNode* CreateSimplified(
-      CSSCalcExpressionNode* left_side,
-      CSSCalcExpressionNode* right_side,
+  static CSSMathExpressionNode* CreateSimplified(
+      CSSMathExpressionNode* left_side,
+      CSSMathExpressionNode* right_side,
       CSSMathOperator op);
 
-  CSSCalcBinaryOperation(CSSCalcExpressionNode* left_side,
-                         CSSCalcExpressionNode* right_side,
-                         CSSMathOperator op,
-                         CalculationCategory category);
+  CSSMathExpressionBinaryOperation(CSSMathExpressionNode* left_side,
+                                   CSSMathExpressionNode* right_side,
+                                   CSSMathOperator op,
+                                   CalculationCategory category);
 
-  const CSSCalcExpressionNode* LeftExpressionNode() const { return left_side_; }
-  const CSSCalcExpressionNode* RightExpressionNode() const {
+  const CSSMathExpressionNode* LeftExpressionNode() const { return left_side_; }
+  const CSSMathExpressionNode* RightExpressionNode() const {
     return right_side_;
   }
   CSSMathOperator OperatorType() const { return operator_; }
@@ -175,14 +174,14 @@ class CORE_EXPORT CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
   void AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const final;
   String CustomCSSText() const final;
-  bool operator==(const CSSCalcExpressionNode& exp) const final;
+  bool operator==(const CSSMathExpressionNode& exp) const final;
   CSSPrimitiveValue::UnitType TypeWithCalcResolved() const final;
   void Trace(blink::Visitor* visitor) final;
 
  private:
-  static CSSCalcExpressionNode* GetNumberSide(
-      CSSCalcExpressionNode* left_side,
-      CSSCalcExpressionNode* right_side);
+  static CSSMathExpressionNode* GetNumberSide(
+      CSSMathExpressionNode* left_side,
+      CSSMathExpressionNode* right_side);
 
   static String BuildCSSText(const String& left_expression,
                              const String& right_expression,
@@ -196,18 +195,18 @@ class CORE_EXPORT CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
                                  double right_value,
                                  CSSMathOperator op);
 
-  const Member<CSSCalcExpressionNode> left_side_;
-  const Member<CSSCalcExpressionNode> right_side_;
+  const Member<CSSMathExpressionNode> left_side_;
+  const Member<CSSMathExpressionNode> right_side_;
   const CSSMathOperator operator_;
 };
 
 template <>
-struct DowncastTraits<CSSCalcBinaryOperation> {
-  static bool AllowFrom(const CSSCalcExpressionNode& node) {
+struct DowncastTraits<CSSMathExpressionBinaryOperation> {
+  static bool AllowFrom(const CSSMathExpressionNode& node) {
     return node.IsBinaryOperation();
   }
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CALCULATION_VALUE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_MATH_EXPRESSION_NODE_H_
