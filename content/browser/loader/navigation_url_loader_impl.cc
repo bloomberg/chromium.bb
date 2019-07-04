@@ -720,9 +720,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (service_worker_navigation_handle_core) {
       std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
           ServiceWorkerRequestHandler::CreateForNavigation(
-              resource_request_->url, resource_context_,
-              service_worker_navigation_handle_core, *request_info,
-              &service_worker_provider_host_);
+              resource_request_->url, service_worker_navigation_handle_core,
+              *request_info, &service_worker_provider_host_);
       // The interceptor for service worker may not be created for some
       // reasons (e.g. the origin is not secure).
       if (service_worker_interceptor)
