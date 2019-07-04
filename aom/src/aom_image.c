@@ -16,7 +16,6 @@
 #include "aom/aom_integer.h"
 #include "aom/internal/aom_image_internal.h"
 #include "aom_mem/aom_mem.h"
-#include "aom_mem/include/aom_mem_intrnl.h"
 
 static INLINE unsigned int align_image_dimension(unsigned int d,
                                                  unsigned int subsampling,
@@ -130,7 +129,7 @@ static aom_image_t *img_alloc_helper(
       const size_t padded_alloc_size = (size_t)alloc_size + buf_align - 1;
       img->img_data = (uint8_t *)alloc_cb(cb_priv, padded_alloc_size);
       if (img->img_data) {
-        img->img_data = align_addr(img->img_data, buf_align);
+        img->img_data = (uint8_t *)aom_align_addr(img->img_data, buf_align);
       }
       img->img_data_owner = 0;
     } else {
