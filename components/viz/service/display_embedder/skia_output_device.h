@@ -64,7 +64,8 @@ class SkiaOutputDevice {
   virtual void Reshape(const gfx::Size& size,
                        float device_scale_factor,
                        const gfx::ColorSpace& color_space,
-                       bool has_alpha) = 0;
+                       bool has_alpha,
+                       gfx::OverlayTransform transform) = 0;
 
   // Presents the back buffer.
   virtual gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) = 0;

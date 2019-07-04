@@ -28,7 +28,10 @@ SkiaOutputDeviceOffscreen::~SkiaOutputDeviceOffscreen() = default;
 void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
                                         float device_scale_factor,
                                         const gfx::ColorSpace& color_space,
-                                        bool has_alpha) {
+                                        bool has_alpha,
+                                        gfx::OverlayTransform transform) {
+  DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
+
   // Some Vulkan drivers do not support kRGB_888x_SkColorType. Always use
   // kRGBA_8888_SkColorType instead and initialize surface to opaque alpha.
   image_info_ =

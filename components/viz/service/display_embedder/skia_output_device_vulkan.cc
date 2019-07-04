@@ -29,6 +29,7 @@ SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
       surface_handle_(surface_handle) {
   capabilities_.flipped_output_surface = true;
   capabilities_.supports_post_sub_buffer = false;
+  capabilities_.supports_pre_transform = true;
 }
 
 SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
@@ -43,7 +44,8 @@ SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
 void SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
                                      float device_scale_factor,
                                      const gfx::ColorSpace& color_space,
-                                     bool has_alpha) {
+                                     bool has_alpha,
+                                     gfx::OverlayTransform transform) {
   DCHECK(!scoped_write_);
 
   uint32_t generation = 0;
@@ -53,12 +55,12 @@ void SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
     generation = vulkan_surface_->swap_chain_generation();
   }
 
-  vulkan_surface_->SetSize(size);
+  vulkan_surface_->Reshape(size, transform);
 
   if (vulkan_surface_->swap_chain_generation() != generation) {
     // swapchain is changed, we need recreate all cached sk surfaces.
     sk_surfaces_.clear();
-    sk_surfaces_.resize(vulkan_surface_->GetSwapChain()->num_images());
+    sk_surfaces_.resize(vulkan_surface_->swap_chain()->num_images());
   }
 }
 
@@ -69,8 +71,8 @@ gfx::SwapResponse SkiaOutputDeviceVulkan::SwapBuffers(
   DCHECK(!scoped_write_);
 
   StartSwapBuffers(std::move(feedback));
-  auto size = vulkan_surface_->size();
-  auto response = FinishSwapBuffers(vulkan_surface_->SwapBuffers(), size);
+  auto image_size = vulkan_surface_->image_size();
+  auto response = FinishSwapBuffers(vulkan_surface_->SwapBuffers(), image_size);
   return response;
 }
 
@@ -78,7 +80,7 @@ SkSurface* SkiaOutputDeviceVulkan::BeginPaint() {
   DCHECK(vulkan_surface_);
   DCHECK(!scoped_write_);
 
-  scoped_write_.emplace(vulkan_surface_->GetSwapChain());
+  scoped_write_.emplace(vulkan_surface_->swap_chain());
   if (!scoped_write_->success()) {
     scoped_write_.reset();
     return nullptr;
@@ -94,8 +96,9 @@ SkSurface* SkiaOutputDeviceVulkan::BeginPaint() {
     GrVkImageInfo vk_image_info(
         scoped_write_->image(), GrVkAlloc(), VK_IMAGE_TILING_OPTIMAL,
         scoped_write_->image_layout(), surface_format, 1 /* level_count */);
-    GrBackendRenderTarget render_target(vulkan_surface_->size().width(),
-                                        vulkan_surface_->size().height(),
+    const auto& vk_image_size = vulkan_surface_->image_size();
+    GrBackendRenderTarget render_target(vk_image_size.width(),
+                                        vk_image_size.height(),
                                         0 /* sample_cnt */, vk_image_info);
     auto sk_color_type = surface_format == VK_FORMAT_B8G8R8A8_UNORM
                              ? kBGRA_8888_SkColorType

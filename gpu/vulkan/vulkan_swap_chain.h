@@ -57,11 +57,15 @@ class VULKAN_EXPORT VulkanSwapChain {
   VulkanSwapChain();
   ~VulkanSwapChain();
 
+  // min_image_count is the minimum number of presentable images.
   bool Initialize(VulkanDeviceQueue* device_queue,
                   VkSurfaceKHR surface,
-                  const VkSurfaceCapabilitiesKHR& surface_caps,
                   const VkSurfaceFormatKHR& surface_format,
+                  const gfx::Size& image_size,
+                  uint32_t min_image_count,
+                  VkSurfaceTransformFlagBitsKHR pre_transform,
                   std::unique_ptr<VulkanSwapChain> old_swap_chain);
+
   // Destroy() should be called when all related GPU tasks have been finished.
   void Destroy();
 
@@ -73,14 +77,16 @@ class VULKAN_EXPORT VulkanSwapChain {
 
  private:
   bool InitializeSwapChain(VkSurfaceKHR surface,
-                           const VkSurfaceCapabilitiesKHR& surface_caps,
                            const VkSurfaceFormatKHR& surface_format,
+                           const gfx::Size& image_size,
+                           uint32_t min_image_count,
+                           VkSurfaceTransformFlagBitsKHR pre_transform,
                            std::unique_ptr<VulkanSwapChain> old_swap_chain);
   void DestroySwapChain();
 
-  bool InitializeSwapImages(const VkSurfaceCapabilitiesKHR& surface_caps,
-                            const VkSurfaceFormatKHR& surface_format);
+  bool InitializeSwapImages(const VkSurfaceFormatKHR& surface_format);
   void DestroySwapImages();
+
   bool BeginWriteCurrentImage(VkImage* image,
                               uint32_t* image_index,
                               VkImageLayout* layout,

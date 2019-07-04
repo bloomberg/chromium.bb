@@ -209,9 +209,9 @@ void VulkanRenderer::RecreateFramebuffers() {
 
   DestroyFramebuffers();
 
-  vulkan_surface_->SetSize(size_);
+  vulkan_surface_->Reshape(size_, gfx::OVERLAY_TRANSFORM_NONE);
 
-  gpu::VulkanSwapChain* vulkan_swap_chain = vulkan_surface_->GetSwapChain();
+  gpu::VulkanSwapChain* vulkan_swap_chain = vulkan_surface_->swap_chain();
   const uint32_t num_images = vulkan_swap_chain->num_images();
   framebuffers_.resize(num_images);
 }
@@ -222,7 +222,7 @@ void VulkanRenderer::RenderFrame() {
   VkClearValue clear_value = {
       /* .color = */ {/* .float32 = */ {.5f, 1.f - NextFraction(), .5f, 1.f}}};
 
-  gpu::VulkanSwapChain* vulkan_swap_chain = vulkan_surface_->GetSwapChain();
+  gpu::VulkanSwapChain* vulkan_swap_chain = vulkan_surface_->swap_chain();
   gpu::VulkanSwapChain::ScopedWrite scoped_write(vulkan_swap_chain);
   const uint32_t image = scoped_write.image_index();
   {
@@ -332,7 +332,7 @@ VulkanRenderer::Framebuffer::Create(gpu::VulkanDeviceQueue* vulkan_device_queue,
                                     VkRenderPass vk_render_pass,
                                     gpu::VulkanSurface* vulkan_surface,
                                     VkImage image) {
-  gpu::VulkanSwapChain* vulkan_swap_chain = vulkan_surface->GetSwapChain();
+  gpu::VulkanSwapChain* vulkan_swap_chain = vulkan_surface->swap_chain();
   const VkDevice vk_device = vulkan_device_queue->GetVulkanDevice();
   VkImageViewCreateInfo vk_image_view_create_info = {
       /* .sType = */ VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,

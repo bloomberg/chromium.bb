@@ -44,9 +44,10 @@ SkiaOutputDeviceX11::~SkiaOutputDeviceX11() {
 void SkiaOutputDeviceX11::Reshape(const gfx::Size& size,
                                   float device_scale_factor,
                                   const gfx::ColorSpace& color_space,
-                                  bool has_alpha) {
+                                  bool has_alpha,
+                                  gfx::OverlayTransform transform) {
   SkiaOutputDeviceOffscreen::Reshape(size, device_scale_factor, color_space,
-                                     has_alpha);
+                                     has_alpha, transform);
   auto ii =
       SkImageInfo::MakeN32(size.width(), size.height(), kOpaque_SkAlphaType);
   pixels_.reserve(ii.computeMinByteSize());

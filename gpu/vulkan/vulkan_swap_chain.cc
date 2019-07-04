@@ -39,15 +39,18 @@ VulkanSwapChain::~VulkanSwapChain() {
 bool VulkanSwapChain::Initialize(
     VulkanDeviceQueue* device_queue,
     VkSurfaceKHR surface,
-    const VkSurfaceCapabilitiesKHR& surface_caps,
     const VkSurfaceFormatKHR& surface_format,
+    const gfx::Size& image_size,
+    uint32_t min_image_count,
+    VkSurfaceTransformFlagBitsKHR pre_transform,
     std::unique_ptr<VulkanSwapChain> old_swap_chain) {
   DCHECK(device_queue);
   device_queue_ = device_queue;
   device_queue_->GetFenceHelper()->ProcessCleanupTasks();
-  return InitializeSwapChain(surface, surface_caps, surface_format,
+  return InitializeSwapChain(surface, surface_format, image_size,
+                             min_image_count, pre_transform,
                              std::move(old_swap_chain)) &&
-         InitializeSwapImages(surface_caps, surface_format);
+         InitializeSwapImages(surface_format);
 }
 
 void VulkanSwapChain::Destroy() {
@@ -104,6 +107,8 @@ gfx::SwapResult VulkanSwapChain::PresentBuffer() {
     DLOG(ERROR) << "vkQueuePresentKHR() failed: " << result;
     return gfx::SwapResult::SWAP_FAILED;
   }
+  DLOG_IF(ERROR, result == VK_SUBOPTIMAL_KHR) << "Swapchian is suboptimal.";
+
   acquired_image_.reset();
   fence_helper->EnqueueSemaphoreCleanupForSubmittedWork(end_write_semaphore_);
   end_write_semaphore_ = VK_NULL_HANDLE;
@@ -113,8 +118,10 @@ gfx::SwapResult VulkanSwapChain::PresentBuffer() {
 
 bool VulkanSwapChain::InitializeSwapChain(
     VkSurfaceKHR surface,
-    const VkSurfaceCapabilitiesKHR& surface_caps,
     const VkSurfaceFormatKHR& surface_format,
+    const gfx::Size& image_size,
+    uint32_t min_image_count,
+    VkSurfaceTransformFlagBitsKHR pre_transform,
     std::unique_ptr<VulkanSwapChain> old_swap_chain) {
   VkDevice device = device_queue_->GetVulkanDevice();
   VkResult result = VK_SUCCESS;
@@ -122,22 +129,15 @@ bool VulkanSwapChain::InitializeSwapChain(
   VkSwapchainCreateInfoKHR swap_chain_create_info = {};
   swap_chain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
   swap_chain_create_info.surface = surface;
-  swap_chain_create_info.minImageCount =
-      std::max(3u, surface_caps.minImageCount);
+  swap_chain_create_info.minImageCount = min_image_count,
   swap_chain_create_info.imageFormat = surface_format.format;
   swap_chain_create_info.imageColorSpace = surface_format.colorSpace;
-  swap_chain_create_info.imageExtent = surface_caps.currentExtent;
+  swap_chain_create_info.imageExtent.width = image_size.width();
+  swap_chain_create_info.imageExtent.height = image_size.height();
   swap_chain_create_info.imageArrayLayers = 1;
   swap_chain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
   swap_chain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-  // Always set preTransform to VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR (which is
-  // relative to the presentation engine's natural orientation), if it does not
-  // match the currentTransform value returned by
-  // vkGetPhysicalDeviceSurfaceCapabilitiesKHR, the presentation engine will
-  // transform the image content as part of the presentation operation.
-  // TODO(penghuang): Support preTransform for better performance.
-  // https://crbug.com/957485
-  swap_chain_create_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+  swap_chain_create_info.preTransform = pre_transform;
   swap_chain_create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
   swap_chain_create_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
   swap_chain_create_info.clipped = true;
@@ -175,7 +175,6 @@ void VulkanSwapChain::DestroySwapChain() {
 }
 
 bool VulkanSwapChain::InitializeSwapImages(
-    const VkSurfaceCapabilitiesKHR& surface_caps,
     const VkSurfaceFormatKHR& surface_format) {
   VkDevice device = device_queue_->GetVulkanDevice();
   VkResult result = VK_SUCCESS;

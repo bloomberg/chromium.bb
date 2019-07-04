@@ -102,6 +102,7 @@ class SkiaOutputSurfaceImplOnGpu {
                const gfx::ColorSpace& color_space,
                bool has_alpha,
                bool use_stencil,
+               gfx::OverlayTransform transform,
                SkSurfaceCharacterization* characterization,
                base::WaitableEvent* event);
   void FinishPaintCurrentFrame(
