@@ -300,19 +300,16 @@ std::unique_ptr<Layer> Layer::Mirror() {
   return mirror;
 }
 
-void Layer::MirrorLayer(Layer* mirrored_layer) {
+void Layer::SetShowReflectedLayerSubtree(Layer* subtree_reflected_layer) {
+  DCHECK(subtree_reflected_layer);
   DCHECK_EQ(type_, LAYER_SOLID_COLOR);
 
-  if (!mirrored_layer) {
-    SetShowSolidColorContent();
-    return;
-  }
-
-  auto new_layer = cc::MirrorLayer::Create(mirrored_layer->cc_layer_);
+  scoped_refptr<cc::MirrorLayer> new_layer =
+      cc::MirrorLayer::Create(subtree_reflected_layer->cc_layer_);
   SwitchToLayer(new_layer);
-  mirror_layer_ = new_layer;
+  mirror_layer_ = std::move(new_layer);
   gfx::Rect bounds = bounds_;
-  bounds.set_size(mirrored_layer->bounds().size());
+  bounds.set_size(subtree_reflected_layer->bounds().size());
   SetBounds(bounds);
 
   RecomputeDrawsContentAndUVRect();
