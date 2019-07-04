@@ -89,7 +89,9 @@ class CORE_EXPORT ImageRecordsManager {
     return visible_node_map_.Contains(node_id);
   }
   bool IsRecordedVisibleNode(
-      const BackgroundImageId& background_image_id) const;
+      const BackgroundImageId& background_image_id) const {
+    return visible_background_image_map_.Contains(background_image_id);
+  }
   bool IsRecordedInvisibleNode(const DOMNodeId& node_id) const {
     return invisible_node_ids_.Contains(node_id);
   }
@@ -106,8 +108,8 @@ class CORE_EXPORT ImageRecordsManager {
   }
   inline bool WasVisibleNodeLoaded(
       const BackgroundImageId& background_image_id) const {
-    DCHECK(IsRecordedVisibleNode(background_image_id));
-    return FindVisibleRecord(background_image_id)->loaded;
+    DCHECK(visible_background_image_map_.Contains(background_image_id));
+    return visible_background_image_map_.at(background_image_id)->loaded;
   }
   void OnImageLoaded(const DOMNodeId&, unsigned current_frame_index);
   void OnImageLoaded(const BackgroundImageId&, unsigned current_frame_index);
@@ -138,11 +140,12 @@ class CORE_EXPORT ImageRecordsManager {
     DCHECK(visible_node_map_.Contains(node_id));
     return visible_node_map_.find(node_id)->value->AsWeakPtr();
   }
-  void InsertVisibleRecord(const BackgroundImageId&,
-                           std::unique_ptr<ImageRecord>&);
-
-  base::WeakPtr<ImageRecord> FindVisibleRecord(
-      const BackgroundImageId& background_image_id) const;
+  inline base::WeakPtr<ImageRecord> FindVisibleRecord(
+      const BackgroundImageId& background_image_id) const {
+    DCHECK(visible_background_image_map_.Contains(background_image_id));
+    return visible_background_image_map_.find(background_image_id)
+        ->value->AsWeakPtr();
+  }
   std::unique_ptr<ImageRecord> CreateImageRecord(
       const DOMNodeId&,
       const ImageResourceContent* cached_image,
@@ -160,7 +163,7 @@ class CORE_EXPORT ImageRecordsManager {
   // We will never destroy the pointers within |visible_node_map_|. Once created
   // they will exist for the whole life cycle of |visible_node_map_|.
   HashMap<DOMNodeId, std::unique_ptr<ImageRecord>> visible_node_map_;
-  HashMap<DOMNodeId, Vector<std::unique_ptr<ImageRecord>>>
+  HashMap<BackgroundImageId, std::unique_ptr<ImageRecord>>
       visible_background_image_map_;
   HashSet<DOMNodeId> invisible_node_ids_;
   // Use |DOMNodeId| instead of |ImageRecord|* for the efficiency of inserting
