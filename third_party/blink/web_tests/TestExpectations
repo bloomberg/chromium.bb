@@ -6260,7 +6260,7 @@ crbug.com/979490 [ Linux Win ] virtual/omt-worker-fetch/external/wpt/workers/mod
 crbug.com/980924 [ Linux Win Debug ] external/wpt/html/cross-origin/null.tentative.html [ Pass Failure ]
 crbug.com/980283 [ Mac ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Pass Failure ]
 crbug.com/981137 [ Win ] virtual/gpu-rasterization/images/webp-no-color-profile-lossy.html [ Pass Failure ]
-crbug.com/981210 [ Linux ] external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
+crbug.com/981210 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
 
 # Sheriff 2019-07-04
 crbug.com/981249 [ Linux Win ] fast/forms/form-submission-create-crash.xhtml [ Pass Failure ]
