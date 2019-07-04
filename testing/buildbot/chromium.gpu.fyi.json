@@ -2630,7 +2630,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 4
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests"
       },
@@ -3085,7 +3085,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 4
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests"
       },
@@ -12351,7 +12351,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 6
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests"
       },
@@ -12376,7 +12376,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 4
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests"
       },
@@ -32369,7 +32369,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 6
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
         "trigger_script": {
@@ -32403,7 +32403,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 6
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
         "trigger_script": {
@@ -32437,7 +32437,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 4
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
         "trigger_script": {
@@ -37323,7 +37323,7 @@
             }
           ],
           "expiration": 21600,
-          "shards": 6
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
         "trigger_script": {
@@ -37358,7 +37358,7 @@
             }
           ],
           "expiration": 21600,
-          "shards": 6
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
         "trigger_script": {
@@ -37393,7 +37393,7 @@
             }
           ],
           "expiration": 21600,
-          "shards": 4
+          "shards": 10
         },
         "test": "angle_deqp_gles31_tests",
         "trigger_script": {

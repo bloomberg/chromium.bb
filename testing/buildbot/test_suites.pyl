@@ -2926,7 +2926,7 @@
         ],
         'should_retry_with_patch': False,
         'swarming': {
-          'shards': 6,
+          'shards': 10,
         },
         'test': 'angle_deqp_gles31_tests',
       },
@@ -2940,7 +2940,7 @@
         ],
         'should_retry_with_patch': False,
         'swarming': {
-          'shards': 6,
+          'shards': 10,
         },
         'test': 'angle_deqp_gles31_tests',
       },
@@ -2960,7 +2960,7 @@
         ],
         'should_retry_with_patch': False,
         'swarming': {
-          'shards': 4,
+          'shards': 10,
         },
         'test': 'angle_deqp_gles31_tests',
       },
