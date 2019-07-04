@@ -159,6 +159,7 @@ mojom("mojom_platform") {
     "//mojo/public/mojom/base",
     "//services/device/public/mojom",
     "//services/network/public/mojom",
+    "//services/network/public/mojom:data_pipe_interfaces",
     "//services/network/public/mojom:websocket_mojom",
     "//services/service_manager/public/mojom",
     "//services/viz/public/interfaces",
