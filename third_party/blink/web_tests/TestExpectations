@@ -6248,5 +6248,8 @@ crbug.com/980283 [ Mac ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ P
 crbug.com/981137 [ Win ] virtual/gpu-rasterization/images/webp-no-color-profile-lossy.html [ Pass Failure ]
 crbug.com/981210 [ Linux ] external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
 
+# Sheriff 2019-07-04
+crbug.com/981249 [ Linux Win ] fast/forms/form-submission-create-crash.xhtml [ Pass Failure ]
+
 # TODO(crbug.com/980588): reenable once WPT is fixed
 crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass Failure ]
