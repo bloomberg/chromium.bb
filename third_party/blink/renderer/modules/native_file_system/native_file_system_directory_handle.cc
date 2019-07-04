@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/file_system_get_directory_options.h"
 #include "third_party/blink/renderer/modules/native_file_system/file_system_get_file_options.h"
+#include "third_party/blink/renderer/modules/native_file_system/file_system_remove_options.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -109,6 +110,29 @@ ScriptValue NativeFileSystemDirectoryHandle::getEntries(
     return ScriptValue();
   }
   return ScriptValue(script_state, result);
+}
+
+ScriptPromise NativeFileSystemDirectoryHandle::removeEntry(
+    ScriptState* script_state,
+    const String& name,
+    const FileSystemRemoveOptions* options) {
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise result = resolver->Promise();
+
+  mojo_ptr_->RemoveEntry(
+      name, options->recursive(),
+      WTF::Bind(
+          [](ScriptPromiseResolver* resolver, NativeFileSystemErrorPtr result) {
+            if (result->error_code == base::File::FILE_OK) {
+              resolver->Resolve();
+            } else {
+              resolver->Reject(
+                  file_error::CreateDOMException(result->error_code));
+            }
+          },
+          WrapPersistent(resolver)));
+
+  return result;
 }
 
 ScriptPromise NativeFileSystemDirectoryHandle::removeRecursively(

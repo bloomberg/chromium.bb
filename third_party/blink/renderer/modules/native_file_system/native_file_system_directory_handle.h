@@ -11,6 +11,7 @@
 namespace blink {
 class FileSystemGetDirectoryOptions;
 class FileSystemGetFileOptions;
+class FileSystemRemoveOptions;
 class GetSystemDirectoryOptions;
 
 class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
@@ -30,6 +31,9 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
                              const String& name,
                              const FileSystemGetDirectoryOptions*);
   ScriptValue getEntries(ScriptState*);
+  ScriptPromise removeEntry(ScriptState*,
+                            const String& name,
+                            const FileSystemRemoveOptions*);
   ScriptPromise removeRecursively(ScriptState*);
 
   static ScriptPromise getSystemDirectory(ScriptState*,
