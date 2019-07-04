@@ -111,7 +111,7 @@ CSSNumericValue* NegateOrInvertIfRequired(CSSMathOperator parent_op,
 
 CSSNumericValue* CalcToNumericValue(const CSSMathExpressionNode& root) {
   if (root.IsNumericLiteral()) {
-    const CSSPrimitiveValue::UnitType unit = root.TypeWithCalcResolved();
+    const CSSPrimitiveValue::UnitType unit = root.ResolvedUnitType();
     auto* value = CSSUnitValue::Create(
         root.DoubleValue(), unit == CSSPrimitiveValue::UnitType::kInteger
                                 ? CSSPrimitiveValue::UnitType::kNumber

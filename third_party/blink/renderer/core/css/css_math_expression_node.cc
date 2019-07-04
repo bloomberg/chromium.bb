@@ -194,7 +194,7 @@ void CSSMathExpressionNumericLiteral::AccumulatePixelsAndPercent(
 }
 
 double CSSMathExpressionNumericLiteral::DoubleValue() const {
-  if (HasDoubleValue(TypeWithCalcResolved()))
+  if (HasDoubleValue(ResolvedUnitType()))
     return value_->GetDoubleValue();
   NOTREACHED();
   return 0;
@@ -239,8 +239,8 @@ bool CSSMathExpressionNumericLiteral::operator==(
                         To<CSSMathExpressionNumericLiteral>(other).value_);
 }
 
-CSSPrimitiveValue::UnitType
-CSSMathExpressionNumericLiteral::TypeWithCalcResolved() const {
+CSSPrimitiveValue::UnitType CSSMathExpressionNumericLiteral::ResolvedUnitType()
+    const {
   return value_->TypeWithCalcResolved();
 }
 
@@ -372,10 +372,9 @@ CSSMathExpressionNode* CSSMathExpressionBinaryOperation::CreateSimplified(
   // Simplify addition and subtraction between same types.
   if (op == CSSMathOperator::kAdd || op == CSSMathOperator::kSubtract) {
     if (left_category == right_side->Category()) {
-      CSSPrimitiveValue::UnitType left_type = left_side->TypeWithCalcResolved();
+      CSSPrimitiveValue::UnitType left_type = left_side->ResolvedUnitType();
       if (HasDoubleValue(left_type)) {
-        CSSPrimitiveValue::UnitType right_type =
-            right_side->TypeWithCalcResolved();
+        CSSPrimitiveValue::UnitType right_type = right_side->ResolvedUnitType();
         if (left_type == right_type) {
           return CSSMathExpressionNumericLiteral::Create(
               EvaluateOperator(left_side->DoubleValue(),
@@ -423,7 +422,7 @@ CSSMathExpressionNode* CSSMathExpressionBinaryOperation::CreateSimplified(
     if (op == CSSMathOperator::kDivide && !number)
       return nullptr;
 
-    CSSPrimitiveValue::UnitType other_type = other_side->TypeWithCalcResolved();
+    CSSPrimitiveValue::UnitType other_type = other_side->ResolvedUnitType();
     if (HasDoubleValue(other_type)) {
       return CSSMathExpressionNumericLiteral::Create(
           EvaluateOperator(other_side->DoubleValue(), number, op), other_type,
@@ -565,8 +564,8 @@ bool CSSMathExpressionBinaryOperation::operator==(
          operator_ == other.operator_;
 }
 
-CSSPrimitiveValue::UnitType
-CSSMathExpressionBinaryOperation::TypeWithCalcResolved() const {
+CSSPrimitiveValue::UnitType CSSMathExpressionBinaryOperation::ResolvedUnitType()
+    const {
   switch (category_) {
     case kCalcNumber:
       DCHECK_EQ(left_side_->Category(), kCalcNumber);
@@ -575,12 +574,11 @@ CSSMathExpressionBinaryOperation::TypeWithCalcResolved() const {
     case kCalcLength:
     case kCalcPercent: {
       if (left_side_->Category() == kCalcNumber)
-        return right_side_->TypeWithCalcResolved();
+        return right_side_->ResolvedUnitType();
       if (right_side_->Category() == kCalcNumber)
-        return left_side_->TypeWithCalcResolved();
-      CSSPrimitiveValue::UnitType left_type =
-          left_side_->TypeWithCalcResolved();
-      if (left_type == right_side_->TypeWithCalcResolved())
+        return left_side_->ResolvedUnitType();
+      CSSPrimitiveValue::UnitType left_type = left_side_->ResolvedUnitType();
+      if (left_type == right_side_->ResolvedUnitType())
         return left_type;
       return CSSPrimitiveValue::UnitType::kUnknown;
     }

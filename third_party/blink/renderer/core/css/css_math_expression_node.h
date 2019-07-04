@@ -83,7 +83,12 @@ class CORE_EXPORT CSSMathExpressionNode
   }
 
   CalculationCategory Category() const { return category_; }
-  virtual CSSPrimitiveValue::UnitType TypeWithCalcResolved() const = 0;
+
+  // Returns the unit type of the math expression *without doing any type
+  // conversion* (e.g., 1px + 1em needs type conversion to resolve).
+  // Returns |UnitType::kUnknown| if type conversion is required.
+  virtual CSSPrimitiveValue::UnitType ResolvedUnitType() const = 0;
+
   bool IsInteger() const { return is_integer_; }
 
   bool IsNestedCalc() const { return is_nested_calc_; }
@@ -127,7 +132,7 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
   void AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const final;
   bool operator==(const CSSMathExpressionNode& other) const final;
-  CSSPrimitiveValue::UnitType TypeWithCalcResolved() const final;
+  CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
   void Trace(blink::Visitor* visitor) final;
 
  private:
@@ -177,7 +182,7 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
                              double multiplier) const final;
   String CustomCSSText() const final;
   bool operator==(const CSSMathExpressionNode& exp) const final;
-  CSSPrimitiveValue::UnitType TypeWithCalcResolved() const final;
+  CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
   void Trace(blink::Visitor* visitor) final;
 
  private:

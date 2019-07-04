@@ -32,6 +32,7 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
   }
 
   UnitType TypeWithMathFunctionResolved() const;
+  bool MayHaveRelativeUnit() const;
 
   CalculationCategory Category() const { return expression_->Category(); }
   bool IsInt() const { return expression_->IsInteger(); }
