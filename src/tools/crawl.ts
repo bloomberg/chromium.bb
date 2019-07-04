@@ -2,6 +2,8 @@
 // This crawls the file tree under src/suites/${suite} to generate a (non-hierarchical) static
 // listing file that can then be used in the browser to load the modules containing the tests.
 
+// tslint:disable: no-console
+
 import fg from 'fast-glob';
 import * as fs from 'fs';
 import * as path from 'path';

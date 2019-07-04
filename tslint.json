@@ -1,6 +1,7 @@
 {
   "extends": "gts/tslint.json",
   "rules": {
+    "no-console": [true]
   },
   "linterOptions": {
     "exclude": [
