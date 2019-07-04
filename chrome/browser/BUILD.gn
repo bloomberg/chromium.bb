@@ -4965,7 +4965,7 @@ jumbo_split_static_library("browser") {
       allow_circular_includes_from += [ "android/vr:vr_android" ]
     }
 
-    if (!is_android) {
+    if (is_win) {
       sources += [
         "vr/service/xr_session_request_consent_manager_impl.cc",
         "vr/service/xr_session_request_consent_manager_impl.h",
