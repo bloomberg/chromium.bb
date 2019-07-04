@@ -309,6 +309,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessibleForWindow()
       override;
+  WebContents* AccessibilityWebContents() override;
   bool AccessibilityIsMainFrame() const override;
 
   // RenderProcessHostObserver implementation.

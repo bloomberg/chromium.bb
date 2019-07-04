@@ -459,7 +459,8 @@ WidgetType RenderWidgetHostViewBase::GetWidgetType() {
 
 BrowserAccessibilityManager*
 RenderWidgetHostViewBase::CreateBrowserAccessibilityManager(
-    BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
+    BrowserAccessibilityDelegate* delegate,
+    bool for_root_frame) {
   NOTREACHED();
   return nullptr;
 }

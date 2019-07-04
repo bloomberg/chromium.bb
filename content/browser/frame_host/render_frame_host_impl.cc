@@ -1636,6 +1636,10 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
   return nullptr;
 }
 
+WebContents* RenderFrameHostImpl::AccessibilityWebContents() {
+  return delegate()->GetAsWebContents();
+}
+
 bool RenderFrameHostImpl::AccessibilityIsMainFrame() const {
   return frame_tree_node()->IsMainFrame();
 }
