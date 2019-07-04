@@ -36,9 +36,6 @@ GL_EXPORT extern const char kANGLEImplementationOpenGLNULLName[];
 GL_EXPORT extern const char kANGLEImplementationOpenGLESNULLName[];
 GL_EXPORT extern const char kANGLEImplementationVulkanNULLName[];
 
-GL_EXPORT extern const char kCmdDecoderValidatingName[];
-GL_EXPORT extern const char kCmdDecoderPassthroughName[];
-
 }  // namespace gl
 
 namespace switches {
@@ -52,7 +49,6 @@ GL_EXPORT extern const char kEnableGPUServiceTracing[];
 GL_EXPORT extern const char kGpuNoContextLost[];
 
 GL_EXPORT extern const char kUseANGLE[];
-GL_EXPORT extern const char kUseCmdDecoder[];
 GL_EXPORT extern const char kEnableANGLEFeatures[];
 GL_EXPORT extern const char kDisableANGLEFeatures[];
 GL_EXPORT extern const char kUseGL[];

@@ -37,7 +37,6 @@ const struct {
     {kGLImplementationAppleName, kGLImplementationAppleGL},
 #endif
     {kGLImplementationEGLName, kGLImplementationEGLGLES2},
-    {kGLImplementationANGLEName, kGLImplementationEGLANGLE},
     {kGLImplementationMockName, kGLImplementationMockGL},
     {kGLImplementationStubName, kGLImplementationStubGL},
     {kGLImplementationDisabledName, kGLImplementationDisabled}};

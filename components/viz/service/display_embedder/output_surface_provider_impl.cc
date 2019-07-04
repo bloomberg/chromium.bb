@@ -111,10 +111,8 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
     return nullptr;
 #else
     if (renderer_settings.use_skia_renderer_non_ddl) {
-      bool is_gles2 =
-          (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) ||
-          (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE);
-      DCHECK(is_gles2) << "SkiaRendererNonDDL is only supported with GLES2.";
+      DCHECK_EQ(gl::GetGLImplementation(), gl::kGLImplementationEGLGLES2)
+          << "SkiaRendererNonDDL is only supported with GLES2.";
       auto gl_surface = gpu::ImageTransportSurface::CreateNativeSurface(
           nullptr, surface_handle, gl::GLSurfaceFormat());
       if (!shared_context_state_) {

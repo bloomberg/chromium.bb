@@ -30,13 +30,8 @@ namespace {
 class GLSurfaceEGLTest : public testing::Test {
  protected:
   void SetUp() override {
-#if defined(OS_WIN)
-    GLSurfaceTestSupport::InitializeOneOffImplementation(
-        GLImplementation::kGLImplementationEGLANGLE, true);
-#else
     GLSurfaceTestSupport::InitializeOneOffImplementation(
         GLImplementation::kGLImplementationEGLGLES2, true);
-#endif
   }
 
   void TearDown() override { gl::init::ShutdownGL(false); }

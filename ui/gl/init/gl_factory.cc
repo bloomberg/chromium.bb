@@ -13,7 +13,6 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_initializer.h"
 
@@ -45,16 +44,6 @@ bool InitializeGLOneOffHelper(bool init_extensions) {
     GLVersionInfo::DisableES3ForTesting();
   }
 
-  // If the passthrough command decoder is enabled, put ANGLE first if allowed
-  if (gl::UsePassthroughCommandDecoder(cmd)) {
-    auto iter = std::find(allowed_impls.begin(), allowed_impls.end(),
-                          kGLImplementationEGLANGLE);
-    if (iter != allowed_impls.end()) {
-      allowed_impls.erase(iter);
-      allowed_impls.insert(allowed_impls.begin(), kGLImplementationEGLANGLE);
-    }
-  }
-
   if (allowed_impls.empty()) {
     LOG(ERROR) << "List of allowed GL implementations is empty.";
     return false;
@@ -73,6 +62,8 @@ bool InitializeGLOneOffHelper(bool init_extensions) {
                (requested_implementation_name ==
                 kGLImplementationSwiftShaderForWebGLName)) {
       impl = kGLImplementationSwiftShaderGL;
+    } else if (requested_implementation_name == kGLImplementationANGLEName) {
+      impl = kGLImplementationEGLGLES2;
     } else {
       impl = GetNamedGLImplementation(requested_implementation_name);
       if (!base::Contains(allowed_impls, impl)) {
