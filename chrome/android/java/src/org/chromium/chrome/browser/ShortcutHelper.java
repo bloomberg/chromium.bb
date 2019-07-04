@@ -273,6 +273,10 @@ public class ShortcutHelper {
         String id = shortcutIntent.getStringExtra(ShortcutHelper.EXTRA_ID);
         Context context = ContextUtils.getApplicationContext();
 
+        if (bitmap == null) {
+            Log.e(TAG, "Failed to find an icon for " + title + ", not adding.");
+            return;
+        }
         Icon icon = isMaskableIcon ? Icon.createWithAdaptiveBitmap(bitmap)
                                    : Icon.createWithBitmap(bitmap);
 
