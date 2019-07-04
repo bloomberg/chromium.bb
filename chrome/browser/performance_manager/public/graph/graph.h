@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
