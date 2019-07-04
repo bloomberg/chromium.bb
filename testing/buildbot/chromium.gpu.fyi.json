@@ -8293,33 +8293,6 @@
           "--enable-gpu",
           "--test-launcher-bot-mode",
           "--test-launcher-jobs=1",
-          "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-19.0.2",
-              "os": "Ubuntu-19.04",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
           "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
           "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
           "--use-gl=any",
@@ -9077,33 +9050,6 @@
           "expiration": 21600
         },
         "test": "angle_white_box_tests"
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3-418.56",
-              "os": "Ubuntu-19.04",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600
-        },
-        "test": "browser_tests"
       },
       {
         "args": [
