@@ -28,6 +28,12 @@
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/base/ime/chromeos/input_method_chromeos.h"
+#else
+#include "ui/base/ime/input_method_minimal.h"
+#endif
+
 namespace ui {
 
 namespace {
@@ -85,6 +91,17 @@ class OzonePlatformX11 : public OzonePlatform {
 
   PlatformClipboard* GetPlatformClipboard() override {
     return clipboard_.get();
+  }
+
+  std::unique_ptr<InputMethod> CreateInputMethod(
+      internal::InputMethodDelegate* delegate) override {
+#if defined(OS_CHROMEOS)
+    return std::make_unique<InputMethodChromeOS>(delegate);
+#else
+    // TODO(spang): Fix InputMethodAuraLinux which requires another level
+    // of initization.
+    return std::make_unique<InputMethodMinimal>(delegate);
+#endif
   }
 
   void InitializeUI(const InitParams& params) override {
