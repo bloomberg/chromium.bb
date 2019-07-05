@@ -256,6 +256,29 @@ static INLINE void set_error_per_bit(MACROBLOCK *x, int rdmult) {
   x->errorperbit += (x->errorperbit == 0);
 }
 
+// Get the threshold for R-D optimization of coefficients depending upon mode
+// decision/winner mode processing
+static INLINE uint32_t get_rd_opt_coeff_thresh(
+    const uint32_t *const coeff_opt_dist_threshold,
+    int enable_winner_mode_for_coeff_opt, int is_winner_mode) {
+  // Default initialization of threshold
+  uint32_t coeff_opt_thresh = coeff_opt_dist_threshold[0];
+  // TODO(any): Experiment with coeff_opt_dist_threshold values when
+  // enable_winner_mode_for_coeff_opt is ON
+  // TODO(any): Skip the winner mode processing for blocks with lower residual
+  // energy as R-D optimization of coefficients would have been enabled during
+  // mode decision
+  if (enable_winner_mode_for_coeff_opt) {
+    // Use conservative threshold during mode decision and perform R-D
+    // optimization of coeffs always for winner modes
+    if (is_winner_mode)
+      coeff_opt_thresh = UINT32_MAX;
+    else
+      coeff_opt_thresh = coeff_opt_dist_threshold[1];
+  }
+  return coeff_opt_thresh;
+}
+
 void av1_setup_pred_block(const MACROBLOCKD *xd,
                           struct buf_2d dst[MAX_MB_PLANE],
                           const YV12_BUFFER_CONFIG *src, int mi_row, int mi_col,

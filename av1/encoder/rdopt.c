@@ -3140,7 +3140,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   // coeffs. For smaller residuals, coeff optimization would be helpful. For
   // larger residuals, R-D optimization may not be effective.
   // TODO(any): Experiment with variance and mean based thresholds
-  perform_block_coeff_opt = (block_mse_q8 <= cpi->coeff_opt_dist_threshold);
+  perform_block_coeff_opt = (block_mse_q8 <= x->coeff_opt_dist_threshold);
 
   assert(IMPLIES(txk_allowed < TX_TYPES, allowed_tx_mask == 1 << txk_allowed));
 
@@ -4725,6 +4725,11 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   else
     x->use_default_intra_tx_type = 0;
 
+  // Get the threshold for R-D optimization of coefficients during mode decision
+  x->coeff_opt_dist_threshold =
+      get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
+                              cpi->sf.enable_winner_mode_for_coeff_opt, 0);
+
   MB_MODE_INFO best_mbmi = *mbmi;
   /* Y Search for intra prediction mode */
   for (int mode_idx = INTRA_MODE_START; mode_idx < INTRA_MODE_END; ++mode_idx) {
@@ -4802,10 +4807,18 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
   }
 
-  // If previous searches use only the default tx type, do an extra search for
-  // the best tx type.
-  if (cpi->sf.tx_type_search.fast_intra_tx_type_search &&
-      !cpi->oxcf.use_intra_default_tx_only) {
+  // If previous searches use only the default tx type/no R-D optimization of
+  // quantized coeffs, do an extra search for the best tx type/better R-D
+  // optimization of quantized coeffs
+  if ((cpi->sf.tx_type_search.fast_intra_tx_type_search &&
+       !cpi->oxcf.use_intra_default_tx_only) ||
+      (cpi->sf.enable_winner_mode_for_coeff_opt &&
+       (cpi->optimize_seg_arr[mbmi->segment_id] != NO_TRELLIS_OPT &&
+        cpi->optimize_seg_arr[mbmi->segment_id] != FINAL_PASS_TRELLIS_OPT))) {
+    // Get the threshold for R-D optimization of coefficients for winner mode
+    x->coeff_opt_dist_threshold =
+        get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
+                                cpi->sf.enable_winner_mode_for_coeff_opt, 1);
     *mbmi = best_mbmi;
     x->use_default_intra_tx_type = 0;
     intra_block_yrd(cpi, x, bsize, bmode_costs, &best_rd, rate, rate_tokenonly,
@@ -10915,6 +10928,11 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
       rd_pick_intra_sby_mode(cpi, x, mi_row, mi_col, &rate_y, &rate_y_tokenonly,
                              &dist_y, &y_skip, bsize, best_rd, ctx);
 
+  // Get the threshold for R-D optimization of coefficients for mode
+  // decision
+  x->coeff_opt_dist_threshold =
+      get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold, 0, 0);
+
   if (intra_yrd < best_rd) {
     // Only store reconstructed luma when there's chroma RDO. When there's no
     // chroma RDO, the reconstructed luma will be stored in encode_superblock().
@@ -11191,13 +11209,21 @@ static void sf_refine_fast_tx_type_search(
         !cpi->oxcf.use_inter_dct_only && is_inter_mode(best_mbmode->mode)) ||
        (sf->tx_type_search.fast_intra_tx_type_search &&
         !cpi->oxcf.use_intra_default_tx_only && !cpi->oxcf.use_intra_dct_only &&
-        !is_inter_mode(best_mbmode->mode)))) {
+        !is_inter_mode(best_mbmode->mode)) ||
+       (cpi->sf.enable_winner_mode_for_coeff_opt &&
+        (cpi->optimize_seg_arr[mbmi->segment_id] != NO_TRELLIS_OPT &&
+         cpi->optimize_seg_arr[mbmi->segment_id] != FINAL_PASS_TRELLIS_OPT)))) {
     int skip_blk = 0;
     RD_STATS rd_stats_y, rd_stats_uv;
     const int skip_ctx = av1_get_skip_context(xd);
 
     x->use_default_inter_tx_type = 0;
     x->use_default_intra_tx_type = 0;
+
+    // Get the threshold for R-D optimization of coefficients for winner mode
+    x->coeff_opt_dist_threshold =
+        get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
+                                cpi->sf.enable_winner_mode_for_coeff_opt, 1);
 
     *mbmi = *best_mbmode;
 
@@ -11581,6 +11607,12 @@ static void set_params_rd_pick_inter_mode(
     x->use_default_inter_tx_type = 1;
   else
     x->use_default_inter_tx_type = 0;
+
+  // Get the threshold for R-D optimization of coefficients during mode decision
+  x->coeff_opt_dist_threshold =
+      get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold,
+                              cpi->sf.enable_winner_mode_for_coeff_opt, 0);
+
   if (cpi->sf.skip_repeat_interpolation_filter_search) {
     x->interp_filter_stats_idx[0] = 0;
     x->interp_filter_stats_idx[1] = 0;
@@ -13029,6 +13061,10 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       cpi, x, mi_row, mi_col, rd_cost, bsize, ctx, search_state.best_mode_index,
       &search_state.best_mbmode, yv12_mb, search_state.best_rate_y,
       search_state.best_rate_uv, &search_state.best_skip2);
+
+  // Get the threshold for R-D optimization of coefficients for mode evaluation
+  x->coeff_opt_dist_threshold =
+      get_rd_opt_coeff_thresh(cpi->coeff_opt_dist_threshold, 0, 0);
 
   // Only try palette mode when the best mode so far is an intra mode.
   const int try_palette =

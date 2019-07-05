@@ -976,7 +976,10 @@ typedef struct AV1_COMP {
 
   // Factor to control R-D optimization of coeffs based on block
   // mse.
-  unsigned int coeff_opt_dist_threshold;
+  // Index 0 corresponds to the modes where winner mode processing is not
+  // applicable (Eg : IntraBc). Index 1 corresponds to the mode evaluation and
+  // is applicable when enable_winner_mode_for_coeff_opt speed feature is ON
+  unsigned int coeff_opt_dist_threshold[2];
 
   AV1LfSync lf_row_sync;
   AV1LrSync lr_row_sync;
