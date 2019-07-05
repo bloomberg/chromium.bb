@@ -79,7 +79,7 @@ class BASE_EXPORT FileDescriptorWatcher {
     // instantiated.
     SequenceChecker sequence_checker_;
 
-    WeakPtrFactory<Controller> weak_factory_{this};
+    WeakPtrFactory<Controller> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(Controller);
   };

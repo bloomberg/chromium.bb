@@ -59,7 +59,7 @@ class MockObject {
 struct DummyError {};
 
 struct Cancelable {
-  Cancelable() {}
+  Cancelable() : weak_ptr_factory(this) {}
 
   void LogTask(std::vector<std::string>* log, std::string value) {
     log->push_back(value);
@@ -67,7 +67,7 @@ struct Cancelable {
 
   void NopTask() {}
 
-  WeakPtrFactory<Cancelable> weak_ptr_factory{this};
+  WeakPtrFactory<Cancelable> weak_ptr_factory;
 };
 
 }  // namespace
