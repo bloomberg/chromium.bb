@@ -72,17 +72,19 @@ function MetadataBoxController(
  * @param{!FilesQuickView} quickView
  */
 MetadataBoxController.prototype.init = function(quickView) {
+  this.metadataBox_ = quickView.getFilesMetadataBox();
+  this.quickView_ = quickView;
+
   this.fileMetadataFormatter_.addEventListener(
       'date-time-format-changed', this.updateView_.bind(this));
 
-  quickView.addEventListener(
+  this.quickView_.addEventListener(
       'metadata-box-active-changed', this.updateView_.bind(this));
 
   this.quickViewModel_.addEventListener(
       'selected-entry-changed', this.updateView_.bind(this));
 
-  this.metadataBox_ = quickView.getFilesMetadataBox();
-  this.quickView_ = quickView;
+  this.metadataBox_.clear(false);
 };
 
 /**
