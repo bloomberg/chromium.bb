@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/caption_style.h"
 
@@ -123,6 +124,9 @@ void GetMAFontAsCSSFontSpecifiers(std::string* font_family,
 // static
 CaptionStyle CaptionStyle::FromSystemSettings() {
   CaptionStyle style;
+
+  if (!base::FeatureList::IsEnabled(features::kSystemCaptionStyle))
+    return style;
 
   style.text_color = GetMAForegroundColorAndOpacityAsCSSColor();
   style.background_color = GetMABackgroundColorAsCSSColor();
