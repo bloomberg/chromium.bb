@@ -188,6 +188,18 @@ message SetConfigResponse {
   optional ErrorType error = 1;
 }
 
+message ValidateConfigRequest {
+  // Kerberos configuration data to validate.
+  optional string krb5conf = 1;
+}
+
+message ValidateConfigResponse {
+  // Response status. Equals ERROR_BAD_CONFIG if validation failed.
+  optional ErrorType error = 1;
+  // More specific information descripting the kind of error.
+  optional ConfigErrorInfo error_info = 2;
+}
+
 message AcquireKerberosTgtRequest {
   // Principal name of the account to acquire a ticket for (user@REALM.COM).
   optional string principal_name = 1;
