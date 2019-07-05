@@ -42,6 +42,8 @@ const char kRegisterFunction[] = "Register";
 const char kConfigureServiceFunction[] = "ConfigureService";
 const char kFindMatchingServiceFunction[] = "FindMatchingService";
 const char kSetNetworkThrottlingFunction[] = "SetNetworkThrottlingStatus";
+const char kSetUsbEthernetMacAddressSourceFunction[] =
+    "SetUsbEthernetMacAddressSource";
 
 // Flimflam Service property names.
 const char kSecurityProperty[] = "Security";
@@ -75,8 +77,7 @@ const char kUIDataProperty[] = "UIData";
 const char kConnectionIdProperty[] = "ConnectionId";
 const char kVisibleProperty[] = "Visible";
 const char kDnsAutoFallbackProperty[] = "DNSAutoFallback";
-const char kPortalDetectionFailedPhaseProperty[] =
-    "PortalDetectionFailedPhase";
+const char kPortalDetectionFailedPhaseProperty[] = "PortalDetectionFailedPhase";
 const char kPortalDetectionFailedStatusProperty[] =
     "PortalDetectionFailedStatus";
 const char kProbeUrlProperty[] = "ProbeUrl";
@@ -484,7 +485,7 @@ const char kErrorResultAlreadyConnected[] =
 const char kErrorResultAlreadyExists[] =
     "org.chromium.flimflam.Error.AlreadyExists";
 const char kErrorResultIncorrectPin[] =
-     "org.chromium.flimflam.Error.IncorrectPin";
+    "org.chromium.flimflam.Error.IncorrectPin";
 const char kErrorResultInProgress[] = "org.chromium.flimflam.Error.InProgress";
 const char kErrorResultInternalError[] =
     "org.chromium.flimflam.Error.InternalError";
@@ -499,7 +500,7 @@ const char kErrorResultInvalidProperty[] =
     "org.chromium.flimflam.Error.InvalidProperty";
 const char kErrorResultNoCarrier[] = "org.chromium.flimflam.Error.NoCarrier";
 const char kErrorResultNotConnected[] =
-     "org.chromium.flimflam.Error.NotConnected";
+    "org.chromium.flimflam.Error.NotConnected";
 const char kErrorResultNotFound[] = "org.chromium.flimflam.Error.NotFound";
 const char kErrorResultNotImplemented[] =
     "org.chromium.flimflam.Error.NotImplemented";
@@ -508,7 +509,7 @@ const char kErrorResultNotOnHomeNetwork[] =
 const char kErrorResultNotRegistered[] =
     "org.chromium.flimflam.Error.NotRegistered";
 const char kErrorResultNotSupported[] =
-     "org.chromium.flimflam.Error.NotSupported";
+    "org.chromium.flimflam.Error.NotSupported";
 const char kErrorResultOperationAborted[] =
     "org.chromium.flimflam.Error.OperationAborted";
 const char kErrorResultOperationInitiated[] =
@@ -521,7 +522,7 @@ const char kErrorResultPermissionDenied[] =
     "org.chromium.flimflam.Error.PermissionDenied";
 const char kErrorResultPinBlocked[] = "org.chromium.flimflam.Error.PinBlocked";
 const char kErrorResultPinRequired[] =
-     "org.chromium.flimflam.Error.PinRequired";
+    "org.chromium.flimflam.Error.PinRequired";
 const char kErrorResultWrongState[] = "org.chromium.flimflam.Error.WrongState";
 
 const char kUnknownString[] = "UNKNOWN";
@@ -557,6 +558,10 @@ const char kUpdateConnectionStateFunction[] = "UpdateConnectionState";
 const char kOnPacketReceivedFunction[] = "OnPacketReceived";
 const char kOnPlatformMessageFunction[] = "OnPlatformMessage";
 
+// Device bus types.
+const char kDeviceBusTypePci[] = "pci";
+const char kDeviceBusTypeUsb[] = "usb";
+
 // Device property names.
 const char kEapAuthenticationCompletedProperty[] = "EapAuthenticationCompleted";
 const char kEapAuthenticatorDetectedProperty[] = "EapAuthenticatorDetected";
@@ -569,6 +574,9 @@ const char kReceiveByteCountProperty[] = "ReceiveByteCount";
 const char kSIMPresentProperty[] = "Cellular.SIMPresent";
 const char kTransmitByteCountProperty[] = "TransmitByteCount";
 const char kWifiSupportedFrequenciesProperty[] = "WiFi.SupportedFrequencies";
+const char kDeviceBusTypeProperty[] = "Ethernet.DeviceBusType";
+const char kUsbEthernetMacAddressSourceProperty[] =
+    "Ethernet.UsbEthernetMacAddressSource";
 
 // Technology types (augments "Flimflam type options" above).
 const char kTypeEthernetEap[] = "etherneteap";
@@ -590,8 +598,7 @@ const char kDhcpPropertyHostnameProperty[] = "DHCPProperty.Hostname";
 const char kDhcpPropertyVendorClassProperty[] = "DHCPProperty.VendorClass";
 const char kDisableWiFiVHTProperty[] = "DisableWiFiVHT";
 const char kIgnoredDNSSearchPathsProperty[] = "IgnoredDNSSearchPaths";
-const char kLinkMonitorTechnologiesProperty[] =
-    "LinkMonitorTechnologies";
+const char kLinkMonitorTechnologiesProperty[] = "LinkMonitorTechnologies";
 const char kNoAutoConnectTechnologiesProperty[] = "NoAutoConnectTechnologies";
 const char kProhibitedTechnologiesProperty[] = "ProhibitedTechnologies";
 const char kServiceCompleteListProperty[] = "ServiceCompleteList";
@@ -675,8 +682,7 @@ const char kVendorOUIListProperty[] = "OUIList";
 // WiFi Device link property names.
 const char kLinkStatisticsProperty[] = "LinkStatistics";
 const char kAverageReceiveSignalDbmProperty[] = "AverageReceiveSignalDbm";
-const char kInactiveTimeMillisecondsProperty[] =
-    "InactiveTimeMilliseconds";
+const char kInactiveTimeMillisecondsProperty[] = "InactiveTimeMilliseconds";
 const char kLastReceiveSignalDbmProperty[] = "LastReceiveSignalDbm";
 const char kPacketReceiveSuccessesProperty[] = "PacketReceiveSuccesses";
 const char kPacketTransmitFailuresProperty[] = "PacketTransmitFailures";
@@ -722,9 +728,16 @@ const char kCarrierVerizon[] = "Verizon Wireless";
 
 // Cellular activation types.
 const char kActivationTypeNonCellular[] = "NonCellular";  // For future use
-const char kActivationTypeOMADM[] = "OMADM";  // For future use
+const char kActivationTypeOMADM[] = "OMADM";              // For future use
 const char kActivationTypeOTA[] = "OTA";
 const char kActivationTypeOTASP[] = "OTASP";
+
+// USB Ethernet MAC address sources.
+const char kUsbEthernetMacAddressSourceDesignatedDockMac[] =
+    "designated_dock_mac";
+const char kUsbEthernetMacAddressSourceBuiltinAdapterMac[] =
+    "builtin_adapter_mac";
+const char kUsbEthernetMacAddressSourceUsbAdapterMac[] = "usb_adapter_mac";
 
 // Geolocation property field names.
 // Reference:
