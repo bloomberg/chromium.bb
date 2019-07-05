@@ -38,10 +38,6 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
  public:
   explicit HostDrmDevice(DrmCursor* cursor);
 
-  // Start the DRM service. Runs the |OnDrmServiceStartedCallback| when the
-  // service has launched and initiates the remaining startup.
-  void AsyncStartDrmDevice(const DrmDeviceConnector& connector);
-
   // Blocks until the DRM service has come up. Use this entry point only when
   // supporting launch of the service where the ozone UI and GPU
   // reponsibilities are performed by the same underlying thread.

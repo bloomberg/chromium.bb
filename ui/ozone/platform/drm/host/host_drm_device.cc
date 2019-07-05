@@ -32,32 +32,6 @@ HostDrmDevice::~HostDrmDevice() {
     observer.OnGpuThreadRetired();
 }
 
-// Setup the DRM device if we are using the ServiceManager.
-void HostDrmDevice::AsyncStartDrmDevice(const DrmDeviceConnector& connector) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
-
-  // We bind here using the provided connector object.
-  if (!connector.BindableNow())
-    return;
-
-  connector.BindInterfaceDrmDevice(&drm_device_ptr_);
-
-  // Bind the cursor interface pointers.
-  ui::ozone::mojom::DeviceCursorAssociatedPtr cursor_ptr_ui, cursor_ptr_io;
-  drm_device_ptr_->GetDeviceCursor(mojo::MakeRequest(&cursor_ptr_ui));
-
-  // This interface pointer is bound on the wrong thread. But that's OK because
-  // we'll re-bind it the first time that it's used from the I/O thread in
-  // HostCursorProxy.
-  drm_device_ptr_->GetDeviceCursor(mojo::MakeRequest(&cursor_ptr_io));
-
-  // Stash the cursor_proxy so that we can install it in the callback.
-  cursor_proxy_ = std::make_unique<HostCursorProxy>(std::move(cursor_ptr_ui),
-                                                    std::move(cursor_ptr_io));
-
-  OnDrmServiceStarted();
-}
-
 // TODO(rjkroege): Remove the need for this entry point.
 void HostDrmDevice::BlockingStartDrmDevice() {
   // Wait until startup related tasks posted to this thread that must precede
