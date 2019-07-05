@@ -62652,6 +62652,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="YouTubeRewriteStatus">
+  <obsolete>
+    Removed from code 07/2019.
+  </obsolete>
   <int value="0" label="Success">Embed was properly rewritten.</int>
   <int value="1" label="Success, params were rewritten">
     Embed was rewritten but the params had to be fixed.
