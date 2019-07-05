@@ -4543,8 +4543,8 @@ static INLINE int skip_gm_frame(AV1_COMMON *const cm, int ref_frame) {
 static void set_default_interp_skip_flags(AV1_COMP *cpi) {
   const int num_planes = av1_num_planes(&cpi->common);
   cpi->default_interp_skip_flags = (num_planes == 1)
-                                       ? DEFAULT_LUMA_INTERP_SKIP_FLAG
-                                       : DEFAULT_INTERP_SKIP_FLAG;
+                                       ? INTERP_SKIP_LUMA_EVAL_CHROMA
+                                       : INTERP_SKIP_LUMA_SKIP_CHROMA;
 }
 
 static void encode_frame_internal(AV1_COMP *cpi) {

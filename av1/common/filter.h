@@ -45,6 +45,13 @@ enum {
   USE_8_TAPS,
 } UENUM1BYTE(SUBPEL_SEARCH_TYPE);
 
+enum {
+  INTERP_EVAL_LUMA_EVAL_CHROMA = 0,
+  INTERP_SKIP_LUMA_EVAL_CHROMA,
+  INTERP_EVAL_INVALID,
+  INTERP_SKIP_LUMA_SKIP_CHROMA,
+} UENUM1BYTE(INTERP_EVAL_PLANE);
+
 // Pack two InterpFilter's into a uint32_t: since there are at most 10 filters,
 // we can use 16 bits for each and have more than enough space. This reduces
 // argument passing and unifies the operation of setting a (pair of) filters.

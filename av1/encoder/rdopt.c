@@ -8100,6 +8100,29 @@ static INLINE int get_switchable_rate(MACROBLOCK *const x,
   return SWITCHABLE_INTERP_RATE_FACTOR * inter_filter_cost;
 }
 
+// Build inter predictor and calculate model rd
+// for a given plane.
+static INLINE void interp_model_rd_eval(
+    MACROBLOCK *const x, const AV1_COMP *const cpi, BLOCK_SIZE bsize,
+    int mi_row, int mi_col, const BUFFER_SET *const orig_dst, int plane_from,
+    int plane_to, RD_STATS *rd_stats, int is_skip_build_pred) {
+  const AV1_COMMON *cm = &cpi->common;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  RD_STATS tmp_rd_stats;
+
+  // Skip inter predictor if the predictor is already avilable.
+  if (!is_skip_build_pred)
+    av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
+                                  plane_from, plane_to);
+
+  model_rd_sb_fn[MODELRD_TYPE_INTERP_FILTER](
+      cpi, bsize, x, xd, plane_from, plane_to, mi_row, mi_col,
+      &tmp_rd_stats.rate, &tmp_rd_stats.dist, &tmp_rd_stats.skip,
+      &tmp_rd_stats.sse, NULL, NULL, NULL);
+
+  av1_merge_rd_stats(rd_stats, &tmp_rd_stats);
+}
+
 // calculate the rdcost of given interpolation_filter
 static INLINE int64_t interpolation_filter_rd(
     MACROBLOCK *const x, const AV1_COMP *const cpi,
@@ -8116,7 +8139,7 @@ static INLINE int64_t interpolation_filter_rd(
 
   // Initialize rd_stats structures to default values.
   av1_init_rd_stats(&this_rd_stats_luma);
-  av1_init_rd_stats(&this_rd_stats);
+  this_rd_stats = *rd_stats_luma;
   const int_interpfilters last_best = mbmi->interp_filters;
   mbmi->interp_filters = filter_sets[filter_idx];
   const int tmp_rs =
@@ -8138,28 +8161,33 @@ static INLINE int64_t interpolation_filter_rd(
   assert((rd_stats->skip == 0) || (rd_stats->skip == 1));
   assert((skip_pred >= 0) && (skip_pred <= cpi->default_interp_skip_flags));
 
-  if (skip_pred != cpi->default_interp_skip_flags) {
-    if (skip_pred != DEFAULT_LUMA_INTERP_SKIP_FLAG) {
-      av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
-                                    AOM_PLANE_Y, AOM_PLANE_Y);
+  // When skip pred is equal to default_interp_skip_flags,
+  // skip both luma and chroma MC.
+  // For mono-chrome images:
+  // num_planes = 1 and cpi->default_interp_skip_flags = 1,
+  // skip_pred = 1: skip both luma and chroma
+  // skip_pred = 0: Evaluate luma and as num_planes=1,
+  // skip chroma evaluation
+  int tmp_skip_pred = (skip_pred == cpi->default_interp_skip_flags)
+                          ? INTERP_SKIP_LUMA_SKIP_CHROMA
+                          : skip_pred;
+
+  switch (tmp_skip_pred) {
+    case INTERP_EVAL_LUMA_EVAL_CHROMA:
+      // skip_pred = 0: Evaluate both luma and chroma.
+      // Luma MC
+      interp_model_rd_eval(x, cpi, bsize, mi_row, mi_col, orig_dst, AOM_PLANE_Y,
+                           AOM_PLANE_Y, &this_rd_stats_luma, 0);
+      this_rd_stats = this_rd_stats_luma;
 #if CONFIG_COLLECT_RD_STATS == 3
       RD_STATS rd_stats_y;
       pick_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col,
                             INT64_MAX);
       PrintPredictionUnitStats(cpi, tile_data, x, &rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 3
-      model_rd_sb_fn[MODELRD_TYPE_INTERP_FILTER](
-          cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &this_rd_stats_luma.rate,
-          &this_rd_stats_luma.dist, &this_rd_stats_luma.skip,
-          &this_rd_stats_luma.sse, NULL, NULL, NULL);
-      this_rd_stats = this_rd_stats_luma;
-    } else {
-      // only luma MC is skipped
-      this_rd_stats = *rd_stats_luma;
-    }
-    if (num_planes > 1) {
-      int64_t this_dist = 0, this_skip_sse = 0;
-      int this_rate = 0, this_skip_sb = 1;
+    case INTERP_SKIP_LUMA_EVAL_CHROMA:
+      // skip_pred = 1: skip luma evaluation (retain previous best luma stats)
+      // and do chroma evaluation.
       for (int plane = 1; plane < num_planes; ++plane) {
         int64_t tmp_rd =
             RDCOST(x->rdmult, tmp_rs + this_rd_stats.rate, this_rd_stats.dist);
@@ -8167,18 +8195,16 @@ static INLINE int64_t interpolation_filter_rd(
           mbmi->interp_filters = last_best;
           return 0;
         }
-        av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
-                                      plane, plane);
-        model_rd_sb_fn[MODELRD_TYPE_INTERP_FILTER](
-            cpi, bsize, x, xd, plane, plane, mi_row, mi_col, &this_rate,
-            &this_dist, &this_skip_sb, &this_skip_sse, NULL, NULL, NULL);
-        av1_accumulate_rd_stats(&this_rd_stats, this_dist, this_rate,
-                                this_skip_sb, this_skip_sse, 0);
+        interp_model_rd_eval(x, cpi, bsize, mi_row, mi_col, orig_dst, plane,
+                             plane, &this_rd_stats, 0);
       }
-    }
-  } else {
-    // both luma and chroma MC is skipped
-    this_rd_stats = *rd_stats;
+      break;
+    case INTERP_SKIP_LUMA_SKIP_CHROMA:
+      // both luma and chroma evaluation is skipped
+      this_rd_stats = *rd_stats;
+      break;
+    case INTERP_EVAL_INVALID:
+    default: assert(1); return 0;
   }
   int64_t tmp_rd =
       RDCOST(x->rdmult, tmp_rs + this_rd_stats.rate, this_rd_stats.dist);
@@ -8187,13 +8213,13 @@ static INLINE int64_t interpolation_filter_rd(
     *rd = tmp_rd;
     *switchable_rate = tmp_rs;
     if (skip_pred != cpi->default_interp_skip_flags) {
-      if (skip_pred == 0) {
+      if (skip_pred == INTERP_EVAL_LUMA_EVAL_CHROMA) {
         // Overwrite the data as current filter is the best one
         *rd_stats_luma = this_rd_stats_luma;
         *rd_stats = this_rd_stats;
         // As luma MC data is computed, no need to recompute after the search
         x->recalc_luma_mc_data = 0;
-      } else if (skip_pred == DEFAULT_LUMA_INTERP_SKIP_FLAG) {
+      } else if (skip_pred == INTERP_SKIP_LUMA_EVAL_CHROMA) {
         // As luma MC data is not computed, update of luma data can be skipped
         *rd_stats = this_rd_stats;
         // As luma MC data is not recomputed and current filter is the best,
@@ -8553,35 +8579,30 @@ static int64_t interpolation_filter_search(
   switchable_ctx[1] = av1_get_pred_context_switchable_interp(xd, 1);
   *switchable_rate =
       get_switchable_rate(x, mbmi->interp_filters, switchable_ctx);
-  if (!(*skip_build_pred)) {
-    av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize, 0,
-                                  av1_num_planes(cm) - 1);
-    *skip_build_pred = 1;
-  }
+
+  // Do MC evaluation for default filter_type.
+  // Luma MC
+  interp_model_rd_eval(x, cpi, bsize, mi_row, mi_col, orig_dst, AOM_PLANE_Y,
+                       AOM_PLANE_Y, &rd_stats_luma, *skip_build_pred);
 
 #if CONFIG_COLLECT_RD_STATS == 3
   RD_STATS rd_stats_y;
   pick_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
   PrintPredictionUnitStats(cpi, tile_data, x, &rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 3
-  {
-    model_rd_sb_fn[MODELRD_TYPE_INTERP_FILTER](
-        cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &rd_stats_luma.rate,
-        &rd_stats_luma.dist, &rd_stats_luma.skip, &rd_stats_luma.sse, NULL,
-        NULL, NULL);
-    if (num_planes > 1) {
-      model_rd_sb_fn[MODELRD_TYPE_INTERP_FILTER](
-          cpi, bsize, x, xd, 1, num_planes - 1, mi_row, mi_col, &rd_stats.rate,
-          &rd_stats.dist, &rd_stats.skip, &rd_stats.sse, NULL, NULL, NULL);
-    }
+  // Chroma MC
+  if (num_planes > 1)
+    interp_model_rd_eval(x, cpi, bsize, mi_row, mi_col, orig_dst, AOM_PLANE_U,
+                         AOM_PLANE_V, &rd_stats, *skip_build_pred);
+  *skip_build_pred = 1;
 
-    av1_merge_rd_stats(&rd_stats, &rd_stats_luma);
+  av1_merge_rd_stats(&rd_stats, &rd_stats_luma);
 
-    assert(rd_stats.rate >= 0);
+  assert(rd_stats.rate >= 0);
 
-    *rd = RDCOST(x->rdmult, *switchable_rate + rd_stats.rate, rd_stats.dist);
-    x->pred_sse[ref_frame] = (unsigned int)(rd_stats_luma.sse >> 4);
-  }
+  *rd = RDCOST(x->rdmult, *switchable_rate + rd_stats.rate, rd_stats.dist);
+  x->pred_sse[ref_frame] = (unsigned int)(rd_stats_luma.sse >> 4);
+
   if (assign_filter != SWITCHABLE || match_found_idx != -1) {
     return 0;
   }
