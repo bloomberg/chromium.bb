@@ -57,49 +57,85 @@ enum ErrorType {
   ERROR_COUNT = 21;
 }
 
+// Error codes returned from ValidateConfig. These values are written to logs.
+// New enum values can be added, but existing enums must never be renumbered or
+// deleted and reused.
+enum ConfigErrorCode {
+  // Configuration is valid.
+  CONFIG_ERROR_NONE = 0;
+  // e.g. realm = { ... [somesection] ... }
+  CONFIG_ERROR_SECTION_NESTED_IN_GROUP = 1;
+  // Expected "[section]"
+  CONFIG_ERROR_SECTION_SYNTAX = 2;
+  // Expected '{' on new line after "key = "
+  CONFIG_ERROR_EXPECTED_OPENING_CURLY_BRACE = 3;
+  // Too many closing curly braces '}'
+  CONFIG_ERROR_EXTRA_CURLY_BRACE = 4;
+  // Expected "key = ..."
+  CONFIG_ERROR_RELATION_SYNTAX = 5;
+  // Non-whitelisted key used
+  CONFIG_ERROR_KEY_NOT_SUPPORTED = 6;
+  // Non-whitelisted section used
+  CONFIG_ERROR_SECTION_NOT_SUPPORTED = 7;
+  // The Kerberos library failed to parse the configuration.
+  CONFIG_ERROR_KRB5_FAILED_TO_PARSE = 8;
+  // Should be the last. Increase when adding new enum values.
+  CONFIG_ERROR_COUNT = 9;
+}
+
+enum ClearMode {
+  // Remove all accounts.
+  CLEAR_ALL = 0;
+  // Remove all unmanaged accounts, leave managed accounts untouched.
+  CLEAR_ONLY_UNMANAGED_ACCOUNTS = 1;
+  // Remove previously remembered passwords for unmanaged accounts.
+  CLEAR_ONLY_UNMANAGED_REMEMBERED_PASSWORDS = 2;
+}
+
 // Message sent to Chrome by authpolicyd as a response to a successful
 // GetUserKerberosFiles call.
 message KerberosFiles {
   // Kerberos credential cache.
   optional bytes krb5cc = 1;
-  // Kerberos configuration file.
+  // Kerberos configuration data.
   optional bytes krb5conf = 2;
 }
 
 message Account {
   // Principal name (user@REALM.COM). Accounts are keyed by principal name.
   optional string principal_name = 1;
-
-  // Kerberos configuration file. Not set if the configuration file does not
+  // Kerberos configuration data. Not set if the configuration file does not
   // exist or some error occurred trying to read it.
   optional bytes krb5conf = 2;
-
   // For how many seconds the TGT is still valid. A value of zero means that the
   // ticket has expired. Not set if the ticket does not exist or some error
   // occurred trying to read it.
   optional int64 tgt_validity_seconds = 3;
-
   // For how many seconds the TGT is still renewable. A value of zero means that
   // the ticket cannot be renewed anymore. Not set if the ticket does not exist
   // or some error occurred trying to read it.
   optional int64 tgt_renewal_seconds = 4;
-
   // Whether the account is managed by policy.
   optional bool is_managed = 5;
-
   // Whether there's a password stored on disk for this account.
   optional bool password_was_remembered = 6;
-
   // Whether the account uses the Chrome OS login password for authentication.
   optional bool use_login_password = 7;
 
   // TODO(https://crbug.com/952239): Set additional properties.
 }
 
+// Contains error information from config validation.
+message ConfigErrorInfo {
+  // Error code. Set to CONFIG_ERROR_NONE if there was no error.
+  optional ConfigErrorCode code = 1;
+  // Line index (0-based) where the error occurred.
+  optional int32 line_index = 2;
+}
+
 message AddAccountRequest {
   // Principal name of the account to add (user@REALM.COM).
   optional string principal_name = 1;
-
   // Whether the account is managed by policy.
   optional bool is_managed = 2;
 }
@@ -117,17 +153,6 @@ message RemoveAccountRequest {
 message RemoveAccountResponse {
   // Response status.
   optional ErrorType error = 1;
-}
-
-enum ClearMode {
-  // Remove all accounts.
-  CLEAR_ALL = 0;
-
-  // Remove all unmanaged accounts, leave managed accounts untouched.
-  CLEAR_ONLY_UNMANAGED_ACCOUNTS = 1;
-
-  // Remove previously remembered passwords for unmanaged accounts.
-  CLEAR_ONLY_UNMANAGED_REMEMBERED_PASSWORDS = 2;
 }
 
 message ClearAccountsRequest {
@@ -154,7 +179,7 @@ message ListAccountsResponse {
 message SetConfigRequest {
   // Principal name of the account to remove (user@REALM.COM).
   optional string principal_name = 1;
-  // Kerberos configuration file to set.
+  // Kerberos configuration data to set.
   optional string krb5conf = 2;
 }
 
@@ -166,11 +191,9 @@ message SetConfigResponse {
 message AcquireKerberosTgtRequest {
   // Principal name of the account to acquire a ticket for (user@REALM.COM).
   optional string principal_name = 1;
-
   // Whether the daemon should remember the password (passed separately in a
   // file descriptor).
   optional bool remember_password = 2;
-
   // Whether to use the Chrome OS login password for authentication. The
   // password file descriptor (passed as D-Bus param) is ignored in this case.
   optional bool use_login_password = 3;
