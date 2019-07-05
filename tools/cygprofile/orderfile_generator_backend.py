@@ -317,6 +317,19 @@ class ClankCompiler(object):
         ['ninja', '-C', os.path.join(self._out_dir, 'Release'),
          '-j' + str(self._jobs), '-l' + str(self._max_load), target])
 
+  def ForceRelink(self):
+    """Forces libchrome.so or libmonochrome.so to be re-linked.
+
+    With partitioned libraries enabled, deleting these library files does not
+    guarantee they'll be recreated by the linker (they may simply be
+    re-extracted from a combined library). To be safe, touch a source file
+    instead. See http://crbug.com/972701 for more explanation.
+    """
+    file_to_touch = os.path.join(constants.DIR_SOURCE_ROOT, 'chrome', 'browser',
+                              'chrome_browser_main_android.cc')
+    assert os.path.exists(file_to_touch)
+    self._step_recorder.RunCommand(['touch', file_to_touch])
+
   def CompileChromeApk(self, instrumented, use_call_graph, force_relink=False):
     """Builds a Chrome.apk either with or without order_profiling on.
 
@@ -326,7 +339,7 @@ class ClankCompiler(object):
       force_relink: Whether libchromeview.so should be re-created.
     """
     if force_relink:
-      self._step_recorder.RunCommand(['rm', '-rf', self.lib_chrome_so])
+      self.ForceRelink()
     self.Build(instrumented, use_call_graph, self._apk_target)
 
   def CompileLibchrome(self, instrumented, use_call_graph, force_relink=False):
@@ -338,7 +351,7 @@ class ClankCompiler(object):
       force_relink: (bool) Whether libchrome.so should be re-created.
     """
     if force_relink:
-      self._step_recorder.RunCommand(['rm', '-rf', self.lib_chrome_so])
+      self.ForceRelink()
     self.Build(instrumented, use_call_graph, self._libchrome_target)
 
 
