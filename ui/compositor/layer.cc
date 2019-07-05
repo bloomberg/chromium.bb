@@ -40,9 +40,10 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/interpolated_transform.h"
 
+namespace ui {
 namespace {
 
-const ui::Layer* GetRoot(const ui::Layer* layer) {
+const Layer* GetRoot(const Layer* layer) {
   // Parent walk cannot be done on a layer that is being used as a mask. Get the
   // layer to which this layer is a mask of.
   if (layer->layer_mask_back_link())
@@ -64,8 +65,6 @@ void CheckSnapped(float snapped_position) {
 #endif
 
 }  // namespace
-
-namespace ui {
 
 class Layer::LayerMirror : public LayerDelegate, LayerObserver {
  public:
@@ -304,13 +303,20 @@ void Layer::SetShowReflectedLayerSubtree(Layer* subtree_reflected_layer) {
   DCHECK(subtree_reflected_layer);
   DCHECK_EQ(type_, LAYER_SOLID_COLOR);
 
+  if (subtree_reflected_layer_ == subtree_reflected_layer)
+    return;
+
   scoped_refptr<cc::MirrorLayer> new_layer =
       cc::MirrorLayer::Create(subtree_reflected_layer->cc_layer_);
   SwitchToLayer(new_layer);
   mirror_layer_ = std::move(new_layer);
-  gfx::Rect bounds = bounds_;
-  bounds.set_size(subtree_reflected_layer->bounds().size());
-  SetBounds(bounds);
+
+  subtree_reflected_layer_ = subtree_reflected_layer;
+  auto insert_pair =
+      subtree_reflected_layer_->subtree_reflecting_layers_.insert(this);
+  DCHECK(insert_pair.second);
+
+  MatchLayerSize(subtree_reflected_layer_);
 
   RecomputeDrawsContentAndUVRect();
 }
@@ -735,6 +741,13 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
     animator_->StopAnimatingProperty(LayerAnimationElement::TRANSFORM);
     animator_->StopAnimatingProperty(LayerAnimationElement::OPACITY);
     animator_->SwitchToLayer(new_layer);
+  }
+
+  if (subtree_reflected_layer_) {
+    size_t result =
+        subtree_reflected_layer_->subtree_reflecting_layers_.erase(this);
+    DCHECK_EQ(1u, result);
+    subtree_reflected_layer_ = nullptr;
   }
 
   if (texture_layer_.get())
@@ -1357,6 +1370,9 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
     if (mirror_dest->sync_bounds_with_source_)
       mirror_dest->SetBounds(bounds);
   }
+
+  for (auto* reflecting_layer : subtree_reflecting_layers_)
+    reflecting_layer->MatchLayerSize(this);
 }
 
 void Layer::SetTransformFromAnimation(const gfx::Transform& transform,
@@ -1578,6 +1594,13 @@ void Layer::CreateSurfaceLayerIfNecessary() {
   new_layer->SetSurfaceHitTestable(true);
   SwitchToLayer(new_layer);
   surface_layer_ = new_layer;
+}
+
+void Layer::MatchLayerSize(const Layer* layer) {
+  gfx::Rect new_bounds = bounds_;
+  gfx::Size new_size = layer->bounds().size();
+  new_bounds.set_size(new_size);
+  SetBounds(new_bounds);
 }
 
 }  // namespace ui

@@ -1573,6 +1573,11 @@ TEST_F(LayerWithNullDelegateTest, SetShowReflectedLayerSubtreeBounds) {
   reflecting_layer->SetShowReflectedLayerSubtree(reflected_layer.get());
   EXPECT_EQ(reflecting_bounds.origin(), reflecting_layer->bounds().origin());
   EXPECT_EQ(reflected_bounds.size(), reflecting_layer->bounds().size());
+
+  const gfx::Rect new_reflected_bounds(10, 10, 30, 30);
+  reflected_layer->SetBounds(new_reflected_bounds);
+  EXPECT_EQ(reflecting_bounds.origin(), reflecting_layer->bounds().origin());
+  EXPECT_EQ(new_reflected_bounds.size(), reflecting_layer->bounds().size());
 }
 
 void ExpectRgba(int x, int y, SkColor expected_color, SkColor actual_color) {

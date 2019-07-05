@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -588,6 +589,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   void CreateSurfaceLayerIfNecessary();
 
+  // Changes the size of |this| to match that of |layer|.
+  void MatchLayerSize(const Layer* layer);
+
   const LayerType type_;
 
   Compositor* compositor_;
@@ -598,6 +602,12 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   std::vector<Layer*> children_;
 
   std::vector<std::unique_ptr<LayerMirror>> mirrors_;
+
+  // The layer being reflected with its subtree by this one, if any.
+  Layer* subtree_reflected_layer_ = nullptr;
+
+  // List of layers reflecting this layer and its subtree, if any.
+  base::flat_set<Layer*> subtree_reflecting_layers_;
 
   // If true, and this is a destination mirror layer, changes to the bounds of
   // the source layer are propagated to this mirror layer.
