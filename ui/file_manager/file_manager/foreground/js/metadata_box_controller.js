@@ -110,8 +110,7 @@ MetadataBoxController.prototype.updateView_ = function(event) {
   this.previousEntry_ = entry;
 
   if (!entry) {
-    // Do not clear isSizeLoading and size fields when the entry is not changed.
-    this.metadataBox_.clear(isSameEntry);
+    this.metadataBox_.clear(false);
     return;
   }
 
