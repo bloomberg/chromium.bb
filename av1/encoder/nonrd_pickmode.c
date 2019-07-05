@@ -1040,7 +1040,7 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   unsigned int sse_y = UINT_MAX;
   unsigned int var_y = UINT_MAX;
   const int *const rd_threshes = cpi->rd.threshes[mi->segment_id][bsize];
-  const int *const rd_thresh_freq_fact = tile_data->thresh_freq_fact[bsize];
+  const int *const rd_thresh_freq_fact = x->thresh_freq_fact[bsize];
 
   InterpFilter filter_ref;
   int const_motion[REF_FRAMES] = { 0 };

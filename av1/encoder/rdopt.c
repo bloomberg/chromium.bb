@@ -11641,7 +11641,6 @@ static void search_palette_mode(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
 
 static void init_inter_mode_search_state(InterModeSearchState *search_state,
                                          const AV1_COMP *cpi,
-                                         const TileDataEnc *tile_data,
                                          const MACROBLOCK *x, BLOCK_SIZE bsize,
                                          int64_t best_rd_so_far) {
   search_state->best_rd = best_rd_so_far;
@@ -11674,7 +11673,7 @@ static void init_inter_mode_search_state(InterModeSearchState *search_state,
   const int *const rd_threshes = cpi->rd.threshes[segment_id][bsize];
   for (int i = LAST_NEW_MV_INDEX + 1; i < MAX_MODES; ++i)
     search_state->mode_threshold[i] =
-        ((int64_t)rd_threshes[i] * tile_data->thresh_freq_fact[bsize][i]) >> 5;
+        ((int64_t)rd_threshes[i] * x->thresh_freq_fact[bsize][i]) >> 5;
 
   search_state->best_intra_mode = DC_PRED;
   search_state->best_intra_rd = INT64_MAX;
@@ -12583,8 +12582,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   mode_skip_mask_t mode_skip_mask;
 
   InterModeSearchState search_state;
-  init_inter_mode_search_state(&search_state, cpi, tile_data, x, bsize,
-                               best_rd_so_far);
+  init_inter_mode_search_state(&search_state, cpi, x, bsize, best_rd_so_far);
   INTERINTRA_MODE interintra_modes[REF_FRAMES] = {
     INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES,
     INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES, INTERINTRA_MODES
@@ -13058,9 +13056,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
          !is_inter_block(&search_state.best_mbmode));
 
   if (!cpi->rc.is_src_frame_alt_ref)
-    av1_update_rd_thresh_fact(cm, tile_data->thresh_freq_fact,
-                              sf->adaptive_rd_thresh, bsize,
-                              search_state.best_mode_index);
+    av1_update_rd_thresh_fact(cm, x->thresh_freq_fact, sf->adaptive_rd_thresh,
+                              bsize, search_state.best_mode_index);
 
   // macroblock modes
   *mbmi = search_state.best_mbmode;
@@ -13220,8 +13217,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   uint8_t motion_mode_skip_mask = 0;  // second pass of single ref modes
 
   InterModeSearchState search_state;
-  init_inter_mode_search_state(&search_state, cpi, tile_data, x, bsize,
-                               best_rd_so_far);
+  init_inter_mode_search_state(&search_state, cpi, x, bsize, best_rd_so_far);
   HandleInterModeArgs args = {
     { NULL },  { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
     { NULL },  { MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1, MAX_SB_SIZE >> 1 },
@@ -13635,9 +13631,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
          !is_inter_block(&search_state.best_mbmode));
 
   if (!cpi->rc.is_src_frame_alt_ref)
-    av1_update_rd_thresh_fact(cm, tile_data->thresh_freq_fact,
-                              sf->adaptive_rd_thresh, bsize,
-                              search_state.best_mode_index);
+    av1_update_rd_thresh_fact(cm, x->thresh_freq_fact, sf->adaptive_rd_thresh,
+                              bsize, search_state.best_mode_index);
 
   // macroblock modes
   *mbmi = search_state.best_mbmode;
@@ -13694,6 +13689,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   const int64_t distortion2 = 0;
   (void)mi_row;
   (void)mi_col;
+  (void)tile_data;
 
   av1_collect_neighbors_ref_counts(xd);
 
@@ -13785,8 +13781,8 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   assert((cm->interp_filter == SWITCHABLE) ||
          (cm->interp_filter == mbmi->interp_filters.as_filters.y_filter));
 
-  av1_update_rd_thresh_fact(cm, tile_data->thresh_freq_fact,
-                            cpi->sf.adaptive_rd_thresh, bsize, THR_GLOBALMV);
+  av1_update_rd_thresh_fact(cm, x->thresh_freq_fact, cpi->sf.adaptive_rd_thresh,
+                            bsize, THR_GLOBALMV);
 
   av1_zero(best_pred_diff);
 

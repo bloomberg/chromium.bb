@@ -16,6 +16,7 @@
 #include "av1/common/entropy.h"
 #include "av1/common/mvref_common.h"
 
+#include "av1/encoder/enc_enums.h"
 #if !CONFIG_REALTIME_ONLY
 #include "av1/encoder/partition_cnn_weights.h"
 #endif
@@ -419,6 +420,7 @@ struct macroblock {
   float cnn_buffer[CNN_OUT_BUF_SIZE];
   float log_q;
 #endif
+  int thresh_freq_fact[BLOCK_SIZES_ALL][MAX_MODES];
 };
 
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
