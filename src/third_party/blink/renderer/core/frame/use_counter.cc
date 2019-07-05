@@ -1235,6 +1235,7 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
     case CSSPropertyBbRubberbandGroupDelimiter:
       return 639;
 
+
     // patch section: lcd-text background (returns 640)
     case CSSPropertyBbLcdBackgroundColor:
       return 640;
