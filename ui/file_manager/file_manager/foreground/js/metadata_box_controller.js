@@ -145,15 +145,12 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
   const type = FileType.getType(entry).type;
   const item = items[0];
 
-  this.metadataBox_.type = type;
-  // For directory, item.size is always -1.
-  if (item.size && !entry.isDirectory) {
+  if (entry.isDirectory) {
+    const directory = /** @type {!DirectoryEntry} */ (entry);
+    this.setDirectorySize_(directory, isSameEntry);
+  } else if (item.size) {
     this.metadataBox_.size =
         this.fileMetadataFormatter_.formatSize(item.size, item.hosted);
-  }
-  if (entry.isDirectory) {
-    this.setDirectorySize_(
-        /** @type {!DirectoryEntry} */ (entry), isSameEntry);
   }
 
   this.updateModificationTime_(entry, isSameEntry, items);
@@ -169,6 +166,8 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
       this.metadataBox_.mediaMimeType = item.mediaMimeType || '';
     });
   }
+
+  this.metadataBox_.type = type;
 
   if (['image', 'video', 'audio'].includes(type)) {
     if (item.externalFileUrl || item.alternateUrl) {
