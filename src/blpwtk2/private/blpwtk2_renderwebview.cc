@@ -786,15 +786,23 @@ void RenderWebView::updateGeometry()
     // but needs to be allowed here:
     content::RenderViewImpl *rv =
             content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
-    content::RenderWidget *rw = rv->GetWidget();
 
-    rw->bbIgnoreSynchronizeVisualPropertiesIPC(false);
+    if (rv) {
+        content::RenderWidget *rw = rv->GetWidget();
 
-    dispatchToRenderWidget(
-            WidgetMsg_SynchronizeVisualProperties(d_renderWidgetRoutingId,
-                params));
+        rw->bbIgnoreSynchronizeVisualPropertiesIPC(false);
 
-    rw->bbIgnoreSynchronizeVisualPropertiesIPC(true);
+        dispatchToRenderWidget(
+                WidgetMsg_SynchronizeVisualProperties(d_renderWidgetRoutingId,
+                    params));
+
+        rw->bbIgnoreSynchronizeVisualPropertiesIPC(true);
+    }
+    else {
+        dispatchToRenderWidget(
+                WidgetMsg_SynchronizeVisualProperties(d_renderWidgetRoutingId,
+                    params));
+    }
 }
 
 void RenderWebView::updateFocus()
