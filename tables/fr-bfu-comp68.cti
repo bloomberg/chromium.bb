@@ -53,7 +53,7 @@ noback uplow \x03A7\x03C7 46-45-12345,45-12345 Χ,χ khi
 noback uplow \x03A8\x03C8 46-45-13456,45-13456 Ψ,ψ psi
 noback uplow \x03A9\x03C9 46-45-2456,45-2456 Ω,ω oméga
 noback sign \x03C2 45-234 ς var. sigma
-noback sign \x03D0 45-12 ϵ ϐ var. bêta
+noback sign \x03D0 45-12 ϐ var. bêta
 noback sign \x03D1 45-245 ϑ var. thêta
 noback sign \x03D2 46-45-136 ϒ var. upsilon majuscule
 noback sign \x03D5 45-124 ϕ var. phi
@@ -185,7 +185,7 @@ noback math \x2194 5-12456 ↔ flèche à gauche et droite
 # angle saillant : pas d'équivalence unicode pour la notation française courante (LaTex : widehat). voir \X2220
 noback math \X20D7 46-25 ⃗ vecteur
 # tenseur d'ordre n : séquence non reproductible: vecteur, lettre, exposant n ; braille : 46-25-4-1345 lettre
-noback math \X0305 456-25 ̅  mesure algébrique, congugué de...
+noback math \X0305 456-25 ̅  mesure algébrique, conjugué de...
 #unicode approprié ? noback math \X035D 4-4-25 ͝  arc sous-tendu par un angle rentrant (COMBINING DOUBLE BREVE)
 # angle rentrant : pas d'équivalence unicode pour la notation française courante
 # vecteur axial : pas d'équivalence unicode pour la flèche suscrite
