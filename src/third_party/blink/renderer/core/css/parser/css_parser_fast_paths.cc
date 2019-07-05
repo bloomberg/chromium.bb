@@ -866,9 +866,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyUserSelect:
       return value_id == CSSValueAuto || value_id == CSSValueNone ||
              value_id == CSSValueText || value_id == CSSValueAll;
-    case CSSPropertyRubberbandable: // auto | none | text | text-with-leading-tab
-      return value_id == CSSValueAuto || value_id == CSSValueNone || 
-             value_id == CSSValueText || value_id == CSSValueTextWithLeadingTab;
+    case CSSPropertyRubberbandable: // auto | none | text | text-with-tab
+      return value_id == CSSValueAuto || value_id == CSSValueNone ||
+             value_id == CSSValueText || value_id == CSSValueTextWithTab;
     case CSSPropertyWebkitWritingMode:
       return value_id >= CSSValueHorizontalTb && value_id <= CSSValueVerticalLr;
     case CSSPropertyWritingMode:

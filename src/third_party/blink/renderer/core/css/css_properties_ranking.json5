@@ -106,6 +106,8 @@
         "clip",
         "user-select",
         "rubberbandable",
+        "-bb-rubberband-empty-text",
+        "-bb-rubberband-group-delimiter",
         "border-bottom-width",
         "webkit-tap-highlight-color",
         "direction",
