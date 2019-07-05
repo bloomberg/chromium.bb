@@ -111,7 +111,7 @@ void jsimd_h2v1_fancy_upsample_neon(int max_v_samp_factor,
     unsigned outptr_offset = 1;
     uint8x16x2_t output_pixels;
 
-#if defined(__aarch64__) && defined(__clang__)
+#if defined(__aarch64__) && defined(__clang__) && !defined(__OPTIMIZE_SIZE__)
     /* Unrolling by four is beneficial on AArch64 as there are 16 additional */
     /* 128-bit SIMD registers to accommodate the extra data in flight. */
     #pragma clang loop unroll_count(4)
