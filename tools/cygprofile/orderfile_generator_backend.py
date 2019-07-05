@@ -589,7 +589,7 @@ class OrderfileGenerator(object):
     self._instrumented_out_dir = os.path.join(
         self._BUILD_ROOT, self._options.arch + '_instrumented_out')
     if self._options.use_call_graph:
-        self._instrumented_out_dir += '_call_graph'
+      self._instrumented_out_dir += '_call_graph'
 
     self._uninstrumented_out_dir = os.path.join(
         self._BUILD_ROOT, self._options.arch + '_uninstrumented_out')
@@ -669,6 +669,14 @@ class OrderfileGenerator(object):
     self._step_recorder.BeginStep('Generate Profile Data')
     files = []
     logging.getLogger().setLevel(logging.DEBUG)
+
+    if self._options.profile_save_dir:
+      # The directory must not preexist, to ensure purity of data. Check
+      # before profiling to save time.
+      if os.path.exists(self._options.profile_save_dir):
+        raise Exception('Profile save directory must not pre-exist')
+      os.makedirs(self._options.profile_save_dir)
+
     if self._options.system_health_orderfile:
       files = self._profiler.CollectSystemHealthProfile(
           self._compiler.chrome_apk)
@@ -1211,7 +1219,7 @@ def CreateArgumentParser():
 
 
 def CreateOrderfile(options, orderfile_updater_class=None):
-  """Creates an oderfile.
+  """Creates an orderfile.
 
   Args:
     options: As returned from optparse.OptionParser.parse_args()
