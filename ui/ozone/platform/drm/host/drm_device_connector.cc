@@ -41,10 +41,7 @@ DrmDeviceConnector::DrmDeviceConnector(
     scoped_refptr<HostDrmDevice> host_drm_device)
     : connector_(connector),
       service_name_(service_name),
-      host_drm_device_(host_drm_device),
-      ws_runner_(base::ThreadTaskRunnerHandle::IsSet()
-                     ? base::ThreadTaskRunnerHandle::Get()
-                     : nullptr) {}
+      host_drm_device_(host_drm_device) {}
 
 DrmDeviceConnector::~DrmDeviceConnector() = default;
 
@@ -76,37 +73,13 @@ void DrmDeviceConnector::OnGpuServiceLaunched(
   // We need to preserve |binder| to let us bind interfaces later.
   binder_callback_ = std::move(binder);
   host_id_ = host_id;
-  if (am_running_in_ws_mode()) {
-    ui::ozone::mojom::DrmDevicePtr drm_device_ptr_ui, drm_device_ptr_ws;
 
-    BindInterfaceDrmDevice(&drm_device_ptr_ui);
-    BindInterfaceDrmDevice(&drm_device_ptr_ws);
-
-    ws_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&HostDrmDevice::OnGpuServiceLaunched, host_drm_device_,
-                       std::move(drm_device_ptr_ws)));
-
-    ui_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&HostDrmDevice::OnGpuServiceLaunchedCompositor,
-                       host_drm_device_, std::move(drm_device_ptr_ui)));
-
-  } else {
-    ui::ozone::mojom::DrmDevicePtr drm_device_ptr_ui;
-
-    BindInterfaceDrmDevice(&drm_device_ptr_ui);
-
-    ui_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&HostDrmDevice::OnGpuServiceLaunched, host_drm_device_,
-                       std::move(drm_device_ptr_ui)));
-
-    ui_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&HostDrmDevice::OnGpuServiceLaunchedCompositor,
-                       host_drm_device_, std::move(drm_device_ptr_ui)));
-  }
+  ui::ozone::mojom::DrmDevicePtr drm_device_ptr;
+  BindInterfaceDrmDevice(&drm_device_ptr);
+  ui_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&HostDrmDevice::OnGpuServiceLaunched, host_drm_device_,
+                     drm_device_ptr.PassInterface()));
 }
 
 void DrmDeviceConnector::OnMessageReceived(const IPC::Message& message) {
