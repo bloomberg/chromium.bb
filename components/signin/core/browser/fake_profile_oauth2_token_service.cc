@@ -20,7 +20,6 @@ FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService(
     : ProfileOAuth2TokenService(user_prefs, std::move(delegate)) {
   OverrideAccessTokenManagerForTesting(
       std::make_unique<FakeOAuth2AccessTokenManager>(
-          this /* OAuth2TokenService* */,
           this /* OAuth2AccessTokenManager::Delegate* */));
 }
 

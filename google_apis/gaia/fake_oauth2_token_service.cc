@@ -10,7 +10,6 @@ FakeOAuth2TokenService::FakeOAuth2TokenService()
     : OAuth2TokenService(std::make_unique<FakeOAuth2TokenServiceDelegate>()) {
   OverrideAccessTokenManagerForTesting(
       std::make_unique<FakeOAuth2AccessTokenManager>(
-          this /* OAuth2TokenService* */,
           this /* OAuth2AccessTokenManager::Delegate* */));
 }
 
