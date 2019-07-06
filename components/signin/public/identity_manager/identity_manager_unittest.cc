@@ -140,15 +140,6 @@ class CustomFakeProfileOAuth2TokenService
   }
 
  private:
-  // OAuth2TokenService:
-  void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
-                                 const std::string& client_id,
-                                 const ScopeSet& scopes,
-                                 const std::string& access_token) override {
-    GetCustomAccessTokenManager()->InvalidateAccessTokenImpl(
-        account_id, client_id, scopes, access_token);
-  }
-
   CustomFakeOAuth2AccessTokenManager* GetCustomAccessTokenManager() {
     return static_cast<CustomFakeOAuth2AccessTokenManager*>(
         GetAccessTokenManager());
