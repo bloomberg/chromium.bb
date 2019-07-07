@@ -1151,6 +1151,8 @@ static INLINE void stack_push(int *stack, int *stack_size, int item) {
 }
 
 static INLINE int stack_pop(int *stack, int *stack_size) {
+  if (*stack_size <= 0) return -1;
+
   int item = stack[0];
   for (int i = 0; i < *stack_size; ++i) stack[i] = stack[i + 1];
   --*stack_size;
