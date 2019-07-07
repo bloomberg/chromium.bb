@@ -901,7 +901,7 @@ drm_output_find_special_plane(struct drm_backend *b, struct drm_output *output,
 
 		switch (type) {
 		case WDRM_PLANE_TYPE_CURSOR:
-			format = GBM_FORMAT_ARGB8888;
+			format = DRM_FORMAT_ARGB8888;
 			break;
 		case WDRM_PLANE_TYPE_PRIMARY:
 			/* We don't know what formats the primary plane supports
@@ -1425,10 +1425,10 @@ drm_output_init_pixman(struct drm_output *output, struct drm_backend *b)
 	uint32_t flags = 0;
 
 	switch (format) {
-		case GBM_FORMAT_XRGB8888:
+		case DRM_FORMAT_XRGB8888:
 			pixman_format = PIXMAN_x8r8g8b8;
 			break;
-		case GBM_FORMAT_RGB565:
+		case DRM_FORMAT_RGB565:
 			pixman_format = PIXMAN_r5g6b5;
 			break;
 		default:
@@ -3231,7 +3231,7 @@ drm_backend_create(struct weston_compositor *compositor,
 
 	compositor->backend = &b->base;
 
-	if (parse_gbm_format(config->gbm_format, GBM_FORMAT_XRGB8888, &b->gbm_format) < 0)
+	if (parse_gbm_format(config->gbm_format, DRM_FORMAT_XRGB8888, &b->gbm_format) < 0)
 		goto err_compositor;
 
 	/* Check if we run drm-backend using weston-launch */
