@@ -514,8 +514,7 @@ drm_output_set_cursor(struct drm_output_state *output_state)
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct drm_plane *plane = output->cursor_plane;
 	struct drm_plane_state *state;
-	int handle;
-	struct gbm_bo *bo;
+	uint32_t handle;
 
 	if (!plane)
 		return;
@@ -534,9 +533,8 @@ drm_output_set_cursor(struct drm_output_state *output_state)
 	assert(state->fb == output->gbm_cursor_fb[output->current_cursor]);
 	assert(!plane->state_cur->output || plane->state_cur->output == output);
 
+	handle = output->gbm_cursor_handle[output->current_cursor];
 	if (plane->state_cur->fb != state->fb) {
-		bo = state->fb->bo;
-		handle = gbm_bo_get_handle(bo).s32;
 		if (drmModeSetCursor(b->drm.fd, output->crtc_id, handle,
 				     b->cursor_width, b->cursor_height)) {
 			weston_log("failed to set cursor: %s\n",

@@ -1307,6 +1307,7 @@ drm_output_init_cursor_egl(struct drm_output *output, struct drm_backend *b)
 			gbm_bo_destroy(bo);
 			goto err;
 		}
+		output->gbm_cursor_handle[i] = gbm_bo_get_handle(bo).s32;
 	}
 
 	return 0;

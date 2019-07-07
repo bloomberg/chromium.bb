@@ -445,6 +445,7 @@ struct drm_output {
 	int disable_pending;
 	int dpms_off_pending;
 
+	uint32_t gbm_cursor_handle[2];
 	struct drm_fb *gbm_cursor_fb[2];
 	struct drm_plane *cursor_plane;
 	struct weston_view *cursor_view;
