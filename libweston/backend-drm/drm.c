@@ -47,7 +47,6 @@
 #include <xf86drmMode.h>
 #include <drm_fourcc.h>
 
-#include <gbm.h>
 #include <libudev.h>
 
 #include <libweston/libweston.h>

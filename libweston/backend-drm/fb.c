@@ -35,8 +35,6 @@
 #include <xf86drmMode.h>
 #include <drm_fourcc.h>
 
-#include <gbm.h>
-
 #include <libweston/libweston.h>
 #include <libweston/backend-drm.h>
 #include <libweston/pixel-formats.h>
