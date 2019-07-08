@@ -8,13 +8,13 @@ import { TestSpecID, TestCaseID } from './id.js';
 // One of the following:
 // - An actual .spec.ts file, as imported.
 // - A *filtered* list of cases from a single .spec.ts file.
-export interface TestSpecFile {
+interface TestSpecFile {
   readonly description: string;
   readonly g: RunCaseIterable;
 }
 
 // A shell object describing a directory (from its README.txt).
-export interface ReadmeFile {
+interface ReadmeFile {
   readonly description: string;
 }
 
@@ -177,9 +177,6 @@ export class TestLoader {
     testPrefix: string
   ): Promise<TestSpecFile> {
     const spec = (await this.fileLoader.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
-    if (!spec.g) {
-      return spec;
-    }
     return {
       description: spec.description,
       g: filterTestGroup(spec.g, testcase => testcase.name.startsWith(testPrefix)),
@@ -193,9 +190,6 @@ export class TestLoader {
     paramsMatch: ParamsAny | null
   ): Promise<TestSpecFile> {
     const spec = (await this.fileLoader.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
-    if (!spec.g) {
-      return spec;
-    }
     return {
       description: spec.description,
       g: filterTestGroup(
@@ -212,9 +206,6 @@ export class TestLoader {
     paramsExact: ParamsAny | null
   ): Promise<TestSpecFile> {
     const spec = (await this.fileLoader.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
-    if (!spec.g) {
-      return spec;
-    }
     return {
       description: spec.description,
       g: filterTestGroup(
