@@ -102,6 +102,12 @@ static INLINE int av1_superres_scaled(const AV1_COMMON *cm) {
   return !(cm->width == cm->superres_upscaled_width);
 }
 
+static INLINE int av1_coded_to_superres_mi(int mi_col, int denom) {
+  const int mi_col_sr =
+      (mi_col * denom + SCALE_NUMERATOR / 2) / SCALE_NUMERATOR;
+  return mi_col_sr;
+}
+
 #define UPSCALE_NORMATIVE_TAPS 8
 extern const int16_t av1_resize_filter_normative[1 << RS_SUBPEL_BITS]
                                                 [UPSCALE_NORMATIVE_TAPS];

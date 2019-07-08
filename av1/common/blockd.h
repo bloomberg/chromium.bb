@@ -1158,6 +1158,10 @@ static INLINE int av1_get_max_eob(TX_SIZE tx_size) {
   return tx_size_2d[tx_size];
 }
 
+static INLINE int av1_pixels_to_mi(int pixels) {
+  return ALIGN_POWER_OF_TWO(pixels, 3) >> MI_SIZE_LOG2;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

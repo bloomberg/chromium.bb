@@ -3639,8 +3639,9 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
     int64_t mc_count_base = 0;
     int row, col;
 
+    const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
     for (row = 0; row < cm->mi_rows; ++row) {
-      for (col = 0; col < cm->mi_cols; ++col) {
+      for (col = 0; col < mi_cols_sr; ++col) {
         TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
         intra_cost_base += this_stats->intra_cost;
         mc_dep_cost_base += this_stats->intra_cost + this_stats->mc_flow;

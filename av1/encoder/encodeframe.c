@@ -3480,6 +3480,7 @@ BEGIN_PARTITION_SEARCH:
 #if !CONFIG_REALTIME_ONLY
 static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
                             int mi_row, int mi_col, int orig_rdmult) {
+  AV1_COMMON *const cm = &cpi->common;
   assert(IMPLIES(cpi->gf_group.size > 0,
                  cpi->gf_group.index < cpi->gf_group.size));
   const int tpl_idx = cpi->gf_group.frame_disp_idx[cpi->gf_group.index];
@@ -3500,12 +3501,15 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
 
   int64_t mc_count = 0, mc_saved = 0;
   int mi_count = 0;
+  const int mi_col_sr =
+      av1_coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
+  const int mi_col_end_sr = av1_coded_to_superres_mi(
+      mi_col + mi_wide, cm->superres_scale_denominator);
+  const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
   for (row = mi_row; row < mi_row + mi_high; ++row) {
-    for (col = mi_col; col < mi_col + mi_wide; ++col) {
+    for (col = mi_col_sr; col < mi_col_end_sr; ++col) {
+      if (row >= cm->mi_rows || col >= mi_cols_sr) continue;
       TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
-
-      if (row >= cpi->common.mi_rows || col >= cpi->common.mi_cols) continue;
-
       intra_cost += this_stats->intra_cost;
       mc_dep_cost += this_stats->intra_cost + this_stats->mc_flow;
       mc_count += this_stats->mc_count;
@@ -3579,10 +3583,15 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
 
   int64_t mc_count = 0, mc_saved = 0;
   int mi_count = 0;
+  const int mi_col_sr =
+      av1_coded_to_superres_mi(mi_col, cm->superres_scale_denominator);
+  const int mi_col_end_sr = av1_coded_to_superres_mi(
+      mi_col + mi_wide, cm->superres_scale_denominator);
+  const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
   for (row = mi_row; row < mi_row + mi_high; ++row) {
-    for (col = mi_col; col < mi_col + mi_wide; ++col) {
+    for (col = mi_col_sr; col < mi_col_end_sr; ++col) {
+      if (row >= cm->mi_rows || col >= mi_cols_sr) continue;
       TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
-      if (row >= cm->mi_rows || col >= cm->mi_cols) continue;
       intra_cost += this_stats->intra_cost;
       mc_dep_cost += this_stats->intra_cost + this_stats->mc_flow;
       mc_count += this_stats->mc_count;
