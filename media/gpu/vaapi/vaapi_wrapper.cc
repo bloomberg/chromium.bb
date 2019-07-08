@@ -1379,9 +1379,10 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
   VASurfaceID va_surface_id = VA_INVALID_ID;
   {
     base::AutoLock auto_lock(*va_lock_);
-    VAStatus va_res =
-        vaCreateSurfaces(va_display_, va_format, size.width(), size.height(),
-                         &va_surface_id, 1, &va_attribs[0], va_attribs.size());
+    VAStatus va_res = vaCreateSurfaces(
+        va_display_, va_format, base::checked_cast<unsigned int>(size.width()),
+        base::checked_cast<unsigned int>(size.height()), &va_surface_id, 1,
+        &va_attribs[0], va_attribs.size());
     VA_SUCCESS_OR_RETURN(va_res, "Failed to create unowned VASurface", nullptr);
   }
 
@@ -1887,19 +1888,52 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
                                   std::vector<VASurfaceID>* va_surfaces) {
   DVLOG(2) << "Creating " << num_surfaces << " " << size.ToString()
            << " surfaces ";
-  DCHECK_NE(va_format, 0u);
+  DCHECK_NE(va_format, kInvalidVaRtFormat);
   DCHECK(va_surfaces->empty());
 
   va_surfaces->resize(num_surfaces);
   VAStatus va_res;
   {
     base::AutoLock auto_lock(*va_lock_);
-    va_res =
-        vaCreateSurfaces(va_display_, va_format, size.width(), size.height(),
-                         va_surfaces->data(), num_surfaces, NULL, 0);
+    va_res = vaCreateSurfaces(va_display_, va_format,
+                              base::checked_cast<unsigned int>(size.width()),
+                              base::checked_cast<unsigned int>(size.height()),
+                              va_surfaces->data(), num_surfaces, NULL, 0);
   }
   VA_LOG_ON_ERROR(va_res, "vaCreateSurfaces failed");
   return va_res == VA_STATUS_SUCCESS;
+}
+
+std::unique_ptr<ScopedVASurface> VaapiWrapper::CreateScopedVASurface(
+    unsigned int va_rt_format,
+    const gfx::Size& size) {
+  if (kInvalidVaRtFormat == va_rt_format) {
+    LOG(ERROR) << "Invalid VA RT format to CreateScopedVASurface";
+    return nullptr;
+  }
+
+  if (size.IsEmpty()) {
+    LOG(ERROR) << "Invalid visible size input to CreateScopedVASurface";
+    return nullptr;
+  }
+
+  base::AutoLock auto_lock(*va_lock_);
+  VASurfaceID va_surface_id = VA_INVALID_ID;
+  VAStatus va_res = vaCreateSurfaces(
+      va_display_, va_rt_format, base::checked_cast<unsigned int>(size.width()),
+      base::checked_cast<unsigned int>(size.height()), &va_surface_id, 1u, NULL,
+      0);
+  VA_SUCCESS_OR_RETURN(va_res, "vaCreateSurfaces failed", nullptr);
+
+  DCHECK_NE(VA_INVALID_ID, va_surface_id)
+      << "Invalid VA surface id after vaCreateSurfaces";
+
+  auto scoped_va_surface = std::make_unique<ScopedVASurface>(
+      va_lock_, va_display_, va_surface_id, size, va_rt_format);
+
+  DCHECK(scoped_va_surface);
+  DCHECK(scoped_va_surface->IsValid());
+  return scoped_va_surface;
 }
 
 void VaapiWrapper::DestroySurfaces(std::vector<VASurfaceID> va_surfaces) {
