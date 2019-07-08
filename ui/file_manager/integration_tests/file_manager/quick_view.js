@@ -94,11 +94,30 @@
    * @return {string} text Text value in the field name.
    */
   async function getQuickViewMetadataBoxField(appId, name) {
+    let filesMetadataBox = 'files-metadata-box';
+
+    /**
+     * <files-metadata-box> field rendering is async. The field name has been
+     * rendered when the 'metadata' attribute indicates that.
+     */
+    switch (name) {
+      case 'Size':
+        filesMetadataBox += '[metadata~="size"]';
+        break;
+      case 'Modified Time':
+      case 'Type':
+        filesMetadataBox += '[metadata~="mime"]';
+        break;
+      default:
+        filesMetadataBox += '[metadata~="meta"]';
+        break;
+    }
+
     /**
      * The <files-metadata-box> element resides in the #quick-view shadow DOM
      * as a child of the #dialog element.
      */
-    let quickViewQuery = ['#quick-view', '#dialog[open] files-metadata-box'];
+    let quickViewQuery = ['#quick-view', '#dialog[open] ' + filesMetadataBox];
 
     /**
      * The <files-metadata-entry key="name"> element resides in the shadow DOM
