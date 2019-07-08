@@ -85,7 +85,5 @@ bool BadgeServiceImpl::IsInApp() {
     return false;
   web_app::AppBrowserController* app_controller = browser->app_controller();
   return app_controller &&
-         extensions::IsSameScope(app_controller->GetAppLaunchURL(),
-                                 web_contents_->GetLastCommittedURL(),
-                                 web_contents_->GetBrowserContext());
+         app_controller->IsUrlInAppScope(web_contents_->GetLastCommittedURL());
 }
