@@ -29,7 +29,7 @@
 <translation id="1113869188872983271">&amp;Deshacer reorganización</translation>
 <translation id="1125573121925420732">Es probable que se muestren advertencias mientras se actualiza la seguridad de los sitios web, pero pronto se solucionará.</translation>
 <translation id="1126551341858583091">El tamaño del almacenamiento local es de <ph name="CRASH_SIZE" />.</translation>
-<translation id="1127259989763091435">¿Quieres confirmar y guardar la tarjeta en la cuenta de Google?</translation>
+<translation id="1127259989763091435">¿Quieres confirmar y guardar la tarjeta en tu cuenta de Google?</translation>
 <translation id="112840717907525620">Caché de política correcta</translation>
 <translation id="1131264053432022307">Imagen copiada</translation>
 <translation id="1150979032973867961">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, el sistema operativo de tu ordenador no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
@@ -691,7 +691,7 @@
 <translation id="4738601419177586157">Sugerencia de búsqueda de <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">Gestionar contraseñas…</translation>
 <translation id="4744603770635761495">Ruta del ejecutable</translation>
-<translation id="47454865135383664">¿Quieres añadir la tarjeta a la cuenta de Google?</translation>
+<translation id="47454865135383664">¿Quieres almacenar los detalles de facturación en tu cuenta de Google?</translation>
 <translation id="4750917950439032686">Tu información (por ejemplo, las contraseñas o los números de las tarjetas de crédito) es privada cuando se envía a este sitio web.</translation>
 <translation id="4756388243121344051">&amp;Historial</translation>
 <translation id="4758311279753947758">Añadir información de contacto</translation>
@@ -1346,7 +1346,7 @@ Más información:
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Si entiendes los riesgos para tu seguridad, puedes <ph name="BEGIN_LINK" />acceder a este sitio<ph name="END_LINK" /> antes de que se hayan eliminado los programas dañinos.</translation>
 <translation id="8349305172487531364">Barra de marcadores</translation>
-<translation id="836241887727198552">¿Quieres guardar la tarjeta en la cuenta de Google?</translation>
+<translation id="836241887727198552">¿Quieres guardar los detalles de facturación en tu cuenta de Google?</translation>
 <translation id="8363502534493474904">Desactivar el modo avión</translation>
 <translation id="8364627913115013041">No establecida</translation>
 <translation id="8368476060205742148">Servicios de Google Play</translation>
@@ -1389,7 +1389,7 @@ Más información:
 <translation id="8620436878122366504">Tus padres aún no lo han aprobado</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Guardar esta tarjeta en el dispositivo</translation>
-<translation id="8626112503828625890">¿Quieres guardar la información de facturación en la cuenta de Google?</translation>
+<translation id="8626112503828625890">¿Quieres almacenar los detalles de facturación en tu cuenta de Google?</translation>
 <translation id="8663226718884576429">Resumen del pedido: <ph name="TOTAL_LABEL" /> (más detalles)</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, respuesta: <ph name="ANSWER" /></translation>
 <translation id="8685155993131031756">Prc-16K</translation>

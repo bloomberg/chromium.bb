@@ -737,7 +737,7 @@ Pastikan Anda memercayai situs ini sebelum mengizinkan akses.</translation>
 <translation id="2120297377148151361">Aktivitas dan interaksi</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Aktifkan Notifikasi Tab}other{Aktifkan Notifikasi Beberapa Tab}}</translation>
 <translation id="2121825465123208577">Ubah ukuran</translation>
-<translation id="2124930039827422115">{1,plural, =1{Diberi nilai <ph name="AVERAGE_RATING" /> oleh satu pengguna.}other{Diberi nilai <ph name="AVERAGE_RATING" /> oleh # pengguna.}}</translation>
+<translation id="2124930039827422115">{1,plural, =1{Diberi rating <ph name="AVERAGE_RATING" /> oleh satu pengguna.}other{Diberi rating <ph name="AVERAGE_RATING" /> oleh # pengguna.}}</translation>
 <translation id="2126167708562367080">Sinkronisasi dinonaktifkan oleh administrator Anda.</translation>
 <translation id="2127372758936585790">Pengisi daya rendah</translation>
 <translation id="212862741129535676">Persentase Pemakaian Status Frekuensi</translation>
@@ -3658,7 +3658,7 @@ Pastikan Anda memercayai situs ini sebelum mengizinkan akses.</translation>
 <translation id="6597017209724497268">Contoh</translation>
 <translation id="659934686219830168">Sinkronisasi akan dimulai setelah Anda meninggalkan halaman ini</translation>
 <translation id="6602956230557165253">Gunakan tombol panah kiri dan kanan untuk bernavigasi.</translation>
-<translation id="6605847144724004692">Belum diberi nilai oleh pengguna.</translation>
+<translation id="6605847144724004692">Belum diberi rating oleh pengguna.</translation>
 <translation id="6607831829715835317">Fitur &amp;lainnya</translation>
 <translation id="6610147964972079463">Tutup tab rahasia</translation>
 <translation id="6612358246767739896">Konten dilindungi</translation>
@@ -3704,7 +3704,7 @@ Pastikan Anda memercayai situs ini sebelum mengizinkan akses.</translation>
 <translation id="6676212663108450937">Pertimbangkan untuk menggunakan headphone saat melatih suara Anda</translation>
 <translation id="6678717876183468697">URL Kueri</translation>
 <translation id="6680442031740878064">Tersedia: <ph name="AVAILABLE_SPACE" /></translation>
-<translation id="6680650203439190394">Beri nilai</translation>
+<translation id="6680650203439190394">Beri rating</translation>
 <translation id="6681668084120808868">Ambil foto</translation>
 <translation id="6681964764822470072">"<ph name="APP_NAME" />" akan dicopot pemasangannya.</translation>
 <translation id="6685083257944113180">Hentikan, <ph name="SINK_NAME" />, <ph name="SINK_STATUS" /></translation>

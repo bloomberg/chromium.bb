@@ -12,7 +12,7 @@
 <translation id="1008557486741366299">Agora não</translation>
 <translation id="1010498023906173788">Este separador está associado a uma porta de série.</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Página sem resposta}other{Páginas sem resposta}}</translation>
-<translation id="1012794136286421601">Os seus ficheiros de Documentos, Folhas, Apresentações e Desenhos estão a ser sincronizados. Abra a aplicação Google Drive para aceder aos ficheiros online ou offline.</translation>
+<translation id="1012794136286421601">Os seus ficheiros de Docs, Folhas, Slides e Desenhos estão a ser sincronizados. Abra a aplicação Google Drive para aceder aos ficheiros online ou offline.</translation>
 <translation id="1012876632442809908">Dispositivo USB-C (porta frontal)</translation>
 <translation id="1013707859758800957">A execução de um plug-in sem isolamento de processos foi permitida nesta página.</translation>
 <translation id="1015318665228971643">Editar nome da pasta</translation>
@@ -4782,7 +4782,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
     <ph name="BEGIN_PARAGRAPH2" />A desativação desta funcionalidade não afeta a capacidade deste dispositivo de enviar as informações necessárias para serviços essenciais, como as atualizações do sistema e a segurança.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />O proprietário pode controlar esta funcionalidade ao aceder a Definições &gt; Avançadas &gt; Enviar automaticamente dados de diagnóstico e de utilização para a Google.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Se a Atividade da Web e de aplicações adicional estiver ativada para a criança, estes dados poderão ser guardados na respetiva Conta Google. Saiba mais acerca destas definições e como as ajustar em families.google.com.<ph name="END_PARAGRAPH4" /></translation>
-<translation id="8270242299912238708">Documentos PDF</translation>
+<translation id="8270242299912238708">Docs PDF</translation>
 <translation id="827097179112817503">Mostrar botão Página inicial</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 marcador eliminado}other{# marcadores eliminados}}</translation>
 <translation id="8272443605911821513">Faça a gestão das suas extensões clicando em Extensões no menu "Mais ferramentas".</translation>
