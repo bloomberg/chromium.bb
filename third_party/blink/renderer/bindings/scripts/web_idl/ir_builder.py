@@ -94,39 +94,40 @@ def _convert_ast(component, ast):
         return callback_function
 
     def build_enumeration(node):
-        identifier = node.GetName()
         filepath, line_number = node.GetFileAndLine()
         enumeration = Enumeration.IR(
-            identifier=identifier,
+            identifier=node.GetName(),
+            values=[child.GetName() for child in node.GetChildren()],
             component=component,
             debug_info=DebugInfo(filepath=filepath, line_number=line_number))
-        # TODO(peria): Build members and register them in |enumeration|
         return enumeration
 
     def build_typedef(node):
-        identifier = node.GetName()
         filepath, line_number = node.GetFileAndLine()
         typedef = Typedef.IR(
-            identifier=identifier,
+            identifier=node.GetName(),
+            idl_type=dispatch_to_build_function(node.GetChildren()[0]),
             component=component,
             debug_info=DebugInfo(filepath=filepath, line_number=line_number))
-        # TODO(peria): Build members and register them in |typedef|
         return typedef
 
     def build_includes(node):
-        interface_identifier = node.GetName()
         filepath, line_number = node.GetFileAndLine()
         includes = Includes.IR(
-            interface_identifier=interface_identifier,
+            interface_identifier=node.GetName(),
+            mixin_identifier=node.GetProperty('REFERENCE'),
             component=component,
             debug_info=DebugInfo(filepath=filepath, line_number=line_number))
-        # TODO(peria): Build members and register them in |includes|
         return includes
 
     def dispatch_to_build_function(node):
         node_class = node.GetClass()
-        assert node_class in build_functions, (
-            '{} is unknown node class.'.format(node_class))
+        # TODO(peria): Drop this if branch returning None, when all the build
+        # functions get implemented.  It is only to avoid a build error in CQ.
+        if node_class not in build_functions:
+            return None
+        assert node_class in build_functions, '{} is unknown node class.'.format(
+            node_class)
         return build_functions[node_class](node)
 
     build_functions = {
