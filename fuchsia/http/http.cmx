@@ -1,11 +1,15 @@
 {
-  "features": [ "root-ssl-certificates" ],
-  "services": [
+  "sandbox": {
+    "features": [
+      "root-ssl-certificates"
+    ],
+    "services": [
       "fuchsia.device.NameProvider",
       "fuchsia.logger.LogSink",
       "fuchsia.net.NameLookup",
       "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",
       "fuchsia.posix.socket.Provider"
-  ]
+    ]
+  }
 }

@@ -1,9 +1,11 @@
 {
-  "features": [
+  "sandbox": {
+    "features": [
       "isolated-persistent-storage",
       "deprecated-shell",
-      "system-temp" ],
-  "services": [
+      "system-temp"
+    ],
+    "services": [
       "fuchsia.device.NameProvider",
       "fuchsia.fonts.Provider",
       "fuchsia.logger.LogSink",
@@ -14,5 +16,6 @@
       "fuchsia.process.Launcher",
       "fuchsia.sysmem.Allocator",
       "fuchsia.web.ContextProvider"
-  ]
+    ]
+  }
 }

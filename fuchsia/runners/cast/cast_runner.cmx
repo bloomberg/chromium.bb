@@ -1,28 +1,24 @@
 {
-  "features": [
-      "isolated-persistent-storage",
-      "root-ssl-certificates",
-      "system-temp",
-      "vulkan" ],
-  "dev": ["null", "zero"],
-  "services": [
-      "fuchsia.bluetooth.gatt.Server",
-      "fuchsia.bluetooth.le.Peripheral",
+  "sandbox": {
+    "features": [],
+    "services": [
+      "chromium.cast.ApplicationConfigManager",
       "fuchsia.device.NameProvider",
       "fuchsia.fonts.Provider",
+      "fuchsia.logger.LogSink",
       "fuchsia.media.Audio",
+      "fuchsia.media.drm.WidevineContentDecryptionModule",
       "fuchsia.mediacodec.CodecFactory",
       "fuchsia.net.NameLookup",
       "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",
       "fuchsia.posix.socket.Provider",
       "fuchsia.process.Launcher",
-      "fuchsia.sys.Launcher",
+      "fuchsia.sysmem.Allocator",
       "fuchsia.ui.input.ImeService",
       "fuchsia.ui.input.ImeVisibilityService",
-      "fuchsia.ui.policy.Presenter",
       "fuchsia.ui.scenic.Scenic",
-      "fuchsia.vulkan.loader.Loader",
-      "fuchsia.wlan.service.Wlan"
-  ]
+      "fuchsia.web.ContextProvider"
+    ]
+  }
 }
