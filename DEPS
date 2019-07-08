@@ -1057,7 +1057,7 @@ deps = {
   },
 
   'src/third_party/libjpeg_turbo':
-    Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + 'e1669e3707c6448a01c8a0dc3e4b20976a4dacf3',
+    Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + '76aabbd351eea8a5988a5672526eda0677f2048d',
 
   'src/third_party/liblouis/src': {
       'url': Var('chromium_git') + '/external/liblouis-github.git' + '@' + '97ce1c67fccbd3668291b7e63c06161c095d49f2',
