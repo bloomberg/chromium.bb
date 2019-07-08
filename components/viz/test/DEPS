@@ -60,6 +60,7 @@ specific_include_rules = {
   ],
 
   "run_all_perftests\.cc": [
-    "+mojo/core/embedder/embedder.h"
+    "+mojo/core/embedder/embedder.h",
+    "+skia/ext/event_tracer_impl.h",
   ],
 }
