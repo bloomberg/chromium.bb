@@ -2936,6 +2936,27 @@ flight_rec_key_binding_handler(struct weston_keyboard *keyboard,
 	weston_log_subscriber_display_flight_rec(flight_rec);
 }
 
+static void
+weston_log_subscribe_to_scopes(struct weston_log_context *log_ctx,
+			       struct weston_log_subscriber *logger,
+			       struct weston_log_subscriber *flight_rec,
+			       const char *log_scopes,
+			       const char *flight_rec_scopes)
+{
+	if (log_scopes)
+		weston_log_setup_scopes(log_ctx, logger, log_scopes);
+	else
+		weston_log_subscribe(log_ctx, logger, "log");
+
+	if (flight_rec_scopes) {
+		weston_log_setup_scopes(log_ctx, flight_rec, flight_rec_scopes);
+	} else {
+		/* by default subscribe to 'log', and 'drm-backend' */
+		weston_log_subscribe(log_ctx, flight_rec, "log");
+		weston_log_subscribe(log_ctx, flight_rec, "drm-backend");
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_FAILURE;
@@ -3028,19 +3049,10 @@ int main(int argc, char *argv[])
 	weston_log_set_handler(vlog, vlog_continue);
 
 	logger = weston_log_subscriber_create_log(weston_logfile);
-	if (log_scopes)
-		weston_log_setup_scopes(log_ctx, logger, log_scopes);
-	else
-		weston_log_subscribe(log_ctx, logger, "log");
-
 	flight_rec = weston_log_subscriber_create_flight_rec(DEFAULT_FLIGHT_REC_SIZE);
-	if (flight_rec_scopes) {
-		weston_log_setup_scopes(log_ctx, flight_rec, flight_rec_scopes);
-	} else {
-		/* subscribe to both 'log' and 'drm-backend' scope */
-		weston_log_subscribe(log_ctx, flight_rec, "log");
-		weston_log_subscribe(log_ctx, flight_rec, "drm-backend");
-	}
+
+	weston_log_subscribe_to_scopes(log_ctx, logger, flight_rec,
+				       log_scopes, flight_rec_scopes);
 
 	weston_log("%s\n"
 		   STAMP_SPACE "%s\n"
