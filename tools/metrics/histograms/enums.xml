@@ -1070,6 +1070,20 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Non-isolated ad request"/>
 </enum>
 
+<enum name="AdPopupTriggerAction">
+  <int value="0" label="The trigger was activated"/>
+  <int value="1"
+      label="A popup caused by an ad was detected and a report was collected"/>
+  <int value="2" label="No Google ad was found"/>
+  <int value="3"
+      label="A Google ad led to a popup that was blocked but the report
+             wasn't sent because of user state or settings (Incognito, or
+             non-SBER)"/>
+  <int value="4"
+      label="An ad was found but data collection was rejected to limit
+             frequency"/>
+</enum>
+
 <enum name="AdSamplerTriggerAction">
   <int value="0" label="The trigger was activated"/>
   <int value="1" label="An ad was found and data was collected"/>
