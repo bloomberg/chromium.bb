@@ -19,6 +19,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
@@ -225,6 +226,11 @@ class TabStripModel {
   void ActivateTabAt(int index,
                      UserGestureDetails gesture_detail =
                          UserGestureDetails(GestureType::kNone));
+
+  // Report histogram metrics for the number of tabs 'scrubbed' within a given
+  // interval of time. Scrubbing is considered to be a tab activated for <= 1.5
+  // seconds for this metric.
+  void RecordTabScrubbingMetrics();
 
   // Move the WebContents at the specified index to another index. This
   // method does NOT send Detached/Attached notifications, rather it moves the
@@ -674,6 +680,19 @@ class TabStripModel {
 
   // A recorder for recording tab switching input latency to UMA
   TabSwitchEventLatencyRecorder tab_switch_event_latency_recorder_;
+
+  // Timer used to mark intervals for metric collection on how many tabs are
+  // scrubbed over a certain interval of time.
+  base::RepeatingTimer tab_scrubbing_interval_timer_;
+  // Timestamp marking the last time a tab was activated by mouse press. This is
+  // used in determining how long a tab was active for metrics.
+  base::TimeTicks last_tab_switch_timestamp_ = base::TimeTicks();
+  // Counter used to keep track of tab scrubs during intervals set by
+  // |tab_scrubbing_interval_timer_|.
+  size_t tabs_scrubbed_by_mouse_press_count_ = 0;
+  // Counter used to keep track of tab scrubs during intervals set by
+  // |tab_scrubbing_interval_timer_|.
+  size_t tabs_scrubbed_by_key_press_count_ = 0;
 
   base::WeakPtrFactory<TabStripModel> weak_factory_;
 
