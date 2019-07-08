@@ -5364,14 +5364,28 @@ bool LayoutBox::ShrinkToAvoidFloats() const {
 
 DISABLE_CFI_PERF
 bool LayoutBox::ShouldBeConsideredAsReplaced() const {
-  // Checkboxes and radioboxes are not isAtomicInlineLevel() nor do they have
-  // their own layoutObject in which to override avoidFloats().
   if (IsAtomicInlineLevel())
     return true;
-  Node* node = GetNode();
-  return node && node->IsElementNode() &&
-         (ToElement(node)->IsFormControlElement() ||
-          IsHTMLImageElement(ToElement(node)));
+  // We need to detect all types of objects that should be treated as replaced.
+  // Callers of this method will use the result for various things, such as
+  // determining how to size the object, or whether it needs to avoid adjacent
+  // floats, just like objects that establish a new formatting context.
+  // IsAtomicInlineLevel() will not catch all the cases. Objects may be
+  // block-level and still replaced, and we cannot deduce this from the
+  // LayoutObject type. Checkboxes and radio buttons are such examples. We need
+  // to check the Element type. This also applies to images, since we may have
+  // created a block-flow LayoutObject for the ALT text (which still counts as
+  // replaced).
+  auto* element = ToElementOrNull(GetNode());
+  if (!element)
+    return false;
+  if (element->IsFormControlElement()) {
+    // Form control elements are generally replaced objects. Fieldsets are not,
+    // though. A fieldset is (almost) a regular block container, and should be
+    // treated as such.
+    return !IsHTMLFieldSetElement(element);
+  }
+  return IsHTMLImageElement(element);
 }
 
 bool LayoutBox::HasNonCompositedScrollbars() const {
