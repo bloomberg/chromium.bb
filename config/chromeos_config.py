@@ -1402,61 +1402,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
   )
   # Add special pre-cq for generic build tests with non-default kernel version
   site_config.AddForBoards(
-      'v4_4-pre-cq',
-      boards_dict['generic_kernel_boards'],
-      board_configs,
-      site_config.templates.pre_cq,
-      useflags=config_lib.append_useflags(['kernel-4_4', '-kernel-4_14',
-                                           '-kernel-4_19']),
-  )
-  site_config.AddForBoards(
-      'v4_4-buildtest-compile-only-pre-cq',
-      boards_dict['generic_kernel_boards'],
-      board_configs,
-      site_config.templates.compile_only_pre_cq,
-      useflags=config_lib.append_useflags(['kernel-4_4', '-kernel-4_14',
-                                           '-kernel-4_19',
-                                           '-clang', 'buildtest',
-                                           '-chrome_internal']),
-      packages=['sys-kernel/chromeos-kernel-4_4'],
-  )
-  site_config.AddForBoards(
-      'v4_14-pre-cq',
-      boards_dict['generic_kernel_boards'],
-      board_configs,
-      site_config.templates.pre_cq,
-      useflags=config_lib.append_useflags(['-kernel-4_4', 'kernel-4_14',
-                                           '-kernel-4_19']),
-  )
-  site_config.AddForBoards(
-      'v4_14-buildtest-compile-only-pre-cq',
-      boards_dict['generic_kernel_boards'],
-      board_configs,
-      site_config.templates.compile_only_pre_cq,
-      useflags=config_lib.append_useflags(['-kernel-4_4', 'kernel-4_14',
-                                           '-kernel-4_19',
-                                           '-clang', 'buildtest']),
-      packages=['sys-kernel/chromeos-kernel-4_14'],
-  )
-  site_config.AddForBoards(
-      'v4_19-pre-cq',
-      boards_dict['generic_kernel_boards'],
-      board_configs,
-      site_config.templates.pre_cq,
-      useflags=config_lib.append_useflags(['-kernel-4_4', '-kernel-4_14',
-                                           'kernel-4_19']),
-  )
-  site_config.AddForBoards(
-      'v4_19-buildtest-compile-only-pre-cq',
-      boards_dict['generic_kernel_boards'],
-      board_configs,
-      site_config.templates.compile_only_pre_cq,
-      useflags=config_lib.append_useflags(['-kernel-4_4', '-kernel-4_14',
-                                           'kernel-4_19', '-clang',
-                                           'buildtest']),
-      packages=['sys-kernel/chromeos-kernel-4_19'],
-  )
-  site_config.AddForBoards(
       'linux-v4_4-pre-cq',
       boards_dict['generic_kernel_boards'],
       board_configs,
