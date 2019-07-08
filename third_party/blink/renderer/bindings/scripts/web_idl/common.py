@@ -92,15 +92,15 @@ Component = str
 
 
 class WithComponent(object):
-    """WithComponent class is an interface to show which components this
-    object belongs to."""
+    """
+    Implements |components| which is a Blink-specific layering concept of
+    components, such as 'core' and 'modules'.
 
-    # The order of |_COMPONENTS| shows the order of their dependencies.
-    # DO NOT change the order.
-    _COMPONENTS = (
-        'core',
-        'modules',
-    )
+    A single IDL definition such as 'interface' may consist from multiple IDL
+    fragments like partial interfaces and mixins, which may exist across
+    Blink components.  |components| is a list of Blink components of IDL
+    fragments that are involved into this object.
+    """
 
     def __init__(self, component):
         assert isinstance(component, Component)
@@ -112,7 +112,7 @@ class WithComponent(object):
         Returns a list of components' names where this definition is defined
         @return tuple(Component)
         """
-        return self._components
+        return tuple(self._components)
 
 
 class DebugInfo(object):
