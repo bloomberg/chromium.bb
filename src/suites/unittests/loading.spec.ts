@@ -2,16 +2,11 @@ export const description = `
 Tests for queries/filtering, loading, and running.
 `;
 
-import {
-  DefaultFixture,
-  objectEquals,
-  paramsEquals,
-  TestGroup,
-  RunCase,
-} from '../../framework/index.js';
+import { DefaultFixture, paramsEquals, TestGroup, RunCase } from '../../framework/index.js';
 import { TestLoader, TestFileLoader, TestSpecOrReadme } from '../../framework/loader.js';
 import { TestSuiteListingEntry, TestSuiteListing } from '../../framework/listing.js';
 import { Logger } from '../../framework/logger.js';
+import { objectEquals } from '../../framework/util/index.js';
 
 const listingData: { [k: string]: TestSuiteListingEntry[] } = {
   suite1: [
@@ -89,11 +84,7 @@ class LoadingTest extends DefaultFixture {
   loader: TestLoader = new TestLoader(new FakeTestFileLoader());
 
   async load(filters: string[]) {
-    const listing = await this.loader.loadTests(filters);
-    const entries = Promise.all(
-      Array.from(listing, ({ id, spec }) => spec.then((s: TestSpecOrReadme) => ({ id, spec: s })))
-    );
-    return entries;
+    return Array.from(await this.loader.loadTests(filters));
   }
 
   async singleGroup(query: string): Promise<RunCase[]> {

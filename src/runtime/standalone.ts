@@ -102,27 +102,23 @@ function mkCase(testcasesVis: HTMLElement, query: string, t: RunCase) {
   const runnow = url.searchParams.get('runnow') === '1';
 
   const loader = new TestLoader();
-  const listing = await loader.loadTestsFromQuery(window.location.search);
 
   // TODO: everything after this point is very similar across the three runtimes.
-
   // TODO: start populating page before waiting for everything to load?
-  const queryResults = await Promise.all(
-    Array.from(listing, ({ id, spec }) => spec.then(s => ({ id, spec: s })))
-  );
+  const files = await loader.loadTestsFromQuery(window.location.search);
   // TODO: convert listing to tree so it can be displayed as a tree?
 
   const runCaseList = [];
-  for (const qr of queryResults) {
-    const testcasesVis = makeTest(qr.id, qr.spec.description);
+  for (const f of files) {
+    const testcasesVis = makeTest(f.id, f.spec.description);
 
-    if (!('g' in qr.spec)) {
+    if (!('g' in f.spec)) {
       continue;
     }
 
-    const [tRec] = log.record(qr.id);
-    for (const t of qr.spec.g.iterate(tRec)) {
-      const query = makeQueryString(qr.id, t.id);
+    const [tRec] = log.record(f.id);
+    for (const t of f.spec.g.iterate(tRec)) {
+      const query = makeQueryString(f.id, t.id);
       const runCase = mkCase(testcasesVis, query, t);
       runCaseList.push(runCase);
     }

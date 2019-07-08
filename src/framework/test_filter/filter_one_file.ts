@@ -1,6 +1,6 @@
-import { TestFilter } from './index.js';
+import { TestFilter, TestFilterResult } from './index.js';
 import { TestSpecID, TestCaseID } from '../id.js';
-import { TestSpecFile, TestFileLoader, TestQueryResult } from '../loader.js';
+import { TestSpecFile, TestFileLoader } from '../loader.js';
 import { RunCaseIterable, RunCase } from '../test_group.js';
 import { ParamsAny, paramsSupersets, paramsEquals } from '../params/index.js';
 import { GroupRecorder } from '../logger.js';
@@ -15,17 +15,17 @@ abstract class FilterOneFile implements TestFilter {
   abstract getCases(spec: TestSpecFile): RunCaseIterable;
   abstract matches(spec: TestSpecID, testcase: TestCaseID): boolean;
 
-  async iterate(loader: TestFileLoader): Promise<TestQueryResult[]> {
+  async iterate(loader: TestFileLoader): Promise<TestFilterResult[]> {
     const spec = (await loader.import(
       `${this.specId.suite}/${this.specId.path}.spec.js`
     )) as TestSpecFile;
     return [
       {
         id: this.specId,
-        spec: Promise.resolve({
+        spec: {
           description: spec.description,
           g: this.getCases(spec),
-        }),
+        },
       },
     ];
   }

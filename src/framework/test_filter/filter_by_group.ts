@@ -1,6 +1,6 @@
-import { TestFilter } from './index.js';
+import { TestFilter, TestFilterResult } from './index.js';
 import { TestSpecID, TestCaseID } from '../id.js';
-import { TestFileLoader, TestQueryResult, ReadmeFile, TestSpecFile } from '../loader.js';
+import { TestFileLoader, ReadmeFile, TestSpecFile } from '../loader.js';
 
 export class FilterByGroup implements TestFilter {
   private readonly suite: string;
@@ -15,17 +15,17 @@ export class FilterByGroup implements TestFilter {
     throw new Error('unimplemented');
   }
 
-  async iterate(loader: TestFileLoader): Promise<TestQueryResult[]> {
+  async iterate(loader: TestFileLoader): Promise<TestFilterResult[]> {
     const specs = await loader.listing(this.suite);
-    const entries: TestQueryResult[] = [];
+    const entries: TestFilterResult[] = [];
 
     const suite = this.suite;
     for (const { path, description } of specs) {
       if (path.startsWith(this.groupPrefix)) {
         const isReadme = path === '' || path.endsWith('/');
         const spec = isReadme
-          ? Promise.resolve({ description } as ReadmeFile)
-          : (loader.import(`${suite}/${path}.spec.js`) as Promise<TestSpecFile>);
+          ? ({ description } as ReadmeFile)
+          : ((await loader.import(`${suite}/${path}.spec.js`)) as TestSpecFile);
         entries.push({ id: { suite, path }, spec });
       }
     }

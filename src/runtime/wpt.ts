@@ -12,22 +12,19 @@ declare function async_test(f: (this: WptTestObject) => Promise<void>, name: str
 
 (async () => {
   const loader = new TestLoader();
-  const listing = await loader.loadTestsFromQuery(window.location.search);
+  const files = await loader.loadTestsFromQuery(window.location.search);
 
   const log = new Logger();
   const running = [];
-  const queryResults = await Promise.all(
-    Array.from(listing, ({ id, spec }) => spec.then(s => ({ id, spec: s })))
-  );
 
-  for (const qr of queryResults) {
-    if (!('g' in qr.spec)) {
+  for (const f of files) {
+    if (!('g' in f.spec)) {
       continue;
     }
 
-    const [rec] = log.record(qr.id);
+    const [rec] = log.record(f.id);
     // TODO: don't run all tests all at once
-    for (const t of qr.spec.g.iterate(rec)) {
+    for (const t of f.spec.g.iterate(rec)) {
       const run = t.run();
       running.push(run);
       // Note: apparently, async_tests must ALL be added within the same task.
@@ -39,7 +36,7 @@ declare function async_test(f: (this: WptTestObject) => Promise<void>, name: str
           }
         });
         this.done();
-      }, makeQueryString(qr.id, t.id));
+      }, makeQueryString(f.id, t.id));
     }
   }
 

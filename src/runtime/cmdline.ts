@@ -3,7 +3,7 @@
 import * as fs from 'fs';
 import * as process from 'process';
 
-import { TestLoader, TestSpecOrReadme } from '../framework/loader.js';
+import { TestLoader } from '../framework/loader.js';
 import { Logger, LiveTestCaseResult } from '../framework/logger.js';
 import { TestSpecID } from '../framework/id.js';
 import { makeQueryString } from '../framework/url_query.js';
@@ -41,33 +41,30 @@ for (const a of process.argv.slice(2)) {
 (async () => {
   try {
     const loader = new TestLoader();
-    const listing = await loader.loadTestsFromCmdLine(filterArgs);
+    const files = await loader.loadTestsFromCmdLine(filterArgs);
 
     const log = new Logger();
-    const queryResults = await Promise.all(
-      Array.from(listing, ({ id, spec }) => spec.then((s: TestSpecOrReadme) => ({ id, spec: s })))
-    );
 
     const failed: Array<[TestSpecID, LiveTestCaseResult]> = [];
     const warned: Array<[TestSpecID, LiveTestCaseResult]> = [];
 
     // TODO: don't run all tests all at once
     const running = [];
-    for (const qr of queryResults) {
-      if (!('g' in qr.spec)) {
+    for (const f of files) {
+      if (!('g' in f.spec)) {
         continue;
       }
 
-      const [rec] = log.record(qr.id);
-      for (const t of qr.spec.g.iterate(rec)) {
+      const [rec] = log.record(f.id);
+      for (const t of f.spec.g.iterate(rec)) {
         running.push(
           (async () => {
             const res = await t.run();
             if (res.status === 'fail') {
-              failed.push([qr.id, res]);
+              failed.push([f.id, res]);
             }
             if (res.status === 'warn') {
-              warned.push([qr.id, res]);
+              warned.push([f.id, res]);
             }
           })()
         );
