@@ -295,7 +295,10 @@ def BuildPackages(target, sysroot, run_configs):
 
   with osutils.TempDir(base_dir='/tmp') as tempdir:
     status_file = os.path.join(tempdir, 'status_file')
-    extra_env = {constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR: status_file}
+    extra_env = {
+        constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR: status_file,
+        'PARALLEL_EMERGE_MAX_RETRIES': '0'
+    }
 
     if run_configs.use_flags:
       extra_env['USE'] = run_configs.GetUseFlags()

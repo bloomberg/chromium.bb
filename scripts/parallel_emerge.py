@@ -237,7 +237,7 @@ class DepGraphGenerator(object):
     self.show_output = False
     self.sysroot = None
     self.unpack_only = False
-    self.max_retries = 1
+    self.max_retries = int(os.environ.get('PARALLEL_EMERGE_MAX_RETRIES', 1))
 
   def ParseParallelEmergeArgs(self, argv):
     """Read the parallel emerge arguments from the command-line.
