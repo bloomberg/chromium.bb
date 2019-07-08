@@ -20,10 +20,10 @@ import urlparse
 
 import chromite.lib.cros_logging as log
 from chromite.lib import cache
-from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import cros_build_lib
+from chromite.utils import memoize
 
 import httplib2
 

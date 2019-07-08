@@ -15,10 +15,10 @@ import time
 
 from chromite.lib import cros_build_lib
 from chromite.lib import locking
-from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import signals
 from chromite.lib import sudo
+from chromite.utils import memoize
 
 
 # Rough hierarchy sketch:

@@ -19,10 +19,10 @@ import time
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import timeout_util
+from chromite.utils import memoize
 
 
 _path = os.path.dirname(os.path.realpath(__file__))

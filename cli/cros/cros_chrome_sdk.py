@@ -23,10 +23,10 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
-from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import retry_util
+from chromite.utils import memoize
 from gn_helpers import gn_helpers
 
 

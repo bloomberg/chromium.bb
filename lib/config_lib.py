@@ -15,8 +15,8 @@ import os
 import re
 
 from chromite.lib import constants
-from chromite.lib import memoize
 from chromite.lib import osutils
+from chromite.utils import memoize
 
 GS_PATH_DEFAULT = 'default'  # Means gs://chromeos-image-archive/ + bot_id
 

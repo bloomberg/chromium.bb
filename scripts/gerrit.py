@@ -24,9 +24,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import gob_util
-from chromite.lib import memoize
 from chromite.lib import terminal
 from chromite.lib import uri_lib
+from chromite.utils import memoize
 
 
 # Locate actions that are exposed to the user.  All functions that start
