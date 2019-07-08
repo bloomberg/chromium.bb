@@ -223,3 +223,20 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
         '-ephemeraldevserver=false', '-keyfile', '/tmp/.ssh/testing_rsa',
         '-extrauseflags=tast_vm', 'localhost:9222', 'ui.ChromeLogin'
     ])
+
+  def testRunDeviceCmdWithoutSrcFiles(self):
+    """Verify running a remote command when src files are not specified.
+
+    The remote command should not change the working directory or create a temp
+    directory on the target.
+    """
+    self._tester.remote_cmd = True
+    self._tester.args = ['/usr/local/autotest/bin/vm_sanity.py']
+    self._tester.Run()
+    self.assertCommandContains(['ssh', '-p', '9222',
+                                '/usr/local/autotest/bin/vm_sanity.py'])
+    self.assertCommandContains(['mkdir', '-p'], expected=False)
+    self.assertCommandContains(['"cd %s && /usr/local/autotest/bin/'
+                                'vm_sanity.py"' % self._tester.cwd],
+                               expected=False)
+    self.assertCommandContains(['rm', '-rf'], expected=False)

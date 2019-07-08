@@ -386,7 +386,8 @@ class CrOSTest(object):
           if has_exe:
             break
       copy_paths.append(chrome_util.Path(f, exe=is_exe or has_exe))
-    self._DeployCopyPaths(os.getcwd(), DEST_BASE, copy_paths)
+    if copy_paths:
+      self._DeployCopyPaths(os.getcwd(), DEST_BASE, copy_paths)
 
     # Make cwd an absolute path (if it isn't one) rooted in DEST_BASE.
     cwd = self.cwd
