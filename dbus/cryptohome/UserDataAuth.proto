@@ -367,12 +367,21 @@ message DircryptoMigrationProgress {
   uint64 total_bytes = 3;
 }
 
+// Input parameters to NeedsDircryptoMigration().
 message NeedsDircryptoMigrationRequest {
+  // The account for which we want to check if Dircrypto migration is needed.
   cryptohome.AccountIdentifier account_id = 1;
 }
 
+// Output parameters for NeedsDircryptoMigration().
 message NeedsDircryptoMigrationReply {
-  bool needs_dircrypto_migration = 1;
+  // Indicates an error if not empty.
+  CryptohomeErrorCode error = 1;
+
+  // Whether Dircrypto migration is needed.
+  // Note that this is invalid and should be disregarded if |error| is not
+  // empty.
+  bool needs_dircrypto_migration = 2;
 }
 
 message GetSupportedKeyPoliciesRequest {
