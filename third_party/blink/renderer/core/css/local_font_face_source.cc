@@ -33,9 +33,7 @@ LocalFontFaceSource::LocalFontFaceSource(CSSFontFace* css_font_face,
                                          const String& font_name)
     : face_(css_font_face),
       font_selector_(font_selector),
-      font_name_(font_name),
-      weak_factory_(this) {
-}
+      font_name_(font_name) {}
 
 LocalFontFaceSource::~LocalFontFaceSource() {}
 
