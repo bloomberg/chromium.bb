@@ -535,6 +535,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 #if !defined(MEMORY_SANITIZER)
         TestCase("openQuickViewImageExif"),
 #endif
+        TestCase("openQuickViewImageRaw"),
         TestCase("openQuickViewVideo"),
 // QuickView PDF test fails on MSAN, crbug.com/768070
 #if !defined(MEMORY_SANITIZER)

@@ -271,7 +271,10 @@ class QuickViewController {
   }
 
   /**
-   * Update quick view using file entry and loaded metadata and tasks.
+   * Update quick view for |entry| from its loaded metadata and tasks.
+   *
+   * Note: fast-typing users can change the active selection while the |entry|
+   * metadata and tasks were being async fetched. Bail out in that case.
    *
    * @param {!FileEntry} entry
    * @param {Array<MetadataItem>} items
@@ -280,6 +283,10 @@ class QuickViewController {
    */
   onMetadataLoaded_(entry, items, tasks) {
     return this.getQuickViewParameters_(entry, items, tasks).then(params => {
+      if (this.quickViewModel_.getSelectedEntry() != entry) {
+        return;  // Bail: there's no point drawing a stale selection.
+      }
+
       this.quickView_.type = params.type || '';
       this.quickView_.subtype = params.subtype || '';
       this.quickView_.filePath = params.filePath || '';
@@ -321,7 +328,7 @@ class QuickViewController {
             volumeInfo.volumeType) >= 0;
 
     if (!localFile) {
-      // For Drive files, display a thumbnail if there is one.
+      // Drive files: fetch their thumbnail if there is one.
       if (item.thumbnailUrl) {
         return this.loadThumbnailFromDrive_(item.thumbnailUrl).then(result => {
           if (result.status === 'success') {
@@ -344,9 +351,26 @@ class QuickViewController {
       return Promise.resolve(params);
     }
 
+    if (type === 'raw') {
+      // RAW files: fetch their ImageLoader thumbnail.
+      return this.loadRawFileThumbnailFromImageLoader_(entry)
+          .then(result => {
+            if (result.status === 'success') {
+              params.contentUrl = result.data;
+              params.type = 'image';
+            }
+            return params;
+          })
+          .catch(e => {
+            console.error(e);
+            return params;
+          });
+    }
+
     if (type === '.folder') {
       return Promise.resolve(params);
     }
+
     return new Promise((resolve, reject) => {
              entry.file(resolve, reject);
            })
@@ -415,6 +439,36 @@ class QuickViewController {
     return new Promise(resolve => {
       ImageLoaderClient.getInstance().load(
           LoadImageRequest.createForUrl(url), resolve);
+    });
+  }
+
+  /**
+   * Loads a RAW image thumbnail from ImageLoader. Resolve the file entry first
+   * to get its |lastModified| time. ImageLoaderClient uses that to work out if
+   * its cached data for |entry| is up-to-date or otherwise call ImageLoader to
+   * refresh the cached |entry| data with the most recent data.
+   *
+   * @param {!Entry} entry The RAW file entry.
+   * @return Promise<{{
+   *   status: string,
+   *   width: number,
+   *   height: number,
+   *   ifd: ?string,
+   *   data: string
+   * }}>
+   * @private
+   */
+  loadRawFileThumbnailFromImageLoader_(entry) {
+    return new Promise((resolve, reject) => {
+      entry.file(function requestFileThumbnail(file) {
+        const request = LoadImageRequest.createForUrl(entry.toURL());
+        request.maxWidth = ThumbnailLoader.THUMBNAIL_MAX_WIDTH;
+        request.maxHeight = ThumbnailLoader.THUMBNAIL_MAX_HEIGHT;
+        request.timestamp = file.lastModified;
+        request.cache = true;
+        request.priority = 0;
+        ImageLoaderClient.getInstance().load(request, resolve);
+      }, reject);
     });
   }
 }
