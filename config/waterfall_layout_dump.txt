@@ -725,6 +725,12 @@
   amd64-generic-goma-canary-chromium-pfq-informational-tryjob
   amd64-generic-goma-full-tryjob
   amd64-generic-incremental-tryjob
+  amd64-generic-linux-v4_14-buildtest-compile-only-pre-cq
+  amd64-generic-linux-v4_14-pre-cq
+  amd64-generic-linux-v4_19-buildtest-compile-only-pre-cq
+  amd64-generic-linux-v4_19-pre-cq
+  amd64-generic-linux-v4_4-buildtest-compile-only-pre-cq
+  amd64-generic-linux-v4_4-pre-cq
   amd64-generic-llvm-next-toolchain-tryjob
   amd64-generic-llvm-toolchain-tryjob
   amd64-generic-llvm-tot-toolchain-tryjob
@@ -763,6 +769,12 @@
   arm-generic-chromium-pfq-tryjob
   arm-generic-compile-only-pre-cq
   arm-generic-full-tryjob
+  arm-generic-linux-v4_14-buildtest-compile-only-pre-cq
+  arm-generic-linux-v4_14-pre-cq
+  arm-generic-linux-v4_19-buildtest-compile-only-pre-cq
+  arm-generic-linux-v4_19-pre-cq
+  arm-generic-linux-v4_4-buildtest-compile-only-pre-cq
+  arm-generic-linux-v4_4-pre-cq
   arm-generic-llvm-next-toolchain-tryjob
   arm-generic-llvm-toolchain-tryjob
   arm-generic-llvm-tot-toolchain-tryjob
@@ -784,6 +796,12 @@
   arm64-generic-chromium-pfq-tryjob
   arm64-generic-compile-only-pre-cq
   arm64-generic-full-tryjob
+  arm64-generic-linux-v4_14-buildtest-compile-only-pre-cq
+  arm64-generic-linux-v4_14-pre-cq
+  arm64-generic-linux-v4_19-buildtest-compile-only-pre-cq
+  arm64-generic-linux-v4_19-pre-cq
+  arm64-generic-linux-v4_4-buildtest-compile-only-pre-cq
+  arm64-generic-linux-v4_4-pre-cq
   arm64-generic-llvm-next-toolchain-tryjob
   arm64-generic-llvm-toolchain-tryjob
   arm64-generic-llvm-tot-toolchain-tryjob
