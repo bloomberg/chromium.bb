@@ -654,7 +654,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // TODO(crbug.com/804589) : Dark style on remote tabs.
   // The styler must be set before the view controller is loaded.
   ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
-  styler.tableViewSectionHeaderBlurEffect = nil;
   styler.tableViewBackgroundColor = UIColorFromRGB(kGridBackgroundColor);
   styler.cellHighlightColor =
       [UIColor colorWithWhite:0 alpha:kGridDarkThemeCellHighlightColorAlpha];

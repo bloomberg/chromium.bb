@@ -16,8 +16,6 @@
 - (instancetype)init {
   if ((self = [super init])) {
     _tableViewBackgroundColor = UIColor.cr_systemBackgroundColor;
-    _tableViewSectionHeaderBlurEffect =
-        [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
   }
   return self;
 }
