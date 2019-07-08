@@ -25163,9 +25163,7 @@
       {
         "args": [
           "--build-revision=${got_revision}",
-          "--enable-logging",
-          "--test-launcher-jobs=1",
-          "--test-launcher-print-test-stdio=always"
+          "--gtest_filter=SkiaGold*"
         ],
         "experiment_percentage": 100,
         "merge": {
