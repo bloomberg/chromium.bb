@@ -23958,6 +23958,9 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="CLUSTER_CHILD_NOT_CARD"/>
   <int value="8" label="CARD_CHILD_MISSING_FEATURE"/>
   <int value="9" label="NULL_SHARED_STATES"/>
+  <int value="10" label="FAILED_TO_CREATE_LEAF"/>
+  <int value="11" label="UNHANDLED_TOKEN"/>
+  <int value="12" label="TASK_QUEUE_STARVATION"/>
 </enum>
 
 <enum name="FeedRequestReason">
