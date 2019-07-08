@@ -23,5 +23,7 @@
     "tslint.json": true,
     "yarn-error.log": true,
     "yarn.lock": true
-  }
+  },
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.preferences.quoteStyle": "single"
 }
