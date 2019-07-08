@@ -101,8 +101,7 @@ URLRequestMockDataJob::URLRequestMockDataJob(URLRequest* request,
                                              bool request_client_certificate)
     : URLRequestJob(request, network_delegate),
       data_offset_(0),
-      request_client_certificate_(request_client_certificate),
-      weak_factory_(this) {
+      request_client_certificate_(request_client_certificate) {
   DCHECK_GT(data_repeat_count, 0);
   for (int i = 0; i < data_repeat_count; ++i) {
     data_.append(data);

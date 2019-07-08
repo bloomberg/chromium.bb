@@ -103,11 +103,7 @@ class MockCTPolicyEnforcer : public CTPolicyEnforcer {
 class FakeDataChannel {
  public:
   FakeDataChannel()
-      : read_buf_len_(0),
-        closed_(false),
-        write_called_after_close_(false),
-        weak_factory_(this) {
-  }
+      : read_buf_len_(0), closed_(false), write_called_after_close_(false) {}
 
   int Read(IOBuffer* buf, int buf_len, CompletionOnceCallback callback) {
     DCHECK(read_callback_.is_null());
@@ -214,7 +210,7 @@ class FakeDataChannel {
   // asynchronously.
   bool write_called_after_close_;
 
-  base::WeakPtrFactory<FakeDataChannel> weak_factory_;
+  base::WeakPtrFactory<FakeDataChannel> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeDataChannel);
 };
