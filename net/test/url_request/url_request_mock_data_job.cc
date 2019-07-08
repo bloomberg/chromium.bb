@@ -168,7 +168,7 @@ void URLRequestMockDataJob::StartAsync() {
 
   set_expected_content_size(data_.length());
   if (request_client_certificate_) {
-    scoped_refptr<SSLCertRequestInfo> request_all(new SSLCertRequestInfo());
+    auto request_all = base::MakeRefCounted<SSLCertRequestInfo>();
     NotifyCertificateRequested(request_all.get());
     return;
   }

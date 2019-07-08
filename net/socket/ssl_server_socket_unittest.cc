@@ -791,7 +791,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSupplied) {
             connect_callback.GetResult(
                 client_socket_->Connect(connect_callback.callback())));
 
-  scoped_refptr<SSLCertRequestInfo> request_info = new SSLCertRequestInfo();
+  auto request_info = base::MakeRefCounted<SSLCertRequestInfo>();
   client_socket_->GetSSLCertRequestInfo(request_info.get());
 
   // Check that the authority name that arrived in the CertificateRequest
@@ -825,7 +825,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSuppliedCached) {
             connect_callback.GetResult(
                 client_socket_->Connect(connect_callback.callback())));
 
-  scoped_refptr<SSLCertRequestInfo> request_info = new SSLCertRequestInfo();
+  auto request_info = base::MakeRefCounted<SSLCertRequestInfo>();
   client_socket_->GetSSLCertRequestInfo(request_info.get());
 
   // Check that the authority name that arrived in the CertificateRequest
@@ -851,7 +851,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithClientCertRequiredNotSuppliedCached) {
             connect_callback2.GetResult(
                 client_socket_->Connect(connect_callback2.callback())));
 
-  scoped_refptr<SSLCertRequestInfo> request_info2 = new SSLCertRequestInfo();
+  auto request_info2 = base::MakeRefCounted<SSLCertRequestInfo>();
   client_socket_->GetSSLCertRequestInfo(request_info2.get());
 
   // Check that the authority name that arrived in the CertificateRequest
