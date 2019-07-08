@@ -1,20 +1,25 @@
-import { GroupRecorder } from './logger.js';
-import { ParamsAny, paramsEquals, paramsSupersets } from './params/index.js';
-import { RunCaseIterable, RunCase } from './test_group.js';
+import { ParamsAny } from './params/index.js';
+import { RunCaseIterable } from './test_group.js';
 import { allowedTestNameCharacters } from './allowed_characters.js';
 import { TestSuiteListing } from './listing.js';
-import { TestSpecID, TestCaseID } from './id.js';
+import { TestSpecID } from './id.js';
+import {
+  FilterByGroup,
+  FilterByTestMatch,
+  FilterByParamsMatch,
+  FilterByParamsExact,
+} from './test_filter/index.js';
 
 // One of the following:
 // - An actual .spec.ts file, as imported.
 // - A *filtered* list of cases from a single .spec.ts file.
-interface TestSpecFile {
+export interface TestSpecFile {
   readonly description: string;
   readonly g: RunCaseIterable;
 }
 
 // A shell object describing a directory (from its README.txt).
-interface ReadmeFile {
+export interface ReadmeFile {
   readonly description: string;
 }
 
@@ -26,25 +31,12 @@ export interface TestQueryResult {
   readonly spec: Promise<TestSpecOrReadme>;
 }
 
-type TestQueryResults = IterableIterator<TestQueryResult>;
+export type TestQueryResults = IterableIterator<TestQueryResult>;
 
 function* concat(lists: TestQueryResult[][]): TestQueryResults {
   for (const specs of lists) {
     yield* specs;
   }
-}
-
-type TestGroupFilter = (testcase: TestCaseID) => boolean;
-function filterTestGroup(group: RunCaseIterable, filter: TestGroupFilter): RunCaseIterable {
-  return {
-    *iterate(log: GroupRecorder): Iterable<RunCase> {
-      for (const rc of group.iterate(log)) {
-        if (filter(rc.id)) {
-          yield rc;
-        }
-      }
-    },
-  };
 }
 
 export interface TestFileLoader {
@@ -99,7 +91,7 @@ export class TestLoader {
       // - cts:buffers/
       // - cts:buffers/map
       const groupPrefix = filter.substring(i1 + 1);
-      return this.filterByGroup(suite, await this.fileLoader.listing(suite), groupPrefix);
+      return new FilterByGroup(suite, groupPrefix).iterate(this.fileLoader);
     }
 
     const path = filter.substring(i1 + 1, i2);
@@ -109,12 +101,7 @@ export class TestLoader {
       // - cts:buffers/mapWriteAsync:
       // - cts:buffers/mapWriteAsync:ba
       const testPrefix = filter.substring(i2 + 1);
-      return [
-        {
-          id: { suite, path },
-          spec: this.filterByTestMatch(suite, path, testPrefix),
-        },
-      ];
+      return new FilterByTestMatch({ suite, path }, testPrefix).iterate(this.fileLoader);
     }
 
     const i3 = i2 + 1 + i3sub;
@@ -130,88 +117,14 @@ export class TestLoader {
       // - cts:buffers/mapWriteAsync:basic~
       // - cts:buffers/mapWriteAsync:basic~{}
       // - cts:buffers/mapWriteAsync:basic~{filter:"params"}
-      return [
-        {
-          id: { suite, path },
-          spec: this.filterByParamsMatch(suite, path, test, params),
-        },
-      ];
+      return new FilterByParamsMatch({ suite, path }, test, params).iterate(this.fileLoader);
     } else if (token === ':') {
       // - cts:buffers/mapWriteAsync:basic:
       // - cts:buffers/mapWriteAsync:basic:{}
       // - cts:buffers/mapWriteAsync:basic:{exact:"params"}
-      return [
-        {
-          id: { suite, path },
-          spec: this.filterByParamsExact(suite, path, test, params),
-        },
-      ];
+      return new FilterByParamsExact({ suite, path }, test, params).iterate(this.fileLoader);
     } else {
       throw new Error("invalid character after test name; must be '~' or ':'");
     }
-  }
-
-  private filterByGroup(
-    suite: string,
-    specs: TestSuiteListing,
-    groupPrefix: string
-  ): TestQueryResult[] {
-    const entries: TestQueryResult[] = [];
-
-    for (const { path, description } of specs) {
-      if (path.startsWith(groupPrefix)) {
-        const isReadme = path === '' || path.endsWith('/');
-        const spec = isReadme
-          ? Promise.resolve({ description } as ReadmeFile)
-          : (this.fileLoader.import(`${suite}/${path}.spec.js`) as Promise<TestSpecFile>);
-        entries.push({ id: { suite, path }, spec });
-      }
-    }
-
-    return entries;
-  }
-
-  private async filterByTestMatch(
-    suite: string,
-    group: string,
-    testPrefix: string
-  ): Promise<TestSpecFile> {
-    const spec = (await this.fileLoader.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
-    return {
-      description: spec.description,
-      g: filterTestGroup(spec.g, testcase => testcase.name.startsWith(testPrefix)),
-    };
-  }
-
-  private async filterByParamsMatch(
-    suite: string,
-    group: string,
-    test: string,
-    paramsMatch: ParamsAny | null
-  ): Promise<TestSpecFile> {
-    const spec = (await this.fileLoader.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
-    return {
-      description: spec.description,
-      g: filterTestGroup(
-        spec.g,
-        testcase => testcase.name === test && paramsSupersets(testcase.params, paramsMatch)
-      ),
-    };
-  }
-
-  private async filterByParamsExact(
-    suite: string,
-    group: string,
-    test: string,
-    paramsExact: ParamsAny | null
-  ): Promise<TestSpecFile> {
-    const spec = (await this.fileLoader.import(`${suite}/${group}.spec.js`)) as TestSpecFile;
-    return {
-      description: spec.description,
-      g: filterTestGroup(
-        spec.g,
-        testcase => testcase.name === test && paramsEquals(testcase.params, paramsExact)
-      ),
-    };
   }
 }
