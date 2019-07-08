@@ -1,0 +1,13 @@
+display: unicode-without-blank.dis
+table:
+  locale: pl
+  grade: 1
+  __assert-match: pl.tbl
+tests:
+# For consecutive capital letters
+  - [BIP, ⠨⠨⠃⠊⠏]
+  - [HACCP, ⠨⠨⠓⠁⠉⠉⠏]
+# for digits with comma between them
+  - ["22,333", ⠼⠃⠃⠂⠉⠉⠉]
+# For digits with dot between them
+  - [22.333, ⠼⠃⠃⠄⠉⠉⠉]
