@@ -76,8 +76,12 @@ class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
   void OnConversationTurnFinished() override {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     input_->RecreateAudioInputStream(true /* use_dsp */);
+    if (stream_state_ == StreamState::HOTWORD) {
+      // If |stream_state_| remains unchanged, that indicates the first stage
+      // DSP hotword detection was rejected by Libassistant.
+      RecordDspHotwordDetection(DspHotwordDetectionStatus::SOFTWARE_REJECTED);
+    }
     stream_state_ = StreamState::HOTWORD;
-    RecordDspHotwordDetection(DspHotwordDetectionStatus::SOFTWARE_REJECTED);
   }
 
   // Runs on audio service thread
