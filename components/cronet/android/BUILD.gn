@@ -337,7 +337,11 @@ android_library("cronet_impl_platform_base_java") {
 
 # cronet_impl_fake_base_java.jar - Fake implementation of Cronet.
 android_library("cronet_impl_fake_base_java") {
-  java_files = [ "fake/java/org/chromium/net/test/FakeUrlResponse.java" ]
+  java_files = [
+    "fake/java/org/chromium/net/test/FakeUrlResponse.java",
+    "fake/java/org/chromium/net/test/ResponseMatcher.java",
+    "fake/java/org/chromium/net/test/UrlResponseMatcher.java",
+  ]
 
   deps = [
     ":cronet_api_java",
@@ -348,8 +352,10 @@ android_library("cronet_impl_fake_base_java") {
 # cronet_fake_javatests.jar - Java tests for the fake implementation of Cronet.
 android_library("cronet_fake_javatests") {
   testonly = true
-  java_files =
-      [ "fake/javatests/org/chromium/net/test/FakeUrlResponseTest.java" ]
+  java_files = [
+    "fake/javatests/org/chromium/net/test/FakeUrlResponseTest.java",
+    "fake/javatests/org/chromium/net/test/UrlResponseMatcherTest.java",
+  ]
 
   deps = [
     ":cronet_api_java",
