@@ -14668,6 +14668,7 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="DANGEROUS_HOST"/>
   <int value="8" label="POTENTIALLY_UNWANTED"/>
   <int value="9" label="WHITELISTED_BY_POLICY"/>
+  <int value="10" label="ASYNC_SCANNING"/>
 </enum>
 
 <enum name="DownloadLocationDialogResult">
@@ -51135,6 +51136,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="DANGEROUS_HOST"/>
   <int value="5" label="POTENTIALLY_UNWANTED"/>
   <int value="6" label="WHITELISTED_BY_POLICY"/>
+  <int value="7" label="ASYNC_SCANNING"/>
 </enum>
 
 <enum name="SBClientDownloadExtensions">
