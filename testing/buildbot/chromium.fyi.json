@@ -6455,7 +6455,7 @@
           "hard_timeout": 3600,
           "io_timeout": 3600
         },
-        "test": "cros_vm_sanity_test"
+        "test": "cros_browser_sanity_test"
       },
       {
         "isolate_coverage_data": true,
