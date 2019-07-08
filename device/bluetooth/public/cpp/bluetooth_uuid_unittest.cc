@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 #include <stddef.h>
 
@@ -130,15 +130,15 @@ TEST(BluetoothUUIDTest, BluetoothUUID_CaseInsensitive) {
     const std::string input_uuid;
     const std::string expected_value;
   } test_cases[] = {
-    { "1abc", k16Bit },
-    { "1ABC", k16Bit },
-    { "1aBc", k16Bit },
-    { "00001abc", k32Bit },
-    { "00001ABC", k32Bit },
-    { "00001aBc", k32Bit },
-    { "00001abc-0000-1000-8000-00805f9b34fb", k128Bit },
-    { "00001ABC-0000-1000-8000-00805F9B34FB", k128Bit },
-    { "00001aBc-0000-1000-8000-00805F9b34fB", k128Bit },
+      {"1abc", k16Bit},
+      {"1ABC", k16Bit},
+      {"1aBc", k16Bit},
+      {"00001abc", k32Bit},
+      {"00001ABC", k32Bit},
+      {"00001aBc", k32Bit},
+      {"00001abc-0000-1000-8000-00805f9b34fb", k128Bit},
+      {"00001ABC-0000-1000-8000-00805F9B34FB", k128Bit},
+      {"00001aBc-0000-1000-8000-00805F9b34fB", k128Bit},
   };
 
   for (size_t i = 0; i < base::size(test_cases); ++i) {

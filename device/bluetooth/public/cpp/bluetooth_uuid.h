@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_UUID_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_UUID_H_
+#ifndef DEVICE_BLUETOOTH_PUBLIC_CPP_BLUETOOTH_UUID_H_
+#define DEVICE_BLUETOOTH_PUBLIC_CPP_BLUETOOTH_UUID_H_
 
 #include <string>
 
 #include "build/build_config.h"
-#include "device/bluetooth/bluetooth_export.h"
 
 #if defined(OS_WIN)
 #include <rpc.h>
@@ -23,15 +22,10 @@ namespace device {
 // used in Bluetooth based communication, such as a peripheral's services,
 // characteristics, and characteristic descriptors. An instance are
 // constructed using a string representing 16, 32, or 128 bit UUID formats.
-class DEVICE_BLUETOOTH_EXPORT BluetoothUUID {
+class BluetoothUUID {
  public:
   // Possible representation formats used during construction.
-  enum Format {
-    kFormatInvalid,
-    kFormat16Bit,
-    kFormat32Bit,
-    kFormat128Bit
-  };
+  enum Format { kFormatInvalid, kFormat16Bit, kFormat32Bit, kFormat128Bit };
 
   // Single argument constructor. |uuid| can be a 16, 32, or 128 bit UUID
   // represented as a 4, 8, or 36 character string with the following
@@ -110,8 +104,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothUUID {
 };
 
 // This is required by gtest to print a readable output on test failures.
-void DEVICE_BLUETOOTH_EXPORT
-PrintTo(const BluetoothUUID& uuid, std::ostream* out);
+void PrintTo(const BluetoothUUID& uuid, std::ostream* out);
 
 struct BluetoothUUIDHash {
   size_t operator()(const device::BluetoothUUID& uuid) const {
@@ -121,4 +114,4 @@ struct BluetoothUUIDHash {
 
 }  // namespace device
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_UUID_H_
+#endif  // DEVICE_BLUETOOTH_PUBLIC_CPP_BLUETOOTH_UUID_H_

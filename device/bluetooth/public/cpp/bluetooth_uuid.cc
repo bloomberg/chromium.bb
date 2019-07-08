@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 #include <stddef.h>
 
@@ -73,7 +73,6 @@ void GetCanonicalUuid(std::string uuid,
 
 }  // namespace
 
-
 BluetoothUUID::BluetoothUUID(const std::string& uuid) {
   GetCanonicalUuid(uuid, &value_, &canonical_value_, &format_);
 }
@@ -90,8 +89,7 @@ BluetoothUUID::BluetoothUUID(GUID uuid) {
 }
 #endif  // defined(OS_WIN)
 
-BluetoothUUID::BluetoothUUID() : format_(kFormatInvalid) {
-}
+BluetoothUUID::BluetoothUUID() : format_(kFormatInvalid) {}
 
 BluetoothUUID::~BluetoothUUID() = default;
 

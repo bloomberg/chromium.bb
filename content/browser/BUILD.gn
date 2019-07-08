@@ -103,6 +103,7 @@ jumbo_source_set("browser") {
     "//crypto",
     "//device/base",
     "//device/bluetooth",
+    "//device/bluetooth/public/cpp",
     "//device/fido",
     "//device/gamepad",
     "//device/vr/public/mojom",
