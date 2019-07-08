@@ -2752,6 +2752,8 @@ crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computeds
 crbug.com/467127 [ Mac ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
 crbug.com/467127 [ Mac ] external/wpt/css/css-flexbox/ttwf-reftest-flex-wrap.html [ Failure ]
 
+crbug.com/972227 external/wpt/css/css-flexbox/overflow-auto-001.html [ Failure ]
+
 crbug.com/467127 external/wpt/css/css-flexbox/negative-margins-001.html [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-001a.xhtml [ Failure ]
 crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-001b.xhtml [ Failure ]
