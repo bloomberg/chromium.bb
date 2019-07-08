@@ -27675,6 +27675,7 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="kGLImplementationMockGL)"/>
   <int value="7" label="kGLImplementationStubGL"/>
   <int value="8" label="kGLImplementationDisabled"/>
+  <int value="9" label="kGLImplementationEGLANGLE"/>
 </enum>
 
 <enum name="GoogleCaptchaEvent">
