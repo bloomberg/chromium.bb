@@ -431,7 +431,8 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
 
 void LayerTreeHostImpl::BeginMainFrameAborted(
     CommitEarlyOutReason reason,
-    std::vector<std::unique_ptr<SwapPromise>> swap_promises) {
+    std::vector<std::unique_ptr<SwapPromise>> swap_promises,
+    const viz::BeginFrameArgs& args) {
   // If the begin frame data was handled, then scroll and scale set was applied
   // by the main thread, so the active tree needs to be updated as if these sent
   // values were applied and committed.
