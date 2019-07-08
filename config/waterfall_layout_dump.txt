@@ -289,6 +289,7 @@
   firmware-nocturne-10984.B-firmwarebranch
   firmware-nyan-5771.B-firmwarebranch
   firmware-oak-8438.B-firmwarebranch
+  firmware-octopus-11297.83.B-firmwarebranch
   firmware-octopus-11297.B-firmwarebranch
   firmware-orco-5216.362.B-firmwarebranch
   firmware-paine-6301.58.B-firmwarebranch
@@ -1768,6 +1769,7 @@
   firmware-nocturne-10984.B-firmwarebranch-tryjob
   firmware-nyan-5771.B-firmwarebranch-tryjob
   firmware-oak-8438.B-firmwarebranch-tryjob
+  firmware-octopus-11297.83.B-firmwarebranch-tryjob
   firmware-octopus-11297.B-firmwarebranch-tryjob
   firmware-orco-5216.362.B-firmwarebranch-tryjob
   firmware-paine-6301.58.B-firmwarebranch-tryjob
