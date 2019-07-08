@@ -30,8 +30,7 @@ static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 						  DRM_FORMAT_XRGB8888 };
 
 static const uint32_t dumb_texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU420,
-							DRM_FORMAT_YVU420_ANDROID,
-							DRM_FORMAT_NV12 };
+							DRM_FORMAT_YVU420_ANDROID };
 
 static const uint32_t texture_source_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_R8, DRM_FORMAT_RG88,
 						   DRM_FORMAT_YVU420_ANDROID };
@@ -210,20 +209,22 @@ static int virtio_gpu_init(struct driver *drv)
 	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
 			     &LINEAR_METADATA, BO_USE_RENDER_MASK | BO_USE_SCANOUT);
 
-	if (priv->has_3d)
+	if (priv->has_3d) {
 		drv_add_combinations(drv, texture_source_formats,
 				     ARRAY_SIZE(texture_source_formats), &LINEAR_METADATA,
 				     BO_USE_TEXTURE_MASK);
-	else
+	} else {
 		drv_add_combinations(drv, dumb_texture_source_formats,
 				     ARRAY_SIZE(dumb_texture_source_formats), &LINEAR_METADATA,
 				     BO_USE_TEXTURE_MASK);
+		drv_add_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
+				    BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_SW_MASK |
+					BO_USE_LINEAR);
+	}
 
 	/* Android CTS tests require this. */
 	drv_add_combination(drv, DRM_FORMAT_BGR888, &LINEAR_METADATA, BO_USE_SW_MASK);
 
-	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
-			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 	drv_modify_combination(drv, DRM_FORMAT_R8, &LINEAR_METADATA,
 			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 
