@@ -367,13 +367,6 @@ TEST_F(BackgroundLoaderOfflinerTest,
   profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
   EXPECT_FALSE(offliner()->LoadAndSave(request, completion_callback(),
                                        progress_callback()));
-  histograms().ExpectBucketCount(
-      "OfflinePages.Background.CctApiDisableStatus",
-      static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
-                           THIRD_PARTY_COOKIES_DISABLED),
-      1);
-  histograms().ExpectBucketCount("OfflinePages.Background.CctApiDisableStatus",
-                                 0 /* PRERENDER_ALLOWED */, 0);
 }
 
 TEST_F(BackgroundLoaderOfflinerTest,
@@ -388,16 +381,6 @@ TEST_F(BackgroundLoaderOfflinerTest,
       chrome_browser_net::NETWORK_PREDICTION_NEVER);
   EXPECT_FALSE(offliner()->LoadAndSave(request, completion_callback(),
                                        progress_callback()));
-  histograms().ExpectBucketCount(
-      "OfflinePages.Background.CctApiDisableStatus",
-      static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
-                           NETWORK_PREDICTION_DISABLED),
-      1);
-  histograms().ExpectBucketCount(
-      "OfflinePages.Background.CctApiDisableStatus",
-      static_cast<int>(
-          OfflinePagesCctApiPrerenderAllowedStatus::PRERENDER_ALLOWED),
-      0);
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, LoadAndSaveStartsLoading) {
