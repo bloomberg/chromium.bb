@@ -331,7 +331,7 @@ class QuickViewController {
       // Drive files: fetch their thumbnail if there is one.
       if (item.thumbnailUrl) {
         return this.loadThumbnailFromDrive_(item.thumbnailUrl).then(result => {
-          if (result.status === 'success') {
+          if (result.status === LoadImageResponseStatus.SUCCESS) {
             if (params.type == 'video') {
               params.videoPoster = result.data;
             } else if (params.type == 'image') {
@@ -355,7 +355,7 @@ class QuickViewController {
       // RAW files: fetch their ImageLoader thumbnail.
       return this.loadRawFileThumbnailFromImageLoader_(entry)
           .then(result => {
-            if (result.status === 'success') {
+            if (result.status === LoadImageResponseStatus.SUCCESS) {
               params.contentUrl = result.data;
               params.type = 'image';
             }
@@ -431,8 +431,7 @@ class QuickViewController {
    * Loads a thumbnail from Drive.
    *
    * @param {string} url Thumbnail url
-   * @return Promise<{{status: string, data:string, width:number,
-   *     height:number}}>
+   * @return Promise<!LoadImageResponse>
    * @private
    */
   loadThumbnailFromDrive_(url) {
@@ -449,13 +448,7 @@ class QuickViewController {
    * refresh the cached |entry| data with the most recent data.
    *
    * @param {!Entry} entry The RAW file entry.
-   * @return Promise<{{
-   *   status: string,
-   *   width: number,
-   *   height: number,
-   *   ifd: ?string,
-   *   data: string
-   * }}>
+   * @return Promise<!LoadImageResponse>
    * @private
    */
   loadRawFileThumbnailFromImageLoader_(entry) {
