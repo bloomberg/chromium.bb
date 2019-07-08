@@ -2,21 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_audio_renderer.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_renderer.h"
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
-#include "content/renderer/media/audio/audio_device_factory.h"
+#include "media/audio/audio_sink_parameters.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_parameters.h"
@@ -24,10 +20,26 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/webrtc/peer_connection_remote_audio_source.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
-namespace content {
+namespace WTF {
+
+template <typename T>
+struct CrossThreadCopier<rtc::scoped_refptr<T>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = rtc::scoped_refptr<T>;
+  static Type Copy(Type pointer) { return pointer; }
+};
+
+}  // namespace WTF
+
+namespace blink {
 
 namespace {
 
@@ -46,12 +58,12 @@ const int kRenderTimeHistogramMaxMicroseconds = 1 * 1000 * 1000;  // 1 second
 // and 'started' states to avoid problems related to incorrect usage which
 // might violate the implementation assumptions inside WebRtcAudioRenderer
 // (see the play reference count).
-class SharedAudioRenderer : public blink::WebMediaStreamAudioRenderer {
+class SharedAudioRenderer : public WebMediaStreamAudioRenderer {
  public:
   // Callback definition for a callback that is called when when Play(), Pause()
   // or SetVolume are called (whenever the internal |playing_state_| changes).
   using OnPlayStateChanged =
-      base::RepeatingCallback<void(const blink::WebMediaStream&,
+      base::RepeatingCallback<void(const WebMediaStream&,
                                    WebRtcAudioRenderer::PlayingState*)>;
 
   // Signals that the PlayingState* is about to become invalid, see comment in
@@ -60,8 +72,8 @@ class SharedAudioRenderer : public blink::WebMediaStreamAudioRenderer {
       base::OnceCallback<void(WebRtcAudioRenderer::PlayingState*)>;
 
   SharedAudioRenderer(
-      const scoped_refptr<blink::WebMediaStreamAudioRenderer>& delegate,
-      const blink::WebMediaStream& media_stream,
+      const scoped_refptr<WebMediaStreamAudioRenderer>& delegate,
+      const WebMediaStream& media_stream,
       const OnPlayStateChanged& on_play_state_changed,
       OnPlayStateRemoved on_play_state_removed)
       : delegate_(delegate),
@@ -139,8 +151,8 @@ class SharedAudioRenderer : public blink::WebMediaStreamAudioRenderer {
 
  private:
   THREAD_CHECKER(thread_checker_);
-  const scoped_refptr<blink::WebMediaStreamAudioRenderer> delegate_;
-  const blink::WebMediaStream media_stream_;
+  const scoped_refptr<WebMediaStreamAudioRenderer> delegate_;
+  const WebMediaStream media_stream_;
   bool started_;
   WebRtcAudioRenderer::PlayingState playing_state_;
   OnPlayStateChanged on_play_state_changed_;
@@ -149,14 +161,33 @@ class SharedAudioRenderer : public blink::WebMediaStreamAudioRenderer {
 
 }  // namespace
 
+class WebRtcAudioRenderer::InternalFrame {
+ public:
+  explicit InternalFrame(WebLocalFrame* web_frame)
+      : frame_(web_frame ? static_cast<LocalFrame*>(
+                               WebLocalFrame::ToCoreFrame(*web_frame))
+                         : nullptr) {}
+
+  LocalFrame* frame() { return frame_.Get(); }
+  WebLocalFrame* web_frame() {
+    if (!frame_)
+      return nullptr;
+
+    return static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame()));
+  }
+
+ private:
+  WeakPersistent<LocalFrame> frame_;
+};
+
 WebRtcAudioRenderer::WebRtcAudioRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
-    const blink::WebMediaStream& media_stream,
-    int source_render_frame_id,
+    const WebMediaStream& media_stream,
+    WebLocalFrame* web_frame,
     int session_id,
     const std::string& device_id)
     : state_(UNINITIALIZED),
-      source_render_frame_id_(source_render_frame_id),
+      source_internal_frame_(std::make_unique<InternalFrame>(web_frame)),
       session_id_(session_id),
       signaling_thread_(signaling_thread),
       media_stream_(media_stream),
@@ -165,9 +196,8 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       start_ref_count_(0),
       sink_params_(kFormat, kChannelLayout, 0, 0),
       output_device_id_(device_id) {
-  blink::WebRtcLogMessage(base::StringPrintf(
-      "WAR::WAR. source_render_frame_id=%d, session_id=%d, effects=%i",
-      source_render_frame_id, session_id, sink_params_.effects()));
+  WebRtcLogMessage(base::StringPrintf("WAR::WAR. session_id=%d, effects=%i",
+                                      session_id, sink_params_.effects()));
 }
 
 WebRtcAudioRenderer::~WebRtcAudioRenderer() {
@@ -189,8 +219,8 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
   media::AudioSinkParameters sink_params(session_id_, output_device_id_);
   sink_params.processing_id = source->GetAudioProcessingId();
-  sink_ = AudioDeviceFactory::NewAudioRendererSink(
-      blink::WebAudioDeviceSourceType::kWebRtc, source_render_frame_id_,
+  sink_ = Platform::Current()->NewAudioRendererSink(
+      WebAudioDeviceSourceType::kWebRtc, source_internal_frame_->web_frame(),
       sink_params);
 
   media::OutputDeviceStatus sink_status =
@@ -219,13 +249,15 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   return true;
 }
 
-scoped_refptr<blink::WebMediaStreamAudioRenderer>
+scoped_refptr<WebMediaStreamAudioRenderer>
 WebRtcAudioRenderer::CreateSharedAudioRendererProxy(
-    const blink::WebMediaStream& media_stream) {
+    const WebMediaStream& media_stream) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   SharedAudioRenderer::OnPlayStateChanged on_play_state_changed =
-      base::BindRepeating(&WebRtcAudioRenderer::OnPlayStateChanged, this);
+      WTF::BindRepeating(&WebRtcAudioRenderer::OnPlayStateChanged,
+                         WrapRefCounted(this));
   SharedAudioRenderer::OnPlayStateRemoved on_play_state_removed =
-      base::BindOnce(&WebRtcAudioRenderer::OnPlayStateRemoved, this);
+      WTF::Bind(&WebRtcAudioRenderer::OnPlayStateRemoved, WrapRefCounted(this));
   return new SharedAudioRenderer(this, media_stream,
                                  std::move(on_play_state_changed),
                                  std::move(on_play_state_removed));
@@ -329,7 +361,7 @@ void WebRtcAudioRenderer::Stop() {
   if (!max_render_time_.is_zero()) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Media.Audio.Render.GetSourceDataTimeMax.WebRTC",
-        max_render_time_.InMicroseconds(),
+        static_cast<int>(max_render_time_.InMicroseconds()),
         kRenderTimeHistogramMinMicroseconds,
         kRenderTimeHistogramMaxMicroseconds, 50);
     max_render_time_ = base::TimeDelta();
@@ -378,9 +410,9 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
   media::AudioSinkParameters sink_params(session_id_, device_id);
   sink_params.processing_id = source_->GetAudioProcessingId();
   scoped_refptr<media::AudioRendererSink> new_sink =
-      AudioDeviceFactory::NewAudioRendererSink(
-          blink::WebAudioDeviceSourceType::kWebRtc, source_render_frame_id_,
-          sink_params);
+      Platform::Current()->NewAudioRendererSink(
+          WebAudioDeviceSourceType::kWebRtc,
+          source_internal_frame_->web_frame(), sink_params);
   media::OutputDeviceStatus status =
       new_sink->GetOutputDeviceInfo().device_status();
   UMA_HISTOGRAM_ENUMERATION(
@@ -433,8 +465,9 @@ int WebRtcAudioRenderer::Render(base::TimeDelta delay,
     if (!audio_fifo_ && prior_frames_skipped != source_frames_per_buffer) {
       audio_fifo_ = std::make_unique<media::AudioPullFifo>(
           kChannels, source_frames_per_buffer,
-          base::BindRepeating(&WebRtcAudioRenderer::SourceCallback,
-                              base::Unretained(this)));
+          ConvertToBaseCallback(
+              CrossThreadBindRepeating(&WebRtcAudioRenderer::SourceCallback,
+                                       CrossThreadUnretained(this))));
     }
 
     std::unique_ptr<media::AudioBus> drop_bus =
@@ -460,15 +493,15 @@ void WebRtcAudioRenderer::OnRenderError() {
 }
 
 // Called by AudioPullFifo when more data is necessary.
-void WebRtcAudioRenderer::SourceCallback(
-    int fifo_frame_delay, media::AudioBus* audio_bus) {
+void WebRtcAudioRenderer::SourceCallback(int fifo_frame_delay,
+                                         media::AudioBus* audio_bus) {
   DCHECK(sink_->CurrentThreadIsRenderingThread());
   base::TimeTicks start_time = base::TimeTicks::Now();
-  DVLOG(2) << "WebRtcAudioRenderer::SourceCallback("
-           << fifo_frame_delay << ", "
+  DVLOG(2) << "WebRtcAudioRenderer::SourceCallback(" << fifo_frame_delay << ", "
            << audio_bus->frames() << ")";
 
-  int output_delay_milliseconds = audio_delay_.InMilliseconds();
+  int output_delay_milliseconds =
+      static_cast<int>(audio_delay_.InMilliseconds());
   // TODO(grunell): This integer division by sample_rate will cause loss of
   // partial milliseconds, and may cause avsync drift. http://crbug.com/586540
   output_delay_milliseconds += fifo_frame_delay *
@@ -479,8 +512,7 @@ void WebRtcAudioRenderer::SourceCallback(
   // We need to keep render data for the |source_| regardless of |state_|,
   // otherwise the data will be buffered up inside |source_|.
   source_->RenderData(audio_bus, sink_params_.sample_rate(),
-                      output_delay_milliseconds,
-                      &current_time_);
+                      output_delay_milliseconds, &current_time_);
 
   // Avoid filling up the audio bus if we are not playing; instead
   // return here and ensure that the returned value in Render() is 0.
@@ -492,7 +524,7 @@ void WebRtcAudioRenderer::SourceCallback(
   if (base::TimeTicks::IsHighResolution()) {
     base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
     UMA_HISTOGRAM_CUSTOM_COUNTS("Media.Audio.Render.GetSourceDataTime.WebRTC",
-                                elapsed.InMicroseconds(),
+                                static_cast<int>(elapsed.InMicroseconds()),
                                 kRenderTimeHistogramMinMicroseconds,
                                 kRenderTimeHistogramMaxMicroseconds, 50);
 
@@ -512,8 +544,8 @@ void WebRtcAudioRenderer::UpdateSourceVolume(
   auto entry = source_playing_states_.find(source);
   if (entry != source_playing_states_.end()) {
     PlayingStates& states = entry->second;
-    for (PlayingStates::const_iterator it = states.begin();
-         it != states.end(); ++it) {
+    for (PlayingStates::const_iterator it = states.begin(); it != states.end();
+         ++it) {
       if ((*it)->playing())
         volume += (*it)->volume();
     }
@@ -530,19 +562,18 @@ void WebRtcAudioRenderer::UpdateSourceVolume(
     // Libjingle hands out proxy objects in most cases, but the audio source
     // object is an exception (bug?).  So, to work around that, we need to make
     // sure we call SetVolume on the signaling thread.
-    signaling_thread_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&webrtc::AudioSourceInterface::SetVolume,
-                       rtc::scoped_refptr<webrtc::AudioSourceInterface>(source),
-                       volume));
+    PostCrossThreadTask(
+        *signaling_thread_, FROM_HERE,
+        CrossThreadBindOnce(
+            &webrtc::AudioSourceInterface::SetVolume,
+            rtc::scoped_refptr<webrtc::AudioSourceInterface>(source), volume));
   } else {
     source->SetVolume(volume);
   }
 }
 
-bool WebRtcAudioRenderer::AddPlayingState(
-    webrtc::AudioSourceInterface* source,
-    PlayingState* state) {
+bool WebRtcAudioRenderer::AddPlayingState(webrtc::AudioSourceInterface* source,
+                                          PlayingState* state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(state->playing());
   // Look up or add the |source| to the map.
@@ -577,20 +608,18 @@ bool WebRtcAudioRenderer::RemovePlayingState(
   return true;
 }
 
-void WebRtcAudioRenderer::OnPlayStateChanged(
-    const blink::WebMediaStream& media_stream,
-    PlayingState* state) {
+void WebRtcAudioRenderer::OnPlayStateChanged(const WebMediaStream& media_stream,
+                                             PlayingState* state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  blink::WebVector<blink::WebMediaStreamTrack> web_tracks =
-      media_stream.AudioTracks();
+  WebVector<WebMediaStreamTrack> web_tracks = media_stream.AudioTracks();
 
-  for (const blink::WebMediaStreamTrack& web_track : web_tracks) {
+  for (const WebMediaStreamTrack& web_track : web_tracks) {
     // WebRtcAudioRenderer can only render audio tracks received from a remote
     // peer. Since the actual MediaStream is mutable from JavaScript, we need
     // to make sure |web_track| is actually a remote track.
-    blink::PeerConnectionRemoteAudioTrack* const remote_track =
-        blink::PeerConnectionRemoteAudioTrack::From(
-            blink::MediaStreamAudioTrack::From(web_track));
+    PeerConnectionRemoteAudioTrack* const remote_track =
+        PeerConnectionRemoteAudioTrack::From(
+            MediaStreamAudioTrack::From(web_track));
     if (!remote_track)
       continue;
     webrtc::AudioSourceInterface* source =
@@ -686,16 +715,18 @@ void WebRtcAudioRenderer::PrepareSink() {
          audio_fifo_->SizeInFrames() != source_frames_per_buffer)) {
       audio_fifo_ = std::make_unique<media::AudioPullFifo>(
           kChannels, source_frames_per_buffer,
-          base::BindRepeating(&WebRtcAudioRenderer::SourceCallback,
-                              base::Unretained(this)));
+          ConvertToBaseCallback(
+              CrossThreadBindRepeating(&WebRtcAudioRenderer::SourceCallback,
+                                       CrossThreadUnretained(this))));
     }
     sink_params_ = new_sink_params;
   }
 
   // Specify the latency info to be passed to the browser side.
-  new_sink_params.set_latency_tag(AudioDeviceFactory::GetSourceLatencyType(
-      blink::WebAudioDeviceSourceType::kWebRtc));
+  new_sink_params.set_latency_tag(
+      Platform::Current()->GetAudioSourceLatencyType(
+          WebAudioDeviceSourceType::kWebRtc));
   sink_->Initialize(new_sink_params, this);
 }
 
-}  // namespace content
+}  // namespace blink

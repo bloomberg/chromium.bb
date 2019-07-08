@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_AUDIO_RENDERER_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_AUDIO_RENDERER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_RENDERER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_RENDERER_H_
 
 #include <stdint.h>
 
@@ -18,25 +18,27 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_pull_fifo.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/channel_layout.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_source.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 
 namespace webrtc {
 class AudioSourceInterface;
 }  // namespace webrtc
 
-namespace content {
+namespace blink {
 
+class WebLocalFrame;
 class WebRtcAudioRendererSource;
 
 // This renderer handles calls from the pipeline and WebRtc ADM. It is used
 // for connecting WebRtc MediaStream with the audio pipeline.
-class CONTENT_EXPORT WebRtcAudioRenderer
+class BLINK_MODULES_EXPORT WebRtcAudioRenderer
     : public media::AudioRendererSink::RenderCallback,
       public blink::WebMediaStreamAudioRenderer {
  public:
@@ -81,7 +83,7 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   WebRtcAudioRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
       const blink::WebMediaStream& media_stream,
-      int source_render_frame_id,
+      WebLocalFrame* web_frame,
       int session_id,
       const std::string& device_id);
 
@@ -203,8 +205,13 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // |sink_|.
   void PrepareSink();
 
-  // The RenderFrame in which the audio is rendered into |sink_|.
-  const int source_render_frame_id_;
+  // The WebLocalFrame in which the audio is rendered into |sink_|.
+  //
+  // TODO(crbug.com/704136): Replace |source_internal_frame_| with regular
+  // fields once this header file moves to blink/renderer.
+  class InternalFrame;
+  std::unique_ptr<InternalFrame> source_internal_frame_;
+
   const int session_id_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
@@ -216,6 +223,8 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   const blink::WebMediaStream media_stream_;
 
   // Audio data source from the browser process.
+  //
+  // TODO(crbug.com/704136): Make it a Member.
   WebRtcAudioRendererSource* source_;
 
   // Protects access to |state_|, |source_|, |audio_fifo_|,
@@ -263,6 +272,6 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebRtcAudioRenderer);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_AUDIO_RENDERER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_RENDERER_H_
