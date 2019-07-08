@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/utils.h"
 #include "libassistant/shared/public/platform_audio_buffer.h"
@@ -70,6 +71,11 @@ class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
       input_->RecreateAudioInputStream(false /* use_dsp */);
     }
     stream_state_ = StreamState::NORMAL;
+
+    // Inform power manager of the user activity happened every time
+    // Libassistant recognized hotword and started a conversation.
+    chromeos::PowerManagerClient::Get()->NotifyUserActivity(
+        power_manager::USER_ACTIVITY_OTHER);
   }
 
   // Runs on main thread.
