@@ -537,7 +537,7 @@ bool Display::DrawAndSwap() {
       frame.metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
       frame.metadata.latency_info.back().AddLatencyNumberWithTimestamp(
           ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT,
-          scheduler_->current_frame_time(), 1);
+          scheduler_->current_frame_time());
     }
 
     std::vector<std::unique_ptr<Surface::PresentationHelper>>
