@@ -8,11 +8,11 @@ import { Logger, LiveTestCaseResult } from '../framework/logger.js';
 import { TestSpecID } from '../framework/id.js';
 import { makeQueryString } from '../framework/url_query.js';
 
-function usage(rc: number) {
+function usage(rc: number): never {
   console.log('Usage:');
   console.log('  tools/run [QUERIES...]');
   console.log('  tools/run unittests: cts:buffers/');
-  process.exit(rc);
+  return process.exit(rc);
 }
 
 if (process.argv.length <= 2) {
@@ -99,10 +99,10 @@ for (const a of process.argv.slice(2)) {
 
     const total = running.length;
     const passed = total - warned.length - failed.length;
-    function pct(x: number) {
+    function pct(x: number): string {
       return ((100 * x) / total).toFixed(2);
     }
-    function rpt(x: number) {
+    function rpt(x: number): string {
       const xs = x.toString().padStart(1 + Math.log10(total), ' ');
       return `${xs} / ${total} = ${pct(x).padStart(6, ' ')}%`;
     }

@@ -6,7 +6,7 @@ import * as path from 'path';
 import * as process from 'process';
 import { crawl } from './crawl.js';
 
-function usage(rc: number) {
+function usage(rc: number): void {
   console.error('Usage:');
   console.error('  tools/gen [SUITES...]');
   console.error('  tools/gen cts unittests');

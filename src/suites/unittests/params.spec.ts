@@ -9,6 +9,7 @@ import {
   pfilter,
   pexclude,
   ParamsAny,
+  ParamsSpec,
 } from '../../framework/index.js';
 import { TestGroupTest } from './test_group_test.js';
 
@@ -57,7 +58,7 @@ g.test('generator', t0 => {
   g.test('generator', t => {
     ran.push(t.params);
   }).params(
-    (function*() {
+    (function*(): IterableIterator<ParamsSpec> {
       for (let x = 0; x < 3; ++x) {
         for (let y = 0; y < 2; ++y) {
           yield { x, y };

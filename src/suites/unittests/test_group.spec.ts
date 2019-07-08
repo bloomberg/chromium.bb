@@ -9,14 +9,14 @@ export const g = new TestGroup(TestGroupTest);
 
 g.test('default fixture', async t0 => {
   let seen = 0;
-  function print(t: Fixture) {
+  function count(t: Fixture): void {
     seen++;
   }
 
   const g = new TestGroup(DefaultFixture);
 
-  g.test('test', print);
-  g.test('testp', print).params([{ a: 1 }]);
+  g.test('test', count);
+  g.test('testp', count).params([{ a: 1 }]);
 
   await t0.run(g);
   t0.expect(seen === 2);
@@ -24,19 +24,19 @@ g.test('default fixture', async t0 => {
 
 g.test('custom fixture', async t0 => {
   let seen = 0;
-  class Printer extends DefaultFixture {
-    print() {
+  class Counter extends DefaultFixture {
+    count(): void {
       seen++;
     }
   }
 
-  const g = new TestGroup(Printer);
+  const g = new TestGroup(Counter);
 
   g.test('test', t => {
-    t.print();
+    t.count();
   });
   g.test('testp', t => {
-    t.print();
+    t.count();
   }).params([{ a: 1 }]);
 
   await t0.run(g);

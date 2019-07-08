@@ -28,7 +28,7 @@ declare function async_test(f: (this: WptTestObject) => Promise<void>, name: str
       const run = t.run();
       running.push(run);
       // Note: apparently, async_tests must ALL be added within the same task.
-      async_test(async function(this: WptTestObject) {
+      async_test(async function(this: WptTestObject): Promise<void> {
         const r = await run;
         this.step(() => {
           if (r.status === 'fail') {

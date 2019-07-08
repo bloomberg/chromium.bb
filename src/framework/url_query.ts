@@ -1,6 +1,6 @@
 import { TestCaseID, TestSpecID } from './id.js';
 
-export function encodeSelectively(s: string) {
+export function encodeSelectively(s: string): string {
   let ret = encodeURIComponent(s);
   ret = ret.replace(/%20/g, '+'); // Encode space with + (equivalent but more readable)
   ret = ret.replace(/%22/g, '"');

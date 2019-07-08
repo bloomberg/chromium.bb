@@ -1,6 +1,6 @@
 import { ParamsSpec, paramsEquals, ParamSpecIterable, ParamSpecIterator } from './index.js';
 
-export function pexclude(params: ParamSpecIterable, exclude: ParamSpecIterable) {
+export function pexclude(params: ParamSpecIterable, exclude: ParamSpecIterable): PExclude {
   return new PExclude(params, exclude);
 }
 

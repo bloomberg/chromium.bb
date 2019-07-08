@@ -1,6 +1,6 @@
 import { ParamArgument, ParamSpecIterable, ParamSpecIterator } from './index.js';
 
-export function poptions(name: string, values: ParamArgument[]) {
+export function poptions(name: string, values: ParamArgument[]): POptions {
   return new POptions(name, values);
 }
 

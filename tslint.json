@@ -1,11 +1,10 @@
 {
   "extends": "gts/tslint.json",
   "rules": {
-    "no-console": [true]
+    "no-console": [true],
+    "typedef": [true, "call-signature", "parameter", "property-declaration"]
   },
   "linterOptions": {
-    "exclude": [
-      "**/*.json"
-    ]
+    "exclude": ["**/*.json"]
   }
 }

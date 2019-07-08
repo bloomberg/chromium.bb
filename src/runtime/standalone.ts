@@ -48,7 +48,7 @@ function makeTest(spec: TestSpecID, description: string): HTMLElement {
   return testcases[0];
 }
 
-function mkCase(testcasesVis: HTMLElement, query: string, t: RunCase) {
+function mkCase(testcasesVis: HTMLElement, query: string, t: RunCase): () => Promise<void> {
   const testcase = $('<div>')
     .addClass('testcase')
     .appendTo(testcasesVis);

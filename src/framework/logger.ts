@@ -60,14 +60,14 @@ export class CaseRecorder {
     this.result = result;
   }
 
-  start() {
+  start(): void {
     this.startTime = now();
     this.logs = [];
     this.failed = false;
     this.warned = false;
   }
 
-  finish() {
+  finish(): void {
     if (this.startTime < 0) {
       throw new Error('finish() before start()');
     }
@@ -78,11 +78,11 @@ export class CaseRecorder {
     this.result.logs = this.logs;
   }
 
-  log(msg: string) {
+  log(msg: string): void {
     this.logs.push(msg);
   }
 
-  warn(msg?: string) {
+  warn(msg?: string): void {
     this.warned = true;
     let m = 'WARN';
     if (msg) {
@@ -92,7 +92,7 @@ export class CaseRecorder {
     this.log(m);
   }
 
-  fail(msg?: string) {
+  fail(msg?: string): void {
     this.failed = true;
     let m = 'FAIL';
     if (msg) {
@@ -102,7 +102,7 @@ export class CaseRecorder {
     this.log(m);
   }
 
-  threw(e: Error) {
+  threw(e: Error): void {
     this.failed = true;
     let m = 'EXCEPTION';
     m += ' ' + getStackTrace(e);

@@ -7,6 +7,7 @@ import { TestLoader, TestFileLoader, TestSpecOrReadme } from '../../framework/lo
 import { TestSuiteListingEntry, TestSuiteListing } from '../../framework/listing.js';
 import { Logger } from '../../framework/logger.js';
 import { objectEquals } from '../../framework/util/index.js';
+import { TestFilterResult } from '../../framework/test_filter/index.js';
 
 const listingData: { [k: string]: TestSuiteListingEntry[] } = {
   suite1: [
@@ -83,7 +84,7 @@ class FakeTestFileLoader implements TestFileLoader {
 class LoadingTest extends DefaultFixture {
   loader: TestLoader = new TestLoader(new FakeTestFileLoader());
 
-  async load(filters: string[]) {
+  async load(filters: string[]): Promise<TestFilterResult[]> {
     return Array.from(await this.loader.loadTests(filters));
   }
 

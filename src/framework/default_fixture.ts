@@ -3,7 +3,7 @@ import { Fixture } from './fixture.js';
 export class DefaultFixture extends Fixture {
   private outstanding = 0;
 
-  finalize() {
+  finalize(): void {
     if (this.outstanding !== 0) {
       throw new Error(
         'there were outstanding asynchronous expectations (e.g. shouldReject) at the end of the test'
@@ -11,15 +11,15 @@ export class DefaultFixture extends Fixture {
     }
   }
 
-  warn(msg?: string) {
+  warn(msg?: string): void {
     this.rec.warn(msg);
   }
 
-  fail(msg?: string) {
+  fail(msg?: string): void {
     this.rec.fail(msg);
   }
 
-  ok(msg?: string) {
+  ok(msg?: string): void {
     const m = msg ? ': ' + msg : '';
     this.log('OK' + m);
   }
@@ -36,7 +36,7 @@ export class DefaultFixture extends Fixture {
     this.outstanding--;
   }
 
-  shouldThrow(fn: () => void, msg?: string) {
+  shouldThrow(fn: () => void, msg?: string): void {
     const m = msg ? ': ' + msg : '';
     try {
       fn();

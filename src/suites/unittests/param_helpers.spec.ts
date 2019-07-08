@@ -15,7 +15,7 @@ import {
 } from '../../framework/index.js';
 
 class ParamsTest extends DefaultFixture {
-  expectSpecEqual(act: ParamSpecIterable, exp: ParamsSpec[]) {
+  expectSpecEqual(act: ParamSpecIterable, exp: ParamsSpec[]): void {
     const a = Array.from(act);
     this.expect(a.length === exp.length && a.every((x, i) => paramsEquals(x, exp[i])));
   }

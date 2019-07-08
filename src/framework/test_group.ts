@@ -33,7 +33,7 @@ export class TestGroup<F extends Fixture> implements RunCaseIterable {
     }
   }
 
-  private checkName(name: string) {
+  private checkName(name: string): void {
     if (!validNames.test(name)) {
       throw new Error(`Invalid test name ${name}; must match [${validNames}]+`);
     }

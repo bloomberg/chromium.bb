@@ -19,7 +19,7 @@ export abstract class Fixture {
 
   finalize(): void {}
 
-  log(msg: string) {
+  log(msg: string): void {
     this.rec.log(msg);
   }
 }
