@@ -1044,11 +1044,6 @@ void Widget::OnSizeConstraintsChanged() {
 
 void Widget::OnOwnerClosing() {}
 
-void Widget::OnCanActivateChanged() {
-  if (native_widget_)
-    native_widget_->OnCanActivateChanged();
-}
-
 std::string Widget::GetName() const {
   return native_widget_->GetName();
 }

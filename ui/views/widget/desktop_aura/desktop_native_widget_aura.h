@@ -191,7 +191,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   bool IsTranslucentWindowOpacitySupported() const override;
   ui::GestureRecognizer* GetGestureRecognizer() override;
   void OnSizeConstraintsChanged() override;
-  void OnCanActivateChanged() override;
   std::string GetName() const override;
 
   // Overridden from aura::WindowDelegate:

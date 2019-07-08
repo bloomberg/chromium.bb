@@ -813,9 +813,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Called when the delegate's CanResize or CanMaximize changes.
   void OnSizeConstraintsChanged();
 
-  // Called when WidgetDelegate::CanActivate() changes.
-  void OnCanActivateChanged();
-
   // Notification that our owner is closing.
   // NOTE: this is not invoked for aura as it's currently not needed there.
   // Under aura menus close by way of activation getting reset when the owner
