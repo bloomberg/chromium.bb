@@ -3049,6 +3049,7 @@ jumbo_split_static_library("ui") {
       "//components/constrained_window",
       "//components/payments/content",
       "//components/payments/core",
+      "//components/tab_count_metrics",
       "//components/ui_devtools/views",
       "//device/vr/buildflags:buildflags",
       "//services/ws/public/cpp/input_devices",
