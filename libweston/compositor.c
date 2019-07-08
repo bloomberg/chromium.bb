@@ -75,6 +75,8 @@
 #include "backend.h"
 #include "libweston-internal.h"
 
+#include "weston-log-internal.h"
+
 /**
  * \defgroup head Head
  * \defgroup output Output

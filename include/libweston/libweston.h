@@ -1816,10 +1816,6 @@ typedef int (*log_func_t)(const char *fmt, va_list ap);
 void
 weston_log_set_handler(log_func_t log, log_func_t cont);
 int
-weston_vlog(const char *fmt, va_list ap);
-int
-weston_vlog_continue(const char *fmt, va_list ap);
-int
 weston_log(const char *fmt, ...)
 	__attribute__ ((format (printf, 1, 2)));
 int
@@ -2036,10 +2032,6 @@ weston_compositor_enable_touch_calibrator(struct weston_compositor *compositor,
 
 struct weston_log_context *
 weston_log_ctx_compositor_create(void);
-
-int
-weston_log_ctx_compositor_setup(struct weston_compositor *compositor,
-			      struct weston_log_context *log_ctx);
 
 void
 weston_log_ctx_compositor_destroy(struct weston_compositor *compositor);
