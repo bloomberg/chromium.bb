@@ -626,7 +626,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // OnDragDone() is called on it. |location| is in the widget's coordinate
   // system.
   void RunShellDrag(View* view,
-                    const ui::OSExchangeData& data,
+                    std::unique_ptr<ui::OSExchangeData> data,
                     const gfx::Point& location,
                     int operation,
                     ui::DragDropTypes::DragEventSource source);

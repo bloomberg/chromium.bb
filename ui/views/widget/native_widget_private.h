@@ -204,7 +204,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void SetAspectRatio(const gfx::SizeF& aspect_ratio) = 0;
   virtual void FlashFrame(bool flash) = 0;
   virtual void RunShellDrag(View* view,
-                            const ui::OSExchangeData& data,
+                            std::unique_ptr<ui::OSExchangeData> data,
                             const gfx::Point& location,
                             int operation,
                             ui::DragDropTypes::DragEventSource source) = 0;
