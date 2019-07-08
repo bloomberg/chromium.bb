@@ -587,6 +587,13 @@ TEST_F(BackgroundLoaderOfflinerTest, ResetsWhenDownloadEncountered) {
   EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED_DOWNLOAD, request_status());
 }
 
+TEST_F(BackgroundLoaderOfflinerTest, CanDownloadReturnsIfNoPendingRequest) {
+  offliner()->CanDownload(can_download_callback());
+  PumpLoop();
+  EXPECT_TRUE(can_download_callback_called());
+  EXPECT_FALSE(can_download());
+}
+
 TEST_F(BackgroundLoaderOfflinerTest, FailsOnInvalidURL) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(kRequestId, kFileUrl, kClientId, creation_time,

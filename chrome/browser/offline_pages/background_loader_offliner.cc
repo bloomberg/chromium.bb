@@ -294,6 +294,7 @@ void BackgroundLoaderOffliner::CanDownload(
     base::OnceCallback<void(bool)> callback) {
   if (!pending_request_.get()) {
     std::move(callback).Run(false);  // Shouldn't happen though...
+    return;
   }
 
   bool should_allow_downloads = false;
