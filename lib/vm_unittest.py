@@ -250,3 +250,25 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     self.assertRaises(AssertionError, self._vm._CreateVMDir)
     getuid_mock.assert_called()
     make_dir_mock.assert_called()
+
+  def testQemuVersionError(self):
+    """Verify that VMError is raised without an expected QEMU version number."""
+    version_str = 'Fake Version String'
+    self.rc.AddCmdResult(partial_mock.In('--version'), output=version_str)
+    self.assertRaises(vm.VMError, self._vm._SetQemuPath)
+
+  def testQemuVersion(self):
+    """Verify that the correct QEMU version is identified."""
+    version_str = ('QEMU emulator version 2.8.0, Copyright (c) '
+                   '2003-2008 Fabrice Bellard')
+    self.rc.AddCmdResult(partial_mock.In('--version'), output=version_str)
+    self._vm._SetQemuPath()
+    self.assertEquals('2.8.0', self._vm.QemuVersion())
+    self.assertCommandContains([self._vm.qemu_path, '--version'])
+
+  def testCheckQemuError(self):
+    """Verify that VMError is raised when the QEMU version is too old."""
+    version_str = ('QEMU emulator version 2.5.0, Copyright (c) '
+                   '2003-2008 Fabrice Bellard')
+    self.rc.AddCmdResult(partial_mock.In('--version'), output=version_str)
+    self.assertRaises(vm.VMError, self._vm._SetQemuPath)
