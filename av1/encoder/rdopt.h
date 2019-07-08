@@ -374,6 +374,14 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
       // Set default transform type prune mode for winner mode evaluation
       set_tx_type_prune(
           sf, x, sf->tx_type_search.enable_winner_mode_tx_type_pruning, 1);
+
+      // Reset hash state for winner mode processing. Winner mode and subsequent
+      // transform/mode evaluations (palette/IntraBC) cann't reuse old data as
+      // the decisions would have been sub-optimal
+      // TODO(any): Move the evaluation of palette/IntraBC modes before winner
+      // mode is processed and clean-up the code below
+      reset_hash_records(x);
+
       break;
     default: assert(0);
   }

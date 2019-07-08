@@ -396,8 +396,6 @@ static void set_good_speed_features_framesize_independent(
     // TODO(any): Experiment with the early exit mechanism for speeds 0, 1 and 2
     // and clean-up the speed feature
     sf->perform_best_rd_based_gating_for_chroma = 1;
-    // TODO(any): Experiment on the dependency of this speed feature with
-    // use_intra_txb_hash, use_inter_txb_hash and use_mb_rd_hash speed features
     // TODO(any): Refactor the code related to following winner mode speed
     // features
     sf->enable_winner_mode_for_coeff_opt = 1;
@@ -421,6 +419,8 @@ static void set_good_speed_features_framesize_independent(
 
   if (speed >= 4) {
     sf->selective_ref_frame = 4;
+    // TODO(any): Experiment with enabling of this speed feature as hash state
+    // is reset during winner mode processing
     sf->use_intra_txb_hash = 0;
     sf->tx_type_search.fast_intra_tx_type_search = 1;
     sf->disable_loop_restoration_chroma =

@@ -11732,81 +11732,83 @@ static AOM_INLINE void refine_winner_mode_tx(
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const int num_planes = av1_num_planes(cm);
 
-  if (xd->lossless[mbmi->segment_id] == 0 && best_mode_index != THR_INVALID &&
-      is_winner_mode_processing_enabled(cpi, mbmi, best_mbmode->mode)) {
-    int skip_blk = 0;
-    RD_STATS rd_stats_y, rd_stats_uv;
-    const int skip_ctx = av1_get_skip_context(xd);
-
+  if (is_winner_mode_processing_enabled(cpi, mbmi, best_mbmode->mode)) {
     // Set params for winner mode evaluation
     set_mode_eval_params(cpi, x, WINNER_MODE_EVAL);
 
-    *mbmi = *best_mbmode;
+    if (xd->lossless[mbmi->segment_id] == 0 && best_mode_index != THR_INVALID) {
+      int skip_blk = 0;
+      RD_STATS rd_stats_y, rd_stats_uv;
+      const int skip_ctx = av1_get_skip_context(xd);
 
-    set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
+      *mbmi = *best_mbmode;
 
-    // Select prediction reference frames.
-    for (int i = 0; i < num_planes; i++) {
-      xd->plane[i].pre[0] = yv12_mb[mbmi->ref_frame[0]][i];
-      if (has_second_ref(mbmi))
-        xd->plane[i].pre[1] = yv12_mb[mbmi->ref_frame[1]][i];
-    }
+      set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
 
-    if (is_inter_mode(mbmi->mode)) {
-      const int mi_row = xd->mi_row;
-      const int mi_col = xd->mi_col;
-      av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize, 0,
-                                    av1_num_planes(cm) - 1);
-      if (mbmi->motion_mode == OBMC_CAUSAL)
-        av1_build_obmc_inter_predictors_sb(cm, xd);
+      // Select prediction reference frames.
+      for (int i = 0; i < num_planes; i++) {
+        xd->plane[i].pre[0] = yv12_mb[mbmi->ref_frame[0]][i];
+        if (has_second_ref(mbmi))
+          xd->plane[i].pre[1] = yv12_mb[mbmi->ref_frame[1]][i];
+      }
 
-      av1_subtract_plane(x, bsize, 0);
-      if (x->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
-        pick_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
-        assert(rd_stats_y.rate != INT_MAX);
+      if (is_inter_mode(mbmi->mode)) {
+        const int mi_row = xd->mi_row;
+        const int mi_col = xd->mi_col;
+        av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize, 0,
+                                      av1_num_planes(cm) - 1);
+        if (mbmi->motion_mode == OBMC_CAUSAL)
+          av1_build_obmc_inter_predictors_sb(cm, xd);
+
+        av1_subtract_plane(x, bsize, 0);
+        if (x->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
+          pick_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+          assert(rd_stats_y.rate != INT_MAX);
+        } else {
+          super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+          memset(mbmi->inter_tx_size, mbmi->tx_size,
+                 sizeof(mbmi->inter_tx_size));
+          for (int i = 0; i < xd->n4_h * xd->n4_w; ++i)
+            set_blk_skip(x, 0, i, rd_stats_y.skip);
+        }
       } else {
         super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
-        memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
-        for (int i = 0; i < xd->n4_h * xd->n4_w; ++i)
-          set_blk_skip(x, 0, i, rd_stats_y.skip);
       }
-    } else {
-      super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
-    }
 
-    if (num_planes > 1) {
-      super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
-    } else {
-      av1_init_rd_stats(&rd_stats_uv);
-    }
+      if (num_planes > 1) {
+        super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
+      } else {
+        av1_init_rd_stats(&rd_stats_uv);
+      }
 
-    if (RDCOST(x->rdmult,
-               x->skip_cost[skip_ctx][0] + rd_stats_y.rate + rd_stats_uv.rate,
-               (rd_stats_y.dist + rd_stats_uv.dist)) >
-        RDCOST(x->rdmult, x->skip_cost[skip_ctx][1],
-               (rd_stats_y.sse + rd_stats_uv.sse))) {
-      skip_blk = 1;
-      rd_stats_y.rate = x->skip_cost[skip_ctx][1];
-      rd_stats_uv.rate = 0;
-      rd_stats_y.dist = rd_stats_y.sse;
-      rd_stats_uv.dist = rd_stats_uv.sse;
-    } else {
-      skip_blk = 0;
-      rd_stats_y.rate += x->skip_cost[skip_ctx][0];
-    }
+      if (RDCOST(x->rdmult,
+                 x->skip_cost[skip_ctx][0] + rd_stats_y.rate + rd_stats_uv.rate,
+                 (rd_stats_y.dist + rd_stats_uv.dist)) >
+          RDCOST(x->rdmult, x->skip_cost[skip_ctx][1],
+                 (rd_stats_y.sse + rd_stats_uv.sse))) {
+        skip_blk = 1;
+        rd_stats_y.rate = x->skip_cost[skip_ctx][1];
+        rd_stats_uv.rate = 0;
+        rd_stats_y.dist = rd_stats_y.sse;
+        rd_stats_uv.dist = rd_stats_uv.sse;
+      } else {
+        skip_blk = 0;
+        rd_stats_y.rate += x->skip_cost[skip_ctx][0];
+      }
 
-    if (RDCOST(x->rdmult, best_rate_y + best_rate_uv, rd_cost->dist) >
-        RDCOST(x->rdmult, rd_stats_y.rate + rd_stats_uv.rate,
-               (rd_stats_y.dist + rd_stats_uv.dist))) {
-      best_mbmode->tx_size = mbmi->tx_size;
-      av1_copy(best_mbmode->inter_tx_size, mbmi->inter_tx_size);
-      av1_copy_array(ctx->blk_skip, x->blk_skip, ctx->num_4x4_blk);
-      av1_copy_array(ctx->tx_type_map, xd->tx_type_map, ctx->num_4x4_blk);
-      rd_cost->rate +=
-          (rd_stats_y.rate + rd_stats_uv.rate - best_rate_y - best_rate_uv);
-      rd_cost->dist = rd_stats_y.dist + rd_stats_uv.dist;
-      rd_cost->rdcost = RDCOST(x->rdmult, rd_cost->rate, rd_cost->dist);
-      *best_skip2 = skip_blk;
+      if (RDCOST(x->rdmult, best_rate_y + best_rate_uv, rd_cost->dist) >
+          RDCOST(x->rdmult, rd_stats_y.rate + rd_stats_uv.rate,
+                 (rd_stats_y.dist + rd_stats_uv.dist))) {
+        best_mbmode->tx_size = mbmi->tx_size;
+        av1_copy(best_mbmode->inter_tx_size, mbmi->inter_tx_size);
+        av1_copy_array(ctx->blk_skip, x->blk_skip, ctx->num_4x4_blk);
+        av1_copy_array(ctx->tx_type_map, xd->tx_type_map, ctx->num_4x4_blk);
+        rd_cost->rate +=
+            (rd_stats_y.rate + rd_stats_uv.rate - best_rate_y - best_rate_uv);
+        rd_cost->dist = rd_stats_y.dist + rd_stats_uv.dist;
+        rd_cost->rdcost = RDCOST(x->rdmult, rd_cost->rate, rd_cost->dist);
+        *best_skip2 = skip_blk;
+      }
     }
   }
 }
