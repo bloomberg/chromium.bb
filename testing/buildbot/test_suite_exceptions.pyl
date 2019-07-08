@@ -1424,13 +1424,6 @@
         },
         'experiment_percentage': 100,
       },
-      # luci.chromium.ci
-      'linux-tcmalloc-rel': {
-        'args': [
-          '--xvfb',
-          '--jobs=1',
-        ],
-      },
     },
     'remove_from': [
       # crbug.com/936540

@@ -1826,16 +1826,6 @@
           'gtest_tests': 'fieldtrial_gtests',
         },
       },
-      'linux-tcmalloc-rel': {
-        'mixins': [
-          'linux-trusty',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
-          'scripts': 'chromium_linux_scripts',
-        },
-      },
       'mac-hermetic-upgrade-rel': {
         'additional_compile_targets': [
           'all'
