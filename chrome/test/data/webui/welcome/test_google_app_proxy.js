@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {nux.AppProxy} */
-class TestNuxAppProxy extends TestBrowserProxy {
+/** @implements {nux.GoogleAppProxy} */
+class TestGoogleAppProxy extends TestBrowserProxy {
   constructor() {
     super([
       'cacheBookmarkIcon',
