@@ -21,7 +21,7 @@ declare function async_test(f: (this: WptTestObject) => Promise<void>, name: str
   );
 
   for (const qr of queryResults) {
-    if (!qr.spec.g) {
+    if (!('g' in qr.spec)) {
       continue;
     }
 

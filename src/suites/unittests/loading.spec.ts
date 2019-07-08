@@ -9,7 +9,7 @@ import {
   TestGroup,
   RunCase,
 } from '../../framework/index.js';
-import { TestSpecFile, TestLoader, TestFileLoader } from '../../framework/loader.js';
+import { TestLoader, TestFileLoader, TestSpecOrReadme } from '../../framework/loader.js';
 import { TestSuiteListingEntry, TestSuiteListing } from '../../framework/listing.js';
 import { Logger } from '../../framework/logger.js';
 
@@ -24,7 +24,7 @@ const listingData: { [k: string]: TestSuiteListingEntry[] } = {
   suite2: [{ path: '', description: 'desc 2a' }, { path: 'foof', description: 'desc 2b' }],
 };
 
-const specsData: { [k: string]: TestSpecFile } = {
+const specsData: { [k: string]: TestSpecOrReadme } = {
   'suite1/README.txt': { description: 'desc 1a' },
   'suite1/foo.spec.js': {
     description: 'desc 1b',
@@ -77,7 +77,7 @@ class FakeTestFileLoader implements TestFileLoader {
     return listingData[suite];
   }
 
-  async import(path: string): Promise<TestSpecFile> {
+  async import(path: string): Promise<TestSpecOrReadme> {
     if (!specsData.hasOwnProperty(path)) {
       throw new Error('[test] mock file ' + path + ' does not exist');
     }
@@ -91,7 +91,7 @@ class LoadingTest extends DefaultFixture {
   async load(filters: string[]) {
     const listing = await this.loader.loadTests(filters);
     const entries = Promise.all(
-      Array.from(listing, ({ id, spec }) => spec.then((s: TestSpecFile) => ({ id, spec: s })))
+      Array.from(listing, ({ id, spec }) => spec.then((s: TestSpecOrReadme) => ({ id, spec: s })))
     );
     return entries;
   }
@@ -102,11 +102,11 @@ class LoadingTest extends DefaultFixture {
     if (a.length !== 1) {
       throw new Error('more than one group');
     }
-    const g = a[0].spec.g;
-    if (g === undefined) {
+    const spec = a[0].spec;
+    if (!('g' in spec)) {
       throw new Error('group undefined');
     }
-    return Array.from(g.iterate(rec));
+    return Array.from(spec.g.iterate(rec));
   }
 }
 
@@ -139,7 +139,7 @@ g.test('whole group', async t => {
     const foo = (await t.load(['suite1:foo:']))[0];
     t.expect(foo.id.suite === 'suite1');
     t.expect(foo.id.path === 'foo');
-    if (foo.spec.g === undefined) {
+    if (!('g' in foo.spec)) {
       throw new Error('foo group');
     }
     const [rec] = new Logger().record({ suite: '', path: '' });
@@ -182,7 +182,7 @@ g.test('end2end', async t => {
   t.expect(l[0].id.suite === 'suite2');
   t.expect(l[0].id.path === 'foof');
   t.expect(l[0].spec.description === 'desc 2b');
-  if (l[0].spec.g === undefined) {
+  if (!('g' in l[0].spec)) {
     throw new Error();
   }
   t.expect(l[0].spec.g.iterate instanceof Function);

@@ -116,7 +116,7 @@ function mkCase(testcasesVis: HTMLElement, query: string, t: RunCase) {
   for (const qr of queryResults) {
     const testcasesVis = makeTest(qr.id, qr.spec.description);
 
-    if (!qr.spec.g) {
+    if (!('g' in qr.spec)) {
       continue;
     }
 

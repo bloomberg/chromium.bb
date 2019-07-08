@@ -3,7 +3,7 @@
 import * as fs from 'fs';
 import * as process from 'process';
 
-import { TestSpecFile, TestLoader } from '../framework/loader.js';
+import { TestLoader, TestSpecOrReadme } from '../framework/loader.js';
 import { Logger, LiveTestCaseResult } from '../framework/logger.js';
 import { TestSpecID } from '../framework/id.js';
 import { makeQueryString } from '../framework/url_query.js';
@@ -45,7 +45,7 @@ for (const a of process.argv.slice(2)) {
 
     const log = new Logger();
     const queryResults = await Promise.all(
-      Array.from(listing, ({ id, spec }) => spec.then((s: TestSpecFile) => ({ id, spec: s })))
+      Array.from(listing, ({ id, spec }) => spec.then((s: TestSpecOrReadme) => ({ id, spec: s })))
     );
 
     const failed: Array<[TestSpecID, LiveTestCaseResult]> = [];
@@ -54,7 +54,7 @@ for (const a of process.argv.slice(2)) {
     // TODO: don't run all tests all at once
     const running = [];
     for (const qr of queryResults) {
-      if (!qr.spec.g) {
+      if (!('g' in qr.spec)) {
         continue;
       }
 

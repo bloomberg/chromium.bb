@@ -6,19 +6,24 @@ import { TestSuiteListing } from './listing.js';
 import { TestSpecID, TestCaseID } from './id.js';
 
 // One of the following:
-// - A shell object describing a directory (from its README.txt).
 // - An actual .spec.ts file, as imported.
 // - A *filtered* list of cases from a single .spec.ts file.
 export interface TestSpecFile {
   readonly description: string;
-  // undefined for README.txt, defined for a test module.
-  readonly g?: RunCaseIterable;
+  readonly g: RunCaseIterable;
 }
+
+// A shell object describing a directory (from its README.txt).
+export interface ReadmeFile {
+  readonly description: string;
+}
+
+export type TestSpecOrReadme = TestSpecFile | ReadmeFile;
 
 // A pending loaded spec (.spec.ts) file, plus identifying information.
 export interface TestQueryResult {
   readonly id: TestSpecID;
-  readonly spec: Promise<TestSpecFile>;
+  readonly spec: Promise<TestSpecOrReadme>;
 }
 
 type TestQueryResults = IterableIterator<TestQueryResult>;
@@ -44,7 +49,7 @@ function filterTestGroup(group: RunCaseIterable, filter: TestGroupFilter): RunCa
 
 export interface TestFileLoader {
   listing(suite: string): Promise<TestSuiteListing>;
-  import(path: string): Promise<TestSpecFile>;
+  import(path: string): Promise<TestSpecOrReadme>;
 }
 
 class DefaultTestFileLoader implements TestFileLoader {
@@ -156,9 +161,9 @@ export class TestLoader {
     for (const { path, description } of specs) {
       if (path.startsWith(groupPrefix)) {
         const isReadme = path === '' || path.endsWith('/');
-        const spec: Promise<TestSpecFile> = isReadme
-          ? Promise.resolve({ description })
-          : this.fileLoader.import(`${suite}/${path}.spec.js`);
+        const spec = isReadme
+          ? Promise.resolve({ description } as ReadmeFile)
+          : (this.fileLoader.import(`${suite}/${path}.spec.js`) as Promise<TestSpecFile>);
         entries.push({ id: { suite, path }, spec });
       }
     }
