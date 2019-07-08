@@ -10,7 +10,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -32,12 +34,21 @@ public class ClickToCallMessageHandler {
     private static final String EXTRA_PHONE_NUMBER = "ClickToCallMessageHandler.EXTRA_PHONE_NUMBER";
 
     /**
-     * Handles the tapping of a notification by firing the call intent.
+     * Handles the tapping of a notification by opening the dialer with the
+     * phone number specified in the notification.
      */
     public static final class TapReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            // TODO(mvanouwerkerk): fire the call intent.
+            String phoneNumber = intent.getStringExtra(EXTRA_PHONE_NUMBER);
+            final Intent dialIntent;
+            if (!TextUtils.isEmpty(phoneNumber)) {
+                dialIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phoneNumber));
+            } else {
+                dialIntent = new Intent(Intent.ACTION_DIAL);
+            }
+            dialIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            ContextUtils.getApplicationContext().startActivity(dialIntent);
         }
     }
 
