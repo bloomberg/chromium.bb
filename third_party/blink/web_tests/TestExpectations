@@ -6266,3 +6266,8 @@ crbug.com/981303 [ Mac ] http/tests/media/controls/toggle-class-with-state-sourc
 crbug.com/981331 fast/forms/form-submission-create-crash.xhtml [ Pass Timeout ]
 # TODO(crbug.com/980588): reenable once WPT is fixed
 crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass Failure ]
+
+# TODO (michaelludwig) - Rebaseline for Skia roll
+crbug.com/981879 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ Pass Failure ]
+crbug.com/981879 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ Pass Failure ]
+crbug.com/981879 virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Failure ]
