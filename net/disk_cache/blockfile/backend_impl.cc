@@ -1937,11 +1937,6 @@ void BackendImpl::ReportStats() {
   stats_.SetCounter(Stats::DOOM_CACHE, 0);
   stats_.SetCounter(Stats::DOOM_RECENT, 0);
 
-  int age = (Time::Now() -
-             Time::FromInternalValue(data_->header.create_time)).InHours();
-  if (age)
-    CACHE_UMA(HOURS, "FilesAge", 0, age);
-
   int64_t total_hours = stats_.GetCounter(Stats::TIMER) / 120;
   if (!data_->header.create_time || !data_->header.lru.filled) {
     int cause = data_->header.create_time ? 0 : 1;
