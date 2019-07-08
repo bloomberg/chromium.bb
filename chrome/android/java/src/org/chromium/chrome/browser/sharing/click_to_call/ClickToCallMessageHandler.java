@@ -65,7 +65,7 @@ public class ClickToCallMessageHandler {
                 new Intent(context, TapReceiver.class).putExtra(EXTRA_PHONE_NUMBER, phoneNumber),
                 PendingIntent.FLAG_UPDATE_CURRENT);
         Resources resources = context.getResources();
-        String text = resources.getString(R.string.click_to_call_notification_text, phoneNumber);
+        String text = resources.getString(R.string.click_to_call_notification_text);
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(/*preferCompat=*/true,
@@ -76,6 +76,7 @@ public class ClickToCallMessageHandler {
                                         NotificationConstants.GROUP_CLICK_TO_CALL,
                                         NotificationConstants.NOTIFICATION_ID_CLICK_TO_CALL))
                         .setContentIntent(contentIntent)
+                        .setContentTitle(phoneNumber)
                         .setContentText(text)
                         .setGroup(NotificationConstants.GROUP_CLICK_TO_CALL)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
