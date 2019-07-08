@@ -4,8 +4,8 @@ table:
   grade: 2
   system: INBAF
   __assert-match: ga-g2.ctb
+flags: {testmode: bothDirections}
 tests:
-- [bád, ⠃⠯⠙] # accent signs: á
 - ["Tá Áine ar scoil.", ⠠⠞⠯⠀⠠⠯⠔⠑⠀⠜⠀⠎⠉⠕⠊⠇⠲]
 - ["Éist leis an éan.", ⠠⠿⠊⠌⠀⠇⠀⠁⠝⠀⠿⠁⠝⠲]
 - ["Íosfaidh Síle a dinnéar.", ⠠⠷⠕⠎⠋⠁⠊⠙⠓⠀⠠⠎⠷⠇⠑⠀⠁⠀⠙⠔⠝⠿⠜⠲]
@@ -26,7 +26,7 @@ tests:
 - ["Bíonn sé ag déanamh an obair.", ⠠⠃⠀⠎⠿⠀⠁⠛⠀⠙⠀⠁⠝⠀⠕⠃⠁⠊⠗⠲]
 - ["Cathain a bhíonn sé á déanamh?", ⠠⠉⠀⠁⠀⠃⠓⠀⠎⠿⠀⠯⠀⠙⠦]
 - ["Cén caoi a mbíonn siad ag déanamh na dtascanna?", ⠠⠉⠿⠝⠀⠉⠁⠕⠊⠀⠁⠀⠍⠃⠀⠎⠊⠁⠙⠀⠁⠛⠀⠙⠀⠝⠁⠀⠙⠞⠁⠎⠉⠁⠝⠝⠁⠦]
-- ["B’fhéidir gur féidir leo iad a dhéanamh gach lá!", ⠠⠃⠄⠋⠓⠀⠛⠥⠗⠀⠋⠀⠇⠑⠕⠀⠊⠁⠙⠀⠁⠀⠙⠓⠀⠛⠀⠇⠯⠖]
+- ["B'fhéidir gur féidir leo iad a dhéanamh gach lá!", ⠠⠃⠄⠋⠓⠀⠛⠥⠗⠀⠋⠀⠇⠑⠕⠀⠊⠁⠙⠀⠁⠀⠙⠓⠀⠛⠀⠇⠯⠖]
 - ["I ngach cás is féidir iad a dhéanamh lá eile.", ⠠⠊⠀⠝⠛⠀⠉⠯⠎⠀⠊⠎⠀⠋⠀⠊⠁⠙⠀⠁⠀⠙⠓⠀⠇⠯⠀⠑⠲]
 - ["É cóngarach go leor don chathair, ach i slite eile bhí sé i bhfad uaithi freisin.", ⠠⠿⠀⠉⠮⠝⠛⠜⠁⠡⠀⠛⠕⠀⠇⠑⠕⠗⠀⠙⠕⠝⠀⠡⠁⠹⠁⠊⠗⠂⠀⠁⠡⠀⠊⠀⠎⠇⠊⠞⠑⠀⠑⠀⠃⠓⠷⠀⠎⠿⠀⠊⠀⠃⠓⠋⠁⠙⠀⠥⠁⠊⠹⠊⠀⠋⠗⠑⠊⠎⠔⠲]
 - ["Tugadh bualadh bos dóibh agus iad ag imeacht ón halla mór. Bígí aireach! a dúirt na príosúnaigh leo.", ⠠⠞⠥⠛⠁⠙⠓⠀⠃⠥⠁⠇⠁⠙⠓⠀⠃⠕⠎⠀⠙⠮⠊⠃⠓⠀⠎⠀⠊⠁⠙⠀⠁⠛⠀⠊⠍⠂⠡⠞⠀⠮⠝⠀⠓⠀⠍⠮⠗⠲⠀⠠⠃⠷⠛⠷⠀⠁⠊⠗⠂⠡⠖⠀⠁⠀⠙⠾⠊⠗⠞⠀⠝⠁⠀⠏⠗⠷⠕⠎⠾⠝⠁⠊⠣⠀⠇⠑⠕⠲]
@@ -38,7 +38,7 @@ tests:
 - ["Ní raibh aon im ar an bpíosa a bhí agam. Thug mé mo phíosa dó ach níor ith sé é.", ⠠⠝⠷⠀⠗⠀⠁⠕⠝⠀⠊⠍⠀⠜⠀⠁⠝⠀⠃⠏⠀⠁⠀⠃⠓⠷⠀⠁⠛⠁⠍⠲⠀⠠⠹⠥⠛⠀⠍⠿⠀⠍⠕⠀⠏⠓⠀⠙⠮⠀⠁⠡⠀⠝⠗⠀⠊⠹⠀⠎⠿⠀⠿⠲]
 - ["Chuamar chun leabhar Braille a fháil. Gheomar é .", ⠠⠡⠍⠜⠀⠡⠥⠝⠀⠇⠂⠃⠓⠜⠀⠠⠃⠗⠇⠀⠁⠀⠋⠓⠯⠊⠇⠲⠀⠠⠣⠑⠕⠍⠜⠀⠿⠀⠲]
 - ["Ní rabhamar ann. Chuaigh sé abhaile.", ⠠⠝⠷⠀⠗⠍⠜⠀⠁⠝⠝⠲⠀⠠⠡⠀⠎⠿⠀⠁⠃⠓⠁⠊⠇⠑⠲]
-- ["Gheobhaidh mé obair mhaith mar shampla...", ⠠⠣⠀⠍⠿⠀⠕⠃⠁⠊⠗⠀⠍⠓⠀⠍⠜⠀⠩⠲⠲⠲]
+- ["Gheobhaidh mé obair mhaith mar shampla mar péintéir.", ⠠⠣⠀⠍⠿⠀⠕⠃⠁⠊⠗⠀⠍⠓⠀⠍⠜⠀⠩⠀⠍⠜⠀⠏⠿⠔⠞⠿⠊⠗⠲]
 - ["Ní bheidh a fhios agat conas a iompóidh do leanbh amach. ", ⠠⠝⠷⠀⠃⠓⠑⠊⠙⠓⠀⠁⠀⠋⠓⠊⠕⠎⠀⠁⠛⠁⠞⠀⠒⠁⠎⠀⠁⠀⠊⠕⠍⠏⠮⠊⠙⠓⠀⠙⠕⠀⠇⠂⠝⠃⠓⠀⠁⠍⠁⠡⠲⠀]
 - ["Chonaic an tAire an t-asal.", ⠠⠡⠕⠝⠁⠊⠉⠀⠁⠝⠀⠞⠠⠁⠊⠗⠑⠀⠁⠝⠀⠞⠒⠁⠎⠁⠇⠲]
 - ["Baineann Ní Ghráda leas as teicníc an iardhearcaidh (flashback) freisin.", ⠠⠃⠁⠔⠂⠝⠝⠀⠠⠝⠷⠀⠠⠣⠗⠯⠙⠁⠀⠇⠂⠎⠀⠁⠎⠀⠞⠑⠊⠉⠝⠷⠉⠀⠁⠝⠀⠊⠜⠙⠓⠑⠜⠉⠁⠊⠙⠓⠀⠐⠣⠋⠇⠁⠩⠃⠁⠉⠅⠐⠜⠀⠋⠗⠑⠊⠎⠔⠲]
