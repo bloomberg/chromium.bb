@@ -27311,6 +27311,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="GCMOutgoingMessageTTLCategory">
+  <obsolete>
+    Deprecated 7/2019. No longer used.
+  </obsolete>
   <int value="0" label="Zero"/>
   <int value="1" label="Less than or equal to 1 minute"/>
   <int value="2" label="Less than or equal to 1 hour"/>
