@@ -256,6 +256,7 @@ struct macroblock {
   unsigned int simple_motion_pred_sse;
   unsigned int pred_sse[REF_FRAMES];
   int pred_mv_sad[REF_FRAMES];
+  int best_pred_mv_sad;
 
   int nmv_vec_cost[MV_JOINTS];
   int *nmvcost[2];

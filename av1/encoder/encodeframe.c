@@ -4423,6 +4423,24 @@ static int get_max_allowed_ref_frames(const AV1_COMP *cpi) {
                 cpi->oxcf.max_reference_frames);
 }
 
+// Set the relative distance of a reference frame w.r.t. current frame
+static void set_rel_frame_dist(AV1_COMP *cpi) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const SPEED_FEATURES *const sf = &cpi->sf;
+  const OrderHintInfo *const order_hint_info = &cm->seq_params.order_hint_info;
+  MV_REFERENCE_FRAME ref_frame;
+  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+    cpi->ref_relative_dist[ref_frame - LAST_FRAME] = 0;
+    if (sf->alt_ref_search_fp) {
+      int dist = av1_encoder_get_relative_dist(
+          order_hint_info,
+          cm->cur_frame->ref_display_order_hint[ref_frame - LAST_FRAME],
+          cm->current_frame.display_order_hint);
+      cpi->ref_relative_dist[ref_frame - LAST_FRAME] = dist;
+    }
+  }
+}
+
 // Enforce the number of references for each arbitrary frame based on user
 // options and speed.
 static void enforce_max_ref_frames(AV1_COMP *cpi) {
@@ -5004,6 +5022,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
 
   av1_setup_frame_buf_refs(cm);
   enforce_max_ref_frames(cpi);
+  set_rel_frame_dist(cpi);
   av1_setup_frame_sign_bias(cm);
 
 #if CHECK_PRECOMPUTED_REF_FRAME_MAP

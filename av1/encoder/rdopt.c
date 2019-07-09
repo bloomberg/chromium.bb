@@ -11479,10 +11479,18 @@ static void init_mode_skip_mask(mode_skip_mask_t *mask, const AV1_COMP *cpi,
     }
   }
 
-  if (sf->alt_ref_search_fp)
-    if (!cm->show_frame && x->pred_mv_sad[GOLDEN_FRAME] < INT_MAX)
-      if (x->pred_mv_sad[ALTREF_FRAME] > (x->pred_mv_sad[GOLDEN_FRAME] << 1))
-        mask->pred_modes[ALTREF_FRAME] |= INTER_ALL;
+  if (sf->alt_ref_search_fp) {
+    if (!cm->show_frame && x->best_pred_mv_sad < INT_MAX) {
+      int sad_thresh = x->best_pred_mv_sad + (x->best_pred_mv_sad >> 3);
+      // Conservatively skip the modes w.r.t. BWDREF, ALTREF2 and ALTREF, if
+      // those are past frames
+      for (ref_frame = BWDREF_FRAME; ref_frame <= ALTREF_FRAME; ref_frame++) {
+        if (cpi->ref_relative_dist[ref_frame - LAST_FRAME] < 0)
+          if (x->pred_mv_sad[ref_frame] > sad_thresh)
+            mask->pred_modes[ref_frame] |= INTER_ALL;
+      }
+    }
+  }
 
   if (sf->adaptive_mode_search) {
     if (cm->show_frame && !cpi->rc.is_src_frame_alt_ref &&
@@ -11544,6 +11552,7 @@ static void set_params_rd_pick_inter_mode(
                            ref_costs_comp);
 
   MV_REFERENCE_FRAME ref_frame;
+  x->best_pred_mv_sad = INT_MAX;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     x->pred_mv_sad[ref_frame] = INT_MAX;
     x->mbmi_ext->mode_context[ref_frame] = 0;
@@ -11569,6 +11578,11 @@ static void set_params_rd_pick_inter_mode(
       setup_buffer_ref_mvs_inter(cpi, x, ref_frame, bsize, mi_row, mi_col,
                                  yv12_mb);
     }
+    // Store the best pred_mv_sad across all past frames
+    if (cpi->sf.alt_ref_search_fp &&
+        cpi->ref_relative_dist[ref_frame - LAST_FRAME] < 0)
+      x->best_pred_mv_sad =
+          AOMMIN(x->best_pred_mv_sad, x->pred_mv_sad[ref_frame]);
   }
   // ref_frame = ALTREF_FRAME
   for (; ref_frame < MODE_CTX_REF_FRAMES; ++ref_frame) {

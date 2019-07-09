@@ -1037,6 +1037,9 @@ typedef struct AV1_COMP {
   // whether any no-zero delta_q was actually used
   int deltaq_used;
 
+  // Indicates the true relative distance of ref frame w.r.t. current frame
+  int8_t ref_relative_dist[INTER_REFS_PER_FRAME];
+
   double *ssim_rdmult_scaling_factors;
 
   // Whether writing to bitstream. It allows us to encode one frame multiple
