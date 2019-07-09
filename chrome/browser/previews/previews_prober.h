@@ -15,6 +15,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -126,7 +127,8 @@ class PreviewsProber
       HttpMethod http_method,
       const net::HttpRequestHeaders headers,
       const RetryPolicy& retry_policy,
-      const TimeoutPolicy& timeout_policy);
+      const TimeoutPolicy& timeout_policy,
+      const size_t max_cache_entries);
   ~PreviewsProber() override;
 
   // Sends a probe now if the prober is currently inactive. If the probe is
@@ -155,6 +157,7 @@ class PreviewsProber
       const net::HttpRequestHeaders headers,
       const RetryPolicy& retry_policy,
       const TimeoutPolicy& timeout_policy,
+      const size_t max_cache_entries,
       const base::TickClock* tick_clock);
 
  private:
@@ -166,6 +169,8 @@ class PreviewsProber
   void ProcessProbeSuccess();
   void AddSelfAsNetworkConnectionObserver(
       network::NetworkConnectionTracker* network_connection_tracker);
+  void RecordProbeResult(bool success);
+  std::string GetCacheKeyForCurrentNetwork() const;
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState new_state);
 #endif
@@ -193,6 +198,9 @@ class PreviewsProber
   // The timeout policy to use in this prober.
   const TimeoutPolicy timeout_policy_;
 
+  // The maximum allowable size of |cached_probe_results_|.
+  const size_t max_cache_entries_;
+
   // The number of retries that have been attempted. This count does not include
   // the original probe.
   size_t successive_retry_count_;
@@ -206,14 +214,16 @@ class PreviewsProber
   // If a probe is being attempted, this will be running until the TTL.
   std::unique_ptr<base::OneShotTimer> timeout_timer_;
 
+  // Caches past probe results in a mapping of one tuple to another:
+  //   (network_id, url_) -> (last_probe_status, last_modification_time).
+  // No more than |max_cache_entries_| will be kept in this dictionary.
+  std::unique_ptr<base::DictionaryValue> cached_probe_results_;
+
   // The tick clock used within this class.
   const base::TickClock* tick_clock_;
 
   // Whether the prober is currently sending probes.
   bool is_active_;
-
-  // The status of the last completed probe, if any.
-  base::Optional<bool> last_probe_status_;
 
   // This reference is kept around for unregistering |this| as an observer on
   // any thread.

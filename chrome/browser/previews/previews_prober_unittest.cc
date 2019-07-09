@@ -54,6 +54,7 @@ class TestPreviewsProber : public PreviewsProber {
       const net::HttpRequestHeaders headers,
       const RetryPolicy& retry_policy,
       const TimeoutPolicy& timeout_policy,
+      const size_t max_cache_entries,
       const base::TickClock* tick_clock)
       : PreviewsProber(delegate,
                        url_loader_factory,
@@ -63,6 +64,7 @@ class TestPreviewsProber : public PreviewsProber {
                        headers,
                        retry_policy,
                        timeout_policy,
+                       max_cache_entries,
                        tick_clock) {}
 };
 
@@ -103,7 +105,7 @@ class PreviewsProberTest : public testing::Test {
         delegate, test_shared_loader_factory_,
         PreviewsProber::ClientName::kLitepages, kTestUrl,
         PreviewsProber::HttpMethod::kGet, headers, retry_policy, timeout_policy,
-        thread_bundle_.GetMockTickClock());
+        1, thread_bundle_.GetMockTickClock());
   }
 
   void RunUntilIdle() { thread_bundle_.RunUntilIdle(); }
@@ -203,6 +205,74 @@ TEST_F(PreviewsProberTest, NetworkChangeStartsProber) {
   RunUntilIdle();
 
   EXPECT_TRUE(prober->is_active());
+}
+
+TEST_F(PreviewsProberTest, NetworkConnectionShardsCache) {
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_3G);
+  RunUntilIdle();
+
+  std::unique_ptr<PreviewsProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive(false);
+  VerifyRequest();
+
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  // The different type of cellular networks shouldn't make a difference.
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_4G);
+  RunUntilIdle();
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_2G);
+  RunUntilIdle();
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+
+  // Switching to WIFI does make a difference.
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
+  RunUntilIdle();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+}
+
+TEST_F(PreviewsProberTest, CacheMaxSize) {
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_3G);
+  RunUntilIdle();
+
+  std::unique_ptr<PreviewsProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive(false);
+  VerifyRequest();
+
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  // Change the connection type and report a new probe result.
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
+  RunUntilIdle();
+
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive(false);
+  VerifyRequest();
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+
+  // Then, flip back to the original connection type. The old probe status
+  // should not be persisted since the max cache size for testing is 1.
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_3G);
+  RunUntilIdle();
+
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 }
 
 #if defined(OS_ANDROID)
