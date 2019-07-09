@@ -19,6 +19,7 @@
 
 namespace {
 const GURL kTestUrl("https://test.com");
+const base::TimeDelta kCacheRevalidateAfter(base::TimeDelta::FromDays(1));
 }  // namespace
 
 class TestDelegate : public PreviewsProber::Delegate {
@@ -55,7 +56,9 @@ class TestPreviewsProber : public PreviewsProber {
       const RetryPolicy& retry_policy,
       const TimeoutPolicy& timeout_policy,
       const size_t max_cache_entries,
-      const base::TickClock* tick_clock)
+      base::TimeDelta revalidate_cache_after,
+      const base::TickClock* tick_clock,
+      const base::Clock* clock)
       : PreviewsProber(delegate,
                        url_loader_factory,
                        name,
@@ -65,7 +68,9 @@ class TestPreviewsProber : public PreviewsProber {
                        retry_policy,
                        timeout_policy,
                        max_cache_entries,
-                       tick_clock) {}
+                       revalidate_cache_after,
+                       tick_clock,
+                       clock) {}
 };
 
 class PreviewsProberTest : public testing::Test {
@@ -105,7 +110,8 @@ class PreviewsProberTest : public testing::Test {
         delegate, test_shared_loader_factory_,
         PreviewsProber::ClientName::kLitepages, kTestUrl,
         PreviewsProber::HttpMethod::kGet, headers, retry_policy, timeout_policy,
-        1, thread_bundle_.GetMockTickClock());
+        1, kCacheRevalidateAfter, thread_bundle_.GetMockTickClock(),
+        thread_bundle_.GetMockClock());
   }
 
   void RunUntilIdle() { thread_bundle_.RunUntilIdle(); }
@@ -254,6 +260,8 @@ TEST_F(PreviewsProberTest, CacheMaxSize) {
   EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
 
+  FastForward(base::TimeDelta::FromSeconds(1));
+
   // Change the connection type and report a new probe result.
   network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
       network::mojom::ConnectionType::CONNECTION_WIFI);
@@ -266,6 +274,8 @@ TEST_F(PreviewsProberTest, CacheMaxSize) {
   MakeResponseAndWait(net::HTTP_OK, net::OK);
   EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
 
+  FastForward(base::TimeDelta::FromSeconds(1));
+
   // Then, flip back to the original connection type. The old probe status
   // should not be persisted since the max cache size for testing is 1.
   network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
@@ -273,6 +283,28 @@ TEST_F(PreviewsProberTest, CacheMaxSize) {
   RunUntilIdle();
 
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+}
+
+TEST_F(PreviewsProberTest, CacheAutoRevalidation) {
+  std::unique_ptr<PreviewsProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive(false);
+  VerifyRequest();
+
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  // Fast forward until just before revalidation time.
+  FastForward(kCacheRevalidateAfter - base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  // Fast forward the rest of the way and check the prober is active again.
+  FastForward(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_TRUE(prober->is_active());
 }
 
 #if defined(OS_ANDROID)

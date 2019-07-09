@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/previews/proto/previews_prober_cache_entry.pb.h"
@@ -122,6 +123,12 @@ base::Optional<PreviewsProberCacheEntry> DecodeCacheEntryValue(
   return entry;
 }
 
+base::Time LastModifiedTimeFromCacheEntry(
+    const PreviewsProberCacheEntry& entry) {
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(entry.last_modified()));
+}
+
 void RemoveOldestDictionaryEntry(base::DictionaryValue* dict) {
   std::vector<std::string> keys_to_remove;
 
@@ -136,8 +143,7 @@ void RemoveOldestDictionaryEntry(base::DictionaryValue* dict) {
       continue;
     }
 
-    base::Time mod_time = base::Time::FromDeltaSinceWindowsEpoch(
-        base::TimeDelta::FromMicroseconds(entry.value().last_modified()));
+    base::Time mod_time = LastModifiedTimeFromCacheEntry(entry.value());
     if (mod_time < oldest_mod_time) {
       oldest_key = iter.first;
       oldest_mod_time = mod_time;
@@ -187,7 +193,8 @@ PreviewsProber::PreviewsProber(
     const net::HttpRequestHeaders headers,
     const RetryPolicy& retry_policy,
     const TimeoutPolicy& timeout_policy,
-    const size_t max_cache_entries)
+    const size_t max_cache_entries,
+    base::TimeDelta revalidate_cache_after)
     : PreviewsProber(delegate,
                      url_loader_factory,
                      name,
@@ -197,7 +204,9 @@ PreviewsProber::PreviewsProber(
                      retry_policy,
                      timeout_policy,
                      max_cache_entries,
-                     base::DefaultTickClock::GetInstance()) {}
+                     revalidate_cache_after,
+                     base::DefaultTickClock::GetInstance(),
+                     base::DefaultClock::GetInstance()) {}
 
 PreviewsProber::PreviewsProber(
     Delegate* delegate,
@@ -209,7 +218,9 @@ PreviewsProber::PreviewsProber(
     const RetryPolicy& retry_policy,
     const TimeoutPolicy& timeout_policy,
     const size_t max_cache_entries,
-    const base::TickClock* tick_clock)
+    base::TimeDelta revalidate_cache_after,
+    const base::TickClock* tick_clock,
+    const base::Clock* clock)
     : delegate_(delegate),
       name_(NameForClient(name)),
       url_(url),
@@ -218,10 +229,12 @@ PreviewsProber::PreviewsProber(
       retry_policy_(retry_policy),
       timeout_policy_(timeout_policy),
       max_cache_entries_(max_cache_entries),
+      revalidate_cache_after_(revalidate_cache_after),
       successive_retry_count_(0),
       successive_timeout_count_(0),
       cached_probe_results_(std::make_unique<base::DictionaryValue>()),
       tick_clock_(tick_clock),
+      clock_(clock),
       is_active_(false),
       network_connection_tracker_(nullptr),
       url_loader_factory_(url_loader_factory),
@@ -451,7 +464,7 @@ void PreviewsProber::ProcessProbeSuccess() {
   ResetState();
 }
 
-base::Optional<bool> PreviewsProber::LastProbeWasSuccessful() const {
+base::Optional<bool> PreviewsProber::LastProbeWasSuccessful() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::Value* cache_entry =
@@ -464,6 +477,12 @@ base::Optional<bool> PreviewsProber::LastProbeWasSuccessful() const {
   if (!entry.has_value())
     return base::nullopt;
 
+  // Check if the cache entry should be revalidated.
+  if (clock_->Now() >=
+      LastModifiedTimeFromCacheEntry(entry.value()) + revalidate_cache_after_) {
+    SendNowIfInactive(false);
+  }
+
   return entry.value().is_success();
 }
 
@@ -471,7 +490,7 @@ void PreviewsProber::RecordProbeResult(bool success) {
   PreviewsProberCacheEntry entry;
   entry.set_is_success(success);
   entry.set_last_modified(
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+      clock_->Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
 
   base::Optional<base::Value> encoded = EncodeCacheEntryValue(entry);
   if (!encoded.has_value()) {
