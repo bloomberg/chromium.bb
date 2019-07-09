@@ -2,8 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+try:
+    import _pickle as pickle
+except ImportError:
+    try:
+        import cPickle as pickle
+    except ImportError:
+        import pickle
+
 import idl_parser
-import utilities
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
 from .common import DebugInfo
@@ -35,18 +42,19 @@ def load_and_register_idl_definitions(
     """
     assert callable(register_ir)
 
-    asts_grouped_by_component = utilities.read_pickle_files(filepaths)
-    for asts_per_component in asts_grouped_by_component:
-        component = asts_per_component.component
-        builder = _IRBuilder(component, create_ref_to_idl_type,
-                             create_ref_to_idl_def)
+    for filepath in filepaths:
+        with open(filepath) as pickle_file:
+            asts_per_component = pickle.load(pickle_file)
+            component = asts_per_component.component
+            builder = _IRBuilder(component, create_ref_to_idl_type,
+                                 create_ref_to_idl_def)
 
-        for file_node in asts_per_component.asts:
-            assert isinstance(file_node, idl_parser.idl_node.IDLNode)
-            assert file_node.GetClass() == 'File'
+            for file_node in asts_per_component.asts:
+                assert isinstance(file_node, idl_parser.idl_node.IDLNode)
+                assert file_node.GetClass() == 'File'
 
-            for top_level_node in file_node.GetChildren():
-                register_ir(builder.build_top_level_def(top_level_node))
+                for top_level_node in file_node.GetChildren():
+                    register_ir(builder.build_top_level_def(top_level_node))
 
 
 class _IRBuilder(object):
