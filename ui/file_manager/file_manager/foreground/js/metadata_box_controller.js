@@ -156,16 +156,11 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
 
   this.updateModificationTime_(entry, isSameEntry, items);
 
-  if (item.externalFileUrl || item.alternateUrl) {
-    this.metadataModel_.get([entry], ['contentMimeType']).then(items => {
-      const item = items[0];
-      this.metadataBox_.mediaMimeType = item.contentMimeType || '';
-      this.metadataBox_.metadataRendered('mime');
-    });
-  } else {
-    this.metadataModel_.get([entry], ['mediaMimeType']).then(items => {
-      const item = items[0];
-      this.metadataBox_.mediaMimeType = item.mediaMimeType || '';
+  if (!entry.isDirectory) {
+    const sniffMimeType = (item.externalFileUrl || item.alternateUrl) ?
+        'contentMimeType' : 'mediaMimeType';
+    this.metadataModel_.get([entry], [sniffMimeType]).then(items => {
+      this.metadataBox_.mediaMimeType = items[0][sniffMimeType] || '';
       this.metadataBox_.metadataRendered('mime');
     });
   }
