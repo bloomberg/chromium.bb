@@ -17,7 +17,6 @@ import os
 import struct
 from StringIO import StringIO
 
-from chromite.api.gen.chromite.api import android_pb2
 from chromite.cbuildbot import commands
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -33,8 +32,6 @@ from chromite.lib import partial_mock
 from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.scripts import pushimage
-
-from google.protobuf import json_format
 
 
 class RunBuildScriptTest(cros_test_lib.RunCommandTempDirTestCase):
@@ -364,6 +361,7 @@ The suite job has another 2:39:39.789250 till timeout.
       commands._DEFAULT_HWTEST_TIMEOUT_MINS * 60 +
       commands._SWARMING_ADDITIONAL_TIMEOUT)
   SWARMING_EXPIRATION = str(commands._SWARMING_EXPIRATION)
+
 
   def setUp(self):
     self._build = 'test-build'
@@ -725,6 +723,7 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
     self.target_image = os.path.join(
         self.tempdir,
         'link/R37-5952.0.2014_06_12_2302-a1/chromiumos_test_image.bin')
+
 
   def testGenerateStackTraces(self):
     """Test if we can generate stack traces for minidumps."""
@@ -1250,6 +1249,7 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
                      constants.AUTOTEST_BUILD_PATH, '..'))
     self._tarball_dir = self.tempdir
 
+
   def testBuildFullAutotestTarball(self):
     """Tests that our call to generate the full autotest tarball is correct."""
     with mock.patch.object(commands, 'BuildTarball') as m:
@@ -1768,7 +1768,6 @@ class ImageTestCommandsTest(cros_test_lib.RunCommandTestCase):
         enter_chroot=True,
     )
 
-
 class GenerateChromeOrderfileArtifactsTests(
     cros_test_lib.RunCommandTempDirTestCase):
   """Test GenerateChromeOrderfileArtifacts command."""
@@ -1841,51 +1840,3 @@ class GenerateChromeOrderfileArtifactsTests(
                      self.chrome_version)
     self.assertEqual(input_proto['output_dir'],
                      self.output_path)
-
-
-class MarkAndroidAsStableTest(cros_test_lib.RunCommandTempDirTestCase):
-  """MarkAndroidAsStable tests."""
-
-  def testSuccess(self):
-    """Test input and success handling."""
-    # Raw arguments for the function.
-    buildroot = self.tempdir
-    tracking_branch = 'refs/tracking'
-    android_package = 'android/android-1.0-r1'
-    android_build_branch = 'refs/build'
-    boards = ['foo', 'bar']
-    android_version = '1.0'
-    android_gts_build_branch = 'refs/gts-build'
-
-    # Write out the mock response.
-    response_package = {'category': 'android', 'package_name': 'android',
-                        'version': '1.0-r2'}
-    response = android_pb2.MarkStableResponse(status=1,
-                                              android_atom=response_package)
-    output_file = os.path.join(self.tempdir, 'output.json')
-    osutils.WriteFile(output_file, json_format.MessageToJson(response))
-
-    # Patch our tempdir to make sure we can get the input file and it uses our
-    # output file.
-    self.PatchObject(osutils.TempDir, '__enter__', return_value=self.tempdir)
-
-    new_atom = commands.MarkAndroidAsStable(
-        buildroot, tracking_branch, android_package, android_build_branch,
-        boards=boards, android_version=android_version,
-        android_gts_build_branch=android_gts_build_branch)
-
-    # Make sure the atom is rebuilt correctly from the package info.
-    self.assertEqual('android/android-1.0-r2', new_atom)
-
-    # Make sure the input was all handled properly.
-    msg = android_pb2.MarkStableRequest()
-    data = osutils.ReadFile(os.path.join(self.tempdir, 'input.json'))
-    json_format.Parse(data, msg)
-
-    self.assertEqual(os.path.join(self.tempdir, 'chroot'), msg.chroot.path)
-    self.assertEqual(tracking_branch, msg.tracking_branch)
-    self.assertEqual(android_package, msg.package_name)
-    self.assertEqual(android_build_branch, msg.android_build_branch)
-    self.assertEqual(android_version, msg.android_version)
-    self.assertEqual(android_gts_build_branch, msg.android_gts_build_branch)
-    self.assertItemsEqual(boards, [bt.name for bt in msg.build_targets])

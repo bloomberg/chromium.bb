@@ -20,18 +20,16 @@ import shutil
 import sys
 import tempfile
 
-from chromite.api.gen.chromite.api import android_pb2
-
 from chromite.cbuildbot import swarming_lib
 from chromite.cbuildbot import topology
 
 from chromite.lib import buildbot_annotations
-from chromite.lib import cipd
 from chromite.lib import config_lib
 from chromite.lib import constants
+from chromite.lib import failures_lib
+from chromite.lib import cipd
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import failures_lib
 from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import image_lib
@@ -47,8 +45,6 @@ from chromite.service import artifacts as artifacts_service
 from chromite.lib.paygen import filelib
 
 from chromite.scripts import pushimage
-
-from google.protobuf import json_format
 
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
@@ -96,7 +92,6 @@ TAST_SSP_FILES = [
     'chroot/usr/share/tast/data',  # Dir containing test data.
     'src/platform/tast/tools/run_tast.sh',  # Helper script to run SSP tast.
 ]
-
 
 # =========================== Command Helpers =================================
 
@@ -1979,51 +1974,43 @@ def MarkAndroidAsStable(buildroot,
                         android_version=None,
                         android_gts_build_branch=None):
   """Returns the portage atom for the revved Android ebuild - see man emerge."""
-  # Temporary measure. Call our version of the API just in case it doesn't
-  # exist (working on a branch), but pass through the chroot for the buildroot
-  # so the commands will be run from that chroot. This isn't viable long term,
-  # but we're trying to dump this, so it should be fine for the transition.
-  # I had hoped to just call packages.uprev_android directly, but it ends up
-  # being a several file circular import chain that breaks.
-  input_msg = android_pb2.MarkStableRequest()
-  input_msg.chroot.path = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
-  input_msg.tracking_branch = tracking_branch
-  input_msg.package_name = android_package
-  input_msg.android_build_branch = android_build_branch
-  if android_version:
-    input_msg.android_version = android_version
-  if android_gts_build_branch:
-    input_msg.android_gts_build_branch = android_gts_build_branch
+  command = [
+      'cros_mark_android_as_stable',
+      '--tracking_branch=%s' % tracking_branch
+  ]
+  command.append('--android_package=%s' % android_package)
+  command.append('--android_build_branch=%s' % android_build_branch)
   if boards:
-    for board in boards:
-      input_msg.build_targets.add().name = board
+    command.append('--boards=%s' % ':'.join(boards))
+  if android_version:
+    command.append('--force_version=%s' % android_version)
+  if android_gts_build_branch:
+    command.append('--android_gts_build_branch=%s' % android_gts_build_branch)
 
-  with osutils.TempDir() as tmpdir:
-    input_proto_file = os.path.join(tmpdir, 'input.json')
-    output_proto_file = os.path.join(tmpdir, 'output.json')
-
-    osutils.WriteFile(input_proto_file, json_format.MessageToJson(input_msg))
-
-    cmd = ['build_api', 'chromite.api.AndroidService/MarkStable',
-           '--input-json', input_proto_file, '--output-json', output_proto_file]
-
-    cros_build_lib.RunCommand(cmd)
-    result = json_format.Parse(osutils.ReadFile(output_proto_file),
-                               android_pb2.MarkStableResponse(),
-                               ignore_unknown_fields=True)
-
-  if result.status == android_pb2.MARK_STABLE_STATUS_EARLY_EXIT:
-    # Early exit (nothing to uprev).
+  portage_atom_string = RunBuildScript(
+      buildroot,
+      command,
+      chromite_cmd=True,
+      enter_chroot=True,
+      redirect_stdout=True).output.rstrip()
+  android_atom = None
+  if portage_atom_string:
+    android_atom = portage_atom_string.splitlines()[-1].partition('=')[-1]
+  if not android_atom:
+    logging.info('Found nothing to rev.')
     return None
 
-  category = result.android_atom.category
-  package = result.android_atom.package_name
-  version = result.android_atom.version
-  android_atom = '%s/%s-%s' % (category, package, version)
-
-  if result.status == android_pb2.MARK_STABLE_STATUS_PINNED:
-    # Failed to emerge the new package, probably pinned.
-    raise AndroidIsPinnedUprevError(android_atom)
+  for board in boards:
+    # Sanity check: We should always be able to merge the version of
+    # Android we just unmasked.
+    try:
+      command = ['emerge-%s' % board, '-p', '--quiet', '=%s' % android_atom]
+      RunBuildScript(buildroot, command, enter_chroot=True)
+    except failures_lib.BuildScriptFailure:
+      logging.error(
+          'Cannot emerge-%s =%s\nIs Android pinned to an older '
+          'version?', board, android_atom)
+      raise AndroidIsPinnedUprevError(android_atom)
 
   return android_atom
 
@@ -3595,7 +3582,6 @@ def SyncChrome(build_root,
   cmd += [chrome_root]
   retry_util.RunCommandWithRetries(constants.SYNC_RETRIES, cmd, cwd=build_root)
 
-
 def GenerateChromeOrderfileArtifacts(buildroot, board, output_path):
   """Generate orderfile artifacts using build_api proto service.
 
@@ -3635,7 +3621,6 @@ def GenerateChromeOrderfileArtifacts(buildroot, board, output_path):
     RunBuildScript(buildroot, cmd, chromite_cmd=True, redirect_stdout=True)
     output = json.loads(osutils.ReadFile(output_proto_file))
     return [artifact['path'] for artifact in output['artifacts']]
-
 
 class ChromeSDK(object):
   """Wrapper for the 'cros chrome-sdk' command."""
