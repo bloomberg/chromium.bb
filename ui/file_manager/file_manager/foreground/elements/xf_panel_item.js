@@ -4,6 +4,7 @@
 
 /**
  * A panel to display the status or progress of a file operation.
+ * @extends HTMLElement
  */
 class PanelItem extends HTMLElement {
   constructor() {
