@@ -620,6 +620,12 @@
     <message name="IDS_SETTINGS_CROSTINI_IMPORT_LABEL" desc="Description shown next to the button to import (restore) Crostini.">
       Replace your Linux apps and files with a previous backup
     </message>
+    <message name="IDS_SETTINGS_CROSTINI_CONFIRM_IMPORT_DIALOG_WINDOW_TITLE" desc="Title of the confirmation dialog displayed before container import begins.">
+      Confirm Restore
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_CONFIRM_IMPORT_DIALOG_WINDOW_MESSAGE" desc="Message of the confirmation dialog displayed before container import begins.">
+      Restoring will override your existing linux installation. Are you sure you wish to continue?
+    </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL" desc="Label for managing shared USB devices.">
       USB preferences
     </message>
