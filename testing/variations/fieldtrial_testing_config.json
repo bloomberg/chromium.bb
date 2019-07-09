@@ -3444,8 +3444,7 @@
                         "OmniboxRichEntitySuggestions",
                         "OmniboxTailSuggestions",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
-                        "QueryInOmnibox",
-                        "UseAlternateFakeboxOnNtp"
+                        "QueryInOmnibox"
                     ]
                 }
             ]
