@@ -18,7 +18,15 @@ from .dictionary import Dictionary
 from .dictionary import DictionaryMember
 from .enumeration import Enumeration
 from .extended_attribute import ExtendedAttributes
-from .idl_types import IdlType
+from .idl_types import AnnotatedType
+from .idl_types import FrozenArrayType
+from .idl_types import NullableType
+from .idl_types import PromiseType
+from .idl_types import RecordType
+from .idl_types import ReferenceType
+from .idl_types import SequenceType
+from .idl_types import SimpleType
+from .idl_types import UnionType
 from .includes import Includes
 from .interface import Interface
 from .namespace import Namespace
@@ -213,8 +221,96 @@ class _IRBuilder(object):
         return None
 
     def _build_type(self, node):
+        def build_maybe_inner_type(node):
+            return self._build_type_internal(node.GetChildren()[0])
+
+        def build_maybe_nullable_type(node):
+            maybe_inner_type = build_maybe_inner_type(node)
+            if node.GetProperty('NULLABLE'):
+                return NullableType(maybe_inner_type)
+            return maybe_inner_type
+
+        def build_maybe_annotated_type(node):
+            type_nodes = list(node.GetChildren())
+            extended_attributes = self._take_extended_attributes(type_nodes)
+            assert len(type_nodes) == 1
+            maybe_inner_type = build_maybe_nullable_type(node)
+            if extended_attributes:
+                return AnnotatedType(
+                    inner_type=maybe_inner_type,
+                    extended_attributes=extended_attributes)
+            return maybe_inner_type
+
         assert node.GetClass() == 'Type'
-        return IdlType()
+        return build_maybe_annotated_type(node)
+
+    def _build_type_internal(self, node):
+        """
+        Args:
+            node: The body node of the type definition, which is supposed to be
+                the first child of a 'Type' node.
+        """
+
+        def build_frozen_array_type(node):
+            assert len(node.GetChildren()) == 1
+            return FrozenArrayType(
+                element_type=self._build_type(node.GetChildren()[0]),
+                debug_info=self._build_debug_info(node))
+
+        def build_promise_type(node):
+            assert len(node.GetChildren()) == 1
+            return PromiseType(
+                result_type=self._build_type(node.GetChildren()[0]),
+                debug_info=self._build_debug_info(node))
+
+        def build_union_type(node):
+            union_type = UnionType(
+                member_types=map(self._build_type, node.GetChildren()))
+            return union_type
+
+        def build_record_type(node):
+            key_node, value_node = node.GetChildren()
+            return RecordType(
+                # idl_parser doesn't produce a 'Type' node for the key type,
+                # hence we need to skip one level.
+                key_type=self._build_type_internal(key_node),
+                value_type=self._build_type(value_node),
+                debug_info=self._build_debug_info(node))
+
+        def build_reference_type(node):
+            identifier = node.GetName()
+            ref_type = ReferenceType(
+                ref_to_idl_type=self.create_ref_to_idl_type(identifier),
+                debug_info=self._build_debug_info(node))
+            return ref_type
+
+        def build_sequence_type(node):
+            return SequenceType(
+                element_type=self._build_type(node.GetChildren()[0]),
+                debug_info=self._build_debug_info(node))
+
+        def build_simple_type(node):
+            type_name = node.GetName()
+            if type_name is None:
+                assert node.GetClass() == 'Any'
+                type_name = node.GetClass().lower()
+            if node.GetProperty('UNRESTRICTED'):
+                type_name = 'unrestricted ' + type_name
+            return SimpleType(
+                name=type_name, debug_info=self._build_debug_info(node))
+
+        build_functions = {
+            'Any': build_simple_type,
+            'FrozenArray': build_frozen_array_type,
+            'PrimitiveType': build_simple_type,
+            'Promise': build_promise_type,
+            'Record': build_record_type,
+            'Sequence': build_sequence_type,
+            'StringType': build_simple_type,
+            'Typeref': build_reference_type,
+            'UnionType': build_union_type,
+        }
+        return build_functions[node.GetClass()](node)
 
     def _take_and_build(self, node_class, build_func, node_list):
         """
