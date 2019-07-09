@@ -834,13 +834,13 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 
 .menu-option {
   border-radius: 0 16px 16px 0;
+  cursor: pointer;
   font-size: 14px;
   height: 32px;
   left: 0;
   line-height: 32px;
   margin-bottom: 16px;
   outline: none;
-  user-select: none;
   width: 192px;
 }
 
@@ -1028,6 +1028,7 @@ html[dir=rtl] .menu-option {
 #customization-menu .bg-sel-tile {
   background-position: center;
   border-radius: 4px;
+  cursor: pointer;
 }
 
 #customization-menu .bg-sel-tile-title {
@@ -1082,6 +1083,7 @@ html[dir=rtl] .menu-option {
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 20px;
   background-color: rgb(var(--GG900-rgb));
+  cursor: pointer;
   height: 20px;
   margin-inline-start: 8px;
   margin-top: 8px;
@@ -1260,6 +1262,7 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   border: 1px solid rgb(var(--GG300-rgb));
   border-radius: 4px;
   box-sizing: border-box;
+  cursor: pointer;
   height: 176px;
   position: relative;
   width: 268px;
