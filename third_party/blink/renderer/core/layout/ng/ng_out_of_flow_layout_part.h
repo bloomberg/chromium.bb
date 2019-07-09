@@ -112,6 +112,13 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const NGOutOfFlowPositionedDescendant&,
       const LayoutBox* only_layout);
 
+  scoped_refptr<const NGLayoutResult> Layout(NGBlockNode,
+                                             const NGConstraintSpace&,
+                                             const NGStaticPosition&,
+                                             LogicalSize container_content_size,
+                                             const ContainingBlockInfo&,
+                                             const LayoutBox* only_layout);
+
   bool IsContainingBlockForDescendant(
       const NGOutOfFlowPositionedDescendant& descendant);
 

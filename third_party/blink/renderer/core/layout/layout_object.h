@@ -1046,6 +1046,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool NeedsCollectInlines() const { return bitfields_.NeedsCollectInlines(); }
 
+  // Return true if the min/max preferred logical widths aren't up-to-date. Note
+  // that for objects that *don't* need to calculate preferred logical widths
+  // (e.g. if inline-size is a fixed value, and no other inline lengths are
+  // intrinsic, and the object isn't a descendant of something that needs
+  // min/max), this flag will never be cleared (since the values will never be
+  // calculated).
   bool PreferredLogicalWidthsDirty() const {
     return bitfields_.PreferredLogicalWidthsDirty();
   }
