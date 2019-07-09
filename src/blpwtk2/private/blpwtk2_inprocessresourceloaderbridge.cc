@@ -188,6 +188,7 @@ class InProcessResourceLoaderBridge::InProcessResourceContext
   // manipulators
   bool start(std::unique_ptr<content::ResourceReceiver> peer);
   void cancel();
+  int requesterID() const;
 
   // ResourceContext overrides
   const URLRequest* request() override;
@@ -281,6 +282,11 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::cancel() {
   d_waitingForCancelLoad = true;
   base::MessageLoopCurrent::Get()->task_runner()->PostTask(
       FROM_HERE, base::Bind(&InProcessResourceContext::cancelLoad, this));
+}
+
+int InProcessResourceLoaderBridge::InProcessResourceContext::requesterID()
+    const {
+  return d_urlRequest->requesterID();
 }
 
 // ResourceContext overrides
@@ -491,7 +497,8 @@ void InProcessResourceLoaderBridge::SetDefersLoading(bool defers) {}
 void InProcessResourceLoaderBridge::StartLoadingBody(
     blink::WebNavigationBodyLoader::Client* client,
     bool use_isolated_code_cache) {
-  Start(std::make_unique<content::BodyLoaderReceiver>(client));
+  Start(std::make_unique<content::BodyLoaderReceiver>(d_context->requesterID(),
+                                                      client));
 }
 
 void InProcessResourceLoaderBridge::Start(
