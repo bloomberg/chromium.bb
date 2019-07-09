@@ -64,6 +64,13 @@ void BadgeManager::ClearBadge(const extensions::ExtensionId& extension_id) {
   delegate_->OnBadgeCleared(extension_id);
 }
 
+void BadgeManager::OnBadgeChangeIgnored() {
+  if (!delegate_)
+    return;
+
+  delegate_->OnBadgeChangeIgnoredForTesting();
+}
+
 void BadgeManager::SetDelegate(std::unique_ptr<BadgeManagerDelegate> delegate) {
   delegate_ = std::move(delegate);
 }

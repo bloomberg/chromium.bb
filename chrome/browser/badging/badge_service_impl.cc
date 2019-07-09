@@ -36,25 +36,21 @@ void BadgeServiceImpl::SetFlag() {
 }
 
 void BadgeServiceImpl::SetBadge(base::Optional<uint64_t> content) {
-  if (!IsInApp())
-    return;
-
   const extensions::Extension* extension = ExtensionFromLastUrl();
-
-  if (!extension)
+  if (!IsInApp() || !extension) {
+    badge_manager_->OnBadgeChangeIgnored();
     return;
+  }
 
   badge_manager_->UpdateBadge(extension->id(), content);
 }
 
 void BadgeServiceImpl::ClearBadge() {
-  if (!IsInApp())
-    return;
-
   const extensions::Extension* extension = ExtensionFromLastUrl();
-
-  if (!extension)
+  if (!IsInApp() || !extension) {
+    badge_manager_->OnBadgeChangeIgnored();
     return;
+  }
 
   badge_manager_->ClearBadge(extension->id());
 }
@@ -84,6 +80,6 @@ bool BadgeServiceImpl::IsInApp() {
   if (!browser)
     return false;
   web_app::AppBrowserController* app_controller = browser->app_controller();
-  return app_controller &&
-         app_controller->IsUrlInAppScope(web_contents_->GetLastCommittedURL());
+  return app_controller && app_controller->IsUrlInAppScope(
+                               render_frame_host_->GetLastCommittedURL());
 }

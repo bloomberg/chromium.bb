@@ -40,6 +40,10 @@ class BadgeManager : public KeyedService {
   // Clears badge contents for an app (if existing) and notifies the delegate.
   void ClearBadge(const extensions::ExtensionId&);
 
+  // Called when the badge service determines that a call to set/clear is not
+  // allowed.
+  void OnBadgeChangeIgnored();
+
   // Sets the delegate used for setting/clearing badges.
   void SetDelegate(std::unique_ptr<BadgeManagerDelegate> delegate);
 
