@@ -1779,17 +1779,15 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       schedule='with 150m interval',
   )
 
-  _mst_hwtest_boards = frozenset([
-      'eve-arcnext',
-  ])
-  _mst_hwtest_skylab_boards = frozenset([
-      'eve-arcnext',
-  ])
+  _mst_hwtest_boards = frozenset([])
+  _mst_hwtest_skylab_boards = frozenset([])
   _mst_no_hwtest_boards = frozenset([])
   _mst_no_hwtest_experimental_boards = frozenset([])
-  _mst_vmtest_boards = frozenset([])
+  _mst_vmtest_boards = frozenset([
+      'betty-arcmaster',
+  ])
 
-  # Android MST master.
+  # Android QT master.
   qt_master_config = site_config.Add(
       constants.QT_ANDROID_PFQ_MASTER,
       site_config.templates.qt_android_pfq,
@@ -1797,8 +1795,12 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       schedule='with 150m interval',
   )
 
-  _qt_hwtest_boards = frozenset([])
-  _qt_hwtest_skylab_boards = frozenset([])
+  _qt_hwtest_boards = frozenset([
+      'eve-arcnext',
+  ])
+  _qt_hwtest_skylab_boards = frozenset([
+      'eve-arcnext',
+  ])
   _qt_no_hwtest_boards = frozenset([])
   _qt_no_hwtest_experimental_boards = frozenset([])
   _qt_vmtest_boards = frozenset([

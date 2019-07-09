@@ -349,7 +349,7 @@
 
 == mst_android_pfq ==
   master-mst-android-pfq
-    eve-arcnext-mst-android-pfq
+    betty-arcmaster-mst-android-pfq
 
 == nyc_android_pfq ==
   master-nyc-android-pfq
@@ -498,6 +498,7 @@
 == qt_android_pfq ==
   master-qt-android-pfq
     betty-qt-arc-qt-android-pfq
+    eve-arcnext-qt-android-pfq
 
 == release ==
   master-lakitu-release
@@ -953,6 +954,7 @@
   betty-arcmaster-full-tryjob
   betty-arcmaster-llvm-next-toolchain-tryjob
   betty-arcmaster-llvm-toolchain-tryjob
+  betty-arcmaster-mst-android-pfq-tryjob
   betty-arcmaster-no-vmtest-pre-cq
   betty-arcmaster-paladin-tryjob
   betty-arcmaster-postsubmit-tryjob
@@ -1472,12 +1474,12 @@
   eve-arcnext-full-tryjob
   eve-arcnext-llvm-next-toolchain-tryjob
   eve-arcnext-llvm-toolchain-tryjob
-  eve-arcnext-mst-android-pfq-tryjob
   eve-arcnext-no-vmtest-pre-cq
   eve-arcnext-paladin-tryjob
   eve-arcnext-payloads-tryjob
   eve-arcnext-postsubmit-tryjob
   eve-arcnext-pre-cq
+  eve-arcnext-qt-android-pfq-tryjob
   eve-arcnext-release-afdo-generate-tryjob
   eve-arcnext-release-afdo-tryjob
   eve-arcnext-release-afdo-use-tryjob
@@ -2554,7 +2556,7 @@
     lakitu-incremental-tryjob
   master-lakitu-release-tryjob
   master-mst-android-pfq-tryjob
-    eve-arcnext-mst-android-pfq-tryjob
+    betty-arcmaster-mst-android-pfq-tryjob
   master-nyc-android-pfq-tryjob
     betty-arc64-nyc-android-pfq-tryjob
     betty-nyc-android-pfq-tryjob
@@ -2789,6 +2791,7 @@
     zork-postsubmit-tryjob
   master-qt-android-pfq-tryjob
     betty-qt-arc-qt-android-pfq-tryjob
+    eve-arcnext-qt-android-pfq-tryjob
   master-release-tryjob
     amd64-generic-cheets-release-tryjob
     arkham-release-tryjob
