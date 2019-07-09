@@ -1040,19 +1040,19 @@ TEST_F(FeedSchedulerHostTest, GetLastFetchTriggerTypeForDebugging) {
   scheduler()->OnForegrounded();
 
   EXPECT_EQ(FeedSchedulerHost::TriggerType::kForegrounded,
-            scheduler()->GetLastFetchTriggerTypeForDebugging());
+            *scheduler()->GetLastFetchTriggerTypeForDebugging());
 
   scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false);
 
   EXPECT_EQ(FeedSchedulerHost::TriggerType::kNtpShown,
-            scheduler()->GetLastFetchTriggerTypeForDebugging());
+            *scheduler()->GetLastFetchTriggerTypeForDebugging());
 
   ClassifyAsActiveSuggestionsConsumer();  // Fixed timer at 48 hours.
   test_clock()->Advance(TimeDelta::FromHours(49));
   scheduler()->OnFixedTimer(base::OnceClosure());
 
   EXPECT_EQ(FeedSchedulerHost::TriggerType::kFixedTimer,
-            scheduler()->GetLastFetchTriggerTypeForDebugging());
+            *scheduler()->GetLastFetchTriggerTypeForDebugging());
 }
 
 }  // namespace feed
