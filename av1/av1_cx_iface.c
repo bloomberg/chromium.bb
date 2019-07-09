@@ -861,8 +861,7 @@ static aom_codec_err_t set_encoder_config(
     oxcf->timing_info_present = 0;
   }
 
-  oxcf->enable_tpl_model =
-      (oxcf->superres_mode == SUPERRES_NONE) ? extra_cfg->enable_tpl_model : 0;
+  oxcf->enable_tpl_model = extra_cfg->enable_tpl_model;
 
   oxcf->aq_mode = extra_cfg->aq_mode;
   oxcf->deltaq_mode = extra_cfg->deltaq_mode;
@@ -870,10 +869,7 @@ static aom_codec_err_t set_encoder_config(
   // superres. If superres is being used on the other hand, turn
   // delta_q off.
   if (oxcf->deltaq_mode == DELTA_Q_OBJECTIVE && !oxcf->enable_tpl_model) {
-    if (oxcf->superres_mode == SUPERRES_NONE)
-      oxcf->enable_tpl_model = 1;
-    else
-      oxcf->deltaq_mode = NO_DELTA_Q;
+    oxcf->enable_tpl_model = 1;
   }
 
   oxcf->deltalf_mode =
