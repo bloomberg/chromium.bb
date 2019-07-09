@@ -4797,7 +4797,8 @@ void RenderFrameHostImpl::CommitNavigation(
   //
   // TODO(arthursonzogni): Replace DumpWithoutCrashing by a CHECK on M79 if it
   // is never reached.
-  if (common_params.url.IsAboutSrcdoc()) {
+  bool is_srcdoc = common_params.url.IsAboutSrcdoc();
+  if (is_srcdoc) {
     if (frame_tree_node_->IsMainFrame() ||
         common_params.url != GURL(url::kAboutSrcdocURL)) {
       base::debug::DumpWithoutCrashing();
@@ -4871,7 +4872,7 @@ void RenderFrameHostImpl::CommitNavigation(
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      (!is_same_document || is_first_navigation)) {
+      (!is_same_document || is_first_navigation) && !is_srcdoc) {
     recreate_default_url_loader_factory_after_network_service_crash_ = false;
     subresource_loader_factories =
         std::make_unique<blink::URLLoaderFactoryBundleInfo>();
@@ -4946,9 +4947,12 @@ void RenderFrameHostImpl::CommitNavigation(
     subresource_loader_factories->default_factory_info() =
         std::move(default_factory_info);
 
-
+    // Only file resources can load file subresources.
+    //
+    // Other URLs like about:srcdoc or about:blank might be able load files, but
+    // only because they will inherit loaders from their parents instead of the
+    // ones provided by the browser process here.
     if (common_params.url.SchemeIsFile()) {
-      // Only file resources can load file subresources
       auto file_factory = std::make_unique<FileURLLoaderFactory>(
           browser_context->GetPath(),
           browser_context->GetSharedCorsOriginAccessList(),
@@ -5021,7 +5025,7 @@ void RenderFrameHostImpl::CommitNavigation(
   // It is imperative that cross-document navigations always provide a set of
   // subresource ULFs when the Network Service is enabled.
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-         is_same_document || !is_first_navigation ||
+         is_same_document || !is_first_navigation || is_srcdoc ||
          subresource_loader_factories);
 
   if (is_same_document) {
@@ -5057,7 +5061,7 @@ void RenderFrameHostImpl::CommitNavigation(
           std::move(subresource_loader_factories));
       subresource_loader_factories = CloneFactoryBundle(bundle);
       factory_bundle_for_prefetch = CloneFactoryBundle(bundle);
-    } else if (!is_same_document || is_first_navigation) {
+    } else if ((!is_same_document || is_first_navigation) && !is_srcdoc) {
       DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
       factory_bundle_for_prefetch =
           std::make_unique<blink::URLLoaderFactoryBundleInfo>();
@@ -5124,6 +5128,24 @@ void RenderFrameHostImpl::CommitNavigation(
               ->RecordFeatureUsage(this);
         }
       }
+    }
+
+    // about:srcdoc "inherits" loaders from its parent in the renderer process,
+    // There are no need to provide new ones here.
+    // TODO(arthursonzogni): What about about:blank URLs?
+    // TODO(arthursonzogni): What about data-URLs?
+    //
+    // Note: Inheriting loaders could be done in the browser process, but we
+    //       aren't confident there are enough reliable information in the
+    //       browser process to always make the correct decision. "Inheriting"
+    //       in the renderer process is slightly less problematic in that it
+    //       guarantees the renderer won't have higher privileges than it
+    //       originally had (since it will inherit loader factories it already
+    //       had access to).
+    if (is_srcdoc) {
+      DCHECK(!subresource_loader_factories);
+      DCHECK(!subresource_overrides);
+      DCHECK(!prefetch_loader_factory);
     }
 
     SendCommitNavigation(

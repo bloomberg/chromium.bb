@@ -3448,6 +3448,7 @@ void RenderFrameImpl::CommitNavigationInternal(
   // Sanity check that the browser always sends us new loader factories on
   // cross-document navigations with the Network Service enabled.
   DCHECK(common_params.url.SchemeIs(url::kJavaScriptScheme) ||
+         common_params.url == GURL(url::kAboutSrcdocURL) ||
          !base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          subresource_loader_factories);
 
@@ -3588,9 +3589,34 @@ void RenderFrameImpl::CommitNavigationWithParams(
     blink::WebRuntimeFeatures::EnableHTMLImports(true);
   }
 
-  SetupLoaderFactoryBundle(std::move(subresource_loader_factories),
-                           std::move(subresource_overrides),
-                           std::move(prefetch_loader_factory));
+  // Here, creator means either the parent frame or the window opener.
+  bool inherit_loaders_from_creator =
+      // Iframe with the about:srcdoc URL inherits subresource loaders from
+      // its parent. If its parent is able to use the FileUrlLoader, then its
+      // about:srcdoc iframe can use it too.
+      // TODO(arthursonzogni): Ideally, this decision should be made by the
+      // browser process. However, giving an iframe the FileUrlLoader mistakenly
+      // could have terrible consequences (e.g. give access to user's file from
+      // an unknown website). Inheriting from the parent in the renderer process
+      // is more conservative and feels more cautious for now.
+      // TODO(arthursonzogni): Something similar needs to be done for
+      // about:blank.
+      common_params.url == url::kAboutSrcdocURL;
+
+  if (inherit_loaders_from_creator) {
+    // The browser process didn't provide any way to fetch subresources, it
+    // expects this document to inherit loaders from its parent.
+    DCHECK(!subresource_loader_factories);
+    DCHECK(!subresource_overrides);
+    DCHECK(!prefetch_loader_factory);
+
+    loader_factories_ = nullptr;  // Will be lazily initialized in
+                                  // GetLoaderFactoryBundle().
+  } else {
+    SetupLoaderFactoryBundle(std::move(subresource_loader_factories),
+                             std::move(subresource_overrides),
+                             std::move(prefetch_loader_factory));
+  }
 
   // If the navigation is for "view source", the WebLocalFrame needs to be put
   // in a special mode.
