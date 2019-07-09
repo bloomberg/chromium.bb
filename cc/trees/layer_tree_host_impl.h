@@ -950,6 +950,13 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void AllocateLocalSurfaceId();
 
   const LayerTreeSettings settings_;
+
+  // This is set to true only if:
+  //  . The compositor is running single-threaded (i.e. there is no separate
+  //    compositor/impl thread).
+  //  . There is no scheduler (which means layer-update, composite, etc. steps
+  //    happen explicitly via. synchronous calls to appropriate functions).
+  // This is usually turned on only in some tests (e.g. web-tests).
   const bool is_synchronous_single_threaded_;
 
   const int default_color_space_id_ = gfx::ColorSpace::GetNextId();
