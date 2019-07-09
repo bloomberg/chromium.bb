@@ -90,7 +90,7 @@ void LargestContentfulPaintCalculator::OnLargestContentfulPaintUpdated(
             : url.GetString();
     // Do not expose element attribution from shadow trees.
     Element* image_element =
-        image_node->IsInShadowTree() ? nullptr : ToElement(image_node);
+        image_node->IsInShadowTree() ? nullptr : To<Element>(image_node);
     const AtomicString& image_id =
         image_element ? image_element->GetIdAttribute() : AtomicString();
     window_performance_->OnLargestContentfulPaintUpdated(
@@ -105,7 +105,7 @@ void LargestContentfulPaintCalculator::OnLargestContentfulPaintUpdated(
 
     // Do not expose element attribution from shadow trees.
     Element* text_element =
-        text_node->IsInShadowTree() ? nullptr : ToElement(text_node);
+        text_node->IsInShadowTree() ? nullptr : To<Element>(text_node);
     const AtomicString& text_id =
         text_element ? text_element->GetIdAttribute() : AtomicString();
     window_performance_->OnLargestContentfulPaintUpdated(
