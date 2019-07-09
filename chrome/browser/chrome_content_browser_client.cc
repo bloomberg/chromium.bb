@@ -3911,10 +3911,10 @@ void ChromeContentBrowserClient::BindInterfaceRequestFromFrame(
   }
 }
 
-void ChromeContentBrowserClient::BindCredentialManagerRequest(
+void ChromeContentBrowserClient::BindCredentialManagerReceiver(
     content::RenderFrameHost* render_frame_host,
-    blink::mojom::CredentialManagerRequest request) {
-  ChromePasswordManagerClient::BindCredentialManager(std::move(request),
+    mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) {
+  ChromePasswordManagerClient::BindCredentialManager(std::move(receiver),
                                                      render_frame_host);
 }
 

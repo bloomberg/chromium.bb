@@ -755,7 +755,7 @@ class TestSimpleDocumentInterfaceBrokerImpl
   void GetAudioContextManager(
       mojo::PendingReceiver<blink::mojom::AudioContextManager>) override {}
   void GetCredentialManager(
-      blink::mojom::CredentialManagerRequest request) override {}
+      mojo::PendingReceiver<blink::mojom::CredentialManager>) override {}
   void GetAuthenticator(blink::mojom::AuthenticatorRequest request) override {}
   void GetPushMessaging(
       mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) override {}
