@@ -22,7 +22,6 @@ namespace base {
 
 class Clock;
 class FileDescriptorWatcher;
-class ThreadPoolInstance;
 class TickClock;
 
 namespace test {
@@ -287,7 +286,8 @@ class ScopedTaskEnvironment {
                         trait_helpers::NotATraitTag tag);
 
   const MainThreadType main_thread_type_;
-  ThreadPoolExecutionMode thread_pool_execution_mode_;
+  const ThreadPoolExecutionMode thread_pool_execution_mode_;
+  const ThreadingMode threading_mode_;
   const bool subclass_creates_default_taskrunner_;
 
   std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;
@@ -304,9 +304,7 @@ class ScopedTaskEnvironment {
   std::unique_ptr<FileDescriptorWatcher> file_descriptor_watcher_;
 #endif
 
-  const ThreadPoolInstance* thread_pool_ = nullptr;
-
-  // Owned by |thread_pool_|.
+  // Owned by the ThreadPoolInstance.
   TestTaskTracker* task_tracker_ = nullptr;
 
   // Ensures destruction of lazy TaskRunners when this is destroyed.

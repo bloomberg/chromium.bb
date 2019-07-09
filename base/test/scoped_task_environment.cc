@@ -305,6 +305,7 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
     trait_helpers::NotATraitTag)
     : main_thread_type_(main_thread_type),
       thread_pool_execution_mode_(thread_pool_execution_mode),
+      threading_mode_(threading_mode),
       subclass_creates_default_taskrunner_(subclass_creates_default_taskrunner),
       sequence_manager_(
           CreateSequenceManagerForMainThreadType(main_thread_type)),
@@ -344,7 +345,7 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
     CompleteInitialization();
   }
 
-  if (threading_mode != ThreadingMode::MAIN_THREAD_ONLY)
+  if (threading_mode_ != ThreadingMode::MAIN_THREAD_ONLY)
     InitializeThreadPool();
 
   if (thread_pool_execution_mode_ == ThreadPoolExecutionMode::QUEUED &&
@@ -387,7 +388,6 @@ void ScopedTaskEnvironment::InitializeThreadPool() {
   task_tracker_ = task_tracker.get();
   ThreadPoolInstance::Set(std::make_unique<internal::ThreadPoolImpl>(
       "ScopedTaskEnvironment", std::move(task_tracker)));
-  thread_pool_ = ThreadPoolInstance::Get();
   ThreadPoolInstance::Get()->Start(init_params);
 }
 
@@ -414,13 +414,14 @@ ScopedTaskEnvironment::~ScopedTaskEnvironment() {
 }
 
 void ScopedTaskEnvironment::DestroyThreadPool() {
-  if (!thread_pool_)
+  if (threading_mode_ == ThreadingMode::MAIN_THREAD_ONLY)
     return;
+
   // Ideally this would RunLoop().RunUntilIdle() here to catch any errors or
   // infinite post loop in the remaining work but this isn't possible right now
   // because base::~MessageLoop() didn't use to do this and adding it here would
   // make the migration away from MessageLoop that much harder.
-  CHECK_EQ(ThreadPoolInstance::Get(), thread_pool_);
+
   // Without FlushForTesting(), DeleteSoon() and ReleaseSoon() tasks could be
   // skipped, resulting in memory leaks.
   task_tracker_->AllowRunTasks();
