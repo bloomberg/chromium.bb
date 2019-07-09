@@ -14,9 +14,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/previews/content/hint_cache_store.h"
 #include "components/previews/content/proto_database_provider_test_base.h"
-#include "components/previews/core/previews_experiments.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -605,7 +605,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
   LoadHint("host.domain.org");
   histogram_tester.ExpectTimeBucketCount(
       "Previews.OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
-      params::StoredFetchedHintsFreshnessDuration(), 1);
+      optimization_guide::features::StoredFetchedHintsFreshnessDuration(), 1);
 }
 
 }  // namespace

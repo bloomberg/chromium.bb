@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/previews/content/hint_update_data.h"
-#include "components/previews/core/previews_experiments.h"
 #include "url/gurl.h"
 
 namespace previews {
@@ -117,7 +117,8 @@ bool HintCache::UpdateFetchedHints(
     expiry_time += base::TimeDelta().FromSeconds(
         get_hints_response->max_cache_duration().seconds());
   } else {
-    expiry_time += params::StoredFetchedHintsFreshnessDuration();
+    expiry_time +=
+        optimization_guide::features::StoredFetchedHintsFreshnessDuration();
   }
   std::unique_ptr<HintUpdateData> fetched_hints_update_data =
       CreateUpdateDataForFetchedHints(update_time, expiry_time);
