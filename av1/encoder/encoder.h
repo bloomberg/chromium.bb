@@ -1145,7 +1145,7 @@ void av1_release_compound_type_rd_buffers(CompoundTypeRdBuffers *const bufs);
 // TODO(jingning): Move these functions as primitive members for the new cpi
 // class.
 static INLINE void stack_push(int *stack, int *stack_size, int item) {
-  for (int i = 0; i < *stack_size; ++i) stack[i + 1] = stack[i];
+  for (int i = *stack_size - 1; i >= 0; --i) stack[i + 1] = stack[i];
   stack[0] = item;
   ++*stack_size;
 }
