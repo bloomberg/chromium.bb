@@ -2872,8 +2872,6 @@ jumbo_split_static_library("browser") {
       "badging/badge_manager_delegate.h",
       "badging/badge_manager_factory.cc",
       "badging/badge_manager_factory.h",
-      "badging/badge_service_impl.cc",
-      "badging/badge_service_impl.h",
       "banners/app_banner_manager_desktop.cc",
       "banners/app_banner_manager_desktop.h",
       "bookmarks/bookmark_html_writer.cc",
