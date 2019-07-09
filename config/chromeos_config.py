@@ -2239,7 +2239,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'grunt',
       'guado',
       'guado-accelerator',
-      'guado_moblab',
       'hana',
       'hatch',
       'kalista',
@@ -2367,7 +2366,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_moblab_hwtest_boards = frozenset([
-      'guado_moblab',
       'fizz-moblab',
   ])
 
@@ -4149,7 +4147,7 @@ def ApplyCustomOverrides(site_config):
   # Some boards in toolchain builder are not using the same configuration as
   # release builders. Configure it here since it's easier, for both
   # llvm-toolchain and llvm-next-toolchain builders.
-  for board in ['lakitu', 'guado_moblab', 'gale', 'mistral', 'whirlwind']:
+  for board in ['lakitu', 'fizz-moblab', 'gale', 'mistral', 'whirlwind']:
     if board == 'lakitu':
       overwritten_configs[board+'-llvm-toolchain'] = {
           'vm_tests': [config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
@@ -4159,7 +4157,7 @@ def ApplyCustomOverrides(site_config):
                         config_lib.GCETestConfig(constants.GCE_SUITE_TEST_TYPE,
                                                  test_suite='gce-smoke')]
       }
-    elif board == 'guado_moblab':
+    elif board == 'fizz-moblab':
       overwritten_configs[board+'-llvm-toolchain'] = {
           'enable_skylab_hw_tests': False,
           'hw_tests': [

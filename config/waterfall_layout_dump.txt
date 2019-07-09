@@ -81,7 +81,6 @@
     grunt-unittest-only-paladin
     guado-accelerator-paladin
     guado-paladin
-    guado_moblab-paladin
     hana-paladin
     hatch-paladin
     incremental-paladin
@@ -2720,7 +2719,6 @@
     grunt-unittest-only-paladin-tryjob
     guado-accelerator-paladin-tryjob
     guado-paladin-tryjob
-    guado_moblab-paladin-tryjob
     hana-paladin-tryjob
     hatch-paladin-tryjob
     incremental-paladin-tryjob
