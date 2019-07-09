@@ -90,17 +90,17 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
     }
   }
 
-  bool UpdateFetchedHints(
+  void UpdateFetchedHintsAndWait(
       std::unique_ptr<optimization_guide::proto::GetHintsResponse>
           get_hints_response,
       base::Time stored_time) {
     are_fetched_hints_updated_ = false;
-    bool result = hint_cache_->UpdateFetchedHints(
+    hint_cache_->UpdateFetchedHints(
         std::move(get_hints_response), stored_time,
         base::BindOnce(&HintCacheTest::OnHintsUpdated, base::Unretained(this)));
 
-    RunUntilIdle();
-    return result;
+    while (!are_fetched_hints_updated_)
+      RunUntilIdle();
   }
 
   void OnHintsUpdated() { are_fetched_hints_updated_ = true; }
@@ -520,7 +520,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHints) {
   page_hint->set_page_pattern("page pattern");
 
   base::Time stored_time = base::Time().Now();
-  EXPECT_TRUE(UpdateFetchedHints(std::move(get_hints_response), stored_time));
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time);
   EXPECT_TRUE(are_fetched_hints_updated());
 
   // Next update time for hints should be updated.
@@ -531,13 +531,15 @@ TEST_F(HintCacheTest, ParseEmptyFetchedHints) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
+  base::Time stored_time = base::Time().Now() + base::TimeDelta().FromDays(1);
   std::unique_ptr<optimization_guide::proto::GetHintsResponse>
       get_hints_response =
           std::make_unique<optimization_guide::proto::GetHintsResponse>();
 
-  EXPECT_FALSE(
-      UpdateFetchedHints(std::move(get_hints_response), base::Time().Now()));
-  EXPECT_FALSE(are_fetched_hints_updated());
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time);
+  // Empty Fetched Hints causes the metadata entry to be updated.
+  EXPECT_TRUE(are_fetched_hints_updated());
+  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), stored_time);
 }
 
 TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
@@ -564,7 +566,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
   page_hint->set_page_pattern("page pattern");
 
   base::Time stored_time = base::Time().Now();
-  EXPECT_TRUE(UpdateFetchedHints(std::move(get_hints_response), stored_time));
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time);
   EXPECT_TRUE(are_fetched_hints_updated());
 
   // Next update time for hints should be updated.
@@ -596,7 +598,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
   page_hint->set_page_pattern("page pattern");
 
   base::Time stored_time = base::Time().Now();
-  EXPECT_TRUE(UpdateFetchedHints(std::move(get_hints_response), stored_time));
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time);
   EXPECT_TRUE(are_fetched_hints_updated());
 
   // Next update time for hints should be updated.

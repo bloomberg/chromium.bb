@@ -1837,12 +1837,41 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherEnabledNoHosts) {
   EXPECT_FALSE(hints_fetcher()->hints_fetched());
 }
 
+TEST_F(PreviewsOptimizationGuideTest,
+       HintsFetcherEnabledWithHostsNoHintsInResponse) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      optimization_guide::features::kOptimizationHintsFetching);
+
+  std::vector<std::string> hosts = {"example1.com", "example2.com"};
+
+  // This should be called exactly once, confirming that hints are not fetched
+  // again after |kTestFetchRetryDelaySecs|.
+  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_))
+      .Times(1)
+      .WillRepeatedly(testing::Return(hosts));
+
+  guide()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithNoHints));
+
+  // Load hints so that OnHintsUpdated is called. This will force FetchHints to
+  // be triggered if OptimizationHintsFetching is enabled.
+  InitializeFixedCountResourceLoadingHints();
+  // Cause the timer to fire the fetch event.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_TRUE(hints_fetcher()->hints_fetched());
+
+  // Check that hints should not be fetched again after the delay for a failed
+  // hints fetch attempt.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_)).Times(0);
+}
+
 TEST_F(PreviewsOptimizationGuideTest, HintsFetcherEnabledWithHosts) {
   base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
       optimization_guide::features::kOptimizationHintsFetching);
-  std::string opt_guide_url = "https://hintsserver.com";
 
   guide()->SetHintsFetcherForTesting(
       BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
