@@ -4,6 +4,7 @@
 
 #include "base/test/scoped_task_environment.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "base/bind_helpers.h"
@@ -98,8 +99,8 @@ class ScopedTaskEnvironment::TestTaskTracker
  public:
   TestTaskTracker();
 
-  // Allow running tasks.
-  void AllowRunTasks();
+  // Allow running tasks. Returns whether tasks were previously allowed to run.
+  bool AllowRunTasks();
 
   // Disallow running tasks. Returns true on success; success requires there to
   // be no tasks currently running. Returns false if >0 tasks are currently
@@ -263,7 +264,9 @@ class ScopedTaskEnvironment::MockTimeDomain
 
     if (!fast_forward_cap.is_max()) {
       AutoLock lock(now_ticks_lock_);
-      now_ticks_ = fast_forward_cap;
+      // It's possible that Now() is already beyond |fast_forward_cap| when the
+      // caller nests multiple FastForwardBy() calls.
+      now_ticks_ = std::max(now_ticks_, fast_forward_cap);
     }
 
     return false;
@@ -509,6 +512,8 @@ void ScopedTaskEnvironment::RunUntilIdle() {
   // This can also be simplified even further once TaskTracker becomes directly
   // aware of main thread tasks. https://crbug.com/660078.
 
+  const bool could_run_tasks = task_tracker_->AllowRunTasks();
+
   for (;;) {
     task_tracker_->AllowRunTasks();
 
@@ -556,9 +561,9 @@ void ScopedTaskEnvironment::RunUntilIdle() {
   }
 
   // The above loop always ends with running tasks being disallowed. Re-enable
-  // parallel execution before returning unless in
-  // ThreadPoolExecutionMode::QUEUED.
-  if (thread_pool_execution_mode_ != ThreadPoolExecutionMode::QUEUED)
+  // parallel execution before returning if it was allowed at the beginning of
+  // this call.
+  if (could_run_tasks)
     task_tracker_->AllowRunTasks();
 }
 
@@ -625,10 +630,12 @@ ScopedTaskEnvironment::TestTaskTracker::TestTaskTracker()
       can_run_tasks_cv_(&lock_),
       task_completed_(&lock_) {}
 
-void ScopedTaskEnvironment::TestTaskTracker::AllowRunTasks() {
+bool ScopedTaskEnvironment::TestTaskTracker::AllowRunTasks() {
   AutoLock auto_lock(lock_);
+  const bool could_run_tasks = can_run_tasks_;
   can_run_tasks_ = true;
   can_run_tasks_cv_.Broadcast();
+  return could_run_tasks;
 }
 
 bool ScopedTaskEnvironment::TestTaskTracker::DisallowRunTasks() {
