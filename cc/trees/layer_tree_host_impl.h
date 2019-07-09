@@ -439,6 +439,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   DrawMode GetDrawMode() const;
 
+  void DidNotNeedBeginFrame();
+
   // TileManagerClient implementation.
   void NotifyReadyToActivate() override;
   void NotifyReadyToDraw() override;
@@ -478,7 +480,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override;
-  void DidNotNeedBeginFrame() override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
