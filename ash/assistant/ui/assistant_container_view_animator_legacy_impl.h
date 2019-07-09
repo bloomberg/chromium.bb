@@ -11,8 +11,8 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/compositor/layer.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/animation/animation_delegate_views.h"
 
 namespace gfx {
 class SlideAnimation;
@@ -30,7 +30,7 @@ namespace ash {
 // not very performant and we are working to deprecate this implementation.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerViewAnimatorLegacyImpl
     : public AssistantContainerViewAnimator,
-      public gfx::AnimationDelegate {
+      public views::AnimationDelegateViews {
  public:
   AssistantContainerViewAnimatorLegacyImpl(
       AssistantViewDelegate* delegate,
@@ -48,7 +48,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerViewAnimatorLegacyImpl
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
 
-  // gfx::AnimationDelegate:
+  // views::AnimationDelegatViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 

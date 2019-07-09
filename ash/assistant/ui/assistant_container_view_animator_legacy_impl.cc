@@ -44,7 +44,8 @@ AssistantContainerViewAnimatorLegacyImpl::
     AssistantContainerViewAnimatorLegacyImpl(
         AssistantViewDelegate* delegate,
         AssistantContainerView* assistant_container_view)
-    : AssistantContainerViewAnimator(delegate, assistant_container_view) {}
+    : AssistantContainerViewAnimator(delegate, assistant_container_view),
+      views::AnimationDelegateViews(assistant_container_view) {}
 
 AssistantContainerViewAnimatorLegacyImpl::
     ~AssistantContainerViewAnimatorLegacyImpl() = default;
