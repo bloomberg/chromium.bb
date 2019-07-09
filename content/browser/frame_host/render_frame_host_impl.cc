@@ -941,19 +941,11 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       owned_render_widget_host_->set_owned_by_render_frame_host(true);
     }
 
-    mojom::WidgetInputHandlerAssociatedPtr widget_handler;
-    mojom::WidgetInputHandlerHostRequest host_request;
-    if (frame_input_handler_) {
-      mojom::WidgetInputHandlerHostPtr host;
-      host_request = mojo::MakeRequest(&host);
-      frame_input_handler_->GetWidgetInputHandler(
-          mojo::MakeRequest(&widget_handler), std::move(host));
-    }
     if (!frame_tree_node_->parent())
       GetLocalRenderWidgetHost()->SetIntersectsViewport(true);
     GetLocalRenderWidgetHost()->SetFrameDepth(frame_tree_node_->depth());
-    GetLocalRenderWidgetHost()->SetWidgetInputHandler(std::move(widget_handler),
-                                                      std::move(host_request));
+    GetLocalRenderWidgetHost()->SetFrameInputHandler(
+        frame_input_handler_.get());
     GetLocalRenderWidgetHost()->input_router()->SetFrameTreeNodeId(
         frame_tree_node_->frame_tree_node_id());
   }
@@ -1790,6 +1782,8 @@ bool RenderFrameHostImpl::SchemeShouldBypassCSP(
 }
 
 mojom::FrameInputHandler* RenderFrameHostImpl::GetFrameInputHandler() {
+  if (!frame_input_handler_)
+    return nullptr;
   return frame_input_handler_.get();
 }
 
@@ -1949,17 +1943,8 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
     mojom::WidgetPtr widget;
     GetRemoteInterfaces()->GetInterface(&widget);
     GetLocalRenderWidgetHost()->SetWidget(std::move(widget));
-
-    if (frame_input_handler_) {
-      mojom::WidgetInputHandlerAssociatedPtr widget_handler;
-      mojom::WidgetInputHandlerHostPtr host;
-      mojom::WidgetInputHandlerHostRequest host_request =
-          mojo::MakeRequest(&host);
-      frame_input_handler_->GetWidgetInputHandler(
-          mojo::MakeRequest(&widget_handler), std::move(host));
-      GetLocalRenderWidgetHost()->SetWidgetInputHandler(
-          std::move(widget_handler), std::move(host_request));
-    }
+    GetLocalRenderWidgetHost()->SetFrameInputHandler(
+        frame_input_handler_.get());
     GetLocalRenderWidgetHost()->input_router()->SetFrameTreeNodeId(
         frame_tree_node_->frame_tree_node_id());
     viz::mojom::InputTargetClientPtr input_target_client;
@@ -5280,7 +5265,8 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
   remote_interfaces_->Bind(std::move(remote_interfaces));
 
-  remote_interfaces_->GetInterface(&frame_input_handler_);
+  remote_interfaces_->GetInterface(
+      frame_input_handler_.BindNewPipeAndPassReceiver());
 }
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {
@@ -5290,6 +5276,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   frame_bindings_control_.reset();
   frame_host_associated_binding_.Close();
   navigation_control_.reset();
+  frame_input_handler_.reset();
 
   // Disconnect with ImageDownloader Mojo service in RenderFrame.
   mojo_image_downloader_.reset();

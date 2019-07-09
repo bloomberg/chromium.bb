@@ -57,6 +57,7 @@
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_isolation_key.h"
 #include "net/cookies/canonical_cookie.h"
@@ -2104,7 +2105,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   base::Optional<base::UnguessableToken> overlay_routing_token_;
 
   viz::mojom::InputTargetClient* input_target_client_ = nullptr;
-  mojom::FrameInputHandlerPtr frame_input_handler_;
+  mojo::Remote<mojom::FrameInputHandler> frame_input_handler_;
 
   std::unique_ptr<KeepAliveHandleFactory> keep_alive_handle_factory_;
   base::TimeDelta keep_alive_timeout_;
