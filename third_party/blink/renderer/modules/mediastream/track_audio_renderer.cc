@@ -2,24 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/track_audio_renderer.h"
+#include "third_party/blink/public/web/modules/mediastream/track_audio_renderer.h"
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "content/renderer/media/audio/audio_device_factory.h"
+#include "media/audio/audio_sink_parameters.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_shifter.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
-namespace content {
+namespace WTF {
+
+template <>
+struct CrossThreadCopier<media::AudioParameters> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = media::AudioParameters;
+  static Type Copy(Type pointer) { return pointer; }
+};
+
+}  // namespace WTF
+
+namespace blink {
 
 namespace {
 
@@ -35,11 +50,32 @@ base::TimeDelta ComputeTotalElapsedRenderTime(
     base::TimeDelta prior_elapsed_render_time,
     int64_t num_samples_rendered,
     int sample_rate) {
-  return prior_elapsed_render_time + base::TimeDelta::FromMicroseconds(
-      num_samples_rendered * base::Time::kMicrosecondsPerSecond / sample_rate);
+  return prior_elapsed_render_time +
+         base::TimeDelta::FromMicroseconds(num_samples_rendered *
+                                           base::Time::kMicrosecondsPerSecond /
+                                           sample_rate);
 }
 
 }  // namespace
+
+class TrackAudioRenderer::InternalFrame {
+ public:
+  InternalFrame(WebLocalFrame* web_frame)
+      : frame_(web_frame ? static_cast<LocalFrame*>(
+                               WebLocalFrame::ToCoreFrame(*web_frame))
+                         : nullptr) {}
+
+  LocalFrame* frame() { return frame_.Get(); }
+  WebLocalFrame* web_frame() {
+    if (!frame_)
+      return nullptr;
+
+    return static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame()));
+  }
+
+ private:
+  WeakPersistent<LocalFrame> frame_;
+};
 
 // media::AudioRendererSink::RenderCallback implementation
 int TrackAudioRenderer::Render(base::TimeDelta delay,
@@ -71,7 +107,7 @@ void TrackAudioRenderer::OnRenderError() {
   NOTIMPLEMENTED();
 }
 
-// blink::WebMediaStreamAudioSink implementation
+// WebMediaStreamAudioSink implementation
 void TrackAudioRenderer::OnData(const media::AudioBus& audio_bus,
                                 base::TimeTicks reference_time) {
   DCHECK(!reference_time.is_null());
@@ -111,26 +147,28 @@ void TrackAudioRenderer::OnSetFormat(const media::AudioParameters& params) {
 
   // Post a task on the main render thread to reconfigure the |sink_| with the
   // new format.
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&TrackAudioRenderer::ReconfigureSink, this, params));
+  PostCrossThreadTask(*task_runner_, FROM_HERE,
+                      CrossThreadBindOnce(&TrackAudioRenderer::ReconfigureSink,
+                                          WrapRefCounted(this), params));
 }
 
-TrackAudioRenderer::TrackAudioRenderer(
-    const blink::WebMediaStreamTrack& audio_track,
-    int playout_render_frame_id,
-    int session_id,
-    const std::string& device_id)
+TrackAudioRenderer::TrackAudioRenderer(const WebMediaStreamTrack& audio_track,
+                                       WebLocalFrame* playout_web_frame,
+                                       int session_id,
+                                       const std::string& device_id)
     : audio_track_(audio_track),
-      playout_render_frame_id_(playout_render_frame_id),
+      internal_playout_frame_(
+          std::make_unique<InternalFrame>(playout_web_frame)),
       session_id_(session_id),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      task_runner_(
+          playout_web_frame->GetTaskRunner(blink::TaskType::kInternalMedia)),
       num_samples_rendered_(0),
       playing_(false),
       output_device_id_(device_id),
       volume_(0.0),
       sink_started_(false) {
-  DCHECK(blink::MediaStreamAudioTrack::From(audio_track_));
+  DCHECK(MediaStreamAudioTrack::From(audio_track_));
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "TrackAudioRenderer::TrackAudioRenderer()";
 }
 
@@ -146,12 +184,12 @@ void TrackAudioRenderer::Start() {
   DCHECK_EQ(playing_, false);
 
   // We get audio data from |audio_track_|...
-  blink::WebMediaStreamAudioSink::AddToAudioTrack(this, audio_track_);
+  WebMediaStreamAudioSink::AddToAudioTrack(this, audio_track_);
   // ...and |sink_| will get audio data from us.
   DCHECK(!sink_);
-  sink_ = AudioDeviceFactory::NewAudioRendererSink(
-      blink::WebAudioDeviceSourceType::kNonRtcAudioTrack,
-      playout_render_frame_id_, {session_id_, output_device_id_});
+  sink_ = Platform::Current()->NewAudioRendererSink(
+      WebAudioDeviceSourceType::kNonRtcAudioTrack,
+      internal_playout_frame_->web_frame(), {session_id_, output_device_id_});
 
   base::AutoLock auto_lock(thread_lock_);
   prior_elapsed_render_time_ = base::TimeDelta();
@@ -179,7 +217,7 @@ void TrackAudioRenderer::Stop() {
   sink_started_ = false;
 
   // Ensure that the capturer stops feeding us with captured audio.
-  blink::WebMediaStreamAudioSink::RemoveFromAudioTrack(this, audio_track_);
+  WebMediaStreamAudioSink::RemoveFromAudioTrack(this, audio_track_);
 }
 
 void TrackAudioRenderer::Play() {
@@ -231,7 +269,7 @@ base::TimeDelta TrackAudioRenderer::GetCurrentRenderTime() {
 
 bool TrackAudioRenderer::IsLocalRenderer() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return blink::MediaStreamAudioTrack::From(audio_track_)->is_local_track();
+  return MediaStreamAudioTrack::From(audio_track_)->is_local_track();
 }
 
 void TrackAudioRenderer::SwitchOutputDevice(
@@ -246,9 +284,9 @@ void TrackAudioRenderer::SwitchOutputDevice(
   }
 
   scoped_refptr<media::AudioRendererSink> new_sink =
-      AudioDeviceFactory::NewAudioRendererSink(
-          blink::WebAudioDeviceSourceType::kNonRtcAudioTrack,
-          playout_render_frame_id_, {session_id_, device_id});
+      Platform::Current()->NewAudioRendererSink(
+          WebAudioDeviceSourceType::kNonRtcAudioTrack,
+          internal_playout_frame_->web_frame(), {session_id_, device_id});
 
   media::OutputDeviceStatus new_sink_status =
       new_sink->GetOutputDeviceInfo().device_status();
@@ -317,8 +355,8 @@ void TrackAudioRenderer::MaybeStartSink() {
            << sink_params.AsHumanReadableString() << '}';
 
   // Specify the latency info to be passed to the browser side.
-  sink_params.set_latency_tag(AudioDeviceFactory::GetSourceLatencyType(
-      blink::WebAudioDeviceSourceType::kNonRtcAudioTrack));
+  sink_params.set_latency_tag(Platform::Current()->GetAudioSourceLatencyType(
+      WebAudioDeviceSourceType::kNonRtcAudioTrack));
 
   sink_->Initialize(sink_params, this);
   sink_->Start();
@@ -347,9 +385,9 @@ void TrackAudioRenderer::ReconfigureSink(const media::AudioParameters& params) {
   // parameters.  Then, invoke MaybeStartSink() to restart everything again.
   sink_->Stop();
   sink_started_ = false;
-  sink_ = AudioDeviceFactory::NewAudioRendererSink(
-      blink::WebAudioDeviceSourceType::kNonRtcAudioTrack,
-      playout_render_frame_id_, {session_id_, output_device_id_});
+  sink_ = Platform::Current()->NewAudioRendererSink(
+      WebAudioDeviceSourceType::kNonRtcAudioTrack,
+      internal_playout_frame_->web_frame(), {session_id_, output_device_id_});
   MaybeStartSink();
 }
 
@@ -381,12 +419,11 @@ void TrackAudioRenderer::HaltAudioFlowWhileLockHeld() {
   audio_shifter_.reset();
 
   if (source_params_.IsValid()) {
-    prior_elapsed_render_time_ =
-        ComputeTotalElapsedRenderTime(prior_elapsed_render_time_,
-                                      num_samples_rendered_,
-                                      source_params_.sample_rate());
+    prior_elapsed_render_time_ = ComputeTotalElapsedRenderTime(
+        prior_elapsed_render_time_, num_samples_rendered_,
+        source_params_.sample_rate());
     num_samples_rendered_ = 0;
   }
 }
 
-}  // namespace content
+}  // namespace blink

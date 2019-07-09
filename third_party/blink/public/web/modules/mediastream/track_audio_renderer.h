@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_TRACK_AUDIO_RENDERER_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_TRACK_AUDIO_RENDERER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_TRACK_AUDIO_RENDERER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_TRACK_AUDIO_RENDERER_H_
 
 #include <stdint.h>
 
@@ -16,27 +16,28 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace media {
 class AudioBus;
 class AudioShifter;
 class AudioParameters;
-}
+}  // namespace media
 
-namespace content {
+namespace blink {
 
-// TrackAudioRenderer is a blink::WebMediaStreamAudioRenderer for plumbing audio
+class WebLocalFrame;
+
+// TrackAudioRenderer is a WebMediaStreamAudioRenderer for plumbing audio
 // data generated from either local or remote (but not
 // PeerConnection/WebRTC-sourced) MediaStreamAudioTracks to an audio output
 // device, reconciling differences in the rates of production and consumption of
 // the audio data.  Note that remote PeerConnection-sourced tracks are NOT
-// rendered by this implementation (see
-// blink::WebMediaStreamRendererFactoryImpl).
+// rendered by this implementation (see WebMediaStreamRendererFactoryImpl).
 //
 // This class uses AudioDeviceFactory to create media::AudioRendererSink and
 // owns/manages their lifecycles.  Output devices are automatically re-created
@@ -50,9 +51,9 @@ namespace content {
 // it is being rendered-out.  media::AudioShifter is used to buffer, stretch
 // and skip audio to maintain time synchronization between the producer and
 // consumer.
-class CONTENT_EXPORT TrackAudioRenderer
-    : public blink::WebMediaStreamAudioRenderer,
-      public blink::WebMediaStreamAudioSink,
+class BLINK_MODULES_EXPORT TrackAudioRenderer
+    : public WebMediaStreamAudioRenderer,
+      public WebMediaStreamAudioSink,
       public media::AudioRendererSink::RenderCallback {
  public:
   // Creates a renderer for the given |audio_track|.  |playout_render_frame_id|
@@ -62,12 +63,12 @@ class CONTENT_EXPORT TrackAudioRenderer
   // otherwise, audio is output to the default device for the system.
   //
   // Called on the main thread.
-  TrackAudioRenderer(const blink::WebMediaStreamTrack& audio_track,
-                     int playout_render_frame_id,
+  TrackAudioRenderer(const WebMediaStreamTrack& audio_track,
+                     WebLocalFrame* playout_web_frame,
                      int session_id,
                      const std::string& device_id);
 
-  // blink::WebMediaStreamAudioRenderer implementation.
+  // WebMediaStreamAudioRenderer implementation.
   // Called on the main thread.
   void Start() override;
   void Stop() override;
@@ -83,7 +84,7 @@ class CONTENT_EXPORT TrackAudioRenderer
   ~TrackAudioRenderer() override;
 
  private:
-  // blink::WebMediaStreamAudioSink implementation.
+  // WebMediaStreamAudioSink implementation.
 
   // Called on the AudioInputDevice worker thread.
   void OnData(const media::AudioBus& audio_bus,
@@ -121,13 +122,14 @@ class CONTENT_EXPORT TrackAudioRenderer
 
   // The audio track which provides access to the source data to render.
   //
-  // This class is calling blink::WebMediaStreamAudioSink::AddToAudioTrack() and
-  // blink::WebMediaStreamAudioSink::RemoveFromAudioTrack() to connect and
+  // This class is calling WebMediaStreamAudioSink::AddToAudioTrack() and
+  // WebMediaStreamAudioSink::RemoveFromAudioTrack() to connect and
   // disconnect with the audio track.
-  blink::WebMediaStreamTrack audio_track_;
+  WebMediaStreamTrack audio_track_;
 
-  // The RenderFrame in which the audio is rendered into |sink_|.
-  const int playout_render_frame_id_;
+  // The WebLocalFrame in which the audio is rendered into |sink_|.
+  class InternalFrame;
+  std::unique_ptr<InternalFrame> internal_playout_frame_;
   const int session_id_;
 
   // MessageLoop associated with the single thread that performs all control
@@ -172,6 +174,6 @@ class CONTENT_EXPORT TrackAudioRenderer
   DISALLOW_COPY_AND_ASSIGN(TrackAudioRenderer);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_TRACK_AUDIO_RENDERER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_TRACK_AUDIO_RENDERER_H_
