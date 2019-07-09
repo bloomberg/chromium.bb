@@ -228,6 +228,8 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   // Converts to a Length (Fixed, Percent or Calculated)
   Length ConvertToLength(const CSSToLengthConversionData&) const;
 
+  bool IsZero() const;
+
   // TODO(crbug.com/979895): Make sure this functions are called only when
   // applicable: on a numeric literal, or on a calc() that can be resolved into
   // a single value without extra context (e.g., CSSToLengthConversionData).

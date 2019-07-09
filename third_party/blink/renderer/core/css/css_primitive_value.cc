@@ -301,6 +301,11 @@ double CSSPrimitiveValue::GetDoubleValue() const {
                         : To<CSSNumericLiteralValue>(this)->DoubleValue();
 }
 
+bool CSSPrimitiveValue::IsZero() const {
+  return IsCalculated() ? To<CSSMathFunctionValue>(this)->IsZero()
+                        : To<CSSNumericLiteralValue>(this)->IsZero();
+}
+
 CSSPrimitiveValue::UnitType CSSPrimitiveValue::CanonicalUnitTypeForCategory(
     UnitCategory category) {
   // The canonical unit type is chosen according to the way

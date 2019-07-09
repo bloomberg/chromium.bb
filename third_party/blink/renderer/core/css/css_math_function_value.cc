@@ -144,4 +144,10 @@ double CSSMathFunctionValue::ClampToPermittedRange(double value) const {
   return IsNonNegative() && value < 0 ? 0 : value;
 }
 
+bool CSSMathFunctionValue::IsZero() const {
+  if (expression_->ResolvedUnitType() == UnitType::kUnknown)
+    return false;
+  return expression_->IsZero();
+}
+
 }  // namespace blink
