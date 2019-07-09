@@ -2726,6 +2726,7 @@
         {
             "platforms": [
                 "android",
+                "android_webview",
                 "chromeos",
                 "linux",
                 "mac",
