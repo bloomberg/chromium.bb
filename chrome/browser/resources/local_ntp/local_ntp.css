@@ -1047,10 +1047,8 @@ html[dir=rtl] .menu-option {
 
 #backgrounds-default.bg-sel-tile-bg {
   background-color: white;
-  border: 1px solid rgb(var(--GG300-rgb));
-  height: 174px;
-  margin-inline-end: 6px;
-  width: 174px;
+  height: 176px;
+  width: 176px;
 }
 
 #customization-menu .bg-sel-tile-bg.selected  {
@@ -1064,13 +1062,14 @@ html[dir=rtl] .menu-option {
   }
 }
 
+#backgrounds-menu {
+  /* Remove extra spacing between inline-block elements. */
+  font-size: 0;
+}
+
 #backgrounds-upload.bg-sel-tile-bg {
   background-color: white;
-  border: 1px solid rgb(var(--GG300-rgb));
-  height: 174px;
-  margin-inline-end: 6px;
   vertical-align: top;
-  width: 174px;
 }
 
 #menu-back-wrapper {
@@ -1137,6 +1136,8 @@ html[dir=rtl] #menu-back {
 }
 
 #backgrounds-upload-wrapper {
+  border: 1px solid rgb(var(--GG300-rgb));
+  box-sizing: border-box;
   display: inline-block;
   left: 0;
   opacity: 1;
@@ -1158,6 +1159,7 @@ html[dir=rtl] #menu-back {
 
 #backgrounds-upload-text {
   color: rgb(var(--GG700-rgb));
+  font-size: 13px;
   text-align: center;
   width: 100%;
 }
@@ -1191,6 +1193,8 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
 #backgrounds-default-icon {
   background-color: white;
   background-repeat: no-repeat;
+  border: 1px solid rgb(var(--GG300-rgb));
+  box-sizing: border-box;
   margin: auto;
   opacity: 1;
 }
