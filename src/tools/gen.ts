@@ -17,7 +17,8 @@ if (process.argv.length <= 2) {
   usage(0);
 }
 
-if (!fs.existsSync('src/tools/gen.ts')) {
+const myself = 'src/tools/gen.ts';
+if (!fs.existsSync(myself)) {
   console.error('Must be run from repository root');
   usage(1);
 }
@@ -30,6 +31,8 @@ if (!fs.existsSync('src/tools/gen.ts')) {
     fs.writeFileSync(
       outFile,
       `\
+// AUTO-GENERATED - DO NOT EDIT. See ${myself}.
+
 export const listing = ${JSON.stringify(listing, undefined, 2)};
 `
     );
