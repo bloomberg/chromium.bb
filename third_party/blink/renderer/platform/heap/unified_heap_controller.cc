@@ -48,7 +48,8 @@ void UnifiedHeapController::TracePrologue(
   // Be conservative here as a new garbage collection gets started right away.
   thread_state_->FinishIncrementalMarkingIfRunning(
       BlinkGC::kHeapPointersOnStack, BlinkGC::kIncrementalMarking,
-      BlinkGC::kLazySweeping, thread_state_->current_gc_data_.reason);
+      BlinkGC::kConcurrentAndLazySweeping,
+      thread_state_->current_gc_data_.reason);
 
   // Reset any previously scheduled garbage collections.
   thread_state_->SetGCState(ThreadState::kNoGCScheduled);
@@ -96,8 +97,8 @@ void UnifiedHeapController::TraceEpilogue(
       thread_state_->LeaveAtomicPause();
       thread_state_->LeaveGCForbiddenScope();
     }
-    thread_state_->AtomicPauseSweepAndCompact(BlinkGC::kIncrementalMarking,
-                                              BlinkGC::kLazySweeping);
+    thread_state_->AtomicPauseSweepAndCompact(
+        BlinkGC::kIncrementalMarking, BlinkGC::kConcurrentAndLazySweeping);
 
     if (base::FeatureList::IsEnabled(
             blink::features::kBlinkHeapUnifiedGCScheduling)) {
