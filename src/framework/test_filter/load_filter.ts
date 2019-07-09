@@ -1,9 +1,10 @@
-import { TestFileLoader } from '../loader.js';
-import { FilterByGroup } from './filter_by_group.js';
-import { TestFilterResult } from './index.js';
 import { allowedTestNameCharacters } from '../allowed_characters.js';
-import { FilterByTestMatch, FilterByParamsMatch, FilterByParamsExact } from './filter_one_file.js';
+import { TestFileLoader } from '../loader.js';
 import { ParamsAny } from '../params/index.js';
+
+import { FilterByGroup } from './filter_by_group.js';
+import { FilterByParamsExact, FilterByParamsMatch, FilterByTestMatch } from './filter_one_file.js';
+import { TestFilterResult } from './index.js';
 
 // Each filter is of one of the forms below (urlencoded).
 export async function loadFilter(

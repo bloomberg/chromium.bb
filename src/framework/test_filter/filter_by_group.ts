@@ -1,7 +1,8 @@
+import { TestCaseID, TestSpecID } from '../id.js';
+import { ReadmeFile, TestFileLoader, TestSpec } from '../loader.js';
+
 import { TestFilterResult } from './index.js';
 import { TestFilter } from './internal.js';
-import { TestSpecID, TestCaseID } from '../id.js';
-import { TestFileLoader, ReadmeFile, TestSpec } from '../loader.js';
 
 export class FilterByGroup implements TestFilter {
   private readonly suite: string;

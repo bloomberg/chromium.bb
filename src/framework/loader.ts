@@ -1,6 +1,6 @@
-import { RunCaseIterable } from './test_group.js';
 import { TestSuiteListing } from './listing.js';
 import { TestFilterResult, loadFilter } from './test_filter/index.js';
+import { RunCaseIterable } from './test_group.js';
 
 // One of the following:
 // - An actual .spec.ts file, as imported.

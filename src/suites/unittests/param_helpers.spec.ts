@@ -2,17 +2,18 @@ export const description = `
 Unit tests for parameterization helpers.
 `;
 
-import { UnitTest } from './unit_test.js';
 import {
-  ParamsSpec,
-  paramsEquals,
   ParamSpecIterable,
+  ParamsSpec,
+  TestGroup,
+  paramsEquals,
   pcombine,
   pexclude,
   pfilter,
   poptions,
-  TestGroup,
 } from '../../framework/index.js';
+
+import { UnitTest } from './unit_test.js';
 
 class ParamsTest extends UnitTest {
   expectSpecEqual(act: ParamSpecIterable, exp: ParamsSpec[]): void {

@@ -1,10 +1,11 @@
+import { TestCaseID, TestSpecID } from '../id.js';
+import { TestFileLoader, TestSpec } from '../loader.js';
+import { GroupRecorder } from '../logger.js';
+import { ParamsAny, paramsEquals, paramsSupersets } from '../params/index.js';
+import { RunCase, RunCaseIterable } from '../test_group.js';
+
 import { TestFilterResult } from './index.js';
 import { TestFilter } from './internal.js';
-import { TestSpecID, TestCaseID } from '../id.js';
-import { TestSpec, TestFileLoader } from '../loader.js';
-import { RunCaseIterable, RunCase } from '../test_group.js';
-import { ParamsAny, paramsSupersets, paramsEquals } from '../params/index.js';
-import { GroupRecorder } from '../logger.js';
 
 abstract class FilterOneFile implements TestFilter {
   protected readonly specId: TestSpecID;

@@ -1,6 +1,7 @@
-import { TestSpecID, TestCaseID } from '../id.js';
-import { TestFilterResult } from './index.js';
+import { TestCaseID, TestSpecID } from '../id.js';
 import { TestFileLoader } from '../loader.js';
+
+import { TestFilterResult } from './index.js';
 
 export interface TestFilter {
   // Checks whether a test case matches a filter. Used to implement negative filters.

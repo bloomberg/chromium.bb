@@ -1,4 +1,5 @@
 import * as Shaderc from '@webgpu/shaderc';
+
 import { getGPU } from '../../framework/gpu/implementation.js';
 import { Fixture } from '../../framework/index.js';
 

@@ -1,8 +1,8 @@
+import { TestSpecID } from './id.js';
 import { ParamsSpec } from './params/index.js';
+import { makeQueryString } from './url_query.js';
 import { getStackTrace, now } from './util/index.js';
 import { version } from './version.js';
-import { TestSpecID } from './id.js';
-import { makeQueryString } from './url_query.js';
 
 type Status = 'running' | 'pass' | 'warn' | 'fail';
 export interface LiveTestRunResult {

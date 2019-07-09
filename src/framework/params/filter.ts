@@ -1,4 +1,4 @@
-import { ParamsAny, ParamSpecIterable, ParamSpecIterator } from './index.js';
+import { ParamSpecIterable, ParamSpecIterator, ParamsAny } from './index.js';
 
 type Predicate = (o: ParamsAny) => boolean;
 

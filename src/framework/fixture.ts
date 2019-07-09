@@ -1,5 +1,5 @@
-import { ParamsAny } from './params/index.js';
 import { CaseRecorder } from './logger.js';
+import { ParamsAny } from './params/index.js';
 
 // A Fixture is a class used to instantiate each test case at run time.
 // A new instance of the Fixture is created for every single test case

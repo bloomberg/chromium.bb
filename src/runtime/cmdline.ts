@@ -3,9 +3,9 @@
 import * as fs from 'fs';
 import * as process from 'process';
 
-import { TestLoader } from '../framework/loader.js';
-import { Logger, LiveTestCaseResult } from '../framework/logger.js';
 import { TestSpecID } from '../framework/id.js';
+import { TestLoader } from '../framework/loader.js';
+import { LiveTestCaseResult, Logger } from '../framework/logger.js';
 import { makeQueryString } from '../framework/url_query.js';
 
 function usage(rc: number): never {

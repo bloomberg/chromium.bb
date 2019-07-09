@@ -1,10 +1,10 @@
 // Implements the standalone test runner (see also: index.html).
 
+import { TestSpecID } from '../framework/id.js';
+import { RunCase } from '../framework/index.js';
 import { TestLoader } from '../framework/loader.js';
 import { Logger } from '../framework/logger.js';
 import { makeQueryString } from '../framework/url_query.js';
-import { RunCase } from '../framework/index.js';
-import { TestSpecID } from '../framework/id.js';
 
 const log = new Logger();
 

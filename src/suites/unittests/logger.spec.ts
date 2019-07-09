@@ -4,9 +4,10 @@ Unit tests for namespaced logging system.
 Also serves as a larger test of async test functions, and of the logging system.
 `;
 
-import { UnitTest } from './unit_test.js';
 import { TestGroup } from '../../framework/index.js';
 import { Logger } from '../../framework/logger.js';
+
+import { UnitTest } from './unit_test.js';
 
 export const g = new TestGroup(UnitTest);
 

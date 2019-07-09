@@ -1,6 +1,7 @@
-import { TestGroup, Fixture, paramsEquals } from '../../framework/index.js';
-import { Logger, LiveTestRunResult } from '../../framework/logger.js';
 import { TestCaseID } from '../../framework/id.js';
+import { Fixture, TestGroup, paramsEquals } from '../../framework/index.js';
+import { LiveTestRunResult, Logger } from '../../framework/logger.js';
+
 import { UnitTest } from './unit_test.js';
 
 export class TestGroupTest extends UnitTest {

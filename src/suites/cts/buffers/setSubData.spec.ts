@@ -2,7 +2,7 @@ export const description = `
 setSubData tests.
 `;
 
-import { poptions, TestGroup } from '../../../framework/index.js';
+import { TestGroup, poptions } from '../../../framework/index.js';
 import { GPUTest } from '../gpu_test.js';
 
 export const g = new TestGroup(GPUTest);

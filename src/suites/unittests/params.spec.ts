@@ -3,13 +3,14 @@ Unit tests for parameterization.
 `;
 
 import {
-  TestGroup,
-  pcombine,
-  pfilter,
-  pexclude,
   ParamsAny,
   ParamsSpec,
+  TestGroup,
+  pcombine,
+  pexclude,
+  pfilter,
 } from '../../framework/index.js';
+
 import { TestGroupTest } from './test_group_test.js';
 import { UnitTest } from './unit_test.js';
 

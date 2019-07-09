@@ -2,12 +2,13 @@ export const description = `
 Tests for queries/filtering, loading, and running.
 `;
 
-import { paramsEquals, TestGroup, RunCase } from '../../framework/index.js';
-import { TestLoader, TestFileLoader, TestSpecOrReadme } from '../../framework/loader.js';
-import { TestSuiteListingEntry, TestSuiteListing } from '../../framework/listing.js';
+import { RunCase, TestGroup, paramsEquals } from '../../framework/index.js';
+import { TestSuiteListing, TestSuiteListingEntry } from '../../framework/listing.js';
+import { TestFileLoader, TestLoader, TestSpecOrReadme } from '../../framework/loader.js';
 import { Logger } from '../../framework/logger.js';
-import { objectEquals } from '../../framework/util/index.js';
 import { TestFilterResult } from '../../framework/test_filter/index.js';
+import { objectEquals } from '../../framework/util/index.js';
+
 import { UnitTest } from './unit_test.js';
 
 const listingData: { [k: string]: TestSuiteListingEntry[] } = {
