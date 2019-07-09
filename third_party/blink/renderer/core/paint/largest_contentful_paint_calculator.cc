@@ -98,6 +98,11 @@ void LargestContentfulPaintCalculator::OnLargestContentfulPaintUpdated(
         cached_image->LoadResponseEnd(), image_id, image_url, image_element);
   } else {
     Node* text_node = DOMNodeIds::NodeForId(largest_text_->node_id);
+    // |text_node| could be null and |largest_text_| should be ignored in this
+    // case.
+    if (!text_node)
+      return;
+
     // Do not expose element attribution from shadow trees.
     Element* text_element =
         text_node->IsInShadowTree() ? nullptr : ToElement(text_node);
