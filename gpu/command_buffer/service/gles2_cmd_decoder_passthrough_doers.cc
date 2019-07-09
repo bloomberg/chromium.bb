@@ -3604,8 +3604,18 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers(uint64_t swap_id,
   }
 
   client()->OnSwapBuffers(swap_id, flags);
-  return CheckSwapBuffersResult(surface_->SwapBuffers(base::DoNothing()),
-                                "SwapBuffers");
+  if (surface_->SupportsAsyncSwap()) {
+    TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", swap_id);
+    surface_->SwapBuffersAsync(
+        base::BindOnce(
+            &GLES2DecoderPassthroughImpl::CheckSwapBuffersAsyncResult,
+            weak_ptr_factory_.GetWeakPtr(), "SwapBuffers", swap_id),
+        base::DoNothing());
+    return error::kNoError;
+  } else {
+    return CheckSwapBuffersResult(surface_->SwapBuffers(base::DoNothing()),
+                                  "SwapBuffers");
+  }
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoGetMaxValueInBufferCHROMIUM(
@@ -4208,9 +4218,20 @@ error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
   }
 
   client()->OnSwapBuffers(swap_id, flags);
-  return CheckSwapBuffersResult(
-      surface_->PostSubBuffer(x, y, width, height, base::DoNothing()),
-      "PostSubBuffer");
+  if (surface_->SupportsAsyncSwap()) {
+    TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", swap_id);
+    surface_->PostSubBufferAsync(
+        x, y, width, height,
+        base::BindOnce(
+            &GLES2DecoderPassthroughImpl::CheckSwapBuffersAsyncResult,
+            weak_ptr_factory_.GetWeakPtr(), "PostSubBuffer", swap_id),
+        base::DoNothing());
+    return error::kNoError;
+  } else {
+    return CheckSwapBuffersResult(
+        surface_->PostSubBuffer(x, y, width, height, base::DoNothing()),
+        "PostSubBuffer");
+  }
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoCopyTextureCHROMIUM(
@@ -4617,8 +4638,19 @@ error::Error GLES2DecoderPassthroughImpl::DoCommitOverlayPlanesCHROMIUM(
   }
 
   client()->OnSwapBuffers(swap_id, flags);
-  return CheckSwapBuffersResult(
-      surface_->CommitOverlayPlanes(base::DoNothing()), "CommitOverlayPlanes");
+  if (surface_->SupportsAsyncSwap()) {
+    TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", swap_id);
+    surface_->CommitOverlayPlanesAsync(
+        base::BindOnce(
+            &GLES2DecoderPassthroughImpl::CheckSwapBuffersAsyncResult,
+            weak_ptr_factory_.GetWeakPtr(), "CommitOverlayPlanes", swap_id),
+        base::DoNothing());
+    return error::kNoError;
+  } else {
+    return CheckSwapBuffersResult(
+        surface_->CommitOverlayPlanes(base::DoNothing()),
+        "CommitOverlayPlanes");
+  }
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoSetColorSpaceMetadataCHROMIUM(
