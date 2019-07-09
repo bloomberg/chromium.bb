@@ -6255,3 +6255,11 @@ crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass F
 crbug.com/981879 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ Pass Failure ]
 crbug.com/981879 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ Pass Failure ]
 crbug.com/981879 virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Failure ]
+
+crbug.com/982289 virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Pass Failure ]
+crbug.com/982289 virtual/gpu-rasterization/images/color-profile-background-image-repeat.html [ Pass Failure ]
+crbug.com/982289 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
+crbug.com/982289 virtual/gpu-rasterization/images/color-profile-image-canvas-pattern.html [ Pass Failure ]
+crbug.com/982289 virtual/gpu-rasterization/images/color-profile-image-canvas.html [ Pass Failure ]
+crbug.com/982289 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Pass Failure ]
+crbug.com/982289 virtual/gpu-rasterization/images/ycbcr-with-cmyk-color-profile.html [ Pass Failure ]
