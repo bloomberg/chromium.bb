@@ -487,6 +487,14 @@ typedef struct /* one state */
 	widechar numTrans;
 } HyphenationState;
 
+typedef struct {
+	TranslationTableOffset tableSize;
+	TranslationTableOffset bytesUsed;
+	TranslationTableOffset charToDots[HASHNUM];
+	TranslationTableOffset dotsToChar[HASHNUM];
+	TranslationTableOffset ruleArea[1]; /** Space for storing all rules and values */
+} DisplayTableHeader;
+
 /**
  * Translation table header
  */
@@ -533,8 +541,6 @@ typedef struct { /* translation table */
 	int noLetsignAfterCount;
 	TranslationTableOffset characters[HASHNUM]; /** Character definitions */
 	TranslationTableOffset dots[HASHNUM];		/** Dot definitions */
-	TranslationTableOffset charToDots[HASHNUM];
-	TranslationTableOffset dotsToChar[HASHNUM];
 	TranslationTableOffset compdotsPattern[256];
 	TranslationTableOffset swapDefinitions[NUMSWAPS];
 	TranslationTableOffset forPassRules[MAXPASS + 1];
@@ -646,6 +652,9 @@ _lou_getDotsForChar(widechar c);
  */
 widechar EXPORT_CALL
 _lou_getCharFromDots(widechar d);
+
+DisplayTableHeader *EXPORT_CALL
+_lou_getCurrentDisplayTable();
 
 /**
  * Allocate memory for internal buffers
