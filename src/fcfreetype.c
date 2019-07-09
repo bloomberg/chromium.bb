@@ -1613,7 +1613,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	    printf ("using FreeType family \"%s\"\n", face->family_name);
 	if (!FcPatternAddString (pat, FC_FAMILY, (FcChar8 *) face->family_name))
 	    goto bail1;
-	if (!FcPatternAddString (pat, FC_STYLELANG, (FcChar8 *) "en"))
+	if (!FcPatternAddString (pat, FC_FAMILYLANG, (FcChar8 *) "en"))
 	    goto bail1;
 	++nfamily;
     }
