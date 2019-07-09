@@ -1152,6 +1152,23 @@ typedef struct
   unsigned int idx;
 } FcNameMapping;
 
+static FcBool
+_is_english(int platform, int language)
+{
+    FcBool ret = FcFalse;
+
+    switch (platform)
+    {
+    case TT_PLATFORM_MACINTOSH:
+	ret = language == TT_MAC_LANGID_ENGLISH;
+	break;
+    case TT_PLATFORM_MICROSOFT:
+	ret = language == TT_MS_LANGID_ENGLISH_UNITED_STATES;
+	break;
+    }
+    return ret;
+}
+
 static int
 name_mapping_cmp (const void *pa, const void *pb)
 {
@@ -1161,7 +1178,7 @@ name_mapping_cmp (const void *pa, const void *pb)
   if (a->platform_id != b->platform_id) return (int) a->platform_id - (int) b->platform_id;
   if (a->name_id != b->name_id) return (int) a->name_id - (int) b->name_id;
   if (a->encoding_id != b->encoding_id) return (int) a->encoding_id - (int) b->encoding_id;
-  if (a->language_id != b->language_id) return (int) a->language_id - (int) b->language_id;
+  if (a->language_id != b->language_id) return _is_english(a->platform_id, a->language_id) ? -1 : _is_english(b->platform_id, b->language_id) ? 1 : (int) a->language_id - (int) b->language_id;
   if (a->idx != b->idx) return (int) a->idx - (int) b->idx;
 
   return 0;
