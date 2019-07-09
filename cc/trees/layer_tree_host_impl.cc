@@ -459,7 +459,7 @@ void LayerTreeHostImpl::CommitComplete() {
   // In high latency mode commit cannot finish within the same frame. We need to
   // flush input here to make sure they got picked up by |PrepareTiles()|.
   if (input_handler_client_ && impl_thread_phase_ == ImplThreadPhase::IDLE)
-    input_handler_client_->DeliverInputForBeginFrame();
+    input_handler_client_->DeliverInputForHighLatencyMode();
 
   if (CommitToActiveTree()) {
     active_tree_->HandleScrollbarShowRequestsFromMain();
@@ -2432,7 +2432,7 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   }
 
   if (input_handler_client_)
-    input_handler_client_->DeliverInputForBeginFrame();
+    input_handler_client_->DeliverInputForBeginFrame(args);
 
   Animate();
 
