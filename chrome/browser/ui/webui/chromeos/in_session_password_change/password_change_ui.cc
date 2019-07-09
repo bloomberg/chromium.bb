@@ -306,7 +306,7 @@ UrgentPasswordExpiryNotificationUI::UrgentPasswordExpiryNotificationUI(
   base::StringToInt(url_suffix, &less_than_n_days);
   less_than_n_days = std::max(less_than_n_days, 0);
   const base::string16 title = l10n_util::GetPluralStringFUTF16(
-      IDS_PASSWORD_EXPIRY_DAYS_BODY, less_than_n_days);
+      IDS_PASSWORD_EXPIRY_DAYS_TITLE, less_than_n_days);
   source->AddString("title", title);
 
   static constexpr LocalizedString kLocalizedStrings[] = {
