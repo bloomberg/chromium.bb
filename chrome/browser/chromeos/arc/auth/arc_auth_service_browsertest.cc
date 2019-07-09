@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -831,7 +832,8 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
 IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
                        RequestPublicAccountInfo) {
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-  profile()->GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
+  policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile())
+      ->OverrideIsManagedForTesting(true);
 
   test_url_loader_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
