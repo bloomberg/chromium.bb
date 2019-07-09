@@ -44,7 +44,9 @@
         ],
         'mixins': [
           'chrome-swarming-pool',
-          'linux-xenial',
+          # TODO(crbug.com/954450): Switch to xenial when chrome-swarming has
+          # xenial bots.
+          'linux-trusty',
         ],
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
