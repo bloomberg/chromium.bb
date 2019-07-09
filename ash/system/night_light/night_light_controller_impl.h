@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_NIGHT_LIGHT_NIGHT_LIGHT_CONTROLLER_H_
-#define ASH_SYSTEM_NIGHT_LIGHT_NIGHT_LIGHT_CONTROLLER_H_
+#ifndef ASH_SYSTEM_NIGHT_LIGHT_NIGHT_LIGHT_CONTROLLER_IMPL_H_
+#define ASH_SYSTEM_NIGHT_LIGHT_NIGHT_LIGHT_CONTROLLER_IMPL_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/interfaces/night_light_controller.mojom.h"
+#include "ash/public/cpp/night_light_controller.h"
 #include "ash/session/session_observer.h"
 #include "ash/system/night_light/time_of_day.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/env_observer.h"
 
 class PrefRegistrySimple;
@@ -36,15 +34,13 @@ class ColorTemperatureAnimation;
 // displays' hosts, rather than on the Unified host, so that we can use the
 // CRTC matrix if available (the Unified host doesn't correspond to an actual
 // display).
-class ASH_EXPORT NightLightController
-    : public mojom::NightLightController,
+class ASH_EXPORT NightLightControllerImpl
+    : public NightLightController,
       public WindowTreeHostManager::Observer,
       public aura::EnvObserver,
       public SessionObserver,
       public chromeos::PowerManagerClient::Observer {
  public:
-  using ScheduleType = mojom::NightLightController::ScheduleType;
-
   enum class AnimationDuration {
     // Short animation (2 seconds) used for manual changes of NightLight status
     // and temperature by the user.
@@ -73,23 +69,14 @@ class ASH_EXPORT NightLightController
 
     // Provides the delegate with the geoposition so that it can be used to
     // calculate sunset and sunrise times.
-    virtual void SetGeoposition(mojom::SimpleGeopositionPtr position) = 0;
+    virtual void SetGeoposition(const SimpleGeoposition& position) = 0;
 
     // Returns true if a geoposition value is available.
     virtual bool HasGeoposition() const = 0;
   };
 
-  class Observer {
-   public:
-    // Emitted when the NightLight status is changed.
-    virtual void OnNightLightEnabledChanged(bool enabled) = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
-  NightLightController();
-  ~NightLightController() override;
+  NightLightControllerImpl();
+  ~NightLightControllerImpl() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -126,11 +113,6 @@ class ASH_EXPORT NightLightController
     return is_current_geoposition_from_cache_;
   }
 
-  void BindRequest(mojom::NightLightControllerRequest request);
-
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
   // Get the NightLight settings stored in the current active user prefs.
   bool GetEnabled() const;
   float GetColorTemperature() const;
@@ -159,9 +141,8 @@ class ASH_EXPORT NightLightController
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
-  // ash::mojom::NightLightController:
-  void SetCurrentGeoposition(mojom::SimpleGeopositionPtr position) override;
-  void SetClient(mojom::NightLightClientPtr client) override;
+  // ash::NightLightController:
+  void SetCurrentGeoposition(const SimpleGeoposition& position) override;
 
   // chromeos::PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
@@ -176,7 +157,7 @@ class ASH_EXPORT NightLightController
   // Called whenever we receive a new geoposition update to cache it in all
   // logged-in users' prefs so that it can be used later in the event of not
   // being able to retrieve a valid geoposition.
-  void StoreCachedGeoposition(const mojom::SimpleGeopositionPtr& position);
+  void StoreCachedGeoposition(const SimpleGeoposition& position);
 
   void RefreshLayersTemperature();
 
@@ -254,15 +235,9 @@ class ASH_EXPORT NightLightController
   // controlled by this class from the WebUI settings.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  base::ObserverList<Observer>::Unchecked observers_;
-
-  mojo::Binding<mojom::NightLightController> binding_;
-
-  mojom::NightLightClientPtr client_;
-
-  DISALLOW_COPY_AND_ASSIGN(NightLightController);
+  DISALLOW_COPY_AND_ASSIGN(NightLightControllerImpl);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_NIGHT_LIGHT_NIGHT_LIGHT_CONTROLLER_H_
+#endif  // ASH_SYSTEM_NIGHT_LIGHT_NIGHT_LIGHT_CONTROLLER_IMPL_H_
