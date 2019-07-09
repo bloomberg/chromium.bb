@@ -48042,6 +48042,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PrintPreviewPdfActionBuckets">
+  <obsolete>
+    Deprecated 07/2019.
+  </obsolete>
   <int value="0" label="PRINT_PREVIEW_SHOWN"/>
   <int value="1" label="ROTATE"/>
   <int value="2" label="SELECT_TEXT"/>
