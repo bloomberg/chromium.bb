@@ -4519,8 +4519,47 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleOverlayPlaneCHROMIUM(
     GLfloat uv_y,
     GLfloat uv_width,
     GLfloat uv_height,
+    bool enable_blend,
     GLuint gpu_fence_id) {
-  NOTIMPLEMENTED();
+  scoped_refptr<TexturePassthrough> passthrough_texture = nullptr;
+  if (!resources_->texture_object_map.GetServiceID(overlay_texture_id,
+                                                   &passthrough_texture) ||
+      passthrough_texture == nullptr) {
+    InsertError(GL_INVALID_VALUE, "invalid texture id");
+    return error::kNoError;
+  }
+
+  gl::GLImage* image =
+      passthrough_texture->GetLevelImage(passthrough_texture->target(), 0);
+  if (!image) {
+    InsertError(GL_INVALID_VALUE, "texture has no image");
+    return error::kNoError;
+  }
+
+  gfx::OverlayTransform transform = GetGFXOverlayTransform(plane_transform);
+  if (transform == gfx::OVERLAY_TRANSFORM_INVALID) {
+    InsertError(GL_INVALID_ENUM, "invalid transform enum");
+    return error::kNoError;
+  }
+
+  std::unique_ptr<gfx::GpuFence> gpu_fence;
+  if (gpu_fence_id != 0) {
+    gpu_fence = GetGpuFenceManager()->GetGpuFence(gpu_fence_id);
+    if (!gpu_fence) {
+      InsertError(GL_INVALID_ENUM, "unknown fence");
+      return error::kNoError;
+    }
+  }
+
+  if (!surface_->ScheduleOverlayPlane(
+          plane_z_order, transform, image,
+          gfx::Rect(bounds_x, bounds_y, bounds_width, bounds_height),
+          gfx::RectF(uv_x, uv_y, uv_width, uv_height), enable_blend,
+          std::move(gpu_fence))) {
+    InsertError(GL_INVALID_OPERATION, "failed to schedule overlay");
+    return error::kNoError;
+  }
+
   return error::kNoError;
 }
 
