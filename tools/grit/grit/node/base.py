@@ -7,17 +7,13 @@
 
 import ast
 import os
-import struct
-import subprocess
 import sys
 import types
 from xml.sax import saxutils
 
-from grit import constants
 from grit import clique
 from grit import exception
 from grit import util
-from grit.node import brotli_util
 import grit.format.gzip_string
 
 
@@ -606,34 +602,18 @@ class Node(object):
     Args:
       data: The data to compressed.
     Returns:
-      The data in gzipped or brotli compressed format. If the format was unknown
-      then this returns the data uncompressed.
+      The data in compressed format. If the format was unknown then this returns
+      the data uncompressed.
     '''
-    if self.attrs.get('compress') == 'gzip':
-      # We only use rsyncable compression on Linux.
-      # We exclude ChromeOS since ChromeOS bots are Linux based but do not have
-      # the --rsyncable option built in for gzip. See crbug.com/617950.
-      if sys.platform == 'linux2' and 'chromeos' not in self.GetRoot().defines:
-        return grit.format.gzip_string.GzipStringRsyncable(data)
-      return grit.format.gzip_string.GzipString(data)
-
-    elif self.attrs.get('compress') == 'brotli':
-      # The length of the uncompressed data as 8 bytes little-endian.
-      size_bytes = struct.pack("<q", len(data))
-      data = brotli_util.BrotliCompress(data)
-      # BROTLI_CONST is prepended to brotli decompressed data in order to
-      # easily check if a resource has been brotli compressed.
-      # The length of the uncompressed data is also appended to the start,
-      # truncated to 6 bytes, little-endian. size_bytes is 8 bytes,
-      # need to truncate further to 6.
-      formatter = '%ds %dx %ds' % (6, 2, len(size_bytes)-8)
-      return constants.BROTLI_CONST + b''.join(struct.unpack(formatter, size_bytes)) + data
-
-    elif self.attrs.get('compress') == 'false':
+    if self.attrs.get('compress') != 'gzip':
       return data
 
-    else:
-      raise Exception('Invalid value for compression')
+    # We only use rsyncable compression on Linux.
+    # We exclude ChromeOS since ChromeOS bots are Linux based but do not have
+    # the --rsyncable option built in for gzip. See crbug.com/617950.
+    if sys.platform == 'linux2' and 'chromeos' not in self.GetRoot().defines:
+      return grit.format.gzip_string.GzipStringRsyncable(data)
+    return grit.format.gzip_string.GzipString(data)
 
 
 class ContentNode(Node):
