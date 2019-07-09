@@ -545,7 +545,7 @@ class CrossSiteDocumentBlockingTest
   DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentBlockingTest);
 };
 
-IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImagesWithSniffing) {
   embedded_test_server()->StartAcceptingConnections();
 
   // The following are files under content/test/data/site_isolation. All
@@ -574,6 +574,10 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
                                      "nosniff.json-prefixed.js"};
   for (const char* resource : blocked_resources)
     VerifyImgRequest(resource, kShouldBeSniffedAndBlocked);
+}
+
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImagesNoSniffing) {
+  embedded_test_server()->StartAcceptingConnections();
 
   // These files should be disallowed without sniffing.
   //   nosniff.*   - Won't sniff correctly, but blocked because of nosniff.
@@ -587,6 +591,10 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
       "nosniff.html", "nosniff.xml", "nosniff.json", "nosniff.txt", "fake.zip"};
   for (const char* resource : nosniff_blocked_resources)
     VerifyImgRequest(resource, kShouldBeBlockedWithoutSniffing);
+}
+
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, AllowImagesWithSniffing) {
+  embedded_test_server()->StartAcceptingConnections();
 
   // These files are allowed for XHR under the document blocking policy because
   // the sniffing logic determines they are not actually documents.
