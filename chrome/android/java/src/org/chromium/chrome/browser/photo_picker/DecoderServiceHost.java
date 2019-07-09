@@ -364,8 +364,8 @@ public class DecoderServiceHost
         // there's no need to use our custom sandboxed process.
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
 
-        int frames = highPriority ? 1 : 20;
-        int intervalMs = 500;
+        int frames = highPriority ? 1 : 10;
+        int intervalMs = 2000;
         mWorkerTask = new DecodeVideoTask(
                 this, mContentResolver, params.mUri, params.mSize, frames, intervalMs);
         mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
