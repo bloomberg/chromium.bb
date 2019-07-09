@@ -699,9 +699,11 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::FrameOwnerElementType frame_owner_element_type) override;
   std::pair<blink::WebRemoteFrame*, base::UnguessableToken> CreatePortal(
       mojo::ScopedInterfaceEndpointHandle portal_endpoint,
-      mojo::ScopedInterfaceEndpointHandle client_endpoint) override;
+      mojo::ScopedInterfaceEndpointHandle client_endpoint,
+      const blink::WebElement& portal_element) override;
   blink::WebRemoteFrame* AdoptPortal(
-      const base::UnguessableToken& portal_token) override;
+      const base::UnguessableToken& portal_token,
+      const blink::WebElement& portal_element) override;
   blink::WebFrame* FindFrame(const blink::WebString& name) override;
   void DidChangeOpener(blink::WebFrame* frame) override;
   void FrameDetached(DetachType type) override;

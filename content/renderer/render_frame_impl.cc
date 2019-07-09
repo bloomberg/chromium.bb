@@ -4394,7 +4394,8 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
 std::pair<blink::WebRemoteFrame*, base::UnguessableToken>
 RenderFrameImpl::CreatePortal(
     mojo::ScopedInterfaceEndpointHandle portal_endpoint,
-    mojo::ScopedInterfaceEndpointHandle client_endpoint) {
+    mojo::ScopedInterfaceEndpointHandle client_endpoint,
+    const blink::WebElement& portal_element) {
   int proxy_routing_id = MSG_ROUTING_NONE;
   base::UnguessableToken portal_token;
   base::UnguessableToken devtools_frame_token;
@@ -4405,18 +4406,21 @@ RenderFrameImpl::CreatePortal(
           std::move(client_endpoint), blink::mojom::PortalClient::Version_),
       &proxy_routing_id, &portal_token, &devtools_frame_token);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
-      this, proxy_routing_id, devtools_frame_token);
+      this, proxy_routing_id, devtools_frame_token, portal_element);
   return std::make_pair(proxy->web_frame(), portal_token);
 }
 
 blink::WebRemoteFrame* RenderFrameImpl::AdoptPortal(
-    const base::UnguessableToken& portal_token) {
+    const base::UnguessableToken& portal_token,
+    const blink::WebElement& portal_element) {
   int proxy_routing_id = MSG_ROUTING_NONE;
   base::UnguessableToken devtools_frame_token;
+  FrameReplicationState replicated_state;
   GetFrameHost()->AdoptPortal(portal_token, &proxy_routing_id,
-                              &devtools_frame_token);
+                              &replicated_state, &devtools_frame_token);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
-      this, proxy_routing_id, devtools_frame_token);
+      this, proxy_routing_id, devtools_frame_token, portal_element);
+  proxy->SetReplicatedState(replicated_state);
   return proxy->web_frame();
 }
 
