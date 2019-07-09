@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -46,22 +45,22 @@ BadgeManager::BadgeManager(Profile* profile) {
 
 BadgeManager::~BadgeManager() = default;
 
-void BadgeManager::UpdateBadge(const extensions::ExtensionId& extension_id,
-                               base::Optional<uint64_t> contents) {
-  badged_apps_[extension_id] = contents;
+void BadgeManager::UpdateBadge(const std::string& app_id,
+                               base::Optional<uint64_t> content) {
+  badged_apps_[app_id] = content;
 
   if (!delegate_)
     return;
 
-  delegate_->OnBadgeSet(extension_id, contents);
+  delegate_->OnBadgeSet(app_id, content);
 }
 
-void BadgeManager::ClearBadge(const extensions::ExtensionId& extension_id) {
-  badged_apps_.erase(extension_id);
+void BadgeManager::ClearBadge(const std::string& app_id) {
+  badged_apps_.erase(app_id);
   if (!delegate_)
     return;
 
-  delegate_->OnBadgeCleared(extension_id);
+  delegate_->OnBadgeCleared(app_id);
 }
 
 void BadgeManager::OnBadgeChangeIgnored() {

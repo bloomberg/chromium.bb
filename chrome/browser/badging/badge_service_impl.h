@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_BADGING_BADGE_SERVICE_IMPL_H_
 #define CHROME_BROWSER_BADGING_BADGE_SERVICE_IMPL_H_
 
+#include <string>
+
 #include "base/optional.h"
 #include "content/public/browser/frame_service_base.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom.h"
@@ -14,10 +16,6 @@ class RenderFrameHost;
 class BrowserContext;
 class WebContents;
 }  // namespace content
-
-namespace extensions {
-class Extension;
-}
 
 namespace badging {
 class BadgeManager;
@@ -41,8 +39,10 @@ class BadgeServiceImpl
   ~BadgeServiceImpl() override;
 
   void SetBadge(base::Optional<uint64_t> content);
-  const extensions::Extension* ExtensionFromLastUrl();
-  bool IsInApp();
+
+  // Returns the app that should be badged. base::nullopt if no app should be
+  // badged.
+  base::Optional<std::string> GetAppIdToBadge() const;
 
   content::RenderFrameHost* render_frame_host_;
   content::BrowserContext* browser_context_;

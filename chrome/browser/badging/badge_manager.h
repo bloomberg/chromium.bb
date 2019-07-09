@@ -13,9 +13,7 @@
 #include "base/optional.h"
 #include "chrome/browser/badging/badge_manager_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "extensions/common/extension_id.h"
 
-class KeyedService;
 class Profile;
 
 namespace badging {
@@ -35,10 +33,11 @@ class BadgeManager : public KeyedService {
 
   // Records badge contents for an app and notifies the delegate if the badge
   // contents have changed.
-  void UpdateBadge(const extensions::ExtensionId&, base::Optional<uint64_t>);
+  // |content| is a non-zero, positive integer to be shown in the badge UI.
+  void UpdateBadge(const std::string& app_id, base::Optional<uint64_t> content);
 
   // Clears badge contents for an app (if existing) and notifies the delegate.
-  void ClearBadge(const extensions::ExtensionId&);
+  void ClearBadge(const std::string& app_id);
 
   // Called when the badge service determines that a call to set/clear is not
   // allowed.
@@ -50,8 +49,8 @@ class BadgeManager : public KeyedService {
  private:
   std::unique_ptr<BadgeManagerDelegate> delegate_;
 
-  // Maps extension id to badge contents.
-  std::map<extensions::ExtensionId, base::Optional<uint64_t>> badged_apps_;
+  // Maps app id to badge contents.
+  std::map<std::string, base::Optional<uint64_t>> badged_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(BadgeManager);
 };

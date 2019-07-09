@@ -9,14 +9,12 @@
 #include "base/logging.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/badging/badge_manager_factory.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/extension.h"
 
 // static
 void BadgeServiceImpl::Create(blink::mojom::BadgeServiceRequest request,
@@ -36,23 +34,23 @@ void BadgeServiceImpl::SetFlag() {
 }
 
 void BadgeServiceImpl::SetBadge(base::Optional<uint64_t> content) {
-  const extensions::Extension* extension = ExtensionFromLastUrl();
-  if (!IsInApp() || !extension) {
+  auto app_id = GetAppIdToBadge();
+  if (!app_id) {
     badge_manager_->OnBadgeChangeIgnored();
     return;
   }
 
-  badge_manager_->UpdateBadge(extension->id(), content);
+  badge_manager_->UpdateBadge(app_id.value(), content);
 }
 
 void BadgeServiceImpl::ClearBadge() {
-  const extensions::Extension* extension = ExtensionFromLastUrl();
-  if (!IsInApp() || !extension) {
+  auto app_id = GetAppIdToBadge();
+  if (!app_id) {
     badge_manager_->OnBadgeChangeIgnored();
     return;
   }
 
-  badge_manager_->ClearBadge(extension->id());
+  badge_manager_->ClearBadge(app_id.value());
 }
 
 BadgeServiceImpl::BadgeServiceImpl(content::RenderFrameHost* render_frame_host,
@@ -68,18 +66,18 @@ BadgeServiceImpl::BadgeServiceImpl(content::RenderFrameHost* render_frame_host,
 
 BadgeServiceImpl::~BadgeServiceImpl() = default;
 
-const extensions::Extension* BadgeServiceImpl::ExtensionFromLastUrl() {
-  DCHECK(browser_context_);
-
-  return extensions::util::GetInstalledPwaForUrl(
-      browser_context_, render_frame_host_->GetLastCommittedURL());
-}
-
-bool BadgeServiceImpl::IsInApp() {
+base::Optional<std::string> BadgeServiceImpl::GetAppIdToBadge() const {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (!browser)
-    return false;
-  web_app::AppBrowserController* app_controller = browser->app_controller();
-  return app_controller && app_controller->IsUrlInAppScope(
-                               render_frame_host_->GetLastCommittedURL());
+    return base::nullopt;
+
+  auto* app_controller = browser->app_controller();
+  if (!app_controller)
+    return base::nullopt;
+
+  bool in_app = app_controller->IsUrlInAppScope(
+      render_frame_host_->GetLastCommittedURL());
+
+  // If the current frame is not in the app, don't apply a badge.
+  return in_app ? app_controller->GetAppId() : base::nullopt;
 }
