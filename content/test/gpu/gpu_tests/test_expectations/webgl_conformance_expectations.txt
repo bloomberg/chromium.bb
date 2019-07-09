@@ -62,10 +62,8 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 # ========================
 # Fails on all platforms
 
-crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ mac ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ android no-angle ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+# TODO(ynovikov): re-add suppressions below once this is removed.
+crbug.com/979444 conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 # Need to implement new error semantics
 # https://github.com/KhronosGroup/WebGL/pull/2607
