@@ -1574,6 +1574,7 @@
     },
     {
       name: "UserActivationV2",
+      status: "stable",
     },
     {
       name: "UserAgentClientHint",
