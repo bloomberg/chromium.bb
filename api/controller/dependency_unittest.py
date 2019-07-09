@@ -6,7 +6,7 @@
 
 from __future__ import print_function
 
-from chromite.api.controller import board_build_dependency
+from chromite.api.controller import dependency
 from chromite.api.gen.chromite.api import depgraph_pb2
 from chromite.lib import cros_test_lib
 
@@ -57,7 +57,7 @@ class BoardBuilDependencyTest(cros_test_lib.TestCase):
     }
 
     depgraph_proto = depgraph_pb2.DepGraph()
-    board_build_dependency.AugmentDepGraphProtoFromJsonMap(
+    dependency.AugmentDepGraphProtoFromJsonMap(
         json_deps, depgraph_proto)
     self.assertEqual(depgraph_proto.build_target.name, 'deathstar')
     darthvader_dep = None
