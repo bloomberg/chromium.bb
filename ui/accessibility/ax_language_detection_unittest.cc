@@ -1,7 +1,7 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "ui/accessibility/ax_language_info.h"
+#include "ui/accessibility/ax_language_detection.h"
 #include "base/command_line.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_node.h"
@@ -16,7 +16,7 @@
 
 namespace ui {
 
-TEST(AXLanguageInfoTest, FeatureFlag) {
+TEST(AXLanguageDetectionTest, FeatureFlag) {
   // TODO(crbug/889370): Remove this test once this feature is stable
   EXPECT_FALSE(
       ::switches::IsExperimentalAccessibilityLanguageDetectionEnabled());
@@ -29,7 +29,7 @@ TEST(AXLanguageInfoTest, FeatureFlag) {
 }
 
 // Tests that AXNode::GetLanguage() terminates when there is no lang attribute.
-TEST(AXLanguageInfoTest, BoringTree) {
+TEST(AXLanguageDetectionTest, BoringTree) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
 
@@ -57,8 +57,9 @@ TEST(AXLanguageInfoTest, BoringTree) {
   initial_state.nodes[3].id = 4;
 
   AXTree tree(initial_state);
-  DetectLanguageForSubtree(tree.root(), &tree);
-  ASSERT_TRUE(LabelLanguageForSubtree(tree.root(), &tree));
+  ASSERT_NE(tree.language_detection_manager, nullptr);
+  tree.language_detection_manager->DetectLanguageForSubtree(tree.root());
+  tree.language_detection_manager->LabelLanguageForSubtree(tree.root());
 
   // Check that tree parenting conforms to expected shape.
   AXNode* node1 = tree.GetFromId(1);
@@ -83,7 +84,7 @@ TEST(AXLanguageInfoTest, BoringTree) {
   EXPECT_EQ(node4->GetLanguage(), "");
 }
 
-TEST(AXLanguageInfoTest, LangAttrInheritanceFeatureFlagOff) {
+TEST(AXLanguageDetectionTest, LangAttrInheritanceFeatureFlagOff) {
   // Test lang attribute inheritance when feature flag is off.
   //
   // Lang attribute inheritance is handled by GetLanguage.
@@ -142,8 +143,9 @@ TEST(AXLanguageInfoTest, LangAttrInheritanceFeatureFlagOff) {
   }
 
   AXTree tree(initial_state);
-  DetectLanguageForSubtree(tree.root(), &tree);
-  ASSERT_TRUE(LabelLanguageForSubtree(tree.root(), &tree));
+  ASSERT_NE(tree.language_detection_manager, nullptr);
+  tree.language_detection_manager->DetectLanguageForSubtree(tree.root());
+  tree.language_detection_manager->LabelLanguageForSubtree(tree.root());
 
   {
     AXNode* node1 = tree.GetFromId(1);
@@ -176,7 +178,7 @@ TEST(AXLanguageInfoTest, LangAttrInheritanceFeatureFlagOff) {
   }
 }
 
-TEST(AXLanguageInfoTest, LangAttrInheritanceFeatureFlagOn) {
+TEST(AXLanguageDetectionTest, LangAttrInheritanceFeatureFlagOn) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
 
@@ -238,8 +240,9 @@ TEST(AXLanguageInfoTest, LangAttrInheritanceFeatureFlagOn) {
   }
 
   AXTree tree(initial_state);
-  DetectLanguageForSubtree(tree.root(), &tree);
-  ASSERT_TRUE(LabelLanguageForSubtree(tree.root(), &tree));
+  ASSERT_NE(tree.language_detection_manager, nullptr);
+  tree.language_detection_manager->DetectLanguageForSubtree(tree.root());
+  tree.language_detection_manager->LabelLanguageForSubtree(tree.root());
 
   {
     AXNode* node1 = tree.GetFromId(1);
@@ -272,7 +275,7 @@ TEST(AXLanguageInfoTest, LangAttrInheritanceFeatureFlagOn) {
   }
 }
 
-TEST(AXLanguageInfoTest, LanguageDetectionBasic) {
+TEST(AXLanguageDetectionTest, LanguageDetectionBasic) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
 
@@ -344,8 +347,9 @@ TEST(AXLanguageInfoTest, LanguageDetectionBasic) {
   }
 
   AXTree tree(initial_state);
-  DetectLanguageForSubtree(tree.root(), &tree);
-  ASSERT_TRUE(LabelLanguageForSubtree(tree.root(), &tree));
+  ASSERT_NE(tree.language_detection_manager, nullptr);
+  tree.language_detection_manager->DetectLanguageForSubtree(tree.root());
+  tree.language_detection_manager->LabelLanguageForSubtree(tree.root());
 
   {
     AXNode* node1 = tree.GetFromId(1);
@@ -383,7 +387,7 @@ TEST(AXLanguageInfoTest, LanguageDetectionBasic) {
   }
 }
 
-TEST(AXLanguageInfoTest, LanguageDetectionDetectOnly) {
+TEST(AXLanguageDetectionTest, LanguageDetectionDetectOnly) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
 
@@ -457,7 +461,8 @@ TEST(AXLanguageInfoTest, LanguageDetectionDetectOnly) {
   }
 
   AXTree tree(initial_state);
-  DetectLanguageForSubtree(tree.root(), &tree);
+  ASSERT_NE(tree.language_detection_manager, nullptr);
+  tree.language_detection_manager->DetectLanguageForSubtree(tree.root());
   // Purposefully not calling Label so we can test Detect in isolation.
 
   {
@@ -505,7 +510,7 @@ TEST(AXLanguageInfoTest, LanguageDetectionDetectOnly) {
   }
 }
 
-TEST(AXLanguageInfoTest, kLanguageUntouched) {
+TEST(AXLanguageDetectionTest, kLanguageUntouched) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
 
@@ -566,8 +571,9 @@ TEST(AXLanguageInfoTest, kLanguageUntouched) {
   }
 
   AXTree tree(initial_state);
-  DetectLanguageForSubtree(tree.root(), &tree);
-  ASSERT_TRUE(LabelLanguageForSubtree(tree.root(), &tree));
+  ASSERT_NE(tree.language_detection_manager, nullptr);
+  tree.language_detection_manager->DetectLanguageForSubtree(tree.root());
+  tree.language_detection_manager->LabelLanguageForSubtree(tree.root());
 
   {
     // French should be detected, original English attr should be untouched.
@@ -600,7 +606,7 @@ TEST(AXLanguageInfoTest, kLanguageUntouched) {
   }
 }
 
-TEST(AXLanguageInfoTest, StatsBasic) {
+TEST(AXLanguageDetectionTest, AXLanguageInfoStatsBasic) {
   AXLanguageInfoStats stats;
 
   {
@@ -679,7 +685,7 @@ TEST(AXLanguageInfoTest, StatsBasic) {
   EXPECT_FALSE(stats.CheckLanguageWithinTop("zz"));
 }
 
-TEST(AXLanguageInfoTest, ShortLanguageDetectorLabeledTest) {
+TEST(AXLanguageDetectionTest, ShortLanguageDetectorLabeledTest) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
   AXTreeUpdate initial_state;
@@ -696,14 +702,15 @@ TEST(AXLanguageInfoTest, ShortLanguageDetectorLabeledTest) {
 
   AXNode* item = tree.GetFromId(2);
   std::vector<AXLanguageSpan> annotation;
+  ASSERT_NE(tree.language_detection_manager, nullptr);
   // Empty output.
   annotation =
-      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+      tree.language_detection_manager->GetLanguageAnnotationForStringAttribute(
           *item, ax::mojom::StringAttribute::kInnerHtml);
   ASSERT_EQ(0, (int)annotation.size());
   // Returns single AXLanguageSpan.
   annotation =
-      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+      tree.language_detection_manager->GetLanguageAnnotationForStringAttribute(
           *item, ax::mojom::StringAttribute::kName);
   ASSERT_EQ(1, (int)annotation.size());
   AXLanguageSpan* lang_span = &annotation[0];
@@ -715,7 +722,7 @@ TEST(AXLanguageInfoTest, ShortLanguageDetectorLabeledTest) {
                         lang_span->end_index - lang_span->start_index));
 }
 
-TEST(AXLanguageInfoTest, ShortLanguageDetectorCharacterTest) {
+TEST(AXLanguageDetectionTest, ShortLanguageDetectorCharacterTest) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
   AXTreeUpdate initial_state;
@@ -730,9 +737,10 @@ TEST(AXLanguageInfoTest, ShortLanguageDetectorCharacterTest) {
 
   AXNode* item = tree.GetFromId(2);
   std::vector<AXLanguageSpan> annotation;
-  // Returns single AXLanguageSpan.
+  ASSERT_NE(tree.language_detection_manager, nullptr);
+  // Returns single LanguageSpan.
   annotation =
-      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+      tree.language_detection_manager->GetLanguageAnnotationForStringAttribute(
           *item, ax::mojom::StringAttribute::kName);
   ASSERT_EQ(1, (int)annotation.size());
   AXLanguageSpan* lang_span = &annotation[0];
@@ -743,7 +751,7 @@ TEST(AXLanguageInfoTest, ShortLanguageDetectorCharacterTest) {
                              lang_span->end_index - lang_span->start_index));
 }
 
-TEST(AXLanguageInfoTest, ShortLanguageDetectorMultipleLanguagesTest) {
+TEST(AXLanguageDetectionTest, ShortLanguageDetectorMultipleLanguagesTest) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
   AXTreeUpdate initial_state;
@@ -759,8 +767,9 @@ TEST(AXLanguageInfoTest, ShortLanguageDetectorMultipleLanguagesTest) {
   AXTree tree(initial_state);
 
   AXNode* item = tree.GetFromId(2);
+  ASSERT_NE(tree.language_detection_manager, nullptr);
   std::vector<AXLanguageSpan> annotation =
-      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+      tree.language_detection_manager->GetLanguageAnnotationForStringAttribute(
           *item, ax::mojom::StringAttribute::kName);
   ASSERT_EQ(3, (int)annotation.size());
   std::string name =
@@ -781,7 +790,7 @@ TEST(AXLanguageInfoTest, ShortLanguageDetectorMultipleLanguagesTest) {
 
 // Assert that GetLanguageAnnotationForStringAttribute works for attributes
 // other than kName.
-TEST(AXLanguageInfoTest, DetectLanguageForRoleTest) {
+TEST(AXLanguageDetectionTest, DetectLanguageForRoleTest) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
   AXTreeUpdate initial_state;
@@ -793,8 +802,9 @@ TEST(AXLanguageInfoTest, DetectLanguageForRoleTest) {
   AXTree tree(initial_state);
 
   AXNode* item = tree.GetFromId(1);
+  ASSERT_NE(tree.language_detection_manager, nullptr);
   std::vector<AXLanguageSpan> annotation =
-      tree.language_info_stats->GetLanguageAnnotationForStringAttribute(
+      tree.language_detection_manager->GetLanguageAnnotationForStringAttribute(
           *item, ax::mojom::StringAttribute::kValue);
   ASSERT_EQ(1, (int)annotation.size());
   std::string value =

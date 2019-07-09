@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ACCESSIBILITY_AX_LANGUAGE_INFO_H_
-#define UI_ACCESSIBILITY_AX_LANGUAGE_INFO_H_
+#ifndef UI_ACCESSIBILITY_AX_LANGUAGE_DETECTION_H_
+#define UI_ACCESSIBILITY_AX_LANGUAGE_DETECTION_H_
 
 #include <string>
 #include <unordered_map>
@@ -24,17 +24,27 @@ class AXTree;
 // detect the language for spans of text within the page without relying on any
 // declared attributes.
 //
-// Language detection relies on two key data structures:
-//   AXLanguageInfo represents the local language detection data for an AXNode.
-//   AXLanguageInfoStats represents the 'global' (tree-level) language detection
-//                       data for all nodes within an AXTree.
+// Language detection relies on four key data structures:
+//   AXLanguageInfo represents the local language detection data for all text
+//        within an AXNode.
+//   AXLanguageInfoStats records statistics about AXLanguageInfo for all AXNodes
+//        within a single AXTree, this is used to help give language detection
+//        some context to reduce false positive language assignment.
+//   AXLanguageSpan represents local language detection data for spans of text
+//        within an AXNode, this is used by sub-node level language detection.
+//   AXLanguageDetectionManager is in charge of managing all language detection
+//        context for a single AXTree.
 //
-// Language detection is separated into two use cases: page-level and
-// inner-node-level.
+//
+// Language detection is currently separated into two related implementation
+// which are trying to address slightly different use cases, one operates at the
+// node level, while the other operates at the sub-node level.
 //
 //
-// Language detection at the page-level is implemented as a two-pass process to
-// reduce the assignment of spurious languages.
+// Language detection at the node-level attempts to assign at most one language
+// for each AXNode in order to support mixed-language pages. Node-level language
+// detection is implemented as a two-pass process to reduce the assignment of
+// spurious languages.
 //
 // After the first pass no languages have been assigned to AXNode(s), this is
 // left to the second pass so that we can take use tree-level statistics to
@@ -52,13 +62,17 @@ class AXTree;
 // results (AXLanguageInfo) and the global stats (AXLanguageInfoStats).
 //
 //
-// Language detection at the inner-node level is different from that at the
-// page-level because in this case, we operate on much smaller pieces of text.
-// For this use case, we would like to detect languages that may only occur
-// once throughout the entire document. Inner-node-level language detection
-// is performed by using a language identifier constructed with a byte minimum
-// of kShortTextIdentifierMinByteLength. This way, it can potentially detect the
+// Language detection at the sub-node level differs from node-level in that it
+// operates at a much finer granularity of text, potentially down to individual
+// characters in order to support mixed language sentences.
+// We would like to detect languages that may only occur once throughout the
+// entire document. Sub-node-level language detection is performed by using a
+// language identifier constructed with a byte minimum of
+// kShortTextIdentifierMinByteLength. This way, it can potentially detect the
 // language of strings that are as short as one character in length.
+//
+// The entry point for sub-nod level language detection is
+// GetLanguageAnnotationForStringAttribute.
 
 // An instance of AXLanguageInfo is used to record the detected and assigned
 // languages for a single AXNode, this data is entirely local to the AXNode.
@@ -107,8 +121,9 @@ struct AX_EXPORT AXLanguageSpan {
   float probability;
 };
 
-// A single AXLanguageInfoStats instance is stored on each AXTree and represents
-// the language detection statistics for every AXNode within that AXTree.
+// A single AXLanguageInfoStats instance is stored for each AXTree and
+// represents the language detection statistics for every AXNode within that
+// AXTree.
 //
 // We rely on these tree-level statistics to avoid spurious language detection
 // assignments.
@@ -129,16 +144,6 @@ class AX_EXPORT AXLanguageInfoStats {
   // Check if a given language is within the top results.
   bool CheckLanguageWithinTop(const std::string& lang);
 
-  chrome_lang_id::NNetLanguageIdentifier& GetLanguageIdentifier();
-
-  // Detect and return languages for string attribute.
-  // For example, if a node has name: "My name is Fred", then calling
-  // GetLanguageAnnotationForStringAttribute(*node, ax::mojom::StringAttribute::
-  // kName) would return language detection information about "My name is Fred".
-  std::vector<AXLanguageSpan> GetLanguageAnnotationForStringAttribute(
-      const AXNode& node,
-      ax::mojom::StringAttribute attr);
-
  private:
   // Store a count of the occurrences of a given language.
   std::unordered_map<std::string, unsigned int> lang_counts_;
@@ -153,8 +158,44 @@ class AX_EXPORT AXLanguageInfoStats {
 
   void InvalidateTopResults();
 
-  // Populate top_results_.
   void GenerateTopResults();
+
+  DISALLOW_COPY_AND_ASSIGN(AXLanguageInfoStats);
+};
+
+// An instance of AXLanguageDetectionManager manages all the context needed for
+// language detection within a single AXTree.
+class AX_EXPORT AXLanguageDetectionManager {
+ public:
+  AXLanguageDetectionManager();
+  ~AXLanguageDetectionManager();
+
+  // Detect language for each node in the subtree rooted at the given node.
+  // This is the first pass in detection and labelling.
+  // This only detects the language, it does not label it, for that see
+  //  LabelLanguageForSubtree.
+  void DetectLanguageForSubtree(AXNode* subtree_root);
+
+  // Label language for each node in the subtree rooted at the given node.
+  // This is the second pass in detection and labelling.
+  // This will label the language, but relies on the earlier detection phase
+  // having already completed.
+  void LabelLanguageForSubtree(AXNode* subtree_root);
+
+  // Detect and return languages for string attribute.
+  // For example, if a node has name: "My name is Fred", then calling
+  // GetLanguageAnnotationForStringAttribute(*node, ax::mojom::StringAttribute::
+  // kName) would return language detection information about "My name is Fred".
+  std::vector<AXLanguageSpan> GetLanguageAnnotationForStringAttribute(
+      const AXNode& node,
+      ax::mojom::StringAttribute attr);
+
+ private:
+  // TODO(chrishall): should this be stored by pointer or value?
+  AXLanguageInfoStats lang_info_stats;
+
+  void DetectLanguageForSubtreeInternal(AXNode* subtree_root);
+  void LabelLanguageForSubtreeInternal(AXNode* subtree_root);
 
   // This language identifier is constructed with a default minimum byte length
   // of chrome_lang_id::NNetLanguageIdentifier::kMinNumBytesToConsider and is
@@ -166,24 +207,9 @@ class AX_EXPORT AXLanguageInfoStats {
   // of shorter text (e.g. one character).
   chrome_lang_id::NNetLanguageIdentifier short_text_language_identifier_;
 
-  DISALLOW_COPY_AND_ASSIGN(AXLanguageInfoStats);
+  DISALLOW_COPY_AND_ASSIGN(AXLanguageDetectionManager);
 };
 
-// Detect language for each node in the subtree rooted at the given node.
-// This is the first pass in detection and labelling.
-// This only detects the language, it does not label it, for that see
-//  LabelLanguageForSubtree.
-AX_EXPORT void DetectLanguageForSubtree(AXNode* subtree_root,
-                                        class AXTree* tree);
-
-// Label language for each node in the subtree rooted at the given node.
-// This is the second pass in detection and labelling.
-// This will label the language, but relies on the earlier detection phase
-// having already completed.
-//
-// returns boolean indicating success.
-AX_EXPORT bool LabelLanguageForSubtree(AXNode* subtree_root,
-                                       class AXTree* tree);
 }  // namespace ui
 
-#endif  // UI_ACCESSIBILITY_AX_LANGUAGE_INFO
+#endif  // UI_ACCESSIBILITY_AX_LANGUAGE_DETECTION_H_
