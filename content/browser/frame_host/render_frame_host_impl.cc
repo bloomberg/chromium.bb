@@ -173,6 +173,7 @@
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/url_request_context.h"
@@ -6174,15 +6175,16 @@ void RenderFrameHostImpl::GetPushMessaging(
 }
 
 void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
-    blink::test::mojom::VirtualAuthenticatorManagerRequest request) {
+    mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
+        receiver) {
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebAuth)) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableWebAuthTestingAPI)) {
       auto* environment_singleton = AuthenticatorEnvironmentImpl::GetInstance();
       environment_singleton->EnableVirtualAuthenticatorFor(frame_tree_node_);
-      environment_singleton->AddVirtualAuthenticatorBinding(frame_tree_node_,
-                                                            std::move(request));
+      environment_singleton->AddVirtualAuthenticatorReceiver(
+          frame_tree_node_, std::move(receiver));
     }
   }
 #endif  // !defined(OS_ANDROID)
