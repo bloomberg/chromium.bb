@@ -309,6 +309,10 @@ const base::Feature kVaapiVP8Encoder{"VaapiVP8Encoder",
 const base::Feature kVaapiVP9Encoder{"VaapiVP9Encoder",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable VP9 k-SVC decoding with HW decoder for webrtc use case on ChromeOS.
+const base::Feature kVp9kSVCHWDecoding{"Vp9kSVCHWDecoding",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Inform video blitter of video color space.
 const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
