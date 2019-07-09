@@ -73,25 +73,6 @@
             ]
         }
     ],
-    "AdFramePriority": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "LowPriorityForAdFrame",
-                    "enable_features": [
-                        "BlinkSchedulerLowPriorityForAdFrame"
-                    ]
-                }
-            ]
-        }
-    ],
     "AdTagging": [
         {
             "platforms": [
@@ -2231,45 +2212,6 @@
             ]
         }
     ],
-    "FrameTypePriorityExperiment": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "LowPriorityForHiddenFrameDuringLoadingEnabled_V2",
-                    "enable_features": [
-                        "BlinkSchedulerFrameExperimentOnlyWhenLoading",
-                        "BlinkSchedulerLowPriorityForHiddenFrame"
-                    ]
-                }
-            ]
-        }
-    ],
-    "FrameTypePriorityExperiment2": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "LowPriorityForBackgroundPageEnabled_V2",
-                    "enable_features": [
-                        "BlinkSchedulerLowPriorityForBackgroundPages"
-                    ]
-                }
-            ]
-        }
-    ],
     "FreezeBackgroundTabOnNetworkIdle": [
         {
             "platforms": [
@@ -3539,25 +3481,6 @@
             ]
         }
     ],
-    "OriginTypePriorityExperiment": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "LowPriorityForCrossOriginFrame",
-                    "enable_features": [
-                        "BlinkSchedulerLowPriorityForCrossOrigin"
-                    ]
-                }
-            ]
-        }
-    ],
     "OutOfBlinkCors": [
         {
             "platforms": [
@@ -4351,33 +4274,6 @@
                     "enable_features": [
                         "NetworkErrorLogging",
                         "Reporting"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ResourceFetchPriorityExperiment": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "BlinkSchedulerUseResourceFetchPriority_Map3_V3",
-                    "params": {
-                        "HIGHEST": "HIGH",
-                        "IDLE": "LOW",
-                        "LOW": "LOW",
-                        "LOWEST": "LOW",
-                        "MEDIUM": "NORMAL",
-                        "THROTTLED": "LOW"
-                    },
-                    "enable_features": [
-                        "BlinkSchedulerResourceFetchPriority"
                     ]
                 }
             ]
