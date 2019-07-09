@@ -386,7 +386,7 @@ void WebViewImpl::activateKeyboardLayout(unsigned int hkl)
     }else if (newLangId == MAKELANGID(LANG_KOREAN, SUBLANG_DEFAULT)) {
         dwConversion = IME_CMODE_NATIVE;
     }else if (newLangId == MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED)) {
-        dwConversion = IME_CMODE_NATIVE | IME_CMODE_FULLSHAPE;
+        dwConversion = IME_CMODE_NATIVE;
     }
     ::ImmSetConversionStatus(hImeContext, dwConversion, dwSentence);
     
