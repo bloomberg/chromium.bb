@@ -46,4 +46,7 @@ struct weston_launcher_open {
 	char path[0];
 };
 
+int
+weston_environment_get_fd(const char *env);
+
 #endif

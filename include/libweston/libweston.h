@@ -1949,9 +1949,6 @@ void
 weston_compositor_set_default_pointer_grab(struct weston_compositor *compositor,
 			const struct weston_pointer_grab_interface *interface);
 
-int
-weston_environment_get_fd(const char *env);
-
 struct weston_surface *
 weston_surface_create(struct weston_compositor *compositor);
 
