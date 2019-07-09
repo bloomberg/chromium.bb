@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BASE_ANDROID_PAYMENT_REQUEST_TEST_BRIDGE_H_
-#define CHROME_TEST_BASE_ANDROID_PAYMENT_REQUEST_TEST_BRIDGE_H_
+#ifndef CHROME_TEST_PAYMENTS_ANDROID_PAYMENT_REQUEST_TEST_BRIDGE_H_
+#define CHROME_TEST_PAYMENTS_ANDROID_PAYMENT_REQUEST_TEST_BRIDGE_H_
 
 #include "base/callback.h"
 
@@ -32,4 +32,4 @@ void SetUseNativeObserverOnPaymentRequestForTesting(
 
 }  // namespace payments
 
-#endif  // CHROME_TEST_BASE_ANDROID_PAYMENT_REQUEST_TEST_BRIDGE_H_
+#endif  // CHROME_TEST_PAYMENTS_ANDROID_PAYMENT_REQUEST_TEST_BRIDGE_H_

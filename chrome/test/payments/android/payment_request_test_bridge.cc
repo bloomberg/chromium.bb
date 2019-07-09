@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/android/payment_request_test_bridge.h"
+#include "chrome/test/payments/android/payment_request_test_bridge.h"
 
 #include "base/no_destructor.h"
-#include "chrome/test/android_browsertests_jni_headers/PaymentRequestTestBridge_jni.h"
+#include "chrome/test/test_support_jni_headers/PaymentRequestTestBridge_jni.h"
 
 namespace payments {
 
