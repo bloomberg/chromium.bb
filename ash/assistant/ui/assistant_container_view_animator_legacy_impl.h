@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/animation/animation_delegate.h"
-#include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 class SlideAnimation;
@@ -61,8 +61,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerViewAnimatorLegacyImpl
 
   // Animation.
   std::unique_ptr<gfx::SlideAnimation> animation_;
-  gfx::SizeF start_size_;
-  gfx::SizeF end_size_;
+  gfx::Size start_size_;
+  gfx::Size end_size_;
   int start_radius_ = 0;
   int end_radius_ = 0;
   int start_frame_number_ = 0;
