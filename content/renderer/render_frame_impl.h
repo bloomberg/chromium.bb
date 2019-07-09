@@ -57,7 +57,6 @@
 #include "content/renderer/input/input_target_client_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/media/media_factory.h"
-#include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/base/routing_token_callback.h"
@@ -314,8 +313,6 @@ class CONTENT_EXPORT RenderFrameImpl
   const blink::WebHistoryItem& current_history_item() {
     return current_history_item_;
   }
-
-  RendererWebCookieJarImpl* cookie_jar() { return &cookie_jar_; }
 
   // Returns the RenderWidget associated with this frame.
   RenderWidget* GetLocalRootRenderWidget();
@@ -682,7 +679,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebExternalPopupMenu* CreateExternalPopupMenu(
       const blink::WebPopupMenuInfo& popup_menu_info,
       blink::WebExternalPopupMenuClient* popup_menu_client) override;
-  blink::WebCookieJar* CookieJar() override;
   blink::BlameContext* GetFrameBlameContext() override;
   std::unique_ptr<blink::WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
@@ -1552,8 +1548,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   PluginPowerSaverHelper* plugin_power_saver_helper_;
 #endif
-
-  RendererWebCookieJarImpl cookie_jar_;
 
   // All the registered observers.
   base::ObserverList<RenderFrameObserver>::Unchecked observers_;

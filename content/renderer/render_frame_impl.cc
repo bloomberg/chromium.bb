@@ -1821,7 +1821,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
 #if BUILDFLAG(ENABLE_PLUGINS)
       plugin_power_saver_helper_(nullptr),
 #endif
-      cookie_jar_(this),
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
       handling_select_range_(false),
@@ -4220,10 +4219,6 @@ WebExternalPopupMenu* RenderFrameImpl::CreateExternalPopupMenu(
 #else
   return nullptr;
 #endif
-}
-
-blink::WebCookieJar* RenderFrameImpl::CookieJar() {
-  return &cookie_jar_;
 }
 
 blink::BlameContext* RenderFrameImpl::GetFrameBlameContext() {

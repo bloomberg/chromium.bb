@@ -524,16 +524,18 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CloneFactoryBundle(
 
 void GetRestrictedCookieManager(
     RenderFrameHostImpl* frame_host,
+    BrowserContext* browser_context,
     int process_id,
     int frame_id,
     StoragePartition* storage_partition,
     network::mojom::RestrictedCookieManagerRequest request) {
-  GetContentClient()->browser()->WillCreateRestrictedCookieManager(
-      frame_host->GetLastCommittedOrigin(),
-      /* is_service_worker = */ false, process_id, frame_id, &request);
-  storage_partition->GetNetworkContext()->GetRestrictedCookieManager(
-      std::move(request), frame_host->GetLastCommittedOrigin(),
-      /* is_service_worker = */ false, process_id, frame_id);
+  if (!GetContentClient()->browser()->WillCreateRestrictedCookieManager(
+          browser_context, frame_host->GetLastCommittedOrigin(),
+          /* is_service_worker = */ false, process_id, frame_id, &request)) {
+    storage_partition->GetNetworkContext()->GetRestrictedCookieManager(
+        std::move(request), frame_host->GetLastCommittedOrigin(),
+        /* is_service_worker = */ false, process_id, frame_id);
+  }
 }
 
 // TODO(crbug.com/977040): Remove when no longer needed.
@@ -4311,7 +4313,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::BindRepeating(
       &GetRestrictedCookieManager, base::Unretained(this),
-      GetProcess()->GetID(), routing_id_, GetProcess()->GetStoragePartition()));
+      GetProcess()->GetBrowserContext(), GetProcess()->GetID(), routing_id_,
+      GetProcess()->GetStoragePartition()));
 
   if (base::FeatureList::IsEnabled(features::kSmsReceiver) &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
