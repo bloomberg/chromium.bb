@@ -832,16 +832,17 @@ void RenderFrameHostImpl::SetNetworkFactoryForTesting(
       create_network_factory_callback;
 }
 
-RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
-                                         RenderViewHostImpl* render_view_host,
-                                         RenderFrameHostDelegate* delegate,
-                                         FrameTree* frame_tree,
-                                         FrameTreeNode* frame_tree_node,
-                                         int32_t routing_id,
-                                         int32_t widget_routing_id,
-                                         bool hidden,
-                                         bool renderer_initiated_creation)
-    : render_view_host_(render_view_host),
+RenderFrameHostImpl::RenderFrameHostImpl(
+    SiteInstance* site_instance,
+    scoped_refptr<RenderViewHostImpl> render_view_host,
+    RenderFrameHostDelegate* delegate,
+    FrameTree* frame_tree,
+    FrameTreeNode* frame_tree_node,
+    int32_t routing_id,
+    int32_t widget_routing_id,
+    bool hidden,
+    bool renderer_initiated_creation)
+    : render_view_host_(std::move(render_view_host)),
       delegate_(delegate),
       site_instance_(static_cast<SiteInstanceImpl*>(site_instance)),
       process_(site_instance->GetProcess()),
@@ -881,7 +882,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
           RenderViewHostImpl::kUnloadTimeoutMS)),
       commit_callback_interceptor_(nullptr),
       weak_ptr_factory_(this) {
-  frame_tree_->AddRenderViewHostRef(render_view_host_);
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().emplace(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_), this);
@@ -1087,10 +1087,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // its RenderViewHost.
   if (owned_render_widget_host_)
     owned_render_widget_host_->ShutdownAndDestroyWidget(false);
-
-  // Notify the FrameTree that this RFH is going away, allowing it to shut down
-  // the corresponding RenderViewHost if it is no longer needed.
-  frame_tree_->ReleaseRenderViewHostRef(render_view_host_);
 
   // If another frame is waiting for a beforeunload ACK from this frame,
   // simulate it now.
@@ -1391,7 +1387,7 @@ void RenderFrameHostImpl::SaveImageAt(int x, int y) {
 }
 
 RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
-  return render_view_host_;
+  return render_view_host_.get();
 }
 
 service_manager::InterfaceProvider* RenderFrameHostImpl::GetRemoteInterfaces() {
