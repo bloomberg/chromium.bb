@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -27,12 +28,14 @@ constexpr BlinkGC::StackState ToBlinkGCStackState(
 
 UnifiedHeapController::UnifiedHeapController(ThreadState* thread_state)
     : thread_state_(thread_state) {
-  if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled())
+  if (base::FeatureList::IsEnabled(
+          blink::features::kBlinkHeapUnifiedGCScheduling))
     thread_state->Heap().stats_collector()->RegisterObserver(this);
 }
 
 UnifiedHeapController::~UnifiedHeapController() {
-  if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled())
+  if (base::FeatureList::IsEnabled(
+          blink::features::kBlinkHeapUnifiedGCScheduling))
     thread_state_->Heap().stats_collector()->UnregisterObserver(this);
 }
 
@@ -96,7 +99,8 @@ void UnifiedHeapController::TraceEpilogue(
     thread_state_->AtomicPauseSweepAndCompact(BlinkGC::kIncrementalMarking,
                                               BlinkGC::kLazySweeping);
 
-    if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled()) {
+    if (base::FeatureList::IsEnabled(
+            blink::features::kBlinkHeapUnifiedGCScheduling)) {
       ThreadHeapStatsCollector* const stats_collector =
           thread_state_->Heap().stats_collector();
       summary->allocated_size =
@@ -197,7 +201,8 @@ bool UnifiedHeapController::IsRootForNonTracingGC(
 }
 
 void UnifiedHeapController::ReportBufferedAllocatedSizeIfPossible() {
-  DCHECK(RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled());
+  DCHECK(base::FeatureList::IsEnabled(
+      blink::features::kBlinkHeapUnifiedGCScheduling));
   // Reported from a recursive sweeping call.
   if (thread_state()->IsSweepingInProgress() &&
       thread_state()->SweepForbidden()) {

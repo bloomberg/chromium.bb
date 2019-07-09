@@ -40,6 +40,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
@@ -442,7 +443,8 @@ bool ThreadState::JudgeGCThreshold(size_t allocated_object_size_threshold,
 }
 
 bool ThreadState::ShouldScheduleV8FollowupGC() {
-  if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled())
+  if (base::FeatureList::IsEnabled(
+          blink::features::kBlinkHeapUnifiedGCScheduling))
     return false;
 
   return JudgeGCThreshold(kDefaultAllocatedObjectSizeThreshold,
@@ -450,7 +452,8 @@ bool ThreadState::ShouldScheduleV8FollowupGC() {
 }
 
 bool ThreadState::ShouldForceConservativeGC() {
-  if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled())
+  if (base::FeatureList::IsEnabled(
+          blink::features::kBlinkHeapUnifiedGCScheduling))
     return false;
 
   // TODO(haraken): 400% is too large. Lower the heap growing factor.
@@ -461,7 +464,8 @@ bool ThreadState::ShouldForceConservativeGC() {
 // If we're consuming too much memory, trigger a conservative GC
 // aggressively. This is a safe guard to avoid OOM.
 bool ThreadState::ShouldForceMemoryPressureGC() {
-  if (RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled())
+  if (base::FeatureList::IsEnabled(
+          blink::features::kBlinkHeapUnifiedGCScheduling))
     return false;
 
   if (TotalMemorySize() < 300 * 1024 * 1024)
@@ -486,7 +490,8 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
   if (ShouldScheduleV8FollowupGC()) {
     // When we want to optimize for load time, we should prioritize throughput
     // over latency and not do incremental marking.
-    if (RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled() &&
+    if (base::FeatureList::IsEnabled(
+            blink::features::kBlinkHeapIncrementalMarking) &&
         !should_optimize_for_load_time_) {
       VLOG(2) << "[state:" << this << "] "
               << "ScheduleV8FollowupGCIfNeeded: Scheduled incremental v8 "
@@ -571,7 +576,8 @@ void ThreadState::ScheduleGCIfNeeded() {
   }
 
   if (GetGCState() == kNoGCScheduled &&
-      RuntimeEnabledFeatures::HeapIncrementalMarkingStressEnabled()) {
+      base::FeatureList::IsEnabled(
+          blink::features::kBlinkHeapIncrementalMarkingStress)) {
     VLOG(2) << "[state:" << this << "] "
             << "ScheduleGCIfNeeded: Scheduled incremental marking for testing";
     IncrementalMarkingStart(BlinkGC::GCReason::kForcedGCForTesting);
@@ -1139,7 +1145,8 @@ void ThreadState::RemoveObserver(BlinkGCObserver* observer) {
 }
 
 void ThreadState::ReportMemoryToV8() {
-  if (!isolate_ || RuntimeEnabledFeatures::HeapUnifiedGCSchedulingEnabled())
+  if (!isolate_ || base::FeatureList::IsEnabled(
+                       blink::features::kBlinkHeapUnifiedGCScheduling))
     return;
 
   const size_t current_heap_size =
@@ -1586,8 +1593,8 @@ bool ThreadState::MarkPhaseAdvanceMarking(base::TimeTicks deadline) {
 }
 
 bool ThreadState::VerifyMarkingEnabled() const {
-  bool should_verify_marking =
-      RuntimeEnabledFeatures::HeapIncrementalMarkingStressEnabled();
+  bool should_verify_marking = base::FeatureList::IsEnabled(
+      blink::features::kBlinkHeapIncrementalMarkingStress);
 #if BUILDFLAG(BLINK_HEAP_VERIFICATION)
   should_verify_marking = true;
 #endif  // BLINK_HEAP_VERIFICATION
