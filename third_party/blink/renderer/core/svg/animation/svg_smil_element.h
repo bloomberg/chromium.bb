@@ -239,8 +239,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void DisconnectSyncBaseConditions();
   void DisconnectEventBaseConditions();
 
-  void NotifyDependentsIntervalChanged();
-  void CreateInstanceTimesFromSyncbase(SVGSMILElement& syncbase);
+  void NotifyDependentsIntervalChanged(const SMILInterval& interval);
+  void CreateInstanceTimesFromSyncbase(SVGSMILElement& syncbase,
+                                       const SMILInterval& interval);
   void AddSyncBaseDependent(SVGSMILElement&);
   void RemoveSyncBaseDependent(SVGSMILElement&);
 

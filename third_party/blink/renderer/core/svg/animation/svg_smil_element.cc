@@ -843,7 +843,7 @@ void SVGSMILElement::ResolveFirstInterval() {
 
   if (!first_interval.begin.IsUnresolved() && first_interval != interval_) {
     interval_ = first_interval;
-    NotifyDependentsIntervalChanged();
+    NotifyDependentsIntervalChanged(interval_);
     next_progress_time_ = next_progress_time_.IsUnresolved()
                               ? interval_.begin
                               : std::min(next_progress_time_, interval_.begin);
@@ -887,7 +887,7 @@ void SVGSMILElement::BeginListChanged(SMILTime event_time) {
           if (GetActiveState() != kActive)
             EndedActiveInterval();
         }
-        NotifyDependentsIntervalChanged();
+        NotifyDependentsIntervalChanged(interval_);
       }
     }
   }
@@ -907,7 +907,7 @@ void SVGSMILElement::EndListChanged(SMILTime) {
       new_end = ResolveActiveEnd(interval_.begin, new_end);
       if (new_end != interval_.end) {
         interval_.end = new_end;
-        NotifyDependentsIntervalChanged();
+        NotifyDependentsIntervalChanged(interval_);
       }
     }
   }
@@ -932,7 +932,7 @@ SVGSMILElement::RestartedInterval SVGSMILElement::MaybeRestartInterval(
     SMILTime next_begin = FindInstanceTime(kBegin, interval_.begin, false);
     if (next_begin < interval_.end) {
       interval_.end = next_begin;
-      NotifyDependentsIntervalChanged();
+      NotifyDependentsIntervalChanged(interval_);
     }
   }
 
@@ -940,7 +940,7 @@ SVGSMILElement::RestartedInterval SVGSMILElement::MaybeRestartInterval(
     base::Optional<SMILInterval> next_interval = ResolveNextInterval();
     if (next_interval) {
       interval_ = *next_interval;
-      NotifyDependentsIntervalChanged();
+      NotifyDependentsIntervalChanged(interval_);
       next_progress_time_ =
           next_progress_time_.IsUnresolved()
               ? interval_.begin
@@ -981,7 +981,7 @@ void SVGSMILElement::SeekToIntervalCorrespondingToTime(double elapsed) {
         break;
 
       interval_ = *next_interval;
-      NotifyDependentsIntervalChanged();
+      NotifyDependentsIntervalChanged(interval_);
       next_progress_time_ =
           next_progress_time_.IsUnresolved()
               ? interval_.begin
@@ -997,7 +997,7 @@ void SVGSMILElement::SeekToIntervalCorrespondingToTime(double elapsed) {
         break;
 
       interval_ = *next_interval;
-      NotifyDependentsIntervalChanged();
+      NotifyDependentsIntervalChanged(interval_);
       next_progress_time_ =
           next_progress_time_.IsUnresolved()
               ? interval_.begin
@@ -1197,8 +1197,9 @@ void SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
   }
 }
 
-void SVGSMILElement::NotifyDependentsIntervalChanged() {
-  DCHECK(interval_.begin.IsFinite());
+void SVGSMILElement::NotifyDependentsIntervalChanged(
+    const SMILInterval& interval) {
+  DCHECK(interval.begin.IsFinite());
   // |loopBreaker| is used to avoid infinite recursions which may be caused by:
   // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncbase| ->
   // |add{Begin,End}Time| -> |{begin,end}TimeChanged| ->
@@ -1213,13 +1214,14 @@ void SVGSMILElement::NotifyDependentsIntervalChanged() {
     return;
 
   for (SVGSMILElement* element : sync_base_dependents_)
-    element->CreateInstanceTimesFromSyncbase(*this);
+    element->CreateInstanceTimesFromSyncbase(*this, interval);
 
   loop_breaker.erase(this);
 }
 
 void SVGSMILElement::CreateInstanceTimesFromSyncbase(
-    SVGSMILElement& sync_base) {
+    SVGSMILElement& sync_base,
+    const SMILInterval& interval) {
   // FIXME: To be really correct, this should handle updating exising interval
   // by changing the associated times instead of creating new ones.
   for (Condition* condition : conditions_) {
@@ -1230,9 +1232,9 @@ void SVGSMILElement::CreateInstanceTimesFromSyncbase(
       // conversions. Phew!
       SMILTime time = 0;
       if (condition->GetName() == "begin")
-        time = sync_base.interval_.begin + condition->Offset();
+        time = interval.begin + condition->Offset();
       else
-        time = sync_base.interval_.end + condition->Offset();
+        time = interval.end + condition->Offset();
       if (!time.IsFinite())
         continue;
       AddInstanceTime(condition->GetBeginOrEnd(), time);
@@ -1243,7 +1245,7 @@ void SVGSMILElement::CreateInstanceTimesFromSyncbase(
 void SVGSMILElement::AddSyncBaseDependent(SVGSMILElement& animation) {
   sync_base_dependents_.insert(&animation);
   if (interval_.begin.IsFinite())
-    animation.CreateInstanceTimesFromSyncbase(*this);
+    animation.CreateInstanceTimesFromSyncbase(*this, interval_);
 }
 
 void SVGSMILElement::RemoveSyncBaseDependent(SVGSMILElement& animation) {
