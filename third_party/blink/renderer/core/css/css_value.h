@@ -167,6 +167,9 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     return class_type_ == kInvalidVariableValueClass;
   }
   bool IsAxisValue() const { return class_type_ == kAxisClass; }
+  bool IsShorthandWrapperValue() const {
+    return class_type_ == kKeyframeShorthandClass;
+  }
 
   bool HasFailedOrCanceledSubresources() const;
   bool MayContainUrl() const;
@@ -245,6 +248,8 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     kLayoutFunctionClass,
 
     kCSSContentDistributionClass,
+
+    kKeyframeShorthandClass,
 
     // List class types must appear after ValueListClass.
     kValueListClass,
