@@ -297,6 +297,10 @@ const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable VA-API hardware encode acceleration for H264 on AMD.
+const base::Feature kVaapiH264AMDEncoder{"VaapiH264AMDEncoder",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable VA-API hardware low power encoder for all codecs.
 const base::Feature kVaapiLowPowerEncoder{"VaapiLowPowerEncoder",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

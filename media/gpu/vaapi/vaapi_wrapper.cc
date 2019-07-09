@@ -140,21 +140,6 @@ static const struct {
 constexpr const char* kMesaGalliumDriverPrefix = "Mesa Gallium driver";
 constexpr const char* kIntelI965DriverPrefix = "Intel i965 driver";
 
-static const struct {
-  std::string va_driver;
-  std::string cpu_family;
-  VaapiWrapper::CodecMode mode;
-  std::vector<VAProfile> va_profiles;
-} kBlackListMap[]{
-    // TODO(hiroh): Remove once Chrome supports unpacked header.
-    // https://crbug.com/828482.
-    {kMesaGalliumDriverPrefix,
-     "AMD STONEY",
-     VaapiWrapper::CodecMode::kEncode,
-     {VAProfileH264Baseline, VAProfileH264Main, VAProfileH264High,
-      VAProfileH264ConstrainedBaseline}},
-};
-
 // Converts the given |va_profile| to the corresponding string.
 // See: http://go/gh/intel/libva/blob/master/va/va.h#L359
 std::string VAProfileToString(VAProfile va_profile) {
@@ -236,27 +221,31 @@ std::string VAProfileToString(VAProfile va_profile) {
 bool IsBlackListedDriver(const std::string& va_vendor_string,
                          VaapiWrapper::CodecMode mode,
                          VAProfile va_profile) {
-  for (const auto& info : kBlackListMap) {
-    if (info.mode == mode &&
-        base::StartsWith(va_vendor_string, info.va_driver,
-                         base::CompareCase::SENSITIVE) &&
-        va_vendor_string.find(info.cpu_family) != std::string::npos &&
-        base::Contains(info.va_profiles, va_profile)) {
+  if (mode != VaapiWrapper::CodecMode::kEncode)
+    return false;
+
+  // TODO(crbug.com/828482): Remove once H264 encoder on AMD is enabled by
+  // default.
+  if (base::StartsWith(va_vendor_string, kMesaGalliumDriverPrefix,
+                       base::CompareCase::SENSITIVE) &&
+      va_vendor_string.find("AMD STONEY") != std::string::npos &&
+      !base::FeatureList::IsEnabled(kVaapiH264AMDEncoder)) {
+    constexpr VAProfile kH264Profiles[] = {VAProfileH264Baseline,
+                                           VAProfileH264Main, VAProfileH264High,
+                                           VAProfileH264ConstrainedBaseline};
+    if (base::Contains(kH264Profiles, va_profile))
       return true;
-    }
   }
 
   // TODO(posciak): Remove once VP8 encoding is to be enabled by default.
-  if (mode == VaapiWrapper::CodecMode::kEncode &&
-      va_profile == VAProfileVP8Version0_3 &&
+  if (va_profile == VAProfileVP8Version0_3 &&
       !base::FeatureList::IsEnabled(kVaapiVP8Encoder)) {
     return true;
   }
 
   // TODO(crbug.com/811912): Remove once VP9 encoding is to be enabled by
   // default.
-  if (mode == VaapiWrapper::CodecMode::kEncode &&
-      va_profile == VAProfileVP9Profile0 &&
+  if (va_profile == VAProfileVP9Profile0 &&
       !base::FeatureList::IsEnabled(kVaapiVP9Encoder)) {
     return true;
   }
