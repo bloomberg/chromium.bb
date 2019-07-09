@@ -7,6 +7,8 @@ tests:
 # For consecutive capital letters
   - [BIP, ⠨⠨⠃⠊⠏]
   - [HACCP, ⠨⠨⠓⠁⠉⠉⠏]
+# For consecutive capitals with lover case letter between them
+  - [WSiP, ⠨⠺⠨⠎⠊⠨⠏, {xfail: Not implemented yet.}]
 # for digits with comma between them
   - ["22,333", ⠼⠃⠃⠂⠉⠉⠉]
 # For digits with dot between them
