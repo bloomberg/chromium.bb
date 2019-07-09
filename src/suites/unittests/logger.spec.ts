@@ -4,11 +4,11 @@ Unit tests for namespaced logging system.
 Also serves as a larger test of async test functions, and of the logging system.
 `;
 
-import { DefaultFixture } from '../../framework/default_fixture.js';
+import { UnitTest } from './unit_test.js';
 import { TestGroup } from '../../framework/index.js';
 import { Logger } from '../../framework/logger.js';
 
-export const g = new TestGroup(DefaultFixture);
+export const g = new TestGroup(UnitTest);
 
 g.test('construct', t => {
   const mylog = new Logger();

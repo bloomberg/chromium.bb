@@ -4,7 +4,6 @@ Unit tests for parameterization.
 
 import {
   TestGroup,
-  DefaultFixture,
   pcombine,
   pfilter,
   pexclude,
@@ -12,6 +11,7 @@ import {
   ParamsSpec,
 } from '../../framework/index.js';
 import { TestGroupTest } from './test_group_test.js';
+import { UnitTest } from './unit_test.js';
 
 export const g = new TestGroup(TestGroupTest);
 
@@ -51,7 +51,7 @@ g.test('exclude', t => {
 );
 
 g.test('generator', t0 => {
-  const g = new TestGroup(DefaultFixture);
+  const g = new TestGroup(UnitTest);
 
   const ran: ParamsAny[] = [];
 

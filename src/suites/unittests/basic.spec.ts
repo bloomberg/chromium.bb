@@ -2,10 +2,10 @@ export const description = `
 Basic unit tests for test framework.
 `;
 
-import { DefaultFixture } from '../../framework/default_fixture.js';
+import { UnitTest } from './unit_test.js';
 import { TestGroup } from '../../framework/index.js';
 
-export const g = new TestGroup(DefaultFixture);
+export const g = new TestGroup(UnitTest);
 
 g.test('test/sync', t => {});
 

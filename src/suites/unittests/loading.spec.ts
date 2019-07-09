@@ -2,12 +2,13 @@ export const description = `
 Tests for queries/filtering, loading, and running.
 `;
 
-import { DefaultFixture, paramsEquals, TestGroup, RunCase } from '../../framework/index.js';
+import { paramsEquals, TestGroup, RunCase } from '../../framework/index.js';
 import { TestLoader, TestFileLoader, TestSpecOrReadme } from '../../framework/loader.js';
 import { TestSuiteListingEntry, TestSuiteListing } from '../../framework/listing.js';
 import { Logger } from '../../framework/logger.js';
 import { objectEquals } from '../../framework/util/index.js';
 import { TestFilterResult } from '../../framework/test_filter/index.js';
+import { UnitTest } from './unit_test.js';
 
 const listingData: { [k: string]: TestSuiteListingEntry[] } = {
   suite1: [
@@ -25,7 +26,7 @@ const specsData: { [k: string]: TestSpecOrReadme } = {
   'suite1/foo.spec.js': {
     description: 'desc 1b',
     g: (() => {
-      const g = new TestGroup(DefaultFixture);
+      const g = new TestGroup(UnitTest);
       g.test('hello', () => {});
       g.test('bonjour', () => {});
       g.test('hola', () => {});
@@ -36,7 +37,7 @@ const specsData: { [k: string]: TestSpecOrReadme } = {
   'suite1/bar/buzz.spec.js': {
     description: 'desc 1d',
     g: (() => {
-      const g = new TestGroup(DefaultFixture);
+      const g = new TestGroup(UnitTest);
       g.test('zap', () => {});
       return g;
     })(),
@@ -44,7 +45,7 @@ const specsData: { [k: string]: TestSpecOrReadme } = {
   'suite1/baz.spec.js': {
     description: 'desc 1e',
     g: (() => {
-      const g = new TestGroup(DefaultFixture);
+      const g = new TestGroup(UnitTest);
       g.test('zed', () => {}).params([
         { a: 1, b: 2 }, //
         { a: 1, b: 3 },
@@ -55,7 +56,7 @@ const specsData: { [k: string]: TestSpecOrReadme } = {
   'suite2/foof.spec.js': {
     description: 'desc 2b',
     g: (() => {
-      const g = new TestGroup(DefaultFixture);
+      const g = new TestGroup(UnitTest);
       g.test('blah', t => {
         t.ok();
       });
@@ -81,7 +82,7 @@ class FakeTestFileLoader implements TestFileLoader {
   }
 }
 
-class LoadingTest extends DefaultFixture {
+class LoadingTest extends UnitTest {
   loader: TestLoader = new TestLoader(new FakeTestFileLoader());
 
   async load(filters: string[]): Promise<TestFilterResult[]> {

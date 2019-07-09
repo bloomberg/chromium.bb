@@ -1,6 +1,6 @@
-import { Fixture } from './fixture.js';
+import { Fixture } from '../../framework/fixture.js';
 
-export class DefaultFixture extends Fixture {
+export class UnitTest extends Fixture {
   private outstanding = 0;
 
   finalize(): void {

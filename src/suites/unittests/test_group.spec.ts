@@ -2,18 +2,19 @@ export const description = `
 Unit tests for TestGroup.
 `;
 
-import { DefaultFixture, Fixture, TestGroup, poptions } from '../../framework/index.js';
+import { Fixture, TestGroup, poptions } from '../../framework/index.js';
 import { TestGroupTest } from './test_group_test.js';
+import { UnitTest } from './unit_test.js';
 
 export const g = new TestGroup(TestGroupTest);
 
-g.test('default fixture', async t0 => {
+g.test('UnitTest fixture', async t0 => {
   let seen = 0;
   function count(t: Fixture): void {
     seen++;
   }
 
-  const g = new TestGroup(DefaultFixture);
+  const g = new TestGroup(UnitTest);
 
   g.test('test', count);
   g.test('testp', count).params([{ a: 1 }]);
@@ -24,7 +25,7 @@ g.test('default fixture', async t0 => {
 
 g.test('custom fixture', async t0 => {
   let seen = 0;
-  class Counter extends DefaultFixture {
+  class Counter extends UnitTest {
     count(): void {
       seen++;
     }
@@ -44,7 +45,7 @@ g.test('custom fixture', async t0 => {
 });
 
 g.test('stack', async t0 => {
-  const g = new TestGroup(DefaultFixture);
+  const g = new TestGroup(UnitTest);
 
   const doNestedThrow1 = () => {
     throw new Error('goodbye');
@@ -64,19 +65,19 @@ g.test('stack', async t0 => {
 
   const res = await t0.run(g);
 
-  const searchString = 'unittests/test_group.spec.';
+  const search = /unittests\/test_group\.spec\.[tj]s|suites\/unittests\/unit_test\.[tj]s/;
   for (const { logs } of res.cases) {
     if (logs === undefined) {
       throw new Error('expected logs');
     }
-    t0.expect(logs[0].indexOf(searchString) !== -1);
+    t0.expect(search.test(logs[0]));
     const st = logs[0].split('\n');
-    t0.expect(st.every(l => l.indexOf(searchString) !== -1));
+    t0.expect(st.every(l => search.test(l)));
   }
 });
 
 g.test('duplicate test name', t => {
-  const g = new TestGroup(DefaultFixture);
+  const g = new TestGroup(UnitTest);
   g.test('abc', () => {});
 
   t.shouldThrow(() => {
@@ -86,7 +87,7 @@ g.test('duplicate test name', t => {
 
 const badChars = Array.from('"`~@#$+=\\|!^&*[]<>{}-\'.,');
 g.test('invalid test name', t => {
-  const g = new TestGroup(DefaultFixture);
+  const g = new TestGroup(UnitTest);
 
   t.shouldThrow(() => {
     g.test('a' + t.params.char + 'b', () => {});

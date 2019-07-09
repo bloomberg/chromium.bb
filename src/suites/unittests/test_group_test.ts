@@ -1,8 +1,9 @@
-import { DefaultFixture, TestGroup, Fixture, paramsEquals } from '../../framework/index.js';
+import { TestGroup, Fixture, paramsEquals } from '../../framework/index.js';
 import { Logger, LiveTestRunResult } from '../../framework/logger.js';
 import { TestCaseID } from '../../framework/id.js';
+import { UnitTest } from './unit_test.js';
 
-export class TestGroupTest extends DefaultFixture {
+export class TestGroupTest extends UnitTest {
   async run<F extends Fixture>(g: TestGroup<F>): Promise<LiveTestRunResult> {
     const [rec, res] = new Logger().record({ suite: '', path: '' });
     await Promise.all(Array.from(g.iterate(rec)).map(test => test.run()));

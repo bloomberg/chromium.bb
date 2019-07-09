@@ -2,7 +2,7 @@ export const description = `
 Unit tests for parameterization helpers.
 `;
 
-import { DefaultFixture } from '../../framework/default_fixture.js';
+import { UnitTest } from './unit_test.js';
 import {
   ParamsSpec,
   paramsEquals,
@@ -14,7 +14,7 @@ import {
   TestGroup,
 } from '../../framework/index.js';
 
-class ParamsTest extends DefaultFixture {
+class ParamsTest extends UnitTest {
   expectSpecEqual(act: ParamSpecIterable, exp: ParamsSpec[]): void {
     const a = Array.from(act);
     this.expect(a.length === exp.length && a.every((x, i) => paramsEquals(x, exp[i])));
