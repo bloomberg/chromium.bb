@@ -1,4 +1,5 @@
-import { TestFilter, TestFilterResult } from './index.js';
+import { TestFilterResult } from './index.js';
+import { TestFilter } from './internal.js';
 import { TestSpecID, TestCaseID } from '../id.js';
 import { TestSpec, TestFileLoader } from '../loader.js';
 import { RunCaseIterable, RunCase } from '../test_group.js';

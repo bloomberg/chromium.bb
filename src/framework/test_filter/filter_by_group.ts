@@ -1,4 +1,5 @@
-import { TestFilter, TestFilterResult } from './index.js';
+import { TestFilterResult } from './index.js';
+import { TestFilter } from './internal.js';
 import { TestSpecID, TestCaseID } from '../id.js';
 import { TestFileLoader, ReadmeFile, TestSpec } from '../loader.js';
 

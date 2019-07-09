@@ -1,8 +1,24 @@
+# Overview
+
+- _Suites_ contain multiple:
+  - _READMEs_
+  - _Test Spec Files_. Contains one:
+    - _Test Group_. Defines a _test fixture_ and contains multiple:
+      - _Tests_. Defines a _test function_ and contains multiple:
+        - _Test Cases_, each with the same test function but different _parameters_.
+- _Queries_ contain multiple:
+  - _Filters_ (positive or negative). Each filter may match one of:
+    - `S:p` In one suite `S`, all specs whose paths start with `p`.
+    - `S:s:t` In one spec `S:s`, all tests whose names start with `t`.
+    - `S:s:t~c` In one test `S:s:t`, all cases whose params are a superset of `c`.
+    - `S:s:t:c` In one test `S:s:t`, the single case whose params equal `c`.
+
 ## Suite
 
 A suite of tests.
-A single suite has a directory structure, and many _test spec files_.
-Each test spec file is identified by its path within the suite.
+A single suite has a directory structure, and many _test spec files_
+(`.spec.ts` files containing tests) and _READMEs_.
+Each member of a suite is identified by its path within the suite.
 
 **Example:** `src/suites/*/`
 
@@ -19,11 +35,12 @@ Describes (in prose) the contents of a subdirectory in a suite.
 ### Test Spec ID
 
 Uniquely identifies a single test spec file.
-Comprised of suite name (`suite`) and test spec file path (`path`).
+Comprised of suite name (`suite`) and test spec file path relative to the suite root (`path`).
 
 **Type:** `TestSpecID`
 
-**Example:** `{ suite: 'cts', path: 'command_buffer/compute/basic' }`
+**Example:** `{ suite: 'cts', path: 'command_buffer/compute/basic' }` corresponds to
+`src/suites/cts/command_buffer/compute/basic.spec.ts`.
 
 ### Test Case ID
 
