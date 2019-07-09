@@ -1,4 +1,12 @@
-# Please contact robin@chapman.edu when issues are fixed
+# Copyright © 2018, 2019 by Michael Robin <robin@chapman.edu>
+#
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved. This file is offered as-is,
+# without any warranty.
+#
+# ----------------------------------------------------------------------------------------------
+
 table:
   locale: en
   grade: 2
