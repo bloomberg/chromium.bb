@@ -1041,8 +1041,15 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
                       event.incremental_marking_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking", event.marking_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForNestedInV8", event.gc_nested_in_v8_);
-  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingAllObjects",
-                      event.sweeping_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingForeground",
+                      event.foreground_sweeping_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingBackground",
+                      event.background_sweeping_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingSum", event.sweeping_time());
+  UMA_HISTOGRAM_TIMES(
+      "BlinkGC.TimeForCompleteSweep",
+      event.scope_data[ThreadHeapStatsCollector::kCompleteSweep]);
+
   UMA_HISTOGRAM_TIMES(
       "BlinkGC.TimeForInvokingPreFinalizers",
       event.scope_data[ThreadHeapStatsCollector::kInvokePreFinalizers]);
@@ -1071,10 +1078,6 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
 
   UMA_HISTOGRAM_TIMES("BlinkGC.AtomicPhaseMarking",
                       event.atomic_marking_time());
-
-  UMA_HISTOGRAM_TIMES(
-      "BlinkGC.CompleteSweep",
-      event.scope_data[ThreadHeapStatsCollector::kCompleteSweep]);
 
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, object_size_freed_by_heap_compaction,
