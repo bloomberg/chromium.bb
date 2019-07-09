@@ -10,7 +10,7 @@ Error::Error() = default;
 
 Error::Error(const Error& error) = default;
 
-Error::Error(Error&& error) = default;
+Error::Error(Error&& error) noexcept = default;
 
 Error::Error(Code code) : code_(code) {}
 
