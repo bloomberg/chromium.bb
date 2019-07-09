@@ -20,9 +20,12 @@
  * IN THE SOFTWARE.
  */
 
+#include "base/logging.h"
 #include "content/renderer/loader/resource_loader_bridge.h"
 #include "content/renderer/loader/resource_dispatcher.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
 ResourceRequestInfoProvider::ResourceRequestInfoProvider() = default;
@@ -127,8 +130,9 @@ ResourceReceiver::ResourceReceiver() = default;
 ResourceReceiver::~ResourceReceiver() = default;
 
 BodyLoaderReceiver::BodyLoaderReceiver(
+    int render_frame_id,
     blink::WebNavigationBodyLoader::Client* client)
-    : client_(client) {}
+    : render_frame_id_(render_frame_id), client_(client) {}
 
 BodyLoaderReceiver::~BodyLoaderReceiver() = default;
 
@@ -137,6 +141,9 @@ void BodyLoaderReceiver::OnReceivedResponse(
 
 void BodyLoaderReceiver::OnReceivedData(
     std::unique_ptr<RequestPeer::ReceivedData> data) {
+  if(!IsClientValid()) {
+    return;
+  }
   client_->BodyDataReceived(
       base::span<const char>(data->payload(), data->length()));
 }
@@ -144,6 +151,9 @@ void BodyLoaderReceiver::OnReceivedData(
 void BodyLoaderReceiver::OnCompletedRequest(
     const network::URLLoaderCompletionStatus& completeStatus,
     const GURL& url) {
+  if(!IsClientValid()) {
+    return;
+  }
   base::Optional<blink::WebURLError> web_errorCode;
   if (completeStatus.error_code) {
     web_errorCode = blink::WebURLError(completeStatus.error_code, url);
@@ -152,6 +162,25 @@ void BodyLoaderReceiver::OnCompletedRequest(
       base::TimeTicks::Now(), completeStatus.encoded_data_length,
       completeStatus.encoded_body_length, completeStatus.decoded_body_length,
       false, std::move(web_errorCode));
+}
+
+bool BodyLoaderReceiver::IsClientValid() const {
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromRoutingID(render_frame_id_);
+  if (!render_frame) {
+    LOG(WARNING) << "Invalid RenderFrameImpl for id: " << render_frame_id_;
+    return false;
+  }
+  const blink::WebLocalFrame* web_frame = render_frame->GetWebFrame();
+  if (!web_frame) {
+    LOG(WARNING) << "Invalid WebLocalFrame for id: " << render_frame_id_;
+    return false;
+  }
+  if (!web_frame->GetDocumentLoader()) {
+    LOG(WARNING) << "Invalid document loader for id: " << render_frame_id_;
+    return false;
+  }
+  return true;
 }
 
 RequestPeerReceiver::RequestPeerReceiver(

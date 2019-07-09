@@ -134,7 +134,8 @@ class CONTENT_EXPORT PeerRequestInfoProvider
 // in content::NavigationBodyLoader and content::RenderFrameImpl.
 class CONTENT_EXPORT BodyLoaderReceiver : public ResourceReceiver {
  public:
-  BodyLoaderReceiver(blink::WebNavigationBodyLoader::Client* client);
+  BodyLoaderReceiver(int render_frame_id,
+                     blink::WebNavigationBodyLoader::Client* client);
   ~BodyLoaderReceiver() override;
 
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override;
@@ -143,6 +144,8 @@ class CONTENT_EXPORT BodyLoaderReceiver : public ResourceReceiver {
                           const GURL&) override;
 
  private:
+  bool IsClientValid() const;
+  int render_frame_id_;
   blink::WebNavigationBodyLoader::Client* client_;
 };
 
