@@ -90,7 +90,7 @@ class Test<F extends Fixture> {
 
   *iterate(rec: GroupRecorder): IterableIterator<RunCase> {
     for (const params of this.cases || [null]) {
-      yield new RunCaseSpecific(rec, { name: this.name, params }, this.fixture, this.fn);
+      yield new RunCaseSpecific(rec, { test: this.name, params }, this.fixture, this.fn);
     }
   }
 }
@@ -109,7 +109,7 @@ class RunCaseSpecific<F extends Fixture> implements RunCase {
   }
 
   async run(): Promise<LiveTestCaseResult> {
-    const [rec, res] = this.recorder.record(this.id.name, this.id.params);
+    const [rec, res] = this.recorder.record(this.id.test, this.id.params);
     rec.start();
     try {
       const inst = new this.fixture(rec, this.id.params || {});

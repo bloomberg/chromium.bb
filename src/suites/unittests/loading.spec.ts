@@ -187,10 +187,10 @@ g.test('end2end', async t => {
     throw new Error('iterate length');
   }
 
-  t.expect(rcs[0].id.name === 'blah');
+  t.expect(rcs[0].id.test === 'blah');
   t.expect(rcs[0].id.params === null);
 
-  t.expect(rcs[1].id.name === 'bleh');
+  t.expect(rcs[1].id.test === 'bleh');
   t.expect(paramsEquals(rcs[1].id.params, {}));
 
   t.expect(log.results[0] === res);
@@ -204,7 +204,7 @@ g.test('end2end', async t => {
       throw new Error('results cases length');
     }
     t.expect(res.cases[0] === res0);
-    t.expect(res0.name === 'blah');
+    t.expect(res0.test === 'blah');
     t.expect(res0.params === null);
     t.expect(res0.status === 'pass');
     t.expect(res0.timems > 0);
@@ -223,7 +223,7 @@ g.test('end2end', async t => {
       throw new Error('results cases length');
     }
     t.expect(res.cases[1] === res1);
-    t.expect(res1.name === 'bleh');
+    t.expect(res1.test === 'bleh');
     t.expect(paramsEquals(res1.params, {}));
     t.expect(res1.status === 'pass');
     t.expect(res1.timems > 0);

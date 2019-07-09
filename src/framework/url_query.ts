@@ -16,7 +16,7 @@ export function makeQueryString(spec: TestSpecID, testcase?: TestCaseID): string
   let s = spec.suite + ':';
   s += spec.path + ':';
   if (testcase !== undefined) {
-    s += testcase.name + ':';
+    s += testcase.test + ':';
     if (testcase.params) {
       s += JSON.stringify(testcase.params);
     }

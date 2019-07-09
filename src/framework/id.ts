@@ -10,6 +10,6 @@ export interface TestSpecID {
 
 // Identifies a test case (a specific parameterization of a test), within its spec file.
 export interface TestCaseID {
-  readonly name: string;
+  readonly test: string;
   readonly params: ParamsSpec | null;
 }

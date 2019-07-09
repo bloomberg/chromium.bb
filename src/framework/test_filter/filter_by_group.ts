@@ -1,6 +1,6 @@
 import { TestFilter, TestFilterResult } from './index.js';
 import { TestSpecID, TestCaseID } from '../id.js';
-import { TestFileLoader, ReadmeFile, TestSpecFile } from '../loader.js';
+import { TestFileLoader, ReadmeFile, TestSpec } from '../loader.js';
 
 export class FilterByGroup implements TestFilter {
   private readonly suite: string;
@@ -25,7 +25,7 @@ export class FilterByGroup implements TestFilter {
         const isReadme = path === '' || path.endsWith('/');
         const spec = isReadme
           ? ({ description } as ReadmeFile)
-          : ((await loader.import(`${suite}/${path}.spec.js`)) as TestSpecFile);
+          : ((await loader.import(`${suite}/${path}.spec.js`)) as TestSpec);
         entries.push({ id: { suite, path }, spec });
       }
     }

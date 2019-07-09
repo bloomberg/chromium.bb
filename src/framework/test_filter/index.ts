@@ -3,7 +3,7 @@ import { TestFileLoader, TestSpecOrReadme } from '../loader.js';
 
 export * from './load_filter.js';
 
-// A pending loaded spec (.spec.ts) file, plus identifying information.
+// Result of iterating a test filter. Contains a loaded spec (.spec.ts) file and its id.
 export interface TestFilterResult {
   readonly id: TestSpecID;
   readonly spec: TestSpecOrReadme;

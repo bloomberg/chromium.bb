@@ -21,12 +21,12 @@ g.test('construct', t => {
   t.expect(testres.cases.length === 2);
   t.expect(testres.cases[0] === res1);
   t.expect(testres.cases[1] === res2);
-  t.expect(res1.name === 'baz');
+  t.expect(res1.test === 'baz');
   t.expect(res1.params === null);
   t.expect(res1.logs === undefined);
   t.expect(res1.status === 'running');
   t.expect(res1.timems < 0);
-  t.expect(res2.name === 'qux');
+  t.expect(res2.test === 'qux');
   t.expect(res2.params === params2);
   t.expect(res2.logs === undefined);
   t.expect(res2.status === 'running');

@@ -68,11 +68,11 @@ g.test('generator', t0 => {
   );
 
   t0.expectCases(g, [
-    { name: 'generator', params: { x: 0, y: 0 } },
-    { name: 'generator', params: { x: 0, y: 1 } },
-    { name: 'generator', params: { x: 1, y: 0 } },
-    { name: 'generator', params: { x: 1, y: 1 } },
-    { name: 'generator', params: { x: 2, y: 0 } },
-    { name: 'generator', params: { x: 2, y: 1 } },
+    { test: 'generator', params: { x: 0, y: 0 } },
+    { test: 'generator', params: { x: 0, y: 1 } },
+    { test: 'generator', params: { x: 1, y: 0 } },
+    { test: 'generator', params: { x: 1, y: 1 } },
+    { test: 'generator', params: { x: 2, y: 0 } },
+    { test: 'generator', params: { x: 2, y: 1 } },
   ]);
 });

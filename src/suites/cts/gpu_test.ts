@@ -4,6 +4,7 @@ import { Fixture } from '../../framework/index.js';
 
 let shaderc: Promise<Shaderc.Shaderc> | undefined;
 
+// TODO: Should this gain some functionality currently only in UnitTest?
 export class GPUTest extends Fixture {
   // tslint:disable-next-line: no-any
   device: GPUDevice = undefined as any;

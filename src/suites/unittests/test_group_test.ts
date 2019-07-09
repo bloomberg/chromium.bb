@@ -24,7 +24,7 @@ export class TestGroupTest extends UnitTest {
 
     if (this.expect(gcases.length === cases.length)) {
       for (let i = 0; i < cases.length; ++i) {
-        this.expect(gcases[i].name === cases[i].name);
+        this.expect(gcases[i].test === cases[i].test);
         this.expect(paramsEquals(gcases[i].params, cases[i].params));
       }
     }

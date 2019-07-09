@@ -1,6 +1,6 @@
 import { TestFilter, TestFilterResult } from './index.js';
 import { TestSpecID, TestCaseID } from '../id.js';
-import { TestSpecFile, TestFileLoader } from '../loader.js';
+import { TestSpec, TestFileLoader } from '../loader.js';
 import { RunCaseIterable, RunCase } from '../test_group.js';
 import { ParamsAny, paramsSupersets, paramsEquals } from '../params/index.js';
 import { GroupRecorder } from '../logger.js';
@@ -12,13 +12,13 @@ abstract class FilterOneFile implements TestFilter {
     this.specId = specId;
   }
 
-  abstract getCases(spec: TestSpecFile): RunCaseIterable;
+  abstract getCases(spec: TestSpec): RunCaseIterable;
   abstract matches(spec: TestSpecID, testcase: TestCaseID): boolean;
 
   async iterate(loader: TestFileLoader): Promise<TestFilterResult[]> {
     const spec = (await loader.import(
       `${this.specId.suite}/${this.specId.path}.spec.js`
-    )) as TestSpecFile;
+    )) as TestSpec;
     return [
       {
         id: this.specId,
@@ -52,8 +52,8 @@ export class FilterByTestMatch extends FilterOneFile {
     this.testPrefix = testPrefix;
   }
 
-  getCases(spec: TestSpecFile): RunCaseIterable {
-    return filterTestGroup(spec.g, testcase => testcase.name.startsWith(this.testPrefix));
+  getCases(spec: TestSpec): RunCaseIterable {
+    return filterTestGroup(spec.g, testcase => testcase.test.startsWith(this.testPrefix));
   }
 
   matches(spec: TestSpecID, testcase: TestCaseID): boolean {
@@ -71,10 +71,10 @@ export class FilterByParamsMatch extends FilterOneFile {
     this.params = params;
   }
 
-  getCases(spec: TestSpecFile): RunCaseIterable {
+  getCases(spec: TestSpec): RunCaseIterable {
     return filterTestGroup(
       spec.g,
-      testcase => testcase.name === this.test && paramsSupersets(testcase.params, this.params)
+      testcase => testcase.test === this.test && paramsSupersets(testcase.params, this.params)
     );
   }
 
@@ -93,10 +93,10 @@ export class FilterByParamsExact extends FilterOneFile {
     this.params = params;
   }
 
-  getCases(spec: TestSpecFile): RunCaseIterable {
+  getCases(spec: TestSpec): RunCaseIterable {
     return filterTestGroup(
       spec.g,
-      testcase => testcase.name === this.test && paramsEquals(testcase.params, this.params)
+      testcase => testcase.test === this.test && paramsEquals(testcase.params, this.params)
     );
   }
 

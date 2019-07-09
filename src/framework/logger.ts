@@ -6,13 +6,13 @@ import { makeQueryString } from './url_query.js';
 
 type Status = 'running' | 'pass' | 'warn' | 'fail';
 export interface LiveTestRunResult {
-  spec: string;
-  cases: LiveTestCaseResult[];
+  readonly spec: string;
+  readonly cases: LiveTestCaseResult[];
 }
 
 export interface LiveTestCaseResult {
-  name: string;
-  params: ParamsSpec | null;
+  readonly test: string;
+  readonly params: ParamsSpec | null;
   status: Status;
   logs?: string[];
   timems: number;
@@ -24,8 +24,7 @@ export class Logger {
   constructor() {}
 
   record(spec: TestSpecID): [GroupRecorder, LiveTestRunResult] {
-    const cases: LiveTestCaseResult[] = [];
-    const result: LiveTestRunResult = { spec: makeQueryString(spec), cases };
+    const result: LiveTestRunResult = { spec: makeQueryString(spec), cases: [] };
     this.results.push(result);
     return [new GroupRecorder(result), result];
   }
@@ -36,15 +35,15 @@ export class Logger {
 }
 
 export class GroupRecorder {
-  private test: LiveTestRunResult;
+  private result: LiveTestRunResult;
 
-  constructor(test: LiveTestRunResult) {
-    this.test = test;
+  constructor(result: LiveTestRunResult) {
+    this.result = result;
   }
 
-  record(name: string, params: ParamsSpec | null): [CaseRecorder, LiveTestCaseResult] {
-    const result: LiveTestCaseResult = { name, params, status: 'running', timems: -1 };
-    this.test.cases.push(result);
+  record(test: string, params: ParamsSpec | null): [CaseRecorder, LiveTestCaseResult] {
+    const result: LiveTestCaseResult = { test, params, status: 'running', timems: -1 };
+    this.result.cases.push(result);
     return [new CaseRecorder(result), result];
   }
 }

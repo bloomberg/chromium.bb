@@ -5,7 +5,7 @@ import { TestFilterResult, loadFilter } from './test_filter/index.js';
 // One of the following:
 // - An actual .spec.ts file, as imported.
 // - A *filtered* list of cases from a single .spec.ts file.
-export interface TestSpecFile {
+export interface TestSpec {
   readonly description: string;
   readonly g: RunCaseIterable;
 }
@@ -15,7 +15,7 @@ export interface ReadmeFile {
   readonly description: string;
 }
 
-export type TestSpecOrReadme = TestSpecFile | ReadmeFile;
+export type TestSpecOrReadme = TestSpec | ReadmeFile;
 
 type TestFilterResultIterator = IterableIterator<TestFilterResult>;
 function* concat(lists: TestFilterResult[][]): TestFilterResultIterator {
@@ -34,7 +34,7 @@ class DefaultTestFileLoader implements TestFileLoader {
     return (await import(`../suites/${suite}/index.js`)).listing;
   }
 
-  import(path: string): Promise<TestSpecFile> {
+  import(path: string): Promise<TestSpec> {
     return import('../suites/' + path);
   }
 }
