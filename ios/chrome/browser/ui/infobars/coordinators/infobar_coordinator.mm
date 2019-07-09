@@ -275,7 +275,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
     if (self.baseViewController.presentedViewController ==
         self.bannerViewController) {
       // Deselect infobar badge in parallel with modal dismissal.
-      [self.badgeDelegate infobarModalWillDismiss:self.infobarType];
+      [self.badgeDelegate infobarModalWillDismiss];
       __weak __typeof(self) weakSelf = self;
       [self.bannerViewController
           dismissViewControllerAnimated:animated
@@ -288,7 +288,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
     } else if (self.baseViewController.presentedViewController ==
                self.modalNavigationController) {
       // Deselect infobar badge in parallel with modal dismissal.
-      [self.badgeDelegate infobarModalWillDismiss:self.infobarType];
+      [self.badgeDelegate infobarModalWillDismiss];
       [self.baseViewController dismissViewControllerAnimated:animated
                                                   completion:^{
                                                     if (completion)
