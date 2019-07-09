@@ -853,10 +853,25 @@ html[dir=rtl] .menu-option {
   background-color: rgba(var(--GB900-rgb), .1);
 }
 
+@media (prefers-color-scheme: dark) {
+  .menu-option:hover,
+  .menu-option:focus {
+    background-color: rgba(var(--GB200-rgb), .03);
+  }
+}
+
 .menu-option:active,
 .menu-option.selected {
   background-color: rgb(232, 240, 254);
   color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .menu-option:active,
+  .menu-option.selected {
+    background-color: rgba(var(--GB200-rgb), .1);
+    color: rgb(var(--GB300-rgb));
+  }
 }
 
 .menu-option-icon-wrapper {
@@ -887,6 +902,13 @@ html[dir=rtl] .menu-option {
 .menu-option:active .menu-option-icon-wrapper .menu-option-icon,
 .menu-option.selected .menu-option-icon-wrapper .menu-option-icon {
   background-color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .menu-option:active .menu-option-icon-wrapper .menu-option-icon,
+  .menu-option.selected .menu-option-icon-wrapper .menu-option-icon {
+    background-color: rgb(var(--GB300-rgb));
+  }
 }
 
 #shortcuts-icon {
@@ -1052,14 +1074,20 @@ html[dir=rtl] .menu-option {
   width: 176px;
 }
 
+@media (prefers-color-scheme: dark) {
+  #backgrounds-default.bg-sel-tile-bg {
+    background-color: transparent;
+  }
+}
+
 #customization-menu .bg-sel-tile-bg.selected  {
   background-color: rgba(var(--GB900-rgb), .08);
 }
 
 @media (prefers-color-scheme: dark) {
   #backgrounds-default.selected,
-  #backgrounds-image-menu .bg-sel-tile-bg.selected {
-    background-color: rgba(var(--GB200-rgb), .5);
+  #customization-menu .bg-sel-tile-bg.selected {
+    background-color: rgba(var(--GB200-rgb), .1);
   }
 }
 
@@ -1069,7 +1097,7 @@ html[dir=rtl] .menu-option {
 }
 
 #backgrounds-upload.bg-sel-tile-bg {
-  background-color: white;
+  background-color: transparent;
   vertical-align: top;
 }
 
@@ -1147,6 +1175,12 @@ html[dir=rtl] #menu-back {
   top: 0;
 }
 
+@media (prefers-color-scheme: dark) {
+  #backgrounds-upload-wrapper {
+    border-color: rgb(var(--GG700-rgb));
+  }
+}
+
 #backgrounds-upload-icon {
   -webkit-mask-image: url(icons/upload.svg);
   -webkit-mask-repeat: no-repeat;
@@ -1164,6 +1198,12 @@ html[dir=rtl] #menu-back {
   font-size: 13px;
   text-align: center;
   width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  #backgrounds-upload-text {
+    color: inherit;
+  }
 }
 
 #customization-menu .bg-sel-tile .selected-circle {
@@ -1199,6 +1239,17 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   box-sizing: border-box;
   margin: auto;
   opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  #backgrounds-default-icon {
+    background-color: rgb(41, 42, 45);
+    border-color: rgb(var(--GG700-rgb));
+  }
+
+  .selected #backgrounds-default-icon {
+    border-color: transparent;
+  }
 }
 
 .mini-page {
