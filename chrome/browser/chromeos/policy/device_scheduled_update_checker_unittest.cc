@@ -18,10 +18,13 @@
 #include "chrome/browser/chromeos/policy/os_and_policies_update_checker.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/tpm/stub_install_attributes.h"
+#include "components/policy/core/common/policy_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -106,7 +109,10 @@ class DeviceScheduledUpdateCheckerForTest
       : DeviceScheduledUpdateChecker(cros_settings),
         clock_(clock),
         tick_clock_(tick_clock) {}
-  ~DeviceScheduledUpdateCheckerForTest() override = default;
+
+  ~DeviceScheduledUpdateCheckerForTest() override {
+    TestingBrowserProcess::GetGlobal()->ShutdownBrowserPolicyConnector();
+  }
 
   int GetUpdateCheckTimerExpirations() const {
     return update_check_timer_expirations_;
@@ -189,13 +195,15 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     chromeos::PowerManagerClient::Shutdown();
   }
 
-  // Notifies status update from |fake_update_engine_client_|.
+  // Notifies status update from |fake_update_engine_client_| and runs scheduled
+  // tasks to ensure that the pending policy refresh completes.
   void NotifyUpdateCheckStatus(
       chromeos::UpdateEngineClient::UpdateStatusOperation
           update_status_operation) {
     chromeos::UpdateEngineClient::Status status = {};
     status.status = update_status_operation;
     fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+    scoped_task_environment_.RunUntilIdle();
   }
 
   // Returns true only iff all stats match in
@@ -353,6 +361,11 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
       device_scheduled_update_checker_;
   chromeos::ScopedTestingCrosSettings cros_settings_;
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
+
+ private:
+  chromeos::ScopedStubInstallAttributes test_install_attributes_{
+      chromeos::StubInstallAttributes::CreateCloudManaged("fake-domain",
+                                                          "fake-id")};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceScheduledUpdateCheckerTest);
 };

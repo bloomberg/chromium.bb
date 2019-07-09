@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/task_executor_with_retries.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "components/policy/core/common/policy_service.h"
 
 namespace policy {
 
@@ -50,7 +52,11 @@ void OsAndPoliciesUpdateChecker::Stop() {
 }
 
 void OsAndPoliciesUpdateChecker::OnUpdateCheckFailure() {
-  RunCompletionCallbackAndResetState(false);
+  // Refresh policies after the update check is finished successfully or
+  // unsuccessfully.
+  g_browser_process->policy_service()->RefreshPolicies(base::BindRepeating(
+      &OsAndPoliciesUpdateChecker::OnRefreshPoliciesCompletion,
+      weak_factory_.GetWeakPtr(), false /* update_check_result */));
 }
 
 void OsAndPoliciesUpdateChecker::RunCompletionCallbackAndResetState(
@@ -104,7 +110,11 @@ void OsAndPoliciesUpdateChecker::UpdateStatusChanged(
 
     case chromeos::UpdateEngineClient::UpdateStatusOperation::
         UPDATE_STATUS_UPDATED_NEED_REBOOT:
-      RunCompletionCallbackAndResetState(true);
+      // Refresh policies after the update check is finished successfully or
+      // unsuccessfully.
+      g_browser_process->policy_service()->RefreshPolicies(base::BindRepeating(
+          &OsAndPoliciesUpdateChecker::OnRefreshPoliciesCompletion,
+          weak_factory_.GetWeakPtr(), true /* update_check_result */));
       break;
 
     case chromeos::UpdateEngineClient::UpdateStatusOperation::
@@ -143,12 +153,19 @@ void OsAndPoliciesUpdateChecker::OnUpdateCheckStarted(
       update_check_task_executor_.ScheduleRetry();
       break;
     case chromeos::UpdateEngineClient::UPDATE_RESULT_NOTIMPLEMENTED:
-      // No point retrying if the operation is not implemented. This should
-      // never happen.
-      LOG(ERROR) << "Operation not implemented";
-      RunCompletionCallbackAndResetState(false);
+      // No point retrying if the operation is not implemented. Refresh policies
+      // since the update check is done.
+      LOG(ERROR) << "Update check failed: Operation not implemented";
+      g_browser_process->policy_service()->RefreshPolicies(base::BindRepeating(
+          &OsAndPoliciesUpdateChecker::OnRefreshPoliciesCompletion,
+          weak_factory_.GetWeakPtr(), false /* update_check_result */));
       break;
   }
+}
+
+void OsAndPoliciesUpdateChecker::OnRefreshPoliciesCompletion(
+    bool update_check_result) {
+  RunCompletionCallbackAndResetState(update_check_result);
 }
 
 void OsAndPoliciesUpdateChecker::ResetState() {

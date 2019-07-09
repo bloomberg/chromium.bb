@@ -41,13 +41,15 @@ class OsAndPoliciesUpdateChecker
 
   using UpdateCheckCompletionCallback = base::OnceCallback<void(bool result)>;
 
-  // Starts an update check and possible download and calls |cb| to indicate
-  // success or failure when the process is complete. Overrides any previous
-  // calls to |Start|.
+  // Starts an update check and possible download. Once the update check is
+  // finished it refreshes policies and finally calls |cb| to indicate success
+  // or failure when the process is complete. Overrides any previous calls to
+  // |Start|.
   void Start(UpdateCheckCompletionCallback cb);
 
-  // Stops any pending update checks. Calls |update_check_completion_cb_| with
-  // false. It is safe to call |Start| after this.
+  // Stops any pending update checks or policy refreshes. Calls
+  // |update_check_completion_cb_| with false. It is safe to call |Start| after
+  // this.
   void Stop();
 
  private:
@@ -67,6 +69,11 @@ class OsAndPoliciesUpdateChecker
   // Tells whether starting an update check succeeded or not.
   void OnUpdateCheckStarted(
       chromeos::UpdateEngineClient::UpdateCheckResult result);
+
+  // Called when the API call to refresh policies is completed.
+  // |update_check_result| represents the result of the update check which
+  // triggered this policy refresh.
+  void OnRefreshPoliciesCompletion(bool update_check_result);
 
   // Resets all state and cancels any pending update checks.
   void ResetState();
