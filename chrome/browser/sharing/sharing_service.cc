@@ -102,9 +102,9 @@ std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
     // Only insert the first occurrence of each device name.
     auto inserted = device_names.insert(device->client_name());
     if (inserted.second) {
-      device_candidates.emplace_back(device->guid(), device->client_name(),
-                                     device->last_updated_timestamp(),
-                                     device_capabilities);
+      device_candidates.emplace_back(
+          device->guid(), device->client_name(), device->device_type(),
+          device->last_updated_timestamp(), device_capabilities);
     }
   }
 
