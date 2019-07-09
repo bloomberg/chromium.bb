@@ -277,6 +277,8 @@ message CreateCertificateRequestRequest {
   optional string request_origin = 3;
   // What kind of ACA to use.
   optional ACAType aca_type = 4;
+  // The key algorithm of certified key.
+  optional KeyType key_type = 5;
 }
 
 message CreateCertificateRequestReply {
