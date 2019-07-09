@@ -180,7 +180,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   SMILInterval ResolveInterval(IntervalSelector) const;
   void ResolveFirstInterval();
-  bool ResolveNextInterval();
+  base::Optional<SMILInterval> ResolveNextInterval();
   SMILTime ResolveActiveEnd(SMILTime resolved_begin,
                             SMILTime resolved_end) const;
   SMILTime RepeatingDuration() const;

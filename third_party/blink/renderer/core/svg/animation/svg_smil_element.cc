@@ -853,21 +853,16 @@ void SVGSMILElement::ResolveFirstInterval() {
   }
 }
 
-bool SVGSMILElement::ResolveNextInterval() {
+base::Optional<SMILInterval> SVGSMILElement::ResolveNextInterval() {
   SMILInterval next_interval = ResolveInterval(kNextInterval);
   DCHECK(!next_interval.begin.IsIndefinite());
 
   if (!next_interval.begin.IsUnresolved() &&
       next_interval.begin != interval_.begin) {
-    interval_ = next_interval;
-    NotifyDependentsIntervalChanged();
-    next_progress_time_ = next_progress_time_.IsUnresolved()
-                              ? interval_.begin
-                              : std::min(next_progress_time_, interval_.begin);
-    return true;
+    return next_interval;
   }
 
-  return false;
+  return base::nullopt;
 }
 
 SMILTime SVGSMILElement::NextProgressTime() const {
@@ -942,8 +937,17 @@ SVGSMILElement::RestartedInterval SVGSMILElement::MaybeRestartInterval(
   }
 
   if (elapsed >= interval_.end) {
-    if (ResolveNextInterval() && elapsed >= interval_.begin)
-      return kDidRestartInterval;
+    base::Optional<SMILInterval> next_interval = ResolveNextInterval();
+    if (next_interval) {
+      interval_ = *next_interval;
+      NotifyDependentsIntervalChanged();
+      next_progress_time_ =
+          next_progress_time_.IsUnresolved()
+              ? interval_.begin
+              : std::min(next_progress_time_, interval_.begin);
+      if (elapsed >= interval_.begin)
+        return kDidRestartInterval;
+    }
   }
   return kDidNotRestartInterval;
 }
@@ -971,16 +975,33 @@ void SVGSMILElement::SeekToIntervalCorrespondingToTime(double elapsed) {
       // End current interval, and start a new interval from the 'nextBegin'
       // time.
       interval_.end = next_begin;
-      if (!ResolveNextInterval())
+
+      base::Optional<SMILInterval> next_interval = ResolveNextInterval();
+      if (!next_interval)
         break;
+
+      interval_ = *next_interval;
+      NotifyDependentsIntervalChanged();
+      next_progress_time_ =
+          next_progress_time_.IsUnresolved()
+              ? interval_.begin
+              : std::min(next_progress_time_, interval_.begin);
       continue;
     }
 
     // If the desired 'elapsed' time is past the current interval, advance to
     // the next.
     if (elapsed >= interval_.end) {
-      if (!ResolveNextInterval())
+      base::Optional<SMILInterval> next_interval = ResolveNextInterval();
+      if (!next_interval)
         break;
+
+      interval_ = *next_interval;
+      NotifyDependentsIntervalChanged();
+      next_progress_time_ =
+          next_progress_time_.IsUnresolved()
+              ? interval_.begin
+              : std::min(next_progress_time_, interval_.begin);
       continue;
     }
 
