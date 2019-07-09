@@ -348,6 +348,16 @@ template("grit") {
     depfile = "$depfile_dir/${grit_output_name}_stamp.d"
     outputs = [ "${depfile}.stamp" ] + grit_outputs + pak_info_outputs
 
+    b_tool = "//third_party/brotli:brotli" + "($host_toolchain)"
+
+    brotli_executable = get_label_info(b_tool, "root_out_dir") + "/" +
+                        get_label_info(b_tool, "name")
+    if (host_os == "win") {
+      brotli_executable += ".exe"
+    }
+
+    inputs += [ brotli_executable ]
+
     args = [
              "-i",
              source_path,
@@ -360,6 +370,8 @@ template("grit") {
              rebase_path(depfile, root_build_dir),
              "--write-only-new=1",
              "--depend-on-stamp",
+             "--brotli",
+             rebase_path(brotli_executable, root_build_dir),
            ] + grit_defines
 
     # Add extra defines with -D flags.
@@ -441,6 +453,7 @@ template("grit") {
     }
 
     deps = [
+      "//third_party/brotli:brotli($host_toolchain)",
       "//tools/grit:grit_sources",
     ]
     if (defined(invoker.deps)) {
