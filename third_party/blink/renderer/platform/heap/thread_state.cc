@@ -641,11 +641,16 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
       ScheduleIdleLazySweep();
   }
 
-  if (sweep_completed)
+  if (sweep_completed) {
+    // TODO(bikineev): We need to synchronize with concurrent sweepers here
+    // using the same bottleneck as in CompleteSweep().
     PostSweep();
+  }
 }
 
 void ThreadState::PerformConcurrentSweep() {
+  VLOG(2) << "[state:" << this << "] [threadid:" << CurrentThread() << "] "
+          << "ConcurrentSweep";
   // Concurrent sweeper doesn't call finalizers - this guarantees that sweeping
   // is not called recursively.
   ThreadHeapStatsCollector::EnabledConcurrentScope stats_scope(
@@ -934,7 +939,7 @@ void ThreadState::CompleteSweep() {
     return;
 
   {
-    // CompleteSweep may be called during regular mutator exececution, from a
+    // CompleteSweep may be called during regular mutator execution, from a
     // task, or from the atomic pause in which the atomic scope has already been
     // opened.
     const bool was_in_atomic_pause = in_atomic_pause();
@@ -950,6 +955,12 @@ void ThreadState::CompleteSweep() {
 
     // Wait for concurrent sweepers.
     sweeper_scheduler_.CancelAndWait();
+
+    // Concurrent sweepers may perform some work at the last stage (e.g.
+    // sweeping the last page and preparing finalizers).
+    // TODO(bikineev): This should be changed to Heap.Finalize() to only call
+    // remaining finalizers, not perform complete sweeping once again.
+    Heap().CompleteSweep();
 
     if (!was_in_atomic_pause)
       LeaveAtomicPause();
