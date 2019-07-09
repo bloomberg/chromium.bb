@@ -294,3 +294,27 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
         'ssh', '-p', '9222', 'root@localhost', '--',
         'fake_command', '--test_cmd'])
     is_running_mock.assert_called()
+
+  def testGetVMPidDir(self):
+    """Verify that isRunning is False with a nonexistent directory."""
+    self._vm.vm_dir = 'fake/directory'
+    self.assertFalse(self._vm.IsRunning())
+
+  def testGetVMPidFile(self):
+    """Verify that isRunning is False with a nonexistent pid file."""
+    self._vm.pidfile = 'fake/pid/file'
+    self.assertFalse(self._vm.IsRunning())
+
+  def testPidString(self):
+    """Verify that isRunning is False if the pid is not an integer."""
+    osutils.WriteFile(self._vm.pidfile, 'fake_pid')
+    self.assertFalse(self._vm.IsRunning())
+
+  def testGetVMPid(self):
+    """Verify that a proper pid number kills the VM process."""
+    # Using this process's pid to fake the VM's pid.
+    pid = str(os.getpid())
+    osutils.WriteFile(self._vm.pidfile, pid)
+    self.assertTrue(self._vm.IsRunning())
+    self._vm.Stop()
+    self.assertCommandContains(['kill', '-9', pid])
