@@ -5579,9 +5579,6 @@ crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/selection-aut
 # Flaky
 crbug.com/894077 virtual/android/fullscreen/video-fixed-background.html [ Pass Failure ]
 
-# Does not set correct realm as scope in current implementation
-crbug.com/872138 external/wpt/client-hints/accept_ch.tentative.https.html [ Timeout Pass ]
-
 crbug.com/898186 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
 
 # Sheriff 2018-09-10
