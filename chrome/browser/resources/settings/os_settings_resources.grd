@@ -214,7 +214,8 @@
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_MAIN_PAGE_BEHAVIOR_JS"
                  file="settings_page/main_page_behavior.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_OS_SETTINGS_SETTINGS_VARS_CSS_HTML"
                  file="settings_vars_css.html"
                  type="chrome_html" />
