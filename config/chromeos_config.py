@@ -1770,7 +1770,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _pi_vmtest_boards = frozenset([
       'betty-arcnext'
   ])
-  _pi_vmtest_experimental_boards = frozenset([])
+  _pi_vmtest_experimental_boards = frozenset([
+      'betty-pi-arc',
+  ])
 
   # Android VM PI master.
   vmpi_master_config = site_config.Add(
@@ -2269,6 +2271,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'mistral', # crbug.com/981118
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
+      'betty-pi-arc', # Promote when we replace betty-arcnext. b/129410042
   ])
 
 
@@ -3272,7 +3275,9 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_rialto',
   ])
 
-  _chrome_pfq_experimental_boards = frozenset([])
+  _chrome_pfq_experimental_boards = frozenset([
+      'betty-pi-arc',
+  ])
 
   _chrome_pfq_skylab_boards = frozenset([
       'caroline',

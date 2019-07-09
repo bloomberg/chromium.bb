@@ -15,6 +15,7 @@
     atlas-chrome-pfq
     betty-arcnext-chrome-pfq
     betty-chrome-pfq
+    betty-pi-arc-chrome-pfq
     bob-chrome-pfq
     caroline-arcnext-chrome-pfq
     caroline-chrome-pfq
@@ -47,6 +48,7 @@
     betty-arc64-paladin
     betty-arcnext-paladin
     betty-paladin
+    betty-pi-arc-paladin
     bob-paladin
     capri-paladin
     capri-zfpga-paladin
@@ -356,6 +358,7 @@
 == pi_android_pfq ==
   master-pi-android-pfq
     betty-arcnext-pi-android-pfq
+    betty-pi-arc-pi-android-pfq
     caroline-arcnext-pi-android-pfq
     caroline-pi-android-pfq
     coral-pi-android-pfq
@@ -999,6 +1002,7 @@
   betty-nyc-arc-unittest-stress
   betty-paladin-tryjob
   betty-payloads-tryjob
+  betty-pi-arc-chrome-pfq-tryjob
   betty-pi-arc-chromium-pfq-tryjob
   betty-pi-arc-compile-only-pre-cq
   betty-pi-arc-full-tryjob
@@ -1006,6 +1010,7 @@
   betty-pi-arc-llvm-toolchain-tryjob
   betty-pi-arc-no-vmtest-pre-cq
   betty-pi-arc-paladin-tryjob
+  betty-pi-arc-pi-android-pfq-tryjob
   betty-pi-arc-postsubmit-tryjob
   betty-pi-arc-pre-cq
   betty-pi-arc-release-tryjob
@@ -2500,6 +2505,7 @@
     atlas-chrome-pfq-tryjob
     betty-arcnext-chrome-pfq-tryjob
     betty-chrome-pfq-tryjob
+    betty-pi-arc-chrome-pfq-tryjob
     bob-chrome-pfq-tryjob
     caroline-arcnext-chrome-pfq-tryjob
     caroline-chrome-pfq-tryjob
@@ -2555,6 +2561,7 @@
     betty-arc64-paladin-tryjob
     betty-arcnext-paladin-tryjob
     betty-paladin-tryjob
+    betty-pi-arc-paladin-tryjob
     bob-paladin-tryjob
     capri-paladin-tryjob
     capri-zfpga-paladin-tryjob
@@ -2640,6 +2647,7 @@
     zork-paladin-tryjob
   master-pi-android-pfq-tryjob
     betty-arcnext-pi-android-pfq-tryjob
+    betty-pi-arc-pi-android-pfq-tryjob
     caroline-arcnext-pi-android-pfq-tryjob
     caroline-pi-android-pfq-tryjob
     coral-pi-android-pfq-tryjob
