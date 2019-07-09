@@ -2846,6 +2846,8 @@ jumbo_split_static_library("browser") {
       "apps/app_service/app_icon_factory.h",
       "apps/app_service/app_icon_source.cc",
       "apps/app_service/app_icon_source.h",
+      "apps/app_service/app_launch_params.cc",
+      "apps/app_service/app_launch_params.h",
       "apps/app_service/app_service_proxy_factory.cc",
       "apps/app_service/app_service_proxy_factory.h",
       "apps/app_service/app_service_proxy_impl.cc",
