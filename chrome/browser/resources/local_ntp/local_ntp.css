@@ -1257,7 +1257,6 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
 }
 
 .sh-option-image {
-  background-color: white;
   border: 1px solid rgb(var(--GG300-rgb));
   border-radius: 4px;
   box-sizing: border-box;
@@ -1266,9 +1265,22 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   width: 268px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .sh-option-image {
+    border-color: rgb(var(--GG700-rgb));
+  }
+}
+
 .selected .sh-option-image {
   background-color: rgb(var(--GB050-rgb));
   border-color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected .sh-option-image {
+    background-color: rgba(var(--GB200-rgb), .1);
+    border-color: rgb(var(--GB300-rgb));
+  }
 }
 
 .sh-option-mini {
@@ -1283,6 +1295,13 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   width: 144px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .sh-option-mini {
+    background-color: rgb(41, 42, 45);
+    border-color: rgb(var(--GG700-rgb));
+  }
+}
+
 html[dir=rtl] .sh-option-mini {
   left: 40px;
   right: unset;
@@ -1293,12 +1312,26 @@ html[dir=rtl] .sh-option-mini {
       0 4px 8px 3px rgba(var(--GG800-rgb), .15);
 }
 
+@media (prefers-color-scheme: dark) {
+  .selected .sh-option-mini {
+    border-color: transparent;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .3),
+        0 4px 8px 3px rgba(0, 0, 0, .15);
+  }
+}
+
 .sh-option-mini .mini-shortcuts {
   background-color: rgb(var(--GG500-rgb));
 }
 
 .selected .sh-option-mini .mini-shortcuts {
   background-color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected .sh-option-mini .mini-shortcuts {
+    background-color: rgb(var(--GB300-rgb));
+  }
 }
 
 .sh-option-icon {
@@ -1324,8 +1357,20 @@ html[dir=rtl] .sh-option-icon {
   right: 16px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .sh-option-icon {
+    background-color: rgb(var(--GG700-rgb));
+  }
+}
+
 .selected .sh-option-icon {
   background-color: rgba(var(--GB600-rgb), .24);
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected .sh-option-icon {
+    background-color: rgb(var(--GB300-rgb));
+  }
 }
 
 .sh-option-image .selected-circle {
@@ -1359,7 +1404,6 @@ html[dir=rtl] .sh-option-image .selected-check {
 }
 
 #sh-hide {
-  background-color: white;
   border: 1px solid rgb(var(--GG300-rgb));
   border-radius: 4px;
   box-sizing: border-box;
@@ -1370,10 +1414,24 @@ html[dir=rtl] .sh-option-image .selected-check {
   width: 100%;
 }
 
+@media (prefers-color-scheme: dark) {
+  #sh-hide {
+    border-color: rgb(var(--GG700-rgb));
+  }
+}
+
 #sh-hide.selected {
   background-color: rgb(var(--GB050-rgb));
   border-color: rgb(var(--GB600-rgb));
   color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  #sh-hide.selected {
+    background-color: rgba(var(--GB200-rgb), .1);
+    border-color: rgb(var(--GB300-rgb));
+    color: rgb(var(--GB300-rgb));
+  }
 }
 
 #sh-hide > div {
@@ -1394,6 +1452,12 @@ html[dir=rtl] .sh-option-image .selected-check {
 
 .selected #sh-hide-icon {
   background-color: rgb(var(--GB600-rgb));
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected #sh-hide-icon {
+    background-color: rgb(var(--GB300-rgb));
+  }
 }
 
 #sh-hide-title {
@@ -1422,6 +1486,12 @@ html[dir=rtl] .sh-option-image .selected-check {
   z-index: 0;
 }
 
+@media (prefers-color-scheme: dark) {
+  .switch {
+    background-color: rgb(41, 42, 45);
+  }
+}
+
 /* Hide the toggle's default checkbox. */
 .switch input {
   opacity: 0;
@@ -1434,7 +1504,7 @@ html[dir=rtl] .sh-option-image .selected-check {
   bottom: 0;
   cursor: pointer;
   display: block;
-  left: -3px;
+  left: 0;
   position: absolute;
   right: 0;
   top: 0;
@@ -1450,7 +1520,7 @@ html[dir=rtl] .sh-option-image .selected-check {
   content: '';
   display: block;
   height: 16px;
-  left: 0;
+  left: -3px;
   position: absolute;
   transition: transform linear 80ms, background-color linear 80ms;
   width: 16px;
@@ -1461,7 +1531,7 @@ html[dir=rtl] .sh-option-image .selected-check {
   background-color: rgb(128, 134, 139);
   border-radius: 50%;
   height: 40px;
-  left: -12px;
+  left: -15px;
   opacity: 0;
   position: absolute;
   top: -14px;
@@ -1469,8 +1539,20 @@ html[dir=rtl] .sh-option-image .selected-check {
   width: 40px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .toggle .highlight {
+    background-color: rgb(var(--GG300-rgb));
+  }
+}
+
 input:checked + .toggle {
   background-color: rgba(var(--GB600-rgb), .5);
+}
+
+@media (prefers-color-scheme: dark) {
+  input:checked + .toggle {
+    background-color: rgba(var(--GB300-rgb), .5);
+  }
 }
 
 input:focus + .toggle {
@@ -1482,10 +1564,24 @@ input:active + .toggle .highlight,
   opacity: .15;
 }
 
+@media (prefers-color-scheme: dark) {
+  input:active + .toggle .highlight,
+  #customization-menu:not(.using-mouse-nav) input:focus + .toggle .highlight {
+    opacity: .4;
+  }
+}
+
 input:checked + .toggle .knob,
 input:checked + .toggle .highlight {
   background-color: rgb(var(--GB600-rgb));
   transform: translateX(18px);
+}
+
+@media (prefers-color-scheme: dark) {
+  input:checked + .toggle .knob,
+  input:checked + .toggle .highlight {
+    background-color: rgb(var(--GB300-rgb));
+  }
 }
 
 #colors-default-icon {
@@ -1505,8 +1601,10 @@ input:checked + .toggle .highlight {
   width: 100%;
 }
 
-html[darkmode=true] #colors-theme {
-  border-color: rgb(var(--GG700-rgb));
+@media (prefers-color-scheme: dark) {
+  #colors-theme {
+    border-color: rgb(var(--GG700-rgb));
+  }
 }
 
 #colors-theme.visible {
@@ -1529,8 +1627,10 @@ html[darkmode=true] #colors-theme {
   width: 24px;
 }
 
-html[darkmode=true] #colors-theme-icon {
- background-color: rgb(var(--GG200-rgb));
+@media (prefers-color-scheme: dark) {
+  #colors-theme-icon {
+    background-color: rgb(var(--GG200-rgb));
+  }
 }
 
 #colors-theme-name {
@@ -1552,8 +1652,10 @@ html[darkmode=true] #colors-theme-icon {
   width: 20px;
 }
 
-html[darkmode=true] #colors-theme-link-icon {
- background-color: rgb(var(--GG200-rgb));
+@media (prefers-color-scheme: dark) {
+  #colors-theme-link-icon {
+    background-color: rgb(var(--GG200-rgb));
+  }
 }
 
 #colors-theme-uninstall {
