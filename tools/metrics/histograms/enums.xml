@@ -53159,6 +53159,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SigninRequestHeaderOperation">
+  <obsolete>
+    Removed 2019-07
+  </obsolete>
   <int value="0" label="Header Added"/>
   <int value="1" label="Header Removed"/>
 </enum>
