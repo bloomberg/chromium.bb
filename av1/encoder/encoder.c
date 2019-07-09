@@ -4212,51 +4212,9 @@ static void superres_post_encode(AV1_COMP *cpi) {
   }
 }
 
-static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
-  const int num_planes = av1_num_planes(cm);
-  MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
-
-  assert(IMPLIES(is_lossless_requested(&cpi->oxcf),
-                 cm->coded_lossless && cm->all_lossless));
-
-  const int use_loopfilter = !cm->coded_lossless && !cm->large_scale_tile;
-  const int use_cdef = cm->seq_params.enable_cdef && !cm->coded_lossless &&
-                       !cm->large_scale_tile;
-  const int use_restoration = cm->seq_params.enable_restoration &&
-                              !cm->all_lossless && !cm->large_scale_tile;
-
-  struct loopfilter *lf = &cm->lf;
-
-#if CONFIG_COLLECT_COMPONENT_TIMING
-  start_timing(cpi, loop_filter_time);
-#endif
-  if (use_loopfilter) {
-    aom_clear_system_state();
-    av1_pick_filter_level(cpi->source, cpi, cpi->sf.lpf_pick);
-  } else {
-    lf->filter_level[0] = 0;
-    lf->filter_level[1] = 0;
-  }
-
-  if (lf->filter_level[0] || lf->filter_level[1]) {
-    if (cpi->num_workers > 1)
-      av1_loop_filter_frame_mt(&cm->cur_frame->buf, cm, xd, 0, num_planes, 0,
-#if CONFIG_LPF_MASK
-                               0,
-#endif
-                               cpi->workers, cpi->num_workers,
-                               &cpi->lf_row_sync);
-    else
-      av1_loop_filter_frame(&cm->cur_frame->buf, cm, xd,
-#if CONFIG_LPF_MASK
-                            0,
-#endif
-                            0, num_planes, 0);
-  }
-#if CONFIG_COLLECT_COMPONENT_TIMING
-  end_timing(cpi, loop_filter_time);
-#endif
-
+static void cdef_restoration_frame(AV1_COMP *cpi, AV1_COMMON *cm,
+                                   MACROBLOCKD *xd, int use_restoration,
+                                   int use_cdef) {
   if (use_restoration)
     av1_loop_restoration_save_boundary_lines(&cm->cur_frame->buf, cm, 0);
 
@@ -4307,6 +4265,54 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, loop_restoration_time);
 #endif
+}
+
+static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
+  const int num_planes = av1_num_planes(cm);
+  MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
+
+  assert(IMPLIES(is_lossless_requested(&cpi->oxcf),
+                 cm->coded_lossless && cm->all_lossless));
+
+  const int use_loopfilter = !cm->coded_lossless && !cm->large_scale_tile;
+  const int use_cdef = cm->seq_params.enable_cdef && !cm->coded_lossless &&
+                       !cm->large_scale_tile;
+  const int use_restoration = cm->seq_params.enable_restoration &&
+                              !cm->all_lossless && !cm->large_scale_tile;
+
+  struct loopfilter *lf = &cm->lf;
+
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, loop_filter_time);
+#endif
+  if (use_loopfilter) {
+    aom_clear_system_state();
+    av1_pick_filter_level(cpi->source, cpi, cpi->sf.lpf_pick);
+  } else {
+    lf->filter_level[0] = 0;
+    lf->filter_level[1] = 0;
+  }
+
+  if (lf->filter_level[0] || lf->filter_level[1]) {
+    if (cpi->num_workers > 1)
+      av1_loop_filter_frame_mt(&cm->cur_frame->buf, cm, xd, 0, num_planes, 0,
+#if CONFIG_LPF_MASK
+                               0,
+#endif
+                               cpi->workers, cpi->num_workers,
+                               &cpi->lf_row_sync);
+    else
+      av1_loop_filter_frame(&cm->cur_frame->buf, cm, xd,
+#if CONFIG_LPF_MASK
+                            0,
+#endif
+                            0, num_planes, 0);
+  }
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, loop_filter_time);
+#endif
+
+  cdef_restoration_frame(cpi, cm, xd, use_restoration, use_cdef);
 }
 
 static void fix_interp_filter(InterpFilter *const interp_filter,
