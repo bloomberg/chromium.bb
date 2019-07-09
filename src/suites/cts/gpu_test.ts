@@ -6,12 +6,9 @@ let shaderc: Promise<Shaderc.Shaderc> | undefined;
 
 // TODO: Should this gain some functionality currently only in UnitTest?
 export class GPUTest extends Fixture {
-  // tslint:disable-next-line: no-any
-  device: GPUDevice = undefined as any;
-  // tslint:disable-next-line: no-any
-  queue: GPUQueue = undefined as any;
-  // tslint:disable-next-line: no-any
-  shaderc: Shaderc.Shaderc = undefined as any;
+  device: GPUDevice = undefined!;
+  queue: GPUQueue = undefined!;
+  shaderc: Shaderc.Shaderc = undefined!;
 
   async init(): Promise<void> {
     super.init();
