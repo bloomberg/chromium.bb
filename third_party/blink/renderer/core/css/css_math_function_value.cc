@@ -23,8 +23,7 @@ void CSSMathFunctionValue::TraceAfterDispatch(blink::Visitor* visitor) {
 
 CSSMathFunctionValue::CSSMathFunctionValue(CSSMathExpressionNode* expression,
                                            ValueRange range)
-    : CSSPrimitiveValue(UnitType::kCalc, kMathFunctionClass),
-      expression_(expression) {
+    : CSSPrimitiveValue(kMathFunctionClass), expression_(expression) {
   is_non_negative_math_function_ = range == kValueRangeNonNegative;
 }
 
@@ -59,20 +58,11 @@ CSSPrimitiveValue::UnitType CSSMathFunctionValue::TypeWithMathFunctionResolved()
       return UnitType::kPercentage;
     case kCalcLength:
       return UnitType::kPixels;
-    case kCalcPercentNumber:
-      return UnitType::kCalcPercentageWithNumber;
-    case kCalcPercentLength:
-      return UnitType::kCalcPercentageWithLength;
-    case kCalcLengthNumber:
-      return UnitType::kCalcLengthWithNumber;
-    case kCalcPercentLengthNumber:
-      return UnitType::kCalcPercentageWithLengthAndNumber;
     case kCalcTime:
       return UnitType::kMilliseconds;
-    case kCalcOther:
+    default:
       return UnitType::kUnknown;
   }
-  return UnitType::kUnknown;
 }
 
 bool CSSMathFunctionValue::MayHaveRelativeUnit() const {

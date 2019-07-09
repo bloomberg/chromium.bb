@@ -268,7 +268,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   ClassType GetClassType() const { return static_cast<ClassType>(class_type_); }
 
   explicit CSSValue(ClassType class_type)
-      : primitive_unit_type_(0),
+      : numeric_literal_unit_type_(0),
         value_list_separator_(kSpaceSeparator),
         is_non_negative_math_function_(false),
         class_type_(class_type) {}
@@ -280,8 +280,8 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   // The bits in this section are only used by specific subclasses but kept here
   // to maximize struct packing.
 
-  // CSSPrimitiveValue bits:
-  unsigned primitive_unit_type_ : 7;  // CSSPrimitiveValue::UnitType
+  // CSSNumericLiteralValue bits:
+  unsigned numeric_literal_unit_type_ : 7;  // CSSPrimitiveValue::UnitType
 
   unsigned value_list_separator_ : kValueListSeparatorBits;
 
