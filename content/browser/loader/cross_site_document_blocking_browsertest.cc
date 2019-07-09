@@ -471,9 +471,14 @@ class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
     VerifyImgRequest(resource, expectations,
                      GURL("http://foo.com/title1.html"));
 
-    // Test from a file: origin.
-    VerifyImgRequest(resource, expectations,
-                     GetTestUrl(nullptr, "title1.html"));
+    // Pre-NetworkService CORB implementation doesn't have an equivalent of
+    // URLLoaderFactoryParams::is_corb_enabled and therefore there is no way to
+    // turn off CORB only when allow_universal_access_from_file_urls is false.
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // Test from a file: origin.
+      VerifyImgRequest(resource, expectations,
+                       GetTestUrl(nullptr, "title1.html"));
+    }
   }
 
   void VerifyImgRequest(std::string resource,
@@ -540,12 +545,7 @@ class CrossSiteDocumentBlockingTest
   DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentBlockingTest);
 };
 
-#if defined(OS_ANDROID)
-#define MAYBE_BlockImages DISABLED_BlockImages
-#else
-#define MAYBE_BlockImages BlockImages
-#endif
-IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, MAYBE_BlockImages) {
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
   embedded_test_server()->StartAcceptingConnections();
 
   // The following are files under content/test/data/site_isolation. All
