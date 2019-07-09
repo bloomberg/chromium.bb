@@ -4,15 +4,19 @@
 
 import idl_parser
 import utilities
+from .callback_function import CallbackFunction
+from .callback_interface import CallbackInterface
 from .common import DebugInfo
+from .dictionary import Dictionary
+from .dictionary import DictionaryMember
+from .enumeration import Enumeration
+from .extended_attribute import ExtendedAttributes
+from .idl_types import IdlType
+from .includes import Includes
 from .interface import Interface
 from .namespace import Namespace
-from .dictionary import Dictionary
-from .callback_interface import CallbackInterface
-from .callback_function import CallbackFunction
-from .enumeration import Enumeration
 from .typedef import Typedef
-from .includes import Includes
+from .values import DefaultValue
 
 
 def load_and_register_idl_definitions(filepaths, ir_map):
@@ -26,12 +30,13 @@ def load_and_register_idl_definitions(filepaths, ir_map):
         component = asts_per_component.component
         for file_node in asts_per_component.asts:
             assert isinstance(file_node, idl_parser.idl_node.IDLNode)
-            for definition_node in file_node.GetChildren():
-                idl_definition = _convert_ast(component, definition_node)
+            assert file_node.GetClass() == 'File'
+            for top_level_def in file_node.GetChildren():
+                idl_definition = _build_top_level_def(component, top_level_def)
                 ir_map.register(idl_definition)
 
 
-def _convert_ast(component, ast):
+def _build_top_level_def(component, node):
     def build_interface(node):
         if node.GetProperty('CALLBACK'):
             return build_callback_interface(node)
@@ -55,12 +60,36 @@ def _convert_ast(component, ast):
         return namespace
 
     def build_dictionary(node):
+        def build_dictionary_member(node):
+            assert node.GetClass() == 'Key'
+
+            child_nodes = list(node.GetChildren())
+            idl_type = _take_type(child_nodes)
+            default_value = _take_default_value(child_nodes)
+            extended_attributes = _take_extended_attributes(child_nodes)
+            assert len(child_nodes) == 0
+
+            return DictionaryMember.IR(
+                identifier=node.GetName(),
+                idl_type=idl_type,
+                is_required=bool(node.GetProperty('REQUIRED')),
+                default_value=default_value,
+                extended_attributes=extended_attributes,
+                component=component,
+                debug_info=_build_debug_info(node))
+
+        child_nodes = list(node.GetChildren())
+        extended_attributes = _take_extended_attributes(child_nodes)
+        _ = _take_inheritance(child_nodes)
+        own_members = [build_dictionary_member(child) for child in child_nodes]
+
         dictionary = Dictionary.IR(
             identifier=node.GetName(),
             is_partial=bool(node.GetProperty('PARTIAL')),
+            own_members=own_members,
+            extended_attributes=extended_attributes,
             component=component,
             debug_info=_build_debug_info(node))
-        # TODO(peria): Build members and register them in |dictionary|
         return dictionary
 
     def build_callback_interface(node):
@@ -122,7 +151,7 @@ def _convert_ast(component, ast):
         'Namespace': build_namespace,
         'Typedef': build_typedef,
     }
-    return dispatch_to_build_function(ast)
+    return dispatch_to_build_function(node)
 
 
 def _build_debug_info(node):
@@ -131,3 +160,48 @@ def _build_debug_info(node):
             filepath=node.GetProperty('FILENAME'),
             line_number=node.GetProperty('LINENO'),
             column_number=node.GetProperty('POSITION')))
+
+
+def _build_default_value(node):
+    assert node.GetClass() == 'Default'
+    return DefaultValue()
+
+
+def _build_extended_attributes(node):
+    assert node.GetClass() == 'ExtAttributes'
+    return ExtendedAttributes()
+
+
+def _build_inheritance(node):
+    assert node.GetClass() == 'Inherit'
+    return None
+
+
+def _build_type(node):
+    assert node.GetClass() == 'Type'
+    return IdlType()
+
+
+def _take_and_build(node_class, build_func, node_list):
+    for node in node_list:
+        if node.GetClass() == node_class:
+            node_list.remove(node)
+            return build_func(node)
+    return None
+
+
+def _take_default_value(node_list):
+    return _take_and_build('Default', _build_default_value, node_list)
+
+
+def _take_extended_attributes(node_list):
+    return _take_and_build('ExtAttributes', _build_extended_attributes,
+                           node_list)
+
+
+def _take_inheritance(node_list):
+    return _take_and_build('Inherit', _build_inheritance, node_list)
+
+
+def _take_type(node_list):
+    return _take_and_build('Type', _build_type, node_list)
