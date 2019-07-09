@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_CONSTANTS_H_
-#define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_CONSTANTS_H_
+#ifndef CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLMENT_CONSTANTS_H_
+#define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLMENT_CONSTANTS_H_
 
 namespace chromeos {
 
@@ -36,4 +36,4 @@ extern const char kCryptAuthClientVersion[];
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_CONSTANTS_H_
+#endif  // CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLMENT_CONSTANTS_H_
