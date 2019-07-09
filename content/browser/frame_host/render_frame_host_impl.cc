@@ -6072,11 +6072,11 @@ void RenderFrameHostImpl::BindSerialServiceRequest(
 }
 
 void RenderFrameHostImpl::BindAuthenticatorRequest(
-    blink::mojom::AuthenticatorRequest request) {
+    mojo::PendingReceiver<blink::mojom::Authenticator> receiver) {
   if (!authenticator_impl_)
     authenticator_impl_.reset(new AuthenticatorImpl(this));
 
-  authenticator_impl_->Bind(std::move(request));
+  authenticator_impl_->Bind(std::move(receiver));
 }
 #endif
 
@@ -6156,13 +6156,13 @@ void RenderFrameHostImpl::GetAudioContextManager(
 }
 
 void RenderFrameHostImpl::GetAuthenticator(
-    blink::mojom::AuthenticatorRequest request) {
+    mojo::PendingReceiver<blink::mojom::Authenticator> receiver) {
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebAuth)) {
-    BindAuthenticatorRequest(std::move(request));
+    BindAuthenticatorRequest(std::move(receiver));
   }
 #else
-  GetJavaInterfaces()->GetInterface(std::move(request));
+  GetJavaInterfaces()->GetInterface(std::move(receiver));
 #endif  // !defined(OS_ANDROID)
 }
 

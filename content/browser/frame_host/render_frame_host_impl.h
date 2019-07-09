@@ -1408,7 +1408,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
 #if !defined(OS_ANDROID)
   void BindSerialServiceRequest(blink::mojom::SerialServiceRequest request);
-  void BindAuthenticatorRequest(blink::mojom::AuthenticatorRequest request);
+  void BindAuthenticatorRequest(
+      mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
 #endif
 
   void BindPresentationServiceRequest(
@@ -1430,7 +1431,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       override;
   void GetCredentialManager(
       mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) override;
-  void GetAuthenticator(blink::mojom::AuthenticatorRequest request) override;
+  void GetAuthenticator(
+      mojo::PendingReceiver<blink::mojom::Authenticator> receiver) override;
   void GetPushMessaging(
       mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) override;
   void GetVirtualAuthenticatorManager(
