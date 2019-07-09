@@ -3936,8 +3936,8 @@ static uint8_t calculate_next_resize_scale(const AV1_COMP *cpi) {
 }
 
 #define SUPERRES_ENERGY_BY_Q2_THRESH_KEYFRAME_SOLO 0.012
-#define SUPERRES_ENERGY_BY_Q2_THRESH_KEYFRAME 0.01
-#define SUPERRES_ENERGY_BY_Q2_THRESH_ARFFRAME 0.01
+#define SUPERRES_ENERGY_BY_Q2_THRESH_KEYFRAME 0.008
+#define SUPERRES_ENERGY_BY_Q2_THRESH_ARFFRAME 0.008
 #define SUPERRES_ENERGY_BY_AC_THRESH 0.2
 
 static double get_energy_by_q2_thresh(const GF_GROUP *gf_group,
@@ -3965,7 +3965,7 @@ static uint8_t get_superres_denom_from_qindex_energy(int qindex, double *energy,
   const double tp = threshp * energy[1];
   const double thresh = AOMMIN(tq, tp);
   int k;
-  for (k = 16; k > 8; --k) {
+  for (k = SCALE_NUMERATOR * 2; k > SCALE_NUMERATOR; --k) {
     if (energy[k - 1] > thresh) break;
   }
   return 3 * SCALE_NUMERATOR - k;
@@ -3991,13 +3991,18 @@ static uint8_t get_superres_denom_for_qindex(const AV1_COMP *cpi, int qindex,
 
   const double energy_by_q2_thresh =
       get_energy_by_q2_thresh(gf_group, &cpi->rc);
+  const int denom = get_superres_denom_from_qindex_energy(
+      qindex, energy, energy_by_q2_thresh, SUPERRES_ENERGY_BY_AC_THRESH);
   /*
   printf("\nenergy = [");
   for (int k = 1; k < 16; ++k) printf("%f, ", energy[k]);
   printf("]\n");
+  printf("boost = %d\n",
+         (gf_group->update_type[gf_group->index] == KF_UPDATE)
+             ? cpi->rc.kf_boost
+             : cpi->rc.gfu_boost);
+  printf("denom = %d\n", denom);
   */
-  const int denom = get_superres_denom_from_qindex_energy(
-      qindex, energy, energy_by_q2_thresh, SUPERRES_ENERGY_BY_AC_THRESH);
   return denom;
 }
 
