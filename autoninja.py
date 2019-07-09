@@ -14,7 +14,7 @@ on non-goma builds.
 # [VPYTHON:BEGIN]
 # wheel: <
 #   name: "infra/python/wheels/psutil/${vpython_platform}"
-#   version: "version:5.2.2"
+#   version: "version:5.6.2"
 # >
 # [VPYTHON:END]
 
