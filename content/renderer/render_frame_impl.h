@@ -62,6 +62,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "media/base/routing_token_callback.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -904,7 +905,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void BindFrameBindingsControl(
       mojom::FrameBindingsControlAssociatedRequest request);
   void BindFrameNavigationControl(
-      mojom::FrameNavigationControlAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<mojom::FrameNavigationControl> receiver);
   // Only used when PerNavigationMojoInterface is enabled.
   void BindNavigationClient(mojom::NavigationClientAssociatedRequest request);
 
@@ -1669,8 +1670,8 @@ class CONTENT_EXPORT RenderFrameImpl
   mojo::AssociatedBinding<mojom::HostZoom> host_zoom_binding_;
   mojo::AssociatedBinding<mojom::FrameBindingsControl>
       frame_bindings_control_binding_;
-  mojo::AssociatedBinding<mojom::FrameNavigationControl>
-      frame_navigation_control_binding_;
+  mojo::AssociatedReceiver<mojom::FrameNavigationControl>
+      frame_navigation_control_receiver_;
   mojo::AssociatedBinding<mojom::FullscreenVideoElementHandler>
       fullscreen_binding_;
   mojo::AssociatedBinding<mojom::MhtmlFileWriter> mhtml_file_writer_binding_;

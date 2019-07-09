@@ -1841,7 +1841,7 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       frame_binding_(this),
       host_zoom_binding_(this),
       frame_bindings_control_binding_(this),
-      frame_navigation_control_binding_(this),
+      frame_navigation_control_receiver_(this),
       fullscreen_binding_(this),
       mhtml_file_writer_binding_(this),
       navigation_client_impl_(nullptr),
@@ -2347,9 +2347,9 @@ void RenderFrameImpl::BindFrameBindingsControl(
 }
 
 void RenderFrameImpl::BindFrameNavigationControl(
-    mojom::FrameNavigationControlAssociatedRequest request) {
-  frame_navigation_control_binding_.Bind(
-      std::move(request), GetTaskRunner(blink::TaskType::kInternalIPC));
+    mojo::PendingAssociatedReceiver<mojom::FrameNavigationControl> receiver) {
+  frame_navigation_control_receiver_.Bind(
+      std::move(receiver), GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindNavigationClient(

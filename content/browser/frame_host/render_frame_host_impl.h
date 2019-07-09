@@ -56,6 +56,7 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -1952,7 +1953,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::AssociatedBinding<mojom::FrameHost> frame_host_associated_binding_;
   mojom::FramePtr frame_;
   mojom::FrameBindingsControlAssociatedPtr frame_bindings_control_;
-  mojom::FrameNavigationControlAssociatedPtr navigation_control_;
+  mojo::AssociatedRemote<mojom::FrameNavigationControl> navigation_control_;
 
   // If this is true then this object was created in response to a renderer
   // initiated request. Init() will be called, and until then navigation
