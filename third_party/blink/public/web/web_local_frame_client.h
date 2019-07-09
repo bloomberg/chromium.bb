@@ -230,7 +230,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual std::pair<WebRemoteFrame*, base::UnguessableToken> CreatePortal(
       mojo::ScopedInterfaceEndpointHandle portal_endpoint,
       mojo::ScopedInterfaceEndpointHandle client_endpoint,
-      const WebElement& protal_element) {
+      const WebElement& portal_element) {
     return std::pair<WebRemoteFrame*, base::UnguessableToken>(
         nullptr, base::UnguessableToken());
   }
