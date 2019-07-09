@@ -10,7 +10,7 @@
 #include "osp/impl/quic/quic_connection_impl.h"
 #include "osp_base/error.h"
 #include "platform/api/logging.h"
-#include "platform/base/event_loop.h"
+#include "platform/impl/event_loop.h"
 #include "third_party/chromium_quic/src/base/location.h"
 #include "third_party/chromium_quic/src/base/task_runner.h"
 #include "third_party/chromium_quic/src/net/third_party/quic/core/quic_constants.h"

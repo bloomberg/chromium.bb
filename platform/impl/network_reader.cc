@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/base/network_reader.h"
+#include "platform/impl/network_reader.h"
 
 #include <chrono>
 #include <condition_variable>

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_POSIX_UDP_SOCKET_H_
-#define PLATFORM_POSIX_UDP_SOCKET_H_
+#ifndef PLATFORM_IMPL_UDP_SOCKET_POSIX_H_
+#define PLATFORM_IMPL_UDP_SOCKET_POSIX_H_
 
 #include "platform/api/udp_socket.h"
 
@@ -41,4 +41,4 @@ struct UdpSocketPosix : public UdpSocket {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_POSIX_UDP_SOCKET_H_
+#endif  // PLATFORM_IMPL_UDP_SOCKET_POSIX_H_

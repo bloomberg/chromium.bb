@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_POSIX_SCOPED_WAKE_LOCK_H_
-#define PLATFORM_POSIX_SCOPED_WAKE_LOCK_H_
+#ifndef PLATFORM_IMPL_SCOPED_WAKE_LOCK_POSIX_H_
+#define PLATFORM_IMPL_SCOPED_WAKE_LOCK_POSIX_H_
 
 #include <atomic>
 #include <memory>
@@ -24,4 +24,4 @@ class ScopedWakeLockPosix : public ScopedWakeLock {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_POSIX_SCOPED_WAKE_LOCK_H_
+#endif  // PLATFORM_IMPL_SCOPED_WAKE_LOCK_POSIX_H_

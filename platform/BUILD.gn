@@ -24,9 +24,9 @@ source_set("platform") {
     "api/udp_socket.cc",
     "api/udp_socket.h",
     "api/upd_read_callback.h",
-    "base/ssl_context.cc",
-    "base/ssl_context.h",
-    "base/time.cc",
+    "impl/ssl_context.cc",
+    "impl/ssl_context.h",
+    "impl/time.cc",
   ]
 
   public_deps = [
@@ -41,36 +41,36 @@ source_set("platform") {
 
   if (!build_with_chromium) {
     sources += [
-      "base/event_loop.cc",
-      "base/event_loop.h",
-      "base/network_reader.cc",
-      "base/network_reader.h",
-      "base/network_runner_impl.cc",
-      "base/network_runner_impl.h",
-      "base/task_runner_impl.cc",
-      "base/task_runner_impl.h",
+      "impl/event_loop.cc",
+      "impl/event_loop.h",
+      "impl/network_reader.cc",
+      "impl/network_reader.h",
+      "impl/network_runner.cc",
+      "impl/network_runner.h",
+      "impl/task_runner_impl.cc",
+      "impl/task_runner_impl.h",
     ]
 
     if (is_linux) {
-      sources += [ "linux/network_interface.cc" ]
+      sources += [ "impl/network_interface_linux.cc" ]
     } else if (is_mac) {
       defines = [
         # Required, to use the new IPv6 Sockets options introduced by RFC 3542.
         "__APPLE_USE_RFC_3542",
       ]
 
-      sources += [ "mac/network_interface.cc" ]
+      sources += [ "impl/network_interface_mac.cc" ]
     }
 
     if (is_posix) {
       sources += [
-        "posix/event_waiter.cc",
-        "posix/network_waiter.cc",
-        "posix/network_waiter.h",
-        "posix/scoped_wake_lock.cc",
-        "posix/scoped_wake_lock.h",
-        "posix/udp_socket.cc",
-        "posix/udp_socket.h",
+        "impl/event_waiter_posix.cc",
+        "impl/network_waiter_posix.cc",
+        "impl/network_waiter_posix.h",
+        "impl/scoped_wake_lock_posix.cc",
+        "impl/scoped_wake_lock_posix.h",
+        "impl/udp_socket_posix.cc",
+        "impl/udp_socket_posix.h",
       ]
     }
 
@@ -101,11 +101,11 @@ source_set("test") {
 
 source_set("default_logger") {
   sources = [
-    "base/logging.cc",
+    "impl/logging.cc",
   ]
 
   if (is_posix) {
-    sources += [ "posix/log_initializer.cc" ]
+    sources += [ "impl/log_initializer_posix.cc" ]
   }
 
   configs += [ "../build:allow_build_from_embedder" ]
@@ -122,19 +122,19 @@ source_set("platform_unittests") {
   sources = [
     "api/time_unittest.cc",
     "api/udp_socket_unittest.cc",
-    "base/ssl_context_unittest.cc",
+    "impl/ssl_context_unittest.cc",
   ]
 
-  # The unit tests in base/ assume the standalone implementation is being used.
+  # The unit tests in impl/ assume the standalone implementation is being used.
   # Exclude them if an embedder is providing the implementation.
   if (!build_with_chromium) {
     sources += [
-      "base/network_reader_unittest.cc",
-      "base/task_runner_impl_unittest.cc",
-      "base/time_unittest.cc",
+      "impl/network_reader_unittest.cc",
+      "impl/task_runner_impl_unittest.cc",
+      "impl/time_unittest.cc",
     ]
     if (is_posix) {
-      sources += [ "posix/network_waiter_unittest.cc" ]
+      sources += [ "impl/network_waiter_posix_unittest.cc" ]
     }
   }
 

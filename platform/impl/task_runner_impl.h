@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_BASE_TASK_RUNNER_IMPL_H_
-#define PLATFORM_BASE_TASK_RUNNER_IMPL_H_
+#ifndef PLATFORM_IMPL_TASK_RUNNER_IMPL_H_
+#define PLATFORM_IMPL_TASK_RUNNER_IMPL_H_
 
 #include <atomic>
 #include <condition_variable>  // NOLINT
@@ -129,4 +129,4 @@ class TaskRunnerImpl final : public TaskRunner {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_BASE_TASK_RUNNER_IMPL_H_
+#endif  // PLATFORM_IMPL_TASK_RUNNER_IMPL_H_

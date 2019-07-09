@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_BASE_NETWORK_RUNNER_IMPL_H_
-#define PLATFORM_BASE_NETWORK_RUNNER_IMPL_H_
+#ifndef PLATFORM_IMPL_NETWORK_RUNNER_H_
+#define PLATFORM_IMPL_NETWORK_RUNNER_H_
 
 #include <mutex>  // NOLINT
 #include <thread>
@@ -12,7 +12,7 @@
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
 #include "platform/api/udp_socket.h"
-#include "platform/base/network_reader.h"
+#include "platform/impl/network_reader.h"
 
 namespace openscreen {
 namespace platform {
@@ -68,4 +68,4 @@ class NetworkRunnerImpl final : public NetworkRunner {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_BASE_NETWORK_RUNNER_IMPL_H_
+#endif  // PLATFORM_IMPL_NETWORK_RUNNER_H_

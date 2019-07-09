@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/base/network_runner_impl.h"
+#include "platform/impl/network_runner.h"
 
 #include <iostream>
 
 #include "platform/api/logging.h"
-#include "platform/base/task_runner_impl.h"
+#include "platform/impl/task_runner_impl.h"
 
 namespace openscreen {
 namespace platform {

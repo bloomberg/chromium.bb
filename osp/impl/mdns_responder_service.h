@@ -18,7 +18,7 @@
 #include "osp/impl/service_publisher_impl.h"
 #include "osp_base/ip_address.h"
 #include "platform/api/network_interface.h"
-#include "platform/base/event_loop.h"
+#include "platform/impl/event_loop.h"
 
 namespace openscreen {
 

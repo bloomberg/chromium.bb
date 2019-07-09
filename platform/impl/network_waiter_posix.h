@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_POSIX_NETWORK_WAITER_H_
-#define PLATFORM_POSIX_NETWORK_WAITER_H_
+#ifndef PLATFORM_IMPL_NETWORK_WAITER_POSIX_H_
+#define PLATFORM_IMPL_NETWORK_WAITER_POSIX_H_
 
 #include <sys/select.h>
 #include <unistd.h>
@@ -12,7 +12,7 @@
 #include <mutex>  // NOLINT
 
 #include "platform/api/network_waiter.h"
-#include "platform/posix/udp_socket.h"
+#include "platform/impl/udp_socket_posix.h"
 
 namespace openscreen {
 namespace platform {
@@ -35,4 +35,4 @@ class NetworkWaiterPosix : public NetworkWaiter {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_POSIX_NETWORK_WAITER_H_
+#endif  // PLATFORM_IMPL_NETWORK_WAITER_POSIX_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_BASE_SSL_CONTEXT_H_
-#define PLATFORM_BASE_SSL_CONTEXT_H_
+#ifndef PLATFORM_IMPL_SSL_CONTEXT_H_
+#define PLATFORM_IMPL_SSL_CONTEXT_H_
 
 #include <memory>
 
@@ -42,4 +42,4 @@ class SSLContext {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_BASE_SSL_CONTEXT_H_
+#endif  // PLATFORM_IMPL_SSL_CONTEXT_H_

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/api/network_interface.h"
-
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_media.h>
@@ -22,6 +20,7 @@
 #include "osp_base/ip_address.h"
 #include "osp_base/scoped_pipe.h"
 #include "platform/api/logging.h"
+#include "platform/api/network_interface.h"
 
 namespace openscreen {
 namespace platform {

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "platform/api/udp_socket.h"
-#include "platform/base/event_loop.h"
+#include "platform/impl/event_loop.h"
 
 namespace openscreen {
 

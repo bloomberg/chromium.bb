@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/posix/network_waiter.h"
+#include "platform/impl/network_waiter_posix.h"
 
 #include <time.h>
 
@@ -11,8 +11,8 @@
 
 #include "osp_base/error.h"
 #include "platform/api/logging.h"
-#include "platform/base/network_reader.h"
-#include "platform/posix/udp_socket.h"
+#include "platform/impl/network_reader.h"
+#include "platform/impl/udp_socket_posix.h"
 
 namespace openscreen {
 namespace platform {

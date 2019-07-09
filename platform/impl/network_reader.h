@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_BASE_NETWORK_READER_H_
-#define PLATFORM_BASE_NETWORK_READER_H_
+#ifndef PLATFORM_IMPL_NETWORK_READER_H_
+#define PLATFORM_IMPL_NETWORK_READER_H_
 
 #include <map>
 #include <mutex>  // NOLINT
@@ -113,4 +113,4 @@ class NetworkReader {
 }  // namespace platform
 }  // namespace openscreen
 
-#endif  // PLATFORM_BASE_NETWORK_READER_H_
+#endif  // PLATFORM_IMPL_NETWORK_READER_H_

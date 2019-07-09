@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/base/task_runner_impl.h"
+#include "platform/impl/task_runner_impl.h"
 
 #include <atomic>
 #include <thread>  // NOLINT
@@ -10,7 +10,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/api/time.h"
-#include "platform/base/task_runner_impl.h"
+#include "platform/impl/task_runner_impl.h"
 #include "platform/test/fake_clock.h"
 
 namespace openscreen {
