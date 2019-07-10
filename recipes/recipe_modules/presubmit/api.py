@@ -164,18 +164,21 @@ def _limitSize(message_list, char_limit=450):
   for index, message in enumerate(message_list):
     char_count += len(message)
     if char_count > char_limit:
-      total_errors = len(message_list)
-      oversized_msg = ('**Error size > %d chars, '
-      'there are %d more error(s) (%d total)**') % (
-        char_limit, total_errors - index, total_errors
-      )
       if index == 0:
         # Show at minimum part of the first error message
-        first_message = message_list[index].replace('\n\n', '\n')
-        return ['\n\n'.join(
-          _limitSize(first_message.splitlines())
+        first_message = message_list[index].splitlines()
+        return ['\n'.join(
+          _limitSize(first_message)
           )
         ]
+      total_errors = len(message_list)
+      # If code is being cropped, the closing code tag will
+      # get removed, so add it back before the hint.
+      code_tag = '```'
+      oversized_msg = ('%s\n**Error size > %d chars, '
+      'there are %d more error(s) (%d total)**') % (
+        code_tag, char_limit, total_errors - index, total_errors
+      )
       return message_list[:index] + [oversized_msg, hint]
   return message_list
 
@@ -220,20 +223,16 @@ def _createSummaryMarkdown(step_json):
   warning_count = len(step_json['warnings'])
   notif_count = len(step_json['notifications'])
   description = (
-    'There are %d error(s), %d warning(s),'
+    '### There are %d error(s), %d warning(s),'
     ' and %d notifications(s). Here are the errors:') % (
       len(errors), warning_count, notif_count
   )
   error_messages = []
 
   for error in errors:
-    # markdown represents new lines with 2 spaces
-    # replacing the \n with \n\n because \n gets replaced with an empty space.
-    # This way it will work on both markdown and plain text.
     error_messages.append(
-      '**ERROR**\n\n%s\n\n%s' % (
-      error['message'].replace('\n', '\n\n'),
-      error['long_text'].replace('\n', '\n\n'))
+      '**ERROR**\n```\n%s\n%s\n```' % (
+      error['message'], error['long_text'])
     )
 
   error_messages = _limitSize(error_messages)
@@ -242,7 +241,7 @@ def _createSummaryMarkdown(step_json):
   error_messages.insert(0, description)
   if warning_count or notif_count:
     error_messages.append(
-      ('To see notifications and warnings,'
+      ('##### To see notifications and warnings,'
       ' look at the stdout of the presubmit step.')
     )
   return '\n\n'.join(error_messages)
