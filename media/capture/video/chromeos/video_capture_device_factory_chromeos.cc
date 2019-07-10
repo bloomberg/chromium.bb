@@ -11,6 +11,7 @@
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/cros_image_capture_impl.h"
 #include "media/capture/video/chromeos/reprocess_manager.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace media {
 
@@ -30,8 +31,6 @@ VideoCaptureDeviceFactoryChromeOS::VideoCaptureDeviceFactoryChromeOS(
       base::BindRepeating(&VideoCaptureDeviceFactoryChromeOS::GetCameraInfo,
                           base::Unretained(this));
   reprocess_manager_ = std::make_unique<ReprocessManager>(std::move(callback));
-  cros_image_capture_ =
-      std::make_unique<CrosImageCaptureImpl>(reprocess_manager_.get());
 }
 
 VideoCaptureDeviceFactoryChromeOS::~VideoCaptureDeviceFactoryChromeOS() {
@@ -118,7 +117,9 @@ void VideoCaptureDeviceFactoryChromeOS::OnGotCameraInfo(
 
 void VideoCaptureDeviceFactoryChromeOS::BindCrosImageCaptureRequest(
     cros::mojom::CrosImageCaptureRequest request) {
-  cros_image_capture_->BindRequest(std::move(request));
+  mojo::MakeStrongBinding(
+      std::make_unique<CrosImageCaptureImpl>(reprocess_manager_.get()),
+      std::move(request));
 }
 
 }  // namespace media
