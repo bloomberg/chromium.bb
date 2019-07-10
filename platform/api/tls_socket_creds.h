@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "osp_base/macros.h"
+#include "platform/base/macros.h"
 
 namespace openscreen {
 

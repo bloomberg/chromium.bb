@@ -24,18 +24,24 @@ source_set("platform") {
     "api/udp_socket.cc",
     "api/udp_socket.h",
     "api/upd_read_callback.h",
+    "base/error.cc",
+    "base/error.h",
+    "base/ip_address.cc",
+    "base/ip_address.h",
+    "base/location.cc",
+    "base/location.h",
     "impl/ssl_context.cc",
     "impl/ssl_context.h",
     "impl/time.cc",
   ]
 
   public_deps = [
-    "../osp_base",
     "../third_party/abseil",
     "../third_party/boringssl",
+    "../util",
   ]
 
-  allow_circular_includes_from = [ "../osp_base" ]
+  allow_circular_includes_from = [ "../util" ]
 
   configs += [ "../build:allow_build_from_embedder" ]
 
@@ -47,8 +53,8 @@ source_set("platform") {
       "impl/network_reader.h",
       "impl/network_runner.cc",
       "impl/network_runner.h",
-      "impl/task_runner_impl.cc",
-      "impl/task_runner_impl.h",
+      "impl/task_runner.cc",
+      "impl/task_runner.h",
     ]
 
     if (is_linux) {
@@ -67,6 +73,7 @@ source_set("platform") {
         "impl/event_waiter_posix.cc",
         "impl/network_waiter_posix.cc",
         "impl/network_waiter_posix.h",
+        "impl/scoped_pipe.h",
         "impl/scoped_wake_lock_posix.cc",
         "impl/scoped_wake_lock_posix.h",
         "impl/udp_socket_posix.cc",
@@ -111,8 +118,8 @@ source_set("default_logger") {
   configs += [ "../build:allow_build_from_embedder" ]
 
   deps = [
-    "../osp_base",
     "../third_party/abseil",
+    "../util",
   ]
 }
 
@@ -122,6 +129,9 @@ source_set("platform_unittests") {
   sources = [
     "api/time_unittest.cc",
     "api/udp_socket_unittest.cc",
+    "base/error_unittest.cc",
+    "base/ip_address_unittest.cc",
+    "base/location_unittest.cc",
     "impl/ssl_context_unittest.cc",
   ]
 
@@ -130,11 +140,14 @@ source_set("platform_unittests") {
   if (!build_with_chromium) {
     sources += [
       "impl/network_reader_unittest.cc",
-      "impl/task_runner_impl_unittest.cc",
+      "impl/task_runner_unittest.cc",
       "impl/time_unittest.cc",
     ]
     if (is_posix) {
-      sources += [ "impl/network_waiter_posix_unittest.cc" ]
+      sources += [
+        "impl/network_waiter_posix_unittest.cc",
+        "impl/scoped_pipe_unittest.cc",
+      ]
     }
   }
 

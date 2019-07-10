@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "osp/impl/quic/quic_connection.h"
-#include "osp_base/ip_address.h"
+#include "platform/base/ip_address.h"
 
 namespace openscreen {
 

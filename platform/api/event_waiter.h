@@ -7,9 +7,9 @@
 
 #include <vector>
 
-#include "osp_base/error.h"
 #include "platform/api/time.h"
 #include "platform/api/udp_socket.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 namespace platform {

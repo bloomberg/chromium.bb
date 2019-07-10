@@ -7,7 +7,7 @@
 #include <iostream>
 
 #include "platform/api/logging.h"
-#include "platform/impl/task_runner_impl.h"
+#include "platform/impl/task_runner.h"
 
 namespace openscreen {
 namespace platform {

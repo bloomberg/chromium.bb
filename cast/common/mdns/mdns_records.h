@@ -12,8 +12,8 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/variant.h"
 #include "cast/common/mdns/mdns_constants.h"
-#include "osp_base/ip_address.h"
 #include "platform/api/logging.h"
+#include "platform/base/ip_address.h"
 
 namespace cast {
 namespace mdns {

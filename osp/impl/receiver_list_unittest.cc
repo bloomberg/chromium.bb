@@ -5,7 +5,7 @@
 #include "osp/impl/receiver_list.h"
 
 #include "gtest/gtest.h"
-#include "osp_base/error.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 

@@ -22,10 +22,10 @@
 #include <cstring>
 
 #include "absl/strings/string_view.h"
-#include "osp_base/ip_address.h"
-#include "osp_base/scoped_pipe.h"
 #include "platform/api/logging.h"
 #include "platform/api/network_interface.h"
+#include "platform/base/ip_address.h"
+#include "platform/impl/scoped_pipe.h"
 
 namespace openscreen {
 namespace platform {

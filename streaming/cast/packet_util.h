@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "absl/types/span.h"
-#include "osp_base/big_endian.h"
 #include "streaming/cast/ssrc.h"
+#include "util/big_endian.h"
 
 namespace openscreen {
 namespace cast_streaming {

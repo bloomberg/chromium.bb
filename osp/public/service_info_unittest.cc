@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "gtest/gtest.h"
-#include "osp_base/error.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 

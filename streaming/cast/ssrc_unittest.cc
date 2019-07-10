@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "osp_base/std_util.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 namespace cast_streaming {

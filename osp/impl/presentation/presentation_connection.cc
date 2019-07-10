@@ -14,8 +14,8 @@
 #include "osp/public/presentation/presentation_controller.h"
 #include "osp/public/presentation/presentation_receiver.h"
 #include "osp/public/protocol_connection.h"
-#include "osp_base/std_util.h"
 #include "platform/api/logging.h"
+#include "util/std_util.h"
 
 // TODO(issue/27): Address TODOs in this file
 namespace openscreen {

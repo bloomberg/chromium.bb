@@ -35,6 +35,7 @@ source_set("public") {
     "service_listener.h",
     "service_publisher.cc",
     "service_publisher.h",
+    "timestamp.h",
   ]
 
   public_deps = [
@@ -42,8 +43,8 @@ source_set("public") {
   ]
 
   deps = [
-    "../../osp_base",
     "../../platform",
+    "../../util",
   ]
 
   configs += [ "../../build:allow_build_from_embedder" ]

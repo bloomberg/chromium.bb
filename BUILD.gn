@@ -12,11 +12,11 @@ group("gn_all") {
     "cast/common:mdns",
     "osp",
     "osp/msgs",
-    "osp_base",
     "platform",
     "third_party/abseil",
     "third_party/tinycbor",
     "tools/cddl",
+    "util",
   ]
 
   if (use_mdns_responder) {
@@ -39,11 +39,11 @@ executable("openscreen_unittests") {
     "osp:osp_unittests",
     "osp/impl/discovery/mdns:mdns_unittests",
     "osp/msgs:unittests",
-    "osp_base:osp_base_unittests",
     "platform:platform_unittests",
     "streaming/cast:cast_unittests",
     "third_party/abseil",
     "third_party/googletest:gtest_main",
+    "util:util_unittests",
   ]
 }
 
@@ -56,8 +56,8 @@ if (use_chromium_quic && use_mdns_responder) {
     deps = [
       "//osp:osp_with_chromium_quic",
       "//osp/impl/discovery/mdns",
-      "//osp_base",
       "//platform",
+      "//util",
     ]
   }
 }

@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "osp/impl/discovery/mdns/mdns_responder_adapter_impl.h"
-#include "osp_base/error.h"
 #include "platform/api/logging.h"
+#include "platform/base/error.h"
 
 // This file contains a demo of our mDNSResponder wrapper code.  It can both
 // listen for mDNS services and advertise an mDNS service.  The command-line

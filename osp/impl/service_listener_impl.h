@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "osp/impl/receiver_list.h"
+#include "osp/impl/with_destruction_callback.h"
 #include "osp/public/service_info.h"
 #include "osp/public/service_listener.h"
-#include "osp_base/macros.h"
-#include "osp_base/with_destruction_callback.h"
+#include "platform/base/macros.h"
 
 namespace openscreen {
 

@@ -111,14 +111,10 @@ recursedeps = [
     'third_party/chromium_quic/src',
 ]
 
-# TODO(mfoltz): Change to allow only base and third_party from the top level
-# once OSP code is moved into osp/.
 include_rules = [
-    '+osp',
-    '+osp_base',
+    '+util',
     '+platform',
     '+third_party',
-
 
     # Don't include abseil from the root so the path can change via include_dirs
     # rules when in Chromium.
@@ -143,10 +139,6 @@ include_rules = [
     "-third_party/googletest",
     "+gtest",
     "+gmock",
-
-    # BoringSSL includes
-    '-third_party/boringssl',
-    '+openssl',
 ]
 
 skip_child_includes = [

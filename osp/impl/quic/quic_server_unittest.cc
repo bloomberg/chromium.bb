@@ -13,7 +13,7 @@
 #include "osp/public/network_metrics.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/testing/message_demuxer_test_support.h"
-#include "osp_base/error.h"
+#include "platform/base/error.h"
 #include "platform/test/fake_clock.h"
 
 namespace openscreen {

@@ -9,10 +9,10 @@
 #include <functional>
 #include <memory>
 
-#include "osp_base/error.h"
-#include "osp_base/ip_address.h"
-#include "osp_base/macros.h"
 #include "platform/api/network_interface.h"
+#include "platform/base/error.h"
+#include "platform/base/ip_address.h"
+#include "platform/base/macros.h"
 
 namespace openscreen {
 namespace platform {

@@ -10,12 +10,12 @@
 #include <functional>
 #include <memory>
 
-#include "osp_base/error.h"
-#include "osp_base/ip_address.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
 #include "platform/api/udp_read_callback.h"
 #include "platform/api/udp_socket.h"
+#include "platform/base/error.h"
+#include "platform/base/ip_address.h"
 
 namespace openscreen {
 namespace platform {

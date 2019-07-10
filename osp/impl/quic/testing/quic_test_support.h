@@ -15,8 +15,8 @@
 #include "osp/public/network_metrics.h"
 #include "osp/public/protocol_connection_client.h"
 #include "osp/public/protocol_connection_server.h"
-#include "osp_base/ip_address.h"
 #include "platform/api/time.h"
+#include "platform/base/ip_address.h"
 #include "platform/test/fake_clock.h"
 
 namespace openscreen {

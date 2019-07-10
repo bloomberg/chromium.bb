@@ -8,10 +8,10 @@
 #include <limits>
 #include <random>
 
-#include "osp_base/big_endian.h"
 #include "platform/api/logging.h"
 #include "platform/api/time.h"
 #include "streaming/cast/packet_util.h"
+#include "util/big_endian.h"
 
 namespace openscreen {
 namespace cast_streaming {

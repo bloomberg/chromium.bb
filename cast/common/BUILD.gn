@@ -16,9 +16,9 @@ source_set("mdns") {
   ]
 
   deps = [
-    "../../osp_base",
     "../../platform",
     "../../third_party/abseil",
+    "../../util",
   ]
 
   configs += [ "../../build:allow_build_from_embedder" ]
@@ -35,11 +35,11 @@ source_set("mdns_unittests") {
 
   deps = [
     ":mdns",
-    "../../osp_base",
     "../../platform",
     "../../third_party/abseil",
     "../../third_party/googletest:gmock",
     "../../third_party/googletest:gtest",
+    "../../util",
   ]
 
   configs += [ "../../build:allow_build_from_embedder" ]

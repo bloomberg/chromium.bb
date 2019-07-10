@@ -6,7 +6,7 @@
 #define CAST_COMMON_MDNS_MDNS_READER_H_
 
 #include "cast/common/mdns/mdns_records.h"
-#include "osp_base/big_endian.h"
+#include "util/big_endian.h"
 
 namespace cast {
 namespace mdns {

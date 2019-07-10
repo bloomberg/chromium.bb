@@ -9,7 +9,7 @@
 
 #include "absl/strings/string_view.h"
 #include "cast/common/mdns/mdns_records.h"
-#include "osp_base/big_endian.h"
+#include "util/big_endian.h"
 
 namespace cast {
 namespace mdns {

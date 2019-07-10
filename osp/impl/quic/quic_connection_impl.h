@@ -9,8 +9,8 @@
 #include <memory>
 
 #include "osp/impl/quic/quic_connection.h"
-#include "osp_base/ip_address.h"
 #include "platform/api/udp_socket.h"
+#include "platform/base/ip_address.h"
 #include "third_party/chromium_quic/src/base/callback.h"
 #include "third_party/chromium_quic/src/base/location.h"
 #include "third_party/chromium_quic/src/base/task_runner.h"

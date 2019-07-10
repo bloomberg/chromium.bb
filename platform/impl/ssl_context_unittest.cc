@@ -12,8 +12,8 @@
 
 #include "absl/strings/string_view.h"
 #include "gtest/gtest.h"
-#include "osp_base/crypto/openssl_util.h"
-#include "osp_base/error.h"
+#include "platform/base/error.h"
+#include "util/crypto/openssl_util.h"
 
 namespace openscreen {
 namespace platform {

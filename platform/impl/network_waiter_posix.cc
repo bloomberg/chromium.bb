@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "osp_base/error.h"
 #include "platform/api/logging.h"
+#include "platform/base/error.h"
 #include "platform/impl/network_reader.h"
 #include "platform/impl/udp_socket_posix.h"
 

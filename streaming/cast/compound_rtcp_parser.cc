@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
-#include "osp_base/std_util.h"
 #include "platform/api/logging.h"
 #include "streaming/cast/packet_util.h"
 #include "streaming/cast/rtcp_session.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 namespace cast_streaming {

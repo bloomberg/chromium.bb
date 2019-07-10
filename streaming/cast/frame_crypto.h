@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "openssl/aes.h"
-#include "osp_base/macros.h"
+#include "platform/base/macros.h"
 #include "streaming/cast/encoded_frame.h"
 
 namespace openscreen {

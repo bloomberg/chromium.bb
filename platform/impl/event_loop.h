@@ -9,9 +9,9 @@
 
 #include <vector>
 
-#include "osp_base/error.h"
 #include "platform/api/event_waiter.h"
 #include "platform/api/network_runner.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 namespace platform {

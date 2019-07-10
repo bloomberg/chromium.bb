@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "osp_base/error.h"
 #include "platform/api/logging.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 namespace mdns {
