@@ -263,4 +263,15 @@ weston_surface_to_buffer_region(struct weston_surface *surface,
 				pixman_region32_t *buffer_region);
 void
 weston_surface_schedule_repaint(struct weston_surface *surface);
+
+/* weston_spring */
+
+void
+weston_spring_init(struct weston_spring *spring,
+		   double k, double current, double target);
+int
+weston_spring_done(struct weston_spring *spring);
+
+void
+weston_spring_update(struct weston_spring *spring, const struct timespec *time);
 #endif

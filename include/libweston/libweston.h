@@ -1640,14 +1640,6 @@ weston_view_from_global_fixed(struct weston_view *view,
 			      wl_fixed_t *vx, wl_fixed_t *vy);
 
 void
-weston_spring_init(struct weston_spring *spring,
-		   double k, double current, double target);
-void
-weston_spring_update(struct weston_spring *spring, const struct timespec *time);
-int
-weston_spring_done(struct weston_spring *spring);
-
-void
 weston_view_activate(struct weston_view *view,
 		     struct weston_seat *seat,
 		     uint32_t flags);
