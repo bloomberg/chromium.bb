@@ -1162,6 +1162,12 @@ HttpHandler::PrepareStandardResponse(
       response.reset(
           new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
       break;
+
+    default:
+      DCHECK(false);
+      response.reset(
+          new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
+      break;
   }
 
   if (!value)
