@@ -68,32 +68,23 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerControlleeRequestHandlerTest,
                            ActivateWaitingVersion);
-  class ScopedDisallowSetControllerRegistration;
 
   void ContinueWithRegistration(
-      std::unique_ptr<ScopedDisallowSetControllerRegistration>
-          disallow_controller,
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
   void ContinueWithActivatedVersion(
       scoped_refptr<ServiceWorkerRegistration> registration,
-      scoped_refptr<ServiceWorkerVersion> version,
-      std::unique_ptr<ScopedDisallowSetControllerRegistration>
-          disallow_controller);
+      scoped_refptr<ServiceWorkerVersion> version);
 
   // For forced update.
   void DidUpdateRegistration(
       scoped_refptr<ServiceWorkerRegistration> original_registration,
-      std::unique_ptr<ScopedDisallowSetControllerRegistration>
-          disallow_controller,
       blink::ServiceWorkerStatusCode status,
       const std::string& status_message,
       int64_t registration_id);
   void OnUpdatedVersionStatusChanged(
       scoped_refptr<ServiceWorkerRegistration> registration,
-      scoped_refptr<ServiceWorkerVersion> version,
-      std::unique_ptr<ScopedDisallowSetControllerRegistration>
-          disallow_controller);
+      scoped_refptr<ServiceWorkerVersion> version);
 
   // ServiceWorkerNavigationLoader::Delegate implementation:
   ServiceWorkerVersion* GetServiceWorkerVersion() override;
