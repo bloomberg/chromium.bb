@@ -1576,11 +1576,16 @@ config("chromium_code") {
       # For intentional fallthrough, use FALLTHROUGH; from
       # base/compiler_specific.h
       "-Wimplicit-fallthrough",
-
-      # Thread safety analysis. See base/thread_annotations.h and
-      # https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
-      "-Wthread-safety",
     ]
+
+    # Thread safety analysis is broken under nacl: https://crbug.com/982423.
+    if (!is_nacl) {
+      cflags += [
+        # Thread safety analysis. See base/thread_annotations.h and
+        # https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
+        "-Wthread-safety",
+      ]
+    }
 
     # TODO(thakis): Enable this for more platforms, https://crbug.com/926235
     # ChromeOS: http://crbug.com/940863
