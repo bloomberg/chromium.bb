@@ -1126,6 +1126,9 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   site_config.AddTemplate(
       'orderfile_generate_toolchain',
       site_config.templates.release,
+      images=['base', 'test'],
+      paygen=False,
+      signer_tests=False,
       orderfile_generate=True,
       useflags=config_lib.append_useflags(['orderfile_generate']),
       display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
@@ -1135,6 +1138,9 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   site_config.AddTemplate(
       'orderfile_verify_toolchain',
       site_config.templates.release,
+      images=['base', 'test'],
+      paygen=False,
+      signer_tests=False,
       orderfile_verify=True,
       useflags=config_lib.append_useflags(['orderfile_use']),
       display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
