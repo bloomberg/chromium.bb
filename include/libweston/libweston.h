@@ -645,18 +645,8 @@ weston_pointer_start_grab(struct weston_pointer *pointer,
 void
 weston_pointer_end_grab(struct weston_pointer *pointer);
 void
-weston_pointer_clamp(struct weston_pointer *pointer,
-			    wl_fixed_t *fx, wl_fixed_t *fy);
-void
 weston_pointer_move(struct weston_pointer *pointer,
 		    struct weston_pointer_motion_event *event);
-void
-weston_pointer_set_default_grab(struct weston_pointer *pointer,
-		const struct weston_pointer_grab_interface *interface);
-
-void
-weston_pointer_constraint_destroy(struct weston_pointer_constraint *constraint);
-
 void
 weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 			  struct weston_surface *surface);
@@ -673,8 +663,6 @@ int
 weston_keyboard_set_locks(struct weston_keyboard *keyboard,
 			  uint32_t mask, uint32_t value);
 
-bool
-weston_keyboard_has_focus_resource(struct weston_keyboard *keyboard);
 void
 weston_keyboard_send_key(struct weston_keyboard *keyboard,
 			 const struct timespec *time, uint32_t key,
@@ -694,8 +682,6 @@ weston_touch_start_grab(struct weston_touch *touch,
 void
 weston_touch_end_grab(struct weston_touch *touch);
 
-bool
-weston_touch_has_focus_resource(struct weston_touch *touch);
 void
 weston_touch_send_down(struct weston_touch *touch, const struct timespec *time,
 		       int touch_id, wl_fixed_t x, wl_fixed_t y);
@@ -708,18 +694,6 @@ weston_touch_send_motion(struct weston_touch *touch,
 			 wl_fixed_t x, wl_fixed_t y);
 void
 weston_touch_send_frame(struct weston_touch *touch);
-
-struct weston_touch_device *
-weston_touch_create_touch_device(struct weston_touch *touch,
-				 const char *syspath,
-				 void *backend_data,
-				 const struct weston_touch_device_ops *ops);
-
-void
-weston_touch_device_destroy(struct weston_touch_device *device);
-
-bool
-weston_touch_device_can_calibrate(struct weston_touch_device *device);
 
 int
 wl_data_device_manager_init(struct wl_display *display);
@@ -734,12 +708,6 @@ weston_pointer_start_drag(struct weston_pointer *pointer,
 		       struct weston_data_source *source,
 		       struct weston_surface *icon,
 		       struct wl_client *client);
-int
-weston_touch_start_drag(struct weston_touch *touch,
-			struct weston_data_source *source,
-			struct weston_surface *icon,
-			struct wl_client *client);
-
 struct weston_xkb_info {
 	struct xkb_keymap *keymap;
 	size_t keymap_size;

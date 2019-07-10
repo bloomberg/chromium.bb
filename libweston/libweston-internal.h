@@ -207,4 +207,46 @@ weston_seat_update_keymap(struct weston_seat *seat, struct xkb_keymap *keymap);
 void
 wl_data_device_set_keyboard_focus(struct weston_seat *seat);
 
+/* weston_pointer */
+
+void
+weston_pointer_clamp(struct weston_pointer *pointer,
+		     wl_fixed_t *fx, wl_fixed_t *fy);
+void
+weston_pointer_set_default_grab(struct weston_pointer *pointer,
+			        const struct weston_pointer_grab_interface *interface);
+
+void
+weston_pointer_constraint_destroy(struct weston_pointer_constraint *constraint);
+
+/* weston_keyboard */
+bool
+weston_keyboard_has_focus_resource(struct weston_keyboard *keyboard);
+
+/* weston_touch */
+
+struct weston_touch_device *
+weston_touch_create_touch_device(struct weston_touch *touch,
+				 const char *syspath,
+				 void *backend_data,
+				 const struct weston_touch_device_ops *ops);
+
+void
+weston_touch_device_destroy(struct weston_touch_device *device);
+
+bool
+weston_touch_has_focus_resource(struct weston_touch *touch);
+
+int
+weston_touch_start_drag(struct weston_touch *touch,
+			struct weston_data_source *source,
+			struct weston_surface *icon,
+			struct wl_client *client);
+
+
+/* weston_touch_device */
+
+bool
+weston_touch_device_can_calibrate(struct weston_touch_device *device);
+
 #endif

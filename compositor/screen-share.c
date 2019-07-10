@@ -41,6 +41,7 @@
 #include <wayland-client.h>
 
 #include <libweston/libweston.h>
+#include "libweston-internal.h"
 #include "weston.h"
 #include "shared/helpers.h"
 #include "shared/os-compatibility.h"

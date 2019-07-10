@@ -39,6 +39,7 @@
 #include <libinput.h>
 
 #include <libweston/libweston.h>
+#include "libweston-internal.h"
 #include "libinput-device.h"
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"
