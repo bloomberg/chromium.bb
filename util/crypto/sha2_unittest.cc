@@ -35,7 +35,7 @@ TEST(Sha256Test, Test1_String) {
       0x7a, 0x9c, 0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad};
 
   const std::string output = SHA256HashString(input);
-  ASSERT_EQ(SHA256_DIGEST_LENGTH, output.size());
+  ASSERT_EQ(static_cast<size_t>(SHA256_DIGEST_LENGTH), output.size());
   EXPECT_THAT(output, testing::ElementsAreArray(kExpected));
 }
 

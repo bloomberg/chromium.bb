@@ -81,7 +81,7 @@ class RepeatingFunction {
   // TODO(rwkeane): Should use a weak pointer once we support those.
   RepeatingFunction(TaskRunner* task_runner,
                     std::function<absl::optional<Clock::duration>()> function)
-      : task_runner_(task_runner), function_(function){};
+      : task_runner_(task_runner), function_(function) {}
 
   TaskRunner* task_runner_;
   std::function<absl::optional<Clock::duration>()> function_;

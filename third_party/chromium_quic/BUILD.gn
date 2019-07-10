@@ -9,7 +9,11 @@ config("chromium_quic_config") {
   ]
 
   if (is_clang) {
-    cflags_cc += [ "-Wno-defaulted-function-deleted" ]
+    cflags_cc += [
+      "-Wno-defaulted-function-deleted",
+      "-Wno-c++98-compat-extra-semi",
+      "-Wno-extra-semi",
+    ]
 
     # The clang version on the Mac OS X build bots is old, causing them to
     # not recognize the defaulted-function-deleted warning. This flag allows

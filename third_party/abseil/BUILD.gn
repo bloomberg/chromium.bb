@@ -14,7 +14,10 @@ if (build_with_chromium) {
 } else {
   config("abseil_config") {
     include_dirs = [ "//third_party/abseil/src" ]
-    cflags_cc = [ "-Wno-sign-compare" ]
+    cflags = [
+      "-Wno-sign-compare",
+      "-Wno-extra-semi",
+    ]
   }
 
   source_set("abseil") {

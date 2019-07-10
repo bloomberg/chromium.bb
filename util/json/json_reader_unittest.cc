@@ -35,7 +35,7 @@ TEST(JsonReaderTest, ValidEmptyDocumentParsedCorrectly) {
   const auto actual = reader.Read("{}");
 
   EXPECT_TRUE(actual.is_value());
-  EXPECT_EQ(actual.value().getMemberNames().size(), 0);
+  EXPECT_EQ(actual.value().getMemberNames().size(), 0u);
 }
 
 // Jsoncpp has its own suite of tests ensure that things are parsed correctly,
@@ -47,7 +47,7 @@ TEST(JsonReaderTest, ValidDocumentParsedCorrectly) {
   const auto actual = reader.Read(R"({"foo": "bar", "baz": 1337})");
 
   EXPECT_TRUE(actual.is_value());
-  EXPECT_EQ(actual.value().getMemberNames().size(), 2);
+  EXPECT_EQ(actual.value().getMemberNames().size(), 2u);
 }
 
 }  // namespace openscreen
