@@ -11,9 +11,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/instant_io_context.h"
-#include "chrome/browser/search/local_files_ntp_source.h"
 #include "chrome/browser/search/ntp_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/local_ntp_resources.h"
 #include "content/public/browser/navigation_entry.h"
@@ -66,24 +64,6 @@ void MostVisitedIframeSource::StartDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   GURL url(chrome::kChromeSearchMostVisitedUrl + path_and_query);
   std::string path(url.path());
-
-#if !defined(GOOGLE_CHROME_BUILD)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kLocalNtpReload)) {
-    std::string rel_path = "most_visited_" + path.substr(1);
-    if (path == kSingleJSPath) {
-      std::string origin;
-      if (!GetOrigin(wc_getter, &origin)) {
-        callback.Run(nullptr);
-        return;
-      }
-      local_ntp::SendLocalFileResourceWithOrigin(rel_path, origin, callback);
-    } else {
-      local_ntp::SendLocalFileResource(rel_path, callback);
-    }
-    return;
-  }
-#endif
 
   if (path == kSingleHTMLPath) {
     ui::TemplateReplacements replacements;
