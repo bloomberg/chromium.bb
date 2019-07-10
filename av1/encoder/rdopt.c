@@ -8303,6 +8303,68 @@ static INLINE void pred_dual_interp_filter_rd(
     }
   }
 }
+// Evaluate dual filter type
+// a) Using above, left block interp filter
+// b) Find the best horizontal filter and
+//    then evaluate corresponding vertical filters.
+static INLINE void fast_dual_interp_filter_rd(
+    MACROBLOCK *const x, const AV1_COMP *const cpi,
+    const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
+    const BUFFER_SET *const orig_dst, int64_t *const rd, RD_STATS *rd_stats_y,
+    RD_STATS *rd_stats, int *const switchable_rate,
+    const BUFFER_SET *dst_bufs[2], const int switchable_ctx[2],
+    const int skip_hor, const int skip_ver) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = xd->mi[0];
+  int pred_filter_search = 0;
+  InterpFilter af_horiz = INTERP_INVALID, af_vert = INTERP_INVALID,
+               lf_horiz = INTERP_INVALID, lf_vert = INTERP_INVALID;
+  if (!have_newmv_in_inter_mode(mbmi->mode)) {
+    const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
+    const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
+    if (above_mbmi && is_inter_block(above_mbmi)) {
+      af_horiz = above_mbmi->interp_filters.as_filters.x_filter;
+      af_vert = above_mbmi->interp_filters.as_filters.y_filter;
+    }
+    if (left_mbmi && is_inter_block(left_mbmi)) {
+      lf_horiz = left_mbmi->interp_filters.as_filters.x_filter;
+      lf_vert = left_mbmi->interp_filters.as_filters.y_filter;
+    }
+    pred_filter_search = is_pred_filter_search_allowed(
+        cpi, bsize, mi_row, mi_col, af_horiz, af_vert, lf_horiz, lf_vert);
+  }
+
+  if (pred_filter_search) {
+    int filter_idx = 0;
+    pred_dual_interp_filter_rd(
+        x, cpi, tile_data, bsize, mi_row, mi_col, orig_dst, rd, rd_stats_y,
+        rd_stats, switchable_rate, dst_bufs, filter_idx, switchable_ctx,
+        (skip_hor & skip_ver), af_horiz, af_vert, lf_horiz, lf_vert);
+  } else {
+    const int bw = block_size_wide[bsize];
+    const int bh = block_size_high[bsize];
+    int best_dual_mode = 0;
+    int skip_pred = bw <= 4 ? cpi->default_interp_skip_flags : skip_hor;
+    for (int i = (SWITCHABLE_FILTERS - 1); i >= 1; --i) {
+      if (interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
+                                  orig_dst, rd, rd_stats_y, rd_stats,
+                                  switchable_rate, dst_bufs, i, switchable_ctx,
+                                  skip_pred)) {
+        best_dual_mode = i;
+      }
+      skip_pred = skip_hor;
+    }
+    // From best of horizontal EIGHTTAP_REGULAR modes, check vertical modes
+    skip_pred = bh <= 4 ? cpi->default_interp_skip_flags : skip_ver;
+    for (int i = (best_dual_mode + (SWITCHABLE_FILTERS * 2));
+         i >= (best_dual_mode + SWITCHABLE_FILTERS); i -= SWITCHABLE_FILTERS) {
+      interpolation_filter_rd(
+          x, cpi, tile_data, bsize, mi_row, mi_col, orig_dst, rd, rd_stats_y,
+          rd_stats, switchable_rate, dst_bufs, i, switchable_ctx, skip_pred);
+      skip_pred = skip_ver;
+    }
+  }
+}
 
 // Find the best interp filter if dual_interp_filter = 0
 static INLINE void find_best_non_dual_interp_filter(
@@ -8691,76 +8753,30 @@ static int64_t interpolation_filter_search(
   const int filter_set_size = DUAL_FILTER_SET_SIZE;
   restore_dst_buf(xd, *tmp_dst, num_planes);
   const BUFFER_SET *dst_bufs[2] = { tmp_dst, orig_dst };
-  if (cpi->sf.use_fast_interpolation_filter_search &&
-      cm->seq_params.enable_dual_filter) {
-    // default to (R,R): EIGHTTAP_REGULARxEIGHTTAP_REGULAR
-    int best_dual_mode = 0;
-    // Find best of {R}x{R,Sm,Sh}
-    const int bw = block_size_wide[bsize];
-    const int bh = block_size_high[bsize];
-    int skip_pred;
-    int pred_filter_search = 0;
-    InterpFilter af_horiz = INTERP_INVALID, af_vert = INTERP_INVALID,
-                 lf_horiz = INTERP_INVALID, lf_vert = INTERP_INVALID;
-    int filter_idx = 0;
-    if (!have_newmv_in_inter_mode(mbmi->mode)) {
-      const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
-      const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
-      if (above_mbmi && is_inter_block(above_mbmi)) {
-        af_horiz = above_mbmi->interp_filters.as_filters.x_filter;
-        af_vert = above_mbmi->interp_filters.as_filters.y_filter;
-      }
-      if (left_mbmi && is_inter_block(left_mbmi)) {
-        lf_horiz = left_mbmi->interp_filters.as_filters.x_filter;
-        lf_vert = left_mbmi->interp_filters.as_filters.y_filter;
-      }
-      pred_filter_search = is_pred_filter_search_allowed(
-          cpi, bsize, mi_row, mi_col, af_horiz, af_vert, lf_horiz, lf_vert);
-    }
-    if (pred_filter_search) {
-      pred_dual_interp_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
+  // Evaluate dual interp filters
+  if (cm->seq_params.enable_dual_filter) {
+    if (cpi->sf.use_fast_interpolation_filter_search) {
+      fast_dual_interp_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
                                  orig_dst, rd, &rd_stats_luma, &rd_stats,
-                                 switchable_rate, dst_bufs, filter_idx,
-                                 switchable_ctx, (skip_hor & skip_ver),
-                                 af_horiz, af_vert, lf_horiz, lf_vert);
+                                 switchable_rate, dst_bufs, switchable_ctx,
+                                 skip_hor, skip_ver);
     } else {
-      skip_pred = bw <= 4 ? cpi->default_interp_skip_flags : skip_hor;
-      for (i = (SWITCHABLE_FILTERS - 1); i >= 1; --i) {
-        if (interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
-                                    orig_dst, rd, &rd_stats_luma, &rd_stats,
-                                    switchable_rate, dst_bufs, i,
-                                    switchable_ctx, skip_pred)) {
-          best_dual_mode = i;
-        }
-        skip_pred = skip_hor;
-      }
-      // From best of horizontal EIGHTTAP_REGULAR modes, check vertical modes
-      skip_pred = bh <= 4 ? cpi->default_interp_skip_flags : skip_ver;
-      assert(filter_set_size == DUAL_FILTER_SET_SIZE);
-      for (i = (best_dual_mode + (SWITCHABLE_FILTERS * 2));
-           i >= (best_dual_mode + SWITCHABLE_FILTERS);
-           i -= SWITCHABLE_FILTERS) {
+      // Use full interpolation filter search
+      // REG_REG filter type is evaluated beforehand, so loop is repeated over
+      // REG_SMOOTH to SHARP_SHARP for full interpolation filter search
+      for (i = 1; i <= filter_set_size; ++i) {
         interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
                                 orig_dst, rd, &rd_stats_luma, &rd_stats,
                                 switchable_rate, dst_bufs, i, switchable_ctx,
-                                skip_pred);
-        skip_pred = skip_ver;
+                                (skip_hor & skip_ver));
       }
     }
-  } else if (cm->seq_params.enable_dual_filter == 0) {
+  } else {
+    // Evaluate non-dual interp filters
     find_best_non_dual_interp_filter(x, cpi, tile_data, bsize, mi_row, mi_col,
                                      orig_dst, rd, &rd_stats_luma, &rd_stats,
                                      switchable_rate, dst_bufs, switchable_ctx,
                                      skip_ver, skip_hor, filter_set_size);
-
-  } else {
-    // EIGHTTAP_REGULAR mode is calculated beforehand
-    for (i = 1; i < filter_set_size; ++i) {
-      interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
-                              orig_dst, rd, &rd_stats_luma, &rd_stats,
-                              switchable_rate, dst_bufs, i, switchable_ctx,
-                              (skip_hor & skip_ver));
-    }
   }
   swap_dst_buf(xd, dst_bufs, num_planes);
   // Recompute final MC data if required
