@@ -34,6 +34,7 @@
 #include <libweston/zalloc.h>
 #include "shared/timespec-util.h"
 #include <libweston/libweston.h>
+#include "libweston-internal.h"
 
 #include "weston-touch-calibration-server-protocol.h"
 

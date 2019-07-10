@@ -1762,15 +1762,6 @@ void
 notify_touch_cancel(struct weston_touch_device *device);
 
 void
-weston_compositor_set_touch_mode_normal(struct weston_compositor *compositor);
-
-void
-weston_compositor_set_touch_mode_calib(struct weston_compositor *compositor);
-
-void
-touch_calibrator_mode_changed(struct weston_compositor *compositor);
-
-void
 notify_touch_calibrator(struct weston_touch_device *device,
 			const struct timespec *time, int32_t slot,
 			const struct weston_point2d_device_normalized *norm,
@@ -1812,11 +1803,6 @@ weston_plane_init(struct weston_plane *plane,
 void
 weston_plane_release(struct weston_plane *plane);
 
-void
-weston_compositor_stack_plane(struct weston_compositor *ec,
-			      struct weston_plane *plane,
-			      struct weston_plane *above);
-
 /* An invalid flag in presented_flags to catch logic errors. */
 #define WP_PRESENTATION_FEEDBACK_INVALID (1U << 31)
 
@@ -1834,8 +1820,6 @@ void
 weston_compositor_damage_all(struct weston_compositor *compositor);
 void
 weston_compositor_wake(struct weston_compositor *compositor);
-void
-weston_compositor_offscreen(struct weston_compositor *compositor);
 void
 weston_compositor_sleep(struct weston_compositor *compositor);
 struct weston_view *
@@ -1895,55 +1879,10 @@ weston_compositor_add_axis_binding(struct weston_compositor *compositor,
 			           enum weston_keyboard_modifier modifier,
 			           weston_axis_binding_handler_t binding,
 				   void *data);
-struct weston_binding *
-weston_compositor_add_debug_binding(struct weston_compositor *compositor,
-				    uint32_t key,
-				    weston_key_binding_handler_t binding,
-				    void *data);
-void
-weston_binding_destroy(struct weston_binding *binding);
 
 void
 weston_install_debug_key_binding(struct weston_compositor *compositor,
 				 uint32_t mod);
-
-void
-weston_binding_list_destroy_all(struct wl_list *list);
-
-void
-weston_compositor_run_key_binding(struct weston_compositor *compositor,
-				  struct weston_keyboard *keyboard,
-				  const struct timespec *time,
-				  uint32_t key,
-				  enum wl_keyboard_key_state state);
-
-void
-weston_compositor_run_modifier_binding(struct weston_compositor *compositor,
-				       struct weston_keyboard *keyboard,
-				       enum weston_keyboard_modifier modifier,
-				       enum wl_keyboard_key_state state);
-void
-weston_compositor_run_button_binding(struct weston_compositor *compositor,
-				     struct weston_pointer *pointer,
-				     const struct timespec *time,
-				     uint32_t button,
-				     enum wl_pointer_button_state value);
-void
-weston_compositor_run_touch_binding(struct weston_compositor *compositor,
-				    struct weston_touch *touch,
-				    const struct timespec *time,
-				    int touch_type);
-int
-weston_compositor_run_axis_binding(struct weston_compositor *compositor,
-				   struct weston_pointer *pointer,
-				   const struct timespec *time,
-				   struct weston_pointer_axis_event *event);
-int
-weston_compositor_run_debug_binding(struct weston_compositor *compositor,
-				    struct weston_keyboard *keyboard,
-				    const struct timespec *time,
-				    uint32_t key,
-				    enum wl_keyboard_key_state state);
 
 void
 weston_compositor_set_default_pointer_grab(struct weston_compositor *compositor,
@@ -2042,9 +1981,6 @@ weston_buffer_from_resource(struct wl_resource *resource);
 void
 weston_compositor_get_time(struct timespec *time);
 
-char *
-weston_compositor_print_scene_graph(struct weston_compositor *ec);
-
 void
 weston_compositor_destroy(struct weston_compositor *ec);
 struct weston_compositor *
@@ -2068,23 +2004,6 @@ void
 weston_compositor_exit(struct weston_compositor *ec);
 void *
 weston_compositor_get_user_data(struct weston_compositor *compositor);
-int
-weston_compositor_set_presentation_clock(struct weston_compositor *compositor,
-					 clockid_t clk_id);
-int
-weston_compositor_set_presentation_clock_software(
-					struct weston_compositor *compositor);
-void
-weston_compositor_read_presentation_clock(
-			const struct weston_compositor *compositor,
-			struct timespec *ts);
-
-bool
-weston_compositor_import_dmabuf(struct weston_compositor *compositor,
-				struct linux_dmabuf_buffer *buffer);
-
-void
-weston_compositor_shutdown(struct weston_compositor *ec);
 void
 weston_compositor_exit_with_code(struct weston_compositor *compositor,
 				 int exit_code);
@@ -2136,8 +2055,6 @@ weston_seat_release(struct weston_seat *seat);
 int
 weston_compositor_set_xkb_rule_names(struct weston_compositor *ec,
 				     struct xkb_rule_names *names);
-void
-weston_compositor_xkb_destroy(struct weston_compositor *ec);
 
 /* String literal of spaces, the same width as the timestamp. */
 #define STAMP_SPACE "               "
@@ -2231,12 +2148,6 @@ int
 weston_output_mode_switch_to_native(struct weston_output *output);
 
 int
-noop_renderer_init(struct weston_compositor *ec);
-
-int
-weston_input_init(struct weston_compositor *compositor);
-
-int
 weston_backend_init(struct weston_compositor *c,
 		    struct weston_backend_config *config_base);
 int
@@ -2299,10 +2210,6 @@ weston_head_init(struct weston_head *head, const char *name);
 
 void
 weston_head_release(struct weston_head *head);
-
-void
-weston_compositor_add_head(struct weston_compositor *compositor,
-			   struct weston_head *head);
 
 void
 weston_head_set_monitor_strings(struct weston_head *head,
@@ -2406,10 +2313,6 @@ void
 weston_output_init(struct weston_output *output,
 		   struct weston_compositor *compositor,
 		   const char *name);
-
-void
-weston_compositor_add_pending_output(struct weston_output *output,
-				     struct weston_compositor *compositor);
 
 int
 weston_output_enable(struct weston_output *output);

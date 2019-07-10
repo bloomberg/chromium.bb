@@ -43,6 +43,7 @@
 #include "shared/os-compatibility.h"
 #include "shared/timespec-util.h"
 #include <libweston/libweston.h>
+#include "libweston-internal.h"
 #include "relative-pointer-unstable-v1-server-protocol.h"
 #include "pointer-constraints-unstable-v1-server-protocol.h"
 #include "input-timestamps-unstable-v1-server-protocol.h"
