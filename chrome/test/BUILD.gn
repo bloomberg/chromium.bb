@@ -2429,11 +2429,17 @@ if (!is_android) {
     if (enable_service_discovery) {
       sources += [ "../browser/extensions/api/mdns/mdns_apitest.cc" ]
     }
-    if (enable_supervised_users) {
+
+    # TODO(crbug.com/980869): Remove is_chromeos once
+    # enable_supervised_users is only enabled on chromeos
+    # (and android, which is excluded from browser_tests).
+    if (enable_supervised_users && is_chromeos) {
       sources += [
         "../browser/supervised_user/supervised_user_browsertest.cc",
         "../browser/supervised_user/supervised_user_navigation_throttle_browsertest.cc",
         "../browser/supervised_user/supervised_user_service_browsertest.cc",
+        "../browser/supervised_user/supervised_user_test_base.cc",
+        "../browser/supervised_user/supervised_user_test_base.h",
       ]
     }
     if (is_linux && is_asan && is_lsan) {
