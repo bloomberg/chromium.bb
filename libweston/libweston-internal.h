@@ -249,4 +249,18 @@ weston_touch_start_drag(struct weston_touch *touch,
 bool
 weston_touch_device_can_calibrate(struct weston_touch_device *device);
 
+/* weston_surface */
+void
+weston_surface_to_buffer_float(struct weston_surface *surface,
+			       float x, float y, float *bx, float *by);
+pixman_box32_t
+weston_surface_to_buffer_rect(struct weston_surface *surface,
+			      pixman_box32_t rect);
+
+void
+weston_surface_to_buffer_region(struct weston_surface *surface,
+				pixman_region32_t *surface_region,
+				pixman_region32_t *buffer_region);
+void
+weston_surface_schedule_repaint(struct weston_surface *surface);
 #endif

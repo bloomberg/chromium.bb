@@ -1640,18 +1640,6 @@ weston_view_from_global_fixed(struct weston_view *view,
 			      wl_fixed_t *vx, wl_fixed_t *vy);
 
 void
-weston_surface_to_buffer_float(struct weston_surface *surface,
-			       float x, float y, float *bx, float *by);
-pixman_box32_t
-weston_surface_to_buffer_rect(struct weston_surface *surface,
-			      pixman_box32_t rect);
-
-void
-weston_surface_to_buffer_region(struct weston_surface *surface,
-				pixman_region32_t *surface_region,
-				pixman_region32_t *buffer_region);
-
-void
 weston_spring_init(struct weston_spring *spring,
 		   double k, double current, double target);
 void
@@ -1883,9 +1871,6 @@ weston_surface_is_mapped(struct weston_surface *surface);
 void
 weston_surface_set_size(struct weston_surface *surface,
 			int32_t width, int32_t height);
-
-void
-weston_surface_schedule_repaint(struct weston_surface *surface);
 
 void
 weston_surface_damage(struct weston_surface *surface);
