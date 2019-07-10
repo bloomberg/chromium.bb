@@ -2225,10 +2225,6 @@ weston_log_ctx_compositor_destroy(struct weston_compositor *compositor);
 int
 weston_compositor_enable_content_protection(struct weston_compositor *compositor);
 
-void
-weston_protected_surface_send_event(struct protected_surface *psurface,
-				    enum weston_hdcp_protection protection);
-
 #ifdef  __cplusplus
 }
 #endif

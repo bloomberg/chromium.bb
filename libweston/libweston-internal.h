@@ -311,4 +311,9 @@ weston_matrix_transform_region(pixman_region32_t *dest,
 			       struct weston_matrix *matrix,
 			       pixman_region32_t *src);
 
+/* protected_surface */
+void
+weston_protected_surface_send_event(struct protected_surface *psurface,
+				    enum weston_hdcp_protection protection);
+
 #endif
