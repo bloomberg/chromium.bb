@@ -598,7 +598,6 @@
     guado-macrophage-release
     guado-release
     guado_labstation-release
-    guado_moblab-release
     hana-release
     hatch-release
     heli-release
@@ -659,6 +658,7 @@
     ultima-release
     veyron_fievel-release
     veyron_jaq-release
+    veyron_jerry-kernelnext-release
     veyron_jerry-release
     veyron_mickey-release
     veyron_mighty-release
@@ -2963,7 +2963,6 @@
     guado-macrophage-release-tryjob
     guado-release-tryjob
     guado_labstation-release-tryjob
-    guado_moblab-release-tryjob
     hana-release-tryjob
     hatch-release-tryjob
     heli-release-tryjob
@@ -3024,6 +3023,7 @@
     ultima-release-tryjob
     veyron_fievel-release-tryjob
     veyron_jaq-release-tryjob
+    veyron_jerry-kernelnext-release-tryjob
     veyron_jerry-release-tryjob
     veyron_mickey-release-tryjob
     veyron_mighty-release-tryjob
@@ -3991,6 +3991,18 @@
   veyron_jerry-compile-only-pre-cq
   veyron_jerry-factory-veyron-6591.B-factorybranch-tryjob
   veyron_jerry-full-tryjob
+  veyron_jerry-kernelnext-chromium-pfq-tryjob
+  veyron_jerry-kernelnext-compile-only-pre-cq
+  veyron_jerry-kernelnext-full-tryjob
+  veyron_jerry-kernelnext-llvm-next-toolchain-tryjob
+  veyron_jerry-kernelnext-llvm-toolchain-tryjob
+  veyron_jerry-kernelnext-no-vmtest-pre-cq
+  veyron_jerry-kernelnext-paladin-tryjob
+  veyron_jerry-kernelnext-postsubmit-tryjob
+  veyron_jerry-kernelnext-pre-cq
+  veyron_jerry-kernelnext-release-tryjob
+  veyron_jerry-kernelnext-tot-chromium-pfq-informational-tryjob
+  veyron_jerry-kernelnext-unittest-stress
   veyron_jerry-llvm-next-toolchain-tryjob
   veyron_jerry-llvm-toolchain-tryjob
   veyron_jerry-no-vmtest-pre-cq
