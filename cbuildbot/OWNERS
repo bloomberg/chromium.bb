@@ -1,4 +1,3 @@
 include ../OWNERS.ci
 
-per-file afdo.py=llozano@chromium.org
-per-file afdo_unittest.py=llozano@chromium.org
+per-file afdo*=file:chromiumos/third_party/toolchain-utils:OWNERS.toolchain
