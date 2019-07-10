@@ -120,10 +120,23 @@ delete StdToastElement.prototype.attributeChangedCallback;
 delete StdToastElement.prototype.observedAttributes;
 delete StdToastElement.prototype.connectedCallback;
 
-export function showToast(message, options) {
+export function showToast(message, options = {}) {
   const toast = new StdToastElement(message);
+
+  const {action, ...showOptions} = options;
+  if (action !== undefined) {
+    const actionButton = document.createElement('button');
+
+    // Unlike String(), this performs the desired JavaScript ToString operation.
+    // https://gist.github.com/domenic/82adbe7edc4a33a70f42f255479cec39
+    actionButton.textContent = `${action}`;
+
+    actionButton.setAttribute('slot', 'action');
+    toast.appendChild(actionButton);
+  }
+
   document.body.append(toast);
-  toast.show(options);
+  toast.show(showOptions);
 
   return toast;
 }
