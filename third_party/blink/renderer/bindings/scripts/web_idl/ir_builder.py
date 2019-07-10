@@ -111,18 +111,17 @@ class _IRBuilder(object):
     def _build_dictionary(self, node):
         child_nodes = list(node.GetChildren())
         extended_attributes = self._take_extended_attributes(child_nodes)
-        # TODO(yukishiino): Implement dictionary inheritance.
-        _ = self._take_inheritance(child_nodes)
+        inherited = self._take_inheritance(child_nodes)
         own_members = map(self._build_dictionary_member, child_nodes)
 
-        dictionary = Dictionary.IR(
+        return Dictionary.IR(
             identifier=node.GetName(),
             is_partial=bool(node.GetProperty('PARTIAL')),
+            inherited=inherited,
             own_members=own_members,
             extended_attributes=extended_attributes,
             component=self._component,
             debug_info=self._build_debug_info(node))
-        return dictionary
 
     def _build_dictionary_member(self, node):
         assert node.GetClass() == 'Key'
@@ -205,7 +204,7 @@ class _IRBuilder(object):
 
     def _build_inheritance(self, node):
         assert node.GetClass() == 'Inherit'
-        return None
+        return self._create_ref_to_idl_def(node.GetName())
 
     def _build_type(self, node):
         def build_maybe_inner_type(node):
