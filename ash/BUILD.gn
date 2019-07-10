@@ -1519,6 +1519,8 @@ static_library("ash_shell_lib_with_content") {
     "//chromeos/dbus",
     "//chromeos/dbus/biod",
     "//chromeos/dbus/power",
+    "//chromeos/services/network_config/public/cpp:manifest",
+    "//chromeos/services/network_config/public/cpp:test_support",
     "//chromeos/system",
     "//components/discardable_memory/public/interfaces",
     "//components/services/font:lib",
