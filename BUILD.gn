@@ -227,6 +227,7 @@ static_library("libjpeg") {
     "jmemmgr.c",
     "jmemnobs.c",
     "jmemsys.h",
+    "jpeg_nbits_table.c",
     "jpegint.h",
     "jquant1.c",
     "jquant2.c",

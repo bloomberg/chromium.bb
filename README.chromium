@@ -42,6 +42,11 @@ following changes which are not merged to upstream:
 * Configuration files jconfig.h and jconfigint.h were generated and then altered
   manually to be compatible on all of Chromium's platforms.
   http://crbug.com/608347
+* Fix static const data duplication of jpeg_nbits_table. A unique copy
+  was in the jchuff.obj and jcphuff.obj resulting in an added 65k in
+  .rdata in chrome.dll and chrome_child.dll.  Declaring extern const
+  in the header instead of static const and moving the definition to
+  a new .c file fixes this so only one copy is referenced.
 
 Refer to working-with-nested-repos [1] for details of how to setup your git
 svn client to update the code (for making local changes, cherry picking from
