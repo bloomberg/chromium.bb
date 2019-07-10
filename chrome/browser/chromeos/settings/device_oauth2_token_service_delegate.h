@@ -164,6 +164,10 @@ class DeviceOAuth2TokenServiceDelegate
 
   CoreAccountId robot_account_id_for_testing_;
 
+  // TODO(https://crbug.com/967598): Completely merge this class into
+  // DeviceOAuth2TokenService.
+  DeviceOAuth2TokenService* service_;
+
   base::WeakPtrFactory<DeviceOAuth2TokenServiceDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOAuth2TokenServiceDelegate);

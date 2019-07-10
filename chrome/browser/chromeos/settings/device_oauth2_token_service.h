@@ -15,7 +15,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
-#include "google_apis/gaia/oauth2_token_service_observer.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -34,8 +33,7 @@ namespace chromeos {
 //
 // Note that requests must be made from the UI thread.
 class DeviceOAuth2TokenService
-    : public OAuth2TokenServiceObserver,
-      public OAuth2AccessTokenManager::Delegate,
+    : public OAuth2AccessTokenManager::Delegate,
       public DeviceOAuth2TokenServiceDelegate::ValidationStatusDelegate {
  public:
   typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */)>
@@ -95,6 +93,9 @@ class DeviceOAuth2TokenService
   OAuth2AccessTokenManager* GetAccessTokenManager();
 
  private:
+  // TODO(https://crbug.com/967598): Merge DeviceOAuth2TokenServiceDelegate
+  // into DeviceOAuth2TokenService.
+  friend class DeviceOAuth2TokenServiceDelegate;
   friend class DeviceOAuth2TokenServiceFactory;
   friend class DeviceOAuth2TokenServiceTest;
   struct PendingRequest;
@@ -122,9 +123,8 @@ class DeviceOAuth2TokenService
   void OnAccessTokenFetched(const CoreAccountId& account_id,
                             const GoogleServiceAuthError& error) override;
 
-  // OAuth2TokenServiceObserver:
-  void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
-  void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
+  void FireRefreshTokenAvailable(const CoreAccountId& account_id);
+  void FireRefreshTokenRevoked(const CoreAccountId& account_id);
 
   // Implementation of
   // DeviceOAuth2TokenServiceDelegate::ValidationStatusDelegate.
