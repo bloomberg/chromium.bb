@@ -59322,13 +59322,17 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Failed - Parse Error"/>
   <int value="3" label="Failed - Signature Mismatch"/>
   <int value="4" label="Failed - Gzip Compress Error"/>
-  <int value="5" label="Delta Count"/>
+  <int value="5" label="Delta Count (obsolete)"/>
   <int value="6" label="Failed - Delta: Read Seed"/>
   <int value="7" label="Failed - Delta: Apply"/>
   <int value="8" label="Failed - Delta: Store Seed"/>
   <int value="9" label="Failed - Gzip Uncompress Error"/>
   <int value="10" label="Failed - Empty Gzip Contents"/>
   <int value="11" label="Failed - Unsupported Seed Format"/>
+  <int value="12" label="Gzip Delta Count"/>
+  <int value="13" label="Non-Gzip Delta Count"/>
+  <int value="14" label="Gzip Full Count"/>
+  <int value="15" label="Non-Gzip Full Count"/>
 </enum>
 
 <enum name="VaryType">
