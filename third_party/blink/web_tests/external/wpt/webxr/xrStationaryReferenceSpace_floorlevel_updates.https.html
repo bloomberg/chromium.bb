@@ -1,36 +1,20 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
-<script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
-<script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
-<script src="../xr/resources/xr-internal-device-mocking.js"></script>
-<script src="../xr/resources/xr-test-utils.js"></script>
-<canvas id="webgl-canvas"></canvas>
+<script src=/resources/testharness.js></script>
+<script src=/resources/testharnessreport.js></script>
+<script src="resources/webxr_util.js"></script>
+<script src="resources/webxr_test_constants.js"></script>
+<script src="resources/xr-test-asserts.js"></script>
+<canvas></canvas>
 
 <script>
-let testName =
-  "'floor-level' XRStationaryReferenceSpace updates properly when the transform changes";
+let immersiveTestName = "'floor-level' XRStationaryReferenceSpace updates properly when " +
+  "the transform changes for immersive sessions";
+let nonImmersiveTestName = "'floor-level' XRStationaryReferenceSpace updates properly when " +
+  "the transform changes for non-immersive sessions";
 
 let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
-let requestSessionModes = [
-  'inline',
-  'immersive-vr',
-];
-
-let testFunction = function(session, t, fakeDeviceController) {
-  // Session must have a baseLayer or else frame requests will be ignored.
-  session.updateRenderState({
-    baseLayer: new XRWebGLLayer(session, gl, {
-        compositionDisabled: session.mode == 'inline' })
-  });
-
-  // TODO(981003): Because the device gets re-used we have to ensure that the
-  //stage transform is cleared here, it shouldn't be set from the initial device.
-  fakeDeviceController.setStageTransform(null);
-
+let testFunction = function(session, fakeDeviceController, t) {
   // Don't need to request a frame/allow the stage updates to propagate before
   // requesting local-floor because if the stage transform is set it just won't
   // be emulated on the first frame, and we wait a frame before checking.
@@ -48,7 +32,7 @@ let testFunction = function(session, t, fakeDeviceController) {
           assert_greater_than(poseMatrix[13], 1.0);
           assert_approx_equals(poseMatrix[14], 0.0, FLOAT_EPSILON);
 
-          fakeDeviceController.setStageTransform(VALID_STAGE_TRANSFORM);
+          fakeDeviceController.setLocalToFloorLevelTransform(VALID_LOCAL_TO_FLOOR_TRANSFORM);
 
           // Need to request one animation frame for the new stage transform to
           // propagate before we check that it's what we expect.
@@ -65,7 +49,7 @@ let testFunction = function(session, t, fakeDeviceController) {
           assert_not_equals(pose, null);
 
           let poseMatrix = pose.transform.matrix;
-          assert_matrices_approx_equal(poseMatrix, VALID_STAGE_TRANSFORM);
+          assert_matrix_approx_equals(poseMatrix, VALID_LOCAL_TO_FLOOR_MATRIX, FLOAT_EPSILON);
         });
 
         // Finished.
@@ -80,7 +64,7 @@ let testFunction = function(session, t, fakeDeviceController) {
     }));
 };
 
-xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+xr_session_promise_test(immersiveTestName, testFunction, fakeDeviceInitParams, 'immersive-vr');
+xr_session_promise_test(nonImmersiveTestName, testFunction, fakeDeviceInitParams, 'inline');
 
 </script>
