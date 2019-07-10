@@ -8198,6 +8198,7 @@ static INLINE int64_t interpolation_filter_rd(
                             INT64_MAX);
       PrintPredictionUnitStats(cpi, tile_data, x, &rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 3
+      AOM_FALLTHROUGH_INTENDED;
     case INTERP_SKIP_LUMA_EVAL_CHROMA:
       // skip_pred = 1: skip luma evaluation (retain previous best luma stats)
       // and do chroma evaluation.
