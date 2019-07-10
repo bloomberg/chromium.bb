@@ -4488,7 +4488,7 @@ def BranchScheduleConfig():
   # (<branch>, [<android PFQs>], <chrome PFQ>)
   RELEASES = [
       ('release-R76-12239.B',
-       ['reef-android-nyc-pre-flight-branch',
+       ['gandof-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],
        'samus-chrome-pre-flight-branch'),
 
