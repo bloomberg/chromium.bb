@@ -497,11 +497,12 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
       if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
         using DeferralMessage = LazyLoadImageObserver::DeferralMessage;
         LoadingAttrValue loading_attr = GetLoadingAttrValue(*html_image);
-        DCHECK(loading_attr != LoadingAttrValue::kEager);
+        DCHECK_NE(loading_attr, LoadingAttrValue::kEager);
         auto deferral_message = DeferralMessage::kNone;
         if (loading_attr == LoadingAttrValue::kAuto) {
           deferral_message = DeferralMessage::kLoadEventsDeferred;
-        } else if (!was_fully_deferred_) {
+        } else if (!IsDimensionAbsoluteLarge(*html_image)) {
+          DCHECK_EQ(loading_attr, LoadingAttrValue::kLazy);
           deferral_message = DeferralMessage::kMissingDimensionForLazy;
         }
         LazyLoadImageObserver::StartMonitoring(html_image, deferral_message);
@@ -602,7 +603,10 @@ void ImageLoader::DoUpdateFromElement(
                  LazyLoadImageEligibility::kEnabledAutomatic &&
              lazy_load_image_enabled_state ==
                  LocalFrame::LazyLoadImageEnabledState::kEnabledAutomatic)) {
-          if ((was_fully_deferred_ = IsDimensionAbsoluteLarge(*html_image))) {
+          if ((was_fully_deferred_ =
+                   !RuntimeEnabledFeatures::
+                       LazyImageLoadingMetadataFetchEnabled() ||
+                   IsDimensionAbsoluteLarge(*html_image))) {
             params.SetLazyImageDeferred();
             if (frame->Client()) {
               frame->Client()->DidObserveLazyLoadBehavior(
