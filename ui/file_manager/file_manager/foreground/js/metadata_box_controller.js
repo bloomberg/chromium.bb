@@ -252,9 +252,7 @@ MetadataBoxController.prototype.updateModificationTime_ = function(
  */
 MetadataBoxController.prototype.setDirectorySize_ = function(
     entry, isSameEntry) {
-  if (!entry.isDirectory) {
-    return;
-  }
+  assert(entry.isDirectory);
 
   if (this.metadataBox_.size === '') {
     this.metadataBox_.size = ' ';  // Provide a dummy size value.
