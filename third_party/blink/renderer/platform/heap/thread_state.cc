@@ -642,8 +642,7 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
   }
 
   if (sweep_completed) {
-    // TODO(bikineev): We need to synchronize with concurrent sweepers here
-    // using the same bottleneck as in CompleteSweep().
+    SynchronizeAndFinishConcurrentSweeping();
     PostSweep();
   }
 }
@@ -950,20 +949,24 @@ void ThreadState::CompleteSweep() {
         "forced",
         current_gc_data_.reason == BlinkGC::GCReason::kForcedGCForTesting);
     Heap().CompleteSweep();
-
-    // Wait for concurrent sweepers.
-    sweeper_scheduler_.CancelAndWait();
-
-    // Concurrent sweepers may perform some work at the last stage (e.g.
-    // sweeping the last page and preparing finalizers).
-    // TODO(bikineev): This should be changed to Heap.Finalize() to only call
-    // remaining finalizers, not perform complete sweeping once again.
-    Heap().CompleteSweep();
+    SynchronizeAndFinishConcurrentSweeping();
 
     if (!was_in_atomic_pause)
       LeaveAtomicPause();
   }
   PostSweep();
+}
+
+void ThreadState::SynchronizeAndFinishConcurrentSweeping() {
+  DCHECK(CheckThread());
+  DCHECK(IsSweepingInProgress());
+
+  // Wait for concurrent sweepers.
+  sweeper_scheduler_.CancelAndWait();
+
+  // Concurrent sweepers may perform some work at the last stage (e.g.
+  // sweeping the last page and preparing finalizers).
+  Heap().InvokeFinalizersOnSweptPages();
 }
 
 BlinkGCObserver::BlinkGCObserver(ThreadState* thread_state)
