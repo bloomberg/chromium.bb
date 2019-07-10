@@ -232,16 +232,19 @@ class DownloadAndroidDebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
         android_version, android_build_branch)
 
     arch = self._run.DetermineAndroidABI(self._current_board)
-    # Q only has userdebug builds.
-    variant = 'user'
-    if android_build_branch == 'git_qt-arc-dev':
-      variant = 'userdebug'
+    variant = self._run.DetermineAndroidVariant(self._current_board)
+    # For user builds, there are no suffix.
+    # For userdebug builds, there is an explicit '_userdebug' suffix.
+    suffix = ''
+    if variant != 'user':
+      suffix = '_' + variant
 
     symbols_file_url = constants.ANDROID_SYMBOLS_URL_TEMPLATE % {
         'branch': android_build_branch,
         'arch': arch,
         'version': android_version,
-        'variant': variant}
+        'variant': variant,
+        'suffix': suffix}
     symbols_file = os.path.join(self.archive_path,
                                 constants.ANDROID_SYMBOLS_FILE)
     gs_context = gs.GSContext()

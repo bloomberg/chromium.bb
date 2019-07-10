@@ -437,7 +437,7 @@ ARC_BUCKET_ACLS = {
 ANDROID_SYMBOLS_URL_TEMPLATE = (
     ARC_BUCKET_URL +
     '/%(branch)s-linux-cheets_%(arch)s-%(variant)s/%(version)s'
-    '/cheets_%(arch)s-symbols-%(version)s.zip')
+    '/cheets_%(arch)s%(suffix)s-symbols-%(version)s.zip')
 ANDROID_SYMBOLS_FILE = 'android-symbols.zip'
 # x86-user, x86-userdebug and x86-eng builders create build artifacts with the
 # same name, e.g. cheets_x86-target_files-${VERSION}.zip. Chrome OS builders

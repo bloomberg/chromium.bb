@@ -816,10 +816,12 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
     android_build_branch = self.DetermineAndroidBranch(android_package)
     android_version = self.DetermineAndroidVersion(android_package)
     arch = self.DetermineAndroidABI()
-    # Q only has userdebug builds.
-    variant = 'user'
-    if android_build_branch == 'git_qt-arc-dev':
-      variant = 'userdebug'
+    variant = self._run.DetermineAndroidVariant(self._current_board)
+    # For user builds, there are no suffix.
+    # For userdebug builds, there is an explicit '_userdebug' suffix.
+    suffix = ''
+    if variant != 'user':
+      suffix = '_' + variant
 
     logging.info(
         'Downloading symbols of Android %s (%s)...',
@@ -829,7 +831,8 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
         'branch': android_build_branch,
         'arch': arch,
         'version': android_version,
-        'variant': variant}
+        'variant': variant,
+        'suffix': suffix}
 
     # Should be based on self.archive_path, but we need a path inside
     # the workspace chroot, not infra chroot.

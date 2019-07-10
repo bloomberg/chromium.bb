@@ -114,6 +114,10 @@ class NoAndroidABIError(Exception):
   """For when Android ABI cannot be determined."""
 
 
+class NoAndroidVariantError(Exception):
+  """For when Android variant cannot be determined."""
+
+
 class NoAndroidVersionError(Exception):
   """For when Android version cannot be determined."""
 
@@ -804,15 +808,6 @@ class _BuilderRunBase(object):
 
   def DetermineAndroidABI(self, board):
     """Returns the Android ABI in use by the active container ebuild."""
-    try:
-      android_package = self.DetermineAndroidPackage(board)
-    except cros_build_lib.RunCommandError:
-      raise NoAndroidABIError(
-          'Android ABI could not be determined for %s' % board)
-    if not android_package:
-      raise NoAndroidABIError(
-          'Android ABI could not be determined for %s (no package?)' % board)
-
     use_flags = portage_util.GetInstalledPackageUseFlags(
         'sys-devel/arc-build', board)
     if 'abi_x86_64' in use_flags.get('sys-devel/arc-build', []):
@@ -823,6 +818,35 @@ class _BuilderRunBase(object):
       # ARM only supports 32-bit so it does not have abi_x86_{32,64} set. But it
       # is also the last possible ABI, so returning by default.
       return 'arm'
+
+  def DetermineAndroidVariant(self, board):
+    """Returns the Android variant in use by the active container ebuild."""
+    try:
+      android_package = self.DetermineAndroidPackage(board)
+    except cros_build_lib.RunCommandError:
+      raise NoAndroidVariantError(
+          'Android Variant could not be determined for %s' % board)
+    if not android_package:
+      raise NoAndroidVariantError(
+          'Android Variant could not be determined for %s (no package?)' %
+          board)
+
+    all_use_flags = portage_util.GetInstalledPackageUseFlags(
+        android_package, board)
+    for use_flags in all_use_flags.values():
+      for use_flag in use_flags:
+        if 'cheets_userdebug' in use_flag or 'cheets_sdk_userdebug' in use_flag:
+          return 'userdebug'
+        elif 'cheets_user' in use_flag or 'cheets_sdk_user' in use_flag:
+          return 'user'
+
+    # We iterated through all the flags and could not find user or userdebug.
+    # This should not be possible given that this code is only ran by
+    # builders, which will never use local images.
+    raise NoAndroidVariantError(
+        'Android Variant cannot be deteremined for the package: %s' %
+        android_package)
+
 
   def DetermineAndroidPackage(self, board):
     """Returns the active Android container package in use by the board."""
