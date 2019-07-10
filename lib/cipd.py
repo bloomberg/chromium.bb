@@ -16,7 +16,6 @@ import json
 import os
 import pprint
 import tempfile
-import urllib
 import urlparse
 
 import chromite.lib.cros_logging as log
@@ -28,13 +27,16 @@ from chromite.lib import cros_build_lib
 
 import httplib2
 
+# pylint: disable=line-too-long
 # CIPD client to download.
 #
 # This is version "git_revision:db7a486094873e3944b8e27ab5b23a3ae3c401e7".
 #
 # To switch to another version:
-#   1. Find it in CIPD Web UI, e.g. https://chrome-infra-packages.appspot.com/p/infra/tools/cipd/linux-amd64/+/latest
+#   1. Find it in CIPD Web UI, e.g.
+#      https://chrome-infra-packages.appspot.com/p/infra/tools/cipd/linux-amd64/+/latest
 #   2. Look up SHA256 there.
+# pylint: enable=line-too-long
 CIPD_CLIENT_PACKAGE = 'infra/tools/cipd/linux-amd64'
 CIPD_CLIENT_SHA256 = (
     'ea6b7547ddd316f32fd9974f598949c3f8f22f6beb8c260370242d0d84825162')
