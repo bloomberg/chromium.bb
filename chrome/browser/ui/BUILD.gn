@@ -2738,6 +2738,8 @@ jumbo_split_static_library("ui") {
       "views/global_media_controls/media_dialog_view.h",
       "views/global_media_controls/media_notification_container_impl.cc",
       "views/global_media_controls/media_notification_container_impl.h",
+      "views/global_media_controls/media_notification_list_view.cc",
+      "views/global_media_controls/media_notification_list_view.h",
       "views/global_media_controls/media_toolbar_button_view.cc",
       "views/global_media_controls/media_toolbar_button_view.h",
       "views/hover_button.cc",
