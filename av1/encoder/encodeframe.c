@@ -4046,6 +4046,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
           map ? get_segment_id(cm, map, sb_size, mi_row, mi_col) : 0;
       seg_skip = segfeature_active(seg, segment_id, SEG_LVL_SKIP);
     }
+
     // Realtime non-rd path.
     if (!(sf->partition_search_type == FIXED_PARTITION || seg_skip) &&
         !cpi->partition_search_skippable_frame &&
@@ -4056,77 +4057,75 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
       td->mb.cb_offset = 0;
       nonrd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
                           pc_root);
-    }
-
+    } else {
 #if !CONFIG_REALTIME_ONLY
-    int dummy_rate;
-    int64_t dummy_dist;
-    RD_STATS dummy_rdc;
-    av1_invalid_rd_stats(&dummy_rdc);
-    if (sf->partition_search_type == FIXED_PARTITION || seg_skip) {
+      int dummy_rate;
+      int64_t dummy_dist;
+      RD_STATS dummy_rdc;
+      av1_invalid_rd_stats(&dummy_rdc);
       adjust_rdmult_tpl_model(cpi, x, mi_row, mi_col);
-      set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
-      const BLOCK_SIZE bsize = seg_skip ? sb_size : sf->always_this_block_size;
-      set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
-      rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
-                       &dummy_rate, &dummy_dist, 1, pc_root);
-    } else if (cpi->partition_search_skippable_frame) {
-      adjust_rdmult_tpl_model(cpi, x, mi_row, mi_col);
-      set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
-      const BLOCK_SIZE bsize =
-          get_rd_var_based_fixed_partition(cpi, x, mi_row, mi_col);
-      set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
-      rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
-                       &dummy_rate, &dummy_dist, 1, pc_root);
-    } else if (!(sf->partition_search_type == VAR_BASED_PARTITION &&
-                 use_nonrd_mode)) {
-      adjust_rdmult_tpl_model(cpi, x, mi_row, mi_col);
-      reset_partition(pc_root, sb_size);
+      if (sf->partition_search_type == FIXED_PARTITION || seg_skip) {
+        set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
+        const BLOCK_SIZE bsize =
+            seg_skip ? sb_size : sf->always_this_block_size;
+        set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
+        rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
+                         &dummy_rate, &dummy_dist, 1, pc_root);
+      } else if (cpi->partition_search_skippable_frame) {
+        set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
+        const BLOCK_SIZE bsize =
+            get_rd_var_based_fixed_partition(cpi, x, mi_row, mi_col);
+        set_fixed_partitioning(cpi, tile_info, mi, mi_row, mi_col, bsize);
+        rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
+                         &dummy_rate, &dummy_dist, 1, pc_root);
+      } else {
+        reset_partition(pc_root, sb_size);
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
-      start_timing(cpi, rd_pick_partition_time);
+        start_timing(cpi, rd_pick_partition_time);
 #endif
-      BLOCK_SIZE max_sq_size = BLOCK_128X128;
-      switch (cpi->oxcf.max_partition_size) {
-        case 4: max_sq_size = BLOCK_4X4; break;
-        case 8: max_sq_size = BLOCK_8X8; break;
-        case 16: max_sq_size = BLOCK_16X16; break;
-        case 32: max_sq_size = BLOCK_32X32; break;
-        case 64: max_sq_size = BLOCK_64X64; break;
-        case 128: max_sq_size = BLOCK_128X128; break;
-        default: assert(0); break;
-      }
-      max_sq_size = AOMMIN(max_sq_size, sb_size);
+        BLOCK_SIZE max_sq_size = BLOCK_128X128;
+        switch (cpi->oxcf.max_partition_size) {
+          case 4: max_sq_size = BLOCK_4X4; break;
+          case 8: max_sq_size = BLOCK_8X8; break;
+          case 16: max_sq_size = BLOCK_16X16; break;
+          case 32: max_sq_size = BLOCK_32X32; break;
+          case 64: max_sq_size = BLOCK_64X64; break;
+          case 128: max_sq_size = BLOCK_128X128; break;
+          default: assert(0); break;
+        }
+        max_sq_size = AOMMIN(max_sq_size, sb_size);
 
-      BLOCK_SIZE min_sq_size = BLOCK_4X4;
-      switch (cpi->oxcf.min_partition_size) {
-        case 4: min_sq_size = BLOCK_4X4; break;
-        case 8: min_sq_size = BLOCK_8X8; break;
-        case 16: min_sq_size = BLOCK_16X16; break;
-        case 32: min_sq_size = BLOCK_32X32; break;
-        case 64: min_sq_size = BLOCK_64X64; break;
-        case 128: min_sq_size = BLOCK_128X128; break;
-        default: assert(0); break;
-      }
+        BLOCK_SIZE min_sq_size = BLOCK_4X4;
+        switch (cpi->oxcf.min_partition_size) {
+          case 4: min_sq_size = BLOCK_4X4; break;
+          case 8: min_sq_size = BLOCK_8X8; break;
+          case 16: min_sq_size = BLOCK_16X16; break;
+          case 32: min_sq_size = BLOCK_32X32; break;
+          case 64: min_sq_size = BLOCK_64X64; break;
+          case 128: min_sq_size = BLOCK_128X128; break;
+          default: assert(0); break;
+        }
 
-      if (use_auto_max_partition(cpi, sb_size, mi_row, mi_col)) {
-        float features[FEATURE_SIZE_MAX_MIN_PART_PRED] = { 0.0f };
+        if (use_auto_max_partition(cpi, sb_size, mi_row, mi_col)) {
+          float features[FEATURE_SIZE_MAX_MIN_PART_PRED] = { 0.0f };
 
-        av1_get_max_min_partition_features(cpi, x, mi_row, mi_col, features);
-        max_sq_size =
-            AOMMIN(av1_predict_max_partition(cpi, x, features), max_sq_size);
-      }
+          av1_get_max_min_partition_features(cpi, x, mi_row, mi_col, features);
+          max_sq_size =
+              AOMMIN(av1_predict_max_partition(cpi, x, features), max_sq_size);
+        }
 
-      min_sq_size = AOMMIN(min_sq_size, max_sq_size);
+        min_sq_size = AOMMIN(min_sq_size, max_sq_size);
 
-      rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
-                        max_sq_size, min_sq_size, &dummy_rdc, dummy_rdc,
-                        pc_root, NULL);
+        rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
+                          max_sq_size, min_sq_size, &dummy_rdc, dummy_rdc,
+                          pc_root, NULL);
 #if CONFIG_COLLECT_COMPONENT_TIMING
-      end_timing(cpi, rd_pick_partition_time);
+        end_timing(cpi, rd_pick_partition_time);
 #endif
-    }
+      }
 #endif  // !CONFIG_REALTIME_ONLY
+    }
 
     // TODO(angiebird): Let inter_mode_rd_model_estimation support multi-tile.
     if (cpi->sf.inter_mode_rd_model_estimation == 1 && cm->tile_cols == 1 &&
