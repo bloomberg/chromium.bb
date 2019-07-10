@@ -215,9 +215,6 @@ crbug.com/707444 svg/custom/clip-mask-negative-scale.svg [ Failure ]
 
 # Subpixel or 1-pixel differences. May be real subpixel handling bugs.
 Bug(none) fast/forms/text/input-appearance-autocomplete-very-long-value.html [ Failure ]
-Bug(none) fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
-Bug(none) virtual/threaded/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Skip ]
-Bug(none) virtual/scroll_customization/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Skip ]
 Bug(none) svg/custom/grayscale-gradient-mask-2.svg [ Failure ]
 Bug(none) paint/invalidation/scroll/scroll-in-transformed-layer.html [ Failure ]
 Bug(none) paint/invalidation/scroll/scroll-with-transformed-parent-layer.html [ Failure ]

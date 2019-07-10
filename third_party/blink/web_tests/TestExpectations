@@ -236,9 +236,7 @@ crbug.com/907601 virtual/scroll_customization/fast/scrolling/events/scrollend-ev
 crbug.com/907601 external/wpt/dom/events/scrolling/scrollend-event-fired-after-snap.html [ Skip ]
 
 # Tests not yet passing with Blink FractionalScrollOffsets enabled.
-crbug.com/414283 virtual/fractional_scrolling/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/414283 virtual/fractional_scrolling/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure Pass ]
-crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure Pass ]
 
 crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
@@ -2641,7 +2639,6 @@ crbug.com/613672 [ Mac ] fast/events/touch/gesture/gesture-scrollbar.html [ Skip
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-noscroll-body-xhidden.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-noscroll-body-yhidden.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-div-past-extent-diagonally.html [ Skip ]
-crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-div-scaled.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-div-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-div.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
@@ -2659,7 +2656,6 @@ crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-noscroll-body-xhidden.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-noscroll-body-yhidden.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-div-past-extent-diagonally.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-div-scaled.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-div-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-div.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
@@ -2677,7 +2673,6 @@ crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-noscroll-body-xhidden.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-noscroll-body-yhidden.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-div-past-extent-diagonally.html [ Skip ]
-crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-div-scaled.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-div-zoomed.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-div.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-iframe-editable.html [ Skip ]
