@@ -21,6 +21,9 @@ sys.path.insert(1, os.path.join(os.path.dirname(__file__), os.path.pardir))
 import convert_dex_profile
 
 
+_FIXED_ZIP_HEADER_LEN = 30
+
+
 def _CheckFilePathEndsWithJar(parser, file_path):
   if not file_path.endswith(".jar"):
     parser.error("%s does not end in .jar" % file_path)
@@ -121,44 +124,8 @@ def _ParseArgs(args):
   return options, paths
 
 
-def _MoveTempDexFile(tmp_dex_dir, dex_path):
-  """Move the temp dex file out of |tmp_dex_dir|.
-
-  Args:
-    tmp_dex_dir: Path to temporary directory created with tempfile.mkdtemp().
-      The directory should have just a single file.
-    dex_path: Target path to move dex file to.
-
-  Raises:
-    Exception if there are multiple files in |tmp_dex_dir|.
-  """
-  tempfiles = os.listdir(tmp_dex_dir)
-  if len(tempfiles) > 1:
-    raise Exception('%d files created, expected 1' % len(tempfiles))
-
-  tmp_dex_path = os.path.join(tmp_dex_dir, tempfiles[0])
-  shutil.move(tmp_dex_path, dex_path)
-
-
-def _NoClassFiles(jar_paths):
-  """Returns True if there are no .class files in the given JARs.
-
-  Args:
-    jar_paths: list of strings representing JAR file paths.
-
-  Returns:
-    (bool) True if no .class files are found.
-  """
-  for jar_path in jar_paths:
-    with zipfile.ZipFile(jar_path) as jar:
-      if any(name.endswith('.class') for name in jar.namelist()):
-        return False
-  return True
-
-
 def _RunD8(dex_cmd, input_paths, output_path):
-  dex_cmd += ['--output', output_path]
-  dex_cmd += input_paths
+  dex_cmd = dex_cmd + ['--output', output_path] + input_paths
   build_utils.CheckOutput(dex_cmd, print_stderr=False)
 
 
@@ -284,37 +251,29 @@ def _ZipMultidex(file_dir, dex_files):
   return zip_name
 
 
-def _ZipSingleDex(dex_file, zip_name):
-  """Zip up a single dex file.
+def _ZipAligned(dex_files, output_path):
+  """Creates a .dex.jar with 4-byte aligned files.
 
   Args:
-    dex_file: A dexfile whose name is ignored.
-    zip_name: The output file in which to write the zip.
+    dex_files: List of dex files.
+    output_path: The output file in which to write the zip.
   """
-  build_utils.DoZip([('classes.dex', dex_file)], zip_name)
+  with zipfile.ZipFile(output_path, 'w') as z:
+    for i, dex_file in enumerate(dex_files):
+      name = 'classes{}.dex'.format(i + 1 if i > 0 else '')
+      zip_info = build_utils.HermeticZipInfo(filename=name)
+      cur_offset = z.fp.tell()
+      header_size = _FIXED_ZIP_HEADER_LEN + len(name)
+      alignment_needed = (4 - cur_offset + header_size) % 4
+
+      # Extra field used to 4-byte align classes.dex. Alignment speeds up
+      # execution when dex files are used via incremental install.
+      zip_info.extra = b'\0' * alignment_needed
+      with open(dex_file) as f:
+        z.writestr(zip_info, f.read())
 
 
-def main(args):
-  options, paths = _ParseArgs(args)
-  if ((options.proguard_enabled == 'true'
-          and options.configuration_name == 'Release')
-      or (options.debug_build_proguard_enabled == 'true'
-          and options.configuration_name == 'Debug')):
-    paths = [options.proguard_enabled_input_path]
-
-  if options.inputs:
-    paths += options.inputs
-
-  if options.excluded_paths:
-    # Excluded paths are relative to the output directory.
-    exclude_paths = options.excluded_paths
-    paths = [p for p in paths if not
-             os.path.relpath(p, options.output_directory) in exclude_paths]
-
-  input_paths = list(paths)
-  if options.multi_dex and options.main_dex_list_path:
-    input_paths.append(options.main_dex_list_path)
-
+def _PerformDexing(paths, options):
   dex_cmd = ['java', '-jar', options.d8_jar_path, '--no-desugaring']
   if options.multi_dex and options.main_dex_list_path:
     dex_cmd += ['--main-dex-list', options.main_dex_list_path]
@@ -323,30 +282,20 @@ def main(args):
   if options.min_api:
     dex_cmd += ['--min-api', options.min_api]
 
-  is_dex = options.dex_path.endswith('.dex')
-  is_jar = options.dex_path.endswith('.jar')
-
   with build_utils.TempDir() as tmp_dir:
     tmp_dex_dir = os.path.join(tmp_dir, 'tmp_dex_dir')
     os.mkdir(tmp_dex_dir)
-    if is_jar and _NoClassFiles(paths):
-      # Handle case where no classfiles are specified in inputs
-      # by creating an empty JAR
-      with zipfile.ZipFile(options.dex_path, 'w') as outfile:
-        outfile.comment = 'empty'
-    else:
-      # .dex files can't specify a name for D8. Instead, we output them to a
-      # temp directory then move them after the command has finished running
-      # (see _MoveTempDexFile). For other files, tmp_dex_dir is None.
-      _RunD8(dex_cmd, paths, tmp_dex_dir)
+    _RunD8(dex_cmd, paths, tmp_dex_dir)
+    dex_files = [os.path.join(tmp_dex_dir, f) for f in os.listdir(tmp_dex_dir)]
 
-    tmp_dex_output = os.path.join(tmp_dir, 'tmp_dex_output')
-    if is_dex:
-      _MoveTempDexFile(tmp_dex_dir, tmp_dex_output)
+    if not options.dex_path.endswith('.dex'):
+      tmp_dex_output = os.path.join(tmp_dir, 'tmp_dex_output.zip')
+      _ZipAligned(sorted(dex_files), tmp_dex_output)
     else:
-      # d8 supports outputting to a .zip, but does not have deterministic file
-      # ordering: https://issuetracker.google.com/issues/119945929
-      build_utils.ZipDir(tmp_dex_output, tmp_dex_dir)
+      # Output to a .dex file.
+      if len(dex_files) > 1:
+        raise Exception('%d files created, expected 1' % len(dex_files))
+      tmp_dex_output = dex_files[0]
 
     if options.dexlayout_profile:
       if options.proguard_mapping_path is not None:
@@ -366,16 +315,28 @@ def main(args):
       if len(output_files) > 1:
         target = _ZipMultidex(tmp_dir, output_files)
       else:
-        output = output_files[0]
-        if not zipfile.is_zipfile(output):
+        if not zipfile.is_zipfile(output_files[0]):
           target = os.path.join(tmp_dir, 'dex_classes.zip')
-          _ZipSingleDex(output, target)
+          _ZipAligned(output_files, target)
         else:
-          target = output
-      shutil.move(os.path.join(tmp_dir, target), tmp_dex_output)
+          target = output_files[0]
+      tmp_dex_output = os.path.join(tmp_dir, target)
 
     # The dex file is complete and can be moved out of tmp_dir.
     shutil.move(tmp_dex_output, options.dex_path)
+
+
+def main(args):
+  options, paths = _ParseArgs(args)
+
+  if options.inputs:
+    paths += options.inputs
+
+  input_paths = list(paths)
+  if options.multi_dex and options.main_dex_list_path:
+    input_paths.append(options.main_dex_list_path)
+
+  _PerformDexing(paths, options)
 
   build_utils.WriteDepfile(
       options.depfile, options.dex_path, input_paths, add_pydeps=False)
