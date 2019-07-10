@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #include <libweston/libweston.h>
+#include "libweston-internal.h"
 #include "compositor/weston.h"
 
 static void

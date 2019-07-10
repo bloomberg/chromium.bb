@@ -274,4 +274,21 @@ weston_spring_done(struct weston_spring *spring);
 
 void
 weston_spring_update(struct weston_spring *spring, const struct timespec *time);
+
+/* weston_view */
+
+void
+weston_view_to_global_fixed(struct weston_view *view,
+			    wl_fixed_t sx, wl_fixed_t sy,
+			    wl_fixed_t *x, wl_fixed_t *y);
+void
+weston_view_from_global_float(struct weston_view *view,
+			      float x, float y, float *vx, float *vy);
+bool
+weston_view_is_opaque(struct weston_view *ev, pixman_region32_t *region);
+
+void
+weston_view_move_to_plane(struct weston_view *view,
+			  struct weston_plane *plane);
+
 #endif
