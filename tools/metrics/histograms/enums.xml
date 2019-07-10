@@ -56554,6 +56554,7 @@ would be helpful to identify which type is being sent.
   <int value="42" label="Send Tab"/>
   <int value="43" label="Security Events"/>
   <int value="44" label="Wi-Fi Configurations"/>
+  <int value="45" label="Web Apps"/>
 </enum>
 
 <enum name="SyncModelTypeStoreInitResult">
