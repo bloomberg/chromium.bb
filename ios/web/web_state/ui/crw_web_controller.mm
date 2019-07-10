@@ -416,26 +416,40 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   DCHECK_NE(_webView, webView);
 
   // Unwind the old web view.
-  CRWWKScriptMessageRouter* messageRouter =
-      [self webViewConfigurationProvider].GetScriptMessageRouter();
-  web::WebFramesManagerImpl::FromWebState(self.webStateImpl)
-      ->OnWebViewUpdated(_webView, webView, messageRouter);
-  if (_webView) {
-    // TODO(crbug.com/956516): Use removeScriptMessageHandlerForName:webView:
-    // for |kScriptMessageName| and let CRWContextMenuController unregister its
-    // own callback.
-    [messageRouter removeAllScriptMessageHandlersForWebView:_webView];
-  }
+
+  // Remove KVO and WK*Delegate before calling methods on WKWebView so that
+  // handlers won't receive unnecessary callbacks.
   [_webView setNavigationDelegate:nil];
   [_webView setUIDelegate:nil];
   for (NSString* keyPath in self.WKWebViewObservers) {
     [_webView removeObserver:self forKeyPath:keyPath];
   }
 
+  CRWWKScriptMessageRouter* messageRouter =
+      [self webViewConfigurationProvider].GetScriptMessageRouter();
+  web::WebFramesManagerImpl::FromWebState(self.webStateImpl)
+      ->OnWebViewUpdated(_webView, webView, messageRouter);
+
+  if (_webView) {
+    // TODO(crbug.com/956516): Use removeScriptMessageHandlerForName:webView:
+    // for |kScriptMessageName| and let CRWContextMenuController unregister its
+    // own callback.
+    [messageRouter removeAllScriptMessageHandlersForWebView:_webView];
+
+    [_webView stopLoading];
+    [_webView removeFromSuperview];
+  }
+
   // Set up the new web view.
   _webView = webView;
 
   if (_webView) {
+    [_webView setNavigationDelegate:self.navigationHandler];
+    [_webView setUIDelegate:self.UIHandler];
+    for (NSString* keyPath in self.WKWebViewObservers) {
+      [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
+    }
+
     __weak CRWWebController* weakSelf = self;
     [messageRouter
         setScriptMessageHandler:^(WKScriptMessage* message) {
@@ -443,16 +457,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         }
                            name:kScriptMessageName
                         webView:_webView];
+
+    _webView.allowsBackForwardNavigationGestures =
+        _allowsBackForwardNavigationGestures;
   }
   [_jsInjector setWebView:_webView];
-  [_webView setNavigationDelegate:self.navigationHandler];
-  [_webView setUIDelegate:self.UIHandler];
-  for (NSString* keyPath in self.WKWebViewObservers) {
-    [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
-  }
   self.webViewNavigationObserver.webView = _webView;
-  _webView.allowsBackForwardNavigationGestures =
-      _allowsBackForwardNavigationGestures;
+
   [self setDocumentURL:_defaultURL context:nullptr];
 }
 
@@ -1809,11 +1820,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   self.webStateImpl->CancelDialogs();
   self.navigationManagerImpl->DetachFromWebView();
 
-  [self.webView stopLoading];
-  [self.webView removeFromSuperview];
+  [self setWebView:nil];
   [self.navigationHandler stopLoading];
   [_containerView resetContent];
-  [self setWebView:nil];
 
   // webView:didFailProvisionalNavigation:withError: may never be called after
   // resetting WKWebView, so it is important to clear pending navigations now.
