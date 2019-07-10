@@ -1826,7 +1826,7 @@ static void process_first_pass_stats(AV1_COMP *cpi,
     twopass->fr_content_type = FC_NORMAL;
 }
 
-static void setup_target_rate(AV1_COMP *cpi, FRAME_TYPE frame_type) {
+static void setup_target_rate(AV1_COMP *cpi) {
   RATE_CONTROL *const rc = &cpi->rc;
   GF_GROUP *const gf_group = &cpi->gf_group;
 
@@ -1835,13 +1835,6 @@ static void setup_target_rate(AV1_COMP *cpi, FRAME_TYPE frame_type) {
   if (cpi->oxcf.pass == 0) {
     av1_rc_set_frame_target(cpi, target_rate, cpi->common.width,
                             cpi->common.height);
-  } else {
-    if (frame_type == KEY_FRAME) {
-      target_rate = av1_rc_clamp_iframe_target_size(cpi, target_rate);
-    } else {
-      target_rate = av1_rc_clamp_pframe_target_size(
-          cpi, target_rate, gf_group->update_type[gf_group->index]);
-    }
   }
 
   rc->base_frame_target = target_rate;
@@ -1860,7 +1853,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
     assert(gf_group->index < gf_group->size);
     const int update_type = gf_group->update_type[gf_group->index];
 
-    setup_target_rate(cpi, frame_params->frame_type);
+    setup_target_rate(cpi);
 
     // If this is an arf frame then we dont want to read the stats file or
     // advance the input pointer as we already have what we need.
@@ -1936,7 +1929,7 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
     cpi->partition_search_skippable_frame = is_skippable_frame(cpi);
   }
 
-  setup_target_rate(cpi, frame_params->frame_type);
+  setup_target_rate(cpi);
 }
 
 void av1_init_second_pass(AV1_COMP *cpi) {
