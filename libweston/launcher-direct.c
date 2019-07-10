@@ -104,14 +104,14 @@ vt_handler(int signal_number, void *data)
 	struct weston_compositor *compositor = launcher->compositor;
 
 	if (compositor->session_active) {
-		compositor->session_active = 0;
+		compositor->session_active = false;
 		wl_signal_emit(&compositor->session_signal, compositor);
 		drmDropMaster(launcher->drm_fd);
 		ioctl(launcher->tty, VT_RELDISP, 1);
 	} else {
 		ioctl(launcher->tty, VT_RELDISP, VT_ACKACQ);
 		drmSetMaster(launcher->drm_fd);
-		compositor->session_active = 1;
+		compositor->session_active = true;
 		wl_signal_emit(&compositor->session_signal, compositor);
 	}
 

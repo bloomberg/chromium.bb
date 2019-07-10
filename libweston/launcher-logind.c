@@ -272,7 +272,7 @@ launcher_logind_activate_vt(struct weston_launcher *launcher, int vt)
 static void
 launcher_logind_set_active(struct launcher_logind *wl, bool active)
 {
-	if (!wl->compositor->session_active == !active)
+	if (wl->compositor->session_active == active)
 		return;
 
 	wl->compositor->session_active = active;

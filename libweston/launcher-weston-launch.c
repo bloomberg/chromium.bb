@@ -207,12 +207,12 @@ launcher_weston_launch_data(int fd, uint32_t mask, void *data)
 
 	switch (ret) {
 	case WESTON_LAUNCHER_ACTIVATE:
-		launcher->compositor->session_active = 1;
+		launcher->compositor->session_active = true;
 		wl_signal_emit(&launcher->compositor->session_signal,
 			       launcher->compositor);
 		break;
 	case WESTON_LAUNCHER_DEACTIVATE:
-		launcher->compositor->session_active = 0;
+		launcher->compositor->session_active = false;
 		wl_signal_emit(&launcher->compositor->session_signal,
 			       launcher->compositor);
 		break;

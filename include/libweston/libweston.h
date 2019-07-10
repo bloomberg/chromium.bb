@@ -1140,7 +1140,7 @@ struct weston_compositor {
 	struct wl_signal output_heads_changed_signal; /* arg: weston_output */
 
 	struct wl_signal session_signal;
-	int session_active;
+	bool session_active;
 
 	struct weston_layer fade_layer;
 	struct weston_layer cursor_layer;
