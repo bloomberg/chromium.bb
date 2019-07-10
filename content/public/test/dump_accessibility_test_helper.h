@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ACCESSIBILITY_DUMP_ACCESSIBILITY_TEST_HELPER_H_
-#define CONTENT_BROWSER_ACCESSIBILITY_DUMP_ACCESSIBILITY_TEST_HELPER_H_
+#ifndef CONTENT_PUBLIC_TEST_DUMP_ACCESSIBILITY_TEST_HELPER_H_
+#define CONTENT_PUBLIC_TEST_DUMP_ACCESSIBILITY_TEST_HELPER_H_
 
 #include "base/optional.h"
 
@@ -53,4 +53,4 @@ class DumpAccessibilityTestHelper {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ACCESSIBILITY_DUMP_ACCESSIBILITY_TEST_HELPER_H_
+#endif  // CONTENT_PUBLIC_TEST_DUMP_ACCESSIBILITY_TEST_HELPER_H_

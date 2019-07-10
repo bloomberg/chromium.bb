@@ -78,6 +78,7 @@ using test_server::EmbeddedTestServer;
 
 namespace content {
 
+class BrowserAccessibility;
 class BrowserContext;
 struct FrameVisualProperties;
 class FrameTreeNode;
@@ -867,6 +868,23 @@ void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
 
 // Get a snapshot of a web page's accessibility tree.
 ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents);
+
+// Returns the root accessibility node for the given WebContents.
+BrowserAccessibility* GetRootAccessibilityNode(WebContents* web_contents);
+
+// Finds an accessibility node matching the given criteria.
+struct FindAccessibilityNodeCriteria {
+  FindAccessibilityNodeCriteria();
+  ~FindAccessibilityNodeCriteria();
+  base::Optional<ax::mojom::Role> role;
+  base::Optional<std::string> name;
+};
+BrowserAccessibility* FindAccessibilityNode(
+    WebContents* web_contents,
+    const FindAccessibilityNodeCriteria& criteria);
+BrowserAccessibility* FindAccessibilityNodeInSubtree(
+    BrowserAccessibility* node,
+    const FindAccessibilityNodeCriteria& criteria);
 
 // Find out if the BrowserPlugin for a guest WebContents is focused. Returns
 // false if the WebContents isn't a guest with a BrowserPlugin.
