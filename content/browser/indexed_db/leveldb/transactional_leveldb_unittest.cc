@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <content/browser/indexed_db/scopes/leveldb_state.h>
 #include <stddef.h>
 
 #include <algorithm>
@@ -19,9 +18,10 @@
 #include "base/strings/string_piece.h"
 #include "base/test/simple_test_clock.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
-#include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/scopes/leveldb_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -82,9 +82,10 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
       OpenLevelDB(temp_directory.GetPath());
   EXPECT_TRUE(status.ok());
 
-  std::unique_ptr<LevelDBDatabase> leveldb =
-      std::make_unique<LevelDBDatabase>(std::move(ldb_state), nullptr, nullptr,
-                                        kDefaultMaxOpenIteratorsPerDatabase);
+  std::unique_ptr<TransactionalLevelDBDatabase> leveldb =
+      std::make_unique<TransactionalLevelDBDatabase>(
+          std::move(ldb_state), nullptr, nullptr,
+          kDefaultMaxOpenIteratorsPerDatabase);
   EXPECT_TRUE(leveldb);
   put_value = value;
   status = leveldb->Put(key, &put_value);
@@ -95,9 +96,9 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   std::tie(ldb_state, status, std::ignore) =
       OpenLevelDB(temp_directory.GetPath());
   EXPECT_TRUE(status.ok());
-  leveldb =
-      std::make_unique<LevelDBDatabase>(std::move(ldb_state), nullptr, nullptr,
-                                        kDefaultMaxOpenIteratorsPerDatabase);
+  leveldb = std::make_unique<TransactionalLevelDBDatabase>(
+      std::move(ldb_state), nullptr, nullptr,
+      kDefaultMaxOpenIteratorsPerDatabase);
   EXPECT_TRUE(leveldb);
   bool found = false;
   status = leveldb->Get(key, &got_value, &found);
@@ -122,9 +123,9 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   std::tie(ldb_state, status, std::ignore) =
       OpenLevelDB(temp_directory.GetPath());
   EXPECT_TRUE(status.ok());
-  leveldb =
-      std::make_unique<LevelDBDatabase>(std::move(ldb_state), nullptr, nullptr,
-                                        kDefaultMaxOpenIteratorsPerDatabase);
+  leveldb = std::make_unique<TransactionalLevelDBDatabase>(
+      std::move(ldb_state), nullptr, nullptr,
+      kDefaultMaxOpenIteratorsPerDatabase);
   ASSERT_TRUE(leveldb);
   status = leveldb->Get(key, &got_value, &found);
   EXPECT_TRUE(status.ok());
@@ -169,9 +170,10 @@ TEST(LevelDBDatabaseTest, LastModified) {
   std::tie(ldb_state, status, std::ignore) = OpenLevelDB(base::FilePath());
   EXPECT_TRUE(status.ok());
 
-  std::unique_ptr<LevelDBDatabase> leveldb =
-      std::make_unique<LevelDBDatabase>(std::move(ldb_state), nullptr, nullptr,
-                                        kDefaultMaxOpenIteratorsPerDatabase);
+  std::unique_ptr<TransactionalLevelDBDatabase> leveldb =
+      std::make_unique<TransactionalLevelDBDatabase>(
+          std::move(ldb_state), nullptr, nullptr,
+          kDefaultMaxOpenIteratorsPerDatabase);
   ASSERT_TRUE(leveldb);
   leveldb->SetClockForTesting(std::move(test_clock));
   // Calling |Put| sets time modified.

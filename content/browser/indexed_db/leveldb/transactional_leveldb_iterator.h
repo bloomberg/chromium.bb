@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_ITERATOR_H_
-#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_ITERATOR_H_
+#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_ITERATOR_H_
+#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_ITERATOR_H_
 
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
@@ -11,9 +11,9 @@
 
 namespace content {
 
-class CONTENT_EXPORT LevelDBIterator {
+class CONTENT_EXPORT TransactionalLevelDBIterator {
  public:
-  virtual ~LevelDBIterator() {}
+  virtual ~TransactionalLevelDBIterator() {}
   virtual bool IsValid() const = 0;
   virtual leveldb::Status SeekToLast() = 0;
   virtual leveldb::Status Seek(const base::StringPiece& target) = 0;
@@ -32,4 +32,4 @@ class CONTENT_EXPORT LevelDBIterator {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_ITERATOR_H_
+#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_ITERATOR_H_

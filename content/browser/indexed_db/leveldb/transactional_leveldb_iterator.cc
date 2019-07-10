@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
 
 namespace content {
 
-bool LevelDBIterator::IsDetached() const {
+bool TransactionalLevelDBIterator::IsDetached() const {
   return false;
 }
 

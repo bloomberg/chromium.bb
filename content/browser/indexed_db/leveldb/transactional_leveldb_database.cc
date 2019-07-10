@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/leveldb/leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator_impl.h"
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -32,8 +32,8 @@
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
-#include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -63,7 +63,7 @@ const bool kSyncWrites = true;
 #endif
 }  // namespace
 
-LevelDBSnapshot::LevelDBSnapshot(LevelDBDatabase* db)
+LevelDBSnapshot::LevelDBSnapshot(TransactionalLevelDBDatabase* db)
     : db_(db->db()), snapshot_(db_->GetSnapshot()) {}
 
 LevelDBSnapshot::~LevelDBSnapshot() {
@@ -71,9 +71,10 @@ LevelDBSnapshot::~LevelDBSnapshot() {
 }
 
 // static
-constexpr const size_t LevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase;
+constexpr const size_t
+    TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase;
 
-LevelDBDatabase::LevelDBDatabase(
+TransactionalLevelDBDatabase::TransactionalLevelDBDatabase(
     scoped_refptr<LevelDBState> level_db_state,
     indexed_db::LevelDBFactory* class_factory,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -91,15 +92,15 @@ LevelDBDatabase::LevelDBDatabase(
   DCHECK(max_open_iterators);
 }
 
-LevelDBDatabase::~LevelDBDatabase() {
+TransactionalLevelDBDatabase::~TransactionalLevelDBDatabase() {
   LOCAL_HISTOGRAM_COUNTS_10000("Storage.IndexedDB.LevelDB.MaxIterators",
                                max_iterators_);
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }
 
-leveldb::Status LevelDBDatabase::Put(const StringPiece& key,
-                                     std::string* value) {
+leveldb::Status TransactionalLevelDBDatabase::Put(const StringPiece& key,
+                                                  std::string* value) {
   base::TimeTicks begin_time = base::TimeTicks::Now();
 
   leveldb::WriteOptions write_options;
@@ -117,7 +118,7 @@ leveldb::Status LevelDBDatabase::Put(const StringPiece& key,
   return s;
 }
 
-leveldb::Status LevelDBDatabase::Remove(const StringPiece& key) {
+leveldb::Status TransactionalLevelDBDatabase::Remove(const StringPiece& key) {
   leveldb::WriteOptions write_options;
   write_options.sync = kSyncWrites;
 
@@ -129,10 +130,11 @@ leveldb::Status LevelDBDatabase::Remove(const StringPiece& key) {
   return s;
 }
 
-leveldb::Status LevelDBDatabase::Get(const StringPiece& key,
-                                     std::string* value,
-                                     bool* found,
-                                     const LevelDBSnapshot* snapshot) {
+leveldb::Status TransactionalLevelDBDatabase::Get(
+    const StringPiece& key,
+    std::string* value,
+    bool* found,
+    const LevelDBSnapshot* snapshot) {
   *found = false;
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;  // TODO(jsbell): Disable this if the
@@ -152,7 +154,8 @@ leveldb::Status LevelDBDatabase::Get(const StringPiece& key,
   return s;
 }
 
-leveldb::Status LevelDBDatabase::Write(const LevelDBWriteBatch& write_batch) {
+leveldb::Status TransactionalLevelDBDatabase::Write(
+    const LevelDBWriteBatch& write_batch) {
   base::TimeTicks begin_time = base::TimeTicks::Now();
   leveldb::WriteOptions write_options;
   write_options.sync = kSyncWrites;
@@ -170,19 +173,20 @@ leveldb::Status LevelDBDatabase::Write(const LevelDBWriteBatch& write_batch) {
   return s;
 }
 
-std::unique_ptr<LevelDBIterator> LevelDBDatabase::CreateIterator(
+std::unique_ptr<TransactionalLevelDBIterator>
+TransactionalLevelDBDatabase::CreateIterator(
     const leveldb::ReadOptions& options) {
   num_iterators_++;
   max_iterators_ = std::max(max_iterators_, num_iterators_);
   // Iterator isn't added to lru cache until it is used, as memory isn't loaded
   // for the iterator until it's first Seek call.
   std::unique_ptr<leveldb::Iterator> i(db()->NewIterator(options));
-  return std::unique_ptr<LevelDBIterator>(
-      class_factory_->CreateIteratorImpl(std::move(i), this, options.snapshot));
+  return class_factory_->CreateIteratorImpl(std::move(i), this,
+                                            options.snapshot);
 }
 
-void LevelDBDatabase::Compact(const base::StringPiece& start,
-                              const base::StringPiece& stop) {
+void TransactionalLevelDBDatabase::Compact(const base::StringPiece& start,
+                                           const base::StringPiece& stop) {
   IDB_TRACE("LevelDBDatabase::Compact");
   const leveldb::Slice start_slice = leveldb_env::MakeSlice(start);
   const leveldb::Slice stop_slice = leveldb_env::MakeSlice(stop);
@@ -191,15 +195,15 @@ void LevelDBDatabase::Compact(const base::StringPiece& start,
   db()->CompactRange(&start_slice, &stop_slice);
 }
 
-void LevelDBDatabase::CompactAll() {
+void TransactionalLevelDBDatabase::CompactAll() {
   db()->CompactRange(nullptr, nullptr);
 }
 
-leveldb::ReadOptions LevelDBDatabase::DefaultReadOptions() {
+leveldb::ReadOptions TransactionalLevelDBDatabase::DefaultReadOptions() {
   return DefaultReadOptions(nullptr);
 }
 
-leveldb::ReadOptions LevelDBDatabase::DefaultReadOptions(
+leveldb::ReadOptions TransactionalLevelDBDatabase::DefaultReadOptions(
     const LevelDBSnapshot* snapshot) {
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;  // TODO(jsbell): Disable this if the
@@ -208,7 +212,7 @@ leveldb::ReadOptions LevelDBDatabase::DefaultReadOptions(
   return read_options;
 }
 
-bool LevelDBDatabase::OnMemoryDump(
+bool TransactionalLevelDBDatabase::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   if (!level_db_state_)
@@ -253,11 +257,13 @@ bool LevelDBDatabase::OnMemoryDump(
   return true;
 }
 
-void LevelDBDatabase::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
+void TransactionalLevelDBDatabase::SetClockForTesting(
+    std::unique_ptr<base::Clock> clock) {
   clock_ = std::move(clock);
 }
 
-std::unique_ptr<leveldb::Iterator> LevelDBDatabase::CreateLevelDBIterator(
+std::unique_ptr<leveldb::Iterator>
+TransactionalLevelDBDatabase::CreateLevelDBIterator(
     const leveldb::Snapshot* snapshot) {
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
@@ -265,12 +271,14 @@ std::unique_ptr<leveldb::Iterator> LevelDBDatabase::CreateLevelDBIterator(
   return base::WrapUnique(db()->NewIterator(read_options));
 }
 
-LevelDBDatabase::DetachIteratorOnDestruct::~DetachIteratorOnDestruct() {
+TransactionalLevelDBDatabase::DetachIteratorOnDestruct::
+    ~DetachIteratorOnDestruct() {
   if (it_)
     it_->Detach();
 }
 
-void LevelDBDatabase::OnIteratorUsed(LevelDBIterator* iter) {
+void TransactionalLevelDBDatabase::OnIteratorUsed(
+    TransactionalLevelDBIterator* iter) {
   // This line updates the LRU if the item exists.
   if (iterator_lru_.Get(iter) != iterator_lru_.end())
     return;
@@ -278,7 +286,8 @@ void LevelDBDatabase::OnIteratorUsed(LevelDBIterator* iter) {
   iterator_lru_.Put(iter, std::move(purger));
 }
 
-void LevelDBDatabase::OnIteratorDestroyed(LevelDBIterator* iter) {
+void TransactionalLevelDBDatabase::OnIteratorDestroyed(
+    TransactionalLevelDBIterator* iter) {
   DCHECK_GT(num_iterators_, 0u);
   --num_iterators_;
   auto it = iterator_lru_.Peek(iter);

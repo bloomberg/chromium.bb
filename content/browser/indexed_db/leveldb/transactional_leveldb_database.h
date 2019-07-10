@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_DATABASE_H_
-#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_DATABASE_H_
+#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_DATABASE_H_
+#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_DATABASE_H_
 
 #include <memory>
 #include <string>
@@ -29,12 +29,12 @@ class DB;
 class Iterator;
 class Env;
 class Snapshot;
-}
+}  // namespace leveldb
 
 namespace content {
 class LevelDBComparator;
-class LevelDBDatabase;
-class LevelDBIterator;
+class TransactionalLevelDBDatabase;
+class TransactionalLevelDBIterator;
 class LevelDBWriteBatch;
 
 namespace indexed_db {
@@ -43,10 +43,10 @@ class LevelDBFactory;
 
 class LevelDBSnapshot {
  private:
-  friend class LevelDBDatabase;
-  friend class LevelDBTransaction;
+  friend class TransactionalLevelDBDatabase;
+  friend class TransactionalLevelDBTransaction;
 
-  explicit LevelDBSnapshot(LevelDBDatabase* db);
+  explicit LevelDBSnapshot(TransactionalLevelDBDatabase* db);
   ~LevelDBSnapshot();
 
   leveldb::DB* db_;
@@ -55,7 +55,7 @@ class LevelDBSnapshot {
   DISALLOW_COPY_AND_ASSIGN(LevelDBSnapshot);
 };
 
-class CONTENT_EXPORT LevelDBDatabase
+class CONTENT_EXPORT TransactionalLevelDBDatabase
     : public base::trace_event::MemoryDumpProvider {
  public:
   // Necessary because every iterator hangs onto leveldb blocks which can be
@@ -64,12 +64,13 @@ class CONTENT_EXPORT LevelDBDatabase
 
   // |max_open_cursors| cannot be 0.
   // All calls to this class should be done on |task_runner|.
-  LevelDBDatabase(scoped_refptr<LevelDBState> level_db_state,
-                  indexed_db::LevelDBFactory* factory,
-                  scoped_refptr<base::SequencedTaskRunner> task_runner,
-                  size_t max_open_iterators);
+  TransactionalLevelDBDatabase(
+      scoped_refptr<LevelDBState> level_db_state,
+      indexed_db::LevelDBFactory* factory,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      size_t max_open_iterators);
 
-  ~LevelDBDatabase() override;
+  ~TransactionalLevelDBDatabase() override;
 
   leveldb::Status Put(const base::StringPiece& key, std::string* value);
   leveldb::Status Remove(const base::StringPiece& key);
@@ -79,7 +80,7 @@ class CONTENT_EXPORT LevelDBDatabase
                               const LevelDBSnapshot* = 0);
   leveldb::Status Write(const LevelDBWriteBatch& write_batch);
   // Note: Use DefaultReadOptions() and then adjust any values afterwards.
-  std::unique_ptr<LevelDBIterator> CreateIterator(
+  std::unique_ptr<TransactionalLevelDBIterator> CreateIterator(
       const leveldb::ReadOptions& options);
   const LevelDBComparator* Comparator() const {
     return level_db_state_->idb_comparator();
@@ -107,14 +108,14 @@ class CONTENT_EXPORT LevelDBDatabase
 
  private:
   friend class LevelDBSnapshot;
-  friend class LevelDBIteratorImpl;
+  friend class TransactionalLevelDBIteratorImpl;
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, DeleteFailsIfDirectoryLocked);
 
   // Methods for iterator pooling.
   std::unique_ptr<leveldb::Iterator> CreateLevelDBIterator(
       const leveldb::Snapshot*);
-  void OnIteratorUsed(LevelDBIterator*);
-  void OnIteratorDestroyed(LevelDBIterator*);
+  void OnIteratorUsed(TransactionalLevelDBIterator*);
+  void OnIteratorDestroyed(TransactionalLevelDBIterator*);
 
   void CloseDatabase();
 
@@ -125,7 +126,8 @@ class CONTENT_EXPORT LevelDBDatabase
 
   struct DetachIteratorOnDestruct {
     DetachIteratorOnDestruct() {}
-    explicit DetachIteratorOnDestruct(LevelDBIterator* it) : it_(it) {}
+    explicit DetachIteratorOnDestruct(TransactionalLevelDBIterator* it)
+        : it_(it) {}
     DetachIteratorOnDestruct(DetachIteratorOnDestruct&& that) {
       it_ = that.it_;
       that.it_ = nullptr;
@@ -133,13 +135,13 @@ class CONTENT_EXPORT LevelDBDatabase
     ~DetachIteratorOnDestruct();
 
    private:
-    LevelDBIterator* it_ = nullptr;
+    TransactionalLevelDBIterator* it_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(DetachIteratorOnDestruct);
   };
 
   // Despite the type name, this object uses LRU eviction.
-  base::HashingMRUCache<LevelDBIterator*, DetachIteratorOnDestruct>
+  base::HashingMRUCache<TransactionalLevelDBIterator*, DetachIteratorOnDestruct>
       iterator_lru_;
 
   // Recorded for UMA reporting.
@@ -151,4 +153,4 @@ class CONTENT_EXPORT LevelDBDatabase
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_DATABASE_H_
+#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_DATABASE_H_

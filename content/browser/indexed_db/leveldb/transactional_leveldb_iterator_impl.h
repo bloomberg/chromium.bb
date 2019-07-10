@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_ITERATOR_IMPL_H_
-#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_ITERATOR_IMPL_H_
+#ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_ITERATOR_IMPL_H_
+#define CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_ITERATOR_IMPL_H_
 
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 
@@ -18,15 +18,16 @@ class Snapshot;
 }
 
 namespace content {
-class LevelDBDatabase;
+class TransactionalLevelDBDatabase;
 
 namespace indexed_db {
 class DefaultLevelDBFactory;
 }  // namespace indexed_db
 
-class CONTENT_EXPORT LevelDBIteratorImpl : public content::LevelDBIterator {
+class CONTENT_EXPORT TransactionalLevelDBIteratorImpl
+    : public content::TransactionalLevelDBIterator {
  public:
-  ~LevelDBIteratorImpl() override;
+  ~TransactionalLevelDBIteratorImpl() override;
   bool IsValid() const override;
   leveldb::Status SeekToLast() override;
   leveldb::Status Seek(const base::StringPiece& target) override;
@@ -38,9 +39,10 @@ class CONTENT_EXPORT LevelDBIteratorImpl : public content::LevelDBIterator {
   bool IsDetached() const override;
 
  protected:
-  explicit LevelDBIteratorImpl(std::unique_ptr<leveldb::Iterator> iterator,
-                               LevelDBDatabase* db,
-                               const leveldb::Snapshot* snapshot);
+  explicit TransactionalLevelDBIteratorImpl(
+      std::unique_ptr<leveldb::Iterator> iterator,
+      TransactionalLevelDBDatabase* db,
+      const leveldb::Snapshot* snapshot);
 
  private:
   enum class IteratorState { ACTIVE, EVICTED_AND_VALID, EVICTED_AND_INVALID };
@@ -56,14 +58,14 @@ class CONTENT_EXPORT LevelDBIteratorImpl : public content::LevelDBIterator {
   std::unique_ptr<leveldb::Iterator> iterator_;
 
   // State used to facilitate memory purging.
-  LevelDBDatabase* db_;
+  TransactionalLevelDBDatabase* db_;
   IteratorState iterator_state_ = IteratorState::ACTIVE;
   std::string key_before_eviction_;
   const leveldb::Snapshot* snapshot_;
 
-  DISALLOW_COPY_AND_ASSIGN(LevelDBIteratorImpl);
+  DISALLOW_COPY_AND_ASSIGN(TransactionalLevelDBIteratorImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_ITERATOR_IMPL_H_
+#endif  // CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_ITERATOR_IMPL_H_

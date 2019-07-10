@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator_impl.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "content/browser/indexed_db/leveldb/leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 
 static leveldb::Slice MakeSlice(const base::StringPiece& s) {
   return leveldb::Slice(s.begin(), s.size());
@@ -20,16 +20,17 @@ static base::StringPiece MakeStringPiece(const leveldb::Slice& s) {
 
 namespace content {
 
-LevelDBIteratorImpl::~LevelDBIteratorImpl() {
+TransactionalLevelDBIteratorImpl::~TransactionalLevelDBIteratorImpl() {
   db_->OnIteratorDestroyed(this);
 }
 
-LevelDBIteratorImpl::LevelDBIteratorImpl(std::unique_ptr<leveldb::Iterator> it,
-                                         LevelDBDatabase* db,
-                                         const leveldb::Snapshot* snapshot)
+TransactionalLevelDBIteratorImpl::TransactionalLevelDBIteratorImpl(
+    std::unique_ptr<leveldb::Iterator> it,
+    TransactionalLevelDBDatabase* db,
+    const leveldb::Snapshot* snapshot)
     : iterator_(std::move(it)), db_(db), snapshot_(snapshot) {}
 
-leveldb::Status LevelDBIteratorImpl::CheckStatus() {
+leveldb::Status TransactionalLevelDBIteratorImpl::CheckStatus() {
   DCHECK(!IsDetached());
   const leveldb::Status& s = iterator_->status();
   if (!s.ok())
@@ -37,7 +38,7 @@ leveldb::Status LevelDBIteratorImpl::CheckStatus() {
   return s;
 }
 
-bool LevelDBIteratorImpl::IsValid() const {
+bool TransactionalLevelDBIteratorImpl::IsValid() const {
   switch (iterator_state_) {
     case IteratorState::EVICTED_AND_VALID:
       return true;
@@ -50,21 +51,22 @@ bool LevelDBIteratorImpl::IsValid() const {
   return false;
 }
 
-leveldb::Status LevelDBIteratorImpl::SeekToLast() {
+leveldb::Status TransactionalLevelDBIteratorImpl::SeekToLast() {
   WillUseDBIterator();
   DCHECK(iterator_);
   iterator_->SeekToLast();
   return CheckStatus();
 }
 
-leveldb::Status LevelDBIteratorImpl::Seek(const base::StringPiece& target) {
+leveldb::Status TransactionalLevelDBIteratorImpl::Seek(
+    const base::StringPiece& target) {
   WillUseDBIterator();
   DCHECK(iterator_);
   iterator_->Seek(MakeSlice(target));
   return CheckStatus();
 }
 
-leveldb::Status LevelDBIteratorImpl::Next() {
+leveldb::Status TransactionalLevelDBIteratorImpl::Next() {
   DCHECK(IsValid());
   WillUseDBIterator();
   DCHECK(iterator_);
@@ -72,7 +74,7 @@ leveldb::Status LevelDBIteratorImpl::Next() {
   return CheckStatus();
 }
 
-leveldb::Status LevelDBIteratorImpl::Prev() {
+leveldb::Status TransactionalLevelDBIteratorImpl::Prev() {
   DCHECK(IsValid());
   WillUseDBIterator();
   DCHECK(iterator_);
@@ -80,23 +82,24 @@ leveldb::Status LevelDBIteratorImpl::Prev() {
   return CheckStatus();
 }
 
-base::StringPiece LevelDBIteratorImpl::Key() const {
+base::StringPiece TransactionalLevelDBIteratorImpl::Key() const {
   DCHECK(IsValid());
   if (IsDetached())
     return key_before_eviction_;
   return MakeStringPiece(iterator_->key());
 }
 
-base::StringPiece LevelDBIteratorImpl::Value() const {
+base::StringPiece TransactionalLevelDBIteratorImpl::Value() const {
   DCHECK(IsValid());
   // Always need to update the LRU, so we always call this. Const-cast needed,
   // as we're implementing a caching layer.
-  LevelDBIteratorImpl* non_const = const_cast<LevelDBIteratorImpl*>(this);
+  TransactionalLevelDBIteratorImpl* non_const =
+      const_cast<TransactionalLevelDBIteratorImpl*>(this);
   non_const->WillUseDBIterator();
   return MakeStringPiece(iterator_->value());
 }
 
-void LevelDBIteratorImpl::Detach() {
+void TransactionalLevelDBIteratorImpl::Detach() {
   DCHECK(!IsDetached());
   if (iterator_->Valid()) {
     iterator_state_ = IteratorState::EVICTED_AND_VALID;
@@ -107,11 +110,11 @@ void LevelDBIteratorImpl::Detach() {
   iterator_.reset();
 }
 
-bool LevelDBIteratorImpl::IsDetached() const {
+bool TransactionalLevelDBIteratorImpl::IsDetached() const {
   return iterator_state_ != IteratorState::ACTIVE;
 }
 
-void LevelDBIteratorImpl::WillUseDBIterator() {
+void TransactionalLevelDBIteratorImpl::WillUseDBIterator() {
   db_->OnIteratorUsed(this);
   if (!IsDetached())
     return;
