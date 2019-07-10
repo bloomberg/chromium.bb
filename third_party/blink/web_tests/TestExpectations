@@ -3217,12 +3217,6 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.h
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip ]
-crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-003.html [ Failure ]
-crbug.com/626703 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-004.html [ Failure ]
-crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-005.html [ Failure ]
-crbug.com/626703 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-005.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-select-elem-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-fraktur-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-stretched-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-looped-001.tentative.html [ Failure ]
