@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_DBUS_PROPERTIES_INTERFACE_H_
-#define CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_DBUS_PROPERTIES_INTERFACE_H_
+#ifndef COMPONENTS_DBUS_MENU_PROPERTIES_INTERFACE_H_
+#define COMPONENTS_DBUS_MENU_PROPERTIES_INTERFACE_H_
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
-#include "chrome/browser/ui/views/status_icons/dbus_types.h"
+#include "components/dbus/menu/types.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 
 // https://dbus.freedesktop.org/doc/dbus-specification.html#standard-interfaces-properties
-class DbusPropertiesInterface {
+class COMPONENT_EXPORT(DBUS) DbusPropertiesInterface {
  public:
   using InitializedCallback = base::OnceCallback<void(bool success)>;
 
@@ -68,4 +69,4 @@ class DbusPropertiesInterface {
   DISALLOW_COPY_AND_ASSIGN(DbusPropertiesInterface);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_DBUS_PROPERTIES_INTERFACE_H_
+#endif  // COMPONENTS_DBUS_MENU_PROPERTIES_INTERFACE_H_

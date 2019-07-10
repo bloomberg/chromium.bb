@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_DBUS_TYPES_H_
-#define CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_DBUS_TYPES_H_
+#ifndef COMPONENTS_DBUS_MENU_TYPES_H_
+#define COMPONENTS_DBUS_MENU_TYPES_H_
 
 #include <stdint.h>
 
@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/component_export.h"
 #include "base/memory/ref_counted_memory.h"
 #include "dbus/message.h"
 
@@ -60,7 +61,7 @@ std::string GetDbusTypeTupleSignature() {
 
 }  // namespace detail
 
-class DbusType {
+class COMPONENT_EXPORT(DBUS) DbusType {
  public:
   virtual ~DbusType();
 
@@ -85,7 +86,7 @@ class DbusTypeImpl : public DbusType {
   std::string GetSignatureDynamic() const override { return T::GetSignature(); }
 };
 
-class DbusBoolean : public DbusTypeImpl<DbusBoolean> {
+class COMPONENT_EXPORT(DBUS) DbusBoolean : public DbusTypeImpl<DbusBoolean> {
  public:
   explicit DbusBoolean(bool value);
   DbusBoolean(DbusBoolean&& other);
@@ -100,7 +101,7 @@ class DbusBoolean : public DbusTypeImpl<DbusBoolean> {
   bool value_;
 };
 
-class DbusInt32 : public DbusTypeImpl<DbusInt32> {
+class COMPONENT_EXPORT(DBUS) DbusInt32 : public DbusTypeImpl<DbusInt32> {
  public:
   explicit DbusInt32(int32_t value);
   DbusInt32(DbusInt32&& other);
@@ -115,7 +116,7 @@ class DbusInt32 : public DbusTypeImpl<DbusInt32> {
   int32_t value_;
 };
 
-class DbusUint32 : public DbusTypeImpl<DbusUint32> {
+class COMPONENT_EXPORT(DBUS) DbusUint32 : public DbusTypeImpl<DbusUint32> {
  public:
   explicit DbusUint32(uint32_t value);
   DbusUint32(DbusUint32&& other);
@@ -130,7 +131,7 @@ class DbusUint32 : public DbusTypeImpl<DbusUint32> {
   uint32_t value_;
 };
 
-class DbusString : public DbusTypeImpl<DbusString> {
+class COMPONENT_EXPORT(DBUS) DbusString : public DbusTypeImpl<DbusString> {
  public:
   explicit DbusString(const std::string& value);
   DbusString(DbusString&& other);
@@ -145,7 +146,8 @@ class DbusString : public DbusTypeImpl<DbusString> {
   std::string value_;
 };
 
-class DbusObjectPath : public DbusTypeImpl<DbusObjectPath> {
+class COMPONENT_EXPORT(DBUS) DbusObjectPath
+    : public DbusTypeImpl<DbusObjectPath> {
  public:
   explicit DbusObjectPath(const dbus::ObjectPath& value);
   DbusObjectPath(DbusObjectPath&& other);
@@ -160,7 +162,7 @@ class DbusObjectPath : public DbusTypeImpl<DbusObjectPath> {
   dbus::ObjectPath value_;
 };
 
-class DbusVariant : public DbusTypeImpl<DbusVariant> {
+class COMPONENT_EXPORT(DBUS) DbusVariant : public DbusTypeImpl<DbusVariant> {
  public:
   DbusVariant();
   explicit DbusVariant(std::unique_ptr<DbusType> value);
@@ -186,7 +188,7 @@ DbusVariant MakeDbusVariant(T t) {
 }
 
 template <typename T>
-class DbusArray : public DbusTypeImpl<DbusArray<T>> {
+class COMPONENT_EXPORT(DBUS) DbusArray : public DbusTypeImpl<DbusArray<T>> {
  public:
   explicit DbusArray(std::vector<T>&& value) : value_(std::move(value)) {}
   DbusArray(DbusArray<T>&& other) = default;
@@ -224,7 +226,8 @@ auto MakeDbusArray(Ts&&... ts) {
 // (If DbusByte was defined) this is the same as DbusArray<DbusByte>.  This
 // class avoids having to create a bunch of heavy virtual objects just to wrap
 // individual bytes.
-class DbusByteArray : public DbusTypeImpl<DbusByteArray> {
+class COMPONENT_EXPORT(DBUS) DbusByteArray
+    : public DbusTypeImpl<DbusByteArray> {
  public:
   DbusByteArray();
   explicit DbusByteArray(scoped_refptr<base::RefCountedMemory> value);
@@ -241,7 +244,8 @@ class DbusByteArray : public DbusTypeImpl<DbusByteArray> {
 };
 
 template <typename... Ts>
-class DbusStruct : public DbusTypeImpl<DbusStruct<Ts...>> {
+class COMPONENT_EXPORT(DBUS) DbusStruct
+    : public DbusTypeImpl<DbusStruct<Ts...>> {
  public:
   explicit DbusStruct(Ts&&... ts) : value_(std::move(ts)...) {}
   DbusStruct(DbusStruct<Ts...>&& other) = default;
@@ -269,7 +273,8 @@ auto MakeDbusStruct(Ts&&... ts) {
 }
 
 template <typename K, typename V>
-class DbusDictEntry : public DbusTypeImpl<DbusDictEntry<K, V>> {
+class COMPONENT_EXPORT(DBUS) DbusDictEntry
+    : public DbusTypeImpl<DbusDictEntry<K, V>> {
  public:
   DbusDictEntry(K&& k, V&& v) : k_(std::move(k)), v_(std::move(v)) {}
   DbusDictEntry(DbusDictEntry<K, V>&& other) = default;
@@ -298,4 +303,4 @@ auto MakeDbusDictEntry(K&& k, V&& v) {
   return DbusDictEntry<K, V>(std::move(k), std::move(v));
 }
 
-#endif  // CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_DBUS_TYPES_H_
+#endif  // COMPONENTS_DBUS_MENU_TYPES_H_

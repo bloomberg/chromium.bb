@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/status_icons/dbus_types.h"
+#include "components/dbus/menu/types.h"
 
 #include "dbus/message.h"
 #include "dbus/object_path.h"

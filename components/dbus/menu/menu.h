@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_DBUS_MENU_H_
-#define CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_DBUS_MENU_H_
+#ifndef COMPONENTS_DBUS_MENU_MENU_H_
+#define COMPONENTS_DBUS_MENU_MENU_H_
 
 #include <map>
 #include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/views/status_icons/dbus_types.h"
+#include "components/dbus/menu/types.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
@@ -24,7 +25,7 @@ class MenuModel;
 class DbusPropertiesInterface;
 
 // Implements the com.canonical.dbusmenu interface.
-class DbusMenu {
+class COMPONENT_EXPORT(DBUS) DbusMenu {
  public:
   using InitializedCallback = base::OnceCallback<void(bool success)>;
 
@@ -135,4 +136,4 @@ class DbusMenu {
   DISALLOW_COPY_AND_ASSIGN(DbusMenu);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_DBUS_MENU_H_
+#endif  // COMPONENTS_DBUS_MENU_MENU_H_

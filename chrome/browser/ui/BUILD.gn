@@ -2407,19 +2407,15 @@ jumbo_split_static_library("ui") {
       sources += [
         "views/status_icons/concat_menu_model.cc",
         "views/status_icons/concat_menu_model.h",
-        "views/status_icons/dbus_menu.cc",
-        "views/status_icons/dbus_menu.h",
-        "views/status_icons/dbus_properties_interface.cc",
-        "views/status_icons/dbus_properties_interface.h",
-        "views/status_icons/dbus_types.cc",
-        "views/status_icons/dbus_types.h",
         "views/status_icons/status_icon_linux_dbus.cc",
         "views/status_icons/status_icon_linux_dbus.h",
-        "views/status_icons/success_barrier_callback.cc",
-        "views/status_icons/success_barrier_callback.h",
       ]
       defines += [ "USE_DBUS" ]
-      deps += [ "//components/dbus:dbus_thread_linux" ]
+      deps += [
+        "//components/dbus/menu",
+        "//components/dbus/menu:success_barrier_callback",
+        "//components/dbus/thread_linux",
+      ]
     }
 
     if (use_x11) {

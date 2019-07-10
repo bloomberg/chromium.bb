@@ -377,6 +377,10 @@ test("components_unittests") {
     ]
   }
 
+  if (use_dbus) {
+    deps += [ "//components/dbus/menu:unit_tests" ]
+  }
+
   # No components should depend on Chrome.
   assert_no_deps = [ "//chrome/*" ]
 

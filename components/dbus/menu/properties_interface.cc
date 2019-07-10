@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/status_icons/dbus_properties_interface.h"
+#include "components/dbus/menu/properties_interface.h"
 
 #include <dbus/dbus-shared.h>
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "chrome/browser/ui/views/status_icons/success_barrier_callback.h"
+#include "components/dbus/menu/success_barrier_callback.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 

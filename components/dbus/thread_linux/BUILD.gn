@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-component("dbus_thread_linux") {
+component("thread_linux") {
   sources = [
     "dbus_thread_linux.cc",
     "dbus_thread_linux.h",

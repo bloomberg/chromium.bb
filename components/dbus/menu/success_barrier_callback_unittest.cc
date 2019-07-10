@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/status_icons/success_barrier_callback.h"
+#include "components/dbus/menu/success_barrier_callback.h"
 
 #include "base/bind.h"
-#include "chrome/browser/ui/views/status_icons/status_icon_linux_dbus.h"
+#include "base/callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

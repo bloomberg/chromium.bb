@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/status_icons/dbus_menu.h"
+#include "components/dbus/menu/menu.h"
 
 #include <limits>
 #include <memory>
@@ -14,9 +14,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/views/status_icons/dbus_properties_interface.h"
-#include "chrome/browser/ui/views/status_icons/dbus_types.h"
-#include "chrome/browser/ui/views/status_icons/success_barrier_callback.h"
+#include "components/dbus/menu/properties_interface.h"
+#include "components/dbus/menu/success_barrier_callback.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 #include "ui/base/models/menu_model.h"
