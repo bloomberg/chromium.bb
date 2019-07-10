@@ -112,6 +112,8 @@ component("gpu") {
       "android/codec_wrapper.h",
       "android/device_info.cc",
       "android/device_info.h",
+      "android/direct_shared_image_video_provider.cc",
+      "android/direct_shared_image_video_provider.h",
       "android/image_reader_gl_owner.cc",
       "android/image_reader_gl_owner.h",
       "android/maybe_render_early_manager.cc",
