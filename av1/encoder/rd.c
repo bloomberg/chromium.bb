@@ -1328,6 +1328,7 @@ void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
       min_size = AOMMAX(bsize - 1, BLOCK_4X4);
       max_size = AOMMIN(bsize + 2, (int)cm->seq_params.sb_size);
     } else {
+      // This part handles block sizes with 1:4 and 4:1 aspect ratios
       // TODO(any): Experiment with threshold update for parent/child blocks
       min_size = bsize;
       max_size = bsize;
