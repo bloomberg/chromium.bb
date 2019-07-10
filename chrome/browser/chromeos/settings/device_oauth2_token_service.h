@@ -106,7 +106,6 @@ class DeviceOAuth2TokenService
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override;
   bool HasRefreshToken(const CoreAccountId& account_id) const override;
-  bool FixRequestErrorIfPossible() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
   bool HandleAccessTokenFetch(
@@ -116,12 +115,6 @@ class DeviceOAuth2TokenService
       const std::string& client_id,
       const std::string& client_secret,
       const OAuth2AccessTokenManager::ScopeSet& scopes) override;
-  void OnAccessTokenInvalidated(const CoreAccountId& account_id,
-                                const std::string& client_id,
-                                const std::set<std::string>& scopes,
-                                const std::string& access_token) override;
-  void OnAccessTokenFetched(const CoreAccountId& account_id,
-                            const GoogleServiceAuthError& error) override;
 
   void FireRefreshTokenAvailable(const CoreAccountId& account_id);
   void FireRefreshTokenRevoked(const CoreAccountId& account_id);
