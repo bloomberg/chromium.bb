@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTROLLEE_REQUEST_HANDLER_H_
 
 #include <stdint.h>
+
 #include <memory>
 #include <string>
 
@@ -18,6 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
@@ -68,15 +70,12 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
                            ActivateWaitingVersion);
   class ScopedDisallowSetControllerRegistration;
 
-  // TODO(falken): Remove the "MainResource" names, they are redundant as this
-  // handler is for main resources only.
-  void PrepareForMainResource(const GURL& url, const GURL& site_for_cookies);
-  void DidLookupRegistrationForMainResource(
+  void ContinueWithRegistration(
       std::unique_ptr<ScopedDisallowSetControllerRegistration>
           disallow_controller,
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
-  void ContinueWithInScopeMainResourceRequest(
+  void ContinueWithActivatedVersion(
       scoped_refptr<ServiceWorkerRegistration> registration,
       scoped_refptr<ServiceWorkerVersion> version,
       std::unique_ptr<ScopedDisallowSetControllerRegistration>
@@ -105,6 +104,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
   // that job, except for timing information.
   void ClearJob();
 
+  void CompleteWithoutLoader();
+
   // Schedules a service worker update to occur shortly after the page and its
   // initial subresources load, if this handler was for a navigation.
   void MaybeScheduleUpdate();
@@ -117,6 +118,9 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
   GURL stripped_url_;
   bool force_update_started_;
   base::TimeTicks registration_lookup_start_time_;
+
+  LoaderCallback loader_callback_;
+  FallbackCallback fallback_callback_;
 
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 
