@@ -1407,7 +1407,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, MouseDragAppList) {
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
 
-  // Drag AppListView upward by mouse. Before moving the mouse, AppListItems
+  // Drag AppListView upward by mouse. Before moving the mouse, AppsGridView
   // should be invisible.
   const gfx::Point start_point = GetAppListView()->GetBoundsInScreen().origin();
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -1418,13 +1418,53 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, MouseDragAppList) {
                                                ->contents_view()
                                                ->GetAppsContainerView()
                                                ->apps_grid_view();
-  EXPECT_FALSE(apps_grid_view->view_model()->view_at(0)->GetVisible());
+  EXPECT_FALSE(apps_grid_view->GetVisible());
 
   // Verifies that the AppListView state after mouse drag should be
   // FullscreenAllApps.
   generator->MoveMouseBy(0, -start_point.y());
   generator->ReleaseLeftButton();
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
+  EXPECT_TRUE(apps_grid_view->GetVisible());
+}
+
+// Verifies that mouse dragging AppListView causes to change the opacity.
+TEST_F(AppListPresenterDelegateHomeLauncherTest, MouseDragAppListItemOpacity) {
+  std::unique_ptr<app_list::AppListItem> item(
+      new app_list::AppListItem("fake id"));
+  Shell::Get()->app_list_controller()->GetModel()->AddItem(std::move(item));
+
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+
+  // Drag AppListView by mouse. Before moving the mouse, each AppListItem
+  // doesn't have its own layer.
+  const gfx::Point start_point = GetAppListView()->GetBoundsInScreen().origin();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(start_point);
+  generator->PressLeftButton();
+  app_list::AppsGridView* apps_grid_view = GetAppListView()
+                                               ->app_list_main_view()
+                                               ->contents_view()
+                                               ->GetAppsContainerView()
+                                               ->apps_grid_view();
+  views::View* item_view = apps_grid_view->view_model()->view_at(0);
+  EXPECT_FALSE(item_view->layer());
+
+  // Drags the mouse a bit above (twice as shelf's height). This should show the
+  // item vaguely.
+  const int shelf_height =
+      GetPrimaryShelf()->GetShelfViewForTesting()->height();
+  generator->MoveMouseBy(0, -shelf_height * 2);
+  EXPECT_TRUE(item_view->layer());
+  EXPECT_LE(0.f, item_view->layer()->opacity());
+  EXPECT_GT(1.f, item_view->layer()->opacity());
+
+  // Finishes the drag to expand the app-list. Now the app-list item should be
+  // fully visible and does not need layer anymore.
+  generator->MoveMouseTo(start_point.x(), 0);
+  generator->ReleaseLeftButton();
+  EXPECT_FALSE(item_view->layer());
 }
 
 // Tests that the app list is shown automatically when the tablet mode is on.
