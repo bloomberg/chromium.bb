@@ -1993,6 +1993,7 @@
   gale-release-tryjob
   gale-test-ap-tryjob
   gale-unittest-stress
+  gandof-android-nyc-pre-flight-branch-tryjob
   gandof-chrome-pfq-tryjob
   gandof-chromium-pfq-tryjob
   gandof-compile-only-pre-cq
@@ -3510,7 +3511,6 @@
   rammus-tot-chrome-pfq-informational-tryjob
   rammus-tot-chromium-pfq-informational-tryjob
   rammus-unittest-stress
-  reef-android-nyc-pre-flight-branch-tryjob
   reef-chrome-perf-tryjob
   reef-chrome-pfq-tryjob
   reef-chromium-pfq-tryjob

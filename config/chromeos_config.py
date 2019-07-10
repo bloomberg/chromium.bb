@@ -4310,10 +4310,10 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
-      'reef-android-nyc-pre-flight-branch',
+      'gandof-android-nyc-pre-flight-branch',
       site_config.templates.pre_flight_branch,
       display_label=config_lib.DISPLAY_LABEL_NYC_ANDROID_PFQ,
-      boards=['reef'],
+      boards=['gandof'],
       sync_chrome=True,
       android_rev=constants.ANDROID_REV_LATEST,
       android_package='android-container-nyc',
