@@ -2181,6 +2181,7 @@ static_library("test_support") {
 
   public_deps = [
     "//ash",
+    "//dbus",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
     "//third_party/blink/public:blink_headers",
