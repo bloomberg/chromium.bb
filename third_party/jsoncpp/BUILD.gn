@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,7 +12,11 @@ if (build_with_chromium) {
   }
 } else {
   config("jsoncpp_config") {
-    include_dirs = [ "//third_party/jsoncpp/src/include" ]
+    include_dirs = [
+      "//third_party/jsoncpp/src/include",
+      "//third_party/jsoncpp/generated",
+    ]
+
     cflags_cc = [
       "-Wno-exit-time-destructors",
       "-Wno-implicit-fallthrough",
@@ -21,7 +25,14 @@ if (build_with_chromium) {
 
   source_set("jsoncpp") {
     sources = [
-      "overrides.h",
+      # Note: the generated/version.h file is a build artifact of JsonCpp's
+      # meson/CMake build toolchains. When updating the DEPS, build JsonCpp
+      # and copy the generated version.h to this location. You also need to
+      # update the include guard to match our PRESUBMIT rule, from
+      # JSON_VERSION_H_INCLUDED to THIRD_PARTY_JSONCPP_GENERATED_VERSION_H_
+      "generated/version.h",
+
+      # All of the other files are from the actual JsonCpp repository.
       "src/include/json/assertions.h",
       "src/include/json/autolink.h",
       "src/include/json/config.h",
@@ -31,23 +42,16 @@ if (build_with_chromium) {
       "src/include/json/reader.h",
       "src/include/json/value.h",
       "src/include/json/writer.h",
-      "src/src/lib_json/json_batchallocator.h",
       "src/src/lib_json/json_reader.cpp",
       "src/src/lib_json/json_tool.h",
       "src/src/lib_json/json_value.cpp",
       "src/src/lib_json/json_writer.cpp",
     ]
 
-    include_dirs = [ "src/src/lib_json" ]
+    public_configs = [ ":jsoncpp_config" ]
 
     defines = [ "JSON_USE_EXCEPTION=0" ]
 
-    # Need exceptions on for throwRuntimeError. This will result in an abort
-    # once it crosses into parent code (which is compiled without exceptions).
-    # TODO(jophba): remove once jsoncpp patch fixing JSON_USE_EXCEPTION
-    # is upstreamed and DEPS rolled.
-    configs -= [ "//build/config:no_exceptions" ]
-
-    public_configs = [ ":jsoncpp_config" ]
+    include_dirs = [ "src/src/lib_json" ]
   }
 }
