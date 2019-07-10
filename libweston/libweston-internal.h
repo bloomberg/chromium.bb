@@ -156,4 +156,12 @@ weston_compositor_xkb_destroy(struct weston_compositor *ec);
 int
 weston_input_init(struct weston_compositor *compositor);
 
+/* weston_plane */
+
+void
+weston_plane_init(struct weston_plane *plane,
+			struct weston_compositor *ec,
+			int32_t x, int32_t y);
+void
+weston_plane_release(struct weston_plane *plane);
 #endif

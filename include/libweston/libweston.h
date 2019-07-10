@@ -1796,13 +1796,6 @@ weston_layer_set_mask_infinite(struct weston_layer *layer);
 bool
 weston_layer_mask_is_infinite(struct weston_layer *layer);
 
-void
-weston_plane_init(struct weston_plane *plane,
-			struct weston_compositor *ec,
-			int32_t x, int32_t y);
-void
-weston_plane_release(struct weston_plane *plane);
-
 /* An invalid flag in presented_flags to catch logic errors. */
 #define WP_PRESENTATION_FEEDBACK_INVALID (1U << 31)
 
