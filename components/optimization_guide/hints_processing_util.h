@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_HINTS_UTIL_H_
-#define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_HINTS_UTIL_H_
+#ifndef COMPONENTS_OPTIMIZATION_GUIDE_HINTS_PROCESSING_UTIL_H_
+#define COMPONENTS_OPTIMIZATION_GUIDE_HINTS_PROCESSING_UTIL_H_
 
 #include <string>
 
@@ -14,9 +14,6 @@ class Hint;
 class Optimization;
 class PageHint;
 }  // namespace proto
-}  // namespace optimization_guide
-
-namespace previews {
 
 // Returns whether |optimization| is disabled subject to it being part of
 // an optimization hint experiment. |optimization| could be disabled either
@@ -25,12 +22,11 @@ namespace previews {
 // may be configured for the client with the experiment_name parameter to the
 // kOptimizationHintsExperiments feature.
 bool IsDisabledPerOptimizationHintExperiment(
-    const optimization_guide::proto::Optimization& optimization);
+    const proto::Optimization& optimization);
 
 // Returns the matching PageHint for |gurl| if found in |hint|.
-const optimization_guide::proto::PageHint* FindPageHintForURL(
-    const GURL& gurl,
-    const optimization_guide::proto::Hint* hint);
+const proto::PageHint* FindPageHintForURL(const GURL& gurl,
+                                          const proto::Hint* hint);
 
 // The host is hashed and returned as a string because base::DictionaryValue
 // only accepts strings as keys. Note, some hash collisions could occur on
@@ -41,6 +37,6 @@ const optimization_guide::proto::PageHint* FindPageHintForURL(
 // practically zero.
 std::string HashHostForDictionary(const std::string& host);
 
-}  // namespace previews
+}  // namespace optimization_guide
 
-#endif  // COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_HINTS_UTIL_H_
+#endif  // COMPONENTS_OPTIMIZATION_GUIDE_HINTS_PROCESSING_UTIL_H_

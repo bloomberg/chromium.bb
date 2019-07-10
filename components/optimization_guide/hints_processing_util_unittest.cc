@@ -2,33 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/previews_hints_util.h"
+#include "components/optimization_guide/hints_processing_util.h"
 
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace previews {
+namespace optimization_guide {
 
-class PreviewsHintsUtilTest : public testing::Test {
+class HintsProcessingUtilTest : public testing::Test {
  public:
-  PreviewsHintsUtilTest() {}
-  ~PreviewsHintsUtilTest() override {}
+  HintsProcessingUtilTest() {}
+  ~HintsProcessingUtilTest() override {}
 };
 
-TEST_F(PreviewsHintsUtilTest, FindPageHintForSubstringPagePattern) {
-  optimization_guide::proto::Hint hint1;
+TEST_F(HintsProcessingUtilTest, FindPageHintForSubstringPagePattern) {
+  proto::Hint hint1;
 
   // Page hint for "/one/"
-  optimization_guide::proto::PageHint* page_hint1 = hint1.add_page_hints();
+  proto::PageHint* page_hint1 = hint1.add_page_hints();
   page_hint1->set_page_pattern("foo.org/*/one/");
 
   // Page hint for "two"
-  optimization_guide::proto::PageHint* page_hint2 = hint1.add_page_hints();
+  proto::PageHint* page_hint2 = hint1.add_page_hints();
   page_hint2->set_page_pattern("two");
 
   // Page hint for "three.jpg"
-  optimization_guide::proto::PageHint* page_hint3 = hint1.add_page_hints();
+  proto::PageHint* page_hint3 = hint1.add_page_hints();
   page_hint3->set_page_pattern("three.jpg");
 
   EXPECT_EQ(nullptr, FindPageHintForURL(GURL(""), &hint1));
@@ -62,4 +62,4 @@ TEST_F(PreviewsHintsUtilTest, FindPageHintForSubstringPagePattern) {
                             GURL("https://www.foo.org/bar/three.jpg"), &hint1));
 }
 
-}  // namespace previews
+}  // namespace optimization_guide
