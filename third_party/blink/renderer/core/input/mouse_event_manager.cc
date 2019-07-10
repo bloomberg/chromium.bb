@@ -393,10 +393,9 @@ void MouseEventManager::FakeMouseMoveEventTimerFired(TimerBase* timer) {
 }
 
 void MouseEventManager::RecomputeMouseHoverStateIfNeeded() {
-  // |RecomputeMouseHoverState| may set |hover_state_dirty_| to be true.
   if (HoverStateDirty()) {
-    hover_state_dirty_ = false;
     RecomputeMouseHoverState();
+    hover_state_dirty_ = false;
   }
 }
 
