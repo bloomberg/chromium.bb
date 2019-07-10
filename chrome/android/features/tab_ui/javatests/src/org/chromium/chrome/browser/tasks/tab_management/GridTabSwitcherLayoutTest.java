@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features;
@@ -323,6 +324,30 @@ public class GridTabSwitcherLayoutTest {
         }
         checkFinalCaptureCount(switchToAnotherTab, initCount);
         assertThumbnailsAreReleased();
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.
+    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    public void testRestoredTabsDontFetch() throws Exception {
+        prepareTabs(2, mUrl);
+        GridTabSwitcherCoordinator coordinator =
+                (GridTabSwitcherCoordinator) mGtsLayout.getGridTabSwitcherForTesting();
+        int oldCount = coordinator.getBitmapFetchCountForTesting();
+
+        // Restart Chrome.
+        // Although we're destroying the activity, the Application will still live on since its in
+        // the same process as this test.
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        mActivityTestRule.startMainActivityOnBlankPage();
+        Assert.assertEquals(3, mActivityTestRule.tabsCount(false));
+
+        Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
+        assertTrue(layout instanceof GridTabSwitcherLayout);
+        mGtsLayout = (GridTabSwitcherLayout) layout;
+        coordinator = (GridTabSwitcherCoordinator) mGtsLayout.getGridTabSwitcherForTesting();
+        Assert.assertEquals(0, coordinator.getBitmapFetchCountForTesting() - oldCount);
     }
 
     private void enterGTS() throws InterruptedException {

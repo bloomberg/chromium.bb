@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -100,6 +101,7 @@ class TabListMediator {
      */
     static class ThumbnailFetcher {
         static Callback<Bitmap> sBitmapCallbackForTesting;
+        static int sFetchCountForTesting;
         private ThumbnailProvider mThumbnailProvider;
         private Tab mTab;
         private boolean mForceUpdate;
@@ -118,6 +120,7 @@ class TabListMediator {
                 if (sBitmapCallbackForTesting != null) sBitmapCallbackForTesting.onResult(bitmap);
                 callback.onResult(bitmap);
             };
+            sFetchCountForTesting++;
             mThumbnailProvider.getTabThumbnailWithCallback(
                     mTab, forking, mForceUpdate, mWriteToCache);
         }
@@ -393,7 +396,8 @@ class TabListMediator {
             }
 
             @Override
-            public void didAddTab(Tab tab, int type) {
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
+                if (type == TabLaunchType.FROM_RESTORE) return;
                 onTabAdded(tab, !mActionsOnAllRelatedTabs);
             }
 
