@@ -1142,7 +1142,9 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       paygen=False,
       signer_tests=False,
       orderfile_verify=True,
-      useflags=config_lib.append_useflags(['orderfile_use']),
+      useflags=config_lib.append_useflags(['orderfile_verify',
+                                           '-reorder_text_sections',
+                                           'strict_toolchain_checks']),
       display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
       description='Verify the most recent orderfile is building correctly',
   )

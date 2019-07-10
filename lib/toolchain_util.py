@@ -8,8 +8,20 @@
 from __future__ import print_function
 
 import os
+import re
 
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
+from chromite.lib import gs
+from chromite.lib import path_util
+from chromite.lib import portage_util
+
+ORDERFILE_GS_URL_UNVETTED = \
+    'gs://chromeos-prebuilt/afdo-job/orderfiles/unvetted'
+ORDERFILE_GS_URL_VETTED = \
+    'gs://chromeos-prebuilt/afdo-job/orderfiles/vetted'
+ORDERFILE_COMPRESSION_SUFFIX = '.tar.xz'
 
 
 class Error(Exception):
@@ -37,7 +49,6 @@ class GenerateChromeOrderfile(object):
                         'src/out_${BOARD}/Release/chrome')
   INPUT_ORDERFILE_PATH = ('/build/${BOARD}/opt/google/chrome/'
                           'chrome.orderfile.txt')
-  COMPRESSION_SUFFIX = '.tar.xz'
 
   def __init__(self, board, output_dir, chrome_version, chroot_path,
                chroot_args):
@@ -111,7 +122,7 @@ class GenerateChromeOrderfile(object):
     """This command runs outside of chroot."""
     ret = []
     for t in targets:
-      tar_name = os.path.basename(t) + self.COMPRESSION_SUFFIX
+      tar_name = os.path.basename(t) + ORDERFILE_COMPRESSION_SUFFIX
       # Put output tarball in the out_dir
       target = os.path.join(self.output_dir, tar_name)
       # CreateTarball runs within tempdir, so need to use the relative
@@ -129,3 +140,144 @@ class GenerateChromeOrderfile(object):
     chrome_nm = self._GenerateChromeNM()
     orderfile = self._PostProcessOrderfile(chrome_nm)
     self._CreateTarball([chrome_nm, orderfile])
+
+
+class UpdateChromeEbuildWithOrderfileError(Error):
+  """Error for UpdateChromeEbuildWithOrderfile class."""
+
+class UpdateChromeEbuildWithOrderfile(object):
+  """Class to update Chrome ebuild with unvetted orderfile."""
+
+  # regex to find orderfile declaration within the ebuild file.
+  CHROME_EBUILD_ORDERFILE_REGEX = (
+      r'^(?P<bef>UNVETTED_ORDERFILE=")(?P<name>.*)(?P<aft>")')
+  # and corresponding replacement string
+  CHROME_EBUILD_ORDERFILE_REPL = r'\g<bef>%s\g<aft>'
+
+  def __init__(self, board, orderfile):
+    self.board = board
+    if ORDERFILE_COMPRESSION_SUFFIX in orderfile:
+      self.orderfile = orderfile.replace(ORDERFILE_COMPRESSION_SUFFIX, '')
+    else:
+      self.orderfile = orderfile
+
+  def _FindChromeEbuild(self):
+    """Find the Chrome ebuild in the build root."""
+    equery_prog = 'equery-%s' % self.board
+    equery_cmd = [equery_prog, 'w', 'chromeos-chrome']
+    ebuild_file = cros_build_lib.RunCommand(
+        equery_cmd, enter_chroot=True, redirect_stdout=True).output.rstrip()
+    return ebuild_file
+
+  def _PatchChromeEbuild(self, ebuild_file):
+    """Patch the Chrome ebuild to use the orderfile.
+
+    Args:
+      ebuild_file: path to the ebuild file.
+    """
+    original_ebuild = path_util.FromChrootPath(ebuild_file)
+    modified_ebuild = '%s.new' % original_ebuild
+
+    pattern = re.compile(self.CHROME_EBUILD_ORDERFILE_REGEX)
+    orderfile = self.CHROME_EBUILD_ORDERFILE_REPL % self.orderfile
+    found = False
+    with open(original_ebuild) as original, \
+         open(modified_ebuild, 'w') as modified:
+      for line in original:
+        matched = pattern.match(line)
+        if matched:
+          found = True
+          modified.write(pattern.sub(orderfile, line))
+        else:
+          modified.write(line)
+    if not found:
+      logging.info("Unable to find markers for setting orderfile.")
+      raise UpdateChromeEbuildWithOrderfileError(
+          'Chrome ebuild file does not have appropriate orderfile marker')
+    os.rename(modified_ebuild, original_ebuild)
+    logging.info("Patched %s with %s", original_ebuild, self.orderfile)
+
+  def _UpdateManifest(self, ebuild_file):
+    """Regenerate the Manifest file. (To update orderfile)
+
+    Args:
+      ebuild_file: path to the ebuild file
+    """
+    ebuild_prog = 'ebuild-%s' % self.board
+    cmd = [ebuild_prog, ebuild_file, 'manifest', '--force']
+    cros_build_lib.RunCommand(cmd, enter_chroot=True)
+
+  def Perform(self):
+    """Main function to update Chrome ebuild with orderfile"""
+    ebuild = self._FindChromeEbuild()
+    self._PatchChromeEbuild(ebuild)
+    # Patch the chrome 9999 ebuild too, as the manifest will use
+    # 9999 ebuild.
+    ebuild_9999 = os.path.join(
+        os.path.dirname(ebuild), 'chromeos-chrome-9999.ebuild')
+    self._PatchChromeEbuild(ebuild_9999)
+    # Use 9999 ebuild to update manifest.
+    self._UpdateManifest(ebuild_9999)
+
+
+def FindLatestChromeOrderfile(gs_url):
+  """Find the latest unvetted Chrome orderfile.
+
+  Args:
+    gs_url: The full path to GS bucket URL.
+
+  Returns:
+    The orderfile name.
+  """
+  gs_context = gs.GSContext()
+  orderfiles = sorted(
+      gs_context.List(gs_url, details=True), key=lambda x: x.creation_time)
+  orderfile_url = orderfiles[-1].url
+  orderfile_name = os.path.basename(orderfile_url)
+  logging.info("Latest orderfile in %s is %s", gs_url, orderfile_name)
+  return orderfile_name
+
+
+def CheckOrderfileExists(buildroot, orderfile_verify):
+  """Checks if the orderfile to be generated/verified already exists.
+
+  Args:
+    buildroot: The path of build root
+    orderfile_verify: Whether it's for orderfile_verify or orderfile_generate.
+    For orderfile verify builder, it verifies the most recent orderfile from
+    the unvetted bucket. So we checks if it's in the vetted bucket or not.
+    For orderfile generate builder, it generates an orderfile based on the
+    Chrome version number. So we need to find out the Chrome is upreved than
+    the most recent unvetted orderfile or not.
+
+  Returns:
+    True if the orderfile is in the GS bucket already.
+  """
+  gs_context = gs.GSContext()
+  if orderfile_verify:
+    orderfile_name = FindLatestChromeOrderfile(ORDERFILE_GS_URL_UNVETTED)
+    # Check if the latest unvetted orderfile is already verified
+    return gs_context.Exists(ORDERFILE_GS_URL_VETTED + '/' + orderfile_name)
+
+  # For orderfile_generate builder, get the chrome version
+  cpv = portage_util.PortageqBestVisible(constants.CHROME_CP, cwd=buildroot)
+  orderfile_name = '{0}-orderfile-{1}'.format(cpv.package, cpv.version)
+  return gs_context.Exists(ORDERFILE_GS_URL_UNVETTED + '/' + orderfile_name +
+                           ORDERFILE_COMPRESSION_SUFFIX)
+
+
+def OrderfileUpdateChromeEbuild(board):
+  """Update Chrome ebuild with latest unvetted orderfile.
+
+  Args:
+    board: Board type that was built on this machine.
+
+  Returns:
+    True, if the Chrome ebuild is successfully updated.
+    False, if the latest unvetted orderfile is already verified.
+  """
+
+  orderfile_name = FindLatestChromeOrderfile(ORDERFILE_GS_URL_UNVETTED)
+  updater = UpdateChromeEbuildWithOrderfile(board, orderfile_name)
+  updater.Perform()
+  return True

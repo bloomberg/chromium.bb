@@ -7,12 +7,16 @@
 
 from __future__ import print_function
 
+import collections
 import mock
 import os
+import re
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import portage_util
 from chromite.lib import toolchain_util
 
 
@@ -83,7 +87,8 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
     names = [self.chrome_version + '.nm', self.chrome_version + '.orderfile']
     outputs = [
         os.path.relpath(
-            os.path.join(self.out_dir, n + self.test_obj.COMPRESSION_SUFFIX),
+            os.path.join(self.out_dir,
+                         n + toolchain_util.ORDERFILE_COMPRESSION_SUFFIX),
             self.working_dir) for n in names
     ]
     self.PatchObject(cros_build_lib, 'CreateTarball')
@@ -119,8 +124,151 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
     # Make sure the tarballs are inside the output directory
     output_files = os.listdir(self.out_dir)
     self.assertIn(
-        self.chrome_version + '.nm' + self.test_obj.COMPRESSION_SUFFIX,
-        output_files)
+        self.chrome_version + '.nm' +
+        toolchain_util.ORDERFILE_COMPRESSION_SUFFIX, output_files)
     self.assertIn(
-        self.chrome_version + '.orderfile' + self.test_obj.COMPRESSION_SUFFIX,
-        output_files)
+        self.chrome_version + '.orderfile' +
+        toolchain_util.ORDERFILE_COMPRESSION_SUFFIX, output_files)
+
+
+class UpdateChromeEbuildWithOrderfileTest(cros_test_lib.MockTempDirTestCase):
+  """Test UpdateChromeEbuildWithOrderfile class."""
+
+  # pylint: disable=protected-access
+  def setUp(self):
+    self.board = 'board'
+    self.orderfile = 'chromeos-chrome-1.1.orderfile.tar.xz'
+    self.test_obj = toolchain_util.UpdateChromeEbuildWithOrderfile(
+        self.board, self.orderfile)
+
+  def testFindChromeEbuild(self):
+    ebuild_path = '/path/to/chromeos-chrome/chromeos-chrome-1.1.ebuild'
+    mock_result = cros_build_lib.CommandResult(output=ebuild_path)
+    self.PatchObject(cros_build_lib, 'RunCommand', return_value=mock_result)
+    ebuild_file = self.test_obj._FindChromeEbuild()
+    cmd = ['equery-%s' % self.board, 'w', 'chromeos-chrome']
+    cros_build_lib.RunCommand.assert_called_with(
+        cmd, enter_chroot=True, redirect_stdout=True)
+    self.assertEqual(ebuild_file, ebuild_path)
+
+  def testPatchChromeEbuildFail(self):
+    ebuild_file = os.path.join(self.tempdir, 'chromeos-chrome-1.1.ebuild')
+    osutils.Touch(ebuild_file)
+    with self.assertRaises(
+        toolchain_util.UpdateChromeEbuildWithOrderfileError) as context:
+      self.test_obj._PatchChromeEbuild(ebuild_file)
+
+    self.assertEqual(
+        'Chrome ebuild file does not have appropriate orderfile marker',
+        str(context.exception))
+
+  def testPatchChromeEbuildPass(self):
+    ebuild_file = os.path.join(self.tempdir, 'chromeos-chrome-1.1.ebuild')
+    with open(ebuild_file, 'w') as f:
+      f.write('Some message before\n')
+      f.write('UNVETTED_ORDERFILE="chromeos-chrome-1.0.orderfile"\n')
+      f.write('Some message after\n')
+
+    self.test_obj._PatchChromeEbuild(ebuild_file)
+    # Make sure temporary file is removed
+    self.assertNotIn('chromeos-chrome-1.1.ebuild.new', os.listdir(self.tempdir))
+    # Make sure the orderfile is updated
+    pattern = re.compile(self.test_obj.CHROME_EBUILD_ORDERFILE_REGEX)
+    found = False
+    with open(ebuild_file) as f:
+      for line in f:
+        matched = pattern.match(line)
+        if matched:
+          found = True
+          self.assertEqual(
+              matched.group('name'), 'chromeos-chrome-1.1.orderfile')
+    self.assertTrue(found)
+
+  def testUpdateManifest(self):
+    ebuild_file = os.path.join(self.tempdir, 'chromeos-chrome-1.1.ebuild')
+    cmd = ['ebuild-%s' % self.board, ebuild_file, 'manifest', '--force']
+    self.PatchObject(cros_build_lib, 'RunCommand')
+    self.test_obj._UpdateManifest(ebuild_file)
+    cros_build_lib.RunCommand.assert_called_with(cmd, enter_chroot=True)
+
+
+class CheckOrderfileExistsTest(cros_test_lib.RunCommandTempDirTestCase):
+  """Test CheckOrderfileExists command."""
+
+  def setUp(self):
+    # buildroot is not actually needed in this test
+    self.buildroot = self.tempdir
+
+  def testCheckVerifyOrderfile(self):
+    """Test check orderfile for verification work properly."""
+    self.PatchObject(
+        toolchain_util,
+        'FindLatestChromeOrderfile',
+        return_value='chromeos-chrome-orderfile-1.0.tar.xz')
+    for exists in [False, True]:
+      self.PatchObject(gs.GSContext, 'Exists', return_value=exists)
+      ret = toolchain_util.CheckOrderfileExists(
+          self.buildroot, orderfile_verify=True)
+      self.assertEqual(exists, ret)
+      gs.GSContext.Exists.assert_called_once_with(
+          os.path.join(toolchain_util.ORDERFILE_GS_URL_VETTED,
+                       'chromeos-chrome-orderfile-1.0.tar.xz'))
+
+  def testCheckGenerateOrderfile(self):
+    """Test check orderfile for generation work properly."""
+    unused = {
+        'pv': None,
+        'version_no_rev': None,
+        'rev': None,
+        'category': None,
+        'cpv': None,
+        'cp': None,
+        'cpf': None
+    }
+    cpv = portage_util.CPV(version='1.1', package='chromeos-chrome', **unused)
+    self.PatchObject(portage_util, 'PortageqBestVisible', return_value=cpv)
+    for exists in [False, True]:
+      self.PatchObject(gs.GSContext, 'Exists', return_value=exists)
+      ret = toolchain_util.CheckOrderfileExists(
+          self.buildroot, orderfile_verify=False)
+      self.assertEqual(exists, ret)
+      gs.GSContext.Exists.assert_called_once_with(
+          toolchain_util.ORDERFILE_GS_URL_UNVETTED +
+          '/chromeos-chrome-orderfile-1.1' +
+          toolchain_util.ORDERFILE_COMPRESSION_SUFFIX)
+
+
+class OrderfileUpdateChromeEbuildTest(cros_test_lib.RunCommandTempDirTestCase):
+  """Test OrderfileUpdateChromeEbuild and related command."""
+
+  def setUp(self):
+    self.board = 'board'
+    self.unvetted_gs_url = 'gs://path/to/unvetted'
+    self.vetted_gs_url = 'gs://path/to/vetted'
+    MockListResult = collections.namedtuple('MockListResult',
+                                            ('url', 'creation_time'))
+    self.unvetted_orderfiles = [
+        MockListResult(
+            url=self.unvetted_gs_url + '/chrome-orderfile-2.0',
+            creation_time=2.0),
+        MockListResult(
+            url=self.unvetted_gs_url + '/chrome-orderfile-3.0',
+            creation_time=3.0),
+        MockListResult(
+            url=self.unvetted_gs_url + '/chrome-orderfile-1.0',
+            creation_time=1.0)
+    ]  # Intentionally unsorted
+    self.PatchObject(toolchain_util, 'UpdateChromeEbuildWithOrderfile')
+    self.PatchObject(
+        gs.GSContext, 'List', return_value=self.unvetted_orderfiles)
+
+  def testFindLatestChromeOrderfile(self):
+    """Test FindLatestChromeOrderfile() returns latest orderfile."""
+    orderfile = toolchain_util.FindLatestChromeOrderfile(self.unvetted_gs_url)
+    self.assertEqual(orderfile, 'chrome-orderfile-3.0')
+
+  def testOrderfileUpdateChromePass(self):
+    ret = toolchain_util.OrderfileUpdateChromeEbuild(self.board)
+    self.assertTrue(ret)
+    toolchain_util.UpdateChromeEbuildWithOrderfile.assert_called_with(
+        self.board, 'chrome-orderfile-3.0')

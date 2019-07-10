@@ -35,6 +35,7 @@ from chromite.lib import failures_lib
 from chromite.lib import patch as cros_patch
 from chromite.lib import parallel
 from chromite.lib import results_lib
+from chromite.lib import toolchain_util
 
 
 # TODO: SimpleBuilder needs to be broken up big time.
@@ -225,6 +226,9 @@ class SimpleBuilder(generic_builders.Builder):
     if config.orderfile_generate:
       stage_list += [[artifact_stages.GenerateOrderfileStage, board]]
 
+    if config.orderfile_verify:
+      stage_list += [[afdo_stages.UploadVettedOrderfileStage, board]]
+
     stage_list += [
         [release_stages.SignerTestStage, board, archive_stage],
         [release_stages.SigningStage, board],
@@ -325,6 +329,21 @@ class SimpleBuilder(generic_builders.Builder):
     task_runner = self._RunBackgroundStagesForBoardAndMarkAsSuccessful
     with parallel.BackgroundTaskRunner(task_runner) as queue:
       for builder_run, board in tasks:
+        # Only generate orderfile if Chrome is upreved since last generation
+        if builder_run.config.orderfile_generate and \
+           toolchain_util.CheckOrderfileExists(builder_run.buildroot,
+                                               orderfile_verify=False):
+          continue
+
+        # Update Chrome ebuild with unvetted orderfile
+        if builder_run.config.orderfile_verify:
+          # Skip verifying orderfile if it's already verified.
+          if toolchain_util.CheckOrderfileExists(builder_run.buildroot,
+                                                 orderfile_verify=True):
+            continue
+          self._RunStage(afdo_stages.OrderfileUpdateChromeEbuildStage,
+                         board, builder_run=builder_run)
+
         # Run BuildPackages in the foreground, generating or using AFDO data
         # if requested.
         kwargs = {'builder_run': builder_run}
