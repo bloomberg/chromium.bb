@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<script src='../../resources/gesture-util.js'></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<style>
+#blue {
+    background-color: rgb(0, 0, 255);
+    position: absolute;
+    left: 75px;
+    top: 75px;
+    height: 100px;
+    width: 100px;
+}
+#blue:hover {
+    top: 500px;
+}
+</style>
+<div id="blue"></div>
+<script>
+const x = 100;
+const y = 100;
+var blue = document.getElementById('blue');
+
+window.onload = async () => {
+  if (window.internals) {
+    internals.runtimeFlags.updateHoverFromLayoutChangeAtBeginFrameEnabled = true;
+  }
+
+  promise_test(async () => {
+    await mouseMoveTo(x, y);
+    // Move the blue element away when it is hovered, so the blue element will oscillates
+    // between 75px and 500px at each animation frame.
+    assert_true(blue.matches(':hover'), "Hover on the blue element");
+    assert_equals(blue.offsetTop, 500, "Check that the blue element is moved to 500px from the top");
+    await raf();
+    assert_false(blue.matches(':hover'), "The blue element is moved away from the mouse cursor after a begin frame");
+    assert_equals(blue.offsetTop, 75, "The blue element is moved back to 75px from the top");
+    await raf();
+    assert_true(blue.matches(':hover'), "Hover on the blue element");
+    assert_equals(blue.offsetTop, 500, "Check that the blue element is moved to 500px from the top");
+    await raf();
+    assert_false(blue.matches(':hover'), "The blue element is moved away from the mouse cursor after a begin frame");
+    assert_equals(blue.offsetTop, 75, "The blue element is moved back to 75px from the top");
+  }, 'The hover state is updated at the begin frame after the layout changes which is caused by hover update.');
+
+}
+</script>
