@@ -30,6 +30,8 @@
 
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 
+#include <array>
+
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -397,15 +399,14 @@ void HTMLSlotElement::NotifySlottedNodesOfFlatTreeChangeByDynamicProgramming(
     const HeapVector<Member<Node>>& old_slotted,
     const HeapVector<Member<Node>>& new_slotted) {
   // Use dynamic programming to minimize the number of nodes being reattached.
-  using LCSTable =
-      Vector<LCSArray<wtf_size_t, kLCSTableSizeLimit>, kLCSTableSizeLimit>;
+  using LCSTable = std::array<std::array<wtf_size_t, kLCSTableSizeLimit>,
+                              kLCSTableSizeLimit>;
   using Backtrack = std::pair<wtf_size_t, wtf_size_t>;
   using BacktrackTable =
-      Vector<LCSArray<Backtrack, kLCSTableSizeLimit>, kLCSTableSizeLimit>;
+      std::array<std::array<Backtrack, kLCSTableSizeLimit>, kLCSTableSizeLimit>;
 
-  DEFINE_STATIC_LOCAL(LCSTable*, lcs_table, (new LCSTable(kLCSTableSizeLimit)));
-  DEFINE_STATIC_LOCAL(BacktrackTable*, backtrack_table,
-                      (new BacktrackTable(kLCSTableSizeLimit)));
+  DEFINE_STATIC_LOCAL(LCSTable*, lcs_table, (new LCSTable));
+  DEFINE_STATIC_LOCAL(BacktrackTable*, backtrack_table, (new BacktrackTable));
 
   FillLongestCommonSubsequenceDynamicProgrammingTable(
       old_slotted, new_slotted, *lcs_table, *backtrack_table);
