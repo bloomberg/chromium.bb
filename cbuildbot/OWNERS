@@ -1,5 +1,3 @@
-set noparent
-
 include ../OWNERS.ci
 
 per-file afdo.py=llozano@chromium.org
