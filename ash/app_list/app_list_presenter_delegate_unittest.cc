@@ -290,6 +290,32 @@ TEST_F(AppListPresenterDelegateZeroStateTest,
                    ->is_search_box_active());
 }
 
+// Tests that the SearchBox activation is reset after the AppList is hidden with
+// no animation from FULLSCREEN_SEARCH.
+TEST_F(AppListPresenterDelegateZeroStateTest,
+       SideShelfAppListResetsSearchBoxActivationOnClose) {
+  // Set the shelf to one side, then show the AppList and activate the
+  // searchbox.
+  SetShelfAlignment(ShelfAlignment::SHELF_ALIGNMENT_RIGHT);
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetEventGenerator()->GestureTapAt(GetPointInsideSearchbox());
+  ASSERT_TRUE(GetAppListTestHelper()
+                  ->GetAppListView()
+                  ->search_box_view()
+                  ->is_search_box_active());
+
+  // Dismiss the AppList using the controller, this is the same way we dismiss
+  // the AppList when a SearchResult is launched, and skips the
+  // FULLSCREEN_SEARCH -> FULLSCREEN_ALL_APPS transition.
+  Shell::Get()->app_list_controller()->DismissAppList();
+
+  // Test that the search box is not active.
+  EXPECT_FALSE(GetAppListTestHelper()
+                   ->GetAppListView()
+                   ->search_box_view()
+                   ->is_search_box_active());
+}
+
 // Verifies that tapping on the search box in tablet mode with animation and
 // zero state enabled should not bring Chrome crash (https://crbug.com/958267).
 TEST_F(AppListPresenterDelegateZeroStateTest, ClickSearchBoxInTabletMode) {
