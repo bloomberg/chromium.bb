@@ -34,6 +34,7 @@
 #include <errno.h>
 
 #include <libweston/libweston.h>
+#include "libweston-internal.h"
 #include "compositor/weston.h"
 #include "weston-test-server-protocol.h"
 

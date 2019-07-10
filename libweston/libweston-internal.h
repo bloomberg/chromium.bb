@@ -164,4 +164,47 @@ weston_plane_init(struct weston_plane *plane,
 			int32_t x, int32_t y);
 void
 weston_plane_release(struct weston_plane *plane);
+
+/* weston_seat */
+
+struct clipboard *
+clipboard_create(struct weston_seat *seat);
+
+void
+weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
+		 const char *seat_name);
+
+void
+weston_seat_repick(struct weston_seat *seat);
+
+void
+weston_seat_release(struct weston_seat *seat);
+
+void
+weston_seat_send_selection(struct weston_seat *seat, struct wl_client *client);
+
+void
+weston_seat_init_pointer(struct weston_seat *seat);
+
+int
+weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap);
+
+void
+weston_seat_init_touch(struct weston_seat *seat);
+
+void
+weston_seat_release_keyboard(struct weston_seat *seat);
+
+void
+weston_seat_release_pointer(struct weston_seat *seat);
+
+void
+weston_seat_release_touch(struct weston_seat *seat);
+
+void
+weston_seat_update_keymap(struct weston_seat *seat, struct xkb_keymap *keymap);
+
+void
+wl_data_device_set_keyboard_focus(struct weston_seat *seat);
+
 #endif

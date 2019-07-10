@@ -721,9 +721,6 @@ weston_touch_device_destroy(struct weston_touch_device *device);
 bool
 weston_touch_device_can_calibrate(struct weston_touch_device *device);
 
-void
-wl_data_device_set_keyboard_focus(struct weston_seat *seat);
-
 int
 wl_data_device_manager_init(struct wl_display *display);
 
@@ -731,8 +728,6 @@ wl_data_device_manager_init(struct wl_display *display);
 void
 weston_seat_set_selection(struct weston_seat *seat,
 			  struct weston_data_source *source, uint32_t serial);
-void
-weston_seat_send_selection(struct weston_seat *seat, struct wl_client *client);
 
 int
 weston_pointer_start_drag(struct weston_pointer *pointer,
@@ -2023,28 +2018,6 @@ weston_output_transform_coordinate(struct weston_output *output,
 				   double device_x, double device_y,
 				   double *x, double *y);
 
-void
-weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
-		 const char *seat_name);
-void
-weston_seat_init_pointer(struct weston_seat *seat);
-void
-weston_seat_release_pointer(struct weston_seat *seat);
-int
-weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap);
-void
-weston_seat_release_keyboard(struct weston_seat *seat);
-void
-weston_seat_init_touch(struct weston_seat *seat);
-void
-weston_seat_release_touch(struct weston_seat *seat);
-void
-weston_seat_repick(struct weston_seat *seat);
-void
-weston_seat_update_keymap(struct weston_seat *seat, struct xkb_keymap *keymap);
-
-void
-weston_seat_release(struct weston_seat *seat);
 int
 weston_compositor_set_xkb_rule_names(struct weston_compositor *ec,
 				     struct xkb_rule_names *names);
@@ -2081,9 +2054,6 @@ struct weston_recorder *
 weston_recorder_start(struct weston_output *output, const char *filename);
 void
 weston_recorder_stop(struct weston_recorder *recorder);
-
-struct clipboard *
-clipboard_create(struct weston_seat *seat);
 
 struct weston_view_animation;
 typedef	void (*weston_view_animation_done_func_t)(struct weston_view_animation *animation, void *data);

@@ -35,6 +35,7 @@
 #include <libudev.h>
 
 #include <libweston/libweston.h>
+#include "libweston-internal.h"
 #include "launcher-util.h"
 #include "libinput-seat.h"
 #include "libinput-device.h"
