@@ -77,4 +77,13 @@ for f in $(git diff --name-only --diff-filter=d origin/master); do
   fi
 done
 
+python buildtools/checkdeps/checkdeps.py
+checkdeps_retval=$?
+
+# We always want to check DEPS, but don't want to clobber
+# failure results from above.
+if (($fail == 0)); then
+  fail=$checkdeps_retval
+fi
+
 exit $fail
