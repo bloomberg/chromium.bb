@@ -1,7 +1,7 @@
 import { allowedTestNameCharacters } from './allowed_characters.js';
 import { Fixture } from './fixture.js';
 import { TestCaseID } from './id.js';
-import { CaseRecorder, GroupRecorder, LiveTestCaseResult } from './logger.js';
+import { LiveTestCaseResult, TestCaseRecorder, TestSpecRecorder } from './logger.js';
 import { ParamSpecIterable, ParamsAny, paramsEquals } from './params/index.js';
 
 export interface RunCase {
@@ -10,10 +10,10 @@ export interface RunCase {
 }
 
 export interface RunCaseIterable {
-  iterate(rec: GroupRecorder): Iterable<RunCase>;
+  iterate(rec: TestSpecRecorder): Iterable<RunCase>;
 }
 
-type FixtureClass<F extends Fixture> = new (log: CaseRecorder, params: ParamsAny) => F;
+type FixtureClass<F extends Fixture> = new (log: TestCaseRecorder, params: ParamsAny) => F;
 type TestFn<F extends Fixture> = (t: F) => Promise<void> | void;
 
 const validNames = new RegExp('^[' + allowedTestNameCharacters + ']+$');
@@ -27,7 +27,7 @@ export class TestGroup<F extends Fixture> implements RunCaseIterable {
     this.fixture = fixture;
   }
 
-  *iterate(log: GroupRecorder): Iterable<RunCase> {
+  *iterate(log: TestSpecRecorder): Iterable<RunCase> {
     for (const test of this.tests) {
       yield* test.iterate(log);
     }
@@ -88,7 +88,7 @@ class Test<F extends Fixture> {
     this.cases = cases;
   }
 
-  *iterate(rec: GroupRecorder): IterableIterator<RunCase> {
+  *iterate(rec: TestSpecRecorder): IterableIterator<RunCase> {
     for (const params of this.cases || [null]) {
       yield new RunCaseSpecific(rec, { test: this.name, params }, this.fixture, this.fn);
     }
@@ -97,11 +97,11 @@ class Test<F extends Fixture> {
 
 class RunCaseSpecific<F extends Fixture> implements RunCase {
   readonly id: TestCaseID;
-  private readonly recorder: GroupRecorder;
+  private readonly recorder: TestSpecRecorder;
   private readonly fixture: FixtureClass<F>;
   private readonly fn: TestFn<F>;
 
-  constructor(recorder: GroupRecorder, id: TestCaseID, fixture: FixtureClass<F>, fn: TestFn<F>) {
+  constructor(recorder: TestSpecRecorder, id: TestCaseID, fixture: FixtureClass<F>, fn: TestFn<F>) {
     this.recorder = recorder;
     this.id = id;
     this.fixture = fixture;

@@ -46,17 +46,20 @@ export class TestLoader {
     this.fileLoader = fileLoader;
   }
 
+  // TODO: Test
   async loadTestsFromQuery(query: string): Promise<TestFilterResultIterator> {
     return this.loadTests(new URLSearchParams(query).getAll('q'));
   }
 
+  // TODO: Test
+  // TODO: Probably should actually not exist at all, just use queries on cmd line too.
   async loadTestsFromCmdLine(filters: string[]): Promise<TestFilterResultIterator> {
     // In actual URL queries (?q=...), + represents a space. But decodeURIComponent doesn't do this,
     // so do it manually. (+ is used over %20 for readability.) (See also encodeSelectively.)
     return this.loadTests(filters.map(f => decodeURIComponent(f.replace(/\+/g, '%20'))));
   }
 
-  async loadTests(filters: string[]): Promise<TestFilterResultIterator> {
+  private async loadTests(filters: string[]): Promise<TestFilterResultIterator> {
     const loads = filters.map(f => loadFilter(this.fileLoader, f));
     return concat(await Promise.all(loads));
   }

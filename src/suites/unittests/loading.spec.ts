@@ -87,7 +87,7 @@ class LoadingTest extends UnitTest {
   loader: TestLoader = new TestLoader(new FakeTestFileLoader());
 
   async load(filters: string[]): Promise<TestFilterResult[]> {
-    return Array.from(await this.loader.loadTests(filters));
+    return Array.from(await this.loader.loadTestsFromCmdLine(filters));
   }
 
   async singleGroup(query: string): Promise<RunCase[]> {

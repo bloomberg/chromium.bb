@@ -1,11 +1,11 @@
 import { TestCaseID } from '../../framework/id.js';
 import { Fixture, TestGroup, paramsEquals } from '../../framework/index.js';
-import { LiveTestRunResult, Logger } from '../../framework/logger.js';
+import { LiveTestSpecResult, Logger } from '../../framework/logger.js';
 
 import { UnitTest } from './unit_test.js';
 
 export class TestGroupTest extends UnitTest {
-  async run<F extends Fixture>(g: TestGroup<F>): Promise<LiveTestRunResult> {
+  async run<F extends Fixture>(g: TestGroup<F>): Promise<LiveTestSpecResult> {
     const [rec, res] = new Logger().record({ suite: '', path: '' });
     await Promise.all(Array.from(g.iterate(rec)).map(test => test.run()));
     return res;

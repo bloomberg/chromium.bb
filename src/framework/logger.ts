@@ -5,7 +5,7 @@ import { getStackTrace, now } from './util/index.js';
 import { version } from './version.js';
 
 type Status = 'running' | 'pass' | 'warn' | 'fail';
-export interface LiveTestRunResult {
+export interface LiveTestSpecResult {
   readonly spec: string;
   readonly cases: LiveTestCaseResult[];
 }
@@ -19,14 +19,14 @@ export interface LiveTestCaseResult {
 }
 
 export class Logger {
-  readonly results: LiveTestRunResult[] = [];
+  readonly results: LiveTestSpecResult[] = [];
 
   constructor() {}
 
-  record(spec: TestSpecID): [GroupRecorder, LiveTestRunResult] {
-    const result: LiveTestRunResult = { spec: makeQueryString(spec), cases: [] };
+  record(spec: TestSpecID): [TestSpecRecorder, LiveTestSpecResult] {
+    const result: LiveTestSpecResult = { spec: makeQueryString(spec), cases: [] };
     this.results.push(result);
-    return [new GroupRecorder(result), result];
+    return [new TestSpecRecorder(result), result];
   }
 
   asJSON(space?: number): string {
@@ -34,21 +34,21 @@ export class Logger {
   }
 }
 
-export class GroupRecorder {
-  private result: LiveTestRunResult;
+export class TestSpecRecorder {
+  private result: LiveTestSpecResult;
 
-  constructor(result: LiveTestRunResult) {
+  constructor(result: LiveTestSpecResult) {
     this.result = result;
   }
 
-  record(test: string, params: ParamsSpec | null): [CaseRecorder, LiveTestCaseResult] {
+  record(test: string, params: ParamsSpec | null): [TestCaseRecorder, LiveTestCaseResult] {
     const result: LiveTestCaseResult = { test, params, status: 'running', timems: -1 };
     this.result.cases.push(result);
-    return [new CaseRecorder(result), result];
+    return [new TestCaseRecorder(result), result];
   }
 }
 
-export class CaseRecorder {
+export class TestCaseRecorder {
   private result: LiveTestCaseResult;
   private failed = false;
   private warned = false;
@@ -71,7 +71,7 @@ export class CaseRecorder {
       throw new Error('finish() before start()');
     }
     const endTime = now();
-    this.result.timems = endTime - this.startTime;
+    this.result.timems = Math.ceil((endTime - this.startTime) * 1000);
     this.result.status = this.failed ? 'fail' : this.warned ? 'warn' : 'pass';
 
     this.result.logs = this.logs;

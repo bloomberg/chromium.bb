@@ -1,4 +1,4 @@
-import { CaseRecorder } from './logger.js';
+import { TestCaseRecorder } from './logger.js';
 import { ParamsAny } from './params/index.js';
 
 // A Fixture is a class used to instantiate each test case at run time.
@@ -6,9 +6,9 @@ import { ParamsAny } from './params/index.js';
 // (i.e. every time the test function is run).
 export abstract class Fixture {
   params: ParamsAny;
-  protected rec: CaseRecorder;
+  protected rec: TestCaseRecorder;
 
-  constructor(rec: CaseRecorder, params: ParamsAny) {
+  constructor(rec: TestCaseRecorder, params: ParamsAny) {
     this.rec = rec;
     this.params = params;
   }

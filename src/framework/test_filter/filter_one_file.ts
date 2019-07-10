@@ -1,6 +1,6 @@
 import { TestCaseID, TestSpecID } from '../id.js';
 import { TestFileLoader, TestSpec } from '../loader.js';
-import { GroupRecorder } from '../logger.js';
+import { TestSpecRecorder } from '../logger.js';
 import { ParamsAny, paramsEquals, paramsSupersets } from '../params/index.js';
 import { RunCase, RunCaseIterable } from '../test_group.js';
 
@@ -36,7 +36,7 @@ abstract class FilterOneFile implements TestFilter {
 type TestGroupFilter = (testcase: TestCaseID) => boolean;
 function filterTestGroup(group: RunCaseIterable, filter: TestGroupFilter): RunCaseIterable {
   return {
-    *iterate(log: GroupRecorder): Iterable<RunCase> {
+    *iterate(log: TestSpecRecorder): Iterable<RunCase> {
       for (const rc of group.iterate(log)) {
         if (filter(rc.id)) {
           yield rc;

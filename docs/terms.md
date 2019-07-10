@@ -1,4 +1,4 @@
-# Overview
+# Writing Tests
 
 - _Suites_ contain multiple:
   - _READMEs_
@@ -6,12 +6,6 @@
     - _Test Group_. Defines a _test fixture_ and contains multiple:
       - _Tests_. Defines a _test function_ and contains multiple:
         - _Test Cases_, each with the same test function but different _parameters_.
-- _Queries_ contain multiple:
-  - _Filters_ (positive or negative). Each filter may match one of:
-    - `S:p` In one suite `S`, all specs whose paths start with `p`.
-    - `S:s:t` In one spec `S:s`, all tests whose names start with `t`.
-    - `S:s:t~c` In one test `S:s:t`, all cases whose params are a superset of `c`.
-    - `S:s:t:c` In one test `S:s:t`, the single case whose params equal `c`.
 
 ## Suite
 
@@ -134,6 +128,8 @@ which allows it to produce test results.
 
 They are also how tests produce results: `.log()`, `.fail()`, etc.
 
+**Type:** `Fixture`
+
 ### `UnitTest` Fixture
 
 Provides basic fixture utilities most useful in the `unittests` suite.
@@ -142,18 +138,140 @@ Provides basic fixture utilities most useful in the `unittests` suite.
 
 Provides utilities useful in WebGPU CTS tests.
 
-# TODO: undocumented
+# Running Tests
+
+- _Queries_ contain multiple:
+  - _Filters_ (positive or negative).
 
 ## Query
 
+A query is a string which denotes a subset of a test suite to run.
+It is comprised of a list of positive and negative filters.
+
+A case is included in the subset if it matches any of the positive filters
+and none of the negative filters.
+
+(TODO: implement negative filters and update these docs if needed; syntax may change.)
+
+In the WPT and standalone harnesses, the query is stored in the URL.
+
+Queries are selectively URL-encoded for readability and compatibility with browsers.
+
+**Example:** `?q=unittests:param_helpers:combine/&not=unittests:param_helpers:combine/mixed`
+
+**Type:** None yet. TODO
+
 ### Filter
 
-### Positive Filter
+A filter matches a set of cases in a suite.
 
-### Negative Filter
+Each filter may match one of:
+
+- `S:s` In one suite `S`, all specs whose paths start with `s` (which may be empty).
+- `S:s:t` In one spec `S:s`, all tests whose names start with `t` (which may be empty).
+- `S:s:t~c` In one test `S:s:t`, all cases whose params are a superset of `c`.
+- `S:s:t:c` In one test `S:s:t`, the single case whose params equal `c` (empty string = `{}`).
+
+**Type:** `TestFilter`
+
+### Using filters to split expectations
+
+A set of cases can be split using negative filters. For example, imagine you have one WPT test variant:
+
+- `webgpu/cts.html?q=unittests:param_helpers:`
+
+But one of the cases is failing. To be able to suppress the failing test without losing test coverage, the WPT test variant can be split into two variants:
+
+- `webgpu/cts.html?q=unittests:param_helpers:&not=unittests:param_helpers:combine/mixed:`
+- `webgpu/cts.html?q=unittests:param_helpers:combine/mixed:`
+
+This runs the same set of cases, but in two separate page loads.
+
+# Test Results
 
 ## Logger
 
-### Group Recorder
+A logger logs the results of a whole test run.
 
-### Case Recorder
+It saves an empty `LiveTestSpecResult` into its results array, then creates a
+_test spec recorder_, which records the results for a group into the `LiveTestSpecResult`.
+
+### Test Spec Recorder
+
+Refers to a `LiveTestSpecResult` in the logger, and writes results into it.
+
+It saves an empty `LiveTestCaseResult` into its `LiveTestSpecResult`, then creates a
+_test case recorder_, which records the results for a case into the `LiveTestCaseResult`.
+
+### Test Case Recorder
+
+Records the actual results of running a test case (its pass-status, run time, and logs)
+into its `LiveTestCaseResult`.
+
+#### Test Case Status
+
+The `status` of a `LiveTestCaseResult` can be one of:
+
+- `'running'`
+- `'fail'`
+- `'warn'`
+- `'pass'`
+
+The "worst" result from running a case is always reported.
+
+## Results Format
+
+The results are returned in JSON format.
+
+They are designed to be easily merged in JavaScript.
+(TODO: Write a merge tool.)
+
+(TODO: Update these docs if the format changes.)
+
+```js
+{
+  "version": "e24c459b46c4815f93f0aed5261e28008d1f2882-dirty",
+  "results": [
+    // LiveTestSpecResult objects
+    {
+      "spec": "unittests:basic:",
+      "cases": [
+        // LiveTestCaseResult objects
+        {
+          "test": "test/sync",
+          "params": null,
+          "status": "pass",
+          "timems": 145,
+          "logs": []
+        },
+        {
+          "test": "test/async",
+          "params": null,
+          "status": "pass",
+          "timems": 26,
+          "logs": []
+        }
+      ]
+    },
+    {
+      "spec": "unittests:test_group:",
+      "cases": [
+        {
+          "test": "invalid test name",
+          "params": { "char": "\"" },
+          "status": "pass",
+          "timems": 66,
+          "logs": ["OK: threw"]
+        },
+        {
+          "test": "invalid test name",
+          "params": { "char": "`" },
+          "status": "pass",
+          "timems": 15,
+          "logs": ["OK: threw"]
+        }
+      ]
+    }
+  ]
+}
+```
