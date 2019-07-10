@@ -65,9 +65,7 @@ static bool LargeImageFirst(const base::WeakPtr<ImageRecord>& a,
     return a->first_size > b->first_size;
   // This make sure that two different nodes with the same |first_size| wouldn't
   // be merged in the set.
-  if (a->node_id != b->node_id)
-    return a->node_id > b->node_id;
-  return a->record_id > b->record_id;
+  return a->insertion_index < b->insertion_index;
 }
 
 ImagePaintTimingDetector::ImagePaintTimingDetector(LocalFrameView* frame_view)
@@ -315,11 +313,8 @@ std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
     const uint64_t& visual_size) {
   DCHECK(!RecordedTooManyNodes());
   DCHECK_GT(visual_size, 0u);
-  std::unique_ptr<ImageRecord> record = std::make_unique<ImageRecord>();
-  record->record_id = max_record_id_++;
-  record->node_id = node_id;
-  record->first_size = visual_size;
-  record->cached_image = cached_image;
+  std::unique_ptr<ImageRecord> record =
+      std::make_unique<ImageRecord>(node_id, cached_image, visual_size);
   return record;
 }
 

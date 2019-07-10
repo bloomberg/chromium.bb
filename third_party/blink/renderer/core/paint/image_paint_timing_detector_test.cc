@@ -235,6 +235,31 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_OneImage) {
   EXPECT_TRUE(record->loaded);
 }
 
+TEST_F(ImagePaintTimingDetectorTest, InsertionOrderIsSecondaryRankingKey) {
+  SetBodyInnerHTML(R"HTML(
+  )HTML");
+
+  auto* image1 = MakeGarbageCollected<HTMLImageElement>(GetDocument());
+  image1->setAttribute("id", "image1");
+  GetDocument().body()->AppendChild(image1);
+  SetImageAndPaint("image1", 5, 5);
+
+  auto* image2 = MakeGarbageCollected<HTMLImageElement>(GetDocument());
+  image2->setAttribute("id", "image2");
+  GetDocument().body()->AppendChild(image2);
+  SetImageAndPaint("image2", 5, 5);
+
+  auto* image3 = MakeGarbageCollected<HTMLImageElement>(GetDocument());
+  image3->setAttribute("id", "image3");
+  GetDocument().body()->AppendChild(image3);
+  SetImageAndPaint("image3", 5, 5);
+
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+
+  EXPECT_EQ(FindLargestPaintCandidate()->node_id,
+            DOMNodeIds::ExistingIdForNode(image1));
+}
+
 TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_TraceEvent_Candidate) {
   using trace_analyzer::Query;
   trace_analyzer::Start("loading");
