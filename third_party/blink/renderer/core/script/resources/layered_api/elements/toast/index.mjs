@@ -75,6 +75,12 @@ export class StdToastElement extends HTMLElement {
     // TODO(jacksteinberg): use https://github.com/whatwg/html/pull/4658 when implemented
   }
 
+  get action() {
+    return this.#actionSlot.assignedNodes().length !== 0 ?
+      this.#actionSlot.assignedNodes()[0] :
+      null;
+  }
+
   show({duration = DEFAULT_DURATION} = {}) {
     this.setAttribute('open', '');
     clearTimeout(this.#timeoutID);
