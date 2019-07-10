@@ -253,8 +253,6 @@ component("ash") {
     "display/mouse_warp_controller.h",
     "display/null_mouse_warp_controller.cc",
     "display/null_mouse_warp_controller.h",
-    "display/output_protection_controller_ash.cc",
-    "display/output_protection_controller_ash.h",
     "display/output_protection_delegate.cc",
     "display/output_protection_delegate.h",
     "display/overscan_calibrator.cc",
