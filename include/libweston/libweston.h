@@ -2040,18 +2040,6 @@ struct weston_buffer *
 weston_buffer_from_resource(struct wl_resource *resource);
 
 void
-weston_buffer_reference(struct weston_buffer_reference *ref,
-			struct weston_buffer *buffer);
-
-void
-weston_buffer_release_reference(struct weston_buffer_release_reference *ref,
-				struct weston_buffer_release *buf_release);
-
-void
-weston_buffer_release_move(struct weston_buffer_release_reference *dest,
-			   struct weston_buffer_release_reference *src);
-
-void
 weston_compositor_get_time(struct timespec *time);
 
 char *
@@ -2455,10 +2443,6 @@ weston_log_ctx_compositor_setup(struct weston_compositor *compositor,
 
 void
 weston_log_ctx_compositor_destroy(struct weston_compositor *compositor);
-
-void
-weston_buffer_send_server_error(struct weston_buffer *buffer,
-				      const char *msg);
 
 int
 weston_compositor_enable_content_protection(struct weston_compositor *compositor);

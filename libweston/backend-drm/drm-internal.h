@@ -55,6 +55,7 @@
 #include <libweston/weston-debug.h>
 #include "shared/helpers.h"
 #include "libinput-seat.h"
+#include "libweston-internal.h"
 
 #ifndef DRM_CLIENT_CAP_ASPECT_RATIO
 #define DRM_CLIENT_CAP_ASPECT_RATIO	4

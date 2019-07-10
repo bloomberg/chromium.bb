@@ -72,6 +72,7 @@
 #include <libweston/version.h>
 #include <libweston/plugin-registry.h>
 #include "pixel-formats.h"
+#include "libweston-internal.h"
 
 /**
  * \defgroup head Head

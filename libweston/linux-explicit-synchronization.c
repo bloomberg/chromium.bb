@@ -33,6 +33,7 @@
 #include "linux-explicit-synchronization-unstable-v1-server-protocol.h"
 #include "linux-sync-file.h"
 #include "shared/fd-util.h"
+#include "libweston-internal.h"
 
 static void
 destroy_linux_buffer_release(struct wl_resource *resource)
