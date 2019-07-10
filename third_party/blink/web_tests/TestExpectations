@@ -1039,7 +1039,7 @@ crbug.com/591099 [ Mac10.13 ] fast/dynamic/012.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/dynamic/insert-before-table-part-in-continuation.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/dynamic/noninlinebadness.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/dynamic/outerHTML-doc.html [ Failure ]
-crbug.com/591099 [ Mac ] fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
+#crbug.com/591099 [ Mac ] fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.13 ] fast/forms/basic-inputs.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/forms/button/button-inner-block-reuse.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/forms/formmove2.html [ Failure ]
@@ -1327,10 +1327,15 @@ crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/image-map-anchor-
 crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-focus-ring-zoom.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] virtual/gpu-rasterization/images/imagemap-overflowing-circle-focus-ring.html [ Failure ]
-crbug.com/591099 [ Mac ] virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
+#crbug.com/591099 [ Mac ] virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Crash Timeout ]
 crbug.com/591099 [ Mac10.13 ] virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
 
-crbug.com/974725 [ Win7 ] fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
+#crbug.com/974725 [ Win7 ] fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
+
+# A few other lines for this test are commented out above to avoid conflicting expectations.
+# If they are not also fixed, reinstate them when removing these lines.
+crbug.com/982211 fast/events/before-unload-return-value-from-listener.html [ Pass Crash Timeout ]
+crbug.com/982211 virtual/mouseevent_fractional/fast/events/before-unload-return-value-from-listener.html [ Pass Crash Timeout ]
 
 # Maybe a Mac-specific rebaselining issue.
 crbug.com/846557 [ Mac ] virtual/layout_ng_experimental/css3/flexbox/button.html [ Skip ]
