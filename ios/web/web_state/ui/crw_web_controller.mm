@@ -598,8 +598,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   self.webStateImpl->CancelDialogs();
 
   _SSLStatusUpdater = nil;
+  [self.navigationHandler close];
   [self.UIHandler close];
   [self.JSNavigationHandler close];
+  [self.requestController close];
   _faviconManager.reset();
   _jsWindowErrorManager.reset();
   self.swipeRecognizerProvider = nil;
@@ -1253,11 +1255,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)legacyNativeContentControllerWebUsageEnabled:
     (CRWLegacyNativeContentController*)contentController {
   return [self webUsageEnabled];
-}
-
-- (BOOL)legacyNativeContentControllerIsBeingDestroyed:
-    (CRWLegacyNativeContentController*)contentController {
-  return _isBeingDestroyed;
 }
 
 - (void)legacyNativeContentControllerRemoveWebView:
@@ -1986,11 +1983,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 #pragma mark - CRWWebViewNavigationObserverDelegate
 
-- (BOOL)webViewIsBeingDestroyed:
-    (CRWWebViewNavigationObserver*)navigationObserver {
-  return _isBeingDestroyed;
-}
-
 - (web::WebStateImpl*)webStateImplForNavigationObserver:
     (CRWWebViewNavigationObserver*)navigationObserver {
   return self.webStateImpl;
@@ -2149,11 +2141,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 #pragma mark - CRWWKNavigationHandlerDelegate
 
-- (BOOL)navigationHandlerWebViewBeingDestroyed:
-    (CRWWKNavigationHandler*)navigationHandler {
-  return _isBeingDestroyed;
-}
-
 - (web::WebStateImpl*)webStateImplForNavigationHandler:
     (CRWWKNavigationHandler*)navigationHandler {
   return self.webStateImpl;
@@ -2275,11 +2262,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 #pragma mark - CRWWebRequestControllerDelegate
-
-- (BOOL)webRequestControllerIsBeingDestroyed:
-    (CRWWebRequestController*)requestController {
-  return _isBeingDestroyed;
-}
 
 - (void)webRequestControllerStopLoading:
     (CRWWebRequestController*)requestController {
