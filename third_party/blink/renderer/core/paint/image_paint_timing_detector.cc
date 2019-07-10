@@ -153,6 +153,19 @@ void ImagePaintTimingDetector::OnPaintFinished() {
   RegisterNotifySwapTime();
 }
 
+void ImagePaintTimingDetector::LayoutObjectWillBeDestroyed(
+    const LayoutObject& object) {
+  if (!is_recording_)
+    return;
+
+  DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(object.GetNode());
+  if (node_id == kInvalidDOMNodeId)
+    return;
+  // The visible record removal has been handled by
+  // |NotifyBackgroundImageRemoved|.
+  records_manager_.RemoveInvisibleRecordIfNeeded(node_id);
+}
+
 void ImagePaintTimingDetector::NotifyBackgroundImageRemoved(
     DOMNodeId node_id,
     const ImageResourceContent* cached_image) {
@@ -270,15 +283,6 @@ void ImagePaintTimingDetector::RecordBackgroundImage(
       need_update_timing_at_frame_end_ = true;
     }
   }
-
-  if (records_manager_.RecordedTooManyNodes())
-    HandleTooManyNodes();
-}
-
-void ImagePaintTimingDetector::HandleTooManyNodes() {
-  TRACE_EVENT_INSTANT0("loading", "ImagePaintTimingDetector::OverNodeLimit",
-                       TRACE_EVENT_SCOPE_THREAD);
-  StopRecordEntries();
 }
 
 ImageRecordsManager::ImageRecordsManager()
@@ -311,7 +315,6 @@ std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
     const DOMNodeId& node_id,
     const ImageResourceContent* cached_image,
     const uint64_t& visual_size) {
-  DCHECK(!RecordedTooManyNodes());
   DCHECK_GT(visual_size, 0u);
   std::unique_ptr<ImageRecord> record =
       std::make_unique<ImageRecord>(node_id, cached_image, visual_size);

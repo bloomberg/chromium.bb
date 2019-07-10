@@ -102,8 +102,17 @@ class ImagePaintTimingDetectorTest
         ->records_manager_.visible_background_image_map_.size();
   }
 
+  size_t CountInvisibleRecords() {
+    return GetPaintTimingDetector()
+        .GetImagePaintTimingDetector()
+        ->records_manager_.invisible_node_ids_.size();
+  }
+
   size_t ContainerTotalSize() {
     return GetPaintTimingDetector()
+               .GetImagePaintTimingDetector()
+               ->records_manager_.invisible_node_ids_.size() +
+           GetPaintTimingDetector()
                .GetImagePaintTimingDetector()
                ->records_manager_.visible_background_image_map_.size() +
            GetPaintTimingDetector()
@@ -594,6 +603,35 @@ TEST_F(ImagePaintTimingDetectorTest,
   GetDocument().getElementById("parent")->RemoveChild(
       GetDocument().getElementById("target"));
   EXPECT_EQ(ContainerTotalSize(), 0u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest,
+       RemoveRecordFromAllContainersAfterInvisibleImageRemoved) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        position: relative;
+        left: 100px;
+      }
+      #parent {
+        background-color: yellow;
+        height: 50px;
+        width: 50px;
+        overflow: scroll;
+      }
+    </style>
+    <div id='parent'>
+      <img id='target'></img>
+    </div>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  EXPECT_EQ(ContainerTotalSize(), 1u);
+  EXPECT_EQ(CountInvisibleRecords(), 1u);
+
+  GetDocument().body()->RemoveChild(GetDocument().getElementById("parent"));
+  EXPECT_EQ(ContainerTotalSize(), 0u);
+  EXPECT_EQ(CountInvisibleRecords(), 0u);
 }
 
 TEST_F(ImagePaintTimingDetectorTest,
