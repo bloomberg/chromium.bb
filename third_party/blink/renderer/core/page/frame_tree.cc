@@ -227,17 +227,10 @@ Frame* FrameTree::FindFrameForNavigationInternal(
   if (EqualIgnoringASCIICase(name, "_parent"))
     return Parent() ? Parent() : this_frame_.Get();
 
-  if (EqualIgnoringASCIICase(name, "_blank")) {
-    if (RuntimeEnabledFeatures::RedirectBlankNavigationToTopEnabled()) {
-      // TODO(mthiesse): Only apply this behavior to navigations without
-      // rel=opener once
-      // https://html.spec.whatwg.org/multipage/links.html#link-type-opener is
-      // implemented.
-      return &Top();
-    } else {
-      return nullptr;
-    }
-  }
+  // Since "_blank" should never be any frame's name, the following just amounts
+  // to an optimization.
+  if (EqualIgnoringASCIICase(name, "_blank"))
+    return nullptr;
 
   // TODO(japhet): window-open-noopener.html?indexed asserts that the noopener
   // feature prevents named-window reuse, but the spec doesn't mention this.
