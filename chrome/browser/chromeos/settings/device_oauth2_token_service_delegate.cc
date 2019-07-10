@@ -326,13 +326,6 @@ void DeviceOAuth2TokenServiceDelegate::RequestValidation() {
 void DeviceOAuth2TokenServiceDelegate::InitializeWithValidationStatusDelegate(
     ValidationStatusDelegate* delegate) {
   validation_status_delegate_ = delegate;
-
-  // Now that |delegate| (i.e., DeviceOAuth2TokenService) has been initialized
-  // and is listening to this object as an observer, fire the notification that
-  // refresh tokens were loaded; otherwise,
-  // OAuth2TokenService::{GetAccounts(), RefreshTokenIsAvailable()} will short-
-  // circuit out to match O2TS semantics.
-  FireRefreshTokensLoaded();
 }
 
 void DeviceOAuth2TokenServiceDelegate::ClearValidationStatusDelegate() {
