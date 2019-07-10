@@ -9554,6 +9554,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Choose a different folder
     </message>
 
+    <!-- Native File System directory access confirmation dialog. -->
+    <message name="IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TITLE" desc="Title of dialog asking user if they intended to share a particular directory">
+      Let site read this folder?
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TEXT" desc="Text of dialog asking user if they intended to share a particular directory">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to read all files in the following folder. This site can see any changes to the folder only while this tab is open.
+    </message>
+
     <!-- Relaunch notification bubble and dialog. -->
     <if expr="not is_android">
       <if expr="not chromeos">
