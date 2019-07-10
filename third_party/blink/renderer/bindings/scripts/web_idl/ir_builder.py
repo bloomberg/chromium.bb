@@ -124,9 +124,7 @@ class _IRBuilder(object):
         extended_attributes = self._take_extended_attributes(child_nodes)
         # TODO(yukishiino): Implement dictionary inheritance.
         _ = self._take_inheritance(child_nodes)
-        own_members = [
-            self._build_dictionary_member(child) for child in child_nodes
-        ]
+        own_members = map(self._build_dictionary_member, child_nodes)
 
         dictionary = Dictionary.IR(
             identifier=node.GetName(),
