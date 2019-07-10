@@ -98,6 +98,7 @@ public class GridTabSwitcherLayoutTest {
         GridTabSwitcherCoordinator coordinator =
                 (GridTabSwitcherCoordinator) mGtsLayout.getGridTabSwitcherForTesting();
         coordinator.setBitmapCallbackForTesting(mBitmapListener);
+        Assert.assertEquals(0, coordinator.getBitmapFetchCountForTesting());
 
         mActivityTestRule.getActivity().getTabContentManager().setCaptureMinRequestTimeForTesting(
                 0);
@@ -348,6 +349,74 @@ public class GridTabSwitcherLayoutTest {
         mGtsLayout = (GridTabSwitcherLayout) layout;
         coordinator = (GridTabSwitcherCoordinator) mGtsLayout.getGridTabSwitcherForTesting();
         Assert.assertEquals(0, coordinator.getBitmapFetchCountForTesting() - oldCount);
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.
+    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    public void testInvisibleTabsDontFetch() throws InterruptedException {
+        // Open a few new tabs.
+        final int count = mAllBitmaps.size();
+        for (int i = 0; i < 3; i++) {
+            MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                    mActivityTestRule.getActivity(), org.chromium.chrome.R.id.new_tab_menu_id);
+        }
+        // Fetching might not happen instantly.
+        Thread.sleep(1000);
+
+        // No fetching should happen.
+        Assert.assertEquals(0, mAllBitmaps.size() - count);
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.
+    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/10000/cleanup-delay/10000"})
+    public void testInvisibleTabsDontFetchWarm() throws InterruptedException {
+        // Get the GTS in the warm state.
+        prepareTabs(2, NTP_URL);
+        mRepeat = 2;
+        testTabToGrid(NTP_URL);
+
+        Thread.sleep(1000);
+
+        // Open a few new tabs.
+        final int count = mAllBitmaps.size();
+        for (int i = 0; i < 3; i++) {
+            MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                    mActivityTestRule.getActivity(), org.chromium.chrome.R.id.new_tab_menu_id);
+        }
+        // Fetching might not happen instantly.
+        Thread.sleep(1000);
+
+        // No fetching should happen.
+        Assert.assertEquals(0, mAllBitmaps.size() - count);
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.
+    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/10000"})
+    public void testInvisibleTabsDontFetchSoft() throws InterruptedException {
+        // Get the GTS in the soft cleaned up state.
+        prepareTabs(2, NTP_URL);
+        mRepeat = 2;
+        testTabToGrid(NTP_URL);
+
+        Thread.sleep(1000);
+
+        // Open a few new tabs.
+        final int count = mAllBitmaps.size();
+        for (int i = 0; i < 3; i++) {
+            MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
+                    mActivityTestRule.getActivity(), org.chromium.chrome.R.id.new_tab_menu_id);
+        }
+        // Fetching might not happen instantly.
+        Thread.sleep(1000);
+
+        // No fetching should happen.
+        Assert.assertEquals(0, mAllBitmaps.size() - count);
     }
 
     private void enterGTS() throws InterruptedException {

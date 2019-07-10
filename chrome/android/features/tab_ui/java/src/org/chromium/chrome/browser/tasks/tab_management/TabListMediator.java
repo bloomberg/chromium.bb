@@ -57,6 +57,7 @@ import java.util.Map;
  * TODO(yusufo): Move some of the logic here to a parent component to make the above true.
  */
 class TabListMediator {
+    private boolean mVisible;
     private boolean mShownIPH;
 
     /**
@@ -660,6 +661,7 @@ class TabListMediator {
      * The selected border should re-appear in the final fading-in stage.
      */
     void prepareOverview() {
+        assert mVisible;
         int count = 0;
         for (int i = 0; i < mModel.size(); i++) {
             if (mModel.get(i).get(TabProperties.IS_SELECTED)) count++;
@@ -688,6 +690,7 @@ class TabListMediator {
      * @return Whether the {@link TabListRecyclerView} can be shown quickly.
      */
     boolean resetWithListOfTabs(@Nullable List<Tab> tabs, boolean quickMode) {
+        mVisible = tabs != null;
         if (areTabsUnchanged(tabs)) {
             if (tabs == null) return true;
 
@@ -712,6 +715,10 @@ class TabListMediator {
         return false;
     }
 
+    void postHiding() {
+        mVisible = false;
+    }
+
     private boolean isSelectedTab(int tabId, int tabModelSelectedTabId) {
         SelectionDelegate<Integer> selectionDelegate = getTabSelectionDelegate();
         if (selectionDelegate == null) {
@@ -725,6 +732,7 @@ class TabListMediator {
      * @see GridTabSwitcherMediator.ResetHandler#softCleanup
      */
     void softCleanup() {
+        assert !mVisible;
         for (int i = 0; i < mModel.size(); i++) {
             mModel.get(i).set(TabProperties.THUMBNAIL_FETCHER, null);
         }
@@ -761,7 +769,7 @@ class TabListMediator {
         mTabListFaviconProvider.getFaviconForUrlAsync(
                 tab.getUrl(), tab.isIncognito(), faviconCallback);
         boolean forceUpdate = isSelected && !quickMode;
-        if (mThumbnailProvider != null
+        if (mThumbnailProvider != null && mVisible
                 && (mModel.get(index).get(TabProperties.THUMBNAIL_FETCHER) == null || forceUpdate
                         || isUpdatingId)) {
             ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, forceUpdate,
@@ -874,7 +882,7 @@ class TabListMediator {
         mTabListFaviconProvider.getFaviconForUrlAsync(
                 tab.getUrl(), tab.isIncognito(), faviconCallback);
 
-        if (mThumbnailProvider != null) {
+        if (mThumbnailProvider != null && mVisible) {
             ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, isSelected,
                     isSelected
                             && !ChromeFeatureList.isEnabled(
