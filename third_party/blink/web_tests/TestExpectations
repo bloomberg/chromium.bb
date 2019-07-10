@@ -143,10 +143,6 @@ Bug(none) virtual/composite-after-paint/paint/frames [ Pass ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
 
-# Fails due to flaws in the SPv1 architecture. Can be fixed with composite-after-paint.
-crbug.com/862483 compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
-crbug.com/862483 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
-
 crbug.com/807395 fast/multicol/mixed-opacity-test.html [ Failure ]
 
 ########## Ref tests can't be rebaselined ##########
