@@ -3249,8 +3249,6 @@ jumbo_split_static_library("browser") {
       "search/chrome_colors/chrome_colors_factory.h",
       "search/chrome_colors/chrome_colors_service.cc",
       "search/chrome_colors/chrome_colors_service.h",
-      "search/iframe_source.cc",
-      "search/iframe_source.h",
       "search/instant_service.cc",
       "search/instant_service.h",
       "search/instant_service_factory.cc",

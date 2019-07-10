@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/search/iframe_source.h"
+#include "chrome/browser/search/most_visited_iframe_source.h"
 
 #include <memory>
 
@@ -30,12 +30,12 @@ const int kInstantRendererPID = 1;
 const char kInstantOrigin[] = "chrome-search://instant";
 const int kInvalidRendererPID = 42;
 
-class TestIframeSource : public IframeSource {
+class TestMostVisitedIframeSource : public MostVisitedIframeSource {
  public:
-  using IframeSource::GetMimeType;
-  using IframeSource::ShouldServiceRequest;
-  using IframeSource::SendResource;
-  using IframeSource::SendJSWithOrigin;
+  using MostVisitedIframeSource::GetMimeType;
+  using MostVisitedIframeSource::SendJSWithOrigin;
+  using MostVisitedIframeSource::SendResource;
+  using MostVisitedIframeSource::ShouldServiceRequest;
 
   void set_origin(std::string origin) { origin_ = origin; }
 
@@ -66,19 +66,18 @@ class TestIframeSource : public IframeSource {
   std::string origin_;
 };
 
-class IframeSourceTest : public testing::Test {
+class MostVisitedIframeSourceTest : public testing::Test {
  public:
   // net::URLRequest wants to be executed with a message loop that has TYPE_IO.
   // InstantIOContext needs to be created on the UI thread and have everything
   // else happen on the IO thread. This setup is a hacky way to satisfy all
   // those constraints.
-  IframeSourceTest()
+  MostVisitedIframeSourceTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         instant_io_context_(NULL),
-        response_(NULL) {
-  }
+        response_(NULL) {}
 
-  TestIframeSource* source() { return source_.get(); }
+  TestMostVisitedIframeSource* source() { return source_.get(); }
 
   std::string response_string() {
     if (response_.get()) {
@@ -104,8 +103,8 @@ class IframeSourceTest : public testing::Test {
 
  private:
   void SetUp() override {
-    source_.reset(new TestIframeSource());
-    callback_ = base::Bind(&IframeSourceTest::SaveResponse,
+    source_ = std::make_unique<TestMostVisitedIframeSource>();
+    callback_ = base::Bind(&MostVisitedIframeSourceTest::SaveResponse,
                            base::Unretained(this));
     instant_io_context_ = new InstantIOContext;
     InstantIOContext::SetUserDataOnIO(&resource_context_, instant_io_context_);
@@ -125,13 +124,13 @@ class IframeSourceTest : public testing::Test {
 
   net::TestURLRequestContext test_url_request_context_;
   content::MockResourceContext resource_context_;
-  std::unique_ptr<TestIframeSource> source_;
+  std::unique_ptr<TestMostVisitedIframeSource> source_;
   content::URLDataSource::GotDataCallback callback_;
   scoped_refptr<InstantIOContext> instant_io_context_;
   scoped_refptr<base::RefCountedMemory> response_;
 };
 
-TEST_F(IframeSourceTest, ShouldServiceRequest) {
+TEST_F(MostVisitedIframeSourceTest, ShouldServiceRequest) {
   source()->set_origin(kNonInstantOrigin);
   EXPECT_FALSE(ShouldService("http://test/loader.js", kNonInstantRendererPID));
   source()->set_origin(kInstantOrigin);
@@ -151,7 +150,7 @@ TEST_F(IframeSourceTest, ShouldServiceRequest) {
       ShouldService("chrome-search://test/valid.js", kInvalidRendererPID));
 }
 
-TEST_F(IframeSourceTest, GetMimeType) {
+TEST_F(MostVisitedIframeSourceTest, GetMimeType) {
   // URLDataManagerBackend does not include / in path_and_query.
   EXPECT_EQ("text/html", source()->GetMimeType("foo.html"));
   EXPECT_EQ("application/javascript", source()->GetMimeType("foo.js"));
@@ -160,12 +159,12 @@ TEST_F(IframeSourceTest, GetMimeType) {
   EXPECT_EQ("", source()->GetMimeType("bogus"));
 }
 
-TEST_F(IframeSourceTest, SendResource) {
+TEST_F(MostVisitedIframeSourceTest, SendResource) {
   SendResource(IDR_MOST_VISITED_TITLE_HTML);
   EXPECT_FALSE(response_string().empty());
 }
 
-TEST_F(IframeSourceTest, SendJSWithOrigin) {
+TEST_F(MostVisitedIframeSourceTest, SendJSWithOrigin) {
   source()->set_origin(kInstantOrigin);
   SendJSWithOrigin(IDR_MOST_VISITED_TITLE_JS);
   EXPECT_FALSE(response_string().empty());
