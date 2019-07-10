@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_TABLET_MODE_TABLET_MODE_OBSERVER_H_
-#define ASH_WM_TABLET_MODE_TABLET_MODE_OBSERVER_H_
+#ifndef ASH_PUBLIC_CPP_TABLET_MODE_OBSERVER_H_
+#define ASH_PUBLIC_CPP_TABLET_MODE_OBSERVER_H_
 
-#include "ash/ash_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 
 namespace ash {
 
 // Used to observe tablet mode changes inside ash. Exported for tests.
 // NOTE: Code in chrome should use TabletModeClientObserver.
-class ASH_EXPORT TabletModeObserver {
+class ASH_PUBLIC_EXPORT TabletModeObserver {
  public:
   // Called when the tablet mode is about to start.
   virtual void OnTabletModeStarting() {}
@@ -42,4 +42,4 @@ class ASH_EXPORT TabletModeObserver {
 
 }  // namespace ash
 
-#endif  // ASH_WM_TABLET_MODE_TABLET_MODE_OBSERVER_H_
+#endif  // ASH_PUBLIC_CPP_TABLET_MODE_OBSERVER_H_

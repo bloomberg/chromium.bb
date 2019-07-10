@@ -99,9 +99,6 @@ class ASH_EXPORT TabletModeController
   // If the tablet mode is not enabled no action will be performed.
   void AddWindow(aura::Window* window);
 
-  void AddObserver(TabletModeObserver* observer);
-  void RemoveObserver(TabletModeObserver* observer);
-
   // Checks if we should auto hide title bars for the |widget| in tablet mode.
   bool ShouldAutoHideTitlebars(views::Widget* widget);
 
@@ -120,7 +117,8 @@ class ASH_EXPORT TabletModeController
   void StopObservingAnimation(bool record_stats, bool delete_screenshot);
 
   // TabletMode:
-  void SetTabletModeToggleObserver(TabletModeToggleObserver* observer) override;
+  void AddObserver(TabletModeObserver* observer) override;
+  void RemoveObserver(TabletModeObserver* observer) override;
   bool InTabletMode() const override;
   void SetEnabledForTest(bool enabled) override;
 
@@ -368,10 +366,6 @@ class ASH_EXPORT TabletModeController
   // incorrect calculations of hinge angles.
   gfx::Vector3dF base_smoothed_;
   gfx::Vector3dF lid_smoothed_;
-
-  // A simplified observer that only gets notified of entering or exiting tablet
-  // mode.
-  TabletModeToggleObserver* toggle_observer_ = nullptr;
 
   State state_ = State::kInClamshellMode;
 

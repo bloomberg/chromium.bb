@@ -82,7 +82,6 @@ component("ash") {
     "wm/splitview/split_view_controller.h",
     "wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h",
     "wm/tablet_mode/tablet_mode_controller.h",
-    "wm/tablet_mode/tablet_mode_observer.h",
     "wm/tablet_mode/tablet_mode_window_drag_controller.h",
     "wm/tablet_mode/tablet_mode_window_drag_delegate.h",
     "wm/window_positioner.h",
