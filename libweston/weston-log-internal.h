@@ -27,6 +27,8 @@
 
 #include "wayland-util.h"
 
+struct weston_log_subscription;
+
 /** Subscriber allows each type of stream to customize or to provide its own
  * methods to manipulate the underlying storage. It follows also an
  * object-oriented approach, contains the ops callbacks and a list of
@@ -61,9 +63,9 @@ struct weston_log_subscriber {
 	struct wl_list subscription_list;       /**< weston_log_subscription::owner_link */
 };
 
-struct weston_log_subscription *
+void
 weston_log_subscription_create(struct weston_log_subscriber *owner,
-			       const char *scope_name);
+			       struct weston_log_scope *scope);
 
 void
 weston_log_subscription_destroy(struct weston_log_subscription *sub);

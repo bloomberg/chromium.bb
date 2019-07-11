@@ -171,7 +171,6 @@ stream_create(struct weston_log_context *log_ctx, const char *name,
 {
 	struct weston_log_debug_wayland *stream;
 	struct weston_log_scope *scope;
-	struct weston_log_subscription *sub;
 
 	stream = zalloc(sizeof *stream);
 	if (!stream)
@@ -185,12 +184,9 @@ stream_create(struct weston_log_context *log_ctx, const char *name,
 	stream->base.complete = weston_log_debug_wayland_complete;
 	wl_list_init(&stream->base.subscription_list);
 
-
 	scope = weston_log_get_scope(log_ctx, name);
 	if (scope) {
-		sub = weston_log_subscription_create(&stream->base, name);
-		weston_log_subscription_add(scope, sub);
-		weston_log_run_begin_cb(scope);
+		weston_log_subscription_create(&stream->base, scope);
 	} else {
 		stream_close_on_failure(stream,
 					"Debug stream name '%s' is unknown.",
@@ -212,8 +208,11 @@ stream_destroy(struct wl_resource *stream_resource)
 		close(stream->fd);
 
 	sub = weston_log_subscriber_get_only_subscription(&stream->base);
-	weston_log_subscription_remove(sub);
-	weston_log_subscription_destroy(sub);
+
+	/* we can have a zero subscription if clients tried to subscribe
+	 * to a non-existent scope */
+	if (sub)
+		weston_log_subscription_destroy(sub);
 
 	free(stream);
 }

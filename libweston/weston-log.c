@@ -170,9 +170,13 @@ weston_log_subscription_destroy_pending(struct weston_log_subscription *sub)
  * Destroying the subscription using weston_log_subscription_destroy() will
  * remove the link from the subscription list and free storage alloc'ed.
  *
+ * Note that this adds the subscription to the scope's subscription list
+ * hence the \c scope required argument.
+ *
  * @param owner the subscriber owner, must be created before creating a
  * subscription
- * @param scope_name the scope for which to create this subscription
+ * @param scope the scope in order to add the subscription to the scope's
+ * subscription list
  * @returns a weston_log_subscription object in case of success, or NULL
  * otherwise
  *
@@ -180,35 +184,43 @@ weston_log_subscription_destroy_pending(struct weston_log_subscription *sub)
  * @sa weston_log_subscription_destroy, weston_log_subscription_remove,
  * weston_log_subscription_add
  */
-struct weston_log_subscription *
+void
 weston_log_subscription_create(struct weston_log_subscriber *owner,
-			       const char *scope_name)
+			       struct weston_log_scope *scope)
 {
 	struct weston_log_subscription *sub;
-	assert(scope_name);
 	assert(owner);
+	assert(scope);
+	assert(scope->name);
 
 	sub = zalloc(sizeof(*sub));
 	if (!sub)
-		return NULL;
+		return;
 
 	sub->owner = owner;
-	sub->scope_name = strdup(scope_name);
+	sub->scope_name = strdup(scope->name);
 
 	wl_list_insert(&sub->owner->subscription_list, &sub->owner_link);
-	return sub;
+
+	weston_log_subscription_add(scope, sub);
+	weston_log_run_begin_cb(scope);
 }
 
 /** Destroys the subscription
  *
- * @param sub
- * @internal
+ * Removes the subscription from the scopes subscription list and from
+ * subscriber's subscription list. It destroys the subscription afterwads.
+ *
+ * @memberof weston_log_subscription
  */
 void
 weston_log_subscription_destroy(struct weston_log_subscription *sub)
 {
+	assert(sub);
 	if (sub->owner)
 		wl_list_remove(&sub->owner_link);
+
+	weston_log_subscription_remove(sub);
 	free(sub->scope_name);
 	free(sub);
 }
@@ -544,12 +556,7 @@ weston_compositor_add_log_scope(struct weston_log_context *log_ctx,
 
 	/* check if there are any pending subscriptions to this scope */
 	while ((pending_sub = find_pending_subscription(log_ctx, scope->name)) != NULL) {
-		struct weston_log_subscription *sub =
-			weston_log_subscription_create(pending_sub->owner,
-						       scope->name);
-
-		weston_log_subscription_add(scope, sub);
-		weston_log_run_begin_cb(scope);
+		weston_log_subscription_create(pending_sub->owner, scope);
 
 		/* remove it from pending */
 		weston_log_subscription_destroy_pending(pending_sub);
@@ -581,7 +588,6 @@ weston_compositor_log_scope_destroy(struct weston_log_scope *scope)
 		if (sub->owner->destroy)
 			sub->owner->destroy(sub->owner);
 
-		weston_log_subscription_remove(sub);
 		weston_log_subscription_destroy(sub);
 	}
 
@@ -793,18 +799,14 @@ weston_log_subscribe(struct weston_log_context *log_ctx,
 	assert(scope_name);
 
 	struct weston_log_scope *scope;
-	struct weston_log_subscription *sub;
 
 	scope = weston_log_get_scope(log_ctx, scope_name);
-	if (scope) {
-		sub = weston_log_subscription_create(subscriber, scope_name);
-		weston_log_subscription_add(scope, sub);
-		weston_log_run_begin_cb(scope);
-	} else {
+	if (scope)
+		weston_log_subscription_create(subscriber, scope);
+	else
 		/*
 		 * if we don't have already as scope for it, add it to pending
 		 * subscription list
 		 */
 		weston_log_subscription_create_pending(subscriber, scope_name, log_ctx);
-	}
 }
