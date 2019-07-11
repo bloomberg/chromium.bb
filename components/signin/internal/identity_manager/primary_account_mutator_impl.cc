@@ -49,6 +49,17 @@ bool PrimaryAccountMutatorImpl::SetPrimaryAccount(
   return true;
 }
 
+#else
+bool PrimaryAccountMutatorImpl::SetPrimaryAccountAndUpdateAccountInfo(
+    const std::string& gaia_id,
+    const std::string& email) {
+  account_tracker_->SeedAccountInfo(gaia_id, email);
+  primary_account_manager_->SignIn(email);
+  return true;
+}
+#endif
+
+#if !defined(OS_CHROMEOS)
 bool PrimaryAccountMutatorImpl::ClearPrimaryAccount(
     ClearAccountsAction action,
     signin_metrics::ProfileSignout source_metric,
@@ -70,14 +81,6 @@ bool PrimaryAccountMutatorImpl::ClearPrimaryAccount(
       break;
   }
 
-  return true;
-}
-#else
-bool PrimaryAccountMutatorImpl::SetPrimaryAccountAndUpdateAccountInfo(
-    const std::string& gaia_id,
-    const std::string& email) {
-  account_tracker_->SeedAccountInfo(gaia_id, email);
-  primary_account_manager_->SignIn(email);
   return true;
 }
 #endif

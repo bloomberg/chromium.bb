@@ -54,13 +54,6 @@ class PrimaryAccountMutator {
   //    - the account is known by the IdentityManager.
   virtual bool SetPrimaryAccount(const CoreAccountId& account_id) = 0;
 
-  // Clears the primary account, and returns whether the operation
-  // succeeded or not. Depending on |action|, the other accounts
-  // known to the IdentityManager may be deleted.
-  virtual bool ClearPrimaryAccount(
-      ClearAccountsAction action,
-      signin_metrics::ProfileSignout source_metric,
-      signin_metrics::SignoutDelete delete_metric) = 0;
 #else
   // Updates the info of the account corresponding to (|gaia_id|, |email|),
   // marks it as the primary account, and returns whether the operation
@@ -73,6 +66,16 @@ class PrimaryAccountMutator {
   virtual bool SetPrimaryAccountAndUpdateAccountInfo(
       const std::string& gaia_id,
       const std::string& email) = 0;
+#endif
+
+#if !defined(OS_CHROMEOS)
+  // Clears the primary account, and returns whether the operation
+  // succeeded or not. Depending on |action|, the other accounts
+  // known to the IdentityManager may be deleted.
+  virtual bool ClearPrimaryAccount(
+      ClearAccountsAction action,
+      signin_metrics::ProfileSignout source_metric,
+      signin_metrics::SignoutDelete delete_metric) = 0;
 #endif
 };
 
