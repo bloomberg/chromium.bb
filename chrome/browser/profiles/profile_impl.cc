@@ -46,6 +46,8 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/client_hints/client_hints_factory.h"
+#include "chrome/browser/content_index/content_index_provider_factory.h"
+#include "chrome/browser/content_index/content_index_provider_impl.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
@@ -1220,6 +1222,10 @@ content::BackgroundFetchDelegate* ProfileImpl::GetBackgroundFetchDelegate() {
 
 content::BackgroundSyncController* ProfileImpl::GetBackgroundSyncController() {
   return BackgroundSyncControllerFactory::GetForProfile(this);
+}
+
+content::ContentIndexProvider* ProfileImpl::GetContentIndexProvider() {
+  return ContentIndexProviderFactory::GetForProfile(this);
 }
 
 net::URLRequestContextGetter* ProfileImpl::CreateRequestContext(
