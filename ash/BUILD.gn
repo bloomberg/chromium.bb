@@ -783,8 +783,6 @@ component("ash") {
     "system/night_light/night_light_controller_impl.h",
     "system/night_light/night_light_feature_pod_controller.cc",
     "system/night_light/night_light_feature_pod_controller.h",
-    "system/night_light/night_light_toggle_button.cc",
-    "system/night_light/night_light_toggle_button.h",
     "system/night_light/time_of_day.cc",
     "system/night_light/time_of_day.h",
     "system/overview/overview_button_tray.cc",
