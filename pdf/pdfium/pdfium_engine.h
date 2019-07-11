@@ -397,9 +397,8 @@ class PDFiumEngine : public PDFEngine,
   // Returns the currently visible rectangle in document coordinates.
   pp::Rect GetVisibleRect() const;
 
-  // Given a rectangle in document coordinates, returns the rectange into screen
-  // coordinates (i.e. 0,0 is top left corner of plugin area).  If it's not
-  // visible, an empty rectangle is returned.
+  // Given |rect| in document coordinates, returns the rectangle in screen
+  // coordinates. (i.e. 0,0 is top left corner of plugin area)
   pp::Rect GetScreenRect(const pp::Rect& rect) const;
 
   // Given an image |buffer| with |stride|, highlights |rect|.
