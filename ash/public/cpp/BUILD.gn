@@ -308,6 +308,7 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//ui/aura:test_support",
     "//ui/gfx:test_support",
+    "//ui/views:test_support",
   ]
 }
 
