@@ -159,19 +159,6 @@ class BrowserActionApiTest : public ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(BrowserActionApiTest);
 };
 
-
-// Canvas tests rely on the harness producing pixel output in order to read back
-// pixels from a canvas element. So we have to override the setup function.
-class BrowserActionApiCanvasTest
-    : public BrowserActionApiTest {
- public:
-  void SetUp() override {
-    EnablePixelOutput();
-    ExtensionApiTest::SetUp();
-  }
-};
-
-
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
@@ -203,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiCanvasTest, DynamicBrowserAction) {
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   ASSERT_TRUE(RunExtensionTest("browser_action/no_icon")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
@@ -388,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiCanvasTest, DynamicBrowserAction) {
   EXPECT_EQ(kEmptyPathError, catcher.message());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiCanvasTest, InvisibleIconBrowserAction) {
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, InvisibleIconBrowserAction) {
   // Turn this on so errors are reported.
   ExtensionActionSetIconFunction::SetReportErrorForInvisibleIconForTesting(
       true);

@@ -41,20 +41,18 @@ function runTest(testScenario) {
     _8bitImage.onload = t_image.step_func(function() {
         _16bitImage.onload = function() {
             var refCanvas = document.createElement("canvas");
-            refCanvas.width = refCanvas.height = 40000;
+            refCanvas.width = refCanvas.height = 2;
             var refCtx = refCanvas.getContext(
                 '2d', testScenario.canvasColorParams);
             refCtx.drawImage(_8bitImage, 0, 0);
-            var refImageData = refCtx.getImageData(0, 0, 2, 2);
-            var refPixels = refImageData.dataUnion;
+            var refPixels = refCtx.getImageData(0, 0, 2, 2).dataUnion;
 
             var testCanvas = document.createElement("canvas");
-            testCanvas.width = testCanvas.height = 40000;
+            testCanvas.width = testCanvas.height = 2;
             var testCtx = testCanvas.getContext(
                 '2d', testScenario.canvasColorParams);
             testCtx.drawImage(_16bitImage, 0, 0);
-            var testImageData = testCtx.getImageData(0, 0, 2, 2);
-            var testPixels = testImageData.dataUnion;
+            var testPixels = testCtx.getImageData(0, 0, 2, 2).dataUnion;
 
             assert_array_approx_equals(refPixels, testPixels, tolerance);
 

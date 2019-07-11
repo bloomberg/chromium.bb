@@ -198,17 +198,6 @@ class MultiActionAPITest
   DISALLOW_COPY_AND_ASSIGN(MultiActionAPITest);
 };
 
-// Canvas tests rely on the harness producing pixel output in order to read back
-// pixels from a canvas element. So we have to override the setup function.
-class MultiActionAPICanvasTest
-    : public MultiActionAPITest {
- public:
-  void SetUp() override {
-    EnablePixelOutput();
-    ExtensionActionAPITest::SetUp();
-  }
-};
-
 // Check that updating the browser action badge for a specific tab id does not
 // cause a disk write (since we only persist the defaults).
 // Only browser actions persist settings.
@@ -488,7 +477,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, PopupCreation) {
 }
 
 // Tests setting the icon dynamically from the background page.
-IN_PROC_BROWSER_TEST_P(MultiActionAPICanvasTest, DynamicSetIcon) {
+IN_PROC_BROWSER_TEST_P(MultiActionAPITest, DynamicSetIcon) {
   constexpr char kManifestTemplate[] =
       R"({
            "name": "Test Clicking",
@@ -627,12 +616,6 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPICanvasTest, DynamicSetIcon) {
 
 INSTANTIATE_TEST_SUITE_P(,
                          MultiActionAPITest,
-                         testing::Values(ActionInfo::TYPE_ACTION,
-                                         ActionInfo::TYPE_PAGE,
-                                         ActionInfo::TYPE_BROWSER));
-
-INSTANTIATE_TEST_SUITE_P(,
-                         MultiActionAPICanvasTest,
                          testing::Values(ActionInfo::TYPE_ACTION,
                                          ActionInfo::TYPE_PAGE,
                                          ActionInfo::TYPE_BROWSER));

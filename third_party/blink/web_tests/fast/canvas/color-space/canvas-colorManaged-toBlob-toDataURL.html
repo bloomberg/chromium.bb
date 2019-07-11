@@ -14,9 +14,9 @@ var opaqueReferencePxiels, transparentReferencePixels;
 function testPixels(actualPixels, alpha)
 {
     if (alpha == 1)
-        assert_array_approx_equals(actualPixels, opaqueReferencePxiels, 5);
+        assert_array_approx_equals(actualPixels, opaqueReferencePxiels, 1);
     else
-        assert_array_approx_equals(actualPixels, transparentReferencePixels, 7);
+        assert_array_approx_equals(actualPixels, transparentReferencePixels, 2);
 }
 
 function generateFillStyle(red, green, blue, alpha) {
