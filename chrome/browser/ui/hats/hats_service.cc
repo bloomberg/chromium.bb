@@ -41,12 +41,6 @@ HatsFinchConfig CreateHatsFinchConfig() {
                                  kHatsSurveyProbability,
                                  kHatsSurveyProbabilityDefault)
           .Get();
-
-  config.site_ids.insert(
-      std::make_pair("en", base::FeatureParam<std::string>(
-                               &features::kHappinessTrackingSurveysForDesktop,
-                               kHatsSurveyEnSiteID, kHatsSurveyEnSiteIDDefault)
-                               .Get()));
   return config;
 }
 }  // namespace
@@ -56,7 +50,13 @@ HatsFinchConfig::~HatsFinchConfig() = default;
 HatsFinchConfig::HatsFinchConfig(const HatsFinchConfig& other) = default;
 
 HatsService::HatsService(Profile* profile)
-    : profile_(profile), hats_finch_config_(CreateHatsFinchConfig()) {}
+    : profile_(profile),
+      hats_finch_config_(CreateHatsFinchConfig()),
+      en_site_id_(base::FeatureParam<std::string>(
+                      &features::kHappinessTrackingSurveysForDesktop,
+                      kHatsSurveyEnSiteID,
+                      kHatsSurveyEnSiteIDDefault)
+                      .Get()) {}
 
 void HatsService::LaunchSatisfactionSurvey() {
   if (ShouldShowSurvey(kHatsSurveyTriggerSatisfaction)) {

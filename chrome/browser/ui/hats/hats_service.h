@@ -22,10 +22,6 @@ struct HatsFinchConfig {
   double probability;   // This is the percent of users [0,1] that will see the
                         // survey
   std::string trigger;  // This is the name of the survey in question.
-
-  // This is a map between the locale being presented and the site ID used to
-  // fetch the survey.
-  std::map<std::string, std::string> site_ids;
 };
 
 // This class provides the client side logic for determining if a
@@ -39,6 +35,9 @@ class HatsService : public KeyedService {
   // it's appropriate.
   void LaunchSatisfactionSurvey();
 
+  // Returns the en-us site ID for the HaTS survey.
+  const std::string& en_site_id() const { return en_site_id_; }
+
  private:
   // This returns true is the survey trigger specified should be shown.
   bool ShouldShowSurvey(const std::string& trigger) const;
@@ -48,6 +47,7 @@ class HatsService : public KeyedService {
   static bool launch_hats_;
   Profile* profile_;
   const HatsFinchConfig hats_finch_config_;
+  const std::string en_site_id_;
 
   FRIEND_TEST_ALL_PREFIXES(HatsForceEnabledTest, ParamsWithAForcedFlagTest);
 
