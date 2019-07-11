@@ -4874,8 +4874,19 @@ void RenderFrameHostImpl::CommitNavigation(
     if (subresource_loader_params &&
         subresource_loader_params->appcache_loader_factory_info.is_valid()) {
       // If the caller has supplied a factory for AppCache, use it.
-      subresource_loader_factories->appcache_factory_info() =
+
+      auto factory_ptr_info =
           std::move(subresource_loader_params->appcache_loader_factory_info);
+
+#if defined(OS_ANDROID)
+      GetContentClient()
+          ->browser()
+          ->WillCreateURLLoaderFactoryForAppCacheSubresource(
+              GetProcess()->GetID(), &factory_ptr_info);
+#endif
+
+      subresource_loader_factories->appcache_factory_info() =
+          std::move(factory_ptr_info);
 
       // Inject test intermediary if needed.
       if (!GetCreateNetworkFactoryCallbackForRenderFrame().is_null()) {
