@@ -47,7 +47,14 @@ function check_gn_format() {
 if [[ "${BASH_VERSION:0:1}" -lt 4 ]]; then
   echo "This script requires at least bash version 4.0, please upgrade!"
   echo "Your version: " $BASH_VERSION
-  exit $fail
+  exit 1
+fi
+
+ppid=$(ps -o pid,ppid | awk -F ' ' "{ if (\$1 == $$) print \$2 }")
+invoker=$(ps -o pid,comm | awk -F ' ' "{ if (\$1 == $ppid) print \$2 }")
+
+if [[ "$invoker" != 'python' ]]; then
+  echo "This shouldn't be invoked directly, please use \`git cl presubmit\`."
 fi
 
 if [[ ! -e ./clang-format ]]; then
@@ -76,14 +83,5 @@ for f in $(git diff --name-only --diff-filter=d origin/master); do
     check_gn_format "$f"
   fi
 done
-
-python buildtools/checkdeps/checkdeps.py
-checkdeps_retval=$?
-
-# We always want to check DEPS, but don't want to clobber
-# failure results from above.
-if (($fail == 0)); then
-  fail=$checkdeps_retval
-fi
 
 exit $fail
