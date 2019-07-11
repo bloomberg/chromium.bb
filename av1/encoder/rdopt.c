@@ -8205,7 +8205,7 @@ static INLINE int64_t interpolation_filter_rd(
       this_rd_stats = *rd_stats;
       break;
     case INTERP_EVAL_INVALID:
-    default: assert(1); return 0;
+    default: assert(0); return 0;
   }
   int64_t tmp_rd =
       RDCOST(x->rdmult, tmp_rs + this_rd_stats.rate, this_rd_stats.dist);
