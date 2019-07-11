@@ -73,7 +73,9 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);
-  StartRecording();
+  if (is_deferral_enabled_) {
+    StartRecording();
+  }
   // Clear the background transparent or opaque. Similar code at
   // CanvasResourceProvider::Clear().
   if (IsValid()) {
