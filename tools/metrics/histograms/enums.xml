@@ -17378,6 +17378,7 @@ Called by update_net_error_codes.py.-->
   <int value="570" label="UserFeedbackAllowed"/>
   <int value="571" label="DevicePowerwashAllowed"/>
   <int value="572" label="ExternalPrintServers"/>
+  <int value="573" label="SelectToSpeakEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
