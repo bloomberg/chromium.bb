@@ -171,6 +171,7 @@ cca.views.Camera.prototype.focus = function() {
     const values = await new Promise((resolve) => {
       chrome.storage.local.get(['isIntroShown'], resolve);
     });
+    await this.started_;
     if (!values.isIntroShown) {
       chrome.storage.local.set({isIntroShown: true});
       cca.util.animateOnce(this.banner_);
