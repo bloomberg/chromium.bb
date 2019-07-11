@@ -4487,6 +4487,7 @@
       'skia_renderer_browser_tests': {
         'args': [
           '--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.browser_tests.filter',
         ],
         'swarming': {
           'shards': 10,
