@@ -2205,7 +2205,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'nyan_blaze',
       'nyan_kitty',
       'octavius',
-      'octopus',
       'panther',
       'peppy',
       'quawks',
@@ -2269,6 +2268,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'mistral', # crbug.com/981118
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
+      'octopus', # crbug.com/983190
   ])
 
 
