@@ -695,9 +695,6 @@ weston_touch_send_motion(struct weston_touch *touch,
 void
 weston_touch_send_frame(struct weston_touch *touch);
 
-int
-wl_data_device_manager_init(struct wl_display *display);
-
 
 void
 weston_seat_set_selection(struct weston_seat *seat,

@@ -316,4 +316,8 @@ void
 weston_protected_surface_send_event(struct protected_surface *psurface,
 				    enum weston_hdcp_protection protection);
 
+/* others */
+int
+wl_data_device_manager_init(struct wl_display *display);
+
 #endif
