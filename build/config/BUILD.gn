@@ -85,14 +85,17 @@ config("openscreen_code") {
       # overrides).
       "-Wno-unused-parameter",
 
-      # Permit code like "struct foo f = {0};"
+      # Permit code like "struct foo f = {0};".
       "-Wno-missing-field-initializers",
 
       # Warn on signed versus unsigned comparisons.
       "-Wsign-compare",
 
-      # Warn on extra semi-colons
+      # Warn on extra semi-colons.
       "-Wextra-semi",
+
+      # Warn on unused results.
+      "-Wunused-result",
     ]
 
     # Generate warning if code generates exit-time destructors, since such

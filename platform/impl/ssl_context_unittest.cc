@@ -84,7 +84,9 @@ class TemporaryFile {
     remove(file_name_.c_str());
   }
 
-  void Put(const char* data) { write(fd_, data, strlen(data)); }
+  void Put(const char* data) {
+    EXPECT_EQ(write(fd_, data, strlen(data)), strlen(data));
+  }
   const std::string& get_file_name() { return file_name_; }
 
  private:
