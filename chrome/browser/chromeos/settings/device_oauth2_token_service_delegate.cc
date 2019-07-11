@@ -83,33 +83,6 @@ void DeviceOAuth2TokenServiceDelegate::SetAndSaveRefreshToken(
   }
 }
 
-bool DeviceOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
-    const CoreAccountId& account_id) const {
-  auto accounts = GetAccounts();
-  return std::find(accounts.begin(), accounts.end(), account_id) !=
-         accounts.end();
-}
-
-std::vector<CoreAccountId> DeviceOAuth2TokenServiceDelegate::GetAccounts()
-    const {
-  std::vector<CoreAccountId> accounts;
-  switch (state_) {
-    case STATE_NO_TOKEN:
-    case STATE_TOKEN_INVALID:
-      return accounts;
-    case STATE_LOADING:
-    case STATE_VALIDATION_PENDING:
-    case STATE_VALIDATION_STARTED:
-    case STATE_TOKEN_VALID:
-      if (!GetRobotAccountId().empty())
-        accounts.push_back(GetRobotAccountId());
-      return accounts;
-  }
-
-  NOTREACHED() << "Unhandled state " << state_;
-  return accounts;
-}
-
 CoreAccountId DeviceOAuth2TokenServiceDelegate::GetRobotAccountId() const {
   if (!robot_account_id_for_testing_.empty()) {
     return robot_account_id_for_testing_;

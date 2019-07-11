@@ -110,7 +110,9 @@ void DeviceOAuth2TokenService::InvalidateAccessToken(
 
 bool DeviceOAuth2TokenService::RefreshTokenIsAvailable(
     const CoreAccountId& account_id) const {
-  return delegate_->RefreshTokenIsAvailable(account_id);
+  auto accounts = GetAccounts();
+  return std::find(accounts.begin(), accounts.end(), account_id) !=
+         accounts.end();
 }
 
 OAuth2AccessTokenManager* DeviceOAuth2TokenService::GetAccessTokenManager() {
@@ -221,4 +223,24 @@ void DeviceOAuth2TokenService::FailRequest(
                      request->AsWeakPtr(), auth_error,
                      OAuth2AccessTokenConsumer::TokenResponse()));
 }
+
+std::vector<CoreAccountId> DeviceOAuth2TokenService::GetAccounts() const {
+  std::vector<CoreAccountId> accounts;
+  switch (delegate_->state_) {
+    case DeviceOAuth2TokenServiceDelegate::STATE_NO_TOKEN:
+    case DeviceOAuth2TokenServiceDelegate::STATE_TOKEN_INVALID:
+      return accounts;
+    case DeviceOAuth2TokenServiceDelegate::STATE_LOADING:
+    case DeviceOAuth2TokenServiceDelegate::STATE_VALIDATION_PENDING:
+    case DeviceOAuth2TokenServiceDelegate::STATE_VALIDATION_STARTED:
+    case DeviceOAuth2TokenServiceDelegate::STATE_TOKEN_VALID:
+      if (!GetRobotAccountId().empty())
+        accounts.push_back(GetRobotAccountId());
+      return accounts;
+  }
+
+  NOTREACHED() << "Unhandled state " << delegate_->state_;
+  return accounts;
+}
+
 }  // namespace chromeos

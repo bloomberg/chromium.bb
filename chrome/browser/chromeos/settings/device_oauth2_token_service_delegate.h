@@ -59,13 +59,11 @@ class DeviceOAuth2TokenServiceDelegate
     robot_account_id_for_testing_ = account_id;
   }
 
-  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() const;
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer);
-  std::vector<CoreAccountId> GetAccounts() const;
 
   // gaia::GaiaOAuthClient::Delegate implementation.
   void OnRefreshTokenResponse(const std::string& access_token,

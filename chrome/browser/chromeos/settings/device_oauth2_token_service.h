@@ -137,6 +137,9 @@ class DeviceOAuth2TokenService
   void FailRequest(OAuth2AccessTokenManager::RequestImpl* request,
                    GoogleServiceAuthError::State error);
 
+  // Returns a list of accounts based on |state_|.
+  std::vector<CoreAccountId> GetAccounts() const;
+
   // TODO(https://crbug.com/967598): Merge DeviceOAuth2TokenServiceDelegate
   // into DeviceOAuth2TokenService.
   std::unique_ptr<DeviceOAuth2TokenServiceDelegate> delegate_;
