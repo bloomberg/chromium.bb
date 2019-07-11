@@ -266,6 +266,10 @@ int av1_estimate_q_constant_quality_two_pass(const struct AV1_COMP *cpi,
                                              int width, int height, int *arf_q,
                                              int gf_index);
 
+void av1_get_one_pass_params(struct AV1_COMP *cpi,
+                             struct EncodeFrameParams *const frame_params,
+                             unsigned int frame_flags);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
