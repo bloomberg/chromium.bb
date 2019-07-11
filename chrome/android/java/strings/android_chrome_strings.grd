@@ -1147,7 +1147,7 @@ Your Google account may have other forms of browsing history like searches and a
 
       <!-- Single site settings -->
       <message name="IDS_NO_SAVED_WEBSITE_SETTINGS" desc="Text to display when there are no saved website settings.">
-        You have no saved website settings.
+        No storage data here
       </message>
 
       <!-- Languages preferences -->
