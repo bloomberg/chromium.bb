@@ -5,19 +5,9 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
 
 #include <string>
-#include <vector>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
-#include "chrome/browser/chromeos/settings/token_encryptor.h"
-#include "chrome/common/pref_names.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
-#include "components/policy/proto/device_management_backend.pb.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
@@ -27,49 +17,15 @@ namespace chromeos {
 
 DeviceOAuth2TokenServiceDelegate::DeviceOAuth2TokenServiceDelegate(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    PrefService* local_state,
     DeviceOAuth2TokenService* service)
     : url_loader_factory_(url_loader_factory),
-      local_state_(local_state),
       state_(STATE_LOADING),
       max_refresh_token_validation_retries_(3),
       validation_requested_(false),
       validation_status_delegate_(nullptr),
-      service_(service),
-      weak_ptr_factory_(this) {
-  // Pull in the system salt.
-  SystemSaltGetter::Get()->GetSystemSalt(
-      base::Bind(&DeviceOAuth2TokenServiceDelegate::DidGetSystemSalt,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
+      service_(service) {}
 
-DeviceOAuth2TokenServiceDelegate::~DeviceOAuth2TokenServiceDelegate() {
-  FlushTokenSaveCallbacks(false);
-}
-
-void DeviceOAuth2TokenServiceDelegate::SetAndSaveRefreshToken(
-    const std::string& refresh_token,
-    const StatusCallback& result_callback) {
-  ReportServiceError(GoogleServiceAuthError::REQUEST_CANCELED);
-
-  bool waiting_for_salt = state_ == STATE_LOADING;
-  refresh_token_ = refresh_token;
-  state_ = STATE_VALIDATION_PENDING;
-
-  // If the robot account ID is not available yet, do not announce the token. It
-  // will be done from OnServiceAccountIdentityChanged() once the robot account
-  // ID becomes available as well.
-  if (!service_->GetRobotAccountId().empty())
-    service_->FireRefreshTokenAvailable(service_->GetRobotAccountId());
-
-  token_save_callbacks_.push_back(result_callback);
-  if (!waiting_for_salt) {
-    if (system_salt_.empty())
-      FlushTokenSaveCallbacks(false);
-    else
-      EncryptAndSaveToken();
-  }
-}
+DeviceOAuth2TokenServiceDelegate::~DeviceOAuth2TokenServiceDelegate() = default;
 
 void DeviceOAuth2TokenServiceDelegate::OnRefreshTokenResponse(
     const std::string& access_token,
@@ -103,27 +59,6 @@ void DeviceOAuth2TokenServiceDelegate::OnNetworkError(int response_code) {
   ReportServiceError(GoogleServiceAuthError::CONNECTION_FAILED);
 }
 
-std::string DeviceOAuth2TokenServiceDelegate::GetRefreshToken() const {
-  switch (state_) {
-    case STATE_LOADING:
-    case STATE_NO_TOKEN:
-    case STATE_TOKEN_INVALID:
-      // This shouldn't happen: GetRefreshToken() is only called for actual
-      // token minting operations. In above states, requests are either queued
-      // or short-circuited to signal error immediately, so no actual token
-      // minting via OAuth2TokenService::FetchOAuth2Token should be triggered.
-      NOTREACHED();
-      return std::string();
-    case STATE_VALIDATION_PENDING:
-    case STATE_VALIDATION_STARTED:
-    case STATE_TOKEN_VALID:
-      return refresh_token_;
-  }
-
-  NOTREACHED() << "Unhandled state " << state_;
-  return std::string();
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 DeviceOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return url_loader_factory_;
@@ -134,71 +69,10 @@ DeviceOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
-  std::string refresh_token = GetRefreshToken();
+  std::string refresh_token = service_->GetRefreshToken();
   DCHECK(!refresh_token.empty());
   return std::make_unique<OAuth2AccessTokenFetcherImpl>(
       consumer, url_loader_factory, refresh_token);
-}
-
-void DeviceOAuth2TokenServiceDelegate::DidGetSystemSalt(
-    const std::string& system_salt) {
-  system_salt_ = system_salt;
-
-  // Bail out if system salt is not available.
-  if (system_salt_.empty()) {
-    LOG(ERROR) << "Failed to get system salt.";
-    FlushTokenSaveCallbacks(false);
-    state_ = STATE_NO_TOKEN;
-    return;
-  }
-
-  // If the token has been set meanwhile, write it to |local_state_|.
-  if (!refresh_token_.empty()) {
-    EncryptAndSaveToken();
-    return;
-  }
-
-  // Otherwise, load the refresh token from |local_state_|.
-  std::string encrypted_refresh_token =
-      local_state_->GetString(prefs::kDeviceRobotAnyApiRefreshToken);
-  if (!encrypted_refresh_token.empty()) {
-    CryptohomeTokenEncryptor encryptor(system_salt_);
-    refresh_token_ = encryptor.DecryptWithSystemSalt(encrypted_refresh_token);
-    if (refresh_token_.empty()) {
-      LOG(ERROR) << "Failed to decrypt refresh token.";
-      state_ = STATE_NO_TOKEN;
-      return;
-    }
-  }
-
-  state_ = STATE_VALIDATION_PENDING;
-
-  // If there are pending requests, start a validation.
-  if (validation_requested_)
-    StartValidation();
-
-  // Announce the token.
-  if (!service_->GetRobotAccountId().empty()) {
-    service_->FireRefreshTokenAvailable(service_->GetRobotAccountId());
-  }
-}
-
-void DeviceOAuth2TokenServiceDelegate::EncryptAndSaveToken() {
-  DCHECK_NE(state_, STATE_LOADING);
-
-  CryptohomeTokenEncryptor encryptor(system_salt_);
-  std::string encrypted_refresh_token =
-      encryptor.EncryptWithSystemSalt(refresh_token_);
-  bool result = true;
-  if (encrypted_refresh_token.empty()) {
-    LOG(ERROR) << "Failed to encrypt refresh token; save aborted.";
-    result = false;
-  } else {
-    local_state_->SetString(prefs::kDeviceRobotAnyApiRefreshToken,
-                            encrypted_refresh_token);
-  }
-
-  FlushTokenSaveCallbacks(result);
 }
 
 void DeviceOAuth2TokenServiceDelegate::StartValidation() {
@@ -216,19 +90,9 @@ void DeviceOAuth2TokenServiceDelegate::StartValidation() {
   client_info.client_secret = gaia_urls->oauth2_chrome_client_secret();
 
   gaia_oauth_client_->RefreshToken(
-      client_info, refresh_token_,
+      client_info, service_->refresh_token_,
       std::vector<std::string>(1, GaiaConstants::kOAuthWrapBridgeUserInfoScope),
       max_refresh_token_validation_retries_, this);
-}
-
-void DeviceOAuth2TokenServiceDelegate::FlushTokenSaveCallbacks(bool result) {
-  std::vector<StatusCallback> callbacks;
-  callbacks.swap(token_save_callbacks_);
-  for (std::vector<StatusCallback>::iterator callback(callbacks.begin());
-       callback != callbacks.end(); ++callback) {
-    if (!callback->is_null())
-      callback->Run(result);
-  }
 }
 
 void DeviceOAuth2TokenServiceDelegate::RequestValidation() {

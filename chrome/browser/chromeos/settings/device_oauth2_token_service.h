@@ -149,6 +149,19 @@ class DeviceOAuth2TokenService
   // device settings.
   void CheckRobotAccountId(const CoreAccountId& gaia_robot_id);
 
+  // Returns the refresh token for the robot account id.
+  std::string GetRefreshToken() const;
+
+  // Handles completion of the system salt input.
+  void DidGetSystemSalt(const std::string& system_salt);
+
+  // Encrypts and saves the refresh token. Should only be called when the system
+  // salt is available.
+  void EncryptAndSaveToken();
+
+  // Flushes |token_save_callbacks_|, indicating the specified result.
+  void FlushTokenSaveCallbacks(bool result);
+
   // TODO(https://crbug.com/967598): Merge DeviceOAuth2TokenServiceDelegate
   // into DeviceOAuth2TokenService.
   std::unique_ptr<DeviceOAuth2TokenServiceDelegate> delegate_;
@@ -162,10 +175,21 @@ class DeviceOAuth2TokenService
   RefreshTokenAvailableCallback on_refresh_token_available_callback_;
   RefreshTokenRevokedCallback on_refresh_token_revoked_callback_;
 
+  PrefService* local_state_;
+
   std::unique_ptr<CrosSettings::ObserverSubscription>
       service_account_identity_subscription_;
 
   CoreAccountId robot_account_id_for_testing_;
+
+  // Token save callbacks waiting to be completed.
+  std::vector<StatusCallback> token_save_callbacks_;
+
+  // The system salt for encrypting and decrypting the refresh token.
+  std::string system_salt_;
+
+  // Cache the decrypted refresh token, so we only decrypt once.
+  std::string refresh_token_;
 
   base::WeakPtrFactory<DeviceOAuth2TokenService> weak_ptr_factory_;
 

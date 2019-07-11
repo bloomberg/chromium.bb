@@ -7,16 +7,12 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace gaia {
 class GaiaOAuthClient;
@@ -26,7 +22,6 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
-class PrefService;
 class OAuth2AccessTokenFetcher;
 class OAuth2AccessTokenConsumer;
 
@@ -39,17 +34,8 @@ class DeviceOAuth2TokenServiceDelegate
  public:
   DeviceOAuth2TokenServiceDelegate(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      PrefService* local_state,
       DeviceOAuth2TokenService* service);
   ~DeviceOAuth2TokenServiceDelegate() override;
-
-  typedef base::Callback<void(bool)> StatusCallback;
-
-  // Persist the given refresh token on the device. Overwrites any previous
-  // value. Should only be called during initial device setup. Signals
-  // completion via the given callback, passing true if the operation succeeded.
-  void SetAndSaveRefreshToken(const std::string& refresh_token,
-                              const StatusCallback& callback);
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() const;
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
@@ -90,21 +76,8 @@ class DeviceOAuth2TokenServiceDelegate
     STATE_TOKEN_VALID,
   };
 
-  // Returns the refresh token for the robot account id.
-  std::string GetRefreshToken() const;
-
-  // Handles completion of the system salt input.
-  void DidGetSystemSalt(const std::string& system_salt);
-
-  // Encrypts and saves the refresh token. Should only be called when the system
-  // salt is available.
-  void EncryptAndSaveToken();
-
   // Starts the token validation flow, i.e. token info fetch.
   void StartValidation();
-
-  // Flushes |token_save_callbacks_|, indicating the specified result.
-  void FlushTokenSaveCallbacks(bool result);
 
   void RequestValidation();
 
@@ -116,16 +89,9 @@ class DeviceOAuth2TokenServiceDelegate
 
   // Dependencies.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  PrefService* local_state_;
 
   // Current operational state.
   State state_;
-
-  // Token save callbacks waiting to be completed.
-  std::vector<StatusCallback> token_save_callbacks_;
-
-  // The system salt for encrypting and decrypting the refresh token.
-  std::string system_salt_;
 
   int max_refresh_token_validation_retries_;
 
@@ -135,16 +101,11 @@ class DeviceOAuth2TokenServiceDelegate
   // Validation status delegate
   ValidationStatusDelegate* validation_status_delegate_;
 
-  // Cache the decrypted refresh token, so we only decrypt once.
-  std::string refresh_token_;
-
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
 
   // TODO(https://crbug.com/967598): Completely merge this class into
   // DeviceOAuth2TokenService.
   DeviceOAuth2TokenService* service_;
-
-  base::WeakPtrFactory<DeviceOAuth2TokenServiceDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOAuth2TokenServiceDelegate);
 };

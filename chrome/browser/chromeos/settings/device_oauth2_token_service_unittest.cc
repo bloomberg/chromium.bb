@@ -126,10 +126,6 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
            "  \"user_id\": \"1234567890\" }";
   }
 
-  DeviceOAuth2TokenServiceDelegate* GetDelegate() {
-    return oauth2_service_->delegate_.get();
-  }
-
   bool RefreshTokenIsAvailable() {
     return oauth2_service_->RefreshTokenIsAvailable(
         oauth2_service_->GetRobotAccountId());
@@ -139,7 +135,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
     if (!RefreshTokenIsAvailable())
       return std::string();
 
-    return GetDelegate()->GetRefreshToken();
+    return oauth2_service_->GetRefreshToken();
   }
 
   // A utility method to return fake URL results, for testing the refresh token
