@@ -285,6 +285,27 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
                   ->ValidateThumbnail());
 }
 
+// Play a video from start to finish, using allocate mode. This test is only run
+// on platforms that support import mode, as on allocate-mode only platforms all
+// tests are run in allocate mode. The test will be skipped when --use_vd is
+// specified as the new video decoders only support import mode.
+// TODO(dstaessens): Deprecate after switching to new VD-based video decoders.
+TEST_F(VideoDecoderTest, FlushAtEndOfStream_Allocate) {
+  if (!g_env->ImportSupported() || g_env->UseVD())
+    GTEST_SKIP();
+
+  VideoDecoderClientConfig config;
+  config.allocation_mode = AllocationMode::kAllocate;
+  auto tvp = CreateVideoPlayer(g_env->Video(), config);
+
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForFlushDone());
+
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
+  EXPECT_TRUE(tvp->WaitForFrameProcessors());
+}
+
 }  // namespace test
 }  // namespace media
 
