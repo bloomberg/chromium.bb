@@ -277,6 +277,11 @@ constexpr char TabletModeController::kLidAngleHistogramName[];
 ////////////////////////////////////////////////////////////////////////////////
 // TabletModeContrller, public:
 
+// static
+void TabletModeController::SetUseScreenshotForTest(bool use_screenshot) {
+  use_screenshot_for_test = use_screenshot;
+}
+
 TabletModeController::TabletModeController()
     : event_blocker_(std::make_unique<InternalInputDevicesEventBlocker>()),
       tablet_mode_usage_interval_start_time_(base::Time::Now()),
@@ -308,8 +313,13 @@ TabletModeController::TabletModeController()
 }
 
 TabletModeController::~TabletModeController() {
+  DCHECK(!tablet_mode_window_manager_);
+}
+
+void TabletModeController::Shutdown() {
   if (tablet_mode_window_manager_)
     tablet_mode_window_manager_->Shutdown();
+  tablet_mode_window_manager_.reset();
 
   UMA_HISTOGRAM_COUNTS_1000("Tablet.AppWindowDrag.CountOfPerUserSession",
                             app_window_drag_count_);
@@ -333,11 +343,6 @@ TabletModeController::~TabletModeController() {
 
   for (auto& observer : tablet_mode_observers_)
     observer.OnTabletControllerDestroyed();
-}
-
-// static
-void TabletModeController::SetUseScreenshotForTest(bool use_screenshot) {
-  use_screenshot_for_test = use_screenshot;
 }
 
 void TabletModeController::AddWindow(aura::Window* window) {

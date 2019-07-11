@@ -74,6 +74,10 @@ class ASH_EXPORT TabletModeController
       public KioskNextShellObserver,
       public ui::LayerAnimationObserver {
  public:
+  // Enable or disable using a screenshot for testing as it makes the
+  // initialization flow async, which makes most tests harder to write.
+  static void SetUseScreenshotForTest(bool use_screenshot);
+
   // Used for keeping track if the user wants the machine to behave as a
   // clamshell/tablet regardless of hardware orientation.
   // TODO(oshima): Move this to common place.
@@ -89,9 +93,7 @@ class ASH_EXPORT TabletModeController
   TabletModeController();
   ~TabletModeController() override;
 
-  // Enable or disable using a screenshot for testing as it makes the
-  // initialization flow async, which makes most tests harder to write.
-  static void SetUseScreenshotForTest(bool use_screenshot);
+  void Shutdown();
 
   // Add a special window to the TabletModeWindowManager for tracking. This is
   // only required for special windows which are handled by other window
