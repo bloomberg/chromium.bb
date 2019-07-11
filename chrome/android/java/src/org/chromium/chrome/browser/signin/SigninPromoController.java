@@ -284,7 +284,7 @@ public class SigninPromoController {
         view.getDescription().setText(mDescriptionStringId);
 
         String signinButtonText = context.getString(
-                R.string.signin_promo_continue_as, mProfileData.getFullNameOrEmail());
+                R.string.signin_promo_continue_as, mProfileData.getGivenNameOrFullNameOrEmail());
         view.getSigninButton().setText(signinButtonText);
         view.getSigninButton().setOnClickListener(v -> signinWithDefaultAccount(context));
 
