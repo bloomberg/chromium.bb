@@ -1858,44 +1858,6 @@ TEST(IncrementalMarkingTest,
   driver.FinishGC();
 }
 
-namespace {
-
-class EagerlySweptWithVectorWithInlineStorage
-    : public GarbageCollected<EagerlySweptWithVectorWithInlineStorage> {
-  EAGERLY_FINALIZE();
-
- public:
-  virtual void Trace(Visitor* visitor) { visitor->Trace(nested_); }
-
-  HeapVector<HeapVector<Member<Object>>, 2>& nested() { return nested_; }
-
- private:
-  HeapVector<HeapVector<Member<Object>>, 2> nested_;
-};
-
-}  // namespace
-
-TEST(IncrementalMarkingTest,
-     InPayloadWriteBarrierInEagerlyFinalizedRegistersInvalidSlotForCompaction) {
-  // Regression test: https://crbug.com/918064
-  //
-  // Same as InPayloadWriteBarrierRegistersInvalidSlotForCompaction with the
-  // addition that the object is marked as EAGERLY_FINALIZE(). This requires
-  // that slots filtering happens before any eager sweep phase.
-
-  IncrementalMarkingTestDriver driver(ThreadState::Current());
-  ThreadState::Current()->EnableCompactionForNextGCForTesting();
-  EagerlySweptWithVectorWithInlineStorage* eagerly =
-      MakeGarbageCollected<EagerlySweptWithVectorWithInlineStorage>();
-  driver.Start();
-  eagerly->nested().emplace_back(1);
-  eagerly->nested().at(0).emplace_back(MakeGarbageCollected<Object>());
-  driver.FinishSteps();
-  CHECK(!HeapObjectHeader::FromPayload(eagerly)->IsMarked());
-  eagerly = nullptr;
-  driver.FinishGC();
-}
-
 TEST(IncrementalMarkingTest, AdjustMarkedBytesOnMarkedBackingStore) {
   // Regression test: https://crbug.com/966456
   //
