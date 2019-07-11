@@ -37,7 +37,8 @@ class PanelButton extends HTMLElement {
                 background: url(../images/files/ui/pause.svg) no-repeat center;
               }
 
-              :host([data-category='cancel']) {
+              :host([data-category='cancel']),
+              :host([data-category='dismiss']) {
                 background: url(../images/files/ui/cancel.svg) no-repeat center;
               }
 
