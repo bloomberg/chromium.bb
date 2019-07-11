@@ -192,11 +192,15 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
     const gfx::Rect& visible_rect,
     uint32_t texture_target) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
-  ASSERT_NE(format, PIXEL_FORMAT_UNKNOWN);
   ASSERT_EQ(textures_per_buffer, 1u);
   DVLOGF(4) << "Requested " << requested_num_of_buffers
             << " picture buffers with size " << dimensions.height() << "x"
             << dimensions.height();
+
+  // If using allocate mode the format requested here might be
+  // PIXEL_FORMAT_UNKNOWN.
+  if (format == PIXEL_FORMAT_UNKNOWN)
+    format = PIXEL_FORMAT_ARGB;
 
   std::vector<PictureBuffer> picture_buffers;
 
