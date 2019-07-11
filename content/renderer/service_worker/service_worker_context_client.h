@@ -19,7 +19,6 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
