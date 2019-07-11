@@ -29,7 +29,7 @@
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
 #include "pdf/document_loader_impl.h"
-#include "pdf/draw_utils.h"
+#include "pdf/draw_utils/shadow.h"
 #include "pdf/pdf_transform.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_document.h"

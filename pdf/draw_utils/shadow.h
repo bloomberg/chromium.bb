@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PDF_DRAW_UTILS_H_
-#define PDF_DRAW_UTILS_H_
+#ifndef PDF_DRAW_UTILS_SHADOW_H_
+#define PDF_DRAW_UTILS_SHADOW_H_
 
 #include <stdint.h>
 
@@ -54,4 +54,4 @@ void DrawShadow(pp::ImageData* image,
 
 }  // namespace chrome_pdf
 
-#endif  // PDF_DRAW_UTILS_H_
+#endif  // PDF_DRAW_UTILS_SHADOW_H_
