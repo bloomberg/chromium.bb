@@ -324,11 +324,6 @@ static void set_good_speed_features_framesize_independent(
     sf->prune_comp_type_by_model_rd = boosted ? 0 : 1;
     sf->disable_smooth_intra =
         !frame_is_intra_only(&cpi->common) || (cpi->rc.frames_to_key != 1);
-    sf->perform_coeff_opt = frame_is_intra_only(&cpi->common) ? 2 : 4;
-    // TODO(any): Experiment on the dependency of this speed feature with
-    // use_intra_txb_hash, use_inter_txb_hash and use_mb_rd_hash speed features
-    sf->enable_winner_mode_for_coeff_opt =
-        frame_is_intra_only(&cpi->common) ? 0 : 1;
   }
 
   if (speed >= 4) {
@@ -342,8 +337,7 @@ static void set_good_speed_features_framesize_independent(
     sf->adaptive_mode_search = 1;
     sf->alt_ref_search_fp = 1;
     sf->skip_sharp_interp_filter_search = 1;
-    sf->perform_coeff_opt = 4;
-    sf->enable_winner_mode_for_coeff_opt = 1;
+    sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
     sf->adaptive_txb_search_level = boosted ? 2 : 3;
   }
 
@@ -782,7 +776,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->prune_warp_using_wmtype = 0;
   sf->disable_wedge_interintra_search = 0;
   sf->perform_coeff_opt = 0;
-  sf->enable_winner_mode_for_coeff_opt = 0;
   sf->prune_comp_type_by_model_rd = 0;
   sf->disable_smooth_intra = 0;
   sf->perform_best_rd_based_gating_for_chroma = 0;
