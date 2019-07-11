@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "media/base/scopedfd_helper.h"
+#include "media/base/video_util.h"
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
@@ -377,9 +378,9 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
                                   base::BindOnce(std::move(init_cb), false));
     return;
   }
+  pixel_aspect_ratio_ = config.GetPixelAspectRatio();
   visible_rect_ = config.visible_rect();
-  natural_size_ = config.natural_size();
-  frame_pool_->SetFrameFormat(*frame_layout_, visible_rect_, natural_size_);
+  UpdateVideoFramePoolFormat();
 
   // Create Input/Output V4L2Queue
   input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
@@ -477,6 +478,11 @@ bool V4L2SliceVideoDecoder::SetupOutputFormat(uint32_t output_format_fourcc) {
   DCHECK_EQ(format.fmt.pix_mp.pixelformat, output_format_fourcc);
 
   return true;
+}
+
+void V4L2SliceVideoDecoder::UpdateVideoFramePoolFormat() {
+  gfx::Size natural_size = GetNaturalSize(visible_rect_, pixel_aspect_ratio_);
+  frame_pool_->SetFrameFormat(*frame_layout_, visible_rect_, natural_size);
 }
 
 void V4L2SliceVideoDecoder::Reset(base::OnceClosure closure) {
@@ -680,7 +686,8 @@ void V4L2SliceVideoDecoder::PumpOutputSurfaces() {
         scoped_refptr<V4L2DecodeSurface> surface = std::move(request.surface);
 
         DCHECK(surface->video_frame());
-        RunOutputCB(surface->video_frame(), request.timestamp);
+        RunOutputCB(surface->video_frame(), surface->visible_rect(),
+                    request.timestamp);
         break;
     }
   }
@@ -735,9 +742,14 @@ bool V4L2SliceVideoDecoder::ChangeResolution() {
     return false;
   }
   frame_layout_ = VideoFrameLayout::Create(frame_layout_->format(), coded_size);
-  frame_pool_->SetFrameFormat(*frame_layout_, visible_rect_, natural_size_);
+  DCHECK(frame_layout_);
+
+  visible_rect_ = avd_->GetVisibleRect();
+  UpdateVideoFramePoolFormat();
 
   // Allocate new output buffers.
+  if (!output_queue_->DeallocateBuffers())
+    return false;
   size_t num_output_frames = avd_->GetRequiredNumOfPictures();
   DCHECK_GT(num_output_frames, 0u);
   if (output_queue_->AllocateBuffers(num_output_frames, V4L2_MEMORY_DMABUF) ==
@@ -868,14 +880,17 @@ void V4L2SliceVideoDecoder::SurfaceReady(
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
+  if (visible_rect_ != visible_rect) {
+    visible_rect_ = visible_rect;
+    UpdateVideoFramePoolFormat();
+  }
+
   auto it = bitstream_id_to_timestamp_.find(bitstream_id);
   DCHECK(it != bitstream_id_to_timestamp_.end());
   base::TimeDelta timestamp = it->second;
   bitstream_id_to_timestamp_.erase(it);
 
-  // TODO(akahuang): Update visible_rect at the output frame.
   dec_surface->SetVisibleRect(visible_rect);
-
   output_request_queue_.push(
       OutputRequest::Surface(std::move(dec_surface), timestamp));
   PumpOutputSurfaces();
@@ -1057,14 +1072,20 @@ void V4L2SliceVideoDecoder::RunDecodeCB(DecodeCB cb, DecodeStatus status) {
 }
 
 void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame,
+                                        const gfx::Rect& visible_rect,
                                         base::TimeDelta timestamp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(4) << "timestamp: " << timestamp;
 
-  // The attribute of the frame is needed to update. Wrap the frame again.
-  if (frame->timestamp() != timestamp) {
+  // We need to update one or more attributes of the frame. Since we can't
+  // modify the attributes of the frame directly, we wrap the frame into a new
+  // frame with updated attributes. The old frame is bound to a destruction
+  // observer so it's not destroyed before the wrapped frame.
+  if (frame->visible_rect() != visible_rect ||
+      frame->timestamp() != timestamp) {
+    gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
     scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
-        *frame, frame->format(), frame->visible_rect(), frame->natural_size());
+        *frame, frame->format(), visible_rect, natural_size);
     wrapped_frame->set_timestamp(timestamp);
     wrapped_frame->AddDestructionObserver(base::BindOnce(
         base::DoNothing::Once<scoped_refptr<VideoFrame>>(), std::move(frame)));
