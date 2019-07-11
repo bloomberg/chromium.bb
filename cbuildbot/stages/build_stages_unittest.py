@@ -312,6 +312,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
         self._run,
         self.buildstore,
         self._current_board,
+        record_packages_under_test=False,
         update_metadata=self._update_metadata)
 
   def RunTestsWithBotId(self, bot_id, options_tests=True):

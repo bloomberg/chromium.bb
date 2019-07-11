@@ -560,6 +560,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                afdo_generate_min=False,
                afdo_use=False,
                update_metadata=False,
+               record_packages_under_test=True,
                **kwargs):
     if afdo_use:
       suffix = self.UpdateSuffix(constants.USE_AFDO_USE, suffix)
@@ -567,6 +568,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
         builder_run, buildstore, board, suffix=suffix, **kwargs)
     self._afdo_generate_min = afdo_generate_min
     self._update_metadata = update_metadata
+    self._record_packages_under_test = record_packages_under_test
     assert not afdo_generate_min or not afdo_use
 
     useflags = self._portage_extra_env.get('USE', '').split()
@@ -591,24 +593,15 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
   def RecordPackagesUnderTest(self):
     """Records all packages that may affect the board to BuilderRun."""
     packages = set()
-    try:
-      deps = commands.ExtractBuildDepsGraph(self._build_root,
-                                            self._current_board)
-      for package_dep in deps['packageDeps']:
-        info = package_dep['packageInfo']
-        packages.add('%s/%s-%s' % (info['category'], info['packageName'],
-                                   info['version']))
+    deps = commands.ExtractBuildDepsGraph(self._build_root,
+                                          self._current_board)
+    for package_dep in deps['packageDeps']:
+      info = package_dep['packageInfo']
+      packages.add('%s/%s-%s' % (info['category'], info['packageName'],
+                                 info['version']))
 
-    except Exception:
-      # Dependency extraction may fail due to bad ebuild changes. Let
-      # the build continues because we have logic to triage build
-      # packages failures separately. Note that we only categorize CLs
-      # on the package-level if dependencies are extracted
-      # successfully, so it is safe to ignore the exception.
-      logging.exception('Unable to gather packages under test')
-    else:
-      logging.info('Recording packages under test')
-      self.board_runattrs.SetParallel('packages_under_test', packages)
+    logging.info('Sucessfully extract packages under test')
+    self.board_runattrs.SetParallel('packages_under_test', packages)
 
   def _ShouldEnableGoma(self):
     # Enable goma if 1) chrome actually needs to be built, or we want to use
@@ -658,7 +651,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     packages = self.GetListOfPackagesToBuild()
     self.VerifyChromeBinpkg(packages)
-    self.RecordPackagesUnderTest()
+    if self._record_packages_under_test:
+      self.RecordPackagesUnderTest()
 
     try:
       event_filename = 'build-events.json'
