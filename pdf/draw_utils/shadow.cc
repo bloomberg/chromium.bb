@@ -6,14 +6,18 @@
 
 #include <math.h>
 #include <stddef.h>
-#include <stdint.h>
+
 #include <algorithm>
-#include <vector>
 
 #include "base/logging.h"
-#include "base/numerics/safe_math.h"
+#include "ppapi/cpp/image_data.h"
+#include "ppapi/cpp/rect.h"
 
 namespace chrome_pdf {
+namespace draw_utils {
+
+constexpr uint8_t kOpaqueAlpha = 0xFF;
+constexpr uint8_t kTransparentAlpha = 0x00;
 
 inline uint8_t GetBlue(const uint32_t& pixel) {
   return static_cast<uint8_t>(pixel & 0xFF);
@@ -169,4 +173,5 @@ void DrawShadow(pp::ImageData* image,
   PaintShadow(image, rc.Intersect(clip_rc), shadow_rc, matrix);
 }
 
+}  // namespace draw_utils
 }  // namespace chrome_pdf

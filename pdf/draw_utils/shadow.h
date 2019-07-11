@@ -9,13 +9,13 @@
 
 #include <vector>
 
-#include "ppapi/cpp/image_data.h"
-#include "ppapi/cpp/rect.h"
+namespace pp {
+class ImageData;
+class Rect;
+}  // namespace pp
 
 namespace chrome_pdf {
-
-const uint8_t kOpaqueAlpha = 0xFF;
-const uint8_t kTransparentAlpha = 0x00;
+namespace draw_utils {
 
 // Shadow Matrix contains matrix for shadow rendering. To reduce amount of
 // calculations user may choose to cache matrix and reuse it if nothing changed.
@@ -52,6 +52,7 @@ void DrawShadow(pp::ImageData* image,
                 const pp::Rect& clip_rc,
                 const ShadowMatrix& matrix);
 
+}  // namespace draw_utils
 }  // namespace chrome_pdf
 
 #endif  // PDF_DRAW_UTILS_SHADOW_H_

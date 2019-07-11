@@ -38,7 +38,10 @@
 namespace chrome_pdf {
 
 class PDFiumDocument;
+
+namespace draw_utils {
 class ShadowMatrix;
+}
 
 class PDFiumEngine : public PDFEngine,
                      public DocumentLoader::Client,
@@ -649,7 +652,7 @@ class PDFiumEngine : public PDFEngine,
   base::TimeDelta progressive_paint_timeout_;
 
   // Shadow matrix for generating the page shadow bitmap.
-  std::unique_ptr<ShadowMatrix> page_shadow_;
+  std::unique_ptr<draw_utils::ShadowMatrix> page_shadow_;
 
   // While true, the document try to be opened and parsed after download each
   // part. Else the document will be opened and parsed only on finish of

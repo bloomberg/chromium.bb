@@ -3367,8 +3367,8 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
   depth = static_cast<uint32_t>(depth * 1.5) + 1;
 
   // We need to check depth only to verify our copy of shadow matrix is correct.
-  if (!page_shadow_.get() || page_shadow_->depth() != depth) {
-    page_shadow_ = std::make_unique<ShadowMatrix>(
+  if (!page_shadow_ || page_shadow_->depth() != depth) {
+    page_shadow_ = std::make_unique<draw_utils::ShadowMatrix>(
         depth, factor, client_->GetBackgroundColor());
   }
 
