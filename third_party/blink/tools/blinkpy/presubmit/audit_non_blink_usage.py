@@ -772,6 +772,10 @@ _CONFIG = [
             'base::NullableString16',
             'net::ParseMimeTypeWithoutParameter',
         ],
+    },
+    {
+        'paths': ['third_party/blink/renderer/core/fetch/fetch_request_data.cc'],
+        'allowed': ['net::RequestPriority'],
     }
 ]
 
