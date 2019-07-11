@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -69,6 +70,12 @@ BindPermissionActionCallbackToCurrentSequence(
 
 }  // namespace
 
+ChromeNativeFileSystemPermissionContext::Grants::Grants() = default;
+ChromeNativeFileSystemPermissionContext::Grants::~Grants() = default;
+ChromeNativeFileSystemPermissionContext::Grants::Grants(Grants&&) = default;
+ChromeNativeFileSystemPermissionContext::Grants&
+ChromeNativeFileSystemPermissionContext::Grants::operator=(Grants&&) = default;
+
 class ChromeNativeFileSystemPermissionContext::PermissionGrantImpl
     : public content::NativeFileSystemPermissionGrant {
  public:
@@ -85,6 +92,11 @@ class ChromeNativeFileSystemPermissionContext::PermissionGrantImpl
   const url::Origin& origin() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return origin_;
+  }
+
+  bool is_directory() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return is_directory_;
   }
 
   const base::FilePath& path() const {
@@ -187,6 +199,47 @@ ChromeNativeFileSystemPermissionContext::GetWritePermissionGrant(
                                                           is_directory);
   existing_grant = result.get();
   return result;
+}
+
+ChromeNativeFileSystemPermissionContext::Grants
+ChromeNativeFileSystemPermissionContext::GetPermissionGrants(
+    const url::Origin& origin) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  Grants grants;
+  auto it = origins_.find(origin);
+  if (it == origins_.end())
+    return grants;
+  for (const auto& entry : it->second.grants) {
+    if (entry.second->GetStatus() ==
+        PermissionGrantImpl::PermissionStatus::GRANTED) {
+      if (entry.second->is_directory()) {
+        grants.directory_write_grants.push_back(entry.second->path());
+      } else {
+        grants.file_write_grants.push_back(entry.second->path());
+      }
+    }
+  }
+  return grants;
+}
+
+// static
+void ChromeNativeFileSystemPermissionContext::GetPermissionGrantsFromUIThread(
+    content::BrowserContext* browser_context,
+    const url::Origin& origin,
+    base::OnceCallback<void(Grants)> callback) {
+  auto permission_context =
+      NativeFileSystemPermissionContextFactory::GetForProfileIfExists(
+          browser_context);
+  if (!permission_context) {
+    std::move(callback).Run(Grants());
+    return;
+  }
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(
+          &ChromeNativeFileSystemPermissionContext::GetPermissionGrants,
+          permission_context, origin),
+      std::move(callback));
 }
 
 ChromeNativeFileSystemPermissionContext::
