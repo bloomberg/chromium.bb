@@ -393,7 +393,9 @@ Polymer({
             this.getManagedPropertiesCallback_(managedProperties);
           });
     } else {
-      this.focusFirstInput_();
+      setTimeout(() => {
+        this.focusFirstInput_();
+      });
     }
     this.onCertificateListsChanged_();
     this.updateIsConfigured_();
