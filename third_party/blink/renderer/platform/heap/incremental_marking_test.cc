@@ -5,7 +5,9 @@
 #include <initializer_list>
 
 #include "base/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -1901,6 +1903,11 @@ TEST(IncrementalMarkingTest, AdjustMarkedBytesOnMarkedBackingStore) {
   // marked bytes when the page is actually about to be swept and marking is not
   // in progress.
 
+  // Disable concurrent sweeping to check that sweeping is not in progress after
+  // the FinishGC call.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      blink::features::kBlinkHeapConcurrentSweeping);
   using Container = HeapVector<Member<Object>>;
   Persistent<Container> holder(MakeGarbageCollected<Container>());
   holder->push_back(MakeGarbageCollected<Object>());

@@ -38,8 +38,10 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/buildflags.h"
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
@@ -1872,6 +1874,11 @@ TEST(HeapTest, LazySweepingPages) {
 }
 
 TEST(HeapTest, LazySweepingLargeObjectPages) {
+  // Disable concurrent sweeping to check lazy sweeping on allocation.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      blink::features::kBlinkHeapConcurrentSweeping);
+
   ClearOutOldGarbage();
 
   // Create free lists that can be reused for IntWrappers created in
