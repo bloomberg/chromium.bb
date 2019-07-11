@@ -84,6 +84,7 @@
     hana-paladin
     hatch-paladin
     incremental-paladin
+    jacuzzi-paladin
     kalista-paladin
     kefka-kernelnext-paladin
     kevin-arcnext-paladin
@@ -2269,6 +2270,7 @@
   heli-tot-chromium-pfq-informational-tryjob
   heli-unittest-stress
   incremental-paladin-tryjob
+  jacuzzi-chrome-pfq-tryjob
   jacuzzi-chromium-pfq-tryjob
   jacuzzi-compile-only-pre-cq
   jacuzzi-full-tryjob
@@ -2276,9 +2278,14 @@
   jacuzzi-llvm-toolchain-tryjob
   jacuzzi-no-vmtest-pre-cq
   jacuzzi-paladin-tryjob
+  jacuzzi-payloads-tryjob
   jacuzzi-postsubmit-tryjob
   jacuzzi-pre-cq
+  jacuzzi-release-afdo-generate-tryjob
+  jacuzzi-release-afdo-tryjob
+  jacuzzi-release-afdo-use-tryjob
   jacuzzi-release-tryjob
+  jacuzzi-tot-chrome-pfq-informational-tryjob
   jacuzzi-tot-chromium-pfq-informational-tryjob
   jacuzzi-unittest-stress
   jecht-chrome-pfq-tryjob
@@ -2719,6 +2726,7 @@
     hana-paladin-tryjob
     hatch-paladin-tryjob
     incremental-paladin-tryjob
+    jacuzzi-paladin-tryjob
     kalista-paladin-tryjob
     kefka-kernelnext-paladin-tryjob
     kevin-arcnext-paladin-tryjob

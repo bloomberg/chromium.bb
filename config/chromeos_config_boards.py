@@ -36,6 +36,7 @@ arm_internal_release_boards = frozenset([
     'gale',
     'gonzo',
     'hana',
+    'jacuzzi',
     'kevin',
     'kevin-arcnext',
     'kevin64',

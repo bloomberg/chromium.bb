@@ -2265,6 +2265,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
       'drallion',
+      'jacuzzi',
       'kumo',
       'kefka-kernelnext',
       'zork',
