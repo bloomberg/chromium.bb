@@ -25,9 +25,8 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
   ~PrimaryAccountMutatorImpl() override;
 
   // PrimaryAccountMutator implementation.
-#if !defined(OS_CHROMEOS)
   bool SetPrimaryAccount(const CoreAccountId& account_id) override;
-#else
+#if defined(OS_CHROMEOS)
   bool SetPrimaryAccountAndUpdateAccountInfo(const std::string& gaia_id,
                                              const std::string& email) override;
 #endif
