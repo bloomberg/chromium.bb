@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "chrome/browser/permissions/permission_util.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -35,15 +35,21 @@ void ShowWritePermissionPromptOnUIThread(
 
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
-
   if (!web_contents) {
     // Requested from a worker, or a no longer existing tab.
     std::move(callback).Run(PermissionAction::DISMISSED);
     return;
   }
 
-  ShowNativeFileSystemPermissionDialog(origin, path, is_directory,
-                                       std::move(callback), web_contents);
+  auto* request_manager =
+      NativeFileSystemPermissionRequestManager::FromWebContents(web_contents);
+  if (!request_manager) {
+    std::move(callback).Run(PermissionAction::DISMISSED);
+    return;
+  }
+
+  request_manager->AddRequest({origin, path, is_directory},
+                              std::move(callback));
 }
 
 // Returns a callback that calls the passed in |callback| by posting a task to
