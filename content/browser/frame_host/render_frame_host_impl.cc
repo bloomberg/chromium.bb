@@ -883,8 +883,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       keep_alive_timeout_(base::TimeDelta::FromSeconds(30)),
       subframe_unload_timeout_(base::TimeDelta::FromMilliseconds(
           RenderViewHostImpl::kUnloadTimeoutMS)),
-      commit_callback_interceptor_(nullptr),
-      weak_ptr_factory_(this) {
+      commit_callback_interceptor_(nullptr) {
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().emplace(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_), this);

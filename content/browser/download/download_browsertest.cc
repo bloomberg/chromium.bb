@@ -241,7 +241,7 @@ class DownloadFileWithDelayFactory : public download::DownloadFileFactory {
  private:
   std::vector<base::Closure> rename_callbacks_;
   base::OnceClosure stop_waiting_;
-  base::WeakPtrFactory<DownloadFileWithDelayFactory> weak_ptr_factory_;
+  base::WeakPtrFactory<DownloadFileWithDelayFactory> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileWithDelayFactory);
 };
@@ -297,8 +297,7 @@ void DownloadFileWithDelay::RenameCallbackWrapper(
   factory->AddRenameCallback(base::Bind(original_callback, reason, path));
 }
 
-DownloadFileWithDelayFactory::DownloadFileWithDelayFactory()
-    : weak_ptr_factory_(this) {}
+DownloadFileWithDelayFactory::DownloadFileWithDelayFactory() {}
 
 DownloadFileWithDelayFactory::~DownloadFileWithDelayFactory() {}
 
@@ -454,8 +453,7 @@ class ErrorInjectionDownloadFile : public download::DownloadFileImpl {
 // on this class must be called on the UI thread.
 class ErrorInjectionDownloadFileFactory : public download::DownloadFileFactory {
  public:
-  ErrorInjectionDownloadFileFactory()
-      : download_file_(nullptr), weak_ptr_factory_(this) {}
+  ErrorInjectionDownloadFileFactory() : download_file_(nullptr) {}
   ~ErrorInjectionDownloadFileFactory() override = default;
 
   // DownloadFileFactory interface.
@@ -504,7 +502,8 @@ class ErrorInjectionDownloadFileFactory : public download::DownloadFileFactory {
   ErrorInjectionDownloadFile* download_file_;
   int64_t injected_error_offset_ = -1;
   int64_t injected_error_length_ = 0;
-  base::WeakPtrFactory<ErrorInjectionDownloadFileFactory> weak_ptr_factory_;
+  base::WeakPtrFactory<ErrorInjectionDownloadFileFactory> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ErrorInjectionDownloadFileFactory);
 };

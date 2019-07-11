@@ -1445,7 +1445,7 @@ class TestNavigationManager : public WebContentsObserver {
   base::OnceClosure quit_closure_;
   base::RunLoop::Type message_loop_type_ = base::RunLoop::Type::kDefault;
 
-  base::WeakPtrFactory<TestNavigationManager> weak_factory_;
+  base::WeakPtrFactory<TestNavigationManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationManager);
 };

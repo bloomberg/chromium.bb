@@ -85,9 +85,7 @@ class WebMediaPlayerMS::FrameDeliverer {
       : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         player_(player),
         enqueue_frame_cb_(enqueue_frame_cb),
-        media_task_runner_(media_task_runner),
-        weak_factory_for_pool_(this),
-        weak_factory_(this) {
+        media_task_runner_(media_task_runner) {
     DETACH_FROM_THREAD(io_thread_checker_);
 
     if (gpu_factories && gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames(
@@ -220,8 +218,8 @@ class WebMediaPlayerMS::FrameDeliverer {
   // Used for DCHECKs to ensure method calls are executed on the correct thread.
   THREAD_CHECKER(io_thread_checker_);
 
-  base::WeakPtrFactory<FrameDeliverer> weak_factory_for_pool_;
-  base::WeakPtrFactory<FrameDeliverer> weak_factory_;
+  base::WeakPtrFactory<FrameDeliverer> weak_factory_for_pool_{this};
+  base::WeakPtrFactory<FrameDeliverer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
 };
@@ -265,8 +263,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       should_play_upon_shown_(false),
       create_bridge_callback_(std::move(create_bridge_callback)),
       submitter_(std::move(submitter)),
-      surface_layer_mode_(surface_layer_mode),
-      weak_factory_(this) {
+      surface_layer_mode_(surface_layer_mode) {
   DVLOG(1) << __func__;
   DCHECK(client);
   DCHECK(delegate_);

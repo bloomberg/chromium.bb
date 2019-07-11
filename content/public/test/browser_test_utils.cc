@@ -2714,8 +2714,7 @@ TestNavigationManager::TestNavigationManager(WebContents* web_contents,
       handle_(nullptr),
       navigation_paused_(false),
       current_state_(NavigationState::INITIAL),
-      desired_state_(NavigationState::STARTED),
-      weak_factory_(this) {}
+      desired_state_(NavigationState::STARTED) {}
 
 TestNavigationManager::~TestNavigationManager() {
   if (navigation_paused_)

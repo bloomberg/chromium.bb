@@ -1924,8 +1924,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::unique_ptr<JavaScriptDialogNavigationDeferrer>
       javascript_dialog_navigation_deferrer_;
 
-  base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
-  base::WeakPtrFactory<WebContentsImpl> weak_factory_;
+  base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_{this};
+  base::WeakPtrFactory<WebContentsImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };
