@@ -5,6 +5,7 @@
 #include "chrome/browser/content_index/content_index_provider_factory.h"
 
 #include "chrome/browser/content_index/content_index_provider_impl.h"
+#include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -24,13 +25,17 @@ ContentIndexProviderFactory* ContentIndexProviderFactory::GetInstance() {
 ContentIndexProviderFactory::ContentIndexProviderFactory()
     : BrowserContextKeyedServiceFactory(
           "ContentIndexProvider",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(OfflineContentAggregatorFactory::GetInstance());
+}
 
 ContentIndexProviderFactory::~ContentIndexProviderFactory() {}
 
 KeyedService* ContentIndexProviderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new ContentIndexProviderImpl(Profile::FromBrowserContext(context));
+  auto* aggregator = OfflineContentAggregatorFactory::GetForKey(
+      Profile::FromBrowserContext(context)->GetProfileKey());
+  return new ContentIndexProviderImpl(aggregator);
 }
 
 content::BrowserContext* ContentIndexProviderFactory::GetBrowserContextToUse(

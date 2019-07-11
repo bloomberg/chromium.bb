@@ -40,7 +40,7 @@ struct CONTENT_EXPORT ContentIndexEntry {
 class CONTENT_EXPORT ContentIndexProvider {
  public:
   // Interface for the client that updates the provider with entries.
-  class Client {
+  class CONTENT_EXPORT Client {
    public:
     virtual ~Client();
 
