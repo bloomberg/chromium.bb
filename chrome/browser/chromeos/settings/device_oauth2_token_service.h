@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/core_account_id.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
@@ -36,6 +37,7 @@ namespace chromeos {
 // Note that requests must be made from the UI thread.
 class DeviceOAuth2TokenService
     : public OAuth2AccessTokenManager::Delegate,
+      public gaia::GaiaOAuthClient::Delegate,
       public DeviceOAuth2TokenServiceDelegate::ValidationStatusDelegate {
  public:
   typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */)>
@@ -94,6 +96,14 @@ class DeviceOAuth2TokenService
 
   OAuth2AccessTokenManager* GetAccessTokenManager();
 
+  // gaia::GaiaOAuthClient::Delegate implementation.
+  void OnRefreshTokenResponse(const std::string& access_token,
+                              int expires_in_seconds) override;
+  void OnGetTokenInfoResponse(
+      std::unique_ptr<base::DictionaryValue> token_info) override;
+  void OnOAuthError() override;
+  void OnNetworkError(int response_code) override;
+
  private:
   // TODO(https://crbug.com/967598): Merge DeviceOAuth2TokenServiceDelegate
   // into DeviceOAuth2TokenService.
@@ -101,6 +111,22 @@ class DeviceOAuth2TokenService
   friend class DeviceOAuth2TokenServiceFactory;
   friend class DeviceOAuth2TokenServiceTest;
   struct PendingRequest;
+
+  // Describes the operational state of this object.
+  enum State {
+    // Pending system salt / refresh token load.
+    STATE_LOADING,
+    // No token available.
+    STATE_NO_TOKEN,
+    // System salt loaded, validation not started yet.
+    STATE_VALIDATION_PENDING,
+    // Refresh token validation underway.
+    STATE_VALIDATION_STARTED,
+    // Token validation failed.
+    STATE_TOKEN_INVALID,
+    // Refresh token is valid.
+    STATE_TOKEN_VALID,
+  };
 
   // OAuth2AccessTokenManager::Delegate:
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
@@ -121,6 +147,9 @@ class DeviceOAuth2TokenService
   void FireRefreshTokenAvailable(const CoreAccountId& account_id);
   void FireRefreshTokenRevoked(const CoreAccountId& account_id);
 
+  void InitializeWithValidationStatusDelegate(
+      ValidationStatusDelegate* delegate);
+  void ClearValidationStatusDelegate();
   // Implementation of
   // DeviceOAuth2TokenServiceDelegate::ValidationStatusDelegate.
   void OnValidationCompleted(GoogleServiceAuthError::State error) override;
@@ -142,6 +171,11 @@ class DeviceOAuth2TokenService
   // Returns a list of accounts based on |state_|.
   std::vector<CoreAccountId> GetAccounts() const;
 
+  // Starts the token validation flow, i.e. token info fetch.
+  void StartValidation();
+
+  void RequestValidation();
+
   // Invoked by CrosSettings when the robot account ID becomes available.
   void OnServiceAccountIdentityChanged();
 
@@ -162,6 +196,8 @@ class DeviceOAuth2TokenService
   // Flushes |token_save_callbacks_|, indicating the specified result.
   void FlushTokenSaveCallbacks(bool result);
 
+  void ReportServiceError(GoogleServiceAuthError::State error);
+
   // TODO(https://crbug.com/967598): Merge DeviceOAuth2TokenServiceDelegate
   // into DeviceOAuth2TokenService.
   std::unique_ptr<DeviceOAuth2TokenServiceDelegate> delegate_;
@@ -177,10 +213,8 @@ class DeviceOAuth2TokenService
 
   PrefService* local_state_;
 
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      service_account_identity_subscription_;
-
-  CoreAccountId robot_account_id_for_testing_;
+  // Current operational state.
+  State state_;
 
   // Token save callbacks waiting to be completed.
   std::vector<StatusCallback> token_save_callbacks_;
@@ -188,8 +222,23 @@ class DeviceOAuth2TokenService
   // The system salt for encrypting and decrypting the refresh token.
   std::string system_salt_;
 
+  int max_refresh_token_validation_retries_;
+
+  // Flag to indicate whether there are pending requests.
+  bool validation_requested_;
+
+  // Validation status delegate
+  ValidationStatusDelegate* validation_status_delegate_;
+
   // Cache the decrypted refresh token, so we only decrypt once.
   std::string refresh_token_;
+
+  std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
+
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      service_account_identity_subscription_;
+
+  CoreAccountId robot_account_id_for_testing_;
 
   base::WeakPtrFactory<DeviceOAuth2TokenService> weak_ptr_factory_;
 
