@@ -4104,6 +4104,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillSaveCardShowNoThanksDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillSaveCardShowNoThanks)},
 
+    {"enable-defer-all-script", flag_descriptions::kEnableDeferAllScriptName,
+     flag_descriptions::kEnableDeferAllScriptDescription, kOsAll,
+     FEATURE_VALUE_TYPE(previews::features::kDeferAllScriptPreviews)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

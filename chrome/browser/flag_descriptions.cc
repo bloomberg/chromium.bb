@@ -533,6 +533,10 @@ const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =
     "If enabled, adds the status of certain experiment variations when making "
     "calls to Google Payments.";
 
+const char kEnableDeferAllScriptName[] = "DeferAllScript previews";
+const char kEnableDeferAllScriptDescription[] =
+    "Enable deferring synchronous script on slow pages.";
+
 const char kEnableSaveDataName[] = "Enables save data feature";
 const char kEnableSaveDataDescription[] =
     "Enables save data feature. May cause user's traffic to be proxied via "
