@@ -31,8 +31,8 @@
 namespace {
 
 // Default width/height of the dialog in screen size.
-const int kDefaultWidth = 400;
-const int kDefaultHeight = 420;
+const int kDefaultHatsDialogWidth = 400;
+const int kDefaultHatsDialogHeight = 420;
 
 // Placeholder strings in html file to be replaced when the file is loaded.
 constexpr char kScriptSrcReplacementToken[] = "$SCRIPT_SRC";
@@ -119,7 +119,7 @@ void HatsWebDialog::GetWebUIMessageHandlers(
     std::vector<content::WebUIMessageHandler*>* handlers) const {}
 
 void HatsWebDialog::GetDialogSize(gfx::Size* size) const {
-  size->SetSize(kDefaultWidth, kDefaultHeight);
+  size->SetSize(kDefaultHatsDialogWidth, kDefaultHatsDialogHeight);
 }
 
 bool HatsWebDialog::CanResizeDialog() const {
