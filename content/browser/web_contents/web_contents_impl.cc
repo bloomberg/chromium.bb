@@ -6725,6 +6725,10 @@ base::UnguessableToken WebContentsImpl::GetAudioGroupId() {
   return GetAudioStreamFactory()->group_id();
 }
 
+ukm::SourceId WebContentsImpl::GetLastCommittedSourceId() {
+  return last_committed_source_id_;
+}
+
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {
   return browser_plugin_embedder_.get();
 }
