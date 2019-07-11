@@ -531,8 +531,6 @@ component("ash") {
     "shelf/home_button.h",
     "shelf/home_button_controller.cc",
     "shelf/home_button_controller.h",
-    "shelf/kiosk_next_shelf_view.cc",
-    "shelf/kiosk_next_shelf_view.h",
     "shelf/login_shelf_view.cc",
     "shelf/login_shelf_view.h",
     "shelf/overflow_bubble.cc",
