@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">‏التحويل الصوتي (فاناكام ← வணக்கம்)</translation>
 <translation id="1035094536595558507">تحريك الشرائح</translation>
 <translation id="1045157690796831147">‏التحويل الصوتي (ناماسكار ← നമസ്കാരം)</translation>
+<translation id="1046068652463704410">الإدخال باللغة اليابانية (للوحة مفاتيح الولايات المتحدة)</translation>
 <translation id="1047956942837015229">جارٍ حذف <ph name="COUNT" /> من العناصر...</translation>
 <translation id="1049926623896334335">‏مستند Word</translation>
 <translation id="1062407476771304334">استبدال</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">يمين</translation>
 <translation id="1351692861129622852">جار استيراد ملفات <ph name="FILE_COUNT" /> ...</translation>
 <translation id="1352103415082130575">‏لوحة المفاتيح التايلاندية (Pattachote)</translation>
-<translation id="1358032944105037487">لوحة المفاتيح اليابانية</translation>
 <translation id="1358735829858566124">الملف أو الدليل غير قابل للاستخدام.</translation>
 <translation id="1363028406613469049">مقطع صوتي</translation>
 <translation id="1378727793141957596">‏مرحبًا بك في Google Drive!</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824">‏تم نسخ <ph name="FILE_COUNT" /> من الصور احتياطيًا في <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">جارٍ النسخ...</translation>
 <translation id="3475447146579922140">‏جدول بيانات Google</translation>
-<translation id="3494768541638400973">‏أسلوب Google للإدخال الياباني (للوحة المفاتيح اليابانية)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> من الأخطاء.</translation>
 <translation id="3519867315646775981">التحويل الصوتي (שלום ← شالوم)</translation>
 <translation id="3522708245912499433">البرتغالية</translation>
 <translation id="3527085408025491307">المجلد</translation>
 <translation id="3549797760399244642">‏جارٍالانتقال إلى drive.google.com...</translation>
 <translation id="357479282490346887">الليتوانية</translation>
+<translation id="3583509704582854624">الإدخال الأبجدي الرقمي (للوحة المفاتيح اليابانية)</translation>
 <translation id="3603385196401704894">الفرنسية الكندية</translation>
 <translation id="3606220979431771195">Turkish-F</translation>
 <translation id="3609785682760573515">جارٍ المزامنة...</translation>
@@ -423,6 +423,7 @@
 <translation id="5892290200158927959">‏لوحة مفاتيح BÉPO الفرنسية</translation>
 <translation id="5911887972742538906">‏حدث خطأ أثناء تثبيت تطبيق Linux.</translation>
 <translation id="5913638992615760742">تعذَّر إتمام عملية النسخ، خطأ غير متوقِّع: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">الإدخال باللغة اليابانية (للوحة المفاتيح اليابانية)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">‏يمكنك منح تطبيقات نظام التشغيل Linux الإذن لتعديل الملفات في Google Drive. وستتم مزامنة التغييرات مع الأجهزة الأخرى.</translation>
 <translation id="5982621672636444458">خيارات التصنيف</translation>
@@ -501,7 +502,6 @@
     <ph name="LINE_BREAK1" />
     تم العثور على <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">رأسًا على عقب</translation>
-<translation id="6937152069980083337">‏أسلوب الإدخال باللغة اليابانية لـ Google (للوحة المفاتيح بالولايات المتحدة)</translation>
 <translation id="6939777852457331078">‏لوحة مفاتيح US Workman</translation>
 <translation id="696203921837389374">تفعيل المزامنة عبر بيانات الجوّال</translation>
 <translation id="6965382102122355670">موافق</translation>

@@ -132,15 +132,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Hvis politikken er angivet til Falsk, rapporteres tilstanden for udviklerkontakten ikke.</translation>
 <translation id="1160479894929412407">Tillad QUIC-protokol</translation>
 <translation id="1160939557934457296">Deaktiver fortsættelse fra advarselssiden for Beskyttet browsing</translation>
-<translation id="1171342272070128466">Aktivér hjælpefunktionen Fastgjort lupvindue.
-
-          Hvis politikken angives som Sand, er det fastgjorte lupvindue altid aktiveret.
-
-          Hvis politikken angives som Falsk, er det fastgjorte lupvindue altid deaktiveret.
-
-          Hvis politikken konfigureres, kan brugerne ikke ændre eller tilsidesætte den.
-
-          Hvis politikken ikke konfigureres, er det fastgjorte lupvindue deaktiveret, men brugeren kan når som helst aktivere funktionen.</translation>
 <translation id="1189817621108632689">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor det ikke er tilladt at vise billeder.
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultImagesSetting", hvis den er angivet, eller brugerens personlige konfiguration.
@@ -312,7 +303,6 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 <translation id="1474273443907024088">Deaktiver TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Bloker for tilføjelse af software fra tredjeparter</translation>
-<translation id="1504431521196476721">Fjernattestering</translation>
 <translation id="1507382822467487898">
           Konfigurerer, hvilken MAC-adresse (Media Access Control) der skal anvendes, når enheden er tilsluttet en dockingstation.
 
@@ -443,12 +433,6 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
 
       Politikken skal indstilles til en webadresse, hvorfra <ph name="PRODUCT_OS_NAME" /> kan downloade servicevilkårene. Servicevilkårene skal være almindelig tekst vist som MIME-tekst. Markering er ikke tilladt.</translation>
 <translation id="1750315445671978749">Bloker alle downloads</translation>
-<translation id="1762072363876276024">
-      Denne politik gælder for loginskærmen. Se også politikken <ph name="SITE_PER_PROCESS_POLICY_NAME" />, der gælder for brugersessionen. Det anbefales at angive samme værdi for begge politikker. Hvis værdierne ikke stemmer overens, kan der opstå en forsinkelse ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      Denne indstilling, DeviceLoginScreenSitePerProcess, kan bruges til at forhindre brugerne i at fravælge standardadfærden, hvor alle websites isoleres. Bemærk, at politikken DeviceLoginScreenIsolateOrigins også kan bruges til mere finkornet isolering af websites.
-      Hvis politikken er aktiveret, kan brugerne ikke fravælge standardadfærden, hvor hvert website kører i sin egen proces.
-      Hvis politikken ikke er angivet eller er deaktiveret, kan brugeren ændre denne indstilling (f.eks. ved at bruge posten "Deaktiver isolering af website" i chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Aktivér appanbefaling ved nultilstand i søgefeltet</translation>
 <translation id="17719159826324007">
       Hvis politikken er angivet som ArcSession, tvinges enheden til at genstarte, når brugeren logger ud og Android er startet.
@@ -1326,13 +1310,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis du konfigurerer denne politik, kan brugerne ikke ændre eller tilsidesætte den.
 
           Hvis denne politik ikke er konfigureret, er ændringen ved strømspidsbelastning deaktiveret og kan ikke aktiveres af brugeren.</translation>
-<translation id="3388153794103186066">Gør det muligt at angive en liste over webadresser, der angiver, hvilke sider der automatisk får adgangstilladelse til en USB-enhed med de givne leverandør- og produkt-id'er. Hvert element på listen skal indeholde både enheder og webadresser, før politikken er gyldig. Hvert element på enheder kan indeholde felter til leverandør-id og produkt-id. Alle id'er, der udelades, behandles som et jokertegn – et produkt-id kan dog ikke angives, uden at der også angives et leverandør-id. Hvis ikke disse regler overholdes, regnes politikken som ugyldig og ignoreres.
-
-        USB-tilladelsesmodellen anvender webadressen til det anmodende website ("anmodende webadresse") og webadressen til indramningswebsitet på øverste niveau ("integrerende webadresse") til at give den anmodende webadresse adgang til USB-enheden. Den anmodende webadresse kan adskille sig fra den integrerende webadresse, når det anmodende website indlæses i en iframe. Feltet "webadresser" kan derfor indeholde op til to webadressestrenge, adskilt af et komma, for at angive henholdsvis den anmodende og den integrerende webadresse. Hvis der kun angives én webadresse, gives der adgang til de tilsvarende USB-enheder, når webadressen til det anmodende website stemmer overens med denne webadresse, uanset hvilken integreringsstatus den har. Webadresserne i feltet "webadresser" skal være gyldige webadresser, ellers ignoreres politikken.
-
-        Hvis politikken ikke konfigureres, anvendes den globale standardværdi fra politikken "DefaultWebUsbGuardSetting" til alle websites, og hvis denne ikke er konfigureret, anvendes brugerens personlige konfiguration.
-
-        Webadressemønstre i denne politik må ikke være i strid med dem, der er konfigureret via WebUsbBlockedForUrls. Hvis de er i strid med hinanden, har denne politik forrang frem for WebUsbBlockedForUrls og WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Hvis denne politik ikke konfigureres, anvender <ph name="PRODUCT_NAME" /> en standardminimumversion, som er TLS 1.0.
 
       Den kan også angives til en af følgende værdier: "tls1", "tls1.1" eller "tls1.2". Når der er angivet en værdi, anvender <ph name="PRODUCT_NAME" /> ikke SSL/TLS-versioner, der er mindre end den angivne version. Ukendte værdier ignoreres.</translation>
@@ -1604,15 +1581,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis du ikke angiver denne politik, bruger <ph name="PRODUCT_NAME" /> den sædvanlige standardmappe (platformspecifikt).
 
       Se https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for en liste over variabler, der kan bruges.</translation>
-<translation id="3904459740090265495">Denne politik styrer loginadfærd i browseren. Den giver dig mulighed for at angive, om brugeren kan logge ind i <ph name="PRODUCT_NAME" /> med sin konto og benytte kontorelaterede tjenester såsom Chrome-synkronisering.
-
-      Hvis "Deaktiver browserlogin" er angivet for politikken, kan brugeren ikke logge ind i browseren og benytte kontobaserede tjenester. Det betyder, at browserfunktioner såsom Chrome-synkronisering ikke kan anvendes. Hvis brugeren allerede er logget ind, og "Deaktiveret" er angivet for politikken, logges brugeren ud, næste gang vedkommende starter Chrome. Brugerens lokale profildata som f.eks. bogmærker og adgangskoder bevares dog. Brugeren kan stadig logge ind på og benytte Google-webtjenester såsom Gmail.
-
-      Hvis "Aktivér browserlogin" er angivet for politikken, har brugeren tilladelse til at logge ind i browseren, og brugeren logges automatisk ind i browseren, når vedkommende er logget ind i Google-webtjenester såsom Gmail. Når brugeren er logget ind i browseren, gemmes vedkommendes kontooplysninger i browseren. Det betyder dog ikke, at Chrome-synkronisering som standard aktiveres. Brugeren skal selv tilvælge denne funktion. Aktivering af denne politik forhindrer brugeren i at deaktivere den indstilling, der tillader browserlogin. Brug politikken "SyncDisabled" til at styre tilgængeligheden af Chrome-synkronisering.
-
-      Hvis "Kræv browserlogin" er angivet for politikken, får brugeren vist en dialogboks til kontovalg, hvor vedkommende skal vælge og logge ind på en konto for at benytte browseren. Dette sikrer, at politikker, der er knyttet til mangerstyrede konti, anvendes og håndhæves. Denne indstilling aktiverer som standard Chrome-synkronisering for kontoen, undtagen i tilfælde, hvor synkronisering er deaktiveret af domæneadministratoren eller via politikken "SyncDisabled". Standardværdien for BrowserGuestModeEnabled angives som Falsk. Bemærk! Eksisterende profiler, hvor der ikke er logget ind, låses og kan ikke længere anvendes efter aktivering af denne politik. Du kan få flere oplysninger i artiklen i Hjælp: https://support.google.com/chrome/a/answer/7572556.
-
-      Hvis politikken ikke konfigureres, kan brugeren selv bestemme, om muligheden for browserlogin skal aktiveres, og anvende den efter eget behov.</translation>
 <translation id="3911737181201537215">Denne politik påvirker ikke logføring udført af Android.</translation>
 <translation id="391531815696899618">Deaktiverer Google Drev-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" />, når den er angivet til Sand. I dette tilfælde uploades der ingen data til Google Drev.
 
@@ -1694,12 +1662,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       <ph name="PRODUCT_OS_NAME" />-enheder søger automatisk efter opdateringer, når denne indstilling ikke er konfigureret eller er angivet til falsk.
 
       Advarsel! Det anbefales at holde automatiske opdateringer aktiveret, så brugerne modtager softwareopdateringer og kritiske sikkerhedsrettelser. Deaktivering af automatiske opdateringer kan udgøre en risiko for brugerne.</translation>
-<translation id="4018000735882846261">Denne politik giver Google Assistent tilladelse til at lytte efter den stemmestyrede aktiveringssætning.
-
-      Hvis politikken er aktiveret, lytter Google Assistent efter den stemmestyrede aktiveringssætning.
-      Hvis politikken er deaktiveret, lytter Google Assistent ikke efter den stemmestyrede aktiveringssætning.
-      Hvis politikken ikke er konfigureret, lytter Google Assistent ikke efter den stemmestyrede aktiveringssætning.
-      </translation>
 <translation id="4020682745012723568">Cookies, der overføres til brugerens profil, er ikke tilgængelige i Android-apps.</translation>
 <translation id="402759845255257575">Tillad ikke, at websites kører JavaScript</translation>
 <translation id="4027608872760987929">Aktiver standardsøgemaskine</translation>
@@ -3391,7 +3353,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
       Hvis denne politik er angivet til "RemoveLRUIfDormant", vil den automatiske oprydningsfunktion fortsætte med at fjerne brugere, der ikke har været logget ind i minimum tre måneder, startende med den bruger, der ikke har været logget ind i længst tid, indtil der er tilstrækkelig ledig plads.
 
       Hvis denne politik ikke er indstillet, anvender den automatiske oprydningsfunktion standardstrategien. Denne strategi er i øjeblikket "RemoveLRUIfDormant".</translation>
-<translation id="7334274148831027933">Aktivér fastgjort lupvindue</translation>
 <translation id="7336785017449297672">Styrer indstillingerne for tidszone</translation>
 <translation id="7336878834592315572">Behold cookies under sessionen</translation>
 <translation id="7339315111520512972">Tving netværkskoden til at køre i browserprocessen</translation>
@@ -3582,22 +3543,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 
           Bemærk! Tilladte værdier for feltet <ph name="MINUTE_FIELD_NAME" /> i <ph name="CHARGE_START_TIME_FIELD_NAME" /> og <ph name="CHARGE_END_TIME_FIELD_NAME" /> er 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Konfigurer hjælpefunktioner for <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Denne politik aktiverer HTTP/0.9 på andre porte end 80 for HTTP og 443 for HTTPS.
-
-      Denne politik er som standard deaktiveret. Hvis den aktiveres, kan brugerne blive udsat for sikkerhedsproblemet https://crbug.com/600352.
-
-      Denne politik har til formål at give virksomheder mulighed for at migrere eksisterende servere væk fra HTTP/0.9 og vil blive fjernet på et senere tidspunkt.
-
-      Hvis denne politik ikke er angivet, deaktiveres HTTP/0.9 på ikke-standard-porte.</translation>
-<translation id="7726421241038987229">
-      Denne indstilling, SitePerProcess, kan bruges til at forhindre brugerne i at fravælge standardadfærden, hvor alle websites isoleres. Bemærk, at politikken IsolateOrigins også kan bruges til mere finkornet isolering af websites.
-      Hvis politikken er aktiveret, kan brugerne ikke fravælge standardadfærden, hvor hvert website kører i sin egen proces.
-      Hvis politikken ikke er angivet eller er deaktiveret, kan brugeren fravælge isolering af website
-      (f.eks. ved at bruge posten "Deaktiver isolering af website" i chrome://flags).  Isolering af website slås ikke fra, hvis politikken angives som deaktiveret og/eller ikke angives.
-      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-
-      BEMÆRK! Denne politik anvendes ikke på Android-enheder. Hvis du vil aktivere SitePerProcess på en Android-enhed, skal du bruge politikindstillingen SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Tillad, at enheder anvender en <ph name="PLUGIN_VM_NAME" /> i <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7749402620209366169">Aktiverer godkendelse med to faktorer for værter med fjernadgang i stedet for en brugerangivet pinkode.
 
@@ -3730,13 +3675,6 @@ Hvis du aktiverer denne indstilling eller ikke konfigurerer en værdi, forbliver
 <translation id="8050080920415773384">Indbygget udskrivning</translation>
 <translation id="8053580360728293758">Tilsidesætter farvetilstanden for standardudskrivning. Hvis tilstanden ikke er tilgængelig, ignoreres denne politik.</translation>
 <translation id="8059164285174960932">Den webadresse, hvor klienten til fjernadgang skal hente deres godkendelsestoken</translation>
-<translation id="806280865577636339">Hvis denne politik er angivet som sand, vises indstillingerne for Tilgængelighed altid i systembakkemenuen.
-
-          Hvis denne politik er angivet som falsk, vises indstillingerne for Tilgængelighed aldrig i systembakkemenuen.
-
-          Hvis du konfigurerer denne politik, kan brugerne ikke ændre eller tilsidesætte den.
-
-          Hvis denne politik ikke angives, vises indstillingerne for Tilgængelighed ikke i systembakkemenuen, men brugeren kan få vist indstillingerne for Tilgængelighed via siden Indstillinger.</translation>
 <translation id="806523868782250975">Konfigurerer en liste over administrerede bogmærker.
 
       Politikken består af en liste over bogmærker, hvor hvert bogmærke er en ordbog med nøglerne "<ph name="NAME" />" og "<ph name="URL_LABEL" />", som indeholder bogmærkets navn og mål. En undermappe kan konfigureres ved at definere et bogmærke uden en "<ph name="URL_LABEL" />"-nøgle, men med en ekstra "<ph name="CHILDREN" />"-nøgle, der selv indeholder en liste over bogmærker som defineret ovenfor (nogle af disse kan også være mapper). <ph name="PRODUCT_NAME" /> ændrer ufuldstændige webadresser på samme måde, som hvis de blev indsendt via omnifeltet. "<ph name="GOOGLE_COM" />" bliver f.eks. til "<ph name="HTTPS_GOOGLE_COM" />".
@@ -4208,9 +4146,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 
       Politikkens værdi skal angives i sekunder.</translation>
 <translation id="9035964157729712237">Udvidelses-id'er, der skal udelades fra sortlisten</translation>
-<translation id="9038058011835642205">Angiver en liste over websites, der installeres i baggrunden uden brugerinteraktion, og som ikke kan afinstalleres eller deaktiveres af brugeren.
-
-      Hvert listepunkt i politikken er et objekt med et obligatorisk medlem: "url" og to valgfrie medlemmer: "default_launch_container" og "create_desktop_shortcut". "url" skal være webadressen til den webapp, der skal installeres, "launch_container" skal enten være "window" eller "tab" for at indikere, hvordan webappen åbnes, når den er installeret, og "create_desktop_shortcut" skal være sand, hvis der skal oprettes en skrivebordsgenvej i Linux og Windows. Hvis "default_launch_container" er udeladt, åbnes appen som standard i en fane. Brugerne kan ændre, hvilken container appen åbnes i, uanset hvilken værdi der er angivet for "default_launch_container". Hvis "create_desktop_shortcuts" er udeladt, oprettes der ingen skrivebordsgenveje.</translation>
 <translation id="9038839118379817310">Aktivér Wi-Fi</translation>
 <translation id="9039822628127365650">Når denne politik er konfigureret, angiver den det tidsrum, hvorefter en bruger automatisk logges ud, og sessionen afsluttes. Brugeren oplyses om den resterende tid med et nedtællingsur, der vises i systembakken.
 

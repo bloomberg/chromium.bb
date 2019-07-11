@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">লিপ্যন্তরকরণ (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">স্লাইড দৃশ্য</translation>
 <translation id="1045157690796831147">লিপ্যন্তরকরণ (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">জাপানি ইনপুট (মার্কিন যুক্তরাষ্ট্রের কীবোর্ডের ক্ষেত্রে)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" />টি আইটেম মুছে ফেলা হচ্ছে...</translation>
 <translation id="1049926623896334335">Word document</translation>
 <translation id="1062407476771304334">প্রতিস্থাপন করুন</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">ডানে</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT" />টি ফাইল ইমপোর্ট করা হচ্ছে...</translation>
 <translation id="1352103415082130575">থাই কীবোর্ড (পাট্টাচোটে)</translation>
-<translation id="1358032944105037487">জাপানী কীবোর্ড</translation>
 <translation id="1358735829858566124">ফাইল বা ডিরেক্টরি ব্যবহারযোগ্য নয়৷</translation>
 <translation id="1363028406613469049">ট্র্যাক</translation>
 <translation id="1378727793141957596">Google ড্রাইভে স্বাগতম!</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824"><ph name="BEGIN_LINK" />Google ড্রাইভ<ph name="END_LINK" /> এ <ph name="FILE_COUNT" />টি ফটো ব্যাকআপ নেওয়া হয়েছে</translation>
 <translation id="3470502288861289375">অনুলিপি করা হচ্ছে...</translation>
 <translation id="3475447146579922140">Google স্প্রেডশীট</translation>
-<translation id="3494768541638400973">Google জাপানিয় ইনপুট (জাপানি কীবোর্ডের জন্য)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" />টি ত্রুটি৷</translation>
 <translation id="3519867315646775981">লিপ্যন্তরকরণ (shalom ← שלום)</translation>
 <translation id="3522708245912499433">পর্তুগিজ</translation>
 <translation id="3527085408025491307">ফোল্ডার</translation>
 <translation id="3549797760399244642">drive.google.com এ যান...</translation>
 <translation id="357479282490346887">লিথুয়ানিয়ান</translation>
+<translation id="3583509704582854624">বর্ণসাংখ্যিক ইনপুট (জাপানি কীবোর্ডের ক্ষেত্রে)</translation>
 <translation id="3603385196401704894">কানাডীয় ফরাসি</translation>
 <translation id="3606220979431771195">তুর্কি-এফ</translation>
 <translation id="3609785682760573515">সিঙ্ক হচ্ছে...</translation>
@@ -422,6 +422,7 @@
 <translation id="5892290200158927959">ফরাসি BÉPO কীবোর্ড</translation>
 <translation id="5911887972742538906">Linux অ্যাপ্লিকেশন ইনস্টল করার সময়ে সমস্যা হয়েছে।</translation>
 <translation id="5913638992615760742">কপি করা যায়নি, অপ্রত্যাশিত সমস্যা হয়েছে: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">জাপানি ইনপুট (জাপানি কীবোর্ডের ক্ষেত্রে)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux অ্যাপকে আপনার Google ড্রাইভ-এর ফাইলগুলি পরিবর্তন করার অনুমতি দিন। পরিবর্তনগুলি আপনার অন্যান্য ডিভাইসের সাথে সিঙ্ক হয়ে যাবে।</translation>
 <translation id="5982621672636444458">বাছাই বিকল্পগুলি</translation>
@@ -500,7 +501,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" />টি পাওয়া যায়</translation>
 <translation id="6935521024859866267">ওলট পালট</translation>
-<translation id="6937152069980083337">Google জাপানিয় ইনপুট (ইউএস কীবোর্ডের জন্য)</translation>
 <translation id="6939777852457331078">মার্কিন ওয়ার্কম্যান কীবোর্ড</translation>
 <translation id="696203921837389374">মোবাইল ডেটার মাধ্যমে সিঙ্ক করা সক্ষম করুন</translation>
 <translation id="6965382102122355670">ঠিক আছে</translation>

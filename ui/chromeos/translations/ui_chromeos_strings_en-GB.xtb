@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Transliteration (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Slide view</translation>
 <translation id="1045157690796831147">Transliteration (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Japanese input (for US keyboard)</translation>
 <translation id="1047956942837015229">Deleting <ph name="COUNT" /> items...</translation>
 <translation id="1049926623896334335">Word document</translation>
 <translation id="1062407476771304334">Replace</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">Right</translation>
 <translation id="1351692861129622852">Importing <ph name="FILE_COUNT" /> files...</translation>
 <translation id="1352103415082130575">Thai keyboard (Pattachote)</translation>
-<translation id="1358032944105037487">Japanese keyboard</translation>
 <translation id="1358735829858566124">The file or the directory is not usable.</translation>
 <translation id="1363028406613469049">Track</translation>
 <translation id="1378727793141957596">Welcome to Google Drive!</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> photos backed up to <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Copying...</translation>
 <translation id="3475447146579922140">Google spreadsheet</translation>
-<translation id="3494768541638400973">Google Japanese Input (for Japanese keyboard)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> errors.</translation>
 <translation id="3519867315646775981">Transliteration (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portuguese</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3549797760399244642">Go to drive.google.com...</translation>
 <translation id="357479282490346887">Lithuanian</translation>
+<translation id="3583509704582854624">Alphanumeric input (for Japanese keyboard)</translation>
 <translation id="3603385196401704894">Canadian French</translation>
 <translation id="3606220979431771195">Turkish-F</translation>
 <translation id="3609785682760573515">Syncing...</translation>
@@ -423,6 +423,7 @@
 <translation id="5892290200158927959">French BÉPO keyboard</translation>
 <translation id="5911887972742538906">An error occurred during installation of your Linux application.</translation>
 <translation id="5913638992615760742">Copy operation failed, unexpected error: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Japanese input (for Japanese keyboard)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Give Linux apps permission to modify files in your Google Drive. Changes will sync to your other devices.</translation>
 <translation id="5982621672636444458">Sort options</translation>
@@ -501,7 +502,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> found</translation>
 <translation id="6935521024859866267">Upside Down</translation>
-<translation id="6937152069980083337">Google Japanese Input (for US keyboard)</translation>
 <translation id="6939777852457331078">US Workman keyboard</translation>
 <translation id="696203921837389374">Enable syncing over mobile data</translation>
 <translation id="6965382102122355670">OK</translation>

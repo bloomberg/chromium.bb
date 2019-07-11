@@ -142,15 +142,6 @@
       Si esta política se establece en "False", no se informará sobre el estado del conmutador de dispositivo.</translation>
 <translation id="1160479894929412407">Permitir el protocolo QUIC</translation>
 <translation id="1160939557934457296">Inhabilita continuar desde la página de advertencia de Navegación segura.</translation>
-<translation id="1171342272070128466">Habilita la función de accesibilidad de la lupa con vista acoplada.
-
-          Si se establece esta política como verdadera, la lupa con vista acoplada estará siempre habilitada.
-
-          Si se establece como falsa, la lupa estará siempre inhabilitada.
-
-          Si la estableces, los usuarios no podrán cambiarla ni anularla.
-
-          Si no la estableces, la lupa estará inicialmente inhabilitada, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="1189817621108632689">Te permite configurar una lista de patrones de URL con los sitios no autorizados para mostrar imágenes.
 
           Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultImagesSetting" (si se establece) o la configuración personal del usuario.
@@ -323,7 +314,6 @@
 <translation id="1474273443907024088">Inhabilitar TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Habilitar el bloqueo de inserción de software de terceros</translation>
-<translation id="1504431521196476721">Atestación remota</translation>
 <translation id="1507382822467487898">
           Configura la dirección MAC (Control de acceso de medio) que se usará cuando un conector está enchufado al dispositivo.
 
@@ -454,12 +444,6 @@
 
       La política debe establecerse en una URL de la cual <ph name="PRODUCT_OS_NAME" /> pueda descargar las Condiciones del servicio. Estas deberán estar en texto sin formato y ofrecerse como texto sin formato tipo MIME. No se permiten marcas.</translation>
 <translation id="1750315445671978749">Bloquear todas las descargas</translation>
-<translation id="1762072363876276024">
-      Esta política se aplica a la pantalla de acceso. Consulta también la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica a la sesión de usuario. Se recomienda establecer ambas políticas en el mismo valor. Si los valores no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor que especifica la política del usuario.
-      Esta configuración, DeviceLoginScreenSitePerProcess, se puede utilizar para impedir que los usuarios rechacen el comportamiento predeterminado de aislamiento de todos los sitios. Ten en cuenta que la política DeviceLoginScreenIsolateOrigins también puede ser útil para aislar orígenes adicionales más precisos.
-      Si se habilita la política, los usuarios no podrán rechazar el comportamiento predeterminado en el que cada sitio ejecuta su propio proceso.
-      Si se inhabilita la política o no se configura, el usuario podrá cambiar esta configuración (p. ej., mediante la entrada para inhabilitar el aislamiento de sitios en chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Habilitar las recomendaciones de apps cuando el cuadro de búsqueda se encuentra sin estado</translation>
 <translation id="17719159826324007">
       Si se establece en ArcSession, esta política forzará el reinicio del dispositivo después de que el usuario salga de su cuenta en el caso de que se inicie Android.
@@ -1329,13 +1313,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si la estableces, los usuarios no podrán cambiarla ni anularla.
 
           Si no se establece, se inhabilitará el cambio de pico de consumo de energía desde un principio, y el usuario no podrá habilitarla.</translation>
-<translation id="3388153794103186066">Te permite establecer una lista de URL en la que se especifiquen los sitios a los que se les otorgará permiso para acceder de forma automática a un dispositivo USB con los ID del producto y proveedor correspondientes. Para que la política sea válida, cada elemento en la lista debe contener tanto los dispositivos como las URL. Cada elemento en los dispositivos puede contener un campo de ID del producto y del proveedor. Los ID que se omitan se considerarán como comodín con una excepción: no podrá especificarse un ID del producto sin que se especifique un ID del proveedor; de lo contrario, la política no será válida y se ignorará.
-
-        El modelo del permiso para USB utiliza la URL del sitio que lo solicita ("URL que solicita permiso") y la URL del sitio del marco principal ("URL de incorporación") para otorgar permiso a la URL que lo solicita a fin de acceder al dispositivo USB. Es posible que esa URL no sea la misma que la de incorporación cuando se carga el sitio que solicita permiso en un iframe. Por lo tanto, el campo "urls" puede incluir hasta dos strings de URL delimitados por una coma para especificar la URL que solicita permiso y la URL de incorporación respectivamente. Si solo se especifica una URL, se otorgará el acceso a los dispositivos USB correspondientes cuando la URL del sitio que lo solicita coincida con esta URL más allá del estado de incorporación. Las URL en el campo "urls" deben ser válidas; de lo contrario, se ignorará la política.
-
-        Si no se establece esta política, se usará el valor predeterminado general para todos los sitios ya sea de la política "DefaultWebUsbGuardSetting" (si se establece) o de la configuración personal del usuario.
-
-        Los patrones de URL en esta política deben ser compatibles con los que se configuran a través de WebUsbBlockedForUrls. Si no lo son, prevalecerá esta política por sobre WebUsbBlockedForUrls y WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Si no se configura esta política, <ph name="PRODUCT_NAME" /> usará la versión mínima predeterminada, que es TLS 1.0.
 
       De lo contrario, se podrá establecer en uno de los siguientes valores: "tls1", "tls1.1" o "tls1.2". De esta manera, <ph name="PRODUCT_NAME" /> no usará las versiones de SSL/TLS anteriores a la versión especificada. Se ignorarán los valores que no se reconozcan.</translation>
@@ -1608,15 +1585,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si no se establece esta política, <ph name="PRODUCT_NAME" /> usará el directorio predeterminado (específico de cada plataforma).
 
       Ingresa a https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver una lista de las variables que se pueden usar.</translation>
-<translation id="3904459740090265495">Esta política controla el comportamiento de acceso en el navegador. Te permite especificar si el usuario puede acceder a <ph name="PRODUCT_NAME" /> con su cuenta y usar los servicios relacionados, como la "Sincronización de Chrome".
-
-      Si la política se establece como "Inhabilitar el acceso en el navegador", el usuario no podrá acceder a su cuenta en el navegador ni podrá usar los servicios basados en la cuenta. En este caso, las funciones al nivel del navegador (como la "Sincronización de Chrome") no se podrán usar ni estarán disponibles. Si el usuario accedió a su cuenta y la política se establece como "Inhabilitada", saldrá de su cuenta la próxima vez que ejecute Chrome, pero se conservarán sus datos de perfil locales (como los favoritos, las contraseñas, etc.). El usuario podrá acceder a servicios web de Google, como Gmail, y usarlos.
-
-      Si la política se establece como "Habilitar el acceso en el navegador", el usuario podrá acceder a su cuenta en el navegador. Además, ingresará automáticamente cuando acceda a servicios web de Google, como Gmail. Esta acción implica que el navegador guardará la información de cuenta del usuario. Sin embargo, no significa que la "Sincronización de Chrome" se activará de forma predeterminada; para usar esta función, el usuario debe habilitarla explícitamente. Para controlar la disponibilidad de la "Sincronización de Chrome", usa la política "SyncDisabled".
-
-      Si la política se establece como "Forzar el acceso en el navegador", el usuario verá un cuadro de diálogo para seleccionar una cuenta de acceso. Esta opción asegura que se apliquen las políticas asociadas a las cuentas administradas. De manera predeterminada, esta opción activa la "Sincronización de Chrome" para la cuenta, excepto si la sincronización se inhabilitó por parte del administrador del dominio o mediante la política "SyncDisabled". El valor predeterminado de BrowserGuestModeEnabled se establecerá como "false". Ten en cuenta que, después de habilitar esta política, se bloquearán los perfiles existentes sin asignación y no podrás acceder a ellos. Para obtener más información, consulta el artículo del Centro de ayuda: https://support.google.com/chrome/a/answer/7572556.
-
-      Si no se establece esta política, el usuario podrá decidir si desea habilitar el acceso en el navegador y usarlo según su criterio.</translation>
 <translation id="3911737181201537215">Si Android accede a una cuenta, esta política no tendrá efecto en esta acción.</translation>
 <translation id="391531815696899618">Permite inhabilitar la sincronización de Google Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" /> si se establece en true. En ese caso, no se subirán datos a Google Drive.
 
@@ -1699,12 +1667,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Cuando esta configuración no se establece o se establece como falsa, <ph name="PRODUCT_OS_NAME" /> busca actualizaciones de forma automática.
 
       Advertencia: Se recomienda mantener habilitadas las actualizaciones automáticas para que los usuarios reciban actualizaciones de software y correcciones de seguridad críticas. Desactivar las actualizaciones automáticas puede poner en riesgo a los usuarios.</translation>
-<translation id="4018000735882846261">Esta política le otorga permiso al Asistente de Google para escuchar la frase de activación de voz.
-
-      Si se habilita la política, el Asistente de Google escuchará la frase de activación de voz.
-      Si se inhabilita, el Asistente de Google no escuchará la frase de activación de voz.
-      Si no se establece, el Asistente de Google no escuchará la frase de activación de voz.
-      </translation>
 <translation id="4020682745012723568">Las apps de Android no pueden acceder a las cookies transferidas al perfil del usuario.</translation>
 <translation id="402759845255257575">No permitir que los sitios ejecuten JavaScript.</translation>
 <translation id="4027608872760987929">Habilitar el proveedor de búsqueda predeterminado</translation>
@@ -3231,11 +3193,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           A partir de <ph name="PRODUCT_NAME" /> 77, si ignorará esta política y se tratará como inhabilitada.</translation>
 <translation id="7126716959063786004">Permitir finalizar procesos en el Administrador de tareas</translation>
 <translation id="7127892035367404455">Reversión a la versión objetivo</translation>
-<translation id="7128918109610518786">Muestra la lista de identificadores de las aplicaciones que <ph name="PRODUCT_OS_NAME" /> muestra como aplicaciones fijas en la barra del menú de aplicaciones.
-
-      Si se configura esta política, se fijará el conjunto de aplicaciones y el usuario no podrá cambiarlo.
-
-      Si no se configura esta política, el usuario podrá cambiar la lista de aplicaciones fijas en el menú de aplicaciones.</translation>
 <translation id="713121532817834879">Esta política es una URL que redirecciona a un archivo XML en el mismo formato que la política <ph name="IEEM_SITELIST_POLICY" /> de Internet Explorer. De esta manera, se cargan reglas de un archivo XML sin la necesidad de compartir esas reglas con Internet Explorer.
 
       Las reglas de este archivo XML se aplican de la misma manera que <ph name="GREYLIST_POLICY_NAME" />, es decir, impiden que <ph name="PRODUCT_NAME" /> abra el navegador alternativo y que el navegador alternativo abra <ph name="PRODUCT_NAME" />.
@@ -3392,7 +3349,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se establece el valor "RemoveLRUIfDormant" en esta política, el proceso de limpieza automática seguirá eliminando usuarios que no hayan accedido durante al menos 3 meses, empezando por quienes hayan accedido por última vez hace más tiempo hasta que se libere espacio suficiente.
 
       Si esta política no se establece, la limpieza automática utilizará la estrategia integrada predeterminada, que actualmente es "RemoveLRUIfDormant".</translation>
-<translation id="7334274148831027933">Habilitar lupa con vista acoplada</translation>
 <translation id="7336785017449297672">Controla la configuración del reloj y la zona horaria.</translation>
 <translation id="7336878834592315572">Guardar las cookies durante la sesión</translation>
 <translation id="7339315111520512972">Forzar el código de red para que se ejecute en el proceso de navegación</translation>
@@ -3582,22 +3538,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Nota: Los valores permitidos para el campo <ph name="MINUTE_FIELD_NAME" /> en <ph name="CHARGE_START_TIME_FIELD_NAME" /> y <ph name="CHARGE_END_TIME_FIELD_NAME" /> son 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Permite configurar las funciones de accesibilidad de <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Esta política habilita el protocolo HTTP/0.9 en otros puertos además del puerto 80 para HTTP y el 443 para HTTPS.
-
-      De forma predeterminada, esta política está inhabilitada. Si se habilita, los usuarios quedan expuestos ante el problema de seguridad https://crbug.com/600352.
-
-      El objetivo de esta política es darle a las empresas una oportunidad para migrar servidores existentes con HTTP/0.9; en el futuro, se quitará.
-
-      Si la política no se establece, HTTP/0.9 se inhabilitará para los puertos no predeterminados.</translation>
-<translation id="7726421241038987229">
-      Esta configuración, SitePerProcess, se puede usar para impedir que los usuarios rechacen el comportamiento predeterminado del aislamiento de todos los sitios. Ten en cuenta que la política IsolateOrigins también puede ser útil para aislar los orígenes adicionales más precisos.
-      Si se habilita la política, los usuarios no podrán rechazar el comportamiento predeterminado en el que cada sitio ejecuta su propio proceso.
-      Si se inhabilita la política o no se configura, el usuario podrá rechazar el aislamiento de sitios
-      (p. ej., mediante la entrada para inhabilitar el aislamiento de sitios en chrome://flags).  Si se inhabilita la política o no se configura, no se desactivará el aislamiento de sitios.
-      En <ph name="PRODUCT_OS_NAME" />, se recomienda también establecer la política de dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> en el mismo valor. Si los valores que especifican las dos políticas no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor que especifica la política del usuario.
-
-      NOTA: Esta política no se aplica en Android. Para habilitar SitePerProcess en Android, usa la configuración de la política SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Permitir que los dispositivos usen un <ph name="PLUGIN_VM_NAME" /> en <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Habilita la autenticación de dos factores para los hosts de acceso remoto en lugar de un PIN especificado por el usuario.
 
@@ -3732,13 +3672,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8050080920415773384">Impresión nativa</translation>
 <translation id="8053580360728293758">Anula el modo predeterminado de impresión a color. Si el modo no está disponible, se ignorará esta política.</translation>
 <translation id="8059164285174960932">URL donde los clientes de acceso remoto deben obtener el token de autenticación</translation>
-<translation id="806280865577636339">Si esta política se configura como verdadera, las opciones de accesibilidad aparecerán siempre en el menú de la bandeja del sistema.
-
-          Si esta política se configura como falsa, las opciones de accesibilidad no aparecerán nunca en el menú de la bandeja del sistema.
-
-          Si configuras esta política, los usuarios no podrán modificarla ni anularla.
-
-          Si no configuras esta política, las opciones de accesibilidad no aparecerán en el menú de la bandeja del sistema, pero el usuario podrá modificar esto en la página de configuración.</translation>
 <translation id="806523868782250975">Configura una lista de favoritos administrados.
 
       La política consiste en una lista de favoritos, mientras que cada uno de ellos es un diccionario que contiene las claves "<ph name="NAME" />" y "<ph name="URL_LABEL" />" con el nombre y objetivo del favorito. Puede configurarse una subcarpeta al definir un favorito sin una clave "<ph name="URL_LABEL" />", pero con una clave "<ph name="CHILDREN" />" adicional que contenga una lista de favoritos, como se define anteriormente (algunos pueden ser carpetas). <ph name="PRODUCT_NAME" /> modifica las URL incompletas como si fueran enviadas a través del cuadro multifunción, p. ej., "<ph name="GOOGLE_COM" />" cambia a "<ph name="HTTPS_GOOGLE_COM" />".
@@ -4070,7 +4003,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           Nota: Los valores permitidos para el campo <ph name="MINUTE_FIELD_NAME" /> en <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> y <ph name="CHARGE_START_TIME_FIELD_NAME" /> son 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">Lista de complementos inhabilitados</translation>
 <translation id="8711086062295757690">Especifica la palabra clave, que es el acceso directo utilizado en el cuadro multifunción para activar la búsqueda de este proveedor. Esta política es opcional. Si no se configura, ninguna palabra clave activará el proveedor de búsqueda. Esta política solo se considera si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
-<translation id="8731693562790917685">La configuración del contenido permite especificar de qué manera se manejará el contenido de un tipo específico (por ejemplo, cookies, imágenes o JavaScript).</translation>
 <translation id="8733448613597049197">Habilita el informe extendido de la Navegación segura de <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
 
       El informe extendido envía cierta información del sistema y contenido de páginas a los servidores de Google para detectar apps y sitios peligrosos.
@@ -4239,9 +4171,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       El valor de la política debe especificarse en segundos.</translation>
 <translation id="9035964157729712237">Identificaciones de extensión para excluir de la lista negra</translation>
-<translation id="9038058011835642205">Especifica una lista de sitios web instalados de manera silenciosa, sin interacción del usuario y que este no puede desinstalar ni inhabilitar.
-
-      Cada elemento de la lista de la política es un objeto con un miembro obligatorio: "url" y dos miembros opcionales: "default_launch_container" y "create_desktop_shortcut". "url" debe ser la URL de la aplicación web que se va a instalar, "launch_container" debe ser "window" o "tab" para indicar cómo se abrirá la app una vez que se instale, y "create_desktop_shortcut" debe ser verdadero si desea crear un acceso directo de escritorio en Linux y Windows. Si se omite "default_launch_container", se abrirá la app en una pestaña de forma predeterminada. Más allá del valor de "default_launch_container", los usuarios podrán cambiar el contenedor donde se abrirá la app. Si se omite "create_desktop_shortcuts", no se crearán accesos directos de escritorio.</translation>
 <translation id="9038839118379817310">Habilitar Wi-Fi</translation>
 <translation id="9039822628127365650">Si se configura esta política, especificará el tiempo después del cual el usuario saldrá de su cuenta automáticamente. Se informa al usuario del tiempo restante mediante un cronómetro que aparece en la bandeja del sistema.
 

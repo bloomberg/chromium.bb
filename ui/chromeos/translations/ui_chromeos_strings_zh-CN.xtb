@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">音译(vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">幻灯片视图</translation>
 <translation id="1045157690796831147">音译(namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">日语输入法（适用于美式键盘）</translation>
 <translation id="1047956942837015229">正在删除<ph name="COUNT" />项内容…</translation>
 <translation id="1049926623896334335">Word 文档</translation>
 <translation id="1062407476771304334">替换</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">向右</translation>
 <translation id="1351692861129622852">正在导入 <ph name="FILE_COUNT" /> 个文件…</translation>
 <translation id="1352103415082130575">泰语键盘(Pattachote)</translation>
-<translation id="1358032944105037487">日语键盘</translation>
 <translation id="1358735829858566124">该文件或目录无法使用。</translation>
 <translation id="1363028406613469049">曲目</translation>
 <translation id="1378727793141957596">欢迎使用 Google 云端硬盘！</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824">已将 <ph name="FILE_COUNT" /> 张照片备份到 <ph name="BEGIN_LINK" />Google 云端硬盘<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">正在复制…</translation>
 <translation id="3475447146579922140">Google 电子表格</translation>
-<translation id="3494768541638400973">Google 日语输入法（日语键盘）</translation>
 <translation id="3495304270784461826"><ph name="COUNT" />个错误。</translation>
 <translation id="3519867315646775981">音译(shalom ← שלום)</translation>
 <translation id="3522708245912499433">葡萄牙语</translation>
 <translation id="3527085408025491307">文件夹</translation>
 <translation id="3549797760399244642">转到 drive.google.com...</translation>
 <translation id="357479282490346887">立陶宛语</translation>
+<translation id="3583509704582854624">字母数字输入法（适用于日语键盘）</translation>
 <translation id="3603385196401704894">加拿大法语</translation>
 <translation id="3606220979431771195">土耳其语 F</translation>
 <translation id="3609785682760573515">正在同步…</translation>
@@ -418,6 +418,7 @@
 <translation id="5892290200158927959">法语 BÉPO 键盘</translation>
 <translation id="5911887972742538906">安装 Linux 应用时出错。</translation>
 <translation id="5913638992615760742">复制操作失败，出现了意外的错误：<ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">日语输入法（适用于日语键盘）</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">授权 Linux 应用修改您 Google 云端硬盘中的文件。相关更改会同步到您的其他设备。</translation>
 <translation id="5982621672636444458">排序选项</translation>
@@ -496,7 +497,6 @@
     <ph name="LINE_BREAK1" />
     找到了 <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">倒栽葱蝴蝶</translation>
-<translation id="6937152069980083337">Google 日语输入法（美式键盘）</translation>
 <translation id="6939777852457331078">美式 Workman 键盘</translation>
 <translation id="696203921837389374">在移动数据网络中启用同步功能</translation>
 <translation id="6965382102122355670">确定</translation>

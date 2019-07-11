@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Transliteratie (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Diaweergave</translation>
 <translation id="1045157690796831147">Transliteratie (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Japanse invoer (voor Amerikaans toetsenbord)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> items verwijderen...</translation>
 <translation id="1049926623896334335">Word-document</translation>
 <translation id="1062407476771304334">Vervangen</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> bestanden importeren...</translation>
 <translation id="1352103415082130575">Thais toetsenbord (Pattachote)</translation>
-<translation id="1358032944105037487">Japans toetsenbord</translation>
 <translation id="1358735829858566124">Het bestand of de map is niet bruikbaar.</translation>
 <translation id="1363028406613469049">Track</translation>
 <translation id="1378727793141957596">Welkom bij Google Drive!</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824">Er is een back-up van <ph name="FILE_COUNT" /> foto's gemaakt in <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Kopiëren...</translation>
 <translation id="3475447146579922140">Google-spreadsheet</translation>
-<translation id="3494768541638400973">Japanse invoer van Google (voor Japans toetsenbord)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> fouten.</translation>
 <translation id="3519867315646775981">Transliteratie (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugees</translation>
 <translation id="3527085408025491307">Map</translation>
 <translation id="3549797760399244642">Ga naar drive.google.com...</translation>
 <translation id="357479282490346887">Litouws</translation>
+<translation id="3583509704582854624">Alfanumerieke invoer (voor Japans toetsenbord)</translation>
 <translation id="3603385196401704894">Canadees Frans</translation>
 <translation id="3606220979431771195">Turks-F</translation>
 <translation id="3609785682760573515">Synchroniseren...</translation>
@@ -424,6 +424,7 @@
 <translation id="5892290200158927959">Frans BÉPO-toetsenbord</translation>
 <translation id="5911887972742538906">Er is een fout opgetreden tijdens de installatie van je Linux-app.</translation>
 <translation id="5913638992615760742">Kopiëren mislukt. Onverwachte fout: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Japanse invoer (voor Japans toetsenbord)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux-apps toestaan om bestanden in je Google Drive te wijzigen. Wijzigingen worden gesynchroniseerd met je andere apparaten.</translation>
 <translation id="5982621672636444458">Sorteeropties</translation>
@@ -502,7 +503,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> gevonden</translation>
 <translation id="6935521024859866267">Ondersteboven</translation>
-<translation id="6937152069980083337">Japanse invoer van Google (voor Amerikaans toetsenbord)</translation>
 <translation id="6939777852457331078">Amerikaans Workman-toetsenbord</translation>
 <translation id="696203921837389374">Synchroniseren via mobiele data inschakelen</translation>
 <translation id="6965382102122355670">OK</translation>

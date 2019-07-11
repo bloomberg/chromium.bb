@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Μεταγραφή (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Προβολή διαφάνειας</translation>
 <translation id="1045157690796831147">Μεταγραφή (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Εισαγωγή Ιαπωνικών (για πληκτρολόγιο ΗΠΑ)</translation>
 <translation id="1047956942837015229">Διαγραφή <ph name="COUNT" /> στοιχείων…</translation>
 <translation id="1049926623896334335">Έγγραφο του Word</translation>
 <translation id="1062407476771304334">Αντικατάσταση</translation>
@@ -37,7 +38,6 @@
 <translation id="1346748346194534595">Δεξιά</translation>
 <translation id="1351692861129622852">Εισαγωγή <ph name="FILE_COUNT" /> αρχείων…</translation>
 <translation id="1352103415082130575">Πληκτρολόγιο Ταϊλανδικών (Pattachote)</translation>
-<translation id="1358032944105037487">Πληκτρολόγιο με ιαπωνικούς χαρακτήρες</translation>
 <translation id="1358735829858566124">Το αρχείο ή ο κατάλογος δεν μπορούν να χρησιμοποιηθούν.</translation>
 <translation id="1363028406613469049">Κομμάτι</translation>
 <translation id="1378727793141957596">Καλώς ήρθατε στο Google Drive!</translation>
@@ -211,7 +211,6 @@
 <translation id="3468522857997926824">Δημιουργήθηκαν αντίγραφα ασφαλείας για <ph name="FILE_COUNT" /> φωτογραφίες στο <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Αντιγραφή…</translation>
 <translation id="3475447146579922140">Υπολογιστικό φύλλο Google</translation>
-<translation id="3494768541638400973">Εισαγωγή Ιαπωνικών Google (για πληκτρολόγιο Ιαπωνικών)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> σφάλματα.</translation>
 <translation id="3519867315646775981">Μεταγραφή (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Πορτογαλικά</translation>
@@ -219,6 +218,7 @@
 <translation id="3549797760399244642">Μετάβαση στη διεύθυνση drive.google.com…</translation>
 <translation id="357479282490346887">Λιθουανικά
 </translation>
+<translation id="3583509704582854624">Αλφαριθμητική εισαγωγή (για πληκτρολόγιο Ιαπωνικών)</translation>
 <translation id="3603385196401704894">Γαλλικά Καναδά</translation>
 <translation id="3606220979431771195">Τουρκικά-F</translation>
 <translation id="3609785682760573515">Συγχρονισμός…</translation>
@@ -436,6 +436,7 @@
 <translation id="5892290200158927959">Πληκτρολόγιο BÉPO Γαλλικών</translation>
 <translation id="5911887972742538906">Παρουσιάστηκε σφάλμα κατά την εγκατάσταση της εφαρμογής σας Linux.</translation>
 <translation id="5913638992615760742">Αποτυχία λειτουργίας αντιγραφής, μη αναμενόμενο σφάλμα: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Εισαγωγή Ιαπωνικών (για πληκτρολόγιο Ιαπωνικών)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Δώστε στις εφαρμογές Linux την άδεια να τροποποιούν αρχεία στο Google Drive σας. Οι αλλαγές θα συγχρονιστούν με τις άλλες συσκευές σας.</translation>
 <translation id="5982621672636444458">Επιλογές ταξινόμησης</translation>
@@ -515,7 +516,6 @@
     <ph name="LINE_BREAK1" />
     Βρέθηκαν <ph name="FILE_COUNT" /> αρχεία</translation>
 <translation id="6935521024859866267">Ανάποδα</translation>
-<translation id="6937152069980083337">Εισαγωγή Ιαπωνικών Google (για πληκτρολόγιο ΗΠΑ)</translation>
 <translation id="6939777852457331078">Πληκτρολόγιο ΗΠΑ Workman</translation>
 <translation id="696203921837389374">Ενεργοποίηση συγχρονισμού μέσω δεδομένων κινητής τηλεφωνίας</translation>
 <translation id="6965382102122355670">OK</translation>

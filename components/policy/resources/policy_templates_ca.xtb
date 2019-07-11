@@ -132,15 +132,6 @@
       Si la política s'estableix com a falsa, no s'informarà de l'estat del botó per a desenvolupadors.</translation>
 <translation id="1160479894929412407">Permet el protocol QUIC</translation>
 <translation id="1160939557934457296">Desactivació de l'accés des de la pàgina d'advertiment de Navegació segura</translation>
-<translation id="1171342272070128466">Activa la funció d'accessibilitat de la lupa acoblada.
-
-          Si aquesta política s'estableix en "true", la lupa acoblada sempre estarà activada.
-
-          Si aquesta política s'estableix en "false", la lupa acoblada sempre estarà desactivada.
-
-          Si estableixes aquesta política, els usuaris no la podran canviar ni substituir.
-
-          Si aquesta política no s'estableix, la lupa acoblada estarà desactivada des d'un principi, però l'usuari la podrà activar en qualsevol moment.</translation>
 <translation id="1189817621108632689">Permet definir una llista de patrons d'URL que especifiquin llocs web que no poden mostrar imatges.
 
           Si aquesta política es deixa sense establir, s'utilitzarà per a tots els llocs web el valor global predeterminat indicat a la política DefaultImagesSetting (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.
@@ -274,7 +265,6 @@
 <translation id="1474273443907024088">Desactiva False Start de TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Activa el bloqueig d'injecció de programari de tercers</translation>
-<translation id="1504431521196476721">Testimoni remot</translation>
 <translation id="1507382822467487898">
           Configura quina adreça MAC (control d'accés als recursos multimèdia) s'utilitzarà quan es connecta una base al dispositiu.
 
@@ -396,12 +386,6 @@
 
       La política s'ha de definir en un URL del qual <ph name="PRODUCT_OS_NAME" /> pugui baixar els Termes i condicions, que han de trobar-se com a text sense format proporcionat com a text/sense format de tipus MIME. No es permet l'etiquetatge.</translation>
 <translation id="1750315445671978749">Bloqueja totes les baixades</translation>
-<translation id="1762072363876276024">
-      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que s'aplica a la sessió de l'usuari. Es recomana que les dues polítiques tinguin el mateix valor. Si els valors no coincideixen, es pot produir un retard en entrar en una sessió d'usuari mentre s'apliqui el valor especificat per la política de l'usuari.
-      Aquesta configuració, DeviceLoginScreenSitePerProcess, es pot utilitzar per impedir que els usuaris desactivin el comportament predeterminat de l'aïllament de tots els llocs web. Tingues en compte que la política DeviceLoginScreenIsolateOrigins també pot ser útil per aïllar altres orígens amb més precisió.
-      Si la política s'activa, els usuaris no podran desactivar el comportament predeterminat quan cada lloc web s'executi en el seu propi procés.
-      Si la política no es configura o es desactiva, l'usuari podrà canviar aquesta configuració (per exemple, utilitzant l'entrada "Desactiva l'aïllament de lloc web" a chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Activa les recomanacions d'aplicacions quan el quadre de cerca no mostri cap resultat.</translation>
 <translation id="17719159826324007">
       Si aquesta política s'estableix en ArcSession, obliga el dispositiu a reiniciar-se quan l'usuari tanqui la sessió si Android s'ha iniciat.
@@ -1221,13 +1205,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Si estableixes aquesta política, els usuaris no la podran canviar ni substituir.
 
           Si aquesta política es deixa sense establir, el canvi d'alimentació en pics d'ús estarà desactivat d'entrada i l'usuari no el podrà activar.</translation>
-<translation id="3388153794103186066">Permet definir una llista d'URL que especifiquin quins llocs web obtindran permís automàticament per accedir a un dispositiu USB amb els identificadors de proveïdor i producte que s'indiquin. Perquè la política sigui vàlida, tots els elements de la llista han d'incloure tant dispositius com URL. A més, cada dispositiu pot incloure un camp per a l'identificador de proveïdor i per al de producte. Els identificadors omesos es tracten com un comodí, amb excepció dels identificadors de producte, que no es poden especificar si no hi ha un identificador de proveïdor. En cas contrari, la política no serà vàlida i s'ignorarà.
-
-        El model de permisos per a USB utilitza l'URL del lloc web que sol·licita permís ("URL sol·licitant") i l'URL del lloc web de marcs de nivell superior ("URL d'inserció") per concedir permís a l'URL sol·licitant per accedir al dispositiu USB. Si el lloc web que sol·licita permís es carrega en un iframe, l'URL sol·licitant pot ser diferent de l'URL d'inserció. Per tant, el camp urls pot incloure fins a dues cadenes d'URL delimitades per una coma a fi d'especificar l'URL sol·licitant i el d'inserció, respectivament. Si només se n'especifica un, l'accés als dispositius USB corresponents es concedeix quan l'URL del lloc web sol·licitant coincideixi amb aquest URL independentment de l'estat d'inserció. Els URL del camp urls han de ser vàlids. Si no, la política s'ignorarà.
-
-        Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat general per a tots els llocs web, ja sigui de la política DefaultWebUsbGuardSetting si està establerta o de la configuració personal de l'usuari si no ho està.
-
-        Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbBlockedForUrls. Si hi ha un conflicte, aquesta política té prioritat sobre WebUsbBlockedForUrls i WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Si aquesta política no es configura, <ph name="PRODUCT_NAME" /> utilitzarà TLS 1.0 com a versió mínima predeterminada.
 
       També es pot definir en un dels valors següents: "tls1", "tls1.1" o "tls1.2". Quan s'hagi definit, <ph name="PRODUCT_NAME" /> no utilitzarà versions SSL/TLS inferiors a la versió especificada. Els valors que no es reconeguin s'ignoraran.</translation>
@@ -1471,15 +1448,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si no es defineix aquesta política, <ph name="PRODUCT_NAME" /> utilitzarà el directori predeterminat habitual (específic de la plataforma).
 
       Consulta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden fer servir.</translation>
-<translation id="3904459740090265495">Aquesta política controla el comportament de l'inici de sessió al navegador. Et permet especificar si l'usuari pot iniciar la sessió a <ph name="PRODUCT_NAME" /> amb el seu compte i utilitzar serveis relacionats amb el compte, com ara la Sincronització de Chrome.
-
-      Si la política s'estableix en "Desactiva l'inici de sessió al navegador", l'usuari no podrà iniciar la sessió al navegador ni utilitzar serveis basats en el compte. En aquest cas, les funcions del navegador, com ara la Sincronització de Chrome, no es podran utilitzar i no estaran disponibles. Si l'usuari ha iniciat la sessió i la política s'ha establert en "Desactivada", es tancarà la sessió de l'usuari la propera vegada que executi Chrome, però es conservaran les dades del perfil local, com ara els marcadors, les contrasenyes, etc. L'usuari podrà continuar iniciant la sessió i utilitzant serveis web de Google com ara Gmail.
-
-      Si la política s'estableix en "Activa l'inici de sessió al navegador", l'usuari podrà iniciar la sessió al navegador i la seva sessió s'hi iniciarà automàticament quan la tingui iniciada en serveis web de Google com ara Gmail. Quan s'inicia la sessió al navegador, la informació del compte de l'usuari s'hi manté. Tanmateix, la Sincronització de Chrome no s'activarà de manera predeterminada; si l'usuari vol utilitzar aquesta funció, l'haurà d'activar per separat. En activar aquesta política, s'impedeix que l'usuari desactivi l'opció de configuració que permet l'inici de sessió al navegador. Per controlar la disponibilitat de la Sincronització de Chrome, fes servir la política "SyncDisabled".
-
-      Si la política s'estableix en "Força l'inici de sessió al navegador", es mostrarà a l'usuari un quadre de diàleg per seleccionar un compte. L'usuari n'haurà de triar un i iniciar-hi la sessió per fer servir el navegador. D'aquesta manera, es garanteix que, als comptes gestionats, s'hi apliquin i es compleixin les polítiques associades. De manera predeterminada, s'activa la Sincronització de Chrome al compte, excepte en el cas que l'administrador del domini hagi desactivat la sincronització o s'hagi desactivat amb la política "SyncDisabled". El valor predeterminat de BrowserGuestModeEnabled s'establirà en "false". Tingues en compte que, després d'activar aquesta política, els perfils en què no s'hagi iniciat la sessió es bloquejaran i no s'hi podrà accedir. Per obtenir més informació, consulta l'article següent del Centre d'ajuda: https://support.google.com/chrome/a/answer/7572556.
-
-      Si aquesta política no s'estableix, l'usuari pot decidir si vol activar l'opció d'inici de sessió al navegador i utilitzar-lo com li sembli més adequat.</translation>
 <translation id="3911737181201537215">Aquesta política no té cap efecte als registres que fa Android.</translation>
 <translation id="391531815696899618">Quan aquesta política s'estableix en True, desactiva la sincronització de Google Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" />. En aquest cas, no es pengen dades a Google Drive.
 
@@ -1552,12 +1520,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Quan aquesta opció de configuració no es configura o s'estableix en "false", els dispositius <ph name="PRODUCT_OS_NAME" /> cerquen actualitzacions automàticament.
 
       Advertiment: et recomanem mantenir activades les actualitzacions automàtiques perquè els usuaris rebin actualitzacions de programari i correccions crítiques de seguretat. En definitiva, si es desactiven les actualitzacions automàtiques, es pot posar els usuaris en perill.</translation>
-<translation id="4018000735882846261">Aquesta política dona permís a l'Assistent de Google perquè escolti la frase d'activació per veu.
-
-      Si la política s'activa, l'Assistent de Google escoltarà la frase d'activació per veu.
-      Si la política es desactiva, l'Assistent de Google no escoltarà la frase d'activació per veu.
-      Si la política no s'estableix, l'Assistent de Google no escoltarà la frase d'activació per veu.
-      </translation>
 <translation id="4020682745012723568">Les aplicacions per a Android no poden accedir a les galetes transferides al perfil de l'usuari.</translation>
 <translation id="402759845255257575">No permetis que cap lloc web executi JavaScript</translation>
 <translation id="4027608872760987929">Activa el proveïdor de cerca predeterminat</translation>
@@ -3100,7 +3062,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política es defineix com a RemoveLRUIfDormant, la neteja automàtica continuarà suprimint usuaris que no hagin iniciat la sessió com a mínim durant els darrers tres mesos, començant pels que faci més temps que han iniciat la sessió, fins que hi hagi prou espai lliure.
 
       Si aquesta política no es defineix, la neteja automàtica utilitza l'estratègia integrada predeterminada. Actualment, és l'estratègia RemoveLRUIfDormant.</translation>
-<translation id="7334274148831027933">Activa la lupa acoblada</translation>
 <translation id="7336785017449297672">Controla la configuració del rellotge i de la zona horària.</translation>
 <translation id="7336878834592315572">Conserva les galetes mentre duri la sessió</translation>
 <translation id="7339315111520512972">Obliga a executar el codi de xarxa cal procés del navegador</translation>
@@ -3278,21 +3239,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Nota: els valors que s'admeten al camp <ph name="MINUTE_FIELD_NAME" /> corresponent a <ph name="CHARGE_START_TIME_FIELD_NAME" /> i a <ph name="CHARGE_END_TIME_FIELD_NAME" /> són 0, 15, 30 i 45.</translation>
 <translation id="7717938661004793600">Permet configurar les funcions d'accessibilitat de <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Aquesta política activa la compatibilitat amb HTTP/0.9 als ports que no són 80 per a HTTP ni 443 per a HTTPS.
-
-      Està desactivada de manera predeterminada i, si s'activa, els usuaris es poden trobar amb el problema de seguretat https://crbug.com/600352.
-
-      Aquesta política està dissenyada perquè les empreses puguin migrar els servidors que ja tenen a HTTP/0.9. Se suprimirà en el futur.
-
-      Si no s'estableix cap valor, es desactivarà la compatibilitat amb HTTP/0.9 en tots els ports no predeterminats.</translation>
-<translation id="7726421241038987229">
-      Aquesta configuració, SitePerProcess, es pot utilitzar per impedir que els usuaris desactivin el comportament predeterminat de l'aïllament de tots els llocs web. Tingues en compte que la política IsolateOrigins també pot ser útil per aïllar altres orígens amb més precisió.
-      Si la política s'activa, els usuaris no podran desactivar el comportament predeterminat quan cada lloc web s'executi en el seu propi procés.
-      Si la política no es configura o es desactiva, l'usuari podrà desactivar l'aïllament de lloc web (per exemple, utilitzant l'entrada "Desactiva l'aïllament de lloc web" a chrome://flags).  Si la política es desactiva o no es configura, l'aïllament de lloc web no es desactivarà.
-      A <ph name="PRODUCT_OS_NAME" />, també es recomana establir la política <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> del dispositiu en el mateix valor. Si els valors especificats per les dues polítiques no coincideixen, es pot produir un retard en entrar en una sessió d'usuari mentre s'apliqui el valor especificat per la política de l'usuari.
-
-      NOTA: aquesta política no s'aplica a Android. Per activar SitePerProcess a Android, fes servir la configuració de la política SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Permet que els dispositius utilitzin un connector <ph name="PLUGIN_VM_NAME" /> a <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Activa l'autenticació de dos factors per als amfitrions d'accés remot en lloc d'un PIN especificat per l'usuari.
 
@@ -3833,9 +3779,6 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="8976531594979650914">Utilitza la impressora predeterminada del sistema com a predeterminada</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
-<translation id="9038058011835642205">Especifica una llista de llocs web que s'instal·len silenciosament, sense la interacció de l'usuari, i que l'usuari no pot desinstal·lar ni desactivar.
-
-      Cada element de la política inclòs a la llista és un objecte amb un membre obligatori ("url") i dos membres opcionals ("default_launch_container" i "create_desktop_shortcut"). "url" ha de ser l'URL de l'aplicació web que cal instal·lar, "launch_container" ha de ser "window" (finestra) o "tab" (pestanya) per indicar com s'obrirà l'aplicació web un cop instal·lada i "create_desktop_shortcut" ha de ser "true" si cal crear una drecera de l'escriptori a Linux i Windows. Si "default_launch_container" s'omet, l'aplicació s'obrirà en una pestanya de manera predeterminada. Independentment del valor de "default_launch_container", els usuaris poden canviar el contenidor en què s'obrirà l'aplicació. Si "create_desktop_shortcuts" s'omet, no es crearà cap drecera de l'escriptori.</translation>
 <translation id="9038839118379817310">Activa la Wi-Fi</translation>
 <translation id="9050853837490399534">Aquesta política controla si el dispositiu s'ha d'actualitzar o no a una compilació de correcció ràpida.
 

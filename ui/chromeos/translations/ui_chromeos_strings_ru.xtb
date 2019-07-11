@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Транслитерация (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Просмотр в виде слайдов</translation>
 <translation id="1045157690796831147">Транслитерация (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Ввод на японском языке (для американской раскладки)</translation>
 <translation id="1047956942837015229">Удаление элементов (<ph name="COUNT" />)…</translation>
 <translation id="1049926623896334335">Документ Word</translation>
 <translation id="1062407476771304334">Заменить</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">Справа</translation>
 <translation id="1351692861129622852">Импорт файлов (<ph name="FILE_COUNT" />)...</translation>
 <translation id="1352103415082130575">Тайская раскладка (Pattachote)</translation>
-<translation id="1358032944105037487">Японская раскладка</translation>
 <translation id="1358735829858566124">Этот файл или каталог непригоден для использования.</translation>
 <translation id="1363028406613469049">Трек</translation>
 <translation id="1378727793141957596">Добро пожаловать в Google Диск!</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824">На <ph name="BEGIN_LINK" />Google Диске<ph name="END_LINK" /> сохранено <ph name="FILE_COUNT" /> фото</translation>
 <translation id="3470502288861289375">Копирование…</translation>
 <translation id="3475447146579922140">Электронная таблица Google</translation>
-<translation id="3494768541638400973">японская раскладка Google (для японской клавиатуры)</translation>
 <translation id="3495304270784461826">Ошибок: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Транслитерация (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Португальский</translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3549797760399244642">Перейти на drive.google.com…</translation>
 <translation id="357479282490346887">Литовский</translation>
+<translation id="3583509704582854624">Ввод букв и цифр (для японской раскладки)</translation>
 <translation id="3603385196401704894">Канадская (французская)</translation>
 <translation id="3606220979431771195">Турецкая раскладка</translation>
 <translation id="3609785682760573515">Cинхронизация…</translation>
@@ -423,6 +423,7 @@
 <translation id="5892290200158927959">Французская раскладка (BÉPO)</translation>
 <translation id="5911887972742538906">При установке приложения для Linux произошла ошибка.</translation>
 <translation id="5913638992615760742">Произошла непредвиденная ошибка. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Ввод на японском языке (для японской раскладки)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Приложения Linux смогут изменять файлы Google Диска. Изменения вступят в силу на всех ваших устройствах.</translation>
 <translation id="5982621672636444458">Сортировать</translation>
@@ -501,7 +502,6 @@
     <ph name="LINE_BREAK1" />
     Обнаружены файлы (<ph name="FILE_COUNT" />).</translation>
 <translation id="6935521024859866267">Вверх ногами</translation>
-<translation id="6937152069980083337">японская раскладка Google (для клавиатуры США)</translation>
 <translation id="6939777852457331078">Раскладка США (Workman)</translation>
 <translation id="696203921837389374">Синхронизировать по мобильной сети</translation>
 <translation id="6965382102122355670">ОК</translation>

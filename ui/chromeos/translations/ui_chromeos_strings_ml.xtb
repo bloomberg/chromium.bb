@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">ലിപ്യന്തരണം (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">സ്ലൈഡ് കാഴ്‌ച</translation>
 <translation id="1045157690796831147">ലിപ്യന്തരണം (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">ജാപ്പനീസ് ഇൻപുട്ട് (യുഎസ് കീബോർഡിന്)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> ഇനങ്ങൾ ഇല്ലാതാക്കുന്നു...</translation>
 <translation id="1049926623896334335">Word പ്രമാണം</translation>
 <translation id="1062407476771304334">മാറ്റിസ്ഥാപിക്കുക</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">ശരി</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> ഫയലുകൾ ഇമ്പോർട്ടുചെയ്യുന്നു...</translation>
 <translation id="1352103415082130575">തായ് കീബോർഡ് (പറ്റച്ചോട്ടെ)</translation>
-<translation id="1358032944105037487">ജാപ്പനീസ്‌ കീബോര്‍ഡ്</translation>
 <translation id="1358735829858566124">ഫയലോ ഡയറക്‌റ്ററിയോ ഉപയോഗക്ഷമമല്ല.</translation>
 <translation id="1363028406613469049">ട്രാക്കുചെയ്യുക</translation>
 <translation id="1378727793141957596">Google ഡ്രൈവിലേക്ക് സ്വാഗതം!</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> ഫോട്ടോകൾ <ph name="BEGIN_LINK" />Google ഡ്രൈവിലേക്ക്<ph name="END_LINK" /> ബാക്കപ്പുചെയ്‌തു</translation>
 <translation id="3470502288861289375">പകർത്തുന്നു...</translation>
 <translation id="3475447146579922140">Google സ്‌പ്രെഡ്‌ഷീറ്റ്</translation>
-<translation id="3494768541638400973">Google ജാപ്പനീസ് ഇന്‍‌പുട്ട് (ജാപ്പനീസ് കീബോര്‍‌ഡിന് മാത്രം)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> പിശകുകൾ.</translation>
 <translation id="3519867315646775981">ലിപ്യന്തരണം (shalom ← שלום)</translation>
 <translation id="3522708245912499433">പോര്‍ച്ചുഗീസ്</translation>
 <translation id="3527085408025491307">ഫോൾഡർ</translation>
 <translation id="3549797760399244642">drive.google.com-ലേക്ക് പോകുക...</translation>
 <translation id="357479282490346887">ലിത്വാനിയന്‍</translation>
+<translation id="3583509704582854624">അക്ക - അക്ഷര പ്രതീകങ്ങളുടെ ഇൻപുട്ട് (ജാപ്പനീസ് കീബോർഡിന്)</translation>
 <translation id="3603385196401704894">കനേഡിയന്‍ ഫ്രഞ്ച്</translation>
 <translation id="3606220979431771195">ടർക്കിഷ്-എഫ്</translation>
 <translation id="3609785682760573515">സമന്വയിപ്പിക്കുന്നു...</translation>
@@ -423,6 +423,7 @@
 <translation id="5892290200158927959">ഫ്രഞ്ച് BÉPO കീബോർഡ്</translation>
 <translation id="5911887972742538906">നിങ്ങളുടെ Linux അപ്ലിക്കേഷൻ ഇൻസ്‌റ്റാൾ ചെയ്യുന്ന സമയത്ത് ഒരു പിശക് സംഭവിച്ചു.</translation>
 <translation id="5913638992615760742">അപ്രതീക്ഷിത പിശക് കാരണം പകർത്താനായില്ല: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">ജാപ്പനീസ് ഇൻപുട്ട് (ജാപ്പനീസ് കീബോർഡിന്)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">നിങ്ങളുടെ Google ഡ്രൈവിലെ ഫയലുകൾ പരിഷ്‌ക്കരിക്കാൻ Linux ആപ്പുകൾക്ക് അനുമതി നൽകുക. മാറ്റങ്ങൾ, നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിലേക്ക് സമന്വയിപ്പിക്കും.</translation>
 <translation id="5982621672636444458">അടുക്കൽ ഓപ്‌ഷനുകൾ</translation>
@@ -501,7 +502,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> കണ്ടെത്തി</translation>
 <translation id="6935521024859866267">അപ്‌സൈഡ് ഡൗൺ</translation>
-<translation id="6937152069980083337">Google ജാപ്പനീസ് ഇന്‍‌പുട്ട് (യു‌എസ് കീബോര്‍‌ഡിന് മാത്രം)</translation>
 <translation id="6939777852457331078">യുഎസ് വർക്ക്‌മാൻ കീബോർഡ്</translation>
 <translation id="696203921837389374">മൊബൈൽ ഡാറ്റയിലൂടെയുള്ള സമന്വയം പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="6965382102122355670">ശരി</translation>

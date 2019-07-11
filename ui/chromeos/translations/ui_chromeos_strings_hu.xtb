@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Átírás (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Dia nézet</translation>
 <translation id="1045157690796831147">Átírás (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Japán bevitel (amerikai billentyűzethez)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> elem törlése...</translation>
 <translation id="1049926623896334335">Word-dokumentum</translation>
 <translation id="1062407476771304334">Csere</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">Jobbra</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> fájl importálása folyamatban…</translation>
 <translation id="1352103415082130575">Thai billentyűzet (Pattachote)</translation>
-<translation id="1358032944105037487">Japán billentyűzet</translation>
 <translation id="1358735829858566124">A fájl vagy könyvtár nem használható.</translation>
 <translation id="1363028406613469049">Szám</translation>
 <translation id="1378727793141957596">Üdvözli a Google Drive!</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> fotó biztonsági mentése végrehajtva a <ph name="BEGIN_LINK" />Google Drive-on<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Másolás...</translation>
 <translation id="3475447146579922140">Google-táblázat</translation>
-<translation id="3494768541638400973">Google japán beviteli mód (japán billentyűzetre)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> hiba.</translation>
 <translation id="3519867315646775981">Átírás (shalom ← שלום)</translation>
 <translation id="3522708245912499433">portugál</translation>
 <translation id="3527085408025491307">Mappa</translation>
 <translation id="3549797760399244642">Ugrás ide: drive.google.com...</translation>
 <translation id="357479282490346887">litván</translation>
+<translation id="3583509704582854624">Alfanumerikus bevitel (japán billentyűzethez)</translation>
 <translation id="3603385196401704894">kanadai francia</translation>
 <translation id="3606220979431771195">Török F</translation>
 <translation id="3609785682760573515">Szinkronizálás...</translation>
@@ -423,6 +423,7 @@
 <translation id="5892290200158927959">Francia BÉPO-billentyűzet</translation>
 <translation id="5911887972742538906">Hiba történt a Linux-alkalmazás telepítése során.</translation>
 <translation id="5913638992615760742">A másolási művelet nem várt hiba miatt nem sikerült: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Japán bevitel (japán billentyűzethez)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">A Linux-alkalmazások engedélyt kapnak arra, hogy módosítsák az Ön fájljait a Google Drive-fiókjában. A változtatások szinkronizálása a többi eszközön is megtörténik.</translation>
 <translation id="5982621672636444458">Rendezési beállítások</translation>
@@ -501,7 +502,6 @@
     <ph name="LINE_BREAK1" />
     A következőket találtuk: <ph name="FILE_COUNT" /></translation>
 <translation id="6935521024859866267">Fejjel lefelé</translation>
-<translation id="6937152069980083337">Google japán beviteli mód (US billentyűzetre)</translation>
 <translation id="6939777852457331078">USA „Workman” billentyűzet</translation>
 <translation id="696203921837389374">Szinkronizálás engedélyezése mobiladat-kapcsolaton</translation>
 <translation id="6965382102122355670">OK</translation>

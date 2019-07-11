@@ -144,15 +144,6 @@
       If the policy is set to false, the state of the dev switch will not be reported.</translation>
 <translation id="1160479894929412407">Allow QUIC protocol</translation>
 <translation id="1160939557934457296">Disable proceeding from the Safe Browsing warning page</translation>
-<translation id="1171342272070128466">Enable the docked magnifier accessibility feature.
-
-          If this policy is set to true, the docked magnifier will always be enabled.
-
-          If this policy is set to false, the docked magnifier will always be disabled.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, the docked magnifier is disabled initially but can be enabled by the user at any time.</translation>
 <translation id="1189817621108632689">Allows you to set a list of URL patterns that specify sites which are not allowed to display images.
 
           If this policy is left not set, the global default value will be used for all sites, either from the 'DefaultImagesSetting' policy if it is set, or from the user's personal configuration. 
@@ -327,7 +318,6 @@
 <translation id="1474273443907024088">Disable TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Enable third-party software injection blocking</translation>
-<translation id="1504431521196476721">Remote Attestation</translation>
 <translation id="1507382822467487898">
           Configures which MAC (media access control) address will be used when a dock is connected to the device.
 
@@ -458,12 +448,6 @@
 
       The policy should be set to a URL from which <ph name="PRODUCT_OS_NAME" /> can download the Terms of Service. The Terms of Service must be plain text, served as MIME type text/plain. No markup is allowed.</translation>
 <translation id="1750315445671978749">Block all downloads</translation>
-<translation id="1762072363876276024">
-      This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME" /> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-      This setting, DeviceLoginScreenSitePerProcess, may be used to disallow users from opting out of the default behaviour of isolating all sites. Note that the DeviceLoginScreenIsolateOrigins policy may also be useful for isolating additional, finer-grained origins.
-      If the policy is enabled, users will be unable to opt out of the default behaviour where each site runs in its own process.
-      If the policy is not configured or disabled, the user will be able to change this setting (e.g. using 'Disable site isolation' entry in chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Enable App Recommendations in Zero State of Search Box</translation>
 <translation id="17719159826324007">
       This policy, when set to ArcSession, forces the device to reboot when a user signs out if Android has started.
@@ -1366,13 +1350,6 @@
           If you set this policy, users cannot change or override it.
 
           If this policy is left unset, power peak shift is disabled initially and cannot be enabled by the user.</translation>
-<translation id="3388153794103186066">Allows you to set a list of URLs that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and URLs in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid and will be ignored.
-
-        The USB permission model uses the URL of the requesting site ('requesting URL') and the URL of the top-level frame site ('embedding URL') to grant permission to the requesting URL to access the USB device. The requesting URL may be different from the embedding URL when the requesting site is loaded in an iframe. Therefore, the 'urls' field can contain up to two URL strings delimited by a comma to specify the requesting and embedding URL respectively. If only one URL is specified, then access to the corresponding USB devices will be granted when the requesting site's URL matches this URL regardless of embedding status. The URLs in 'urls' must be valid URLs, otherwise the policy will be ignored.
-
-        If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
-
-        URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">If this policy is not configured then <ph name="PRODUCT_NAME" /> uses a default minimum version which is TLS 1.0.
 
       Otherwise it may be set to one of the following values: 'tls1', 'tls1.1' or 'tls1.2'. When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions less than the specified version. An unrecognised value will be ignored.</translation>
@@ -1646,15 +1623,6 @@
       If you do not set this policy, <ph name="PRODUCT_NAME" /> will use its usual default directory (platform-specific).
 
       See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.</translation>
-<translation id="3904459740090265495">This policy controls the sign-in behaviour of the browser. It allows you to specify if the user can sign in to <ph name="PRODUCT_NAME" /> with their account and use account-related services such as Chrome Sync.
-
-      If the policy is set to 'Disable browser sign-in', the user cannot sign in to the browser and use account-based services. In this case browser-level features such as Chrome Sync cannot be used and will be unavailable. If the user was signed in and the policy is set 'Disabled', they will be signed out the next time that they run Chrome but their local profile data such as bookmarks, passwords, etc. will stay preserved. The user will still be able to sign in to and use Google web services such as Gmail.
-
-      If the policy is set to 'Enable browser sign-in', the user is allowed to sign in to the browser and is automatically signed in to the browser when signed in to Google web services such as Gmail. Being signed in to the browser means that the user's account information will be kept by the browser. However, it does not mean that Chrome Sync will be turned on per default; the user must separately opt in to use this feature. Enabling this policy will prevent the user from turning off the setting that allows browser sign-in. To control the availability of Chrome Sync, use the 'SyncDisabled' policy.
-
-      If the policy is set to 'Force browser sign-in', the user is presented with an account selection dialogue and has to choose and sign in to an account to use the browser. This ensures that for managed accounts the policies associated with the account are applied and enforced. By default this turns on Chrome Sync for the account, except for the case when sync was disabled by the domain admin or via the 'SyncDisabled' policy. The default value of BrowserGuestModeEnabled will be set to false. Note: Existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help centre article: https://support.google.com/chrome/a/answer/7572556.
-
-      If this policy is not set then the user can decide if they want to enable the browser sign-in option and use it as they see fit.</translation>
 <translation id="3911737181201537215">This policy has no effect on the logging done by Android.</translation>
 <translation id="391531815696899618">Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME" /> Files app when set to True. In that case, no data is uploaded to Google Drive.
 
@@ -1736,12 +1704,6 @@
       <ph name="PRODUCT_OS_NAME" /> devices automatically check for updates when this setting is not configured or set to False.
 
       Warning: It is recommended to keep auto-updates enabled so that users receive software updates and critical security fixes. Turning off auto-updates might leave users at risk.</translation>
-<translation id="4018000735882846261">This policy gives Google Assistant permission to listen for the voice activation phrase.
-
-      If the policy is enabled, Google Assistant would listen for the voice activation phrase.
-      If the policy is disabled, Google Assistant would not listen for the voice activation phrase.
-      If the policy is not set, Google Assistant would not listen for the voice activation phrase.
-      </translation>
 <translation id="4020682745012723568">Cookies transferred to the user's profile are not accessible to Android apps.</translation>
 <translation id="402759845255257575">Do not allow any site to run JavaScript</translation>
 <translation id="4027608872760987929">Enable the default search provider</translation>
@@ -3488,7 +3450,6 @@
       If this policy is set to 'RemoveLRUIfDormant', the automatic clean-up will keep removing users who have not logged in for at least 3 months in least-recently-logged-in order until there is enough free space.
 
       If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.</translation>
-<translation id="7334274148831027933">Enable docked magnifier</translation>
 <translation id="7336785017449297672">Controls clock and time zone settings.</translation>
 <translation id="7336878834592315572">Keep cookies for the duration of the session.</translation>
 <translation id="7339315111520512972">Force networking code to run in the browser process</translation>
@@ -3685,22 +3646,6 @@
 
           Note: allowed values for <ph name="MINUTE_FIELD_NAME" /> field in <ph name="CHARGE_START_TIME_FIELD_NAME" /> and <ph name="CHARGE_END_TIME_FIELD_NAME" /> are 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Configure <ph name="PRODUCT_OS_NAME" /> accessibility features.</translation>
-<translation id="7724994675283793633">This policy enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
-
-      This policy is disabled by default and, if enabled, leaves users open to the security issue https://crbug.com/600352.
-
-      This policy is intended to give enterprises a chance to migrate existing servers off HTTP/0.9, and will be removed in the future.
-
-      If this policy is not set, HTTP/0.9 will be disabled on non-default ports.</translation>
-<translation id="7726421241038987229">
-      This setting, SitePerProcess, may be used to disallow users from opting out of the default behaviour of isolating all sites. Note that the IsolateOrigins policy may also be useful for isolating additional, finer-grained origins.
-      If the policy is enabled, users will be unable to opt out of the default behaviour where each site runs in its own process.
-      If the policy is not configured or disabled, the user will be able to opt out of site isolation
-      (e.g. using 'Disable site isolation' entry in chrome://flags).  Setting the policy to disabled and/or not configuring the policy does not turn off Site Isolation.
-      On <ph name="PRODUCT_OS_NAME" />, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
-
-      NOTE: This policy does not apply on Android. To enable SitePerProcess on Android, use the SitePerProcessAndroid policy setting.
-      </translation>
 <translation id="7747447585227954402">Allow devices to use a <ph name="PLUGIN_VM_NAME" /> on <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Enables two-factor authentication for remote access hosts instead of a user-specified PIN.
 
@@ -3840,13 +3785,6 @@
 <translation id="8050080920415773384">Native Printing</translation>
 <translation id="8053580360728293758">Overrides default printing colour mode. If the mode is unavailable, this policy is ignored.</translation>
 <translation id="8059164285174960932">URL where remote access clients should obtain their authentication token</translation>
-<translation id="806280865577636339">If this policy is set to true, Accessibility options always appear in system tray menu.
-
-          If this policy is set to false, Accessibility options never appear in system tray menu.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, Accessibility options will not appear in the system tray menu, but the user can cause the Accessibility options to appear via the Settings page.</translation>
 <translation id="806523868782250975">Configures a list of managed bookmarks.
 
       The policy consists of a list of bookmarks whereas each bookmark is a dictionary containing the keys '<ph name="NAME" />' and '<ph name="URL_LABEL" />' which hold the bookmark's name and its target. A subfolder may be configured by defining a bookmark without an '<ph name="URL_LABEL" />' key but with an additional '<ph name="CHILDREN" />' key, which itself contains a list of bookmarks as defined above (some of which may be folders again). <ph name="PRODUCT_NAME" /> amends incomplete URLs as if they were submitted via the Omnibox, for example '<ph name="GOOGLE_COM" />' becomes '<ph name="HTTPS_GOOGLE_COM" />'.
@@ -4341,9 +4279,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       The policy value should be specified in seconds.</translation>
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
-<translation id="9038058011835642205">Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled nor disabled by the user.
-
-      Each list item of the policy is an object with a mandatory member: 'url' and two optional members: 'default_launch_container' and 'create_desktop_shortcut'. 'url' should be the URL of the web app to install, 'launch_container' should be either 'window' or 'tab' to indicate how the Web App will be opened once installed, and 'create_desktop_shortcut' should be true if a desktop shortcut should be created on Linux and Windows. If 'default_launch_container' is omitted, the app will open in a tab by default. Regardless of the value of 'default_launch_container', users are able to change which container the app will open in. If 'create_desktop_shortcuts' is omitted, no desktop shortcuts will be created.</translation>
 <translation id="9038839118379817310">Enable Wi-Fi</translation>
 <translation id="9039822628127365650">When this policy is set, it specifies the length of time after which a user is automatically logged out, terminating the session. The user is informed about the remaining time by a countdown timer shown in the system tray.
 

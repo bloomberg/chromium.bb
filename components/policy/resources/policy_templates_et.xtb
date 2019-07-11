@@ -146,15 +146,6 @@
       Kui määrate reegli olekule Väär, siis ei saadeta teavet arendaja lüliti oleku kohta.</translation>
 <translation id="1160479894929412407">QUIC-protokolli lubamine</translation>
 <translation id="1160939557934457296">Keela turvalise sirvimise hoiatuslehest edasiliikumine</translation>
-<translation id="1171342272070128466">Lubatakse dokitud luubi juurdepääsufunktsioon.
-
-          Kui see reegel on seatud väärtusele Tõene, on dokitud luup alati lubatud.
-
-          Kui see reegel on seatud väärtusele Väär, on dokitud luup alati keelatud.
-
-          Kui määrate reegli, ei saa kasutajad seda muuta ega alistada.
-
-          Kui see reegel jäetakse määramata, on dokitud luup algselt keelatud, kuid kasutaja võib selle igal ajal lubada.</translation>
 <translation id="1189817621108632689">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud pilte kuvada.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultImagesSetting”, kui see on määratud, või kasutaja isiklikku seadistust.
@@ -333,7 +324,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="1474273443907024088">TLS-i valekäivitamise keelamine</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Kolmanda osapoole tarkvara sisestamise blokeerimise lubamine</translation>
-<translation id="1504431521196476721">Kaugatesteerimine</translation>
 <translation id="1507382822467487898">
           Määrab, millist MAC-aadressi (meediumipöörduse juhtimise aadress) kasutatakse, kui dokk on seadmega ühendatud.
 
@@ -464,12 +454,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Reegel tuleb määrata URL-ile, kust <ph name="PRODUCT_OS_NAME" /> saab teenusetingimused alla laadida. Teenusetingimused peavad olema lihtteksti vormingus, esitatud MIME-tüüpi tekstina/lihttekstina. Märgistused pole lubatud.</translation>
 <translation id="1750315445671978749">Blokeeri kõik allalaadimised</translation>
-<translation id="1762072363876276024">
-      See reegel kehtib sisselogimiskuval. Vaadake ka reeglit <ph name="SITE_PER_PROCESS_POLICY_NAME" />, mis kehtib kasutajaseansi puhul. Soovitatav on seada mõlemad reeglid samale väärtusele. Kui väärtused ei kattu, võib kasutajaseansi avamisel ilmneda viivitus kasutajareeglitega määratud väärtuse rakendamise tõttu.
-      Seade DeviceLoginScreenSitePerProcess abil võib keelata kasutajate jaoks vaikekäitumisest ehk kõigi saitide isoleerimisest loobumise. Pange tähele, et reegel DeviceLoginScreenIsolateOrigins võimaldab isoleerida ka muid, täpsemini määratud lähtekohti.
-      Kui reegel on lubatud, ei saa kasutajad loobuda vaikekäitumisest, mille puhul käitatakse igat saiti eraldi protsessina.
-      Kui reegel on seadistamata või keelatud, saab kasutaja seadet muuta (nt jaotise chrome://flags kirje „Keela saidi isoleerimine” abil).
-      </translation>
 <translation id="1767673020408652620">Rakenduse soovituste lubamine nullolekuga otsingukastis</translation>
 <translation id="17719159826324007">
       Kui selle reegli väärtuseks on määratud ArcSession, taaskäivitab reegel seadme pärast kasutaja väljalogimist, kui Android on käivitunud.
@@ -1373,13 +1357,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
           Selle reegli määramisel ei saa kasutajad seda muuta ega alistada.
 
           Kui see reegel jäetakse määramata, siis on elektrikasutuse nihutamine tarbimise tippajast esialgu keelatud ja kasutaja ei saa seda lubada.</translation>
-<translation id="3388153794103186066">Võimaldab teil määrata URL-ide loendi, mis määravad, millistele saitidele antakse automaatselt luba määratud hankija ja toote ID-ga USB-seadmele juurdepääsemiseks. Iga loendiüksus peab sisaldama nii seadmeid kui ka URL-e, et reegel kehtiks. Iga seadmete loendi üksus võib sisaldada hankija ID ja toote ID välja. Välja jäetud ID-sid käsitletakse metamärkidena ühe erandiga: ilma hankija ID-d määramata ei saa toote ID-d määrata. Muidu on reegel kehtetu ja seda eiratakse.
-
-        USB loamudel kasutab taotluse esitanud saidi URL-i („taotleja URL”) ja ülataseme raamsaidi URL-i („manustamise URL”), et lubada taotluse esitanud URL-il USB-seadmele juurde pääseda. Taotleja URL võib manustamise URL-ist erineda juhul, kui taotluse esitanud sait laaditakse iframe'is. Seetõttu võib väli „URL-id” sisaldada kuni kaht komaga eraldatud URL-i, mis määravad vastavalt taotleja URL-i ja manustamise URL-i. Kui määratud on ainult üks URL, antakse juurdepääs vastavatele USB-seadmetele juhul, kui taotluse esitanud saidi URL kattub selle URL-iga, olenemata manustamise olekust. Väljal „URL-id” olevad URL-id peavad olema kehtivad, muidu reeglit eiratakse.
-
-        Kui reegel jäetakse määramata, kasutatakse kõigi saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultWebUsbGuardSetting” (kui see on määratud) või kasutaja isiklikust seadistusest.
-
-        Reeglis määratud URL-i mustrid ei tohi olla vastuolus reegli WebUsbBlockedForUrls kaudu seadistatud URL-idega. Vastuolu korral on sellel reeglil eesõigus reeglite WebUsbBlockedForUrls ja WebUsbAskForUrls ees.</translation>
 <translation id="3414260318408232239">Kui seda reeglit pole seadistatud, siis kasutab teenus <ph name="PRODUCT_NAME" /> vaikimisi miinimumversiooni, milleks on TLS 1.0.
 
       Muul juhul võidakse see määrata ühele järgmistest väärtustest: „tls1”, „tls1.1” või „tls1.2”. Kui see on määratud, ei kasuta teenus <ph name="PRODUCT_NAME" /> SSL-i/TLS-i versioone, mis on määratud versioonist vanemad. Tundmatut väärtust eiratakse.</translation>
@@ -1655,15 +1632,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui te seda reeglit ei määra, kasutab brauser <ph name="PRODUCT_NAME" /> oma tavapärast kataloogi (platvormipõhine).
 
       Saidil https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables näete loendit kasutatavatest muutujatest.</translation>
-<translation id="3904459740090265495">See reegel juhib brauserisse sisselogimise käitumist. See võimaldab teil määrata, kas kasutaja saab teenusesse <ph name="PRODUCT_NAME" /> oma kontoga sisse logida ja kasutada kontoga seotud teenuseid, nagu Chrome'i sünkroonimine.
-
-      Kui reegli väärtuseks on määratud „Keela brauserisse sisselogimine”, siis ei saa kasutaja brauserisse sisse logida ega kasutada kontopõhiseid teenuseid. Sellisel juhul ei saa brauseri tasemel funktsioone (nt Chrome'i sünkroonimine) kasutada ja need pole saadaval. Kui kasutaja oli sisse logitud ja reegli väärtuseks määratakse „Keelatud”, logitakse ta Chrome'i järgmisel käivitamisel välja, kuid tema kohalikud profiili andmed (nt järjehoidjad, paroolid jm) jäävad alles. Kasutaja saab siiski sisse logida Google'i veebiteenustesse (nt Gmaili) ja neid kasutada.
-
-      Kui reegli väärtuseks on määratud „Luba brauserisse sisselogimine”, siis saab kasutaja brauserisse sisse logida ja ta logitakse automaatselt brauserisse sisse, kui ta logib sisse mõnda Google'i veebiteenusesse (nt Gmaili). Kui kasutaja on brauserisse sisse logitud, siis salvestab brauser tema kontoteabe. See aga ei tähenda, et Chrome'i sünkroonimine vaikimisi sisse lülitatakse. Kasutaja peab selle funktsiooni kasutamise eraldi lubama. Selle reegli lubamisel ei saa kasutaja välja lülitada seadet, mis lubab brauserisse sisselogimise. Chrome'i sünkroonimise kättesaadavuse juhtimiseks kasutage reeglit „SyncDisabled”.
-
-      Kui reegli väärtuseks on määratud „Brauserisse sisselogimise nõudmine”, siis kuvatakse kasutajale kontovaliku dialoog ja ta peab valima, millisele kontole brauseri kasutamiseks sisse logida. See tagab, et hallatud kontode puhul rakendatakse ja jõustatakse kontoga seotud reeglid. Vaikimisi lülitab see Chrome'i sünkroonimise sellel kontol sisse (v.a juhul, kui sünkroonimine on domeeni administraatori poolt või reegliga „SyncDisabled” välja lülitatud). Reegli BrowserGuestModeEnabled vaikeväärtuseks määratakse Väär. Pange tähele, et olemasolevad allkirjastamata profiilid lukustatakse ja nendele ei pääse pärast selle reegli lubamist juurde. Lisateabe saamiseks lugege abikeskuse artiklit: https://support.google.com/chrome/a/answer/7572556.
-
-      Kui see reegel jäetakse määramata, siis saab kasutaja otsustada, kas soovib brauserisse sisselogimise valiku lubada, ja seda kasutada siis, kui ise soovib.</translation>
 <translation id="3911737181201537215">See reegel ei mõjuta Androidi logimist.</translation>
 <translation id="391531815696899618">Keelab Google Drive'i sünkroonimise operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduses Failid, kui väärtuse olekuks on määratud Tõene. Sellisel juhul ei laadita Google Drive'i üles mingeid andmeid.
 
@@ -1744,12 +1712,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui seade pole seadistatud või see on määratud väärtusele Väär, siis otsivad teenuse <ph name="PRODUCT_OS_NAME" /> seadmed värskendusi automaatselt.
 
       Hoiatus. Soovitame automaatsed värskendused lubada, et kasutajad saaksid tarkvaravärskendusi ja kriitilisi turvapaikasid. Automaatsete värskenduste väljalülitamine võib kasutajad ohtu seada.</translation>
-<translation id="4018000735882846261">Reegel annab Google'i assistendile loa kuulata häälega aktiveerimise fraasi.
-
-      Kui reegel on lubatud, kuulab Google'i assistent häälega aktiveerimise fraasi.
-      Kui reegel on keelatud, ei kuula Google'i assistent häälega aktiveerimise fraasi.
-      Kui reegel on määramata, ei kuula Google'i assistent häälega aktiveerimise fraasi.
-      </translation>
 <translation id="4020682745012723568">Androidi rakendused ei pääse juurde kasutajaprofiilile ülekantud küpsisefailidele.</translation>
 <translation id="402759845255257575">Keela kõigil saitidel JavaScripti käitamine</translation>
 <translation id="4027608872760987929">Luba vaikeotsingupakkuja</translation>
@@ -3504,7 +3466,6 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
       Kui reegel on määratud valikule „RemoveLRUIfDormant”, jätkab automaatne puhastamine nende kasutajate eemaldamist, kes ei ole vähemalt 3 kuu jooksul sisse loginud, lähtudes sellest, milline kasutaja kõige kauem aega tagasi sisse logis, kuni on piisavalt vaba ruumi.
 
       Kui reegel on määramata, kasutab automaatne puhastamine sisseehitatud vaikestrateegiat. Praegu on selleks strateegia „RemoveLRUIfDormant”.</translation>
-<translation id="7334274148831027933">Luba dokitud luup</translation>
 <translation id="7336785017449297672">Haldab kella ja ajavööndi seadeid.</translation>
 <translation id="7336878834592315572">Säilita küpsised seansi kestuse jooksul</translation>
 <translation id="7339315111520512972">Brauseri protsessis võrgustiku koodi sundkäitamine</translation>
@@ -3701,22 +3662,6 @@ Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. 
 
           Märkus. Üksuste <ph name="CHARGE_START_TIME_FIELD_NAME" /> ja <ph name="CHARGE_END_TIME_FIELD_NAME" /> välja <ph name="MINUTE_FIELD_NAME" /> lubatud väärtused on 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Seadistage teenuse <ph name="PRODUCT_OS_NAME" /> juurdepääsufunktsioonid.</translation>
-<translation id="7724994675283793633">See reegel lubab HTTP/0.9 portides, mis ei ole HTTP puhul 80 ja HTTPS-i puhul 443.
-
-      See reegel on vaikimisi keelatud. Kui see on lubatud, võivad kasutajad kokku puutuda turvaprobleemiga https://crbug.com/600352.
-
-      Selle reegli eesmärk on anda ettevõtetele võimalus eemaldada olemasolevad serverid üksusest HTTP/0.9. See reegel eemaldatakse tulevikus.
-
-      Kui see reegel on määramata, keelatakse HTTP/0.9 mittevaikeportides.</translation>
-<translation id="7726421241038987229">
-      Seadega SitePerProcess saab kasutajate jaoks keelata kõigi saitide isoleerimise vaikeseadest loobumise. Pange tähele, et reegel IsolateOrigins võimaldab isoleerida ka muid, täpsemini määratud lähtekohti.
-      Kui reegel on lubatud, ei saa kasutajad loobuda vaikekäitumisest, mille puhul käitatakse igat saiti eraldi protsessina.
-      Kui reegel on seadistamata või keelatud, saab kasutaja loobuda saidi isoleerimisest
-      (nt jaotises chrome://flags kirje „Keela saidi isoleerimine” kasutamisest).  Reegli keelamisel ja/või seadistamata jätmisel ei lülitata saidi isoleerimist välja.
-      Teenuses <ph name="PRODUCT_OS_NAME" /> on soovitatav määrata seadmereegli <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> jaoks sama väärtus. Kui nende kahe reegli jaoks määratud väärtused ei kattu, võib kasutajaseansi avamisel ilmneda viivitus kasutajareegli jaoks määratud väärtuse rakendamise tõttu.
-
-      MÄRKUS. Reegel ei kehti Androidi puhul. Androidis funktsiooni SitePerProcess lubamiseks kasutage reegli SitePerProcessAndroid seadet.
-      </translation>
 <translation id="7747447585227954402">Seadmetel lubatakse operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> kasutada pistikprogrammi <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7749402620209366169">Lubab kaugjuurdepääsu hostide autentimiseks kasutaja määratud PIN-koodi asemel kahetasandilise autentimise.
 
@@ -3856,13 +3801,6 @@ Lubab rakenduse <ph name="PRODUCT_NAME" /> automaatse täitmise funktsiooni ja v
 <translation id="8050080920415773384">Printimise omaprotsess</translation>
 <translation id="8053580360728293758">Alistab printimisel vaikimisi kasutatava värvirežiimi. Reeglit eiratakse, kui režiim ei ole saadaval.</translation>
 <translation id="8059164285174960932">URL, kust kaugjuurdepääsuga kliendid peaksid saama autentimismärgi</translation>
-<translation id="806280865577636339">Kui reegli väärtuseks määratakse Tõene, kuvatakse juurdepääsuvalikud alati süsteemisalve menüüs.
-
-          Kui reegli väärtuseks määratakse Väär, ei kuvata juurdepääsuvalikuid süsteemisalve menüüs kunagi.
-
-          Kui määrate reegli, ei saa kasutajad seda muuta ega alistada.
-
-          Kui jätate reegli määramata, ei kuvata juurdepääsuvalikuid süsteemisalve menüüs, kuid kasutaja saab juurdepääsuvalikud kuvada lehe Seaded kaudu.</translation>
 <translation id="806523868782250975">Seadistab hallatud järjehoidjate loendi.
 
       Reegel koosneb järjehoidjate loendist, kusjuures iga järjehoidja on sõnastik, mis sisaldab võtmeid „<ph name="NAME" />” ja „<ph name="URL_LABEL" />”, kus hoiustatakse järjehoidja nime ning selle sihtmärki. Alamkausta saab seadistada, määrates järjehoidja ilma võtmeta „<ph name="URL_LABEL" />”, kuid lisavõtmega „<ph name="CHILDREN" />”, mis sisaldab ise ülalmääratud järjehoidjate loendit (millest mõned võivad olla kaustad). <ph name="PRODUCT_NAME" /> täiendab poolikuid URL-e, nagu need oleksid edastatud omnikastikese kaudu, nt aadressist „<ph name="GOOGLE_COM" />” saab „<ph name="HTTPS_GOOGLE_COM" />”.
@@ -4358,9 +4296,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
       Reegli väärtus tuleb määrata sekundites.</translation>
 <translation id="9035964157729712237">Mustast nimekirjast välistatud laienduste ID-d</translation>
-<translation id="9038058011835642205">Määrab loendi veebisaitidest, mis installitakse märkamatult, ilma et kasutaja peaks sekkuma, ning mida kasutaja ei saa desinstallida ega keelata.
-
-      Reegli iga loendiüksus on kohustusliku liikmega objekt: „url” ja kaks valikulist liiget: „default_launch_container” ja „create_desktop_shortcut”. Väärtus „url” peab olema installitava veebirakenduse URL ja „launch_container” peab olema „window” või „tab”, mis näitab, kuidas veebirakendus pärast installimist avatakse. Reegel „create_desktop_shortcut” peab olema tõene, kui töölaua otsetee tuleb luua Linuxis ja Windowsis. Kui reegel „default_launch_container" jäetakse tühjaks, avaneb rakendus vaikimisi vahelehel. Olenemata reegli „default_launch_container” väärtusest, saavad kasutajad muuta, millises konteineris rakendus avaneb. Kui reegel „create_desktop_shortcuts” jäetakse tühjaks, siis töölaua otseteid ei looda.</translation>
 <translation id="9038839118379817310">WiFi lubamine</translation>
 <translation id="9039822628127365650">Kui reegel on seadistatud, määrab see ajavahemiku, mille möödudes logitakse kasutaja automaatselt välja ja seanss lõpetatakse. Süsteemisalves olev taimer näitab kasutajale järelejäänud aega.
 

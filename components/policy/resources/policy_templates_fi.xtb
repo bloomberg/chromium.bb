@@ -142,15 +142,6 @@
       Jos käytännön arvo on epätosi, kehittäjätilaa (käytössä / ei käytössä) ei ilmoiteta.</translation>
 <translation id="1160479894929412407">Salli QUIC-protokollan käyttö</translation>
 <translation id="1160939557934457296">Estä eteneminen Selaussuojan varoitussivulta</translation>
-<translation id="1171342272070128466">Ota käyttöön kiinnitetty suurennus ‑esteettömyysominaisuus.
-
-          Jos käytännön arvoksi on asetettu tosi, kiinnitetty suurennus on aina käytössä.
-
-          Jos käytännön arvoksi on asetettu epätosi, kiinnitetty suurennus ei ole koskaan käytössä.
-
-          Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
-
-          Jos tätä käytäntöä ei ole määritetty, kiinnitetty suurennus poistetaan oletuksena käytöstä, mutta käyttäjä voi ottaa sen käyttöön milloin tahansa.</translation>
 <translation id="1189817621108632689">Voit määrittää URL-mallien luettelon, jossa määritetään sivustot, jotka saavat näyttää kuvia.
 
           Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultImagesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.
@@ -326,7 +317,6 @@
 <translation id="1474273443907024088">Poista TLS False Start käytöstä</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Ota käyttöön kolmannen osapuolen ohjelmistojen lisäämisen esto</translation>
-<translation id="1504431521196476721">Etätodennus</translation>
 <translation id="1507382822467487898">
           Määrittää, mitä MAC-osoitetta (media access control) käytetään, kun laite on telineessä.
 
@@ -458,12 +448,6 @@
 
       Tämän käytännön arvoksi määritetään URL-osoite, josta <ph name="PRODUCT_OS_NAME" /> voi ladata käyttöehdot. Käyttöehtojen täytyy olla tavallista tekstiä (MIME-tyyppi text/plain). Muotoilua ei sallita.</translation>
 <translation id="1750315445671978749">Estä kaikki lataukset</translation>
-<translation id="1762072363876276024">
-      Tämä käytäntö koskee kirjautumisnäyttöä. Tutustu myös <ph name="SITE_PER_PROCESS_POLICY_NAME" /> -käytäntöön, joka koskee käyttökertaa. On suositeltavaa asettaa molemmille käytännöille sama arvo. Jos arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon hakemisen vuoksi.
-      Tällä asetuksella (DeviceLoginScreenSitePerProcess) voidaan estää käyttäjiä lopettamasta oletuskäytös, kaikkien sivustojen erilläänpito. Huomaa, että DeviceLoginScreenIsolateOrigins voi myös olla hyödyllinen eristettäessä muita, tarkemmin määritettyjä alkuperiä.
-      Jos käytäntö on käytössä, käyttäjä voi lopettaa oletuskäyttäytymisen eli oman prosessin suorittamisen joka sivustolla.
-      Jos käytäntöä ei määritetä tai se poistetaan käytöstä, käyttäjä voi muuttaa tätä asetusta (esimerkiksi chrome://flags-valinnalla Älä pidä sivustoja erillään).
-      </translation>
 <translation id="1767673020408652620">Ota käyttöön sovellussuositukset hakukentän nollatilassa</translation>
 <translation id="17719159826324007">
       Kun käytännön arvoksi asetetaan ArcSession, se pakottaa laitteen käynnistymään uudelleen käyttäjän uloskirjautumisen yhteydessä, jos Android on käynnistynyt.
@@ -1344,13 +1328,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
 
           Jos tätä käytäntöä ei ole määritetty, ruuhka-ajan virranvaihto on oletuksena poistettu käytöstä eikä käyttäjä voi ottaa sitä käyttöön.</translation>
-<translation id="3388153794103186066">Voit määrittää luettelon URL-osoitemalleja, jonka sivustot saavat automaattisesti pyytää käyttäjältä USB-laitteen käyttöoikeutta, jos sillä on tietty myyjän ja tuotteen tunnus. Luettelon jokaisessa kohteessa on oltava laitteita ja URL-osoitemalleja, jotta käytäntö voi astua voimaan. Jokainen laitekohta voi sisältää kentät myyjän tunnukselle ja tuotteen tunnukselle. Jos tunnusta ei mainita, tätä pidetään jokerimerkkinä, paitsi jos tuotteen tunnus mainitaan ilman myyjän tunnuksen mainitsemista – tämä ei ole mahdollista. Muuten käytäntö ei voi astua voimaan. Virheelliset käytännön arvot ohitetaan.
-
-        USB-lupamallissa on pyytävän sivuston URL-osoite (pyytävä URL) ja ylimmän tason kehyssivuston URL-osoite (upottava URL), joiden avulla pyytävälle URL-osoitteelle annetaan lupa käyttää USB-laitetta. Pyytävä ja upottava URL-osoite voivat olla erilaiset, kun pyytävä sivusto ladataan iframella. Siksi "urls"-kentässä voi olla enintään kaksi URL-osoitekohtaa pilkulla erotettuna: pyytävä ja upottava URL-osoite. Jos vain yksi URL-osoite mainitaan, kyseisten USB-laitteiden käyttölupa annetaan, jos tämä osoite vastaa pyytävän sivun URL-osoitetta upotustilasta huolimatta. "urls"-kentän osoitteiden on oltava hyväksyttäviä URL-osoitteita, tai käytäntö ohitetaan.
-
-        Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultWebUsbGuardSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista arvoa.
-
-        Tämän käytännön URL-osoitemallien on sovittava yhteen WebUsbBlockedForUrls-mallien kanssa. Ristiriitatilanteissa tätä käytäntöä sovelletaan ennen WebUsbBlockedForUrls- ja WebUsbAskForUrls-käytäntöjä.</translation>
 <translation id="3414260318408232239">Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> käyttää oletuksena vanhinta versiota, joka on TLS 1.0.
 
       Muussa tapauksessa käytännön arvoksi voidaan määrittää tls1, tls1.1 tai tls1.2. Jos arvo on jokin näistä, <ph name="PRODUCT_NAME" /> ei käytä kyseistä arvoa vanhempaa SSL/TLS-versiota. Tunnistamattomat arvot ohitetaan.</translation>
@@ -1624,16 +1601,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Jos et ota tätä käytäntöä käyttöön, <ph name="PRODUCT_NAME" /> käyttää tavallista oletushakemistoaan (käyttöympäristökohtainen).
 
       Osoitteessa https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables on lista käytettävissä olevista muuttujista.</translation>
-<translation id="3904459740090265495">Tällä käytännöllä hallitaan selaimen kirjautumiskäyttäytymistä. Sillä voit valita, voiko käyttäjä suorittaa <ph name="PRODUCT_NAME" /> ‑kirjautumisen tilillään ja käyttää tähän liittyviä palveluita, kuten Chromen synkronointia.
-
-      Jos käytännön arvo on Estä kirjautuminen selaimelle, käyttäjä ei voi kirjautua selaimelle tai käyttää tilipohjaisia palveluita. Tällöin selaintason palvelut kuten Chromen synkronointi eivät ole käytettävissä. Jos käyttäjä oli kirjautuneena, kun käytännön arvoksi valittiin Estä, hänet kirjataan ulos seuraavalla Chromen suorituskerralla. Paikallinen profiilidata, esimerkiksi kirjanmerkit ja salasanat, säilytetään silti. Käyttäjä voi kirjautua Googlen verkkopalveluihin (esim. Gmail) ja käyttää niitä.
-
-      Jos käytännön arvo on Salli kirjautuminen selaimelle, käyttäjä voi kirjautua selaimelle, ja hänet kirjataan automaattisesti selaimelle Gmailiin tai muihin Googlen verkkopalveluihin kirjautumisen yhteydessä. Kun käyttäjä on kirjautunut selaimelle, se tallentaa hänen tilitietonsa. Chromen synkronointi ei kuitenkaan ole käytössä oletuksena, vaan käyttäjän on otettava tämä ominaisuus käyttöön erikseen. Tämän käytännön voimaantulo estää käyttäjää kytkemästä päälle asetusta, joka sallii selaimelle kirjautumisen. Voit päättää Chromen synkronoinnin saatavuudesta SyncDisabled-käytännöllä.
-
-      Jos käytännön arvo on Pakota kirjautumaan selaimelle, käyttäjälle näytetään tilinvalintaikkuna, ja hänen täytyy valita tili ja kirjautua sisään käyttääkseen selainta. Näin varmistetaan, että tilin käytäntöjä noudatetaan hallinnoiduilla tileillä. Samalla Chromen synkronointi otetaan oletuksena käyttöön tilillä, paitsi jos synkronointi on verkkotunnuksen 
-ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-käytännön arvoksi asetetaan Epätosi. Aiemmin luodut profiilit, joilla ei ole kirjauduttu sisään, lukitaan pois käytöstä, kun käytäntö on voimassa. Lisätietoja on artikkelissa https://support.google.com/chrome/a/answer/7572556.
-
-      Jos tälle käytännölle ei määritetä arvoa, käyttäjä voi valita, otetaan selaimelle kirjautuminen käyttöön, ja käyttää ominaisuutta haluamallaan tavalla.</translation>
 <translation id="3911737181201537215">Tällä käytännöllä ei ole vaikutusta Androidin tekemään lokikirjaukseen.</translation>
 <translation id="391531815696899618">Jos arvo on tosi, Google Driven synkronointi tuotteen <ph name="PRODUCT_OS_NAME" /> Tiedostot-sovelluksen kanssa poistetaan käytöstä. Tällöin mitään tietoja ei lähetetä Google Driveen.
 
@@ -1715,12 +1682,6 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
       Tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävät laitteet hakevat päivityksiä automaattisesti, jos tätä asetusta ei ole määritetty tai sen arvo on epätosi.
 
       Varoitus: suosittelemme pitämään automaattiset päivitykset käytössä, jotta käyttäjät saavat ohjelmistopäivitykset ja kriittiset suojauspäivitykset. Automaattisten päivitysten poistaminen käytöstä voi vaarantaa käyttäjiä.</translation>
-<translation id="4018000735882846261">Tämä käytäntö antaa Google Assistantille luvan kuunnella äänikomennon.
-
-      Jos käytäntö on käytössä, Google Assistant kuuntelee äänikomennon.
-      Jos käytäntö ei ole käytössä, Google Assistant ei kuuntele äänikomentoa.
-      Jos käytäntöä ei ole määritetty, Google Assistant ei kuuntele äänikomentoa.
-      </translation>
 <translation id="4020682745012723568">Android-sovellukset eivät voi käyttää käyttäjän profiiliin siirrettyjä evästeitä.</translation>
 <translation id="402759845255257575">Älä salli sivustojen käyttää JavaScriptiä</translation>
 <translation id="4027608872760987929">Ota oletushakupalvelu käyttöön</translation>
@@ -3414,7 +3375,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käytännön arvoksi asetetaan RemoveLRUIfDormant, automaattinen puhdistus poistaa laitteelta käyttäjiä, jotka eivät ole kirjautuneet sisään vähintään kolmeen kuukauteen, järjestyksessä, jossa pisimpään kirjautumatta ollut käyttäjä poistetaan ensin, kunnes levytilaa on vapautettu tarpeeksi.
 
       Jos käytäntöä ei määritetä, automaattinen puhdistus käyttää sisäänrakennettua oletustapaa, joka on tällä hetkellä RemoveLRUIfDormant.</translation>
-<translation id="7334274148831027933">Ota kiinnitetty suurennus käyttöön</translation>
 <translation id="7336785017449297672">Määrittää kellon ja aikavyöhykkeen asetukset</translation>
 <translation id="7336878834592315572">Säilytä evästeet käyttökerran ajan</translation>
 <translation id="7339315111520512972">Pakota verkostokoodin suorittaminen selainprosessissa</translation>
@@ -3605,22 +3565,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Huom. Kentän <ph name="MINUTE_FIELD_NAME" /> sallitut arvot kohdissa<ph name="CHARGE_START_TIME_FIELD_NAME" /> ja <ph name="CHARGE_END_TIME_FIELD_NAME" /> ovat 0, 15, 30 ja 45.</translation>
 <translation id="7717938661004793600">Määritä tuotteen <ph name="PRODUCT_OS_NAME" /> käytettävyysominaisuudet.</translation>
-<translation id="7724994675283793633">Tämä käytäntö sallii HTTP/0.9:n myös muille porteille kuin 80 (HTTP) ja 443 (HTTPS).
-
-      Käytäntö on oletuksena poissa käytöstä. Jos se otetaan käyttöön, käyttäjät altistuvat tälle tietoturvaongelmalle: https://crbug.com/600352.
-
-      Käytännön tarkoitus on antaa yrityksille tilaisuus jättää HTTP/0.9 pois käytöstä olemassa olevilla palvelimilla, ja se poistetaan tulevaisuudessa.
-
-      Jos käytäntöä ei ole määritetty, HTTP/0.9 ei ole käytössä muilla kuin oletusarvoisilla porteilla.</translation>
-<translation id="7726421241038987229">
-      Tällä asetuksella (SitePerProcess) voidaan estää käyttäjiä lopettamasta oletuskäytös, kaikkien sivustojen erilläänpito. Huomaa, että IsolateOrigins voi myös olla hyödyllinen eristettäessä muita, tarkemmin määritettyjä alkuperiä.
-      Jos käytäntö on käytössä, käyttäjä voi lopettaa oletuskäyttäytymisen eli oman prosessin suorittamisen joka sivustolla.
-      Jos käytäntöä ei määritetä tai se poistetaan käytöstä, käyttäjä voi poistaa sivustojen erilläänpidon käytöstä
-      (esimerkiksi chrome://flags-valinnalla Älä pidä sivustoja erillään).  Sivustojen erilläänpito ei poistu käytöstä, vaikka käytäntö poistetaan käytöstä tai sitä ei määritetä.
-      Suositus (<ph name="PRODUCT_OS_NAME" />): aseta sama arvo myös laitekäytännölle <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Jos näiden kahden käytännön arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon hakemisen vuoksi.
-
-      HUOMIOITAVAA: Tämä käytäntö ei koske Androidia. Jos haluat ottaa SitePerProcess-asetuksen käyttöön Androidilla, käytä SitePerProcessAndroid-käytännön asetusta.
-      </translation>
 <translation id="7747447585227954402">Salli laitteiden käyttää laajennusta <ph name="PLUGIN_VM_NAME" /> tuotteessa <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Ottaa etäisännille käyttöön kahden tekijän todennuksen käyttäjän määrittämän PIN-koodin sijaan.
 
@@ -3755,13 +3699,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="8050080920415773384">Natiivitulostus</translation>
 <translation id="8053580360728293758">Ohittaa tulostuksen oletusväritilan. Jos tila ei ole käytettävissä, tämä käytäntö ohitetaan.</translation>
 <translation id="8059164285174960932">URL-osoite, josta etäkäytön asiakkaiden tulisi saada todennustunnus</translation>
-<translation id="806280865577636339">Jos tämän käytännön arvo on tosi, esteettömyysasetukset näkyvät aina ilmaisinalueen valikossa.
-
-          Jos tämän käytännön arvo on epätosi, esteettömyysasetuksia ei koskaan lisätä ilmaisinalueen valikkoon.
-
-          Jos tämä käytäntö on määritetty, käyttäjät eivät voi muuttaa tai ohittaa sitä.
-
-          Jos tätä käytäntöä ei ole määritetty, esteettömyysasetuksia ei lisätä ilmaisinalueen valikkoon, mutta käyttäjä voi asettaa ne näkyviin Asetukset-sivulta.</translation>
 <translation id="806523868782250975">Määrittää hallinnoitujen kirjanmerkkien luettelon.
 
       Tämä käytäntö sisältää kirjanmerkkiluettelon, jonka jokainen kirjanmerkki on tietohakemisto ja sisältää avaimet <ph name="NAME" /> ja <ph name="URL_LABEL" />. Nämä avaimet sisältävät kirjanmerkin nimen ja kohteen. Voit määrittää alikansion määrittelemällä kirjanmerkin, jolla on avaimen <ph name="URL_LABEL" /> sijaan lisäavain <ph name="CHILDREN" />. Tämä lisäavain sisältää erillisen, yllä kuvatun kaltaisen kirjanmerkkiluettelon (jonka kirjanmerkeistä osa voi olla kansioita). Jos URL-osoitteissa on puutteita, <ph name="PRODUCT_NAME" /> muokkaa niitä samaan tapaan kuin omniboxin kautta lähetettyjä osoitteita. Esimerkiksi <ph name="GOOGLE_COM" /> muutetaan muotoon <ph name="HTTPS_GOOGLE_COM" />.
@@ -4247,9 +4184,6 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
 
       Määritä käytännön arvo sekunteina.</translation>
 <translation id="9035964157729712237">Kieltoluettelosta poistettavat laajennuksien tunnukset</translation>
-<translation id="9038058011835642205">Määrittää luettelon verkkosivustoista, jotka asennetaan huomaamattomasti ilman käyttäjän toimenpiteitä ja joita käyttäjä ei voi poistaa käytöstä tai kokonaan.
-
-      Käytännön jokainen luettelokohde on olio, jossa on pakollinen osa, "url", ja kaksi valinnaista osaa, "default_launch_container" ja "create_desktop_shortcut". "url" on asennettavan verkkosovelluksen URL-osoite ja "launch_container" joko "window" tai "tab", mikä kertoo verkkosovelluksen avaamistavan sen asentamisen jälkeen. "create_desktop_shortcut"-arvon tulee olla tosi, jos Linuxilla tai Windowsilla on tarkoitus luoda työpöydän pikakuvake. Jos "default_launch_container"-arvo jätetään pois, sovellus avautuu oletuksena välilehdellä. "default_launch_container"-arvosta huolimatta käyttäjä voi vaihtaa sovelluksen avaavaa säilöä. Jos "create_desktop_shortcut"-arvo jätetään pois, työpöydän pikakuvakkeita ei luoda.</translation>
 <translation id="9038839118379817310">Ota Wi-Fi käyttöön</translation>
 <translation id="9039822628127365650">Jos tämä käytäntö on määritetty, se asettaa aikarajan, jonka jälkeen käyttäjä kirjataan automaattisesti ulos ja istunto lopetetaan. Käyttäjä voi tarkistaa jäljellä olevan ajan ilmaisinalueella näkyvästä laskurista.
 

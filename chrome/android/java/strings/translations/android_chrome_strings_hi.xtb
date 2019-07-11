@@ -294,7 +294,7 @@
 <translation id="300526633675317032">इससे वेबसाइट की पूरी <ph name="SIZE_IN_KB" /> मेमोरी साफ़ हो जाएगी.</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> केबी डाउनलोड किया गया</translation>
 <translation id="3029704984691124060">पासफ़्रेज़ मिलान नहीं करते</translation>
-<translation id="3036750288708366620"><ph name="BEGIN_LINK" />सहायता प्राप्त करें<ph name="END_LINK" /></translation>
+<translation id="3036750288708366620"><ph name="BEGIN_LINK" />सहायता पाएं<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">स्थान सेवा बंद है, उसे <ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में चालू करें.</translation>
 <translation id="3058498974290601450">आप सेटिंग में किसी भी समय सिंक चालू कर सकते हैं</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> बुकमार्क}one{<ph name="BOOKMARKS_COUNT_MANY" /> बुकमार्क}other{<ph name="BOOKMARKS_COUNT_MANY" /> बुकमार्क}}</translation>

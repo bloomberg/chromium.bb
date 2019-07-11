@@ -132,15 +132,6 @@
       Ako se pravilo ne postavi ili se postavi na neistinito, izvješće o stanju prekidača za razvojne programere neće se generirati.</translation>
 <translation id="1160479894929412407">Dopusti QUIC protokol</translation>
 <translation id="1160939557934457296">Onemogući nastavljanje sa stranice upozorenja Sigurno pregledavanje</translation>
-<translation id="1171342272070128466">Omogućite značajku pristupačnosti usidrenog povećala.
-
-          Ako se to pravilo postavi na true, usidreno povećalo uvijek će biti omogućeno.
-
-          Ako se to pravilo postavi na false, usidreno povećalo uvijek će biti onemogućeno.
-
-          Ako postavite to pravilo, korisnici ga neće moći promijeniti ni nadjačati.
-
-          Ako se to pravilo ne postavi, usidreno povećalo izvorno je onemogućeno, ali ga korisnici mogu u bilo kojem trenutku omogućiti.</translation>
 <translation id="1189817621108632689">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju prikazivati slike.
 
           Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultImagesSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.
@@ -315,7 +306,6 @@
 <translation id="1474273443907024088">Onemogući TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Omogući blokiranje umetanja softvera treće strane</translation>
-<translation id="1504431521196476721">Daljinsko atestiranje</translation>
 <translation id="1507382822467487898">
           Konfigurira MAC adresu koja će se upotrebljavati kada je uređaj spojen na priključnu stanicu.
 
@@ -446,12 +436,6 @@
 
       Pravilo treba biti postavljeno na URL s kojeg <ph name="PRODUCT_OS_NAME" /> može preuzeti Uvjete pružanja usluge. Uvjeti pružanja usluge moraju biti običan tekst, poslužen kao vrsta "text/plain" protokola MIME. Jezik za označavanje nije dopušten.</translation>
 <translation id="1750315445671978749">Blokiranje svih preuzimanja</translation>
-<translation id="1762072363876276024">
-      To se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="SITE_PER_PROCESS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju. Preporučuje se postaviti oba pravila na istu vrijednost. Ako se vrijednosti ne podudaraju, može doći do kašnjenja prilikom pokretanja korisničke sesije dok se primjenjuje vrijednost navedena korisničkim pravilima.
-      Ova postavka, DeviceLoginScreenSitePerProcess, može se koristiti kako bi se korisnicima onemogućilo da se isključe iz zadanog ponašanja izolacije svih web-lokacija. Napominjemo da pravilo DeviceLoginScreenIsolateOrigins također može biti korisno za izolaciju dodatnih, preciznije određenih izvora.
-      Ako se to pravilo omogući, korisnici se neće moći isključiti iz zadanog ponašanja pri kojem se svaka web-lokacija izvodi u svojem procesu.
-      Ako se to pravilo ne konfigurira ili se onemogući, korisnik će moći promijeniti tu postavku (na primjer pomoću unosa "Disable site isolation" (Onemogući izolaciju web-lokacije) na stranici chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Omogući preporuke aplikacije u nultom stanju okvira za pretraživanje</translation>
 <translation id="17719159826324007">
       Kada se postavi na ArcSession, to pravilo prisilno ponovo pokreće uređaj nakon što se korisnik odjavi, a Android je pokrenut.
@@ -1328,13 +1312,6 @@
           Ako postavite to pravilo, korisnici ga neće moći promijeniti ili nadjačati.
 
           Ako se to pravilo ne postavi, prebacivanje napajanja radi uštede energije bit će onemogućeno i korisnik ga neće moći omogućiti.</translation>
-<translation id="3388153794103186066">Omogućuje postavljanje popisa URL-ova koji navode koje će web-lokacije automatski dobiti dopuštenje za pristup USB uređaju s navedenim ID-jem dobavljača i ID-jem proizvoda. Svaka stavka na popisu mora sadržavati uređaje i URL-ove da bi pravilo bilo važeće. Svaka stavka na uređaju može sadržavati polje ID-ja dobavljača i ID-ja proizvoda. Svaki izostavljeni ID smatra se zamjenskim znakom s jednom iznimkom, a ta je iznimka da se ID proizvoda ne može navesti, a da se ne navede i ID dobavljača. U suprotnom pravilo neće biti važeće i zanemarit će se.
-
-        Model dopuštenja za USB upotrebljava URL web-lokacije koja šalje zahtjev ("URL koji šalje zahtjev") i URL vršnih web-lokacija u okviru ("URL koji se ugrađuje") kako bi se URL-u koji šalje zahtjev dopustio pristup USB uređaju. URL koji šalje zahtjev može se razlikovati od URL-a koji se ugrađuje ako se web-lokacija koja šalje zahtjev učitava u iframeu. Stoga, da bi se odredio URL koji šalje zahtjev i URL koji se ugrađuje, polje za "URL-ove" može sadržavati najviše dva niza URL-a razdvojena zarezom. Ako se odredi samo jedan URL, pristup će biti dopušten odgovarajućim USB uređajima kada se URL web-lokacije koja šalje zahtjev podudara s ovim URL-om, bez obzira na status ugrađivanja. URL-ovi u polju "URL-ovi" moraju biti važeći. U protivnom će se pravilo zanemariti.
-
-        Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se globalna zadana vrijednost iz pravila "DefaultWebUsbGuardSetting" ako je to pravilo postavljeno, a ako nije, upotrebljavat će se korisnikova osobna konfiguracija.
-
-        Uzorci URL-a u ovom pravilu ne bi trebali biti u sukobu s onima koji su konfigurirani pravilom WebUsbBlockedForUrls. Ako se pojavi sukob, ovo će pravilo imati prednost pred pravilima WebUsbBlockedForUrls i WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Ako se to pravilo ne konfigurira, <ph name="PRODUCT_NAME" /> upotrebljava zadanu minimalnu verziju, a to je TLS 1.0.
 
       U suprotnom se može postaviti na jednu od sljedećih vrijednosti: "tls1", "tls1.1" ili "tls1.2". Kad se to pravilo postavi, <ph name="PRODUCT_NAME" /> neće upotrebljavati verzije SSL-a/TLS-a manje od navedene verzije. Vrijednost koja se ne prepozna ignorirat će se.</translation>
@@ -1610,15 +1587,6 @@
       Ako ne postavite to pravilo, <ph name="PRODUCT_NAME" /> upotrebljava svoj uobičajeni zadani direktorij (ovisno o platformi).
 
       Popis varijabli koje se mogu upotrebljavati potražite na stranici https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
-<translation id="3904459740090265495">To pravilo upravlja ponašanjem prijave putem preglednika. Omogućuje vam da odredite može li se korisnik prijaviti na preglednik <ph name="PRODUCT_NAME" /> svojim računom i upotrebljavati usluge povezane s računom kao što je Chrome sinkronizacija.
-
-      Ako se to pravilo postavi na "Onemogući prijavu putem preglednika", korisnik se ne može prijaviti na preglednik i upotrebljavati usluge računa. U tom se slučaju značajke na razini preglednika kao što je Chrome sinkronizacija ne mogu upotrebljavati i neće biti dostupne. Ako je korisnik bio prijavljen i pravilo se postavi na "Onemogućeno", korisnik će se odjaviti sljedeći put kad pokrene Chrome, no zadržat će se lokalni podaci profila kao što su oznake, zaporke itd. Korisnik će se i dalje moći prijaviti na Googleove web-usluge kao što je Gmail i moći će ih upotrebljavati.
-
-      Ako se to pravilo postavi na "Omogući prijavu putem preglednika", korisnik se može prijaviti na preglednik i automatski se prijavljuje na preglednik kad se prijavi na Googleove web-usluge kao što je Gmail. Kad je korisnik prijavljen na preglednik, to znači da preglednik sprema podatke o korisnikovom računu. No to ne znači da će Chrome sinkronizacija biti uključena prema zadanim postavkama; da bi upotrebljavao tu značajku, korisnik se mora uključiti zasebno. Ako se to pravilo omogući, korisnik neće moći isključiti postavku koja omogućuje prijavu na preglednik. Da biste kontrolirali dostupnost Chrome sinkronizacije, upotrijebite pravilo "SyncDisabled".
-
-      Ako se pravilo postavi na "Nametni prijavu putem preglednika", korisniku se prikazuje dijaloški okvir za odabir računa i on mora odabrati račun i prijaviti se da bi upotrebljavao preglednik. Na taj se način za upravljane račune osigurava primjena i provedba pravila povezanih s računom. Prema zadanim postavkama time se uključuje Chrome sinkronizacija za račun, osim kad je sinkronizaciju onemogućio administrator domene ili kad je onemogućena putem pravila "SyncDisabled". Zadana vrijednost za BrowserGuestModeEnabled bit će postavljena na False. Postojeći neprijavljeni profili bit će zaključani i neće biti dostupni nakon što se to pravilo omogući. Više informacija potražite u članku centra za pomoć: https://support.google.com/chrome/a/answer/7572556.
-
-      Ako se to pravilo ne postavi, korisnik može odlučiti hoće li omogućiti opciju prijave putem preglednika i može je upotrebljavati kako želi.</translation>
 <translation id="3911737181201537215">To pravilo nema utjecaja na Androidovo bilježenje u zapisnike.</translation>
 <translation id="391531815696899618">Onemogućuje sinkronizaciju Google diska u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /> kada je postavljeno na točno. U tom se slučaju nikakvi podaci ne prenose na Google disk.
 
@@ -1699,12 +1667,6 @@
       <ph name="PRODUCT_OS_NAME" /> uređaji automatski traže ažuriranja kada ta postavka nije konfigurirana ili je postavljena na False.
 
       Upozorenje: preporučuje se da automatska ažuriranja budu uvijek uključena da korisnici mogu primati ažuriranja softvera i važne sigurnosne ispravke. Isključivanje automatskih ažuriranja korisnike može izložiti opasnosti.</translation>
-<translation id="4018000735882846261">To pravilo Google asistentu daje dopuštenje za osluškivanje izraza za glasovnu aktivaciju.
-
-      Ako se pravilo omogući, Google asistent osluškivat će izraz za glasovnu aktivaciju.
-      Ako se pravilo onemogući, Google asistent neće osluškivati izraz za glasovnu aktivaciju.
-      Ako se pravilo ne postavi, Google asistent neće osluškivati izraz za glasovnu aktivaciju.
-      </translation>
 <translation id="4020682745012723568">Kolačići prenijeti na korisnikov profil nisu dostupni Android aplikacijama.</translation>
 <translation id="402759845255257575">Nemoj dopustiti nijednoj web-lokaciji da pokreće JavaScript</translation>
 <translation id="4027608872760987929">Omogući zadanog davatelja usluge pretraživanja</translation>
@@ -3399,7 +3361,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
       Ako se to pravilo postavi na "RemoveLRUIfDormant", automatsko čišćenje uklanjat će korisnike koji se nisu prijavili najmanje 3 mjeseca počevši od onog koji se najdulje nije prijavljivao, sve dok ne bude dovoljno prostora.
 
       Ako se to pravilo ne postavi, automatsko čišćenje upotrebljava zadanu ugrađenu strategiju. Ta je strategija trenutačno "RemoveLRUIfDormant".</translation>
-<translation id="7334274148831027933">Omogući usidreno povećalo</translation>
 <translation id="7336785017449297672">Upravlja postavkama sata i vremenske zone.</translation>
 <translation id="7336878834592315572">Zadrži kolačiće za vrijeme trajanja sesije</translation>
 <translation id="7339315111520512972">Nametni pokretanje koda za umrežavanje u procesu preglednika</translation>
@@ -3590,22 +3551,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
           Napomena: dopuštene vrijednosti za polje <ph name="MINUTE_FIELD_NAME" /> u <ph name="CHARGE_START_TIME_FIELD_NAME" /> i <ph name="CHARGE_END_TIME_FIELD_NAME" /> jesu 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Konfiguriranje značajki pristupačnosti proizvoda <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">To pravilo omogućuje HTTP/0.9 na priključcima osim priključka 80 za HTTP i 443 za HTTPS.
-
-      To je pravilo onemogućeno prema zadanim postavkama. Ako se omogući, korisnici mogu biti izloženi sigurnosnoj poteškoći https://crbug.com/600352.
-
-      Tim se pravilom organizacijama želi pružiti prilika da premjeste postojeće poslužitelje s HTTP-a/0.9. Pravilo će se ukloniti u budućnosti.
-
-      Ako se to pravilo ne postavi, HTTP/0.9 onemogućit će se na priključcima koji nisu zadani.</translation>
-<translation id="7726421241038987229">
-      Ova postavka, SitePerProcess, može se koristiti kako bi se korisnicima onemogućilo da se isključe iz zadanog ponašanja izolacije svih web-lokacija. Napominjemo da pravilo IsolateOrigins također može biti korisno za izolaciju dodatnih, preciznije određenih izvora.
-      Ako se to pravilo omogući, korisnici se neće moći isključiti iz zadanog ponašanja pri kojem se svaka web-lokacija izvodi u svojem procesu.
-      Ako se pravilo ne konfigurira ili se onemogući, korisnik će se moći isključiti iz izolacije web-lokacije
-      (na primjer pomoću unosa "Disable site isolation" (Onemogući izolaciju web-lokacije) na stranici chrome://flags).  Ako se to pravilo postavi na onemogućeno i/ili ne konfigurira, ono ne isključuje izolaciju web-lokacije.
-      Na proizvodu <ph name="PRODUCT_OS_NAME" /> preporučuje se postaviti pravila za uređaje <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na istu vrijednost. Ako se vrijednosti koje navode ta dva pravila ne podudaraju, može doći do kašnjenja prilikom pokretanja korisničke sesije dok se primjenjuje vrijednost koju navode korisnička pravila.
-
-      NAPOMENA: To se pravilo ne primjenjuje na Androidu. Da biste omogućili SitePerProcess na Androidu, postavite pravilo SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Dopusti uređajima da upotrebljavaju <ph name="PLUGIN_VM_NAME" /> na proizvodu <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Omogućuje autentifikaciju s dva čimbenika za hostove daljinskog pristupa umjesto PIN-a koji određuje korisnik.
 
@@ -3740,13 +3685,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="8050080920415773384">Nativni ispis</translation>
 <translation id="8053580360728293758">Nadjačava način boje zadanog ispisa. Pravilo se zanemaruje ako način nije dostupan.</translation>
 <translation id="8059164285174960932">URL na kojem bi klijenti za daljinski pristup trebali dobiti token za autentifikaciju</translation>
-<translation id="806280865577636339">Ako se to pravilo postavi na true, opcije pristupačnosti uvijek se prikazuju na izborniku trake sustava.
-
-          Ako se pravilo postavi na false, opcije pristupačnosti nikad se neće prikazivati na izborniku trake sustava.
-
-          Ako postavite to pravilo, korisnici ga neće moći promijeniti ni nadjačati.
-
-          Ako ne postavite to pravilo, opcije pristupačnosti neće se prikazivati na izborniku trake sustava, ali ih korisnik može prikazati putem stranice Postavke.</translation>
 <translation id="806523868782250975">Konfigurira popis upravljanih oznaka.
 
       Pravilo obuhvaća popis oznaka u kojem je svaka oznaka rječnik s ključevima "<ph name="NAME" />" i "<ph name="URL_LABEL" />" koji nose naziv i cilj oznake. Moguće je konfigurirati podmapu tako da se definira oznaka bez ključa "<ph name="URL_LABEL" />", ali s dodatnim ključem "<ph name="CHILDREN" />" koji i sam sadrži popis oznaka kako je gore definirano (od kojih neke opet mogu biti mape). <ph name="PRODUCT_NAME" /> dopunjuje nepotpune URL-ove kao da su poslani putem višenamjenskog okvira, npr. "<ph name="GOOGLE_COM" />" postaje "<ph name="HTTPS_GOOGLE_COM" />".
@@ -4220,9 +4158,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 
       Vrijednost pravila navodi se u sekundama.</translation>
 <translation id="9035964157729712237">ID-jevi proširenja za izuzimanje s crne liste</translation>
-<translation id="9038058011835642205">Određuje popis web-lokacija koje se instaliraju u pozadini bez interakcije korisnika i koje korisnik ne može deinstalirati ni onemogućiti.
-
-      Svaka stavka na popisu pravila objekt je s obaveznim članom: "url" i dva izborna člana: "default_launch_container" i "create_desktop_shortcut". "url" je URL web-aplikacije koja će se instalirati, za "launch_container" je potrebno odabrati postavku "window" ili "tab" kako bi se naznačilo hoće li se web-aplikacija nakon instalacije otvarati u prozoru ili na kartici, a "create_desktop_shortcut" treba biti postavljen na true ako je potrebno izraditi prečac na radnoj površini na Linuxu i Windowsima. Ako se izostavi "default_launch_container", aplikacija će se prema zadanim postavkama otvarati u kartici. Neovisno o vrijednosti parametra "default_launch_container", korisnici mogu promijeniti spremnik u kojem će se aplikacija otvarati. Ako se "create_desktop_shortcuts" izostavi, prečac na radnoj površini neće se izraditi.</translation>
 <translation id="9038839118379817310">Omogući Wi-Fi</translation>
 <translation id="9039822628127365650">Ako se postavi, to pravilo određuje vremensko razdoblje nakon kojeg se korisnik automatski odjavljuje, a sesija prekida. Korisnik može vidjeti preostalo vrijeme na tajmeru za odbrojavanje prikazanom na traci sustava.
 

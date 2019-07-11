@@ -143,15 +143,6 @@
       Als het beleid is ingesteld op 'false', wordt de status van de schakelaar voor de ontwikkelaarsmodus niet gemeld.</translation>
 <translation id="1160479894929412407">QUIC-protocol toestaan</translation>
 <translation id="1160939557934457296">Doorgaan vanaf de waarschuwingspagina van Safe Browsing uitschakelen</translation>
-<translation id="1171342272070128466">Schakel de toegankelijkheidsfunctie 'Gedockt vergrootglas' in.
-
-          Als dit beleid is ingesteld op True, wordt het gedockte vergrootglas altijd ingeschakeld.
-
-          Als dit beleid is ingesteld op False, wordt het gedockte vergrootglas altijd uitgeschakeld.
-
-          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
-
-          Als dit beleid niet wordt ingesteld, is het gedockte vergrootglas in eerste instantie uitgeschakeld, maar kan de gebruiker dit op elk gewenst moment inschakelen.</translation>
 <translation id="1189817621108632689">Hiermee kun je een lijst met URL's opgeven voor sites die afbeeldingen mogen weergeven.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites, op basis van het beleid DefaultImagesSetting (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.
@@ -328,7 +319,6 @@
 <translation id="1474273443907024088">TLS False Start uitschakelen</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Blokkering van injectie van software van derden inschakelen</translation>
-<translation id="1504431521196476721">Externe bevestiging</translation>
 <translation id="1507382822467487898">
           Hiermee kun je instellen welk MAC-adres (Media Access Control) wordt gebruikt als het apparaat is aangesloten op een dock.
 
@@ -457,12 +447,6 @@
 
       Het beleid moet op een URL worden ingesteld vanaf waar de Servicevoorwaarden door <ph name="PRODUCT_OS_NAME" /> kunnen worden gedownload. De Servicevoorwaarden moeten platte tekst zijn die als tekst met MIME-type/plat wordt weergegeven. Er is geen opmaak toegestaan.</translation>
 <translation id="1750315445671978749">Alle downloads blokkeren</translation>
-<translation id="1762072363876276024">
-      Dit beleid is van toepassing op het inlogscherm. Raadpleeg ook het beleid <ph name="SITE_PER_PROCESS_POLICY_NAME" /> dat van toepassing is op de gebruikerssessie. Het wordt aangeraden beide beleidsregels in te stellen op dezelfde waarde. Als de waarden niet overeenkomen, kan er een vertraging optreden bij het starten van een gebruikerssessie terwijl de waarde wordt toegepast die is gespecificeerd door het gebruikersbeleid.
-      Deze instelling, DeviceLoginScreenSitePerProcess, kan worden gebruikt om gebruikers niet toe te staan het standaardgedrag uit te schakelen waarbij alle sites worden geïsoleerd. Het beleid DeviceLoginScreenIsolateOrigins kan ook handig zijn voor het isoleren van aanvullende, gedetailleerdere herkomsten.
-      Als het beleid is ingeschakeld, kunnen gebruikers het standaardgedrag niet uitschakelen waarbij elke site wordt uitgevoerd in een eigen proces.
-      Als het beleid niet is geconfigureerd of is uitgeschakeld, kan de gebruiker deze instelling wijzigen (bijvoorbeeld met 'Disable site isolation' ('Site-isolatie uitschakelen) in chrome://flags).
-      </translation>
 <translation id="1767673020408652620">App-aanbevelingen inschakelen voor de nulstatus van het zoekvak</translation>
 <translation id="17719159826324007">
       Wanneer dit beleid is ingesteld op ArcSession, wordt het apparaat gedwongen opnieuw opgestart na het uitloggen van een gebruiker als Android is gestart.
@@ -1366,13 +1350,6 @@
           Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
 
           Als dit beleid niet wordt ingesteld, wordt stroompiekverschuiving in eerste instantie uitgeschakeld en kan dit worden ingeschakeld door de gebruiker.</translation>
-<translation id="3388153794103186066">Hiermee kun je een lijst met URL's instellen die aangeven welke sites automatisch toegang krijgen tot een USB-apparaat met de opgegeven leverancier- en product-ID. Het beleid is alleen geldig als elk item in de lijst zowel apparaten als URL's bevat. Elk item in apparaten kan een veld voor leverancier-ID en een veld voor product-ID bevatten. Een ID die is weggelaten, wordt als wildcard behandeld, met één uitzondering: er mag geen product-ID worden opgegeven zonder dat er ook een leverancier-ID is opgegeven. Anders is het beleid niet geldig. Ongeldige beleidswaarden worden genegeerd.
-
-        Het USB-toestemmingsmodel gebruikt de URL van de site die de aanvraag indient ('aanvragende URL') en de URL van de framesite op hoofdniveau ('insluitings-URL') om de aanvragende URL toegang te geven tot het USB-apparaat. Wanneer de aanvragende site in een iframe wordt geladen, is het mogelijk dat de aanvragende URL en de insluitings-URL niet hetzelfde zijn. Daarom kan het veld voor URL's maximaal twee, door een komma gescheiden URL-tekenreeksen bevatten om respectievelijk de aanvragende URL en insluitings-URL op te geven. Als er slechts één URL wordt opgegeven, wordt toegang tot de bijbehorende USB-apparaten gegeven wanneer de URL van de aanvragende site overeenkomt met deze URL, ongeacht de insluitingsstatus. De URL's in het veld voor URL's moeten geldige URL's zijn. Als dit niet het geval is, wordt het beleid genegeerd.
-
-        Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Deze vind je in het beleid DefaultWebUsbGuardSetting (als dit is ingesteld) of in de persoonlijke configuratie van de gebruiker.
-
-        De URL-patronen in dit beleid mogen niet conflicteren met de patronen die zijn ingesteld via WebUsbBlockedForUrls. Als er een conflict is, krijgt dit beleid voorrang op WebUsbBlockedForUrls en WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Als dit beleid niet is geconfigureerd, gebruikt <ph name="PRODUCT_NAME" /> een standaard minimum versie, oftewel TLS 1.0.
 
       In andere gevallen kan een van de volgende waarden worden ingesteld: 'tls1', 'tls1.1' of 'tls1.2'. Wanneer dit beleid is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> geen lagere SSL-/TLS-versies dan de gespecificeerde versie. Als er een waarde wordt ingesteld die niet wordt herkend, wordt deze genegeerd.</translation>
@@ -1648,15 +1625,6 @@
       Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_NAME" /> de normale standaardmap (platformspecifiek).
 
       Raadpleeg https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.</translation>
-<translation id="3904459740090265495">Met dit beleid wordt het inloggedrag van de browser beheerd. Hiermee kun je specificeren of de gebruiker kan inloggen bij <ph name="PRODUCT_NAME" /> met zijn account en accountgerelateerde services (zoals Chrome-synchronisatie) kan gebruiken.
-
-      Als het beleid is ingesteld op 'Inloggen bij browser uitschakelen', kan de gebruiker niet inloggen bij de browser en geen accountgebaseerde services gebruiken. Functies op browserniveau (zoals Chrome-synchronisatie) kunnen in dit geval niet worden gebruikt en zijn niet beschikbaar. Als de gebruiker was ingelogd en het beleid is ingesteld op 'Uitgeschakeld', wordt de gebruiker uitgelogd wanneer hij Chrome de volgende keer gebruikt. Zijn lokale profielgegevens (zoals bladwijzers, wachtwoorden, enzovoort) blijven behouden. De gebruiker kan nog steeds inloggen bij en gebruikmaken van Google-webservices zoals Gmail.
-
-      Als het beleid is ingesteld op 'Inloggen bij browser inschakelen', mag de gebruiker inloggen bij de browser en wordt deze automatisch ingelogd bij de browser wanneer hij is ingelogd bij Google-webservices zoals Gmail. Als een gebruiker wordt ingelogd bij de browser, betekent dit dat de accountgegevens van de gebruiker worden bewaard door de browser. Het betekent echter niet dat Chrome-synchronisatie standaard wordt ingeschakeld. De gebruiker moet zich afzonderlijk aanmelden voor gebruik van deze functie. Als dit beleid wordt ingeschakeld, kan de gebruiker de instelling die inloggen bij de browser toestaat, niet uitschakelen. Gebruik het beleid 'SyncDisabled' om de beschikbaarheid van Chrome-synchronisatie te beheren.
-
-      Als het beleid is ingesteld op 'Inloggen bij browser afdwingen', krijgt de gebruiker een dialoogvenster voor accountselectie te zien en moet deze een account kiezen en inloggen om de browser te gebruiken. Dit zorgt ervoor dat voor beheerde accounts de beleidsregels die aan het account zijn gekoppeld, worden toegepast en afgedwongen. Hiermee wordt Chrome-synchronisatie standaard ingeschakeld voor het account, behalve wanneer synchronisatie is uitgeschakeld door de domeinbeheerder of via het beleid 'SyncDisabled'. De standaardwaarde van BrowserGuestModeEnabled wordt ingesteld op 'False'. Houd er rekening mee dat bestaande, niet-ingelogde profielen worden vergrendeld en niet toegankelijk zijn na inschakeling van dit beleid. Bekijk het Helpcentrum-artikel voor meer informatie: https://support.google.com/chrome/a/answer/7572556.
-
-      Als dit beleid niet is ingesteld, kan de gebruiker bepalen of deze de optie voor inloggen bij de browser wil inschakelen en deze naar wens gebruiken.</translation>
 <translation id="3911737181201537215">Dit beleid is niet van invloed op de logboekregistratie van Android.</translation>
 <translation id="391531815696899618">Hiermee wordt synchronisatie van Google Drive in de app Bestanden van <ph name="PRODUCT_OS_NAME" /> uitgeschakeld wanneer de optie is ingesteld op 'True'. In dat geval worden geen gegevens naar Google Drive geüpload.
 
@@ -1729,12 +1697,6 @@
       <ph name="PRODUCT_OS_NAME" />-apparaten zoeken automatisch naar updates wanneer deze instelling niet is geconfigureerd of is ingesteld op 'False'.
 
       Waarschuwing: Het wordt aanbevolen automatische updates ingeschakeld te laten, zodat gebruikers software-updates en essentiële beveiligingsoplossingen ontvangen. Als je automatische updates uitschakelt, kunnen gebruikers gevaar lopen.</translation>
-<translation id="4018000735882846261">Dit beleid geeft de Google Assistent toestemming om te luisteren naar de spraakactiveringszin.
-
-      Als het beleid is ingeschakeld, luistert de Google Assistent naar de spraakactiveringszin.
-      Als het beleid is uitgeschakeld, luistert de Google Assistent niet naar de spraakactiveringszin.
-      Als het beleid niet is ingesteld, luistert de Google Assistent niet naar de spraakactiveringszin.
-      </translation>
 <translation id="4020682745012723568">Cookies die worden overgedragen naar het profiel van de gebruiker, zijn niet toegankelijk voor Android-apps.</translation>
 <translation id="402759845255257575">Niet toestaan dat sites JavaScript uitvoeren</translation>
 <translation id="4027608872760987929">De standaardzoekprovider inschakelen</translation>
@@ -3473,7 +3435,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid is ingesteld op 'RemoveLRUIfDormant', blijft de automatische opschoonfunctie gebruikers verwijderen die ten minste drie maanden niet zijn ingelogd (waarbij gegevens van gebruikers die het minst recentelijk hebben ingelogd het eerste worden verwijderd) totdat er voldoende schijfruimte is.
 
       Als dit beleid niet wordt ingesteld, gebruikt de automatische opschoonfunctie de standaard ingebouwde strategie. Momenteel is dit de strategie'RemoveLRUIfDormant'.</translation>
-<translation id="7334274148831027933">Gedockt vergrootglas inschakelen</translation>
 <translation id="7336785017449297672">Beheert instellingen voor de klok en tijdzone.</translation>
 <translation id="7336878834592315572">Cookies bewaren voor de duur van de sessie</translation>
 <translation id="7339315111520512972">Afdwingen dat netwerkcode wordt uitgevoerd in het browserproces</translation>
@@ -3669,22 +3630,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Opmerking: Toegestane waarden voor het veld <ph name="MINUTE_FIELD_NAME" /> in <ph name="CHARGE_START_TIME_FIELD_NAME" /> en <ph name="CHARGE_END_TIME_FIELD_NAME" /> zijn 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Toegankelijkheidsfuncties van <ph name="PRODUCT_OS_NAME" /> configureren.</translation>
-<translation id="7724994675283793633">Met dit beleid wordt HTTP/0.9 ingeschakeld voor poorten anders dan poort 80 voor HTTP en poort 443 voor HTTPS.
-
-      Dit beleid is standaard uitgeschakeld. Als dit is ingeschakeld, hebben gebruikers te maken met het volgende beveiligingsprobleem: https://crbug.com/600352.
-
-      Dit beleid is bedoeld om ondernemingen de kans te geven bestaande servers over te zetten naar iets anders dan HTTP/0.9. Het beleid zal in de toekomst worden verwijderd.
-
-      Als dit beleid niet is ingesteld, wordt HTTP/0.9 uitgeschakeld voor niet-standaardpoorten.</translation>
-<translation id="7726421241038987229">
-      Deze instelling, SitePerProcess, kan worden gebruikt om gebruikers niet toe te staan het standaardgedrag uit te schakelen waarbij alle sites worden geïsoleerd. Het beleid IsolateOrigins kan ook handig zijn om aanvullende, gedetailleerdere herkomsten te isoleren.
-      Als het beleid is ingeschakeld, kunnen gebruikers het standaardgedrag niet uitschakelen waarbij elke site wordt uitgevoerd in een eigen proces.
-      Als het beleid niet is geconfigureerd of is uitgeschakeld, kan de gebruiker de site-isolatie uitschakelen
-      (bijvoorbeeld met 'Disable site isolation' ('Site-isolatie uitschakelen) in chrome://flags).  Wanneer je dit beleid instelt op uitgeschakeld en/of het beleid niet configureert, wordt site-isolatie niet uitgeschakeld.
-      Voor <ph name="PRODUCT_OS_NAME" /> raden we aan het apparaatbeleid <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> ook in te stellen op dezelfde waarde. Als de waarden die zijn opgegeven in de twee beleidsregels niet overeenkomen, kan er een vertraging optreden bij het starten van een gebruikerssessie terwijl de waarde wordt toegepast die is gespecificeerd door het gebruikersbeleid.
-
-      OPMERKING: Dit beleid is niet van toepassing op Android. Als je SitePerProcess wilt inschakelen op Android, gebruik je de beleidsinstelling SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Toestaan dat apparaten een <ph name="PLUGIN_VM_NAME" /> gebruiken op <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Hiermee schakel je authenticatie in twee stappen in plaats van een door de gebruiker gedefinieerde pincode in voor hosts voor externe toegang.
 
@@ -3822,13 +3767,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8050080920415773384">Systeemeigen printer</translation>
 <translation id="8053580360728293758">Hiermee overschrijf je de standaard kleurenmodus voor afdrukken. Als de modus niet beschikbaar is, wordt dit beleid genegeerd.</translation>
 <translation id="8059164285174960932">URL waarbij clients met externe toegang hun verificatietoken moeten ophalen</translation>
-<translation id="806280865577636339">Als dit beleid is ingesteld op 'true', worden toegankelijkheidsopties altijd weergegeven in het systeemvakmenu.
-
-          Als dit beleid is ingesteld op 'false', worden toegankelijkheidsopties nooit weergegeven in het systeemvakmenu.
-
-          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
-
-          Als dit beleid niet is ingesteld, worden toegankelijkheidsopties niet weergegeven in het systeemvakmenu, maar kan de gebruiker er via de pagina Instellingen voor zorgen dat de toegankelijkheidsopties worden weergegeven.</translation>
 <translation id="806523868782250975">Hiermee wordt een lijst met beheerde bladwijzers geconfigureerd.
 
       Het beleid bestaat uit een lijst met bladwijzers waarbij elke bladwijzer een woordenboek is met daarin de sleutels '<ph name="NAME" />' en '<ph name="URL_LABEL" />' voor de naam en het doel van de bladwijzers. Er kan een submap worden geconfigureerd door een bladwijzer te definiëren zonder een '<ph name="URL_LABEL" />'-sleutel maar met een extra '<ph name="CHILDREN" />'-sleutel die zelf een lijst met bladwijzers bevat, zoals hierboven gedefinieerd (sommige hiervan kunnen ook weer mappen zijn). <ph name="PRODUCT_NAME" /> vult onvolledige URL's aan alsof ze via de omnibox zijn opgegeven. Voorbeeld: <ph name="GOOGLE_COM" /> wordt <ph name="HTTPS_GOOGLE_COM" />.
@@ -4308,9 +4246,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 
       De beleidswaarde moet worden gespecificeerd in seconden.</translation>
 <translation id="9035964157729712237">Extensie-ID's die zijn vrijgesteld van de zwarte lijst</translation>
-<translation id="9038058011835642205">Specificeert een lijst met web-apps die op de achtergrond worden geïnstalleerd zonder interactie van de gebruiker en die niet kunnen worden verwijderd of uitgeschakeld door de gebruiker.
-
-      Elk lijstitem van het beleid is een object met een verplicht element: 'url' en twee optionele elementen: 'default_launch_container' en 'create_desktop_shortcut'. 'url' moet de URL van de te installeren web-app zijn en 'launch_container' moet 'window' of 'tab' zijn om aan te duiden hoe de web-app na de installatie wordt geopend. 'create_desktop_shortcut' moet zijn ingesteld op 'true' als er een snelkoppeling moet worden gemaakt op Linux en Windows. Als 'default_launch_container' wordt weggelaten, wordt de app standaard geopend in een tabblad. Gebruikers kunnen wijzigen in welke container de app wordt geopend, ongeacht de waarde van 'default_launch_container'. Als 'create_desktop_shortcuts' wordt weggelaten, worden er geen snelkoppelingen gemaakt.</translation>
 <translation id="9038839118379817310">Wifi inschakelen</translation>
 <translation id="9039822628127365650">Als dit beleid is ingesteld, geeft het de periode op waarna een gebruiker automatisch wordt uitgelogd en de sessie wordt beëindigd. De gebruiker wordt geïnformeerd over de resterende tijd door een afteltimer die in het systeemvak wordt weergegeven.
 

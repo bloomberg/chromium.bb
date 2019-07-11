@@ -144,15 +144,6 @@
       Nếu chính sách được đặt thành sai, trạng thái của bộ chuyển đổi dành cho nhà phát triển sẽ không được báo cáo.</translation>
 <translation id="1160479894929412407">Cho phép giao thức kết nối Internet nhanh UDP (QUIC)</translation>
 <translation id="1160939557934457296">Vô hiệu hóa khả năng tiếp tục từ trang cảnh báo Duyệt web an toàn</translation>
-<translation id="1171342272070128466">Bật tính năng hỗ trợ tiếp cận cho tùy chọn phóng to ở vị trí cố định.
-
-          Nếu bạn đặt chính sách này thành true, thì tùy chọn phóng to ở vị trí cố định sẽ luôn bật.
-
-          Nếu bạn đặt chính sách này thành false, thì tùy chọn phóng to ở vị trí cố định sẽ luôn tắt.
-
-          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
-
-          Nếu bạn không đặt chính sách này, thì ban đầu, tùy chọn phóng to ở vị trí cố định sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="1189817621108632689">Cho phép bạn đặt danh sách các mẫu url chỉ định những trang web không được phép hiển thị hình ảnh.
 
           Nếu không đặt chính sách này, thì giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web từ chính sách 'DefaultImagesSetting', nếu chính sách đó được đặt, hoặc từ cấu hình cá nhân của người dùng.
@@ -330,7 +321,6 @@
 <translation id="1474273443907024088">Tắt Khởi động giả TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Cho phép chặn phần mềm bên thứ ba thêm mã thực thi</translation>
-<translation id="1504431521196476721">Chứng thực từ xa</translation>
 <translation id="1507382822467487898">
           Định cấu hình địa chỉ MAC (điều khiển truy cập phương tiện) sẽ được sử dụng khi kết nối đế sạc với thiết bị.
 
@@ -461,12 +451,6 @@
 
       Phải đặt chính sách thành một URL nơi <ph name="PRODUCT_OS_NAME" /> có thể tải xuống Điều khoản dịch vụ. Điều khoản dịch vụ phải là văn bản thuần túy, được phân phối dưới dạng văn bản/thuần túy loại MIME. Không cho phép đánh dấu.</translation>
 <translation id="1750315445671978749">Chặn tất cả các mục tải xuống</translation>
-<translation id="1762072363876276024">
-      Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem cả chính sách <ph name="SITE_PER_PROCESS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cả hai chính sách về cùng một giá trị. Nếu các giá trị không khớp nhau, thì có thể xảy ra tình trạng chậm trễ khi vào một phiên người dùng mặc dù đang áp dụng giá trị do chính sách người dùng chỉ định.
-      Tùy chọn cài đặt DeviceLoginScreenSitePerProcess này có thể dùng để không cho phép người dùng chọn không sử dụng hoạt động mặc định là cách ly tất cả trang web. Xin lưu ý rằng chính sách DeviceLoginScreenIsolateOrigins cũng có thể hữu ích cho việc cách ly các nguồn gốc bổ sung không dễ thấy.
-      Nếu bạn bật chính sách này, thì người dùng sẽ không thể chọn không sử dụng hoạt động mặc định, trong đó mỗi trang web chạy ở quy trình riêng.
-      Nếu bạn tắt hoặc không định cấu hình chính sách này, thì người dùng có thể thay đổi tùy chọn cài đặt này (ví dụ như sử dụng mục "Tắt tính năng cách ly trang web" trong chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Bật Ứng dụng đề xuất khi hộp tìm kiếm ở trạng thái 0</translation>
 <translation id="17719159826324007">
       Khi bạn đặt chính sách này thành ArcSession, nếu Android đã khởi động, thì chính sách này sẽ buộc thiết bị khởi động lại khi người dùng đăng xuất.
@@ -1365,13 +1349,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn đặt chính sách này, thì người dùng không thể thay đổi hoặc ghi đè chính sách này.
 
           Nếu bạn không đặt chính sách này, thì chế độ chuyển đổi điện năng cao điểm sẽ tắt ngay từ đầu và người dùng không thể bật chế độ này.</translation>
-<translation id="3388153794103186066">Cho phép bạn đặt danh sách các url chỉ định những trang web sẽ tự động được cấp quyền truy cập vào thiết bị USB bằng ID sản phẩm và ID nhà cung cấp cụ thể. Mỗi mục trong danh sách phải chứa cả thiết bị và url để chính sách có hiệu lực. Mỗi mục trong các thiết bị có thể chứa trường ID sản phẩm và ID nhà cung cấp. Bất kỳ ID nào bị bỏ qua đều được coi là ký tự đại diện có một ngoại lệ và ngoại lệ đó chính là không thể chỉ định ID sản phẩm nếu không chỉ định được ID nhà cung cấp. Nếu không, chính sách sẽ không có hiệu lực và bị bỏ qua.
-
-        Mô hình quyền của USB sử dụng URL của trang web yêu cầu ("URL yêu cầu") và URL của trang web khung cấp cao nhất ("URL nhúng") để cấp quyền cho URL yêu cầu truy cập vào thiết bị USB. URL yêu cầu có thể khác với URL nhúng khi bạn tải trang web yêu cầu trong khung nội tuyến. Do đó, trường "url" có thể chứa tối đa hai chuỗi URL phân tách bằng dấu phẩy để chỉ định URL yêu cầu và URL nhúng tương ứng. Nếu chỉ có một URL được chỉ định, thì quyền truy cập vào các thiết bị USB tương ứng sẽ được cấp khi URL của trang web yêu cầu khớp với URL này bất kể trạng thái nhúng. Các URL trong "url" phải là các URL hợp lệ. Nếu không, chính sách này sẽ bị bỏ qua.
-
-        Nếu bạn không đặt chính sách này, thì giá trị mặc định chung sẽ được dùng cho tất cả các trang web của chính sách 'DefaultWebUsbGuardSetting' nếu chính sách này được đặt, hoặc nếu không sẽ được sử dụng cho cấu hình cá nhân của người dùng.
-
-        Các mẫu URL trong chính sách này không được xung đột với các URL đã định cấu hình thông qua WebUsbBlockedForUrls. Nếu có xung đột, thì chính sách này sẽ được ưu tiên so với WebUsbBlockedForUrls và WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Nếu bạn chưa định cấu hình chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ sử dụng phiên bản tối thiểu mặc định là TLS 1.0.
 
       Nếu không, bạn có thể đặt chính sách này thành một trong các giá trị sau: "tls1", "tls1.1" hoặc "tls1.2". Khi được đặt, <ph name="PRODUCT_NAME" /> sẽ không sử dụng các phiên bản SSL/TLS thấp hơn phiên bản đã chỉ định. Giá trị không xác định sẽ bị bỏ qua.</translation>
@@ -1648,15 +1625,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục mặc định thông thường (dành riêng cho nền tảng).
 
       Hãy xem https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để biết danh sách các biến có thể được sử dụng.</translation>
-<translation id="3904459740090265495">Chính sách này kiểm soát hành vi đăng nhập của trình duyệt. Chính sách cho phép bạn chỉ định xem người dùng có thể đăng nhập vào <ph name="PRODUCT_NAME" /> bằng tài khoản của họ và sử dụng các dịch vụ liên quan đến tài khoản như tính năng đồng bộ hóa trên Chrome hay không.
-
-      Nếu bạn đặt chính sách này thành "Vô hiệu hóa đăng nhập vào trình duyệt", thì người dùng sẽ không thể đăng nhập vào trình duyệt và sử dụng các dịch vụ dựa trên tài khoản. Trong trường hợp này, các tính năng ở cấp trình duyệt như đồng bộ hóa trên Chrome sẽ không sử dụng được và không có sẵn. Nếu người dùng đã đăng nhập và chính sách này được đặt thành "Tắt", thì họ sẽ bị đăng xuất khi chạy Chrome vào lần sau. Tuy nhiên, các dữ liệu hồ sơ cục bộ của họ như dấu trang, mật khẩu, v.v. sẽ vẫn giữ nguyên. Người dùng vẫn có thể đăng nhập và sử dụng các dịch vụ web của Google như Gmail.
-
-      Nếu bạn đặt chính sách này thành "Cho phép đăng nhập vào trình duyệt", thì người dùng sẽ được phép đăng nhập vào trình duyệt và tự động được đăng nhập vào trình duyệt khi họ đăng nhập vào các dịch vụ web của Google như Gmail. Được đăng nhập vào trình duyệt nghĩa là thông tin tài khoản của người dùng sẽ do trình duyệt lưu giữ. Tuy nhiên, điều đó không có nghĩa là tính năng đồng bộ hóa trên Chrome sẽ được bật theo mặc định; người dùng phải chọn sử dụng tính năng này riêng biệt. Việc bật chính sách này sẽ ngăn không cho người dùng tắt tùy chọn cài đặt cho phép đăng nhập vào trình duyệt. Để kiểm soát việc có cho phép tính năng đồng bộ hóa trên Chrome hay không, hãy sử dụng chính sách "SyncDisabled".
-
-      Nếu bạn đặt chính sách này thành "Buộc đăng nhập vào trình duyệt", thì người dùng sẽ thấy hộp thoại lựa chọn tài khoản và phải chọn rồi đăng nhập vào tài khoản để sử dụng trình duyệt. Điều này đảm bảo rằng các chính sách liên kết với tài khoản sẽ được áp dụng và thực thi (đối với tài khoản được quản lý). Theo mặc định, việc này sẽ bật tính năng đồng bộ hóa trên Chrome cho tài khoản, trừ khi quản trị viên miền hoặc chính sách "SyncDisabled" đã tắt tính năng đó. Giá trị mặc định của BrowserGuestModeEnabled sẽ được đặt thành false. Lưu ý rằng các hồ sơ chưa ký hiện tại sẽ bị khóa và không truy cập được sau khi bật chính sách này. Để biết thêm thông tin, hãy xem bài viết trên trung tâm trợ giúp: https://support.google.com/chrome/a/answer/7572556.
-
-      Nếu bạn không đặt chính sách này, thì người dùng có thể quyết định xem họ có muốn bật tùy chọn đăng nhập vào trình duyệt và sử dụng khi thấy phù hợp hay không.</translation>
 <translation id="3911737181201537215">Chính sách này không ảnh hưởng đến việc ghi nhật ký do Android thực hiện.</translation>
 <translation id="391531815696899618">Tắt đồng bộ hóa Google Drive trong ứng dụng Tệp <ph name="PRODUCT_OS_NAME" /> khi được đặt thành True. Trong trường hợp đó, không có dữ liệu nào được tải lên Google Drive.
 
@@ -1738,12 +1706,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Thiết bị <ph name="PRODUCT_OS_NAME" /> sẽ tự động kiểm tra các cập nhật khi cài đặt này không được định cấu hình hoặc được đặt thành False.
 
       Cảnh báo: Bạn nên bật cập nhật tự động liên tục để người dùng nhận được các bản cập nhật phần mềm và các bản vá bảo mật tối quan trọng. Tắt cập nhật tự động có thể khiến người dùng gặp rủi ro.</translation>
-<translation id="4018000735882846261">Chính sách này cấp cho Trợ lý Google quyền nghe cụm từ kích hoạt bằng giọng nói.
-
-      Nếu bạn bật chính sách này, thì Trợ lý Google sẽ lắng nghe cụm từ kích hoạt bằng giọng nói.
-      Nếu bạn tắt chính sách này, thì Trợ lý Google sẽ không lắng nghe cụm từ kích hoạt bằng giọng nói.
-      Nếu bạn không đặt chính sách này, thì Trợ lý Google sẽ không lắng nghe cụm từ kích hoạt bằng giọng nói.
-      </translation>
 <translation id="4020682745012723568">Cookie được chuyển tới hồ sơ của người dùng không thể truy cập vào các ứng dụng Android.</translation>
 <translation id="402759845255257575">Không cho phép bất kỳ trang web nào chạy JavaScript</translation>
 <translation id="4027608872760987929">Bật nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
@@ -3331,11 +3293,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
           Bắt đầu từ <ph name="PRODUCT_NAME" /> 77, chính sách này sẽ bị bỏ qua và coi như là đã tắt.</translation>
 <translation id="7126716959063786004">Cho phép kết thúc các quá trình trong Trình quản lý tác vụ</translation>
 <translation id="7127892035367404455">Khôi phục về phiên bản đích</translation>
-<translation id="7128918109610518786">Liệt kê số nhận dạng ứng dụng mà <ph name="PRODUCT_OS_NAME" /> hiển thị dưới dạng ứng dụng được ghim trong thanh trình chạy.
-
-      Nếu chính sách này được định cấu hình, bộ ứng dụng sẽ được cố định và người dùng không thể thay đổi được.
-
-      Nếu chính sách này không được đặt, người dùng có thể thay đổi danh sách các ứng dụng được ghim trong trình chạy.</translation>
 <translation id="713121532817834879">Chính sách này là một URL trỏ tới tệp XML có cùng định dạng với chính sách <ph name="IEEM_SITELIST_POLICY" /> của Internet Explorer. URL này sẽ tải các quy tắc từ một tệp XML nhưng không chia sẻ những quy tắc đó với Internet Explorer.
 
       Các quy tắc trong tệp XML này được áp dụng giống như <ph name="GREYLIST_POLICY_NAME" />. Tức là, các quy tắc này không cho phép <ph name="PRODUCT_NAME" /> mở trình duyệt thay thế, đồng thời ngăn trình duyệt thay thế mở <ph name="PRODUCT_NAME" />.
@@ -3494,7 +3451,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu chính sách này được đặt thành 'RemoveLRUIfDormant', tính năng dọn sạch tự động sẽ tiếp tục xóa người dùng đã không đăng nhập trong ít nhất 3 tháng theo thứ tự gần đây ít đăng nhập nhất cho tới khi có đủ dung lượng trống.
 
       Nếu chính sách này không được đặt, tính năng dọn sạch tự động sẽ sử dụng chiến lược tích hợp sẵn mặc định. Hiện tại đó là chiến lược 'RemoveLRUIfDormant'.</translation>
-<translation id="7334274148831027933">Bật tính năng phóng to ở vị trí cố định</translation>
 <translation id="7336785017449297672">Kiểm soát các tùy chọn cài đặt đồng hồ và múi giờ.</translation>
 <translation id="7336878834592315572">Lưu giữ cookie trong thời hạn phiên</translation>
 <translation id="7339315111520512972">Buộc mã nối mạng chạy trong quá trình chạy trình duyệt</translation>
@@ -3684,22 +3640,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
           Lưu ý: các giá trị được phép của trường <ph name="MINUTE_FIELD_NAME" /> trong <ph name="CHARGE_START_TIME_FIELD_NAME" /> và <ph name="CHARGE_END_TIME_FIELD_NAME" /> là 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Định cấu hình các tính năng hỗ trợ tiếp cận của <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Chính sách này bật HTTP/0.9 trên cổng không phải 80 cho HTTP và 443 cho HTTPS.
-
-      Chính sách này được tắt theo mặc định và nếu được bật sẽ khiến người dùng dễ gặp phải các sự cố bảo mật https://crbug.com/600352.
-
-      Chính sách này nhằm cung cấp cho doanh nghiệp cơ hội để di chuyển các máy chủ hiện có khỏi HTTP/0.9 và sẽ bị xóa trong tương lai.
-
-      Nếu bạn không đặt chính sách này, HTTP/0.9 sẽ bị tắt trên cổng không phải là cổng mặc định.</translation>
-<translation id="7726421241038987229">
-      Tùy chọn cài đặt SitePerProcess này có thể dùng để không cho phép người dùng chọn không sử dụng hoạt động mặc định là cách ly tất cả trang web. Xin lưu ý rằng chính sách IsolateOrigins cũng có thể hữu ích cho việc cách ly các nguồn gốc bổ sung không dễ thấy.
-      Nếu bạn bật chính sách này, thì người dùng sẽ không thể chọn không sử dụng hoạt động mặc định, trong đó mỗi trang web chạy ở quy trình riêng.
-      Nếu bạn tắt hoặc không định cấu hình chính sách này, thì người dùng có thể chọn không sử dụng tính năng cách ly trang web
-      (ví dụ như sử dụng mục "Tắt tính năng cách ly trang web" trong chrome://flags).  Việc tắt và/hoặc không định cấu hình chính sách này sẽ không tắt tính năng Cách ly trang web.
-      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> về cùng giá trị. Nếu các giá trị do 2 chính sách này chỉ định không khớp nhau, thì có thể xảy ra tình trạng chậm trễ khi vào một phiên người dùng mặc dù đang áp dụng giá trị do chính sách người dùng chỉ định.
-
-      LƯU Ý: Chính sách này không áp dụng trên Android. Để bật SitePerProcess trên Android, hãy dùng tùy chọn cài đặt chính sách SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Cho phép thiết bị sử dụng một <ph name="PLUGIN_VM_NAME" /> trên <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Bật xác thực hai bước cho máy chủ truy cập từ xa thay vì mã PIN do người dùng chỉ định.
 
@@ -3839,13 +3779,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="8050080920415773384">In bản gốc</translation>
 <translation id="8053580360728293758">Ghi đè chế độ in màu mặc định. Nếu không có chế độ này thì chính sách này sẽ bị bỏ qua.</translation>
 <translation id="8059164285174960932">URL nơi ứng dụng truy cập từ xa sẽ lấy mã thông báo xác thực</translation>
-<translation id="806280865577636339">Nếu bạn đặt chính sách này thành true, tùy chọn Hỗ trợ tiếp cận sẽ luôn xuất hiện trong menu khay hệ thống.
-
-          Nếu bạn đặt chính sách này thành false, tùy chọn Hỗ trợ tiếp cận sẽ không bao giờ xuất hiện trong menu khay hệ thống.
-
-          Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hay ghi đè chính sách.
-
-          Nếu bạn không đặt chính sách này, tùy chọn Hỗ trợ tiếp cận sẽ không xuất hiện trong menu khay hệ thống nhưng người dùng có thể đặt để tùy chọn Hỗ trợ tiếp cận hiển thị qua trang Cài đặt.</translation>
 <translation id="806523868782250975">Định cấu hình danh sách dấu trang được quản lý.
 
       Chính sách này bao gồm danh sách các dấu trang trong đó mỗi dấu trang là một từ điển chứa khóa "<ph name="NAME" />" và "<ph name="URL_LABEL" />". Các khóa này lưu giữ tên và URL đích của dấu trang. Có thể định cấu hình thư mục con bằng cách xác định một dấu trang không có khóa "<ph name="URL_LABEL" />" nhưng có khóa "<ph name="CHILDREN" />" bổ sung chứa danh sách dấu trang được xác định ở trên (một số dấu trang trong đó có thể lại là thư mục). <ph name="PRODUCT_NAME" /> sửa đổi các URL chưa hoàn chỉnh như thể các URL đó được gửi qua Thanh địa chỉ, ví dụ như "<ph name="GOOGLE_COM" />" trở thành "<ph name="HTTPS_GOOGLE_COM" />".
@@ -4163,7 +4096,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Chính sách này là tùy chọn. Nếu không thiết lập chính sách này, sẽ không có từ khóa nào kích hoạt nhà cung cấp dịch vụ tìm kiếm.
 
           Chính sách này chỉ được xem xét nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
-<translation id="8731693562790917685">Cài đặt nội dung cho phép bạn chỉ định cách xử lý những loại nội dung cụ thể (ví dụ: Cookie, Hình ảnh hoặc JavaScript).</translation>
 <translation id="8733448613597049197">Bật Báo cáo mở rộng trong dịch vụ Duyệt web an toàn của <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi mục cài đặt này.
 
       Báo cáo mở rộng sẽ gửi một số thông tin hệ thống và nội dung trang đến máy chủ Google nhằm giúp phát hiện các trang web cũng như ứng dụng nguy hiểm.
@@ -4338,9 +4270,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Bạn nên chỉ định giá trị tính bằng giây cho chính sách này.</translation>
 <translation id="9035964157729712237">Các ID tiện ích được miễn khỏi danh sách đen</translation>
-<translation id="9038058011835642205">Chỉ định danh sách các trang web được cài đặt tự động mà không có sự tương tác của người dùng và người dùng không thể gỡ cài đặt cũng như tắt.
-
-      Mỗi mục trong danh sách của chính sách này là một đối tượng có một thành phần bắt buộc: "url" và hai thành phần không bắt buộc: "default_launch_container" và "create_desktop_shortcut". "url" phải là URL của ứng dụng web cần cài đặt, "launch_container" phải là "cửa sổ" hoặc "tab" để xác định cách mở Ứng dụng web sau khi cài đặt và "create_desktop_shortcut" phải có giá trị true nếu lối tắt trên màn hình được tạo trên Linux và Windows. Nếu bỏ qua mục "default_launch_container", ứng dụng sẽ mở trong tab theo mặc định. Người dùng có thể thay đổi vùng chứa nơi mở ứng dụng bất kể "default_launch_container"có giá trị nào. Nếu bỏ qua mục "create_desktop_shortcuts", thì sẽ không có lối tắt trên màn hình nào được tạo.</translation>
 <translation id="9038839118379817310">Bật Wi-Fi</translation>
 <translation id="9039822628127365650">Khi bạn đặt chính sách này, chính sách sẽ chỉ định thời lượng mà sau đó một người dùng tự động bị đăng xuất, chấm dứt phiên. Người dùng được thông báo về thời gian còn lại bằng đồng hồ đếm ngược hiển thị trong khay hệ thống.
 

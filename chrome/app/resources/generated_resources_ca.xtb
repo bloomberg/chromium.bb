@@ -2316,7 +2316,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4524832533047962394">El mode d'inscripció proporcionat no és compatible amb aquesta versió del sistema operatiu. Assegura't que tens la versió més recent.</translation>
 <translation id="4525382759303819021">Obtén les darreres actualitzacions i recomanacions de les aplicacions de Play Store</translation>
 <translation id="4530494379350999373">Origen</translation>
-<translation id="4532646538815530781">Aquest lloc web utilitza sensors de llum.</translation>
+<translation id="4532646538815530781">Aquest lloc web utilitza sensors de moviment.</translation>
 <translation id="4533846798469727141">Ara digues "Ok Google"</translation>
 <translation id="4533985347672295764">Temps de la CPU</translation>
 <translation id="4534661889221639075">Torna-ho a provar.</translation>
@@ -3716,7 +3716,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6691541770654083180">La Terra</translation>
 <translation id="6691936601825168937">&amp;Reenvia</translation>
 <translation id="6697492270171225480">Mostra suggeriments de pàgines similars quan no se'n trobi una</translation>
-<translation id="6697690052557311665">Per compartir, fes clic amb el botó dret a l'aplicació Fitxers i selecciona "Comparteix amb Linux".</translation>
+<translation id="6697690052557311665">Per compartir, fes clic amb el botó dret en una carpeta de l'aplicació Fitxers i selecciona Comparteix amb Linux.</translation>
 <translation id="6698810901424468597">Llegir i modificar les dades dels llocs web <ph name="WEBSITE_1" /> i <ph name="WEBSITE_2" /></translation>
 <translation id="6699883973579689168">Ara pots gestionar els teus Comptes de Google des d'un sol lloc. És possible que tots els permisos (inclosos els d'accés) que hagis concedit a aplicacions, llocs web i extensions de Chrome i Google Play s'apliquin a tots els comptes en què tinguis la sessió iniciada. <ph name="LINK_BEGIN" />Més informació<ph name="LINK_END" /></translation>
 <translation id="6700480081846086223">Emeteu el contingut de <ph name="HOST_NAME" /></translation>

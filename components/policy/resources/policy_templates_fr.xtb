@@ -143,15 +143,6 @@
       Si la règle est définie sur "False", l'état de l'interrupteur du mode développeur n'est pas communiqué.</translation>
 <translation id="1160479894929412407">Autoriser le protocole QUIC</translation>
 <translation id="1160939557934457296">Désactiver l'accès au site lors de l'affichage de la page d'avertissement par le service de navigation sécurisée</translation>
-<translation id="1171342272070128466">Permet d'activer la fonctionnalité d'accessibilité Loupe ancrée.
-
-          Si cette règle est définie sur "True", la loupe ancrée est toujours activée.
-
-          Si cette règle est définie sur "False", la loupe ancrée est toujours désactivée.
-
-          Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
-
-          Si cette règle n'est pas définie, la loupe ancrée est initialement désactivée, mais les utilisateurs peuvent l'activer à tout moment.</translation>
 <translation id="1189817621108632689">Permet de définir une liste de formats d'URL spécifiant les sites non autorisés à afficher des images.
 
           Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultImagesSetting" si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
@@ -327,7 +318,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="1474273443907024088">Désactiver TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Activer le blocage de l'injection de logiciels tiers</translation>
-<translation id="1504431521196476721">Attestation à distance</translation>
 <translation id="1507382822467487898">
           Permet de définir quelle l'adresse MAC (Media Access Control, contrôle d'accès au support) est utilisée lorsqu'une station d'accueil est connectée à l'appareil.
 
@@ -459,12 +449,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       La règle doit être définie sur une URL à partir de laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger les conditions d'utilisation. Ces conditions doivent être en texte brut, et proposées au format texte/brut au type MIME. Aucun balisage n'est autorisé.</translation>
 <translation id="1750315445671978749">Bloquer tous les téléchargements</translation>
-<translation id="1762072363876276024">
-      Cette règle s'applique à l'écran de connexion. Veuillez également consulter celle applicable à la session utilisateur (<ph name="SITE_PER_PROCESS_POLICY_NAME" />). Nous vous recommandons d'attribuer la même valeur à ces deux règles. Si les valeurs sont différentes, il peut y avoir un certain délai lors de l'ouverture d'une session utilisateur dû à l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      La règle DeviceLoginScreenSitePerProcess peut être utilisée pour empêcher les utilisateurs de désactiver le paramètre par défaut qui isole tous les sites. Notez que la règle DeviceLoginScreenIsolateOrigins peut également servir à isoler d'autres origines plus précises.
-      Si la présente règle est activée, les utilisateurs ne peuvent pas désactiver le paramètre par défaut où chaque site exécute son propre processus.
-      Si cette règle n'est pas configurée ou si elle est désactivée, les utilisateurs peuvent modifier ce paramètre (en accédant à l'option "Désactiver l'isolation de sites" sur la page chrome://flags, par exemple).
-      </translation>
 <translation id="1767673020408652620">Activer les recommandations d'applications dans le champ de recherche vide</translation>
 <translation id="17719159826324007">
       Lorsque l'option "ArcSession" est activée, cette règle contraint l'appareil à redémarrer lorsqu'un utilisateur se déconnecte si Android est en cours d'exécution.
@@ -1373,13 +1357,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Si vous définissez cette règle, les utilisateurs n'ont pas la possibilité de la modifier ni de l'ignorer.
 
           Si cette règle n'est pas définie, le passage à l'alimentation via la batterie est désactivé au départ et ne peut être activé par l'utilisateur.</translation>
-<translation id="3388153794103186066">Vous permet de définir une liste d'URL indiquant les sites automatiquement autorisés à accéder à un appareil USB correspondant aux ID de fournisseur et de produit indiqués. Chaque élément de la liste doit contenir à la fois les appareils et les URL pour que la règle soit valide. Chaque élément des appareils peut contenir un champ d'ID de produit et d'ID de fournisseur. Les ID non renseignés sont traités comme des caractères génériques, à une exception près : un ID de produit ne peut pas être spécifié si un ID de fournisseur n'est pas aussi spécifié. Sinon, la règle n'est pas valide et est ignorée.
-
-        Le modèle d'autorisation USB utilise l'URL du site à l'origine de la demande ("URL demandeuse") et l'URL du site du cadre de premier niveau ("URL d'intégration") pour autoriser l'URL demandeuse à accéder à l'appareil USB. L'URL demandeuse peut être différente de l'URL d'intégration si le site demandeur est chargé dans un iFrame. Le champ "URL" peut de ce fait contenir jusqu'à deux chaînes d'URL séparées par une virgule, afin d'indiquer l'URL demandeuse et l'URL d'intégration, respectivement. Si une seule URL est spécifiée, l'accès aux appareils USB concernés est autorisé si l'URL du site demandeur correspond à cette URL, quel que soit l'état d'intégration. Si les URL indiquées dans le champ "URL" ne sont pas valides, la règle est ignorée.
-
-        Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle DefaultWebUsbGuardSetting si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
-
-        Les formats d'URL de cette règle ne doivent pas entrer en conflit avec ceux qui ont été configurés via WebUsbBlockedForUrls. En cas de conflit, cette règle est prioritaire sur les règles WebUsbBlockedForUrls et WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> utilise une version minimale par défaut qui est TLS 1.0.
 
       Sinon, l'une des valeurs suivantes peut être définie : "tls1", "tls1.1" ou "tls1.2". Si elle est configurée, <ph name="PRODUCT_NAME" /> n'utilisera pas de versions SSL/TLS antérieures à la version précisée. Toute valeur non reconnue sera ignorée.</translation>
@@ -1653,15 +1630,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si vous ne configurez pas cette règle, <ph name="PRODUCT_NAME" /> utilise le répertoire par défaut habituel (spécifique à la plate-forme).
 
       Vous pouvez consulter la liste des variables utilisables à l'adresse https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
-<translation id="3904459740090265495">Cette règle permet de gérer la connexion au navigateur et de spécifier si l'utilisateur peut ou non se connecter à <ph name="PRODUCT_NAME" /> avec son compte et utiliser les services relatifs au compte, comme la synchronisation Chrome.
-
-      Si la règle est définie sur "Désactiver la connexion au navigateur", l'utilisateur ne peut pas se connecter au navigateur et utiliser les services relatifs au compte. Dans ce cas, les fonctionnalités de navigateur comme la synchronisation Chrome sont indisponibles et ne peuvent pas être utilisés. Si l'utilisateur était connecté et que la règle est définie sur "Disabled", il sera déconnecté la prochaine fois qu'il utilisera Chrome, mais ses données de profil locales (favoris, mots de passe, etc.) seront conservées. L'utilisateur peut toujours se connecter aux services Web Google comme Gmail et s'en servir.
-
-      Si la règle est définie sur "Activer la connexion au navigateur", l'utilisateur peut se connecter au navigateur. Il est également automatiquement connecté au navigateur lorsqu'il est connecté aux services Web Google comme Gmail. Lorsque l'utilisateur est connecté au navigateur, ses informations de compte sont conservées par le navigateur. Cependant, cela ne signifie pas que la synchronisation Chrome est activée par défaut, l'utilisateur doit accepter d'utiliser cette fonctionnalité séparément. En activant cette règle, vous empêchez l'utilisateur de désactiver le paramètre qui autorise la connexion au navigateur. Pour contrôler la disponibilité de la synchronisation Chrome, utilisez la règle "SyncDisabled".
-
-      Si la règle est définie sur "Obliger la connexion au navigateur", une boîte de dialogue s'affiche pour permettre à l'utilisateur de choisir un compte auquel se connecter pour utiliser le navigateur. Cette mesure permet de s'assurer que dans le cas de comptes gérés, les règles associées à un compte sont appliquées. Active par défaut la synchronisation Chrome pour le compte, sauf dans le cas où la synchronisation a été désactivée par l'administrateur de domaine ou via la règle "SyncDisabled". La valeur par défaut de "BrowserGuestModeEnabled" est définie sur "False". Sachez que les profils existants non signés seront verrouillés et inaccessibles une fois cette règle activée. Pour en savoir plus, consultez l'article suivant du centre d'aide : https://support.google.com/chrome/a/answer/7572556.
-
-      Si la règle n'est pas définie, l'utilisateur peut décider d'activer ou non l'option de connexion au navigateur et l'utiliser à sa convenance.</translation>
 <translation id="3911737181201537215">Cette règle n'a aucun effet sur l'enregistrement effectué par Android.</translation>
 <translation id="391531815696899618">Désactive la synchronisation de Google Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /> lorsque ce paramètre est défini sur "True". Dans ce cas, aucune donnée n'est importée dans Google Drive.
 
@@ -1741,12 +1709,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Les appareils <ph name="PRODUCT_OS_NAME" /> recherchent automatiquement les mises à jour lorsque ce paramètre n'est pas configuré ou lorsqu'il est défini sur "False".
 
       Avertissement : Il est recommandé de ne pas désactiver les mises à jour automatiques afin que les utilisateurs continuent de recevoir les mises à jour logicielles et les correctifs de sécurité essentiels. La désactivation des mises à jour automatiques pourrait constituer un risque pour les utilisateurs.</translation>
-<translation id="4018000735882846261">Cette règle accorde à l'Assistant Google l'autorisation d'écouter l'expression servant à activer les commandes vocales.
-
-      Si cette règle est activée, l'Assistant Google écoute l'expression d'activation des commandes vocales.
-      Si elle est désactivée, l'Assistant Google n'écoute pas cette expression.
-      Si elle n'est pas définie, l'Assistant Google n'écoute pas cette expression.
-      </translation>
 <translation id="4020682745012723568">Les applications Android n'ont pas accès aux cookies transférés vers le profil de l'utilisateur.</translation>
 <translation id="402759845255257575">Interdire à tous les sites d'exécuter JavaScript</translation>
 <translation id="4027608872760987929">Activer le moteur de recherche par défaut</translation>
@@ -3498,7 +3460,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
       Si cette règle est définie sur "RemoveLRUIfDormant", le nettoyage automatique continue à supprimer les comptes des utilisateurs qui ne se sont pas connectés depuis au moins trois mois en commençant par ceux qui se sont connectés il y a le plus longtemps, et ce jusqu'à ce que l'espace libre soit suffisant.
 
       Si cette règle n'est pas définie, le nettoyage automatique utilise la stratégie intégrée par défaut. Actuellement, il s'agit de la stratégie "RemoveLRUIfDormant".</translation>
-<translation id="7334274148831027933">Activer la loupe ancrée</translation>
 <translation id="7336785017449297672">Contrôle les paramètres d'horloge et de fuseau horaire.</translation>
 <translation id="7336878834592315572">Conserver les cookies pendant toute la durée de la session</translation>
 <translation id="7339315111520512972">Forcer le code réseau à s'exécuter dans le processus du navigateur</translation>
@@ -3696,22 +3657,6 @@ au maximum si un utilisateur se sert de l'appareil.
 
           Remarque : Les valeurs autorisées dans le champ <ph name="MINUTE_FIELD_NAME" /> de <ph name="CHARGE_START_TIME_FIELD_NAME" /> et <ph name="CHARGE_END_TIME_FIELD_NAME" /> sont 0, 15, 30 et 45.</translation>
 <translation id="7717938661004793600">Permet de configurer les fonctionnalités d'accessibilité de <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Cette règle active le protocole HTTP 0.9 sur les ports autres que 80 pour HTTP et 443 pour HTTPS.
-
-      Cette règle est désactivée par défaut. Lorsqu'elle est activée, les utilisateurs sont exposés à la faille de sécurité décrite sur la page https://crbug.com/600352.
-
-      Cette règle est conçue pour permettre aux entreprises de migrer les serveurs pour qu'ils n'utilisent plus HTTP 0.9. Elle sera supprimée à l'avenir.
-
-      Si cette règle n'est pas définie, le protocole HTTP 0.9 est désactivé sur les ports non utilisés par défaut.</translation>
-<translation id="7726421241038987229">
-      La règle SitePerProcess peut être employée pour empêcher les utilisateurs de désactiver le paramètre par défaut qui isole tous les sites. Notez que la règle IsolateOrigins peut également servir à isoler d'autres origines plus précises.
-      Si la présente règle est activée, les utilisateurs ne peuvent pas désactiver le paramètre par défaut où chaque site exécute son propre processus.
-      Si cette règle n'est pas configurée ou si elle est désactivée, les utilisateurs peuvent désactiver l'isolation de sites
-      (en accédant à l'option "Désactiver l'isolation de sites" sur la page chrome://flags, par exemple).  Si cette règle est désactivée et/ou si elle n'est pas configurée, l'isolation de sites n'est pas désactivée.
-      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons d'attribuer également la même valeur à la règle <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> relative aux appareils. Si les valeurs sont différentes, il peut y avoir un certain délai lors de l'ouverture d'une session utilisateur dû à l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-
-      REMARQUE : Cette règle ne s'applique pas à Android. Pour l'activer sur Android, utilisez le paramètre de la règle SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Autoriser les appareils à utiliser un <ph name="PLUGIN_VM_NAME" /> pour <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Active l'authentification forte pour les hôtes d'accès à distance au lieu d'un code d'accès défini par l'utilisateur.
 
@@ -3851,13 +3796,6 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 <translation id="8050080920415773384">Impression en mode natif</translation>
 <translation id="8053580360728293758">Remplace le mode d'impression couleur par défaut. Si le mode est indisponible, cette règle est ignorée.</translation>
 <translation id="8059164285174960932">URL où les clients d'accès à distance doivent obtenir leur jeton d'authentification</translation>
-<translation id="806280865577636339">Si cette règle est définie sur "True", les options d'accessibilité s'affichent en permanence dans le menu de la barre d'état système.
-
-          Si cette règle est définie sur "False", les options d'accessibilité ne s'affichent jamais dans le menu de la barre d'état système.
-
-          Si vous définissez cette règle, les utilisateurs n'ont pas la possibilité de la modifier ni de l'ignorer.
-
-          Si vous ne définissez pas cette règle, les options d'accessibilité ne s'affichent pas dans le menu de la barre d'état système, mais l'utilisateur peut activer leur affichage via la page "Paramètres".</translation>
 <translation id="806523868782250975">Configure une liste de favoris gérés.
 
       Cette règle se compose d'une liste de favoris, et chaque favori est un dictionnaire comprenant les clés "<ph name="NAME" />" et "<ph name="URL_LABEL" />" qui contiennent le nom du favori et son URL cible. Vous pouvez également configurer un sous-dossier en définissant un favori sans clé "<ph name="URL_LABEL" />", mais avec une clé "<ph name="CHILDREN" />" supplémentaire qui contient elle-même une liste de favoris, comme défini ci-dessus (certains peuvent de nouveau être des dossiers). <ph name="PRODUCT_NAME" /> modifie les URL incomplètes comme si elles avaient été envoyées via l'omnibox. Par exemple, "<ph name="GOOGLE_COM" />" devient "<ph name="HTTPS_GOOGLE_COM" />".
@@ -4342,9 +4280,6 @@ indique uniquement les imprimantes qui peuvent être choisies.
 
       La valeur doit être indiquée en secondes.</translation>
 <translation id="9035964157729712237">Identifiants d'extension à exclure de la liste noire</translation>
-<translation id="9038058011835642205">Définit la liste des sites Web qui sont installés silencieusement, sans aucune intervention de l'utilisateur, et que ce dernier ne peut pas désinstaller ni désactiver.
-
-      Dans cette règle, chaque élément de la liste est un objet avec un membre obligatoire, "url", et deux membres facultatifs, "default_launch_container" et "create_desktop_shortcut". "url" doit correspondre à l'URL de l'application Web à installer et "launch_container" doit correspondre à "fenêtre" ou "onglet" pour préciser dans quel élément d'interface l'application Web sera ouverte après son installation. Enfin, "create_desktop_shortcut" doit être défini sur True si un raccourci (sur le Bureau) doit être créé sous Linux et Windows. Si le membre "default_launch_container" n'est pas défini, l'application s'ouvre par défaut dans un nouvel onglet. Quelle que soit la valeur de "default_launch_container", les utilisateurs peuvent modifier le conteneur dans lequel l'application doit s'ouvrir. Si "create_desktop_shortcut" n'est pas défini, aucun raccourci n'est créé sur le Bureau.</translation>
 <translation id="9038839118379817310">Activer le Wi-Fi</translation>
 <translation id="9039822628127365650">Lorsque cette règle est configurée, elle indique au bout de combien de temps un utilisateur est automatiquement déconnecté, ce qui met fin à la session. Un compte à rebours, qui s'affiche dans la barre d'état système, informe l'utilisateur du temps qu'il lui reste.
 

@@ -133,15 +133,6 @@
       如果這項政策設為 False，則不會回報開發人員模式切換設定的狀態。</translation>
 <translation id="1160479894929412407">允許 QUIC 通訊協定</translation>
 <translation id="1160939557934457296">停用略過安全瀏覽警告網頁繼續進行</translation>
-<translation id="1171342272070128466">啟用停駐放大鏡無障礙功能。
-
-          如果將這項政策設為 True，系統將一律啟用停駐放大鏡功能。
-
-          如果將這項政策設為 False，系統將一律停用停駐放大鏡功能。
-
-          設定這項政策後，使用者即無法變更或覆寫。
-
-          如果未設定這項政策，系統預設會停用停駐放大鏡，但使用者可以隨時啟用這項功能。</translation>
 <translation id="1189817621108632689">讓你設定網址模式清單，指定不可顯示圖片的網站。
 
           如果未設定這項政策，系統會根據「DefaultImagesSetting」政策 (如有設定) 或使用者的個人設定，將通用預設值套用至所有網站。
@@ -316,7 +307,6 @@
 <translation id="1474273443907024088">停用 TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">啟用禁止第三方軟體置入可執行程式碼的政策</translation>
-<translation id="1504431521196476721">遠端證明</translation>
 <translation id="1507382822467487898">
           設定當裝置插入座架時，要使用的 MAC (媒體存取控制) 位址。
 
@@ -447,12 +437,6 @@
 
       你需將政策設為可供 <ph name="PRODUCT_OS_NAME" /> 下載《服務條款》的網址。《服務條款》需為純文字內容，以 MIME 類型 text/plain 提供。不允許任何標記。</translation>
 <translation id="1750315445671978749">封鎖所有下載作業</translation>
-<translation id="1762072363876276024">
-      這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩者的值不相符，進入使用者工作階段時，系統可能會因為套用使用者政策指定的值而發生延遲。
-      這項 DeviceLoginScreenSitePerProcess 設定可在系統預設隔離所有網站時，禁止使用者停用這項行為。請注意，DeviceLoginScreenIsolateOrigins 政策也可用於隔離其他更精細的來源。
-      如果啟用這項政策，當系統預設為以獨立程序執行每個網站時，使用者將無法停用這項行為。
-      如果不設定或停用這項政策，使用者可以變更這項設定 (例如使用 chrome://flags 中的「停用網站隔離」選項)。
-      </translation>
 <translation id="1767673020408652620">在零狀態搜尋框中啟用應用程式推薦</translation>
 <translation id="17719159826324007">
       如果將這項政策設為 [ArcSession]，系統會在 Android 已啟動的前提下，於使用者登出時強制裝置重新啟動。
@@ -1328,13 +1312,6 @@
           設定這項政策後，使用者即無法變更或覆寫。
 
           如果未設定這項政策，系統預設會關閉用電尖峰轉移功能，且使用者無法啟用這項功能。</translation>
-<translation id="3388153794103186066">允許設定一組網址清單，當中指定的網站會自動取得權限，可存取具有特定廠商和產品 ID 的 USB 裝置。清單中的每個項目都必須包含裝置和網址，這項政策才具效力。裝置中的每個項目可包含廠商 ID 和產品 ID 欄位。如有省略的 ID，系統將視作萬用字元處理，但如未指定廠商 ID，將無法指定產品 ID。在其他情況下，這項政策一律不具效力，系統會予以忽略。
-
-        USB 權限模型會使用要求網站的網址 (簡稱「要求網址」) 以及頂層頁框網站的網址 (簡稱「內嵌網址」)，將 USB 裝置存取權限授予要求網址。當網站在 iframe 中載入時，要求網址可能與內嵌網址不同。因此，「urls」欄位最多可包含兩個網址字串 (以半形逗號分隔)，以依序指定要求網址和內嵌網址。如果只指定一個網址，只要要求網站的網址與指定的網址相符，不論其是否為內嵌網址，系統都會授予相應 USB 裝置的存取權限。「urls」中的網址必須是有效網址，否則系統將忽略這項政策。
-
-        如果不設定這項政策，所有網站將使用「DefaultWebUsbGuardSetting」政策的全域預設值 (如有設定的話) 或使用者的個人設定值。
-
-        這項政策中的網址模式與透過 WebUsbAskForUrls 所設定的網址模式應保持一致。如果兩者不符，這項政策的優先順序高於 WebUsbBlockedForUrls 和 WebUsbAskForUrls。</translation>
 <translation id="3414260318408232239">如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設最低版本 TLS 1.0。
 
       這項政策可使用的設定值包括：「tls1」、「tls1.1」或「tls1.2」。設定後，<ph name="PRODUCT_NAME" /> 就不會使用低於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。</translation>
@@ -1602,15 +1579,6 @@
       如果不設定這項政策，<ph name="PRODUCT_NAME" /> 將使用一般的預設目錄 (依平台區分)。
 
       如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。</translation>
-<translation id="3904459740090265495">這項政策可控制瀏覽器的登入行為。你可以指定使用者是否能用個人帳戶登入 <ph name="PRODUCT_NAME" /> 並使用帳戶相關服務 (例如 Chrome 同步功能)。
-
-      如果將這項政策設為「禁止登入瀏覽器」，使用者便無法登入瀏覽器及使用帳戶提供的服務。在這種情況下，瀏覽器層級的功能 (例如 Chrome 同步功能) 是無法使用的。將這項政策設為「禁止登入瀏覽器」之後，原先已登入瀏覽器的使用者會在下次執行 Chrome 時被登出，不過，他們的本機設定檔資料 (例如書籤、密碼等) 仍會保留在裝置上。使用者仍然可以登入並使用 Gmail 之類的 Google 網路服務。
-
-      如果將這項政策設為「允許登入瀏覽器」，使用者便能登入瀏覽器，而且當他們登入 Gmail 之類的 Google 網路服務時，也會自動登入瀏覽器。在登入瀏覽器的狀態下，瀏覽器會保留使用者的帳戶資料。不過，Chrome 同步功能不會預設開啟，使用者必須另外選擇啟用這項功能。啟用這項政策後，使用者將無法關閉允許登入瀏覽器的設定。如要管理能否使用 Chrome 同步功能，請使用「SyncDisabled」政策。
-
-      如果將這項政策設為「強制登入瀏覽器」，使用者便會看到帳戶選項對話方塊，而且必須選擇要登入哪個帳戶使用瀏覽器。這樣可確保系統在所有受管理的帳戶中套用並強制執行相關政策。根據預設，這會開啟帳戶的 Chrome 同步功能 (除非網域管理員已停用同步功能，或是另外設定了「SyncDisabled」政策)。BrowserGuestModeEnabled 的預設值將設為 False。請注意，啟用這項政策後，未經簽署的現有設定檔會遭到鎖定，無法再使用。詳情請參閱說明中心文章：https://support.google.com/chrome/a/answer/7572556.
-
-      如果未設定這項政策，使用者則可以決定是否要啟用瀏覽器登入選項，並視情況使用。</translation>
 <translation id="3911737181201537215">這項政策對 Android 應用程式執行的登入作業沒有影響。</translation>
 <translation id="391531815696899618">如果你設為 Ture，<ph name="PRODUCT_OS_NAME" />的「檔案」應用程式就會停用 Google 雲端硬碟同步功能。這種情形下，系統無法將資料上傳至 Google 雲端硬碟。
 
@@ -1678,12 +1646,6 @@
       在這項設定未調整或設為 False 時，<ph name="PRODUCT_OS_NAME" /> 裝置會自動檢查更新。
 
       警告：建議保持啟用自動更新功能，這樣一來使用者才能接收軟體更新，修正重大的安全性問題。停用自動更新功能可能讓使用者面臨風險。</translation>
-<translation id="4018000735882846261">這項政策可授予 Google 助理聽取語音啟動字詞的權限。
-
-      如果啟用這項政策，Google 助理將聽取語音啟動字詞。
-      如果停用這項政策，Google 助理將不會聽取語音啟動字詞。
-      如果未設定這項政策，Google 助理將不會聽取語音啟動字詞。
-      </translation>
 <translation id="4020682745012723568">Android 應用程式無法存取傳輸到該使用者設定檔的 Cookie。</translation>
 <translation id="402759845255257575">不允許任何網站執行 JavaScript</translation>
 <translation id="4027608872760987929">啟用預設搜尋引擎</translation>
@@ -3344,7 +3306,6 @@
       如果這項政策設為「RemoveLRUIfDormant」，自動清理作業將會根據使用者的近期登入次數，從次數最少的使用者開始，依序把至少 3 個月未登入的使用者從裝置上移除，直到有足夠的可用空間為止。
 
       如果未設定這項政策，自動清理作業將會採用目前的預設內建策略：「RemoveLRUIfDormant」。</translation>
-<translation id="7334274148831027933">啟用停駐放大鏡</translation>
 <translation id="7336785017449297672">控管時鐘和時區設定。</translation>
 <translation id="7336878834592315572">在工作階段期間保留 Cookie</translation>
 <translation id="7339315111520512972">強制網路程式碼在瀏覽器程序中執行</translation>
@@ -3528,22 +3489,6 @@
 
           注意：「<ph name="CHARGE_START_TIME_FIELD_NAME" />」和「<ph name="CHARGE_END_TIME_FIELD_NAME" />」的「<ph name="MINUTE_FIELD_NAME" />」欄位中，允許的值為 0、15、30、45。</translation>
 <translation id="7717938661004793600">設定 <ph name="PRODUCT_OS_NAME" /> 無障礙功能。</translation>
-<translation id="7724994675283793633">這項政策可讓你在 80 (HTTP) 和 443 (HTTPS) 以外的通訊埠啟用 HTTP/0.9。
-
-      這項政策預設為停用，啟用後使用者可能會遇到安全性問題 https://crbug.com/600352。
-
-      這項政策的用意是讓企業自行遷移目前使用 HTTP/0.9 的伺服器，日後我們會移除這項政策。
-
-      如果未設定這項政策，則會在非預設通訊埠停用 HTTP/0.9。</translation>
-<translation id="7726421241038987229">
-      這項 SitePerProcess 設定可在系統預設為隔離所有網站時，禁止使用者停用這項行為。請注意，IsolateOrigins 政策也可用於隔離其他更精細的來源。
-      如果啟用這項政策，當系統預設為以獨立程序執行每個網站時，使用者將無法停用這項行為。
-      如果不設定或停用這項政策，使用者可以選擇停用網站隔離功能
-      (例如，使用 chrome://flags 中的「停用網站隔離」選項)。即使將這項政策設為停用和/或不設定，也不會關閉網站隔離功能。
-      在「<ph name="PRODUCT_OS_NAME" />」上，建議你將 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 裝置政策也設定為相同的值。如果兩個政策指定的值不相符，進入使用者工作階段時，系統可能會因為套用使用者政策指定的值而發生延遲。
-
-      注意：這項政策不適用於 Android。如果要在 Android 上啟用 SitePerProcess，請使用 SitePerProcessAndroid 政策設定。
-      </translation>
 <translation id="7747447585227954402">允許裝置在 <ph name="PRODUCT_OS_NAME" /> 使用 <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7749402620209366169">為遠端存取主機啟用雙重驗證機制，而不採用使用者指定的 PIN。
 
@@ -3677,13 +3622,6 @@
 <translation id="8050080920415773384">原生列印</translation>
 <translation id="8053580360728293758">覆寫預設列印色彩模式。如果設定的模式不適用，系統會忽略這項政策。</translation>
 <translation id="8059164285174960932">遠端存取用戶端取得驗證憑證的來源網址</translation>
-<translation id="806280865577636339">如果將這項政策設定為 True，系統將一律在系統匣選單中顯示無障礙選項。
-
-          如果將這項政策設定為 False，系統匣選單中就永遠不會顯示無障礙選項。
-
-          設定這項政策後，使用者無法變更或覆寫這項政策。
-
-          如果不設定這項政策，系統匣選單中不會顯示無障礙選項，但使用者可以在「設定」頁面中，將無障礙選項設為顯示。</translation>
 <translation id="806523868782250975">設定受管理書籤清單。
 
       這項政策內含一份書籤清單；每個書籤都是一個包含「<ph name="NAME" />」和「<ph name="URL_LABEL" />」索引鍵的條目，前者指定書籤的名稱，後者指定書籤的目標網址。如要設定子資料夾，請定義一個書籤，但不要指定「<ph name="URL_LABEL" />」索引鍵，並額外指定「<ph name="CHILDREN" />」索引鍵，當中應包含一份符合上述定義的書籤清單 (其中某些書籤也可能是資料夾)。<ph name="PRODUCT_NAME" /> 會將有缺漏的網址修補完整，就像你在網址列中輸入網址時一樣。舉例來說，系統會自動將 <ph name="GOOGLE_COM" /> 改成 <ph name="HTTPS_GOOGLE_COM" />。
@@ -4146,9 +4084,6 @@
 
       指定政策值時，請以秒為單位進行設定。</translation>
 <translation id="9035964157729712237">要從黑名單上移除的擴充功能 ID</translation>
-<translation id="9038058011835642205">指定要以無訊息方式 (使用者無需操作) 安裝的網站清單；使用者無法解除安裝或停用這些網站。
-
-      這項政策的每個清單項目都是一個物件，由下列必要元素組成：「url」與另外兩個選用元素：「default_launch_container」和「create_desktop_shortcut」。「url」是要安裝的網路應用程式的網址，「launch_container」則是「window」(視窗) 或「tab」(分頁)，用於指定網路應用程式安裝後所採用的開啟方式。如要在 Linux 和 Windows 上建立桌面捷徑，請將「create_desktop_shortcut」設為 True。如果未設定「default_launch_container」，應用程式預設會在分頁中開啟。無論「default_launch_container」的值為何，使用者都可以變更開啟應用程式的容器。如果未設定「create_desktop_shortcuts」，系統將不會建立桌面捷徑。</translation>
 <translation id="9038839118379817310">啟用 Wi-Fi</translation>
 <translation id="9039822628127365650">如果設定這項政策，系統會在裝置閒置達指定時間後，將使用者自動登出並終止工作階段。使用者可以在系統匣所顯示的倒數計時器中，查看剩餘的等待時間。
 

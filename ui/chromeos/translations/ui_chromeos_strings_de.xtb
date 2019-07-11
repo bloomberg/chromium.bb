@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Transliteration (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Präsentationsansicht</translation>
 <translation id="1045157690796831147">Transliteration (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Japanische Eingabe (für US-Tastatur)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> Elemente werden gelöscht...</translation>
 <translation id="1049926623896334335">Word-Dokument</translation>
 <translation id="1062407476771304334">Ersetzen</translation>
@@ -36,7 +37,6 @@
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> Dateien werden importiert...</translation>
 <translation id="1352103415082130575">Thailändische Tastatur (Pattachote)</translation>
-<translation id="1358032944105037487">Japanische Tastatur </translation>
 <translation id="1358735829858566124">Die Datei oder das Verzeichnis kann nicht verwendet werden.</translation>
 <translation id="1363028406613469049">Titel</translation>
 <translation id="1378727793141957596">Willkommen bei Google Drive!</translation>
@@ -205,13 +205,13 @@
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> Fotos auf <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> gesichert</translation>
 <translation id="3470502288861289375">Wird kopiert...</translation>
 <translation id="3475447146579922140">Google-Tabellendokument</translation>
-<translation id="3494768541638400973">Google Japanese Input (für japanische Tastatur)</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> Fehler</translation>
 <translation id="3519867315646775981">Transliteration (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugiesisch</translation>
 <translation id="3527085408025491307">Ordner</translation>
 <translation id="3549797760399244642">Zu drive.google.com wechseln...</translation>
 <translation id="357479282490346887">Litauisch</translation>
+<translation id="3583509704582854624">Alphanumerische Eingabe (für japanische Tastatur)</translation>
 <translation id="3603385196401704894">Kanadisches Französisch</translation>
 <translation id="3606220979431771195">Türkisch-F</translation>
 <translation id="3609785682760573515">Synchronisieren...</translation>
@@ -423,6 +423,7 @@
 <translation id="5892290200158927959">Französische Bépo-Tastatur</translation>
 <translation id="5911887972742538906">Bei der Installation Ihrer Linux-Anwendung ist ein Fehler aufgetreten.</translation>
 <translation id="5913638992615760742">Unerwarteter Fehler beim Kopieren: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Japanische Eingabe (für japanische Tastatur)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Sie geben Linux-Apps die Berechtigung, Dateien in Google Drive zu ändern. Änderungen werden mit Ihren anderen Geräten synchronisiert.</translation>
 <translation id="5982621672636444458">Sortieroptionen</translation>
@@ -501,7 +502,6 @@
     <ph name="LINE_BREAK1" />
     <ph name="FILE_COUNT" /> gefunden</translation>
 <translation id="6935521024859866267">Auf dem Kopf</translation>
-<translation id="6937152069980083337">Google Japanese Input (für US-Tastatur)</translation>
 <translation id="6939777852457331078">US-amerikanische Workman-Tastatur</translation>
 <translation id="696203921837389374">Synchronisierung über mobile Daten aktivieren</translation>
 <translation id="6965382102122355670">Ok</translation>

@@ -143,15 +143,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책을 false로 설정하면 기기 개발자 스위치 상태가 보고되지 않습니다.</translation>
 <translation id="1160479894929412407">QUIC 프로토콜 허용</translation>
 <translation id="1160939557934457296">세이프 브라우징 경고 페이지 사용 중지</translation>
-<translation id="1171342272070128466">고정 돋보기 접근성 기능을 사용 설정합니다.
-
-          이 정책이 True로 설정되면 고정 돋보기가 항상 사용됩니다.
-
-          이 정책이 False로 설정되면 고정 돋보기가 항상 사용 중지됩니다.
-
-          정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
-
-          이 정책이 설정되지 않은 경우 처음에 고정 돋보기가 사용 중지되어 있으나 사용자가 언제든지 사용하도록 설정할 수 있습니다.</translation>
 <translation id="1189817621108632689">이미지를 표시할 수 없는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultImagesSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.
@@ -329,7 +320,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="1474273443907024088">TLS False Start 사용 안함</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">타사 소프트웨어 삽입 차단 사용</translation>
-<translation id="1504431521196476721">원격 인증</translation>
 <translation id="1507382822467487898">
           기기에 도크가 연결되었을 때 어떤 미디어 액세스 컨트롤(MAC) 주소가 사용될지 설정합니다.
 
@@ -460,12 +450,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       정책은 <ph name="PRODUCT_OS_NAME" />에서 서비스 약관을 다운로드할 수 있는 URL로 설정되어야 합니다. 서비스 약관은 일반 텍스트여야 하며 MIME 유형 text/plain으로 제공됩니다. 마크업은 허용되지 않습니다.</translation>
 <translation id="1750315445671978749">모든 다운로드 차단</translation>
-<translation id="1762072363876276024">
-      이 정책은 로그인 화면에 적용됩니다. 사용자 세션에 적용되는 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 정책도 확인하세요. 두 정책을 동일한 값으로 설정하는 것이 좋습니다. 값이 일치하지 않을 경우 사용자 세션을 입력할 때 지연이 발생할 수 있으며 사용자 정책에서 지정된 값이 적용됩니다.
-      DeviceLoginScreenSitePerProcess 설정을 사용해 사용자가 기본 동작인 전체 사이트 격리를 선택 해제하지 못하도록 할 수 있습니다. 추가로 세분화된 출처를 격리하는 경우 DeviceLoginScreenIsolateOrigins 정책도 유용합니다.
-      이 정책이 사용 설정되면 모든 사이트가 자체 프로세스로 작동하는 기본 동작을 사용자가 선택 해제할 수 없습니다.
-      이 정책이 구성되지 않거나 사용 중지되면 사용자가 설정을 변경할 수 있습니다(예: chrome://flags에서 '사이트 격리 사용 중지' 항목 사용).
-      </translation>
 <translation id="1767673020408652620">검색창이 0 상태일 때 앱 추천을 사용 설정합니다.</translation>
 <translation id="17719159826324007">
       이 정책을 ArcSession으로 설정하면 Android 시작 후 사용자가 로그아웃한 경우 기기가 강제로 재부팅됩니다.
@@ -1372,13 +1356,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책을 설정하면 사용자가 이를 변경하거나 덮어쓸 수 없습니다.
 
           정책이 설정되지 않은 경우 전력 피크 시프트는 처음부터 사용 중지되며 사용자가 활성화할 수 없습니다.</translation>
-<translation id="3388153794103186066">URL 목록을 설정하여 주어진 공급업체 및 제품 ID로 USB 기기에 액세스할 권한을 자동으로 부여할 사이트를 지정할 수 있습니다. 이 정책이 유효하려면 목록에 있는 모든 항목에 기기 및 URL이 포함되어 있어야 합니다. 기기에 있는 모든 항목에는 공급업체 ID 및 제품 ID 입력란이 포함될 수 있습니다. 생략된 모든 ID는 공급업체 ID가 지정되지 않으면 제품 ID도 지정될 수 없다는 하나의 예외 사항이 있는 와일드 카드로 취급됩니다. 그렇지 않은 경우 정책은 유효하지 않게 되며 무시됩니다.
-
-        USB 권한 모델은 요청하는 사이트의 URL('요청 URL')과 최상위 프레임 사이트의 URL('삽입 URL')을 사용하여 요청 URL에 USB 기기 액세스 권한을 부여합니다. 요청하는 사이트가 iframe에서 로드되는 경우 요청 URL과 삽입 URL이 다를 수 있습니다. 따라서 'URL' 입력란에는 요청 URL과 삽입 URL을 구분하여 지정할 수 있도록 쉼표로 구분되는 두 개의 URL 문자열이 포함될 수 있습니다. URL이 하나만 지정된 경우 삽입 상태와 관계없이 요청하는 사이트의 URL이 이 URL과 일치하면 관련 USB 기기에 액세스할 권한이 부여됩니다. 'URL' 입력란의 URL은 유효한 URL이어야 하며, 그렇지 않으면 정책이 무시됩니다.
-
-        이 정책을 설정하지 않으면 'DefaultWebUsbGuardSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.
-
-        이 정책의 URL 패턴은 WebUsbBlockedForUrls를 통해 구성된 패턴과 충돌해서는 안 됩니다. 충돌이 발생한 경우 이 정책이 WebUsbBlockedForUrls 및 WebUsbAskForUrls에 우선합니다.</translation>
 <translation id="3414260318408232239">이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 기본 최소 버전인 TLS 1.0이 사용됩니다.
 
       정책을 설정하는 경우 'tls1', 'tls1.1', 'tls1.2' 중 하나로 설정할 수 있으며, 버전을 설정하면 <ph name="PRODUCT_NAME" />에서 지정된 버전보다 낮은 SSL/TLS 버전은 사용되지 않습니다. 인식할 수 없는 값은 무시됩니다.</translation>
@@ -1656,15 +1633,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 일반적인 기본 디렉터리(플랫폼별)를 사용합니다.
 
       사용할 수 있는 변수 목록을 확인하려면 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables 페이지를 참조하세요.</translation>
-<translation id="3904459740090265495">브라우저의 로그인 동작을 제어하는 정책입니다. 이 정책을 사용하면 사용자가 자신의 계정으로 <ph name="PRODUCT_NAME" />에 로그인하고 Chrome 동기화와 같은 계정 관련 서비스를 사용하도록 허용할지 결정할 수 있습니다.
-
-      정책을 '브라우저 로그인 사용 중지'로 설정하면 사용자가 브라우저에 로그인하여 계정 기반 서비스를 사용할 수 없게 됩니다. 이 경우 Chrome 동기화와 같은 브라우저 수준의 기능을 사용할 수 없으며, 이러한 기능이 제공되지도 않습니다. 사용자가 로그인되어 있는 상태에서 정책이 '사용 중지'로 설정되면 다음번에 Chrome을 실행할 때 사용자가 로그아웃됩니다. 이때 북마크, 비밀번호 등 사용자의 로컬 프로필 데이터는 삭제되지 않습니다. Gmail과 같은 Google 웹 서비스의 경우 계속해서 로그인하여 사용할 수 있습니다.
-
-      정책을 '브라우저 로그인 사용'으로 설정하면 사용자가 브라우저에 로그인할 수 있으며, Gmail과 같은 Google 웹 서비스에 로그인하면 브라우저에도 자동으로 로그인됩니다. 브라우저에 로그인되었다는 것은 사용자의 계정 정보가 브라우저에 보관된다는 의미입니다. 하지만 그렇다고 해서 Chrome 동기화가 기본적으로 사용 설정되는 것은 아닙니다. 사용자가 이 기능을 이용하려면 별도로 선택해야 합니다. 이 정책을 사용 설정하면 사용자가 브라우저 로그인을 허용하는 설정을 사용 중지할 수 없게 됩니다. Chrome 동기화의 사용 가능 여부를 제어하려면 'SyncDisabled' 정책을 사용하세요.
-
-      정책을 '브라우저 로그인 강제 사용'으로 설정하면 사용자에게 계정 선택 대화상자가 표시되며, 브라우저를 사용하기 위해서는 계정을 선택하여 로그인해야 합니다. 관리 계정의 경우 이 설정을 통해 계정과 관련된 정책을 적용 및 시행할 수 있습니다. 도메인 관리자가 동기화를 사용 중지하거나 'SyncDisabled' 정책을 통해 동기화가 사용 중지되지 않은 이상 계정에서 Chrome 동기화가 기본적으로 사용 설정됩니다. 또한 BrowserGuestModeEnabled의 기본값은 False로 설정됩니다. 이 정책을 사용 설정하면 로그인되지 않은 기존 프로필은 잠겨서 액세스할 수 없게 됩니다. 자세한 내용은 다음 고객센터 도움말을 확인하세요. https://support.google.com/chrome/a/answer/7572556
-
-      정책을 설정하지 않으면 사용자가 브라우저 로그인 옵션을 사용 설정할지 결정하고 필요에 따라 사용할 수 있습니다.</translation>
 <translation id="3911737181201537215">이 정책은 Android에 의해 수행된 로깅에 아무런 영향을 미치지 않습니다.</translation>
 <translation id="391531815696899618">True로 설정하면 <ph name="PRODUCT_OS_NAME" /> 파일 앱에서 Google 드라이브 동기화를 사용 중지합니다. 이런 경우 Google 드라이브에 데이터가 업로드되지 않습니다.
 
@@ -1745,12 +1713,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       <ph name="PRODUCT_OS_NAME" /> 기기는 설정이 구성되지 않거나 False로 설정된 경우 자동으로 업데이트를 확인합니다.
 
       경고: 자동 업데이트를 사용 설정해야 사용자가 소프트웨어 업데이트나 주요 보안 수정사항을 받을 수 있으므로 사용하도록 설정하는 것이 좋습니다. 자동 업데이트를 사용 중지하면 사용자가 위험에 처할 수 있습니다.</translation>
-<translation id="4018000735882846261">이 정책은 Google 어시스턴트에 음성 활성화 문구를 감지할 권한을 부여합니다.
-
-      정책을 사용 설정할 경우 Google 어시스턴트가 음성 활성화 문구를 감지합니다.
-      정책을 사용 중지할 경우 Google 어시스턴트가 음성 활성화 문구를 감지하지 않습니다.
-      정책이 설정되어 있지 않으면 Google 어시스턴트가 음성 활성화 문구를 감지하지 않습니다.
-      </translation>
 <translation id="4020682745012723568">사용자의 프로필로 전송된 쿠키는 Android 앱에 액세스할 수 없습니다.</translation>
 <translation id="402759845255257575">모든 사이트에서 자바스크립트 실행 허용 안함</translation>
 <translation id="4027608872760987929">기본 검색 공급자 사용</translation>
@@ -3344,11 +3306,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           <ph name="PRODUCT_NAME" /> 77부터 이 정책은 무시되며 사용 중지된 것으로 처리됩니다.</translation>
 <translation id="7126716959063786004">작업 관리자의 종료 프로세스 사용</translation>
 <translation id="7127892035367404455">대상 버전으로 롤백</translation>
-<translation id="7128918109610518786"><ph name="PRODUCT_OS_NAME" />이(가) 런처 바에 고정된 앱으로 표시하는 애플리케이션 식별자를 열거합니다.
-
-      해당 정책이 설정된 경우 애플리케이션이 고정되어 사용자가 변경할 수 없습니다.
-
-      해당 정책이 설정되지 않은 경우 사용자는 런처에서 고정된 앱의 목록을 변경할 수 있습니다.</translation>
 <translation id="713121532817834879">이 정책은 Internet Explorer의 <ph name="IEEM_SITELIST_POLICY" /> 정책과 동일한 형식의 XML 파일로 연결되는 URL입니다. 정책은 XML 파일에서 규칙을 로드하지만 Internet Explorer와 공유하지는 않습니다.
 
       이 XML 파일에 있는 규칙은 <ph name="GREYLIST_POLICY_NAME" />과(와) 동일하게 적용됩니다. 즉, 이 규칙은 <ph name="PRODUCT_NAME" />이(가) 대체 브라우저를 열지 못하게 하며, 대체 브라우저에서 <ph name="PRODUCT_NAME" />을(를) 열지 못하게 합니다.
@@ -3508,7 +3465,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책을 'RemoveLRU'로 설정하면 자동 정리는 여유 공간을 확보할 때까지 3개월 이내에 로그인하지 않은 사용자를 가장 오래된 사용자 순서대로 기기에서 삭제합니다.
 
       이 정책을 설정하지 않으면 자동 정리는 기본 전략을 사용합니다. 현재 기본 전략은 'RemoveLRUIfDormant'입니다.</translation>
-<translation id="7334274148831027933">고정 돋보기 사용</translation>
 <translation id="7336785017449297672">시계 및 시간대 설정을 제어합니다.</translation>
 <translation id="7336878834592315572">세션이 지속되는 동안 쿠키를 유지합니다.</translation>
 <translation id="7339315111520512972">브라우저 프로세스에서 네트워킹 코드를 강제로 실행</translation>
@@ -3705,22 +3661,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           참고: <ph name="CHARGE_START_TIME_FIELD_NAME" /> 및 <ph name="CHARGE_END_TIME_FIELD_NAME" />의 <ph name="MINUTE_FIELD_NAME" /> 필드에 허용된 값은 0, 15, 30, 45입니다.</translation>
 <translation id="7717938661004793600"><ph name="PRODUCT_OS_NAME" /> 접근성 기능을 구성합니다.</translation>
-<translation id="7724994675283793633">이 정책은 HTTP:80 및 HTTPS:443이 아닌 포트에서 HTTP/0.9를 사용합니다.
-
-      이 정책은 기본적으로 중지되어 있으며 사용 설정할 경우 사용자가 보안 문제(https://crbug.com/600352)에 노출됩니다.
-
-      이 정책은 기업이 HTTP/0.9에서 기존 서버를 이전하도록 돕는 데 목적이 있으며 이후에 삭제됩니다.
-
-      이 정책이 설정되지 않으면 기본 포트가 아닌 포트에서 HTTP/0.9가 중지됩니다.</translation>
-<translation id="7726421241038987229">
-      SitePerProcess 설정을 사용해 사용자가 기본 동작인 전체 사이트 격리를 선택 해제하지 못하도록 할 수 있습니다. 추가로 세분화된 출처를 격리하는 경우 IsolateOrigins 정책도 유용합니다.
-      이 정책이 사용 설정되면 모든 사이트가 자체 프로세스로 작동하는 기본 동작을 사용자가 선택 해제할 수 없습니다.
-      이 정책이 구성되지 않거나 사용 중지되면 사용자가 사이트 격리를 선택 해제할 수 있습니다.
-      (예: chrome://flags에서 '사이트 격리 사용 중지' 항목 사용).  정책을 구성하지 않거나 사용 중지함으로 설정해도 사이트 격리가 사용 중지되지 않습니다.
-      <ph name="PRODUCT_OS_NAME" />의 경우 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 기기 정책을 같은 값으로 설정하는 것이 좋습니다. 두 정책에서 지정된 값이 일치하지 않을 경우, 사용자 세션을 입력할 때 지연이 발생할 수 있으며 사용자 정책에서 지정된 값이 적용됩니다.
-
-      참고: 이 정책은 Android에는 적용되지 않습니다. Android에서 SitePerProcess를 사용하도록 설정하려면 SitePerProcessAndroid 정책 설정을 사용하세요.
-      </translation>
 <translation id="7747447585227954402">기기가 <ph name="PRODUCT_OS_NAME" />에서 <ph name="PLUGIN_VM_NAME" />을(를) 사용하도록 허용합니다.</translation>
 <translation id="7749402620209366169">사용자 지정 PIN 대신 원격 액세스 호스트에 대한 2단계 인증을 사용하도록 설정합니다.
 
@@ -3861,13 +3801,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="8050080920415773384">기본 인쇄</translation>
 <translation id="8053580360728293758">기본 컬러 인쇄 모드를 재정의합니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
 <translation id="8059164285174960932">원격 액세스 클라이언트가 인증 토큰을 확보해야 하는 URL</translation>
-<translation id="806280865577636339">이 정책을 true로 설정하면 작업 표시줄 메뉴에 접근성 옵션이 항상 표시됩니다.
-
-          이 정책을 false로 설정하면 작업 표시줄 메뉴에 접근성 옵션이 표시되지 않습니다.
-
-          이 정책을 설정하면 사용자는 변경하거나 덮어쓸 수 없습니다.
-
-          이 정책을 설정하지 않으면 작업 표시줄 메뉴에 접근성 옵션이 표시되지 않지만 사용자가 설정 페이지에서 접근성 옵션을 표시하도록 설정할 수 있습니다.</translation>
 <translation id="806523868782250975">관리 북마크 목록을 설정합니다.
 
       이 정책은 북마크의 목록으로 구성되어 있으며 각 북마크는 키 '<ph name="NAME" />' 및 '<ph name="URL_LABEL" />'을 포함하는 사전으로, 북마크의 이름과 대상을 포함합니다. 하위 폴더의 경우 '<ph name="URL_LABEL" />' 키는 없으나 위에 설명된 북마크(이 북마크 중 일부는 폴더일 수 있음) 목록을 자체적으로 포함하는 추가 '<ph name="CHILDREN" />' 키가 있는 북마크를 정의하는 방법으로 설정할 수 있습니다. <ph name="PRODUCT_NAME" />에서는 불완전한 URL이 있을 경우 검색주소창에 입력했을 때처럼 URL을 수정합니다. 예를 들어 '<ph name="GOOGLE_COM" />'은 '<ph name="HTTPS_GOOGLE_COM" />'으로 수정됩니다.
@@ -4187,7 +4120,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
           이 정책은 선택사항입니다. 설정하지 않으면 검색 공급자를 활성화하는  키워드가 없습니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
-<translation id="8731693562790917685">콘텐츠 설정을 사용하면 특정 형식(예: 쿠키, 이미지 또는 자바스크립트)의 콘텐츠를 다루는 방법을 지정할 수 있습니다.</translation>
 <translation id="8733448613597049197"><ph name="PRODUCT_NAME" />의 세이프 브라우징 확장 보고를 사용하고 사용자가 이 설정을 변경할 수 없게 합니다.
 
       확장 보고에서는 위험한 앱 및 사이트를 감지하는 데 도움이 되도록 Google 서버에 일부 시스템 정보 및 페이지 콘텐츠를 전송합니다.
@@ -4362,9 +4294,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       이 정책의 값은 초 단위로 지정해야 합니다.</translation>
 <translation id="9035964157729712237">차단목록에서 제외할 확장 프로그램 ID</translation>
-<translation id="9038058011835642205">사용자가 개입하지 않아도 자동 설치되며 사용자가 제거하거나 사용 중지할 수 없는 웹사이트의 목록을 지정합니다.
-
-      정책 목록에 있는 각 항목은 필수 멤버인 'url' 및 두 개의 선택 멤버인 'default_launch_container' 및 'create_desktop_shortcut'으로 구성된 개체입니다. 'url'은 설치할 웹 앱의 URL이어야 하며 'launch_container'는 웹 앱이 설치된 뒤 어떻게 열릴지 표시하는 'window' 또는 'tab'이어야 합니다. 데스크톱 단축키가 Linux 및 Windows에서 만들어져야 하는 경우 'create_desktop_shortcut'이 참이어야 합니다. 'default_launch_container'가 생략된 경우, 앱이 기본적으로 탭에서 열립니다. 'default_launch_container'의 값과 관계없이 사용자는 앱이 어떤 컨테이너에서 열릴지 변경할 수 있습니다. 'create_desktop_shortcuts'가 생략된 경우 바탕화면 바로가기가 생성되지 않습니다.</translation>
 <translation id="9038839118379817310">Wi-Fi 사용</translation>
 <translation id="9039822628127365650">이 정책을 설정하면 사용자가 자동으로 로그아웃되고 세션을 종료해야 하는 시간을 지정합니다. 사용자는 작업 표시줄에 있는 카운트다운 타이머를 통해 남은 시간을 확인할 수 있습니다.
 

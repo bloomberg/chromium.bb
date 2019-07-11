@@ -130,15 +130,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis innstillingen angis som «true», rapporteres ikke tilstanden til utviklerbryteren.</translation>
 <translation id="1160479894929412407">Tillat QUIC-protokollen</translation>
 <translation id="1160939557934457296">Deaktiver muligheten til å overse Safe Browsing-advarsler og fortsette til potensielt farlig nettsted</translation>
-<translation id="1171342272070128466">Slå på tilgjengelighetsfunksjonen for dokket forstørrelse.
-
-          Hvis denne regelen er satt til «true» (sann), er dokket forstørrelse alltid slått på.
-
-          Hvis denne regelen er satt til «false» (usann), er dokket forstørrelse alltid slått av.
-
-          Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
-
-          Hvis denne regelen ikke angis, er dokket forstørrelse i utgangspunktet slått av, men brukerne kan når som helst slå funksjonen på.</translation>
 <translation id="1189817621108632689">Lar deg angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke får vise bilder.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra DefaultImagesSetting-regelen hvis den er angitt, eller fra brukerens egen konfigurasjon hvis ikke.
@@ -312,7 +303,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="1474273443907024088">Slå av falsk start av TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Slå på blokkering av innsetting av tredjepartsprogramvare</translation>
-<translation id="1504431521196476721">Ekstern attestering</translation>
 <translation id="1507382822467487898">
           Konfigurerer hvilken MAC-adresse som skal brukes når en dokk kobles til enheten.
 
@@ -443,12 +433,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Denne innnstillingen må konfigureres med en nettadresse der <ph name="PRODUCT_OS_NAME" /> kan laste ned vilkårene. Vilkårene må være i ren tekst, levert som MIME-typen tekst/ren. Det er ikke tillatt med koding.</translation>
 <translation id="1750315445671978749">Blokkér alle nedlastinger</translation>
-<translation id="1762072363876276024">
-      Denne regelen gjelder påloggingsskjermen. Se også regelen <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gjelder brukerøkten. Det anbefales å sette begge reglene til samme verdi. Hvis reglene har ulike verdier, kan det medføre at oppstart av brukerøkter blir forsinket mens verdien som spesifiseres av brukerregelen, tas i bruk.
-      Denne innstillingen (DeviceLoginScreenSitePerProcess) kan brukes til å nekte brukere å velge bort standardfunksjonaliteten, som er å isolere alle nettsteder. Merk at DeviceLoginScreenIsolateOrigins-regelen også kan være nyttig for å isolere flere, mer finkornede opprinnelser.
-      Hvis regelen er slått på, kan ikke brukerne velge bort standardfunksjonaliteten der alle nettsteder kjører i sine egne prosesser.
-      Hvis regelen er slått av eller ikke er konfigurert, kan brukeren velge bort nettstedsisolering (f.eks. ved å bruke oppføringen «Slå av nettstedsisolering» i chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Slå på appanbefalinger i nulltilstanden for søkefeltet</translation>
 <translation id="17719159826324007">
       Hvis denne regelen er satt til ArcSession og Android har startet, tvinges enheten til å starte på nytt når brukeren logger av.
@@ -1335,13 +1319,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
 
           Hvis denne regelen ikke angis, er strømtoppskift av og kan ikke slås på av brukerne.</translation>
-<translation id="3388153794103186066">Lar deg angi en liste over nettadresser som spesifiserer nettsteder som automatisk får tilgang til USB-enheter fra gjeldende leverandører og produkt-ID-er. Hvert element på listen må inneholde både enhetene og nettadressene for at regelen skal gjelde. Hvert element i enheter kan inneholde felt for leverandør-ID og produkt-ID. Eventuelle ID-er som ikke føres opp på listen, behandles som jokertegn, med ett unntak: Du kan ikke angi en produkt-ID uten å angi en leverandør-ID. Hvis ikke er regelen ugyldig og den blir ignorert.
-
-        USB-tillatelsesmodellen bruker nettadressen forespørselen kommer fra («forespørsel-nettadressen»), og nettadressen med den innebygde iframe-koden («nettadressen med innebygging») for å gi nettadressen forespørselen kommer fra, tilgang til USB-enheten. Forespørsel-nettadressen kan være forskjellig fra nettadressen med innebygging når nettstedet forespørselen kommer fra, ligger i en iframe. Derfor kan feltet «urls» (nettadresser) inneholde opptil to nettadressestrenger atskilt med komma for å spesifisere henholdsvis forespørsel-nettadressen og nettadressen med innebygging. Hvis kun én nettadresse er spesifisert, gis tilgang til de samsvarende USB-enhetene når forespørsel-nettadressen samsvarer med denne nettadressen, uavhengig av innebyggingsstatus. Nettadressene i «urls» (nettadresser) må være gyldige, ellers blir regelen ignorert.
-
-        Hvis denne regelen ikke er angitt, brukes den globale standardverdien for alle nettsteder fra «DefaultWebUsbGuardSetting»-regelen hvis den er angitt, eller brukerens personlige konfigurasjon hvis den ikke er angitt.
-
-        Nettadressemønstre i denne regelen må ikke kollidere med de som er konfigurert via WebUsbBlockedForUrls. Hvis de kolliderer, har denne regelen prioritet over WebUsbBlockedForUrls og WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Hvis denne regelen ikke er konfigurert, bruker <ph name="PRODUCT_NAME" /> en standard minimumsversjon, som er TLS 1.0.
 
       Ellers kan den angis som en av de følgende verdiene: «tls1», «tls1.1» eller «tls1.2». Når den er angitt, bruker ikke <ph name="PRODUCT_NAME" /> lavere SSL/TLS-versjoner enn den angitte versjonen. Ukjente verdier blir ignorert.</translation>
@@ -1615,15 +1592,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis du ikke angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den vanlige standardkatalogen (plattformspesifikk).
 
       Se https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for en liste over variabler som kan brukes.</translation>
-<translation id="3904459740090265495">Denne regelen styrer påloggingsatferden til nettleseren. Du kan spesifisere hvorvidt brukeren kan logge på <ph name="PRODUCT_NAME" /> med kontoen sin og bruke kontorelaterte tjenester som Chrome-synkronisering.
-
-      Hvis regelen er angitt som «Deaktiver nettleserpålogging», kan ikke brukeren logge på nettleseren og bruke kontobaserte tjenester. Da er det ikke mulig å bruke funksjoner på nettlesernivå, for eksempel Chrome-synkronisering, og slike funksjoner er utilgjengelige. Hvis brukeren var pålogget da regelen ble deaktivert, logges vedkommende av neste gang Chrome startes, men lokale profildata som bokmerker, passord osv. beholdes. Brukeren kan fortsatt logge på og bruke Google-nettjenester som Gmail.
-
-      Hvis regelen er angitt som «Aktiver nettleserpålogging», kan brukeren logge på nettleseren og logges på nettleseren automatisk når vedkommende logger på Google-nettjenester som Gmail. Når brukeren er logget på nettleseren, lagrer nettleseren brukerens kontoinformasjon. Men dette betyr ikke at Chrome-synkronisering er på som standard. Brukeren må velge å bruke denne funksjonen. Når denne regelen aktiveres, kan ikke brukeren slå av innstillingen som styrer nettleserpålogging. For å styre hvorvidt Chrome-synkronisering skal være tilgjengelig, bruk regelen «SyncDisabled».
-
-      Hvis regelen er angitt som «Tving nettleserpålogging», vises brukeren en dialogboks for kontovalg og må velge og logge på en konto for å bruke nettleseren. Dette sikrer at reglene som er knyttet til kontoen, brukes og håndheves for administrerte kontoer. Dette slår på Chrome-synkronisering for kontoen som standard, med mindre synkronisering er deaktivert av domeneadministratoren eller med regelen «SyncDisabled». Standardverdien for BrowserGuestModeEnabled er satt til «False» (usann). Merk at eksisterende, usignerte profiler låses og gjøres utilgjengelige når denne regelen aktiveres. For mer informasjon, se denne brukerstøtteartikkelen: https://support.google.com/chrome/a/answer/7572556.
-
-      Hvis denne regelen ikke er angitt, kan brukeren velge om alternativet for nettleserpålogging skal aktiveres, og bruke det som vedkommende selv vil.</translation>
 <translation id="3911737181201537215">Denne regelen har ingen innvirkning på loggføring i Android.</translation>
 <translation id="391531815696899618">Slår av Google Disk-synkronisering i Filer-appen for <ph name="PRODUCT_OS_NAME" /> ved bruk av mobiltilkobling når den har verdien true (sann). I disse tilfellene lastes ikke noen data opp til Google Disk.
 
@@ -1706,12 +1674,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       <ph name="PRODUCT_OS_NAME" />-enheter ser automatisk etter oppdateringer når denne innstillingen ikke er konfigurert eller den er angitt som «false» (usann).
 
       Advarsel: Vi anbefaler å ha automatiske oppdateringer slått på, slik at brukere får programvareoppdateringer og kritiske sikkerhetsløsninger. Hvis automatiske oppdateringer slås av, kan brukerne bli utsatt for risiko.</translation>
-<translation id="4018000735882846261">Denne regelen gir Google-assistenten tillatelse til å lytte etter frasen for taleaktivering.
-
-      Hvis regelen er aktivert, lytter Google-assistenten etter frasen for taleaktivering.
-      Hvis regelen er deaktivert, lytter ikke Google-assistenten etter frasen for taleaktivering.
-      Hvis regelen ikke er angitt, lytter ikke Google-assistenten etter frasen for taleaktivering.
-      </translation>
 <translation id="4020682745012723568">Informasjonskapsler som overføres til brukerens profil, kan ikke brukes av Android-apper.</translation>
 <translation id="402759845255257575">Ikke tillat nettsteder å kjøre JavaScript</translation>
 <translation id="4027608872760987929">Aktiver standard søkeleverandør</translation>
@@ -3280,11 +3242,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Fra og med <ph name="PRODUCT_NAME" /> 77 ignoreres denne regelen og behandles som om den er slått av.</translation>
 <translation id="7126716959063786004">Slå på muligheten for å avslutte prosesser i oppgavebehandlingen</translation>
 <translation id="7127892035367404455">Rollback til målversjon</translation>
-<translation id="7128918109610518786">Viser en liste over programidentifikatorene <ph name="PRODUCT_OS_NAME" /> viser som festede programmer i programlisteraden.
-
-      Hvis denne innstillingen er konfigurert, blir programsettet festet og kan ikke endres av brukeren.
-
-      Hvis denne innstillingen ikke angis, kan brukeren endre listen over programmer som er festet i programlisten.</translation>
 <translation id="713121532817834879">Denne regelen er en nettadresse som peker til en XML-fil med samme format som Internet Explorer-regelen <ph name="IEEM_SITELIST_POLICY" />. Denne laster inn regler fra en XML-fil – uten at reglene deles med Internet Explorer.
 
       Reglene i denne XML-filen gjelder på samme måte som <ph name="GREYLIST_POLICY_NAME" />. Det vil si at disse reglene forhindrer <ph name="PRODUCT_NAME" /> fra å åpne den alternative nettleseren og samtidig forhindrer den alternative nettleseren fra å åpne <ph name="PRODUCT_NAME" />.
@@ -3443,7 +3400,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne innstillingen angis som «RemoveLRUIfDormant», fortsetter den automatiske oppryddingen å fjerne brukere som ikke har logget på de siste tre månedene (gamle pålogginger først) til det er nok ledig plass.
 
       Hvis denne innstillingen ikke angis, tar automatisk opprydding i bruk den innebygde standardstrategien. For øyeblikket er det «RemoveLRUIfDormant»-strategien.</translation>
-<translation id="7334274148831027933">Aktivér den dokkede lupen</translation>
 <translation id="7336785017449297672">Kontrollerer innstillinger for klokke og tidssone.</translation>
 <translation id="7336878834592315572">Behold informasjonskapsler så lenge økten varer</translation>
 <translation id="7339315111520512972">Tving nettverkskode til å kjøre i nettleserprosessen</translation>
@@ -3640,21 +3596,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Merk: Tillatte verdier for <ph name="MINUTE_FIELD_NAME" />-feltet i <ph name="CHARGE_START_TIME_FIELD_NAME" /> og <ph name="CHARGE_END_TIME_FIELD_NAME" /> er 0, 15, 30 og 45.</translation>
 <translation id="7717938661004793600">Konfigurer tilgjengelighetfunksjonene for <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">Denne regelen slår på HTTP/0.9 for andre porter enn 80 for HTTP og 443 for HTTPS.
-
-      Denne regelen er slått av som standard. Hvis den slås på, kan brukere bli eksponert for følgende sikkerhetsproblem: https://crbug.com/600352.
-
-      Denne regelen åpner for at bedrifter kan migrere eksisterende tjenere fra HTTP/0.9, og kommer til å bli fjernet i fremtiden.
-
-      Hvis regelen ikke er angitt, slås HTTP/0.9 av for andre porter enn standardportene.</translation>
-<translation id="7726421241038987229">
-      Denne innstillingen (SitePerProcess) kan brukes til å nekte brukere å velge bort standardatferden, som er å isolere alle nettsteder. Merk at regelen IsolateOrigins også kan være nyttig for å isolere flere, mer finkornede opprinnelser.
-      Hvis regelen er slått på, kan ikke brukerne velge bort standardfunksjonaliteten der alle nettsteder kjører i sine egne prosesser.
-      Hvis regelen er slått av eller ikke er konfigurert, kan brukeren velge bort nettstedsisolering (f.eks. ved å bruke oppføringen «Slå av nettstedsisolering» i chrome://flags).  Nettstedsisolering slås ikke av selv om du slår av regelen og/eller ikke konfigurerer den.
-      På <ph name="PRODUCT_OS_NAME" /> anbefales det også å sette enhetsregelen <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />til samme verdi. Hvis disse to reglene har ulike verdier, kan det medføre at oppstart av brukerøkter blir forsinket mens verdien som spesifiseres av brukerregelen, tas i bruk.
-
-      MERK: Denne regelen gjelder ikke på Android. For å slå på SitePerProcess på Android, bruk regelinnstillingen SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">La enheter bruke en <ph name="PLUGIN_VM_NAME" /> på <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Aktiverer to-delt autentisering for verter med ekstern adgang i stedet for brukerangitt PIN-kode.
 
@@ -3787,13 +3728,6 @@ MERK: Frem til versjon 45 ble denne regelen bare støttet i kioskmodus.</transla
 <translation id="8050080920415773384">Integrert utskrift</translation>
 <translation id="8053580360728293758">Overstyrer fargemodus som standard for utskrift. Hvis modusen ikke er tilgjengelig, ignoreres regelen.</translation>
 <translation id="8059164285174960932">Nettadressen der klienter for ekstern tilgang skal hente autentiseringstokenet sitt fra</translation>
-<translation id="806280865577636339">Hvis denne regelen er satt til «true» (sann), vises alltid tilgjengelighetsalternativer i systemfeltmenyen.
-
-          Hvis denne regelen er satt til «false» (usann), vises aldri tilgjengelighetsalternativer i systemfeltmenyen.
-
-          Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
-
-          Hvis denne regelen ikke er angitt, vises ikke tilgjengelighetsalternativer i systemfeltmenyen. Brukerne kan likevel få tilgjengelighetsalternativer til å vises via innstillingssiden.</translation>
 <translation id="806523868782250975">Angir en liste over administrerte bokmerker.
 
       Denne regelen består av en liste over bokmerker, der hvert bokmerke er en ordliste som inneholder nøklene «<ph name="NAME" />» og «<ph name="URL_LABEL" />». Disse nøklene inneholder de ulike bokmerkenes navn og mål. En undermappe kan konfigureres ved å angi et bokmerke uten «<ph name="URL_LABEL" />»-nøkkel, men med en ekstra «<ph name="CHILDREN" />»-nøkkel som selv inneholder en liste over bokmerker, som definert ovenfor (noen av disse kan igjen være mapper). <ph name="PRODUCT_NAME" /> retter ufullstendige nettadresser som om de er sendt inn via multifunksjonsfeltet. «<ph name="GOOGLE_COM" />» blir for eksempel «<ph name="HTTPS_GOOGLE_COM" />».
@@ -4112,7 +4046,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
           Denne retningslinjen er valgfri. Hvis den ikke angis, aktiverer ingen søkeord søkeleverandøren.
 
           Denne retningslinjen tas bare i betraktning hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
-<translation id="8731693562790917685">Innholdsinnstillinger lar deg angi hvordan innholdet for spesifikke elementer (f.eks. informasjonskapsler, bilder eller JavaScript) skal håndteres.</translation>
 <translation id="8733448613597049197">Slår på utvidet rapportering for Safe Browsing i <ph name="PRODUCT_NAME" /> og hindrer at brukerne kan endre denne innstillingen.
 
       Utvidet rapportering sender noe systeminformasjon og sideinnhold til Googles tjenere for å bidra til å oppdage farlige apper og nettsteder.
@@ -4268,9 +4201,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Regelverdien skal angis i sekunder.</translation>
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
-<translation id="9038058011835642205">Spesifiserer en liste over nettsteder som installeres stille (uten brukerinteraksjon) og ikke kan avinstalleres eller deaktiveres av brukeren.
-
-      Hvert listeelement i regelen er et objekt med en obligatorisk komponent: «url» og to valgfrie komponenter: «default_launch_container» og «create_desktop_shortcut». «url» skal være nettadressen for nettprogrammet som skal installeres, «launch_container» skal være enten «window» (vindu) eller «tab» (fane) for å avgjøre hvordan nettprogrammet skal åpnes når det er installert, og «create_desktop_shortcut» skal være «true» (sann) hvis det skal opprettes en snarvei på skrivebordet i Linux og Windows. Hvis «default_launch_container» utelates, åpnes nettprogrammet i en fane som standard. Uavhengig av verdien til «default_launch_container» kan brukere endre hvilken beholder nettprogrammet skal åpnes i. Hvis «create_desktop_shortcuts» utelates, opprettes det ingen snarveier på skrivebordet.</translation>
 <translation id="9038839118379817310">Slå på Wi-Fi</translation>
 <translation id="9039822628127365650">Når denne regelen er angitt, spesifiserer den hvor lang tid det tar før brukerne automatisk logges av og økten avsluttes. Brukerne ser den gjenværende tiden som en nedtelling i systemfeltet.
 

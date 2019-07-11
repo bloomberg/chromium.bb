@@ -131,15 +131,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1152117524387175066">Consente di indicare lo stato dello switch dev del dispositivo all'avvio. Se la norma viene impostata su False, lo stato dello switch dev non viene indicato.</translation>
 <translation id="1160479894929412407">Consenti protocollo QUIC</translation>
 <translation id="1160939557934457296">Disattiva procedendo dalla pagina di avviso Navigazione sicura</translation>
-<translation id="1171342272070128466">Consente di attivare la funzione di accessibilità Lente d'ingrandimento ancorata.
-
-          Se questo criterio viene impostato su true, la lente d'ingrandimento ancorata sarà sempre attiva.
-
-          Se questo criterio viene impostato su false, la lente d'ingrandimento ancorata sarà sempre disattivata.
-
-          Se questo criterio viene impostato, gli utenti non potranno modificarlo o ignorarlo.
-
-          Se questo criterio non viene impostato, inizialmente la lente d'ingrandimento ancorata è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="1189817621108632689">Questa norma consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita la visualizzazione di immagini.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultImagesSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.
@@ -313,7 +304,6 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
 <translation id="1474273443907024088">Disattiva TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Attiva blocco inserimento da software di terze parti</translation>
-<translation id="1504431521196476721">Attestazione da remoto</translation>
 <translation id="1507382822467487898">
           Consente di configurare quale indirizzo MAC (media access control) verrà utilizzato quando il dispositivo è inserito in un dock.
 
@@ -436,12 +426,6 @@ Se questa norma non viene impostata, i Termini di servizio non verranno visualiz
 
 Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME" /> possa scaricare i Termini di servizio. I Termini di servizio devono essere in testo normale e pubblicati come testo di tipo MIME/semplice. Il markup non è consentito.</translation>
 <translation id="1750315445671978749">Blocca tutti i download</translation>
-<translation id="1762072363876276024">
-      Questo criterio si applica alla schermata di accesso. Vedi anche il criterio <ph name="SITE_PER_PROCESS_POLICY_NAME" /> che viene applicato alla sessione utente. È consigliabile impostare lo stesso valore per entrambi i criteri. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dai criteri relativi agli utenti.
-      Questa impostazione, DeviceLoginScreenSitePerProcess, può essere utilizzata per non consentire più agli utenti di disattivare il comportamento predefinito di isolamento di tutti i siti. Tieni presente che il criterio DeviceLoginScreenIsolateOrigins può essere utile anche per isolare origini aggiuntive più specifiche.
-      Se il criterio è attivato, gli utenti non potranno disattivare il comportamento predefinito nei casi in cui ciascun sito viene eseguito nel proprio processo.
-      Se il criterio non è configurato o è disattivato, l'utente potrà modificare questa impostazione (ad esempio, utilizzando la voce "Disattiva isolamento dei siti" in chrome://flags).
-      </translation>
 <translation id="1767673020408652620">Attiva consigli di app a stato nullo della casella di ricerca</translation>
 <translation id="17719159826324007">
       Se è impostato su ArcSession, questo criterio forza il riavvio del dispositivo all'uscita dell'utente se Android è stato avviato.
@@ -1312,13 +1296,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           Se imposti questa norma, gli utenti non potranno modificarla o sostituirla.
 
           Se questa norma non viene impostata, la variazione dei picchi energetici è disattivata da subito e non può essere attivata dall'utente.</translation>
-<translation id="3388153794103186066">Consente di impostare un elenco di URL che specifica a quali siti verrà concessa automaticamente l'autorizzazione per accedere a un dispositivo USB con gli ID prodotto e vendor definiti. Perché la norma sia valida, ogni elemento dell'elenco deve contenere sia dispositivi sia URL. Ogni elemento nei dispositivi può contenere un campo ID vendor e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza aver specificato un ID vendor. In caso contrario, la norma non sarà valida e verrà ignorata.
-
-        Il modello di autorizzazione USB utilizza l'URL del sito richiedente ("URL richiedente") e l'URL del sito frame di livello principale ("URL di incorporamento") per concedere l'autorizzazione all'URL richiedente di accedere al dispositivo USB. L'URL richiedente può essere diverso dall'URL di incorporamento quando il sito richiedente viene caricato in un iframe. Di conseguenza il campo "urls" può contenere fino a due stringhe URL delimitate da virgola per specificare rispettivamente l'URL richiedente e l'URL di incorporamento. Se è specificato un solo URL, l'accesso ai dispositivi USB corrispondenti viene concesso quando l'URL del sito richiedente corrisponde all'URL, a prescindere dallo stato di incorporamento. Gli URL in "urls" devono essere validi, altrimenti la norma viene ignorata.
-
-        Se questa norma non viene impostata, per tutti i siti viene usato il valore predefinito globale dalla norma "DefaultWebUsbGuardSetting" (se impostata) o dalla configurazione personale dell'utente (se non impostata).
-
-        I pattern URL di questa norma non devono essere in conflitto con quelli configurati tramite WebUsbBlockedForUrls. In caso di conflitto, questa norma ha la precedenza su WebUsbBlockedForUrls e WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Se questa norma non viene configurata, <ph name="PRODUCT_NAME" /> utilizza una versione minima predefinita, ossia TLS 1.0.
 
       In caso contrario, la norma potrebbe essere impostata su uno dei seguenti valori: "tls1", "tls1.1" o "tls1.2". Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> non utilizzerà versioni SSL/TLS precedenti alla versione specificata. I valori non riconosciuti verranno ignorati.</translation>
@@ -1588,15 +1565,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Se questa norma non viene impostata, verrà usata la normale directory predefinita (specifica della piattaforma) di <ph name="PRODUCT_NAME" />.
 
       Visita il sito https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.</translation>
-<translation id="3904459740090265495">Questa norma consente di stabilire il comportamento di accesso del browser. Ti consente di specificare se l'utente può accedere a <ph name="PRODUCT_NAME" /> con il proprio account e usare i servizi correlati all'account come Sincronizzazione Chrome.
-
-      Se la norma viene impostata su "Disattiva accesso al browser", l'utente non potrà accedere al browser e usare i servizi basati sull'account. In questo caso, le funzionalità a livello di browser come la Sincronizzazione Chrome non potranno essere usate e non saranno disponibili. Se la norma viene impostata su "Disattivata" dopo che l'utente ha eseguito l'accesso, l'utente verrà scollegato alla successiva esecuzione di Chrome, ma i dati locali del profilo, come preferiti, password ecc., verranno mantenuti. L'utente potrà comunque accedere e usare i servizi web di Google come Gmail.
-
-      Se la norma viene impostata su "Attiva accesso al browser", l'utente potrà accedere al browser e verrà collegato automaticamente al browser se accederà a servizi web di Google come Gmail. Se viene eseguito l'accesso al browser, i dati dell'account dell'utente vengono memorizzati dal browser, ma la funzione Sincronizzazione Chrome non viene attivata per impostazione predefinita; per poter utilizzare questa funzione, l'utente deve attivarla separatamente. Se attivi questa norma, l'utente non potrà disattivare l'impostazione che consente l'accesso al browser. Per gestire la disponibilità della funzione Sincronizzazione Chrome, usa la norma "SyncDisabled".
-
-      Se la norma viene impostata su "Forza accesso al browser", all'utente verrà mostrata una finestra di dialogo di selezione dell'account, da cui dovrà scegliere un account a cui accedere per usare il browser. Questa misura garantisce l'applicazione, nell'ambito degli account gestiti, delle norme associate all'account. La funzione Sincronizzazione Chrome viene attivata per impostazione predefinita per l'account, ad eccezione del caso in cui la sincronizzazione sia stata disattivata dall'amministratore di dominio o tramite la norma "SyncDisabled". Il valore predefinito della norma BrowserGuestModeEnabled sarà false. Tieni presente che i profili esistenti a cui non viene eseguito l'accesso saranno bloccati e inaccessibili dopo l'attivazione di questa norma. Per ulteriori informazioni, leggi il seguente articolo del Centro assistenza: https://support.google.com/chrome/a/answer/7572556.
-
-      Se questa norma non è impostata, l'utente potrà decidere se attivare o meno l'opzione di accesso al browser e di usarla in base alle necessità.</translation>
 <translation id="3911737181201537215">Questa norma non influisce sulla registrazione effettuata da Android.</translation>
 <translation id="391531815696899618">Consente di disattivare la sincronizzazione di Google Drive nell'app File di <ph name="PRODUCT_OS_NAME" /> quando è impostata su True. In tal caso, non vengono caricati dati in Google Drive.
 
@@ -1670,12 +1638,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 Se questa norma non viene configurata o viene impostata su False, i dispositivi <ph name="PRODUCT_OS_NAME" /> controllano automaticamente la disponibilità di aggiornamenti.
 
 Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per consentire agli utenti di ricevere gli aggiornamenti software e le correzioni di sicurezza fondamentali. Disattivare gli aggiornamenti automatici potrebbe mettere a rischio gli utenti.</translation>
-<translation id="4018000735882846261">Questa norma autorizza l'Assistente Google ad ascoltare la frase di attivazione vocale.
-
-      Se la norma viene attivata, l'Assistente Google ascolta la frase di attivazione vocale.
-      Se la norma viene disattivata, l'Assistente Google non ascolta la frase di attivazione vocale.
-      Se la norma non è impostata, l'Assistente Google non ascolta la frase di attivazione vocale.
-      </translation>
 <translation id="4020682745012723568">Le app Android non possono accedere ai cookie trasferiti al profilo dell'utente.</translation>
 <translation id="402759845255257575">Non consentire ad alcun sito di eseguire JavaScript</translation>
 <translation id="4027608872760987929">Attiva il provider di ricerca predefinito</translation>
@@ -3351,7 +3313,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se questa norma viene impostata su "RemoveLRUIfDormant", la pulizia automatica continua a rimuovere gli utenti che non hanno eseguito l'accesso negli ultimi tre mesi in ordine di accesso meno recente fino a liberare spazio a sufficienza.
 
       Se questa norma non viene impostata, la pulizia automatica utilizza la strategia incorporata predefinita, che al momento è "RemoveLRUIfDormant".</translation>
-<translation id="7334274148831027933">Attiva lente d'ingrandimento ancorata</translation>
 <translation id="7336785017449297672">Consente di gestire le impostazioni relative all'orologio e al fuso orario.</translation>
 <translation id="7336878834592315572">Conserva cookie per tutta la durata della sessione</translation>
 <translation id="7339315111520512972">Forza l'esecuzione del codice di networking nel processo di browser</translation>
@@ -3541,22 +3502,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 
           Nota: i valori consentiti per il campo <ph name="MINUTE_FIELD_NAME" /> in <ph name="CHARGE_START_TIME_FIELD_NAME" /> e <ph name="CHARGE_END_TIME_FIELD_NAME" /> sono 0, 15, 30 e 45.</translation>
 <translation id="7717938661004793600">Configura le funzioni di accessibilità di <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7724994675283793633">La norma consente di attivare HTTP/0.9 sulle porte diverse da 80 per HTTP e 443 per HTTPS.
-
-      Per impostazione predefinita, la norma è disattivata e, se attivata, espone gli utenti al problema di sicurezza https://crbug.com/600352.
-
-      La norma è pensata per dare alle aziende la possibilità di eseguire la migrazione dei server esistenti da HTTP/0.9 e in futuro sarà rimossa.
-
-      Se la norma non viene impostata, HTTP/0.9 sarà disattivato sulle porte non predefinite.</translation>
-<translation id="7726421241038987229">
-      Questa impostazione, SitePerProcess, può essere utilizzata per non consentire più agli utenti di disattivare il comportamento predefinito di isolamento di tutti i siti. Tieni presente che il criterio IsolateOrigins può essere utile anche per isolare origini aggiuntive più specifiche.
-      Se il criterio è attivato, gli utenti non potranno disattivare il comportamento predefinito nei casi in cui ciascun sito viene eseguito nel proprio processo.
-      Se il criterio non è configurato o è disattivato, l'utente potrà disattivare l'isolamento dei siti
-      (ad esempio, utilizzando la voce "Disattiva isolamento dei siti" in chrome://flags).  La disattivazione e/o la mancata configurazione del criterio non comporta la disattivazione dell'isolamento dei siti.
-      In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare anche il criterio <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> relativo ai dispositivi sullo stesso valore. Se i valori specificati dai due criteri non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente, mentre viene applicato il valore specificato dai criteri relativi agli utenti.
-
-      NOTA: questo criterio non viene applicato su Android. Per attivare SitePerProcess su Android, utilizza l'impostazione del criterio SitePerProcessAndroid.
-      </translation>
 <translation id="7747447585227954402">Consenti ai dispositivi di usare <ph name="PLUGIN_VM_NAME" /> su <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7749402620209366169">Consente di abilitare l'autenticazione a due fattori per gli host di accesso remoto invece di un PIN specificato dall'utente.
 
@@ -3691,13 +3636,6 @@ Se attivi questa impostazione o non imposti un valore, la funzione Compilazione 
 <translation id="8050080920415773384">Stampa nativa</translation>
 <translation id="8053580360728293758">Consente di eseguire l'override della modalità di stampa a colori predefinita. Se la modalità non è disponibile, questa norma viene ignorata.</translation>
 <translation id="8059164285174960932">URL su cui i client di accesso remoto dovrebbero ottenere il token di autenticazione</translation>
-<translation id="806280865577636339">Se questa norma è impostata su true, le opzioni di accessibilità vengono visualizzate sempre nel menu della barra delle applicazioni.
-
-          Se questa norma è impostata su false, le opzioni di accessibilità non vengono mai visualizzate nel menu della barra delle applicazioni.
-
-          Se imposti questa norma, gli utenti non potranno modificarla o sostituirla.
-
-          Se questa norma non viene impostata, le opzioni di accessibilità non verranno visualizzate nel menu della barra delle applicazioni, ma l'utente potrà attivarne la visualizzazione tramite la pagina Impostazioni.</translation>
 <translation id="806523868782250975">Configura un elenco di preferiti gestiti.
 
       La norma è costituita da un elenco di preferiti, in cui ogni preferito è un dizionario che contiene le chiavi "<ph name="NAME" />" e "<ph name="URL_LABEL" />" indicanti il nome e la destinazione del preferito. È possibile configurare una sottocartella definendo un preferito senza una chiave "<ph name="URL_LABEL" />", ma con una chiave aggiuntiva "<ph name="CHILDREN" />" contenente un elenco di preferiti come definito sopra (alcuni dei quali possono essere a loro volta cartelle). <ph name="PRODUCT_NAME" /> corregge gli URL incompleti come se fossero stati inviati tramite la omnibox, ad esempio "<ph name="GOOGLE_COM" />" diventa "<ph name="HTTPS_GOOGLE_COM" />".
@@ -4151,9 +4089,6 @@ https://www.w3.org/TR/secure-contexts/
 
       Il valore della norma deve essere specificato in secondi.</translation>
 <translation id="9035964157729712237">ID delle estensioni da escludere dalla blacklist</translation>
-<translation id="9038058011835642205">Consente di specificare un elenco di siti web che vengono installati automaticamente, senza l'interazione dell'utente, e che non possono essere disinstallati né disattivati dall'utente.
-
-      Ogni voce dell'elenco della norma è un oggetto con un componente obbligatorio: "url" e due componenti facoltativi: "default_launch_container" e "create_desktop_shortcut". "url" deve essere l'URL dell'applicazione web da installare, "launch_container" deve essere "window" o "tab" a indicare che l'applicazione web verrà aperta una volta installata, e "create_desktop_shortcut" deve essere "true" se è necessario creare un collegamento sul desktop su Linux e Windows. Se "default_launch_container" viene omesso, l'applicazione si aprirà in una scheda per impostazione predefinita. A prescindere dal valore di "default_launch_container", gli utenti possono modificare il contenitore in cui si aprirà l'applicazione. Se "create_desktop_shortcuts" viene omesso, non verranno creati collegamenti sul desktop.</translation>
 <translation id="9038839118379817310">Consente di attivare la rete Wi-Fi</translation>
 <translation id="9039822628127365650">Quando questa norma viene impostata, consente di specificare il periodo di tempo trascorso il quale un utente viene automaticamente disconnesso, terminando così la sessione. Un timer conto alla rovescia nella barra delle applicazioni informa l'utente del tempo restante.
 
