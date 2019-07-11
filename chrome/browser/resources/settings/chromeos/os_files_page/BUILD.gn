@@ -6,7 +6,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
-    ":os_downloads_page",
+    ":os_files_page",
     ":smb_shares_page",
   ]
 }
@@ -18,7 +18,7 @@ js_library("smb_shares_page") {
   ]
 }
 
-js_library("os_downloads_page") {
+js_library("os_files_page") {
   deps = [
     "../..:page_visibility",
     "../..:route",

@@ -4,12 +4,11 @@
 
 /**
  * @fileoverview
- * 'os-settings-downloads-page' is the settings page containing downloads
- * settings.
+ * 'os-settings-files-page' is the settings page containing files settings.
  *
  */
 Polymer({
-  is: 'os-settings-downloads-page',
+  is: 'os-settings-files-page',
 
   properties: {
     /**
