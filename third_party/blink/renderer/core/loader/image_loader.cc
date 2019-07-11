@@ -693,6 +693,13 @@ void ImageLoader::DoUpdateFromElement(
       new_image_content == old_image_content) {
     ToLayoutImage(element_->GetLayoutObject())->IntrinsicSizeChanged();
   } else {
+    // Loading didn't start (loading of images was disabled). We show fallback
+    // contents here, while we don't dispatch an 'error' event etc., because
+    // spec-wise the image remains in the "Unavailable" state.
+    if (new_image_content &&
+        new_image_content->GetContentStatus() == ResourceStatus::kNotStarted)
+      NoImageResourceToLoad();
+
     if (pending_load_event_.IsActive())
       pending_load_event_.Cancel();
 
