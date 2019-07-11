@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.device_dialog;
 
 import android.Manifest;
 import android.app.Activity;
@@ -26,6 +26,7 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.location.LocationUtils;

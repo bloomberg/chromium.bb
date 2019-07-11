@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.device_dialog;
 
 import android.app.Dialog;
 import android.support.test.filters.LargeTest;
@@ -20,6 +20,8 @@ import org.chromium.base.annotations.JCaller;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.security_state.ConnectionSecurityLevel;

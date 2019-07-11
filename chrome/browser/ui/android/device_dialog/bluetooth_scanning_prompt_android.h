@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ANDROID_BLUETOOTH_SCANNING_PROMPT_ANDROID_H_
-#define CHROME_BROWSER_UI_ANDROID_BLUETOOTH_SCANNING_PROMPT_ANDROID_H_
+#ifndef CHROME_BROWSER_UI_ANDROID_DEVICE_DIALOG_BLUETOOTH_SCANNING_PROMPT_ANDROID_H_
+#define CHROME_BROWSER_UI_ANDROID_DEVICE_DIALOG_BLUETOOTH_SCANNING_PROMPT_ANDROID_H_
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
@@ -16,7 +16,7 @@
 class BluetoothScanningPromptAndroid : public content::BluetoothScanningPrompt {
  public:
   // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.device_dialog
   enum BluetoothScanningPermissionEvent {
     ALLOW = 0,
     BLOCK = 1,
@@ -47,4 +47,4 @@ class BluetoothScanningPromptAndroid : public content::BluetoothScanningPrompt {
   DISALLOW_COPY_AND_ASSIGN(BluetoothScanningPromptAndroid);
 };
 
-#endif  // CHROME_BROWSER_UI_ANDROID_BLUETOOTH_SCANNING_PROMPT_ANDROID_H_
+#endif  // CHROME_BROWSER_UI_ANDROID_DEVICE_DIALOG_BLUETOOTH_SCANNING_PROMPT_ANDROID_H_
