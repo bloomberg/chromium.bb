@@ -188,7 +188,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Get the next bitsream ID.
   int32_t GetNextBitstreamId();
   // Convert the frame and call the output callback.
-  void RunOutputCB(scoped_refptr<VideoFrame> frame);
+  void RunOutputCB(scoped_refptr<VideoFrame> frame, base::TimeDelta timestamp);
   // Call the decode callback and count the number of pending callbacks.
   void RunDecodeCB(DecodeCB cb, DecodeStatus status);
   // Change the state and check the state transition is valid.
@@ -229,6 +229,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // V4L2 input and output queue.
   scoped_refptr<V4L2Queue> input_queue_;
   scoped_refptr<V4L2Queue> output_queue_;
+
+  // The mapping between bitstream id and the timestamp.
+  std::map<int32_t, base::TimeDelta> bitstream_id_to_timestamp_;
 
   // Queue of pending decode request.
   base::queue<DecodeRequest> decode_request_queue_;

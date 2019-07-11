@@ -82,9 +82,14 @@ struct V4L2SliceVideoDecoder::OutputRequest {
   const OutputRequestType type;
   // The surface to be outputted.
   scoped_refptr<V4L2DecodeSurface> surface;
+  // The timestamp of the output frame. Because a surface might be outputted
+  // multiple times with different timestamp, we need to store timestamp out of
+  // surface.
+  base::TimeDelta timestamp;
 
-  static OutputRequest Surface(scoped_refptr<V4L2DecodeSurface> s) {
-    return OutputRequest(std::move(s));
+  static OutputRequest Surface(scoped_refptr<V4L2DecodeSurface> s,
+                               base::TimeDelta t) {
+    return OutputRequest(std::move(s), t);
   }
 
   static OutputRequest FlushFence() { return OutputRequest(kFlushFence); }
@@ -101,8 +106,8 @@ struct V4L2SliceVideoDecoder::OutputRequest {
   OutputRequest(OutputRequest&&) = default;
 
  private:
-  explicit OutputRequest(scoped_refptr<V4L2DecodeSurface> s)
-      : type(kSurface), surface(std::move(s)) {}
+  OutputRequest(scoped_refptr<V4L2DecodeSurface> s, base::TimeDelta t)
+      : type(kSurface), surface(std::move(s)), timestamp(t) {}
   explicit OutputRequest(OutputRequestType t) : type(t) {}
 
   DISALLOW_COPY_AND_ASSIGN(OutputRequest);
@@ -547,6 +552,10 @@ void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(state_ == State::kDecoding || state_ == State::kFlushing);
 
+  if (!request.buffer->end_of_stream()) {
+    bitstream_id_to_timestamp_.emplace(request.bitstream_id,
+                                       request.buffer->timestamp());
+  }
   decode_request_queue_.push(std::move(request));
   // If we are already decoding, then we don't need to pump again.
   if (!current_decode_request_)
@@ -671,7 +680,7 @@ void V4L2SliceVideoDecoder::PumpOutputSurfaces() {
         scoped_refptr<V4L2DecodeSurface> surface = std::move(request.surface);
 
         DCHECK(surface->video_frame());
-        RunOutputCB(surface->video_frame());
+        RunOutputCB(surface->video_frame(), request.timestamp);
         break;
     }
   }
@@ -859,10 +868,16 @@ void V4L2SliceVideoDecoder::SurfaceReady(
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
+  auto it = bitstream_id_to_timestamp_.find(bitstream_id);
+  DCHECK(it != bitstream_id_to_timestamp_.end());
+  base::TimeDelta timestamp = it->second;
+  bitstream_id_to_timestamp_.erase(it);
+
   // TODO(akahuang): Update visible_rect at the output frame.
   dec_surface->SetVisibleRect(visible_rect);
 
-  output_request_queue_.push(OutputRequest::Surface(std::move(dec_surface)));
+  output_request_queue_.push(
+      OutputRequest::Surface(std::move(dec_surface), timestamp));
   PumpOutputSurfaces();
 }
 
@@ -1041,10 +1056,23 @@ void V4L2SliceVideoDecoder::RunDecodeCB(DecodeCB cb, DecodeStatus status) {
                                 base::BindOnce(std::move(cb), status));
 }
 
-void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame) {
+void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame,
+                                        base::TimeDelta timestamp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(4) << "timestamp: " << timestamp;
 
+  // The attribute of the frame is needed to update. Wrap the frame again.
+  if (frame->timestamp() != timestamp) {
+    scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
+        *frame, frame->format(), frame->visible_rect(), frame->natural_size());
+    wrapped_frame->set_timestamp(timestamp);
+    wrapped_frame->AddDestructionObserver(base::BindOnce(
+        base::DoNothing::Once<scoped_refptr<VideoFrame>>(), std::move(frame)));
+
+    frame = std::move(wrapped_frame);
+  }
   frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
+
   scoped_refptr<VideoFrame> converted_frame =
       frame_converter_->ConvertFrame(std::move(frame));
   if (!converted_frame) {
@@ -1052,6 +1080,7 @@ void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame) {
     SetState(State::kError);
     return;
   }
+
   // Although the document of VideoDecoder says "should run |output_cb| as soon
   // as possible (without thread trampolining)", MojoVideoDecoderService still
   // assumes the callback is called at original thread.
