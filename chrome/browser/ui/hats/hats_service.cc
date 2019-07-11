@@ -29,29 +29,20 @@ constexpr char kHatsSurveyEnSiteIDDefault[] = "z4cctguzopq5x2ftal6vdgjrui";
 
 constexpr char kHatsSurveyTriggerSatisfaction[] = "satisfaction";
 
-HatsFinchConfig CreateHatsFinchConfig() {
-  HatsFinchConfig config;
-  config.trigger = base::FeatureParam<std::string>(
-                       &features::kHappinessTrackingSurveysForDesktop,
-                       kHatsSurveyTrigger, kHatsSurveyTriggerDefault)
-                       .Get();
-
-  config.probability =
-      base::FeatureParam<double>(&features::kHappinessTrackingSurveysForDesktop,
-                                 kHatsSurveyProbability,
-                                 kHatsSurveyProbabilityDefault)
-          .Get();
-  return config;
-}
 }  // namespace
-
-HatsFinchConfig::HatsFinchConfig() = default;
-HatsFinchConfig::~HatsFinchConfig() = default;
-HatsFinchConfig::HatsFinchConfig(const HatsFinchConfig& other) = default;
 
 HatsService::HatsService(Profile* profile)
     : profile_(profile),
-      hats_finch_config_(CreateHatsFinchConfig()),
+      trigger_(base::FeatureParam<std::string>(
+                   &features::kHappinessTrackingSurveysForDesktop,
+                   kHatsSurveyTrigger,
+                   kHatsSurveyTriggerDefault)
+                   .Get()),
+      probability_(base::FeatureParam<double>(
+                       &features::kHappinessTrackingSurveysForDesktop,
+                       kHatsSurveyProbability,
+                       kHatsSurveyProbabilityDefault)
+                       .Get()),
       en_site_id_(base::FeatureParam<std::string>(
                       &features::kHappinessTrackingSurveysForDesktop,
                       kHatsSurveyEnSiteID,
@@ -67,10 +58,9 @@ void HatsService::LaunchSatisfactionSurvey() {
 }
 
 bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
-  if ((hats_finch_config_.trigger == trigger ||
-       hats_finch_config_.trigger == kHatsSurveyTriggerDefault) &&
+  if ((trigger_ == trigger || trigger_ == kHatsSurveyTriggerDefault) &&
       !launch_hats_) {
-    if (base::RandDouble() < hats_finch_config_.probability) {
+    if (base::RandDouble() < probability_) {
       // we only want to ever show hats once per profile.
       launch_hats_ = true;
       return true;
