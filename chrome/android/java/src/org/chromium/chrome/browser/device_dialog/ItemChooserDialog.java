@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -26,6 +27,7 @@ import android.widget.TextView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
@@ -170,20 +172,40 @@ public class ItemChooserDialog implements DeviceItemAdapter.Observer {
         mConfirmButton = (Button) dialogContainer.findViewById(R.id.positive);
         mConfirmButton.setText(labels.positiveButton);
         mConfirmButton.setEnabled(false);
-        mConfirmButton.setOnClickListener(v -> {
-            mItemSelectedCallback.onItemSelected(mItemAdapter.getSelectedItemKey());
-            mDialog.setOnDismissListener(null);
-            mDialog.dismiss();
-        });
+
+        View.OnClickListener clickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mItemSelectedCallback.onItemSelected(mItemAdapter.getSelectedItemKey());
+                mDialog.setOnDismissListener(null);
+                mDialog.dismiss();
+            }
+        };
 
         mItemAdapter = new DeviceItemAdapter(
                 mActivity, /*itemsSelectable=*/true, R.layout.item_chooser_dialog_row);
         mItemAdapter.setNotifyOnChange(true);
         mItemAdapter.setObserver(this);
+
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            // TODO(crbug.com/982869): ideally we would port to using the modal dialog
+            // manager. Until then, we will treat clicking on the items as selecting them.
+            mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
+                    mItemAdapter.onItemClick(adapter, view, position, id);
+                    clickListener.onClick(null);
+                }
+            });
+            mConfirmButton.setVisibility(View.GONE);
+        } else {
+            mConfirmButton.setOnClickListener(clickListener);
+            mListView.setOnItemClickListener(mItemAdapter);
+        }
+
         mListView.setAdapter(mItemAdapter);
         mListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         mListView.setEmptyView(mEmptyMessage);
-        mListView.setOnItemClickListener(mItemAdapter);
         mListView.setDivider(null);
         setState(State.STARTING);
 
