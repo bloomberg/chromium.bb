@@ -1353,13 +1353,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftLeft) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), blink::WebInputEvent::kShiftKey,
       blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::WaitForBrowserToOpen();
 
   ASSERT_EQ(2U, chrome::GetTotalBrowserCount());
 
@@ -1519,13 +1516,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, ShiftLeft) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), blink::WebInputEvent::kShiftKey,
       blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::WaitForBrowserToOpen();
 
   ASSERT_EQ(2U, chrome::GetTotalBrowserCount());
 
