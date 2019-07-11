@@ -9344,7 +9344,9 @@ Called by update_net_error_codes.py.-->
   <int value="15" label="RESOURCE_TYPE_SERVICE_WORKER"/>
   <int value="16" label="RESOURCE_TYPE_CSP_REPORT"/>
   <int value="17" label="RESOURCE_TYPE_PLUGIN_RESOURCE"/>
-  <int value="18" label="RESOURCE_TYPE_NAVIGATION_PRELOAD"/>
+  <int value="18" label="RESOURCE_TYPE_NAVIGATION_PRELOAD (obsolete)"/>
+  <int value="19" label="RESOURCE_TYPE_NAVIGATION_PRELOAD_MAIN_FRAME"/>
+  <int value="20" label="RESOURCE_TYPE_NAVIGATION_PRELOAD_SUB_FRAME"/>
 </enum>
 
 <enum name="ContentSetting">
