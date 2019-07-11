@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
+#include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 
 // This file declares strings used in chrome://flags. These messages are not
 // translated, because instead of end-users they target Chromium developers and

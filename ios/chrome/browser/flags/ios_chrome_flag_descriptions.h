@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_IOS_CHROME_FLAG_DESCRIPTIONS_H_
-#define IOS_CHROME_BROWSER_IOS_CHROME_FLAG_DESCRIPTIONS_H_
+#ifndef IOS_CHROME_BROWSER_FLAGS_IOS_CHROME_FLAG_DESCRIPTIONS_H_
+#define IOS_CHROME_BROWSER_FLAGS_IOS_CHROME_FLAG_DESCRIPTIONS_H_
 
 // Please add names and descriptions in alphabetical order.
 
@@ -407,4 +407,4 @@ extern const char kWKHTTPSystemCookieStoreDescription[];
 
 }  // namespace flag_descriptions
 
-#endif  // IOS_CHROME_BROWSER_IOS_CHROME_FLAG_DESCRIPTIONS_H_
+#endif  // IOS_CHROME_BROWSER_FLAGS_IOS_CHROME_FLAG_DESCRIPTIONS_H_

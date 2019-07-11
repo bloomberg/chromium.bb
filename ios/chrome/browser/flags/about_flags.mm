@@ -53,7 +53,7 @@
 #include "ios/chrome/browser/crash_report/crash_report_flags.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/find_in_page/features.h"
-#include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
+#include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/reading_list/features.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
