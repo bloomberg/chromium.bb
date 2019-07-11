@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -51,13 +50,6 @@ class DeviceOAuth2TokenServiceDelegate
   // completion via the given callback, passing true if the operation succeeded.
   void SetAndSaveRefreshToken(const std::string& refresh_token,
                               const StatusCallback& callback);
-
-  // Pull the robot account ID from device policy.
-  CoreAccountId GetRobotAccountId() const;
-
-  void set_robot_account_id_for_testing(const CoreAccountId& account_id) {
-    robot_account_id_for_testing_ = account_id;
-  }
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() const;
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
@@ -98,18 +90,11 @@ class DeviceOAuth2TokenServiceDelegate
     STATE_TOKEN_VALID,
   };
 
-  // Invoked by CrosSettings when the robot account ID becomes available.
-  void OnServiceAccountIdentityChanged();
-
   // Returns the refresh token for the robot account id.
   std::string GetRefreshToken() const;
 
   // Handles completion of the system salt input.
   void DidGetSystemSalt(const std::string& system_salt);
-
-  // Checks whether |gaia_robot_id| matches the expected account ID indicated in
-  // device settings.
-  void CheckRobotAccountId(const CoreAccountId& gaia_robot_id);
 
   // Encrypts and saves the refresh token. Should only be called when the system
   // salt is available.
@@ -154,11 +139,6 @@ class DeviceOAuth2TokenServiceDelegate
   std::string refresh_token_;
 
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
-
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      service_account_identity_subscription_;
-
-  CoreAccountId robot_account_id_for_testing_;
 
   // TODO(https://crbug.com/967598): Completely merge this class into
   // DeviceOAuth2TokenService.

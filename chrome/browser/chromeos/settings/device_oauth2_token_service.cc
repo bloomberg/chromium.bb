@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
@@ -49,7 +50,14 @@ void DeviceOAuth2TokenService::OnValidationCompleted(
 
 DeviceOAuth2TokenService::DeviceOAuth2TokenService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    PrefService* local_state) {
+    PrefService* local_state)
+    : service_account_identity_subscription_(
+          CrosSettings::Get()->AddSettingsObserver(
+              kServiceAccountIdentity,
+              base::Bind(
+                  &DeviceOAuth2TokenService::OnServiceAccountIdentityChanged,
+                  base::Unretained(this)))),
+      weak_ptr_factory_(this) {
   delegate_ = std::make_unique<DeviceOAuth2TokenServiceDelegate>(
       url_loader_factory, local_state, this);
   token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
@@ -74,13 +82,19 @@ void DeviceOAuth2TokenService::SetAndSaveRefreshToken(
   delegate_->SetAndSaveRefreshToken(refresh_token, result_callback);
 }
 
-std::string DeviceOAuth2TokenService::GetRobotAccountId() const {
-  return delegate_->GetRobotAccountId();
+CoreAccountId DeviceOAuth2TokenService::GetRobotAccountId() const {
+  if (!robot_account_id_for_testing_.empty()) {
+    return robot_account_id_for_testing_;
+  }
+
+  std::string account_id;
+  CrosSettings::Get()->GetString(kServiceAccountIdentity, &account_id);
+  return CoreAccountId(account_id);
 }
 
 void DeviceOAuth2TokenService::set_robot_account_id_for_testing(
     const CoreAccountId& account_id) {
-  delegate_->set_robot_account_id_for_testing(account_id);
+  robot_account_id_for_testing_ = account_id;
 }
 
 void DeviceOAuth2TokenService::SetRefreshTokenAvailableCallback(
@@ -243,4 +257,47 @@ std::vector<CoreAccountId> DeviceOAuth2TokenService::GetAccounts() const {
   return accounts;
 }
 
+void DeviceOAuth2TokenService::OnServiceAccountIdentityChanged() {
+  if (!GetRobotAccountId().empty() && !delegate_->refresh_token_.empty())
+    FireRefreshTokenAvailable(GetRobotAccountId());
+}
+
+void DeviceOAuth2TokenService::CheckRobotAccountId(
+    const CoreAccountId& gaia_robot_id) {
+  // Make sure the value returned by GetRobotAccountId has been validated
+  // against current device settings.
+  switch (CrosSettings::Get()->PrepareTrustedValues(
+      base::Bind(&DeviceOAuth2TokenService::CheckRobotAccountId,
+                 weak_ptr_factory_.GetWeakPtr(), gaia_robot_id))) {
+    case CrosSettingsProvider::TRUSTED:
+      // All good, compare account ids below.
+      break;
+    case CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
+      // The callback passed to PrepareTrustedValues above will trigger a
+      // re-check eventually.
+      return;
+    case CrosSettingsProvider::PERMANENTLY_UNTRUSTED:
+      // There's no trusted account id, which is equivalent to no token present.
+      LOG(WARNING) << "Device settings permanently untrusted.";
+      delegate_->state_ = DeviceOAuth2TokenServiceDelegate::STATE_NO_TOKEN;
+      delegate_->ReportServiceError(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
+      return;
+  }
+
+  CoreAccountId policy_robot_id = GetRobotAccountId();
+  if (policy_robot_id == gaia_robot_id) {
+    delegate_->state_ = DeviceOAuth2TokenServiceDelegate::STATE_TOKEN_VALID;
+    delegate_->ReportServiceError(GoogleServiceAuthError::NONE);
+  } else {
+    if (gaia_robot_id.empty()) {
+      LOG(WARNING) << "Device service account owner in policy is empty.";
+    } else {
+      LOG(WARNING) << "Device service account owner in policy does not match "
+                   << "refresh token owner \"" << gaia_robot_id << "\".";
+    }
+    delegate_->state_ = DeviceOAuth2TokenServiceDelegate::STATE_TOKEN_INVALID;
+    delegate_->ReportServiceError(
+        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  }
+}
 }  // namespace chromeos

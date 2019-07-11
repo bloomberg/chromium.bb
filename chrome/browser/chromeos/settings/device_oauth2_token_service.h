@@ -10,6 +10,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -52,7 +54,7 @@ class DeviceOAuth2TokenService
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Pull the robot account ID from device policy.
-  virtual std::string GetRobotAccountId() const;
+  CoreAccountId GetRobotAccountId() const;
 
   // Can be used to override the robot account ID for testing purposes. Most
   // common use case is to easily inject a non-empty account ID to make the
@@ -140,6 +142,13 @@ class DeviceOAuth2TokenService
   // Returns a list of accounts based on |state_|.
   std::vector<CoreAccountId> GetAccounts() const;
 
+  // Invoked by CrosSettings when the robot account ID becomes available.
+  void OnServiceAccountIdentityChanged();
+
+  // Checks whether |gaia_robot_id| matches the expected account ID indicated in
+  // device settings.
+  void CheckRobotAccountId(const CoreAccountId& gaia_robot_id);
+
   // TODO(https://crbug.com/967598): Merge DeviceOAuth2TokenServiceDelegate
   // into DeviceOAuth2TokenService.
   std::unique_ptr<DeviceOAuth2TokenServiceDelegate> delegate_;
@@ -152,6 +161,13 @@ class DeviceOAuth2TokenService
   // Callbacks to invoke, if set, for refresh token-related events.
   RefreshTokenAvailableCallback on_refresh_token_available_callback_;
   RefreshTokenRevokedCallback on_refresh_token_revoked_callback_;
+
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      service_account_identity_subscription_;
+
+  CoreAccountId robot_account_id_for_testing_;
+
+  base::WeakPtrFactory<DeviceOAuth2TokenService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOAuth2TokenService);
 };
