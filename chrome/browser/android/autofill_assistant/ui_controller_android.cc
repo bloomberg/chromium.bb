@@ -523,7 +523,7 @@ void UiControllerAndroid::OnCancelButtonWithActionIndexClicked(
 
 void UiControllerAndroid::OnCancel(int action_index) {
   if (action_index == -1 || !ui_delegate_) {
-    Shutdown(Metrics::SHEET_CLOSED);
+    Shutdown(Metrics::DropOutReason::SHEET_CLOSED);
     return;
   }
   ui_delegate_->PerformUserAction(action_index);
@@ -586,10 +586,10 @@ void UiControllerAndroid::OnTouchableAreaChanged(
 }
 
 void UiControllerAndroid::OnUnexpectedTaps() {
-  ShowSnackbar(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP),
-      base::BindOnce(&UiControllerAndroid::Shutdown,
-                     weak_ptr_factory_.GetWeakPtr(), Metrics::SHEET_CLOSED));
+  ShowSnackbar(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP),
+               base::BindOnce(&UiControllerAndroid::Shutdown,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              Metrics::DropOutReason::SHEET_CLOSED));
 }
 
 void UiControllerAndroid::UpdateTouchableArea() {
@@ -605,7 +605,7 @@ void UiControllerAndroid::OnUserInteractionInsideTouchableArea() {
 // Other methods.
 
 void UiControllerAndroid::WillShutdown(Metrics::DropOutReason reason) {
-  if (reason == Metrics::CUSTOM_TAB_CLOSED) {
+  if (reason == Metrics::DropOutReason::CUSTOM_TAB_CLOSED) {
     Java_AutofillAssistantUiController_scheduleCloseCustomTab(
         AttachCurrentThread(), java_object_);
   }
