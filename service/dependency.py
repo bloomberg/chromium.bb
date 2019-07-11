@@ -160,7 +160,9 @@ def GetBuildDependency(board):
   # and/or portage packages, we assume every board run all autotests.
   board_specific_packages += ['chromeos-base/autotest-all']
 
-  non_board_specific_packages = ['virtual/target-sdk', 'chromeos-base/chromite']
+  non_board_specific_packages = [
+      'virtual/target-sdk', 'chromeos-base/chromite',
+      'virtual/target-sdk-post-cross']
 
   board_specific_deps = cros_extract_deps.ExtractDeps(
       sysroot=cros_build_lib.GetSysroot(board),
