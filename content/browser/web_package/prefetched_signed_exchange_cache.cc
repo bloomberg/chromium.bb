@@ -85,6 +85,7 @@ class RedirectResponseURLLoader : public network::mojom::URLLoader {
     network::ResourceResponseHead response_head =
         signed_exchange_utils::CreateRedirectResponseHead(
             outer_response, false /* is_fallback_redirect */);
+    response_head.was_fetched_via_cache = true;
     response_head.was_in_prefetch_cache = true;
     UpdateRequestResponseStartTime(&response_head);
     client_->OnReceiveRedirect(signed_exchange_utils::CreateRedirectInfo(
