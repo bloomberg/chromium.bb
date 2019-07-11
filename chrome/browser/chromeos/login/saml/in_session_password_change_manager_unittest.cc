@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/saml/saml_password_expiry_notification.h"
+#include "chrome/browser/chromeos/login/saml/in_session_password_change_manager.h"
 
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/cpp/session/session_controller.h"
@@ -41,7 +41,9 @@ inline base::string16 utf16(const char* ascii) {
   return base::ASCIIToUTF16(ascii);
 }
 
-class SamlPasswordExpiryNotificationTest : public testing::Test {
+}  // namespace
+
+class InSessionPasswordChangeManagerTest : public testing::Test {
  public:
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
@@ -62,11 +64,17 @@ class SamlPasswordExpiryNotificationTest : public testing::Test {
 
     display_service_tester_ =
         std::make_unique<NotificationDisplayServiceTester>(profile_);
+    manager_ = std::make_unique<InSessionPasswordChangeManager>(profile_);
+
+    // urgent_warning_days_ = -1: This means we only ever show a standard
+    // notification, instead of an urgent one, because it is simpler to test.
+    // TODO(https://crbug.com/930109): Test both types of notification.
+    manager_->urgent_warning_days_ = -1;
+    InSessionPasswordChangeManager::SetForTesting(manager_.get());
   }
 
   void TearDown() override {
-    display_service_tester_.reset();
-    expiry_notification_test_helper_.ResetForTesting();
+    InSessionPasswordChangeManager::ResetForTesting();
   }
 
  protected:
@@ -82,7 +90,7 @@ class SamlPasswordExpiryNotificationTest : public testing::Test {
 
   void ExpectNotificationAndDismiss() {
     EXPECT_TRUE(Notification().has_value());
-    DismissSamlPasswordExpiryNotification(profile_);
+    manager_->DismissExpiryNotification();
     EXPECT_FALSE(Notification().has_value());
   }
 
@@ -92,49 +100,23 @@ class SamlPasswordExpiryNotificationTest : public testing::Test {
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
   TestingProfile* profile_;
 
-  SamlPasswordExpiryNotificationTestHelper expiry_notification_test_helper_;
-
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
+  std::unique_ptr<InSessionPasswordChangeManager> manager_;
 };
 
-}  // namespace
-
-TEST_F(SamlPasswordExpiryNotificationTest, ShowAlreadyExpired) {
-  ShowSamlPasswordExpiryNotification(profile_, 0);
-  ASSERT_TRUE(Notification().has_value());
-
-  EXPECT_EQ(utf16("Password is expired"), Notification()->title());
-  EXPECT_EQ(utf16("Choose a new one immediately"), Notification()->message());
-
-  DismissSamlPasswordExpiryNotification(profile_);
-  EXPECT_FALSE(Notification().has_value());
-}
-
-TEST_F(SamlPasswordExpiryNotificationTest, ShowWillSoonExpire) {
-  ShowSamlPasswordExpiryNotification(profile_, 14);
-  ASSERT_TRUE(Notification().has_value());
-
-  EXPECT_EQ(utf16("Password expires in less than 14 days"),
-            Notification()->title());
-  EXPECT_EQ(utf16("Choose a new one now"), Notification()->message());
-
-  DismissSamlPasswordExpiryNotification(profile_);
-  EXPECT_FALSE(Notification().has_value());
-}
-
-TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_PolicyDisabled) {
+TEST_F(InSessionPasswordChangeManagerTest, MaybeShow_PolicyDisabled) {
   SetExpirationTime(base::Time::Now());
   profile_->GetPrefs()->SetBoolean(prefs::kSamlInSessionPasswordChangeEnabled,
                                    false);
-  MaybeShowSamlPasswordExpiryNotification(profile_);
+  manager_->MaybeShowExpiryNotification();
 
   EXPECT_FALSE(Notification().has_value());
 }
 
-TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_WillNotExpire) {
+TEST_F(InSessionPasswordChangeManagerTest, MaybeShow_WillNotExpire) {
   SamlPasswordAttributes::DeleteFromPrefs(profile_->GetPrefs());
-  MaybeShowSamlPasswordExpiryNotification(profile_);
+  manager_->MaybeShowExpiryNotification();
 
   EXPECT_FALSE(Notification().has_value());
   // No notification shown now and nothing shown in the next 10 years.
@@ -142,18 +124,18 @@ TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_WillNotExpire) {
   EXPECT_FALSE(Notification().has_value());
 }
 
-TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_AlreadyExpired) {
+TEST_F(InSessionPasswordChangeManagerTest, MaybeShow_AlreadyExpired) {
   SetExpirationTime(base::Time::Now() - kOneYear);  // Expired last year.
-  MaybeShowSamlPasswordExpiryNotification(profile_);
+  manager_->MaybeShowExpiryNotification();
 
   // Notification is shown immediately since password has expired.
   EXPECT_TRUE(Notification().has_value());
   EXPECT_EQ(utf16("Password is expired"), Notification()->title());
 }
 
-TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_WillSoonExpire) {
+TEST_F(InSessionPasswordChangeManagerTest, MaybeShow_WillSoonExpire) {
   SetExpirationTime(base::Time::Now() + (kAdvanceWarningTime / 2) - kOneHour);
-  MaybeShowSamlPasswordExpiryNotification(profile_);
+  manager_->MaybeShowExpiryNotification();
 
   // Notification is shown immediately since password will soon expire.
   EXPECT_TRUE(Notification().has_value());
@@ -161,9 +143,9 @@ TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_WillSoonExpire) {
             Notification()->title());
 }
 
-TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_WillEventuallyExpire) {
+TEST_F(InSessionPasswordChangeManagerTest, MaybeShow_WillEventuallyExpire) {
   SetExpirationTime(base::Time::Now() + kOneYear + kAdvanceWarningTime);
-  MaybeShowSamlPasswordExpiryNotification(profile_);
+  manager_->MaybeShowExpiryNotification();
 
   // Notification is not shown when expiration is still over a year away.
   EXPECT_FALSE(Notification().has_value());
@@ -175,9 +157,9 @@ TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_WillEventuallyExpire) {
             Notification()->title());
 }
 
-TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_DeleteExpirationTime) {
+TEST_F(InSessionPasswordChangeManagerTest, MaybeShow_DeleteExpirationTime) {
   SetExpirationTime(base::Time::Now() + kOneYear);
-  MaybeShowSamlPasswordExpiryNotification(profile_);
+  manager_->MaybeShowExpiryNotification();
 
   // Notification is not shown immediately.
   EXPECT_FALSE(Notification().has_value());
@@ -188,9 +170,9 @@ TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_DeleteExpirationTime) {
   EXPECT_FALSE(Notification().has_value());
 }
 
-TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_PasswordChanged) {
+TEST_F(InSessionPasswordChangeManagerTest, MaybeShow_PasswordChanged) {
   SetExpirationTime(base::Time::Now() + (kAdvanceWarningTime / 2) - kOneHour);
-  MaybeShowSamlPasswordExpiryNotification(profile_);
+  manager_->MaybeShowExpiryNotification();
 
   // Notification is shown immediately since password will soon expire.
   EXPECT_TRUE(Notification().has_value());
@@ -199,35 +181,35 @@ TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_PasswordChanged) {
 
   // Password is changed and notification is dismissed.
   SamlPasswordAttributes::DeleteFromPrefs(profile_->GetPrefs());
-  DismissSamlPasswordExpiryNotification(profile_);
+  manager_->DismissExpiryNotification();
 
   // From now on, notification will not be reshown.
   test_environment_.FastForwardBy(kTenYears);
   EXPECT_FALSE(Notification().has_value());
 }
 
-TEST_F(SamlPasswordExpiryNotificationTest, MaybeShow_Idempotent) {
+TEST_F(InSessionPasswordChangeManagerTest, MaybeShow_Idempotent) {
   SetExpirationTime(base::Time::Now() + kOneYear);
 
   // Calling MaybeShowSamlPasswordExpiryNotification should only add one task -
   // to maybe show the notification in about a year.
   int baseline_task_count = test_environment_.GetPendingMainThreadTaskCount();
-  MaybeShowSamlPasswordExpiryNotification(profile_);
+  manager_->MaybeShowExpiryNotification();
   int new_task_count = test_environment_.GetPendingMainThreadTaskCount();
   EXPECT_EQ(1, new_task_count - baseline_task_count);
 
   // Calling it many times shouldn't create more tasks - we only need one task
   // to show the notification in about a year.
   for (int i = 0; i < 10; i++) {
-    MaybeShowSamlPasswordExpiryNotification(profile_);
+    manager_->MaybeShowExpiryNotification();
   }
   new_task_count = test_environment_.GetPendingMainThreadTaskCount();
   EXPECT_EQ(1, new_task_count - baseline_task_count);
 }
 
-TEST_F(SamlPasswordExpiryNotificationTest, TimePasses_NoUserActionTaken) {
+TEST_F(InSessionPasswordChangeManagerTest, TimePasses_NoUserActionTaken) {
   SetExpirationTime(base::Time::Now() + kOneYear + kAdvanceWarningTime);
-  MaybeShowSamlPasswordExpiryNotification(profile_);
+  manager_->MaybeShowExpiryNotification();
 
   // Notification is not shown immediately.
   EXPECT_FALSE(Notification().has_value());
@@ -253,17 +235,17 @@ TEST_F(SamlPasswordExpiryNotificationTest, TimePasses_NoUserActionTaken) {
   test_environment_.FastForwardBy(kAdvanceWarningTime / 2);
   EXPECT_TRUE(Notification().has_value());
   EXPECT_EQ(utf16("Password is expired"), Notification()->title());
-  EXPECT_EQ(utf16("Choose a new one immediately"), Notification()->message());
+  EXPECT_EQ(utf16("Choose a new one now"), Notification()->message());
 
   test_environment_.FastForwardBy(kOneYear);
   EXPECT_TRUE(Notification().has_value());
   EXPECT_EQ(utf16("Password is expired"), Notification()->title());
-  EXPECT_EQ(utf16("Choose a new one immediately"), Notification()->message());
+  EXPECT_EQ(utf16("Choose a new one now"), Notification()->message());
 }
 
-TEST_F(SamlPasswordExpiryNotificationTest, TimePasses_NotificationDismissed) {
+TEST_F(InSessionPasswordChangeManagerTest, TimePasses_NotificationDismissed) {
   SetExpirationTime(base::Time::Now() + kOneYear + kAdvanceWarningTime / 2);
-  MaybeShowSamlPasswordExpiryNotification(profile_);
+  manager_->MaybeShowExpiryNotification();
 
   // Notification is not shown immediately.
   EXPECT_FALSE(Notification().has_value());
@@ -284,9 +266,9 @@ TEST_F(SamlPasswordExpiryNotificationTest, TimePasses_NotificationDismissed) {
   ExpectNotificationAndDismiss();
 }
 
-TEST_F(SamlPasswordExpiryNotificationTest, ReshowOnUnlock) {
+TEST_F(InSessionPasswordChangeManagerTest, ReshowOnUnlock) {
   SetExpirationTime(base::Time::Now() + kAdvanceWarningTime / 2);
-  MaybeShowSamlPasswordExpiryNotification(profile_);
+  manager_->MaybeShowExpiryNotification();
 
   // Notification is shown immediately.
   EXPECT_TRUE(Notification().has_value());
@@ -300,26 +282,27 @@ TEST_F(SamlPasswordExpiryNotificationTest, ReshowOnUnlock) {
 
   // But when the screen is unlocked, the old notification is replaced with a
   // newer one. The new one is prominently shown on screen for a few seconds.
-  expiry_notification_test_helper_.SimulateUnlockForTesting();
+  manager_->OnScreenUnlocked();
   EXPECT_TRUE(Notification().has_value());
   EXPECT_NE(first_shown_at, Notification()->timestamp());
 }
 
-TEST_F(SamlPasswordExpiryNotificationTest, DontReshowWhenDismissed) {
+TEST_F(InSessionPasswordChangeManagerTest, DontReshowWhenDismissed) {
   SetExpirationTime(base::Time::Now() + kAdvanceWarningTime / 2);
-  MaybeShowSamlPasswordExpiryNotification(profile_);
+  manager_->MaybeShowExpiryNotification();
 
   // Notification is shown immediately.
   EXPECT_TRUE(Notification().has_value());
 
   // If dismissed, the notification won't reappear within the next hour, since
   // we don't want to nag the user continuously.
-  DismissSamlPasswordExpiryNotification(profile_);
+  manager_->DismissExpiryNotification();
+  manager_->OnExpiryNotificationDismissedByUser();
   test_environment_.FastForwardBy(kOneHour);
   EXPECT_FALSE(Notification().has_value());
 
   // Nor will it reappear if the user unlocks the screen.
-  expiry_notification_test_helper_.SimulateUnlockForTesting();
+  manager_->OnScreenUnlocked();
   EXPECT_FALSE(Notification().has_value());
 
   // But it will eventually reappear the next day.
