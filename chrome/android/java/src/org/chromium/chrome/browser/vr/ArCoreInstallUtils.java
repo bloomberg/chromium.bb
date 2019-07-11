@@ -60,7 +60,7 @@ public class ArCoreInstallUtils implements ModuleInstallUi.FailureUiListener {
     private ArCoreInstallUtils(long nativeArCoreInstallUtils) {
         mNativeArCoreInstallUtils = nativeArCoreInstallUtils;
         // Need to be called before trying to access the AR module.
-        ModuleInstaller.init();
+        ModuleInstaller.getInstance().init();
     }
 
     @Override
@@ -98,7 +98,7 @@ public class ArCoreInstallUtils implements ModuleInstallUi.FailureUiListener {
         mTab = tab;
         ModuleInstallUi ui = new ModuleInstallUi(mTab, R.string.ar_module_title, this);
         ui.showInstallStartUi();
-        ModuleInstaller.install("ar", success -> {
+        ModuleInstaller.getInstance().install("ar", success -> {
             assert shouldRequestInstallArModule() != success;
 
             if (success) {

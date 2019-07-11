@@ -27,7 +27,7 @@ public class AutofillAssistantModuleEntryProvider {
     @Nullable
     /* package */ static AutofillAssistantModuleEntry getModuleEntryIfInstalled(Context context) {
         // Required to access resources in DFM using this activity as context.
-        ModuleInstaller.initActivity(context);
+        ModuleInstaller.getInstance().initActivity(context);
         if (AutofillAssistantModule.isInstalled()) {
             return AutofillAssistantModule.getImpl();
         }
@@ -92,11 +92,11 @@ public class AutofillAssistantModuleEntryProvider {
                 });
         // Shows toast informing user about install start.
         ui.showInstallStartUi();
-        ModuleInstaller.install("autofill_assistant", (success) -> {
+        ModuleInstaller.getInstance().install("autofill_assistant", (success) -> {
             if (success) {
                 // Clean install of chrome will have issues here without initializing
                 // after installation of DFM.
-                ModuleInstaller.initActivity(activity);
+                ModuleInstaller.getInstance().initActivity(activity);
                 // Don't show success UI from DFM, transition to autobot UI directly.
                 callback.onResult(AutofillAssistantModule.getImpl());
                 return;

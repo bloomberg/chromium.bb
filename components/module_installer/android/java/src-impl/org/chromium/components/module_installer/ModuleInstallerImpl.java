@@ -30,53 +30,54 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /** Installs dynamic feature modules (DFMs). */
-public class ModuleInstaller {
+public class ModuleInstallerImpl implements ModuleInstaller {
     /** Command line switch for activating the fake backend.  */
     private static final String FAKE_FEATURE_MODULE_INSTALL = "fake-feature-module-install";
-    private static final Map<String, List<OnModuleInstallFinishedListener>> sModuleNameListenerMap =
+    private static ModuleInstaller sInstance = new ModuleInstallerImpl();
+    private static boolean sAppContextSplitCompatted;
+    private final Map<String, List<OnModuleInstallFinishedListener>> mModuleNameListenerMap =
             new HashMap<>();
-    private static ModuleInstallerBackend sBackend;
-    private static boolean sSplitCompatted;
+    private ModuleInstallerBackend mBackend;
 
-    /** Needs to be called before trying to access a module. */
-    public static void init() {
-        if (sSplitCompatted) return;
+    /** Returns the singleton instance. */
+    public static ModuleInstaller getInstance() {
+        return sInstance;
+    }
+
+    public static void setInstanceForTesting(ModuleInstaller moduleInstaller) {
+        sInstance = moduleInstaller;
+    }
+
+    @Override
+    public void init() {
+        if (sAppContextSplitCompatted) return;
         // SplitCompat.install may copy modules into Chrome's internal folder or clean them up.
         try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             SplitCompat.install(ContextUtils.getApplicationContext());
-            sSplitCompatted = true;
+            sAppContextSplitCompatted = true;
         }
         // SplitCompat.install may add emulated modules. Thus, update crash keys.
         updateCrashKeys();
     }
 
-    /**
-     * Needs to be called in attachBaseContext of the activities that want to have access to
-     * splits prior to application restart.
-     *
-     * For details, see:
-     * https://developer.android.com/reference/com/google/android/play/core/splitcompat/SplitCompat.html#install(android.content.Context)
-     */
-    public static void initActivity(Context context) {
+    @Override
+    public void initActivity(Context context) {
         SplitCompat.install(context);
     }
 
-    /**
-     * Records via UMA all modules that have been requested and are currently installed. The intent
-     * is to measure the install penetration of each module.
-     */
-    public static void recordModuleAvailability() {
+    @Override
+    public void recordModuleAvailability() {
         if (!CommandLine.getInstance().hasSwitch(FAKE_FEATURE_MODULE_INSTALL)) {
             PlayCoreModuleInstallerBackend.recordModuleAvailability();
         }
     }
 
-    /** Writes fully installed and emulated modules to crash keys. */
-    public static void updateCrashKeys() {
+    @Override
+    public void updateCrashKeys() {
         Context context = ContextUtils.getApplicationContext();
 
         // Get modules that are fully installed as split APKs (excluding base which is always
-        // intalled). Tree set to have ordered and, thus, deterministic results.
+        // installed). Tree set to have ordered and, thus, deterministic results.
         Set<String> fullyInstalledModules = new TreeSet<>();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Split APKs are only supported on Android L+.
@@ -97,7 +98,7 @@ public class ModuleInstaller {
         // emulation of later modules won't work. If splitcompat has not been called no modules are
         // emulated. Therefore, use an empty set in that case.
         Set<String> emulatedModules = new TreeSet<>();
-        if (sSplitCompatted) {
+        if (sAppContextSplitCompatted) {
             emulatedModules.addAll(
                     SplitInstallManagerFactory.create(context).getInstalledModules());
             emulatedModules.removeAll(fullyInstalledModules);
@@ -109,21 +110,15 @@ public class ModuleInstaller {
                 CrashKeyIndex.EMULATED_MODULES, encodeCrashKeyValue(emulatedModules));
     }
 
-    /**
-     * Requests the install of a module. The install will be performed asynchronously.
-     *
-     * @param moduleName Name of the module as defined in GN.
-     * @param onFinishedListener Listener to be called once installation is finished.
-     */
-    public static void install(
-            String moduleName, OnModuleInstallFinishedListener onFinishedListener) {
+    @Override
+    public void install(String moduleName, OnModuleInstallFinishedListener onFinishedListener) {
         ThreadUtils.assertOnUiThread();
 
-        if (!sModuleNameListenerMap.containsKey(moduleName)) {
-            sModuleNameListenerMap.put(moduleName, new LinkedList<>());
+        if (!mModuleNameListenerMap.containsKey(moduleName)) {
+            mModuleNameListenerMap.put(moduleName, new LinkedList<>());
         }
         List<OnModuleInstallFinishedListener> onFinishedListeners =
-                sModuleNameListenerMap.get(moduleName);
+                mModuleNameListenerMap.get(moduleName);
         onFinishedListeners.add(onFinishedListener);
         if (onFinishedListeners.size() > 1) {
             // Request is already running.
@@ -132,56 +127,50 @@ public class ModuleInstaller {
         getBackend().install(moduleName);
     }
 
-    /**
-     * Asynchronously installs module in the background when on unmetered connection and charging.
-     * Install is best effort and may fail silently. Upon success, the module will only be available
-     * after Chrome restarts.
-     *
-     * @param moduleName Name of the module.
-     */
-    public static void installDeferred(String moduleName) {
+    @Override
+    public void installDeferred(String moduleName) {
         ThreadUtils.assertOnUiThread();
         getBackend().installDeferred(moduleName);
     }
 
-    private static void onFinished(boolean success, List<String> moduleNames) {
+    private void onFinished(boolean success, List<String> moduleNames) {
         ThreadUtils.assertOnUiThread();
 
         for (String moduleName : moduleNames) {
             List<OnModuleInstallFinishedListener> onFinishedListeners =
-                    sModuleNameListenerMap.get(moduleName);
+                    mModuleNameListenerMap.get(moduleName);
             if (onFinishedListeners == null) continue;
 
             for (OnModuleInstallFinishedListener listener : onFinishedListeners) {
                 listener.onFinished(success);
             }
-            sModuleNameListenerMap.remove(moduleName);
+            mModuleNameListenerMap.remove(moduleName);
         }
 
-        if (sModuleNameListenerMap.isEmpty()) {
-            sBackend.close();
-            sBackend = null;
+        if (mModuleNameListenerMap.isEmpty()) {
+            mBackend.close();
+            mBackend = null;
         }
 
         updateCrashKeys();
     }
 
-    private static ModuleInstallerBackend getBackend() {
-        if (sBackend == null) {
-            ModuleInstallerBackend.OnFinishedListener listener = ModuleInstaller::onFinished;
-            sBackend = CommandLine.getInstance().hasSwitch(FAKE_FEATURE_MODULE_INSTALL)
+    private ModuleInstallerBackend getBackend() {
+        if (mBackend == null) {
+            ModuleInstallerBackend.OnFinishedListener listener = this::onFinished;
+            mBackend = CommandLine.getInstance().hasSwitch(FAKE_FEATURE_MODULE_INSTALL)
                     ? new FakeModuleInstallerBackend(listener)
                     : new PlayCoreModuleInstallerBackend(listener);
         }
-        return sBackend;
+        return mBackend;
     }
 
-    private static String encodeCrashKeyValue(Set<String> moduleNames) {
+    private String encodeCrashKeyValue(Set<String> moduleNames) {
         if (moduleNames.isEmpty()) return "<none>";
         // Values with dots are interpreted as URLs. Some module names have dots in them. Make sure
         // they don't get sanitized.
         return TextUtils.join(",", moduleNames).replace('.', '$');
     }
 
-    private ModuleInstaller() {}
+    private ModuleInstallerImpl() {}
 }

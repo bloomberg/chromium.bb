@@ -852,7 +852,6 @@ android_library("chrome_test_java") {
     "//third_party/android_deps:com_android_support_preference_v7_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",
-    "//third_party/android_deps:com_google_ar_core_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_sdk:android_test_mock_java",
@@ -1039,6 +1038,7 @@ if (enable_vr || enable_arcore) {
             "//third_party/gvr-android-sdk:gvr_common_java",
             ":chrome_test_util_java",
             "//components/module_installer/android:module_installer_java",
+            "//components/module_installer/android:module_installer_stub_java",
             "//components/module_installer/android:module_installer_test_java",
           ]
 
