@@ -624,7 +624,7 @@
       Confirm Restore
     </message>
     <message name="IDS_SETTINGS_CROSTINI_CONFIRM_IMPORT_DIALOG_WINDOW_MESSAGE" desc="Message of the confirmation dialog displayed before container import begins.">
-      Restoring will override your existing linux installation. Are you sure you wish to continue?
+      Restoring from a backup will delete existing Linux applications and data in your Linux files folder.
     </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL" desc="Label for managing shared USB devices.">
       USB preferences
