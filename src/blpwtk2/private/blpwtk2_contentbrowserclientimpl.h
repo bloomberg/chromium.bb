@@ -35,6 +35,7 @@
 
 namespace content {
     class AssociatedInterfaceRegistry;
+    class ServiceManagerConnection;
 }
 
 namespace blpwtk2 {
@@ -127,6 +128,9 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
 
     base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
             base::StringPiece name) override;
+
+    void RegisterIOThreadServiceHandlers(
+        content::ServiceManagerConnection* connection) override;
 
     void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
 

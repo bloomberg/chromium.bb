@@ -33,12 +33,14 @@
 #include <services/service_manager/public/cpp/local_interface_provider.h>
 
 namespace service_manager {
+class ServiceBinding;
 struct BindSourceInfo;
 }
 
 class SpellCheck;
 
 namespace blpwtk2 {
+class ForwardingService;
 
                         // ===============================
                         // class ContentRendererClientImpl
@@ -116,6 +118,8 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
     service_manager::BinderRegistry d_registry;
     std::unique_ptr<service_manager::Connector> d_connector;
     service_manager::mojom::ConnectorRequest d_connector_request;
+    std::unique_ptr<blpwtk2::ForwardingService> d_forward_service;
+    std::unique_ptr<service_manager::ServiceBinding> d_service_binding;
 
     DISALLOW_COPY_AND_ASSIGN(ContentRendererClientImpl);
 };
