@@ -227,7 +227,7 @@ class WebMediaPlayerMS::FrameDeliverer {
 WebMediaPlayerMS::WebMediaPlayerMS(
     blink::WebLocalFrame* frame,
     blink::WebMediaPlayerClient* client,
-    media::WebMediaPlayerDelegate* delegate,
+    blink::WebMediaPlayerDelegate* delegate,
     std::unique_ptr<media::MediaLog> media_log,
     std::unique_ptr<blink::WebMediaStreamRendererFactory> factory,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner,

@@ -2,27 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BLINK_WEBMEDIAPLAYER_DELEGATE_H_
-#define MEDIA_BLINK_WEBMEDIAPLAYER_DELEGATE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MEDIA_WEBMEDIAPLAYER_DELEGATE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MEDIA_WEBMEDIAPLAYER_DELEGATE_H_
 
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_player.h"
-
-namespace blink {
-enum class WebFullscreenVideoStatus;
-class WebMediaPlayer;
-}  // namespace blink
 
 namespace gfx {
 class Size;
 }  // namespace gfx
 
 namespace media {
-
 enum class MediaContentType;
+}  // namespace media
+
+namespace blink {
+
+enum class WebFullscreenVideoStatus;
+class WebMediaPlayer;
 
 // An interface to collect WebMediaPlayer state changes and to fan out commands
 // from the browser.
-class WebMediaPlayerDelegate {
+class BLINK_PLATFORM_EXPORT WebMediaPlayerDelegate {
  public:
   // Note: WebMediaPlayerDelegate implementations should not call an Observer
   // method on a stack that includes a call from the player.
@@ -146,6 +147,6 @@ class WebMediaPlayerDelegate {
   virtual ~WebMediaPlayerDelegate() = default;
 };
 
-}  // namespace media
+}  // namespace blink
 
-#endif  // MEDIA_BLINK_WEBMEDIAPLAYER_DELEGATE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MEDIA_WEBMEDIAPLAYER_DELEGATE_H_
