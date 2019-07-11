@@ -322,6 +322,8 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
   // Use 'text-indent' as the initial position. This lets tab positions to align
   // regardless of 'text-indent'.
   position_ = line_info->TextIndent();
+
+  overflow_item_index_ = 0;
 }
 
 void NGLineBreaker::NextLine(
@@ -405,6 +407,11 @@ void NGLineBreaker::BreakLine(
 #endif
       continue;
     }
+    if (item.Type() == NGInlineItem::kOpenTag) {
+      if (HandleOpenTag(item, line_info))
+        continue;
+      return;
+    }
     if (item.Type() == NGInlineItem::kCloseTag) {
       HandleCloseTag(item, line_info);
       continue;
@@ -443,8 +450,6 @@ void NGLineBreaker::BreakLine(
     if (item.Type() == NGInlineItem::kAtomicInline) {
       HandleAtomicInline(item, percentage_resolution_block_size_for_min_max,
                          line_info);
-    } else if (item.Type() == NGInlineItem::kOpenTag) {
-      HandleOpenTag(item, line_info);
     } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       AddItem(item, line_info);
       MoveToNextOf(item);
@@ -1317,7 +1322,8 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
 bool NGLineBreaker::ComputeOpenTagResult(
     const NGInlineItem& item,
     const NGConstraintSpace& constraint_space,
-    NGInlineItemResult* item_result) {
+    NGInlineItemResult* item_result,
+    base::Optional<NGLineBoxStrut> margins) {
   DCHECK_EQ(item.Type(), NGInlineItem::kOpenTag);
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
@@ -1328,7 +1334,9 @@ bool NGLineBreaker::ComputeOpenTagResult(
     item_result->borders = ComputeLineBorders(style);
     item_result->padding = ComputeLinePadding(constraint_space, style);
     if (item_result->has_edge) {
-      item_result->margins = ComputeLineMarginsForSelf(constraint_space, style);
+      item_result->margins =
+          margins ? *margins
+                  : ComputeLineMarginsForSelf(constraint_space, style);
       item_result->inline_size = item_result->margins.inline_start +
                                  item_result->borders.inline_start +
                                  item_result->padding.inline_start;
@@ -1338,11 +1346,39 @@ bool NGLineBreaker::ComputeOpenTagResult(
   return false;
 }
 
-void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
+bool NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
                                   NGLineInfo* line_info) {
+  DCHECK_EQ(item.Type(), NGInlineItem::kOpenTag);
+  DCHECK(item.Style());
+  const ComputedStyle& style = *item.Style();
+
+  // OpenTag is not trailable, except when it has negative inline-start margin,
+  // which can bring the position back to inside of the available width.
+  base::Optional<NGLineBoxStrut> margins;
+  if (UNLIKELY(state_ == LineBreakState::kTrailing &&
+               CanBreakAfterLast(line_info->Results()))) {
+    bool can_continue = false;
+    if (UNLIKELY(item_index_ >= overflow_item_index_ &&
+                 item.ShouldCreateBoxFragment() && item.HasStartEdge() &&
+                 style.MayHaveMargin())) {
+      margins = ComputeLineMarginsForSelf(constraint_space_, style);
+      LayoutUnit inline_start_margin = margins->inline_start;
+      can_continue = inline_start_margin < 0 &&
+                     position_ + inline_start_margin < AvailableWidthToFit();
+    }
+    if (!can_continue) {
+      // Not that case. Break the line before this OpenTag.
+      line_info->SetIsLastLine(false);
+      return false;
+    }
+    // The state is back to normal because the position is back to inside of the
+    // available width.
+    state_ = LineBreakState::kContinue;
+  }
+
   NGInlineItemResult* item_result = AddItem(item, line_info);
 
-  if (ComputeOpenTagResult(item, constraint_space_, item_result)) {
+  if (ComputeOpenTagResult(item, constraint_space_, item_result, margins)) {
     position_ += item_result->inline_size;
 
     // While the spec defines "non-zero margins, padding, or borders" prevents
@@ -1354,8 +1390,6 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
   }
 
   bool was_auto_wrap = auto_wrap_;
-  DCHECK(item.Style());
-  const ComputedStyle& style = *item.Style();
   SetCurrentStyle(style);
   MoveToNextOf(item);
 
@@ -1364,6 +1398,7 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
   if (UNLIKELY(!was_auto_wrap && auto_wrap_ && item_results.size() >= 2)) {
     ComputeCanBreakAfter(std::prev(item_result), auto_wrap_, break_iterator_);
   }
+  return true;
 }
 
 void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
@@ -1417,6 +1452,8 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
 // At this point, item_results does not fit into the current line, and there
 // are no break opportunities in item_results.back().
 void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
+  overflow_item_index_ = std::max(overflow_item_index_, item_index_);
+
   // Compute the width needing to rewind. When |width_to_rewind| goes negative,
   // items can fit within the line.
   LayoutUnit available_width = AvailableWidthToFit();
@@ -1509,6 +1546,7 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
     if (!item_results->IsEmpty())
       Rewind(0, line_info);
     state_ = LineBreakState::kContinue;
+    overflow_item_index_ = 0;
     return;
   }
 
