@@ -18,7 +18,7 @@ namespace android {
 class SigninPromoUtilAndroid {
  public:
   // Opens a signin flow with the specified |access_point| for metrics.
-  static void StartAccountSigninActivityForPromo(
+  static void StartSigninActivityForPromo(
       ui::WindowAndroid* window,
       signin_metrics::AccessPoint access_point);
 };

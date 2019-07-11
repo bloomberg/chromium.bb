@@ -506,10 +506,8 @@ void ChromeAutofillClient::ExecuteCommand(int id) {
   if (id == autofill::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
     auto* window = web_contents()->GetNativeView()->GetWindowAndroid();
     if (window) {
-      chrome::android::SigninPromoUtilAndroid::
-          StartAccountSigninActivityForPromo(
-              window,
-              signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
+      chrome::android::SigninPromoUtilAndroid::StartSigninActivityForPromo(
+          window, signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
     }
   }
 #endif
