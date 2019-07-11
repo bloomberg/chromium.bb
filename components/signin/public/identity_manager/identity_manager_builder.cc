@@ -20,8 +20,11 @@
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
+#include "components/signin/core/browser/webdata/token_web_data.h"
+#if !defined(OS_IOS)
 #include "components/signin/internal/identity_manager/accounts_mutator_impl.h"
+#endif
 #endif
 
 #if !defined(OS_CHROMEOS)

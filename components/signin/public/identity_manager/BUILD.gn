@@ -46,6 +46,7 @@ source_set("identity_manager") {
     "//components/image_fetcher/core",
     "//components/prefs",
     "//components/signin/core/browser:internals",
+    "//components/signin/core/browser/webdata",
     "//components/signin/internal/identity_manager",
     "//services/network/public/cpp",
   ]
