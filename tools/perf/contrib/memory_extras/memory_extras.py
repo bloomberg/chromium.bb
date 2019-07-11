@@ -9,43 +9,6 @@ from telemetry import benchmark
 
 
 # pylint: disable=protected-access
-@benchmark.Info(emails=['perezju@chromium.org'])
-class DualBrowserBenchmark(memory._MemoryInfra):
-  """Measures memory usage while interacting with two different browsers.
-
-  The user story involves going back and forth between doing Google searches
-  on a webview-based browser (a stand in for the Search app), and loading
-  pages on a select browser.
-  """
-  options = {'pageset_repeat': 5}
-
-  @classmethod
-  def Name(cls):
-    return 'memory.dual_browser_test'
-
-  def CreateStorySet(self, options):
-    del options
-    return page_sets.DualBrowserStorySet()
-
-
-@benchmark.Info(emails=['perezju@chromium.org'])
-class LongRunningDualBrowserBenchmark(memory._MemoryInfra):
-  """Measures memory during prolonged usage of alternating browsers.
-
-  Same as memory.dual_browser_test, but the test is run for 60 iterations
-  and the browser is *not* restarted between page set repeats.
-  """
-  options = {'pageset_repeat': 60}
-
-  @classmethod
-  def Name(cls):
-    return 'memory.long_running_dual_browser_test'
-
-  def CreateStorySet(self, options):
-    del options
-    return page_sets.DualBrowserStorySet(long_running=True)
-
-
 @benchmark.Info(emails=['etienneb@chromium.org'])
 class LongRunningMemoryBenchmarkSitesDesktop(memory._MemoryInfra):
   """Measure memory usage on popular sites.
