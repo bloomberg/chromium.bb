@@ -98,8 +98,7 @@ private:
 Note that finalization is done at an arbitrary time after the object becomes unreachable.
 
 Any destructor executed within the finalization period must not touch any other on-heap object, because destructors
-can be executed in any order. If there is a need of having such destructor, consider using
-[EAGERLY_FINALIZE](#EAGERLY_FINALIZE).
+can be executed in any order.
 
 Because `GarbageCollectedFinalized<T>` is a special case of `GarbageCollected<T>`, all the restrictions that apply
 to `GarbageCollected<T>` classes also apply to `GarbageCollectedFinalized<T>`.
