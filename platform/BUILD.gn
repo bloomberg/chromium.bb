@@ -41,8 +41,6 @@ source_set("platform") {
     "../util",
   ]
 
-  allow_circular_includes_from = [ "../util" ]
-
   configs += [ "../build:allow_build_from_embedder" ]
 
   if (!build_with_chromium) {

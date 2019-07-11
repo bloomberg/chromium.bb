@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 include_rules = [
-    '+platform/api',
-
     # BoringSSL includes
     '-third_party/boringssl',
     '+openssl'

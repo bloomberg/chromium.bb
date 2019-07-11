@@ -3,6 +3,5 @@
 # found in the LICENSE file.
 
 include_rules = [
-    '+platform/api',
     '+json'
 ]
