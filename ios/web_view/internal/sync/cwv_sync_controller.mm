@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
-#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/driver/sync_service.h"

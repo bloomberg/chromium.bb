@@ -11,10 +11,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_client.h"
+#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/base/device_id_helper.h"
+#include "components/signin/public/base/signin_client.h"
 
 #if defined(OS_ANDROID)
 #include "components/signin/core/browser/oauth2_token_service_delegate_android.h"
