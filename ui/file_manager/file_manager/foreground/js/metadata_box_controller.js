@@ -209,6 +209,16 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
         this.metadataBox_.metadataRendered('meta');
       });
     }
+  } else if (type === 'raw') {
+    const data = ['ifd'];
+    this.metadataModel_.get([entry], data).then(items => {
+      const raw = items[0].ifd ? items[0].ifd : {};
+      this.metadataBox_.type = items[0].ifd ? 'image' : '';
+      this.metadataBox_.ifd = items[0].ifd ? {raw} : null;
+      this.metadataBox_.imageWidth = raw.width || 0;
+      this.metadataBox_.imageHeight = raw.height || 0;
+      this.metadataBox_.metadataRendered('meta');
+    });
   }
 };
 
