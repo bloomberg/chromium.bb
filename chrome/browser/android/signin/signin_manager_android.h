@@ -11,6 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/android/signin/signin_manager_delegate.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
@@ -26,8 +27,10 @@ class Profile;
 // is available before sign-in completes.
 class SigninManagerAndroid : public identity::IdentityManager::Observer {
  public:
-  SigninManagerAndroid(Profile* profile,
-                       identity::IdentityManager* identity_manager);
+  SigninManagerAndroid(
+      Profile* profile,
+      identity::IdentityManager* identity_manager,
+      std::unique_ptr<SigninManagerDelegate> signin_manager_delegate);
 
   ~SigninManagerAndroid() override;
 
@@ -72,6 +75,8 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
   Profile* profile_;
 
   identity::IdentityManager* identity_manager_;
+
+  std::unique_ptr<SigninManagerDelegate> signin_manager_delegate_;
 
   // Java-side SigninManager object.
   base::android::ScopedJavaGlobalRef<jobject> java_signin_manager_;

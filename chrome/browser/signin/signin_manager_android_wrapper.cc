@@ -6,8 +6,11 @@
 
 SigninManagerAndroidWrapper::SigninManagerAndroidWrapper(
     Profile* profile,
-    identity::IdentityManager* identity_manager)
-    : signin_manager_android_(profile, identity_manager) {}
+    identity::IdentityManager* identity_manager,
+    std::unique_ptr<SigninManagerDelegate> signin_manager_delegate)
+    : signin_manager_android_(profile,
+                              identity_manager,
+                              std::move(signin_manager_delegate)) {}
 
 SigninManagerAndroidWrapper::~SigninManagerAndroidWrapper() {}
 

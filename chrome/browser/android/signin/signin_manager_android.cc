@@ -33,10 +33,14 @@ void ClearLastSignedInUserForProfile(Profile* profile) {
 
 SigninManagerAndroid::SigninManagerAndroid(
     Profile* profile,
-    identity::IdentityManager* identity_manager)
-    : profile_(profile), identity_manager_(identity_manager) {
+    identity::IdentityManager* identity_manager,
+    std::unique_ptr<SigninManagerDelegate> signin_manager_delegate)
+    : profile_(profile),
+      identity_manager_(identity_manager),
+      signin_manager_delegate_(std::move(signin_manager_delegate)) {
   DCHECK(profile_);
   DCHECK(identity_manager_);
+  DCHECK(signin_manager_delegate_);
   identity_manager_->AddObserver(this);
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
@@ -44,7 +48,9 @@ SigninManagerAndroid::SigninManagerAndroid(
       base::Bind(&SigninManagerAndroid::OnSigninAllowedPrefChanged,
                  base::Unretained(this)));
   java_signin_manager_ = Java_SigninManager_create(
-      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
+      signin_manager_delegate_->GetJavaObject(),
+      identity_manager_->LegacyGetAccountTrackerServiceJavaObject());
 }
 
 base::android::ScopedJavaLocalRef<jobject>
@@ -52,13 +58,13 @@ SigninManagerAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(java_signin_manager_);
 }
 
-SigninManagerAndroid::~SigninManagerAndroid() {
-  Java_SigninManager_destroy(base::android::AttachCurrentThread(),
-                             java_signin_manager_);
-}
+SigninManagerAndroid::~SigninManagerAndroid() {}
 
 void SigninManagerAndroid::Shutdown() {
   identity_manager_->RemoveObserver(this);
+  Java_SigninManager_destroy(base::android::AttachCurrentThread(),
+                             java_signin_manager_);
+  signin_manager_delegate_.reset();
 }
 
 void SigninManagerAndroid::OnSignInCompleted(

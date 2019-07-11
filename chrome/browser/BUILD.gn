@@ -2578,6 +2578,7 @@ jumbo_split_static_library("browser") {
       "android/signin/signin_investigator_android.h",
       "android/signin/signin_manager_android.cc",
       "android/signin/signin_manager_android.h",
+      "android/signin/signin_manager_delegate.h",
       "android/signin/signin_promo_util_android.cc",
       "android/signin/signin_promo_util_android.h",
       "android/signin/signin_utils.cc",
