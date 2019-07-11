@@ -29,6 +29,8 @@
 
 #include "third_party/blink/renderer/core/css/media_query_exp.h"
 
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -291,11 +293,25 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
                FeatureWithPositiveInteger(lower_media_feature, value) ||
                FeatureWithPositiveNumber(lower_media_feature, value) ||
                FeatureWithZeroOrOne(lower_media_feature, value)) {
-      exp_value.value = value->GetDoubleValue();
-      if (value->IsNumber())
-        exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
-      else
-        exp_value.unit = value->TypeWithCalcResolved();
+      if (!value->IsLength() || !value->IsMathFunctionValue()) {
+        exp_value.value = value->GetDoubleValue();
+        if (value->IsNumber())
+          exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
+        else
+          exp_value.unit = value->TypeWithCalcResolved();
+      } else {
+        const auto* math_value = To<CSSMathFunctionValue>(value);
+        CSSPrimitiveValue::UnitType expression_unit =
+            math_value->ExpressionNode()->ResolvedUnitType();
+        if (expression_unit == CSSPrimitiveValue::UnitType::kUnknown) {
+          // TODO(crbug.com/982542): Support math expressions involving type
+          // conversions properly. For example, calc(10px + 1em).
+          return Invalid();
+        } else {
+          exp_value.value = math_value->DoubleValue();
+          exp_value.unit = expression_unit;
+        }
+      }
       exp_value.is_value = true;
     } else {
       return Invalid();
