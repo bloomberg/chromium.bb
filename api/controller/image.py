@@ -68,7 +68,10 @@ def Create(input_proto, output_proto):
     # Success -- we need to list out the images we built in the output.
     _PopulateBuiltImages(board, image_types, output_proto)
   else:
-    # Failure -- include all of the failed packages in the output.
+    # Failure, include all of the failed packages in the output when available.
+    if not result.failed_packages:
+      return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
+
     for package in result.failed_packages:
       current = output_proto.failed_packages.add()
       current.category = package.category

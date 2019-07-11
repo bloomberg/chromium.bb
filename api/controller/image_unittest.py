@@ -106,9 +106,24 @@ class CreateTest(cros_test_lib.MockTempDirTestCase):
     for package in output_proto.failed_packages:
       self.assertIn((package.category, package.package_name), expected_packages)
 
+  def testNoPackagesFailureHandling(self):
+    """Test failed packages are populated correctly."""
+    result = image_service.BuildResult(1, [])
+    self.PatchObject(image_service, 'Build', return_value=result)
 
-class ImageTest(cros_test_lib.MockTempDirTestCase):
-  """Image service tests."""
+    input_proto = image_pb2.CreateImageRequest()
+    input_proto.build_target.name = 'board'
+    output_proto = image_pb2.CreateImageResult()
+
+    rc = image_controller.Create(input_proto, output_proto)
+    self.assertTrue(rc)
+    self.assertNotEqual(controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE,
+                        rc)
+    self.assertFalse(output_proto.failed_packages)
+
+
+class ImageTestTest(cros_test_lib.MockTempDirTestCase):
+  """Image test tests."""
 
   def setUp(self):
     self.image_path = os.path.join(self.tempdir, 'image.bin')

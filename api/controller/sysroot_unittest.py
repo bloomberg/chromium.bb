@@ -288,7 +288,31 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(sysroot_service, 'BuildPackages', side_effect=error)
 
     rc = sysroot_controller.InstallPackages(in_proto, out_proto)
-    self.assertTrue(rc)
+    # This needs to return 2 to indicate the available error response.
+    self.assertEqual(controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE, rc)
     for package in out_proto.failed_packages:
       cat_pkg = (package.category, package.package_name)
       self.assertIn(cat_pkg, expected)
+
+  def testNoPackageFailureOutputHandling(self):
+    """Test failure handling without packages to report."""
+    # Prevent argument validation error.
+    self.PatchObject(sysroot_lib.Sysroot, 'IsToolchainInstalled',
+                     return_value=True)
+
+    in_proto = self._InputProto(build_target=self.build_target,
+                                sysroot_path=self.sysroot)
+    out_proto = self._OutputProto()
+
+    # Force error to be raised with no packages.
+    error = sysroot_lib.PackageInstallError('Error',
+                                            cros_build_lib.CommandResult(),
+                                            packages=[])
+    self.PatchObject(sysroot_service, 'BuildPackages', side_effect=error)
+
+    rc = sysroot_controller.InstallPackages(in_proto, out_proto)
+    # All we really care about is it's not 0 or 2 (response available), so
+    # test for that rather than a specific return code.
+    self.assertTrue(rc)
+    self.assertNotEqual(controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE,
+                        rc)

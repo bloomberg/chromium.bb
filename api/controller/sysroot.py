@@ -98,6 +98,11 @@ def InstallPackages(input_proto, output_proto):
   try:
     sysroot.BuildPackages(build_target, target_sysroot, build_packages_config)
   except sysroot_lib.PackageInstallError as e:
+    if not e.failed_packages:
+      # No packages to report, so just exit with an error code.
+      return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
+
+    # We need to report the failed packages.
     for package in e.failed_packages:
       package_info = output_proto.failed_packages.add()
       controller_util.CPVToPackageInfo(package, package_info)
