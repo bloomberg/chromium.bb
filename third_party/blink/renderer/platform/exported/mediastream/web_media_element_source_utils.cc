@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/web_media_element_source_utils.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_element_source_utils.h"
 
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 
-namespace content {
+namespace blink {
 
-blink::WebMediaStream GetWebMediaStreamFromWebMediaPlayerSource(
-    const blink::WebMediaPlayerSource& source) {
+WebMediaStream GetWebMediaStreamFromWebMediaPlayerSource(
+    const WebMediaPlayerSource& source) {
   if (source.IsMediaStream())
     return source.GetAsMediaStream();
 
-  return blink::WebMediaStream();
+  return WebMediaStream();
 }
 
-}  // namespace content
+}  // namespace blink

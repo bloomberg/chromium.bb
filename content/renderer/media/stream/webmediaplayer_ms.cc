@@ -16,7 +16,6 @@
 #include "cc/layers/video_layer.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/webmediaplayer_ms_compositor.h"
-#include "content/renderer/media/web_media_element_source_utils.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
@@ -29,6 +28,7 @@
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_element_source_utils.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_video_renderer.h"
@@ -318,7 +318,7 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
   // TODO(acolwell): Change this to DCHECK_EQ(load_type, LoadTypeMediaStream)
   // once Blink-side changes land.
   DCHECK_NE(load_type, kLoadTypeMediaSource);
-  web_stream_ = GetWebMediaStreamFromWebMediaPlayerSource(source);
+  web_stream_ = blink::GetWebMediaStreamFromWebMediaPlayerSource(source);
   if (!web_stream_.IsNull())
     web_stream_.AddObserver(this);
 
