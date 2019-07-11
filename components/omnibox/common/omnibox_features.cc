@@ -282,6 +282,11 @@ const base::Feature kOmniboxMaterialDesignWeatherIcons{
 const base::Feature kOmniboxDisableInstantExtendedLimit{
     "OmniboxDisableInstantExtendedLimit", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Show the search engine logo in the omnibox on Android (desktop already does
+// this).
+const base::Feature kOmniboxSearchEngineLogo{"OmniboxSearchEngineLogo",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature to configure on-focus suggestions provided by ZeroSuggestProvider.
 // This feature's main job is to contain some field trial parameters such as:
 //  - "ZeroSuggestVariant" configures the per-page-classification mode of

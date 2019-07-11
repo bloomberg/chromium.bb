@@ -1326,6 +1326,10 @@ const char kOmniboxRichEntitySuggestionsDescription[] =
     "Display entity suggestions using images and an enhanced layout; showing "
     "more context and descriptive text about the entity.";
 
+const char kOmniboxSearchEngineLogoName[] = "Omnibox search engine logo";
+const char kOmniboxSearchEngineLogoDescription[] =
+    "Display the current default search engine's logo in the omnibox";
+
 const char kOmniboxSpareRendererName[] =
     "Start spare renderer on omnibox focus";
 const char kOmniboxSpareRendererDescription[] =

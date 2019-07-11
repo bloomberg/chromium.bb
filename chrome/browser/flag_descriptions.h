@@ -805,6 +805,9 @@ extern const char kOmniboxRichEntitySuggestionsDescription[];
 extern const char kOmniboxShortBookmarkSuggestionsName[];
 extern const char kOmniboxShortBookmarkSuggestionsDescription[];
 
+extern const char kOmniboxSearchEngineLogoName[];
+extern const char kOmniboxSearchEngineLogoDescription[];
+
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
 

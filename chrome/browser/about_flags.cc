@@ -2509,6 +2509,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsName,
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProvider)},
+
+    {"omnibox-search-engine-logo",
+     flag_descriptions::kOmniboxSearchEngineLogoName,
+     flag_descriptions::kOmniboxSearchEngineLogoDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxSearchEngineLogo)},
 #endif  // defined(OS_ANDROID)
 
     {"omnibox-rich-entity-suggestions",
