@@ -42,6 +42,7 @@
 #include <content/public/renderer/render_thread.h>
 #include <net/base/net_errors.h>
 #include "services/service_manager/public/cpp/bind_source_info.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include <skia/ext/fontmgr_default.h>
 #include <third_party/skia/include/core/SkFontMgr.h>
 #include <third_party/blink/public/platform/web_url_error.h>
@@ -172,6 +173,9 @@ void ContentRendererClientImpl::GetInterface(
 void ContentRendererClientImpl::CreateRendererService(
     service_manager::mojom::ServiceRequest service_request)
 {
+    d_forward_service = std::make_unique<blpwtk2::ForwardingService>(this);
+    d_service_binding = std::make_unique<service_manager::ServiceBinding>(d_forward_service.get(),
+        std::move(service_request));
 }
 
 service_manager::Connector* ContentRendererClientImpl::GetConnector()
