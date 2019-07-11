@@ -68,7 +68,7 @@ def main():
     print('`%s` returned %d:\n%s' % (cmd_str, e.returncode, e.output))
     return 1
   except Exception as e:
-    print('`%s` failed:\n%s' % (cmd_str, e.message))
+    print('`%s` failed:\n%s' % (cmd_str, e))
     return 1
 
   current_revision = re.findall(r'\((.*)\)', out)[0]
@@ -96,7 +96,7 @@ def main():
     zf = zipfile.ZipFile(io.BytesIO(zipdata))
     zf.extract(member, os.path.join(BUILDTOOLS_DIR, dest_dir))
   except Exception as e:
-    print('Failed to extract the binary:\n%s\n' % e.msg)
+    print('Failed to extract the binary:\n%s\n' % e)
     return 1
 
   try:
