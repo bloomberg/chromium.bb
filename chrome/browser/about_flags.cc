@@ -4075,6 +4075,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniWebUIInstaller)},
 #endif  // OS_CHROMEOS
 
+    {"enable-autofill-save-card-show-no-thanks",
+     flag_descriptions::kEnableAutofillSaveCardShowNoThanksName,
+     flag_descriptions::kEnableAutofillSaveCardShowNoThanksDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillSaveCardShowNoThanks)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
