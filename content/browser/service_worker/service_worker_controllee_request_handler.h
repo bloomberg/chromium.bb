@@ -33,7 +33,6 @@ class ServiceWorkerVersion;
 
 // Handles main resource requests for service worker clients (documents and
 // shared workers).
-// TODO(falken): Rename to ServiceWorkerNavigationLoaderInterceptor.
 class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
     : public NavigationLoaderInterceptor {
  public:

@@ -120,6 +120,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
                          "url", resource_request.url.spec());
   DCHECK(ServiceWorkerUtils::IsMainResourceType(
       static_cast<ResourceType>(resource_request.resource_type)));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   resource_request_ = resource_request;
   if (provider_host_ && provider_host_->fetch_request_window_id()) {
