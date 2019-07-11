@@ -39,6 +39,20 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
   def TempFilePath(self, file_path):
     return os.path.join(self.tempdir, file_path)
 
+  def CheckParserError(self, args, error_msg):
+    """Checks that parser error is raised.
+
+    Args:
+      args: List of commandline arguments.
+      error_msg: Error message to check for.
+    """
+    # Putting cros_build_lib.OutputCapturer() before assertRaises(SystemExit)
+    # swallows SystemExit exception check.
+    with self.assertRaises(SystemExit):
+      with cros_build_lib.OutputCapturer() as output:
+        cros_test.ParseCommandLine(args)
+    self.assertIn(error_msg, output.GetStderr())
+
   def testBasic(self):
     """Tests basic functionality."""
     self._tester.Run()
@@ -277,3 +291,15 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
                               'ui.ChromeLogin'], error_code_ok=True)
     # Ensure that --host-cmd does not invoke ssh since it runs on the host.
     self.assertCommandContains(['ssh', 'tast'], expected=False)
+
+  def testParserErrorChromeTest(self):
+    """Verify we get a parser error for --chrome-test when no args are given."""
+    self.CheckParserError(['--chrome-test'], '--chrome-test')
+
+  def testParserSetsBuildDir(self):
+    """Verify that the build directory is set when not specified."""
+    test_dir = self.TempFilePath('out_amd64-generic/Release/crypto_unittests')
+    # Retrieves the build directory from the parsed options.
+    build_dir = cros_test.ParseCommandLine(
+        ['--chrome-test', '--', test_dir]).build_dir
+    self.assertEqual(build_dir, os.path.dirname(test_dir))
