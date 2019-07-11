@@ -119,13 +119,7 @@ static inline bool FeatureWithValidPositiveLength(
 
 static inline bool FeatureWithValidDensity(const String& media_feature,
                                            const CSSPrimitiveValue* value) {
-  if ((value->TypeWithCalcResolved() !=
-           CSSPrimitiveValue::UnitType::kDotsPerPixel &&
-       value->TypeWithCalcResolved() !=
-           CSSPrimitiveValue::UnitType::kDotsPerInch &&
-       value->TypeWithCalcResolved() !=
-           CSSPrimitiveValue::UnitType::kDotsPerCentimeter) ||
-      value->GetDoubleValue() <= 0)
+  if (!value->IsResolution() || value->GetDoubleValue() <= 0)
     return false;
 
   return media_feature == kResolutionMediaFeature ||
@@ -149,7 +143,7 @@ static inline bool FeatureExpectingPositiveInteger(
 
 static inline bool FeatureWithPositiveInteger(const String& media_feature,
                                               const CSSPrimitiveValue* value) {
-  if (value->TypeWithCalcResolved() != CSSPrimitiveValue::UnitType::kInteger)
+  if (!value->IsInteger())
     return false;
   return FeatureExpectingPositiveInteger(media_feature);
 }
@@ -167,7 +161,7 @@ static inline bool FeatureWithPositiveNumber(const String& media_feature,
 
 static inline bool FeatureWithZeroOrOne(const String& media_feature,
                                         const CSSPrimitiveValue* value) {
-  if (value->TypeWithCalcResolved() != CSSPrimitiveValue::UnitType::kInteger ||
+  if (!value->IsInteger() ||
       !(value->GetDoubleValue() == 1 || !value->GetDoubleValue()))
     return false;
 
@@ -274,9 +268,7 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
   // Create value for media query expression that must have 1 or more values.
   if (value) {
     if (FeatureWithAspectRatio(lower_media_feature)) {
-      if (value->TypeWithCalcResolved() !=
-              CSSPrimitiveValue::UnitType::kInteger ||
-          value->GetDoubleValue() == 0)
+      if (!value->IsInteger() || value->GetDoubleValue() == 0)
         return Invalid();
       if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
         return Invalid();
