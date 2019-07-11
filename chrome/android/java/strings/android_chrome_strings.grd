@@ -2248,7 +2248,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
 
       <!-- Page info popup -->
       <message name="IDS_PAGE_INFO_SITE_SETTINGS_BUTTON" desc="Text in the button that opens a website's Site Settings from the Page Info dialog.">
-        Site Settings
+        Site settings
       </message>
       <message name="IDS_PAGE_INFO_INSTANT_APP_BUTTON" desc="Text in the button that opens an Android Instant app that is associated with the website's URL.">
         Open Instant App
