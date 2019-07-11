@@ -24,6 +24,10 @@ class UserContext;
 
 // Manages the flow of changing a password in-session - handles user
 // response from dialogs, and callbacks from subsystems.
+// This singleton is scoped to the primary user session - it will exist for as
+// long as the primary user session exists  (but only if the primary user's
+// InSessionPasswordChange policy is enabled and the kInSessionPasswordChange
+// feature is enabled).
 class InSessionPasswordChangeManager : public AuthStatusConsumer {
  public:
   // Events in the in-session SAML password change flow.
