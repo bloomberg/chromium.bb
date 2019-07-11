@@ -509,6 +509,7 @@ source_set("unit_tests") {
     "autofill_experiments_unittest.cc",
     "autofill_external_delegate_unittest.cc",
     "autofill_ie_toolbar_import_win_unittest.cc",
+    "autofill_internals_logging_unittest.cc",
     "autofill_manager_unittest.cc",
     "autofill_merge_unittest.cc",
     "autofill_metrics_unittest.cc",
