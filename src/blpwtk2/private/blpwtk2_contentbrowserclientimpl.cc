@@ -42,6 +42,7 @@
 #include <content/public/browser/resource_dispatcher_host_delegate.h>
 #include <content/public/browser/resource_request_info.h>
 #include <content/public/browser/web_contents.h>
+#include "content/public/common/service_manager_connection.h"
 #include <content/public/common/service_names.mojom.h>
 #include <content/public/common/url_constants.h>
 #include <content/public/common/user_agent.h>
@@ -239,6 +240,14 @@ base::Optional<service_manager::Manifest> ContentBrowserClientImpl::GetServiceMa
   }
 
   return base::nullopt;
+}
+
+void ContentBrowserClientImpl::RegisterIOThreadServiceHandlers(
+    content::ServiceManagerConnection* connection) {
+  // needed for chrome services
+  connection->AddServiceRequestHandler(
+      chrome::mojom::kServiceName,
+      ChromeService::GetInstance()->CreateChromeServiceRequestHandler());
 }
 
 void ContentBrowserClientImpl::RegisterOutOfProcessServices(OutOfProcessServiceMap* services)
