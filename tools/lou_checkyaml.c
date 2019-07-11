@@ -32,9 +32,11 @@
 #include "version-etc.h"
 #include "brl_checks.h"
 
+static int verbose = 0;
 static const struct option longopts[] = {
 	{ "help", no_argument, NULL, 'h' },
 	{ "version", no_argument, NULL, 'v' },
+	{ "verbose", no_argument, &verbose, 1 },
 	{ NULL, 0, NULL, 0 },
 };
 
@@ -68,7 +70,8 @@ to stderr.\n\n",
 
 	fputs("\
   -h, --help          display this help and exit\n\
-  -v, --version       display version information and exit\n",
+  -v, --version       display version information and exit\n\
+      --verbose       report expected failures\n",
 			stdout);
 
 	printf("\n");
@@ -834,7 +837,7 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 					.direction = direction, .diagnostics = !xfail);
 		}
 		if (xfail != r) errors++;
-		if (xfail || r != 0) {
+		if ((xfail || r != 0) && !(verbose == 0 && xfail && r != 0)) {
 			if (description) fprintf(stderr, "%s\n", description);
 			error_at_line(0, 0, file_name, event.start_mark.line + 1,
 					(xfail ? (r == 0 ? "Unexpected Pass" : "Expected Failure")
