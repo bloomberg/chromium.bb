@@ -2442,6 +2442,9 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kShowAndroidFilesInFilesApp,
          chromeos::switches::kHideAndroidFilesInFilesApp)},
+    {"camera-system-web-app", flag_descriptions::kCameraSystemWebAppName,
+     flag_descriptions::kCameraSystemWebAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCameraSystemWebApp)},
     {"crostini-gpu-support", flag_descriptions::kCrostiniGpuSupportName,
      flag_descriptions::kCrostiniGpuSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniGpuSupport)},

@@ -371,6 +371,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "camera-system-web-app",
+    "owners": [ "calamity", "ortuno" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "cast-media-route-provider",
     "owners": [ "mfoltz", "takumif" ],
     "expiry_milestone": 83

@@ -1773,6 +1773,9 @@ extern const char kBluetoothAggressiveAppearanceFilterDescription[];
 extern const char kBulkPrintersName[];
 extern const char kBulkPrintersDescription[];
 
+extern const char kCameraSystemWebAppName[];
+extern const char kCameraSystemWebAppDescription[];
+
 extern const char kCrOSContainerName[];
 extern const char kCrOSContainerDescription[];
 
