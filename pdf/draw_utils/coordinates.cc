@@ -17,15 +17,11 @@ pp::Rect GetScreenRect(const pp::Rect& rect,
                        double zoom) {
   DCHECK_GT(zoom, 0);
 
-  pp::Rect rv;
+  int x = static_cast<int>(rect.x() * zoom - position.x());
+  int y = static_cast<int>(rect.y() * zoom - position.y());
   int right = static_cast<int>(ceil(rect.right() * zoom - position.x()));
   int bottom = static_cast<int>(ceil(rect.bottom() * zoom - position.y()));
-
-  rv.set_x(static_cast<int>(rect.x() * zoom - position.x()));
-  rv.set_y(static_cast<int>(rect.y() * zoom - position.y()));
-  rv.set_width(right - rv.x());
-  rv.set_height(bottom - rv.y());
-  return rv;
+  return pp::Rect(x, y, right - x, bottom - y);
 }
 
 }  // namespace draw_utils
