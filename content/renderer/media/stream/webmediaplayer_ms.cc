@@ -736,7 +736,7 @@ double WebMediaPlayerMS::CurrentTime() const {
 }
 
 blink::WebMediaPlayer::NetworkState WebMediaPlayerMS::GetNetworkState() const {
-  DVLOG(1) << __func__ << ", state:" << network_state_;
+  DVLOG(2) << __func__ << ", state:" << network_state_;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return network_state_;
 }
