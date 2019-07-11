@@ -21,6 +21,8 @@ issues]].
 - Fix an issue with ordinal numbers inside caps passages in Dutch
   braille. Thanks to Bert Frees.
 - Improved back-translation for Mongolian thanks to Angaragerdene.
+- Fixes to Polish grade 1 and Polish computer braille thanks to Łukasz
+  Golonka.
 
 ** Other changes
 ** Deprecation notice

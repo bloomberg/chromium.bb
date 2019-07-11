@@ -175,11 +175,11 @@ noback sign \X25CF 35-35	# 9679 black circle
 
 
 capsletter 46			# single capital letter indicator
-begcapsword 4-6			# a block of consecutive capital letters indicator
+begcapsword 46-46			# a block of consecutive capital letters indicator
 
 numsign 3456		#	number sign, just one operand
-midnum , 3
-midnum . 2
+midnum , 2
+midnum . 3
 midnum + 235
 midnum - 36
 midnum / 256

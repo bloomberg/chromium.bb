@@ -145,6 +145,7 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/no_typeform_harness.yaml		  \
 	braille-specs/pl-pl-comp8_harness.yaml		  \
 	braille-specs/Pl-Pl-g1_backward.yaml		  \
+	braille-specs/Pl-Pl-g1_harness.yaml		  \
 	braille-specs/sk-g1_harness.yaml		  \
 	braille-specs/sl-g1.yaml			  \
 	braille-specs/spaces.yaml			  \
