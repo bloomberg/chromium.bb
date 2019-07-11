@@ -84,9 +84,9 @@ void CopyFieldPropertiesMasks(const FormData& from, FormData* to) {
 }
 
 // Filter sensitive information, duplicates and |username_value| out from
-// |form->other_possible_usernames|.
+// |form->all_possible_usernames|.
 void SanitizePossibleUsernames(PasswordForm* form) {
-  auto& usernames = form->other_possible_usernames;
+  auto& usernames = form->all_possible_usernames;
 
   // Deduplicate.
   std::sort(usernames.begin(), usernames.end());
@@ -325,11 +325,11 @@ void NewPasswordFormManager::UpdateUsername(
   // uploaded.
   votes_uploader_.set_has_username_edited_vote(false);
   if (!new_username.empty()) {
-    // |other_possible_usernames| has all possible usernames.
+    // |all_possible_usernames| has all possible usernames.
     // TODO(crbug.com/831123): rename to |all_possible_usernames| when the old
     // parser is gone.
     for (const auto& possible_username :
-         parsed_submitted_form_->other_possible_usernames) {
+         parsed_submitted_form_->all_possible_usernames) {
       if (possible_username.first == new_username) {
         parsed_submitted_form_->username_element = possible_username.second;
         votes_uploader_.set_has_username_edited_vote(true);
@@ -962,8 +962,8 @@ void NewPasswordFormManager::CreatePendingCredentialsForNewCredentials(
   pending_credentials_.username_element =
       submitted_password_form.username_element;
   pending_credentials_.username_value = submitted_password_form.username_value;
-  pending_credentials_.other_possible_usernames =
-      submitted_password_form.other_possible_usernames;
+  pending_credentials_.all_possible_usernames =
+      submitted_password_form.all_possible_usernames;
   pending_credentials_.all_possible_passwords =
       submitted_password_form.all_possible_passwords;
 
