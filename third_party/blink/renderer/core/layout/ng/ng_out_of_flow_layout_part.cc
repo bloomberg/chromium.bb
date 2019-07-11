@@ -460,10 +460,16 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
 
   // Determine if we need to actually run the full OOF-positioned sizing, and
   // positioning algorithm.
-  if (scoped_refptr<const NGLayoutResult> cached_result =
-          node.CachedLayoutResultForOutOfFlowPositioned(
-              container_content_size_in_child_writing_mode))
-    return cached_result;
+  //
+  // When this candidate has an inline container, the container may move without
+  // setting |NeedsLayout()| to the candidate and that there are cases where the
+  // cache validity cannot be determined.
+  if (!descendant.inline_container) {
+    if (scoped_refptr<const NGLayoutResult> cached_result =
+            node.CachedLayoutResultForOutOfFlowPositioned(
+                container_content_size_in_child_writing_mode))
+      return cached_result;
+  }
 
   // Adjust the |static_position| (which is currently relative to the default
   // container's border-box). ng_absolute_utils expects the static position to
