@@ -11,6 +11,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/driver/mock_sync_service.h"
@@ -578,8 +579,9 @@ TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
   // AccountTrackerService::Initialize(), it fails because account ids are
   // updated with gaia ID from email at MigrateToGaiaId. As IdentityManager
   // needs refresh token to find account info, it reloads all credentials.
-  // TODO(crbug.com/930094): Eliminate this.
-  identity_manager()->LegacyReloadAccountsFromSystem();
+  identity_manager()
+      ->GetDeviceAccountsSynchronizer()
+      ->ReloadAllAccountsFromSystem();
 
   // Actually migrate the accounts in prefs.
   MigrateAccountsStoredInPrefsIfNeeded();

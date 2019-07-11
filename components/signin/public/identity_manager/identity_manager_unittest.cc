@@ -32,6 +32,7 @@
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/signin/public/identity_manager/set_accounts_in_cookie_result.h"
@@ -360,7 +361,7 @@ class IdentityManagerTest : public testing::Test {
         std::move(gaia_cookie_manager_service),
         std::move(primary_account_manager), std::move(account_fetcher_service),
         nullptr, nullptr, std::move(accounts_cookie_mutator),
-        std::move(diagnostics_provider)));
+        std::move(diagnostics_provider), nullptr));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
     identity_manager_diagnostics_observer_.reset(

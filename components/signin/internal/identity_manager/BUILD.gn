@@ -32,4 +32,11 @@ source_set("identity_manager") {
       "accounts_mutator_impl.h",
     ]
   }
+
+  if (is_ios) {
+    sources += [
+      "device_accounts_synchronizer_impl.cc",
+      "device_accounts_synchronizer_impl.h",
+    ]
+  }
 }
