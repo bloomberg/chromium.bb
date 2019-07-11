@@ -2617,6 +2617,8 @@ This indicates that the tests are for backward translation
 This indicates that the tests are for both forward and backward translation.
 @item hyphenate
 This indicates that the tests are for hyphenation
+@item hyphenateBraille
+This indicates that the tests are for hyphenation and the input is braille
 @end table
 
 If no flags are defined forward translation is assumed.
