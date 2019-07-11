@@ -140,6 +140,20 @@ public class LibraryLoader {
      * libraries instead.
      */
     public static boolean useCrazyLinker() {
+        // A non-monochrome APK (such as ChromePublic.apk) can be installed on N+ in these
+        // circumstances:
+        // * installing APK manually
+        // * after OTA from M to N
+        // * side-installing Chrome (possibly from another release channel)
+        // * Play Store bugs leading to incorrect APK flavor being installed
+        // * installing other Chromium-based browsers
+        //
+        // For Chrome builds regularly shipped to users on N+, the system linker (or the Android
+        // Framework) provides the necessary functionality to load without crazylinker. The
+        // crazylinker is risky to auto-enable on newer Android releases, as it may interfere with
+        // regular library loading. See http://crbug.com/980304 as example.
+        if (Build.VERSION.SDK_INT >= VERSION_CODES.N) return false;
+
         // The auto-generated NativeLibraries.sUseLinker variable will be true if the
         // build has not explicitly disabled Linker features.
         return NativeLibraries.sUseLinker;
