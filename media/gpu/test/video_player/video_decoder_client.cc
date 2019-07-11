@@ -337,8 +337,6 @@ void VideoDecoderClient::DecodeDoneTask(media::DecodeStatus status) {
 void VideoDecoderClient::FrameReadyTask(scoped_refptr<VideoFrame> video_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
 
-  // When using allocate mode the frame will be reused after this function, so
-  // the frame should be rendered synchronously in this case.
   frame_renderer_->RenderFrame(video_frame);
 
   // When using allocate mode, direct texture memory access is not supported.
