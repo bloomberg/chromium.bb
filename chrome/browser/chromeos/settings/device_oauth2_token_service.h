@@ -12,17 +12,17 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 
 namespace network {
 class SharedURLLoaderFactory;
 }
 
+class OAuth2AccessTokenFetcher;
+class OAuth2AccessTokenConsumer;
 class PrefRegistrySimple;
 class PrefService;
 
@@ -35,10 +35,8 @@ namespace chromeos {
 // be used in places where API expects |account_id|.
 //
 // Note that requests must be made from the UI thread.
-class DeviceOAuth2TokenService
-    : public OAuth2AccessTokenManager::Delegate,
-      public gaia::GaiaOAuthClient::Delegate,
-      public DeviceOAuth2TokenServiceDelegate::ValidationStatusDelegate {
+class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
+                                 public gaia::GaiaOAuthClient::Delegate {
  public:
   typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */)>
       RefreshTokenAvailableCallback;
@@ -105,9 +103,6 @@ class DeviceOAuth2TokenService
   void OnNetworkError(int response_code) override;
 
  private:
-  // TODO(https://crbug.com/967598): Merge DeviceOAuth2TokenServiceDelegate
-  // into DeviceOAuth2TokenService.
-  friend class DeviceOAuth2TokenServiceDelegate;
   friend class DeviceOAuth2TokenServiceFactory;
   friend class DeviceOAuth2TokenServiceTest;
   struct PendingRequest;
@@ -146,13 +141,6 @@ class DeviceOAuth2TokenService
 
   void FireRefreshTokenAvailable(const CoreAccountId& account_id);
   void FireRefreshTokenRevoked(const CoreAccountId& account_id);
-
-  void InitializeWithValidationStatusDelegate(
-      ValidationStatusDelegate* delegate);
-  void ClearValidationStatusDelegate();
-  // Implementation of
-  // DeviceOAuth2TokenServiceDelegate::ValidationStatusDelegate.
-  void OnValidationCompleted(GoogleServiceAuthError::State error) override;
 
   // Use DeviceOAuth2TokenServiceFactory to get an instance of this class.
   explicit DeviceOAuth2TokenService(
@@ -198,9 +186,6 @@ class DeviceOAuth2TokenService
 
   void ReportServiceError(GoogleServiceAuthError::State error);
 
-  // TODO(https://crbug.com/967598): Merge DeviceOAuth2TokenServiceDelegate
-  // into DeviceOAuth2TokenService.
-  std::unique_ptr<DeviceOAuth2TokenServiceDelegate> delegate_;
   std::unique_ptr<OAuth2AccessTokenManager> token_manager_;
 
   // Currently open requests that are waiting while loading the system salt or
@@ -210,6 +195,8 @@ class DeviceOAuth2TokenService
   // Callbacks to invoke, if set, for refresh token-related events.
   RefreshTokenAvailableCallback on_refresh_token_available_callback_;
   RefreshTokenRevokedCallback on_refresh_token_revoked_callback_;
+
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   PrefService* local_state_;
 
@@ -226,9 +213,6 @@ class DeviceOAuth2TokenService
 
   // Flag to indicate whether there are pending requests.
   bool validation_requested_;
-
-  // Validation status delegate
-  ValidationStatusDelegate* validation_status_delegate_;
 
   // Cache the decrypted refresh token, so we only decrypt once.
   std::string refresh_token_;

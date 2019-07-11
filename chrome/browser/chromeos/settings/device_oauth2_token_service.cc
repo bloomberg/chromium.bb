@@ -24,7 +24,9 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
@@ -46,22 +48,14 @@ struct DeviceOAuth2TokenService::PendingRequest {
   const OAuth2AccessTokenManager::ScopeSet scopes;
 };
 
-void DeviceOAuth2TokenService::OnValidationCompleted(
-    GoogleServiceAuthError::State error) {
-  if (error == GoogleServiceAuthError::NONE)
-    FlushPendingRequests(true, GoogleServiceAuthError::NONE);
-  else
-    FlushPendingRequests(false, error);
-}
-
 DeviceOAuth2TokenService::DeviceOAuth2TokenService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     PrefService* local_state)
-    : local_state_(local_state),
+    : url_loader_factory_(url_loader_factory),
+      local_state_(local_state),
       state_(STATE_LOADING),
       max_refresh_token_validation_retries_(3),
       validation_requested_(false),
-      validation_status_delegate_(nullptr),
       service_account_identity_subscription_(
           CrosSettings::Get()->AddSettingsObserver(
               kServiceAccountIdentity,
@@ -69,11 +63,8 @@ DeviceOAuth2TokenService::DeviceOAuth2TokenService(
                   &DeviceOAuth2TokenService::OnServiceAccountIdentityChanged,
                   base::Unretained(this)))),
       weak_ptr_factory_(this) {
-  delegate_ = std::make_unique<DeviceOAuth2TokenServiceDelegate>(
-      url_loader_factory, this);
   token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
       this /* OAuth2AccessTokenManager::Delegate* */);
-  InitializeWithValidationStatusDelegate(this);
   // Pull in the system salt.
   SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&DeviceOAuth2TokenService::DidGetSystemSalt,
@@ -82,7 +73,6 @@ DeviceOAuth2TokenService::DeviceOAuth2TokenService(
 
 DeviceOAuth2TokenService::~DeviceOAuth2TokenService() {
   FlushTokenSaveCallbacks(false);
-  ClearValidationStatusDelegate();
   FlushPendingRequests(false, GoogleServiceAuthError::REQUEST_CANCELED);
 }
 
@@ -204,8 +194,10 @@ DeviceOAuth2TokenService::CreateAccessTokenFetcher(
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
-  return delegate_->CreateAccessTokenFetcher(account_id, url_loader_factory,
-                                             consumer);
+  std::string refresh_token = GetRefreshToken();
+  DCHECK(!refresh_token.empty());
+  return std::make_unique<OAuth2AccessTokenFetcherImpl>(
+      consumer, url_loader_factory, refresh_token);
 }
 
 bool DeviceOAuth2TokenService::HasRefreshToken(
@@ -215,7 +207,7 @@ bool DeviceOAuth2TokenService::HasRefreshToken(
 
 scoped_refptr<network::SharedURLLoaderFactory>
 DeviceOAuth2TokenService::GetURLLoaderFactory() const {
-  return delegate_->GetURLLoaderFactory();
+  return url_loader_factory_;
 }
 
 void DeviceOAuth2TokenService::FireRefreshTokenAvailable(
@@ -279,9 +271,9 @@ void DeviceOAuth2TokenService::FlushPendingRequests(
     if (token_is_valid) {
       token_manager_->FetchOAuth2Token(
           scoped_request->request.get(),
-          scoped_request->request->GetAccountId(),
-          delegate_->GetURLLoaderFactory(), scoped_request->client_id,
-          scoped_request->client_secret, scoped_request->scopes);
+          scoped_request->request->GetAccountId(), GetURLLoaderFactory(),
+          scoped_request->client_id, scoped_request->client_secret,
+          scoped_request->scopes);
     } else {
       FailRequest(scoped_request->request.get(), error);
     }
@@ -465,7 +457,7 @@ void DeviceOAuth2TokenService::StartValidation() {
   state_ = STATE_VALIDATION_STARTED;
 
   gaia_oauth_client_ =
-      std::make_unique<gaia::GaiaOAuthClient>(delegate_->url_loader_factory_);
+      std::make_unique<gaia::GaiaOAuthClient>(url_loader_factory_);
 
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   gaia::OAuthClientInfo client_info;
@@ -482,20 +474,12 @@ void DeviceOAuth2TokenService::RequestValidation() {
   validation_requested_ = true;
 }
 
-void DeviceOAuth2TokenService::InitializeWithValidationStatusDelegate(
-    ValidationStatusDelegate* delegate) {
-  validation_status_delegate_ = delegate;
-}
-
-void DeviceOAuth2TokenService::ClearValidationStatusDelegate() {
-  validation_status_delegate_ = nullptr;
-}
-
 void DeviceOAuth2TokenService::ReportServiceError(
     GoogleServiceAuthError::State error) {
-  if (validation_status_delegate_) {
-    validation_status_delegate_->OnValidationCompleted(error);
-  }
+  if (error == GoogleServiceAuthError::NONE)
+    FlushPendingRequests(true, GoogleServiceAuthError::NONE);
+  else
+    FlushPendingRequests(false, error);
 }
 
 }  // namespace chromeos
