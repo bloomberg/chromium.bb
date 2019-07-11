@@ -2333,6 +2333,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcVpnDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kVpnFeature)},
 #endif  // OS_CHROMEOS
+#if defined(OS_WIN)
+    {"enable-winrt-sensor-implementation",
+     flag_descriptions::kWinrtSensorsImplementationName,
+     flag_descriptions::kWinrtSensorsImplementationDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kWinrtSensorsImplementation)},
+#endif
     {"enable-generic-sensor", flag_descriptions::kEnableGenericSensorName,
      flag_descriptions::kEnableGenericSensorDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kGenericSensor)},

@@ -35135,6 +35135,7 @@ from previous Chrome versions.
   <int value="98134240" label="material-design-ink-drop-animation-speed"/>
   <int value="98218116" label="ContextualSearchLongpressResolve:disabled"/>
   <int value="99177659" label="OmniboxUICuesForSearchHistoryMatches:disabled"/>
+  <int value="103347629" label="WinrtSensorsImplementation:enabled"/>
   <int value="103932290" label="show-autofill-type-predictions"/>
   <int value="105046382" label="ParallelDownloading:disabled"/>
   <int value="106840653" label="mus"/>
@@ -35395,6 +35396,7 @@ from previous Chrome versions.
       label="AutofillEnforceMinRequiredFieldsForQuery:enabled"/>
   <int value="510814146" label="OfflineBookmarks:enabled"/>
   <int value="511179195" label="ShoppingAssist:disabled"/>
+  <int value="513258875" label="WinrtSensorsImplementation:disabled"/>
   <int value="513356954" label="InstantTethering:disabled"/>
   <int value="513372959" label="ViewsProfileChooser:enabled"/>
   <int value="517429103" label="AutofillImportDynamicForms:enabled"/>

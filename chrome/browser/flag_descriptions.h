@@ -370,6 +370,9 @@ extern const char kEnforceTLS13DowngradeDescription[];
 extern const char kEnableTLS13EarlyDataName[];
 extern const char kEnableTLS13EarlyDataDescription[];
 
+extern const char kWinrtSensorsImplementationName[];
+extern const char kWinrtSensorsImplementationDescription[];
+
 extern const char kEnableGenericSensorName[];
 extern const char kEnableGenericSensorDescription[];
 

@@ -1172,6 +1172,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-winrt-sensor-implementation",
+    "owners": [ "wensh@microsoft.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-generic-sensor",
     "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
     "expiry_milestone": 72

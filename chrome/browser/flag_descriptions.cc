@@ -603,6 +603,11 @@ const char kEnableTLS13EarlyDataDescription[] =
     "during the handshake when resuming a connection to a compatible TLS 1.3 "
     "server.";
 
+const char kWinrtSensorsImplementationName[] = "WinRT Sensor Implementation";
+const char kWinrtSensorsImplementationDescription[] =
+    "Enables usage of the Windows.Devices.Sensors WinRT APIs on Windows for "
+    "sensors";
+
 const char kEnableGenericSensorName[] = "Generic Sensor";
 const char kEnableGenericSensorDescription[] =
     "Enables motion sensor classes based on Generic Sensor API, i.e. "
