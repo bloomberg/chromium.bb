@@ -814,6 +814,7 @@
     },
 
     'tryserver.chromium.win': {
+      'gpu-fyi-try-win-xr-builder': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win7-amd-dbg': 'gpu_fyi_tests_debug_trybot_x86',
       'gpu-fyi-try-win7-amd-dqp': 'deqp_release_trybot_x86',
       'gpu-fyi-try-win7-amd-rel': 'gpu_fyi_tests_release_trybot_x86',
