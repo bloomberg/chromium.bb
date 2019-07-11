@@ -59,7 +59,6 @@
  * @internal
  */
 struct weston_log_context {
-	struct wl_listener compositor_destroy_listener;
 	struct wl_global *global;
 	struct wl_list scope_list; /**< weston_log_scope::compositor_link */
 	struct wl_list pending_subscription_list; /**< weston_log_subscription::source_link */
