@@ -6256,6 +6256,9 @@ crbug.com/982289 virtual/gpu-rasterization/images/color-profile-mask-image-svg.h
 crbug.com/982289 virtual/gpu-rasterization/images/ycbcr-with-cmyk-color-profile.html [ Pass Failure ]
 crbug.com/982289 virtual/gpu-rasterization/images/color-profile-image.html [ Pass Failure ]
 
+# Sheriff 2019-07-11
+crbug.com/982290 [ Win ] http/tests/devtools/elements/styles-4/styles-do-not-detach-sourcemap-on-edits.js [ Pass Timeout ]
+
 crbug.com/970079 external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
 crbug.com/970079 external/wpt/html/browsers/history/the-history-interface/001.html [ Pass Failure ]
 crbug.com/970079 external/wpt/html/browsers/history/the-history-interface/002.html [ Pass Failure ]
@@ -6266,4 +6269,3 @@ crbug.com/970079 virtual/mouseevent_fractional/fast/events/message-port-multi.ht
 crbug.com/970079 virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
 crbug.com/970079 external/wpt/html/infrastructure/safe-passing-of-structured-data/structuredclone_0.html [ Pass Failure ]
 crbug.com/970079 external/wpt/html/infrastructure/safe-passing-of-structured-data/structured-cloning-error-stack-optional.sub.window.html [ Pass Failure ]
-
