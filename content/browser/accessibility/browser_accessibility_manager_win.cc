@@ -191,10 +191,20 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireUiaPropertyChangedEvent(UIA_ToggleToggleStatePropertyId, node);
       aria_properties_events_.insert(node);
       break;
-    case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
-      FireWinAccessibilityEvent(EVENT_OBJECT_REORDER, node);
-      FireUiaStructureChangedEvent(StructureChangeType_ChildrenReordered, node);
+    case ui::AXEventGenerator::Event::CHILDREN_CHANGED: {
+      // If this node is ignored, notify from the platform parent if available,
+      // since it will be unignored.
+      BrowserAccessibility* target_node =
+          node->GetData().HasState(ax::mojom::State::kIgnored)
+              ? node->PlatformGetParent()
+              : node;
+      if (target_node) {
+        FireWinAccessibilityEvent(EVENT_OBJECT_REORDER, target_node);
+        FireUiaStructureChangedEvent(StructureChangeType_ChildrenReordered,
+                                     target_node);
+      }
       break;
+    }
     case ui::AXEventGenerator::Event::CLASS_NAME_CHANGED:
       FireUiaPropertyChangedEvent(UIA_ClassNamePropertyId, node);
       break;
