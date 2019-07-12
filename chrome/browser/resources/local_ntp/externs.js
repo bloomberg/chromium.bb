@@ -26,12 +26,8 @@ let MostVisitedData;
  * The type of the config data object. The definition is based on
  * chrome/browser/search/local_ntp_source.cc:
  *     LocalNtpSource::SearchConfigurationProvider::UpdateConfigData()
- * @typedef {{alternateFakebox: boolean,
- *            alternateFakeboxRect: boolean,
- *            chromeColors: boolean,
+ * @typedef {{chromeColors: boolean,
  *            enableShortcutsGrid: boolean,
- *            fakeboxSearchIcon: boolean,
- *            fakeboxSearchIconColor: boolean,
  *            googleBaseUrl: string,
  *            hideShortcuts: boolean,
  *            isAccessibleBrowser: boolean,

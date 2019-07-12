@@ -75,20 +75,13 @@ const NTP_DESIGN = {
  * @const
  */
 const CLASSES = {
-  // Shows a Google search style fakebox.
-  ALTERNATE_FAKEBOX: 'alternate-fakebox',
-  // Shows a rectangular Google search style fakebox with rounded corners.
-  ALTERNATE_FAKEBOX_RECT: 'alternate-fakebox-rect',
   ALTERNATE_LOGO: 'alternate-logo',  // Shows white logo if required by theme
   // Applies styles to dialogs used in customization.
   CUSTOMIZE_DIALOG: 'customize-dialog',
   DARK: 'dark',
   DEFAULT_THEME: 'default-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
-  FAKEBOX_ICON_COLOR: 'color',       // Use a blue search icon for the fakebox.
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
-  // Shows a search icon in the fakebox.
-  SHOW_FAKEBOX_ICON: 'show-fakebox-icon',
   // Applied when the fakebox placeholder text should not be hidden on focus.
   SHOW_PLACEHOLDER: 'show-placeholder',
   // Applies float animations to the Most Visited notification
@@ -1075,18 +1068,6 @@ function init() {
 
     customize.init(showErrorNotification, hideNotification);
 
-    if (configData.alternateFakebox) {
-      document.body.classList.add(CLASSES.ALTERNATE_FAKEBOX);
-    }
-    if (configData.alternateFakeboxRect) {
-      document.body.classList.add(CLASSES.ALTERNATE_FAKEBOX_RECT);
-    }
-    if (configData.fakeboxSearchIcon) {
-      document.body.classList.add(CLASSES.SHOW_FAKEBOX_ICON);
-    }
-    if (configData.fakeboxSearchIconColor) {
-      $(IDS.FAKEBOX_ICON).classList.add(CLASSES.FAKEBOX_ICON_COLOR);
-    }
     if (configData.showFakeboxPlaceholderOnFocus) {
       $(IDS.FAKEBOX_TEXT).classList.add(CLASSES.SHOW_PLACEHOLDER);
     }
