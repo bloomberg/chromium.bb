@@ -62,9 +62,14 @@ class VideoDecoderTest : public ::testing::Test {
     LOG_ASSERT(video);
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors;
 
+    // Force allocate mode if import mode is not supported.
+    if (!g_env->ImportSupported())
+      config.allocation_mode = AllocationMode::kAllocate;
+
     // Use the video frame validator to validate decoded video frames if import
-    // mode is supported.
-    if (g_env->IsValidatorEnabled() && g_env->ImportSupported()) {
+    // mode is supported and enabled.
+    if (g_env->IsValidatorEnabled() &&
+        config.allocation_mode == AllocationMode::kImport) {
       frame_processors.push_back(
           media::test::VideoFrameValidator::Create(video->FrameChecksums()));
     }
@@ -80,10 +85,6 @@ class VideoDecoderTest : public ::testing::Test {
 
     // Use the new VD-based video decoders if requested.
     config.use_vd = g_env->UseVD();
-
-    // Force allocate mode if import mode is not supported.
-    if (!g_env->ImportSupported())
-      config.allocation_mode = AllocationMode::kAllocate;
 
     return VideoPlayer::Create(video, std::move(frame_renderer),
                                std::move(frame_processors), config);
