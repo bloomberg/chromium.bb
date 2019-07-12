@@ -173,10 +173,10 @@ class CORE_EXPORT FrameLoader final {
                                        WebFrameLoadType,
                                        HistoryItem*);
 
-  // This prepares the FrameLoader for the next commit. It will dispatch unload
-  // events, abort XHR requests and detach the document. Returns true if the
-  // frame is ready to receive the next commit, or false otherwise.
-  bool PrepareForCommit();
+  // This will attempt to detach the current document. It will dispatch unload
+  // events and abort XHR requests. Returns true if the frame is ready to
+  // receive the next document commit, or false otherwise.
+  bool DetachDocument();
 
   FrameLoaderStateMachine* StateMachine() const { return &state_machine_; }
 

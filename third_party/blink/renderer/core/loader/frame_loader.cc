@@ -207,7 +207,7 @@ void FrameLoader::Init() {
       nullptr /* extra_data */);
   provisional_document_loader_->StartLoading();
   WillCommitNavigation();
-  if (!PrepareForCommit())
+  if (!DetachDocument())
     return;
 
   CommitDocumentLoader(provisional_document_loader_.Release());
@@ -935,7 +935,7 @@ void FrameLoader::CommitNavigation(
   provisional_document_loader_->StartLoading();
   WillCommitNavigation();
 
-  if (!PrepareForCommit())
+  if (!DetachDocument())
     return;
 
   CommitDocumentLoader(provisional_document_loader_.Release());
@@ -1001,7 +1001,7 @@ void FrameLoader::DidAccessInitialDocument() {
   }
 }
 
-bool FrameLoader::PrepareForCommit() {
+bool FrameLoader::DetachDocument() {
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   DocumentLoader* pdl = provisional_document_loader_;
 
