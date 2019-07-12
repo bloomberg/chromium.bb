@@ -1,5 +1,6 @@
 # tags: [ android chromeos linux mac win win10 win7 ]
-# tags: [ android-chromium android-webview-instrumentation debug release ]
+# tags: [ android-chromium android-webview-instrumentation ]
+# tags: [ debug release ]
 # tags: [ amd amd-0x6613 amd-0x699f intel intel-0xa011 intel-0xa2e nvidia
 #         nvidia-0x1cb3 nvidia-0x2184 nvidia-0xfe9 qualcomm
 #         qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
@@ -426,7 +427,7 @@ crbug.com/907512 [ android android-chromium ] conformance/textures/video/tex-2d-
 crbug.com/733599 [ android ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/733599 [ android no-angle ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/733599 [ android no-angle ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/834933 [ android no-angle ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/834933 [ android android-chromium no-angle ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/834933 [ android android-chromium ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
 
 # This crashes in Android WebView on the Nexus 6, preventing the
@@ -494,7 +495,7 @@ crbug.com/914631 [ android qualcomm-adreno-(tm)-418 passthrough ] conformance/li
 
 # Nexus 6 (Adreno 420) and 6P (Adreno 430)
 crbug.com/499555 [ android qualcomm-adreno-(tm)-420 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
-crbug.com/611945 [ android qualcomm-adreno-(tm)-420 ] conformance/context/context-size-change.html [ Failure ]
+crbug.com/611945 [ android no-angle qualcomm-adreno-(tm)-420 ] conformance/context/context-size-change.html [ Failure ]
 crbug.com/499555 [ android qualcomm-adreno-(tm)-420 ] conformance/context/premultiplyalpha-test.html [ Failure ]
 crbug.com/611945 [ android qualcomm-adreno-(tm)-420 ] conformance/glsl/bugs/gl-fragcoord-multisampling-bug.html [ Failure ]
 crbug.com/611945 [ android qualcomm-adreno-(tm)-420 ] conformance/glsl/bugs/qualcomm-crash.html [ Failure ]
@@ -545,7 +546,7 @@ crbug.com/845411 [ android ] conformance/glsl/constructors/glsl-construct-mat3.h
 crbug.com/845438 [ android ] conformance/glsl/bugs/sketchfab-lighting-shader-crash.html [ RetryOnFailure ]
 
 # Android ANGLE GLES
-crbug.com/981579 [ android opengles ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
+crbug.com/981579 [ android android-chromium opengles ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 

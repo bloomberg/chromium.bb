@@ -556,9 +556,9 @@ crbug.com/950552 [ linux intel ] conformance2/textures/misc/tex-base-level-bug.h
 crbug.com/950552 [ linux intel ] conformance2/textures/misc/tex-3d-size-limit.html [ Failure ]
 
 crbug.com/680675 [ linux intel mesa_lt_17.1.6 ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
-crbug.com/905011 [ linux intel mesa_lt_17.3.9 ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]
-crbug.com/666384 [ linux intel mesa_lt_17.3.9 ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
-crbug.com/666384 [ linux intel mesa_lt_17.3.9 ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
+crbug.com/905011 [ linux intel no-angle mesa_lt_17.3.9 ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]
+crbug.com/666384 [ linux intel no-angle mesa_lt_17.3.9 ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
+crbug.com/666384 [ linux intel no-angle mesa_lt_17.3.9 ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
 crbug.com/905011 [ linux intel opengl passthrough ] conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html [ Failure ]
 
 # Linux AMD only.
@@ -728,7 +728,7 @@ crbug.com/949321 [ android qualcomm ] deqp/functional/gles3/framebufferblit/defa
 # This test is failing on Android Pixel 2 and 3 (Qualcomm)
 # Seems to be an OpenGL ES bug.
 crbug.com/945903 [ android qualcomm ] conformance2/rendering/vertex-id.html [ Failure ]
-crbug.com/695742 [ android qualcomm ] deqp/functional/gles3/multisample.html [ RetryOnFailure ]
+crbug.com/695742 [ android qualcomm no-angle ] deqp/functional/gles3/multisample.html [ RetryOnFailure ]
 
 # This test is flaky but can fail three times in a row so it must be
 # marked as Fail instead of Flaky.
