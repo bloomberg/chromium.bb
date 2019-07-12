@@ -2016,6 +2016,7 @@ string MinidumpModule::code_identifier() const {
     }
 
     case MD_OS_ANDROID:
+    case MD_OS_FUCHSIA:
     case MD_OS_LINUX: {
       // If ELF CodeView data is present, return the debug id.
       if (cv_record_ && cv_record_signature_ == MD_CVINFOELF_SIGNATURE) {
@@ -3500,6 +3501,10 @@ string MinidumpSystemInfo::GetOS() {
 
     case MD_OS_NACL:
       os = "nacl";
+      break;
+
+    case MD_OS_FUCHSIA:
+      os = "fuchsia";
       break;
 
     default:
