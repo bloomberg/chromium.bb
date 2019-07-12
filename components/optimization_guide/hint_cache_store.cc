@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/hint_cache_store.h"
+#include "components/optimization_guide/hint_cache_store.h"
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
@@ -14,11 +14,11 @@
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
+#include "components/optimization_guide/proto/hint_cache.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/previews/content/proto/hint_cache.pb.h"
 
-namespace previews {
+namespace optimization_guide {
 
 namespace {
 
@@ -112,8 +112,7 @@ void IncrementHintLoadedCountsPrefForKey(PrefService* pref_service,
   if (!pref_service)
     return;
 
-  DictionaryPrefUpdate pref(pref_service,
-                            optimization_guide::prefs::kHintLoadedCounts);
+  DictionaryPrefUpdate pref(pref_service, prefs::kHintLoadedCounts);
   base::Optional<int> maybe_val = pref->FindIntKey(key);
   if (maybe_val.has_value()) {
     pref->SetIntKey(key, maybe_val.value() + 1);
@@ -132,7 +131,7 @@ HintCacheStore::HintCacheStore(
     : pref_service_(pref_service), weak_ptr_factory_(this) {
   base::FilePath hint_store_dir =
       database_dir.AppendASCII(kHintCacheStoreFolder);
-  database_ = database_provider->GetDB<previews::proto::StoreEntry>(
+  database_ = database_provider->GetDB<proto::StoreEntry>(
       leveldb_proto::ProtoDbType::HINT_CACHE_STORE, hint_store_dir,
       store_task_runner);
 
@@ -140,8 +139,7 @@ HintCacheStore::HintCacheStore(
 }
 
 HintCacheStore::HintCacheStore(
-    std::unique_ptr<leveldb_proto::ProtoDatabase<previews::proto::StoreEntry>>
-        database,
+    std::unique_ptr<leveldb_proto::ProtoDatabase<proto::StoreEntry>> database,
     PrefService* pref_service)
     : database_(std::move(database)),
       pref_service_(pref_service),
@@ -254,8 +252,7 @@ void HintCacheStore::UpdateComponentHints(
   // and clear the pref afterwards.
   if (pref_service_) {
     const base::DictionaryValue* hint_loaded_counts =
-        pref_service_->GetDictionary(
-            optimization_guide::prefs::kHintLoadedCounts);
+        pref_service_->GetDictionary(prefs::kHintLoadedCounts);
     if (hint_loaded_counts) {
       base::Optional<int> maybe_total_load_attempts =
           hint_loaded_counts->FindIntKey(kHintLoadedPercentageTotalKey);
@@ -281,7 +278,7 @@ void HintCacheStore::UpdateComponentHints(
             100 * total_hints_loaded / total_load_attempts);
       }
     }
-    pref_service_->ClearPref(optimization_guide::prefs::kHintLoadedCounts);
+    pref_service_->ClearPref(prefs::kHintLoadedCounts);
   }
 
   // Add the new component data and purge any old component hints from the db.
@@ -463,7 +460,7 @@ const char HintCacheStore::kStoreSchemaVersion[] = "1";
 
 // static
 HintCacheStore::EntryKeyPrefix HintCacheStore::GetMetadataEntryKeyPrefix() {
-  return std::to_string(
+  return base::NumberToString(
              static_cast<int>(HintCacheStore::StoreEntryType::kMetadata)) +
          kKeySectionDelimiter;
 }
@@ -472,13 +469,13 @@ HintCacheStore::EntryKeyPrefix HintCacheStore::GetMetadataEntryKeyPrefix() {
 HintCacheStore::EntryKey HintCacheStore::GetMetadataTypeEntryKey(
     MetadataType metadata_type) {
   return GetMetadataEntryKeyPrefix() +
-         std::to_string(static_cast<int>(metadata_type));
+         base::NumberToString(static_cast<int>(metadata_type));
 }
 
 // static
 HintCacheStore::EntryKeyPrefix
 HintCacheStore::GetComponentHintEntryKeyPrefixWithoutVersion() {
-  return std::to_string(
+  return base::NumberToString(
              static_cast<int>(HintCacheStore::StoreEntryType::kComponentHint)) +
          kKeySectionDelimiter;
 }
@@ -537,7 +534,7 @@ bool HintCacheStore::IsAvailable() const {
 void HintCacheStore::PurgeDatabase(base::OnceClosure callback) {
   // When purging the database, update the schema version to the current one.
   EntryKey schema_entry_key = GetMetadataTypeEntryKey(MetadataType::kSchema);
-  previews::proto::StoreEntry schema_entry;
+  proto::StoreEntry schema_entry;
   schema_entry.set_version(kStoreSchemaVersion);
 
   auto entries_to_save = std::make_unique<EntryVector>();
@@ -790,11 +787,10 @@ void HintCacheStore::OnLoadHintEntryKeys(
   std::move(callback).Run();
 }
 
-void HintCacheStore::OnLoadHint(
-    const std::string& entry_key,
-    HintLoadedCallback callback,
-    bool success,
-    std::unique_ptr<previews::proto::StoreEntry> entry) {
+void HintCacheStore::OnLoadHint(const std::string& entry_key,
+                                HintLoadedCallback callback,
+                                bool success,
+                                std::unique_ptr<proto::StoreEntry> entry) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If either the request failed, the store was set to unavailable after the
@@ -807,7 +803,7 @@ void HintCacheStore::OnLoadHint(
   }
 
   if (!entry || !entry->has_hint()) {
-    std::unique_ptr<optimization_guide::proto::Hint> loaded_hint(nullptr);
+    std::unique_ptr<proto::Hint> loaded_hint(nullptr);
     std::move(callback).Run(entry_key, std::move(loaded_hint));
     return;
   }
@@ -822,15 +818,14 @@ void HintCacheStore::OnLoadHint(
     // An empty hint is returned instead of the expired one.
     UMA_HISTOGRAM_BOOLEAN(
         "Previews.HintCacheStore.OnLoadHint.FetchedHintExpired", true);
-    std::unique_ptr<optimization_guide::proto::Hint> loaded_hint(nullptr);
+    std::unique_ptr<proto::Hint> loaded_hint(nullptr);
     std::move(callback).Run(entry_key, std::move(loaded_hint));
     return;
   }
 
   // Release the Hint into a Hint unique_ptr. This eliminates the need for any
   // copies of the entry's hint.
-  std::unique_ptr<optimization_guide::proto::Hint> loaded_hint(
-      entry->release_hint());
+  std::unique_ptr<proto::Hint> loaded_hint(entry->release_hint());
 
   StoreEntryType store_entry_type =
       static_cast<StoreEntryType>(entry->entry_type());
@@ -851,4 +846,4 @@ void HintCacheStore::OnLoadHint(
   std::move(callback).Run(entry_key, std::move(loaded_hint));
 }
 
-}  // namespace previews
+}  // namespace optimization_guide

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/hint_cache.h"
+#include "components/optimization_guide/hint_cache.h"
 
 #include <algorithm>
 
 #include "base/bind.h"
+#include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/optimization_guide_features.h"
-#include "components/previews/content/hint_update_data.h"
 #include "url/gurl.h"
 
-namespace previews {
+namespace optimization_guide {
 
 namespace {
 
@@ -24,16 +24,15 @@ const size_t kDefaultMaxMemoryCacheHints = 20;
 // there are applicable hints moved into UpdateData that can be stored.
 // TODO(crbug/969558): Consolidate this with ProcessConfigurationHints for
 // component hints.
-bool ProcessGetHintsResponse(
-    optimization_guide::proto::GetHintsResponse* get_hints_response,
-    HintUpdateData* fetched_hints_update_data) {
+bool ProcessGetHintsResponse(proto::GetHintsResponse* get_hints_response,
+                             HintUpdateData* fetched_hints_update_data) {
   std::unordered_set<std::string> seen_host_suffixes;
 
   bool has_processed_hints = false;
   // Process each hint in |get_hints_response|.
   for (auto& hint : *(get_hints_response->mutable_hints())) {
     // One |hint| applies to one host URL suffix.
-    if (hint.key_representation() != optimization_guide::proto::HOST_SUFFIX) {
+    if (hint.key_representation() != proto::HOST_SUFFIX) {
       continue;
     }
     const std::string& hint_key = hint.key();
@@ -110,8 +109,7 @@ void HintCache::UpdateComponentHints(
 }
 
 void HintCache::UpdateFetchedHints(
-    std::unique_ptr<optimization_guide::proto::GetHintsResponse>
-        get_hints_response,
+    std::unique_ptr<proto::GetHintsResponse> get_hints_response,
     base::Time update_time,
     base::OnceClosure callback) {
   base::Time expiry_time = update_time;
@@ -119,8 +117,7 @@ void HintCache::UpdateFetchedHints(
     expiry_time += base::TimeDelta().FromSeconds(
         get_hints_response->max_cache_duration().seconds());
   } else {
-    expiry_time +=
-        optimization_guide::features::StoredFetchedHintsFreshnessDuration();
+    expiry_time += features::StoredFetchedHintsFreshnessDuration();
   }
   std::unique_ptr<HintUpdateData> fetched_hints_update_data =
       CreateUpdateDataForFetchedHints(update_time, expiry_time);
@@ -168,8 +165,7 @@ void HintCache::LoadHint(const std::string& host, HintLoadedCallback callback) {
   std::move(callback).Run(hint_it->second.get());
 }
 
-const optimization_guide::proto::Hint* HintCache::GetHintIfLoaded(
-    const std::string& host) {
+const proto::Hint* HintCache::GetHintIfLoaded(const std::string& host) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Try to retrieve the hint entry key for the host. If no hint exists for the
@@ -201,10 +197,9 @@ void HintCache::OnStoreInitialized(base::OnceClosure callback) {
   std::move(callback).Run();
 }
 
-void HintCache::OnLoadStoreHint(
-    HintLoadedCallback callback,
-    const HintCacheStore::EntryKey& hint_entry_key,
-    std::unique_ptr<optimization_guide::proto::Hint> hint) {
+void HintCache::OnLoadStoreHint(HintLoadedCallback callback,
+                                const HintCacheStore::EntryKey& hint_entry_key,
+                                std::unique_ptr<proto::Hint> hint) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!hint) {
     std::move(callback).Run(nullptr);
@@ -222,4 +217,4 @@ void HintCache::OnLoadStoreHint(
   std::move(callback).Run(hint_it->second.get());
 }
 
-}  // namespace previews
+}  // namespace optimization_guide

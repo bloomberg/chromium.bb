@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_H_
-#define COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_H_
+#ifndef COMPONENTS_OPTIMIZATION_GUIDE_HINT_CACHE_H_
+#define COMPONENTS_OPTIMIZATION_GUIDE_HINT_CACHE_H_
 
 #include <string>
 
@@ -12,14 +12,13 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/previews/content/hint_cache_store.h"
 
-namespace previews {
+namespace optimization_guide {
 class HintUpdateData;
 
-using HintLoadedCallback =
-    base::OnceCallback<void(const optimization_guide::proto::Hint*)>;
+using HintLoadedCallback = base::OnceCallback<void(const proto::Hint*)>;
 
 // Contains a set of optimization hints received from the Cacao service. This
 // may include hints received from the ComponentUpdater and hints fetched from a
@@ -74,8 +73,7 @@ class HintCache {
   // if the store is not available. |update_time| specifies when the hints
   // within |get_hints_response| will need to be updated next.
   void UpdateFetchedHints(
-      std::unique_ptr<optimization_guide::proto::GetHintsResponse>
-          get_hints_response,
+      std::unique_ptr<proto::GetHintsResponse> get_hints_response,
       base::Time update_time,
       base::OnceClosure callback);
 
@@ -97,13 +95,12 @@ class HintCache {
   base::Time FetchedHintsUpdateTime() const;
 
   // Returns the hint data for |host| if found in memory, otherwise nullptr.
-  const optimization_guide::proto::Hint* GetHintIfLoaded(
-      const std::string& host);
+  const proto::Hint* GetHintIfLoaded(const std::string& host);
 
  private:
   using StoreHintMemoryCache =
       base::HashingMRUCache<HintCacheStore::EntryKey,
-                            std::unique_ptr<optimization_guide::proto::Hint>>;
+                            std::unique_ptr<proto::Hint>>;
 
   // The callback run after the store finishes initialization. This then runs
   // the callback initially provided by the Initialize() call.
@@ -115,7 +112,7 @@ class HintCache {
   // LoadHint() call.
   void OnLoadStoreHint(HintLoadedCallback callback,
                        const HintCacheStore::EntryKey& store_hint_entry_key,
-                       std::unique_ptr<optimization_guide::proto::Hint> hint);
+                       std::unique_ptr<proto::Hint> hint);
 
   // The backing store used with this hint cache. Set during construction.
   const std::unique_ptr<HintCacheStore> hint_store_;
@@ -133,6 +130,6 @@ class HintCache {
   DISALLOW_COPY_AND_ASSIGN(HintCache);
 };
 
-}  // namespace previews
+}  // namespace optimization_guide
 
-#endif  // COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_H_
+#endif  // COMPONENTS_OPTIMIZATION_GUIDE_HINT_CACHE_H_

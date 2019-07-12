@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/hint_update_data.h"
+#include "components/optimization_guide/hint_update_data.h"
 
+#include "components/optimization_guide/hint_cache_store.h"
+#include "components/optimization_guide/proto/hint_cache.pb.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/previews/content/hint_cache_store.h"
-#include "components/previews/content/proto/hint_cache.pb.h"
 
-namespace previews {
+namespace optimization_guide {
 
 // static
 std::unique_ptr<HintUpdateData> HintUpdateData::CreateComponentHintUpdateData(
@@ -44,11 +44,10 @@ HintUpdateData::HintUpdateData(base::Optional<base::Version> component_version,
         HintCacheStore::GetComponentHintEntryKeyPrefix(*component_version_);
 
     // Add a component metadata entry for the component's version.
-    previews::proto::StoreEntry metadata_component_entry;
+    proto::StoreEntry metadata_component_entry;
 
-    metadata_component_entry.set_entry_type(
-        static_cast<previews::proto::StoreEntryType>(
-            HintCacheStore::StoreEntryType::kMetadata));
+    metadata_component_entry.set_entry_type(static_cast<proto::StoreEntryType>(
+        HintCacheStore::StoreEntryType::kMetadata));
     metadata_component_entry.set_version(component_version_->GetString());
     entries_to_save_->emplace_back(
         HintCacheStore::GetMetadataTypeEntryKey(
@@ -56,10 +55,9 @@ HintUpdateData::HintUpdateData(base::Optional<base::Version> component_version,
         std::move(metadata_component_entry));
   } else if (fetch_update_time_.has_value()) {
     hint_entry_key_prefix_ = HintCacheStore::GetFetchedHintEntryKeyPrefix();
-    previews::proto::StoreEntry metadata_fetched_entry;
-    metadata_fetched_entry.set_entry_type(
-        static_cast<previews::proto::StoreEntryType>(
-            HintCacheStore::StoreEntryType::kMetadata));
+    proto::StoreEntry metadata_fetched_entry;
+    metadata_fetched_entry.set_entry_type(static_cast<proto::StoreEntryType>(
+        HintCacheStore::StoreEntryType::kMetadata));
     metadata_fetched_entry.set_update_time_secs(
         fetch_update_time_->ToDeltaSinceWindowsEpoch().InSeconds());
     entries_to_save_->emplace_back(HintCacheStore::GetMetadataTypeEntryKey(
@@ -76,8 +74,7 @@ HintUpdateData::HintUpdateData(base::Optional<base::Version> component_version,
 
 HintUpdateData::~HintUpdateData() {}
 
-void HintUpdateData::MoveHintIntoUpdateData(
-    optimization_guide::proto::Hint&& hint) {
+void HintUpdateData::MoveHintIntoUpdateData(proto::Hint&& hint) {
   // All future modifications must be made by the same thread. Note, |this| may
   // have been constructed on another thread.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -85,19 +82,18 @@ void HintUpdateData::MoveHintIntoUpdateData(
 
   // To avoid any unnecessary copying, the hint is moved into proto::StoreEntry.
   HintCacheStore::EntryKey hint_entry_key = hint_entry_key_prefix_ + hint.key();
-  previews::proto::StoreEntry entry_proto;
+  proto::StoreEntry entry_proto;
   if (component_version()) {
-    entry_proto.set_entry_type(static_cast<previews::proto::StoreEntryType>(
+    entry_proto.set_entry_type(static_cast<proto::StoreEntryType>(
         HintCacheStore::StoreEntryType::kComponentHint));
   } else if (fetch_update_time()) {
     DCHECK(expiry_time());
     entry_proto.set_expiry_time_secs(
         expiry_time_->ToDeltaSinceWindowsEpoch().InSeconds());
-    entry_proto.set_entry_type(static_cast<previews::proto::StoreEntryType>(
+    entry_proto.set_entry_type(static_cast<proto::StoreEntryType>(
         HintCacheStore::StoreEntryType::kFetchedHint));
   }
-  entry_proto.set_allocated_hint(
-      new optimization_guide::proto::Hint(std::move(hint)));
+  entry_proto.set_allocated_hint(new proto::Hint(std::move(hint)));
   entries_to_save_->emplace_back(std::move(hint_entry_key),
                                  std::move(entry_proto));
 }
@@ -110,4 +106,4 @@ std::unique_ptr<EntryVector> HintUpdateData::TakeUpdateEntries() {
   return std::move(entries_to_save_);
 }
 
-}  // namespace previews
+}  // namespace optimization_guide

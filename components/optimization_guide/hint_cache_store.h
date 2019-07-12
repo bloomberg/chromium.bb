@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_STORE_H_
-#define COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_STORE_H_
+#ifndef COMPONENTS_OPTIMIZATION_GUIDE_HINT_CACHE_STORE_H_
+#define COMPONENTS_OPTIMIZATION_GUIDE_HINT_CACHE_STORE_H_
 
 #include <map>
 #include <string>
@@ -18,8 +18,8 @@
 #include "base/version.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/optimization_guide/hint_update_data.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/content/hint_update_data.h"
 
 class PrefService;
 
@@ -30,11 +30,6 @@ class SequencedTaskRunner;
 namespace optimization_guide {
 namespace proto {
 class Hint;
-}  // namespace proto
-}  // namespace optimization_guide
-
-namespace previews {
-namespace proto {
 class StoreEntry;
 }  // namespace proto
 
@@ -44,12 +39,12 @@ class StoreEntry;
 // store. All calls to this store must be made from the same thread.
 class HintCacheStore {
  public:
-  using HintLoadedCallback = base::OnceCallback<void(
-      const std::string&,
-      std::unique_ptr<optimization_guide::proto::Hint>)>;
+  using HintLoadedCallback =
+      base::OnceCallback<void(const std::string&,
+                              std::unique_ptr<proto::Hint>)>;
   using EntryKey = std::string;
   using StoreEntryProtoDatabase =
-      leveldb_proto::ProtoDatabase<previews::proto::StoreEntry>;
+      leveldb_proto::ProtoDatabase<proto::StoreEntry>;
 
   // Status of the store. The store begins in kUninitialized, transitions to
   // kInitializing after Initialize() is called, and transitions to kAvailable
@@ -176,8 +171,8 @@ class HintCacheStore {
   using EntryKeySet = std::unordered_set<EntryKey>;
 
   using EntryVector =
-      leveldb_proto::ProtoDatabase<previews::proto::StoreEntry>::KeyEntryVector;
-  using EntryMap = std::map<EntryKey, previews::proto::StoreEntry>;
+      leveldb_proto::ProtoDatabase<proto::StoreEntry>::KeyEntryVector;
+  using EntryMap = std::map<EntryKey, proto::StoreEntry>;
 
   // Metadata types within the store. The metadata type appears at the end of
   // metadata entry keys. These values are converted into strings within the
@@ -306,7 +301,7 @@ class HintCacheStore {
   void OnLoadHint(const EntryKey& entry_key,
                   HintLoadedCallback callback,
                   bool success,
-                  std::unique_ptr<previews::proto::StoreEntry> entry);
+                  std::unique_ptr<proto::StoreEntry> entry);
 
   // Proto database used by the store.
   std::unique_ptr<StoreEntryProtoDatabase> database_;
@@ -348,6 +343,6 @@ class HintCacheStore {
   DISALLOW_COPY_AND_ASSIGN(HintCacheStore);
 };
 
-}  // namespace previews
+}  // namespace optimization_guide
 
-#endif  // COMPONENTS_PREVIEWS_CONTENT_HINT_CACHE_STORE_H_
+#endif  // COMPONENTS_OPTIMIZATION_GUIDE_HINT_CACHE_STORE_H_

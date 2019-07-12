@@ -6,10 +6,8 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package previews.proto;
+package optimization_guide.proto;
 
-// Imports //components/optimization_guide/proto/hints.proto but uses local
-// path here with import_dirs in build file.
 import "hints.proto";
 
 // The types of StoreEntries.
@@ -38,7 +36,7 @@ message StoreEntry {
   // the component version.
   optional string version = 1;
   // The actual hint data.
-  optional optimization_guide.proto.Hint hint = 2;
+  optional Hint hint = 2;
   // Time when top host fetched hints are still usable but update should
   // be requested. This is set on the fetched metadata entry.
   optional int64 update_time_secs = 3;

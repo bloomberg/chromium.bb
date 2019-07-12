@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/hint_cache_store.h"
+#include "components/optimization_guide/hint_cache_store.h"
 
 #include <string>
 #include <vector>
@@ -13,13 +13,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/leveldb_proto/testing/fake_db.h"
+#include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
+#include "components/optimization_guide/proto/hint_cache.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/previews/content/hint_update_data.h"
-#include "components/previews/content/proto/hint_cache.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -27,7 +27,7 @@
 using leveldb_proto::test::FakeDB;
 using testing::Mock;
 
-namespace previews {
+namespace optimization_guide {
 
 namespace {
 
@@ -38,9 +38,9 @@ std::string GetHostSuffix(size_t id) {
   // Host suffix alternates between two different domain types depending on
   // whether the id is odd or even.
   if (id % 2 == 0) {
-    return "domain" + std::to_string(id) + ".org";
+    return "domain" + base::NumberToString(id) + ".org";
   } else {
-    return "different.domain" + std::to_string(id) + ".co.in";
+    return "different.domain" + base::NumberToString(id) + ".co.in";
   }
 }
 
@@ -54,7 +54,7 @@ enum class MetadataSchemaState {
 
 class HintCacheStoreTest : public testing::Test {
  public:
-  using StoreEntry = previews::proto::StoreEntry;
+  using StoreEntry = proto::StoreEntry;
   using StoreEntryMap = std::map<HintCacheStore::EntryKey, StoreEntry>;
 
   HintCacheStoreTest() : db_(nullptr) {}
@@ -97,13 +97,13 @@ class HintCacheStoreTest : public testing::Test {
       for (size_t i = 0; i < component_hint_count.value(); ++i) {
         std::string host_suffix = GetHostSuffix(i);
         StoreEntry& entry = db_store_[component_hint_key_prefix + host_suffix];
-        entry.set_entry_type(static_cast<previews::proto::StoreEntryType>(
+        entry.set_entry_type(static_cast<proto::StoreEntryType>(
             HintCacheStore::StoreEntryType::kComponentHint));
-        optimization_guide::proto::Hint* hint = entry.mutable_hint();
+        proto::Hint* hint = entry.mutable_hint();
         hint->set_key(host_suffix);
-        hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-        optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
-        page_hint->set_page_pattern("page pattern " + std::to_string(i));
+        hint->set_key_representation(proto::HOST_SUFFIX);
+        proto::PageHint* page_hint = hint->add_page_hints();
+        page_hint->set_page_pattern("page pattern " + base::NumberToString(i));
       }
     }
     if (fetched_hints_update) {
@@ -119,11 +119,11 @@ class HintCacheStoreTest : public testing::Test {
                                size_t component_hint_count) {
     for (size_t i = 0; i < component_hint_count; ++i) {
       std::string host_suffix = GetHostSuffix(i);
-      optimization_guide::proto::Hint hint;
+      proto::Hint hint;
       hint.set_key(host_suffix);
-      hint.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-      optimization_guide::proto::PageHint* page_hint = hint.add_page_hints();
-      page_hint->set_page_pattern("page pattern " + std::to_string(i));
+      hint.set_key_representation(proto::HOST_SUFFIX);
+      proto::PageHint* page_hint = hint.add_page_hints();
+      page_hint->set_page_pattern("page pattern " + base::NumberToString(i));
       update_data->MoveHintIntoUpdateData(std::move(hint));
     }
   }
@@ -132,10 +132,10 @@ class HintCacheStoreTest : public testing::Test {
                              size_t fetched_hint_count) {
     for (size_t i = 0; i < fetched_hint_count; ++i) {
       std::string host_suffix = GetHostSuffix(i);
-      optimization_guide::proto::Hint hint;
+      proto::Hint hint;
       hint.set_key(host_suffix);
-      hint.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-      optimization_guide::proto::PageHint* page_hint = hint.add_page_hints();
+      hint.set_key_representation(proto::HOST_SUFFIX);
+      proto::PageHint* page_hint = hint.add_page_hints();
       page_hint->set_page_pattern("page pattern " + base::NumberToString(i));
       update_data->MoveHintIntoUpdateData(std::move(hint));
     }
@@ -302,19 +302,16 @@ class HintCacheStoreTest : public testing::Test {
   }
 
   HintCacheStore* hint_store() { return hint_store_.get(); }
-  FakeDB<previews::proto::StoreEntry>* db() { return db_; }
+  FakeDB<proto::StoreEntry>* db() { return db_; }
 
   const HintCacheStore::EntryKey& last_loaded_hint_entry_key() const {
     return last_loaded_hint_entry_key_;
   }
 
-  optimization_guide::proto::Hint* last_loaded_hint() {
-    return last_loaded_hint_.get();
-  }
+  proto::Hint* last_loaded_hint() { return last_loaded_hint_.get(); }
 
-  void OnHintLoaded(
-      const HintCacheStore::EntryKey& hint_entry_key,
-      std::unique_ptr<optimization_guide::proto::Hint> loaded_hint) {
+  void OnHintLoaded(const HintCacheStore::EntryKey& hint_entry_key,
+                    std::unique_ptr<proto::Hint> loaded_hint) {
     last_loaded_hint_entry_key_ = hint_entry_key;
     last_loaded_hint_ = std::move(loaded_hint);
   }
@@ -328,13 +325,13 @@ class HintCacheStoreTest : public testing::Test {
   MOCK_METHOD0(OnUpdateHints, void());
 
  private:
-  FakeDB<previews::proto::StoreEntry>* db_;
+  FakeDB<proto::StoreEntry>* db_;
   StoreEntryMap db_store_;
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<HintCacheStore> hint_store_;
 
   HintCacheStore::EntryKey last_loaded_hint_entry_key_;
-  std::unique_ptr<optimization_guide::proto::Hint> last_loaded_hint_;
+  std::unique_ptr<proto::Hint> last_loaded_hint_;
 
   DISALLOW_COPY_AND_ASSIGN(HintCacheStoreTest);
 };
@@ -1073,7 +1070,7 @@ TEST_F(HintCacheStoreTest, LoadHintSuccessInitialData) {
 
     EXPECT_EQ(last_loaded_hint_entry_key(), hint_entry_key);
     if (!last_loaded_hint()) {
-      FAIL() << "Loaded hint NULL for entry key: " << hint_entry_key;
+      FAIL() << "Loaded hint was null for entry key: " << hint_entry_key;
       continue;
     }
 
@@ -1115,7 +1112,7 @@ TEST_F(HintCacheStoreTest, LoadHintSuccessUpdateData) {
 
     EXPECT_EQ(last_loaded_hint_entry_key(), hint_entry_key);
     if (!last_loaded_hint()) {
-      FAIL() << "Loaded hint NULL for entry key: " << hint_entry_key;
+      FAIL() << "Loaded hint was null for entry key: " << hint_entry_key;
       continue;
     }
 
@@ -1228,13 +1225,13 @@ TEST_F(HintCacheStoreTest, FindHintEntryKeyCheckFetchedBeforeComponentHints) {
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
 
-  optimization_guide::proto::Hint hint1;
+  proto::Hint hint1;
   hint1.set_key("domain1.org");
-  hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(hint1));
-  optimization_guide::proto::Hint hint2;
+  proto::Hint hint2;
   hint2.set_key("host.domain2.org");
-  hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint2.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(hint2));
 
   UpdateComponentHints(std::move(update_data));
@@ -1246,9 +1243,9 @@ TEST_F(HintCacheStoreTest, FindHintEntryKeyCheckFetchedBeforeComponentHints) {
       update_time +
           optimization_guide::features::StoredFetchedHintsFreshnessDuration());
 
-  optimization_guide::proto::Hint hint;
+  proto::Hint hint;
   hint.set_key("domain2.org");
-  hint.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(hint));
 
   UpdateFetchedHints(std::move(update_data));
@@ -1287,13 +1284,13 @@ TEST_F(HintCacheStoreTest, ClearFetchedHints) {
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
 
-  optimization_guide::proto::Hint hint1;
+  proto::Hint hint1;
   hint1.set_key("domain1.org");
-  hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(hint1));
-  optimization_guide::proto::Hint hint2;
+  proto::Hint hint2;
   hint2.set_key("host.domain2.org");
-  hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint2.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(hint2));
 
   UpdateComponentHints(std::move(update_data));
@@ -1303,13 +1300,13 @@ TEST_F(HintCacheStoreTest, ClearFetchedHints) {
   update_data = hint_store()->CreateUpdateDataForFetchedHints(
       update_time, update_time + base::TimeDelta().FromDays(7));
 
-  optimization_guide::proto::Hint fetched_hint1;
+  proto::Hint fetched_hint1;
   fetched_hint1.set_key("domain2.org");
-  fetched_hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  fetched_hint1.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
-  optimization_guide::proto::Hint fetched_hint2;
+  proto::Hint fetched_hint2;
   fetched_hint2.set_key("domain3.org");
-  fetched_hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  fetched_hint2.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
 
   UpdateFetchedHints(std::move(update_data));
@@ -1350,9 +1347,9 @@ TEST_F(HintCacheStoreTest, ClearFetchedHints) {
 
   ASSERT_TRUE(update_data2);
 
-  optimization_guide::proto::Hint new_hint2;
+  proto::Hint new_hint2;
   new_hint2.set_key("domain2.org");
-  new_hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  new_hint2.set_key_representation(proto::HOST_SUFFIX);
   update_data2->MoveHintIntoUpdateData(std::move(new_hint2));
 
   UpdateComponentHints(std::move(update_data2));
@@ -1364,9 +1361,9 @@ TEST_F(HintCacheStoreTest, ClearFetchedHints) {
       update_time,
       update_time +
           optimization_guide::features::StoredFetchedHintsFreshnessDuration());
-  optimization_guide::proto::Hint new_hint;
+  proto::Hint new_hint;
   new_hint.set_key("domain1.org");
-  new_hint.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  new_hint.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(new_hint));
 
   UpdateFetchedHints(std::move(update_data));
@@ -1397,13 +1394,13 @@ TEST_F(HintCacheStoreTest, FetchHintsPurgeExpiredFetchedHints) {
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
 
-  optimization_guide::proto::Hint hint1;
+  proto::Hint hint1;
   hint1.set_key("domain1.org");
-  hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(hint1));
-  optimization_guide::proto::Hint hint2;
+  proto::Hint hint2;
   hint2.set_key("host.domain2.org");
-  hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint2.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(hint2));
 
   UpdateComponentHints(std::move(update_data));
@@ -1413,13 +1410,13 @@ TEST_F(HintCacheStoreTest, FetchHintsPurgeExpiredFetchedHints) {
   update_data = hint_store()->CreateUpdateDataForFetchedHints(
       update_time, update_time + base::TimeDelta().FromDays(7));
 
-  optimization_guide::proto::Hint fetched_hint1;
+  proto::Hint fetched_hint1;
   fetched_hint1.set_key("domain2.org");
-  fetched_hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  fetched_hint1.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
-  optimization_guide::proto::Hint fetched_hint2;
+  proto::Hint fetched_hint2;
   fetched_hint2.set_key("domain3.org");
-  fetched_hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  fetched_hint2.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
 
   UpdateFetchedHints(std::move(update_data));
@@ -1428,13 +1425,13 @@ TEST_F(HintCacheStoreTest, FetchHintsPurgeExpiredFetchedHints) {
   update_data = hint_store()->CreateUpdateDataForFetchedHints(
       update_time, update_time - base::TimeDelta().FromDays(7));
 
-  optimization_guide::proto::Hint fetched_hint3;
+  proto::Hint fetched_hint3;
   fetched_hint1.set_key("domain4.org");
-  fetched_hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  fetched_hint1.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
-  optimization_guide::proto::Hint fetched_hint4;
+  proto::Hint fetched_hint4;
   fetched_hint2.set_key("domain5.org");
-  fetched_hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  fetched_hint2.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
 
   UpdateFetchedHints(std::move(update_data));
@@ -1471,9 +1468,9 @@ TEST_F(HintCacheStoreTest, LoadingHintUpdatesPrefCorrectly) {
       base::Time().Now(),
       base::Time().Now() +
           optimization_guide::features::StoredFetchedHintsFreshnessDuration());
-  optimization_guide::proto::Hint hint;
+  proto::Hint hint;
   hint.set_key("domain2.org");
-  hint.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(hint));
   UpdateFetchedHints(std::move(update_data));
 
@@ -1577,13 +1574,13 @@ TEST_F(HintCacheStoreTest, FetchedHintsLoadExpiredHint) {
           base::Version(kUpdateComponentVersion));
   ASSERT_TRUE(update_data);
 
-  optimization_guide::proto::Hint hint1;
+  proto::Hint hint1;
   hint1.set_key("domain1.org");
-  hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(hint1));
-  optimization_guide::proto::Hint hint2;
+  proto::Hint hint2;
   hint2.set_key("host.domain2.org");
-  hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint2.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(hint2));
 
   UpdateComponentHints(std::move(update_data));
@@ -1592,13 +1589,13 @@ TEST_F(HintCacheStoreTest, FetchedHintsLoadExpiredHint) {
   update_data = hint_store()->CreateUpdateDataForFetchedHints(
       update_time, update_time - base::TimeDelta().FromDays(10));
 
-  optimization_guide::proto::Hint fetched_hint1;
+  proto::Hint fetched_hint1;
   fetched_hint1.set_key("domain2.org");
-  fetched_hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  fetched_hint1.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
-  optimization_guide::proto::Hint fetched_hint2;
+  proto::Hint fetched_hint2;
   fetched_hint2.set_key("domain3.org");
-  fetched_hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  fetched_hint2.set_key_representation(proto::HOST_SUFFIX);
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
 
   UpdateFetchedHints(std::move(update_data));
@@ -1625,4 +1622,4 @@ TEST_F(HintCacheStoreTest, FetchedHintsLoadExpiredHint) {
       "Previews.HintCacheStore.OnLoadHint.FetchedHintExpired", true, 1);
 }
 
-}  // namespace previews
+}  // namespace optimization_guide

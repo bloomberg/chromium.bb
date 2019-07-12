@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/hint_update_data.h"
+#include "components/optimization_guide/hint_update_data.h"
 
 #include <string>
 #include <vector>
@@ -11,26 +11,26 @@
 #include "base/time/time.h"
 #include "base/version.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/proto/hint_cache.pb.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/previews/content/proto/hint_cache.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace previews {
+namespace optimization_guide {
 
 namespace {
 
 TEST(HintUpdateDataTest, BuildComponentHintUpdateData) {
   // Verify creating a Component Hint update package.
   base::Version v1("1.2.3.4");
-  optimization_guide::proto::Hint hint1;
+  proto::Hint hint1;
   hint1.set_key("foo.org");
-  hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-  optimization_guide::proto::PageHint* page_hint1 = hint1.add_page_hints();
+  hint1.set_key_representation(proto::HOST_SUFFIX);
+  proto::PageHint* page_hint1 = hint1.add_page_hints();
   page_hint1->set_page_pattern("slowpage");
-  optimization_guide::proto::Hint hint2;
+  proto::Hint hint2;
   hint2.set_key("bar.com");
-  hint2.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-  optimization_guide::proto::PageHint* page_hint2 = hint2.add_page_hints();
+  hint2.set_key_representation(proto::HOST_SUFFIX);
+  proto::PageHint* page_hint2 = hint2.add_page_hints();
   page_hint2->set_page_pattern("slowpagealso");
 
   std::unique_ptr<HintUpdateData> component_update =
@@ -48,10 +48,10 @@ TEST(HintUpdateDataTest, BuildComponentHintUpdateData) {
 TEST(HintUpdateDataTest, BuildFetchUpdateData) {
   // Verify creating a Fetched Hint update package.
   base::Time update_time = base::Time::Now();
-  optimization_guide::proto::Hint hint1;
+  proto::Hint hint1;
   hint1.set_key("foo.org");
-  hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-  optimization_guide::proto::PageHint* page_hint1 = hint1.add_page_hints();
+  hint1.set_key_representation(proto::HOST_SUFFIX);
+  proto::PageHint* page_hint1 = hint1.add_page_hints();
   page_hint1->set_page_pattern("slowpage");
 
   std::unique_ptr<HintUpdateData> fetch_update =
@@ -69,4 +69,4 @@ TEST(HintUpdateDataTest, BuildFetchUpdateData) {
 
 }  // namespace
 
-}  // namespace previews
+}  // namespace optimization_guide

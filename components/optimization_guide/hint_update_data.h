@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CONTENT_HINT_UPDATE_DATA_H_
-#define COMPONENTS_PREVIEWS_CONTENT_HINT_UPDATE_DATA_H_
+#ifndef COMPONENTS_OPTIMIZATION_GUIDE_HINT_UPDATE_DATA_H_
+#define COMPONENTS_OPTIMIZATION_GUIDE_HINT_UPDATE_DATA_H_
 
 #include <string>
 
@@ -17,16 +17,11 @@
 namespace optimization_guide {
 namespace proto {
 class Hint;
-}  // namespace proto
-}  // namespace optimization_guide
-
-namespace previews {
-namespace proto {
 class StoreEntry;
 }  // namespace proto
 
 using EntryVector =
-    leveldb_proto::ProtoDatabase<previews::proto::StoreEntry>::KeyEntryVector;
+    leveldb_proto::ProtoDatabase<proto::StoreEntry>::KeyEntryVector;
 
 // Holds hint data for updating the HintCacheStore.
 class HintUpdateData {
@@ -57,7 +52,7 @@ class HintUpdateData {
 
   // Moves |hint| into this update data. After MoveHintIntoUpdateData() is
   // called, |hint| is no longer valid.
-  void MoveHintIntoUpdateData(optimization_guide::proto::Hint&& hint);
+  void MoveHintIntoUpdateData(proto::Hint&& hint);
 
   // Returns the store entry updates along with ownership to them.
   std::unique_ptr<EntryVector> TakeUpdateEntries();
@@ -88,6 +83,6 @@ class HintUpdateData {
   DISALLOW_COPY_AND_ASSIGN(HintUpdateData);
 };
 
-}  // namespace previews
+}  // namespace optimization_guide
 
-#endif  // COMPONENTS_PREVIEWS_CONTENT_HINT_UPDATE_DATA_H_
+#endif  // COMPONENTS_OPTIMIZATION_GUIDE_HINT_UPDATE_DATA_H_
