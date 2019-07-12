@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
@@ -30,7 +31,7 @@ constexpr int kMaxIconDimension = 256;
 // Validates |description|. If there is an error, an error message to be passed
 // to a TypeError is passed. Otherwise a null string is returned.
 WTF::String ValidateDescription(const ContentDescription& description,
-                                ExecutionContext* execution_context) {
+                                ServiceWorkerRegistration* registration) {
   if (description.id().IsEmpty())
     return "ID cannot be empty";
 
@@ -46,7 +47,20 @@ WTF::String ValidateDescription(const ContentDescription& description,
   if (description.launchUrl().IsEmpty())
     return "Invalid launch URL provided";
 
-  // TODO(crbug.com/973844): Add origin checks.
+  KURL icon_url =
+      registration->GetExecutionContext()->CompleteURL(description.iconUrl());
+  if (!icon_url.ProtocolIsInHTTPFamily())
+    return "Invalid icon URL protocol";
+
+  KURL launch_url =
+      registration->GetExecutionContext()->CompleteURL(description.launchUrl());
+  auto* security_origin =
+      registration->GetExecutionContext()->GetSecurityOrigin();
+  if (!security_origin->CanRequest(launch_url))
+    return "Service Worker cannot request provided launch URL";
+
+  if (!launch_url.GetString().StartsWith(registration->scope()))
+    return "Launch URL must belong to the Service Worker's scope";
 
   return WTF::String();
 }
@@ -72,7 +86,7 @@ ScriptPromise ContentIndex::add(ScriptState* script_state,
   }
 
   WTF::String description_error =
-      ValidateDescription(*description, registration_->GetExecutionContext());
+      ValidateDescription(*description, registration_.Get());
   if (!description_error.IsNull()) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
