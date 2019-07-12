@@ -300,15 +300,24 @@ void TestVDAVideoDecoder::PictureReady(const Picture& picture) {
   }
 
   DCHECK(wrapped_video_frame);
+
+  // It's important to bind the original video frame to the destruction callback
+  // of the wrapped frame, to avoid deleting it before rendering of the wrapped
+  // frame is done. A reference to the video frame is already stored in
+  // |video_frames_| to map between picture buffers and frames, but that
+  // reference will be released when the decoder calls DismissPictureBuffer()
+  // (e.g. on a resolution change).
   base::OnceClosure reuse_cb = BindToCurrentLoop(
       base::BindOnce(&TestVDAVideoDecoder::ReusePictureBufferTask, weak_this_,
-                     picture.picture_buffer_id()));
+                     picture.picture_buffer_id(), video_frame));
   wrapped_video_frame->AddDestructionObserver(std::move(reuse_cb));
   output_cb_.Run(std::move(wrapped_video_frame));
 }
 
 // Called when a picture buffer is ready to be re-used.
-void TestVDAVideoDecoder::ReusePictureBufferTask(int32_t picture_buffer_id) {
+void TestVDAVideoDecoder::ReusePictureBufferTask(
+    int32_t picture_buffer_id,
+    scoped_refptr<VideoFrame> /*video_frame*/) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
   DCHECK(decoder_);
   DVLOGF(4) << "Picture buffer ID: " << picture_buffer_id;
