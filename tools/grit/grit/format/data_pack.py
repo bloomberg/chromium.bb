@@ -10,7 +10,6 @@ files.
 from __future__ import print_function
 
 import collections
-import exceptions
 import os
 import struct
 import sys
@@ -260,14 +259,14 @@ def RePackFromDataPackStrings(inputs, whitelist,
     # Make sure we have no dups.
     duplicate_keys = set(input_resources.keys()) & set(resources.keys())
     if duplicate_keys:
-      raise exceptions.KeyError('Duplicate keys: ' + str(list(duplicate_keys)))
+      raise KeyError('Duplicate keys: ' + str(list(duplicate_keys)))
 
     # Make sure encoding is consistent.
     if encoding in (None, BINARY):
       encoding = input_encoding
     elif input_encoding not in (BINARY, encoding):
-      raise exceptions.KeyError('Inconsistent encodings: ' + str(encoding) +
-                                ' vs ' + str(input_encoding))
+      raise KeyError('Inconsistent encodings: ' + str(encoding) +
+                     ' vs ' + str(input_encoding))
 
     if whitelist:
       whitelisted_resources = dict([(key, input_resources[key])
