@@ -2,16 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/image_downloader/image_downloader_impl.h"
+#include "third_party/blink/renderer/modules/image_downloader/image_downloader_impl.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/public/renderer/render_frame.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/skbitmap_operations.h"
 
 namespace {
 
@@ -27,8 +31,8 @@ SkBitmap ResizeImage(const SkBitmap& image, uint32_t max_image_size) {
   // max_image_size.
   return skia::ImageOperations::Resize(
       image, skia::ImageOperations::RESIZE_BEST,
-      static_cast<uint64_t>(image.width()) * max_image_size / max_dimension,
-      static_cast<uint64_t>(image.height()) * max_image_size / max_dimension);
+      static_cast<uint32_t>(image.width()) * max_image_size / max_dimension,
+      static_cast<uint32_t>(image.height()) * max_image_size / max_dimension);
 }
 
 // Filters the array of bitmaps, removing all images that do not fit in a box of
@@ -37,14 +41,14 @@ SkBitmap ResizeImage(const SkBitmap& image, uint32_t max_image_size) {
 // in a box of size |max_image_size|.
 // Sets |original_image_sizes| to the sizes of |images| before resizing.
 void FilterAndResizeImagesForMaximalSize(
-    const std::vector<SkBitmap>& unfiltered,
+    const WTF::Vector<SkBitmap>& unfiltered,
     uint32_t max_image_size,
-    std::vector<SkBitmap>* images,
-    std::vector<gfx::Size>* original_image_sizes) {
+    WTF::Vector<SkBitmap>* images,
+    WTF::Vector<blink::WebSize>* original_image_sizes) {
   images->clear();
   original_image_sizes->clear();
 
-  if (unfiltered.empty())
+  if (unfiltered.IsEmpty())
     return;
 
   if (max_image_size == 0)
@@ -54,7 +58,7 @@ void FilterAndResizeImagesForMaximalSize(
   uint32_t min_image_size = std::numeric_limits<uint32_t>::max();
   // Filter the images by |max_image_size|, and also identify the smallest image
   // in case all the images are bigger than |max_image_size|.
-  for (auto it = unfiltered.begin(); it != unfiltered.end(); ++it) {
+  for (auto* it = unfiltered.begin(); it != unfiltered.end(); ++it) {
     const SkBitmap& image = *it;
     uint32_t current_size = std::max(it->width(), it->height());
     if (current_size < min_image_size) {
@@ -83,54 +87,54 @@ void FilterAndResizeImagesForMaximalSize(
 
 }  // namespace
 
-namespace content {
+namespace blink {
 
 ImageDownloaderImpl::ImageDownloaderImpl(
-    RenderFrame* render_frame,
-    blink::mojom::ImageDownloaderRequest request)
-    : ImageDownloaderBase(render_frame), binding_(this, std::move(request)) {
-  DCHECK(render_frame);
+    LocalFrame& frame,
+    mojom::blink::ImageDownloaderRequest request)
+    : ImageDownloaderBase(GetExecutionContext(), frame),
+      binding_(this, std::move(request)) {
   binding_.set_connection_error_handler(
-      base::BindOnce(&ImageDownloaderImpl::OnDestruct, base::Unretained(this)));
+      WTF::Bind(&ImageDownloaderImpl::Dispose,
+                WrapWeakPersistent(this)));
 }
 
 ImageDownloaderImpl::~ImageDownloaderImpl() {}
 
 // static
 void ImageDownloaderImpl::CreateMojoService(
-    RenderFrame* render_frame,
-    blink::mojom::ImageDownloaderRequest request) {
+    LocalFrame* frame,
+    mojom::blink::ImageDownloaderRequest request) {
   DVLOG(1) << "ImageDownloaderImpl::CreateMojoService";
-  DCHECK(render_frame);
+  DCHECK(frame);
 
-  // Owns itself. Will be deleted when message pipe is destroyed or RenderFrame
-  // is destructed.
-  new ImageDownloaderImpl(render_frame, std::move(request));
+  // Owns itself. Will be deleted when message pipe is destroyed or
+  // LocalFrame is destructed.
+  MakeGarbageCollected<ImageDownloaderImpl>(*frame, std::move(request));
 }
 
 // ImageDownloader methods:
-void ImageDownloaderImpl::DownloadImage(const GURL& image_url,
+void ImageDownloaderImpl::DownloadImage(const KURL& image_url,
                                         bool is_favicon,
                                         uint32_t max_bitmap_size,
                                         bool bypass_cache,
                                         DownloadImageCallback callback) {
-  std::vector<SkBitmap> result_images;
-  std::vector<gfx::Size> result_original_image_sizes;
+  WTF::Vector<SkBitmap> result_images;
+  WTF::Vector<gfx::Size> result_original_image_sizes;
 
   ImageDownloaderBase::DownloadImage(
       image_url, is_favicon, bypass_cache,
-      base::BindOnce(&ImageDownloaderImpl::DidDownloadImage,
-                     base::Unretained(this), max_bitmap_size,
-                     std::move(callback)));
+      WTF::Bind(&ImageDownloaderImpl::DidDownloadImage, WrapPersistent(this),
+                max_bitmap_size, std::move(callback)));
 }
 
 void ImageDownloaderImpl::DidDownloadImage(
     uint32_t max_image_size,
     DownloadImageCallback callback,
     int32_t http_status_code,
-    const std::vector<SkBitmap>& images) {
-  std::vector<SkBitmap> result_images;
-  std::vector<gfx::Size> result_original_image_sizes;
+    const WTF::Vector<SkBitmap>& images) {
+  WTF::Vector<SkBitmap> result_images;
+  WTF::Vector<WebSize> result_original_image_sizes;
   FilterAndResizeImagesForMaximalSize(images, max_image_size, &result_images,
                                       &result_original_image_sizes);
 
@@ -138,8 +142,17 @@ void ImageDownloaderImpl::DidDownloadImage(
                           result_original_image_sizes);
 }
 
-void ImageDownloaderImpl::OnDestruct() {
-  delete this;
+void ImageDownloaderImpl::Dispose() {
+  if (binding_.is_bound())
+    binding_.Unbind();
 }
 
-}  // namespace content
+void ImageDownloaderImpl::ContextDestroyed(ExecutionContext*) {
+  Dispose();
+}
+
+void ImageDownloaderImpl::Trace(Visitor* visitor) {
+  ImageDownloaderBase::Trace(visitor);
+}
+
+}  // namespace blink

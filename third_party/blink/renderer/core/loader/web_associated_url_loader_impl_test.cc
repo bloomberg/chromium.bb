@@ -53,8 +53,8 @@
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-using blink::url_test_helpers::ToKURL;
 using blink::test::RunPendingTasks;
+using blink::url_test_helpers::ToKURL;
 
 namespace blink {
 
@@ -89,7 +89,8 @@ class WebAssociatedURLLoaderTest : public testing::Test,
     std::string url_root = "http://www.test.com/";
     KURL url = RegisterMockedUrl(url_root, "iframes_test.html");
     const char* iframe_support_files[] = {
-        "invisible_iframe.html", "visible_iframe.html",
+        "invisible_iframe.html",
+        "visible_iframe.html",
         "zero_sized_iframe.html",
     };
     for (size_t i = 0; i < base::size(iframe_support_files); ++i) {

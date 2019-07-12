@@ -2,54 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_FETCHERS_ASSOCIATED_RESOURCE_FETCHER_IMPL_H_
-#define CONTENT_RENDERER_FETCHERS_ASSOCIATED_RESOURCE_FETCHER_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGE_DOWNLOADER_FETCHER_ASSOCIATED_RESOURCE_FETCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGE_DOWNLOADER_FETCHER_ASSOCIATED_RESOURCE_FETCHER_H_
 
 #include <memory>
 #include <string>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
 
-class GURL;
-
 namespace blink {
+class KURL;
+class LocalFrame;
 class WebAssociatedURLLoader;
-class WebLocalFrame;
-}
-
-namespace content {
 
 // Interface to download resources asynchronously.
-class AssociatedResourceFetcherImpl {
+class AssociatedResourceFetcher {
+  USING_FAST_MALLOC(AssociatedResourceFetcher);
+
  public:
   // This will be called asynchronously after the URL has been fetched,
   // successfully or not.  If there is a failure, response and data will both be
   // empty.  |response| and |data| are both valid until the URLFetcher instance
   // is destroyed.
-  using StartCallback =
-      base::OnceCallback<void(const blink::WebURLResponse& response,
-                              const std::string& data)>;
+  using StartCallback = base::OnceCallback<void(const WebURLResponse& response,
+                                                const std::string& data)>;
 
-  // Creates a AssociatedResourceFetcherImpl for the specified resource.
-  // Caller takes ownership of the returned object.
-  // Deleting the AssociatedResourceFetcherImpl will cancel
-  // the request, and the callback will never be run.
-  static AssociatedResourceFetcherImpl* Create(const GURL& url);
-
-  ~AssociatedResourceFetcherImpl();
+  explicit AssociatedResourceFetcher(const KURL& url);
+  ~AssociatedResourceFetcher();
 
   void SetSkipServiceWorker(bool skip_service_worker);
-  void SetCacheMode(blink::mojom::FetchCacheMode mode);
+  void SetCacheMode(mojom::FetchCacheMode mode);
 
   // Associate the corresponding WebURLLoaderOptions to the loader. Must be
   // called before Start. Used if the LoaderType is FRAME_ASSOCIATED_LOADER.
-  void SetLoaderOptions(const blink::WebAssociatedURLLoaderOptions& options);
+  void SetLoaderOptions(const WebAssociatedURLLoaderOptions& options);
 
   // Starts the request using the specified frame.  Calls |callback| when
   // done.
@@ -59,8 +50,8 @@ class AssociatedResourceFetcherImpl {
   //
   // |fetch_credentials_mode| is the credentials mode to use. See
   // https://fetch.spec.whatwg.org/#concept-request-credentials-mode
-  void Start(blink::WebLocalFrame* frame,
-             blink::mojom::RequestContextType request_context,
+  void Start(LocalFrame* frame,
+             mojom::RequestContextType request_context,
              network::mojom::RequestMode request_mode,
              network::mojom::CredentialsMode credentials_mode,
              StartCallback callback);
@@ -71,20 +62,18 @@ class AssociatedResourceFetcherImpl {
  private:
   class ClientImpl;
 
-  explicit AssociatedResourceFetcherImpl(const GURL& url);
-
-  std::unique_ptr<blink::WebAssociatedURLLoader> loader_;
+  std::unique_ptr<WebAssociatedURLLoader> loader_;
   std::unique_ptr<ClientImpl> client_;
 
   // Options to send to the loader.
-  blink::WebAssociatedURLLoaderOptions options_;
+  WebAssociatedURLLoaderOptions options_;
 
   // Request to send.
-  blink::WebURLRequest request_;
+  WebURLRequest request_;
 
-  DISALLOW_COPY_AND_ASSIGN(AssociatedResourceFetcherImpl);
+  DISALLOW_COPY_AND_ASSIGN(AssociatedResourceFetcher);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_FETCHERS_ASSOCIATED_RESOURCE_FETCHER_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGE_DOWNLOADER_FETCHER_ASSOCIATED_RESOURCE_FETCHER_H_

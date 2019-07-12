@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/exported/web_associated_url_loader_impl.h"
+#include "third_party/blink/renderer/core/loader/web_associated_url_loader_impl.h"
 
 #include <limits>
 #include <memory>
@@ -122,7 +122,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
       const KURL& /*new_url*/,
       const ResourceResponse& /*redirect_response*/) override;
 
-  // Sets an error to be reported back to the client, asychronously.
+  // Sets an error to be reported back to the client, asynchronously.
   void SetDelayedError(const ResourceError&);
 
   // Enables forwarding of error notifications to the

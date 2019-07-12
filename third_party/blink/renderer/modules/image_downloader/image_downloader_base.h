@@ -2,50 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_BASE_H_
-#define CONTENT_RENDERER_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_BASE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_BASE_H_
 
 #include <stdint.h>
 
-#include <memory>
-#include <vector>
-
 #include "base/callback.h"
-#include "content/public/renderer/render_frame_observer.h"
-#include "content/public/renderer/render_thread_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "url/gurl.h"
 
-namespace content {
+namespace blink {
 
+class KURL;
 class MultiResolutionImageResourceFetcher;
-class RenderFrame;
+class LocalFrame;
 
-class ImageDownloaderBase : public RenderFrameObserver,
-                            public RenderThreadObserver {
+class ImageDownloaderBase : public ContextLifecycleObserver {
  public:
-  explicit ImageDownloaderBase(RenderFrame* render_frame);
-  ~ImageDownloaderBase() override;
+  ImageDownloaderBase(ExecutionContext*, LocalFrame&);
+  ~ImageDownloaderBase();
 
   using DownloadCallback =
-      base::OnceCallback<void(int32_t, const std::vector<SkBitmap>&)>;
+      base::OnceCallback<void(int32_t, const WTF::Vector<SkBitmap>&)>;
+
   // Request to asynchronously download an image. When done, |callback| will be
   // called.
-  void DownloadImage(const GURL& url,
+  void DownloadImage(const KURL& url,
                      bool is_favicon,
                      bool bypass_cache,
                      DownloadCallback callback);
 
+  void Trace(blink::Visitor*) override;
+
  protected:
-  // RenderFrameObserver implementation.
-  void OnDestruct() override;
+  // ContextLifecycleObserver:
+  void ContextDestroyed(ExecutionContext*) override;
 
  private:
   // Requests to fetch an image. When done, the image downloader is notified by
   // way of DidFetchImage. If the image is a favicon, cookies will not be sent
   // nor accepted during download. If the image has multiple frames, all frames
   // are returned.
-  void FetchImage(const GURL& image_url,
+  void FetchImage(const KURL& image_url,
                   bool is_favicon,
                   bool bypass_cache,
                   DownloadCallback callback);
@@ -55,17 +54,19 @@ class ImageDownloaderBase : public RenderFrameObserver,
   // details.
   void DidFetchImage(DownloadCallback callback,
                      MultiResolutionImageResourceFetcher* fetcher,
-                     const std::vector<SkBitmap>& images);
+                     const WTF::Vector<SkBitmap>& images);
 
-  typedef std::vector<std::unique_ptr<MultiResolutionImageResourceFetcher>>
+  typedef WTF::Vector<std::unique_ptr<MultiResolutionImageResourceFetcher>>
       ImageResourceFetcherList;
 
   // ImageResourceFetchers schedule via FetchImage.
   ImageResourceFetcherList image_fetchers_;
 
+  Member<LocalFrame> frame_;
+
   DISALLOW_COPY_AND_ASSIGN(ImageDownloaderBase);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_BASE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_BASE_H_

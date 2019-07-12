@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_ASSOCIATED_URL_LOADER_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_ASSOCIATED_URL_LOADER_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_WEB_ASSOCIATED_URL_LOADER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_WEB_ASSOCIATED_URL_LOADER_IMPL_H_
 
 #include <memory>
 
@@ -24,6 +24,8 @@ class Document;
 // This class is used to implement WebFrame::createAssociatedURLLoader.
 class CORE_EXPORT WebAssociatedURLLoaderImpl final
     : public WebAssociatedURLLoader {
+  USING_FAST_MALLOC(WebAssociatedURLLoaderImpl);
+
  public:
   WebAssociatedURLLoaderImpl(Document*, const WebAssociatedURLLoaderOptions&);
   ~WebAssociatedURLLoaderImpl() override;

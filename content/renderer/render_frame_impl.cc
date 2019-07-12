@@ -106,7 +106,6 @@
 #include "content/renderer/gpu_benchmarking_extension.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
-#include "content/renderer/image_downloader/image_downloader_impl.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/frame_input_handler_impl.h"
 #include "content/renderer/input/input_target_client_impl.h"
@@ -7368,10 +7367,6 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
       &RenderFrameImpl::BindMhtmlFileWriter, base::Unretained(this)));
 
   if (!frame_->Parent()) {
-    // Only main frame have ImageDownloader service.
-    registry_.AddInterface(base::BindRepeating(
-        &ImageDownloaderImpl::CreateMojoService, base::Unretained(this)));
-
     // Host zoom is per-page, so only added on the main frame.
     GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
         &RenderFrameImpl::OnHostZoomClientRequest, weak_factory_.GetWeakPtr()));

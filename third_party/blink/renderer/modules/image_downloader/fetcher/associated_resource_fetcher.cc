@@ -2,35 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/fetchers/associated_resource_fetcher_impl.h"
+#include "third_party/blink/renderer/modules/image_downloader/fetcher/associated_resource_fetcher.h"
 
 #include <stdint.h>
 
-#include "base/logging.h"
-#include "base/macros.h"
-#include "base/strings/string_util.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_http_body.h"
-#include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
-#include "third_party/blink/public/web/blink.h"
-#include "third_party/blink/public/web/web_associated_url_loader.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
-#include "third_party/blink/public/web/web_document.h"
-#include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_security_policy.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/web_associated_url_loader_impl.h"
+#include "third_party/blink/renderer/modules/image_downloader/fetcher/associated_resource_fetcher.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
-namespace content {
+namespace blink {
 
-// static
-AssociatedResourceFetcherImpl* AssociatedResourceFetcherImpl::Create(
-    const GURL& url) {
-  return new AssociatedResourceFetcherImpl(url);
-}
+class AssociatedResourceFetcher::ClientImpl
+    : public WebAssociatedURLLoaderClient {
+  USING_FAST_MALLOC(AssociatedResourceFetcher::ClientImpl);
 
-class AssociatedResourceFetcherImpl::ClientImpl
-    : public blink::WebAssociatedURLLoaderClient {
  public:
   explicit ClientImpl(StartCallback callback)
       : completed_(false), status_(LOADING), callback_(std::move(callback)) {}
@@ -58,12 +51,12 @@ class AssociatedResourceFetcherImpl::ClientImpl
     if (callback_.is_null())
       return;
     std::move(callback_).Run(
-        status_ == LOAD_FAILED ? blink::WebURLResponse() : response_,
+        status_ == LOAD_FAILED ? WebURLResponse() : response_,
         status_ == LOAD_FAILED ? std::string() : data_);
   }
 
   // WebAssociatedURLLoaderClient methods:
-  void DidReceiveResponse(const blink::WebURLResponse& response) override {
+  void DidReceiveResponse(const WebURLResponse& response) override {
     DCHECK(!completed_);
     response_ = response;
   }
@@ -87,7 +80,7 @@ class AssociatedResourceFetcherImpl::ClientImpl
       return;
     OnLoadCompleteInternal(LOAD_SUCCEEDED);
   }
-  void DidFail(const blink::WebURLError& error) override {
+  void DidFail(const WebURLError& error) override {
     OnLoadCompleteInternal(LOAD_FAILED);
   }
 
@@ -99,7 +92,7 @@ class AssociatedResourceFetcherImpl::ClientImpl
   std::string data_;
 
   // A copy of the original resource response.
-  blink::WebURLResponse response_;
+  WebURLResponse response_;
 
   LoadStatus status_;
 
@@ -109,10 +102,10 @@ class AssociatedResourceFetcherImpl::ClientImpl
   DISALLOW_COPY_AND_ASSIGN(ClientImpl);
 };
 
-AssociatedResourceFetcherImpl::AssociatedResourceFetcherImpl(const GURL& url)
+AssociatedResourceFetcher::AssociatedResourceFetcher(const KURL& url)
     : request_(url) {}
 
-AssociatedResourceFetcherImpl::~AssociatedResourceFetcherImpl() {
+AssociatedResourceFetcher::~AssociatedResourceFetcher() {
   if (!loader_)
     return;
 
@@ -122,33 +115,31 @@ AssociatedResourceFetcherImpl::~AssociatedResourceFetcherImpl() {
     loader_->Cancel();
 }
 
-void AssociatedResourceFetcherImpl::SetSkipServiceWorker(
-    bool skip_service_worker) {
+void AssociatedResourceFetcher::SetSkipServiceWorker(bool skip_service_worker) {
   DCHECK(!request_.IsNull());
   DCHECK(!loader_);
 
   request_.SetSkipServiceWorker(skip_service_worker);
 }
 
-void AssociatedResourceFetcherImpl::SetCacheMode(
-    blink::mojom::FetchCacheMode mode) {
+void AssociatedResourceFetcher::SetCacheMode(mojom::FetchCacheMode mode) {
   DCHECK(!request_.IsNull());
   DCHECK(!loader_);
 
   request_.SetCacheMode(mode);
 }
 
-void AssociatedResourceFetcherImpl::SetLoaderOptions(
-    const blink::WebAssociatedURLLoaderOptions& options) {
+void AssociatedResourceFetcher::SetLoaderOptions(
+    const WebAssociatedURLLoaderOptions& options) {
   DCHECK(!request_.IsNull());
   DCHECK(!loader_);
 
   options_ = options;
 }
 
-void AssociatedResourceFetcherImpl::Start(
-    blink::WebLocalFrame* frame,
-    blink::mojom::RequestContextType request_context,
+void AssociatedResourceFetcher::Start(
+    LocalFrame* frame,
+    mojom::RequestContextType request_context,
     network::mojom::RequestMode request_mode,
     network::mojom::CredentialsMode credentials_mode,
     StartCallback callback) {
@@ -159,22 +150,23 @@ void AssociatedResourceFetcherImpl::Start(
     DCHECK_NE("GET", request_.HttpMethod().Utf8()) << "GETs can't have bodies.";
 
   request_.SetRequestContext(request_context);
-  request_.SetSiteForCookies(frame->GetDocument().SiteForCookies());
+  request_.SetSiteForCookies(frame->GetDocument()->SiteForCookies());
   request_.SetMode(request_mode);
   request_.SetCredentialsMode(credentials_mode);
 
-  client_.reset(new ClientImpl(std::move(callback)));
+  client_ = std::make_unique<ClientImpl>(std::move(callback));
 
-  loader_.reset(frame->CreateAssociatedURLLoader(options_));
+  loader_ = std::make_unique<WebAssociatedURLLoaderImpl>(frame->GetDocument(),
+                                                         options_);
   loader_->LoadAsynchronously(request_, client_.get());
 
   // No need to hold on to the request; reset it now.
-  request_ = blink::WebURLRequest();
+  request_ = WebURLRequest();
 }
 
-void AssociatedResourceFetcherImpl::Cancel() {
+void AssociatedResourceFetcher::Cancel() {
   loader_->Cancel();
   client_->Cancel();
 }
 
-}  // namespace content
+}  // namespace blink
