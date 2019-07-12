@@ -8,7 +8,7 @@
 // Requirements
 //------------------------------------------------------------------------------
 
-const astUtils = require("../ast-utils");
+const astUtils = require("./utils/ast-utils");
 
 //------------------------------------------------------------------------------
 // Rule Definition
@@ -16,10 +16,13 @@ const astUtils = require("../ast-utils");
 
 module.exports = {
     meta: {
+        type: "layout",
+
         docs: {
             description: "enforce consistent spacing before and after the arrow in arrow functions",
             category: "ECMAScript 6",
-            recommended: false
+            recommended: false,
+            url: "https://eslint.org/docs/rules/arrow-spacing"
         },
 
         fixable: "whitespace",
@@ -29,25 +32,34 @@ module.exports = {
                 type: "object",
                 properties: {
                     before: {
-                        type: "boolean"
+                        type: "boolean",
+                        default: true
                     },
                     after: {
-                        type: "boolean"
+                        type: "boolean",
+                        default: true
                     }
                 },
                 additionalProperties: false
             }
-        ]
+        ],
+
+        messages: {
+            expectedBefore: "Missing space before =>.",
+            unexpectedBefore: "Unexpected space before =>.",
+
+            expectedAfter: "Missing space after =>.",
+            unexpectedAfter: "Unexpected space after =>."
+        }
     },
 
     create(context) {
 
         // merge rules with default
-        const rule = { before: true, after: true },
-            option = context.options[0] || {};
+        const rule = Object.assign({}, context.options[0]);
 
-        rule.before = option.before !== false;
-        rule.after = option.after !== false;
+        rule.before = rule.before !== false;
+        rule.after = rule.after !== false;
 
         const sourceCode = context.getSourceCode();
 
@@ -95,7 +107,7 @@ module.exports = {
                 if (countSpace.before === 0) {
                     context.report({
                         node: tokens.before,
-                        message: "Missing space before =>.",
+                        messageId: "expectedBefore",
                         fix(fixer) {
                             return fixer.insertTextBefore(tokens.arrow, " ");
                         }
@@ -107,7 +119,7 @@ module.exports = {
                 if (countSpace.before > 0) {
                     context.report({
                         node: tokens.before,
-                        message: "Unexpected space before =>.",
+                        messageId: "unexpectedBefore",
                         fix(fixer) {
                             return fixer.removeRange([tokens.before.range[1], tokens.arrow.range[0]]);
                         }
@@ -121,7 +133,7 @@ module.exports = {
                 if (countSpace.after === 0) {
                     context.report({
                         node: tokens.after,
-                        message: "Missing space after =>.",
+                        messageId: "expectedAfter",
                         fix(fixer) {
                             return fixer.insertTextAfter(tokens.arrow, " ");
                         }
@@ -133,7 +145,7 @@ module.exports = {
                 if (countSpace.after > 0) {
                     context.report({
                         node: tokens.after,
-                        message: "Unexpected space after =>.",
+                        messageId: "unexpectedAfter",
                         fix(fixer) {
                             return fixer.removeRange([tokens.arrow.range[1], tokens.after.range[0]]);
                         }
