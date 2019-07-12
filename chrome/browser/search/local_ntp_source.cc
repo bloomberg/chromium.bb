@@ -615,8 +615,6 @@ class LocalNtpSource::SearchConfigurationProvider
       config_data.SetBoolean(
           "enableShortcutsGrid",
           base::FeatureList::IsEnabled(features::kGridLayoutForNtpShortcuts));
-      config_data.SetBoolean("removeFakebox", base::FeatureList::IsEnabled(
-                                                  features::kRemoveNtpFakebox));
       config_data.SetBoolean("alternateFakebox",
                              features::IsUseAlternateFakeboxOnNtpEnabled());
       config_data.SetBoolean("alternateFakeboxRect",

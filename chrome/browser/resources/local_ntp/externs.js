@@ -36,7 +36,6 @@ let MostVisitedData;
  *            hideShortcuts: boolean,
  *            isAccessibleBrowser: boolean,
  *            isGooglePage: boolean,
- *            removeFakebox: boolean,
  *            richerPicker: boolean,
  *            showFakeboxPlaceholderOnFocus: boolean,
  *            translatedStrings: Array<string>}}

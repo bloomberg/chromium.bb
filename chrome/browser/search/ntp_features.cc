@@ -26,10 +26,6 @@ const base::Feature kGridLayoutForNtpShortcuts{
 const base::Feature kNtpCustomizationMenuV2{"NtpCustomizationMenuV2",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, the fakebox will not be shown on the NTP.
-const base::Feature kRemoveNtpFakebox{"RemoveNtpFakebox",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, show a search icon (magnifier glass) in the NTP fakebox. Also
 // implicitly enabled by |kFakeboxSearchIconColorOnNtp|.
 const base::Feature kFakeboxSearchIconOnNtp{"FakeboxSearchIconOnNtp",

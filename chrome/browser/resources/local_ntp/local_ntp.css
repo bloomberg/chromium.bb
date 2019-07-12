@@ -120,10 +120,6 @@ body.hide-fakebox #fakebox {
   width: var(--content-width);
 }
 
-body.remove-fakebox #fakebox-container {
-  display: none;
-}
-
 .alternate-fakebox #fakebox-container {
   /* Increase min-width to account for larger font + increased padding: 341px
    * min-width + 50px */
@@ -377,12 +373,6 @@ body.fakebox-focused #fakebox-cursor {
 .alternate-fakebox #user-content-wrapper {
   /* Reduce margin by new height of fakebox (46px) - old height (44px) = 2px */
   margin-top: -2px;
-}
-
-body.remove-fakebox #user-content {
-  /* Total of 48px margin between the logo and MV tiles/suggestions: 29px logo
-   * margin-bottom + 32px margin (from #most-visited or #suggestions) - 13px */
-  margin-top: -13px;
 }
 
 #most-visited {

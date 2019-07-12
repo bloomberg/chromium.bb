@@ -1560,9 +1560,6 @@ extern const char kDialMediaRouteProviderDescription[];
 extern const char kGridLayoutForNtpShortcutsName[];
 extern const char kGridLayoutForNtpShortcutsDescription[];
 
-extern const char kRemoveNtpFakeboxName[];
-extern const char kRemoveNtpFakeboxDescription[];
-
 extern const char kNtpCustomizationMenuV2Name[];
 extern const char kNtpCustomizationMenuV2Description[];
 

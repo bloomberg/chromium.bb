@@ -2637,10 +2637,6 @@ const char kGridLayoutForNtpShortcutsDescription[] =
     "Enables better animations for the shortcuts, including improved "
     "drag-and-drop.";
 
-const char kRemoveNtpFakeboxName[] = "Remove fakebox from the NTP";
-const char kRemoveNtpFakeboxDescription[] =
-    "Do not show the fakebox on the New Tab page.";
-
 const char kNtpCustomizationMenuV2Name[] = "NTP customization menu version 2";
 const char kNtpCustomizationMenuV2Description[] =
     "Use the second version of the NTP customization menu.";
