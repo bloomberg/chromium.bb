@@ -27441,6 +27441,11 @@ Called by update_net_error_codes.py.-->
   <int value="32770" label="PDF"/>
 </enum>
 
+<enum name="GenerationDialogChoice">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="Rejected"/>
+</enum>
+
 <enum name="GeolocationAuthorizationAction">
   <int value="0" label="Location authorized"/>
   <int value="1" label="Location permanently denied (Don't Allow)"/>
