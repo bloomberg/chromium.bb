@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_INTERFACES_PIPELINE_STATISTICS_STRUCT_TRAITS_H_
-#define MEDIA_MOJO_INTERFACES_PIPELINE_STATISTICS_STRUCT_TRAITS_H_
+#ifndef MEDIA_MOJO_INTERFACES_PIPELINE_STATUS_STRUCT_TRAITS_H_
+#define MEDIA_MOJO_INTERFACES_PIPELINE_STATUS_STRUCT_TRAITS_H_
+
+#include <string>
 
 #include "media/base/pipeline_status.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
@@ -44,6 +46,30 @@ struct StructTraits<media::mojom::PipelineStatisticsDataView,
   }
 };
 
+template <>
+struct StructTraits<media::mojom::PipelineDecoderInfoDataView,
+                    media::PipelineDecoderInfo> {
+  static std::string decoder_name(const media::PipelineDecoderInfo& input) {
+    return input.decoder_name;
+  }
+
+  static bool is_platform_decoder(const media::PipelineDecoderInfo& input) {
+    return input.is_platform_decoder;
+  }
+
+  static bool is_decrypting_demuxer_stream(
+      const media::PipelineDecoderInfo& input) {
+    return input.is_decrypting_demuxer_stream;
+  }
+
+  static bool Read(media::mojom::PipelineDecoderInfoDataView data,
+                   media::PipelineDecoderInfo* output) {
+    output->is_platform_decoder = data.is_platform_decoder();
+    output->is_decrypting_demuxer_stream = data.is_decrypting_demuxer_stream();
+    return data.ReadDecoderName(&output->decoder_name);
+  }
+};
+
 }  // namespace mojo
 
-#endif  // MEDIA_MOJO_INTERFACES_PIPELINE_STATISTICS_STRUCT_TRAITS_H_
+#endif  // MEDIA_MOJO_INTERFACES_PIPELINE_STATUS_STRUCT_TRAITS_H_
