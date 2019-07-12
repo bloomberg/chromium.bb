@@ -478,6 +478,25 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     # Parser error if the cwd is not an absolute path.
     self.CheckParserError(['--cwd', 'tmp/cwd'], 'cwd must be an absolute path')
 
+  def testParserErrorFiles(self):
+    """Verify we get parser errors with --files."""
+    # Parser error when both --files and --files-from are specified.
+    self.CheckParserError(['--files', 'file_list', '--files-from', 'file'],
+                          '--files and --files-from')
+
+    # Parser error when --files-from does not exist.
+    self.CheckParserError(['--files-from', '/fake/file'], 'is not a file')
+
+    # Parser error when a file in --files has an absolute path.
+    self.CheckParserError(['--files', '/etc/lsb-release'],
+                          'should be a relative path')
+
+    # Parser error when a file has a bad path.
+    self.CheckParserError(['--files', '../some_file'], 'cannot start with ..')
+
+    # Parser error when a non-existent file is passed to --files.
+    self.CheckParserError(['--files', 'fake/file'], 'does not exist')
+
   def testFileList(self):
     """Verify that FileList returns the correct files."""
     # Ensure FileList returns files when files_from is None.
