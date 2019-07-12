@@ -19889,6 +19889,14 @@ Called by update_net_error_codes.py.-->
   <int value="1351" label="AUTOTESTPRIVATE_GETALLENTERPRISEPOLICIES"/>
   <int value="1352"
       label="ACCESSIBILITY_PRIVATE_ONSCROLLABLEBOUNDSFORPOINTFOUND"/>
+  <int value="1353" label="ACTION_GETPOPUP"/>
+  <int value="1354" label="ACTION_SETPOPUP"/>
+  <int value="1355" label="ACTION_GETTITLE"/>
+  <int value="1356" label="ACTION_SETTITLE"/>
+  <int value="1357" label="ACTION_GETBADGETEXT"/>
+  <int value="1358" label="ACTION_SETBADGETEXT"/>
+  <int value="1359" label="ACTION_GETBADGEBACKGROUNDCOLOR"/>
+  <int value="1360" label="ACTION_SETBADGEBACKGROUNDCOLOR"/>
 </enum>
 
 <enum name="ExtensionIconState">

@@ -97,6 +97,14 @@ ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context)
 
   // Actions
   registry.RegisterFunction<ActionSetIconFunction>();
+  registry.RegisterFunction<ActionGetPopupFunction>();
+  registry.RegisterFunction<ActionSetPopupFunction>();
+  registry.RegisterFunction<ActionGetTitleFunction>();
+  registry.RegisterFunction<ActionSetTitleFunction>();
+  registry.RegisterFunction<ActionGetBadgeTextFunction>();
+  registry.RegisterFunction<ActionSetBadgeTextFunction>();
+  registry.RegisterFunction<ActionGetBadgeBackgroundColorFunction>();
+  registry.RegisterFunction<ActionSetBadgeBackgroundColorFunction>();
 
   // Browser Actions
   registry.RegisterFunction<BrowserActionSetIconFunction>();
@@ -319,9 +327,9 @@ ExtensionFunction::ResponseAction ExtensionActionFunction::Run() {
     if (!contents_)
       return RespondNow(Error(kNoTabError, base::NumberToString(tab_id_)));
   } else {
-    // Only browser actions have a default tabId.
-    EXTENSION_FUNCTION_VALIDATE(extension_action_->action_type() ==
-                                ActionInfo::TYPE_BROWSER);
+    // Page actions do not have a default tabId.
+    EXTENSION_FUNCTION_VALIDATE(extension_action_->action_type() !=
+                                ActionInfo::TYPE_PAGE);
   }
   return RunExtensionAction();
 }
