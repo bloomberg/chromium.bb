@@ -35,6 +35,12 @@ void ShowWritePermissionPromptOnUIThread(
     return;
   }
 
+  if (!rfh->HasTransientUserActivation()) {
+    // No permission prompts without user activation.
+    std::move(callback).Run(PermissionAction::DISMISSED);
+    return;
+  }
+
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
   if (!web_contents) {

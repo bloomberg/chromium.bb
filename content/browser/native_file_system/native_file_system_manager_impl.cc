@@ -67,6 +67,19 @@ void ShowFilePickerOnUIThread(
     return;
   }
 
+  // Renderer process should already check for user activation before sending
+  // IPC, but just to be sure double check here as well. This is not treated
+  // as a BadMessage because it is possible for the transient user activation
+  // to expire between the renderer side check and this check.
+  if (!rfh->HasTransientUserActivation()) {
+    callback_runner->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  blink::mojom::NativeFileSystemError::New(
+                                      base::File::FILE_ERROR_ACCESS_DENIED),
+                                  std::vector<base::FilePath>()));
+    return;
+  }
+
   FileSystemChooser::CreateAndShow(web_contents, type, std::move(accepts),
                                    include_accepts_all, std::move(callback),
                                    std::move(callback_runner));

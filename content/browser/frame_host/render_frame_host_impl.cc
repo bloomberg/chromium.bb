@@ -3017,6 +3017,10 @@ blink::FrameOwnerElementType RenderFrameHostImpl::GetFrameOwnerElementType() {
   return frame_tree_node_->frame_owner_element_type();
 }
 
+bool RenderFrameHostImpl::HasTransientUserActivation() {
+  return frame_tree_node_->HasTransientUserActivation();
+}
+
 void RenderFrameHostImpl::OnDidAccessInitialDocument() {
   delegate_->DidAccessInitialDocument();
 }
