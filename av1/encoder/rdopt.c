@@ -9894,10 +9894,6 @@ static int compound_type_rd(
             const int64_t tmp_rd_thresh = AOMMIN(*rd, rd_thresh) - mode_rd;
             const int64_t est_rd = estimate_yrd_for_sb(
                 cpi, bsize, x, tmp_rd_thresh, &est_rd_stats);
-            if (comp_rate[cur_type] != INT_MAX) {
-              assert(comp_rate[cur_type] == est_rd_stats.rate);
-              assert(comp_dist[cur_type] == est_rd_stats.dist);
-            }
             if (est_rd != INT64_MAX) {
               best_rd_cur =
                   RDCOST(x->rdmult, rs2 + *rate_mv + est_rd_stats.rate,
