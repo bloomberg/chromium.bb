@@ -207,7 +207,7 @@ def GenTests(api):
             'warnings': []
           }, retcode=2)
       ) +
-      api.post_process(post_process.StatusFailure) +
+      api.post_process(post_process.StatusException) +
       api.post_process(post_process.ResultReason, textwrap.dedent(u'''
         ### There are 1 error(s), 0 warning(s), and 0 notifications(s). Here are the errors:
 
@@ -233,7 +233,7 @@ def GenTests(api):
       api.runtime(is_experimental=False, is_luci=True) +
       api.buildbucket.try_build(project='infra') +
       api.step_data('presubmit', api.json.output(None, retcode=1)) +
-      api.post_process(post_process.StatusFailure) +
+      api.post_process(post_process.StatusException) +
       api.post_process(post_process.ResultReason, bug_msg) +
       api.post_process(post_process.DropExpectation)
   )
@@ -243,7 +243,7 @@ def GenTests(api):
       api.runtime(is_experimental=False, is_luci=True) +
       api.buildbucket.try_build(project='infra') +
       api.step_data('presubmit', api.json.output(None, retcode=2)) +
-      api.post_process(post_process.StatusFailure) +
+      api.post_process(post_process.StatusException) +
       api.post_process(post_process.ResultReason, bug_msg) +
       api.post_process(post_process.DropExpectation)
   )

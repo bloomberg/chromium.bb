@@ -132,7 +132,7 @@ class PresubmitApi(recipe_api.RecipeApi):
       # TODO(iannucci): Shouldn't we also mark failure on timeouts?
       raw_result.summary_markdown += (
           '\n\nTimeout occurred during presubmit step.')
-    if retcode == 1:
+    elif retcode == 1:
       raw_result.status = common_pb2.FAILURE
       self.m.tryserver.set_test_failure_tryjob_result()
     else:
