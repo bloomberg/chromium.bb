@@ -46104,6 +46104,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="15" label="Email, Phone, Shipping Address and Name"/>
 </enum>
 
+<enum name="PaymentRequestTransactionSize">
+  <int value="0" label="Zero"/>
+  <int value="1" label="Micro"/>
+  <int value="2" label="Regular"/>
+</enum>
+
 <enum name="PdfCompositionStatus">
   <int value="0" label="PDF compositor service finished successfully"/>
   <int value="1" label="PDF compositor service encountered memory map error"/>
