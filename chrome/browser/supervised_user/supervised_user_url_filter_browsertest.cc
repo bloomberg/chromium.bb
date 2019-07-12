@@ -70,7 +70,7 @@ class InterstitialPageObserver : public content::WebContentsObserver {
 };
 
 // Tests filtering for supervised users.
-class SupervisedUserTest : public SupervisedUserTestBase {
+class SupervisedUserURLFilterTest : public SupervisedUserTestBase {
  public:
   // Indicates whether the interstitial should proceed or not.
   enum InterstitialAction {
@@ -78,8 +78,8 @@ class SupervisedUserTest : public SupervisedUserTestBase {
     INTERSTITIAL_DONTPROCEED,
   };
 
-  SupervisedUserTest() = default;
-  ~SupervisedUserTest() override = default;
+  SupervisedUserURLFilterTest() = default;
+  ~SupervisedUserURLFilterTest() override = default;
 
   bool ShownPageIsInterstitial(Browser* browser) {
     WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
@@ -113,7 +113,6 @@ class SupervisedUserTest : public SupervisedUserTestBase {
   }
 
  protected:
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Remap all URLs to test server.
     ASSERT_TRUE(embedded_test_server()->Started());
@@ -145,7 +144,7 @@ class SupervisedUserTest : public SupervisedUserTestBase {
 };
 
 // Tests the filter mode in which all sites are blocked by default.
-class SupervisedUserBlockModeTest : public SupervisedUserTest {
+class SupervisedUserBlockModeTest : public SupervisedUserURLFilterTest {
  public:
   void BlockAllSites() {
     Profile* profile = GetPrimaryUserProfile();
@@ -263,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, OpenBlockedURLInNewTab) {
 // interstitial page behave differently from the preceding test, where the
 // navigation is blocked before it commits). The expected behavior is the same
 // though: the tab should be closed when going back.
-IN_PROC_BROWSER_TEST_F(SupervisedUserTest, BlockNewTabAfterLoading) {
+IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, BlockNewTabAfterLoading) {
   LogInUser(true /*child*/);
 
   TabStripModel* tab_strip = browser()->tab_strip_model();
@@ -312,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, BlockNewTabAfterLoading) {
 
 // Tests that we don't end up canceling an interstitial (thereby closing the
 // whole tab) by attempting to show a second one above it.
-IN_PROC_BROWSER_TEST_F(SupervisedUserTest, DontShowInterstitialTwice) {
+IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, DontShowInterstitialTwice) {
   LogInUser(true /*child*/);
 
   TabStripModel* tab_strip = browser()->tab_strip_model();
@@ -350,7 +349,6 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, DontShowInterstitialTwice) {
   // the URL filter.
   supervised_user_service()->OnSiteListUpdated();
 
-  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(tab, tab_strip->GetActiveWebContents());
 }
 
@@ -434,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, HistoryVisitRecorded) {
   EXPECT_FALSE(results[0].blocked_visit());
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserTest, GoBackOnDontProceed) {
+IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, GoBackOnDontProceed) {
   LogInUser(true /*child*/);
 
   WebContents* web_contents =
@@ -476,7 +474,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, GoBackOnDontProceed) {
   EXPECT_EQ(0, web_contents->GetController().GetCurrentEntryIndex());
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserTest, ClosingBlockedTabDoesNotCrash) {
+IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest,
+                       ClosingBlockedTabDoesNotCrash) {
   LogInUser(true /*child*/);
 
   WebContents* web_contents =
@@ -508,10 +507,9 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, ClosingBlockedTabDoesNotCrash) {
   // (https://crbug.com/719708).
   browser()->tab_strip_model()->CloseWebContentsAt(
       0, TabStripModel::CLOSE_USER_GESTURE);
-  content::RunAllPendingInMessageLoop();
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserTest, BlockThenUnblock) {
+IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, BlockThenUnblock) {
   LogInUser(true /*child*/);
 
   GURL test_url("http://www.example.com/simple.html");
