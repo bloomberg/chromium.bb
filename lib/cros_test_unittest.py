@@ -408,6 +408,18 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     self.CheckParserError(['--results-src', '/tmp/results',
                            '--results-dest-dir', filename], 'existing file')
 
+  def testParserErrorCommands(self):
+    """Verify we get parser errors when using certain commands."""
+    # Parser Error if no test command is provided.
+    self.CheckParserError(['--remote-cmd'], 'specify test command')
+    # Parser Error if using chronos without a test command.
+    self.CheckParserError(['--as-chronos'], 'as-chronos')
+    # Parser Error if there are args, but no command.
+    self.CheckParserError(['--some_test some_command'],
+                          '--remote-cmd or --host-cmd or --chrome-test')
+    # Parser Error when additional args don't start with --.
+    self.CheckParserError(['--host-cmd', 'tast', 'run'], 'must start with')
+
   def testParserErrorWithInvalidCWD(self):
     """Verify we get a parser error when given a bad cwd."""
     cwd = '../new_cwd'
