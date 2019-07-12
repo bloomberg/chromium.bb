@@ -53178,8 +53178,8 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SigninInvestigatedScenario">
-  <int value="0" label="Upgrade low risk"/>
-  <int value="1" label="Upgrade high risk"/>
+  <int value="0" label="First-time sign in"/>
+  <int value="1" label="Upgrade high risk (deprecated 07-2019)"/>
   <int value="2" label="Same account"/>
   <int value="3" label="Different account"/>
 </enum>
