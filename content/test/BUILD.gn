@@ -1309,6 +1309,10 @@ test("content_browsertests") {
         "${target_gen_dir}/content_browsertests_manifest/AndroidManifest.xml"
     android_manifest_dep = ":content_browsertests_manifest"
     use_default_launcher = false
+
+    if (enable_chrome_android_internal) {
+      data_deps += [ "//clank/build/bot/filters:content_browsertests_filters" ]
+    }
   } else {
     # Non-Android.
     sources += [
