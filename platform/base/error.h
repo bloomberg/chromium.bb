@@ -80,6 +80,8 @@ class Error {
 
     // OpenSSL errors
     kFileLoadFailure,
+
+    kInsufficientBuffer,
   };
 
   Error();

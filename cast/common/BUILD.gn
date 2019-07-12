@@ -11,6 +11,8 @@ source_set("mdns") {
     "mdns/mdns_reader.h",
     "mdns/mdns_records.cc",
     "mdns/mdns_records.h",
+    "mdns/mdns_sender.cc",
+    "mdns/mdns_sender.h",
     "mdns/mdns_writer.cc",
     "mdns/mdns_writer.h",
   ]
@@ -30,6 +32,7 @@ source_set("mdns_unittests") {
   sources = [
     "mdns/mdns_reader_unittest.cc",
     "mdns/mdns_records_unittest.cc",
+    "mdns/mdns_sender_unittest.cc",
     "mdns/mdns_writer_unittest.cc",
   ]
 

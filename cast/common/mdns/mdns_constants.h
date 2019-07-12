@@ -36,7 +36,7 @@ constexpr uint8_t kDefaultMulticastGroupIPv4[4] = {224, 0, 0, 251};
 // IPv6 group address for joining mDNS multicast group, given as byte array in
 // network-order. This is a link-local multicast address, so messages will not
 // be forwarded outside local network. See RFC 6762, section 3.
-constexpr uint8_t kDefaultMulticastGroupIpv6[16] = {
+constexpr uint8_t kDefaultMulticastGroupIPv6[16] = {
     0xFF, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFB,
 };
