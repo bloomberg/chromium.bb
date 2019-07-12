@@ -3460,12 +3460,24 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
             ? content::AutoplayPolicy::kDocumentUserActivationRequired
             : content::AutoplayPolicy::kNoUserGestureRequired;
   }
+#if !defined(OS_MACOSX)
+  // Mac has a concept of high contrast that does not relate to forced colors.
   web_prefs->forced_colors = native_theme->UsesHighContrastColors()
                                  ? blink::ForcedColors::kActive
                                  : blink::ForcedColors::kNone;
-  web_prefs->preferred_color_scheme = native_theme->SystemDarkModeEnabled()
-                                          ? blink::PreferredColorScheme::kDark
-                                          : blink::PreferredColorScheme::kLight;
+#endif  // !defined(OS_MACOSX)
+
+  switch (native_theme->GetPreferredColorScheme()) {
+    case ui::NativeTheme::PreferredColorScheme::kDark:
+      web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
+      break;
+    case ui::NativeTheme::PreferredColorScheme::kLight:
+      web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
+      break;
+    case ui::NativeTheme::PreferredColorScheme::kNoPreference:
+      web_prefs->preferred_color_scheme =
+          blink::PreferredColorScheme::kNoPreference;
+  }
 #endif  // !defined(OS_ANDROID)
 
   web_prefs->translate_service_available = TranslateService::IsAvailable(prefs);

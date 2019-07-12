@@ -905,7 +905,8 @@ class LocalNTPDarkModeTest : public LocalNTPTest, public DarkModeTestBase {
   void SetUpOnMainThread() override {
     LocalNTPTest::SetUpOnMainThread();
 
-    ui::NativeTheme::GetInstanceForWeb()->SetDarkModeParent(theme());
+    theme()->AddColorSchemeNativeThemeObserver(
+        ui::NativeTheme::GetInstanceForWeb());
   }
 };
 
@@ -973,7 +974,8 @@ class LocalNTPDarkModeStartupTest : public LocalNTPDarkModeTest,
   void SetUpOnMainThread() override {
     LocalNTPTest::SetUpOnMainThread();
 
-    ui::NativeTheme::GetInstanceForWeb()->SetDarkModeParent(theme());
+    theme()->AddColorSchemeNativeThemeObserver(
+        ui::NativeTheme::GetInstanceForWeb());
 
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(browser()->profile());

@@ -635,6 +635,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   native_theme_observer_.Add(native_theme);
   in_high_contrast_ = native_theme->UsesHighContrastColors();
   in_dark_mode_ = native_theme->SystemDarkModeEnabled();
+  preferred_color_scheme_ = native_theme->GetPreferredColorScheme();
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -7277,6 +7278,8 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 
   bool in_dark_mode = observed_theme->SystemDarkModeEnabled();
   bool in_high_contrast = observed_theme->UsesHighContrastColors();
+  ui::NativeTheme::PreferredColorScheme preferred_color_scheme =
+      observed_theme->GetPreferredColorScheme();
   bool preferences_changed = false;
 
   if (in_dark_mode_ != in_dark_mode) {
@@ -7285,6 +7288,10 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   }
   if (in_high_contrast_ != in_high_contrast) {
     in_high_contrast_ = in_high_contrast;
+    preferences_changed = true;
+  }
+  if (preferred_color_scheme_ != preferred_color_scheme) {
+    preferred_color_scheme_ = preferred_color_scheme;
     preferences_changed = true;
   }
 
