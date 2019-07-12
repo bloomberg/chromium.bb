@@ -1240,7 +1240,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self ensureVoiceSearchControllerCreated];
 
   // Present voice search.
-  _voiceSearchController->StartRecognition(self, self.tabModel.currentTab);
+  _voiceSearchController->StartRecognition(self, self.currentWebState);
   [self.dispatcher cancelOmniboxEdit];
 }
 
