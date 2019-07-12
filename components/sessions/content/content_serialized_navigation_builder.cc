@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "components/sessions/content/content_record_password_state.h"
-#include "components/sessions/content/content_record_task_id.h"
 #include "components/sessions/content/content_serialized_navigation_driver.h"
 #include "components/sessions/content/extended_info_handler.h"
+#include "components/sessions/content/navigation_task_id.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
@@ -65,12 +65,10 @@ ContentSerializedNavigationBuilder::FromNavigationEntry(
   navigation.replaced_entry_data_ =
       ConvertReplacedEntryData(entry->GetReplacedEntryData());
   navigation.password_state_ = GetPasswordStateFromNavigation(entry);
-  navigation.task_id_ = ContextRecordTaskId::Get(entry)->task_id();
-  navigation.parent_task_id_ =
-      ContextRecordTaskId::Get(entry)->parent_task_id();
-  navigation.root_task_id_ = ContextRecordTaskId::Get(entry)->root_task_id();
-  navigation.children_task_ids_ =
-      ContextRecordTaskId::Get(entry)->children_task_ids();
+  navigation.task_id_ = NavigationTaskId::Get(entry)->id();
+  navigation.parent_task_id_ = NavigationTaskId::Get(entry)->parent_id();
+  navigation.root_task_id_ = NavigationTaskId::Get(entry)->root_id();
+  navigation.children_task_ids_ = NavigationTaskId::Get(entry)->children_ids();
 
   for (const auto& handler_entry :
        ContentSerializedNavigationDriver::GetInstance()
