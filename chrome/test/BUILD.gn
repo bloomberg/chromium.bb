@@ -1554,6 +1554,7 @@ if (!is_android) {
         "../browser/extensions/api/input_ime/input_ime_apitest_chromeos.cc",
         "../browser/extensions/api/instance_id/instance_id_apitest.cc",
         "../browser/extensions/api/management/management_api_browsertest.cc",
+        "../browser/extensions/api/management/management_api_non_persistent_apitest.cc",
         "../browser/extensions/api/management/management_apitest.cc",
         "../browser/extensions/api/management/management_browsertest.cc",
         "../browser/extensions/api/messaging/native_messaging_apitest.cc",
