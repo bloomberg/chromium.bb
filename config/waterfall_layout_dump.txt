@@ -601,6 +601,7 @@
     hana-release
     hatch-release
     heli-release
+    jacuzzi-release
     kalista-release
     kefka-kernelnext-release
     kefka-release
@@ -658,6 +659,7 @@
     ultima-release
     veyron_fievel-release
     veyron_jaq-release
+    veyron_jerry-kernelnext-release
     veyron_jerry-kernelnext-release
     veyron_jerry-release
     veyron_mickey-release
@@ -2267,6 +2269,18 @@
   heli-tot-chromium-pfq-informational-tryjob
   heli-unittest-stress
   incremental-paladin-tryjob
+  jacuzzi-chromium-pfq-tryjob
+  jacuzzi-compile-only-pre-cq
+  jacuzzi-full-tryjob
+  jacuzzi-llvm-next-toolchain-tryjob
+  jacuzzi-llvm-toolchain-tryjob
+  jacuzzi-no-vmtest-pre-cq
+  jacuzzi-paladin-tryjob
+  jacuzzi-postsubmit-tryjob
+  jacuzzi-pre-cq
+  jacuzzi-release-tryjob
+  jacuzzi-tot-chromium-pfq-informational-tryjob
+  jacuzzi-unittest-stress
   jecht-chrome-pfq-tryjob
   jecht-chromium-pfq-tryjob
   jecht-compile-only-pre-cq
@@ -2967,6 +2981,7 @@
     hana-release-tryjob
     hatch-release-tryjob
     heli-release-tryjob
+    jacuzzi-release-tryjob
     kalista-release-tryjob
     kefka-kernelnext-release-tryjob
     kefka-release-tryjob
@@ -3024,6 +3039,7 @@
     ultima-release-tryjob
     veyron_fievel-release-tryjob
     veyron_jaq-release-tryjob
+    veyron_jerry-kernelnext-release-tryjob
     veyron_jerry-kernelnext-release-tryjob
     veyron_jerry-release-tryjob
     veyron_mickey-release-tryjob

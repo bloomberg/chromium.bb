@@ -674,6 +674,18 @@
       ]
     },
     {
+      "name": "jacuzzi",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": true,
+          "board_group": "",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "kefka",
       "configs": [
         {
@@ -1238,6 +1250,18 @@
       ]
     },
     {
+      "name": "veyron_jerry-kernelnext",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "veyron",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "veyron_mickey",
       "configs": [
         {
@@ -1606,12 +1630,6 @@
         {
           "board_name": "coral",
           "name": "nasher360",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
-          "board_name": "coral",
-          "name": "porbeagle",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
@@ -2456,6 +2474,7 @@
             "sanity",
             "bvt-inline",
             "bvt-tast-cq",
+            "bvt-installer",
             "bvt-arc",
             "au",
             "bvt-cq",
