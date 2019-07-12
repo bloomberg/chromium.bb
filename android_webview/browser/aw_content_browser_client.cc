@@ -95,6 +95,7 @@
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
 #include "media/mojo/buildflags.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "net/android/network_library.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
@@ -815,7 +816,8 @@ bool AwContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
     mojo::ScopedInterfaceEndpointHandle* handle) {
   if (interface_name == autofill::mojom::AutofillDriver::Name_) {
     autofill::ContentAutofillDriverFactory::BindAutofillDriver(
-        autofill::mojom::AutofillDriverAssociatedRequest(std::move(*handle)),
+        mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver>(
+            std::move(*handle)),
         render_frame_host);
     return true;
   }

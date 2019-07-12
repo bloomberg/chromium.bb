@@ -320,6 +320,7 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -3936,15 +3937,17 @@ bool ChromeContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
     mojo::ScopedInterfaceEndpointHandle* handle) {
   if (interface_name == autofill::mojom::AutofillDriver::Name_) {
     autofill::ContentAutofillDriverFactory::BindAutofillDriver(
-        autofill::mojom::AutofillDriverAssociatedRequest(std::move(*handle)),
+        mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver>(
+            std::move(*handle)),
         render_frame_host);
     return true;
   }
   if (interface_name == autofill::mojom::PasswordManagerDriver::Name_) {
-    password_manager::ContentPasswordManagerDriverFactory::BindAutofillDriver(
-        autofill::mojom::PasswordManagerDriverAssociatedRequest(
-            std::move(*handle)),
-        render_frame_host);
+    password_manager::ContentPasswordManagerDriverFactory::
+        BindPasswordManagerDriver(
+            autofill::mojom::PasswordManagerDriverAssociatedRequest(
+                std::move(*handle)),
+            render_frame_host);
     return true;
   }
   if (interface_name == content_capture::mojom::ContentCaptureReceiver::Name_) {
