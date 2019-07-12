@@ -303,3 +303,18 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     build_dir = cros_test.ParseCommandLine(
         ['--chrome-test', '--', test_dir]).build_dir
     self.assertEqual(build_dir, os.path.dirname(test_dir))
+
+  def testParserErrorResultsSrc(self):
+    """Verify parser errors for results src/dest directories."""
+    # Parser Error if --results-src is not absolute.
+    self.CheckParserError(['--results-src', 'tmp/results'], 'absolute')
+    # Parser Error if no results destination dir is given.
+    self.CheckParserError(['--results-src', '/tmp/results'], 'with results-src')
+    # Parser Error if no results source is given.
+    self.CheckParserError(['--results-dest-dir', '/tmp/dest_dir'],
+                          'with results-dest-dir')
+    # Parser Error if results destination dir is a file.
+    filename = '/tmp/dest_dir_file'
+    osutils.Touch(filename)
+    self.CheckParserError(['--results-src', '/tmp/results',
+                           '--results-dest-dir', filename], 'existing file')
