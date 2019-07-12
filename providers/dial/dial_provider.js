@@ -242,6 +242,8 @@ const DialProvider = class {
                    appName, dialMediaSource.launchParameter);
              })
              .then(() => {
+               DialAnalytics.recordCreateRoute(
+                   DialAnalytics.DialCreateRouteResult.SUCCESS);
                return this.addRoute(
                    sinkId, sourceUrn, true, appName, presentationId,
                    offTheRecord);
@@ -283,8 +285,6 @@ const DialProvider = class {
    * @return {!Route} The route that was just added.
    */
   addRoute(sinkId, sourceUrn, isLocal, appName, presentationId, offTheRecord) {
-    DialAnalytics.recordCreateRoute(
-        DialAnalytics.DialCreateRouteResult.SUCCESS);
     const route = Route.createRoute(
         presentationId, this.getName(), sinkId, sourceUrn, isLocal, appName,
         null);
