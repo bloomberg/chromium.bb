@@ -323,7 +323,7 @@ class ScopedTaskEnvironment {
   // ScopedTaskEnvironment's constructor. Helper for the migration (while
   // TimeSource is optionally defined by MainThreadType or NowSource).
   template <class... ArgTypes>
-  constexpr TimeSource TimeSourceForTraits(ArgTypes... args) {
+  static constexpr TimeSource TimeSourceForTraits(ArgTypes... args) {
     const auto explicit_time_source =
         trait_helpers::GetOptionalEnum<TimeSource>(args...);
     const auto explicit_main_thread_type =
