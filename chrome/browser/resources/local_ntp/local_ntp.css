@@ -327,9 +327,13 @@ body.fakebox-focused #fakebox-cursor {
   border: 1px solid rgb(var(--GG300-rgb));
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 16px;
+  box-sizing: border-box;
   font-size: 12px;
   height: fit-content;
   margin: 0 auto;
+  /* Set min-height in order to prevent the border from disappearing at certain
+     zooms. */
+  min-height: 35px;
   opacity: 1;
   width: fit-content;
 }
@@ -346,7 +350,8 @@ body.fakebox-focused #fakebox-cursor {
   cursor: default;
   display: inline-block;
   height: auto;
-  line-height: 32px;
+  /* Use odd height in order to prevent rounding errors at certain zooms. */
+  line-height: 33px;
   vertical-align: unset;
 }
 
