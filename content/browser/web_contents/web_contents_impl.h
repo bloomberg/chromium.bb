@@ -744,6 +744,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   InputEventShim* GetInputEventShim() const override;
   void NotifyVisibleViewportSizeChanged(
       const gfx::Size& visible_viewport_size) override;
+  RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate() override;
 
 #if !defined(OS_ANDROID)
   double GetPendingPageZoomLevel() override;

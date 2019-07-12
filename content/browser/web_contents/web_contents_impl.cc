@@ -1676,6 +1676,12 @@ void WebContentsImpl::NotifyVisibleViewportSizeChanged(
       MSG_ROUTING_NONE, visible_viewport_size));
 }
 
+RenderFrameHostImpl* WebContentsImpl::GetFocusedFrameFromFocusedDelegate() {
+  FrameTreeNode* focused_node =
+      GetFocusedWebContents()->frame_tree_.GetFocusedFrame();
+  return focused_node ? focused_node->current_frame_host() : nullptr;
+}
+
 void WebContentsImpl::OnAudioStateChanged() {
   // This notification can come from any embedded contents or from this
   // WebContents' stream monitor. Aggregate these signals to get the actual
