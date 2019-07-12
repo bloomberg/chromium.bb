@@ -12825,6 +12825,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DevicesPageEvents">
+  <obsolete>
+    Removed July 2019.
+  </obsolete>
   <int value="0" label="OPENED"/>
   <int value="1" label="LOG_IN_STARTED_FROM_REGISTER_PROMO"/>
   <int value="2" label="LOG_IN_STARTED_FROM_DEVICE_LIST_PROMO"/>

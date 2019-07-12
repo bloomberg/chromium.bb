@@ -49,7 +49,6 @@ class ServiceDiscoveryClientMdns
   void StartNewClient();
   void OnInterfaceListReady(const net::InterfaceIndexFamilyList& interfaces);
   void OnMdnsInitialized(int net_error);
-  void ReportSuccess();
   void InvalidateWeakPtrs();
   void OnBeforeMdnsDestroy();
   void DestroyMdns();

@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -333,9 +332,7 @@ class LocalDomainResolverProxy : public ProxyBase<LocalDomainResolver> {
 
 ServiceDiscoveryClientMdns::ServiceDiscoveryClientMdns()
     : mdns_runner_(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
-      restart_attempts_(0),
-      need_delay_mdns_tasks_(true) {
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   StartNewClient();
@@ -386,10 +383,8 @@ void ServiceDiscoveryClientMdns::OnConnectionChanged(
 void ServiceDiscoveryClientMdns::ScheduleStartNewClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnBeforeMdnsDestroy();
-  if (restart_attempts_ >= kMaxRestartAttempts) {
-    ReportSuccess();
+  if (restart_attempts_ >= kMaxRestartAttempts)
     return;
-  }
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -430,18 +425,11 @@ void ServiceDiscoveryClientMdns::OnMdnsInitialized(int net_error) {
     ScheduleStartNewClient();
     return;
   }
-  ReportSuccess();
 
   // Initialization is done, no need to delay tasks.
   need_delay_mdns_tasks_ = false;
   for (Proxy& observer : proxies_)
     observer.OnNewMdnsReady();
-}
-
-void ServiceDiscoveryClientMdns::ReportSuccess() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  UMA_HISTOGRAM_COUNTS_100("LocalDiscovery.ClientRestartAttempts",
-                           restart_attempts_);
 }
 
 void ServiceDiscoveryClientMdns::OnBeforeMdnsDestroy() {
