@@ -96,6 +96,8 @@ ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context)
       ExtensionFunctionRegistry::GetInstance();
 
   // Actions
+  // TODO(devlin): Remove this bespoke registration when action.enable() and
+  // action.disable() have appropriate tests.
   registry.RegisterFunction<ActionSetIconFunction>();
   registry.RegisterFunction<ActionGetPopupFunction>();
   registry.RegisterFunction<ActionSetPopupFunction>();
@@ -105,29 +107,6 @@ ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context)
   registry.RegisterFunction<ActionSetBadgeTextFunction>();
   registry.RegisterFunction<ActionGetBadgeBackgroundColorFunction>();
   registry.RegisterFunction<ActionSetBadgeBackgroundColorFunction>();
-
-  // Browser Actions
-  registry.RegisterFunction<BrowserActionSetIconFunction>();
-  registry.RegisterFunction<BrowserActionSetTitleFunction>();
-  registry.RegisterFunction<BrowserActionSetBadgeTextFunction>();
-  registry.RegisterFunction<BrowserActionSetBadgeBackgroundColorFunction>();
-  registry.RegisterFunction<BrowserActionSetPopupFunction>();
-  registry.RegisterFunction<BrowserActionGetTitleFunction>();
-  registry.RegisterFunction<BrowserActionGetBadgeTextFunction>();
-  registry.RegisterFunction<BrowserActionGetBadgeBackgroundColorFunction>();
-  registry.RegisterFunction<BrowserActionGetPopupFunction>();
-  registry.RegisterFunction<BrowserActionEnableFunction>();
-  registry.RegisterFunction<BrowserActionDisableFunction>();
-  registry.RegisterFunction<BrowserActionOpenPopupFunction>();
-
-  // Page Actions
-  registry.RegisterFunction<PageActionShowFunction>();
-  registry.RegisterFunction<PageActionHideFunction>();
-  registry.RegisterFunction<PageActionSetIconFunction>();
-  registry.RegisterFunction<PageActionSetTitleFunction>();
-  registry.RegisterFunction<PageActionSetPopupFunction>();
-  registry.RegisterFunction<PageActionGetTitleFunction>();
-  registry.RegisterFunction<PageActionGetPopupFunction>();
 }
 
 ExtensionActionAPI::~ExtensionActionAPI() {
