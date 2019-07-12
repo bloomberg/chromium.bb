@@ -1571,12 +1571,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void ClearUseCounterForTesting(mojom::WebFeature);
   void SetSecurityOrigin(scoped_refptr<SecurityOrigin>) final;
 
-  // This method should be used sparingly because it does not adjust the
-  // window agent or agent cluster. If you are using this in a unit test
-  // you should likely navigate the document to adjust the security origin
-  // instead.
-  void SetSecurityOriginForTesting(scoped_refptr<SecurityOrigin>);
-
   // Bind Content Security Policy to this document. This will cause the
   // CSP to resolve the 'self' attribute and all policies will then be
   // applied to this document.
