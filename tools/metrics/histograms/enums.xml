@@ -23858,6 +23858,8 @@ Called by update_net_error_codes.py.-->
   <int value="2953" label="SignedExchangeSubresourcePrefetch"/>
   <int value="2954" label="BasicCardType"/>
   <int value="2955" label="ExecutedJavaScriptURL"/>
+  <int value="2956" label="LinkPrefetchLoadEvent"/>
+  <int value="2957" label="LinkPrefetchErrorEvent"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
