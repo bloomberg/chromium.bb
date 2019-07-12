@@ -1020,7 +1020,8 @@ deps = {
   },
 
   'src/third_party/jsoncpp/source':
-    Var('chromium_git') + '/external/github.com/open-source-parsers/jsoncpp.git' + '@' + 'f572e8e42e22cfcf5ab0aea26574f408943edfa4', # from svn 248
+    Var('chromium_git') + '/external/github.com/open-source-parsers/jsoncpp.git'
+      + '@' + '645250b6690785be60ab6780ce4b58698d884d11', # release 1.9.1
 
   'src/third_party/jsr-305/src': {
       'url': Var('chromium_git') + '/external/jsr-305.git' + '@' + '642c508235471f7220af6d5df2d3210e3bfc0919',
