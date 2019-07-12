@@ -24,8 +24,8 @@ const base::Feature kEnableTLS13EarlyData{"EnableTLS13EarlyData",
 const base::Feature kNetworkQualityEstimator{"NetworkQualityEstimator",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSplitCacheByTopFrameOrigin{
-    "SplitCacheByTopFrameOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSplitCacheByNetworkIsolationKey{
+    "SplitCacheByNetworkIsolationKey", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPartitionConnectionsByNetworkIsolationKey{
     "PartitionConnectionsByNetworkIsolationKey",

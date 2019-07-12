@@ -219,7 +219,7 @@ class NoStatePrefetchBrowserTestHttpCache
   void SetUp() override {
     if (GetParam()) {
       feature_list_.InitAndEnableFeature(
-          net::features::kSplitCacheByTopFrameOrigin);
+          net::features::kSplitCacheByNetworkIsolationKey);
     }
     NoStatePrefetchBrowserTest::SetUp();
   }
