@@ -68,6 +68,24 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "TRYJOB FAILURE (5)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@TEST_TIMEOUT@@@",
+      "@@@SET_BUILD_PROPERTY@failure_type@\"TEST_TIMEOUT\"@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "TRYJOB FAILURE (6)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@TEST_EXPIRED@@@",
+      "@@@SET_BUILD_PROPERTY@failure_type@\"TEST_EXPIRED\"@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
     "cmd": [
       "python",
       "-u",

@@ -218,6 +218,22 @@ class TryserverApi(recipe_api.RecipeApi):
     """
     self._set_failure_type('INVALID_TEST_RESULTS')
 
+  def set_test_timeout_tryjob_result(self):
+    """Mark the tryjob result as a test timeout.
+
+    This means tests were scheduled but didn't finish executing within the
+    timeout.
+    """
+    self._set_failure_type('TEST_TIMEOUT')
+
+  def set_test_expired_tryjob_result(self):
+    """Mark the tryjob result as a test expiration.
+
+    This means a test task expired and was never scheduled, most likely due to
+    lack of capacity.
+    """
+    self._set_failure_type('TEST_EXPIRED')
+
   def add_failure_reason(self, reason):
     """
     Records a more detailed reason why build is failing.

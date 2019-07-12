@@ -780,7 +780,7 @@ Returns:
 
 #### **class [TryserverApi](/recipes/recipe_modules/tryserver/api.py#11)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
-&mdash; **def [add\_failure\_reason](/recipes/recipe_modules/tryserver/api.py#221)(self, reason):**
+&mdash; **def [add\_failure\_reason](/recipes/recipe_modules/tryserver/api.py#237)(self, reason):**
 
 Records a more detailed reason why build is failing.
 
@@ -820,11 +820,11 @@ Argument:
 
 Returned paths will be relative to to patch_root.
 
-&mdash; **def [get\_footer](/recipes/recipe_modules/tryserver/api.py#279)(self, tag, patch_text=None):**
+&mdash; **def [get\_footer](/recipes/recipe_modules/tryserver/api.py#295)(self, tag, patch_text=None):**
 
 Gets a specific tag from a CL description
 
-&mdash; **def [get\_footers](/recipes/recipe_modules/tryserver/api.py#259)(self, patch_text=None):**
+&mdash; **def [get\_footers](/recipes/recipe_modules/tryserver/api.py#275)(self, patch_text=None):**
 
 Retrieves footers from the patch description.
 
@@ -843,7 +843,7 @@ Returns true iff the properties exist to match a Gerrit issue.
 
 Returns true iff we have a change to check out.
 
-&mdash; **def [normalize\_footer\_name](/recipes/recipe_modules/tryserver/api.py#283)(self, footer):**
+&mdash; **def [normalize\_footer\_name](/recipes/recipe_modules/tryserver/api.py#299)(self, footer):**
 
 &mdash; **def [set\_compile\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#200)(self):**
 
@@ -856,7 +856,7 @@ A flag to indicate the build should not be retried by the CQ.
 This mechanism is used to reduce CQ duration when retrying will likely
 return an identical result.
 
-&emsp; **@contextlib.contextmanager**<br>&mdash; **def [set\_failure\_hash](/recipes/recipe_modules/tryserver/api.py#230)(self):**
+&emsp; **@contextlib.contextmanager**<br>&mdash; **def [set\_failure\_hash](/recipes/recipe_modules/tryserver/api.py#246)(self):**
 
 Context manager that sets a failure_hash build property on StepFailure.
 
@@ -884,12 +884,26 @@ Adds a subproject tag to the build.
 This can be used to distinguish between builds that execute different steps
 depending on what was patched, e.g. blink vs. pure chromium patches.
 
+&mdash; **def [set\_test\_expired\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#229)(self):**
+
+Mark the tryjob result as a test expiration.
+
+This means a test task expired and was never scheduled, most likely due to
+lack of capacity.
+
 &mdash; **def [set\_test\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#204)(self):**
 
 Mark the tryjob result as a test failure.
 
 This means we started running actual tests (not prerequisite steps
 like checkout or compile), and some of these tests have failed.
+
+&mdash; **def [set\_test\_timeout\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#221)(self):**
+
+Mark the tryjob result as a test timeout.
+
+This means tests were scheduled but didn't finish executing within the
+timeout.
 ### *recipe_modules* / [windows\_sdk](/recipes/recipe_modules/windows_sdk)
 
 [DEPS](/recipes/recipe_modules/windows_sdk/__init__.py#5): [recipe\_engine/cipd][recipe_engine/recipe_modules/cipd], [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/step][recipe_engine/recipe_modules/step]
