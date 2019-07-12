@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "skia/public/interfaces/bitmap.mojom";
+import "url/mojom/url.mojom";
 
 // As per https://github.com/rknoll/content-index.
 
@@ -47,7 +48,8 @@ struct ContentDescription {
 interface ContentIndexService {
   Add(int64 service_worker_registration_id,
       ContentDescription description,
-      skia.mojom.Bitmap icon)
+      skia.mojom.Bitmap icon,
+      url.mojom.Url launchUrl)
       => (ContentIndexError error);
   Delete(int64 service_worker_registration_id, string id)
       => (ContentIndexError error);

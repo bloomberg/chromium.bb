@@ -60,13 +60,14 @@ void ContentIndexServiceImpl::Add(
     int64_t service_worker_registration_id,
     blink::mojom::ContentDescriptionPtr description,
     const SkBitmap& icon,
+    const GURL& launch_url,
     AddCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(crbug.com/973844): Add parameter validation.
 
-  content_index_context_->database().AddEntry(service_worker_registration_id,
-                                              origin_, std::move(description),
-                                              icon, std::move(callback));
+  content_index_context_->database().AddEntry(
+      service_worker_registration_id, origin_, std::move(description), icon,
+      launch_url, std::move(callback));
 }
 
 void ContentIndexServiceImpl::Delete(int64_t service_worker_registration_id,

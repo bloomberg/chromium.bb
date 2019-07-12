@@ -114,8 +114,11 @@ void ContentIndex::DidGetIcon(ScriptPromiseResolver* resolver,
     return;
   }
 
+  KURL launch_url = registration_->GetExecutionContext()->CompleteURL(
+      description->launch_url);
+
   GetService()->Add(registration_->RegistrationId(), std::move(description),
-                    icon,
+                    icon, launch_url,
                     WTF::Bind(&ContentIndex::DidAdd, WrapPersistent(this),
                               WrapPersistent(resolver)));
 }
