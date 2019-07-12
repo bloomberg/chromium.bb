@@ -49,10 +49,6 @@ crbug.com/945970 [ android ] WebglExtension_EXT_float_blend [ Skip ]
 # Conformance expectations
 # ========================
 
-# Recent regression of invariance rules
-# TODO(kbr): re-add suppressions below once this is removed.
-crbug.com/980675 conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
-
 crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
 # TODO(kbr): restore suppression for Android / Qualcomm below after this is fixed.
 crbug.com/949249 conformance2/extensions/ovr_multiview2.html [ Failure ]
@@ -569,8 +565,7 @@ crbug.com/905011 [ linux intel opengl passthrough ] conformance2/textures/misc/t
 # It looks like AMD shader compiler rejects many valid ES3 semantics.
 crbug.com/844311 [ linux amd ] conformance/glsl/misc/fragcolor-fragdata-invariant.html [ Failure ]
 crbug.com/766776 [ linux amd ] conformance2/attribs/gl-vertex-attrib-normalized-int.html [ Failure ]
-# TODO(kbr): re-add after global suppression is removed.
-# crbug.com/483282 [ linux amd ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
+crbug.com/483282 [ linux amd ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 crbug.com/981070 [ linux amd ] conformance2/glsl3/matrix-row-major.html [ Failure ]
 crbug.com/709351 [ linux amd ] conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html [ Failure ]
 crbug.com/617290 [ linux amd ] deqp/functional/gles3/multisample.html [ Failure ]
