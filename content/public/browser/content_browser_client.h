@@ -1265,6 +1265,19 @@ class CONTENT_EXPORT ContentBrowserClient {
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks);
 
+#if defined(OS_ANDROID)
+  // Similar to WillCreateURLLoaderFactory but for appcache subresources.
+  // WillCreateURLLoaderFactory couldn't be used because when the appcache
+  // URLLoaderFactory is sent on the UI thread, the URLLoaderFactoryRequest is
+  // already consumed. And on the IO thread when it's created but before it's
+  // consumed, we don't have the process ID.
+  // This is behind an OS_ANDROID ifdef because we don't need this on desktop.
+  // Only WebView should implement this, see https://crbug.com/977873.
+  virtual void WillCreateURLLoaderFactoryForAppCacheSubresource(
+      int render_process_id,
+      network::mojom::URLLoaderFactoryPtrInfo* factory_ptr_info);
+#endif
+
   // Allows the embedder to intercept a WebSocket connection. |*request|
   // is always valid upon entry and MUST be valid upon return. The embedder
   // may swap out the value of |*request| for its own.
