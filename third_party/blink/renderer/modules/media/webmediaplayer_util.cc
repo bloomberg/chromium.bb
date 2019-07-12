@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/blink/webmediaplayer_util.h"
+#include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
 
 #include <math.h>
 #include <stddef.h>
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_log.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_media_player_encrypted_media_client.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+
+using namespace media;
 
 namespace {
 
@@ -32,166 +34,6 @@ std::string LoadTypeToString(blink::WebMediaPlayer::LoadType load_type) {
   NOTREACHED();
   return "Unknown";
 }
-
-}  // namespace
-
-namespace media {
-
-mojom::MediaURLScheme GetMediaURLScheme(const GURL& url) {
-  if (!url.has_scheme())
-    return mojom::MediaURLScheme::kMissing;
-  if (url.SchemeIs(url::kHttpScheme))
-    return mojom::MediaURLScheme::kHttp;
-  if (url.SchemeIs(url::kHttpsScheme))
-    return mojom::MediaURLScheme::kHttps;
-  if (url.SchemeIs(url::kFtpScheme))
-    return mojom::MediaURLScheme::kFtp;
-  if (url.SchemeIs(url::kJavaScriptScheme))
-    return mojom::MediaURLScheme::kJavascript;
-  if (url.SchemeIsFile())
-    return mojom::MediaURLScheme::kFile;
-  if (url.SchemeIsBlob())
-    return mojom::MediaURLScheme::kBlob;
-  if (url.SchemeIs(url::kDataScheme))
-    return mojom::MediaURLScheme::kData;
-  if (url.SchemeIsFileSystem())
-    return mojom::MediaURLScheme::kFileSystem;
-  if (url.SchemeIs(url::kContentScheme))
-    return mojom::MediaURLScheme::kContent;
-  if (url.SchemeIs(url::kContentIDScheme))
-    return mojom::MediaURLScheme::kContentId;
-
-  // Some internals pages and extension pages play media.
-  if (url.SchemeIs("chrome"))
-    return mojom::MediaURLScheme::kChrome;
-  if (url.SchemeIs("chrome-extension"))
-    return mojom::MediaURLScheme::kChromeExtension;
-
-  return mojom::MediaURLScheme::kUnknown;
-}
-
-blink::WebTimeRanges ConvertToWebTimeRanges(
-    const Ranges<base::TimeDelta>& ranges) {
-  blink::WebTimeRanges result(ranges.size());
-  for (size_t i = 0; i < ranges.size(); ++i) {
-    result[i].start = ranges.start(i).InSecondsF();
-    result[i].end = ranges.end(i).InSecondsF();
-  }
-  return result;
-}
-
-blink::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
-    PipelineStatus error) {
-  switch (error) {
-    case PIPELINE_ERROR_NETWORK:
-    case PIPELINE_ERROR_READ:
-    case CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR:
-      return blink::WebMediaPlayer::kNetworkStateNetworkError;
-
-    case PIPELINE_ERROR_INITIALIZATION_FAILED:
-    case PIPELINE_ERROR_COULD_NOT_RENDER:
-    case PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED:
-    case DEMUXER_ERROR_COULD_NOT_OPEN:
-    case DEMUXER_ERROR_COULD_NOT_PARSE:
-    case DEMUXER_ERROR_NO_SUPPORTED_STREAMS:
-    case DEMUXER_ERROR_DETECTED_HLS:
-    case DECODER_ERROR_NOT_SUPPORTED:
-      return blink::WebMediaPlayer::kNetworkStateFormatError;
-
-    case PIPELINE_ERROR_DECODE:
-    case PIPELINE_ERROR_ABORT:
-    case PIPELINE_ERROR_INVALID_STATE:
-    case CHUNK_DEMUXER_ERROR_APPEND_FAILED:
-    case CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR:
-    case AUDIO_RENDERER_ERROR:
-      return blink::WebMediaPlayer::kNetworkStateDecodeError;
-
-    case PIPELINE_OK:
-      NOTREACHED() << "Unexpected status! " << error;
-  }
-  return blink::WebMediaPlayer::kNetworkStateFormatError;
-}
-
-void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
-                   const GURL& url,
-                   const blink::WebLocalFrame& frame,
-                   MediaLog* media_log) {
-  DCHECK(media_log);
-
-  // Report URL scheme, such as http, https, file, blob etc. Only do this for
-  // URL based loads, otherwise it's not very useful.
-  if (load_type == blink::WebMediaPlayer::kLoadTypeURL)
-    UMA_HISTOGRAM_ENUMERATION("Media.URLScheme2", GetMediaURLScheme(url));
-
-  // Report load type, such as URL, MediaSource or MediaStream.
-  UMA_HISTOGRAM_ENUMERATION("Media.LoadType", load_type,
-                            blink::WebMediaPlayer::kLoadTypeMax + 1);
-
-  // Report load type separately for ad frames.
-  if (frame.IsAdSubframe()) {
-    UMA_HISTOGRAM_ENUMERATION("Ads.Media.LoadType", load_type,
-                              blink::WebMediaPlayer::kLoadTypeMax + 1);
-  }
-
-  // Report the origin from where the media player is created.
-  media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl." +
-                                            LoadTypeToString(load_type));
-
-  // For MSE, also report usage by secure/insecure origin.
-  if (load_type == blink::WebMediaPlayer::kLoadTypeMediaSource) {
-    if (frame.GetSecurityOrigin().IsPotentiallyTrustworthy()) {
-      media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl.MSE.Secure");
-    } else {
-      media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl.MSE.Insecure");
-    }
-  }
-}
-
-void ReportPipelineError(blink::WebMediaPlayer::LoadType load_type,
-                         PipelineStatus error,
-                         MediaLog* media_log) {
-  DCHECK_NE(PIPELINE_OK, error);
-
-  // Report the origin from where the media player is created.
-  media_log->RecordRapporWithSecurityOrigin(
-      "Media.OriginUrl." + LoadTypeToString(load_type) + ".PipelineError");
-}
-
-EmeInitDataType ConvertToEmeInitDataType(
-    blink::WebEncryptedMediaInitDataType init_data_type) {
-  switch (init_data_type) {
-    case blink::WebEncryptedMediaInitDataType::kWebm:
-      return EmeInitDataType::WEBM;
-    case blink::WebEncryptedMediaInitDataType::kCenc:
-      return EmeInitDataType::CENC;
-    case blink::WebEncryptedMediaInitDataType::kKeyids:
-      return EmeInitDataType::KEYIDS;
-    case blink::WebEncryptedMediaInitDataType::kUnknown:
-      return EmeInitDataType::UNKNOWN;
-  }
-
-  NOTREACHED();
-  return EmeInitDataType::UNKNOWN;
-}
-
-blink::WebEncryptedMediaInitDataType ConvertToWebInitDataType(
-    EmeInitDataType init_data_type) {
-  switch (init_data_type) {
-    case EmeInitDataType::WEBM:
-      return blink::WebEncryptedMediaInitDataType::kWebm;
-    case EmeInitDataType::CENC:
-      return blink::WebEncryptedMediaInitDataType::kCenc;
-    case EmeInitDataType::KEYIDS:
-      return blink::WebEncryptedMediaInitDataType::kKeyids;
-    case EmeInitDataType::UNKNOWN:
-      return blink::WebEncryptedMediaInitDataType::kUnknown;
-  }
-
-  NOTREACHED();
-  return blink::WebEncryptedMediaInitDataType::kUnknown;
-}
-
-namespace {
 
 void RunSetSinkIdCallback(blink::WebSetSinkIdCompleteCallback callback,
                           OutputDeviceStatus result) {
@@ -214,10 +56,164 @@ void RunSetSinkIdCallback(blink::WebSetSinkIdCompleteCallback callback,
 
 }  // namespace
 
-OutputDeviceStatusCB ConvertToOutputDeviceStatusCB(
-    blink::WebSetSinkIdCompleteCallback callback) {
-  return media::BindToCurrentLoop(
-      base::BindOnce(RunSetSinkIdCallback, std::move(callback)));
+namespace blink {
+
+media::mojom::MediaURLScheme GetMediaURLScheme(const WebURL& url) {
+  if (!url.GetParsed().scheme.is_valid())
+    return media::mojom::MediaURLScheme::kMissing;
+  if (url.ProtocolIs(url::kHttpScheme))
+    return media::mojom::MediaURLScheme::kHttp;
+  if (url.ProtocolIs(url::kHttpsScheme))
+    return media::mojom::MediaURLScheme::kHttps;
+  if (url.ProtocolIs(url::kFtpScheme))
+    return media::mojom::MediaURLScheme::kFtp;
+  if (url.ProtocolIs(url::kJavaScriptScheme))
+    return media::mojom::MediaURLScheme::kJavascript;
+  if (url.ProtocolIs(url::kFileScheme))
+    return media::mojom::MediaURLScheme::kFile;
+  if (url.ProtocolIs(url::kBlobScheme))
+    return media::mojom::MediaURLScheme::kBlob;
+  if (url.ProtocolIs(url::kDataScheme))
+    return media::mojom::MediaURLScheme::kData;
+  if (url.ProtocolIs(url::kFileSystemScheme))
+    return media::mojom::MediaURLScheme::kFileSystem;
+  if (url.ProtocolIs(url::kContentScheme))
+    return media::mojom::MediaURLScheme::kContent;
+  if (url.ProtocolIs(url::kContentIDScheme))
+    return media::mojom::MediaURLScheme::kContentId;
+
+  // Some internals pages and extension pages play media.
+  if (url.ProtocolIs("chrome"))
+    return media::mojom::MediaURLScheme::kChrome;
+  if (url.ProtocolIs("chrome-extension"))
+    return media::mojom::MediaURLScheme::kChromeExtension;
+
+  return media::mojom::MediaURLScheme::kUnknown;
 }
 
-}  // namespace media
+WebTimeRanges ConvertToWebTimeRanges(const Ranges<base::TimeDelta>& ranges) {
+  WebTimeRanges result(ranges.size());
+  for (size_t i = 0; i < ranges.size(); ++i) {
+    result[i].start = ranges.start(i).InSecondsF();
+    result[i].end = ranges.end(i).InSecondsF();
+  }
+  return result;
+}
+
+WebMediaPlayer::NetworkState PipelineErrorToNetworkState(PipelineStatus error) {
+  switch (error) {
+    case PIPELINE_ERROR_NETWORK:
+    case PIPELINE_ERROR_READ:
+    case CHUNK_DEMUXER_ERROR_EOS_STATUS_NETWORK_ERROR:
+      return WebMediaPlayer::kNetworkStateNetworkError;
+
+    case PIPELINE_ERROR_INITIALIZATION_FAILED:
+    case PIPELINE_ERROR_COULD_NOT_RENDER:
+    case PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED:
+    case DEMUXER_ERROR_COULD_NOT_OPEN:
+    case DEMUXER_ERROR_COULD_NOT_PARSE:
+    case DEMUXER_ERROR_NO_SUPPORTED_STREAMS:
+    case DEMUXER_ERROR_DETECTED_HLS:
+    case DECODER_ERROR_NOT_SUPPORTED:
+      return WebMediaPlayer::kNetworkStateFormatError;
+
+    case PIPELINE_ERROR_DECODE:
+    case PIPELINE_ERROR_ABORT:
+    case PIPELINE_ERROR_INVALID_STATE:
+    case CHUNK_DEMUXER_ERROR_APPEND_FAILED:
+    case CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR:
+    case AUDIO_RENDERER_ERROR:
+      return WebMediaPlayer::kNetworkStateDecodeError;
+
+    case PIPELINE_OK:
+      NOTREACHED() << "Unexpected status! " << error;
+  }
+  return WebMediaPlayer::kNetworkStateFormatError;
+}
+
+void ReportMetrics(WebMediaPlayer::LoadType load_type,
+                   const WebURL& url,
+                   const WebLocalFrame& frame,
+                   MediaLog* media_log) {
+  DCHECK(media_log);
+
+  // Report URL scheme, such as http, https, file, blob etc. Only do this for
+  // URL based loads, otherwise it's not very useful.
+  if (load_type == WebMediaPlayer::kLoadTypeURL)
+    UMA_HISTOGRAM_ENUMERATION("Media.URLScheme2", GetMediaURLScheme(url));
+
+  // Report load type, such as URL, MediaSource or MediaStream.
+  UMA_HISTOGRAM_ENUMERATION("Media.LoadType", load_type,
+                            WebMediaPlayer::kLoadTypeMax + 1);
+
+  // Report load type separately for ad frames.
+  if (frame.IsAdSubframe()) {
+    UMA_HISTOGRAM_ENUMERATION("Ads.Media.LoadType", load_type,
+                              WebMediaPlayer::kLoadTypeMax + 1);
+  }
+
+  // Report the origin from where the media player is created.
+  media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl." +
+                                            LoadTypeToString(load_type));
+
+  // For MSE, also report usage by secure/insecure origin.
+  if (load_type == WebMediaPlayer::kLoadTypeMediaSource) {
+    if (frame.GetSecurityOrigin().IsPotentiallyTrustworthy()) {
+      media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl.MSE.Secure");
+    } else {
+      media_log->RecordRapporWithSecurityOrigin("Media.OriginUrl.MSE.Insecure");
+    }
+  }
+}
+
+void ReportPipelineError(WebMediaPlayer::LoadType load_type,
+                         PipelineStatus error,
+                         MediaLog* media_log) {
+  DCHECK_NE(PIPELINE_OK, error);
+
+  // Report the origin from where the media player is created.
+  media_log->RecordRapporWithSecurityOrigin(
+      "Media.OriginUrl." + LoadTypeToString(load_type) + ".PipelineError");
+}
+
+EmeInitDataType ConvertToEmeInitDataType(
+    WebEncryptedMediaInitDataType init_data_type) {
+  switch (init_data_type) {
+    case WebEncryptedMediaInitDataType::kWebm:
+      return EmeInitDataType::WEBM;
+    case WebEncryptedMediaInitDataType::kCenc:
+      return EmeInitDataType::CENC;
+    case WebEncryptedMediaInitDataType::kKeyids:
+      return EmeInitDataType::KEYIDS;
+    case WebEncryptedMediaInitDataType::kUnknown:
+      return EmeInitDataType::UNKNOWN;
+  }
+
+  NOTREACHED();
+  return EmeInitDataType::UNKNOWN;
+}
+
+WebEncryptedMediaInitDataType ConvertToWebInitDataType(
+    EmeInitDataType init_data_type) {
+  switch (init_data_type) {
+    case EmeInitDataType::WEBM:
+      return WebEncryptedMediaInitDataType::kWebm;
+    case EmeInitDataType::CENC:
+      return WebEncryptedMediaInitDataType::kCenc;
+    case EmeInitDataType::KEYIDS:
+      return WebEncryptedMediaInitDataType::kKeyids;
+    case EmeInitDataType::UNKNOWN:
+      return WebEncryptedMediaInitDataType::kUnknown;
+  }
+
+  NOTREACHED();
+  return WebEncryptedMediaInitDataType::kUnknown;
+}
+
+OutputDeviceStatusCB ConvertToOutputDeviceStatusCB(
+    WebSetSinkIdCompleteCallback callback) {
+  return media::BindToCurrentLoop(
+      WTF::Bind(RunSetSinkIdCallback, std::move(callback)));
+}
+
+}  // namespace blink
