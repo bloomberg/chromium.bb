@@ -68,8 +68,8 @@ class DisplayPanel extends HTMLElement {
               #container {
                   align-items: stretch;
                   background-color: #FFF;
-                  box-shadow: -2px -1px rgba(60, 64, 67, 0.15),
-                              -1px 2px rgba(60, 64, 67, 0.3),
+                  box-shadow: -1px -1px rgba(60, 64, 67, 0.15),
+                              0px 2px rgba(60, 64, 67, 0.3),
                               2px 0px rgba(60, 64, 67, 0.15);
                   border-radius: 4px;
                   display: flex;

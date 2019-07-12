@@ -58,6 +58,7 @@ class PanelItem extends HTMLElement {
               .xf-panel-item {
                   align-items: center;
                   background-color: #FFF;
+                  border-radius: 4px;
                   display: flex;
                   flex-direction: row;
                   max-width: 400px;
