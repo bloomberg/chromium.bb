@@ -152,23 +152,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
   // OAuth2TokenServiceObserver:
   void OnRefreshTokensLoaded() override;
 
-  // Add a new entry to the cache.
-  // Subclasses can override if there are implementation-specific reasons
-  // that an access token should ever not be cached.
-  virtual void RegisterTokenResponse(
-      const std::string& client_id,
-      const CoreAccountId& account_id,
-      const OAuth2AccessTokenManager::ScopeSet& scopes,
-      const OAuth2AccessTokenConsumer::TokenResponse& token_response);
-
-  // Clears the internal token cache.
-  void ClearCache();
-
-  // Clears all of the tokens belonging to |account_id| from the internal token
-  // cache. It does not matter what other parameters, like |client_id| were
-  // used to request the tokens.
-  void ClearCacheForAccount(const CoreAccountId& account_id);
-
   // Cancels all requests that are currently in progress. Virtual so it can be
   // overridden for tests.
   // Deprecated. It's moved to OAuth2AccessTokenManager.

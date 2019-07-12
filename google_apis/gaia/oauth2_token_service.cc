@@ -150,26 +150,6 @@ void OAuth2TokenService::OnRefreshTokensLoaded() {
   all_credentials_loaded_ = true;
 }
 
-void OAuth2TokenService::RegisterTokenResponse(
-    const std::string& client_id,
-    const CoreAccountId& account_id,
-    const OAuth2AccessTokenManager::ScopeSet& scopes,
-    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  token_manager_->RegisterTokenResponse(client_id, account_id, scopes,
-                                        token_response);
-}
-
-void OAuth2TokenService::ClearCache() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  token_manager_->ClearCache();
-}
-
-void OAuth2TokenService::ClearCacheForAccount(const CoreAccountId& account_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  token_manager_->ClearCacheForAccount(account_id);
-}
-
 void OAuth2TokenService::CancelAllRequests() {
   token_manager_->CancelAllRequests();
 }

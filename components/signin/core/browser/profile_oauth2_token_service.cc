@@ -295,6 +295,15 @@ void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {
   RecreateDeviceIdIfNeeded();
 }
 
+void ProfileOAuth2TokenService::ClearCache() {
+  token_manager_->ClearCache();
+}
+
+void ProfileOAuth2TokenService::ClearCacheForAccount(
+    const CoreAccountId& account_id) {
+  token_manager_->ClearCacheForAccount(account_id);
+}
+
 bool ProfileOAuth2TokenService::HasLoadCredentialsFinishedWithNoErrors() {
   switch (GetDelegate()->load_credentials_state()) {
     case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED:

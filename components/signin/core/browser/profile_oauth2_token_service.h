@@ -179,6 +179,14 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
   void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;
 
+  // Clears the internal token cache.
+  void ClearCache();
+
+  // Clears all of the tokens belonging to |account_id| from the internal token
+  // cache. It does not matter what other parameters, like |client_id| were
+  // used to request the tokens.
+  void ClearCacheForAccount(const CoreAccountId& account_id);
+
   // Creates a new device ID if there are no accounts, or if the current device
   // ID is empty.
   void RecreateDeviceIdIfNeeded();
@@ -191,6 +199,8 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
 
   signin_metrics::SourceForRefreshTokenOperation update_refresh_token_source_ =
       signin_metrics::SourceForRefreshTokenOperation::kUnknown;
+
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest, UpdateClearsCache);
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenService);
 };

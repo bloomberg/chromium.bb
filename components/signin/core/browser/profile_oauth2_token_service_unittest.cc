@@ -73,8 +73,6 @@ class TestProfileOAuth2TokenService : public ProfileOAuth2TokenService {
     CancelRequestsForAccount(account_id);
   }
 
-  void ClearCacheForTest() { ClearCache(); }
-
   FakeOAuth2TokenServiceDelegate* GetFakeOAuth2TokenServiceDelegate() {
     return static_cast<FakeOAuth2TokenServiceDelegate*>(GetDelegate());
   }
@@ -815,7 +813,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, UpdateClearsCache) {
   EXPECT_EQ("token", consumer_.last_token_);
   EXPECT_EQ(1, oauth2_service_->GetTokenCacheCount());
 
-  oauth2_service_->ClearCacheForTest();
+  oauth2_service_->ClearCache();
 
   EXPECT_EQ(0, oauth2_service_->GetTokenCacheCount());
   oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
