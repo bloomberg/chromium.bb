@@ -392,7 +392,8 @@ static const unsigned kCMaxWriteRecursionDepth = 21;
 // a layout without a delay.
 // FIXME: For faster machines this value can really be lowered to 200.  250 is
 // adequate, but a little high for dual G5s. :)
-static const int kCLayoutScheduleThreshold = 250;
+static const base::TimeDelta kCLayoutScheduleThreshold =
+    base::TimeDelta::FromMilliseconds(250);
 
 // DOM Level 2 says (letters added):
 //
@@ -989,7 +990,6 @@ Document::Document(const DocumentInit& initializer,
       was_discarded_(false),
       load_event_progress_(kLoadEventCompleted),
       is_freezing_in_progress_(false),
-      start_time_(CurrentTime()),
       script_runner_(MakeGarbageCollected<ScriptRunner>(this)),
       xml_version_("1.0"),
       xml_standalone_(kStandaloneUnspecified),
@@ -3804,7 +3804,7 @@ void Document::ImplicitClose() {
   }
 
   if (GetFrame()->Loader().HasProvisionalNavigation() &&
-      ElapsedTime() < kCLayoutScheduleThreshold) {
+      start_time_.Elapsed() < kCLayoutScheduleThreshold) {
     // Just bail out. Before or during the onload we were shifted to another
     // page.  The old i-Bench suite does this. When this happens don't bother
     // painting or laying out.
@@ -4172,10 +4172,6 @@ bool Document::ShouldScheduleLayout() const {
     return true;
 
   return false;
-}
-
-int Document::ElapsedTime() const {
-  return static_cast<int>((CurrentTime() - start_time_) * 1000);
 }
 
 void Document::write(const String& text,
