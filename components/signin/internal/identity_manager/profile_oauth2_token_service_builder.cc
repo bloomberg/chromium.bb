@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/profile_oauth2_token_service_builder.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_builder.h"
 
-#include <memory>
 #include <string>
 #include <utility>
 
-#include "chrome/browser/profiles/profile.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/device_id_helper.h"
@@ -52,7 +51,7 @@ CreateCrOsOAuthDelegate(
 #endif  // defined(OS_CHROMEOS)
 
 // Supervised users cannot revoke credentials.
-bool CanRevokeCredentials(Profile* profile) {
+bool CanRevokeCredentials() {
 #if defined(OS_CHROMEOS)
   // UserManager may not exist in unit_tests.
   if (user_manager::UserManager::IsInitialized() &&
@@ -70,7 +69,6 @@ bool CanRevokeCredentials(Profile* profile) {
 
 std::unique_ptr<MutableProfileOAuth2TokenServiceDelegate>
 CreateMutableProfileOAuthDelegate(
-    Profile* profile,
     AccountTrackerService* account_tracker_service,
     signin::AccountConsistencyMethod account_consistency,
     bool delete_signin_cookies_on_exit,
@@ -90,7 +88,7 @@ CreateMutableProfileOAuthDelegate(
   return std::make_unique<MutableProfileOAuth2TokenServiceDelegate>(
       signin_client, account_tracker_service, network_connection_tracker,
       token_web_data, account_consistency, revoke_all_tokens_on_load,
-      CanRevokeCredentials(profile),
+      CanRevokeCredentials(),
 #if defined(OS_WIN)
       reauth_callback
 #else
@@ -101,7 +99,6 @@ CreateMutableProfileOAuthDelegate(
 #endif  // !defined(OS_ANDROID)
 
 std::unique_ptr<OAuth2TokenServiceDelegate> CreateOAuth2TokenServiceDelegate(
-    Profile* profile,
     AccountTrackerService* account_tracker_service,
     signin::AccountConsistencyMethod account_consistency,
     SigninClient* signin_client,
@@ -128,13 +125,12 @@ std::unique_ptr<OAuth2TokenServiceDelegate> CreateOAuth2TokenServiceDelegate(
                                    is_regular_profile);
   }
 #endif  // defined(OS_CHROMEOS)
-
   // Fall back to |MutableProfileOAuth2TokenServiceDelegate|:
   // 1. On all platforms other than Android and Chrome OS.
   // 2. On Chrome OS, if Account Manager has not been switched on yet
   // (chromeos::switches::IsAccountManagerEnabled).
   return CreateMutableProfileOAuthDelegate(
-      profile, account_tracker_service, account_consistency,
+      account_tracker_service, account_consistency,
       delete_signin_cookies_on_exit, token_web_data, signin_client,
 #if defined(OS_WIN)
       reauth_callback,
@@ -146,10 +142,7 @@ std::unique_ptr<OAuth2TokenServiceDelegate> CreateOAuth2TokenServiceDelegate(
 
 }  // namespace
 
-// static
-std::unique_ptr<ProfileOAuth2TokenService>
-ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
-    content::BrowserContext* context,
+std::unique_ptr<ProfileOAuth2TokenService> BuildProfileOAuth2TokenService(
     PrefService* pref_service,
     AccountTrackerService* account_tracker_service,
     network::NetworkConnectionTracker* network_connection_tracker,
@@ -167,8 +160,6 @@ ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
         reauth_callback,
 #endif
     SigninClient* signin_client) {
-  Profile* profile = static_cast<Profile*>(context);
-
 // On ChromeOS the device ID is not managed by the token service.
 #if !defined(OS_CHROMEOS)
   // Ensure the device ID is not empty. This is important for Dice, because the
@@ -181,7 +172,7 @@ ProfileOAuth2TokenServiceBuilder::BuildInstanceFor(
   return std::make_unique<ProfileOAuth2TokenService>(
       pref_service,
       CreateOAuth2TokenServiceDelegate(
-          profile, account_tracker_service, account_consistency, signin_client,
+          account_tracker_service, account_consistency, signin_client,
 #if defined(OS_CHROMEOS)
           account_manager, is_regular_profile,
 #endif
