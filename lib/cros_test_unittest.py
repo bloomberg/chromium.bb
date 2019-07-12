@@ -399,3 +399,13 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     osutils.Touch(filename)
     self.CheckParserError(['--results-src', '/tmp/results',
                            '--results-dest-dir', filename], 'existing file')
+
+  def testParserErrorWithInvalidCWD(self):
+    """Verify we get a parser error when given a bad cwd."""
+    cwd = '../new_cwd'
+    self.CheckParserError(['--cwd', cwd], 'cwd cannot start with ..')
+
+  def testParserErrorWithRelativeCWD(self):
+    """Verify we get a parser error when given a relative cwd path."""
+    cwd = 'tmp/cwd'
+    self.CheckParserError(['--cwd', cwd], 'cwd must be an absolute path')
