@@ -44,7 +44,7 @@ class DataPackSizes(object):
 
   @property
   def total(self):
-    return sum(v for v in self.__dict__.itervalues())
+    return sum(v for v in self.__dict__.values())
 
   def __iter__(self):
     yield ('header', self.header)
@@ -153,7 +153,7 @@ def WriteDataPackToString(resources, encoding):
   # Use reversed() so that for duplicates lower IDs clobber higher ones.
   id_by_data = {resources[k]: k for k in reversed(resource_ids)}
   # Map of resource_id -> resource_id, where value < key.
-  alias_map = {k: id_by_data[v] for k, v in resources.iteritems()
+  alias_map = {k: id_by_data[v] for k, v in resources.items()
                if id_by_data[v] != k}
 
   # Write file header.
