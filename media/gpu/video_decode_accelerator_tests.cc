@@ -258,11 +258,14 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleConcurrentDecodes) {
 // Play a video from start to finish. Thumbnails of the decoded frames will be
 // rendered into a image, whose checksum is compared to a golden value. This
 // test is only run on older platforms that don't support the video frame
-// validator, which requires import mode. This test will be deprecated once all
-// devices support import mode.
+// validator, which requires import mode. If no thumbnail checksums are present
+// in the video metadata the test will be skipped. This test will be deprecated
+// once all devices support import mode.
 TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
-  if (!g_env->IsValidatorEnabled() || g_env->ImportSupported())
+  if (!g_env->IsValidatorEnabled() || g_env->ImportSupported() ||
+      g_env->Video()->ThumbnailChecksums().empty()) {
     GTEST_SKIP();
+  }
 
   base::FilePath output_folder =
       base::FilePath(g_env->OutputFolder())
