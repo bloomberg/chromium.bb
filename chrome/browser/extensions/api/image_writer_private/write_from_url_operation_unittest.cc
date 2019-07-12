@@ -212,7 +212,7 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, DownloadFile) {
   operation->Cancel();
 }
 
-TEST_F(ImageWriterWriteFromUrlOperationTest, VerifyFile) {
+TEST_F(ImageWriterWriteFromUrlOperationTest, DISABLED_VerifyFile) {
   std::unique_ptr<char[]> data_buffer(new char[kTestFileSize]);
   base::ReadFile(test_utils_.GetImagePath(), data_buffer.get(), kTestFileSize);
   base::MD5Digest expected_digest;
