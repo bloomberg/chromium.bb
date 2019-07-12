@@ -38211,6 +38211,9 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MediaEngagementClearReason">
+  <obsolete>
+    Deprecated 07/2019 as no longer needed.
+  </obsolete>
   <int value="0" label="Data (all)"/>
   <int value="1" label="Data (range)"/>
   <int value="2" label="History (all)"/>
@@ -38219,6 +38222,9 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MediaEngagementSessionEvent">
+  <obsolete>
+    Deprecated 07/2019 as no longer needed.
+  </obsolete>
   <int value="0" label="Created"/>
   <int value="1" label="Significant Playback"/>
 </enum>
