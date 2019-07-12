@@ -1483,6 +1483,7 @@ crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/mu
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-003.html [ Failure ]
 crbug.com/924142 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-010.html [ Crash Pass ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-012.html [ Failure Crash ]
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-dynamic-add-013.html [ Failure Crash ]
 crbug.com/874051 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-fieldset-001.html [ Failure ]
 crbug.com/874051 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-fieldset-002.html [ Failure ]
 crbug.com/874051 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-fieldset-003.html [ Failure ]
