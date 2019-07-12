@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_ARCORE_DEVICE_ARCORE_SESSION_UTILS_H_
-#define CHROME_BROWSER_ANDROID_VR_ARCORE_DEVICE_ARCORE_SESSION_UTILS_H_
+#ifndef CHROME_BROWSER_ANDROID_VR_ARCORE_DEVICE_ARCORE_INSTALL_UTILS_H_
+#define CHROME_BROWSER_ANDROID_VR_ARCORE_DEVICE_ARCORE_INSTALL_UTILS_H_
 
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
@@ -30,9 +30,18 @@ using SurfaceTouchCallback =
     base::RepeatingCallback<void(bool touching, const gfx::PointF& location)>;
 using SurfaceDestroyedCallback = base::OnceClosure;
 
-class ArCoreSessionUtils {
+class ArCoreInstallUtils {
  public:
-  virtual ~ArCoreSessionUtils() = default;
+  virtual ~ArCoreInstallUtils() = default;
+  // Returns true if AR module installation is supported, false otherwise.
+  virtual bool CanRequestInstallArModule() = 0;
+  // Returns true if AR module is not installed, false otherwise.
+  virtual bool ShouldRequestInstallArModule() = 0;
+  virtual void RequestInstallArModule(int render_process_id,
+                                      int render_frame_id) = 0;
+  virtual bool ShouldRequestInstallSupportedArCore() = 0;
+  virtual void RequestInstallSupportedArCore(int render_process_id,
+                                             int render_frame_id) = 0;
   virtual bool EnsureLoaded() = 0;
   virtual base::android::ScopedJavaLocalRef<jobject>
   GetApplicationContext() = 0;
@@ -47,4 +56,4 @@ class ArCoreSessionUtils {
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_ANDROID_VR_ARCORE_DEVICE_ARCORE_SESSION_UTILS_H_
+#endif  // CHROME_BROWSER_ANDROID_VR_ARCORE_DEVICE_ARCORE_INSTALL_UTILS_H_
