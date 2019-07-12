@@ -118,64 +118,6 @@ void OAuth2TokenService::RemoveAccessTokenDiagnosticsObserver(
   token_manager_->RemoveDiagnosticsObserver(observer);
 }
 
-std::unique_ptr<OAuth2AccessTokenManager::Request>
-OAuth2TokenService::StartRequestForMultilogin(
-    const CoreAccountId& account_id,
-    OAuth2AccessTokenManager::Consumer* consumer) {
-  const std::string refresh_token =
-      delegate_->GetTokenForMultilogin(account_id);
-  if (refresh_token.empty()) {
-    // If we can't get refresh token from the delegate, start request for access
-    // token.
-    OAuth2AccessTokenManager::ScopeSet scopes;
-    scopes.insert(GaiaConstants::kOAuth1LoginScope);
-    return StartRequest(account_id, scopes, consumer);
-  }
-  std::unique_ptr<OAuth2AccessTokenManager::RequestImpl> request(
-      new OAuth2AccessTokenManager::RequestImpl(account_id, consumer));
-  // Create token response from token. Expiration time and id token do not
-  // matter and should not be accessed.
-  OAuth2AccessTokenConsumer::TokenResponse token_response(
-      refresh_token, base::Time(), std::string());
-  // If we can get refresh token from the delegate, inform cosumer right away.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&OAuth2AccessTokenManager::RequestImpl::InformConsumer,
-                     request.get()->AsWeakPtr(),
-                     GoogleServiceAuthError(GoogleServiceAuthError::NONE),
-                     token_response));
-  return std::move(request);
-}
-
-std::unique_ptr<OAuth2AccessTokenManager::Request>
-OAuth2TokenService::StartRequest(
-    const CoreAccountId& account_id,
-    const OAuth2AccessTokenManager::ScopeSet& scopes,
-    OAuth2AccessTokenManager::Consumer* consumer) {
-  return token_manager_->StartRequest(account_id, scopes, consumer);
-}
-
-std::unique_ptr<OAuth2AccessTokenManager::Request>
-OAuth2TokenService::StartRequestForClient(
-    const CoreAccountId& account_id,
-    const std::string& client_id,
-    const std::string& client_secret,
-    const OAuth2AccessTokenManager::ScopeSet& scopes,
-    OAuth2AccessTokenManager::Consumer* consumer) {
-  return token_manager_->StartRequestForClient(account_id, client_id,
-                                               client_secret, scopes, consumer);
-}
-
-std::unique_ptr<OAuth2AccessTokenManager::Request>
-OAuth2TokenService::StartRequestWithContext(
-    const CoreAccountId& account_id,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const OAuth2AccessTokenManager::ScopeSet& scopes,
-    OAuth2AccessTokenManager::Consumer* consumer) {
-  return token_manager_->StartRequestWithContext(account_id, url_loader_factory,
-                                                 scopes, consumer);
-}
-
 bool OAuth2TokenService::AreAllCredentialsLoaded() const {
   return all_credentials_loaded_;
 }
@@ -202,26 +144,6 @@ GoogleServiceAuthError OAuth2TokenService::GetAuthError(
   GoogleServiceAuthError error = delegate_->GetAuthError(account_id);
   DCHECK(!error.IsTransientError());
   return error;
-}
-
-void OAuth2TokenService::InvalidateAccessToken(
-    const CoreAccountId& account_id,
-    const OAuth2AccessTokenManager::ScopeSet& scopes,
-    const std::string& access_token) {
-  token_manager_->InvalidateAccessToken(account_id, scopes, access_token);
-}
-
-void OAuth2TokenService::InvalidateTokenForMultilogin(
-    const CoreAccountId& failed_account,
-    const std::string& token) {
-  OAuth2AccessTokenManager::ScopeSet scopes;
-  scopes.insert(GaiaConstants::kOAuth1LoginScope);
-  // Remove from cache. This will have no effect on desktop since token is a
-  // refresh token and is not in cache.
-  InvalidateAccessToken(failed_account, scopes, token);
-  // For desktop refresh tokens can be invalidated directly in delegate. This
-  // will have no effect on mobile.
-  delegate_->InvalidateTokenForMultilogin(failed_account);
 }
 
 void OAuth2TokenService::OnRefreshTokensLoaded() {
