@@ -1341,6 +1341,28 @@
             ]
         }
     ],
+    "BufferingBytesConsumerDelay": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "milliseconds": "50"
+                    },
+                    "enable_features": [
+                        "BufferingBytesConsumerDelay"
+                    ]
+                }
+            ]
+        }
+    ],
     "CerseiFakeboxOnNtp": [
         {
             "platforms": [

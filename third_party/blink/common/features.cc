@@ -307,5 +307,12 @@ bool IsPlzDedicatedWorkerEnabled() {
          base::FeatureList::IsEnabled(features::kPlzDedicatedWorker);
 }
 
+// Enables a delay before BufferingBytesConsumer begins reading from its
+// underlying consumer when instantiated with CreateWithDelay().
+const base::Feature kBufferingBytesConsumerDelay{
+    "BufferingBytesConsumerDelay", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int> kBufferingBytesConsumerDelayMilliseconds{
+    &kBufferingBytesConsumerDelay, "milliseconds", 50};
+
 }  // namespace features
 }  // namespace blink
