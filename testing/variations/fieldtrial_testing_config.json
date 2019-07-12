@@ -2627,12 +2627,6 @@
             ],
             "experiments": [
                 {
-                    "name": "Control",
-                    "disable_features": [
-                        "InterestFeedContentSuggestions"
-                    ]
-                },
-                {
                     "name": "Enabled",
                     "enable_features": [
                         "InterestFeedContentSuggestions"
