@@ -308,6 +308,13 @@ static int get_overlap_area(int grid_pos_row, int grid_pos_col, int ref_pos_row,
   return width * height;
 }
 
+static double iiratio_nonlinear(double iiratio) {
+  double z = 8 * (iiratio - 0.5);
+  double sigmoid = 1.0 / (1.0 + exp(-z));
+  return sigmoid;
+  return iiratio * iiratio;
+}
+
 static void tpl_model_update_b(TplDepFrame *tpl_frame,
                                TplDepStats *tpl_stats_ptr, int mi_row,
                                int mi_col, const BLOCK_SIZE bsize) {
@@ -342,10 +349,16 @@ static void tpl_model_update_b(TplDepFrame *tpl_frame,
       int ref_mi_row = round_floor(grid_pos_row, bh) * mi_height;
       int ref_mi_col = round_floor(grid_pos_col, bw) * mi_width;
 
+      const double iiratio_nl = iiratio_nonlinear(
+          (double)tpl_stats_ptr->inter_cost / tpl_stats_ptr->intra_cost);
+      int64_t mc_flow =
+          (int64_t)(tpl_stats_ptr->mc_dep_cost * (1.0 - iiratio_nl));
+      /*
       int64_t mc_flow =
           tpl_stats_ptr->mc_dep_cost -
           (tpl_stats_ptr->mc_dep_cost * tpl_stats_ptr->inter_cost) /
               tpl_stats_ptr->intra_cost;
+              */
       int64_t mc_saved = tpl_stats_ptr->intra_cost - tpl_stats_ptr->inter_cost;
       int idx, idy;
       for (idy = 0; idy < mi_height; ++idy) {
