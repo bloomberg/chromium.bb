@@ -28,6 +28,7 @@ class FootnoteContainerView : public View {
 
  private:
   void ResetBackground();
+  void ResetBorder();
 
   float corner_radius_;
 

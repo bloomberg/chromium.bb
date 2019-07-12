@@ -54,10 +54,7 @@ FootnoteContainerView::FootnoteContainerView(const gfx::Insets& margins,
   SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kVertical, margins, 0));
   SetCornerRadius(corner_radius);
-  SetBorder(CreateSolidSidedBorder(1, 0, 0, 0,
-                                   GetNativeTheme()->SystemDarkModeEnabled()
-                                       ? gfx::kGoogleGrey900
-                                       : gfx::kGoogleGrey200));
+  ResetBorder();
   auto* child_view_ptr = AddChildView(std::move(child_view));
   SetVisible(child_view_ptr->GetVisible());
 }
@@ -71,6 +68,7 @@ void FootnoteContainerView::SetCornerRadius(float corner_radius) {
 
 void FootnoteContainerView::OnThemeChanged() {
   View::OnThemeChanged();
+  ResetBorder();
   ResetBackground();
 }
 
@@ -84,6 +82,13 @@ void FootnoteContainerView::ResetBackground() {
       ui::NativeTheme::kColorId_BubbleFooterBackground);
   SetBackground(std::make_unique<HalfRoundedRectBackground>(background_color,
                                                             corner_radius_));
+}
+
+void FootnoteContainerView::ResetBorder() {
+  SetBorder(CreateSolidSidedBorder(1, 0, 0, 0,
+                                   GetNativeTheme()->SystemDarkModeEnabled()
+                                       ? gfx::kGoogleGrey900
+                                       : gfx::kGoogleGrey200));
 }
 
 BEGIN_METADATA(FootnoteContainerView)
