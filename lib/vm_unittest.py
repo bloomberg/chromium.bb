@@ -318,3 +318,31 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     self.assertTrue(self._vm.IsRunning())
     self._vm.Stop()
     self.assertCommandContains(['kill', '-9', pid])
+
+  def testBiosPath(self):
+    """Verify QEMU bios path."""
+    self._vm.qemu_bios_path = self.TempFilePath('qemu/bios/path')
+    osutils.SafeMakedirs(self._vm.qemu_bios_path)
+    self._vm.Start()
+    self.assertCommandContains(['-L', self._vm.qemu_bios_path])
+
+  def testQemuHost(self):
+    """Verify QEMU host forwarding."""
+    self._vm.ssh_port = 1028
+    self._vm.qemu_hostfwd = ['tcp:127.0.0.1:1024-:22']
+    self._vm.Start()
+    self.assertCommandContains(
+        ['-netdev', 'user,id=eth0,net=10.0.2.0/27,'
+         'hostfwd=tcp:127.0.0.1:1028-:22,hostfwd=tcp:127.0.0.1:1024-:22'])
+
+  def testQemuArgs(self):
+    """Verify QEMU arguments."""
+    self._vm.qemu_args = ['-portrait', '-full-screen', '-no-reboot']
+    self._vm.Start()
+    self.assertCommandContains(['-portrait', '-full-screen', '-no-reboot'])
+
+  def testNoDisplay(self):
+    """Check the command call's arguments when there is no display."""
+    self._vm.display = False
+    self._vm.Start()
+    self.assertCommandContains(['-display', 'none'])
