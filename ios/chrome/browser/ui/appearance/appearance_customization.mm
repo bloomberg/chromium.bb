@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/appearance_customizer/appearance_customizer.h"
+#import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"

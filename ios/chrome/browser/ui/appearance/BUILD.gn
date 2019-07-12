@@ -4,10 +4,10 @@
 
 import("//build/config/chrome_build.gni")
 
-source_set("appearance_customizer") {
+source_set("appearance") {
   sources = [
-    "appearance_customizer.h",
-    "appearance_customizer.mm",
+    "appearance_customization.h",
+    "appearance_customization.mm",
   ]
   deps = [
     "//ios/chrome/browser/ui/table_view",
