@@ -124,4 +124,9 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kEnterpriseHardwarePlatformAPIEnabled,
                                 false);
   registry->RegisterBooleanPref(prefs::kAllowPopupsDuringPageUnload, false);
+
+#if !defined(OS_ANDROID)
+  registry->RegisterBooleanPref(prefs::kShowFirstRunDefaultSearchShortcut,
+                                false);
+#endif  // !defined(OS_ANDROID)
 }
