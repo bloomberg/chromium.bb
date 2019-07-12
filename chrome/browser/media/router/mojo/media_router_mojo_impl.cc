@@ -129,9 +129,7 @@ MediaRouterMojoImpl::MediaSinksQuery::MediaSinksQuery() = default;
 MediaRouterMojoImpl::MediaSinksQuery::~MediaSinksQuery() = default;
 
 MediaRouterMojoImpl::MediaRouterMojoImpl(content::BrowserContext* context)
-    : instance_id_(base::GenerateGUID()),
-      context_(context),
-      weak_factory_(this) {
+    : instance_id_(base::GenerateGUID()), context_(context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

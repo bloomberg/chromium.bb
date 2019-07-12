@@ -189,8 +189,7 @@ InstantService::InstantService(Profile* profile)
       most_visited_info_(std::make_unique<InstantMostVisitedInfo>()),
       pref_service_(profile_->GetPrefs()),
       theme_observer_(this),
-      native_theme_(ui::NativeTheme::GetInstanceForNativeUi()),
-      weak_ptr_factory_(this) {
+      native_theme_(ui::NativeTheme::GetInstanceForNativeUi()) {
   // The initialization below depends on a typical set of browser threads. Skip
   // it if we are running in a unit test without the full suite.
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI))

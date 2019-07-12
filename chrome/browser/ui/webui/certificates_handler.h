@@ -214,7 +214,7 @@ class CertificatesHandler : public content::WebUIMessageHandler,
   base::IDMap<std::unique_ptr<CertificateManagerModel::CertInfo>>
       cert_info_id_map_;
 
-  base::WeakPtrFactory<CertificatesHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<CertificatesHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CertificatesHandler);
 };

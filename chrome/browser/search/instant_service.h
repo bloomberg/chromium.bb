@@ -279,7 +279,7 @@ class InstantService : public KeyedService,
 
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
-  base::WeakPtrFactory<InstantService> weak_ptr_factory_;
+  base::WeakPtrFactory<InstantService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InstantService);
 };

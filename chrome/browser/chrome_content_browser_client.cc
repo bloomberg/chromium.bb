@@ -1151,8 +1151,7 @@ ChromeContentBrowserClient::ChromeContentBrowserClient(
     : data_reduction_proxy_throttle_manager_(
           nullptr,
           base::OnTaskRunnerDeleter(nullptr)),
-      startup_data_(startup_data),
-      weak_factory_(this) {
+      startup_data_(startup_data) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   for (size_t i = 0; i < base::size(kPredefinedAllowedDevChannelOrigins); ++i)
     allowed_dev_channel_origins_.insert(kPredefinedAllowedDevChannelOrigins[i]);

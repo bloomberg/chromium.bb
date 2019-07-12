@@ -37,9 +37,7 @@ class ServiceDiscoveryClientMdns::Proxy {
  public:
   using WeakPtr = base::WeakPtr<Proxy>;
 
-  explicit Proxy(ServiceDiscoveryClientMdns* client)
-      : client_(client),
-        weak_ptr_factory_(this) {
+  explicit Proxy(ServiceDiscoveryClientMdns* client) : client_(client) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     client_->proxies_.AddObserver(this);
   }
@@ -112,7 +110,7 @@ class ServiceDiscoveryClientMdns::Proxy {
   scoped_refptr<ServiceDiscoveryClientMdns> client_;
   // Delayed |mdns_runner_| tasks.
   std::vector<base::OnceClosure> delayed_tasks_;
-  base::WeakPtrFactory<Proxy> weak_ptr_factory_;
+  base::WeakPtrFactory<Proxy> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Proxy);
 };
@@ -337,8 +335,7 @@ ServiceDiscoveryClientMdns::ServiceDiscoveryClientMdns()
     : mdns_runner_(
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
       restart_attempts_(0),
-      need_delay_mdns_tasks_(true),
-      weak_ptr_factory_(this) {
+      need_delay_mdns_tasks_(true) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   StartNewClient();

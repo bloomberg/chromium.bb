@@ -112,8 +112,7 @@ PrivetTrafficDetector::Helper::Helper(
     : profile_(profile),
       on_traffic_detected_(on_traffic_detected),
       restart_attempts_(kMaxRestartAttempts),
-      receiver_binding_(this),
-      weak_ptr_factory_(this) {
+      receiver_binding_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 

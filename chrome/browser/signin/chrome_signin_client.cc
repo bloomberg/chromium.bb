@@ -93,8 +93,7 @@ SigninClient::SignoutDecision IsSignoutAllowed(
 
 }  // namespace
 
-ChromeSigninClient::ChromeSigninClient(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {
+ChromeSigninClient::ChromeSigninClient(Profile* profile) : profile_(profile) {
 #if !defined(OS_CHROMEOS)
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
 #endif

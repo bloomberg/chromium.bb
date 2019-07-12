@@ -70,7 +70,7 @@ class ServiceDiscoveryClientMdns
   // If false, delay tasks until initialization is posted to |mdns_runner_|.
   bool need_delay_mdns_tasks_ = true;
 
-  base::WeakPtrFactory<ServiceDiscoveryClientMdns> weak_ptr_factory_;
+  base::WeakPtrFactory<ServiceDiscoveryClientMdns> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryClientMdns);
 };

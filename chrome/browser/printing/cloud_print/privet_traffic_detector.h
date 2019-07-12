@@ -86,7 +86,7 @@ class PrivetTrafficDetector
     // Initialized on the UI thread, but only accessed on the IO thread.
     mojo::Binding<network::mojom::UDPSocketReceiver> receiver_binding_;
 
-    base::WeakPtrFactory<Helper> weak_ptr_factory_;
+    base::WeakPtrFactory<Helper> weak_ptr_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(Helper);
   };
