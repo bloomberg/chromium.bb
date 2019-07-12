@@ -9947,22 +9947,24 @@ static int compound_type_rd(
       } else {
         update_mbmi_for_compound_type(mbmi, cur_type);
         rs2 = masked_type_cost[cur_type];
+        int64_t approx_rd = ((*rd / cpi->max_comp_type_rd_threshold_div) *
+                             cpi->max_comp_type_rd_threshold_mul);
 
-        if (((*rd / cpi->max_comp_type_rd_threshold_div) *
-             cpi->max_comp_type_rd_threshold_mul) < ref_best_rd) {
-          const COMPOUND_TYPE compound_type = mbmi->interinter_comp.type;
-          const int64_t tmp_rd_thresh = AOMMIN(*rd, rd_thresh);
+        if (approx_rd < ref_best_rd) {
+          int8_t enable_wedge = ((cur_type == COMPOUND_WEDGE) &&
+                                 enable_wedge_interinter_search(x, cpi));
+          int8_t enable_diffwtd = ((cur_type == COMPOUND_DIFFWTD) &&
+                                   cpi->oxcf.enable_diff_wtd_comp);
 
-          if (!((compound_type == COMPOUND_WEDGE &&
-                 !enable_wedge_interinter_search(x, cpi)) ||
-                (compound_type == COMPOUND_DIFFWTD &&
-                 !cpi->oxcf.enable_diff_wtd_comp)))
+          if (enable_wedge || enable_diffwtd) {
+            const int64_t tmp_rd_thresh = AOMMIN(*rd, rd_thresh);
             best_rd_cur = build_and_cost_compound_type(
                 cpi, x, cur_mv, bsize, this_mode, &rs2, *rate_mv, orig_dst,
                 &tmp_rate_mv, preds0, preds1, buffers->residual1,
                 buffers->diff10, strides, mi_row, mi_col, rd_stats->rate,
                 tmp_rd_thresh, &calc_pred_masked_compound, comp_rate, comp_dist,
                 comp_model_rd, comp_best_model_rd, &comp_model_rd_cur);
+          }
         }
       }
     }
