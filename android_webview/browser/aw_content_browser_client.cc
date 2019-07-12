@@ -821,8 +821,8 @@ bool AwContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
   }
   if (interface_name == content_capture::mojom::ContentCaptureReceiver::Name_) {
     content_capture::ContentCaptureReceiverManager::BindContentCaptureReceiver(
-        content_capture::mojom::ContentCaptureReceiverAssociatedRequest(
-            std::move(*handle)),
+        mojo::PendingAssociatedReceiver<
+            content_capture::mojom::ContentCaptureReceiver>(std::move(*handle)),
         render_frame_host);
     return true;
   }
