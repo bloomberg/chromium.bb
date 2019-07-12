@@ -1577,7 +1577,6 @@ void HostProcess::StartHost() {
 
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
-          signal_strategy_.get(),
           std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
           std::make_unique<ChromiumUrlRequestFactory>(
               context_->url_loader_factory()),
