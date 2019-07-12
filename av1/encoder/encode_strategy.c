@@ -766,30 +766,34 @@ static int get_refresh_ref_frame_map(AV1_COMMON *const cm) {
   return ref_map_index;
 }
 
-static void update_arf_stack(AV1_COMP *cpi, int ref_map_index) {
-  if (cpi->arf_stack_size >= 0) {
-    if (cpi->arf_stack[0] == ref_map_index)
-      stack_pop(cpi->arf_stack, &cpi->arf_stack_size);
+static void update_arf_stack(AV1_COMP *cpi, int ref_map_index,
+                             RefBufferStack *ref_buffer_stack) {
+  (void)cpi;
+  if (ref_buffer_stack->arf_stack_size >= 0) {
+    if (ref_buffer_stack->arf_stack[0] == ref_map_index)
+      stack_pop(ref_buffer_stack->arf_stack, &ref_buffer_stack->arf_stack_size);
   }
 
-  if (cpi->lst_stack_size) {
-    for (int i = cpi->lst_stack_size - 1; i >= 0; --i) {
-      if (cpi->lst_stack[i] == ref_map_index) {
-        for (int idx = i; idx < cpi->lst_stack_size - 1; ++idx)
-          cpi->lst_stack[idx] = cpi->lst_stack[idx + 1];
-        cpi->lst_stack[i] = INVALID_IDX;
-        --cpi->lst_stack_size;
+  if (ref_buffer_stack->lst_stack_size) {
+    for (int i = ref_buffer_stack->lst_stack_size - 1; i >= 0; --i) {
+      if (ref_buffer_stack->lst_stack[i] == ref_map_index) {
+        for (int idx = i; idx < ref_buffer_stack->lst_stack_size - 1; ++idx)
+          ref_buffer_stack->lst_stack[idx] =
+              ref_buffer_stack->lst_stack[idx + 1];
+        ref_buffer_stack->lst_stack[i] = INVALID_IDX;
+        --ref_buffer_stack->lst_stack_size;
       }
     }
   }
 
-  if (cpi->gld_stack_size) {
-    for (int i = cpi->gld_stack_size - 1; i >= 0; --i) {
-      if (cpi->gld_stack[i] == ref_map_index) {
-        for (int idx = i; idx < cpi->gld_stack_size - 1; ++idx)
-          cpi->gld_stack[idx] = cpi->gld_stack[idx + 1];
-        cpi->gld_stack[i] = INVALID_IDX;
-        --cpi->gld_stack_size;
+  if (ref_buffer_stack->gld_stack_size) {
+    for (int i = ref_buffer_stack->gld_stack_size - 1; i >= 0; --i) {
+      if (ref_buffer_stack->gld_stack[i] == ref_map_index) {
+        for (int idx = i; idx < ref_buffer_stack->gld_stack_size - 1; ++idx)
+          ref_buffer_stack->gld_stack[idx] =
+              ref_buffer_stack->gld_stack[idx + 1];
+        ref_buffer_stack->gld_stack[i] = INVALID_IDX;
+        --ref_buffer_stack->gld_stack_size;
       }
     }
   }
@@ -808,46 +812,57 @@ static void assign_new_map(AV1_COMMON *const cm, int *new_map, int new_ref,
 // This determines which references (e.g. LAST_FRAME, ALTREF_FRAME) point at the
 // 8 underlying buffers and, together with get_refresh_frame_flags(), implements
 // our reference frame management strategy.
-static void update_ref_frame_map(AV1_COMP *cpi,
-                                 FRAME_UPDATE_TYPE frame_update_type) {
+void av1_update_ref_frame_map(AV1_COMP *cpi,
+                              FRAME_UPDATE_TYPE frame_update_type,
+                              RefBufferStack *ref_buffer_stack) {
   AV1_COMMON *const cm = &cpi->common;
 
   int ref_map_index = get_refresh_ref_frame_map(cm);
 
   if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
-    stack_reset(cpi->lst_stack, &cpi->lst_stack_size);
-    stack_reset(cpi->gld_stack, &cpi->gld_stack_size);
-    stack_reset(cpi->arf_stack, &cpi->arf_stack_size);
+    stack_reset(ref_buffer_stack->lst_stack, &ref_buffer_stack->lst_stack_size);
+    stack_reset(ref_buffer_stack->gld_stack, &ref_buffer_stack->gld_stack_size);
+    stack_reset(ref_buffer_stack->arf_stack, &ref_buffer_stack->arf_stack_size);
 
-    stack_push(cpi->gld_stack, &cpi->gld_stack_size, ref_map_index);
+    stack_push(ref_buffer_stack->gld_stack, &ref_buffer_stack->gld_stack_size,
+               ref_map_index);
   } else {
     switch (frame_update_type) {
       case GF_UPDATE:
-        update_arf_stack(cpi, ref_map_index);
-        stack_push(cpi->gld_stack, &cpi->gld_stack_size, ref_map_index);
+        update_arf_stack(cpi, ref_map_index, ref_buffer_stack);
+        stack_push(ref_buffer_stack->gld_stack,
+                   &ref_buffer_stack->gld_stack_size, ref_map_index);
         break;
       case LF_UPDATE:
-        update_arf_stack(cpi, ref_map_index);
-        stack_push(cpi->lst_stack, &cpi->lst_stack_size, ref_map_index);
+        update_arf_stack(cpi, ref_map_index, ref_buffer_stack);
+        stack_push(ref_buffer_stack->lst_stack,
+                   &ref_buffer_stack->lst_stack_size, ref_map_index);
         break;
       case ARF_UPDATE:
       case INTNL_ARF_UPDATE:
-        update_arf_stack(cpi, ref_map_index);
-        stack_push(cpi->arf_stack, &cpi->arf_stack_size, ref_map_index);
+        update_arf_stack(cpi, ref_map_index, ref_buffer_stack);
+        stack_push(ref_buffer_stack->arf_stack,
+                   &ref_buffer_stack->arf_stack_size, ref_map_index);
         break;
       case OVERLAY_UPDATE:
         if (cpi->preserve_arf_as_gld || cm->show_existing_frame) {
-          ref_map_index = stack_pop(cpi->arf_stack, &cpi->arf_stack_size);
-          stack_push(cpi->gld_stack, &cpi->gld_stack_size, ref_map_index);
+          ref_map_index = stack_pop(ref_buffer_stack->arf_stack,
+                                    &ref_buffer_stack->arf_stack_size);
+          stack_push(ref_buffer_stack->gld_stack,
+                     &ref_buffer_stack->gld_stack_size, ref_map_index);
         } else {
-          stack_pop(cpi->arf_stack, &cpi->arf_stack_size);
-          update_arf_stack(cpi, ref_map_index);
-          stack_push(cpi->gld_stack, &cpi->gld_stack_size, ref_map_index);
+          stack_pop(ref_buffer_stack->arf_stack,
+                    &ref_buffer_stack->arf_stack_size);
+          update_arf_stack(cpi, ref_map_index, ref_buffer_stack);
+          stack_push(ref_buffer_stack->gld_stack,
+                     &ref_buffer_stack->gld_stack_size, ref_map_index);
         }
         break;
       case INTNL_OVERLAY_UPDATE:
-        ref_map_index = stack_pop(cpi->arf_stack, &cpi->arf_stack_size);
-        stack_push(cpi->lst_stack, &cpi->lst_stack_size, ref_map_index);
+        ref_map_index = stack_pop(ref_buffer_stack->arf_stack,
+                                  &ref_buffer_stack->arf_stack_size);
+        stack_push(ref_buffer_stack->lst_stack,
+                   &ref_buffer_stack->lst_stack_size, ref_map_index);
         break;
       default: assert(0 && "unknown type");
     }
@@ -961,25 +976,25 @@ static void update_ref_frame_map(AV1_COMP *cpi,
 #endif  // DUMP_REF_FRAME_IMAGES
 }
 
-static int get_free_ref_map_index(const AV1_COMP *cpi) {
+static int get_free_ref_map_index(const RefBufferStack *ref_buffer_stack) {
   for (int idx = 0; idx < REF_FRAMES; ++idx) {
     int is_free = 1;
-    for (int i = 0; i < cpi->arf_stack_size; ++i) {
-      if (cpi->arf_stack[i] == idx) {
+    for (int i = 0; i < ref_buffer_stack->arf_stack_size; ++i) {
+      if (ref_buffer_stack->arf_stack[i] == idx) {
         is_free = 0;
         break;
       }
     }
 
-    for (int i = 0; i < cpi->lst_stack_size; ++i) {
-      if (cpi->lst_stack[i] == idx) {
+    for (int i = 0; i < ref_buffer_stack->lst_stack_size; ++i) {
+      if (ref_buffer_stack->lst_stack[i] == idx) {
         is_free = 0;
         break;
       }
     }
 
-    for (int i = 0; i < cpi->gld_stack_size; ++i) {
-      if (cpi->gld_stack[i] == idx) {
+    for (int i = 0; i < ref_buffer_stack->gld_stack_size; ++i) {
+      if (ref_buffer_stack->gld_stack[i] == idx) {
         is_free = 0;
         break;
       }
@@ -990,9 +1005,10 @@ static int get_free_ref_map_index(const AV1_COMP *cpi) {
   return INVALID_IDX;
 }
 
-static int get_refresh_frame_flags(const AV1_COMP *const cpi,
-                                   const EncodeFrameParams *const frame_params,
-                                   FRAME_UPDATE_TYPE frame_update_type) {
+int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
+                                const EncodeFrameParams *const frame_params,
+                                FRAME_UPDATE_TYPE frame_update_type,
+                                const RefBufferStack *const ref_buffer_stack) {
   const AV1_COMMON *const cm = &cpi->common;
 
   // Switch frames and shown key-frames overwrite all reference slots
@@ -1048,25 +1064,31 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi,
   // buffer management strategy currently in use.  This function just decides
   // which buffers should be refreshed.
 
-  int free_fb_index = get_free_ref_map_index(cpi);
+  int free_fb_index = get_free_ref_map_index(&cpi->ref_buffer_stack);
   switch (frame_update_type) {
     case KF_UPDATE:
     case GF_UPDATE:
       if (free_fb_index != INVALID_IDX) {
         refresh_mask = 1 << free_fb_index;
       } else {
-        if (cpi->gld_stack_size)
-          refresh_mask = 1 << cpi->gld_stack[cpi->gld_stack_size - 1];
+        if (ref_buffer_stack->gld_stack_size)
+          refresh_mask =
+              1 << ref_buffer_stack
+                       ->gld_stack[ref_buffer_stack->gld_stack_size - 1];
         else
-          refresh_mask = 1 << cpi->lst_stack[cpi->lst_stack_size - 1];
+          refresh_mask =
+              1 << ref_buffer_stack
+                       ->lst_stack[ref_buffer_stack->lst_stack_size - 1];
       }
       break;
     case LF_UPDATE:
       if (free_fb_index != INVALID_IDX) {
         refresh_mask = 1 << free_fb_index;
       } else {
-        if (cpi->lst_stack_size >= 2)
-          refresh_mask = 1 << cpi->lst_stack[cpi->lst_stack_size - 1];
+        if (ref_buffer_stack->lst_stack_size >= 2)
+          refresh_mask =
+              1 << ref_buffer_stack
+                       ->lst_stack[ref_buffer_stack->lst_stack_size - 1];
         else
           assert(0 && "No ref map index found");
       }
@@ -1075,10 +1097,14 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi,
       if (free_fb_index != INVALID_IDX) {
         refresh_mask = 1 << free_fb_index;
       } else {
-        if (cpi->gld_stack_size >= 3)
-          refresh_mask = 1 << cpi->gld_stack[cpi->gld_stack_size - 1];
-        else if (cpi->lst_stack_size >= 2)
-          refresh_mask = 1 << cpi->lst_stack[cpi->lst_stack_size - 1];
+        if (ref_buffer_stack->gld_stack_size >= 3)
+          refresh_mask =
+              1 << ref_buffer_stack
+                       ->gld_stack[ref_buffer_stack->gld_stack_size - 1];
+        else if (ref_buffer_stack->lst_stack_size >= 2)
+          refresh_mask =
+              1 << ref_buffer_stack
+                       ->lst_stack[ref_buffer_stack->lst_stack_size - 1];
         else
           assert(0 && "No ref map index found");
       }
@@ -1087,17 +1113,23 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi,
       if (free_fb_index != INVALID_IDX) {
         refresh_mask = 1 << free_fb_index;
       } else {
-        refresh_mask = 1 << cpi->lst_stack[cpi->lst_stack_size - 1];
+        refresh_mask =
+            1 << ref_buffer_stack
+                     ->lst_stack[ref_buffer_stack->lst_stack_size - 1];
       }
       break;
     case OVERLAY_UPDATE:
       if (!cpi->preserve_arf_as_gld) {
         if (free_fb_index != INVALID_IDX) {
           refresh_mask = 1 << free_fb_index;
-        } else if (cpi->arf_stack_size) {
-          refresh_mask = 1 << cpi->arf_stack[cpi->arf_stack_size - 1];
+        } else if (ref_buffer_stack->arf_stack_size) {
+          refresh_mask =
+              1 << ref_buffer_stack
+                       ->arf_stack[ref_buffer_stack->arf_stack_size - 1];
         } else {
-          refresh_mask = 1 << cpi->lst_stack[cpi->lst_stack_size - 1];
+          refresh_mask =
+              1 << ref_buffer_stack
+                       ->lst_stack[ref_buffer_stack->lst_stack_size - 1];
         }
       }
       break;
@@ -1248,45 +1280,52 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
 }
 #endif  // !CONFIG_REALTIME_ONLY
 
-static void get_ref_frames(AV1_COMP *const cpi,
-                           FRAME_UPDATE_TYPE frame_update_type) {
+void av1_get_ref_frames(AV1_COMP *const cpi,
+                        FRAME_UPDATE_TYPE frame_update_type,
+                        RefBufferStack *ref_buffer_stack) {
   AV1_COMMON *cm = &cpi->common;
   (void)frame_update_type;
 
-  const int arf_stack_size = cpi->arf_stack_size;
-  const int lst_stack_size = cpi->lst_stack_size;
-  const int gld_stack_size = cpi->gld_stack_size;
+  const int arf_stack_size = ref_buffer_stack->arf_stack_size;
+  const int lst_stack_size = ref_buffer_stack->lst_stack_size;
+  const int gld_stack_size = ref_buffer_stack->gld_stack_size;
 
   // Initialization
   for (int i = 0; i < REF_FRAMES; ++i) cm->remapped_ref_idx[i] = INVALID_IDX;
 
   if (arf_stack_size) {
     cm->remapped_ref_idx[ALTREF_FRAME - LAST_FRAME] =
-        cpi->arf_stack[arf_stack_size - 1];
+        ref_buffer_stack->arf_stack[arf_stack_size - 1];
 
     if (arf_stack_size > 1)
-      cm->remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] = cpi->arf_stack[0];
+      cm->remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] =
+          ref_buffer_stack->arf_stack[0];
 
     if (arf_stack_size > 2)
-      cm->remapped_ref_idx[ALTREF2_FRAME - LAST_FRAME] = cpi->arf_stack[1];
+      cm->remapped_ref_idx[ALTREF2_FRAME - LAST_FRAME] =
+          ref_buffer_stack->arf_stack[1];
   }
 
   if (lst_stack_size) {
-    cm->remapped_ref_idx[LAST_FRAME - LAST_FRAME] = cpi->lst_stack[0];
+    cm->remapped_ref_idx[LAST_FRAME - LAST_FRAME] =
+        ref_buffer_stack->lst_stack[0];
 
     if (lst_stack_size > 1)
-      cm->remapped_ref_idx[LAST2_FRAME - LAST_FRAME] = cpi->lst_stack[1];
+      cm->remapped_ref_idx[LAST2_FRAME - LAST_FRAME] =
+          ref_buffer_stack->lst_stack[1];
   }
 
   if (gld_stack_size) {
     cm->remapped_ref_idx[GOLDEN_FRAME - LAST_FRAME] =
-        cpi->gld_stack[gld_stack_size - 1];
+        ref_buffer_stack->gld_stack[gld_stack_size - 1];
 
     if (gld_stack_size > 1) {
       if (arf_stack_size <= 1)
-        cm->remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] = cpi->gld_stack[0];
+        cm->remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] =
+            ref_buffer_stack->gld_stack[0];
       else
-        cm->remapped_ref_idx[LAST3_FRAME - LAST_FRAME] = cpi->gld_stack[0];
+        cm->remapped_ref_idx[LAST3_FRAME - LAST_FRAME] =
+            ref_buffer_stack->gld_stack[0];
     }
   }
 
@@ -1295,41 +1334,47 @@ static void get_ref_frames(AV1_COMP *const cpi,
 
     if (ref_map_index != INVALID_IDX) continue;
 
-    for (int i = 0; i < cpi->arf_stack_size && ref_map_index == INVALID_IDX;
+    for (int i = 0;
+         i < ref_buffer_stack->arf_stack_size && ref_map_index == INVALID_IDX;
          ++i) {
       int ref_idx = 0;
       for (ref_idx = 0; ref_idx <= ALTREF_FRAME - LAST_FRAME; ++ref_idx)
-        if (cpi->arf_stack[i] == cm->remapped_ref_idx[ref_idx]) break;
+        if (ref_buffer_stack->arf_stack[i] == cm->remapped_ref_idx[ref_idx])
+          break;
 
       // not in use
       if (ref_idx > ALTREF_FRAME - LAST_FRAME) {
-        ref_map_index = cpi->arf_stack[i];
+        ref_map_index = ref_buffer_stack->arf_stack[i];
         break;
       }
     }
 
-    for (int i = 0; i < cpi->gld_stack_size && ref_map_index == INVALID_IDX;
+    for (int i = 0;
+         i < ref_buffer_stack->gld_stack_size && ref_map_index == INVALID_IDX;
          ++i) {
       int ref_idx = 0;
       for (ref_idx = 0; ref_idx <= ALTREF_FRAME - LAST_FRAME; ++ref_idx)
-        if (cpi->gld_stack[i] == cm->remapped_ref_idx[ref_idx]) break;
+        if (ref_buffer_stack->gld_stack[i] == cm->remapped_ref_idx[ref_idx])
+          break;
 
       // not in use
       if (ref_idx > ALTREF_FRAME - LAST_FRAME) {
-        ref_map_index = cpi->gld_stack[i];
+        ref_map_index = ref_buffer_stack->gld_stack[i];
         break;
       }
     }
 
-    for (int i = 0; i < cpi->lst_stack_size && ref_map_index == INVALID_IDX;
+    for (int i = 0;
+         i < ref_buffer_stack->lst_stack_size && ref_map_index == INVALID_IDX;
          ++i) {
       int ref_idx = 0;
       for (ref_idx = 0; ref_idx <= ALTREF_FRAME - LAST_FRAME; ++ref_idx)
-        if (cpi->lst_stack[i] == cm->remapped_ref_idx[ref_idx]) break;
+        if (ref_buffer_stack->lst_stack[i] == cm->remapped_ref_idx[ref_idx])
+          break;
 
       // not in use
       if (ref_idx > ALTREF_FRAME - LAST_FRAME) {
-        ref_map_index = cpi->lst_stack[i];
+        ref_map_index = ref_buffer_stack->lst_stack[i];
         break;
       }
     }
@@ -1337,8 +1382,10 @@ static void get_ref_frames(AV1_COMP *const cpi,
     if (ref_map_index != INVALID_IDX)
       cm->remapped_ref_idx[idx] = ref_map_index;
     else
-      cm->remapped_ref_idx[idx] = cpi->gld_stack[0];
+      cm->remapped_ref_idx[idx] = ref_buffer_stack->gld_stack[0];
   }
+
+  return;
 }
 
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
@@ -1503,7 +1550,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
   if (oxcf->pass == 0 || oxcf->pass == 2) {
     if (!cpi->ext_refresh_frame_flags_pending)
-      get_ref_frames(cpi, frame_update_type);
+      av1_get_ref_frames(cpi, frame_update_type, &cpi->ref_buffer_stack);
 
     // Work out which reference frame slots may be used.
     frame_params.ref_frame_flags = get_ref_frame_flags(cpi);
@@ -1512,8 +1559,8 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
         choose_primary_ref_frame(cpi, &frame_params);
     frame_params.order_offset = get_order_offset(&cpi->gf_group, &frame_params);
 
-    frame_params.refresh_frame_flags =
-        get_refresh_frame_flags(cpi, &frame_params, frame_update_type);
+    frame_params.refresh_frame_flags = av1_get_refresh_frame_flags(
+        cpi, &frame_params, frame_update_type, &cpi->ref_buffer_stack);
   }
 
   // The way frame_params->remapped_ref_idx is setup is a placeholder.
@@ -1569,7 +1616,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     // First pass doesn't modify reference buffer assignment or produce frame
     // flags
     update_frame_flags(cpi, frame_flags);
-    update_ref_frame_map(cpi, frame_update_type);
+    av1_update_ref_frame_map(cpi, frame_update_type, &cpi->ref_buffer_stack);
   }
 
 #if !CONFIG_REALTIME_ONLY

@@ -721,6 +721,15 @@ static INLINE char const *get_component_name(int index) {
 // The maximum number of internal ARFs except ALTREF_FRAME
 #define MAX_INTERNAL_ARFS (REF_FRAMES - BWDREF_FRAME - 1)
 
+typedef struct {
+  int arf_stack[FRAME_BUFFERS];
+  int arf_stack_size;
+  int lst_stack[FRAME_BUFFERS];
+  int lst_stack_size;
+  int gld_stack[FRAME_BUFFERS];
+  int gld_stack_size;
+} RefBufferStack;
+
 typedef struct AV1_COMP {
   QUANTS quants;
   ThreadData td;
@@ -866,12 +875,7 @@ typedef struct AV1_COMP {
   GF_GROUP gf_group;
 
   // To control the reference frame buffer and selection.
-  int arf_stack[FRAME_BUFFERS];
-  int arf_stack_size;
-  int lst_stack[FRAME_BUFFERS];
-  int lst_stack_size;
-  int gld_stack[FRAME_BUFFERS];
-  int gld_stack_size;
+  RefBufferStack ref_buffer_stack;
 
   YV12_BUFFER_CONFIG alt_ref_buffer;
 

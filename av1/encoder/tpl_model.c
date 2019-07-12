@@ -22,6 +22,7 @@
 #include "av1/common/reconintra.h"
 
 #include "av1/encoder/encoder.h"
+#include "av1/encoder/encode_strategy.h"
 #include "av1/encoder/reconinter_enc.h"
 
 #define MC_FLOW_BSIZE 16
