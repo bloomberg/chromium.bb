@@ -256,7 +256,7 @@ static TX_SIZE set_lpf_parameters(
   // and mi_col should be odd number for chroma plane.
   const int mi_row = scale_vert | ((y << scale_vert) >> MI_SIZE_LOG2);
   const int mi_col = scale_horz | ((x << scale_horz) >> MI_SIZE_LOG2);
-  MB_MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride + mi_col;
+  MB_MODE_INFO **mi = cm->mi_grid_base + mi_row * cm->mi_stride + mi_col;
   const MB_MODE_INFO *mbmi = mi[0];
   // If current mbmi is not correctly setup, return an invalid value to stop
   // filtering. One example is that if this tile is not coded, then its mbmi

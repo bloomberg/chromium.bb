@@ -386,8 +386,8 @@ static void enc_setup_mi(AV1_COMMON *cm) {
   // Clear left border column
   for (i = 0; i < mi_rows_sb_aligned; ++i)
     memset(&cm->prev_mi[i * cm->mi_stride], 0, sizeof(*cm->prev_mi));
-  cm->mi_grid_visible = cm->mi_grid_base;
-  cm->prev_mi_grid_visible = cm->prev_mi_grid_base;
+  cm->mi_grid_base = cm->mi_grid_base;
+  cm->prev_mi_grid_base = cm->prev_mi_grid_base;
 
   memset(cm->mi_grid_base, 0,
          cm->mi_stride * mi_rows_sb_aligned * sizeof(*cm->mi_grid_base));
@@ -432,8 +432,8 @@ static void swap_mi_and_prev_mi(AV1_COMMON *cm) {
   // Update the upper left visible macroblock ptrs.
   cm->prev_mi_grid_base = cm->mi_grid_base;
   cm->mi_grid_base = temp_base;
-  cm->mi_grid_visible = cm->mi_grid_base;
-  cm->prev_mi_grid_visible = cm->prev_mi_grid_base;
+  cm->mi_grid_base = cm->mi_grid_base;
+  cm->prev_mi_grid_base = cm->prev_mi_grid_base;
 }
 
 void av1_initialize_enc(void) {
@@ -773,7 +773,7 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
 
 static void update_reference_segmentation_map(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  MB_MODE_INFO **mi_4x4_ptr = cm->mi_grid_visible;
+  MB_MODE_INFO **mi_4x4_ptr = cm->mi_grid_base;
   uint8_t *cache_ptr = cm->cur_frame->seg_map;
   int row, col;
 

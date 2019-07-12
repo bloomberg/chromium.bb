@@ -56,11 +56,11 @@ static void read_cdef(AV1_COMMON *cm, aom_reader *r, MACROBLOCKD *const xd,
   const int index = cm->seq_params.sb_size == BLOCK_128X128
                         ? !!(mi_col & mask) + 2 * !!(mi_row & mask)
                         : 0;
-  cm->mi_grid_visible[(mi_row & m) * cm->mi_stride + (mi_col & m)]
-      ->cdef_strength = xd->cdef_preset[index] =
-      xd->cdef_preset[index] == -1 && !mbmi->skip
-          ? aom_read_literal(r, cm->cdef_info.cdef_bits, ACCT_STR)
-          : xd->cdef_preset[index];
+  cm->mi_grid_base[(mi_row & m) * cm->mi_stride + (mi_col & m)]->cdef_strength =
+      xd->cdef_preset[index] =
+          xd->cdef_preset[index] == -1 && !mbmi->skip
+              ? aom_read_literal(r, cm->cdef_info.cdef_bits, ACCT_STR)
+              : xd->cdef_preset[index];
 }
 
 static int read_delta_qindex(AV1_COMMON *cm, const MACROBLOCKD *xd,

@@ -46,7 +46,7 @@ static void update_delta_lf_for_row_mt(AV1_COMP *cpi) {
         for (int mi_col = tile_info->mi_col_start;
              mi_col < tile_info->mi_col_end; mi_col += mib_size) {
           const int idx_str = cm->mi_stride * mi_row + mi_col;
-          MB_MODE_INFO **mi = cm->mi_grid_visible + idx_str;
+          MB_MODE_INFO **mi = cm->mi_grid_base + idx_str;
           MB_MODE_INFO *mbmi = mi[0];
           if (mbmi->skip == 1 && (mbmi->sb_type == cm->seq_params.sb_size)) {
             for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)

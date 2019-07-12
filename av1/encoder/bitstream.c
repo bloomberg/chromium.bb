@@ -878,7 +878,7 @@ static void write_cdef(AV1_COMMON *cm, MACROBLOCKD *const xd, aom_writer *w,
 
   const int m = ~((1 << (6 - MI_SIZE_LOG2)) - 1);
   const MB_MODE_INFO *mbmi =
-      cm->mi_grid_visible[(mi_row & m) * cm->mi_stride + (mi_col & m)];
+      cm->mi_grid_base[(mi_row & m) * cm->mi_stride + (mi_col & m)];
   // Initialise when at top left part of the superblock
   if (!(mi_row & (cm->seq_params.mib_size - 1)) &&
       !(mi_col & (cm->seq_params.mib_size - 1))) {  // Top left?
@@ -1274,7 +1274,7 @@ static int rd_token_stats_mismatch(RD_STATS *rd_stats, TOKEN_STATS *token_stats,
 static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
   const MB_MODE_INFO *const *mbmi =
-      *(cm->mi_grid_visible + (mi_row * cm->mi_stride + mi_col));
+      *(cm->mi_grid_base + (mi_row * cm->mi_stride + mi_col));
   const MB_MODE_INFO_EXT *const *mbmi_ext =
       cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
   if (is_inter_block(mbmi)) {
@@ -1461,7 +1461,7 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
                           int mi_col) {
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
-  xd->mi = cm->mi_grid_visible + (mi_row * cm->mi_stride + mi_col);
+  xd->mi = cm->mi_grid_base + (mi_row * cm->mi_stride + mi_col);
   cpi->td.mb.mbmi_ext = cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
 
   const MB_MODE_INFO *mbmi = xd->mi[0];

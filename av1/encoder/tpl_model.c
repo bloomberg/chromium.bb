@@ -496,7 +496,7 @@ static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
     }
   }
 
-  xd->mi = cm->mi_grid_visible;
+  xd->mi = cm->mi_grid_base;
   xd->mi[0] = cm->mi;
   xd->block_ref_scale_factors[0] = &sf;
 

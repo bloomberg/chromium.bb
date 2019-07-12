@@ -434,9 +434,7 @@ typedef struct AV1Common {
   // Grid of pointers to 4x4 MB_MODE_INFO structs. Any 4x4 not in the visible
   // area will be NULL.
   MB_MODE_INFO **mi_grid_base;
-  MB_MODE_INFO **mi_grid_visible;
   MB_MODE_INFO **prev_mi_grid_base;
-  MB_MODE_INFO **prev_mi_grid_visible;
 
   // Whether to use previous frames' motion vectors for prediction.
   int allow_ref_frame_mvs;
@@ -1280,7 +1278,7 @@ static INLINE PARTITION_TYPE get_partition(const AV1_COMMON *const cm,
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return PARTITION_INVALID;
 
   const int offset = mi_row * cm->mi_stride + mi_col;
-  MB_MODE_INFO **mi = cm->mi_grid_visible + offset;
+  MB_MODE_INFO **mi = cm->mi_grid_base + offset;
   const BLOCK_SIZE subsize = mi[0]->sb_type;
 
   if (subsize == bsize) return PARTITION_NONE;

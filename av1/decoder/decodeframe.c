@@ -341,7 +341,7 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const int offset = mi_row * cm->mi_stride + mi_col;
   const TileInfo *const tile = &xd->tile;
 
-  xd->mi = cm->mi_grid_visible + offset;
+  xd->mi = cm->mi_grid_base + offset;
   xd->mi[0] = &cm->mi[offset];
   // TODO(slavarnway): Generate sb_type based on bwl and bhl, instead of
   // passing bsize from decode_partition().
@@ -1470,7 +1470,7 @@ static void set_offsets_for_pred_and_recon(AV1Decoder *const pbi,
   const int offset = mi_row * cm->mi_stride + mi_col;
   const TileInfo *const tile = &xd->tile;
 
-  xd->mi = cm->mi_grid_visible + offset;
+  xd->mi = cm->mi_grid_base + offset;
   xd->cfl.mi_row = mi_row;
   xd->cfl.mi_col = mi_col;
 

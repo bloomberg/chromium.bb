@@ -4052,7 +4052,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
     td->mb.cb_coef_buff = av1_get_cb_coeff_buffer(cpi, mi_row, mi_col);
 
     const int idx_str = cm->mi_stride * mi_row + mi_col;
-    MB_MODE_INFO **mi = cm->mi_grid_visible + idx_str;
+    MB_MODE_INFO **mi = cm->mi_grid_base + idx_str;
     x->source_variance = UINT_MAX;
     x->simple_motion_pred_sse = UINT_MAX;
     const struct segmentation *const seg = &cm->seg;
@@ -4572,7 +4572,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     cm->setup_mi(cm);
   }
 
-  xd->mi = cm->mi_grid_visible;
+  xd->mi = cm->mi_grid_base;
   xd->mi[0] = cm->mi;
 
   av1_zero(*td->counts);

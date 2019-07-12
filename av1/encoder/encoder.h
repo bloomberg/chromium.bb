@@ -1293,7 +1293,7 @@ static INLINE void set_mode_info_offsets(const AV1_COMP *const cpi,
                                          int mi_col) {
   const AV1_COMMON *const cm = &cpi->common;
   const int idx_str = xd->mi_stride * mi_row + mi_col;
-  xd->mi = cm->mi_grid_visible + idx_str;
+  xd->mi = cm->mi_grid_base + idx_str;
   xd->mi[0] = cm->mi + idx_str;
   x->mbmi_ext = cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
 }
