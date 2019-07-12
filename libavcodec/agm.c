@@ -103,6 +103,9 @@ static int read_code(GetBitContext *gb, int *oskip, int *level, int *map, int mo
 {
     int len = 0, skip = 0, max;
 
+    if (get_bits_left(gb) < 2)
+        return AVERROR_INVALIDDATA;
+
     if (show_bits(gb, 2)) {
         switch (show_bits(gb, 4)) {
         case 1:
@@ -1045,6 +1048,9 @@ static int decode_huffman2(AVCodecContext *avctx, int header, int size)
         return ret;
 
     s->output_size = get_bits_long(gb, 32);
+
+    if (s->output_size > avctx->width * avctx->height * 9LL + 10000)
+        return AVERROR_INVALIDDATA;
 
     av_fast_padded_malloc(&s->output, &s->padded_output_size, s->output_size);
     if (!s->output)

@@ -280,6 +280,16 @@ static int extract_header(AVCodecContext *const avctx,
         for (i = 0; i < 16; i++)
             s->tvdc[i] = bytestream_get_be16(&buf);
 
+        if (s->ham) {
+            if (s->bpp > 8) {
+                av_log(avctx, AV_LOG_ERROR, "Invalid number of hold bits for HAM: %u\n", s->ham);
+                return AVERROR_INVALIDDATA;
+            } if (s->ham != (s->bpp > 6 ? 6 : 4)) {
+                av_log(avctx, AV_LOG_ERROR, "Invalid number of hold bits for HAM: %u, BPP: %u\n", s->ham, s->bpp);
+                return AVERROR_INVALIDDATA;
+            }
+        }
+
         if (s->masking == MASK_HAS_MASK) {
             if (s->bpp >= 8 && !s->ham) {
                 avctx->pix_fmt = AV_PIX_FMT_RGB32;
@@ -306,9 +316,6 @@ static int extract_header(AVCodecContext *const avctx,
         }
         if (!s->bpp || s->bpp > 32) {
             av_log(avctx, AV_LOG_ERROR, "Invalid number of bitplanes: %u\n", s->bpp);
-            return AVERROR_INVALIDDATA;
-        } else if (s->ham >= 8) {
-            av_log(avctx, AV_LOG_ERROR, "Invalid number of hold bits for HAM: %u\n", s->ham);
             return AVERROR_INVALIDDATA;
         }
 
@@ -371,6 +378,8 @@ static av_cold int decode_end(AVCodecContext *avctx)
     av_freep(&s->planebuf);
     av_freep(&s->ham_buf);
     av_freep(&s->ham_palbuf);
+    av_freep(&s->mask_buf);
+    av_freep(&s->mask_palbuf);
     av_freep(&s->video[0]);
     av_freep(&s->video[1]);
     av_freep(&s->pal);
@@ -1512,7 +1521,7 @@ static int decode_frame(AVCodecContext *avctx,
     buf_size -= bytestream2_tell(gb);
     desc = av_pix_fmt_desc_get(avctx->pix_fmt);
 
-    if (!s->init && avctx->bits_per_coded_sample <= 8 &&
+    if (!s->init && avctx->bits_per_coded_sample <= 8 - (s->masking == MASK_HAS_MASK) &&
         avctx->pix_fmt == AV_PIX_FMT_PAL8) {
         if ((res = cmap_read_palette(avctx, (uint32_t *)frame->data[1])) < 0)
             return res;

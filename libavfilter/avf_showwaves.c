@@ -29,6 +29,7 @@
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
 #include "avfilter.h"
+#include "filters.h"
 #include "formats.h"
 #include "audio.h"
 #include "video.h"
@@ -416,7 +417,7 @@ static int config_output(AVFilterLink *outlink)
         showwaves->n = 1;
 
     if (!showwaves->n)
-        showwaves->n = FFMAX(1, ((double)inlink->sample_rate / (showwaves->w * av_q2d(showwaves->rate))) + 0.5);
+        showwaves->n = FFMAX(1, av_rescale_q(inlink->sample_rate, av_make_q(1, showwaves->w), showwaves->rate));
 
     showwaves->buf_idx = 0;
     if (!(showwaves->buf_idy = av_mallocz_array(nb_channels, sizeof(*showwaves->buf_idy)))) {
@@ -706,7 +707,8 @@ static int showwaves_filter_frame(AVFilterLink *inlink, AVFrame *insamples)
             showwaves->sample_count_mod = 0;
             showwaves->buf_idx++;
         }
-        if (showwaves->buf_idx == showwaves->w)
+        if (showwaves->buf_idx == showwaves->w ||
+            (ff_outlink_get_status(inlink) && i == nb_samples - 1))
             if ((ret = push_frame(outlink)) < 0)
                 break;
         outpicref = showwaves->outpicref;
@@ -717,11 +719,33 @@ end:
     return ret;
 }
 
+static int activate(AVFilterContext *ctx)
+{
+    AVFilterLink *inlink = ctx->inputs[0];
+    AVFilterLink *outlink = ctx->outputs[0];
+    ShowWavesContext *showwaves = ctx->priv;
+    AVFrame *in;
+    const int nb_samples = showwaves->n * outlink->w;
+    int ret;
+
+    FF_FILTER_FORWARD_STATUS_BACK(outlink, inlink);
+
+    ret = ff_inlink_consume_samples(inlink, nb_samples, nb_samples, &in);
+    if (ret < 0)
+        return ret;
+    if (ret > 0)
+        return showwaves_filter_frame(inlink, in);
+
+    FF_FILTER_FORWARD_STATUS(inlink, outlink);
+    FF_FILTER_FORWARD_WANTED(outlink, inlink);
+
+    return FFERROR_NOT_READY;
+}
+
 static const AVFilterPad showwaves_inputs[] = {
     {
         .name         = "default",
         .type         = AVMEDIA_TYPE_AUDIO,
-        .filter_frame = showwaves_filter_frame,
     },
     { NULL }
 };
@@ -731,7 +755,6 @@ static const AVFilterPad showwaves_outputs[] = {
         .name          = "default",
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
-        .request_frame = request_frame,
     },
     { NULL }
 };
@@ -744,6 +767,7 @@ AVFilter ff_avf_showwaves = {
     .query_formats = query_formats,
     .priv_size     = sizeof(ShowWavesContext),
     .inputs        = showwaves_inputs,
+    .activate      = activate,
     .outputs       = showwaves_outputs,
     .priv_class    = &showwaves_class,
 };
@@ -765,6 +789,9 @@ static const AVOption showwavespic_options[] = {
         { "log", "logarithmic",    0, AV_OPT_TYPE_CONST, {.i64=SCALE_LOG}, .flags=FLAGS, .unit="scale"},
         { "sqrt", "square root",   0, AV_OPT_TYPE_CONST, {.i64=SCALE_SQRT}, .flags=FLAGS, .unit="scale"},
         { "cbrt", "cubic root",    0, AV_OPT_TYPE_CONST, {.i64=SCALE_CBRT}, .flags=FLAGS, .unit="scale"},
+    { "draw", "set draw mode", OFFSET(draw_mode), AV_OPT_TYPE_INT, {.i64 = DRAW_SCALE}, 0, DRAW_NB-1, FLAGS, .unit="draw" },
+        { "scale", "scale pixel values for each drawn sample", 0, AV_OPT_TYPE_CONST, {.i64=DRAW_SCALE}, .flags=FLAGS, .unit="draw"},
+        { "full",  "draw every pixel for sample directly",     0, AV_OPT_TYPE_CONST, {.i64=DRAW_FULL},  .flags=FLAGS, .unit="draw"},
     { NULL }
 };
 
