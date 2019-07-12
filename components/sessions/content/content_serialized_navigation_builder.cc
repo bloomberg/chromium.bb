@@ -88,6 +88,10 @@ std::unique_ptr<content::NavigationEntry>
 ContentSerializedNavigationBuilder::ToNavigationEntry(
     const SerializedNavigationEntry* navigation,
     content::BrowserContext* browser_context) {
+  // TODO(lukasza): https://crbug.com/976055: |initiator_origin| should be
+  // persisted across session restore.
+  base::Optional<url::Origin> initiator_origin = base::nullopt;
+
   network::mojom::ReferrerPolicy policy =
       static_cast<network::mojom::ReferrerPolicy>(navigation->referrer_policy_);
   std::unique_ptr<content::NavigationEntry> entry(
@@ -96,6 +100,7 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
           content::Referrer::SanitizeForRequest(
               navigation->virtual_url_,
               content::Referrer(navigation->referrer_url_, policy)),
+          initiator_origin,
           // Use a transition type of reload so that we don't incorrectly
           // increase the typed count.
           ui::PAGE_TRANSITION_RELOAD, false,

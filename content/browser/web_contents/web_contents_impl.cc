@@ -4648,14 +4648,16 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
   // that view source has a consistent process model and always ends up in a new
   // process (https://crbug.com/699493).
   scoped_refptr<SiteInstanceImpl> site_instance_for_view_source = nullptr;
-  // Referrer is not important, because view-source should not hit the network,
-  // but should be served from the cache instead.
+  // Referrer and initiator are not important, because view-source should not
+  // hit the network, but should be served from the cache instead.
   Referrer referrer_for_view_source;
+  base::Optional<url::Origin> initiator_for_view_source = base::nullopt;
   // Do not restore title, derive it from the url.
   base::string16 title_for_view_source;
   auto navigation_entry = std::make_unique<NavigationEntryImpl>(
       site_instance_for_view_source, frame_entry->url(),
-      referrer_for_view_source, title_for_view_source, ui::PAGE_TRANSITION_LINK,
+      referrer_for_view_source, initiator_for_view_source,
+      title_for_view_source, ui::PAGE_TRANSITION_LINK,
       /* is_renderer_initiated = */ false,
       /* blob_url_loader_factory = */ nullptr);
   navigation_entry->SetVirtualURL(GURL(content::kViewSourceScheme +
