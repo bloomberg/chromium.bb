@@ -91,7 +91,7 @@ class PasswordProtectionRequest
     return trigger_type_;
   }
 
-  const std::string& username() const { return username_; }
+  const std::string username() const { return username_; }
 
   ReusedPasswordType reused_password_type() const {
     return reused_password_type_;
@@ -181,7 +181,7 @@ class PasswordProtectionRequest
   // The username of the reused password hash. The username can be an email or
   // a username for a non-GAIA or saved-password reuse. No validation has been
   // done on it.
-  const std::string& username_;
+  const std::string username_;
 
   // Type of the reused password.
   const ReusedPasswordType reused_password_type_;
