@@ -385,6 +385,14 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
         ['--chrome-test', '--', test_dir]).build_dir
     self.assertEqual(build_dir, os.path.dirname(test_dir))
 
+  def testParserErrorBuild(self):
+    """Verify parser errors for building/deploying Chrome."""
+    # Parser error if no build directory is specified.
+    self.CheckParserError(['--build'], '--build-dir')
+    # Parser error if build directory is not an existing directory.
+    self.CheckParserError(['--deploy', '--build-dir', '/not/a/directory'],
+                          'not a directory')
+
   def testParserErrorResultsSrc(self):
     """Verify parser errors for results src/dest directories."""
     # Parser Error if --results-src is not absolute.
