@@ -4371,6 +4371,50 @@
             ]
         }
     ],
+    "SafeBrowsingAdPopupTrigger": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "ad_popup_trigger_quota": "5"
+                    },
+                    "enable_features": [
+                        "SafeBrowsingAdPopupTrigger"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingAdRedirectTrigger": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "ad_redirect_trigger_quota": "5"
+                    },
+                    "enable_features": [
+                        "SafeBrowsingAdRedirectTrigger"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingAdSamplerTrigger": [
         {
             "platforms": [
