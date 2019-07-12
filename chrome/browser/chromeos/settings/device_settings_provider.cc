@@ -88,7 +88,6 @@ const char* const kKnownSettings[] = {
     kDeviceQuirksDownloadEnabled,
     kDeviceRebootOnUserSignout,
     kDeviceScheduledUpdateCheck,
-    kDeviceSecondFactorAuthenticationMode,
     kDeviceUnaffiliatedCrostiniAllowed,
     kDeviceWiFiAllowed,
     kDeviceWilcoDtcAllowed,
@@ -801,13 +800,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     new_values_cache->SetInteger(
         kDeviceDockMacAddressSource,
         policy.device_dock_mac_address_source().source());
-  }
-
-  if (policy.has_device_second_factor_authentication() &&
-      policy.device_second_factor_authentication().has_mode()) {
-    new_values_cache->SetInteger(
-        kDeviceSecondFactorAuthenticationMode,
-        policy.device_second_factor_authentication().mode());
   }
 }
 
