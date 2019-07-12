@@ -17,7 +17,7 @@ html {
 
   --logo-height: 200px; /* Normal height of a doodle. */
   --logo-margin-top: 56px; /* Expected OGB height, so logo doesn't overlap. */
-  --logo-margin-bottom: 29px; /* Between logo and fakebox. */
+  --logo-margin-bottom: 38px; /* Between logo and fakebox. */
 
   /* Initial height determines the margin between the logo and the fakebox. If
    * the iframe height exceeds the normal --logo-height, the difference is
