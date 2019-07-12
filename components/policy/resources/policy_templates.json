@@ -13422,7 +13422,7 @@
       In order for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to correctly capture the new password fingerprint on this change password page, please make sure your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       If this setting is enabled, then password protection service will send users to this URL to change their password after seeing a warning in the browser.
-      If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
+      If this setting is disabled or not set, then password protection service will send users to https://myaccount.google.com to change their password.
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management.''',
     },
     {
