@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_WEBDATA_TOKEN_SERVICE_TABLE_H_
-#define COMPONENTS_SIGNIN_CORE_BROWSER_WEBDATA_TOKEN_SERVICE_TABLE_H_
+#ifndef COMPONENTS_SIGNIN_PUBLIC_WEBDATA_TOKEN_SERVICE_TABLE_H_
+#define COMPONENTS_SIGNIN_PUBLIC_WEBDATA_TOKEN_SERVICE_TABLE_H_
 
 #include <map>
 #include <string>
@@ -48,11 +48,10 @@ class TokenServiceTable : public WebDatabaseTable {
   // Store a token in the token_service table. Stored encrypted. May cause
   // a mac keychain popup.
   // True if we encrypted a token and stored it, false otherwise.
-  bool SetTokenForService(const std::string& service,
-                          const std::string& token);
+  bool SetTokenForService(const std::string& service, const std::string& token);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TokenServiceTable);
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_WEBDATA_TOKEN_SERVICE_TABLE_H_
+#endif  // COMPONENTS_SIGNIN_PUBLIC_WEBDATA_TOKEN_SERVICE_TABLE_H_

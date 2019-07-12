@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/signin/public/webdata/token_service_table.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/os_crypt/os_crypt_mocker.h"
-#include "components/signin/core/browser/webdata/token_service_table.h"
 #include "components/webdata/common/web_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

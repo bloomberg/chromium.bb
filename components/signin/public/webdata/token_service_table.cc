@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/webdata/token_service_table.h"
+#include "components/signin/public/webdata/token_service_table.h"
 
 #include <map>
 #include <string>
@@ -34,7 +34,6 @@ enum ReadOneTokenResult {
 
 TokenServiceTable* TokenServiceTable::FromWebDatabase(WebDatabase* db) {
   return static_cast<TokenServiceTable*>(db->GetTable(GetKey()));
-
 }
 
 WebDatabaseTable::TypeKey TokenServiceTable::GetTypeKey() const {
@@ -73,8 +72,8 @@ bool TokenServiceTable::RemoveAllTokens() {
 }
 
 bool TokenServiceTable::RemoveTokenForService(const std::string& service) {
-  sql::Statement s(db_->GetUniqueStatement(
-      "DELETE FROM token_service WHERE service = ?"));
+  sql::Statement s(
+      db_->GetUniqueStatement("DELETE FROM token_service WHERE service = ?"));
   s.BindString(0, service);
 
   bool result = s.Run();
@@ -93,9 +92,9 @@ bool TokenServiceTable::SetTokenForService(const std::string& service,
 
   // Don't bother with a cached statement since this will be a relatively
   // infrequent operation.
-  sql::Statement s(db_->GetUniqueStatement(
-      "INSERT OR REPLACE INTO token_service "
-      "(service, encrypted_token) VALUES (?, ?)"));
+  sql::Statement s(
+      db_->GetUniqueStatement("INSERT OR REPLACE INTO token_service "
+                              "(service, encrypted_token) VALUES (?, ?)"));
   s.BindString(0, service);
   s.BindBlob(1, encrypted_token.data(),
              static_cast<int>(encrypted_token.length()));
@@ -128,8 +127,8 @@ TokenServiceTable::Result TokenServiceTable::GetAllTokens(
     std::string decrypted_token;
     std::string service;
     service = s.ColumnString(0);
-    bool entry_ok = !service.empty() &&
-                    s.ColumnBlobAsString(1, &encrypted_token);
+    bool entry_ok =
+        !service.empty() && s.ColumnBlobAsString(1, &encrypted_token);
     if (entry_ok) {
       if (OSCrypt::DecryptString(encrypted_token, &decrypted_token)) {
         (*tokens)[service] = decrypted_token;
@@ -149,8 +148,7 @@ TokenServiceTable::Result TokenServiceTable::GetAllTokens(
     }
     DCHECK_LT(read_token_result, READ_ONE_TOKEN_MAX_VALUE);
     UMA_HISTOGRAM_ENUMERATION("Signin.TokenTable.ReadTokenFromDBResult",
-                              read_token_result,
-                              READ_ONE_TOKEN_MAX_VALUE);
+                              read_token_result, READ_ONE_TOKEN_MAX_VALUE);
   }
   VLOG(1) << "Loaded tokens: result = " << read_all_tokens_result
           << " ; number of tokens loaded = " << number_of_tokens_loaded;
