@@ -27,6 +27,7 @@ public class ProgressBarMediator {
     private boolean mWasDisplayedForMinimumDuration;
 
     private static final int MINIMUM_DISPLAY_DURATION_MS = 3 * 1000;
+    private static final int MAXIMUM_PROGRESS = 100;
 
     ProgressBarMediator(PropertyModel model, ActivityTabProvider activityTabProvider) {
         mProgressBarTabObserver = new ProgressBarTabObserver(activityTabProvider);
@@ -63,9 +64,14 @@ public class ProgressBarMediator {
         show();
     }
 
-    private void stopLoadProgress() {
+    private void finishLoadProgress() {
         mCanHideProgressBar = true;
         hide();
+    }
+
+    private void updateLoadProgress(int progress) {
+        mModel.set(ProgressBarProperties.PROGRESS_FRACTION, progress / ((float) MAXIMUM_PROGRESS));
+        if (progress == MAXIMUM_PROGRESS) finishLoadProgress();
     }
 
     void destroy() {
@@ -84,15 +90,23 @@ public class ProgressBarMediator {
         public void onDidStartNavigation(Tab tab, NavigationHandle navigation) {
             if (!navigation.isInMainFrame()) return;
 
+            if (tab.getWebContents() != null
+                    && tab.getWebContents().getNavigationController() != null
+                    && tab.getWebContents().getNavigationController().isInitialNavigation()) {
+                updateUrl(tab);
+            }
+
+            if (navigation.isSameDocument()) return;
+
             if (NativePageFactory.isNativePageUrl(navigation.getUrl(), tab.isIncognito())) {
                 mModel.set(ProgressBarProperties.IS_ENABLED, false);
-                stopLoadProgress();
+                finishLoadProgress();
                 return;
             }
 
             mModel.set(ProgressBarProperties.IS_ENABLED, true);
-            updateUrl(tab);
             startLoadProgress();
+            updateLoadProgress(tab.getProgress());
         }
 
         @Override
@@ -107,15 +121,21 @@ public class ProgressBarMediator {
 
         @Override
         public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
-            updateUrl(tab);
-            stopLoadProgress();
+            if (!toDifferentDocument) return;
+
+            // If we made some progress, fast-forward to complete.
+            if (tab.getProgress() < MAXIMUM_PROGRESS) {
+                updateLoadProgress(MAXIMUM_PROGRESS);
+            } else {
+                finishLoadProgress();
+            }
         }
 
         @Override
         public void onLoadProgressChanged(Tab tab, int progress) {
             if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) return;
 
-            mModel.set(ProgressBarProperties.PROGRESS_FRACTION, progress / 100f);
+            updateLoadProgress(progress);
         }
 
         @Override
@@ -123,12 +143,12 @@ public class ProgressBarMediator {
             if (!didStartLoad) return;
 
             updateUrl(tab);
-            if (didFinishLoad) stopLoadProgress();
+            if (didFinishLoad) finishLoadProgress();
         }
 
         @Override
         public void onCrash(Tab tab) {
-            stopLoadProgress();
+            finishLoadProgress();
         }
 
         private void updateUrl(Tab tab) {
