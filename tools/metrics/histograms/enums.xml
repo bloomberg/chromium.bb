@@ -23857,6 +23857,7 @@ Called by update_net_error_codes.py.-->
   <int value="2952" label="DiscardInputEventToMovingIframe"/>
   <int value="2953" label="SignedExchangeSubresourcePrefetch"/>
   <int value="2954" label="BasicCardType"/>
+  <int value="2955" label="ExecutedJavaScriptURL"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
