@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_BACKDROP_WALLPAPER_HANDLERS_BACKDROP_WALLPAPER_HANDLERS_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_BACKDROP_WALLPAPER_HANDLERS_BACKDROP_WALLPAPER_HANDLERS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_BACKDROP_WALLPAPER_HANDLERS_BACKDROP_WALLPAPER_HANDLERS_H_
+#define CHROME_BROWSER_CHROMEOS_BACKDROP_WALLPAPER_HANDLERS_BACKDROP_WALLPAPER_HANDLERS_H_
 
 #include <memory>
 
@@ -11,14 +11,10 @@
 #include "base/macros.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
-namespace extensions {
-namespace api {
-namespace wallpaper_private {
-struct CollectionInfo;
-struct ImageInfo;
-}  // namespace wallpaper_private
-}  // namespace api
-}  // namespace extensions
+namespace backdrop {
+class Collection;
+class Image;
+}  // namespace backdrop
 
 namespace backdrop_wallpaper_handlers {
 
@@ -27,10 +23,8 @@ class BackdropFetcher;
 // Downloads the wallpaper collections info from the Backdrop service.
 class CollectionInfoFetcher {
  public:
-  using OnCollectionsInfoFetched = base::OnceCallback<void(
-      bool success,
-      const std::vector<extensions::api::wallpaper_private::CollectionInfo>&
-          collections_info_list)>;
+  using OnCollectionsInfoFetched = base::OnceCallback<
+      void(bool success, const std::vector<backdrop::Collection>& collections)>;
 
   CollectionInfoFetcher();
   ~CollectionInfoFetcher();
@@ -55,10 +49,9 @@ class CollectionInfoFetcher {
 // Downloads the wallpaper images info from the Backdrop service.
 class ImageInfoFetcher {
  public:
-  using OnImagesInfoFetched = base::OnceCallback<void(
-      bool success,
-      const std::vector<extensions::api::wallpaper_private::ImageInfo>&
-          images_info_list)>;
+  using OnImagesInfoFetched =
+      base::OnceCallback<void(bool success,
+                              const std::vector<backdrop::Image>& images)>;
 
   explicit ImageInfoFetcher(const std::string& collection_id);
   ~ImageInfoFetcher();
@@ -86,10 +79,10 @@ class ImageInfoFetcher {
 // Downloads the surprise me image info from the Backdrop service.
 class SurpriseMeImageFetcher {
  public:
-  using OnSurpriseMeImageFetched = base::OnceCallback<void(
-      bool success,
-      const extensions::api::wallpaper_private::ImageInfo& image_info,
-      const std::string& new_resume_token)>;
+  using OnSurpriseMeImageFetched =
+      base::OnceCallback<void(bool success,
+                              const backdrop::Image& image,
+                              const std::string& new_resume_token)>;
 
   SurpriseMeImageFetcher(const std::string& collection_id,
                          const std::string& resume_token);
@@ -121,4 +114,4 @@ class SurpriseMeImageFetcher {
 
 }  // namespace backdrop_wallpaper_handlers
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_BACKDROP_WALLPAPER_HANDLERS_BACKDROP_WALLPAPER_HANDLERS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_BACKDROP_WALLPAPER_HANDLERS_BACKDROP_WALLPAPER_HANDLERS_H_

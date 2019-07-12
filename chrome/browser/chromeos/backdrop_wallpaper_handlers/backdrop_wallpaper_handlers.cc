@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h"
+#include "chrome/browser/chromeos/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/extensions/backdrop_wallpaper_handlers/backdrop_wallpaper.pb.h"
+#include "chrome/browser/chromeos/backdrop_wallpaper_handlers/backdrop_wallpaper.pb.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/extensions/api/wallpaper_private.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -48,20 +48,6 @@ std::string MaybeConvertToTestUrl(std::string url) {
                                            "chromecast-dev.sandbox");
   }
   return url;
-}
-
-// Helper function to parse the data from a |backdrop::Image| object and save it
-// to |image_info_out|.
-void ParseImageInfo(
-    const backdrop::Image& image,
-    extensions::api::wallpaper_private::ImageInfo* image_info_out) {
-  // The info of each image should contain image url, action url and display
-  // text.
-  image_info_out->image_url = image.image_url();
-  image_info_out->action_url = image.action_url();
-  // Display text may have more than one strings.
-  for (int i = 0; i < image.attribution_size(); ++i)
-    image_info_out->display_text.push_back(image.attribution()[i].text());
 }
 
 }  // namespace
@@ -198,28 +184,20 @@ void CollectionInfoFetcher::Start(OnCollectionsInfoFetched callback) {
 }
 
 void CollectionInfoFetcher::OnResponseFetched(const std::string& response) {
-  std::vector<extensions::api::wallpaper_private::CollectionInfo>
-      collections_info_list;
-
+  std::vector<backdrop::Collection> collections;
   backdrop::GetCollectionsResponse collections_response;
+  bool success = false;
   if (response.empty() || !collections_response.ParseFromString(response)) {
     LOG(ERROR) << "Deserializing Backdrop wallpaper proto for collection info "
                   "failed.";
-    backdrop_fetcher_.reset();
-    std::move(callback_).Run(false /*success=*/, collections_info_list);
-    return;
-  }
-
-  for (int i = 0; i < collections_response.collections_size(); ++i) {
-    backdrop::Collection collection = collections_response.collections(i);
-    extensions::api::wallpaper_private::CollectionInfo collection_info;
-    collection_info.collection_name = collection.collection_name();
-    collection_info.collection_id = collection.collection_id();
-    collections_info_list.push_back(std::move(collection_info));
+  } else {
+    success = true;
+    for (const auto& collection : collections_response.collections())
+      collections.push_back(collection);
   }
 
   backdrop_fetcher_.reset();
-  std::move(callback_).Run(true /*success=*/, collections_info_list);
+  std::move(callback_).Run(success, collections);
 }
 
 ImageInfoFetcher::ImageInfoFetcher(const std::string& collection_id)
@@ -276,25 +254,20 @@ void ImageInfoFetcher::Start(OnImagesInfoFetched callback) {
 }
 
 void ImageInfoFetcher::OnResponseFetched(const std::string& response) {
-  std::vector<extensions::api::wallpaper_private::ImageInfo> images_info_list;
-
+  std::vector<backdrop::Image> images;
   backdrop::GetImagesInCollectionResponse images_response;
+  bool success = false;
   if (response.empty() || !images_response.ParseFromString(response)) {
     LOG(ERROR) << "Deserializing Backdrop wallpaper proto for collection "
                << collection_id_ << " failed";
-    backdrop_fetcher_.reset();
-    std::move(callback_).Run(false /*success=*/, images_info_list);
-    return;
-  }
-
-  for (int i = 0; i < images_response.images_size(); ++i) {
-    extensions::api::wallpaper_private::ImageInfo image_info;
-    ParseImageInfo(images_response.images()[i], &image_info);
-    images_info_list.push_back(std::move(image_info));
+  } else {
+    success = true;
+    for (const auto& image : images_response.images())
+      images.push_back(image);
   }
 
   backdrop_fetcher_.reset();
-  std::move(callback_).Run(true /*success=*/, images_info_list);
+  std::move(callback_).Run(success, images);
 }
 
 SurpriseMeImageFetcher::SurpriseMeImageFetcher(const std::string& collection_id,
@@ -357,21 +330,19 @@ void SurpriseMeImageFetcher::Start(OnSurpriseMeImageFetched callback) {
 }
 
 void SurpriseMeImageFetcher::OnResponseFetched(const std::string& response) {
-  extensions::api::wallpaper_private::ImageInfo image_info;
-
   backdrop::GetImageFromCollectionResponse surprise_me_image_response;
   if (response.empty() ||
       !surprise_me_image_response.ParseFromString(response)) {
     LOG(ERROR) << "Deserializing surprise me wallpaper proto for collection "
                << collection_id_ << " failed";
     backdrop_fetcher_.reset();
-    std::move(callback_).Run(false /*success=*/, image_info, std::string());
+    std::move(callback_).Run(/*success=*/false, backdrop::Image(),
+                             std::string());
     return;
   }
 
-  ParseImageInfo(surprise_me_image_response.image(), &image_info);
   backdrop_fetcher_.reset();
-  std::move(callback_).Run(true /*success=*/, image_info,
+  std::move(callback_).Run(/*success=*/true, surprise_me_image_response.image(),
                            surprise_me_image_response.resume_token());
 }
 
