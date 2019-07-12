@@ -31,11 +31,12 @@ interface DocumentInterfaceBroker {
   // handling credentials.
   GetCredentialManager(pending_receiver<blink.mojom.CredentialManager> receiver);
 
-  // Binds the blink.mojom.FrameHostTestInterface interface request to its
+  // Binds the blink.mojom.FrameHostTestInterface pending receiver to its
   // remote implementation in the browser process, to allow using this test
   // interface to exercise requesting document-scoped interfaces from the
   // RenderFrameHost through the DocumentInterfaceBroker interface.
-  GetFrameHostTestInterface(blink.mojom.FrameHostTestInterface& request);
+  GetFrameHostTestInterface(
+      pending_receiver<blink.mojom.FrameHostTestInterface> receiver);
 
   // Binds the blink.mojom.PushMessaging pending receiver to its remote
   // implementation in the browser process, to allow subscribing, unsubscribing

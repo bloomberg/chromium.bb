@@ -1425,7 +1425,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // blink::mojom::DocumentInterfaceBroker:
   void GetFrameHostTestInterface(
-      blink::mojom::FrameHostTestInterfaceRequest request) override;
+      mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver)
+      override;
   void GetAudioContextManager(
       mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver)
       override;

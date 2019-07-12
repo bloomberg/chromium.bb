@@ -174,6 +174,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/url_request_context.h"
@@ -6146,7 +6147,7 @@ void RenderFrameHostImpl::GetInterface(
 
 // This is a test-only interface, not exposed in production.
 void RenderFrameHostImpl::GetFrameHostTestInterface(
-    blink::mojom::FrameHostTestInterfaceRequest request) {
+    mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver) {
   class FrameHostTestInterfaceImpl
       : public blink::mojom::FrameHostTestInterface {
    public:
@@ -6156,8 +6157,8 @@ void RenderFrameHostImpl::GetFrameHostTestInterface(
     }
   };
 
-  mojo::MakeStrongBinding(std::make_unique<FrameHostTestInterfaceImpl>(),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FrameHostTestInterfaceImpl>(),
+                              std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetAudioContextManager(
