@@ -11,7 +11,11 @@ import "url/mojom/url.mojom";
 
 enum ContentIndexError {
   NONE,
-  SERVICE_WORKER_UNAVAILABLE,
+
+  // The browser process received an unexpected parameter.
+  INVALID_PARAMETER,
+
+  // An IO error occured while interacting with the database.
   STORAGE_ERROR,
 };
 
@@ -46,6 +50,8 @@ struct ContentDescription {
 // TODO(crbug.com/976962): Register interfaces that are exposed only on
 // Service Workers.
 interface ContentIndexService {
+  const int32 kMaxIconDimension = 256;
+
   Add(int64 service_worker_registration_id,
       ContentDescription description,
       skia.mojom.Bitmap icon,

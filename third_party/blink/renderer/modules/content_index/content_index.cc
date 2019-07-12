@@ -25,13 +25,12 @@ namespace {
 
 constexpr base::TimeDelta kIconFetchTimeout = base::TimeDelta::FromSeconds(30);
 
-// TODO(crbug.com/973844): Find the ideal icon dimensions.
-constexpr int kMaxIconDimension = 256;
-
 // Validates |description|. If there is an error, an error message to be passed
 // to a TypeError is passed. Otherwise a null string is returned.
 WTF::String ValidateDescription(const ContentDescription& description,
                                 ServiceWorkerRegistration* registration) {
+  // TODO(crbug.com/973844): Should field sizes be capped?
+
   if (description.id().IsEmpty())
     return "ID cannot be empty";
 
@@ -104,9 +103,12 @@ ScriptPromise ContentIndex::add(ScriptState* script_state,
   resource_request.SetTimeoutInterval(kIconFetchTimeout);
 
   auto* threaded_icon_loader = MakeGarbageCollected<ThreadedIconLoader>();
+  // TODO(crbug.com/973844): Use ideal icon dimensions instead of the max.
   threaded_icon_loader->Start(
       registration_->GetExecutionContext(), resource_request,
-      /* resize_dimensions= */ WebSize(kMaxIconDimension, kMaxIconDimension),
+      /* resize_dimensions= */
+      WebSize(mojom::blink::ContentIndexService::kMaxIconDimension,
+              mojom::blink::ContentIndexService::kMaxIconDimension),
       WTF::Bind(&ContentIndex::DidGetIcon, WrapPersistent(this),
                 WrapPersistent(resolver), WrapPersistent(threaded_icon_loader),
                 mojom::blink::ContentDescription::From(description)));
@@ -151,7 +153,8 @@ void ContentIndex::DidAdd(ScriptPromiseResolver* resolver,
           DOMExceptionCode::kAbortError,
           "Failed to add description due to I/O error."));
       return;
-    case mojom::blink::ContentIndexError::SERVICE_WORKER_UNAVAILABLE:
+    case mojom::blink::ContentIndexError::INVALID_PARAMETER:
+      // The renderer should have been killed.
       NOTREACHED();
       return;
   }
@@ -192,7 +195,8 @@ void ContentIndex::DidDeleteDescription(ScriptPromiseResolver* resolver,
           DOMExceptionCode::kAbortError,
           "Failed to delete description due to I/O error."));
       return;
-    case mojom::blink::ContentIndexError::SERVICE_WORKER_UNAVAILABLE:
+    case mojom::blink::ContentIndexError::INVALID_PARAMETER:
+      // The renderer should have been killed.
       NOTREACHED();
       return;
   }
@@ -239,7 +243,8 @@ void ContentIndex::DidGetDescriptions(
           DOMExceptionCode::kAbortError,
           "Failed to get descriptions due to I/O error."));
       return;
-    case mojom::blink::ContentIndexError::SERVICE_WORKER_UNAVAILABLE:
+    case mojom::blink::ContentIndexError::INVALID_PARAMETER:
+      // The renderer should have been killed.
       NOTREACHED();
       return;
   }
