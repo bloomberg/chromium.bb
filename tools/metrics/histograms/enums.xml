@@ -17381,6 +17381,7 @@ Called by update_net_error_codes.py.-->
   <int value="571" label="DevicePowerwashAllowed"/>
   <int value="572" label="ExternalPrintServers"/>
   <int value="573" label="SelectToSpeakEnabled"/>
+  <int value="574" label="BrowserGuestModeEnforced"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

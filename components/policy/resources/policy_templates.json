@@ -10241,6 +10241,23 @@
       If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not allow guest profiles to be started.''',
     },
     {
+      'name': 'BrowserGuestModeEnforced',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:77-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 574,
+      'caption': '''Enforce browser guest mode''',
+      'tags': [],
+      'desc': '''If this policy is set to enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will enforce guest sessions and prevents profile logins. Guest logins are <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles where all windows are in incognito mode.
+
+      If this policy is set to disabled or not set or browser guest mode is disabled by <ph name="BROWSER_GUEST_MODE_ENABLED_POLICY_NAME">BrowserGuestModeEnabled</ph> policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow using new and existing profiles.''',
+    },
+    {
       'name': 'BrowserAddPersonEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -17006,6 +17023,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 573,
+  'highest_id_currently_used': 574,
   'highest_atomic_group_id_currently_used': 37
 }
