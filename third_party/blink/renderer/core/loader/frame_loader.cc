@@ -210,7 +210,7 @@ void FrameLoader::Init() {
   if (!PrepareForCommit())
     return;
 
-  CommitDocumentLoader();
+  CommitDocumentLoader(provisional_document_loader_.Release());
 
   // Load the document if needed.
   document_loader_->StartLoadingResponse();
@@ -934,10 +934,11 @@ void FrameLoader::CommitNavigation(
 
   provisional_document_loader_->StartLoading();
   WillCommitNavigation();
+
   if (!PrepareForCommit())
     return;
 
-  CommitDocumentLoader();
+  CommitDocumentLoader(provisional_document_loader_.Release());
 
   // Load the document if needed.
   document_loader_->StartLoadingResponse();
@@ -1068,8 +1069,8 @@ void FrameLoader::WillCommitNavigation() {
   virtual_time_pauser_.UnpauseVirtualTime();
 }
 
-void FrameLoader::CommitDocumentLoader() {
-  document_loader_ = provisional_document_loader_.Release();
+void FrameLoader::CommitDocumentLoader(DocumentLoader* document_loader) {
+  document_loader_ = document_loader;
   CHECK(document_loader_);
   document_loader_->MarkAsCommitted();
 

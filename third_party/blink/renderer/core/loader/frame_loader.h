@@ -246,8 +246,8 @@ class CORE_EXPORT FrameLoader final {
 
   void WillCommitNavigation();
 
-  // Commits the provisional DocumentLoader.
-  void CommitDocumentLoader();
+  // Commits the given |document_loader|.
+  void CommitDocumentLoader(DocumentLoader* document_loader);
 
   LocalFrameClient* Client() const;
 
