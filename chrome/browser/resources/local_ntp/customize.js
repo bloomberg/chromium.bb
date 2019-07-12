@@ -413,6 +413,7 @@ customize.richerPicker_showSubmenu = function(menuButton, menu, title = '') {
   menuButton.classList.toggle(customize.CLASSES.SELECTED, true);
   menu.classList.toggle(customize.CLASSES.MENU_SHOWN, true);
   $(customize.IDS.MENU_TITLE).textContent = title;
+  menuButton.setAttribute('aria-selected', true);
 
   // Indicate if this is a Background collection's image menu, which will enable
   // the back button.
@@ -435,6 +436,8 @@ customize.richerPicker_hideOpenSubmenu = function() {
   customize.richerPicker_selectedSubmenu.menu.classList.toggle(
       customize.CLASSES.MENU_SHOWN, false);
   $(customize.IDS.MENU_TITLE).textContent = customize.richerPicker_defaultTitle;
+  customize.richerPicker_selectedSubmenu.menuButton.setAttribute(
+      'aria-selected', false);
 
   customize.richerPicker_selectedSubmenu.menuButton = null;
   customize.richerPicker_selectedSubmenu.menu = null;
@@ -854,6 +857,7 @@ customize.richerPicker_applySelectedState = function(option) {
   selectedCheck.classList.add(customize.CLASSES.SELECTED_CHECK);
   option.appendChild(selectedCircle);
   option.appendChild(selectedCheck);
+  option.setAttribute('aria-pressed', true);
 };
 
 /**
@@ -875,6 +879,7 @@ customize.richerPicker_removeSelectedState = function(option) {
   select.forEach((element) => {
     element.remove();
   });
+  option.setAttribute('aria-pressed', false);
 };
 
 /**

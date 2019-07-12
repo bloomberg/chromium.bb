@@ -978,7 +978,7 @@ void LocalNtpSource::StartDataRequest(
     // URLDataSource::GetContentSecurityPolicy*() methods?
     replacements["contentSecurityPolicy"] = GetContentSecurityPolicy();
 
-    replacements["customizeMenuTitle"] =
+    replacements["customizeMenu"] =
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL);
     replacements["cancelButton"] =
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_BG_CANCEL);
