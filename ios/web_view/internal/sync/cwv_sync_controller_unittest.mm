@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/test/bind_test_util.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/driver/mock_sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
