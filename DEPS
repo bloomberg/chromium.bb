@@ -119,7 +119,9 @@ vars = {
   'angle_root': 'src/third_party/angle',
 
   # luci-go CIPD package version.
-  'luci_go': 'git_revision:25958d48e89e980e2a97daeddc977fb5e2e1fb8c',
+  # Make sure the revision is uploaded by infra-packagers builder.
+  # https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
+  'luci_go': 'git_revision:7d11fd9e66407c49cb6c8546a2ae45ea993a240c',
 
   # This can be overridden, e.g. with custom_vars, to build clang from HEAD
   # instead of downloading the prebuilt pinned revision.
