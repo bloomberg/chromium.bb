@@ -178,8 +178,6 @@ class CORE_EXPORT FrameLoader final {
   // frame is ready to receive the next commit, or false otherwise.
   bool PrepareForCommit();
 
-  void CommitProvisionalLoad();
-
   FrameLoaderStateMachine* StateMachine() const { return &state_machine_; }
 
   bool ShouldClose(bool is_reload = false);
@@ -245,6 +243,11 @@ class CORE_EXPORT FrameLoader final {
 
   std::unique_ptr<TracedValue> ToTracedValue() const;
   void TakeObjectSnapshot() const;
+
+  void WillCommitNavigation();
+
+  // Commits the provisional DocumentLoader.
+  void CommitDocumentLoader();
 
   LocalFrameClient* Client() const;
 
