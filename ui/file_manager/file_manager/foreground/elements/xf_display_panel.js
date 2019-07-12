@@ -81,9 +81,13 @@ class DisplayPanel extends HTMLElement {
                 background-color: rgba(60, 64, 67, 0.15);
                 height: 1px;
               }
-              /* Limit to 3 visible progress panels before scroll */
+              /* Limit to 3 visible progress panels before scroll. */
               #panels {
                   max-height: calc(192px + 28px);
+              }
+              /* Show only the first of any non-progress panels. */
+              xf-panel-item:not([panel-type='0']):not(:first-child) {
+                display: none;
               }
               xf-panel-item:not(:only-child) {
                 --progress-height: 64px;
