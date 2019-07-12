@@ -41,7 +41,13 @@ const fakeDeviceInitParams = {
   supportsImmersive: true,
   views: VIEWS_WITH_OFFSET,
   viewerOrigin: IDENTITY_TRANSFORM,
-  localToFloorLevelTransform: FLOOR_TRANSFORM
+  localToFloorLevelTransform: FLOOR_TRANSFORM,
+  boundsCoordinates: [
+    { x:  1, z: -1.5 },
+    { x:  1, z:  1.5 },
+    { x: -1, z:  1.5 },
+    { x: -1, z: -1.5 }
+  ]
 };
 
 const requestSessionModes = ['immersive-vr'];
@@ -64,8 +70,6 @@ function testFunction(session, t, fakeDeviceController) {
     0,    0,    1,    0,
     0.01, 0.02, 0.03, 1,
   ];
-
-  fakeDeviceController.setStageSize(2.0, 3.0);
 
   let input_source = new MockXRInputSource();
   input_source.targetRayMode = "tracked-pointer";
