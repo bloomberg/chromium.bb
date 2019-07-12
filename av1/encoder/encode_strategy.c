@@ -24,9 +24,11 @@
 #endif  // CONFIG_MISMATCH_DEBUG
 
 #include "av1/common/onyxc_int.h"
+#include "av1/common/reconinter.h"
 
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/encode_strategy.h"
+#include "av1/encoder/encodeframe.h"
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/pass2_strategy.h"
 #include "av1/encoder/temporal_filter.h"
@@ -1199,6 +1201,22 @@ int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
 }
 
 #if !CONFIG_REALTIME_ONLY
+void setup_mi(AV1_COMP *const cpi, YV12_BUFFER_CONFIG *src) {
+  AV1_COMMON *const cm = &cpi->common;
+  const int num_planes = av1_num_planes(cm);
+  MACROBLOCK *const x = &cpi->td.mb;
+  MACROBLOCKD *const xd = &x->e_mbd;
+
+  av1_setup_src_planes(x, src, 0, 0, num_planes, cm->seq_params.sb_size);
+
+  av1_setup_block_planes(xd, cm->seq_params.subsampling_x,
+                         cm->seq_params.subsampling_y, num_planes);
+
+  xd->mi = cm->mi_grid_base;
+  xd->mi[0] = cm->mi;
+  x->mbmi_ext = cpi->mbmi_ext_base;
+}
+
 // Apply temporal filtering to key frames and encode the filtered frame.
 // If the current frame is not key frame, this function is identical to
 // av1_encode().
@@ -1238,25 +1256,31 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
 
   // Apply filtering to key frame and encode.
   if (apply_filtering) {
-    const int num_planes = av1_num_planes(cm);
+    // Initialization for frame motion estimation.
+    MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
+    av1_init_context_buffers(cm);
+    setup_mi(cpi, frame_input->source);
+    av1_init_macroblockd(cm, xd, NULL);
+    memset(cpi->mbmi_ext_base, 0,
+           cm->mi_rows * cm->mi_cols * sizeof(*cpi->mbmi_ext_base));
+
+    av1_set_speed_features_framesize_independent(cpi, oxcf->speed);
+    av1_set_speed_features_framesize_dependent(cpi, oxcf->speed);
+    av1_set_rd_speed_thresholds(cpi);
+    av1_setup_frame_buf_refs(cm);
+    av1_setup_frame_sign_bias(cm);
+    av1_frame_init_quantizer(cpi);
+    av1_setup_past_independence(cm);
+
     // Keep a copy of the source image.
+    const int num_planes = av1_num_planes(cm);
     aom_yv12_copy_frame(frame_input->source, &cpi->source_kf_buffer,
                         num_planes);
-    // TODO(chengchen): Encode the key frame, this is a workaround to get
-    // internal data structures properly initialized, for example, mi, x, xd.
-    // Do not pack bitstream in this case.
-    cpi->pack_bitstream = 0;
-    if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
-        AOM_CODEC_OK) {
-      return AOM_CODEC_ERROR;
-    }
-    // Produce the filtered key frame.
     av1_temporal_filter(cpi, -1);
     aom_extend_frame_borders(&cpi->alt_ref_buffer, num_planes);
-    *temporal_filtered = 1;
-    // Set frame_input source to temporal filtered key frame.
+    // Use the filtered frame for encoding.
     frame_input->source = &cpi->alt_ref_buffer;
-    // Encode the filtered key frame. Pack bitstream.
+    *temporal_filtered = 1;
     cpi->pack_bitstream = 1;
     if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
         AOM_CODEC_OK) {
