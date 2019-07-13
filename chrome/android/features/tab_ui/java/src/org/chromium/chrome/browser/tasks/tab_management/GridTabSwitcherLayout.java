@@ -18,6 +18,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
@@ -300,7 +301,7 @@ public class GridTabSwitcherLayout
                 // Step 2: fade in the real GTS RecyclerView.
                 mGridController.showOverview(true);
 
-                reportAnimationPerf();
+                reportAnimationPerf(true);
             }
         });
         mStartFrame = mFrameCount;
@@ -350,7 +351,7 @@ public class GridTabSwitcherLayout
                 mTabToSwitcherAnimation = null;
                 postHiding();
 
-                reportAnimationPerf();
+                reportAnimationPerf(false);
             }
         });
         mStartFrame = mFrameCount;
@@ -376,7 +377,7 @@ public class GridTabSwitcherLayout
         return mGridTabSwitcher;
     }
 
-    private void reportAnimationPerf() {
+    private void reportAnimationPerf(boolean isShrinking) {
         int frameRendered = mFrameCount - mStartFrame;
         long elapsedMs = SystemClock.elapsedRealtime() - mStartTime;
         long lastDirty = mGridTabSwitcher.getLastDirtyTimeForTesting();
@@ -396,6 +397,18 @@ public class GridTabSwitcherLayout
         if (!ChromeVersionInfo.isStableBuild()) {
             Log.i(TAG, message);
         }
+
+        String suffix;
+        if (isShrinking) {
+            suffix = ".Shrink";
+        } else {
+            suffix = ".Expand";
+        }
+        RecordHistogram.recordCount100Histogram(
+                "GridTabSwitcher.FramePerSecond" + suffix, (int) fps);
+        RecordHistogram.recordTimesHistogram(
+                "GridTabSwitcher.MaxFrameInterval" + suffix, mMaxFrameInterval);
+        RecordHistogram.recordTimesHistogram("GridTabSwitcher.DirtySpan" + suffix, dirtySpan);
 
         if (mPerfListenerForTesting != null) {
             mPerfListenerForTesting.onAnimationDone(
