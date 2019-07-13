@@ -4,6 +4,9 @@
 
 #include "cc/trees/frame_sequence_tracker.h"
 
+#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -11,6 +14,33 @@
 #include "ui/gfx/presentation_feedback.h"
 
 namespace cc {
+
+namespace {
+
+enum class ThreadType {
+  kMain,
+  kCompositor,
+};
+
+constexpr const char* const kBuiltinSequences[] = {
+    [FrameSequenceTrackerType::kCompositorAnimation] = "CompositorAnimation",
+    [FrameSequenceTrackerType::kMainThreadAnimation] = "MainThreadAnimation",
+    [FrameSequenceTrackerType::kPinchZoom] = "PinchZoom",
+    [FrameSequenceTrackerType::kRAF] = "RAF",
+    [FrameSequenceTrackerType::kTouchScroll] = "TouchScroll",
+    [FrameSequenceTrackerType::kWheelScroll] = "WheelScroll",
+};
+
+constexpr int kBuiltinSequenceNum = base::size(kBuiltinSequences);
+constexpr int kMaxHistogramIndex = 2 * kBuiltinSequenceNum;
+
+int GetIndexForMetric(ThreadType thread_type, FrameSequenceTrackerType type) {
+  return thread_type == ThreadType::kMain
+             ? static_cast<int>(type)
+             : static_cast<int>(type + kBuiltinSequenceNum);
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // FrameSequenceTrackerCollection
@@ -22,11 +52,11 @@ FrameSequenceTrackerCollection::~FrameSequenceTrackerCollection() {
 }
 
 std::unique_ptr<FrameSequenceTracker>
-FrameSequenceTrackerCollection::CreateTracker(const char* name) {
+FrameSequenceTrackerCollection::CreateTracker(FrameSequenceTrackerType type) {
   // The collection always outlives the trackers. So using Unretained() here is
   // safe.
   auto tracker = base::WrapUnique(new FrameSequenceTracker(
-      name, base::BindOnce(&FrameSequenceTrackerCollection::RemoveFrameTracker,
+      type, base::BindOnce(&FrameSequenceTrackerCollection::RemoveFrameTracker,
                            base::Unretained(this))));
   AddFrameTracker(tracker.get());
   return tracker;
@@ -116,11 +146,12 @@ void FrameSequenceTrackerCollection::RemoveFrameTracker(
 // FrameSequenceTracker
 
 FrameSequenceTracker::FrameSequenceTracker(
-    const char* name,
+    FrameSequenceTrackerType type,
     base::OnceCallback<void(FrameSequenceTracker*)> destroy_callback)
-    : name_(name), destroy_callback_(std::move(destroy_callback)) {
+    : type_(type), destroy_callback_(std::move(destroy_callback)) {
+  DCHECK_LT(type_, FrameSequenceTrackerType::kMaxType);
   TRACE_EVENT_ASYNC_BEGIN1("cc,benchmark", "FrameSequenceTracker", this, "name",
-                           TRACE_STR_COPY(name_));
+                           TRACE_STR_COPY(kBuiltinSequences[type_]));
 }
 
 FrameSequenceTracker::~FrameSequenceTracker() {
@@ -130,6 +161,12 @@ FrameSequenceTracker::~FrameSequenceTracker() {
   TRACE_EVENT_ASYNC_END1(
       "cc,benchmark", "FrameSequenceTracker", this, "args",
       ThroughputData::ToTracedValue(impl_throughput_, main_throughput_));
+  ThroughputData::ReportHistogram(
+      type_, "CompositorThread",
+      GetIndexForMetric(ThreadType::kCompositor, type_), impl_throughput_);
+  ThroughputData::ReportHistogram(type_, "MainThread",
+                                  GetIndexForMetric(ThreadType::kMain, type_),
+                                  main_throughput_);
   std::move(destroy_callback_).Run(this);
 }
 
@@ -296,6 +333,33 @@ FrameSequenceTracker::ThroughputData::ToTracedValue(
   dict->SetInteger("main-frames-produced", main.frames_produced);
   dict->SetInteger("main-frames-expected", main.frames_expected);
   return dict;
+}
+
+void FrameSequenceTracker::ThroughputData::ReportHistogram(
+    FrameSequenceTrackerType sequence_type,
+    const char* thread_name,
+    int metric_index,
+    const ThroughputData& data) {
+  DCHECK_LT(sequence_type, FrameSequenceTrackerType::kMaxType);
+
+  UMA_HISTOGRAM_COUNTS_1000("Graphics.Smoothness.FrameSequenceLength",
+                            data.frames_expected);
+
+  // Avoid reporting any throughput metric for sequences that had a small amount
+  // of frames.
+  constexpr int kMinFramesForThroughputMetric = 4;
+  if (data.frames_expected < kMinFramesForThroughputMetric)
+    return;
+
+  const std::string name =
+      base::StrCat({"Graphics.Smoothness.Throughput.", thread_name, ".",
+                    kBuiltinSequences[sequence_type]});
+  const int percent =
+      static_cast<int>(100 * data.frames_produced / data.frames_expected);
+  STATIC_HISTOGRAM_POINTER_GROUP(
+      name, metric_index, kMaxHistogramIndex, Add(percent),
+      base::LinearHistogram::FactoryGet(
+          name, 1, 100, 101, base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
 }  // namespace cc

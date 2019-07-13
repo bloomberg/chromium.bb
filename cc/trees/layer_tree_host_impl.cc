@@ -499,7 +499,14 @@ void LayerTreeHostImpl::CommitComplete() {
 
   if (mutator_host_->CurrentFrameHadRAF() &&
       !request_animation_frame_tracker_) {
-    request_animation_frame_tracker_ = frame_trackers_.CreateTracker("RAF");
+    request_animation_frame_tracker_ =
+        frame_trackers_.CreateTracker(FrameSequenceTrackerType::kRAF);
+  }
+
+  if (mutator_host_->MainThreadAnimationsCount() > 0 &&
+      !main_thread_animation_frame_tracker_) {
+    main_thread_animation_frame_tracker_ = frame_trackers_.CreateTracker(
+        FrameSequenceTrackerType::kMainThreadAnimation);
   }
 }
 
@@ -2202,6 +2209,12 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
         std::move(request_animation_frame_tracker_));
   }
 
+  if (main_thread_animation_frame_tracker_ &&
+      mutator_host_->MainThreadAnimationsCount() == 0) {
+    frame_trackers_.ScheduleRemoval(
+        std::move(main_thread_animation_frame_tracker_));
+  }
+
   // Clears the list of swap promises after calling DidSwap on each of them to
   // signal that the swap is over.
   active_tree()->ClearSwapPromises();
@@ -3465,6 +3478,7 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
   scroll_frame_tracker_ = nullptr;
   compositor_animation_frame_tracker_ = nullptr;
   request_animation_frame_tracker_ = nullptr;
+  main_thread_animation_frame_tracker_ = nullptr;
   frame_trackers_.ClearAll();
 
   // Detach from the old LayerTreeFrameSink and reset |layer_tree_frame_sink_|
@@ -3869,7 +3883,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   }
 
   scroll_frame_tracker_ = frame_trackers_.CreateTracker(
-      wheel_scrolling_ ? "WheelScroll" : "TouchScroll");
+      wheel_scrolling_ ? FrameSequenceTrackerType::kWheelScroll
+                       : FrameSequenceTrackerType::kTouchScroll);
   client_->RenewTreePriority();
   RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
@@ -5079,7 +5094,8 @@ void LayerTreeHostImpl::PinchGestureBegin() {
                        OuterViewportScrollNode() ? false : true);
   active_tree_->SetCurrentlyScrollingNode(OuterViewportScrollNode());
   browser_controls_offset_manager_->PinchBegin();
-  pinch_frame_tracker_ = frame_trackers_.CreateTracker("PinchZoom");
+  pinch_frame_tracker_ =
+      frame_trackers_.CreateTracker(FrameSequenceTrackerType::kPinchZoom);
 }
 
 void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
@@ -5294,8 +5310,8 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
   if (animated) {
     SetNeedsOneBeginImplFrame();
     if (!compositor_animation_frame_tracker_) {
-      compositor_animation_frame_tracker_ =
-          frame_trackers_.CreateTracker("CompositorAnimation");
+      compositor_animation_frame_tracker_ = frame_trackers_.CreateTracker(
+          FrameSequenceTrackerType::kCompositorAnimation);
     }
   } else {
     frame_trackers_.ScheduleRemoval(

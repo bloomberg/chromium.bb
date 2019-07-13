@@ -29,6 +29,16 @@ struct BeginFrameArgs;
 namespace cc {
 class FrameSequenceTracker;
 
+enum FrameSequenceTrackerType {
+  kCompositorAnimation,
+  kMainThreadAnimation,
+  kPinchZoom,
+  kRAF,
+  kTouchScroll,
+  kWheelScroll,
+  kMaxType
+};
+
 // Used for notifying attached FrameSequenceTracker's of begin-frames and
 // submitted frames.
 class CC_EXPORT FrameSequenceTrackerCollection {
@@ -41,8 +51,9 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   FrameSequenceTrackerCollection& operator=(
       const FrameSequenceTrackerCollection&) = delete;
 
-  // Creates a tracker with the specified name.
-  std::unique_ptr<FrameSequenceTracker> CreateTracker(const char* name);
+  // Creates a tracker for the specified sequence-type.
+  std::unique_ptr<FrameSequenceTracker> CreateTracker(
+      FrameSequenceTrackerType type);
 
   // Schedules |tracker| for destruction. This is preferred instead of outright
   // desrtruction of the tracker, since this ensures that the actual tracker
@@ -143,7 +154,7 @@ class CC_EXPORT FrameSequenceTracker {
   friend class FrameSequenceTrackerCollection;
 
   FrameSequenceTracker(
-      const char* name,
+      FrameSequenceTrackerType type,
       base::OnceCallback<void(FrameSequenceTracker*)> destroy_callback);
 
   void ScheduleTerminate() {
@@ -166,6 +177,10 @@ class CC_EXPORT FrameSequenceTracker {
     static std::unique_ptr<base::trace_event::TracedValue> ToTracedValue(
         const ThroughputData& impl,
         const ThroughputData& main);
+    static void ReportHistogram(FrameSequenceTrackerType sequence_type,
+                                const char* thread_name,
+                                int metric_index,
+                                const ThroughputData& data);
     // Tracks the number of frames that were expected to be shown during this
     // frame-sequence.
     uint32_t frames_expected = 0;
@@ -179,7 +194,7 @@ class CC_EXPORT FrameSequenceTracker {
                               uint64_t source_id,
                               uint64_t sequence_number);
 
-  const char* name_;
+  const FrameSequenceTrackerType type_;
   base::OnceCallback<void(FrameSequenceTracker*)> destroy_callback_;
 
   TerminationStatus termination_status_ = TerminationStatus::kActive;

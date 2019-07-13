@@ -1238,9 +1238,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<FrameSequenceTracker> pinch_frame_tracker_;
   std::unique_ptr<FrameSequenceTracker> scroll_frame_tracker_;
   std::unique_ptr<FrameSequenceTracker> compositor_animation_frame_tracker_;
-
-  // Keep on compositor thread because notification come from impl side
   std::unique_ptr<FrameSequenceTracker> request_animation_frame_tracker_;
+  std::unique_ptr<FrameSequenceTracker> main_thread_animation_frame_tracker_;
 
   // Set to true when a scroll gesture being handled on the compositor has
   // ended. i.e. When a GSE has arrived and any ongoing scroll animation has
