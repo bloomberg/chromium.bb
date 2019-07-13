@@ -268,7 +268,7 @@ include braille-patterns.cti
 #always ... 256-256-256
 #always ...' 256-256-256-3
 #repeated .... 0
-repeated _ 46-36
+#repeated _ 46-36
 #repeated ---- 36
 #always .\s.\s." 256-256-256-356
 #always .\s.\s. 256-256-256 . . .
