@@ -145,6 +145,11 @@ class ChromeNativeFileSystemPermissionContext::PermissionGrantImpl
     return status_;
   }
 
+  void SetStatus(PermissionStatus status) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    status_ = status;
+  }
+
   void RequestPermission(int process_id,
                          int frame_id,
                          base::OnceClosure callback) override {
@@ -220,7 +225,8 @@ scoped_refptr<content::NativeFileSystemPermissionGrant>
 ChromeNativeFileSystemPermissionContext::GetWritePermissionGrant(
     const url::Origin& origin,
     const base::FilePath& path,
-    bool is_directory) {
+    bool is_directory,
+    UserAction user_action) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // operator[] might insert a new OriginState in |origins_|, but that is
   // exactly what we want.
@@ -229,10 +235,15 @@ ChromeNativeFileSystemPermissionContext::GetWritePermissionGrant(
   // returning a parent directory's grant if that one already has write
   // access.
   auto*& existing_grant = origin_state.grants[path];
-  if (existing_grant)
+  if (existing_grant) {
+    if (user_action == UserAction::kSave)
+      existing_grant->SetStatus(PermissionGrantImpl::PermissionStatus::GRANTED);
     return existing_grant;
+  }
   auto result = base::MakeRefCounted<PermissionGrantImpl>(this, origin, path,
                                                           is_directory);
+  if (user_action == UserAction::kSave)
+    result->SetStatus(PermissionGrantImpl::PermissionStatus::GRANTED);
   existing_grant = result.get();
   return result;
 }
