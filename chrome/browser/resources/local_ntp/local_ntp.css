@@ -15,6 +15,7 @@ html {
        * make the width shorter than it should be. */
       + 1px);
 
+  --logo-color: #eee; /* Background color for alternative logo. */
   --logo-height: 200px; /* Normal height of a doodle. */
   --logo-margin-top: 56px; /* Expected OGB height, so logo doesn't overlap. */
   --logo-margin-bottom: 38px; /* Between logo and fakebox. */
