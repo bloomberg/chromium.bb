@@ -1397,7 +1397,7 @@ void WebMediaPlayerImpl::OnEncryptedMediaInitData(
   }
 
   encrypted_client_->Encrypted(
-      blink::ConvertToWebInitDataType(init_data_type), init_data.data(),
+      init_data_type, init_data.data(),
       base::saturated_cast<unsigned int>(init_data.size()));
 }
 
