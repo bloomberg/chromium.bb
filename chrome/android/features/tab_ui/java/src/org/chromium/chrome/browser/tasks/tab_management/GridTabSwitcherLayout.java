@@ -38,7 +38,10 @@ import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -53,12 +56,14 @@ public class GridTabSwitcherLayout
     static final long ZOOMING_DURATION = 300;
     private static final int BACKGROUND_FADING_DURATION_MS = 150;
 
-    /** Field trial parameter for whether skipping slow zooming animation */
+    // Field trial parameter for whether skipping slow zooming animation.
     private static final String SKIP_SLOW_ZOOMING_PARAM = "skip-slow-zooming";
+    // TODO(wychen): Probably want to set this to true when launching.
     private static final boolean DEFAULT_SKIP_SLOW_ZOOMING = false;
 
     // The transition animation from a tab to the tab switcher.
     private AnimatorSet mTabToSwitcherAnimation;
+    private boolean mIsAnimating;
 
     private final TabListSceneLayer mSceneLayer = new TabListSceneLayer();
     private final GridTabSwitcher mGridTabSwitcher;
@@ -87,6 +92,7 @@ public class GridTabSwitcherLayout
         mDummyLayoutTab = createLayoutTab(Tab.INVALID_TAB_ID, false, false, false);
         mDummyLayoutTab.setShowToolbar(true);
         mGridTabSwitcher = gridTabSwitcher;
+        mGridTabSwitcher.setOnTabSelectingListener(this::onTabSelecting);
         mGridController = gridTabSwitcher.getGridController();
         mGridController.addOverviewModeObserver(this);
     }
@@ -98,6 +104,8 @@ public class GridTabSwitcherLayout
     @Override
     public void finishedShowing() {
         doneShowing();
+        // The Tab-to-GTS animation is done, and it's time to renew the thumbnail without causing
+        // janky frames.
         // When animation is off, the thumbnail is already updated when showing the GTS.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)) {
             Tab currentTab = mTabModelSelector.getCurrentTab();
@@ -106,17 +114,21 @@ public class GridTabSwitcherLayout
     }
 
     @Override
-    public void startedHiding() {
-        startHiding(mTabModelSelector.getCurrentTabId(), false);
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)) {
-            mGridTabSwitcher.postHiding();
-            return;
-        }
-        expandTab(mGridTabSwitcher.getThumbnailLocationOfCurrentTab(true));
-    }
+    public void startedHiding() {}
 
     @Override
-    public void finishedHiding() {}
+    public void finishedHiding() {
+        // The Android View version of GTS overview is hidden.
+        // If not doing GTS-to-Tab transition animation, we show the fade-out instead, which was
+        // already done.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)) {
+            postHiding();
+            return;
+        }
+        // If we are doing GTS-to-Tab transition animation, we start showing the Bitmap version of
+        // the GTS overview in the background while expanding the thumbnail to the viewport.
+        expandTab(mGridTabSwitcher.getThumbnailLocationOfCurrentTab(true));
+    }
 
     // Layout implementation.
     @Override
@@ -142,12 +154,15 @@ public class GridTabSwitcherLayout
             showShrinkingAnimation &= quick;
         }
 
-        if (!showShrinkingAnimation) {
-            // Keep the current tab in mLayoutTabs so that thumbnail taking is not blocked.
-            LayoutTab sourceLayoutTab = createLayoutTab(mTabModelSelector.getCurrentTabId(),
-                    mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NEED_TITLE);
-            mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
+        // Keep the current tab in mLayoutTabs even if we are not going to show the shrinking
+        // animation so that thumbnail taking is not blocked.
+        LayoutTab sourceLayoutTab = createLayoutTab(mTabModelSelector.getCurrentTabId(),
+                mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NO_TITLE);
+        sourceLayoutTab.setDecorationAlpha(0);
 
+        mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
+
+        if (!showShrinkingAnimation) {
             mGridController.showOverview(animate);
             return;
         }
@@ -163,6 +178,36 @@ public class GridTabSwitcherLayout
         assert mLayoutTabs.length == 1;
         boolean needUpdate = mLayoutTabs[0].updateSnap(dt);
         if (needUpdate) requestUpdate();
+    }
+
+    @Override
+    public void startHiding(int nextId, boolean hintAtTabSelection) {
+        super.startHiding(nextId, hintAtTabSelection);
+
+        int sourceTabId = mNextTabId;
+        if (sourceTabId == Tab.INVALID_TAB_ID) sourceTabId = mTabModelSelector.getCurrentTabId();
+        LayoutTab sourceLayoutTab = createLayoutTab(
+                sourceTabId, mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NO_TITLE);
+        sourceLayoutTab.setDecorationAlpha(0);
+
+        List<LayoutTab> layoutTabs = new ArrayList<>();
+        layoutTabs.add(sourceLayoutTab);
+
+        if (sourceTabId != mTabModelSelector.getCurrentTabId()) {
+            // Keep the original tab in mLayoutTabs to unblock thumbnail taking at the end of the
+            // animation.
+            LayoutTab originalTab = createLayoutTab(mTabModelSelector.getCurrentTabId(),
+                    mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NO_TITLE);
+            originalTab.setScale(0);
+            layoutTabs.add(originalTab);
+        }
+        mLayoutTabs = layoutTabs.toArray(new LayoutTab[0]);
+
+        updateCacheVisibleIds(new LinkedList<>(Arrays.asList(sourceTabId)));
+
+        mIsAnimating = true;
+        mGridController.hideOverview(
+                !ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION));
     }
 
     @Override
@@ -215,14 +260,9 @@ public class GridTabSwitcherLayout
      * @param target The target {@link Rect} area.
      */
     private void shrinkTab(Supplier<Rect> target) {
-        LayoutTab sourceLayoutTab = createLayoutTab(mTabModelSelector.getCurrentTabId(),
-                mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NEED_TITLE);
-        sourceLayoutTab.setDecorationAlpha(0);
-
-        mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
-
         forceAnimationToFinish();
 
+        LayoutTab sourceLayoutTab = mLayoutTabs[0];
         CompositorAnimationHandler handler = getAnimationHandler();
         Collection<Animator> animationList = new ArrayList<>(5);
 
@@ -275,14 +315,9 @@ public class GridTabSwitcherLayout
      * @param source The source {@link Rect} area.
      */
     private void expandTab(Rect source) {
-        LayoutTab sourceLayoutTab = createLayoutTab(mTabModelSelector.getCurrentTabId(),
-                mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NEED_TITLE);
-        sourceLayoutTab.setDecorationAlpha(0);
-
-        mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
+        LayoutTab sourceLayoutTab = mLayoutTabs[0];
 
         forceAnimationToFinish();
-
         CompositorAnimationHandler handler = getAnimationHandler();
         Collection<Animator> animationList = new ArrayList<>(5);
 
@@ -313,7 +348,7 @@ public class GridTabSwitcherLayout
             @Override
             public void onAnimationEnd(Animator animation) {
                 mTabToSwitcherAnimation = null;
-                mGridTabSwitcher.postHiding();
+                postHiding();
 
                 reportAnimationPerf();
             }
@@ -325,6 +360,13 @@ public class GridTabSwitcherLayout
         mTabToSwitcherAnimation.start();
     }
 
+    private void postHiding() {
+        mGridTabSwitcher.postHiding();
+        mIsAnimating = false;
+        doneHiding();
+    }
+
+    @VisibleForTesting
     void setPerfListenerForTesting(PerfListener perfListener) {
         mPerfListenerForTesting = perfListener;
     }
@@ -391,5 +433,10 @@ public class GridTabSwitcherLayout
             mMaxFrameInterval = Math.max(mMaxFrameInterval, elapsed);
         }
         mLastFrameTime = SystemClock.elapsedRealtime();
+    }
+
+    @Override
+    public boolean onUpdateAnimation(long time, boolean jumpToEnd) {
+        return mTabToSwitcherAnimation == null && !mIsAnimating;
     }
 }
