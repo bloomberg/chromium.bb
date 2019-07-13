@@ -90,6 +90,8 @@ enum ClearMode {
   CLEAR_ONLY_UNMANAGED_ACCOUNTS = 1;
   // Remove previously remembered passwords for unmanaged accounts.
   CLEAR_ONLY_UNMANAGED_REMEMBERED_PASSWORDS = 2;
+  // Remove all managed accounts, leave unmanaged accounts untouched.
+  CLEAR_ONLY_MANAGED_ACCOUNTS = 3;
 }
 
 // Message sent to Chrome by authpolicyd as a response to a successful
@@ -158,6 +160,8 @@ message RemoveAccountResponse {
 message ClearAccountsRequest {
   // What kind of data to clear.
   optional ClearMode mode = 1 [default = CLEAR_ALL];
+  // Do not touch the accounts of the principals listed here.
+  repeated string principal_names_to_ignore = 2;
 }
 
 message ClearAccountsResponse {
