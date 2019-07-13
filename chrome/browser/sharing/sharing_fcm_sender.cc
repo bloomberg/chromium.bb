@@ -37,15 +37,7 @@ void SharingFCMSender::SendMessageToDevice(
     return;
   }
 
-  const syncer::DeviceInfo* local_device_info =
-      device_info_provider_->GetLocalDeviceInfo();
-  if (!local_device_info) {
-    LOG(ERROR) << "Unable to find local device info";
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-
-  message.set_sender_guid(local_device_info->guid());
+  message.set_sender_guid(device_info_provider_->GetLocalDeviceInfo()->guid());
 
   gcm::WebPushMessage web_push_message;
   web_push_message.time_to_live = time_to_live.InSeconds();

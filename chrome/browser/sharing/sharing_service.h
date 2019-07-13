@@ -27,7 +27,6 @@
 
 namespace syncer {
 class DeviceInfoTracker;
-class LocalDeviceInfoProvider;
 class SyncService;
 }  // namespace syncer
 
@@ -45,17 +44,6 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
   using SendMessageCallback =
       base::OnceCallback<void(base::Optional<std::string>)>;
 
-  enum class State {
-    // Device is unregistered with FCM and Sharing is unavailable.
-    DISABLED,
-    // Device registration is in progress.
-    REGISTERING,
-    // Device is fully registered with FCM and Sharing is available.
-    ACTIVE,
-    // Device un-registration is in progress.
-    UNREGISTERING
-  };
-
   SharingService(
       std::unique_ptr<SharingSyncPreference> sync_prefs,
       std::unique_ptr<VapidKeyManager> vapid_key_manager,
@@ -63,7 +51,6 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
       std::unique_ptr<SharingFCMSender> fcm_sender,
       std::unique_ptr<SharingFCMHandler> fcm_handler,
       syncer::DeviceInfoTracker* device_info_tracker,
-      syncer::LocalDeviceInfoProvider* local_device_info_provider,
       syncer::SyncService* sync_service);
   ~SharingService() override;
 
@@ -87,21 +74,16 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
       chrome_browser_sharing::SharingMessage::PayloadCase payload_type,
       SharingMessageHandler* handler);
 
-  // Returns the current state of SharingService.
-  State GetState() const;
-
  private:
   // Overrides for syncer::SyncServiceObserver.
   void OnSyncShutdown(syncer::SyncService* sync) override;
   void OnStateChanged(syncer::SyncService* sync) override;
 
-  void RegisterDevice();
-  void UnregisterDevice();
+  void AttemptRegistration();
   void OnDeviceRegistered(SharingDeviceRegistration::Result result);
-  void OnDeviceUnregistered(SharingDeviceRegistration::Result result);
 
-  // Returns true if sync is active and sync preference is enabled.
-  bool IsSyncEnabled() const;
+  // Returns true if cross-device Sharing features enabled, false otherwise.
+  bool IsEnabled() const;
 
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
   std::unique_ptr<VapidKeyManager> vapid_key_manager_;
@@ -109,12 +91,11 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
   std::unique_ptr<SharingFCMSender> fcm_sender_;
   std::unique_ptr<SharingFCMHandler> fcm_handler_;
   syncer::DeviceInfoTracker* device_info_tracker_;
-  syncer::LocalDeviceInfoProvider* local_device_info_provider_;
   syncer::SyncService* sync_service_;
   AckMessageHandler ack_message_handler_;
   PingMessageHandler ping_message_handler_;
   net::BackoffEntry backoff_entry_;
-  State state_;
+  bool device_registered_ = false;
 
 #if defined(OS_ANDROID)
   ClickToCallMessageHandler click_to_call_message_handler_;
