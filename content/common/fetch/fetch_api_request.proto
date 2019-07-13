@@ -8,10 +8,10 @@ option optimize_for = LITE_RUNTIME;
 
 package content.proto.internal;
 
-// Serializable version of ServiceWorkerFetchRequest.
+// Serializable version of blink::mojom::FetchAPIRequest.
 //
 // Next Tag: 17
-message ServiceWorkerFetchRequest {
+message FetchAPIRequest {
   // Serializable version of the Referrer struct defined in
   // https://cs.chromium.org/chromium/src/content/public/common/referrer.h
   //
