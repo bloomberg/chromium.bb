@@ -593,19 +593,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
 
-      # ARC disabled on these boards (so can't run bvt-arc)
-      'peppy-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
-      'peach_pit-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
-      'tricky-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
       'amd64-generic-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-arc64-paladin': site_config.templates.tast_vm_paladin_tests,
       'betty-paladin': site_config.templates.tast_vm_paladin_tests,

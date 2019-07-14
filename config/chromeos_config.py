@@ -2178,7 +2178,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'elm',
       'eve',
       'eve-arcnext',
-      'falco',
       'fizz',
       'fizz-accelerator',
       'fizz-moblab',
@@ -2202,7 +2201,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lakitu-gpu',
       'lakitu-st',
       'lasilla-ground',
-      'leon',
       'littlejoe',
       'monroe',
       'nami',
@@ -2212,9 +2210,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'nyan_kitty',
       'octavius',
       'octopus',
-      'panther',
-      'peppy',
-      'quawks',
       'rammus',
       'reef',
       'romer',
@@ -2228,7 +2223,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'tatl',
       'terra',
       'tidus',
-      'tricky',
       'veyron_jaq',
       'veyron_jerry',
       'veyron_mighty',
@@ -2240,7 +2234,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'whirlwind',
       'winky',
       'wizpig',
-      'wolf',
       'wooten',
   ])
 
@@ -2346,7 +2339,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'eve',
       'gale',
       'grunt',
-      'quawks',
       'hana',
       'kevin',
       'kip',
@@ -2356,7 +2348,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'nyan_big',
       'nyan_kitty',
       'octopus',
-      'peppy',
       'reef',
       'scarlet',
       'sentry',
@@ -2367,7 +2358,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'whirlwind',
       'winky',
       'wizpig',
-      'wolf',
   ])
 
   _paladin_separate_unittest_phase = frozenset([
@@ -2521,7 +2511,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # pylint: disable=bad-continuation, bad-whitespace, line-too-long
   _paladin_hwtest_assignments = frozenset([
     # bvt-inline      bvt-cq           bvt-arc             bvt-tast-cq          family
-    ('wolf',          'peppy',         None,               'wolf'),             # slippy (HSW)
     ('winky',         'kip',           None,               'winky'),            # rambi (BYT)
     ('nyan_big',      'nyan_kitty',    None,               'nyan_big'),         # nyan (K1)
     ('auron_paine',   'tidus',         'auron_yuna',       'auron_paine'),      # auron (BDW)
@@ -2604,7 +2593,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   master_config.AddSlaves(
       site_config.AddForBoards(
           'full-compile-paladin',
-          ['falco', 'nyan_kitty'],
+          ['nyan_kitty'],
           board_configs,
           site_config.templates.paladin,
           site_config.templates.no_hwtest_builder,
@@ -2957,7 +2946,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       'caroline',
       'eve',
       'reks',
-      'tricky',
       'veyron_minnie',
   ])
 
@@ -3158,7 +3146,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       [
           'caroline',
           'eve',
-          'tricky',
           'veyron_minnie',
           'kevin-arcnext',
       ],
@@ -3279,10 +3266,8 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'kevin64',
       'nocturne',
       'nyan_big',
-      'peppy',
       'reef',
       'terra',
-      'tricky',
       'veyron_minnie',
       'veyron_rialto',
   ])
@@ -3295,9 +3280,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'kevin-arcnext',
       'kevin64',
       'grunt',
-      'peppy',
       'reef',
-      'tricky',
       'veyron_minnie',
   ])
 
@@ -3369,17 +3352,8 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
   ACTIVE = 'with 168h interval'  # 1 week interval
   INACTIVE = 'with 720h interval'  # 30 day interval
   firmware_branch_builders = [
-      (INACTIVE, 'firmware-falco_peppy-4389.B', ['falco', 'peppy']),
-      (INACTIVE, 'firmware-wolf-4389.24.B', ['wolf']),
-      (INACTIVE, 'firmware-leon-4389.61.B', ['leon']),
-      (INACTIVE, 'firmware-pit-4482.B', ['peach_pit', 'peach_pi']),
-      (INACTIVE, 'firmware-panther-4920.24.B', ['panther']),
       (INACTIVE, 'firmware-monroe-4921.B', ['monroe']),
-      (INACTIVE, 'firmware-squawks-5216.152.B', ['squawks']),
-      (INACTIVE, 'firmware-glimmer-5216.198.B', ['glimmer']),
-      (INACTIVE, 'firmware-clapper-5216.199.B', ['clapper']),
       (INACTIVE, 'firmware-enguarde-5216.201.B', ['enguarde']),
-      (INACTIVE, 'firmware-quawks-5216.204.B', ['quawks']),
       (INACTIVE, 'firmware-expresso-5216.223.B', ['expresso']),
       (INACTIVE, 'firmware-kip-5216.227.B', ['kip']),
       (INACTIVE, 'firmware-swanky-5216.238.B', ['swanky']),
@@ -3391,12 +3365,8 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (INACTIVE, 'firmware-sumo-5216.382.B', ['sumo']),
       (INACTIVE, 'firmware-ninja-5216.383.B', ['ninja']),
       (INACTIVE, 'firmware-heli-5216.392.B', ['heli']),
-      (INACTIVE, 'firmware-zako-5219.B', ['zako']),
-      (INACTIVE, 'firmware-zako-5219.17.B', ['zako']),
       (INACTIVE, 'firmware-nyan-5771.B', ['nyan_big', 'nyan_blaze']),
       (INACTIVE, 'firmware-kitty-5771.61.B', ['nyan_kitty']),
-      (INACTIVE, 'firmware-mccloud-5827.B', ['mccloud']),
-      (INACTIVE, 'firmware-tricky-5829.B', ['tricky']),
       (INACTIVE, 'firmware-samus-6300.B', ['samus']),
       (INACTIVE, 'firmware-auron-6301.B', ['jecht']),
       (INACTIVE, 'firmware-paine-6301.58.B', ['auron_paine']),
@@ -3428,7 +3398,6 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (INACTIVE, 'firmware-gale-8281.B', ['gale']),
       (INACTIVE, 'firmware-oak-8438.B', ['oak', 'elm', 'hana']),
       (INACTIVE, 'firmware-gru-8785.B', ['gru', 'kevin', 'bob']),
-      (INACTIVE, 'firmware-servo-9040.B', ['falco']),
       (INACTIVE, 'firmware-reef-9042.B', ['reef', 'pyro', 'sand', 'snappy']),
       (INACTIVE, 'firmware-cr50-9308.B', ['reef']),
       (INACTIVE, 'firmware-cr50-9308.24.B', ['reef']),
@@ -3477,9 +3446,7 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
   ACTIVE = 'with 168h interval'  # 1 week interval
   INACTIVE = 'with 720h interval'  # 30 day interval
   branch_builders = [
-      (INACTIVE, 'factory-beltino-5140.14.B', ['tricky', 'mccloud']),
       (INACTIVE, 'factory-rambi-5517.B', [
-          'squawks', 'clapper', 'glimmer', 'quawks',
           'enguarde', 'expresso', 'kip', 'swanky', 'winky']),
       (INACTIVE, 'factory-nyan-5772.B', [
           'nyan_big', 'nyan_blaze', 'nyan_kitty']),
@@ -4075,9 +4042,6 @@ def ApplyCustomOverrides(site_config):
       'kip-release': {
           'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
-      'peppy-release': {
-          'useflags': config_lib.append_useflags(['new_tcmalloc']),
-      },
       'setzer-release': {
           'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
@@ -4086,13 +4050,6 @@ def ApplyCustomOverrides(site_config):
       },
       'veyron_speedy-release': {
           'useflags': config_lib.append_useflags(['new_tcmalloc']),
-      },
-
-      # TODO(crbug/871967, b/117991928) Re-enable hwtests on clapper-release
-      # once clapper automated repair is fixed in the lab.
-      'clapper-release': {
-          'hw_tests': [],
-          'hw_tests_override': [],
       },
   }
 
@@ -4285,9 +4242,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddGroup(
       'test-ap-group',
-      site_config.Add('panther-test-ap',
-                      site_config.templates.test_ap,
-                      boards=['panther']),
       site_config.Add('whirlwind-test-ap',
                       site_config.templates.test_ap,
                       boards=['whirlwind']),

@@ -963,16 +963,16 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     self.assertSetEqual(triage_changes.will_not_submit, set())
 
   def _MockForUploadPrebuiltsStageCheck(self):
-    self.slaves = ['wolf-paladin', 'cyan-paladin', 'elm-paladin',
-                   'falco-full-compile-paladin']
-    self.completed_builds = {self.slaves[0], self.slaves[1], self.slaves[3]}
+    self.slaves = [
+        'cyan-paladin', 'elm-paladin', 'nyan_kitty-full-compile-paladin'
+    ]
+    self.completed_builds = {self.slaves[0], self.slaves[2]}
     self.PatchObject(relevant_changes.TriageRelevantChanges,
                      '_UpdateSlaveInfo')
     self.buildbucket_info_dict = {
         self.slaves[0]: self.BuildbucketInfos.GetSuccessBuild(),
         self.slaves[1]: self.BuildbucketInfos.GetFailureBuild(),
-        self.slaves[2]: self.BuildbucketInfos.GetStartedBuild(),
-        self.slaves[3]: self.BuildbucketInfos.GetFailureBuild()}
+        self.slaves[2]: self.BuildbucketInfos.GetStartedBuild()}
     self._InsertSlaveBuilds(self.slaves, self.buildbucket_info_dict)
 
   def testAllCompletedSlavesPassedUploadPrebuiltsStageReturnsFalse(self):
@@ -980,11 +980,11 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     self._MockForUploadPrebuiltsStageCheck()
 
     self.fake_cidb.InsertBuildStage(
-        1, relevant_changes.TriageRelevantChanges.STAGE_UPLOAD_PREBUILTS,
-        self.slaves[0], status=self.PASS)
-    self.fake_cidb.InsertBuildStage(
         2, relevant_changes.TriageRelevantChanges.STAGE_UPLOAD_PREBUILTS,
-        self.slaves[1], status=self.FAIL)
+        self.slaves[1], status=self.PASS)
+    self.fake_cidb.InsertBuildStage(
+        3, relevant_changes.TriageRelevantChanges.STAGE_UPLOAD_PREBUILTS,
+        self.slaves[2], status=self.FAIL)
 
     triage_changes = self.GetTriageRelevantChanges(
         buildbucket_info_dict=self.buildbucket_info_dict,
@@ -1026,9 +1026,6 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     self.fake_cidb.InsertBuildStage(
         3, relevant_changes.TriageRelevantChanges.STAGE_UPLOAD_PREBUILTS,
         self.slaves[2], status=self.PASS)
-    self.fake_cidb.InsertBuildStage(
-        4, relevant_changes.TriageRelevantChanges.STAGE_UPLOAD_PREBUILTS,
-        self.slaves[3], status=self.PASS)
 
     triage_changes = self.GetTriageRelevantChanges(
         buildbucket_info_dict=self.buildbucket_info_dict,
@@ -1046,11 +1043,8 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
         1, relevant_changes.TriageRelevantChanges.STAGE_UPLOAD_PREBUILTS,
         self.slaves[0], status=self.PASS)
     self.fake_cidb.InsertBuildStage(
-        2, relevant_changes.TriageRelevantChanges.STAGE_UPLOAD_PREBUILTS,
-        self.slaves[1], status=self.PASS)
-    self.fake_cidb.InsertBuildStage(
-        4, relevant_changes.TriageRelevantChanges.STAGE_UPLOAD_PREBUILTS,
-        self.slaves[3], status=self.PASS)
+        3, relevant_changes.TriageRelevantChanges.STAGE_UPLOAD_PREBUILTS,
+        self.slaves[2], status=self.PASS)
 
     triage_changes = self.GetTriageRelevantChanges(
         buildbucket_info_dict=self.buildbucket_info_dict,
