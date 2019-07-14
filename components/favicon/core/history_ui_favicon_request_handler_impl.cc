@@ -30,20 +30,17 @@ void RecordFaviconAvailabilityMetric(FaviconRequestOrigin origin,
                                      FaviconAvailability availability) {
   switch (origin) {
     case FaviconRequestOrigin::HISTORY:
-      UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.HISTORY",
+      UMA_HISTOGRAM_ENUMERATION("Sync.SyncedHistoryFaviconAvailability.HISTORY",
                                 availability);
       break;
     case FaviconRequestOrigin::HISTORY_SYNCED_TABS:
-      UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.SYNCED_TABS",
-                                availability);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Sync.SyncedHistoryFaviconAvailability.SYNCED_TABS", availability);
       break;
     case FaviconRequestOrigin::RECENTLY_CLOSED_TABS:
-      UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.RECENTLY_CLOSED_TABS",
-                                availability);
-      break;
-    case FaviconRequestOrigin::UNKNOWN:
-      UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.UNKNOWN",
-                                availability);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Sync.SyncedHistoryFaviconAvailability.RECENTLY_CLOSED_TABS",
+          availability);
       break;
   }
 }
@@ -54,20 +51,17 @@ void RecordFaviconServerGroupingMetric(FaviconRequestOrigin origin,
   switch (origin) {
     case FaviconRequestOrigin::HISTORY:
       base::UmaHistogramCounts100(
-          "Sync.SizeOfFaviconServerRequestGroup.HISTORY", group_size);
+          "Sync.RequestGroupSizeForSyncedHistoryFavicons.HISTORY", group_size);
       break;
     case FaviconRequestOrigin::HISTORY_SYNCED_TABS:
       base::UmaHistogramCounts100(
-          "Sync.SizeOfFaviconServerRequestGroup.SYNCED_TABS", group_size);
+          "Sync.RequestGroupSizeForSyncedHistoryFavicons.SYNCED_TABS",
+          group_size);
       break;
     case FaviconRequestOrigin::RECENTLY_CLOSED_TABS:
       base::UmaHistogramCounts100(
-          "Sync.SizeOfFaviconServerRequestGroup.RECENTLY_CLOSED_TABS",
+          "Sync.RequestGroupSizeForSyncedHistoryFavicons.RECENTLY_CLOSED_TABS",
           group_size);
-      break;
-    case FaviconRequestOrigin::UNKNOWN:
-      base::UmaHistogramCounts100(
-          "Sync.SizeOfFaviconServerRequestGroup.UNKNOWN", group_size);
       break;
   }
 }

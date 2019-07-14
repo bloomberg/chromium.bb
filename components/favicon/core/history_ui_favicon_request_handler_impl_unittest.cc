@@ -37,8 +37,10 @@ const FaviconRequestOrigin kDummyOrigin = FaviconRequestOrigin::HISTORY;
 const char kDummyOriginHistogramSuffix[] = ".HISTORY";
 const FaviconRequestPlatform kDummyPlatform = FaviconRequestPlatform::kDesktop;
 base::CancelableTaskTracker::TaskId kDummyTaskId = 1;
-const char kAvailabilityHistogramName[] = "Sync.FaviconAvailability";
-const char kGroupingHistogramName[] = "Sync.SizeOfFaviconServerRequestGroup";
+const char kAvailabilityHistogramName[] =
+    "Sync.SyncedHistoryFaviconAvailability";
+const char kGroupingHistogramName[] =
+    "Sync.RequestGroupSizeForSyncedHistoryFavicons";
 const int kDefaultDesiredSizeInPixel = 16;
 // TODO(victorvianna): Add unit tests specific for mobile.
 const SkColor kTestColor = SK_ColorRED;

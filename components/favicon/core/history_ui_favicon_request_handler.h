@@ -20,9 +20,6 @@ namespace favicon {
 // TODO(victorvianna): Adopt same naming style used in the platform enum.
 // TODO(victorvianna): Rename enum to mention history UIs.
 enum class FaviconRequestOrigin {
-  // Unknown origin.
-  // TODO(victorvianna): Remove this and deprecate the histogram-suffix.
-  UNKNOWN,
   // History page.
   HISTORY,
   // History synced tabs page (desktop only).
