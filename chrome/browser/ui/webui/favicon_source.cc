@@ -45,14 +45,14 @@ GURL GetUnsafeRequestOrigin(
 }
 
 bool ParseHistoryUiOrigin(const GURL& url,
-                          favicon::FaviconRequestOrigin* origin) {
+                          favicon::HistoryUiFaviconRequestOrigin* origin) {
   GURL history_url(chrome::kChromeUIHistoryURL);
   if (url == history_url) {
-    *origin = favicon::FaviconRequestOrigin::HISTORY;
+    *origin = favicon::HistoryUiFaviconRequestOrigin::HISTORY;
     return true;
   }
   if (url == history_url.Resolve(chrome::kChromeUIHistorySyncedTabs)) {
-    *origin = favicon::FaviconRequestOrigin::HISTORY_SYNCED_TABS;
+    *origin = favicon::HistoryUiFaviconRequestOrigin::HISTORY_SYNCED_TABS;
     return true;
   }
   return false;
@@ -152,7 +152,7 @@ void FaviconSource::StartDataRequest(
       }
     }
 
-    favicon::FaviconRequestOrigin parsed_history_ui_origin;
+    favicon::HistoryUiFaviconRequestOrigin parsed_history_ui_origin;
     if (!parsed.allow_favicon_server_fallback ||
         !ParseHistoryUiOrigin(GetUnsafeRequestOrigin(wc_getter),
                               &parsed_history_ui_origin)) {
