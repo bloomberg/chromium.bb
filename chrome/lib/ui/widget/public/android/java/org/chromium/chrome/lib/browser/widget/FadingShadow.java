@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.lib.browser.widget;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -18,7 +18,6 @@ import android.view.View;
  * color must be opaque.
  */
 public class FadingShadow {
-
     public static final int POSITION_TOP = 0;
     public static final int POSITION_BOTTOM = 1;
 
@@ -31,7 +30,7 @@ public class FadingShadow {
     /**
      * @param shadowColor The color of the shadow, e.g. 0x11000000.
      */
-    public FadingShadow(int shadowColor) {
+    FadingShadow(int shadowColor) {
         final int n = SMOOTH_ALGORITHM_INTERPOLATION_POINTS_NUM;
         float[] positions = new float[n];
         int[] colors = new int[n];
@@ -49,7 +48,6 @@ public class FadingShadow {
         }
 
         mShadowShader = new LinearGradient(0, 0, 0, 1, colors, positions, Shader.TileMode.CLAMP);
-
     }
 
     /**
@@ -63,8 +61,8 @@ public class FadingShadow {
      * @param shadowStrength A value between 0 and 1 indicating the relative size of the shadow. 0
      *                       means no shadow at all. 1 means a full height shadow.
      */
-    public void drawShadow(View view, Canvas canvas, int position, float shadowHeight,
-            float shadowStrength) {
+    void drawShadow(
+            View view, Canvas canvas, int position, float shadowHeight, float shadowStrength) {
         float scaledShadowHeight = Math.max(0.0f, Math.min(1.0f, shadowStrength)) * shadowHeight;
         if (scaledShadowHeight < 1.0f) return;
 
