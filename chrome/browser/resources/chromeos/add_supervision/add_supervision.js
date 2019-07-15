@@ -28,7 +28,7 @@ const ALLOWED_HOSTS = [
  */
 function isAllowedRequest(requestDetails) {
   const requestUrl = new URL(requestDetails.url);
-  return requestUrl.protocol == 'https' &&
+  return requestUrl.protocol == 'https:' &&
       ALLOWED_HOSTS.includes(requestUrl.host);
 }
 
