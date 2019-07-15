@@ -656,6 +656,10 @@ bool FidoDeviceAuthenticator::IsPaired() const {
   return device_->IsPaired();
 }
 
+bool FidoDeviceAuthenticator::RequiresBlePairingPin() const {
+  return device_->RequiresBlePairingPin();
+}
+
 #if defined(OS_WIN)
 bool FidoDeviceAuthenticator::IsWinNativeApiAuthenticator() const {
   return false;
