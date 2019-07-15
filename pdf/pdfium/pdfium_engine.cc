@@ -869,10 +869,6 @@ void PDFiumEngine::OnDocumentCanceled() {
     OnDocumentComplete();
 }
 
-void PDFiumEngine::CancelBrowserDownload() {
-  client_->CancelBrowserDownload();
-}
-
 void PDFiumEngine::FinishLoadingDocument() {
   DCHECK(doc());
   DCHECK(doc_loader_->IsDocumentComplete());

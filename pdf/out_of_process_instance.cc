@@ -132,8 +132,6 @@ constexpr char kJSPositionX[] = "x";
 constexpr char kJSPositionY[] = "y";
 // Scroll by (Plugin -> Page)
 constexpr char kJSScrollByType[] = "scrollBy";
-// Cancel the stream URL request (Plugin -> Page)
-constexpr char kJSCancelStreamUrlType[] = "cancelStreamUrl";
 // Navigate to the given URL (Plugin -> Page)
 constexpr char kJSNavigateType[] = "navigate";
 constexpr char kJSNavigateUrl[] = "url";
@@ -1923,12 +1921,6 @@ bool OutOfProcessInstance::IsPrintPreview() {
 
 uint32_t OutOfProcessInstance::GetBackgroundColor() {
   return background_color_;
-}
-
-void OutOfProcessInstance::CancelBrowserDownload() {
-  pp::VarDictionary message;
-  message.Set(kType, kJSCancelStreamUrlType);
-  PostMessage(message);
 }
 
 void OutOfProcessInstance::IsSelectingChanged(bool is_selecting) {
