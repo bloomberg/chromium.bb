@@ -130,16 +130,6 @@ class OAuth2TokenService : public OAuth2AccessTokenManager::Delegate {
   // fully manages access tokens independently of OAuth2TokenService.
   friend class OAuth2AccessTokenManager;
 
-  // Cancels all requests that are currently in progress. Virtual so it can be
-  // overridden for tests.
-  // Deprecated. It's moved to OAuth2AccessTokenManager.
-  virtual void CancelAllRequests();
-
-  // Cancels all requests related to a given |account_id|. Virtual so it can be
-  // overridden for tests.
-  // Deprecated. It's moved to OAuth2AccessTokenManager.
-  virtual void CancelRequestsForAccount(const CoreAccountId& account_id);
-
  private:
   // TODO(https://crbug.com/967598): Completely merge this class into
   // ProfileOAuth2TokenService.

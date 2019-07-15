@@ -325,6 +325,15 @@ void ProfileOAuth2TokenService::ClearCacheForAccount(
   token_manager_->ClearCacheForAccount(account_id);
 }
 
+void ProfileOAuth2TokenService::CancelAllRequests() {
+  token_manager_->CancelAllRequests();
+}
+
+void ProfileOAuth2TokenService::CancelRequestsForAccount(
+    const CoreAccountId& account_id) {
+  token_manager_->CancelRequestsForAccount(account_id);
+}
+
 bool ProfileOAuth2TokenService::HasLoadCredentialsFinishedWithNoErrors() {
   switch (GetDelegate()->load_credentials_state()) {
     case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED:

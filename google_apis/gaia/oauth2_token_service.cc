@@ -125,15 +125,6 @@ GoogleServiceAuthError OAuth2TokenService::GetAuthError(
   return error;
 }
 
-void OAuth2TokenService::CancelAllRequests() {
-  token_manager_->CancelAllRequests();
-}
-
-void OAuth2TokenService::CancelRequestsForAccount(
-    const CoreAccountId& account_id) {
-  token_manager_->CancelRequestsForAccount(account_id);
-}
-
 void OAuth2TokenService::set_max_authorization_token_fetch_retries_for_testing(
     int max_retries) {
   token_manager_->set_max_authorization_token_fetch_retries_for_testing(
