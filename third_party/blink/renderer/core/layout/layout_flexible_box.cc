@@ -1410,8 +1410,7 @@ bool LayoutFlexibleBox::ChildHasIntrinsicMainAxisSize(
     const FlexLayoutAlgorithm& algorithm,
     const LayoutBox& child) const {
   bool result = false;
-  bool main_axis_is_inline = MainAxisIsInlineAxis(child);
-  if (!main_axis_is_inline && !child.ShouldApplySizeContainment() &&
+  if (!MainAxisIsInlineAxis(child) && !child.ShouldApplySizeContainment() &&
       !child.DisplayLockInducesSizeContainment()) {
     Length child_flex_basis = FlexBasisForChild(child);
     const Length& child_min_size = IsHorizontalFlow()
@@ -1426,11 +1425,6 @@ bool LayoutFlexibleBox::ChildHasIntrinsicMainAxisSize(
     } else if (algorithm.ShouldApplyMinSizeAutoForChild(child)) {
       result = true;
     }
-  } else if (main_axis_is_inline &&
-             child.StyleRef().OverflowInlineDirection() == EOverflow::kAuto) {
-    // Because scrollbars depend on layout, we need to layout before running
-    // the algorithm to get an up-to-date size.
-    result = true;
   }
   return result;
 }
