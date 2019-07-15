@@ -20014,14 +20014,18 @@ Called by update_net_error_codes.py.-->
 
 <enum name="ExtensionInstallPromptType">
   <int value="0" label="Install prompt"/>
-  <int value="1" label="Inline install prompt"/>
-  <int value="2" label="Bundle install prompt"/>
+  <int value="1" label="Inline install prompt (deprecated)"/>
+  <int value="2" label="Bundle install prompt (deprecated)"/>
   <int value="3" label="Re-enable prompt"/>
   <int value="4" label="Permissions prompt"/>
   <int value="5" label="External install prompt"/>
   <int value="6" label="Post install permissions prompt"/>
-  <int value="7" label="Launch prompt"/>
+  <int value="7" label="Launch prompt (deprecated)"/>
   <int value="8" label="Remote install prompt"/>
+  <int value="9" label="Repair prompt"/>
+  <int value="10" label="Delegated permissions prompt"/>
+  <int value="11" label="Delegated bundle permissions prompt (deprecated)"/>
+  <int value="12" label="Webstore widget prompt"/>
 </enum>
 
 <enum name="ExtensionInstallVerifierGetSignatureResult">
