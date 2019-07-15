@@ -2766,6 +2766,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       if options.reviewers or options.tbrs or options.add_owners_to:
         change_desc.update_reviewers(options.reviewers, options.tbrs,
                                      options.add_owners_to, change)
+      if options.preserve_tryjobs:
+        change_desc.set_preserve_tryjobs()
 
       remote, upstream_branch = self.FetchUpstreamTuple(self.GetBranch())
       parent = self._ComputeParent(remote, upstream_branch, custom_cl_base,
@@ -3238,6 +3240,14 @@ class ChangeDescription(object):
         self.append_footer(new_r_line)
       if new_tbr_line:
         self.append_footer(new_tbr_line)
+
+  def set_preserve_tryjobs(self):
+    """Ensures description footer contains 'Cq-Do-Not-Cancel-Tryjobs: true'."""
+    footers = git_footers.parse_footers(self.description)
+    for v in footers.get('Cq-Do-Not-Cancel-Tryjobs', []):
+      if v.lower() == 'true':
+        return
+    self.append_footer('Cq-Do-Not-Cancel-Tryjobs: true')
 
   def prompt(self, bug=None, git_footer=True):
     """Asks the user to update the description."""
@@ -4751,6 +4761,10 @@ def CMDupload(parser, args):
                     action='store_true',
                     help='Send the patchset to do a CQ dry run right after '
                          'upload.')
+  parser.add_option('--preserve-tryjobs', action='store_true',
+                    help='instruct the CQ to let tryjobs running even after '
+                         'new patchsets are uploaded instead of canceling '
+                         'prior patchset\' tryjobs')
   parser.add_option('--dependencies', action='store_true',
                     help='Uploads CLs of all the local branches that depend on '
                          'the current branch')

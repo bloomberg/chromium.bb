@@ -210,6 +210,34 @@ class TestGitClBasic(unittest.TestCase):
       'Gnarly-Dude: beans',
     ])
 
+  def test_set_preserve_tryjobs(self):
+    d = git_cl.ChangeDescription('Simple.')
+    d.set_preserve_tryjobs()
+    self.assertEqual(d.description.splitlines(), [
+      'Simple.',
+      '',
+      'Cq-Do-Not-Cancel-Tryjobs: true',
+    ])
+    before = d.description
+    d.set_preserve_tryjobs()
+    self.assertEqual(before, d.description)
+
+    d = git_cl.ChangeDescription('\n'.join([
+      'One is enough',
+      '',
+      'Cq-Do-Not-Cancel-Tryjobs: dups not encouraged, but don\'t hurt',
+      'Change-Id: Ideadbeef',
+    ]))
+    d.set_preserve_tryjobs()
+    self.assertEqual(d.description.splitlines(), [
+      'One is enough',
+      '',
+      'Cq-Do-Not-Cancel-Tryjobs: dups not encouraged, but don\'t hurt',
+      'Change-Id: Ideadbeef',
+      'Cq-Do-Not-Cancel-Tryjobs: true',
+    ])
+
+
   def test_get_bug_line_values(self):
     f = lambda p, bugs: list(git_cl._get_bug_line_values(p, bugs))
     self.assertEqual(f('', ''), [])
