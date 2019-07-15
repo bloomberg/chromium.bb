@@ -852,9 +852,6 @@ message ExportLxdContainerResponse {
 
   // Details relating to the failure state.
   string failure_reason = 2;
-
-  // A unique id generated for the export request.
-  uint64 transaction_id = 3;
 }
 
 message ExportLxdContainerProgressSignal {
@@ -920,9 +917,6 @@ message ExportLxdContainerProgressSignal {
 
   // Size of the files in the input container that have been downloaded.
   uint64 input_bytes_streamed = 11;
-
-  // A unique id generated for the export request.
-  uint64 transaction_id = 12;
 }
 
 message ImportLxdContainerRequest {
@@ -960,9 +954,6 @@ message ImportLxdContainerResponse {
 
   // Details relating to the failure state.
   string failure_reason = 2;
-
-  // A unique id generated for the import request.
-  uint64 transaction_id = 3;
 }
 
 message ImportLxdContainerProgressSignal {
@@ -1022,9 +1013,6 @@ message ImportLxdContainerProgressSignal {
 
   // Minimum required space for import.  Set when status is FAILED_SPACE.
   uint64 min_required_space = 11;
-
-  // A unique id generated for the import request.
-  uint64 transaction_id = 12;
 }
 
 message PendingAppListUpdatesSignal {
