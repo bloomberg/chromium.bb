@@ -27,7 +27,6 @@
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
-#include "ui/latency/latency_tracker.h"
 
 class SkDeferredDisplayList;
 
@@ -228,8 +227,6 @@ class SkiaOutputSurfaceImplOnGpu {
     sk_sp<SkPromiseImageTexture> promise_texture_;
   };
   base::flat_map<RenderPassId, OffscreenSurface> offscreen_surfaces_;
-
-  ui::LatencyTracker latency_tracker_;
 
   scoped_refptr<base::SingleThreadTaskRunner> context_current_task_runner_;
   scoped_refptr<DirectContextProvider> context_provider_;
