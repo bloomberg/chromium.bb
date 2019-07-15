@@ -884,6 +884,13 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Empty and duplicate usernames"/>
 </enum>
 
+<enum name="AccountManagerTokenLoadStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="File Read Error"/>
+  <int value="2" label="File Parse Error"/>
+  <int value="3" label="Account Corruption Detected"/>
+</enum>
+
 <enum name="AccountRelation">
   <int value="0" label="Empty cookie jar"/>
   <int value="1" label="No signed in, single signed out match"/>
