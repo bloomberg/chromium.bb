@@ -9763,6 +9763,8 @@ Called by update_net_error_codes.py.-->
   <int value="23" label="Share link"/>
   <int value="24" label="Preview page (Ephemeral tab)"/>
   <int value="25" label="Preview image (Ephemeral tab)"/>
+  <int value="26" label="Share Link (DirectShare)"/>
+  <int value="27" label="Share Image (DirectShare)"/>
 </enum>
 
 <enum name="ContextMenuOptionDesktop">
