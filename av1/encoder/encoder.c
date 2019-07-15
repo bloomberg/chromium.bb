@@ -2800,7 +2800,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
     cpi->tpl_stats_buffer[frame].mi_rows = cm->mi_rows;
     cpi->tpl_stats_buffer[frame].mi_cols = cm->mi_cols;
   }
-  cpi->tpl_frame = &cpi->tpl_stats_buffer[REF_FRAMES];
+  cpi->tpl_frame = &cpi->tpl_stats_buffer[REF_FRAMES + 1];
 
 #if CONFIG_COLLECT_PARTITION_STATS == 2
   av1_zero(cpi->partition_stats);
@@ -3636,7 +3636,8 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
 
   assert(IMPLIES(gf_group->size > 0, gf_group->index < gf_group->size));
-  const int tpl_idx = gf_group->frame_disp_idx[gf_group->index];
+
+  const int tpl_idx = gf_group->index;
   TplDepFrame *tpl_frame = &cpi->tpl_frame[tpl_idx];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
 
