@@ -297,8 +297,6 @@ static_library("test_support") {
       "../browser/ui/ash/accessibility/fake_accessibility_controller.h",
       "base/browser_process_platform_part_test_api_chromeos.cc",
       "base/browser_process_platform_part_test_api_chromeos.h",
-      "base/default_ash_event_generator_delegate.cc",
-      "base/default_ash_event_generator_delegate.h",
 
       # Only used for Chromevox tests, so only included on Chrome OS.
       "base/extension_js_browser_test.cc",
