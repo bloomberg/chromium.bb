@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/linux/dmabuf_video_frame_pool.h"
+#include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 
 namespace media {
 

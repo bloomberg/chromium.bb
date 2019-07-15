@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/linux/mailbox_video_frame_converter.h"
+#include "media/gpu/chromeos/mailbox_video_frame_converter.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/format_utils.h"
-#include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_pixmap.h"

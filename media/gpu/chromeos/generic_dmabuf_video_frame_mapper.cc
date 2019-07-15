@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/linux/generic_dmabuf_video_frame_mapper.h"
+#include "media/gpu/chromeos/generic_dmabuf_video_frame_mapper.h"
 
 #include <sys/mman.h>
 
