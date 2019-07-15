@@ -705,11 +705,12 @@ message GetLoginStatusReply {
   // This will be set if there's a problem getting login status.
   CryptohomeErrorCode error = 1;
 
-  // This is set to false if device policy is loaded.
+  // This is set to true if an owner user is specified in the device policy.
   bool owner_user_exists = 2;
 
-  // Set to true if the bootlockbox for this user has been finalized.
-  bool boot_lockbox_finalized = 3;
+  // Note that |boot_lockbox_finalized| is not supplied because current version
+  // of bootlockbox doesn't support querying whether it's finalized. The
+  // previous version that does support that has been deprecated.
 }
 
 // Input parameters to GetStatusString()
