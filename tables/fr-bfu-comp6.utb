@@ -254,11 +254,11 @@ include braille-patterns.cti
 # other signs: 8 and 6 dots
 include fr-bfu-comp68.cti
 # with a few exceptions...
-noback math \X00B1 235-36 ± plus ou moins
-noback math \X00D7 35 × multiplié par
-noback math \X2715 35 ✕ multiplié par
-noback math \X00B7 35-35 · point multiplicatif ; produit scalaire
-noback math \X00F7 25 ÷ divisé par
+noback math \x00B1 235-36 ± plus ou moins
+noback math \x00D7 35 × multiplié par
+noback math \x2715 35 ✕ multiplié par
+noback math \x00B7 35-35 · point multiplicatif ; produit scalaire
+noback math \x00F7 25 ÷ divisé par
 
 # Braille indicators
 numsign 6             # number sign, just a dots operand

@@ -44,7 +44,7 @@ letter   \x0C92	346	# KANNADA LETTER O
 letter   \x0C93	135	# KANNADA LETTER OO
 letter   \x0C94	246	# KANNADA LETTER AU
 
-replace \X200D
+replace \x200D
 
 # consonants
 
