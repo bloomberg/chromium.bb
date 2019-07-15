@@ -1486,8 +1486,10 @@ Status ExecutePerformActions(Session* session,
             event.y += mouse_locations[j].y();
           } else if (!event.element_id.empty()) {
             int center_x = 0, center_y = 0;
-            ElementInViewCenter(session, web_view, event.element_id, &center_x,
-                                &center_y);
+            Status status = ElementInViewCenter(
+                session, web_view, event.element_id, &center_x, &center_y);
+            if (status.IsError())
+              return status;
             event.x += center_x;
             event.y += center_y;
           }
@@ -1545,8 +1547,10 @@ Status ExecutePerformActions(Session* session,
             event.y += touch_locations[j].y();
           } else if (!event.element_id.empty()) {
             int center_x = 0, center_y = 0;
-            ElementInViewCenter(session, web_view, event.element_id, &center_x,
-                                &center_y);
+            Status status = ElementInViewCenter(
+                session, web_view, event.element_id, &center_x, &center_y);
+            if (status.IsError())
+              return status;
             event.x += center_x;
             event.y += center_y;
           }
