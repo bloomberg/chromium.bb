@@ -152,13 +152,10 @@ class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
   }
 
  protected:
-  SpdySessionTest()
-      : SpdySessionTest(base::test::ScopedTaskEnvironment::MainThreadType::IO) {
-  }
-
   explicit SpdySessionTest(
-      base::test::ScopedTaskEnvironment::MainThreadType type)
-      : WithScopedTaskEnvironment(type),
+      base::test::ScopedTaskEnvironment::TimeSource time_source =
+          base::test::ScopedTaskEnvironment::TimeSource::DEFAULT)
+      : WithScopedTaskEnvironment(time_source),
         old_max_group_sockets_(ClientSocketPoolManager::max_sockets_per_group(
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
         old_max_pool_sockets_(ClientSocketPoolManager::max_sockets_per_pool(
@@ -387,7 +384,7 @@ class SpdySessionTestWithMockTime : public SpdySessionTest {
  protected:
   SpdySessionTestWithMockTime()
       : SpdySessionTest(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 };
 
 // Try to create a SPDY session that will fail during
