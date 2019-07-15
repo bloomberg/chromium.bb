@@ -39946,6 +39946,9 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="NativeLibraryPreloaderResult">
+  <obsolete>
+    Removed in July 2019. See https://crbug.com/975556.
+  </obsolete>
   <int value="0" label="SUCCESS"/>
   <int value="1" label="WRONG_PACKAGE_NAME"/>
   <int value="2" label="ADDRESS_SPACE_NOT_RESERVED"/>
