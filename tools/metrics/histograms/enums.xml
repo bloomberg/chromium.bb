@@ -44034,6 +44034,23 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Active other profiles."/>
 </enum>
 
+<enum name="OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="LoadMetadataFailed"/>
+  <int value="2" label="SchemaMetadataMissing"/>
+  <int value="3" label="SchemaMetadataWrongVersion"/>
+  <int value="4" label="ComponentMetadataMissing"/>
+  <int value="5" label="FetchedMetadataMissing"/>
+  <int value="6" label="ComponentAndFetchedMetadataMissing"/>
+</enum>
+
+<enum name="OptimizationGuideHintCacheLevelDBStoreStatus">
+  <int value="0" label="Unitialized"/>
+  <int value="1" label="Initializing"/>
+  <int value="2" label="Available"/>
+  <int value="3" label="Failed"/>
+</enum>
+
 <enum name="OptimizationGuideProcessHintsResult">
   <int value="0" label="Success"/>
   <int value="1" label="FailedInvalidParameters"/>
@@ -47890,6 +47907,10 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreLoadMetadataResult">
+  <obsolete>
+    Replaced by OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult in
+    07/19.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="LoadMetadataFailed"/>
   <int value="2" label="SchemaMetadataMissing"/>
@@ -47900,6 +47921,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreStatus">
+  <obsolete>
+    Replaced by OptimizationGuideHintCacheLevelDBStoreStatus in 07/19.
+  </obsolete>
   <int value="0" label="Unitialized"/>
   <int value="1" label="Initializing"/>
   <int value="2" label="Available"/>
