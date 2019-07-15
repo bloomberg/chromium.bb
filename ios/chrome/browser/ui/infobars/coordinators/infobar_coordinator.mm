@@ -318,8 +318,8 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 #pragma mark InfobarModalPositioner
 
-- (CGFloat)modalHeight {
-  return [self infobarModalHeight];
+- (CGFloat)modalHeightForWidth:(CGFloat)width {
+  return [self infobarModalHeightForWidth:width];
 }
 
 #pragma mark InfobarCoordinatorImplementation
@@ -348,7 +348,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   NOTREACHED() << "Subclass must implement.";
 }
 
-- (CGFloat)infobarModalHeight {
+- (CGFloat)infobarModalHeightForWidth:(CGFloat)width {
   NOTREACHED() << "Subclass must implement.";
   return 0;
 }
