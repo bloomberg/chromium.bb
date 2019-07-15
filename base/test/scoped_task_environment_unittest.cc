@@ -1041,18 +1041,6 @@ TEST_P(ScopedTaskEnvironmentMockedTime, NoFastForwardToCancelledTask) {
   EXPECT_EQ(start_time, scoped_task_environment.NowTicks());
 }
 
-TEST_P(ScopedTaskEnvironmentMockedTime, NowSource) {
-  ScopedTaskEnvironment scoped_task_environment(
-      GetParam(), ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
-
-  TimeTicks start_time = scoped_task_environment.NowTicks();
-  EXPECT_EQ(TimeTicks::Now(), start_time);
-
-  constexpr TimeDelta delay = TimeDelta::FromSeconds(10);
-  scoped_task_environment.FastForwardBy(delay);
-  EXPECT_EQ(TimeTicks::Now(), start_time + delay);
-}
-
 TEST_P(ScopedTaskEnvironmentMockedTime, NextTaskIsDelayed) {
   ScopedTaskEnvironment scoped_task_environment(GetParam());
 
