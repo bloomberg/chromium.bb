@@ -2108,6 +2108,7 @@ void TabStrip::StartMoveTabAnimation() {
 }
 
 void TabStrip::AnimateToIdealBounds() {
+  UpdateHoverCard(nullptr, /* should_show */ false);
   for (int i = 0; i < tab_count(); ++i) {
     // If the tab is being dragged manually, skip it.
     Tab* tab = tab_at(i);
@@ -2878,6 +2879,8 @@ void TabStrip::OnMouseEntered(const ui::MouseEvent& event) {
 }
 
 void TabStrip::OnMouseExited(const ui::MouseEvent& event) {
+  if (base::FeatureList::IsEnabled(features::kTabHoverCards) && hover_card_)
+    hover_card_->set_last_mouse_exit_timestamp(base::TimeTicks::Now());
   UpdateHoverCard(nullptr, /* should_show */ false);
 }
 

@@ -358,26 +358,17 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
 TabHoverCardBubbleView::~TabHoverCardBubbleView() = default;
 
 void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
+  RecordTimeSinceLastSeenMetric(base::TimeTicks::Now() -
+                                last_visible_timestamp_);
   // If less than |kShowWithoutDelayTimeBuffer| time has passed since the hover
   // card was last visible then it is shown immediately. This is to account for
   // if hover unintentionally leaves the tab strip.
   constexpr base::TimeDelta kShowWithoutDelayTimeBuffer =
       base::TimeDelta::FromMilliseconds(500);
   base::TimeDelta elapsed_time =
-      base::TimeTicks::Now() - last_visible_timestamp_;
-  constexpr base::TimeDelta kMaxHoverCardReshowTimeDelta =
-      base::TimeDelta::FromSeconds(5);
-  if ((!widget_->IsVisible() || IsFadingOut()) &&
-      elapsed_time <= kMaxHoverCardReshowTimeDelta) {
-    constexpr base::TimeDelta kMinHoverCardReshowTimeDelta =
-        base::TimeDelta::FromMilliseconds(1);
-    constexpr int kHoverCardHistogramBucketCount = 50;
-    UMA_HISTOGRAM_CUSTOM_TIMES("TabHoverCards.TimeSinceLastVisible",
-                               elapsed_time, kMinHoverCardReshowTimeDelta,
-                               kMaxHoverCardReshowTimeDelta,
-                               kHoverCardHistogramBucketCount);
-  }
-  bool within_delay_time_buffer = !last_visible_timestamp_.is_null() &&
+      base::TimeTicks::Now() - last_mouse_exit_timestamp_;
+
+  bool within_delay_time_buffer = !last_mouse_exit_timestamp_.is_null() &&
                                   elapsed_time <= kShowWithoutDelayTimeBuffer;
   // Hover cards should be shown without delay if triggered within the time
   // buffer or if the tab or its children have focus which indicates that the
@@ -573,4 +564,20 @@ gfx::Size TabHoverCardBubbleView::CalculatePreferredSize() const {
   preferred_size.set_width(GetPreferredTabHoverCardWidth());
   DCHECK(!preferred_size.IsEmpty());
   return preferred_size;
+}
+
+void TabHoverCardBubbleView::RecordTimeSinceLastSeenMetric(
+    base::TimeDelta elapsed_time) {
+  constexpr base::TimeDelta kMaxHoverCardReshowTimeDelta =
+      base::TimeDelta::FromSeconds(5);
+  if ((!widget_->IsVisible() || IsFadingOut()) &&
+      elapsed_time <= kMaxHoverCardReshowTimeDelta) {
+    constexpr base::TimeDelta kMinHoverCardReshowTimeDelta =
+        base::TimeDelta::FromMilliseconds(1);
+    constexpr int kHoverCardHistogramBucketCount = 50;
+    UMA_HISTOGRAM_CUSTOM_TIMES("TabHoverCards.TimeSinceLastVisible",
+                               elapsed_time, kMinHoverCardReshowTimeDelta,
+                               kMaxHoverCardReshowTimeDelta,
+                               kHoverCardHistogramBucketCount);
+  }
 }
