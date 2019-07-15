@@ -284,6 +284,13 @@ viz_component("service") {
     ]
   }
 
+  if (is_chromeos) {
+    sources += [
+      "display_embedder/output_surface_unified.cc",
+      "display_embedder/output_surface_unified.h",
+    ]
+  }
+
   if (enable_vulkan) {
     deps += [ "//gpu/vulkan" ]
   }
