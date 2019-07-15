@@ -2986,6 +2986,7 @@ test("unit_tests") {
     "../browser/performance_manager/persistence/site_data/exponential_moving_average_unittest.cc",
     "../browser/performance_manager/persistence/site_data/leveldb_site_data_store_unittest.cc",
     "../browser/performance_manager/persistence/site_data/non_recording_site_data_cache_unittest.cc",
+    "../browser/performance_manager/persistence/site_data/site_data_cache_facade_unittest.cc",
     "../browser/performance_manager/persistence/site_data/site_data_cache_factory_unittest.cc",
     "../browser/performance_manager/persistence/site_data/site_data_cache_impl_unittest.cc",
     "../browser/performance_manager/persistence/site_data/site_data_impl_unittest.cc",
