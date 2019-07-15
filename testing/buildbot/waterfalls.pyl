@@ -1316,6 +1316,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'linux_viz_gtests',
+          'isolated_scripts': 'skia_renderer_isolated_scripts',
         },
       },
       'Linux x64 Goma Canary (clobber)': {
