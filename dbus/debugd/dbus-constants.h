@@ -52,6 +52,9 @@ const char kSetU2fFlags[] = "SetU2fFlags";
 const char kGetU2fFlags[] = "GetU2fFlags";
 const char kSetSchedulerConfiguration[] = "SetSchedulerConfiguration";
 
+// Properties.
+const char kCrashSenderTestMode[] = "CrashSenderTestMode";
+
 // Values.
 enum DevFeatureFlag {
   DEV_FEATURES_DISABLED = 1 << 0,
