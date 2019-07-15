@@ -4331,6 +4331,21 @@
             ]
         }
     ],
+    "RevampedContextMenu": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RevampedContextMenu"
+                    ]
+                }
+            ]
+        }
+    ],
     "SRTPromptFieldTrial": [
         {
             "platforms": [
