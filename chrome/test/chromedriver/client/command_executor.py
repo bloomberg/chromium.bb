@@ -58,7 +58,6 @@ class Command(object):
   IS_ELEMENT_ENABLED = (_Method.GET, '/session/:sessionId/element/:id/enabled')
   IS_ELEMENT_DISPLAYED = (
       _Method.GET, '/session/:sessionId/element/:id/displayed')
-  HOVER_OVER_ELEMENT = (_Method.POST, '/session/:sessionId/element/:id/hover')
   GET_ELEMENT_LOCATION = (
       _Method.GET, '/session/:sessionId/element/:id/location')
   GET_ELEMENT_RECT = (

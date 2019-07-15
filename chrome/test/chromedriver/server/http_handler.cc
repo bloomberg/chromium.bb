@@ -854,10 +854,6 @@ HttpHandler::HttpHandler(
       //
 
       CommandMapping(
-          kPost, "session/:sessionId/element/:id/hover",
-          WrapToCommand("HoverElement",
-                        base::BindRepeating(&ExecuteHoverOverElement))),
-      CommandMapping(
           kGet, "session/:sessionId/autoreport",
           WrapToCommand("IsAutoReporting",
                         base::BindRepeating(&ExecuteIsAutoReporting))),

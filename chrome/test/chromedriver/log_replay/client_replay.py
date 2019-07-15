@@ -153,7 +153,6 @@ _COMMANDS = {
     "GoBack": (Method.POST, "/session/:sessionId/back"),
     "GoForward": (Method.POST, "/session/:sessionId/forward"),
     "HeapSnapshot": (Method.GET, "/session/:sessionId/chromium/heap_snapshot"),
-    "HoverElement": (Method.POST, "/session/:sessionId/element/:id/hover"),
     "InitSession": (Method.POST, "/session"),
     "IsAlertOpen": (Method.GET, "/session/:sessionId/alert"),
     "IsAutoReporting": (Method.GET, "/session/:sessionId/autoreport"),

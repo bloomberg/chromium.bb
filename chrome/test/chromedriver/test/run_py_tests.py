@@ -687,18 +687,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     for br in brs:
       self.assertTrue(isinstance(br, webelement.WebElement))
 
-  def testHoverOverElement(self):
-    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
-    div = self._driver.ExecuteScript(
-        'document.body.innerHTML = "<div>old</div>";'
-        'var div = document.getElementsByTagName("div")[0];'
-        'div.addEventListener("mouseover", function() {'
-        '  document.body.appendChild(document.createElement("br"));'
-        '});'
-        'return div;')
-    div.HoverOver()
-    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
-
   def testClickElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     div = self._driver.ExecuteScript(
@@ -1621,21 +1609,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEqual('Button Was Clicked', self._driver.ExecuteScript(
         'return arguments[0].value;',
         self._FindElementInShadowDom(['#innerDiv', '#parentDiv', '#textBox'])))
-
-  def testShadowDomHover(self):
-    """Checks that chromedriver can call HoverOver on an element in a
-    shadow DOM."""
-    self._driver.Load(self.GetHttpUrlForFile(
-        '/chromedriver/shadow_dom_test.html'))
-    # Wait for page to stabilize. See https://crbug.com/954553#c7
-    time.sleep(1)
-    elem = self._FindElementInShadowDom(
-        ["#innerDiv", "#parentDiv", "#button"])
-    elem.HoverOver()
-    # the button's onMouseOver handler changes the text box's value
-    self.assertEqual("Button Was Hovered Over", self._driver.ExecuteScript(
-        'return arguments[0].value;',
-        self._FindElementInShadowDom(["#innerDiv", "#parentDiv", "#textBox"])))
 
   def testShadowDomStaleReference(self):
     """Checks that trying to manipulate shadow DOM elements that are detached
