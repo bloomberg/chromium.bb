@@ -123,8 +123,7 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
   MockHeartbeatClient* mock_client_;
 
   std::unique_ptr<FakeSignalStrategy> signal_strategy_;
