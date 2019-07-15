@@ -317,9 +317,7 @@ InProcessCommandBuffer::InProcessCommandBuffer(
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
       task_executor_(task_executor),
       fence_sync_wait_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                             base::WaitableEvent::InitialState::NOT_SIGNALED),
-      client_thread_weak_ptr_factory_(this),
-      gpu_thread_weak_ptr_factory_(this) {
+                             base::WaitableEvent::InitialState::NOT_SIGNALED) {
   // This binds the client sequence checker to the current sequence.
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   // Detach gpu sequence checker because we want to bind it to the gpu sequence,
