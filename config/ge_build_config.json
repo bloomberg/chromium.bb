@@ -1346,18 +1346,6 @@
       ]
     },
     {
-      "name": "veyron_jerry-kernelnext",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "viking",
       "configs": [
         {

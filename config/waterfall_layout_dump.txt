@@ -626,7 +626,6 @@
     veyron_fievel-release
     veyron_jaq-release
     veyron_jerry-kernelnext-release
-    veyron_jerry-kernelnext-release
     veyron_jerry-release
     veyron_mickey-release
     veyron_mighty-release
@@ -2905,7 +2904,6 @@
     ultima-release-tryjob
     veyron_fievel-release-tryjob
     veyron_jaq-release-tryjob
-    veyron_jerry-kernelnext-release-tryjob
     veyron_jerry-kernelnext-release-tryjob
     veyron_jerry-release-tryjob
     veyron_mickey-release-tryjob
