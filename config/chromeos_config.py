@@ -2590,6 +2590,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           build_before_patching=True,
           compilecheck=True,
           unittests=False,
+          important=False, # crbug.com/984006
       ),
   ])
 
