@@ -221,7 +221,10 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testActionsTouchTap',
         'ChromeDriverTest.testTouchDownMoveUpElement',
         'ChromeDriverTest.testTouchFlickElement',
-
+        # Android has no concept of tab or window, and will always lose focus
+        # on tab creation. https://crbug.com/chromedriver/3018
+        'ChromeDriverTest.testNewWindowDoesNotFocus',
+        'ChromeDriverTest.testNewTabDoesNotFocus',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
