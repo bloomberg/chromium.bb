@@ -154,8 +154,9 @@ def GetBuildDependency(board):
   results['package_deps'] = {}
   results['source_path_mapping'] = {}
 
-  board_specific_packages = ['virtual/target-os', 'virtual/target-os-dev',
-                             'virtual/target-os-test']
+  board_specific_packages = [
+      'virtual/target-os', 'virtual/target-os-dev',
+      'virtual/target-os-test', 'virtual/target-os-factory']
   # Since we don’t have a clear mapping from autotests to git repos
   # and/or portage packages, we assume every board run all autotests.
   board_specific_packages += ['chromeos-base/autotest-all']
