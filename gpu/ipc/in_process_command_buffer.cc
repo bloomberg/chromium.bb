@@ -671,10 +671,16 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
                                             params.activity_flags);
       }
 
-      if (!context_state_->MakeCurrent(nullptr)) {
+      if (!context_state_->MakeCurrent(nullptr, /*needs_gl=*/true)) {
         DestroyOnGpuThread();
         LOG(ERROR) << "Failed to make context current.";
         return ContextResult::kTransientFailure;
+      }
+
+      // TODO(penghuang): Merge all SharedContextState::Initialize*()
+      if (!context_state_->IsGLInitialized()) {
+        context_state_->InitializeGL(task_executor_->gpu_preferences(),
+                                     context_group_->feature_info());
       }
 
       if (base::ThreadTaskRunnerHandle::IsSet()) {
@@ -683,7 +689,6 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       }
 
       context_ = context_state_->context();
-
       decoder_.reset(raster::RasterDecoder::Create(
           this, command_buffer_.get(), task_executor_->outputter(),
           task_executor_->gpu_feature_info(), task_executor_->gpu_preferences(),
