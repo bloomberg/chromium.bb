@@ -167,6 +167,20 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
                           const CoreAccountId& account_id);
 #endif
 
+  // Returns true iff all credentials have been loaded from disk.
+  bool AreAllCredentialsLoaded() const;
+
+  void set_all_credentials_loaded_for_testing(bool loaded) {
+    all_credentials_loaded_ = loaded;
+  }
+
+  // Lists account IDs of all accounts with a refresh token maintained by this
+  // instance.
+  // Note: For each account returned by |GetAccounts|, |RefreshTokenIsAvailable|
+  // will return true.
+  // Note: If tokens have not been fully loaded yet, an empty list is returned.
+  std::vector<CoreAccountId> GetAccounts() const;
+
   // Exposes the ability to update auth errors to tests.
   void UpdateAuthErrorForTesting(const CoreAccountId& account_id,
                                  const GoogleServiceAuthError& error);
@@ -192,6 +206,9 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
   void RecreateDeviceIdIfNeeded();
 
   PrefService* user_prefs_;
+
+  // Whether all credentials have been loaded.
+  bool all_credentials_loaded_;
 
   // Callbacks to invoke, if set, for refresh token-related events.
   RefreshTokenAvailableFromSourceCallback on_refresh_token_available_callback_;

@@ -26,7 +26,7 @@
 
 OAuth2TokenService::OAuth2TokenService(
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
-    : delegate_(std::move(delegate)), all_credentials_loaded_(false) {
+    : delegate_(std::move(delegate)) {
   DCHECK(delegate_);
   AddObserver(this);
   token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
@@ -118,17 +118,6 @@ void OAuth2TokenService::RemoveAccessTokenDiagnosticsObserver(
   token_manager_->RemoveDiagnosticsObserver(observer);
 }
 
-bool OAuth2TokenService::AreAllCredentialsLoaded() const {
-  return all_credentials_loaded_;
-}
-
-std::vector<CoreAccountId> OAuth2TokenService::GetAccounts() const {
-  if (!AreAllCredentialsLoaded())
-    return std::vector<CoreAccountId>();
-
-  return delegate_->GetAccounts();
-}
-
 bool OAuth2TokenService::RefreshTokenIsAvailable(
     const CoreAccountId& account_id) const {
   return delegate_->RefreshTokenIsAvailable(account_id);
@@ -144,10 +133,6 @@ GoogleServiceAuthError OAuth2TokenService::GetAuthError(
   GoogleServiceAuthError error = delegate_->GetAuthError(account_id);
   DCHECK(!error.IsTransientError());
   return error;
-}
-
-void OAuth2TokenService::OnRefreshTokensLoaded() {
-  all_credentials_loaded_ = true;
 }
 
 void OAuth2TokenService::CancelAllRequests() {

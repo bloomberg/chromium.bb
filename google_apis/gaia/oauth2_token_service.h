@@ -91,20 +91,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
   void RemoveAccessTokenDiagnosticsObserver(
       OAuth2AccessTokenManager::DiagnosticsObserver* observer);
 
-  // Returns true iff all credentials have been loaded from disk.
-  bool AreAllCredentialsLoaded() const;
-
-  void set_all_credentials_loaded_for_testing(bool loaded) {
-    all_credentials_loaded_ = loaded;
-  }
-
-  // Lists account IDs of all accounts with a refresh token maintained by this
-  // instance.
-  // Note: For each account returned by |GetAccounts|, |RefreshTokenIsAvailable|
-  // will return true.
-  // Note: If tokens have not been fully loaded yet, an empty list is returned.
-  std::vector<CoreAccountId> GetAccounts() const;
-
   // Returns true if a refresh token exists for |account_id|. If false, calls to
   // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
   // Note: This will return |true| if and only if |account_id| is contained in
@@ -149,9 +135,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
   // fully manages access tokens independently of OAuth2TokenService.
   friend class OAuth2AccessTokenManager;
 
-  // OAuth2TokenServiceObserver:
-  void OnRefreshTokensLoaded() override;
-
   // Cancels all requests that are currently in progress. Virtual so it can be
   // overridden for tests.
   // Deprecated. It's moved to OAuth2AccessTokenManager.
@@ -172,9 +155,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
 
   // The depth of batch changes.
   int batch_change_depth_;
-
-  // Whether all credentials have been loaded.
-  bool all_credentials_loaded_;
 
   std::unique_ptr<OAuth2AccessTokenManager> token_manager_;
 

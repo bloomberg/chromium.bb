@@ -67,7 +67,9 @@ std::string SourceToString(SourceForRefreshTokenOperation source) {
 ProfileOAuth2TokenService::ProfileOAuth2TokenService(
     PrefService* user_prefs,
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
-    : OAuth2TokenService(std::move(delegate)), user_prefs_(user_prefs) {
+    : OAuth2TokenService(std::move(delegate)),
+      user_prefs_(user_prefs),
+      all_credentials_loaded_(false) {
   DCHECK(user_prefs_);
 }
 
@@ -229,6 +231,17 @@ void ProfileOAuth2TokenService::ExtractCredentials(
 }
 #endif
 
+bool ProfileOAuth2TokenService::AreAllCredentialsLoaded() const {
+  return all_credentials_loaded_;
+}
+
+std::vector<CoreAccountId> ProfileOAuth2TokenService::GetAccounts() const {
+  if (!AreAllCredentialsLoaded())
+    return std::vector<CoreAccountId>();
+
+  return GetDelegate()->GetAccounts();
+}
+
 void ProfileOAuth2TokenService::UpdateAuthErrorForTesting(
     const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
@@ -280,6 +293,8 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
 
 void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {
   OAuth2TokenService::OnRefreshTokensLoaded();
+
+  all_credentials_loaded_ = true;
 
   DCHECK_NE(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
             GetDelegate()->load_credentials_state());
