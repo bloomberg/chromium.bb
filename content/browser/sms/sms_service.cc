@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
+#include "content/browser/sms/sms_service.h"
 
-#include "content/browser/sms/sms_service_impl.h"
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -12,19 +12,14 @@
 
 namespace content {
 
-// static
-std::unique_ptr<SmsService> SmsService::Create() {
-  return std::make_unique<SmsServiceImpl>();
-}
+SmsService::SmsService() : sms_provider_(SmsProvider::Create()) {}
 
-SmsServiceImpl::SmsServiceImpl() : sms_provider_(SmsProvider::Create()) {}
-
-SmsServiceImpl::~SmsServiceImpl() {
+SmsService::~SmsService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void SmsServiceImpl::Bind(blink::mojom::SmsReceiverRequest request,
-                          const url::Origin& origin) {
+void SmsService::Bind(blink::mojom::SmsReceiverRequest request,
+                      const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bindings_.AddBinding(
@@ -32,7 +27,7 @@ void SmsServiceImpl::Bind(blink::mojom::SmsReceiverRequest request,
       std::move(request));
 }
 
-void SmsServiceImpl::SetSmsProviderForTest(
+void SmsService::SetSmsProviderForTest(
     std::unique_ptr<SmsProvider> sms_provider) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sms_provider_ = std::move(sms_provider);

@@ -93,6 +93,7 @@ class MediaStreamManager;
 class ResourceDispatcherHostImpl;
 class SaveFileManager;
 class ScreenlockMonitor;
+class SmsService;
 class SpeechRecognitionManagerImpl;
 class StartupTaskRunner;
 class TracingControllerImpl;
@@ -227,6 +228,8 @@ class CONTENT_EXPORT BrowserMainLoop {
     return device_monitor_mac_.get();
   }
 #endif
+
+  SmsService* GetSmsService();
 
   BrowserMainParts* parts() { return parts_.get(); }
 
@@ -375,6 +378,8 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   // Must be deleted on the IO thread.
   std::unique_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
+
+  std::unique_ptr<SmsService> sms_service_;
 
 #if defined(OS_WIN)
   std::unique_ptr<media::SystemMessageWindowWin> system_message_window_;

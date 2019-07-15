@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/sms/sms_service_impl.h"
+#include "content/browser/sms/sms_service.h"
 
 #include <utility>
 
@@ -47,20 +47,20 @@ class MockSmsProvider : public SmsProvider {
   DISALLOW_COPY_AND_ASSIGN(MockSmsProvider);
 };
 
-class SmsServiceImplTest : public RenderViewHostTestHarness {
+class SmsServiceTest : public RenderViewHostTestHarness {
  protected:
-  SmsServiceImplTest() {}
+  SmsServiceTest() {}
 
-  ~SmsServiceImplTest() override {}
+  ~SmsServiceTest() override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SmsServiceImplTest);
+  DISALLOW_COPY_AND_ASSIGN(SmsServiceTest);
 };
 
 }  // namespace
 
-TEST_F(SmsServiceImplTest, Basic) {
-  auto impl = std::make_unique<SmsServiceImpl>();
+TEST_F(SmsServiceTest, Basic) {
+  auto impl = std::make_unique<SmsService>();
   auto* mock = new NiceMock<MockSmsProvider>();
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
@@ -88,8 +88,8 @@ TEST_F(SmsServiceImplTest, Basic) {
   ASSERT_FALSE(mock->HasObservers());
 }
 
-TEST_F(SmsServiceImplTest, ExpectTwoReceiveTwoSerially) {
-  auto impl = std::make_unique<SmsServiceImpl>();
+TEST_F(SmsServiceTest, ExpectTwoReceiveTwoSerially) {
+  auto impl = std::make_unique<SmsService>();
   auto* mock = new NiceMock<MockSmsProvider>();
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
@@ -138,8 +138,8 @@ TEST_F(SmsServiceImplTest, ExpectTwoReceiveTwoSerially) {
   }
 }
 
-TEST_F(SmsServiceImplTest, IgnoreFromOtherOrigins) {
-  auto impl = std::make_unique<SmsServiceImpl>();
+TEST_F(SmsServiceTest, IgnoreFromOtherOrigins) {
+  auto impl = std::make_unique<SmsService>();
   auto* mock = new NiceMock<MockSmsProvider>();
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
@@ -182,8 +182,8 @@ TEST_F(SmsServiceImplTest, IgnoreFromOtherOrigins) {
   EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status);
 }
 
-TEST_F(SmsServiceImplTest, ExpectOneReceiveTwo) {
-  auto impl = std::make_unique<SmsServiceImpl>();
+TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
+  auto impl = std::make_unique<SmsService>();
   auto* mock = new NiceMock<MockSmsProvider>();
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
@@ -224,8 +224,8 @@ TEST_F(SmsServiceImplTest, ExpectOneReceiveTwo) {
   EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status);
 }
 
-TEST_F(SmsServiceImplTest, ExpectTwoReceiveTwoConcurrently) {
-  auto impl = std::make_unique<SmsServiceImpl>();
+TEST_F(SmsServiceTest, ExpectTwoReceiveTwoConcurrently) {
+  auto impl = std::make_unique<SmsService>();
   auto* mock = new NiceMock<MockSmsProvider>();
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
@@ -287,8 +287,8 @@ TEST_F(SmsServiceImplTest, ExpectTwoReceiveTwoConcurrently) {
   EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status2);
 }
 
-TEST_F(SmsServiceImplTest, Timeout) {
-  auto impl = std::make_unique<SmsServiceImpl>();
+TEST_F(SmsServiceTest, Timeout) {
+  auto impl = std::make_unique<SmsService>();
   auto* mock = new NiceMock<MockSmsProvider>();
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
@@ -310,8 +310,8 @@ TEST_F(SmsServiceImplTest, Timeout) {
   loop.Run();
 }
 
-TEST_F(SmsServiceImplTest, TimeoutTwoOrigins) {
-  auto impl = std::make_unique<SmsServiceImpl>();
+TEST_F(SmsServiceTest, TimeoutTwoOrigins) {
+  auto impl = std::make_unique<SmsService>();
   auto* mock = new NiceMock<MockSmsProvider>();
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
@@ -372,8 +372,8 @@ TEST_F(SmsServiceImplTest, TimeoutTwoOrigins) {
   EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status2);
 }
 
-TEST_F(SmsServiceImplTest, SecondRequestTimesOutEarlierThanFirstRequest) {
-  auto impl = std::make_unique<SmsServiceImpl>();
+TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
+  auto impl = std::make_unique<SmsService>();
   auto* mock = new NiceMock<MockSmsProvider>();
 
   impl->SetSmsProviderForTest(base::WrapUnique(mock));
