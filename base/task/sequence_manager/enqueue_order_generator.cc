@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task/sequence_manager/enqueue_order.h"
+#include "base/task/sequence_manager/enqueue_order_generator.h"
 
 namespace base {
 namespace sequence_manager {
 namespace internal {
 
-EnqueueOrder::Generator::Generator() : counter_(kFirst) {}
+EnqueueOrderGenerator::EnqueueOrderGenerator()
+    : counter_(EnqueueOrder::kFirst) {}
 
-EnqueueOrder::Generator::~Generator() = default;
+EnqueueOrderGenerator::~EnqueueOrderGenerator() = default;
 
 }  // namespace internal
 }  // namespace sequence_manager
