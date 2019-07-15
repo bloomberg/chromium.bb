@@ -214,7 +214,6 @@ _COMMANDS = {
     "TouchFlick": (Method.POST, "/session/:sessionId/touch/flick"),
     "TouchLongPress": (Method.POST, "/session/:sessionId/touch/longclick"),
     "TouchMove": (Method.POST, "/session/:sessionId/touch/move"),
-    "TouchPinch": (Method.POST, "/session/:sessionId/touch/pinch"),
     "TouchScroll": (Method.POST, "/session/:sessionId/touch/scroll"),
     "TouchUp": (Method.POST, "/session/:sessionId/touch/up"),
     "Type": (Method.POST, "/session/:sessionId/keys"),

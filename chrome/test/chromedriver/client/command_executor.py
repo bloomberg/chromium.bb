@@ -173,8 +173,6 @@ class Command(object):
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')
-  TOUCH_PINCH = (_Method.POST, '/session/:sessionId/touch/pinch')
-
 
 class CommandExecutor(object):
   def __init__(self, server_url):

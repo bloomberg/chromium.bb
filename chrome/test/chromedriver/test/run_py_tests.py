@@ -74,8 +74,6 @@ _NEGATIVE_FILTER = [
     # on developer workstations.
     'ChromeDriverTest.testEmulateNetworkConditionsNameSpeed',
     'ChromeDriverTest.testEmulateNetworkConditionsSpeed',
-    # crbug.com/469947
-    'ChromeDriverTest.testTouchPinch',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=833
     'ChromeDriverTest.testAlertOnNewWindow',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
@@ -124,7 +122,6 @@ _DESKTOP_NEGATIVE_FILTER = [
     'ChromeDriverTestLegacy.testTouchDoubleTapElement',
     'ChromeDriverTestLegacy.testTouchLongPressElement',
     'ChromeDriverTest.testTouchFlickElement',
-    'ChromeDriverTest.testTouchPinch',
     'ChromeDriverAndroidTest.*',
 ]
 
@@ -1673,18 +1670,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         'return div;')
     self._driver.TouchFlick(div, dx, dy, speed)
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
-
-  def testTouchPinch(self):
-    self._driver.Load(self.GetHttpUrlForFile(
-        '/chromedriver/touch_action_tests.html'))
-    width_before_pinch = self._driver.ExecuteScript('return window.innerWidth;')
-    height_before_pinch = self._driver.ExecuteScript(
-        'return window.innerHeight;')
-    self._driver.TouchPinch(width_before_pinch / 2,
-                            height_before_pinch / 2,
-                            2.0)
-    width_after_pinch = self._driver.ExecuteScript('return window.innerWidth;')
-    self.assertAlmostEqual(2.0, float(width_before_pinch) / width_after_pinch)
 
   def testSwitchesToTopFrameAfterNavigation(self):
     self._driver.Load('about:blank')
