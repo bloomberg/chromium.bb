@@ -1022,7 +1022,7 @@ def GetCurrentBranch():
 
 
 class _CQState(object):
-  """Enum for states of CL with respect to Commit Queue."""
+  """Enum for states of CL with respect to CQ."""
   NONE = 'none'
   DRY_RUN = 'dry_run'
   COMMIT = 'commit'
@@ -2117,8 +2117,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       * 'waiting' - waiting for review
       * 'reply'   - waiting for uploader to reply to review
       * 'lgtm'    - Code-Review label has been set
-      * 'dry-run' - dry-running in the commit queue
-      * 'commit'  - in the commit queue
+      * 'dry-run' - dry-running in the CQ
+      * 'commit'  - in the CQ
       * 'closed'  - successfully submitted or abandoned
     """
     if not self.GetIssue():
@@ -2375,7 +2375,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     detail = self._GetChangeDetail(['CURRENT_REVISION', 'LABELS'])
     if not force and self._IsCqConfigured():
-      confirm_or_exit('\nIt seems this repository has a Commit Queue, '
+      confirm_or_exit('\nIt seems this repository has a CQ, '
                         'which can test and land changes for you. '
                         'Are you sure you wish to bypass it?\n',
                         action='bypass CQ')
@@ -4120,7 +4120,7 @@ def CMDstatus(parser, args):
     - Yellow   waiting for you to reply to review, or not yet sent
     - Green    LGTM'ed
     - Red      'not LGTM'ed
-    - Magenta  in the commit queue
+    - Magenta  in the CQ
     - Cyan     was committed, branch can be deleted
     - White    error, or unknown status
 
@@ -4729,9 +4729,6 @@ def CMDupload(parser, args):
                           'can be applied multiple times'))
   parser.add_option('-s', '--send-mail', action='store_true',
                     help='send email to reviewer(s) and cc(s) immediately')
-  parser.add_option('-c', '--use-commit-queue', action='store_true',
-                    help='tell the commit queue to commit this patchset; '
-                          'implies --send-mail')
   parser.add_option('--target_branch',
                     '--target-branch',
                     metavar='TARGET',
@@ -4747,6 +4744,9 @@ def CMDupload(parser, args):
                     const='TBR', help='add a set of OWNERS to TBR')
   parser.add_option('--r-owners', dest='add_owners_to', action='store_const',
                     const='R', help='add a set of OWNERS to R')
+  parser.add_option('-c', '--use-commit-queue', action='store_true',
+                    help='tell the CQ to commit this patchset; '
+                          'implies --send-mail')
   parser.add_option('-d', '--cq-dry-run', dest='cq_dry_run',
                     action='store_true',
                     help='Send the patchset to do a CQ dry run right after '
@@ -5261,7 +5261,7 @@ def CMDweb(parser, args):
 
 @metrics.collector.collect_metrics('git cl set-commit')
 def CMDset_commit(parser, args):
-  """Sets the commit bit to trigger the Commit Queue."""
+  """Sets the commit bit to trigger the CQ."""
   parser.add_option('-d', '--dry-run', action='store_true',
                     help='trigger in dry run mode')
   parser.add_option('-c', '--clear', action='store_true',
