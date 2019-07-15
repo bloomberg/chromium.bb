@@ -55,7 +55,7 @@ class ASH_EXPORT LockScreenMediaControlsView
       const std::vector<media_session::mojom::MediaSessionAction>& actions)
       override;
   void MediaSessionChanged(
-      const base::Optional<base::UnguessableToken>& request_id) override {}
+      const base::Optional<base::UnguessableToken>& request_id) override;
 
   // media_session::mojom::MediaControllerImageObserver:
   void MediaControllerImageChanged(
@@ -117,9 +117,9 @@ class ASH_EXPORT LockScreenMediaControlsView
   mojo::Receiver<media_session::mojom::MediaControllerImageObserver>
       artwork_observer_receiver_{this};
 
-  // The info about the current media session. It will be null if there is not
+  // The id of the current media session. It will be null if there is not
   // a current session.
-  media_session::mojom::MediaSessionInfoPtr media_session_info_;
+  base::Optional<base::UnguessableToken> media_session_id_;
 
   // Spacing between controls and user.
   std::unique_ptr<views::View> middle_spacing_;

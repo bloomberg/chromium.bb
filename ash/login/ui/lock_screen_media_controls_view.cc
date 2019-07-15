@@ -181,7 +181,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
                         IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_NEXT_TRACK));
 
   // Set child view data to default values initially, until the media controller
-  // observers are triggered by a change in media session state..
+  // observers are triggered by a change in media session state.
   MediaSessionMetadataChanged(base::nullopt);
   MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kSourceIcon, SkBitmap());
@@ -248,22 +248,13 @@ views::View* LockScreenMediaControlsView::GetMiddleSpacingView() {
 
 void LockScreenMediaControlsView::MediaSessionInfoChanged(
     media_session::mojom::MediaSessionInfoPtr session_info) {
-  // If a new media session began while waiting, keep showing the controls.
-  if (hide_controls_timer_->IsRunning() && session_info)
-    hide_controls_timer_->Stop();
+  if (hide_controls_timer_->IsRunning())
+    return;
 
   // If controls aren't enabled or there is no session to show, don't show the
   // controls.
-  if (!view_->AreMediaControlsEnabled() ||
-      (!session_info && !media_session_info_)) {
+  if (!view_->AreMediaControlsEnabled() || !session_info) {
     view_->HideMediaControlsLayout();
-  } else if (!session_info && media_session_info_) {
-    // If there is no current session but there was a previous one, wait to see
-    // if a new session starts before hiding the controls.
-    hide_controls_timer_->Start(
-        FROM_HERE, kNextMediaDelay,
-        base::BindOnce(&LockContentsView::HideMediaControlsLayout,
-                       base::Unretained(view_)));
   } else if (!IsDrawn() &&
              session_info->playback_state ==
                  media_session::mojom::MediaPlaybackState::kPaused) {
@@ -276,12 +267,13 @@ void LockScreenMediaControlsView::MediaSessionInfoChanged(
   SetIsPlaying(session_info &&
                session_info->playback_state ==
                    media_session::mojom::MediaPlaybackState::kPlaying);
-
-  media_session_info_ = std::move(session_info);
 }
 
 void LockScreenMediaControlsView::MediaSessionMetadataChanged(
     const base::Optional<media_session::MediaMetadata>& metadata) {
+  if (hide_controls_timer_->IsRunning())
+    return;
+
   media_session::MediaMetadata session_metadata =
       metadata.value_or(media_session::MediaMetadata());
   base::string16 source_title =
@@ -296,15 +288,41 @@ void LockScreenMediaControlsView::MediaSessionMetadataChanged(
 
 void LockScreenMediaControlsView::MediaSessionActionsChanged(
     const std::vector<MediaSessionAction>& actions) {
+  if (hide_controls_timer_->IsRunning())
+    return;
+
   enabled_actions_ =
       std::set<MediaSessionAction>(actions.begin(), actions.end());
 
   UpdateActionButtonsVisibility();
 }
 
+void LockScreenMediaControlsView::MediaSessionChanged(
+    const base::Optional<base::UnguessableToken>& request_id) {
+  // If a new media session began while waiting, keep showing the controls.
+  if (hide_controls_timer_->IsRunning() && request_id.has_value()) {
+    hide_controls_timer_->Stop();
+    enabled_actions_.clear();
+  }
+
+  // If there is no current session but there was a previous one, wait to see
+  // if a new session starts before hiding the controls.
+  if (!request_id.has_value() && media_session_id_.has_value()) {
+    hide_controls_timer_->Start(
+        FROM_HERE, kNextMediaDelay,
+        base::BindOnce(&LockContentsView::HideMediaControlsLayout,
+                       base::Unretained(view_)));
+  }
+
+  media_session_id_ = request_id;
+}
+
 void LockScreenMediaControlsView::MediaControllerImageChanged(
     media_session::mojom::MediaSessionImageType type,
     const SkBitmap& bitmap) {
+  if (hide_controls_timer_->IsRunning())
+    return;
+
   switch (type) {
     case media_session::mojom::MediaSessionImageType::kArtwork: {
       base::Optional<gfx::ImageSkia> session_artwork =
@@ -327,7 +345,7 @@ void LockScreenMediaControlsView::ButtonPressed(views::Button* sender,
                                                 const ui::Event& event) {
   if (!base::Contains(enabled_actions_,
                       media_message_center::GetActionFromButtonTag(*sender)) ||
-      !media_session_info_) {
+      !media_session_id_.has_value()) {
     return;
   }
 
@@ -380,13 +398,6 @@ void LockScreenMediaControlsView::UpdateActionButtonsVisibility() {
 void LockScreenMediaControlsView::SetIsPlaying(bool playing) {
   MediaSessionAction action =
       playing ? MediaSessionAction::kPause : MediaSessionAction::kPlay;
-
-  // |media_session_info_| is not set before the play/pause state is initially
-  // set.
-  if (media_session_info_ &&
-      (play_pause_button_->tag() == static_cast<int>(action))) {
-    return;
-  }
 
   play_pause_button_->SetToggled(!playing);
   play_pause_button_->set_tag(static_cast<int>(action));

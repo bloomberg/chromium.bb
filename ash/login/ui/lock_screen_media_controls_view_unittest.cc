@@ -72,12 +72,8 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     media_controls_view_->set_media_controller_for_testing(
         media_controller_->CreateMediaControllerPtr());
 
-    // Simulate active media session.
-    media_session::mojom::MediaSessionInfoPtr session_info(
-        media_session::mojom::MediaSessionInfo::New());
-    session_info->playback_state =
-        media_session::mojom::MediaPlaybackState::kPlaying;
-    media_controls_view_->MediaSessionInfoChanged(session_info.Clone());
+    SimulateMediaSessionChanged(
+        media_session::mojom::MediaPlaybackState::kPlaying);
   }
 
   void TearDown() override {
@@ -106,6 +102,20 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
   void DisableAction(MediaSessionAction action) {
     actions_.erase(action);
     NotifyUpdatedActions();
+  }
+
+  void SimulateMediaSessionChanged(
+      media_session::mojom::MediaPlaybackState playback_state) {
+    // Simulate media session change.
+    media_controls_view_->MediaSessionChanged(base::UnguessableToken::Create());
+
+    // Create media session information.
+    media_session::mojom::MediaSessionInfoPtr session_info(
+        media_session::mojom::MediaSessionInfo::New());
+    session_info->playback_state = playback_state;
+
+    // Simulate media session information change.
+    media_controls_view_->MediaSessionInfoChanged(session_info.Clone());
   }
 
   void SimulateButtonClick(MediaSessionAction action) {
@@ -176,6 +186,45 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsViewTest);
 };
+
+TEST_F(LockScreenMediaControlsViewTest, KeepMediaSessionDataBetweenSessions) {
+  // Simulate media session stopping.
+  media_controls_view_->MediaSessionChanged(base::nullopt);
+
+  // Simulate new media session starting within the timer delay.
+  SimulateMediaSessionChanged(
+      media_session::mojom::MediaPlaybackState::kPlaying);
+
+  // Set icon for new media session.
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(kAppIconSize, kAppIconSize);
+  media_controls_view_->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kSourceIcon, bitmap);
+
+  // Default icon.
+  gfx::ImageSkia default_icon = gfx::CreateVectorIcon(
+      message_center::kProductIcon, kAppIconSize, gfx::kChromeIconGrey);
+
+  // Verify that the default icon is not drawn.
+  EXPECT_FALSE(GetAppIcon().BackedBySameObjectAs(default_icon));
+
+  // Set artwork for new media session.
+  SkBitmap artwork;
+  artwork.allocN32Pixels(kArtworkViewWidth, kArtworkViewHeight);
+  media_controls_view_->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, artwork);
+
+  // Verify that the default artwork is not drawn.
+  EXPECT_FALSE(artwork_view()->GetImage().isNull());
+
+  // Set app name for new media session.
+  media_session::MediaMetadata metadata;
+  metadata.source_title = kTestAppName;
+  media_controls_view_->MediaSessionMetadataChanged(metadata);
+
+  // Verify that the default name is not used.
+  EXPECT_EQ(kTestAppName, GetAppName());
+}
 
 TEST_F(LockScreenMediaControlsViewTest, ButtonsSanityCheck) {
   EnableAllActions();
