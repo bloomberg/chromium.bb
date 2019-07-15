@@ -22,19 +22,8 @@ namespace {
 const int kThreads = 10;
 const int kEvents = 100;
 
-// Under the hood a NetLogCaptureMode is simply an int. But for layering reasons
-// this internal value is not exposed. These tests need to serialize a
-// NetLogCaptureMode to a base::Value, so create our own private mapping.
 int CaptureModeToInt(NetLogCaptureMode capture_mode) {
-  if (capture_mode == NetLogCaptureMode::kDefault)
-    return 0;
-  if (capture_mode == NetLogCaptureMode::kIncludeSensitive)
-    return 1;
-  if (capture_mode == NetLogCaptureMode::kEverything)
-    return 2;
-
-  ADD_FAILURE() << "Unknown capture mode";
-  return -1;
+  return static_cast<int>(capture_mode);
 }
 
 base::Value CaptureModeToValue(NetLogCaptureMode capture_mode) {
