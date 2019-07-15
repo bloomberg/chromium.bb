@@ -21693,6 +21693,30 @@
       }
     ]
   },
+  "linux-wpt-fyi-rel": {
+    "isolated_scripts": [
+      {
+        "args": [],
+        "isolate_name": "wpt_tests_isolate",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "wpt_tests_suite",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "shards": 10
+        }
+      }
+    ]
+  },
   "mac-hermetic-upgrade-rel": {
     "additional_compile_targets": [
       "all"

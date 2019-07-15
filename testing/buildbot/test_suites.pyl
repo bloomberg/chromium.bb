@@ -4834,7 +4834,24 @@
         # Experimental until we're sure these are stable.
         'experiment_percentage': 100,
       }
-    }
+    },
+
+    'wpt_web_tests': {
+      'wpt_tests_suite': {
+        'args': [
+        ],
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'isolate_name': 'wpt_tests_isolate',
+        'swarming': {
+          'shards': 10,
+        },
+      },
+    },
   },
 
   ##############################################################################

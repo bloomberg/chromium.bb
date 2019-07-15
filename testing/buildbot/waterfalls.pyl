@@ -1828,6 +1828,14 @@
           'gtest_tests': 'fieldtrial_gtests',
         },
       },
+      'linux-wpt-fyi-rel': {
+        'mixins': [
+          'linux-trusty',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'wpt_web_tests',
+        },
+      },
       'mac-hermetic-upgrade-rel': {
         'additional_compile_targets': [
           'all'
