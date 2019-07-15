@@ -1694,6 +1694,16 @@
         },
       },
     },
+    'replacements': {
+      'chromeos-kevin-rel-hw-tests': {
+        # Replace VM args with the magic hostname that resolves to a CrOS
+        # device in the test lab.
+        'args': {
+          '--remote': 'variable_chromeos_device_hostname',
+          '--remote-ssh-port': None,
+        },
+      },
+    },
     'remove_from': [
       # Too slow on this configuration, which is severely hardware
       # constrained. crbug.com/950690

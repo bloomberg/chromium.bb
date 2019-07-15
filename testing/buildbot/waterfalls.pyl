@@ -1619,6 +1619,7 @@
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
+        'browser_config': 'cros-chrome',
         'swarming': {
           'dimension_sets': [
             {
@@ -1631,6 +1632,7 @@
           ],
         },
         'test_suites': {
+          'gpu_telemetry_tests': 'gpu_chromeos_telemetry_tests',
           'isolated_scripts': 'chromeos_experimental_remote_device_isolated_tests',
         },
         'os_type': 'chromeos',
