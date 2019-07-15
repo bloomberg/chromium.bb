@@ -477,3 +477,18 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
 
     # Parser error if the cwd is not an absolute path.
     self.CheckParserError(['--cwd', 'tmp/cwd'], 'cwd must be an absolute path')
+
+  def testFileList(self):
+    """Verify that FileList returns the correct files."""
+    # Ensure FileList returns files when files_from is None.
+    files = ['/tmp/filename1', '/tmp/filename2']
+    self.assertEqual(files, cros_test.FileList(files, None))
+
+    # Ensure FileList returns files when files_from does not exist.
+    files_from = self.TempFilePath('file_list')
+    self.assertEqual(files, cros_test.FileList(files, files_from))
+
+    # Ensure FileList uses 'files_from' and ignores 'files'.
+    file_list = ['/tmp/file1', '/tmp/file2', '/tmp/file3']
+    osutils.WriteFile(files_from, '\n'.join(file_list))
+    self.assertEqual(file_list, cros_test.FileList(files, files_from))
