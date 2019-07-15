@@ -718,3 +718,17 @@ message GetStatusStringReply {
   // install attributes status information.
   string status = 1;
 }
+
+// Input parameters to GetRsuDeviceId()
+message GetRsuDeviceIdReply {
+  // This will be set if there's a problem getting device ID.
+  // Note that to be compliant with behaviours before the refactor, failure
+  // in this method call will be reported through DBus error.
+  CryptohomeErrorCode error = 1;
+
+  // Returns lookup key for Remote Server Unlock
+  bytes rsu_device_id = 2;
+}
+
+// Output parameters for GetRsuDeviceId()
+message GetRsuDeviceIdRequest {}
