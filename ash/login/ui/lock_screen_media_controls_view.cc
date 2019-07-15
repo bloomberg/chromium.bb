@@ -7,9 +7,11 @@
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/media_controls_header_view.h"
 #include "ash/media/media_controller_impl.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "components/media_message_center/media_notification_util.h"
+#include "services/media_session/public/cpp/util.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -19,21 +21,28 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/vector_icons.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
 
+using media_session::mojom::MediaSessionAction;
+
 namespace {
 
 constexpr SkColor kMediaControlsBackground = SkColorSetA(SK_ColorDKGRAY, 100);
+constexpr SkColor kMediaButtonColor = SK_ColorWHITE;
+
+// Maximum number of actions that should be displayed on |button_row_|.
+constexpr size_t kMaxActions = 5;
 
 // Dimensions.
 constexpr int kMediaControlsTotalWidthDp = 320;
 constexpr int kMediaControlsTotalHeightDp = 400;
 constexpr int kMediaControlsCornerRadius = 8;
-constexpr gfx::Insets kMediaControlsInsets = gfx::Insets(25, 25, 50, 25);
-constexpr int kMediaControlsChildSpacing = 50;
+constexpr gfx::Insets kMediaControlsInsets = gfx::Insets(25, 25, 30, 25);
+constexpr int kMediaControlsChildSpacing = 30;
 constexpr int kMinimumIconSize = 16;
 constexpr int kDesiredIconSize = 20;
 constexpr int kIconSize = 20;
@@ -41,6 +50,12 @@ constexpr int kMinimumArtworkSize = 200;
 constexpr int kDesiredArtworkSize = 300;
 constexpr int kArtworkViewWidth = 270;
 constexpr int kArtworkViewHeight = 200;
+constexpr gfx::Size kMediaButtonSize = gfx::Size(45, 45);
+constexpr int kPlayPauseIconSize = 32;
+constexpr int kMediaButtonIconSize = 18;
+constexpr gfx::Size kMediaControlsButtonRowSize =
+    gfx::Size(270, kMediaButtonSize.height());
+constexpr int kMediaButtonRowSeparator = 20;
 
 // How long to wait (in milliseconds) for a new media session to begin.
 constexpr base::TimeDelta kNextMediaDelay =
@@ -65,6 +80,32 @@ gfx::Size ScaleSizeToFitView(const gfx::Size& size,
   }
 
   return size;
+}
+
+const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
+  switch (action) {
+    case MediaSessionAction::kPreviousTrack:
+      return kLockScreenPreviousTrackIcon;
+    case MediaSessionAction::kPause:
+      return kLockScreenPauseIcon;
+    case MediaSessionAction::kNextTrack:
+      return kLockScreenNextTrackIcon;
+    case MediaSessionAction::kPlay:
+      return kLockScreenPlayIcon;
+
+    // The following actions are not yet supported on the controls.
+    case MediaSessionAction::kSeekBackward:
+    case MediaSessionAction::kSeekForward:
+    case MediaSessionAction::kStop:
+    case MediaSessionAction::kSkipAd:
+    case MediaSessionAction::kSeekTo:
+    case MediaSessionAction::kScrubTo:
+      NOTREACHED();
+      break;
+  }
+
+  NOTREACHED();
+  return gfx::kNoneIcon;
 }
 
 }  // namespace
@@ -93,6 +134,51 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   session_artwork->SetPreferredSize(
       gfx::Size(kArtworkViewWidth, kArtworkViewHeight));
   session_artwork_ = AddChildView(std::move(session_artwork));
+
+  // |button_row_| contains the buttons for controlling playback.
+  auto button_row = std::make_unique<NonAccessibleView>();
+  auto* button_row_layout =
+      button_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+          kMediaButtonRowSeparator));
+  button_row_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  button_row_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kCenter);
+  button_row->SetPreferredSize(kMediaControlsButtonRowSize);
+  button_row_ = AddChildView(std::move(button_row));
+
+  CreateMediaButton(
+      MediaSessionAction::kPreviousTrack,
+      l10n_util::GetStringUTF16(
+          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PREVIOUS_TRACK));
+
+  // |play_pause_button_| toggles playback. If the current media is playing, the
+  // tag will be |MediaSessionAction::kPause|. If the current media is paused,
+  // the tag will be |MediaSessionAction::kPlay|.
+  auto play_pause_button = views::CreateVectorToggleImageButton(this);
+  play_pause_button->set_tag(static_cast<int>(MediaSessionAction::kPause));
+  play_pause_button->SetPreferredSize(kMediaButtonSize);
+  play_pause_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  play_pause_button->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PAUSE));
+  play_pause_button->SetToggledTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PLAY));
+  play_pause_button_ = button_row_->AddChildView(std::move(play_pause_button));
+
+  // |play_pause_button_| icons.
+  views::SetImageFromVectorIcon(
+      play_pause_button_,
+      GetVectorIconForMediaAction(MediaSessionAction::kPause),
+      kPlayPauseIconSize, kMediaButtonColor);
+  views::SetToggledImageFromVectorIcon(
+      play_pause_button_,
+      GetVectorIconForMediaAction(MediaSessionAction::kPlay),
+      kPlayPauseIconSize, kMediaButtonColor);
+
+  CreateMediaButton(MediaSessionAction::kNextTrack,
+                    l10n_util::GetStringUTF16(
+                        IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_NEXT_TRACK));
 
   // Set child view data to default values initially, until the media controller
   // observers are triggered by a change in media session state..
@@ -186,6 +272,11 @@ void LockScreenMediaControlsView::MediaSessionInfoChanged(
   } else if (!IsDrawn()) {
     view_->CreateMediaControlsLayout();
   }
+
+  SetIsPlaying(session_info &&
+               session_info->playback_state ==
+                   media_session::mojom::MediaPlaybackState::kPlaying);
+
   media_session_info_ = std::move(session_info);
 }
 
@@ -201,6 +292,14 @@ void LockScreenMediaControlsView::MediaSessionMetadataChanged(
 
   accessible_name_ =
       media_message_center::GetAccessibleNameFromMetadata(session_metadata);
+}
+
+void LockScreenMediaControlsView::MediaSessionActionsChanged(
+    const std::vector<MediaSessionAction>& actions) {
+  enabled_actions_ =
+      std::set<MediaSessionAction>(actions.begin(), actions.end());
+
+  UpdateActionButtonsVisibility();
 }
 
 void LockScreenMediaControlsView::MediaControllerImageChanged(
@@ -222,6 +321,77 @@ void LockScreenMediaControlsView::MediaControllerImageChanged(
       header_row_->SetAppIcon(session_icon);
     }
   }
+}
+
+void LockScreenMediaControlsView::ButtonPressed(views::Button* sender,
+                                                const ui::Event& event) {
+  if (!base::Contains(enabled_actions_,
+                      media_message_center::GetActionFromButtonTag(*sender)) ||
+      !media_session_info_) {
+    return;
+  }
+
+  media_session::PerformMediaSessionAction(
+      media_message_center::GetActionFromButtonTag(*sender),
+      media_controller_ptr_);
+}
+
+void LockScreenMediaControlsView::FlushForTesting() {
+  media_controller_ptr_.FlushForTesting();
+}
+
+void LockScreenMediaControlsView::CreateMediaButton(
+    MediaSessionAction action,
+    const base::string16& accessible_name) {
+  auto button = views::CreateVectorImageButton(this);
+  button->set_tag(static_cast<int>(action));
+  button->SetPreferredSize(kMediaButtonSize);
+  button->SetAccessibleName(accessible_name);
+  button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+
+  views::SetImageFromVectorIcon(button.get(),
+                                GetVectorIconForMediaAction(action),
+                                kMediaButtonIconSize, kMediaButtonColor);
+
+  button_row_->AddChildView(std::move(button));
+}
+
+void LockScreenMediaControlsView::UpdateActionButtonsVisibility() {
+  std::set<MediaSessionAction> ignored_actions = {
+      media_message_center::GetPlayPauseIgnoredAction(
+          media_message_center::GetActionFromButtonTag(*play_pause_button_))};
+
+  std::set<MediaSessionAction> visible_actions =
+      media_message_center::GetTopVisibleActions(enabled_actions_,
+                                                 ignored_actions, kMaxActions);
+
+  for (auto* view : button_row_->children()) {
+    views::Button* action_button = views::Button::AsButton(view);
+    bool should_show = base::Contains(
+        visible_actions,
+        media_message_center::GetActionFromButtonTag(*action_button));
+
+    action_button->SetVisible(should_show);
+  }
+
+  PreferredSizeChanged();
+}
+
+void LockScreenMediaControlsView::SetIsPlaying(bool playing) {
+  MediaSessionAction action =
+      playing ? MediaSessionAction::kPause : MediaSessionAction::kPlay;
+
+  // |media_session_info_| is not set before the play/pause state is initially
+  // set.
+  if (media_session_info_ &&
+      (play_pause_button_->tag() == static_cast<int>(action))) {
+    return;
+  }
+
+  play_pause_button_->SetToggled(!playing);
+  play_pause_button_->set_tag(static_cast<int>(action));
+
+  UpdateActionButtonsVisibility();
 }
 
 void LockScreenMediaControlsView::SetArtwork(
