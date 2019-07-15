@@ -1103,11 +1103,6 @@ bool ChromeMainDelegate::ProcessRegistersWithSystemProcess(
 #endif
 }
 
-bool ChromeMainDelegate::ShouldSendMachPort(const std::string& process_type) {
-  return process_type != switches::kRelauncherProcess &&
-         process_type != switches::kCloudPrintServiceProcess;
-}
-
 bool ChromeMainDelegate::DelaySandboxInitialization(
     const std::string& process_type) {
 #if BUILDFLAG(ENABLE_NACL)
