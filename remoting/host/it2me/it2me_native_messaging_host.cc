@@ -39,11 +39,9 @@
 #include "remoting/signaling/delegating_signal_strategy.h"
 #include "remoting/signaling/ftl_client_uuid_device_id_provider.h"
 #include "remoting/signaling/ftl_signal_strategy.h"
-#include "remoting/signaling/muxing_signal_strategy.h"
 #include "remoting/signaling/remoting_log_to_server.h"
 #include "remoting/signaling/server_log_entry.h"
 #include "remoting/signaling/xmpp_log_to_server.h"
-#include "remoting/signaling/xmpp_signal_strategy.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
@@ -295,8 +293,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
         host_context_->network_task_runner());
   } else {
     std::string access_token = ExtractAccessToken(message.get());
-    signal_strategy =
-        CreateMuxingSignalStrategy(username, access_token, message.get());
+    signal_strategy = CreateFtlSignalStrategy(username, access_token);
     register_host_request =
         std::make_unique<RemotingRegisterSupportHostRequest>(
             std::make_unique<PassthroughOAuthTokenGetter>(username,
@@ -593,52 +590,17 @@ It2MeNativeMessagingHost::CreateDelegatedSignalStrategy(
 }
 
 std::unique_ptr<SignalStrategy>
-It2MeNativeMessagingHost::CreateMuxingSignalStrategy(
+It2MeNativeMessagingHost::CreateFtlSignalStrategy(
     const std::string& username,
-    const std::string& access_token,
-    const base::DictionaryValue* message) {
+    const std::string& access_token) {
   if (username.empty()) {
     LOG(ERROR) << "'userName' not found in request.";
     return nullptr;
   }
 
-  XmppSignalStrategy::XmppServerConfig xmpp_config;
-  xmpp_config.username = username;
-
-  const ServiceUrls* service_urls = ServiceUrls::GetInstance();
-  const bool xmpp_server_valid =
-      net::ParseHostAndPort(service_urls->xmpp_server_address(),
-                            &xmpp_config.host, &xmpp_config.port);
-  DCHECK(xmpp_server_valid);
-  xmpp_config.use_tls = service_urls->xmpp_server_use_tls();
-  xmpp_config.auth_token = access_token;
-
-#if !defined(NDEBUG)
-  std::string address;
-  if (!message->GetString("xmppServerAddress", &address)) {
-    LOG(ERROR) << "'xmppServerAddress' not found in request.";
-    return nullptr;
-  }
-
-  if (!net::ParseHostAndPort(address, &xmpp_config.host, &xmpp_config.port)) {
-    LOG(ERROR) << "Invalid 'xmppServerAddress': " << address;
-    return nullptr;
-  }
-
-  if (!message->GetBoolean("xmppServerUseTls", &xmpp_config.use_tls)) {
-    LOG(ERROR) << "'xmppServerUseTls' not found in request.";
-    return nullptr;
-  }
-#endif  // !defined(NDEBUG)
-
-  auto xmpp_signal_strategy = std::make_unique<XmppSignalStrategy>(
-      net::ClientSocketFactory::GetDefaultFactory(),
-      host_context_->url_request_context_getter(), xmpp_config);
-  auto ftl_signal_strategy = std::make_unique<FtlSignalStrategy>(
+  return std::make_unique<FtlSignalStrategy>(
       std::make_unique<PassthroughOAuthTokenGetter>(username, access_token),
       std::make_unique<FtlClientUuidDeviceIdProvider>());
-  return std::make_unique<MuxingSignalStrategy>(
-      std::move(ftl_signal_strategy), std::move(xmpp_signal_strategy));
 }
 
 std::string It2MeNativeMessagingHost::ExtractAccessToken(
