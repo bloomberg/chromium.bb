@@ -3657,34 +3657,6 @@
           '${buildername}',
         ],
       },
-      'pixel': {
-        'name': 'pixel_test',
-        'args': [
-          '--dont-restore-color-profile-after-test',
-          '--refimg-cloud-storage-bucket',
-          'chromium-gpu-archive/reference-images',
-          '--os-type',
-          '${os_type}',
-          '--build-revision',
-          '${got_revision}',
-          '--test-machine-name',
-          '${buildername}',
-        ],
-        'non_precommit_args': [
-          '--upload-refimg-to-cloud-storage',
-        ],
-        'precommit_args': [
-          '--download-refimg-from-cloud-storage',
-        ],
-      },
-      'screenshot_sync': {
-        'args': [
-          '--dont-restore-color-profile-after-test',
-        ],
-      },
-    },
-
-    'gpu_telemetry_tests_for_skia_gold_testing': {
       'pixel_skia': {
         'name': 'pixel_skia_gold_test',
         'args': [
@@ -3718,6 +3690,11 @@
           'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
         },
         'telemetry_test_name': 'pixel',
+      },
+      'screenshot_sync': {
+        'args': [
+          '--dont-restore-color-profile-after-test',
+        ],
       },
     },
 
@@ -5186,14 +5163,12 @@
     'gpu_common_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
     'gpu_common_win_and_linux_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
@@ -5211,7 +5186,7 @@
     ],
 
     'gpu_fyi_android_webgl2_and_gold_telemetry_tests': [
-      'gpu_telemetry_tests_for_skia_gold_testing',
+      'gpu_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
     ],
 
@@ -5227,7 +5202,6 @@
     'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
@@ -5281,26 +5255,15 @@
       'gpu_swiftshader_gtests',
     ],
 
-    # Gold tests added here since all bot that use it are FYI-only.
     'gpu_fyi_mac_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
-    # TODO(https://crbug.com/850107): Merge this back into
-    # gpu_fyi_optional_telemetry_tests once Gold is stabilized.
-    'gpu_fyi_optional_gold_telemetry_tests': [
-      'gpu_common_and_optional_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
-      'gpu_webgl2_conformance_telemetry_tests',
-    ],
-
     'gpu_fyi_optional_linux_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
     ],
@@ -5323,12 +5286,9 @@
       'gpu_win_specific_gtests',
     ],
 
-    # Gold tests added directly here since the only two builders that use this
-    # set of tests are FYI.
     'gpu_fyi_win7_nvidia_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_d3d11_validating_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
@@ -5338,12 +5298,9 @@
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
 
-    # Gold tests added directly here since the only two builders that use this
-    # set of tests are FYI.
     'gpu_fyi_win_amd_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_validating_telemetry_tests',
@@ -5367,30 +5324,24 @@
       'gpu_win_specific_gtests',
     ],
 
-    # Gold tests added here since the only builder that uses it is FYI.
     'gpu_fyi_win_and_linux_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
-    # Gold tests added here since the only builder that uses it is FYI.
     'gpu_fyi_win_and_linux_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
-    # Gold tests added here since the only two builders that use this are FYI.
     'gpu_fyi_win_debug_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_d3d11_validating_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_validating_telemetry_tests',
@@ -5413,11 +5364,9 @@
       'gpu_win_specific_gtests',
     ],
 
-    # Gold tests added here since all bots that use it are FYI-only.
     'gpu_fyi_win_intel_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_d3d11_validating_telemetry_tests',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
@@ -5438,11 +5387,9 @@
       'gpu_swiftshader_gtests',
     ],
 
-    # Gold tests added here since all the bots that use it are FYI-only.
     'gpu_fyi_win_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_d3d11_validating_telemetry_tests',
@@ -5456,7 +5403,6 @@
     'gpu_nexus5x_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
@@ -5464,14 +5410,12 @@
     'gpu_nexus5x_telemetry_tests_v8': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
     'gpu_optional_win_intel_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
@@ -5482,7 +5426,6 @@
 
     'gpu_optional_win_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_d3d11_validating_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
@@ -5495,7 +5438,6 @@
     'gpu_v8_desktop_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],

@@ -2980,7 +2980,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_optional_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_optional_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_optional_telemetry_tests',
         },
       },
       'Optional Mac Retina Release (AMD)': {
@@ -2991,7 +2991,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_optional_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_optional_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_optional_telemetry_tests',
         },
       },
       'Optional Mac Retina Release (NVIDIA)': {
