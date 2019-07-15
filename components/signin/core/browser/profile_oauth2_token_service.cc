@@ -71,9 +71,11 @@ ProfileOAuth2TokenService::ProfileOAuth2TokenService(
       user_prefs_(user_prefs),
       all_credentials_loaded_(false) {
   DCHECK(user_prefs_);
+  AddObserver(this);
 }
 
 ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {
+  RemoveObserver(this);
 }
 
 // static
@@ -86,6 +88,16 @@ void ProfileOAuth2TokenService::RegisterProfilePrefs(
 #endif
   registry->RegisterStringPref(prefs::kGoogleServicesSigninScopedDeviceId,
                                std::string());
+}
+
+void ProfileOAuth2TokenService::AddObserver(
+    OAuth2TokenServiceObserver* observer) {
+  delegate_->AddObserver(observer);
+}
+
+void ProfileOAuth2TokenService::RemoveObserver(
+    OAuth2TokenServiceObserver* observer) {
+  delegate_->RemoveObserver(observer);
 }
 
 std::unique_ptr<OAuth2AccessTokenManager::Request>
@@ -250,8 +262,6 @@ void ProfileOAuth2TokenService::UpdateAuthErrorForTesting(
 
 void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
     const CoreAccountId& account_id) {
-  OAuth2TokenService::OnRefreshTokenAvailable(account_id);
-
   // Check if the newly-updated token is valid (invalid tokens are inserted when
   // the user signs out on the web with DICE enabled).
   bool is_valid = true;
@@ -276,8 +286,6 @@ void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
 
 void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
     const CoreAccountId& account_id) {
-  OAuth2TokenService::OnRefreshTokenRevoked(account_id);
-
   // If this was the last token, recreate the device ID.
   RecreateDeviceIdIfNeeded();
 
@@ -292,8 +300,6 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
 }
 
 void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {
-  OAuth2TokenService::OnRefreshTokensLoaded();
-
   all_credentials_loaded_ = true;
 
   DCHECK_NE(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,

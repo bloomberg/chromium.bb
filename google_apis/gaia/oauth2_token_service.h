@@ -56,8 +56,7 @@ class OAuth2AccessTokenManager;
 //
 // The caller of StartRequest() owns the returned request and is responsible to
 // delete the request even once the callback has been invoked.
-class OAuth2TokenService : public OAuth2TokenServiceObserver,
-                           public OAuth2AccessTokenManager::Delegate {
+class OAuth2TokenService : public OAuth2AccessTokenManager::Delegate {
  public:
   explicit OAuth2TokenService(
       std::unique_ptr<OAuth2TokenServiceDelegate> delegate);
@@ -78,10 +77,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
                                 const std::string& access_token) override;
   void OnAccessTokenFetched(const CoreAccountId& account_id,
                             const GoogleServiceAuthError& error) override;
-
-  // Add or remove observers of this token service.
-  void AddObserver(OAuth2TokenServiceObserver* observer);
-  void RemoveObserver(OAuth2TokenServiceObserver* observer);
 
   // TODO(https://crbug.com/967598): Remove these APIs once we can use
   // OAuth2AccessTokenManager without OAuth2TokenService.

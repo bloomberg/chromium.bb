@@ -28,14 +28,12 @@ OAuth2TokenService::OAuth2TokenService(
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
     : delegate_(std::move(delegate)) {
   DCHECK(delegate_);
-  AddObserver(this);
   token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
       this /* OAuth2AccessTokenManager::Delegate* */);
 }
 
 OAuth2TokenService::~OAuth2TokenService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RemoveObserver(this);
 }
 
 OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() {
@@ -98,14 +96,6 @@ void OAuth2TokenService::OnAccessTokenFetched(
 bool OAuth2TokenService::HasRefreshToken(
     const CoreAccountId& account_id) const {
   return RefreshTokenIsAvailable(account_id);
-}
-
-void OAuth2TokenService::AddObserver(OAuth2TokenServiceObserver* observer) {
-  delegate_->AddObserver(observer);
-}
-
-void OAuth2TokenService::RemoveObserver(OAuth2TokenServiceObserver* observer) {
-  delegate_->RemoveObserver(observer);
 }
 
 void OAuth2TokenService::AddAccessTokenDiagnosticsObserver(

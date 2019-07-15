@@ -38,7 +38,8 @@ class PrefRegistrySimple;
 // won't be cached.
 //
 // Note: requests should be started from the UI thread.
-class ProfileOAuth2TokenService : public OAuth2TokenService {
+class ProfileOAuth2TokenService : public OAuth2TokenService,
+                                  public OAuth2TokenServiceObserver {
  public:
   typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */,
                                        bool /* is_refresh_token_valid */,
@@ -55,6 +56,10 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
 
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // Add or remove observers of this token service.
+  void AddObserver(OAuth2TokenServiceObserver* observer);
+  void RemoveObserver(OAuth2TokenServiceObserver* observer);
 
   // Checks in the cache for a valid access token for a specified |account_id|
   // and |scopes|, and if not found starts a request for an OAuth2 access token
