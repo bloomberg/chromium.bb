@@ -605,3 +605,7 @@ crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to
 crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to-scrolled-element.html [ Skip ]
 crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to-window.html [ Skip ]
 crbug.com/966981 virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.html [ Skip ]
+
+# Added to land BGPT-fix
+crbug.com/979002 virtual/fractional_scrolling_threaded/fast/scrolling/uncomposite-and-composite-scroll.html [ Skip ]
+crbug.com/979002 virtual/threaded/fast/scrolling/uncomposite-and-composite-scroll.html [ Skip ]
