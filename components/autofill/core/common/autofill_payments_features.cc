@@ -75,7 +75,7 @@ const base::Feature kAutofillEnableToolbarStatusChip{
 
 // When enabled, autofill can import credit cards from dynamic change form.
 const base::Feature kAutofillImportDynamicForms{
-    "AutofillImportDynamicForms", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillImportDynamicForms", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, a credit card form that is hidden after receiving input can
 // import the card.
