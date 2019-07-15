@@ -23881,6 +23881,10 @@ Called by update_net_error_codes.py.-->
   <int value="2956" label="LinkPrefetchLoadEvent"/>
   <int value="2957" label="LinkPrefetchErrorEvent"/>
   <int value="2958" label="FontSizeWebkitXxxLarge"/>
+  <int value="2959" label="V8Database_ChangeVersion_Method"/>
+  <int value="2960" label="V8Database_Transaction_Method"/>
+  <int value="2961" label="V8Database_ReadTransaction_Method"/>
+  <int value="2962" label="V8SQLTransaction_ExecuteSql_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
