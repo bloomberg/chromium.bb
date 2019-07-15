@@ -1844,14 +1844,14 @@ class EmergeQueue(object):
       # Complain if necessary.
       if job.retcode != 0:
         # Handle job failure.
-        failed_count = self._failed_count.get(target, 0)
-        if failed_count >= self._max_retries:
+        self._failed_count[target] = self._failed_count.get(target, 0) + 1
+        failed_count = self._failed_count[target]
+        if failed_count > self._max_retries:
           # If this job has failed and can't be retried, give up.
           self._Print("Failed %s. Your build has failed." % details)
         else:
           # Queue up this build to try again after a long while.
           self._retry_queue.append(self._state_map[target])
-          self._failed_count[target] = failed_count + 1
           self._Print("Failed %s, retrying later." % details)
       else:
         self._Print("Completed %s" % details)
