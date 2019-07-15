@@ -186,6 +186,20 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // Note: If tokens have not been fully loaded yet, an empty list is returned.
   std::vector<CoreAccountId> GetAccounts() const;
 
+  // Returns true if a refresh token exists for |account_id|. If false, calls to
+  // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
+  // Note: This will return |true| if and only if |account_id| is contained in
+  // the list returned by |GetAccounts|.
+  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const;
+
+  // Returns true if a refresh token exists for |account_id| and it is in a
+  // persistent error state.
+  bool RefreshTokenHasError(const CoreAccountId& account_id) const;
+
+  // Returns the auth error associated with |account_id|. Only persistent errors
+  // will be returned.
+  GoogleServiceAuthError GetAuthError(const CoreAccountId& account_id) const;
+
   // Exposes the ability to update auth errors to tests.
   void UpdateAuthErrorForTesting(const CoreAccountId& account_id,
                                  const GoogleServiceAuthError& error);

@@ -95,7 +95,7 @@ void OAuth2TokenService::OnAccessTokenFetched(
 
 bool OAuth2TokenService::HasRefreshToken(
     const CoreAccountId& account_id) const {
-  return RefreshTokenIsAvailable(account_id);
+  return delegate_->RefreshTokenIsAvailable(account_id);
 }
 
 void OAuth2TokenService::AddAccessTokenDiagnosticsObserver(
@@ -106,23 +106,6 @@ void OAuth2TokenService::AddAccessTokenDiagnosticsObserver(
 void OAuth2TokenService::RemoveAccessTokenDiagnosticsObserver(
     OAuth2AccessTokenManager::DiagnosticsObserver* observer) {
   token_manager_->RemoveDiagnosticsObserver(observer);
-}
-
-bool OAuth2TokenService::RefreshTokenIsAvailable(
-    const CoreAccountId& account_id) const {
-  return delegate_->RefreshTokenIsAvailable(account_id);
-}
-
-bool OAuth2TokenService::RefreshTokenHasError(
-    const CoreAccountId& account_id) const {
-  return GetAuthError(account_id) != GoogleServiceAuthError::AuthErrorNone();
-}
-
-GoogleServiceAuthError OAuth2TokenService::GetAuthError(
-    const CoreAccountId& account_id) const {
-  GoogleServiceAuthError error = delegate_->GetAuthError(account_id);
-  DCHECK(!error.IsTransientError());
-  return error;
 }
 
 void OAuth2TokenService::set_max_authorization_token_fetch_retries_for_testing(

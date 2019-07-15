@@ -86,20 +86,6 @@ class OAuth2TokenService : public OAuth2AccessTokenManager::Delegate {
   void RemoveAccessTokenDiagnosticsObserver(
       OAuth2AccessTokenManager::DiagnosticsObserver* observer);
 
-  // Returns true if a refresh token exists for |account_id|. If false, calls to
-  // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
-  // Note: This will return |true| if and only if |account_id| is contained in
-  // the list returned by |GetAccounts|.
-  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const;
-
-  // Returns true if a refresh token exists for |account_id| and it is in a
-  // persistent error state.
-  bool RefreshTokenHasError(const CoreAccountId& account_id) const;
-
-  // Returns the auth error associated with |account_id|. Only persistent errors
-  // will be returned.
-  GoogleServiceAuthError GetAuthError(const CoreAccountId& account_id) const;
-
   // Deprecated. It's moved to OAuth2AccessTokenManager.
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
   // Returns the current number of pending fetchers matching given params.
