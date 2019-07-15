@@ -3406,6 +3406,13 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Cancelled"/>
 </enum>
 
+<enum name="AutofillAssistantPaymentRequestAutofillInfoChanged">
+  <int value="0" label="Changed &amp; Success"/>
+  <int value="1" label="Not changed &amp; Success"/>
+  <int value="2" label="Changed &amp; Failure"/>
+  <int value="3" label="Not changed &amp; Failure"/>
+</enum>
+
 <enum name="AutofillAssistantPaymentRequestPrefilled">
   <int value="0" label="Initially complete &amp; Success"/>
   <int value="1" label="Initially incomplete &amp; Success"/>
