@@ -3500,7 +3500,7 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
   assert(IMPLIES(cpi->gf_group.size > 0,
                  cpi->gf_group.index < cpi->gf_group.size));
   const int tpl_idx = cpi->gf_group.frame_disp_idx[cpi->gf_group.index];
-  TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];
+  TplDepFrame *tpl_frame = &cpi->tpl_frame[tpl_idx];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   int tpl_stride = tpl_frame->stride;
   int64_t intra_cost = 0;
@@ -3577,7 +3577,7 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   assert(IMPLIES(cpi->gf_group.size > 0,
                  cpi->gf_group.index < cpi->gf_group.size));
   const int tpl_idx = cpi->gf_group.frame_disp_idx[cpi->gf_group.index];
-  TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];
+  TplDepFrame *tpl_frame = &cpi->tpl_frame[tpl_idx];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   int tpl_stride = tpl_frame->stride;
   int64_t intra_cost = 0;

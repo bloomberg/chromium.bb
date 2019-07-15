@@ -157,7 +157,7 @@ enum {
   SS_CFG_TOTAL = 2
 } UENUM1BYTE(SS_CFG_OFFSET);
 
-#define MAX_LENGTH_TPL_FRAME_STATS 27
+#define MAX_LENGTH_TPL_FRAME_STATS (27 + 8)
 
 typedef struct TplDepStats {
   int64_t intra_cost;
@@ -175,6 +175,7 @@ typedef struct TplDepStats {
 typedef struct TplDepFrame {
   uint8_t is_valid;
   TplDepStats *tpl_stats_ptr;
+  const YV12_BUFFER_CONFIG *gf_picture;
   int stride;
   int width;
   int height;
@@ -753,7 +754,8 @@ typedef struct AV1_COMP {
   YV12_BUFFER_CONFIG *unscaled_last_source;
   YV12_BUFFER_CONFIG scaled_last_source;
 
-  TplDepFrame tpl_stats[MAX_LENGTH_TPL_FRAME_STATS];
+  TplDepFrame tpl_stats_buffer[MAX_LENGTH_TPL_FRAME_STATS];
+  TplDepFrame *tpl_frame;
 
   // For a still frame, this flag is set to 1 to skip partition search.
   int partition_search_skippable_frame;

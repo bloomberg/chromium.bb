@@ -2789,16 +2789,18 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
     int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
     int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
 
-    CHECK_MEM_ERROR(cm, cpi->tpl_stats[frame].tpl_stats_ptr,
-                    aom_calloc(mi_rows * mi_cols,
-                               sizeof(*cpi->tpl_stats[frame].tpl_stats_ptr)));
-    cpi->tpl_stats[frame].is_valid = 0;
-    cpi->tpl_stats[frame].width = mi_cols;
-    cpi->tpl_stats[frame].height = mi_rows;
-    cpi->tpl_stats[frame].stride = mi_cols;
-    cpi->tpl_stats[frame].mi_rows = cm->mi_rows;
-    cpi->tpl_stats[frame].mi_cols = cm->mi_cols;
+    CHECK_MEM_ERROR(
+        cm, cpi->tpl_stats_buffer[frame].tpl_stats_ptr,
+        aom_calloc(mi_rows * mi_cols,
+                   sizeof(*cpi->tpl_stats_buffer[frame].tpl_stats_ptr)));
+    cpi->tpl_stats_buffer[frame].is_valid = 0;
+    cpi->tpl_stats_buffer[frame].width = mi_cols;
+    cpi->tpl_stats_buffer[frame].height = mi_rows;
+    cpi->tpl_stats_buffer[frame].stride = mi_cols;
+    cpi->tpl_stats_buffer[frame].mi_rows = cm->mi_rows;
+    cpi->tpl_stats_buffer[frame].mi_cols = cm->mi_cols;
   }
+  cpi->tpl_frame = &cpi->tpl_stats_buffer[REF_FRAMES];
 
 #if CONFIG_COLLECT_PARTITION_STATS == 2
   av1_zero(cpi->partition_stats);
@@ -3130,8 +3132,8 @@ void av1_remove_compressor(AV1_COMP *cpi) {
   }
 
   for (int frame = 0; frame < MAX_LENGTH_TPL_FRAME_STATS; ++frame) {
-    aom_free(cpi->tpl_stats[frame].tpl_stats_ptr);
-    cpi->tpl_stats[frame].is_valid = 0;
+    aom_free(cpi->tpl_stats_buffer[frame].tpl_stats_ptr);
+    cpi->tpl_stats_buffer[frame].is_valid = 0;
   }
 
   for (t = cpi->num_workers - 1; t >= 0; --t) {
@@ -3635,7 +3637,7 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
 
   assert(IMPLIES(gf_group->size > 0, gf_group->index < gf_group->size));
   const int tpl_idx = gf_group->frame_disp_idx[gf_group->index];
-  TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];
+  TplDepFrame *tpl_frame = &cpi->tpl_frame[tpl_idx];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
 
   if (tpl_frame->is_valid) {
