@@ -726,12 +726,13 @@ class CBuildBotTest(ChromeosConfigTestBase):
             config.prebuilts,
             'Paladin %s should not generate prebuilts.' % build_name)
 
-  def testPreCQHasVMTests(self):
-    """Make sure that at least one pre-cq builder enables VM tests."""
-    pre_cq_configs = constants.PRE_CQ_DEFAULT_CONFIGS
-    have_vm_tests = any([self.site_config[name].vm_tests
-                         for name in pre_cq_configs])
-    self.assertTrue(have_vm_tests, 'No Pre-CQ builder has VM tests enabled')
+  # Disabled due to https://crbug.com/984316
+  # def testPreCQHasVMTests(self):
+  #   """Make sure that at least one pre-cq builder enables VM tests."""
+  #   pre_cq_configs = constants.PRE_CQ_DEFAULT_CONFIGS
+  #   have_vm_tests = any([self.site_config[name].vm_tests
+  #                        for name in pre_cq_configs])
+  #   self.assertTrue(have_vm_tests, 'No Pre-CQ builder has VM tests enabled')
 
   def testCqHasPrebuilts(self):
     """Make sure every master has a sane list of slaves"""

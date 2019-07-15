@@ -651,7 +651,8 @@ PRE_CQ_DEFAULT_CONFIGS = [
     # Betty is the designated board to run vmtest on N.
     # betty-arcnext is disabled pending https://crbug.com/977232
     # 'betty-arcnext-pre-cq',           # vm board    arcnext
-    'betty-pre-cq',                   # vm board    vmtest
+    # betty is disabled due to https://crbug.com/984316
+    # 'betty-pre-cq',                   # vm board    vmtest
     'eve-no-vmtest-pre-cq',           # kabylake    cheets_64 vulkan(Intel)
     'fizz-no-vmtest-pre-cq',          # kabylake
     'grunt-no-vmtest-pre-cq',         # stoneyridge vulkan(AMD)
