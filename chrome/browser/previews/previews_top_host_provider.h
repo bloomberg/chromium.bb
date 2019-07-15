@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_TOP_HOST_PROVIDER_IMPL_H_
-#define CHROME_BROWSER_PREVIEWS_PREVIEWS_TOP_HOST_PROVIDER_IMPL_H_
+#ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_TOP_HOST_PROVIDER_H_
+#define CHROME_BROWSER_PREVIEWS_PREVIEWS_TOP_HOST_PROVIDER_H_
 
 #include <memory>
 #include <string>
@@ -13,22 +13,21 @@
 #include "base/sequence_checker.h"
 #include "base/values.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
-#include "components/previews/content/previews_top_host_provider.h"
+#include "components/optimization_guide/top_host_provider.h"
 
 class PrefService;
 
 namespace content {
 class BrowserContext;
 class NavigationHandle;
-}
-namespace previews {
+}  // namespace content
 
-// An implementation of the PreviewTopHostProvider for getting the top sites
-// based on site engagement scores.
-class PreviewsTopHostProviderImpl : public PreviewsTopHostProvider {
+// An implementation of the optimization_guide::TopHostProvider for getting the
+// top sites based on site engagement scores.
+class PreviewsTopHostProvider : public optimization_guide::TopHostProvider {
  public:
-  explicit PreviewsTopHostProviderImpl(content::BrowserContext* BrowserContext);
-  ~PreviewsTopHostProviderImpl() override;
+  explicit PreviewsTopHostProvider(content::BrowserContext* BrowserContext);
+  ~PreviewsTopHostProvider() override;
 
   // Update the HintsFetcherTopHostBlacklist by attempting to remove the host
   // for the current navigation from the blacklist. A host is removed if it is
@@ -71,9 +70,7 @@ class PreviewsTopHostProviderImpl : public PreviewsTopHostProvider {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsTopHostProviderImpl);
+  DISALLOW_COPY_AND_ASSIGN(PreviewsTopHostProvider);
 };
 
-}  // namespace previews
-
-#endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_TOP_HOST_PROVIDER_IMPL_H_
+#endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_TOP_HOST_PROVIDER_H_

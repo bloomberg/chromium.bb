@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_TOP_HOST_PROVIDER_H_
-#define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_TOP_HOST_PROVIDER_H_
+#ifndef COMPONENTS_OPTIMIZATION_GUIDE_TOP_HOST_PROVIDER_H_
+#define COMPONENTS_OPTIMIZATION_GUIDE_TOP_HOST_PROVIDER_H_
 
 #include <string>
 #include <vector>
 
-namespace previews {
+namespace optimization_guide {
 
 // A class to handle querying for the top hosts for a user.
-class PreviewsTopHostProvider {
+class TopHostProvider {
  public:
   // Returns a vector of at most |max_sites| top hosts, the order of hosts is
   // not guaranteed.
   virtual std::vector<std::string> GetTopHosts(size_t max_sites) = 0;
 
  protected:
-  PreviewsTopHostProvider() {}
-  virtual ~PreviewsTopHostProvider() {}
+  TopHostProvider() {}
+  virtual ~TopHostProvider() {}
 };
 
-}  // namespace previews
+}  // namespace optimization_guide
 
-#endif  // COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_TOP_HOST_PROVIDER_H_
+#endif  // COMPONENTS_OPTIMIZATION_GUIDE_TOP_HOST_PROVIDER_H_

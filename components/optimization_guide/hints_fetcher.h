@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CONTENT_HINTS_FETCHER_H_
-#define COMPONENTS_PREVIEWS_CONTENT_HINTS_FETCHER_H_
+#ifndef COMPONENTS_OPTIMIZATION_GUIDE_HINTS_FETCHER_H_
+#define COMPONENTS_OPTIMIZATION_GUIDE_HINTS_FETCHER_H_
 
 #include <memory>
 #include <string>
@@ -15,7 +15,6 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/previews/core/previews_experiments.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -23,7 +22,7 @@ class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
 
-namespace previews {
+namespace optimization_guide {
 
 // A class to handle requests for optimization hints from a remote Optimization
 // Guide Service.
@@ -36,8 +35,7 @@ class HintsFetcher {
   // to pass back the fetched hints response from the remote Optimization Guide
   // Service.
   using HintsFetchedCallback = base::OnceCallback<void(
-      base::Optional<
-          std::unique_ptr<optimization_guide::proto::GetHintsResponse>>)>;
+      base::Optional<std::unique_ptr<proto::GetHintsResponse>>)>;
 
  public:
   HintsFetcher(
@@ -68,8 +66,7 @@ class HintsFetcher {
 
   // Used to hold the GetHintsRequest being constructed and sent as a remote
   // request.
-  std::unique_ptr<optimization_guide::proto::GetHintsRequest>
-      get_hints_request_;
+  std::unique_ptr<proto::GetHintsRequest> get_hints_request_;
 
   // Used to hold the callback while the SimpleURLLoader performs the request
   // asynchronously.
@@ -89,6 +86,6 @@ class HintsFetcher {
   DISALLOW_COPY_AND_ASSIGN(HintsFetcher);
 };
 
-}  // namespace previews
+}  // namespace optimization_guide
 
-#endif  // COMPONENTS_PREVIEWS_CONTENT_HINTS_FETCHER_H_
+#endif  // COMPONENTS_OPTIMIZATION_GUIDE_HINTS_FETCHER_H_

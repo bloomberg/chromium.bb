@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/hints_fetcher.h"
+#include "components/optimization_guide/hints_fetcher.h"
 
 #include <memory>
 #include <utility>
@@ -21,7 +21,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
-namespace previews {
+namespace optimization_guide {
 
 HintsFetcher::HintsFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -29,10 +29,10 @@ HintsFetcher::HintsFetcher(
     : optimization_guide_service_url_(net::AppendOrReplaceQueryParameter(
           optimization_guide_service_url,
           "key",
-          optimization_guide::features::GetOptimizationGuideServiceAPIKey())) {
+          features::GetOptimizationGuideServiceAPIKey())) {
   url_loader_factory_ = std::move(url_loader_factory);
   CHECK(optimization_guide_service_url_.SchemeIs(url::kHttpsScheme));
-  CHECK(optimization_guide::features::IsHintsFetchingEnabled());
+  CHECK(features::IsHintsFetchingEnabled());
 }
 
 HintsFetcher::~HintsFetcher() {}
@@ -45,28 +45,21 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   if (url_loader_)
     return false;
 
-  get_hints_request_ =
-      std::make_unique<optimization_guide::proto::GetHintsRequest>();
+  get_hints_request_ = std::make_unique<proto::GetHintsRequest>();
 
   // Add all the optimizations supported by the current version of Chrome,
   // regardless of whether the session is in holdback for any of them.
-  get_hints_request_->add_supported_optimizations(
-      optimization_guide::proto::NOSCRIPT);
-  get_hints_request_->add_supported_optimizations(
-      optimization_guide::proto::RESOURCE_LOADING);
-  get_hints_request_->add_supported_optimizations(
-      optimization_guide::proto::DEFER_ALL_SCRIPT);
-  static_assert(static_cast<int>(PreviewsType::DEFER_ALL_SCRIPT) + 1 ==
-                    static_cast<int>(PreviewsType::LAST),
-                "PreviewsType has been updated, make sure Optimization Guide "
-                "Service hints are not affected");
+  get_hints_request_->add_supported_optimizations(proto::NOSCRIPT);
+  get_hints_request_->add_supported_optimizations(proto::RESOURCE_LOADING);
+  get_hints_request_->add_supported_optimizations(proto::DEFER_ALL_SCRIPT);
+  // TODO(crbug/969558): Figure out a way to either have a registration call
+  // for clients to specify their supported optimization types or have a static
+  // assert on the last OptimizationType.
 
-  get_hints_request_->set_context(
-      optimization_guide::proto::CONTEXT_BATCH_UPDATE);
+  get_hints_request_->set_context(proto::CONTEXT_BATCH_UPDATE);
 
   for (const auto& host : hosts) {
-    optimization_guide::proto::HostInfo* host_info =
-        get_hints_request_->add_hosts();
+    proto::HostInfo* host_info = get_hints_request_->add_hosts();
     host_info->set_host(host);
   }
 
@@ -130,9 +123,8 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
 void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
                                   int net_status,
                                   int response_code) {
-  std::unique_ptr<optimization_guide::proto::GetHintsResponse>
-      get_hints_response =
-          std::make_unique<optimization_guide::proto::GetHintsResponse>();
+  std::unique_ptr<proto::GetHintsResponse> get_hints_response =
+      std::make_unique<proto::GetHintsResponse>();
 
   UMA_HISTOGRAM_ENUMERATION(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.Status",
@@ -162,4 +154,4 @@ void HintsFetcher::OnURLLoadComplete(
   url_loader_.reset();
 }
 
-}  // namespace previews
+}  // namespace optimization_guide

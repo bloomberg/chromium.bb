@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/previews/previews_top_host_provider_impl.h"
+#include "chrome/browser/previews/previews_top_host_provider.h"
 
 #include "base/values.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
@@ -16,16 +16,13 @@
 #include "content/public/test/mock_navigation_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace previews {
-
 // Class to test the TopHostProvider and the HintsFetcherTopHostBlacklist.
-class PreviewsTopHostProviderImplTest : public ChromeRenderViewHostTestHarness {
+class PreviewsTopHostProviderTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    top_host_provider_ =
-        std::make_unique<PreviewsTopHostProviderImpl>(profile());
+    top_host_provider_ = std::make_unique<PreviewsTopHostProvider>(profile());
     service_ = SiteEngagementService::Get(profile());
     pref_service_ = profile()->GetPrefs();
   }
@@ -88,8 +85,7 @@ class PreviewsTopHostProviderImplTest : public ChromeRenderViewHostTestHarness {
   void SimulateNavigation(GURL url) {
     std::unique_ptr<content::MockNavigationHandle> test_handle_ =
         std::make_unique<content::MockNavigationHandle>(url, main_rfh());
-    PreviewsTopHostProviderImpl::MaybeUpdateTopHostBlacklist(
-        test_handle_.get());
+    PreviewsTopHostProvider::MaybeUpdateTopHostBlacklist(test_handle_.get());
   }
 
   void RemoveHostsFromBlacklist(size_t num_hosts_navigated) {
@@ -125,17 +121,17 @@ class PreviewsTopHostProviderImplTest : public ChromeRenderViewHostTestHarness {
 
   void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
 
-  PreviewsTopHostProviderImpl* top_host_provider() {
+  PreviewsTopHostProvider* top_host_provider() {
     return top_host_provider_.get();
   }
 
  private:
-  std::unique_ptr<PreviewsTopHostProviderImpl> top_host_provider_;
+  std::unique_ptr<PreviewsTopHostProvider> top_host_provider_;
   SiteEngagementService* service_;
   PrefService* pref_service_;
 };
 
-TEST_F(PreviewsTopHostProviderImplTest, GetTopHostsMaxSites) {
+TEST_F(PreviewsTopHostProviderTest, GetTopHostsMaxSites) {
   SetTopHostBlacklistState(optimization_guide::prefs::
                                HintsFetcherTopHostBlacklistState::kInitialized);
   size_t engaged_hosts = 5;
@@ -148,7 +144,7 @@ TEST_F(PreviewsTopHostProviderImplTest, GetTopHostsMaxSites) {
   EXPECT_EQ(max_top_hosts, hosts.size());
 }
 
-TEST_F(PreviewsTopHostProviderImplTest,
+TEST_F(PreviewsTopHostProviderTest,
        GetTopHostsFiltersPrivacyBlackedlistedHosts) {
   SetTopHostBlacklistState(optimization_guide::prefs::
                                HintsFetcherTopHostBlacklistState::kInitialized);
@@ -165,7 +161,7 @@ TEST_F(PreviewsTopHostProviderImplTest,
   EXPECT_EQ(hosts.size(), engaged_hosts - num_hosts_blacklisted);
 }
 
-TEST_F(PreviewsTopHostProviderImplTest, GetTopHostsInitializeBlacklistState) {
+TEST_F(PreviewsTopHostProviderTest, GetTopHostsInitializeBlacklistState) {
   EXPECT_EQ(GetCurrentTopHostBlacklistState(),
             optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
                 kNotInitialized);
@@ -182,7 +178,7 @@ TEST_F(PreviewsTopHostProviderImplTest, GetTopHostsInitializeBlacklistState) {
                 kInitialized);
 }
 
-TEST_F(PreviewsTopHostProviderImplTest,
+TEST_F(PreviewsTopHostProviderTest,
        GetTopHostsBlacklistStateNotInitializedToInitialized) {
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 5;
@@ -205,7 +201,7 @@ TEST_F(PreviewsTopHostProviderImplTest,
                 kInitialized);
 }
 
-TEST_F(PreviewsTopHostProviderImplTest,
+TEST_F(PreviewsTopHostProviderTest,
        GetTopHostsBlacklistStateNotInitializedToEmpty) {
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 5;
@@ -228,7 +224,7 @@ TEST_F(PreviewsTopHostProviderImplTest,
       optimization_guide::prefs::HintsFetcherTopHostBlacklistState::kEmpty);
 }
 
-TEST_F(PreviewsTopHostProviderImplTest,
+TEST_F(PreviewsTopHostProviderTest,
        MaybeUpdateTopHostBlacklistNavigationsOnBlacklist) {
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 5;
@@ -248,8 +244,7 @@ TEST_F(PreviewsTopHostProviderImplTest,
   EXPECT_EQ(hosts.size(), num_top_hosts);
 }
 
-TEST_F(PreviewsTopHostProviderImplTest,
-       MaybeUpdateTopHostBlacklistEmptyBlacklist) {
+TEST_F(PreviewsTopHostProviderTest, MaybeUpdateTopHostBlacklistEmptyBlacklist) {
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 5;
   size_t num_top_hosts = 5;
@@ -269,7 +264,7 @@ TEST_F(PreviewsTopHostProviderImplTest,
   EXPECT_EQ(hosts.size(), num_top_hosts);
 }
 
-TEST_F(PreviewsTopHostProviderImplTest,
+TEST_F(PreviewsTopHostProviderTest,
        HintsFetcherTopHostBlacklistNonHTTPOrHTTPSHost) {
   size_t engaged_hosts = 5;
   size_t max_top_hosts = 5;
@@ -301,8 +296,7 @@ TEST_F(PreviewsTopHostProviderImplTest,
   EXPECT_FALSE(IsHostBlacklisted(http_url.host()));
 }
 
-TEST_F(PreviewsTopHostProviderImplTest,
-       IntializeTopHostBlacklistWithMaxTopSites) {
+TEST_F(PreviewsTopHostProviderTest, IntializeTopHostBlacklistWithMaxTopSites) {
   size_t engaged_hosts =
       optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() + 1;
   size_t max_top_hosts =
@@ -333,7 +327,7 @@ TEST_F(PreviewsTopHostProviderImplTest,
   EXPECT_FALSE(IsHostBlacklisted(base::StringPrintf("domain%u.com", 1u)));
 }
 
-TEST_F(PreviewsTopHostProviderImplTest, TopHostsFilteredByEngagementThreshold) {
+TEST_F(PreviewsTopHostProviderTest, TopHostsFilteredByEngagementThreshold) {
   size_t engaged_hosts =
       optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize() + 1;
   size_t max_top_hosts =
@@ -366,5 +360,3 @@ TEST_F(PreviewsTopHostProviderImplTest, TopHostsFilteredByEngagementThreshold) {
   EXPECT_EQ(std::find(hosts.begin(), hosts.end(), "lowengagement2.com"),
             hosts.end());
 }
-
-}  // namespace previews

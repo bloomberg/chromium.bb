@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/content/hints_fetcher.h"
+#include "components/optimization_guide/hints_fetcher.h"
 
 #include <memory>
 
@@ -21,7 +21,7 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace previews {
+namespace optimization_guide {
 
 constexpr char optimization_guide_service_url[] = "https://hintsserver.com/";
 
@@ -33,7 +33,7 @@ class HintsFetcherTest : public testing::Test {
                 &test_url_loader_factory_)) {
     base::test::ScopedFeatureList scoped_list;
     scoped_list.InitAndEnableFeatureWithParameters(
-        optimization_guide::features::kOptimizationHintsFetching, {});
+        features::kOptimizationHintsFetching, {});
 
     hints_fetcher_ = std::make_unique<HintsFetcher>(
         shared_url_loader_factory_, GURL(optimization_guide_service_url));
@@ -41,10 +41,8 @@ class HintsFetcherTest : public testing::Test {
 
   ~HintsFetcherTest() override {}
 
-  void OnHintsFetched(
-      base::Optional<
-          std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
-          get_hints_response) {
+  void OnHintsFetched(base::Optional<std::unique_ptr<proto::GetHintsResponse>>
+                          get_hints_response) {
     if (get_hints_response)
       hints_fetched_ = true;
   }
@@ -137,4 +135,4 @@ TEST_F(HintsFetcherTest, FetchReturnBadResponse) {
   EXPECT_FALSE(hints_fetched());
 }
 
-}  // namespace previews
+}  // namespace optimization_guide
