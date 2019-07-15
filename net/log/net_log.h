@@ -323,6 +323,22 @@ class NET_EXPORT NetLog {
   // be called while |lock_| is already held.
   bool HasObserver(ThreadSafeObserver* observer);
 
+  // In debug and ASAN builds, verify that the NetLog is not used while free.
+  // This is a regression test for https://crbug.com/983298.
+#if defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
+  static constexpr int kAliveToken = 0xDEADBEEF;
+
+  inline void CheckAlive() const { CHECK_EQ(alive_, kAliveToken); }
+  inline void MarkDead() {
+    CheckAlive();
+    alive_ = 0;
+  }
+  int alive_ = kAliveToken;
+#else
+  inline void CheckAlive() const {}
+  inline void MarkDead() {}
+#endif
+
   // |lock_| protects access to |observers_|.
   base::Lock lock_;
 

@@ -31,7 +31,9 @@ NetLog* NetLog::ThreadSafeObserver::net_log() const {
 
 NetLog::NetLog() : last_id_(0), observer_capture_modes_(0) {}
 
-NetLog::~NetLog() = default;
+NetLog::~NetLog() {
+  MarkDead();
+}
 
 void NetLog::AddEntry(NetLogEventType type,
                       const NetLogSource& source,
@@ -55,6 +57,7 @@ uint32_t NetLog::NextID() {
 }
 
 bool NetLog::IsCapturing() const {
+  CheckAlive();
   return GetObserverCaptureModes() != 0;
 }
 

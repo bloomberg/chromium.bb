@@ -362,6 +362,8 @@ class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
                url, session_.get()) != kNoPushedStreamFound;
   }
 
+  BoundTestNetLog log_;
+
   // Original socket limits.  Some tests set these.  Safest to always restore
   // them once each test has been run.
   int old_max_group_sockets_;
@@ -377,7 +379,6 @@ class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
   const url::SchemeHostPort test_server_;
   SpdySessionKey key_;
   SSLSocketDataProvider ssl_;
-  BoundTestNetLog log_;
 };
 
 class SpdySessionTestWithMockTime : public SpdySessionTest {

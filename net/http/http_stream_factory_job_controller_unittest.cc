@@ -307,6 +307,7 @@ class HttpStreamFactoryJobControllerTest
   void TestMainJobFailsAfterAltJobSucceeded(
       bool alt_job_retried_on_non_default_network);
 
+  BoundTestNetLog net_log_;
   TestJobFactory job_factory_;
   MockHttpStreamRequestDelegate request_delegate_;
   SpdySessionDependencies session_deps_{ProxyResolutionService::CreateDirect()};
@@ -328,7 +329,6 @@ class HttpStreamFactoryJobControllerTest
       false};
 
  protected:
-  BoundTestNetLog net_log_;
   bool use_alternative_proxy_ = false;
   bool is_preconnect_ = false;
   bool enable_ip_based_pooling_ = true;
