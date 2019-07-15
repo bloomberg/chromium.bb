@@ -68,12 +68,11 @@ extern const int kCreditCardSigninPromoImpressionLimit;
 
 // Enum for the value patterns metric. Don't renumerate existing value. They are
 // used for metrics.
-// TODO(crbug.com/966475): Add support for IBAN
-// (https://en.wikipedia.org/wiki/International_Bank_Account_Number).
 enum class ValuePatternsMetric {
   kNoPatternFound = 0,
-  kUpiVpa = 1,
-  kMaxValue = kUpiVpa,
+  kUpiVpa = 1,  // UPI virtual payment address.
+  kIban = 2,    // International Bank Account Number.
+  kMaxValue = kIban,
 };
 
 // Manages saving and restoring the user's personal information entered into web

@@ -196,6 +196,8 @@ std::string GetAPIKeyForUrl(version_info::Channel channel) {
 ValuePatternsMetric GetValuePattern(const base::string16& value) {
   if (IsUPIVirtualPaymentAddress(value))
     return ValuePatternsMetric::kUpiVpa;
+  if (IsInternationalBankAccountNumber(value))
+    return ValuePatternsMetric::kIban;
   return ValuePatternsMetric::kNoPatternFound;
 }
 

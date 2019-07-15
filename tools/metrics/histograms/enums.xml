@@ -4343,6 +4343,7 @@ Unknown properties are collapsed to zero. -->
 <enum name="AutofillValuePatterns">
   <int value="0" label="No pattern found"/>
   <int value="1" label="UPI VPA"/>
+  <int value="2" label="IBAN"/>
 </enum>
 
 <enum name="AutofillWalletAddressConversionType">
