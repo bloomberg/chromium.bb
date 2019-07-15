@@ -18,8 +18,6 @@ import android.support.test.espresso.Espresso;
 import android.support.test.espresso.action.ViewActions;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.espresso.matcher.ViewMatchers;
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,6 +27,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -104,7 +103,7 @@ public class GridTabSwitcherLayoutPerfTest {
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTab() throws InterruptedException {
         prepareTabs(1, NTP_URL);
@@ -112,7 +111,7 @@ public class GridTabSwitcherLayoutPerfTest {
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabWith10Tabs() throws InterruptedException {
         prepareTabs(10, NTP_URL);
@@ -120,7 +119,7 @@ public class GridTabSwitcherLayoutPerfTest {
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWith10TabsWarm() throws InterruptedException {
         prepareTabs(10, NTP_URL);
@@ -128,7 +127,7 @@ public class GridTabSwitcherLayoutPerfTest {
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWith10TabsSoft() throws InterruptedException {
         prepareTabs(10, NTP_URL);
@@ -136,7 +135,7 @@ public class GridTabSwitcherLayoutPerfTest {
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     @CommandLineFlags.Add({BASE_PARAMS + "/downsampling-scale/1"})
     public void testTabToGridFromLiveTabWith10TabsNoDownsample() throws InterruptedException {
         prepareTabs(10, NTP_URL);
@@ -144,7 +143,7 @@ public class GridTabSwitcherLayoutPerfTest {
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabWith10TabsWithoutThumbnail() throws InterruptedException {
         // Note that most of the tabs won't have thumbnails.
@@ -153,7 +152,7 @@ public class GridTabSwitcherLayoutPerfTest {
     }
 
     @Test
-    @LargeTest
+    @EnormousTest
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabWith100Tabs() throws InterruptedException {
         // Skip waiting for loading. Otherwise it would take too long.
@@ -163,7 +162,7 @@ public class GridTabSwitcherLayoutPerfTest {
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromNtp() throws InterruptedException {
         prepareTabs(1, NTP_URL);
@@ -246,35 +245,35 @@ public class GridTabSwitcherLayoutPerfTest {
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     public void testGridToTabToCurrentNTP() throws InterruptedException {
         prepareTabs(1, NTP_URL);
         reportGridToTabPerf(false, false, "Grid-to-Tab to current NTP");
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     public void testGridToTabToOtherNTP() throws InterruptedException {
         prepareTabs(2, NTP_URL);
         reportGridToTabPerf(true, false, "Grid-to-Tab to other NTP");
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     public void testGridToTabToCurrentLive() throws InterruptedException {
         prepareTabs(1, mUrl);
         reportGridToTabPerf(false, false, "Grid-to-Tab to current live tab");
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     public void testGridToTabToOtherLive() throws InterruptedException {
         prepareTabs(2, mUrl);
         reportGridToTabPerf(true, false, "Grid-to-Tab to other live tab");
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     public void testGridToTabToOtherFrozen() throws InterruptedException {
         prepareTabs(2, mUrl);
         reportGridToTabPerf(true, true, "Grid-to-Tab to other frozen tab");
