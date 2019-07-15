@@ -386,8 +386,6 @@ static void enc_setup_mi(AV1_COMMON *cm) {
   // Clear left border column
   for (i = 0; i < mi_rows_sb_aligned; ++i)
     memset(&cm->prev_mi[i * cm->mi_stride], 0, sizeof(*cm->prev_mi));
-  cm->mi_grid_base = cm->mi_grid_base;
-  cm->prev_mi_grid_base = cm->prev_mi_grid_base;
 
   memset(cm->mi_grid_base, 0,
          cm->mi_stride * mi_rows_sb_aligned * sizeof(*cm->mi_grid_base));
@@ -432,8 +430,6 @@ static void swap_mi_and_prev_mi(AV1_COMMON *cm) {
   // Update the upper left visible macroblock ptrs.
   cm->prev_mi_grid_base = cm->mi_grid_base;
   cm->mi_grid_base = temp_base;
-  cm->mi_grid_base = cm->mi_grid_base;
-  cm->prev_mi_grid_base = cm->prev_mi_grid_base;
 }
 
 void av1_initialize_enc(void) {
