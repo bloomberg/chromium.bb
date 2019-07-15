@@ -145,6 +145,7 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/no_typeform_harness.yaml		  \
 	braille-specs/pl-pl-comp8_harness.yaml		  \
 	braille-specs/Pl-Pl-g1_backward.yaml		  \
+	braille-specs/Pl-Pl-g1_harness.yaml		  \
 	braille-specs/sk-g1_harness.yaml		  \
 	braille-specs/sl-g1.yaml			  \
 	braille-specs/spaces.yaml			  \
@@ -181,6 +182,7 @@ dist_yaml_TESTS =				\
 	yaml/foo.yaml				\
 	yaml/hyphenation_nocross_harness.yaml	\
 	yaml/inpos_outpos.yaml			\
+	yaml/input-length.yaml			\
 	yaml/issue-238.yaml			\
 	yaml/issue-332.yaml			\
 	yaml/issue-35.yaml			\
@@ -204,12 +206,12 @@ dist_yaml_TESTS =				\
 	yaml/multipass-vs-match.yaml		\
 	yaml/new_emph.yaml			\
 	yaml/noletsignafter.yaml		\
-	yaml/noUndefinedDots.yaml		\
 	yaml/partialTrans.yaml			\
 	yaml/pass0_typebuf.yaml			\
 	yaml/present_progressive.yaml		\
 	yaml/squash_space.yaml			\
-	yaml/syllable.yaml
+	yaml/syllable.yaml			\
+	yaml/undefined-dots.yaml
 
 YAML_LOG_COMPILER_SCRIPT = yaml-log-compiler.sh
 TEST_EXTENSIONS = .yaml

@@ -889,7 +889,9 @@ back_updatePositions(const widechar *outChars, int inLength, int outLength,
 
 static int
 undefinedDots(widechar dots, int mode, OutString *output, int pos, int *posMapping) {
+	posMapping[pos] = output->length;
 	if (mode & noUndefinedDots) return 1;
+
 	/* Print out dot numbers */
 	widechar buffer[20];
 	int k = 1;
@@ -912,7 +914,6 @@ undefinedDots(widechar dots, int mode, OutString *output, int pos, int *posMappi
 	buffer[k++] = '/';
 	if ((output->length + k) > output->maxlength) return 0;
 	memcpy(&output->chars[output->length], buffer, k * CHARSIZE);
-	posMapping[pos] = output->length;
 	output->length += k;
 	return 1;
 }

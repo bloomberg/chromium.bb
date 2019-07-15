@@ -14,11 +14,15 @@ issues]].
   Frees.
 - Never convert to lowercase if capsletter is not defined. Thanks to
   Bert Frees.
+- Fix position mapping for back-translation when noUndefinedDots mode
+  is active. Thanks to Dave Mielke.
 
 ** Braille table improvements
 - Fix an issue with ordinal numbers inside caps passages in Dutch
   braille. Thanks to Bert Frees.
 - Improved back-translation for Mongolian thanks to Angaragerdene.
+- Fixes to Polish grade 1 and Polish computer braille thanks to Łukasz
+  Golonka.
 
 ** Other changes
 ** Deprecation notice

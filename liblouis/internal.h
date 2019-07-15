@@ -633,9 +633,6 @@ _lou_resolveTable(const char *tableList, const char *base);
 char **EXPORT_CALL
 _lou_defaultTableResolver(const char *tableList, const char *base);
 
-char *EXPORT_CALL
-_lou_getLastTableList(void);
-
 /**
  * Return single-cell dot pattern corresponding to a character.
  * TODO: move to commonTranslationFunctions.c
