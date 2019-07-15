@@ -198,7 +198,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Kebijakan ini memengaruhi semua jenis output audio, tidak hanya speaker bawaan. Fitur aksesibilitas audio juga dibatasi oleh kebijakan ini. Jangan aktifkan kebijakan ini jika pengguna memerlukan pembaca layar.
 
       Jika setelan ini ditetapkan ke True atau tidak dikonfigurasi, maka pengguna dapat menggunakan semua output audio yang didukung pada perangkatnya.</translation>
-<translation id="1359553908012294236">Jika kebijakan ini disetel ke True atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mengaktifkan proses masuk tamu. Proses masuk tamu adalah profil <ph name="PRODUCT_NAME" /> dengan semua jendela dalam mode penyamaran.
+<translation id="1359553908012294236">Jika kebijakan ini disetel ke True atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mengaktifkan proses masuk tamu. Proses masuk tamu adalah profil <ph name="PRODUCT_NAME" /> dengan semua jendela dalam mode samaran.
 
       Jika kebijakan ini disetel ke False, <ph name="PRODUCT_NAME" /> tidak akan mengizinkan profil tamu dimulai.</translation>
 <translation id="1363275621236827384">Mengaktifkan kueri ke Quirks Server untuk profil hardware</translation>
@@ -552,7 +552,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
       Jika setelan ini diaktifkan atau tidak memiliki nilai, pengguna dapat mengontrol fitur IsiOtomatis untuk alamat di UI.</translation>
 <translation id="1962273523772270623">Mengizinkan pengumpulan log aktivitas WebRTC dari layanan Google</translation>
-<translation id="1964634611280150550">Mode penyamaran dinonaktifkan</translation>
+<translation id="1964634611280150550">Mode samaran dinonaktifkan</translation>
 <translation id="1964802606569741174">Kebijakan ini tidak memengaruhi aplikasi YouTube Android. Jika Mode Perlindungan di YouTube harus diterapkan, pemasangan aplikasi YouTube Android harus dilarang.</translation>
 <translation id="1969212217917526199">Menggantikan kebijakan pada versi Debug untuk host akses jarak jauh.
 
@@ -983,7 +983,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Jika kebijakan ini tidak ditetapkan atau tidak memuat interval waktu:
       Pemeriksaan update otomatis tidak akan diblokir oleh kebijakan ini, tetapi dapat diblokir oleh kebijakan lain. Fitur ini hanya diaktifkan di perangkat Chrome yang dikonfigurasi sebagai kios dengan peluncuran otomatis. Perangkat lain tidak akan dibatasi oleh kebijakan ini.</translation>
 <translation id="2823870601012066791">Lokasi registry Windows untuk klien <ph name="PRODUCT_OS_NAME" />:</translation>
-<translation id="2824715612115726353">Aktifkan mode Penyamaran</translation>
+<translation id="2824715612115726353">Aktifkan mode Samaran</translation>
 <translation id="2836621397261130126">Mengontrol apakah persetujuan oleh kebijakan KDC dipatuhi untuk menentukan pendelegasian tiket <ph name="KERBEROS" />.
 
           Jika kebijakan ini ditetapkan ke True, autentikasi HTTP akan mematuhi persetujuan oleh kebijakan KDC, artinya Chrome hanya akan mendelegasikan kredensial jika KDC menetapkan <ph name="OK_AS_DELEGATE" /> pada tiket layanan. Lihat https://tools.ietf.org/html/rfc5896.html untuk mengetahui informasi selengkapnya. Layanan juga harus cocok dengan kebijakan 'AuthNegotiateDelegateWhitelist'.
@@ -1237,7 +1237,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="3205825995289802549">Maksimalkan jendela browser pertama di percobaan pertama</translation>
 <translation id="3211426942294667684">Setelan login browser</translation>
 <translation id="3214164532079860003">Kebijakan ini memaksa beranda diimpor dari browser default yang sedang digunakan, jika diaktifkan. Jika dinonaktifkan, beranda tidak diimpor. Jika tidak disetel, pengguna mungkin akan ditanya apakah ingin mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
-<translation id="3219421230122020860">Mode penyamaran tersedia</translation>
+<translation id="3219421230122020860">Mode samaran tersedia</translation>
 <translation id="3220624000494482595">Jika aplikasi kios adalah aplikasi Android, aplikasi tersebut tidak akan memiliki kontrol terhadap versi <ph name="PRODUCT_OS_NAME" />, meski kebijakan ini disetel ke <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Pola URL untuk memungkinkan pemasangan skrip pengguna, aplikasi, dan ekstensi dari</translation>
 <translation id="3240609035816615922">Kebijakan akses konfigurasi untuk printer.</translation>
@@ -1649,7 +1649,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
           Jika kebijakan ini tidak ditetapkan, tidak ada aplikasi atau ekstensi yang otomatis diinstal dan pengguna dapat meng-uninstal aplikasi atau ekstensi apa pun di <ph name="PRODUCT_NAME" />.
 
-          Perlu diperhatikan bahwa kebijakan ini tidak berlaku untuk mode penyamaran.</translation>
+          Perlu diperhatikan bahwa kebijakan ini tidak berlaku untuk mode samaran.</translation>
 <translation id="4008507541867797979">Jika kebijakan ini ditetapkan ke true atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan menampilkan pengguna yang ada di layar login dan diizinkan untuk memilih salah satu.
 
       Jika kebijakan ini ditetapkan ke false, <ph name="PRODUCT_OS_NAME" /> tidak akan menampilkan pengguna yang ada di layar login. Layar login normal (yang meminta email dan sandi atau ponsel pengguna) atau layar interstisial SAML (jika diaktifkan melalui kebijakan <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) akan ditampilkan, kecuali jika Sesi Terkelola dikonfigurasi. Jika Sesi Terkelola dikonfigurasi, hanya akun Sesi Terkelola yang akan ditampilkan, sehingga memungkinkan untuk memilih salah satu akun.
@@ -1679,7 +1679,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Printer yang tersambung ke <ph name="CLOUD_PRINT_NAME" /> dianggap sebagai <ph name="PRINTER_TYPE_CLOUD" />, printer lainnya akan diklasifikasikan sebagai <ph name="PRINTER_TYPE_LOCAL" />.
       Jika Anda menghapus satu kolom berarti semua nilai yang cocok, misalnya tidak menentukan konektivitas, akan menyebabkan Pratinjau Cetak memulai pencarian semua jenis printer, baik lokal maupun cloud.
       Pola ekspresi reguler harus mengikuti sintaks RegExp JavaScript, dan hasil yang cocok peka huruf besar/kecil.</translation>
-<translation id="4088589230932595924">Mode penyamaran dipaksakan</translation>
+<translation id="4088589230932595924">Mode samaran dipaksakan</translation>
 <translation id="4088983553732356374">Memungkinkan Anda menentukan apakah situs web diizinkan untuk menyetel data lokal atau tidak. Penyetelan data lokal bisa diizinkan untuk semua situs web atau ditolak untuk semua situs web.
 
           Jika kebijakan ini disetel ke 'Simpan cookie untuk durasi sesi', cookie akan dihapus saat sesi ditutup. Perhatikan bahwa jika <ph name="PRODUCT_NAME" /> dijalankan dalam 'mode latar belakang', sesi mungkin tidak ditutup saat jendela terakhir ditutup. Lihat kebijakan 'BackgroundModeEnabled' untuk informasi selengkapnya tentang cara mengonfigurasi perilaku ini.
@@ -2246,7 +2246,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan tidak disetel, atau jika disetel menjadi string kosong maupun rentang port yang tidak valid, WebRTC diizinkan untuk menggunakan port UDP lokal mana pun yang tersedia.</translation>
 <translation id="5290940294294002042">Tentukan daftar plugin yang dapat diaktifkan atau dinonaktifkan pengguna</translation>
 <translation id="5306186200045823863">Mengaktifkan kepercayaan pada Infrastruktur IKU Lama milik Symantec Corporation</translation>
-<translation id="5307432759655324440">Ketersediaan mode penyamaran</translation>
+<translation id="5307432759655324440">Ketersediaan mode samaran</translation>
 <translation id="5318185076587284965">Aktifkan penggunaan server relay oleh hosting akses jarak jauh</translation>
 <translation id="5323128137188992869">Izinkan konten untuk ditransmisikan ke perangkat menggunakan <ph name="PRODUCT_NAME" />.
 
@@ -2565,7 +2565,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Buka http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk melihat daftar variabel yang dapat digunakan.
 
       Jika setelan ini tidak disetel, direktori profil default akan digunakan.</translation>
-<translation id="5826047473100157858">Menentukan apakah pengguna dapat membuka halaman dalam mode Penyamaran di <ph name="PRODUCT_NAME" />. Jika 'Aktifkan' dipilih atau kebijakan dibiarkan tidak disetel, halaman dapat dibuka dalam mode Penyamaran. Jika 'Nonaktifkan' dipilih, halaman tidak dapat dibuka dalam mode Penyamaran. Jika 'Paksa' dipilih, halaman dapat dibuka HANYA dalam mode Penyamaran.</translation>
+<translation id="5826047473100157858">Menentukan apakah pengguna dapat membuka halaman dalam mode Samaran di <ph name="PRODUCT_NAME" />. Jika 'Aktifkan' dipilih atau kebijakan dibiarkan tidak disetel, halaman dapat dibuka dalam mode Samaran. Jika 'Nonaktifkan' dipilih, halaman tidak dapat dibuka dalam mode Samaran. Jika 'Paksa' dipilih, halaman dapat dibuka HANYA dalam mode Samaran.</translation>
 <translation id="582857022372205358">Aktifkan pencetakan dupleks tepi pendek</translation>
 <translation id="583091600226586337">
       Jika kebijakan diaktifkan, pengguna akan ditanyai tempat untuk menyimpan tiap file sebelum mendownload.
@@ -2937,11 +2937,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6735701345096330595">Mengaktifkan paksa pemeriksaan ejaan bahasa</translation>
 <translation id="673699536430961464">Setelan ini memungkinkan pengguna beralih ke akun Google lain di dalam area konten jendela browser setelah mereka login ke perangkat <ph name="PRODUCT_OS_NAME" />.
 
-      Jika kebijakan ini disetel ke false, pengguna tidak diizinkan untuk login ke akun lain dari area konten browser non-Penyamaran.
+      Jika kebijakan ini disetel ke false, pengguna tidak diizinkan untuk login ke akun lain dari area konten browser non-Samaran.
 
-      Jika kebijakan ini tidak disetel atau disetel ke true, perilaku default akan digunakan: pengguna diizinkan untuk login ke akun lain dari area konten browser, kecuali untuk akun anak, karena akun anak akan diblokir untuk area konten non-Penyamaran.
+      Jika kebijakan ini tidak disetel atau disetel ke true, perilaku default akan digunakan: pengguna diizinkan untuk login ke akun lain dari area konten browser, kecuali untuk akun anak, karena akun anak akan diblokir untuk area konten non-Samaran.
 
-      Jika tidak diizinkan untuk login ke akun lain melalui Mode penyamaran, blokir mode tersebut menggunakan kebijakan IncognitoModeAvailability.
+      Jika tidak diizinkan untuk login ke akun lain melalui Mode samaran, blokir mode tersebut menggunakan kebijakan IncognitoModeAvailability.
 
       Perhatikan bahwa pengguna akan dapat mengakses layanan Google dalam kondisi tidak terautentikasi dengan memblokir cookienya.</translation>
 <translation id="6757438632136860443">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />.
@@ -3715,7 +3715,7 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 
       Dalam mode ini, data profil hanya akan dipertahankan di disk selama durasi sesi pengguna. Beberapa fitur seperti histori browser, ekstensi dan datanya, data web seperti cookie dan basis data web, tidak akan dipertahankan setelah browser ditutup. Namun, hal ini tidak mencegah pengguna mendownload data apa pun ke disk secara manual, menyimpan halaman, atau mencetak halaman
 
-      Jika pengguna mengaktifkan sinkronkan semua, data ini akan dipertahankan di profil sinkronisasinya layaknya di profil reguler. Mode penyamaran juga tersedia jika tidak dinonaktifkan secara eksplisit oleh kebijakan.
+      Jika pengguna mengaktifkan sinkronkan semua, data ini akan dipertahankan di profil sinkronisasinya layaknya di profil reguler. Mode samaran juga tersedia jika tidak dinonaktifkan secara eksplisit oleh kebijakan.
 
       Jika kebijakan ini disetel ke nonaktif atau dibiarkan tidak disetel, proses masuk akan mengarahkan ke profil reguler.</translation>
 <translation id="8158758865057576716">Mengaktifkan pembuatan salinan roaming untuk data profil <ph name="PRODUCT_NAME" />.</translation>
@@ -4159,7 +4159,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 
       Jika kebijakan ini disetel ke True, log sistem akan dikirim. Jika disetel
       ke False atau tidak disetel, tidak ada log sistem yang akan dikirimkan.</translation>
-<translation id="9150416707757015439">Kebijakan ini sudah tidak digunakan lagi. Gunakan IncognitoModeAvailability sebagai gantinya. Aktifkan mode Penyamaran di <ph name="PRODUCT_NAME" />. Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat membuka halaman web dalam mode penyamaran. Jika setelan ini dinonaktifkan, pengguna tidak dapat membuka halaman web dalam mode penyamaran. Jika kebijakan ini dibiarkan tanpa disetel, kebijakan ini akan diaktifkan dan pengguna akan dapat menggunakan mode penyamaran.</translation>
+<translation id="9150416707757015439">Kebijakan ini sudah tidak digunakan lagi. Gunakan IncognitoModeAvailability sebagai gantinya. Aktifkan mode Samaran di <ph name="PRODUCT_NAME" />. Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat membuka halaman web dalam mode samaran. Jika setelan ini dinonaktifkan, pengguna tidak dapat membuka halaman web dalam mode samaran. Jika kebijakan ini dibiarkan tanpa disetel, kebijakan ini akan diaktifkan dan pengguna akan dapat menggunakan mode samaran.</translation>
 <translation id="915194831143859291">Jika kebijakan ini disetel ke False atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan memungkinkan pengguna menonaktifkan perangkat.
       Jika kebijakan ini disetel ke True, <ph name="PRODUCT_OS_NAME" /> akan memicu boot ulang ketika pengguna mematikan perangkat. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kemunculan tombol matikan di antarmuka pengguna dengan tombol boot ulang. Jika pengguna mematikan perangkat menggunakan tombol daya, perangkat tidak otomatis melakukan boot ulang, meskipun kebijakan ini diaktifkan.</translation>
 <translation id="9152473318295429890">Aktifkan saran kontekstual halaman terkait</translation>

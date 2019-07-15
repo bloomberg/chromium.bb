@@ -4320,7 +4320,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="763632859238619983">No permetis que cap lloc web instal·li gestors de pagament</translation>
 <translation id="7636919061354591437">Instal·la en aquest dispositiu</translation>
 <translation id="7638605456503525968">Ports en sèrie</translation>
-<translation id="7639178625568735185">D'acord</translation>
+<translation id="7639178625568735185">Entesos</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> us inicia la sessió automàticament als llocs que compleixen els requisits amb les contrasenyes que heu desat.</translation>
 <translation id="7642778300616172920">Amaga el contingut sensible</translation>
 <translation id="7643842463591647490">{0,plural, =1{# finestra oberta}other{# finestres obertes}}</translation>
@@ -4844,7 +4844,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8393511274964623038">Atura el connector</translation>
 <translation id="8393700583063109961">Envia el missatge</translation>
 <translation id="8396532978067103567">Contrasenya incorrecta.</translation>
-<translation id="839736845446313156">Registra</translation>
+<translation id="839736845446313156">Registra'm</translation>
 <translation id="8398877366907290961">Continua igualment</translation>
 <translation id="8400146488506985033">Gestiona persones</translation>
 <translation id="8410775397654368139">Google Play</translation>
@@ -5043,7 +5043,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="870805141700401153">Signatura de codi individual de Microsoft</translation>
 <translation id="8708671767545720562">&amp;Més informació</translation>
 <translation id="8711402221661888347">Hamburguesa</translation>
-<translation id="8712637175834984815">D'acord</translation>
+<translation id="8712637175834984815">Entesos</translation>
 <translation id="8713570323158206935">Envia <ph name="BEGIN_LINK1" />informació del sistema<ph name="END_LINK1" /></translation>
 <translation id="8714838604780058252">Gràfics de fons</translation>
 <translation id="8715480913140015283">Una pestanya de fons està utilitzant la càmera</translation>

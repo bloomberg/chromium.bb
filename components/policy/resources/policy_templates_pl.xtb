@@ -2577,7 +2577,7 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
       Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
       </translation>
 <translation id="5832274826894536455">Wycofane zasady</translation>
-<translation id="5835124959204887277">Określa adresy URL i domeny, w przypadku których nie będzie wyświetlać się monit podczas przesyłania prośby o certyfikaty poświadczenia z Kluczy bezpieczeństwa Google. Oprócz tego do Klucza bezpieczeństwa Google będzie wysyłany sygnał wskazujący, że można użyć poświadczenia indywidualnego. Jeśli zasada ta nie będzie ustawiona, użytkownicy Chrome w wersji 65 lub nowszej zobaczą monit, gdy strony będą prosić o poświadczenie Kluczy bezpieczeństwa Google.
+<translation id="5835124959204887277">Określa adresy URL i domeny, w przypadku których nie będzie wyświetlać się monit podczas przesyłania prośby o certyfikaty poświadczenia z kluczy bezpieczeństwa. Oprócz tego do klucza bezpieczeństwa będzie wysyłany sygnał wskazujący, że można użyć poświadczenia indywidualnego. Jeśli zasada ta nie będzie ustawiona, użytkownicy Chrome w wersji 65 lub nowszej zobaczą monit, gdy strony będą prosić o poświadczenie kluczy bezpieczeństwa.
 
       Adresy URL (takie jak https://example.com/jakaś/ścieżka) będą dopasowywane tylko jako identyfikatory appID typu U2F. Domeny (takie jak example.com) będą dopasowane tylko jako identyfikatory RP typu webauthn. Dlatego jeśli w przypadku danej witryny mają zostać uwzględnione zarówno interfejsy API U2F, jak i webauthn, na liście muszą znajdować się zarówno URL identyfikatora appID, jak i domena.</translation>
 <translation id="5836064773277134605">Ogranicz zakres portów UDP używanych przez host zdalnego dostępu</translation>
@@ -2776,7 +2776,7 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
 
       Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować dane, lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="6221175752766085998">Zezwól na certyfikaty bez rozszerzenia subjectAlternativeName wydane przez lokalne kotwice zaufania</translation>
-<translation id="6224304369267200483">Adresy URL / domeny automatycznie uprawnione do bezpośredniego poświadczania Kluczy bezpieczeństwa Google</translation>
+<translation id="6224304369267200483">Adresy URL / domeny automatycznie uprawnione do bezpośredniego poświadczania kluczy bezpieczeństwa</translation>
 <translation id="6233173491898450179">Ustaw katalog pobierania</translation>
 <translation id="6244210204546589761">Adresy URL otwierane po uruchomieniu</translation>
 <translation id="6255387031094435995">Zezwala na scalanie wybranych zasad, które pochodzą z różnych źródeł, a mają te same zakresy i poziom.
