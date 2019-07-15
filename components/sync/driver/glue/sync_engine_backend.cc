@@ -73,10 +73,7 @@ void RecordPerModelTypeInvalidation(int model_type, bool is_grouped) {
 SyncEngineBackend::SyncEngineBackend(const std::string& name,
                                      const base::FilePath& sync_data_folder,
                                      const base::WeakPtr<SyncEngineImpl>& host)
-    : name_(name),
-      sync_data_folder_(sync_data_folder),
-      host_(host),
-      weak_ptr_factory_(this) {
+    : name_(name), sync_data_folder_(sync_data_folder), host_(host) {
   DCHECK(host);
   // This is constructed on the UI thread but used from the sync thread.
   DETACH_FROM_SEQUENCE(sequence_checker_);

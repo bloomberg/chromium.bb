@@ -393,7 +393,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // only.
   bool migration_attempted_;
 
-  base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncEncryptionHandlerImpl);
 };

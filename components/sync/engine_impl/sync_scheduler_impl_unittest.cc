@@ -101,8 +101,7 @@ class SyncSchedulerImplTest : public testing::Test {
             base::test::ScopedTaskEnvironment::NowSource::
                 MAIN_THREAD_MOCK_TIME),
         syncer_(nullptr),
-        delay_(nullptr),
-        weak_ptr_factory_(this) {}
+        delay_(nullptr) {}
 
   class MockDelayProvider : public BackoffDelayProvider {
    public:
@@ -332,7 +331,7 @@ class SyncSchedulerImplTest : public testing::Test {
   MockDelayProvider* delay_;
   std::vector<scoped_refptr<ModelSafeWorker>> workers_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
-  base::WeakPtrFactory<SyncSchedulerImplTest> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncSchedulerImplTest> weak_ptr_factory_{this};
 };
 
 const base::TickClock* SyncSchedulerImplTest::tick_clock_ = nullptr;

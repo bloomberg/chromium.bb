@@ -128,7 +128,7 @@ HintCacheStore::HintCacheStore(
     const base::FilePath& database_dir,
     PrefService* pref_service,
     scoped_refptr<base::SequencedTaskRunner> store_task_runner)
-    : pref_service_(pref_service), weak_ptr_factory_(this) {
+    : pref_service_(pref_service) {
   base::FilePath hint_store_dir =
       database_dir.AppendASCII(kHintCacheStoreFolder);
   database_ = database_provider->GetDB<proto::StoreEntry>(
@@ -141,9 +141,7 @@ HintCacheStore::HintCacheStore(
 HintCacheStore::HintCacheStore(
     std::unique_ptr<leveldb_proto::ProtoDatabase<proto::StoreEntry>> database,
     PrefService* pref_service)
-    : database_(std::move(database)),
-      pref_service_(pref_service),
-      weak_ptr_factory_(this) {
+    : database_(std::move(database)), pref_service_(pref_service) {
   RecordStatusChange(status_);
 }
 

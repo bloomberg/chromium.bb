@@ -344,8 +344,7 @@ SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
       encrypt_everything_(false),
       nigori_overwrite_count_(0),
       random_salt_generator_(random_salt_generator),
-      migration_attempted_(false),
-      weak_ptr_factory_(this) {
+      migration_attempted_(false) {
   // Restore the cryptographer's previous keys. Note that we don't add the
   // keystore keys into the cryptographer here, in case a migration was pending.
   vault_unsafe_.cryptographer.Bootstrap(restored_key_for_bootstrapping);

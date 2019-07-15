@@ -155,8 +155,7 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
       previews_top_host_provider_(previews_top_host_provider),
       time_clock_(base::DefaultClock::GetInstance()),
       pref_service_(pref_service),
-      url_loader_factory_(url_loader_factory),
-      ui_weak_ptr_factory_(this) {
+      url_loader_factory_(url_loader_factory) {
   DCHECK(optimization_guide_service_);
   hint_cache_->Initialize(
       ShouldPurgeHintCacheStoreOnStartup(),

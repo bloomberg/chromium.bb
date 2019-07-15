@@ -244,7 +244,7 @@ class SkiaOutputSurfaceImplOnGpu {
   THREAD_CHECKER(thread_checker_);
 
   base::WeakPtr<SkiaOutputSurfaceImplOnGpu> weak_ptr_;
-  base::WeakPtrFactory<SkiaOutputSurfaceImplOnGpu> weak_ptr_factory_;
+  base::WeakPtrFactory<SkiaOutputSurfaceImplOnGpu> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurfaceImplOnGpu);
 };

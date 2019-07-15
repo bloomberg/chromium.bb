@@ -66,8 +66,7 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     const RendererSettings& renderer_settings)
     : dependency_(std::move(deps)),
       is_using_vulkan_(dependency_->IsUsingVulkan()),
-      renderer_settings_(renderer_settings),
-      weak_ptr_factory_(this) {
+      renderer_settings_(renderer_settings) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 

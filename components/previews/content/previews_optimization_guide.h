@@ -218,7 +218,7 @@ class PreviewsOptimizationGuide
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Used to get |weak_ptr_| to self on the UI thread.
-  base::WeakPtrFactory<PreviewsOptimizationGuide> ui_weak_ptr_factory_;
+  base::WeakPtrFactory<PreviewsOptimizationGuide> ui_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuide);
 };

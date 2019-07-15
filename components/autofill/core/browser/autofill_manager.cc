@@ -1358,8 +1358,7 @@ AutofillManager::AutofillManager(
 #if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),
 #endif
-      is_rich_query_enabled_(IsRichQueryEnabled(client->GetChannel())),
-      weak_ptr_factory_(this) {
+      is_rich_query_enabled_(IsRichQueryEnabled(client->GetChannel())) {
   DCHECK(driver);
   DCHECK(client_);
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {

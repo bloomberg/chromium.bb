@@ -29,7 +29,7 @@ using base::ASCIIToUTF16;
 
 class TestCardUnmaskDelegate : public CardUnmaskDelegate {
  public:
-  TestCardUnmaskDelegate() : weak_factory_(this) {}
+  TestCardUnmaskDelegate() {}
 
   virtual ~TestCardUnmaskDelegate() {}
 
@@ -47,7 +47,7 @@ class TestCardUnmaskDelegate : public CardUnmaskDelegate {
 
  private:
   UnmaskResponse response_;
-  base::WeakPtrFactory<TestCardUnmaskDelegate> weak_factory_;
+  base::WeakPtrFactory<TestCardUnmaskDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestCardUnmaskDelegate);
 };
@@ -67,8 +67,7 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
       TestingPrefServiceSimple* pref_service)
       : CardUnmaskPromptControllerImpl(pref_service, false),
         can_store_locally_(!base::FeatureList::IsEnabled(
-            features::kAutofillNoLocalSaveOnUnmaskSuccess)),
-        weak_factory_(this) {}
+            features::kAutofillNoLocalSaveOnUnmaskSuccess)) {}
 
   bool CanStoreLocally() const override { return can_store_locally_; }
 
@@ -84,7 +83,7 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
 
  private:
   bool can_store_locally_;
-  base::WeakPtrFactory<TestCardUnmaskPromptController> weak_factory_;
+  base::WeakPtrFactory<TestCardUnmaskPromptController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestCardUnmaskPromptController);
 };

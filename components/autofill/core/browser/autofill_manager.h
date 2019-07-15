@@ -614,7 +614,7 @@ class AutofillManager : public AutofillHandler,
   // interaction and re-used throughout the context of this manager.
   AutofillSyncSigninState sync_state_ = AutofillSyncSigninState::kNumSyncStates;
 
-  base::WeakPtrFactory<AutofillManager> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillManager> weak_ptr_factory_{this};
 
   friend class AutofillAssistantTest;
   friend class AutofillManagerTest;

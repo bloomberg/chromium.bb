@@ -338,7 +338,7 @@ class HintCacheStore {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<HintCacheStore> weak_ptr_factory_;
+  base::WeakPtrFactory<HintCacheStore> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HintCacheStore);
 };

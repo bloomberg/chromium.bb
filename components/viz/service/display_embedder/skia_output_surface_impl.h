@@ -156,7 +156,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurfaceBase {
   std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;
 
   base::WeakPtr<SkiaOutputSurfaceImpl> weak_ptr_;
-  base::WeakPtrFactory<SkiaOutputSurfaceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SkiaOutputSurfaceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurfaceImpl);
 };

@@ -69,8 +69,7 @@ DownloadDBImpl::DownloadDBImpl(
       db_(std::move(db)),
       is_initialized_(false),
       download_namespace_(download_namespace),
-      num_initialize_attempts_(0),
-      weak_factory_(this) {}
+      num_initialize_attempts_(0) {}
 
 DownloadDBImpl::~DownloadDBImpl() = default;
 
