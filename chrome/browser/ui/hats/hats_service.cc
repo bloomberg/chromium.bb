@@ -31,9 +31,8 @@ constexpr char kHatsSurveyTriggerSatisfaction[] = "satisfaction";
 
 }  // namespace
 
-HatsService::HatsService(Profile* profile)
-    : profile_(profile),
-      trigger_(base::FeatureParam<std::string>(
+HatsService::HatsService()
+    : trigger_(base::FeatureParam<std::string>(
                    &features::kHappinessTrackingSurveysForDesktop,
                    kHatsSurveyTrigger,
                    kHatsSurveyTriggerDefault)
@@ -51,7 +50,7 @@ HatsService::HatsService(Profile* profile)
 
 void HatsService::LaunchSatisfactionSurvey() {
   if (ShouldShowSurvey(kHatsSurveyTriggerSatisfaction)) {
-    Browser* browser = chrome::FindBrowserWithActiveWindow();
+    Browser* browser = chrome::FindLastActive();
     if (browser && browser->is_type_tabbed())
       browser->window()->ShowHatsBubbleFromAppMenuButton();
   }
