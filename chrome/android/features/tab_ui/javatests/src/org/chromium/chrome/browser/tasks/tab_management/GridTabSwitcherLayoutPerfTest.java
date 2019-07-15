@@ -62,6 +62,8 @@ import java.util.List;
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class GridTabSwitcherLayoutPerfTest {
     private static final String TAG = "GTSLayoutPerfTest";
+    private static final String BASE_PARAMS = "force-fieldtrial-params="
+            + "Study.Group:soft-cleanup-delay/0/cleanup-delay/0/skip-slow-zooming/false";
 
     /** Flip this to {@code true} to run performance tests locally. */
     private static final boolean PERF_RUN = false;
@@ -103,8 +105,7 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTab() throws InterruptedException {
         prepareTabs(1, NTP_URL);
         reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab");
@@ -112,8 +113,7 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabWith10Tabs() throws InterruptedException {
         prepareTabs(10, NTP_URL);
         reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab with 10 tabs");
@@ -121,8 +121,7 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/10000/cleanup-delay/10000"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWith10TabsWarm() throws InterruptedException {
         prepareTabs(10, NTP_URL);
         reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab with 10 tabs (warm)");
@@ -130,8 +129,7 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/10000"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWith10TabsSoft() throws InterruptedException {
         prepareTabs(10, NTP_URL);
         reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab with 10 tabs (soft)");
@@ -139,8 +137,7 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:downsampling-scale/1/soft-cleanup-delay/0/cleanup-delay/0"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/downsampling-scale/1"})
     public void testTabToGridFromLiveTabWith10TabsNoDownsample() throws InterruptedException {
         prepareTabs(10, NTP_URL);
         reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab with 10 tabs (no downsample)");
@@ -148,8 +145,7 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabWith10TabsWithoutThumbnail() throws InterruptedException {
         // Note that most of the tabs won't have thumbnails.
         prepareTabs(10, null);
@@ -158,8 +154,7 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @LargeTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabWith100Tabs() throws InterruptedException {
         // Skip waiting for loading. Otherwise it would take too long.
         // Note that most of the tabs won't have thumbnails.
@@ -169,8 +164,7 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromNtp() throws InterruptedException {
         prepareTabs(1, NTP_URL);
         reportTabToGridPerf(NTP_URL, "Tab-to-Grid from NTP");
