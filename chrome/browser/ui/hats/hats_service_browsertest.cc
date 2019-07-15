@@ -53,9 +53,9 @@ class HatsServiceBrowserTestBase : public InProcessBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(HatsServiceBrowserTestBase, DialogShownOnDefault) {
+IN_PROC_BROWSER_TEST_F(HatsServiceBrowserTestBase, DialogNotShownOnDefault) {
   GetHatsService()->LaunchSatisfactionSurvey();
-  EXPECT_TRUE(HatsDialogShowRequested());
+  EXPECT_FALSE(HatsDialogShowRequested());
 }
 
 namespace {
@@ -88,4 +88,36 @@ class HatsServiceProbabilityZero : public HatsServiceBrowserTestBase {
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityZero, NoShow) {
   GetHatsService()->LaunchSatisfactionSurvey();
   EXPECT_FALSE(HatsDialogShowRequested());
+}
+
+namespace {
+
+class HatsServiceProbabilityOne : public HatsServiceBrowserTestBase {
+ protected:
+  HatsServiceProbabilityOne() = default;
+  ~HatsServiceProbabilityOne() override = default;
+
+ private:
+  void SetUpOnMainThread() override {
+    HatsServiceBrowserTestBase::SetUpOnMainThread();
+
+    // The HatsService must not be created so that feature parameters can be
+    // injected below.
+    ASSERT_FALSE(
+        HatsServiceFactory::GetForProfile(browser()->profile(), false));
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kHappinessTrackingSurveysForDesktop,
+        {{"probability", "1.000"}});
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(HatsServiceProbabilityOne);
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, AlwaysShow) {
+  GetHatsService()->LaunchSatisfactionSurvey();
+  EXPECT_TRUE(HatsDialogShowRequested());
 }
