@@ -12,6 +12,11 @@
 namespace chrome_pdf {
 namespace draw_utils {
 
+void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size) {
+  int width_diff = std::max(0, rect_size.width() - doc_size->width());
+  doc_size->Enlarge(width_diff, rect_size.height());
+}
+
 pp::Rect GetScreenRect(const pp::Rect& rect,
                        const pp::Point& position,
                        double zoom) {

@@ -10,6 +10,31 @@
 namespace chrome_pdf {
 namespace draw_utils {
 
+TEST(CoordinateTest, ExpandDocumentSize) {
+  pp::Size doc_size(100, 400);
+
+  // Test various expansion sizes.
+  pp::Size rect_size(100, 200);
+  ExpandDocumentSize(rect_size, &doc_size);
+  EXPECT_EQ(100, doc_size.width());
+  EXPECT_EQ(600, doc_size.height());
+
+  rect_size.SetSize(200, 150);
+  ExpandDocumentSize(rect_size, &doc_size);
+  EXPECT_EQ(200, doc_size.width());
+  EXPECT_EQ(750, doc_size.height());
+
+  rect_size.SetSize(100, 300);
+  ExpandDocumentSize(rect_size, &doc_size);
+  EXPECT_EQ(200, doc_size.width());
+  EXPECT_EQ(1050, doc_size.height());
+
+  rect_size.SetSize(250, 400);
+  ExpandDocumentSize(rect_size, &doc_size);
+  EXPECT_EQ(250, doc_size.width());
+  EXPECT_EQ(1450, doc_size.height());
+}
+
 TEST(CoordinateTest, GetScreenRect) {
   pp::Rect screen_rect;
   const pp::Rect rect(10, 20, 200, 300);

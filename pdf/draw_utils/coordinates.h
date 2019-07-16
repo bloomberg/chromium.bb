@@ -14,6 +14,11 @@ class Point;
 namespace chrome_pdf {
 namespace draw_utils {
 
+// Given |rect_size|, sets the width of |doc_size| to the max of |rect_size|'s
+// width and |doc_size|'s width. Also adds the height of |rect_size| to
+// |doc_size|'s height.
+void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size);
+
 // Given |rect| in document coordinates, a |position| in screen coordinates, and
 // a |zoom| factor, returns the rectangle in screen coordinates (i.e. 0,0 is top
 // left corner of plugin area).
