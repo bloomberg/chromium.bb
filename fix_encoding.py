@@ -212,7 +212,7 @@ class WinUnicodeConsoleOutput(WinUnicodeOutputBase):
 
   def write(self, text):
     try:
-      if not isinstance(text, unicode):
+      if sys.version_info.major == 2 and not isinstance(text, unicode):
         # Convert to unicode.
         text = str(text).decode(self.encoding, 'replace')
       remaining = len(text)
@@ -262,7 +262,7 @@ class WinUnicodeOutput(WinUnicodeOutputBase):
 
   def write(self, text):
     try:
-      if isinstance(text, unicode):
+      if sys.version_info.major == 2 and isinstance(text, unicode):
         # Replace characters that cannot be printed instead of failing.
         text = text.encode(self.encoding, 'replace')
       self._stream.write(text)
