@@ -3322,11 +3322,12 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
         // always be able to retrieve a WebAppProvider from the Profile.
         //
         // Similarly, if a Hosted Apps is a PWA, it will always have a scope
-        // so there is no need to test for HasScope().
+        // so there is no need to test for has_value().
         web_prefs->web_app_scope =
             web_app::WebAppProvider::Get(profile)
                 ->registrar()
-                .GetScopeUrlForApp(*browser->app_controller()->GetAppId());
+                .GetAppScope(*browser->app_controller()->GetAppId())
+                .value();
       }
     }
 #endif
