@@ -7,8 +7,10 @@
 
 from __future__ import print_function
 
+import logging
 import mock
 import os
+import socket
 import stat
 import unittest
 
@@ -18,6 +20,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
+from chromite.lib import remote_access
 from chromite.lib import vm
 
 
@@ -348,3 +351,26 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     self._vm.display = False
     self._vm.Start()
     self.assertCommandContains(['-display', 'none'])
+
+  def testWaitForSSHPort(self):
+    """Verify VM correctly waits on the SSH port if it is busy."""
+    # Assigning an unused port to the VM SSH Port.
+    self._vm.ssh_port = remote_access.GetUnusedPort()
+    sock = socket.socket()
+    sock.bind((remote_access.LOCALHOST_IP, self._vm.ssh_port))
+
+    # Look for retry messages in output.
+    with cros_test_lib.LoggingCapturer(log_level=logging.INFO) as logger:
+      self.assertRaises(vm.VMError, self._vm._WaitForSSHPort, sleep=0)
+    in_use_message = 'SSH port %d in use' % self._vm.ssh_port
+    self.assertTrue(logger.LogsMatch((in_use_message + '...\n') * 11 +
+                                     in_use_message + '\n'))
+
+    # Verify the VM works correctly when the port is not in use.
+    # There should be no retries after the port is released.
+    # Another process could grab the unused port between closing it
+    # and calling _WaitForSSHPort but this is extremely unlikely.
+    sock.close()
+    with cros_test_lib.LoggingCapturer(log_level=logging.INFO) as logger:
+      self._vm._WaitForSSHPort()
+    self.assertEquals(logger.messages, '')

@@ -329,7 +329,7 @@ class VM(device.Device):
         raise VMError('VM image does not exist: %s' % self.image_path)
     logging.debug('VM image path: %s', self.image_path)
 
-  def _WaitForSSHPort(self):
+  def _WaitForSSHPort(self, sleep=5):
     """Wait for SSH port to become available."""
     class _SSHPortInUseError(Exception):
       """Exception for _CheckSSHPortBusy to throw."""
@@ -351,7 +351,7 @@ class VM(device.Device):
           exception=_SSHPortInUseError,
           max_retry=10,
           functor=lambda: _CheckSSHPortBusy(self.ssh_port),
-          sleep=5)
+          sleep=sleep)
     except _SSHPortInUseError:
       raise VMError('SSH port %d in use' % self.ssh_port)
 
