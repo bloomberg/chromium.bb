@@ -777,8 +777,11 @@ void TaskQueueImpl::InsertFence(TaskQueue::InsertFencePosition position) {
     UpdateCrossThreadQueueStateLocked();
   }
 
-  if (IsQueueEnabled() && task_unblocked)
+  if (IsQueueEnabled() && task_unblocked) {
+    main_thread_only().last_unblocked_enqueue_order =
+        sequence_manager_->GetNextSequenceNumber();
     sequence_manager_->ScheduleWork();
+  }
 }
 
 void TaskQueueImpl::InsertFenceAt(TimeTicks time) {
@@ -812,8 +815,11 @@ void TaskQueueImpl::RemoveFence() {
     UpdateCrossThreadQueueStateLocked();
   }
 
-  if (IsQueueEnabled() && task_unblocked)
+  if (IsQueueEnabled() && task_unblocked) {
+    main_thread_only().last_unblocked_enqueue_order =
+        sequence_manager_->GetNextSequenceNumber();
     sequence_manager_->ScheduleWork();
+  }
 }
 
 bool TaskQueueImpl::BlockedByFence() const {
@@ -840,6 +846,10 @@ bool TaskQueueImpl::HasActiveFence() {
     return true;
   }
   return !!main_thread_only().current_fence;
+}
+
+EnqueueOrder TaskQueueImpl::GetLastUnblockEnqueueOrder() const {
+  return main_thread_only().last_unblocked_enqueue_order;
 }
 
 bool TaskQueueImpl::CouldTaskRun(EnqueueOrder enqueue_order) const {
@@ -933,6 +943,11 @@ void TaskQueueImpl::SetQueueEnabled(bool enabled) {
     // Note the selector calls SequenceManager::OnTaskQueueEnabled which posts
     // a DoWork if needed.
     sequence_manager_->main_thread_only().selector.EnableQueue(this);
+
+    if (!BlockedByFence()) {
+      main_thread_only().last_unblocked_enqueue_order =
+          sequence_manager_->GetNextSequenceNumber();
+    }
   } else {
     sequence_manager_->main_thread_only().selector.DisableQueue(this);
   }
