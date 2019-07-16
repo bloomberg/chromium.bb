@@ -50394,6 +50394,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="101" label="IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS"/>
   <int value="102" label="IDC_SEND_TO_MY_DEVICES"/>
   <int value="103" label="IDC_CONTENT_LINK_SEND_TAB_TO_SELF"/>
+  <int value="104" label="IDC_SEND_TAB_TO_SELF_SINGLE_TARGET"/>
+  <int value="105" label="IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET"/>
+  <int value="106"
+      label="IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE"/>
+  <int value="107"
+      label="IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">
