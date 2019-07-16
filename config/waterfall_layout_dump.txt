@@ -1007,10 +1007,15 @@
   betty-pi-arc-llvm-toolchain-tryjob
   betty-pi-arc-no-vmtest-pre-cq
   betty-pi-arc-paladin-tryjob
+  betty-pi-arc-payloads-tryjob
   betty-pi-arc-pi-android-pfq-tryjob
   betty-pi-arc-postsubmit-tryjob
   betty-pi-arc-pre-cq
+  betty-pi-arc-release-afdo-generate-tryjob
+  betty-pi-arc-release-afdo-tryjob
+  betty-pi-arc-release-afdo-use-tryjob
   betty-pi-arc-release-tryjob
+  betty-pi-arc-tot-chrome-pfq-informational-tryjob
   betty-pi-arc-tot-chromium-pfq-informational-tryjob
   betty-pi-arc-unittest-stress
   betty-postsubmit-tryjob
