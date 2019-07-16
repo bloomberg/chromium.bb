@@ -1722,6 +1722,24 @@
             ]
         }
     ],
+    "DefaultSearchShortcut": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DefaultSearchShortcut"
+                    ]
+                }
+            ]
+        }
+    ],
     "DialMediaRouteProvider": [
         {
             "platforms": [
