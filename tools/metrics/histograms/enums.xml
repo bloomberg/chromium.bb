@@ -60152,6 +60152,10 @@ Full version information for the fingerprint enum values:
   <int value="7007" label="HIDDEN_to_HIDDEN"/>
 </enum>
 
+<enum name="VirtualKeyboardErrorTypeHashes">
+  <int value="30998784" label="Generic Error"/>
+</enum>
+
 <enum name="VisibleTab">
   <int value="0" label="Custom Tab"/>
   <int value="1" label="Chrome Tab"/>
