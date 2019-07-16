@@ -273,7 +273,7 @@ bool DrainWorklistWithDeadline(base::TimeTicks deadline,
     callback(item);
     processed_callback_count++;
     if (++processed_callback_count == kDeadlineCheckInterval) {
-      if (deadline <= CurrentTimeTicks()) {
+      if (deadline <= base::TimeTicks::Now()) {
         return false;
       }
       processed_callback_count = 0;
@@ -609,7 +609,7 @@ bool ThreadHeap::AdvanceLazySweep(base::TimeTicks deadline) {
     // lazySweepWithDeadline() won't check the deadline until it sweeps
     // 10 pages. So we give a small slack for safety.
     const base::TimeDelta remaining_budget =
-        deadline - slack - CurrentTimeTicks();
+        deadline - slack - base::TimeTicks::Now();
     if (remaining_budget <= base::TimeDelta() ||
         !arenas_[i]->LazySweepWithDeadline(deadline)) {
       return false;

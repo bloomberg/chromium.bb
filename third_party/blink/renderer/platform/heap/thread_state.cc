@@ -633,7 +633,7 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
     SweepForbiddenScope scope(this);
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kLazySweepInIdle,
-        "idleDeltaInSeconds", (deadline - CurrentTimeTicks()).InSecondsF());
+        "idleDeltaInSeconds", (deadline - base::TimeTicks::Now()).InSecondsF());
     sweep_completed = Heap().AdvanceLazySweep(deadline);
     // We couldn't finish the sweeping within the deadline.
     // We request another idle task for the remaining sweeping.
@@ -1331,7 +1331,7 @@ void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state) {
     Heap().FlushNotFullyConstructedObjects();
   }
   const bool complete = MarkPhaseAdvanceMarking(
-      CurrentTimeTicks() + next_incremental_marking_step_duration_);
+      base::TimeTicks::Now() + next_incremental_marking_step_duration_);
   if (complete) {
     if (IsUnifiedGCMarkingInProgress()) {
       // If there are no more objects to mark for unified garbage collections
@@ -1395,7 +1395,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   if (SweepForbidden())
     return;
 
-  base::TimeTicks start_total_collect_garbage_time = WTF::CurrentTimeTicks();
+  base::TimeTicks start_total_collect_garbage_time = base::TimeTicks::Now();
   RUNTIME_CALL_TIMER_SCOPE_IF_ISOLATE_EXISTS(
       GetIsolate(), RuntimeCallStats::CounterId::kCollectGarbage);
 
@@ -1418,7 +1418,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   }
 
   const base::TimeDelta total_collect_garbage_time =
-      WTF::CurrentTimeTicks() - start_total_collect_garbage_time;
+      base::TimeTicks::Now() - start_total_collect_garbage_time;
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForTotalCollectGarbage",
                       total_collect_garbage_time);
 

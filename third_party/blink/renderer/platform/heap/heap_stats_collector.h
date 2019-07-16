@@ -143,7 +143,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     inline InternalScope(ThreadHeapStatsCollector* tracer,
                          IdType id,
                          Args... args)
-        : tracer_(tracer), start_time_(WTF::CurrentTimeTicks()), id_(id) {
+        : tracer_(tracer), start_time_(base::TimeTicks::Now()), id_(id) {
       StartTrace(id, args...);
     }
 
@@ -187,12 +187,12 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     }
 
     void IncreaseScopeTime(Id) {
-      tracer_->IncreaseScopeTime(id_, WTF::CurrentTimeTicks() - start_time_);
+      tracer_->IncreaseScopeTime(id_, base::TimeTicks::Now() - start_time_);
     }
 
     void IncreaseScopeTime(ConcurrentId) {
       tracer_->IncreaseConcurrentScopeTime(
-          id_, WTF::CurrentTimeTicks() - start_time_);
+          id_, base::TimeTicks::Now() - start_time_);
     }
 
     ThreadHeapStatsCollector* const tracer_;
@@ -216,11 +216,11 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
    public:
     template <typename... Args>
     BlinkGCInV8Scope(ThreadHeapStatsCollector* tracer)
-        : tracer_(tracer), start_time_(WTF::CurrentTimeTicks()) {}
+        : tracer_(tracer), start_time_(base::TimeTicks::Now()) {}
 
     ~BlinkGCInV8Scope() {
       if (tracer_)
-        tracer_->gc_nested_in_v8_ += WTF::CurrentTimeTicks() - start_time_;
+        tracer_->gc_nested_in_v8_ += base::TimeTicks::Now() - start_time_;
     }
 
    private:
