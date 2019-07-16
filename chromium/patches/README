@@ -66,7 +66,7 @@ Affects:
 
 ------------------------------------------------------------------
 commit 87b9d8e5781b28ae6f27b454605d8dbdf325d7e9
-Merge: 3a9bce0eec6 c39916bc2f4
+Merge: 3a9bce0eec c39916bc2f
 Author: Dale Curtis <dalecurtis@chromium.org>
 Date:   Mon Oct 1 10:30:25 2012 -0700
 
@@ -85,7 +85,7 @@ Affects:
 
 ------------------------------------------------------------------
 commit 67a3d8459c78a653192631c84611cf300c0c9b19
-Merge: 82ae69cc47f d91388367fa
+Merge: 82ae69cc47 d91388367f
 Author: Dale Curtis <dalecurtis@chromium.org>
 Date:   Mon Dec 3 14:22:52 2012 -0800
 
@@ -269,7 +269,7 @@ Affects:
 
 ------------------------------------------------------------------
 commit e4decbe7fd3f49d90f296e83bcbf2beb8edf202a
-Merge: b4d337e6682 134233972e7
+Merge: b4d337e668 134233972e
 Author: Matt Wolenetz <wolenetz@chromium.org>
 Date:   Tue Oct 25 14:31:38 2016 -0700
 
@@ -429,7 +429,7 @@ Affects:
 
 ------------------------------------------------------------------
 commit d4512b74a80eca1a4ea5c682300171efe0f721ff
-Merge: bb7fe72a56e 8ef2c791c99
+Merge: bb7fe72a56 8ef2c791c9
 Author: John Rummell <jrummell@chromium.org>
 Date:   Mon May 8 13:56:56 2017 -0700
 
@@ -491,7 +491,7 @@ Affects:
 
 ------------------------------------------------------------------
 commit 4a74bbe9c6a37e7cadd7fa3b4e9fb943b57e3f00
-Merge: bb424af97f1 6a50a8f3401
+Merge: bb424af97f 6a50a8f340
 Author: Dale Curtis <dalecurtis@chromium.org>
 Date:   Fri Nov 3 12:06:55 2017 -0700
 
@@ -719,7 +719,7 @@ Affects:
 
 ------------------------------------------------------------------
 commit 9846ee38e057a93db62f6730d0107bf68d8329ae
-Merge: bbe6b81a6c3 179ed2d2e08
+Merge: bbe6b81a6c 179ed2d2e0
 Author: John Rummell <jrummell@chromium.org>
 Date:   Fri Sep 28 10:56:34 2018 -0700
 
@@ -830,7 +830,7 @@ Affects:
 
 ------------------------------------------------------------------
 commit feb5456cf973a819ace9a5001256f168631b6788
-Merge: 464c195d8b1 81d3d7dd44a
+Merge: 464c195d8b 81d3d7dd44
 Author: Matt Wolenetz <wolenetz@chromium.org>
 Date:   Fri Jul 12 15:20:19 2019 -0700
 
