@@ -1492,8 +1492,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ForwardResourceTimingToParent,
                         OnForwardResourceTimingToParent)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_TextSurroundingSelectionResponse,
-                        OnTextSurroundingSelectionResponse)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_EventBundle, OnAccessibilityEvents)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_LocationChanges,
                         OnAccessibilityLocationChanges)
@@ -2863,34 +2861,10 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(
 }
 
 void RenderFrameHostImpl::RequestTextSurroundingSelection(
-    const TextSurroundingSelectionCallback& callback,
+    TextSurroundingSelectionCallback callback,
     int max_length) {
   DCHECK(!callback.is_null());
-  // Only one outstanding request is allowed at any given time.
-  // If already one request is in progress, then immediately release callback
-  // with empty result.
-  if (!text_surrounding_selection_callback_.is_null()) {
-    callback.Run(base::string16(), 0, 0);
-    return;
-  }
-  text_surrounding_selection_callback_ = callback;
-  Send(
-      new FrameMsg_TextSurroundingSelectionRequest(GetRoutingID(), max_length));
-}
-
-void RenderFrameHostImpl::OnTextSurroundingSelectionResponse(
-    const base::string16& content,
-    uint32_t start_offset,
-    uint32_t end_offset) {
-  // text_surrounding_selection_callback_ should not be null, but don't trust
-  // the renderer.
-  if (text_surrounding_selection_callback_.is_null())
-    return;
-
-  // Just Run the callback instead of propagating further.
-  text_surrounding_selection_callback_.Run(content, start_offset, end_offset);
-  // Reset the callback for enabling early exit from future request.
-  text_surrounding_selection_callback_.Reset();
+  frame_->GetTextSurroundingSelection(max_length, std::move(callback));
 }
 
 void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
