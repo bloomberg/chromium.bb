@@ -919,6 +919,8 @@ html[dir=rtl] .menu-option {
 
 #backgrounds-menu .bg-sel-tile-bg.selected .bg-sel-tile,
 #backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile {
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
   height: 144px;
   margin: 16px 16px 0 16px;
   width: 144px;
@@ -1165,6 +1167,11 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   margin-inline-start: 7px;
   margin-top: 12px;
   width: 116px;
+}
+
+#backgrounds-default.selected #backgrounds-default-icon {
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
 }
 
 #backgrounds-default:not(.selected) .mini-page {
