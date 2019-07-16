@@ -248,9 +248,7 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
       break;
     case PerformanceEntry::kTaskAttribution:
       break;
-    case PerformanceEntry::kLayoutJank:
-      UseCounter::Count(GetExecutionContext(),
-                        WebFeature::kLayoutJankExplicitlyRequested);
+    case PerformanceEntry::kLayoutShift:
       for (const auto& layout_jank : layout_jank_buffer_)
         entries.push_back(layout_jank);
       break;
