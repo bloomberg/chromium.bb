@@ -177,7 +177,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "net/url_request/url_request_context.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
@@ -2100,6 +2100,57 @@ void RenderFrameHostImpl::SetLastCommittedOrigin(const url::Origin& origin) {
 void RenderFrameHostImpl::SetLastCommittedOriginForTesting(
     const url::Origin& origin) {
   SetLastCommittedOrigin(origin);
+}
+
+GURL RenderFrameHostImpl::ComputeSiteForCookiesForNavigation(
+    const GURL& destination) const {
+  // For top-level navigation, |site_for_cookies| will always be the destination
+  // URL.
+  if (frame_tree_node_->IsMainFrame())
+    return destination;
+
+  GURL base_url;
+#if defined(OS_ANDROID)
+  // On Android, a base URL can be set for the frame. If this the case, it is
+  // the URL to use for cookies.
+  NavigationEntry* last_committed_entry =
+      frame_tree_node_->navigator()->GetController()->GetLastCommittedEntry();
+  if (last_committed_entry)
+    base_url = last_committed_entry->GetBaseURLForDataURL();
+#endif
+  // This is pre-navigation, but since at this point the frame being navigated
+  // is known to not be the main frame, it's correct post-navigation as well.
+  const GURL& top_document_url =
+      !base_url.is_empty() ? base_url : frame_tree_->root()->current_url();
+
+  if (GetContentClient()
+          ->browser()
+          ->ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
+              top_document_url.scheme_piece())) {
+    return top_document_url;
+  }
+
+  // Check if everything above the frame being navigated is consistent. It's OK
+  // to skip checking the frame itself since it will be validated against
+  // |site_for_cookies| anyway.
+  const FrameTreeNode* current = frame_tree_node_->parent();
+  bool ancestors_are_same_site = true;
+  while (current && ancestors_are_same_site) {
+    // Skip over srcdoc documents, as they are always same-origin with their
+    // closest non-srcdoc parent.
+    while (current->current_url().IsAboutSrcdoc())
+      current = current->parent();
+
+    if (!net::registry_controlled_domains::SameDomainOrHost(
+            top_document_url, current->current_url(),
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+      ancestors_are_same_site = false;
+    }
+    current = current->parent();
+  }
+
+  return (ancestors_are_same_site || !base_url.is_empty()) ? top_document_url
+                                                           : GURL::EmptyGURL();
 }
 
 void RenderFrameHostImpl::SetOriginOfNewFrame(

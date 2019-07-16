@@ -428,6 +428,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // cases, use GetLastCommittedURL instead.
   const GURL& last_successful_url() { return last_successful_url_; }
 
+  // Computes site_for_cookies to be used when navigating this frame to
+  // |destination|.
+  GURL ComputeSiteForCookiesForNavigation(const GURL& destination) const;
+
   // Allows overriding the last committed origin in tests.
   void SetLastCommittedOriginForTesting(const url::Origin& origin);
 
