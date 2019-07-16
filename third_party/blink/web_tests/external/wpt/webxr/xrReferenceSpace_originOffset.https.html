@@ -1,17 +1,12 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
-<script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
-<script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
-<script src="../xr/resources/xr-test-utils.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/webxr_util.js"></script>
+<script src="resources/webxr_test_constants.js"></script>
+<script src="resources/webxr_test_asserts.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
-
-// Can't go in external WPT tests because this test uses MockXRInputSource which
-// is not available there.
 let testName = "Updating XRReferenceSpace origin offset updates view and input matrices.";
 
 const VIEW_OFFSET_WITH_ROTATION = {
@@ -37,13 +32,8 @@ let fakeDeviceInitParams = {
   views: VIEWS_WITH_OFFSET
 };
 
-let requestSessionModes =  ['immersive-vr'];
-
 let testFunction =
-  (session, t, fakeDeviceController) => new Promise((resolve) => {
-    // Session must have a baseLayer or frame requests will be ignored.
-    session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
-
+  (session, fakeDeviceController, t) => new Promise((resolve) => {
     const GRIP_TRANSFORM_WITH_ROTATION = {
       position: [1, 2, 3],
       orientation: [0, 0.7071, 0, 0.7071]
@@ -91,9 +81,9 @@ let testFunction =
             let grip_matrix = grip_pose.transform.matrix;
             let ray_matrix = input_pose.transform.matrix;
 
-            assert_matrices_approx_equal(view_matrix, expected_view_matrix);
-            assert_matrices_approx_equal(grip_matrix, expected_grip_matrix);
-            assert_matrices_approx_equal(ray_matrix, expected_ray_matrix);
+            assert_matrix_approx_equals(view_matrix, expected_view_matrix);
+            assert_matrix_approx_equals(grip_matrix, expected_grip_matrix);
+            assert_matrix_approx_equals(ray_matrix, expected_ray_matrix);
           });
         }
 
@@ -138,6 +128,6 @@ let testFunction =
   });
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+  testName, testFunction, fakeDeviceInitParams, 'immersive-vr');
 
 </script>
