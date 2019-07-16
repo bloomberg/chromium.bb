@@ -51,6 +51,14 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
         return extras.getString(BACKGROUND_TASK_CLASS_KEY);
     }
 
+    static Long getDeadlineTimeFromJobParameters(JobParameters jobParameters) {
+        PersistableBundle extras = jobParameters.getExtras();
+        if (extras == null || !extras.containsKey(BACKGROUND_TASK_DEADLINE_KEY)) {
+            return null;
+        }
+        return extras.getLong(BACKGROUND_TASK_DEADLINE_KEY);
+    }
+
     private static long getDeadlineTime(TaskInfo taskInfo) {
         long windowEndTimeMs = taskInfo.getOneOffInfo().getWindowEndTimeMs();
         return sClock.currentTimeMillis() + windowEndTimeMs;
