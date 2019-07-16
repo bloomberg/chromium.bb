@@ -19,8 +19,6 @@
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
@@ -610,19 +608,6 @@ TEST_P(TabModelTest, AddWithOrderController) {
                inBackground:NO];
   EXPECT_EQ(tab_model_.webStateList->GetIndexOfWebState(web_state4),
             tab_model_.webStateList->GetIndexOfWebState(web_state3) + 1);
-}
-
-TEST_P(TabModelTest, TabCreatedOnInsertion) {
-  std::unique_ptr<web::WebState> web_state = web::WebState::Create(
-      web::WebState::CreateParams(chrome_browser_state_.get()));
-
-  EXPECT_NSEQ(nil, LegacyTabHelper::GetTabForWebState(web_state.get()));
-
-  web::WebState* web_state_ptr = web_state.get();
-  [tab_model_ webStateList]->InsertWebState(0, std::move(web_state),
-                                            WebStateList::INSERT_FORCE_INDEX,
-                                            WebStateOpener());
-  EXPECT_NSNE(nil, LegacyTabHelper::GetTabForWebState(web_state_ptr));
 }
 
 TEST_P(TabModelTest, DISABLED_PersistSelectionChange) {
