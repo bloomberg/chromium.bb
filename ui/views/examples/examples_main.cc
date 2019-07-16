@@ -56,7 +56,7 @@ base::LazyInstance<base::TestDiscardableMemoryAllocator>::DestructorAtExit
 
 int main(int argc, char** argv) {
 #if defined(OS_WIN)
-  ui::ScopedOleInitializer ole_initializer_;
+  ui::ScopedOleInitializer ole_initializer;
 #endif
 
   base::CommandLine::Init(argc, argv);
