@@ -859,18 +859,6 @@ HttpHandler::HttpHandler(
           kGet, "session/:sessionId/is_loading",
           WrapToCommand("IsLoading", base::BindRepeating(&ExecuteIsLoading))),
 
-      //
-      // Commands of unknown origins.
-      //
-
-      CommandMapping(
-          kGet, "session/:sessionId/autoreport",
-          WrapToCommand("IsAutoReporting",
-                        base::BindRepeating(&ExecuteIsAutoReporting))),
-      CommandMapping(
-          kPost, "session/:sessionId/autoreport",
-          WrapToCommand("SetAutoReporting",
-                        base::BindRepeating(&ExecuteSetAutoReporting))),
   };
   command_map_.reset(new CommandMap(commands, commands + base::size(commands)));
 }

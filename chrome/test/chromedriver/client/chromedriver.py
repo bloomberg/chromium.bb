@@ -560,12 +560,6 @@ class ChromeDriver(object):
   def GetAvailableLogTypes(self):
     return self.ExecuteCommand(Command.GET_AVAILABLE_LOG_TYPES)
 
-  def IsAutoReporting(self):
-    return self.ExecuteCommand(Command.IS_AUTO_REPORTING)
-
-  def SetAutoReporting(self, enabled):
-    self.ExecuteCommand(Command.SET_AUTO_REPORTING, {'enabled': enabled})
-
   def SetNetworkConditions(self, latency, download_throughput,
                            upload_throughput, offline=False):
     # Until http://crbug.com/456324 is resolved, we'll always set 'offline' to

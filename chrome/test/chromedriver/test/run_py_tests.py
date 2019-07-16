@@ -1372,16 +1372,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     except Exception as e:
       self.fail(e.message)
 
-  def testAutoReporting(self):
-    self.assertFalse(self._driver.IsAutoReporting())
-    self._driver.SetAutoReporting(True)
-    self.assertTrue(self._driver.IsAutoReporting())
-    url = self.GetHttpUrlForFile('/chromedriver/console_log.html')
-    self.assertRaisesRegexp(
-        chromedriver.UnknownError,
-        ".*Uncaught TypeError: Cannot read property 'y' of undefined.*",
-        self._driver.Load, url)
-
   def testDoesntHangOnDebugger(self):
     self._driver.Load('about:blank')
     self._driver.ExecuteScript('debugger;')

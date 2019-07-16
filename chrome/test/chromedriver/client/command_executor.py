@@ -160,8 +160,6 @@ class Command(object):
   RELEASE_ACTIONS = (_Method.DELETE, '/session/:sessionId/actions')
   GET_LOG = (_Method.POST, '/session/:sessionId/se/log')
   GET_AVAILABLE_LOG_TYPES = (_Method.GET, '/session/:sessionId/se/log/types')
-  IS_AUTO_REPORTING = (_Method.GET, '/session/:sessionId/autoreport')
-  SET_AUTO_REPORTING = (_Method.POST, '/session/:sessionId/autoreport')
   GET_SESSION_LOGS = (_Method.POST, '/logs')
   STATUS = (_Method.GET, '/status')
   SET_NETWORK_CONNECTION = (
