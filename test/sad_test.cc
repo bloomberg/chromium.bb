@@ -1213,6 +1213,8 @@ const SadMxNParam sse2_tests[] = {
   make_tuple(8, 16, &aom_highbd_sad8x16_sse2, 8),
   make_tuple(8, 8, &aom_highbd_sad8x8_sse2, 8),
   make_tuple(8, 4, &aom_highbd_sad8x4_sse2, 8),
+  make_tuple(4, 8, &aom_highbd_sad4x8_sse2, 8),
+  make_tuple(4, 4, &aom_highbd_sad4x4_sse2, 8),
   make_tuple(64, 64, &aom_highbd_sad64x64_sse2, 10),
   make_tuple(64, 32, &aom_highbd_sad64x32_sse2, 10),
   make_tuple(32, 64, &aom_highbd_sad32x64_sse2, 10),
@@ -1224,6 +1226,8 @@ const SadMxNParam sse2_tests[] = {
   make_tuple(8, 16, &aom_highbd_sad8x16_sse2, 10),
   make_tuple(8, 8, &aom_highbd_sad8x8_sse2, 10),
   make_tuple(8, 4, &aom_highbd_sad8x4_sse2, 10),
+  make_tuple(4, 8, &aom_highbd_sad4x8_sse2, 10),
+  make_tuple(4, 4, &aom_highbd_sad4x4_sse2, 10),
   make_tuple(64, 64, &aom_highbd_sad64x64_sse2, 12),
   make_tuple(64, 32, &aom_highbd_sad64x32_sse2, 12),
   make_tuple(32, 64, &aom_highbd_sad32x64_sse2, 12),
@@ -1235,6 +1239,8 @@ const SadMxNParam sse2_tests[] = {
   make_tuple(8, 16, &aom_highbd_sad8x16_sse2, 12),
   make_tuple(8, 8, &aom_highbd_sad8x8_sse2, 12),
   make_tuple(8, 4, &aom_highbd_sad8x4_sse2, 12),
+  make_tuple(4, 8, &aom_highbd_sad4x8_sse2, 12),
+  make_tuple(4, 4, &aom_highbd_sad4x4_sse2, 12),
 
   make_tuple(64, 16, &aom_sad64x16_sse2, -1),
   make_tuple(16, 64, &aom_sad16x64_sse2, -1),
@@ -1255,13 +1261,13 @@ const SadMxNParam sse2_tests[] = {
   make_tuple(8, 32, &aom_highbd_sad8x32_sse2, 12),
 
   make_tuple(16, 4, &aom_sad16x4_sse2, -1),
-  // make_tuple(4, 16, &aom_sad4x16_sse2, -1),
+  make_tuple(4, 16, &aom_sad4x16_sse2, -1),
   make_tuple(16, 4, &aom_highbd_sad16x4_sse2, 8),
-  // make_tuple(4, 16, &aom_highbd_sad4x16_sse2, 8),
+  make_tuple(4, 16, &aom_highbd_sad4x16_sse2, 8),
   make_tuple(16, 4, &aom_highbd_sad16x4_sse2, 10),
-  // make_tuple(4, 16, &aom_highbd_sad4x16_sse2, 10),
+  make_tuple(4, 16, &aom_highbd_sad4x16_sse2, 10),
   make_tuple(16, 4, &aom_highbd_sad16x4_sse2, 12),
-  // make_tuple(4, 16, &aom_highbd_sad4x16_sse2, 12),
+  make_tuple(4, 16, &aom_highbd_sad4x16_sse2, 12),
 };
 INSTANTIATE_TEST_CASE_P(SSE2, SADTest, ::testing::ValuesIn(sse2_tests));
 
@@ -1293,6 +1299,8 @@ const SadMxNAvgParam avg_sse2_tests[] = {
   make_tuple(8, 16, &aom_highbd_sad8x16_avg_sse2, 8),
   make_tuple(8, 8, &aom_highbd_sad8x8_avg_sse2, 8),
   make_tuple(8, 4, &aom_highbd_sad8x4_avg_sse2, 8),
+  make_tuple(4, 8, &aom_highbd_sad4x8_avg_sse2, 8),
+  make_tuple(4, 4, &aom_highbd_sad4x4_avg_sse2, 8),
   make_tuple(64, 64, &aom_highbd_sad64x64_avg_sse2, 10),
   make_tuple(64, 32, &aom_highbd_sad64x32_avg_sse2, 10),
   make_tuple(32, 64, &aom_highbd_sad32x64_avg_sse2, 10),
@@ -1304,6 +1312,8 @@ const SadMxNAvgParam avg_sse2_tests[] = {
   make_tuple(8, 16, &aom_highbd_sad8x16_avg_sse2, 10),
   make_tuple(8, 8, &aom_highbd_sad8x8_avg_sse2, 10),
   make_tuple(8, 4, &aom_highbd_sad8x4_avg_sse2, 10),
+  make_tuple(4, 8, &aom_highbd_sad4x8_avg_sse2, 10),
+  make_tuple(4, 4, &aom_highbd_sad4x4_avg_sse2, 10),
   make_tuple(64, 64, &aom_highbd_sad64x64_avg_sse2, 12),
   make_tuple(64, 32, &aom_highbd_sad64x32_avg_sse2, 12),
   make_tuple(32, 64, &aom_highbd_sad32x64_avg_sse2, 12),
@@ -1315,6 +1325,8 @@ const SadMxNAvgParam avg_sse2_tests[] = {
   make_tuple(8, 16, &aom_highbd_sad8x16_avg_sse2, 12),
   make_tuple(8, 8, &aom_highbd_sad8x8_avg_sse2, 12),
   make_tuple(8, 4, &aom_highbd_sad8x4_avg_sse2, 12),
+  make_tuple(4, 8, &aom_highbd_sad4x8_avg_sse2, 12),
+  make_tuple(4, 4, &aom_highbd_sad4x4_avg_sse2, 12),
 
   make_tuple(64, 16, &aom_sad64x16_avg_sse2, -1),
   make_tuple(16, 64, &aom_sad16x64_avg_sse2, -1),
@@ -1335,13 +1347,13 @@ const SadMxNAvgParam avg_sse2_tests[] = {
   make_tuple(8, 32, &aom_highbd_sad8x32_avg_sse2, 12),
 
   make_tuple(16, 4, &aom_sad16x4_avg_sse2, -1),
-  // make_tuple(4, 16, &aom_sad4x16_avg_sse2, -1),
+  make_tuple(4, 16, &aom_sad4x16_avg_sse2, -1),
   make_tuple(16, 4, &aom_highbd_sad16x4_avg_sse2, 8),
-  // make_tuple(4, 16, &aom_highbd_sad4x16_avg_sse2, 8),
+  make_tuple(4, 16, &aom_highbd_sad4x16_avg_sse2, 8),
   make_tuple(16, 4, &aom_highbd_sad16x4_avg_sse2, 10),
-  // make_tuple(4, 16, &aom_highbd_sad4x16_avg_sse2, 10),
+  make_tuple(4, 16, &aom_highbd_sad4x16_avg_sse2, 10),
   make_tuple(16, 4, &aom_highbd_sad16x4_avg_sse2, 12),
-  // make_tuple(4, 16, &aom_highbd_sad4x16_avg_sse2, 12),
+  make_tuple(4, 16, &aom_highbd_sad4x16_avg_sse2, 12),
 };
 INSTANTIATE_TEST_CASE_P(SSE2, SADavgTest, ::testing::ValuesIn(avg_sse2_tests));
 
