@@ -58408,6 +58408,7 @@ Full version information for the fingerprint enum values:
   <int value="0" label="Password"/>
   <int value="1" label="Pin"/>
   <int value="2" label="Fingerprint"/>
+  <int value="3" label="Challenge-response security token"/>
 </enum>
 
 <enum name="UnPackStatus">
