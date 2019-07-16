@@ -58,12 +58,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
   const AssistantNotification* GetNotificationById(const std::string& id) const;
 
   // Returns all notifications matching the specified |type|.
-  // Use base::nullopt to return all notifications independent of their type.
   std::vector<const AssistantNotification*> GetNotificationsByType(
-      base::Optional<AssistantNotificationType> type) const;
-
-  // Returns all notifications (that have not been removed).
-  std::vector<const AssistantNotification*> GetNotifications() const;
+      AssistantNotificationType type) const;
 
   // Returns true if the model contains a notification uniquely identified by
   // |id|, otherwise false.
