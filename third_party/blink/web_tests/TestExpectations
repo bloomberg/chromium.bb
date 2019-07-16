@@ -2179,6 +2179,10 @@ crbug.com/891427 [ Mac Win7 ] virtual/mouseevent_fractional/fast/events/touch/ge
 # ====== OOPIF-mode failures until here ======
 
 
+### sheriff 2019-07-16
+crbug.com/983799 [ Win ] http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
+crbug.com/983799 [ Win ] virtual/blink-cors/http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
+
 ### sheriff 2018-05-28
 
 crbug.com/767269 [ Win ] inspector-protocol/layout-fonts/cjk-ideograph-fallback-by-lang.js [ Pass Failure ]
