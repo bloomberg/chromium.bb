@@ -37,7 +37,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_tiles/constants.h"
-#include "components/ntp_tiles/features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
@@ -109,8 +108,7 @@ class LocalNTPTest : public InProcessBrowserTest {
   LocalNTPTest()
       : LocalNTPTest(
             /*enabled_features=*/{},
-            /*disabled_features=*/{features::kFirstRunDefaultSearchShortcut,
-                                   ntp_tiles::kDefaultSearchShortcut}) {}
+            /*disabled_features=*/{features::kFirstRunDefaultSearchShortcut}) {}
 
   void SetUpOnMainThread() override {
     // Some tests depend on the prepopulated most visited tiles coming from
@@ -1168,9 +1166,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, InterstitialsAreNotNTPs) {
 class LocalNTPNoSearchShortcutTest : public LocalNTPTest {
  public:
   LocalNTPNoSearchShortcutTest()
-      : LocalNTPTest({},
-                     {features::kFirstRunDefaultSearchShortcut,
-                      ntp_tiles::kDefaultSearchShortcut}) {}
+      : LocalNTPTest({}, {features::kFirstRunDefaultSearchShortcut}) {}
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPNoSearchShortcutTest, SearchShortcutHidden) {
@@ -1183,32 +1179,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPNoSearchShortcutTest, SearchShortcutHidden) {
   content::RenderFrameHost* iframe = GetIframe(active_tab, "mv-single");
 
   EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
-}
-
-class LocalNTPNonFRESearchShortcutTest : public LocalNTPTest {
- public:
-  LocalNTPNonFRESearchShortcutTest()
-      : LocalNTPTest({ntp_tiles::kDefaultSearchShortcut}, {}) {}
-
-  void SetUpOnMainThread() override {
-    // Make sure TopSites are available before running the tests.
-    InstantService* instant_service =
-        InstantServiceFactory::GetForProfile(browser()->profile());
-    TestInstantServiceObserver mv_observer(instant_service);
-    instant_service->UpdateMostVisitedInfo();
-    mv_observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPNonFRESearchShortcutTest, SearchShortcutAdded) {
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-
-  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
-
-  EXPECT_TRUE(ContainsDefaultSearchTile(iframe));
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
