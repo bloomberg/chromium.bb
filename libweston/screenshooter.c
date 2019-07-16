@@ -38,6 +38,7 @@
 #include <libweston/libweston.h>
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"
+#include "backend.h"
 #include "libweston-internal.h"
 
 #include "wcap/wcap-decode.h"

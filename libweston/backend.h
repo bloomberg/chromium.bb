@@ -57,5 +57,36 @@ weston_head_set_physical_size(struct weston_head *head,
 void
 weston_head_set_subpixel(struct weston_head *head,
 			 enum wl_output_subpixel sp);
+/* weston_output */
+
+void
+weston_output_init(struct weston_output *output,
+		   struct weston_compositor *compositor,
+		   const char *name);
+void
+weston_output_damage(struct weston_output *output);
+
+void
+weston_output_move(struct weston_output *output, int x, int y);
+
+void
+weston_output_release(struct weston_output *output);
+
+void
+weston_output_init_zoom(struct weston_output *output);
+
+void
+weston_output_finish_frame(struct weston_output *output,
+			   const struct timespec *stamp,
+			   uint32_t presented_flags);
+int
+weston_output_mode_set_native(struct weston_output *output,
+			      struct weston_mode *mode,
+			      int32_t scale);
+void
+weston_output_transform_coordinate(struct weston_output *output,
+				   double device_x, double device_y,
+				   double *x, double *y);
+
 
 #endif

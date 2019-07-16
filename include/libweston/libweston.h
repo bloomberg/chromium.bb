@@ -1733,13 +1733,7 @@ weston_layer_mask_is_infinite(struct weston_layer *layer);
 #define WP_PRESENTATION_FEEDBACK_INVALID (1U << 31)
 
 void
-weston_output_finish_frame(struct weston_output *output,
-			   const struct timespec *stamp,
-			   uint32_t presented_flags);
-void
 weston_output_schedule_repaint(struct weston_output *output);
-void
-weston_output_damage(struct weston_output *output);
 void
 weston_compositor_schedule_repaint(struct weston_compositor *compositor);
 void
@@ -1925,28 +1919,16 @@ void
 weston_compositor_exit_with_code(struct weston_compositor *compositor,
 				 int exit_code);
 void
-weston_output_init_zoom(struct weston_output *output);
-void
 weston_output_update_zoom(struct weston_output *output);
 void
 weston_output_activate_zoom(struct weston_output *output,
 			    struct weston_seat *seat);
-void
-weston_output_move(struct weston_output *output, int x, int y);
-
 void
 weston_output_add_destroy_listener(struct weston_output *output,
 				   struct wl_listener *listener);
 struct wl_listener *
 weston_output_get_destroy_listener(struct weston_output *output,
 				   wl_notify_func_t notify);
-void
-weston_output_release(struct weston_output *output);
-void
-weston_output_transform_coordinate(struct weston_output *output,
-				   double device_x, double device_y,
-				   double *x, double *y);
-
 int
 weston_compositor_set_xkb_rule_names(struct weston_compositor *ec,
 				     struct xkb_rule_names *names);
@@ -2028,10 +2010,6 @@ weston_surface_set_color(struct weston_surface *surface,
 void
 weston_surface_destroy(struct weston_surface *surface);
 
-int
-weston_output_mode_set_native(struct weston_output *output,
-			      struct weston_mode *mode,
-			      int32_t scale);
 int
 weston_output_mode_switch_to_temporary(struct weston_output *output,
 				       struct weston_mode *mode,
