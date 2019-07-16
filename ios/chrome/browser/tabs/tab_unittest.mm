@@ -372,36 +372,6 @@ TEST_P(TabTest, DISABLED_NewTabInMiddleOfNavigation) {
   CheckHistoryResult(results[1], GURL(kGoogleRedirectUrl), kGoogleTitle);
 }
 
-TEST_P(TabTest, ClosingWebStateDoesNotRemoveSnapshot) {
-  id partialMock = OCMPartialMock(
-      SnapshotCacheFactory::GetForBrowserState(chrome_browser_state_.get()));
-  NSString* tab_id = TabIdTabHelper::FromWebState(tab_.webState)->tab_id();
-  SnapshotTabHelper::CreateForWebState(tab_.webState, tab_id);
-  [[partialMock reject] removeImageWithSessionID:tab_id];
-
-  // Use @try/@catch as -reject raises an exception.
-  @try {
-    web_state_impl_.reset();
-    EXPECT_OCMOCK_VERIFY(partialMock);
-  } @catch (NSException* exception) {
-    // The exception is raised when -removeImageWithSessionID: is invoked. As
-    // this should not happen, mark the test as failed.
-    GTEST_FAIL();
-  }
-}
-
-TEST_P(TabTest, CallingRemoveSnapshotRemovesSnapshot) {
-  id partialMock = OCMPartialMock(
-      SnapshotCacheFactory::GetForBrowserState(chrome_browser_state_.get()));
-  NSString* tab_id = TabIdTabHelper::FromWebState(tab_.webState)->tab_id();
-
-  SnapshotTabHelper::CreateForWebState(tab_.webState, tab_id);
-  OCMExpect([partialMock removeImageWithSessionID:tab_id]);
-
-  SnapshotTabHelper::FromWebState(tab_.webState)->RemoveSnapshot();
-  EXPECT_OCMOCK_VERIFY(partialMock);
-}
-
 INSTANTIATE_TEST_SUITE_P(ProgrammaticTabTest,
                          TabTest,
                          ::testing::Values(NavigationManagerChoice::LEGACY,
