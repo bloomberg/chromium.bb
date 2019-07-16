@@ -67,7 +67,7 @@ def init():
         _fields_ = [('Name', UNICODE_STRING),
                     ('NameBuffer', ctypes.c_wchar_p)]
 
-      buf = ctypes.create_string_buffer('\0', 1024)
+      buf = ctypes.create_string_buffer(1024)
       # Ask NT what the name of the object our stdout HANDLE is. It would be
       # possible to use GetFileInformationByHandleEx, but it's only available
       # on Vista+. If you're reading this in 2017 or later, feel free to
