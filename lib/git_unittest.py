@@ -300,6 +300,25 @@ class GitWrappersTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertNotExists(fake_lock)
 
 
+class LogTest(cros_test_lib.RunCommandTestCase):
+  """Tests for git.Log"""
+
+  def testNoArgs(self):
+    git.Log('git/repo/path')
+    self.assertCommandContains(['git', 'log'], cwd='git/repo/path')
+
+  def testAllArgs(self):
+    git.Log('git/repo/path', pretty='format:"%cd"',
+            after='1996-01-01', until='1997-01-01', reverse=True,
+            date='unix', paths=['my/path'])
+    self.assertCommandContains(
+        [
+            'git', 'log', '--pretty=format:"%cd"', '--after=1996-01-01',
+            '--until=1997-01-01', '--reverse', '--date=unix',
+            '--', 'my/path',
+        ], cwd='git/repo/path')
+
+
 class ProjectCheckoutTest(cros_test_lib.TestCase):
   """Tests for git.ProjectCheckout"""
 
