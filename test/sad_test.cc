@@ -1582,6 +1582,19 @@ const SadMxNParam avx2_tests[] = {
   make_tuple(16, 8, &aom_highbd_sad16x8_avx2, 8),
   make_tuple(16, 8, &aom_highbd_sad16x8_avx2, 10),
   make_tuple(16, 8, &aom_highbd_sad16x8_avx2, 12),
+
+  make_tuple(64, 16, &aom_highbd_sad64x16_avx2, 8),
+  make_tuple(64, 16, &aom_highbd_sad64x16_avx2, 10),
+  make_tuple(64, 16, &aom_highbd_sad64x16_avx2, 12),
+  make_tuple(16, 64, &aom_highbd_sad16x64_avx2, 8),
+  make_tuple(16, 64, &aom_highbd_sad16x64_avx2, 10),
+  make_tuple(16, 64, &aom_highbd_sad16x64_avx2, 12),
+  make_tuple(32, 8, &aom_highbd_sad32x8_avx2, 8),
+  make_tuple(32, 8, &aom_highbd_sad32x8_avx2, 10),
+  make_tuple(32, 8, &aom_highbd_sad32x8_avx2, 12),
+  make_tuple(16, 4, &aom_highbd_sad16x4_avx2, 8),
+  make_tuple(16, 4, &aom_highbd_sad16x4_avx2, 10),
+  make_tuple(16, 4, &aom_highbd_sad16x4_avx2, 12),
 };
 INSTANTIATE_TEST_CASE_P(AVX2, SADTest, ::testing::ValuesIn(avx2_tests));
 
@@ -1627,6 +1640,19 @@ const SadMxNAvgParam avg_avx2_tests[] = {
   make_tuple(16, 8, &aom_highbd_sad16x8_avg_avx2, 8),
   make_tuple(16, 8, &aom_highbd_sad16x8_avg_avx2, 10),
   make_tuple(16, 8, &aom_highbd_sad16x8_avg_avx2, 12),
+
+  make_tuple(64, 16, &aom_highbd_sad64x16_avg_avx2, 8),
+  make_tuple(64, 16, &aom_highbd_sad64x16_avg_avx2, 10),
+  make_tuple(64, 16, &aom_highbd_sad64x16_avg_avx2, 12),
+  make_tuple(16, 64, &aom_highbd_sad16x64_avg_avx2, 8),
+  make_tuple(16, 64, &aom_highbd_sad16x64_avg_avx2, 10),
+  make_tuple(16, 64, &aom_highbd_sad16x64_avg_avx2, 12),
+  make_tuple(32, 8, &aom_highbd_sad32x8_avg_avx2, 8),
+  make_tuple(32, 8, &aom_highbd_sad32x8_avg_avx2, 10),
+  make_tuple(32, 8, &aom_highbd_sad32x8_avg_avx2, 12),
+  make_tuple(16, 4, &aom_highbd_sad16x4_avg_avx2, 8),
+  make_tuple(16, 4, &aom_highbd_sad16x4_avg_avx2, 10),
+  make_tuple(16, 4, &aom_highbd_sad16x4_avg_avx2, 12),
 };
 INSTANTIATE_TEST_CASE_P(AVX2, SADavgTest, ::testing::ValuesIn(avg_avx2_tests));
 
@@ -1671,6 +1697,19 @@ const SadMxNx4Param x4d_avx2_tests[] = {
   make_tuple(16, 8, &aom_highbd_sad16x8x4d_avx2, 8),
   make_tuple(16, 8, &aom_highbd_sad16x8x4d_avx2, 10),
   make_tuple(16, 8, &aom_highbd_sad16x8x4d_avx2, 12),
+
+  make_tuple(16, 64, &aom_highbd_sad16x64x4d_avx2, 8),
+  make_tuple(16, 64, &aom_highbd_sad16x64x4d_avx2, 10),
+  make_tuple(16, 64, &aom_highbd_sad16x64x4d_avx2, 12),
+  make_tuple(64, 16, &aom_highbd_sad64x16x4d_avx2, 8),
+  make_tuple(64, 16, &aom_highbd_sad64x16x4d_avx2, 10),
+  make_tuple(64, 16, &aom_highbd_sad64x16x4d_avx2, 12),
+  make_tuple(32, 8, &aom_highbd_sad32x8x4d_avx2, 8),
+  make_tuple(32, 8, &aom_highbd_sad32x8x4d_avx2, 10),
+  make_tuple(32, 8, &aom_highbd_sad32x8x4d_avx2, 12),
+  make_tuple(16, 4, &aom_highbd_sad16x4x4d_avx2, 8),
+  make_tuple(16, 4, &aom_highbd_sad16x4x4d_avx2, 10),
+  make_tuple(16, 4, &aom_highbd_sad16x4x4d_avx2, 12),
 };
 INSTANTIATE_TEST_CASE_P(AVX2, SADx4Test, ::testing::ValuesIn(x4d_avx2_tests));
 #endif  // HAVE_AVX2

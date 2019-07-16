@@ -683,8 +683,8 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_dist_wtd_sad16x4_avg     ssse3/;
   specialize qw/aom_dist_wtd_sad8x32_avg     ssse3/;
   specialize qw/aom_dist_wtd_sad32x8_avg     ssse3/;
-  specialize qw/aom_dist_wtd_sad16x64_avg     ssse3/;
-  specialize qw/aom_dist_wtd_sad64x16_avg     ssse3/;
+  specialize qw/aom_dist_wtd_sad16x64_avg    ssse3/;
+  specialize qw/aom_dist_wtd_sad64x16_avg    ssse3/;
 
   add_proto qw/unsigned int/, "aom_sad4xh", "const uint8_t *a, int a_stride, const uint8_t *b, int b_stride, int width, int height";
   add_proto qw/unsigned int/, "aom_sad8xh", "const uint8_t *a, int a_stride, const uint8_t *b, int b_stride, int width, int height";
@@ -737,17 +737,17 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     specialize qw/aom_highbd_sad16x8_avg    avx2 sse2/;
     specialize qw/aom_highbd_sad8x4_avg     sse2/;
 
-    specialize qw/aom_highbd_sad16x4       sse2/;
-    specialize qw/aom_highbd_sad8x32       sse2/;
-    specialize qw/aom_highbd_sad32x8       sse2/;
-    specialize qw/aom_highbd_sad16x64      sse2/;
-    specialize qw/aom_highbd_sad64x16      sse2/;
+    specialize qw/aom_highbd_sad16x4        avx2 sse2/;
+    specialize qw/aom_highbd_sad8x32        sse2/;
+    specialize qw/aom_highbd_sad32x8        avx2 sse2/;
+    specialize qw/aom_highbd_sad16x64       avx2 sse2/;
+    specialize qw/aom_highbd_sad64x16       avx2 sse2/;
 
-    specialize qw/aom_highbd_sad16x4_avg   sse2/;
-    specialize qw/aom_highbd_sad8x32_avg   sse2/;
-    specialize qw/aom_highbd_sad32x8_avg   sse2/;
-    specialize qw/aom_highbd_sad16x64_avg  sse2/;
-    specialize qw/aom_highbd_sad64x16_avg  sse2/;
+    specialize qw/aom_highbd_sad16x4_avg    avx2 sse2/;
+    specialize qw/aom_highbd_sad8x32_avg    sse2/;
+    specialize qw/aom_highbd_sad32x8_avg    avx2 sse2/;
+    specialize qw/aom_highbd_sad16x64_avg   avx2 sse2/;
+    specialize qw/aom_highbd_sad64x16_avg   avx2 sse2/;
 
   #
   # Masked SAD
@@ -846,12 +846,12 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_highbd_sad4x8x4d     sse2/;
   specialize qw/aom_highbd_sad4x4x4d     sse2/;
 
-  specialize qw/aom_highbd_sad4x16x4d  sse2/;
-  specialize qw/aom_highbd_sad16x4x4d  sse2/;
-  specialize qw/aom_highbd_sad8x32x4d  sse2/;
-  specialize qw/aom_highbd_sad32x8x4d  sse2/;
-  specialize qw/aom_highbd_sad16x64x4d sse2/;
-  specialize qw/aom_highbd_sad64x16x4d sse2/;
+  specialize qw/aom_highbd_sad4x16x4d         sse2/;
+  specialize qw/aom_highbd_sad16x4x4d    avx2 sse2/;
+  specialize qw/aom_highbd_sad8x32x4d         sse2/;
+  specialize qw/aom_highbd_sad32x8x4d    avx2 sse2/;
+  specialize qw/aom_highbd_sad16x64x4d   avx2 sse2/;
+  specialize qw/aom_highbd_sad64x16x4d   avx2 sse2/;
 
   #
   # Avg
