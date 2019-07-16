@@ -18,18 +18,18 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='test' class='revealed'",
-          "rect": [8, 52, 200, 200],
+          "object": "LayoutNGBlockFlow (relative positioned) DIV",
+          "rect": [8, 8, 273, 276],
           "reason": "appeared"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV id='test'",
-          "rect": [8, 52, 200, 200],
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (relative positioned) DIV",
+          "rect": [8, 8, 273, 276],
           "reason": "disappeared"
         },
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='revealer'",
-          "rect": [9, 153, 200, 100],
+          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
+          "rect": [238, 241, 40, 40],
           "reason": "disappeared"
         }
       ]
