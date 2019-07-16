@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOG_ROUTER_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOG_ROUTER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_ROUTER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_ROUTER_H_
 
 #include <set>
 #include <string>
@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 
-namespace password_manager {
+namespace autofill {
 
 class LogManager;
 class LogReceiver;
@@ -62,6 +62,6 @@ class LogRouter {
   DISALLOW_COPY_AND_ASSIGN(LogRouter);
 };
 
-}  // namespace password_manager
+}  // namespace autofill
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOG_ROUTER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_ROUTER_H_

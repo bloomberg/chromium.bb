@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOG_MANAGER_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOG_MANAGER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_MANAGER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_MANAGER_H_
 
 #include <memory>
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 
-namespace password_manager {
+namespace autofill {
 
 class LogRouter;
 
@@ -47,6 +47,6 @@ class LogManager {
       base::Closure notification_callback);
 };
 
-}  // namespace password_manager
+}  // namespace autofill
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOG_MANAGER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_MANAGER_H_

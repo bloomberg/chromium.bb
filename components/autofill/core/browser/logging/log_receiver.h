@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOG_RECEIVER_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOG_RECEIVER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_RECEIVER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_RECEIVER_H_
 
 #include <string>
 #include "base/macros.h"
 
-namespace password_manager {
+namespace autofill {
 
 // This interface is used by the password management code to receive and display
 // logs about progress of actions like saving a password.
@@ -23,6 +23,6 @@ class LogReceiver {
   DISALLOW_COPY_AND_ASSIGN(LogReceiver);
 };
 
-}  // namespace password_manager
+}  // namespace autofill
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LOG_RECEIVER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_RECEIVER_H_

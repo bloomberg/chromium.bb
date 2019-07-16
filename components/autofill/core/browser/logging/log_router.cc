@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/log_router.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 
 #include "base/stl_util.h"
-#include "components/password_manager/core/browser/log_manager.h"
-#include "components/password_manager/core/browser/log_receiver.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
+#include "components/autofill/core/browser/logging/log_receiver.h"
 
-namespace password_manager {
+namespace autofill {
 
 LogRouter::LogRouter() = default;
 
@@ -58,4 +58,4 @@ void LogRouter::UnregisterReceiver(LogReceiver* receiver) {
   }
 }
 
-}  // namespace password_manager
+}  // namespace autofill

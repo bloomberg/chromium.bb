@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/log_manager.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "components/password_manager/core/browser/log_receiver.h"
-#include "components/password_manager/core/browser/log_router.h"
+#include "components/autofill/core/browser/logging/log_receiver.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 
-namespace password_manager {
+namespace autofill {
 
 namespace {
 
 const char kTestText[] = "abcd1234";
 
-class MockLogReceiver : public password_manager::LogReceiver {
+class MockLogReceiver : public autofill::LogReceiver {
  public:
   MockLogReceiver() = default;
   MOCK_METHOD1(LogSavePasswordProgress, void(const std::string&));
@@ -161,4 +161,4 @@ TEST_F(LogManagerTest, InterleaveSuspendAndLoggingActivation_ActiveFirst) {
   EXPECT_FALSE(manager_->IsLoggingActive());
 }
 
-}  // namespace password_manager
+}  // namespace autofill

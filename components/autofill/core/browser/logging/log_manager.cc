@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/log_manager.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 
 #include "base/macros.h"
-#include "components/password_manager/core/browser/log_router.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 
-namespace password_manager {
+namespace autofill {
 
 namespace {
 
@@ -92,4 +92,4 @@ std::unique_ptr<LogManager> LogManager::Create(
   return std::make_unique<LogManagerImpl>(log_router, notification_callback);
 }
 
-}  // namespace password_manager
+}  // namespace autofill

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_STUB_LOG_MANAGER_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_STUB_LOG_MANAGER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_STUB_LOG_MANAGER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_STUB_LOG_MANAGER_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "components/password_manager/core/browser/log_manager.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 
-namespace password_manager {
+namespace autofill {
 
 // Use this in tests only, to provide a no-op implementation of LogManager.
 class StubLogManager : public LogManager {
@@ -28,6 +28,6 @@ class StubLogManager : public LogManager {
   DISALLOW_COPY_AND_ASSIGN(StubLogManager);
 };
 
-}  // namespace password_manager
+}  // namespace autofill
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_STUB_LOG_MANAGER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_STUB_LOG_MANAGER_H_

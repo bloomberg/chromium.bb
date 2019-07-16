@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/stub_log_manager.h"
+#include "components/autofill/core/browser/logging/stub_log_manager.h"
 
-namespace password_manager {
+namespace autofill {
 
 void StubLogManager::OnLogRouterAvailabilityChanged(bool router_can_be_used) {}
 
@@ -16,4 +16,4 @@ bool StubLogManager::IsLoggingActive() const {
   return false;
 }
 
-}  // namespace password_manager
+}  // namespace autofill

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/log_router.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 
 #include "base/macros.h"
-#include "components/password_manager/core/browser/log_receiver.h"
-#include "components/password_manager/core/browser/stub_log_manager.h"
+#include "components/autofill/core/browser/logging/log_receiver.h"
+#include "components/autofill/core/browser/logging/stub_log_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 
-namespace password_manager {
+namespace autofill {
 
 namespace {
 
@@ -163,4 +163,4 @@ TEST_F(LogRouterTest, RegisterManager_OneManagerTwoReceivers) {
   router.UnregisterManager(&manager_);
 }
 
-}  // namespace password_manager
+}  // namespace autofill
