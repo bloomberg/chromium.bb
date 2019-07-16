@@ -75,6 +75,7 @@ void DatabaseImpl::RenameObjectStore(int64_t transaction_id,
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "RenameObjectStore must be called from a version change transaction.");
+    return;
   }
 
   // Note: This doesn't schedule a task on the transaction because version
@@ -241,6 +242,7 @@ void DatabaseImpl::SetIndexKeys(
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "SetIndexKeys must be called from a version change transaction.");
+    return;
   }
 
   connection_->database()->SetIndexKeys(
@@ -263,6 +265,7 @@ void DatabaseImpl::SetIndexesReady(int64_t transaction_id,
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "SetIndexesReady must be called from a version change transaction.");
+    return;
   }
 
   connection_->database()->SetIndexesReady(transaction, object_store_id,
@@ -295,6 +298,7 @@ void DatabaseImpl::OpenCursor(
     mojo::ReportBadMessage(
         "OpenCursor with |Preemptive| task type must be called from a version "
         "change transaction.");
+    return;
   }
 
   connection_->database()->OpenCursor(
@@ -406,6 +410,7 @@ void DatabaseImpl::CreateIndex(int64_t transaction_id,
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "CreateIndex must be called from a version change transaction.");
+    return;
   }
 
   connection_->database()->CreateIndex(transaction, object_store_id, index_id,
@@ -427,6 +432,7 @@ void DatabaseImpl::DeleteIndex(int64_t transaction_id,
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "DeleteIndex must be called from a version change transaction.");
+    return;
   }
 
   connection_->database()->DeleteIndex(transaction, object_store_id, index_id);
@@ -448,6 +454,7 @@ void DatabaseImpl::RenameIndex(int64_t transaction_id,
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "RenameIndex must be called from a version change transaction.");
+    return;
   }
 
   connection_->database()->RenameIndex(transaction, object_store_id, index_id,
