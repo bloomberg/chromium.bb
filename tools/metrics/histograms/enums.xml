@@ -33818,6 +33818,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1846471618"
       label="enable-experimental-accessibility-switch-access-text"/>
   <int value="-1844754731" label="Mash:disabled"/>
+  <int value="-1843677118" label="TwoPanesStartSurfaceAndroid:disabled"/>
   <int value="-1840608422" label="AdvancedPpdAttributes:disabled"/>
   <int value="-1839874877" label="WebXROrientationSensorDevice:enabled"/>
   <int value="-1839496458" label="disable-file-manager-touch-mode"/>
@@ -36354,6 +36355,7 @@ from previous Chrome versions.
   <int value="1835523483" label="OmniboxUIExperimentSwapTitleAndUrl:enabled"/>
   <int value="1838990777" label="V8Future:enabled"/>
   <int value="1839740266" label="LocationHardReload:disabled"/>
+  <int value="1841793150" label="TwoPanesStartSurfaceAndroid:enabled"/>
   <int value="1842219851" label="enable-incognito-window-counter"/>
   <int value="1843088575" label="OutOfBlinkCors:enabled"/>
   <int value="1844110073" label="enable-app-view"/>

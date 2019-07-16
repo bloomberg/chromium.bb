@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.tasks.tab_management;
+package org.chromium.chrome.features.start_surface;
 
 import static org.chromium.chrome.browser.compositor.animation.CompositorAnimator.FAST_OUT_SLOW_IN_INTERPOLATOR;
 
@@ -50,9 +50,8 @@ import java.util.Locale;
 /**
  * A {@link Layout} that shows all tabs in one grid view.
  */
-public class GridTabSwitcherLayout
-        extends Layout implements GridTabSwitcher.GridOverviewModeObserver {
-    private static final String TAG = "GTSLayout";
+public class StartSurfaceLayout extends Layout implements StartSurface.GridOverviewModeObserver {
+    private static final String TAG = "SSLayout";
 
     // Duration of the transition animation
     @VisibleForTesting
@@ -68,8 +67,8 @@ public class GridTabSwitcherLayout
     private boolean mIsAnimating;
 
     private final TabListSceneLayer mSceneLayer = new TabListSceneLayer();
-    private final GridTabSwitcher mGridTabSwitcher;
-    private final GridTabSwitcher.GridController mGridController;
+    private final StartSurface mStartSurface;
+    private final StartSurface.GridController mGridController;
     // To force Toolbar finishes its animation when this Layout finished hiding.
     private final LayoutTab mDummyLayoutTab;
 
@@ -88,18 +87,18 @@ public class GridTabSwitcherLayout
 
     private PerfListener mPerfListenerForTesting;
 
-    public GridTabSwitcherLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, GridTabSwitcher gridTabSwitcher) {
+    public StartSurfaceLayout(Context context, LayoutUpdateHost updateHost,
+            LayoutRenderHost renderHost, StartSurface startSurface) {
         super(context, updateHost, renderHost);
         mDummyLayoutTab = createLayoutTab(Tab.INVALID_TAB_ID, false, false, false);
         mDummyLayoutTab.setShowToolbar(true);
-        mGridTabSwitcher = gridTabSwitcher;
-        mGridTabSwitcher.setOnTabSelectingListener(this::onTabSelecting);
-        mGridController = gridTabSwitcher.getGridController();
+        mStartSurface = startSurface;
+        mStartSurface.setOnTabSelectingListener(this::onTabSelecting);
+        mGridController = startSurface.getGridController();
         mGridController.addOverviewModeObserver(this);
     }
 
-    // GridTabSwitcher.GridOverviewModeObserver implementation.
+    // StartSurface.GridOverviewModeObserver implementation.
     @Override
     public void startedShowing() {}
 
@@ -129,7 +128,7 @@ public class GridTabSwitcherLayout
         }
         // If we are doing GTS-to-Tab transition animation, we start showing the Bitmap version of
         // the GTS overview in the background while expanding the thumbnail to the viewport.
-        expandTab(mGridTabSwitcher.getThumbnailLocationOfCurrentTab(true));
+        expandTab(mStartSurface.getThumbnailLocationOfCurrentTab(true));
     }
 
     // Layout implementation.
@@ -150,7 +149,7 @@ public class GridTabSwitcherLayout
         super.show(time, animate);
 
         boolean showShrinkingAnimation = animate && FeatureUtilities.isTabToGtsAnimationEnabled();
-        boolean quick = mGridTabSwitcher.prepareOverview();
+        boolean quick = mStartSurface.prepareOverview();
         Log.d(TAG, "SkipSlowZooming = " + getSkipSlowZooming());
         if (getSkipSlowZooming()) {
             showShrinkingAnimation &= quick;
@@ -169,7 +168,7 @@ public class GridTabSwitcherLayout
             return;
         }
 
-        shrinkTab(() -> mGridTabSwitcher.getThumbnailLocationOfCurrentTab(false));
+        shrinkTab(() -> mStartSurface.getThumbnailLocationOfCurrentTab(false));
     }
 
     @Override
@@ -177,7 +176,7 @@ public class GridTabSwitcherLayout
         super.updateLayout(time, dt);
         if (mLayoutTabs == null) return;
 
-        assert mLayoutTabs.length == 1;
+        assert mLayoutTabs.length >= 1;
         boolean needUpdate = mLayoutTabs[0].updateSnap(dt);
         if (needUpdate) requestUpdate();
     }
@@ -362,7 +361,7 @@ public class GridTabSwitcherLayout
     }
 
     private void postHiding() {
-        mGridTabSwitcher.postHiding();
+        mStartSurface.postHiding();
         mIsAnimating = false;
         doneHiding();
     }
@@ -373,14 +372,14 @@ public class GridTabSwitcherLayout
     }
 
     @VisibleForTesting
-    GridTabSwitcher getGridTabSwitcherForTesting() {
-        return mGridTabSwitcher;
+    StartSurface getStartSurfaceForTesting() {
+        return mStartSurface;
     }
 
     private void reportAnimationPerf(boolean isShrinking) {
         int frameRendered = mFrameCount - mStartFrame;
         long elapsedMs = SystemClock.elapsedRealtime() - mStartTime;
-        long lastDirty = mGridTabSwitcher.getLastDirtyTimeForTesting();
+        long lastDirty = mStartSurface.getLastDirtyTimeForTesting();
         int dirtySpan = (int) (lastDirty - mStartTime);
         float fps = 1000.f * frameRendered / elapsedMs;
         String message = String.format(Locale.US,
@@ -433,7 +432,7 @@ public class GridTabSwitcherLayout
         // The content viewport is intentionally sent as both params below.
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
                 layerTitleCache, tabContentManager, resourceManager, fullscreenManager,
-                FeatureUtilities.isTabToGtsAnimationEnabled() ? mGridTabSwitcher.getResourceId()
+                FeatureUtilities.isTabToGtsAnimationEnabled() ? mStartSurface.getResourceId()
                                                               : 0,
                 mBackgroundAlpha);
         mFrameCount++;

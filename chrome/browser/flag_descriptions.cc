@@ -2569,6 +2569,11 @@ const char kTranslateAndroidManualTriggerName[] =
 const char kTranslateAndroidManualTriggerDescription[] =
     "Show a menu item in the main menu that triggers page translation.";
 
+const char kTwoPanesStartSurfaceAndroidName[] = "Two Panes Start Surface";
+const char kTwoPanesStartSurfaceAndroidDescription[] =
+    "Enable showing two panes start surface when launching Chrome via the "
+    "launcher.";
+
 const char kUpdateMenuBadgeName[] = "Force show update menu badge";
 const char kUpdateMenuBadgeDescription[] =
     "When enabled, a badge will be shown on the app menu button if the update "

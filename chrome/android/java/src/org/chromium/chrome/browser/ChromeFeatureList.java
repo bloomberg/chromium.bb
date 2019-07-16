@@ -327,6 +327,7 @@ public abstract class ChromeFeatureList {
     public static final String TRUSTED_WEB_ACTIVITY_POST_MESSAGE = "TrustedWebActivityPostMessage";
     public static final String TRUSTED_WEB_ACTIVITY_NOTIFICATION_DELEGATION_ENROLMENT =
             "TrustedWebActivityNotificationDelegationAutoEnrolment";
+    public static final String TWO_PANES_START_SURFACE_ANDROID = "TwoPanesStartSurfaceAndroid";
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";
     public static final String USAGE_STATS = "UsageStats";
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";

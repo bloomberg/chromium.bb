@@ -1514,6 +1514,9 @@ extern const char kStrictSiteIsolationDescription[];
 extern const char kTranslateAndroidManualTriggerName[];
 extern const char kTranslateAndroidManualTriggerDescription[];
 
+extern const char kTwoPanesStartSurfaceAndroidName[];
+extern const char kTwoPanesStartSurfaceAndroidDescription[];
+
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
 

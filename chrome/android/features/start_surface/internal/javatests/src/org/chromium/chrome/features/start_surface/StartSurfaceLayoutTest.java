@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.tasks.tab_management;
+package org.chromium.chrome.features.start_surface;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -13,6 +13,7 @@ import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAU
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
 import android.graphics.Bitmap;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
@@ -30,6 +31,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -59,14 +61,14 @@ import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 
-/** Tests for the {@link GridTabSwitcherLayout} */
+/** Tests for the {@link StartSurfaceLayout} */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=" + ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study",
         "force-fieldtrials=Study/Group"})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-public class GridTabSwitcherLayoutTest {
-    private static final String TAG = "GTSLayoutTest";
+public class StartSurfaceLayoutTest {
+    private static final String TAG = "SSLayoutTest";
     private static final String BASE_PARAMS = "force-fieldtrial-params="
             + "Study.Group:soft-cleanup-delay/0/cleanup-delay/0/skip-slow-zooming/false"
             + "/zooming-min-sdk-version/19/zooming-min-memory-mb/512";
@@ -77,7 +79,7 @@ public class GridTabSwitcherLayoutTest {
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
-    private GridTabSwitcherLayout mGtsLayout;
+    private StartSurfaceLayout mStartSurfaceLayout;
     private String mUrl;
     private int mRepeat;
     private List<WeakReference<Bitmap>> mAllBitmaps = new LinkedList<>();
@@ -92,13 +94,13 @@ public class GridTabSwitcherLayoutTest {
         mActivityTestRule.startMainActivityFromLauncher();
 
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
-        assertTrue(layout instanceof GridTabSwitcherLayout);
-        mGtsLayout = (GridTabSwitcherLayout) layout;
+        assertTrue(layout instanceof StartSurfaceLayout);
+        mStartSurfaceLayout = (StartSurfaceLayout) layout;
         mUrl = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
         mRepeat = 3;
 
-        GridTabSwitcherCoordinator coordinator =
-                (GridTabSwitcherCoordinator) mGtsLayout.getGridTabSwitcherForTesting();
+        StartSurfaceCoordinator coordinator =
+                (StartSurfaceCoordinator) mStartSurfaceLayout.getStartSurfaceForTesting();
         coordinator.setBitmapCallbackForTesting(mBitmapListener);
         Assert.assertEquals(0, coordinator.getBitmapFetchCountForTesting());
 
@@ -110,10 +112,9 @@ public class GridTabSwitcherLayoutTest {
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTab() throws InterruptedException {
-        GridTabSwitcher gts = mGtsLayout.getGridTabSwitcherForTesting();
-        GridTabSwitcherMediator mediator = (GridTabSwitcherMediator) gts.getGridController();
-        assertEquals(0, mediator.getSoftCleanupDelayForTesting());
-        assertEquals(0, mediator.getCleanupDelayForTesting());
+        StartSurface startSurface = mStartSurfaceLayout.getStartSurfaceForTesting();
+        assertEquals(0, startSurface.getSoftCleanupDelayForTesting());
+        assertEquals(0, startSurface.getCleanupDelayForTesting());
 
         prepareTabs(2, NTP_URL);
         testTabToGrid(mUrl);
@@ -138,10 +139,9 @@ public class GridTabSwitcherLayoutTest {
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWarm() throws InterruptedException {
-        GridTabSwitcher gts = mGtsLayout.getGridTabSwitcherForTesting();
-        GridTabSwitcherMediator mediator = (GridTabSwitcherMediator) gts.getGridController();
-        assertEquals(10000, mediator.getSoftCleanupDelayForTesting());
-        assertEquals(10000, mediator.getCleanupDelayForTesting());
+        StartSurface startSurface = mStartSurfaceLayout.getStartSurfaceForTesting();
+        assertEquals(10000, startSurface.getSoftCleanupDelayForTesting());
+        assertEquals(10000, startSurface.getCleanupDelayForTesting());
 
         prepareTabs(2, NTP_URL);
         testTabToGrid(mUrl);
@@ -221,12 +221,12 @@ public class GridTabSwitcherLayoutTest {
 
         final int initCount = getCaptureCount();
 
-        GridTabSwitcher gts = mGtsLayout.getGridTabSwitcherForTesting();
+        StartSurface startSurface = mStartSurfaceLayout.getStartSurfaceForTesting();
         for (int i = 0; i < mRepeat; i++) {
             enterGTS();
 
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> { gts.getGridController().onBackPressed(); });
+                    () -> { startSurface.getGridController().onBackPressed(); });
             // clang-format off
             CriteriaHelper.pollInstrumentationThread(
                     () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
@@ -344,8 +344,8 @@ public class GridTabSwitcherLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testRestoredTabsDontFetch() throws Exception {
         prepareTabs(2, mUrl);
-        GridTabSwitcherCoordinator coordinator =
-                (GridTabSwitcherCoordinator) mGtsLayout.getGridTabSwitcherForTesting();
+        StartSurfaceCoordinator coordinator =
+                (StartSurfaceCoordinator) mStartSurfaceLayout.getStartSurfaceForTesting();
         int oldCount = coordinator.getBitmapFetchCountForTesting();
 
         // Restart Chrome.
@@ -356,9 +356,9 @@ public class GridTabSwitcherLayoutTest {
         Assert.assertEquals(3, mActivityTestRule.tabsCount(false));
 
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
-        assertTrue(layout instanceof GridTabSwitcherLayout);
-        mGtsLayout = (GridTabSwitcherLayout) layout;
-        coordinator = (GridTabSwitcherCoordinator) mGtsLayout.getGridTabSwitcherForTesting();
+        assertTrue(layout instanceof StartSurfaceLayout);
+        mStartSurfaceLayout = (StartSurfaceLayout) layout;
+        coordinator = (StartSurfaceCoordinator) mStartSurfaceLayout.getStartSurfaceForTesting();
         Assert.assertEquals(0, coordinator.getBitmapFetchCountForTesting() - oldCount);
     }
 
@@ -450,11 +450,11 @@ public class GridTabSwitcherLayoutTest {
             // NTP is not invalidated, so no new captures.
             delta = 0;
         } else {
-            // The final capture at GridTabSwitcherLayout#finishedShowing time.
+            // The final capture at StartSurfaceLayout#finishedShowing time.
             delta = 1;
             // TODO(wychen): refactor areAnimatorsEnabled() to a util class.
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-                    && TabGridContainerViewBinderTest.areAnimatorsEnabled()) {
+                    && areAnimatorsEnabled()) {
                 // The faster capturing without writing back to cache.
                 delta += 1;
             }
@@ -472,7 +472,7 @@ public class GridTabSwitcherLayoutTest {
         } else {
             expected = mRepeat;
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-                    && TabGridContainerViewBinderTest.areAnimatorsEnabled()) {
+                    && areAnimatorsEnabled()) {
                 expected += mRepeat;
             }
             if (switchToAnotherTab) {
@@ -521,5 +521,20 @@ public class GridTabSwitcherLayoutTest {
             if (!GarbageCollectionTestUtils.canBeGarbageCollected(bitmap)) return false;
         }
         return true;
+    }
+
+    /**
+     * Should be the same as {@link ValueAnimator#areAnimatorsEnabled}, which requires API level 26.
+     * TODO(crbug.com/982018): put this interface in a place to share with
+     * TabGridContainerViewBinderTest.areAnimatorsEnabled.
+     */
+    private static boolean areAnimatorsEnabled() {
+        // We default to assuming that animations are enabled in case ANIMATOR_DURATION_SCALE is not
+        // defined.
+        final float defaultScale = 1f;
+        float durationScale =
+                Settings.Global.getFloat(ContextUtils.getApplicationContext().getContentResolver(),
+                        Settings.Global.ANIMATOR_DURATION_SCALE, defaultScale);
+        return !(durationScale == 0.0);
     }
 }

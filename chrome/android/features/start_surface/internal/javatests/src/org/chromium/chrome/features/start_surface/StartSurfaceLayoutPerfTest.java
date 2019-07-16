@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.tasks.tab_management;
+package org.chromium.chrome.features.start_surface;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -53,15 +53,15 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-/** Tests for the {@link GridTabSwitcherLayout}, mainly for animation performance. */
+/** Tests for the {@link StartSurfaceLayout}, mainly for animation performance. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=" + ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study,"
                 + ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
         "force-fieldtrials=Study/Group"})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-public class GridTabSwitcherLayoutPerfTest {
-    private static final String TAG = "GTSLayoutPerfTest";
+public class StartSurfaceLayoutPerfTest {
+    private static final String TAG = "SSLayoutPerfTest";
     private static final String BASE_PARAMS = "force-fieldtrial-params="
             + "Study.Group:soft-cleanup-delay/0/cleanup-delay/0/skip-slow-zooming/false"
             + "/zooming-min-sdk-version/19/zooming-min-memory-mb/512";
@@ -76,7 +76,7 @@ public class GridTabSwitcherLayoutPerfTest {
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     private EmbeddedTestServer mTestServer;
-    private GridTabSwitcherLayout mGtsLayout;
+    private StartSurfaceLayout mStartSurfaceLayout;
     private String mUrl;
     private int mRepeat;
     private long mWaitingTime;
@@ -89,8 +89,8 @@ public class GridTabSwitcherLayoutPerfTest {
         mActivityTestRule.startMainActivityFromLauncher();
 
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
-        assertTrue(layout instanceof GridTabSwitcherLayout);
-        mGtsLayout = (GridTabSwitcherLayout) layout;
+        assertTrue(layout instanceof StartSurfaceLayout);
+        mStartSurfaceLayout = (StartSurfaceLayout) layout;
         mUrl = mTestServer.getURL("/chrome/test/data/android/navigate/simple.html");
         mRepeat = 3;
         mWaitingTime = 0;
@@ -206,10 +206,10 @@ public class GridTabSwitcherLayoutPerfTest {
         List<Float> frameRates = new LinkedList<>();
         List<Float> frameInterval = new LinkedList<>();
         List<Float> dirtySpans = new LinkedList<>();
-        GridTabSwitcherLayout.PerfListener collector =
+        StartSurfaceLayout.PerfListener collector =
                 (frameRendered, elapsedMs, maxFrameInterval, dirtySpan) -> {
             assertTrue(elapsedMs
-                    >= GridTabSwitcherLayout.ZOOMING_DURATION * CompositorAnimator.sDurationScale);
+                    >= StartSurfaceLayout.ZOOMING_DURATION * CompositorAnimator.sDurationScale);
             float fps = 1000.f * frameRendered / elapsedMs;
             frameRates.add(fps);
             frameInterval.add((float) maxFrameInterval);
@@ -219,26 +219,29 @@ public class GridTabSwitcherLayoutPerfTest {
         mActivityTestRule.loadUrl(fromUrl);
         Thread.sleep(mWaitingTime);
 
-        GridTabSwitcher gts = mGtsLayout.getGridTabSwitcherForTesting();
+        StartSurface startSurface = mStartSurfaceLayout.getStartSurfaceForTesting();
         for (int i = 0; i < mRepeat; i++) {
-            mGtsLayout.setPerfListenerForTesting(collector);
+            mStartSurfaceLayout.setPerfListenerForTesting(collector);
             Thread.sleep(mWaitingTime);
             TestThreadUtils.runOnUiThreadBlocking(
                     () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(true));
             final int expectedSize = i + 1;
-            CriteriaHelper.pollInstrumentationThread(() -> frameRates.size() == expectedSize,
+            CriteriaHelper.pollInstrumentationThread(()
+                                                             -> frameRates.size() == expectedSize,
                     "Have not got PerfListener callback", DEFAULT_MAX_TIME_TO_POLL * 10,
                     DEFAULT_POLLING_INTERVAL);
             assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
-            mGtsLayout.setPerfListenerForTesting(null);
+            mStartSurfaceLayout.setPerfListenerForTesting(null);
             // Make sure the fading animation is done.
             Thread.sleep(1000);
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> { gts.getGridController().onBackPressed(); });
+                    () -> { startSurface.getGridController().onBackPressed(); });
             Thread.sleep(1000);
-            CriteriaHelper.pollInstrumentationThread(
-                    () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
+            CriteriaHelper.pollInstrumentationThread(()
+                                                             -> !mActivityTestRule.getActivity()
+                                                                         .getLayoutManager()
+                                                                         .overviewVisible(),
                     "Overview not hidden yet", DEFAULT_MAX_TIME_TO_POLL * 10,
                     DEFAULT_POLLING_INTERVAL);
         }
@@ -291,10 +294,10 @@ public class GridTabSwitcherLayoutPerfTest {
             String description) throws InterruptedException {
         List<Float> frameRates = new LinkedList<>();
         List<Float> frameInterval = new LinkedList<>();
-        GridTabSwitcherLayout.PerfListener collector =
+        StartSurfaceLayout.PerfListener collector =
                 (frameRendered, elapsedMs, maxFrameInterval, dirtySpan) -> {
             assertTrue(elapsedMs
-                    >= GridTabSwitcherLayout.ZOOMING_DURATION * CompositorAnimator.sDurationScale);
+                    >= StartSurfaceLayout.ZOOMING_DURATION * CompositorAnimator.sDurationScale);
             float fps = 1000.f * frameRendered / elapsedMs;
             frameRates.add(fps);
             frameInterval.add((float) maxFrameInterval);
@@ -302,7 +305,7 @@ public class GridTabSwitcherLayoutPerfTest {
         Thread.sleep(mWaitingTime);
 
         for (int i = 0; i < mRepeat; i++) {
-            mGtsLayout.setPerfListenerForTesting(null);
+            mStartSurfaceLayout.setPerfListenerForTesting(null);
             TestThreadUtils.runOnUiThreadBlocking(
                     () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(true));
             assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
@@ -317,18 +320,21 @@ public class GridTabSwitcherLayoutPerfTest {
                 Thread.sleep(1000);
             }
 
-            mGtsLayout.setPerfListenerForTesting(collector);
+            mStartSurfaceLayout.setPerfListenerForTesting(collector);
             Thread.sleep(mWaitingTime);
             Espresso.onView(ViewMatchers.withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                     .perform(RecyclerViewActions.actionOnItemAtPosition(
                             targetIndex, ViewActions.click()));
 
             final int expectedSize = i + 1;
-            CriteriaHelper.pollInstrumentationThread(() -> frameRates.size() == expectedSize,
+            CriteriaHelper.pollInstrumentationThread(()
+                                                             -> frameRates.size() == expectedSize,
                     "Have not got PerfListener callback", DEFAULT_MAX_TIME_TO_POLL * 10,
                     DEFAULT_POLLING_INTERVAL);
-            CriteriaHelper.pollInstrumentationThread(
-                    () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
+            CriteriaHelper.pollInstrumentationThread(()
+                                                             -> !mActivityTestRule.getActivity()
+                                                                         .getLayoutManager()
+                                                                         .overviewVisible(),
                     "Overview not hidden yet");
             Thread.sleep(1000);
         }
