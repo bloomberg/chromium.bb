@@ -3344,6 +3344,7 @@ test("unit_tests") {
     "//components/content_settings/core/test:test_support",
     "//components/data_reduction_proxy/core/browser:test_support",
     "//components/data_use_measurement/core",
+    "//components/favicon/core/test:test_support",
     "//components/mirroring:mirroring_tests",
     "//components/nacl/common:buildflags",
     "//components/ntp_snippets:test_support",
