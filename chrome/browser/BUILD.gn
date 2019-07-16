@@ -2932,6 +2932,8 @@ jumbo_split_static_library("browser") {
       "download/download_shelf_controller.h",
       "enterprise_reporting/extension_info.cc",
       "enterprise_reporting/extension_info.h",
+      "enterprise_reporting/policy_info.cc",
+      "enterprise_reporting/policy_info.h",
       "enterprise_reporting/prefs.cc",
       "enterprise_reporting/prefs.h",
       "enterprise_reporting/profile_report_generator.cc",
