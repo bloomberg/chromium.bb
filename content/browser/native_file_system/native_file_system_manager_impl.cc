@@ -171,6 +171,13 @@ void NativeFileSystemManagerImpl::ChooseEntries(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const BindingContext& context = bindings_.dispatch_context();
 
+  // ChooseEntries API is only available to windows, as we need a frame to
+  // anchor the picker to.
+  if (context.is_worker()) {
+    bindings_.ReportBadMessage("ChooseEntries called from a worker");
+    return;
+  }
+
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
