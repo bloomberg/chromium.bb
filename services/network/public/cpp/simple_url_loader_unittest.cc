@@ -1691,7 +1691,7 @@ enum class TestLoaderEvent {
   kClientPipeClosed,
   kBodyBufferClosed,
   // Advances time by 1 second. Only callable when the test environment is
-  // configured to be MainThreadType::MOCK_TIME.
+  // configured to be TimeSource::MOCK_TIME.
   kAdvanceOneSecond,
 };
 
@@ -2973,7 +2973,7 @@ TEST_F(SimpleURLLoaderStreamTest, OnRetryDestruction) {
 }
 
 // Don't inherit from SimpleURLLoaderTestBase so that we can initialize our
-// |scoped_task_environment_| different namely with MainThreadType::MOCK_TIME.
+// |scoped_task_environment_| different namely with TimeSource::MOCK_TIME.
 class SimpleURLLoaderMockTimeTest : public testing::Test {
  public:
   SimpleURLLoaderMockTimeTest()
