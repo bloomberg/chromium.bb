@@ -41,32 +41,30 @@ class PLATFORM_EXPORT ThreadHeapStatsObserver {
   virtual void DecreaseAllocatedObjectSize(size_t) = 0;
 };
 
-#define FOR_ALL_SCOPES(V)                  \
-  V(AtomicPhase)                           \
-  V(AtomicPhaseCompaction)                 \
-  V(AtomicPhaseMarking)                    \
-  V(AtomicSweepAndCompact)                 \
-  V(CompleteSweep)                         \
-  V(EagerSweep)                            \
-  V(IncrementalMarkingFinalize)            \
-  V(IncrementalMarkingStartMarking)        \
-  V(IncrementalMarkingStep)                \
-  V(InvokePreFinalizers)                   \
-  V(LazySweepInIdle)                       \
-  V(LazySweepOnAllocation)                 \
-  V(MarkInvokeEphemeronCallbacks)          \
-  V(MarkProcessWorklist)                   \
-  V(MarkNotFullyConstructedObjects)        \
-  V(MarkWeakProcessing)                    \
-  V(StandAloneAtomicMarking)               \
-  V(UnifiedAtomicMarkingEpilogue)          \
-  V(UnifiedAtomicMarkingPrologue)          \
-  V(UnifiedAtomicMarkingTransitiveClosure) \
-  V(UnifiedMarkingStep)                    \
-  V(VisitCrossThreadPersistents)           \
-  V(VisitDOMWrappers)                      \
-  V(VisitPersistentRoots)                  \
-  V(VisitPersistents)                      \
+#define FOR_ALL_SCOPES(V)             \
+  V(AtomicPauseCompaction)            \
+  V(AtomicPauseMarkEpilogue)          \
+  V(AtomicPauseMarkPrologue)          \
+  V(AtomicPauseMarkRoots)             \
+  V(AtomicPauseMarkTransitiveClosure) \
+  V(AtomicPauseSweepAndCompact)       \
+  V(CompleteSweep)                    \
+  V(EagerSweep)                       \
+  V(IncrementalMarkingFinalize)       \
+  V(IncrementalMarkingStartMarking)   \
+  V(IncrementalMarkingStep)           \
+  V(InvokePreFinalizers)              \
+  V(LazySweepInIdle)                  \
+  V(LazySweepOnAllocation)            \
+  V(MarkInvokeEphemeronCallbacks)     \
+  V(MarkProcessWorklist)              \
+  V(MarkNotFullyConstructedObjects)   \
+  V(MarkWeakProcessing)               \
+  V(UnifiedMarkingStep)               \
+  V(VisitCrossThreadPersistents)      \
+  V(VisitDOMWrappers)                 \
+  V(VisitPersistentRoots)             \
+  V(VisitPersistents)                 \
   V(VisitStackRoots)
 
 #define FOR_ALL_CONCURRENT_SCOPES(V) V(ConcurrentSweep)

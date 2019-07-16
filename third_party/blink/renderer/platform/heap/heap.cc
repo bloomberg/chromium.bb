@@ -391,7 +391,7 @@ void ThreadHeap::Compact() {
     return;
 
   ThreadHeapStatsCollector::Scope stats_scope(
-      stats_collector(), ThreadHeapStatsCollector::kAtomicPhaseCompaction);
+      stats_collector(), ThreadHeapStatsCollector::kAtomicPauseCompaction);
   // Compaction is done eagerly and before the mutator threads get
   // to run again. Doing it lazily is problematic, as the mutator's
   // references to live objects could suddenly be invalidated by
