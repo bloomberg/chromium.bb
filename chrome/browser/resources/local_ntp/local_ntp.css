@@ -1158,6 +1158,15 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   width: 130px;
 }
 
+.mini-header-colorful {
+  background-image: url(icons/colored_header.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100%;
+  height: 40px;
+  width: 130px;
+}
+
 .mini-shortcuts {
   -webkit-mask-image: url(icons/shortcut-circles.svg);
   -webkit-mask-repeat: no-repeat;
@@ -1178,7 +1187,8 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   padding-top: 32px;
 }
 
-#backgrounds-default:not(.selected) .mini-header {
+#backgrounds-default:not(.selected) .mini-header,
+#backgrounds-default:not(.selected) .mini-header-colorful {
   height: 48px;
   width: 156px;
 }
