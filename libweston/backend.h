@@ -25,8 +25,77 @@
  * SOFTWARE.
  */
 
+/*
+ * This header contains the libweston ABI exported only for internal backends.
+ */
+
 #ifndef LIBWESTON_BACKEND_INTERNAL_H
 #define LIBWESTON_BACKEND_INTERNAL_H
+
+struct weston_backend {
+	void (*destroy)(struct weston_compositor *compositor);
+
+	/** Begin a repaint sequence
+	 *
+	 * Provides the backend with explicit markers around repaint
+	 * sequences, which may allow the backend to aggregate state
+	 * application. This call will be bracketed by the repaint_flush (on
+	 * success), or repaint_cancel (when any output in the grouping fails
+	 * repaint).
+	 *
+	 * Returns an opaque pointer, which the backend may use as private
+	 * data referring to the repaint cycle.
+	 */
+	void * (*repaint_begin)(struct weston_compositor *compositor);
+
+	/** Cancel a repaint sequence
+	 *
+	 * Cancels a repaint sequence, when an error has occurred during
+	 * one output's repaint; see repaint_begin.
+	 *
+	 * @param repaint_data Data returned by repaint_begin
+	 */
+	void (*repaint_cancel)(struct weston_compositor *compositor,
+			       void *repaint_data);
+
+	/** Conclude a repaint sequence
+	 *
+	 * Called on successful completion of a repaint sequence; see
+	 * repaint_begin.
+	 *
+	 * @param repaint_data Data returned by repaint_begin
+	 */
+	int (*repaint_flush)(struct weston_compositor *compositor,
+			     void *repaint_data);
+
+	/** Allocate a new output
+	 *
+	 * @param compositor The compositor.
+	 * @param name Name for the new output.
+	 *
+	 * Allocates a new output structure that embeds a weston_output,
+	 * initializes it, and returns the pointer to the weston_output
+	 * member.
+	 *
+	 * Must set weston_output members @c destroy, @c enable and @c disable.
+	 */
+	struct weston_output *
+	(*create_output)(struct weston_compositor *compositor,
+			 const char *name);
+
+	/** Notify of device addition/removal
+	 *
+	 * @param compositor The compositor.
+	 * @param device The device that has changed.
+	 * @param added Where it was added (or removed)
+	 *
+	 * Called when a device has been added/removed from the session.
+	 * The backend can decide what to do based on whether it is a
+	 * device that it is controlling or not.
+	 */
+	void (*device_changed)(struct weston_compositor *compositor,
+			       dev_t device, bool added);
+};
 
 /* weston_head */
 

@@ -39,6 +39,7 @@
 #include <unistd.h>
 
 #include <libweston/libweston.h>
+#include "backend.h"
 #include "dbus.h"
 #include "launcher-impl.h"
 
