@@ -168,8 +168,7 @@ class MockAudioCapturerSource : public media::AudioCapturerSource {
 BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<BlinkTestRunner>(render_view),
-      test_config_(mojom::ShellTestConfiguration::New()),
-      is_main_window_(false) {}
+      test_config_(mojom::ShellTestConfiguration::New()) {}
 
 BlinkTestRunner::~BlinkTestRunner() {}
 
@@ -572,8 +571,6 @@ void BlinkTestRunner::CaptureDumpComplete() {
     return;
 
   std::move(dump_callback_).Run(std::move(dump_result_));
-  dump_callback_.Reset();
-  dump_result_.reset();
 }
 
 void BlinkTestRunner::CloseRemainingWindows() {

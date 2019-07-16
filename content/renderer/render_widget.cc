@@ -664,7 +664,14 @@ bool RenderWidget::Send(IPC::Message* message) {
     delete message;
     return false;
   }
-  if (is_frozen_ && !SwappedOutMessages::CanSendWhileSwappedOut(message)) {
+  // TODO(danakj): We believe that we should be able to not block IPC sending.
+  // When there's a provisional main frame using this widget, we should not be
+  // sending messages with the RenderWidget yet. And when the widget is frozen
+  // because there is no local main frame, there should be no code using
+  // RenderWidget and sending messages through it.
+  // We should CHECK() that the RenderWidget is not frozen and that the frame
+  // attached to it is not provisional, instead of dropping messages.
+  if (is_frozen_) {
     delete message;
     return false;
   }
