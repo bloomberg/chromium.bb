@@ -64,6 +64,7 @@
 #include "extensions/browser/url_request_util.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/app_isolation_info.h"
@@ -614,6 +615,18 @@ void ChromeContentBrowserClientExtensionsPart::OverrideNavigationParams(
   // should still see the request as cross-site.
   if (extension->is_extension())
     *referrer = content::Referrer();
+}
+
+// static
+std::vector<url::Origin> ChromeContentBrowserClientExtensionsPart::
+    GetOriginsRequiringDedicatedProcess() {
+  std::vector<url::Origin> list;
+
+  // Require a dedicated process for the webstore origin.  See
+  // https://crbug.com/939108.
+  list.push_back(url::Origin::Create(extension_urls::GetWebstoreLaunchURL()));
+
+  return list;
 }
 
 // static

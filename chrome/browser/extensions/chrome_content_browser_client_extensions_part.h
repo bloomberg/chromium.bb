@@ -78,6 +78,7 @@ class ChromeContentBrowserClientExtensionsPart
       bool* is_renderer_initiated,
       content::Referrer* referrer,
       base::Optional<url::Origin>* initiator_origin);
+  static std::vector<url::Origin> GetOriginsRequiringDedicatedProcess();
 
   // Similiar to ChromeContentBrowserClient::ShouldAllowOpenURL(), but the
   // return value indicates whether to use |result| or not.
