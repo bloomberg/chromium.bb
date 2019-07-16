@@ -68,7 +68,7 @@ class Checkout(object):
     if self.options.dry_run:
       return ''
     if return_stdout:
-      return subprocess.check_output(cmd, **kwargs)
+      return subprocess.check_output(cmd, **kwargs).decode()
     else:
       try:
         subprocess.check_call(cmd, **kwargs)
