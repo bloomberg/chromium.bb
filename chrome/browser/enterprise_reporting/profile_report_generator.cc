@@ -63,6 +63,7 @@ void ProfileReportGenerator::MaybeGenerate(const base::FilePath& path,
         /* with_device_data*/ false,
         /* is_pretty_print */ false, /* convert_types */ false);
     GetChromePolicyInfo();
+    GetExtensionPolicyInfo();
   }
 
   CheckReportStatusAsync();
@@ -98,6 +99,10 @@ void ProfileReportGenerator::GetPluginInfo() {
 
 void ProfileReportGenerator::GetChromePolicyInfo() {
   AppendChromePolicyInfoIntoProfileReport(policies_, report_.get());
+}
+
+void ProfileReportGenerator::GetExtensionPolicyInfo() {
+  AppendExtensionPolicyInfoIntoProfileReport(policies_, report_.get());
 }
 
 void ProfileReportGenerator::OnPluginsLoaded(

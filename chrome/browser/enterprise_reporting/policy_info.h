@@ -19,6 +19,10 @@ void AppendChromePolicyInfoIntoProfileReport(
     const base::Value& policies,
     em::ChromeUserProfileInfo* profile_info);
 
+void AppendExtensionPolicyInfoIntoProfileReport(
+    const base::Value& policies,
+    em::ChromeUserProfileInfo* profile_info);
+
 }  // namespace enterprise_reporting
 
 #endif  // CHROME_BROWSER_ENTERPRISE_REPORTING_POLICY_INFO_H_

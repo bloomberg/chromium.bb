@@ -61,23 +61,46 @@ em::Policy_PolicySource GetSource(const base::Value& policy) {
   return em::Policy_PolicySource_SOURCE_UNKNOWN;
 }
 
+void UpdatePolicyInfo(em::Policy* policy_info,
+                      const std::string& policy_name,
+                      const base::Value& policy) {
+  policy_info->set_name(policy_name);
+  policy_info->set_level(GetLevel(policy));
+  policy_info->set_scope(GetScope(policy));
+  policy_info->set_source(GetSource(policy));
+  base::JSONWriter::Write(*policy.FindKey("value"),
+                          policy_info->mutable_value());
+  const std::string* error = policy.FindStringKey("error");
+  if (error)
+    policy_info->set_error(*error);
+}
+
 }  // namespace
 
 void AppendChromePolicyInfoIntoProfileReport(
     const base::Value& policies,
     em::ChromeUserProfileInfo* profile_info) {
-  for (const auto& item : policies.FindKey("chromePolicies")->DictItems()) {
-    const base::Value& policy = item.second;
-    auto* policy_info = profile_info->add_chrome_policies();
-    policy_info->set_name(item.first);
-    policy_info->set_level(GetLevel(policy));
-    policy_info->set_scope(GetScope(policy));
-    policy_info->set_source(GetSource(policy));
-    base::JSONWriter::Write(*policy.FindKey("value"),
-                            policy_info->mutable_value());
-    const std::string* error = policy.FindStringKey("error");
-    if (error)
-      policy_info->set_error(*error);
+  for (const auto& policy_iter :
+       policies.FindKey("chromePolicies")->DictItems()) {
+    UpdatePolicyInfo(profile_info->add_chrome_policies(), policy_iter.first,
+                     policy_iter.second);
+  }
+}
+
+void AppendExtensionPolicyInfoIntoProfileReport(
+    const base::Value& policies,
+    em::ChromeUserProfileInfo* profile_info) {
+  for (const auto& extension_iter :
+       policies.FindKey("extensionPolicies")->DictItems()) {
+    const base::Value& policies = extension_iter.second;
+    if (policies.DictSize() == 0)
+      continue;
+    auto* extension = profile_info->add_extension_policies();
+    extension->set_extension_id(extension_iter.first);
+    for (const auto& policy_iter : policies.DictItems()) {
+      UpdatePolicyInfo(extension->add_policies(), policy_iter.first,
+                       policy_iter.second);
+    }
   }
 }
 

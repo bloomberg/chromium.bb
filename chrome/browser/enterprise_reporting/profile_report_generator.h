@@ -53,7 +53,7 @@ class ProfileReportGenerator {
   void GetExtensionInfo();
   void GetPluginInfo();
   void GetChromePolicyInfo();
-  // TODO(zmin): void GetExtensionPolicyInfo();
+  void GetExtensionPolicyInfo();
   // TODO(zmin): void GetPolicyFetchTimestampInfo();
 
  private:
