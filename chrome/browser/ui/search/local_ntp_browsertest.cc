@@ -37,7 +37,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_tiles/constants.h"
-#include "components/ntp_tiles/features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
@@ -109,8 +108,7 @@ class LocalNTPTest : public InProcessBrowserTest {
   LocalNTPTest()
       : LocalNTPTest(
             /*enabled_features=*/{},
-            /*disabled_features=*/{features::kFirstRunDefaultSearchShortcut,
-                                   ntp_tiles::kDefaultSearchShortcut}) {}
+            /*disabled_features=*/{features::kFirstRunDefaultSearchShortcut}) {}
 
   void SetUpOnMainThread() override {
     // Some tests depend on the prepopulated most visited tiles coming from
@@ -1168,9 +1166,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, InterstitialsAreNotNTPs) {
 class LocalNTPNoSearchShortcutTest : public LocalNTPTest {
  public:
   LocalNTPNoSearchShortcutTest()
-      : LocalNTPTest({},
-                     {features::kFirstRunDefaultSearchShortcut,
-                      ntp_tiles::kDefaultSearchShortcut}) {}
+      : LocalNTPTest({}, {features::kFirstRunDefaultSearchShortcut}) {}
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPNoSearchShortcutTest, SearchShortcutHidden) {
@@ -1183,32 +1179,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPNoSearchShortcutTest, SearchShortcutHidden) {
   content::RenderFrameHost* iframe = GetIframe(active_tab, "mv-single");
 
   EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
-}
-
-class LocalNTPNonFRESearchShortcutTest : public LocalNTPTest {
- public:
-  LocalNTPNonFRESearchShortcutTest()
-      : LocalNTPTest({ntp_tiles::kDefaultSearchShortcut}, {}) {}
-
-  void SetUpOnMainThread() override {
-    // Make sure TopSites are available before running the tests.
-    InstantService* instant_service =
-        InstantServiceFactory::GetForProfile(browser()->profile());
-    TestInstantServiceObserver mv_observer(instant_service);
-    instant_service->UpdateMostVisitedInfo();
-    mv_observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPNonFRESearchShortcutTest, SearchShortcutAdded) {
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-
-  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
-
-  EXPECT_TRUE(ContainsDefaultSearchTile(iframe));
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -1254,39 +1224,6 @@ class LocalNTPExistingProfileSearchShortcutTest : public LocalNTPTest {
  public:
   LocalNTPExistingProfileSearchShortcutTest() : LocalNTPTest({}, {}) {}
 };
-
-IN_PROC_BROWSER_TEST_F(LocalNTPExistingProfileSearchShortcutTest,
-                       SearchShortcutAdded) {
-  TestInstantServiceObserver observer(
-      InstantServiceFactory::GetForProfile(browser()->profile()));
-
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
-  EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
-
-  // Navigate to a non-NTP URL, which should update most visited tiles.
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url(embedded_test_server()->GetURL("/title2.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
-  ASSERT_FALSE(search::IsInstantNTP(active_tab));
-
-  // Enable the feature to insert the search shortcut for existing profiles.
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(ntp_tiles::kDefaultSearchShortcut);
-  ASSERT_TRUE(base::FeatureList::IsEnabled(ntp_tiles::kDefaultSearchShortcut));
-
-  // Two new tiles (the non-NTP URL and the search shortcut) should be added.
-  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 2);
-
-  active_tab = local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  iframe = GetIframe(active_tab, kMostVisitedIframe);
-  EXPECT_TRUE(ContainsDefaultSearchTile(iframe));
-}
 
 IN_PROC_BROWSER_TEST_F(LocalNTPExistingProfileSearchShortcutTest,
                        PRE_FRESearchShortcutNotAddedForExistingUsers) {
