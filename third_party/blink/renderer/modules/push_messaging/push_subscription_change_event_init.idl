@@ -4,7 +4,7 @@
 
 // https://w3c.github.io/push-api/#pushsubscriptionchangeevent-interface
 
-dictionary PushSubscriptionChangeInit : ExtendableEventInit {
+dictionary PushSubscriptionChangeEventInit : ExtendableEventInit {
   PushSubscription newSubscription = null;
   PushSubscription oldSubscription = null;
 };
