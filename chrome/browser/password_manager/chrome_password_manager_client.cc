@@ -941,6 +941,10 @@ void ChromePasswordManagerClient::NavigateToManagePasswordsPage(
 #endif
 }
 
+bool ChromePasswordManagerClient::IsNewTabPage() const {
+  return GetMainFrameURL() == chrome::kChromeSearchLocalNtpUrl;
+}
+
 // static
 void ChromePasswordManagerClient::BindCredentialManager(
     blink::mojom::CredentialManagerRequest request,
