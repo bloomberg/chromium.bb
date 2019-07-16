@@ -13,7 +13,6 @@ sys.path.insert(0, ROOT_DIR)
 
 import metrics
 import metrics_utils
-import cStringIO
 
 from third_party import mock
 

@@ -226,7 +226,7 @@ def extract_http_metrics(request_uri, method, status, response_time):
   if parsed_url.netloc in KNOWN_HTTP_HOSTS:
     http_metrics['host'] = parsed_url.netloc
 
-  for name, path_re in KNOWN_HTTP_PATHS.iteritems():
+  for name, path_re in KNOWN_HTTP_PATHS.items():
     if path_re.match(parsed_url.path):
       http_metrics['path'] = name
       break
@@ -287,7 +287,7 @@ def print_notice(countdown):
 def print_version_change(config_version):
   """Print a notice to let the user know we are collecting more metrics."""
   lines = list(get_notice_version_change_header())
-  for version in xrange(config_version + 1, CURRENT_VERSION + 1):
+  for version in range(config_version + 1, CURRENT_VERSION + 1):
     lines.append('')
     lines += list(get_change_notice(version))
   print_boxed_text(sys.stderr.write, 49, lines)
