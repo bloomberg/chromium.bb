@@ -1772,7 +1772,7 @@ UIColor* BackgroundColor() {
     SnapshotTabHelper::FromWebState(_tabModel.webStateList->GetActiveWebState())
         ->UpdateSnapshotWithCallback(nil);
   }
-  [_tabModel setCurrentTab:[_tabModel tabAtIndex:index]];
+  _tabModel.webStateList->ActivateWebStateAt(static_cast<int>(index));
   [self updateContentOffsetForWebStateIndex:index isNewWebState:NO];
 }
 

@@ -390,7 +390,8 @@ TEST_P(TabModelTest, RestoreSessionOnNTPTest) {
   [tab_model_ restoreSessionWindow:window forInitialRestore:NO];
 
   ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_NSEQ([tab_model_ tabAtIndex:1], [tab_model_ currentTab]);
+  EXPECT_EQ(tab_model_.webStateList->GetWebStateAt(1),
+            tab_model_.webStateList->GetActiveWebState());
   EXPECT_NE(web_state, tab_model_.webStateList->GetWebStateAt(0));
   EXPECT_NE(web_state, tab_model_.webStateList->GetWebStateAt(1));
   EXPECT_NE(web_state, tab_model_.webStateList->GetWebStateAt(2));
@@ -428,7 +429,8 @@ TEST_P(TabModelTest, RestoreSessionOn2NtpTest) {
   [tab_model_ restoreSessionWindow:window forInitialRestore:NO];
 
   ASSERT_EQ(5U, [tab_model_ count]);
-  EXPECT_NSEQ([tab_model_ tabAtIndex:3], [tab_model_ currentTab]);
+  EXPECT_EQ(tab_model_.webStateList->GetWebStateAt(3),
+            tab_model_.webStateList->GetActiveWebState());
   EXPECT_EQ(web_state0, tab_model_.webStateList->GetWebStateAt(0));
   EXPECT_EQ(web_state1, tab_model_.webStateList->GetWebStateAt(1));
   EXPECT_NE(web_state0, tab_model_.webStateList->GetWebStateAt(2));
@@ -461,7 +463,8 @@ TEST_P(TabModelTest, RestoreSessionOnAnyTest) {
   [tab_model_ restoreSessionWindow:window forInitialRestore:NO];
 
   ASSERT_EQ(4U, [tab_model_ count]);
-  EXPECT_NSEQ([tab_model_ tabAtIndex:2], [tab_model_ currentTab]);
+  EXPECT_EQ(tab_model_.webStateList->GetWebStateAt(2),
+            tab_model_.webStateList->GetActiveWebState());
   EXPECT_EQ(web_state, tab_model_.webStateList->GetWebStateAt(0));
   EXPECT_NE(web_state, tab_model_.webStateList->GetWebStateAt(1));
   EXPECT_NE(web_state, tab_model_.webStateList->GetWebStateAt(2));
@@ -518,8 +521,9 @@ TEST_P(TabModelTest, InsertWithSessionController) {
   EXPECT_EQ([tab_model_ count], 1U);
   EXPECT_EQ(new_web_state, tab_model_.webStateList->GetWebStateAt(0));
   tab_model_.webStateList->ActivateWebStateAt(0);
-  Tab* current_tab = [tab_model_ currentTab];
-  EXPECT_TRUE(current_tab);
+  web::WebState* current_web_state =
+      tab_model_.webStateList->GetActiveWebState();
+  EXPECT_TRUE(current_web_state);
 }
 
 TEST_P(TabModelTest, AddWithOrderController) {
@@ -608,94 +612,6 @@ TEST_P(TabModelTest, AddWithOrderController) {
             tab_model_.webStateList->GetIndexOfWebState(web_state3) + 1);
 }
 
-TEST_P(TabModelTest, MoveTabs) {
-  web::WebState* web_state0 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
-  web::WebState* web_state1 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
-  web::WebState* web_state2 =
-      [tab_model_ insertWebStateWithURL:GURL(kURL1)
-                               referrer:web::Referrer()
-                             transition:ui::PAGE_TRANSITION_TYPED
-                                 opener:nil
-                            openedByDOM:NO
-                                atIndex:[tab_model_ count]
-                           inBackground:NO];
-
-  // Basic sanity checks before moving on.
-  ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_EQ(web_state0, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_EQ(web_state1, tab_model_.webStateList->GetWebStateAt(1));
-  EXPECT_EQ(web_state2, tab_model_.webStateList->GetWebStateAt(2));
-
-  // Check that observer methods are called.
-  FakeWebStateListObservingDelegate* web_state_list_observer =
-      [[FakeWebStateListObservingDelegate alloc] init];
-  [web_state_list_observer observeWebStateList:tab_model_.webStateList];
-
-  // Move a tab from index 1 to index 0 (move tab left by one).
-  [web_state_list_observer setDidMoveWebStateWasCalled:NO];
-  [tab_model_ moveTab:[tab_model_ tabAtIndex:1] toIndex:0];
-  ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_EQ(web_state1, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_EQ(web_state0, tab_model_.webStateList->GetWebStateAt(1));
-  EXPECT_EQ(web_state2, tab_model_.webStateList->GetWebStateAt(2));
-  EXPECT_TRUE([web_state_list_observer didMoveWebStateWasCalled]);
-
-  // Move a tab from index 1 to index 2 (move tab right by one).
-  [web_state_list_observer setDidMoveWebStateWasCalled:NO];
-  [tab_model_ moveTab:[tab_model_ tabAtIndex:1] toIndex:2];
-  ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_EQ(web_state1, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_EQ(web_state2, tab_model_.webStateList->GetWebStateAt(1));
-  EXPECT_EQ(web_state0, tab_model_.webStateList->GetWebStateAt(2));
-  EXPECT_TRUE([web_state_list_observer didMoveWebStateWasCalled]);
-
-  // Move a tab from index 0 to index 2 (move tab right by more than one).
-  [web_state_list_observer setDidMoveWebStateWasCalled:NO];
-  [tab_model_ moveTab:[tab_model_ tabAtIndex:0] toIndex:2];
-  ASSERT_EQ(3U, [tab_model_ count]);
-
-  EXPECT_EQ(web_state2, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_EQ(web_state0, tab_model_.webStateList->GetWebStateAt(1));
-  EXPECT_EQ(web_state1, tab_model_.webStateList->GetWebStateAt(2));
-  EXPECT_TRUE([web_state_list_observer didMoveWebStateWasCalled]);
-
-  // Move a tab from index 2 to index 0 (move tab left by more than one).
-  [web_state_list_observer setDidMoveWebStateWasCalled:NO];
-  [tab_model_ moveTab:[tab_model_ tabAtIndex:2] toIndex:0];
-  ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_EQ(web_state1, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_EQ(web_state2, tab_model_.webStateList->GetWebStateAt(1));
-  EXPECT_EQ(web_state0, tab_model_.webStateList->GetWebStateAt(2));
-  EXPECT_TRUE([web_state_list_observer didMoveWebStateWasCalled]);
-
-  // Move a tab from index 2 to index 2 (move tab to the same index).
-  [web_state_list_observer setDidMoveWebStateWasCalled:NO];
-  [tab_model_ moveTab:[tab_model_ tabAtIndex:2] toIndex:2];
-  ASSERT_EQ(3U, [tab_model_ count]);
-  EXPECT_EQ(web_state1, tab_model_.webStateList->GetWebStateAt(0));
-  EXPECT_EQ(web_state2, tab_model_.webStateList->GetWebStateAt(1));
-  EXPECT_EQ(web_state0, tab_model_.webStateList->GetWebStateAt(2));
-  EXPECT_FALSE([web_state_list_observer didMoveWebStateWasCalled]);
-
-  // TabModel asserts that there are no observer when it is deallocated,
-  // so remove the observer before the end of the method.
-  [web_state_list_observer stopObservingWebStateList:tab_model_.webStateList];
-}
-
 TEST_P(TabModelTest, TabCreatedOnInsertion) {
   std::unique_ptr<web::WebState> web_state = web::WebState::Create(
       web::WebState::CreateParams(chrome_browser_state_.get()));
@@ -741,8 +657,7 @@ TEST_P(TabModelTest, DISABLED_PersistSelectionChange) {
                        inBackground:NO];
 
   ASSERT_EQ(3U, [tab_model_ count]);
-  [tab_model_ setCurrentTab:[tab_model_ tabAtIndex:1]];
-
+  tab_model_.webStateList->ActivateWebStateAt(1);
   // Force state to flush to disk on the main thread so it can be immediately
   // tested below.
   [test_session_service setPerformIO:YES];
@@ -761,7 +676,8 @@ TEST_P(TabModelTest, DISABLED_PersistSelectionChange) {
 
   ASSERT_EQ(3u, [tab_model_ count]);
 
-  EXPECT_EQ([tab_model_ tabAtIndex:1], [tab_model_ currentTab]);
+  EXPECT_EQ(tab_model_.webStateList->GetWebStateAt(1),
+            tab_model_.webStateList->GetActiveWebState());
 
   // Clean up.
   EXPECT_TRUE([[NSFileManager defaultManager] removeItemAtPath:stashPath
