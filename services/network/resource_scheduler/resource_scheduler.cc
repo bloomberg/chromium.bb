@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/resource_scheduler.h"
+#include "services/network/resource_scheduler/resource_scheduler.h"
 
 #include <stdint.h>
 

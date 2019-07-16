@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_RESOURCE_SCHEDULER_CLIENT_H_
-#define SERVICES_NETWORK_RESOURCE_SCHEDULER_CLIENT_H_
+#ifndef SERVICES_NETWORK_RESOURCE_SCHEDULER_RESOURCE_SCHEDULER_CLIENT_H_
+#define SERVICES_NETWORK_RESOURCE_SCHEDULER_RESOURCE_SCHEDULER_CLIENT_H_
 
 #include "base/memory/ref_counted.h"
 #include "net/base/request_priority.h"
-#include "services/network/resource_scheduler.h"
+#include "services/network/resource_scheduler/resource_scheduler.h"
 
 namespace net {
 class URLRequest;
@@ -51,4 +51,4 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerClient final
 };
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_RESOURCE_SCHEDULER_CLIENT_H_
+#endif  // SERVICES_NETWORK_RESOURCE_SCHEDULER_RESOURCE_SCHEDULER_CLIENT_H_

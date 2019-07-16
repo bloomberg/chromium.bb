@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/resource_scheduler.h"
+#include "services/network/resource_scheduler/resource_scheduler.h"
 
 #include <map>
 #include <memory>
@@ -34,7 +34,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "services/network/resource_scheduler_params_manager.h"
+#include "services/network/resource_scheduler/resource_scheduler_params_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/scheme_host_port.h"
@@ -538,8 +538,6 @@ TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenNotDelayable) {
     EXPECT_TRUE(request->started());
 }
 
-
-
 TEST_F(ResourceSchedulerTest, BackgroundRequestStartsImmediately) {
   const int route_id = 0;  // Indicates a background request.
   std::unique_ptr<TestRequest> request(
@@ -1002,7 +1000,6 @@ TEST_F(ResourceSchedulerTest, SpdyProxySchedulesImmediately) {
       NewRequest("http://host/req", net::IDLE));
   EXPECT_FALSE(request->started());
 }
-
 
 TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   base::test::ScopedFeatureList scoped_feature_list;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_RESOURCE_SCHEDULER_H_
-#define SERVICES_NETWORK_RESOURCE_SCHEDULER_H_
+#ifndef SERVICES_NETWORK_RESOURCE_SCHEDULER_RESOURCE_SCHEDULER_H_
+#define SERVICES_NETWORK_RESOURCE_SCHEDULER_RESOURCE_SCHEDULER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -26,12 +26,12 @@
 #include "net/base/priority_queue.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
-#include "services/network/resource_scheduler_params_manager.h"
+#include "services/network/resource_scheduler/resource_scheduler_params_manager.h"
 
 namespace base {
 class SequencedTaskRunner;
 class TickClock;
-}
+}  // namespace base
 
 namespace net {
 class URLRequest;
@@ -201,4 +201,4 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_RESOURCE_SCHEDULER_H_
+#endif  // SERVICES_NETWORK_RESOURCE_SCHEDULER_RESOURCE_SCHEDULER_H_
