@@ -48,12 +48,6 @@ OAuth2AccessTokenManager* OAuth2TokenService::GetAccessTokenManager() {
   return token_manager_.get();
 }
 
-const base::ObserverList<OAuth2AccessTokenManager::DiagnosticsObserver,
-                         true>::Unchecked&
-OAuth2TokenService::GetAccessTokenDiagnosticsObservers() {
-  return token_manager_->diagnostics_observer_list_;
-}
-
 int OAuth2TokenService::GetTokenCacheCount() {
   return token_manager_->token_cache().size();
 }
@@ -96,16 +90,6 @@ void OAuth2TokenService::OnAccessTokenFetched(
 bool OAuth2TokenService::HasRefreshToken(
     const CoreAccountId& account_id) const {
   return delegate_->RefreshTokenIsAvailable(account_id);
-}
-
-void OAuth2TokenService::AddAccessTokenDiagnosticsObserver(
-    OAuth2AccessTokenManager::DiagnosticsObserver* observer) {
-  token_manager_->AddDiagnosticsObserver(observer);
-}
-
-void OAuth2TokenService::RemoveAccessTokenDiagnosticsObserver(
-    OAuth2AccessTokenManager::DiagnosticsObserver* observer) {
-  token_manager_->RemoveDiagnosticsObserver(observer);
 }
 
 void OAuth2TokenService::set_max_authorization_token_fetch_retries_for_testing(

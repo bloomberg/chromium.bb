@@ -78,14 +78,6 @@ class OAuth2TokenService : public OAuth2AccessTokenManager::Delegate {
   void OnAccessTokenFetched(const CoreAccountId& account_id,
                             const GoogleServiceAuthError& error) override;
 
-  // TODO(https://crbug.com/967598): Remove these APIs once we can use
-  // OAuth2AccessTokenManager without OAuth2TokenService.
-  // Add or remove observers of access token manager.
-  void AddAccessTokenDiagnosticsObserver(
-      OAuth2AccessTokenManager::DiagnosticsObserver* observer);
-  void RemoveAccessTokenDiagnosticsObserver(
-      OAuth2AccessTokenManager::DiagnosticsObserver* observer);
-
   // Deprecated. It's moved to OAuth2AccessTokenManager.
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
   // Returns the current number of pending fetchers matching given params.
@@ -106,10 +98,6 @@ class OAuth2TokenService : public OAuth2AccessTokenManager::Delegate {
   // TODO(https://crbug.com/967598): Remove this. It's opened only for
   // OAuth2TokenServiceTest.
   int GetTokenCacheCount();
-
-  const base::ObserverList<OAuth2AccessTokenManager::DiagnosticsObserver,
-                           true>::Unchecked&
-  GetAccessTokenDiagnosticsObservers();
 
  protected:
   // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager

@@ -61,6 +61,12 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   void AddObserver(OAuth2TokenServiceObserver* observer);
   void RemoveObserver(OAuth2TokenServiceObserver* observer);
 
+  // Add or remove observers of access token manager.
+  void AddAccessTokenDiagnosticsObserver(
+      OAuth2AccessTokenManager::DiagnosticsObserver* observer);
+  void RemoveAccessTokenDiagnosticsObserver(
+      OAuth2AccessTokenManager::DiagnosticsObserver* observer);
+
   // Checks in the cache for a valid access token for a specified |account_id|
   // and |scopes|, and if not found starts a request for an OAuth2 access token
   // using the OAuth2 refresh token maintained by this instance for that

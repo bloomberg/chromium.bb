@@ -100,6 +100,16 @@ void ProfileOAuth2TokenService::RemoveObserver(
   delegate_->RemoveObserver(observer);
 }
 
+void ProfileOAuth2TokenService::AddAccessTokenDiagnosticsObserver(
+    OAuth2AccessTokenManager::DiagnosticsObserver* observer) {
+  token_manager_->AddDiagnosticsObserver(observer);
+}
+
+void ProfileOAuth2TokenService::RemoveAccessTokenDiagnosticsObserver(
+    OAuth2AccessTokenManager::DiagnosticsObserver* observer) {
+  token_manager_->RemoveDiagnosticsObserver(observer);
+}
+
 std::unique_ptr<OAuth2AccessTokenManager::Request>
 ProfileOAuth2TokenService::StartRequest(
     const CoreAccountId& account_id,
