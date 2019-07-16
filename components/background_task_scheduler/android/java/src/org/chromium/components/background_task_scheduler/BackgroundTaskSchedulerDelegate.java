@@ -18,6 +18,8 @@ interface BackgroundTaskSchedulerDelegate {
     String BACKGROUND_TASK_CLASS_KEY = "_background_task_class";
     @VisibleForTesting
     String BACKGROUND_TASK_EXTRAS_KEY = "_background_task_extras";
+    @VisibleForTesting
+    String BACKGROUND_TASK_DEADLINE_KEY = "_background_task_deadline";
 
     /**
      * Schedules a background task. See {@link TaskInfo} for information on what types of tasks that
