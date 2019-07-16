@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/about_handler",
   "+components/autofill/core/browser",
   "+components/autofill/core/common",
   "+components/autofill/ios/browser",
