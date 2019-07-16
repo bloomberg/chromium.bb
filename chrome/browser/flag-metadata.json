@@ -851,11 +851,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-assistant-voice-match",
-    "owners": [ "croissant-eng" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-async-dns",
     "owners": [ "ericorth", "net-dev" ],
     "expiry_milestone": 81

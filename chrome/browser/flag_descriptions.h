@@ -1875,9 +1875,6 @@ extern const char kEnableAssistantLauncherIntegrationDescription[];
 extern const char kEnableAssistantMediaSessionIntegrationName[];
 extern const char kEnableAssistantMediaSessionIntegrationDescription[];
 
-extern const char kEnableAssistantVoiceMatchName[];
-extern const char kEnableAssistantVoiceMatchDescription[];
-
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
 

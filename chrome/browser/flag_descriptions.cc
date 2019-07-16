@@ -3137,10 +3137,6 @@ const char kEnableAssistantMediaSessionIntegrationName[] =
 const char kEnableAssistantMediaSessionIntegrationDescription[] =
     "Enable Assistant Media Session Integration.";
 
-const char kEnableAssistantVoiceMatchName[] = "Enable Assistant Voice Match";
-const char kEnableAssistantVoiceMatchDescription[] =
-    "Enable the Assistant Voice Match feature";
-
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Launcher and Shelf.";
