@@ -2186,6 +2186,7 @@ crbug.com/984429 [ Mac10.10 ] fast/text/basic/014.html [ Failure ]
 crbug.com/984429 [ Mac10.11 ] fast/text/basic/014.html [ Failure ]
 crbug.com/984429 [ Mac10.12 ] fast/text/basic/014.html [ Failure ]
 crbug.com/983790 external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Pass Failure Timeout ]
+crbug.com/983789 [ Win7 ] http/tests/cookies/js-set-null.html [ Pass Failure ]
 
 ### sheriff 2018-05-28
 
