@@ -10,15 +10,6 @@
 // Delegate that handles any followup actions to Infobar UI events.
 @protocol InfobarBadgeUIDelegate
 
-// Called whenever an InfobarBanner was dismissed.
-- (void)infobarBannerWasDismissed;
-
-// Called whenever an InfobarModal was presented.
-- (void)infobarModalWasPresented;
-
-// Called whenever an InfobarModal is about to be dismissed.
-- (void)infobarModalWillDismiss;
-
 // Called whenever an Infobar accept/confirm button was tapped. It is
 // triggered by either the banner or modal button.
 - (void)infobarWasAccepted;

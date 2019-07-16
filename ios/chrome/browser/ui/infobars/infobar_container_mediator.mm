@@ -97,39 +97,6 @@
 
 #pragma mark - InfobarBadgeUIDelegate
 
-- (void)infobarBannerWasDismissed {
-  if (IsInfobarUIRebootEnabled()) {
-    web::WebState* webState = self.webStateList->GetActiveWebState();
-    DCHECK(webState);
-    InfobarBadgeTabHelper* infobarBadgeTabHelper =
-        InfobarBadgeTabHelper::FromWebState(webState);
-    DCHECK(infobarBadgeTabHelper);
-    infobarBadgeTabHelper->UpdateBadgeForInfobarBannerDismissed();
-  }
-}
-
-- (void)infobarModalWasPresented {
-  if (IsInfobarUIRebootEnabled()) {
-    web::WebState* webState = self.webStateList->GetActiveWebState();
-    DCHECK(webState);
-    InfobarBadgeTabHelper* infobarBadgeTabHelper =
-        InfobarBadgeTabHelper::FromWebState(webState);
-    DCHECK(infobarBadgeTabHelper);
-    infobarBadgeTabHelper->UpdateBadgeForInfobarModalPresented();
-  }
-}
-
-- (void)infobarModalWillDismiss {
-  if (IsInfobarUIRebootEnabled()) {
-    web::WebState* webState = self.webStateList->GetActiveWebState();
-    DCHECK(webState);
-    InfobarBadgeTabHelper* infobarBadgeTabHelper =
-        InfobarBadgeTabHelper::FromWebState(webState);
-    DCHECK(infobarBadgeTabHelper);
-    infobarBadgeTabHelper->UpdateBadgeForInfobarModalDismissed();
-  }
-}
-
 - (void)infobarWasAccepted {
   if (IsInfobarUIRebootEnabled()) {
     web::WebState* webState = self.webStateList->GetActiveWebState();

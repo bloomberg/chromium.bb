@@ -227,7 +227,6 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   self.infobarBannerState = InfobarBannerPresentationState::NotPresented;
   [self configureAccessibilityForBannerInViewController:self.baseViewController
                                              presenting:NO];
-  [self.badgeDelegate infobarBannerWasDismissed];
   self.bannerTransitionDriver = nil;
   animatedFullscreenDisabler_ = nullptr;
   [self infobarWasDismissed];
@@ -280,8 +279,6 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
     // block cleans up the banner correctly.
     if (self.baseViewController.presentedViewController ==
         self.bannerViewController) {
-      // Deselect infobar badge in parallel with modal dismissal.
-      [self.badgeDelegate infobarModalWillDismiss];
       __weak __typeof(self) weakSelf = self;
       [self.bannerViewController
           dismissViewControllerAnimated:animated
@@ -293,8 +290,6 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
     } else if (self.baseViewController.presentedViewController ==
                self.modalNavigationController) {
-      // Deselect infobar badge in parallel with modal dismissal.
-      [self.badgeDelegate infobarModalWillDismiss];
       [self.baseViewController dismissViewControllerAnimated:animated
                                                   completion:^{
                                                     if (completion)
@@ -308,10 +303,6 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 }
 
 - (void)modalInfobarWasDismissed:(id)sender {
-  // infobarModalWillDismiss call is needed, because sometimes the
-  // baseViewController will dismiss the modal without going through the
-  // coordinator.
-  [self.badgeDelegate infobarModalWillDismiss];
   self.modalTransitionDriver = nil;
 
   // If InfobarBanner is being presented it means that this Modal was presented
@@ -384,7 +375,6 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   [presentingViewController presentViewController:navController
                                          animated:YES
                                        completion:completion];
-  [self.badgeDelegate infobarModalWasPresented];
 }
 
 // Configures the Banner Accessibility in order to give VoiceOver users the

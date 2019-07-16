@@ -51,15 +51,6 @@
 @end
 
 @implementation InfobarBadgeUITestDelegate
-- (void)infobarBannerWasDismissed {
-  self.infobarBadgeTabHelper->UpdateBadgeForInfobarBannerDismissed();
-}
-- (void)infobarModalWasPresented {
-  self.infobarBadgeTabHelper->UpdateBadgeForInfobarModalPresented();
-}
-- (void)infobarModalWillDismiss {
-  self.infobarBadgeTabHelper->UpdateBadgeForInfobarModalDismissed();
-}
 - (void)infobarWasAccepted {
   self.infobarBadgeTabHelper->UpdateBadgeForInfobarAccepted();
 }
@@ -201,43 +192,10 @@ class InfobarBadgeTabHelperTest : public PlatformTest {
 
 // Test each UpdateBadge public method individually.
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeStates) {
-  // Test that dismissing the Banner unselects the badge.
-  tab_helper()->UpdateBadgeForInfobarBannerDismissed();
-  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeState &
-               InfobarBadgeStateSelected);
-  // Test that dismissing the Modal unselects the badge.
-  tab_helper()->UpdateBadgeForInfobarModalDismissed();
-  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeState &
-               InfobarBadgeStateSelected);
-  // Test that presenting the Modal selects the badge.
-  tab_helper()->UpdateBadgeForInfobarModalPresented();
-  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
-              InfobarBadgeStateSelected);
   // Test that accepting the Infobar sets the badge to accepted state.
   tab_helper()->UpdateBadgeForInfobarAccepted();
   EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
               InfobarBadgeStateAccepted);
-}
-
-// Tests that dismissing or presenting the Modal doesn't change the previously
-// accepted state.
-TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeAcceptedState) {
-  // Accept the Infobar.
-  tab_helper()->UpdateBadgeForInfobarAccepted();
-  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
-              InfobarBadgeStateAccepted);
-  // Test badge is still "accepted" after Modal presentation.
-  tab_helper()->UpdateBadgeForInfobarModalPresented();
-  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
-              InfobarBadgeStateAccepted);
-  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
-              InfobarBadgeStateSelected);
-  // Test badge is still "accepted" after Modal dismissal.
-  tab_helper()->UpdateBadgeForInfobarModalDismissed();
-  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
-              InfobarBadgeStateAccepted);
-  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeState &
-               InfobarBadgeStateSelected);
 }
 
 // Test the initial badge state once the banner has been presented.
@@ -250,20 +208,6 @@ TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeStateOnBannerPresentation) {
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeType) {
   EXPECT_EQ(infobar_badge_tab_delegate_.infobarType,
             InfobarType::kInfobarTypePasswordSave);
-}
-
-// Tests that once the Modal is presented the default state is
-// InfobarBadgeStateSelected.
-TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeStateOnModalPresentation) {
-  [infobar_container_coordinator_ dismissBanner];
-  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-      base::test::ios::kWaitForUIElementTimeout, ^bool {
-        return !infobar_container_coordinator_.bannerIsPresenting;
-      }));
-  [infobar_container_coordinator_ presentModal];
-  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
-              InfobarBadgeStateSelected);
-  EXPECT_TRUE(infobar_badge_tab_delegate_.displayingBadge);
 }
 
 // Tests that the InfobarBadge is still being displayed after dismissing the
