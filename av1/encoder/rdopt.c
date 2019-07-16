@@ -12868,6 +12868,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   if (do_tx_search_global != 1) {
     inter_modes_info_sort(inter_modes_info, inter_modes_info->rd_idx_pair_arr);
     search_state.best_rd = best_rd_so_far;
+    search_state.best_mode_index = -1;
 
     int64_t top_est_rd =
         inter_modes_info->num > 0
