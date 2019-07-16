@@ -757,27 +757,28 @@ void TaskQueueImpl::InsertFence(TaskQueue::InsertFencePosition position) {
   // Tasks posted after this point will have a strictly higher enqueue order
   // and will be blocked from running.
   main_thread_only().current_fence = current_fence;
-  bool task_unblocked =
+  bool front_task_unblocked =
       main_thread_only().immediate_work_queue->InsertFence(current_fence);
-  task_unblocked |=
+  front_task_unblocked |=
       main_thread_only().delayed_work_queue->InsertFence(current_fence);
 
   {
     base::internal::CheckedAutoLock lock(any_thread_lock_);
-    if (!task_unblocked && previous_fence && previous_fence < current_fence) {
+    if (!front_task_unblocked && previous_fence &&
+        previous_fence < current_fence) {
       if (!any_thread_.immediate_incoming_queue.empty() &&
           any_thread_.immediate_incoming_queue.front().enqueue_order() >
               previous_fence &&
           any_thread_.immediate_incoming_queue.front().enqueue_order() <
               current_fence) {
-        task_unblocked = true;
+        front_task_unblocked = true;
       }
     }
 
     UpdateCrossThreadQueueStateLocked();
   }
 
-  if (IsQueueEnabled() && task_unblocked) {
+  if (IsQueueEnabled() && front_task_unblocked) {
     main_thread_only().last_unblocked_enqueue_order =
         sequence_manager_->GetNextSequenceNumber();
     sequence_manager_->ScheduleWork();
@@ -799,23 +800,24 @@ void TaskQueueImpl::RemoveFence() {
   main_thread_only().current_fence = EnqueueOrder::none();
   main_thread_only().delayed_fence = nullopt;
 
-  bool task_unblocked = main_thread_only().immediate_work_queue->RemoveFence();
-  task_unblocked |= main_thread_only().delayed_work_queue->RemoveFence();
+  bool front_task_unblocked =
+      main_thread_only().immediate_work_queue->RemoveFence();
+  front_task_unblocked |= main_thread_only().delayed_work_queue->RemoveFence();
 
   {
     base::internal::CheckedAutoLock lock(any_thread_lock_);
-    if (!task_unblocked && previous_fence) {
+    if (!front_task_unblocked && previous_fence) {
       if (!any_thread_.immediate_incoming_queue.empty() &&
           any_thread_.immediate_incoming_queue.front().enqueue_order() >
               previous_fence) {
-        task_unblocked = true;
+        front_task_unblocked = true;
       }
     }
 
     UpdateCrossThreadQueueStateLocked();
   }
 
-  if (IsQueueEnabled() && task_unblocked) {
+  if (IsQueueEnabled() && front_task_unblocked) {
     main_thread_only().last_unblocked_enqueue_order =
         sequence_manager_->GetNextSequenceNumber();
     sequence_manager_->ScheduleWork();
