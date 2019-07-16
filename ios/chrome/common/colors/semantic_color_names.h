@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+extern NSString* const kBackgroundColor;
 extern NSString* const kDestructiveTintColor;
 extern NSString* const kDisabledTintColor;
 extern NSString* const kScrimBackgroundColor;
