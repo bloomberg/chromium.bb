@@ -256,7 +256,7 @@ base::string16 IntentPickerBubbleView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(
       button == ui::DIALOG_BUTTON_OK
-          ? IDS_INTENT_PICKER_BUBBLE_VIEW_USE_APP
+          ? IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN
           : IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME);
 }
 
