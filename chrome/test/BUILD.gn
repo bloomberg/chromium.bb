@@ -1307,6 +1307,7 @@ if (!is_android) {
       "origin_policy/origin_policy_browsertest.cc",
       "ppapi/ppapi_browsertest.cc",
       "ppapi/ppapi_filechooser_browsertest.cc",
+      "trustedtypes/trusted_types_browsertest.cc",
       "v8/wasm_trap_handler_browsertest.cc",
     ]
 

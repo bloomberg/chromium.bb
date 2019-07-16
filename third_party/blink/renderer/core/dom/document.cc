@@ -4328,8 +4328,7 @@ void Document::writeln(v8::Isolate* isolate,
 }
 
 bool Document::IsTrustedTypesEnabledForDoc() const {
-  return SecurityContext::RequireTrustedTypes() &&
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(this);
+  return ExecutionContext::RequireTrustedTypes();
 }
 
 void Document::write(v8::Isolate* isolate,
