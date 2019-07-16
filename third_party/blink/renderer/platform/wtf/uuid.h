@@ -1,12 +1,12 @@
 /*
-* Copyright (C) 2010 Google Inc. All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are
-* met:
-*
-*     * Redistributions of source code must retain the above copyright
-* notice, this list of conditions and the following disclaimer.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_UUID_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_UUID_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_UUID_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_UUID_H_
 
-#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
-namespace blink {
+namespace WTF {
 
 // Creates a UUID that consists of 32 hexadecimal digits and returns its
 // canonical form.  The canonical form is displayed in 5 groups separated by
@@ -47,13 +47,13 @@ namespace blink {
 // pseudorandom data source. Version 4 UUIDs have the form
 // xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx with hexadecimal digits for x and one of
 // 8, 9, A, or B for y.
-PLATFORM_EXPORT String CreateCanonicalUUIDString();
+WTF_EXPORT String CreateCanonicalUUIDString();
 
 // Check that the UUID is a valid UUID. A valid UUID is a string made out of 5
 // groups of lower case hexadecimal characters separated by hyphens, in the form
 // 8-4-4-4-12.
-PLATFORM_EXPORT bool IsValidUUID(const String& uuid);
+WTF_EXPORT bool IsValidUUID(const String& uuid);
 
-}  // namespace blink
+}  // namespace WTF
 
 #endif

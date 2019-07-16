@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/uuid.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 #include "base/guid.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
-namespace blink {
+namespace WTF {
 
 String CreateCanonicalUUIDString() {
   std::string uuid = base::GenerateGUID();
@@ -21,4 +21,4 @@ bool IsValidUUID(const String& uuid) {
   return base::IsValidGUIDOutputString(utf8.AsStringPiece());
 }
 
-}  // namespace blink
+}  // namespace WTF
