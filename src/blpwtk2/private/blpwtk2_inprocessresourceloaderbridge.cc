@@ -201,6 +201,9 @@ class InProcessResourceLoaderBridge::InProcessResourceContext
   void failed() override;
   void finish() override;
 
+  // notified by its owner InProcessResourceLoaderBridge
+  void OnBridgeDeleted();
+
  private:
   friend class base::RefCounted<InProcessResourceContext>;
   ~InProcessResourceContext() final;
@@ -400,6 +403,8 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::finish() {
     completeStatus.encoded_body_length = d_totalTransferSize;
     completeStatus.decoded_body_length = d_totalTransferSize;
     d_peer->OnCompletedRequest(completeStatus, d_url);
+  } else {
+    LOG(WARNING) << "d_peer has been deleted before finishing loading";
   }
 
   // This is to balance the AddRef from startLoad().
@@ -457,7 +462,7 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::
   DCHECK(Statics::isInApplicationMainThread());
   DCHECK(d_peer);
 
-  if (!d_responseHeaders.get()) {
+  if (!d_responseHeaders.get() || !d_peer) {
     return;
   }
 
@@ -477,6 +482,10 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::
   d_peer->OnReceivedResponse(responseInfo);
 }
 
+void InProcessResourceLoaderBridge::InProcessResourceContext::OnBridgeDeleted() {
+  d_peer.reset();
+}
+
 // InProcessResourceLoaderBridge
 
 InProcessResourceLoaderBridge::InProcessResourceLoaderBridge(
@@ -488,7 +497,11 @@ InProcessResourceLoaderBridge::InProcessResourceLoaderBridge(
   DCHECK(Statics::inProcessResourceLoader);
 }
 
-InProcessResourceLoaderBridge::~InProcessResourceLoaderBridge() {}
+InProcessResourceLoaderBridge::~InProcessResourceLoaderBridge() {
+  // Since InProcessResourceContext::startLoad() called AddRef(), d_context may
+  // still be alive after this destructor
+  d_context->OnBridgeDeleted();
+}
 
 void InProcessResourceLoaderBridge::SetDefersLoading(bool defers) {}
 
