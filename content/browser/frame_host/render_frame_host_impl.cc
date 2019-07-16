@@ -4882,6 +4882,8 @@ void RenderFrameHostImpl::CommitNavigation(
   // common_params.url currently leads to an opaque origin to be created. Once
   // this is fixed, the origin which these navigations eventually get committed
   // to will be available here as well.
+  // TODO(crbug.com/979296): Consider changing this code to copy an origin
+  // instead of creating one from a URL which lacks opacity information.
   if (!is_same_document) {
     base::Optional<url::Origin> top_frame_origin =
         frame_tree_node_->IsMainFrame() ? url::Origin::Create(common_params.url)
