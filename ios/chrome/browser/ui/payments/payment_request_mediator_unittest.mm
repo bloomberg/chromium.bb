@@ -18,10 +18,12 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/payment_request_unittest_base.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
+#include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
@@ -47,7 +49,16 @@ class PaymentRequestMediatorTest : public PaymentRequestUnitTestBase,
  protected:
   // PlatformTest:
   void SetUp() override {
-    DoSetUp();
+    PlatformTest::SetUp();
+
+    TestChromeBrowserState::TestingFactories factories;
+    IdentityTestEnvironmentChromeBrowserStateAdaptor::
+        AppendIdentityTestEnvironmentFactories(&factories);
+    DoSetUp(std::move(factories));
+
+    identity_test_env_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentChromeBrowserStateAdaptor>(
+            browser_state());
 
     autofill::AutofillProfile profile = autofill::test::GetFullProfile();
     autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
@@ -62,11 +73,21 @@ class PaymentRequestMediatorTest : public PaymentRequestUnitTestBase,
   }
 
   // PlatformTest:
-  void TearDown() override { DoTearDown(); }
+  void TearDown() override {
+    DoTearDown();
+    PlatformTest::TearDown();
+  }
 
   PaymentRequestMediator* mediator() { return mediator_; }
 
+  identity::IdentityManager* identity_manager() {
+    return identity_test_env_adaptor_->identity_test_env()->identity_manager();
+  }
+
  private:
+  std::unique_ptr<IdentityTestEnvironmentChromeBrowserStateAdaptor>
+      identity_test_env_adaptor_;
+
   PaymentRequestMediator* mediator_;
 };
 
@@ -415,10 +436,7 @@ TEST_F(PaymentRequestMediatorTest, TestFooterItem) {
                              false);
 
   // Make sure the user is signed out.
-  auto* identity_manager = identity_test_env()->identity_manager();
-  if (identity_manager->HasPrimaryAccount()) {
-    identity_test_env()->ClearPrimaryAccount();
-  }
+  ASSERT_FALSE(identity_manager()->HasPrimaryAccount());
 
   // Footer item should be of type CollectionViewFooterItem.
   id item = [mediator() footerItem];
@@ -430,7 +448,7 @@ TEST_F(PaymentRequestMediatorTest, TestFooterItem) {
                           IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_OUT)]);
 
   // Fake a signed in user.
-  identity_test_env()->SetPrimaryAccount("username@example.com");
+  identity::SetPrimaryAccount(identity_manager(), "username@example.com");
 
   item = [mediator() footerItem];
   footer_item = base::mac::ObjCCastStrict<CollectionViewFooterItem>(item);
@@ -450,7 +468,7 @@ TEST_F(PaymentRequestMediatorTest, TestFooterItem) {
                           IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS)]);
 
   // Sign the user out.
-  identity_test_env()->ClearPrimaryAccount();
+  identity::ClearPrimaryAccount(identity_manager());
 
   // The signed in state has no effect on the footer text if the first
   // transaction has completed.
