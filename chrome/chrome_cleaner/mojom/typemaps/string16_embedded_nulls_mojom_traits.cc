@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/chrome_cleaner/interfaces/typemaps/string16_embedded_nulls_mojom_traits.h"
+#include "chrome/chrome_cleaner/mojom/typemaps/string16_embedded_nulls_mojom_traits.h"
 
 namespace mojo {
 

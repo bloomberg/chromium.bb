@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_CHROME_CLEANER_INTERFACES_TYPEMAPS_WINDOWS_HANDLE_MOJOM_TRAITS_H_
-#define CHROME_CHROME_CLEANER_INTERFACES_TYPEMAPS_WINDOWS_HANDLE_MOJOM_TRAITS_H_
+#ifndef CHROME_CHROME_CLEANER_MOJOM_TYPEMAPS_WINDOWS_HANDLE_MOJOM_TRAITS_H_
+#define CHROME_CHROME_CLEANER_MOJOM_TYPEMAPS_WINDOWS_HANDLE_MOJOM_TRAITS_H_
 
-#include "chrome/chrome_cleaner/interfaces/windows_handle.mojom.h"
+#include "chrome/chrome_cleaner/mojom/windows_handle.mojom.h"
 #include "mojo/public/cpp/bindings/union_traits.h"
 
 namespace mojo {
@@ -30,4 +30,4 @@ struct UnionTraits<chrome_cleaner::mojom::WindowsHandleDataView, HANDLE> {
 
 }  // namespace mojo
 
-#endif  // CHROME_CHROME_CLEANER_INTERFACES_TYPEMAPS_WINDOWS_HANDLE_MOJOM_TRAITS_H_
+#endif  // CHROME_CHROME_CLEANER_MOJOM_TYPEMAPS_WINDOWS_HANDLE_MOJOM_TRAITS_H_

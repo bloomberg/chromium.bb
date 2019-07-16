@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/chrome_cleaner/public/typemaps/chrome_prompt_struct_traits.h"
+#include "components/chrome_cleaner/public/typemaps/chrome_prompt_mojom_traits.h"
 #include "build/build_config.h"
 
 namespace mojo {

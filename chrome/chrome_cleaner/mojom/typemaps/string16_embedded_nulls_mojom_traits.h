@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_CHROME_CLEANER_INTERFACES_TYPEMAPS_STRING16_EMBEDDED_NULLS_MOJOM_TRAITS_H_
-#define CHROME_CHROME_CLEANER_INTERFACES_TYPEMAPS_STRING16_EMBEDDED_NULLS_MOJOM_TRAITS_H_
+#ifndef CHROME_CHROME_CLEANER_MOJOM_TYPEMAPS_STRING16_EMBEDDED_NULLS_MOJOM_TRAITS_H_
+#define CHROME_CHROME_CLEANER_MOJOM_TYPEMAPS_STRING16_EMBEDDED_NULLS_MOJOM_TRAITS_H_
 
 #include <stdint.h>
 
 #include "base/containers/span.h"
-#include "chrome/chrome_cleaner/interfaces/string16_embedded_nulls.mojom.h"
+#include "chrome/chrome_cleaner/mojom/string16_embedded_nulls.mojom.h"
 #include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/cpp/bindings/union_traits.h"
@@ -41,4 +41,4 @@ struct UnionTraits<chrome_cleaner::mojom::String16EmbeddedNullsDataView,
 
 }  // namespace mojo
 
-#endif  // CHROME_CHROME_CLEANER_INTERFACES_TYPEMAPS_STRING16_EMBEDDED_NULLS_MOJOM_TRAITS_H_
+#endif  // CHROME_CHROME_CLEANER_MOJOM_TYPEMAPS_STRING16_EMBEDDED_NULLS_MOJOM_TRAITS_H_

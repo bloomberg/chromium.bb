@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//chrome/chrome_cleaner/interfaces/windows_handle.mojom"
+mojom = "//chrome/chrome_cleaner/mojom/windows_handle.mojom"
 public_headers = []
 traits_headers = [
-  "//chrome/chrome_cleaner/interfaces/typemaps/windows_handle_mojom_traits.h",
+  "//chrome/chrome_cleaner/mojom/typemaps/windows_handle_mojom_traits.h",
 ]
 sources = [
-  "//chrome/chrome_cleaner/interfaces/typemaps/windows_handle_mojom_traits.cc",
+  "//chrome/chrome_cleaner/mojom/typemaps/windows_handle_mojom_traits.cc",
 ]
 
 type_mappings = [

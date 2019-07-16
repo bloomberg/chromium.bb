@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_CHROME_CLEANER_INTERFACES_TYPEMAPS_PUP_STRUCT_TRAITS_H_
-#define CHROME_CHROME_CLEANER_INTERFACES_TYPEMAPS_PUP_STRUCT_TRAITS_H_
+#ifndef CHROME_CHROME_CLEANER_MOJOM_TYPEMAPS_PUP_MOJOM_TRAITS_H_
+#define CHROME_CHROME_CLEANER_MOJOM_TYPEMAPS_PUP_MOJOM_TRAITS_H_
 
 #include <stdint.h>
 
-#include "chrome/chrome_cleaner/interfaces/pup.mojom.h"
+#include "chrome/chrome_cleaner/mojom/pup.mojom.h"
 #include "chrome/chrome_cleaner/os/file_path_set.h"
 #include "mojo/public/cpp/bindings/array_traits_stl.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
@@ -50,4 +50,4 @@ struct StructTraits<chrome_cleaner::mojom::PUPDataView,
 
 }  // namespace mojo
 
-#endif  // CHROME_CHROME_CLEANER_INTERFACES_TYPEMAPS_PUP_STRUCT_TRAITS_H_
+#endif  // CHROME_CHROME_CLEANER_MOJOM_TYPEMAPS_PUP_MOJOM_TRAITS_H_

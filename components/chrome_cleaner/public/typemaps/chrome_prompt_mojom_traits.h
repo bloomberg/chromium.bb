@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CHROME_CLEANER_PUBLIC_TYPEMAPS_CHROME_CLEANER_STRUCT_TRAITS_H_
-#define COMPONENTS_CHROME_CLEANER_PUBLIC_TYPEMAPS_CHROME_CLEANER_STRUCT_TRAITS_H_
+#ifndef COMPONENTS_CHROME_CLEANER_PUBLIC_TYPEMAPS_CHROME_PROMPT_MOJOM_TRAITS_H_
+#define COMPONENTS_CHROME_CLEANER_PUBLIC_TYPEMAPS_CHROME_PROMPT_MOJOM_TRAITS_H_
 
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
-#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
+#include "components/chrome_cleaner/public/mojom/chrome_prompt.mojom.h"
 
 namespace mojo {
 
@@ -37,4 +37,4 @@ struct StructTraits<chrome_cleaner::mojom::ExtensionIdDataView,
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_CHROME_CLEANER_PUBLIC_TYPEMAPS_CHROME_CLEANER_STRUCT_TRAITS_H_
+#endif  // COMPONENTS_CHROME_CLEANER_PUBLIC_TYPEMAPS_CHROME_PROMPT_MOJOM_TRAITS_H_

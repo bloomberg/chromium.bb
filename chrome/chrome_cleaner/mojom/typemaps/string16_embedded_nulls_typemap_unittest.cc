@@ -4,8 +4,8 @@
 
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/chrome_cleaner/interfaces/string16_embedded_nulls.mojom.h"
-#include "chrome/chrome_cleaner/interfaces/test_string16_embedded_nulls.mojom.h"
+#include "chrome/chrome_cleaner/mojom/string16_embedded_nulls.mojom.h"
+#include "chrome/chrome_cleaner/mojom/test_string16_embedded_nulls.mojom.h"
 #include "chrome/chrome_cleaner/ipc/ipc_test_util.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"

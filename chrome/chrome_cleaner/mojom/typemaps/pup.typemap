@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//chrome/chrome_cleaner/interfaces/pup.mojom"
+mojom = "//chrome/chrome_cleaner/mojom/pup.mojom"
 
 public_headers = [ "//chrome/chrome_cleaner/pup_data/pup_data.h" ]
 
@@ -15,9 +15,9 @@ public_deps = [
 ]
 
 traits_headers =
-    [ "//chrome/chrome_cleaner/interfaces/typemaps/pup_struct_traits.h" ]
+    [ "//chrome/chrome_cleaner/mojom/typemaps/pup_mojom_traits.h" ]
 sources = [
-  "//chrome/chrome_cleaner/interfaces/typemaps/pup_struct_traits.cc",
+  "//chrome/chrome_cleaner/mojom/typemaps/pup_mojom_traits.cc",
 ]
 
 type_mappings = [
