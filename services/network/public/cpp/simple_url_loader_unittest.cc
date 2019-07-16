@@ -2978,7 +2978,7 @@ class SimpleURLLoaderMockTimeTest : public testing::Test {
  public:
   SimpleURLLoaderMockTimeTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         disallow_blocking_(std::make_unique<base::ScopedDisallowBlocking>()) {
     SimpleURLLoader::SetTimeoutTickClockForTest(
         scoped_task_environment_.GetMockTickClock());

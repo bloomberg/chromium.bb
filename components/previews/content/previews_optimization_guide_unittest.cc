@@ -204,7 +204,8 @@ class PreviewsOptimizationGuideTest
  public:
   PreviewsOptimizationGuideTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::UI,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~PreviewsOptimizationGuideTest() override {}
 
