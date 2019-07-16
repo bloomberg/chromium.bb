@@ -2719,10 +2719,6 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
       manifest_version=True,
       slave_configs=[],
       schedule='triggered',
-      triggered_gitiles=[[
-          'https://chrome-internal.googlesource.com/chromeos/manifest-internal',
-          ['refs/heads/snapshot']
-      ]],
   )
 
   for board in boards_dict['all_boards']:
