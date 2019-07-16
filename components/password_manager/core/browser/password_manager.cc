@@ -321,22 +321,34 @@ void RecordParsingOnSavingDifference(
 }
 
 bool IsNewFormParsingForFillingEnabled() {
+#if defined(OS_IOS)
+  return true;
+#else
   return base::FeatureList::IsEnabled(features::kNewPasswordFormParsing);
+#endif
 }
 
 bool IsNewFormParsingForSavingEnabled() {
+#if defined(OS_IOS)
+  return true;
+#else
   return base::FeatureList::IsEnabled(
              features::kNewPasswordFormParsingForSaving) &&
          base::FeatureList::IsEnabled(features::kNewPasswordFormParsing);
+#endif
 }
 
 // Returns true if it is turned off using PasswordFormManager in
 // PasswordManager.
 bool IsOnlyNewParserEnabled() {
+#if defined(OS_IOS)
+  return true;
+#else
   return base::FeatureList::IsEnabled(
              features::kNewPasswordFormParsingForSaving) &&
          base::FeatureList::IsEnabled(features::kNewPasswordFormParsing) &&
          base::FeatureList::IsEnabled(features::kOnlyNewParser);
+#endif
 }
 
 }  // namespace
