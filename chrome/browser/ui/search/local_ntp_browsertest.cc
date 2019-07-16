@@ -1381,4 +1381,103 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
   EXPECT_THAT(request_headers, ::testing::HasSubstr("same-site-cookie=1"));
 }
 
+// Verifies that Chrome won't spawn a separate renderer process for
+// every single NTP tab.  This behavior goes all the way back to
+// the initial commit [1] which achieved that behavior by forcing
+// process-per-site mode for NTP tabs.  It seems desirable to preserve this
+// behavior going forward.
+//
+// [1] https://chromium.googlesource.com/chromium/src/+/09911bf300f1a419907a9412154760efd0b7abc3/chrome/browser/browsing_instance.cc#55
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, ProcessPerSite) {
+  GURL ntp_url("chrome-search://local-ntp/local-ntp.html");
+
+  // Open NTP in |tab1|.
+  content::WebContents* tab1;
+  {
+    content::WebContentsAddedObserver tab1_observer;
+
+    // Try to simulate as closely as possible what would have happened in the
+    // real user interaction.  In particular, do *not* use
+    // local_ntp_test_utils::OpenNewTab, which requires the caller to specify
+    // the URL of the new tab.
+    chrome::NewTab(browser());
+
+    // Wait for the new tab.
+    tab1 = tab1_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab1));
+
+    // Sanity check: the NTP should be provided by |ntp_url| (and not by
+    // chrome-search://remote-ntp [3rd-party NTP] or chrome://ntp [incognito]).
+    std::string loc;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        tab1, "domAutomationController.send(window.location.href)", &loc));
+    EXPECT_EQ(ntp_url, GURL(loc));
+  }
+
+  // Open another NTP in |tab2|.
+  content::WebContents* tab2;
+  {
+    content::WebContentsAddedObserver tab2_observer;
+    chrome::NewTab(browser());
+    tab2 = tab2_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab2));
+    std::string loc;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        tab2, "domAutomationController.send(window.location.href)", &loc));
+    EXPECT_EQ(ntp_url, GURL(loc));
+  }
+
+  // Verify that |tab1| and |tab2| share a process.
+  EXPECT_EQ(tab1->GetMainFrame()->GetProcess(),
+            tab2->GetMainFrame()->GetProcess());
+}
+
+// Just like LocalNTPTest.ProcessPerSite, but for an incognito window.
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, ProcessPerSite_Incognito) {
+  GURL ntp_url("chrome://newtab");
+  Browser* incognito_browser = new Browser(Browser::CreateParams(
+      browser()->profile()->GetOffTheRecordProfile(), true));
+
+  // Open NTP in |tab1|.
+  content::WebContents* tab1;
+  {
+    content::WebContentsAddedObserver tab1_observer;
+
+    // Try to simulate as closely as possible what would have happened in the
+    // real user interaction.  In particular, do *not* use
+    // local_ntp_test_utils::OpenNewTab, which requires the caller to specify
+    // the URL of the new tab.
+    chrome::NewTab(incognito_browser);
+
+    // Wait for the new tab.
+    tab1 = tab1_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab1));
+
+    // Sanity check: the NTP should be provided by |ntp_url| (and not by
+    // chrome-search://local-ntp [1st-party, non-incognito NTP] or
+    // chrome-search://remote-ntp [3rd-party NTP]).
+    std::string loc;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        tab1, "domAutomationController.send(window.location.href)", &loc));
+    EXPECT_EQ(ntp_url, GURL(loc));
+  }
+
+  // Open another NTP in |tab2|.
+  content::WebContents* tab2;
+  {
+    content::WebContentsAddedObserver tab2_observer;
+    chrome::NewTab(incognito_browser);
+    tab2 = tab2_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab2));
+    std::string loc;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        tab2, "domAutomationController.send(window.location.href)", &loc));
+    EXPECT_EQ(ntp_url, GURL(loc));
+  }
+
+  // Verify that |tab1| and |tab2| share a process.
+  EXPECT_EQ(tab1->GetMainFrame()->GetProcess(),
+            tab2->GetMainFrame()->GetProcess());
+}
+
 }  // namespace
