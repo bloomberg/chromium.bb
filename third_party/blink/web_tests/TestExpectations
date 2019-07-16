@@ -2182,6 +2182,9 @@ crbug.com/891427 [ Mac Win7 ] virtual/mouseevent_fractional/fast/events/touch/ge
 ### sheriff 2019-07-16
 crbug.com/983799 [ Win ] http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
 crbug.com/983799 [ Win ] virtual/blink-cors/http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
+crbug.com/984429 [ Mac10.10 ] fast/text/basic/014.html [ Failure ]
+crbug.com/984429 [ Mac10.11 ] fast/text/basic/014.html [ Failure ]
+crbug.com/984429 [ Mac10.12 ] fast/text/basic/014.html [ Failure ]
 
 ### sheriff 2018-05-28
 
