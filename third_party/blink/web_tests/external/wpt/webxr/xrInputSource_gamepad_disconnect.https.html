@@ -1,12 +1,8 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
-<script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
-<script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
-<script src="../xr/resources/xr-internal-device-mocking.js"></script>
-<script src="../xr/resources/xr-test-utils.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/webxr_util.js"></script>
+<script src="resources/webxr_test_constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
@@ -16,9 +12,7 @@ let watcherDone = new Event("watcherdone");
 
 let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
-let requestSessionModes = ['immersive-vr'];
-
-let testFunction = function(session, t, fakeDeviceController) {
+let testFunction = function(session, fakeDeviceController, t) {
   let eventWatcher = new EventWatcher(t, session, ["watcherdone"]);
   let eventPromise = eventWatcher.wait_for(["watcherdone"]);
 
@@ -96,13 +90,30 @@ let testFunction = function(session, t, fakeDeviceController) {
 
   session.addEventListener('inputsourceschange', onInputSourcesChange, false);
 
-  // Session must have a baseLayer or frame requests will be ignored.
-  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+  // A set of supported buttons which should cause the runtime to treat the
+  // controller as supporting a gamepad.
+  let gamepadButtons = [
+    {
+      buttonType: 'grip',
+      pressed: false,
+      touched: false,
+      pressedValue: 0
+    },
+    {
+      buttonType: 'touchpad',
+      pressed: false,
+      touched: false,
+      pressedValue: 0
+    }
+  ];
 
-  // Create our input source and immediately toggle the primary input so that
-  // it appears as already needing to send a click event when it appears.
-  let input_source = fakeDeviceController.simulateInputSourceConnection(RIGHT_CONTROLLER);
-  input_source.connectGamepad();
+  let input_source = fakeDeviceController.simulateInputSourceConnection({
+    handedness: "right",
+    targetRayMode: "tracked-pointer",
+    pointerOrigin: VALID_POINTER_TRANSFORM,
+    profiles: [],
+    supportedButtons: gamepadButtons
+  });
 
   // Input events need one frame to propagate, so this does (in order and running
   // a rAF after each step:
@@ -114,9 +125,9 @@ let testFunction = function(session, t, fakeDeviceController) {
   // session, at which point the controller should be disconnected.
   return new Promise((resolve) => {
     session.requestAnimationFrame(() => {
-      input_source.disconnectGamepad();
+      input_source.setSupportedButtons([]);
       session.requestAnimationFrame(() => {
-        input_source.connectGamepad();
+        input_source.setSupportedButtons(gamepadButtons);
         session.requestAnimationFrame(() => {
           input_source.disconnect();
           session.requestAnimationFrame(() => {
@@ -137,5 +148,5 @@ let testFunction = function(session, t, fakeDeviceController) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+  testName, testFunction, fakeDeviceInitParams, 'immersive-vr');
 </script>

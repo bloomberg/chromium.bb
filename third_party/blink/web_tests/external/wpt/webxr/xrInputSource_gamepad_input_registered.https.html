@@ -1,12 +1,8 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
-<script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
-<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
-<script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
-<script src="../xr/resources/xr-internal-device-mocking.js"></script>
-<script src="../xr/resources/xr-test-utils.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/webxr_util.js"></script>
+<script src="resources/webxr_test_constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
@@ -14,9 +10,7 @@ let testName = "WebXR InputSource's gamepad properly registers input";
 
 let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
-let requestSessionModes = ['immersive-vr'];
-
-let testFunction = function(session, t, fakeDeviceController) {
+let testFunction = function(session, fakeDeviceController, t) {
 
   // There should only be one input source change event, which is from adding
   // the input source at the start of the test.
@@ -29,15 +23,28 @@ let testFunction = function(session, t, fakeDeviceController) {
 
   session.addEventListener('inputsourceschange', onInputSourcesChange, false);
 
-  // Session must have a baseLayer or frame requests will be ignored.
-  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
-
   // Create our input source and immediately toggle the primary input so that
   // it appears as already needing to send a click event when it appears.
-  let input_source = fakeDeviceController.simulateInputSourceConnection(RIGHT_CONTROLLER);
-  input_source.connectGamepad();
-  input_source.setGamepadButtonCount(1);
-  input_source.setGamepadAxesCount(2);
+  let input_source = fakeDeviceController.simulateInputSourceConnection({
+    handedness: "right",
+    targetRayMode: "tracked-pointer",
+    pointerOrigin: VALID_POINTER_TRANSFORM,
+    profiles: [],
+    supportedButtons: [
+      {
+        buttonType: 'grip',
+        pressed: false,
+        touched: false,
+        pressedValue: 0
+      },
+      {
+        buttonType: 'touchpad',
+        pressed: false,
+        touched: false,
+        pressedValue: 0
+      }
+    ]
+  });
 
   let cached_input_source = null;
   let cached_gamepad = null;
@@ -60,33 +67,51 @@ let testFunction = function(session, t, fakeDeviceController) {
     session.requestAnimationFrame(() => {
       // Make sure the exposed gamepad has the number of buttons and axes we
       // requested.
+      // 3 Buttons: trigger, grip, touchpad
+      // 2 Axes from the touchpad
       cached_input_source = session.inputSources[0];
       cached_gamepad = cached_input_source.gamepad;
-      assert_equals(cached_gamepad.buttons.length, 1);
-      assert_equals(cached_gamepad.axes.length, 2);
-      // Initially, the button should not be pressed and the axes values should
-      // be set to 0.
-      assert_false(cached_gamepad.buttons[0].pressed);
-      assert_equals(cached_gamepad.axes[0], 0);
-      assert_equals(cached_gamepad.axes[1], 0);
+      t.step(() => {
+        assert_equals(cached_gamepad.buttons.length, 3);
+        assert_equals(cached_gamepad.axes.length, 2);
+        // Initially, the button should not be pressed and the axes values should
+        // be set to 0.
+        assert_false(cached_gamepad.buttons[1].pressed);
+        assert_equals(cached_gamepad.axes[0], 0);
+        assert_equals(cached_gamepad.axes[1], 0);
+      }, "Verify initial state");
       // Simulate button press.
-      input_source.setGamepadButtonPressed(0, true);
+      input_source.updateButtonState({
+        buttonType: 'grip',
+        pressed: true,
+        touched: true,
+        value: 1.0
+      });
       session.requestAnimationFrame(() => {
-        // Input source and gamepad should not be re-created. They should be
-        // updated in place when a button is pressed.
-        assertSameObjects();
-        assert_true(cached_gamepad.buttons[0].pressed);
+        t.step(() => {
+          assertSameObjects();
+          assert_true(cached_gamepad.buttons[1].pressed);
+        }, "Gamepad is updated in place when a button is pressed");
+
         // Simulate input axes movement.
-        input_source.setGamepadAxisValue(0, 0.5);
-        input_source.setGamepadAxisValue(1, -0.5);
+        input_source.updateButtonState({
+          buttonType: 'touchpad',
+          pressed: false,
+          touched: true,
+          value: 0,
+          xValue: 0.5,
+          yValue: -0.5
+        });
         session.requestAnimationFrame(() => {
           // Input source and gamepad should not be re-created. They should be
           // updated in place when input axes values change.
-          assertSameObjects();
-          assert_equals(cached_gamepad.axes[0], 0.5);
-          assert_equals(cached_gamepad.axes[1], -0.5);
-          // Button that was pressed last frame should still be pressed.
-          assert_true(cached_gamepad.buttons[0].pressed);
+          t.step(() => {
+            assertSameObjects();
+            assert_equals(cached_gamepad.axes[0], 0.5);
+            assert_equals(cached_gamepad.axes[1], -0.5);
+            // Button that was pressed last frame should still be pressed.
+            assert_true(cached_gamepad.buttons[1].pressed);
+          }, "Gamepad is updated in place when axes values change");
           resolve();
         });
       });
@@ -95,5 +120,5 @@ let testFunction = function(session, t, fakeDeviceController) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+  testName, testFunction, fakeDeviceInitParams, 'immersive-vr');
 </script>
