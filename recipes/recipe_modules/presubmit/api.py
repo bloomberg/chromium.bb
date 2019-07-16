@@ -175,9 +175,10 @@ def _limitSize(message_list, char_limit=450):
       # If code is being cropped, the closing code tag will
       # get removed, so add it back before the hint.
       code_tag = '```'
-      oversized_msg = ('%s\n**Error size > %d chars, '
+      message_list[index - 1] = '\n'.join((message_list[index - 1], code_tag))
+      oversized_msg = ('\n**Error size > %d chars, '
       'there are %d more error(s) (%d total)**') % (
-        code_tag, char_limit, total_errors - index, total_errors
+        char_limit, total_errors - index, total_errors
       )
       return message_list[:index] + [oversized_msg, hint]
   return message_list
@@ -223,7 +224,7 @@ def _createSummaryMarkdown(step_json):
   warning_count = len(step_json['warnings'])
   notif_count = len(step_json['notifications'])
   description = (
-    '### There are %d error(s), %d warning(s),'
+    '#### There are %d error(s), %d warning(s),'
     ' and %d notifications(s). Here are the errors:') % (
       len(errors), warning_count, notif_count
   )
@@ -241,7 +242,7 @@ def _createSummaryMarkdown(step_json):
   error_messages.insert(0, description)
   if warning_count or notif_count:
     error_messages.append(
-      ('##### To see notifications and warnings,'
+      ('#### To see notifications and warnings,'
       ' look at the stdout of the presubmit step.')
     )
   return '\n\n'.join(error_messages)

@@ -78,7 +78,7 @@ def GenTests(api):
       api.post_process(post_process.StatusFailure) +
       api.post_process(
           post_process.ResultReason,
-         (u'### There are 0 error(s), 0 warning(s), and 0 notifications(s).'
+         (u'#### There are 0 error(s), 0 warning(s), and 0 notifications(s).'
           ' Here are the errors:'
           '\n\nTimeout occurred during presubmit step.')) +
       api.post_process(post_process.DropExpectation)
@@ -124,7 +124,7 @@ def GenTests(api):
       ) +
       api.post_process(post_process.StatusFailure) +
       api.post_process(post_process.ResultReason, textwrap.dedent(u'''
-          ### There are 2 error(s), 1 warning(s), and 1 notifications(s). Here are the errors:
+          #### There are 2 error(s), 1 warning(s), and 1 notifications(s). Here are the errors:
 
           **ERROR**
           ```
@@ -138,7 +138,7 @@ def GenTests(api):
           Expected "," after item in list
           ```
 
-          ##### To see notifications and warnings, look at the stdout of the presubmit step.
+          #### To see notifications and warnings, look at the stdout of the presubmit step.
         ''').strip()
       ) +
       api.post_process(post_process.DropExpectation)
@@ -166,7 +166,7 @@ def GenTests(api):
       ) +
       api.post_process(post_process.StatusFailure) +
       api.post_process(post_process.ResultReason, textwrap.dedent('''
-          ### There are 1 error(s), 0 warning(s), and 0 notifications(s). Here are the errors:
+          #### There are 1 error(s), 0 warning(s), and 0 notifications(s). Here are the errors:
 
           **ERROR**
           ```
@@ -182,6 +182,7 @@ def GenTests(api):
           reallyLongFakeAccountNameEmail@chromium.org
           reallyLongFakeAccountNameEmail@chromium.org
           ```
+
           **Error size > 450 chars, there are 2 more error(s) (15 total)**
           **The complete output can be found at the bottom of the presubmit stdout.**
         ''').strip()
@@ -209,7 +210,7 @@ def GenTests(api):
       ) +
       api.post_process(post_process.StatusException) +
       api.post_process(post_process.ResultReason, textwrap.dedent(u'''
-        ### There are 1 error(s), 0 warning(s), and 0 notifications(s). Here are the errors:
+        #### There are 1 error(s), 0 warning(s), and 0 notifications(s). Here are the errors:
 
         **ERROR**
         ```
