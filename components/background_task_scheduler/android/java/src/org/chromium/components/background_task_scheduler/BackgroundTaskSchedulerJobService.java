@@ -27,10 +27,6 @@ import java.util.List;
 class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelegate {
     private static final String TAG = "BkgrdTaskSchedulerJS";
 
-    private static final String BACKGROUND_TASK_CLASS_KEY = "_background_task_class";
-    @VisibleForTesting
-    static final String BACKGROUND_TASK_EXTRAS_KEY = "_background_task_extras";
-
     static BackgroundTask getBackgroundTaskFromJobParameters(JobParameters jobParameters) {
         String backgroundTaskClassName = getBackgroundTaskClassFromJobParameters(jobParameters);
         return BackgroundTaskReflection.getBackgroundTaskFromClassName(backgroundTaskClassName);
