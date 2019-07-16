@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_LINUX_GENERIC_DMABUF_VIDEO_FRAME_MAPPER_H_
-#define MEDIA_GPU_LINUX_GENERIC_DMABUF_VIDEO_FRAME_MAPPER_H_
+#ifndef MEDIA_GPU_CHROMEOS_GENERIC_DMABUF_VIDEO_FRAME_MAPPER_H_
+#define MEDIA_GPU_CHROMEOS_GENERIC_DMABUF_VIDEO_FRAME_MAPPER_H_
 
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/video_frame_mapper.h"
@@ -29,4 +29,4 @@ class MEDIA_GPU_EXPORT GenericDmaBufVideoFrameMapper : public VideoFrameMapper {
 };
 
 }  // namespace media
-#endif  // MEDIA_GPU_LINUX_GENERIC_DMABUF_VIDEO_FRAME_MAPPER_H_
+#endif  // MEDIA_GPU_CHROMEOS_GENERIC_DMABUF_VIDEO_FRAME_MAPPER_H_

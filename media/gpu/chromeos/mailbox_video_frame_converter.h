@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_LINUX_MAILBOX_VIDEO_FRAME_CONVERTER_H_
-#define MEDIA_GPU_LINUX_MAILBOX_VIDEO_FRAME_CONVERTER_H_
+#ifndef MEDIA_GPU_CHROMEOS_MAILBOX_VIDEO_FRAME_CONVERTER_H_
+#define MEDIA_GPU_CHROMEOS_MAILBOX_VIDEO_FRAME_CONVERTER_H_
 
 #include <map>
 
@@ -20,7 +20,7 @@
 
 namespace media {
 
-// The linux VideoDecoder implementations request DMA-buf VideoFrame from the
+// The ChromeOS VideoDecoder implementations request DMA-buf VideoFrame from the
 // DmabufVideoFramePool, and store the decoded data into DMA-buf. However the
 // client of the VideoDecoder may only accept mailbox VideoFrame.
 // This class is used for converting DMA-buf VideoFrame to mailbox VideoFrame.
@@ -109,4 +109,4 @@ class MEDIA_GPU_EXPORT MailboxVideoFrameConverter : public VideoFrameConverter {
 };
 
 }  // namespace media
-#endif  // MEDIA_GPU_LINUX_MAILBOX_VIDEO_FRAME_CONVERTER_H_
+#endif  // MEDIA_GPU_CHROMEOS_MAILBOX_VIDEO_FRAME_CONVERTER_H_
