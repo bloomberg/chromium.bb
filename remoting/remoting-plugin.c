@@ -47,6 +47,7 @@
 #include <libweston/backend-drm.h>
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"
+#include "backend.h"
 #include "libweston-internal.h"
 
 #define MAX_RETRY_COUNT	3

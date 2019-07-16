@@ -28,6 +28,7 @@
 #include <stdint.h>
 
 #include <libweston/libweston.h>
+#include "backend.h"
 #include "libweston-internal.h"
 
 #ifdef ENABLE_EGL

@@ -1,5 +1,7 @@
 /*
- * Copyright © 2013 Vasily Khoruzhick <anarsoul@gmail.com>
+ * Copyright © 2008-2011 Kristian Høgsberg
+ * Copyright © 2017, 2018 General Electric Company
+ * Copyright © 2012, 2017-2019 Collabora, Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -23,29 +25,37 @@
  * SOFTWARE.
  */
 
-#include "config.h"
+#ifndef LIBWESTON_BACKEND_INTERNAL_H
+#define LIBWESTON_BACKEND_INTERNAL_H
 
-#include <libweston/libweston.h>
-#include "backend.h"
-#include "libweston-internal.h"
-
-int
-pixman_renderer_init(struct weston_compositor *ec);
-
-enum pixman_renderer_output_flags {
-	PIXMAN_RENDERER_OUTPUT_USE_SHADOW = (1 << 0),
-};
-
-int
-pixman_renderer_output_create(struct weston_output *output, uint32_t flags);
+/* weston_head */
 
 void
-pixman_renderer_output_set_buffer(struct weston_output *output,
-				  pixman_image_t *buffer);
+weston_head_init(struct weston_head *head, const char *name);
 
 void
-pixman_renderer_output_set_hw_extra_damage(struct weston_output *output,
-					   pixman_region32_t *extra_damage);
+weston_head_release(struct weston_head *head);
 
 void
-pixman_renderer_output_destroy(struct weston_output *output);
+weston_head_set_connection_status(struct weston_head *head, bool connected);
+
+void
+weston_head_set_internal(struct weston_head *head);
+
+void
+weston_head_set_monitor_strings(struct weston_head *head,
+				const char *make,
+				const char *model,
+				const char *serialno);
+void
+weston_head_set_non_desktop(struct weston_head *head, bool non_desktop);
+
+void
+weston_head_set_physical_size(struct weston_head *head,
+			      int32_t mm_width, int32_t mm_height);
+
+void
+weston_head_set_subpixel(struct weston_head *head,
+			 enum wl_output_subpixel sp);
+
+#endif

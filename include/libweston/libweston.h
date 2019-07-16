@@ -2077,35 +2077,6 @@ weston_keyboard_send_keymap(struct weston_keyboard *kbd,
 int
 weston_compositor_load_xwayland(struct weston_compositor *compositor);
 
-void
-weston_head_init(struct weston_head *head, const char *name);
-
-void
-weston_head_release(struct weston_head *head);
-
-void
-weston_head_set_monitor_strings(struct weston_head *head,
-				const char *make,
-				const char *model,
-				const char *serialno);
-
-void
-weston_head_set_non_desktop(struct weston_head *head, bool non_desktop);
-
-void
-weston_head_set_physical_size(struct weston_head *head,
-			      int32_t mm_width, int32_t mm_height);
-
-void
-weston_head_set_subpixel(struct weston_head *head,
-			 enum wl_output_subpixel sp);
-
-void
-weston_head_set_connection_status(struct weston_head *head, bool connected);
-
-void
-weston_head_set_internal(struct weston_head *head);
-
 bool
 weston_head_is_connected(struct weston_head *head);
 
