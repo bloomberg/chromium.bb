@@ -53,6 +53,14 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
         return extras.getString(BACKGROUND_TASK_CLASS_KEY);
     }
 
+    static Long getDeadlineTimeFromTaskParams(@NonNull TaskParams taskParams) {
+        Bundle extras = taskParams.getExtras();
+        if (extras == null || !extras.containsKey(BACKGROUND_TASK_DEADLINE_KEY)) {
+            return null;
+        }
+        return extras.getLong(BACKGROUND_TASK_DEADLINE_KEY);
+    }
+
     private static long getDeadlineTime(TaskInfo taskInfo) {
         long windowEndTimeMs = taskInfo.getOneOffInfo().getWindowEndTimeMs();
         return sClock.currentTimeMillis() + windowEndTimeMs;
