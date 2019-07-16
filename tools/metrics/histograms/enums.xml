@@ -14793,6 +14793,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DownloadNotificationLaunchType">
+  <obsolete>
+    Deprecated in July 2019.
+  </obsolete>
   <int value="0" label="LAUNCH"/>
   <int value="1" label="RELAUNCH"/>
 </enum>
