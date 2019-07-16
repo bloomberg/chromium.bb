@@ -191,6 +191,13 @@ struct rdcost_block_args {
   int skip_trellis;
 };
 
+// Structure to store the compound type related stats for best compound type
+typedef struct {
+  INTERINTER_COMPOUND_DATA best_compound_data;
+  int64_t comp_best_model_rd;
+  int best_compmode_interinter_cost;
+} BEST_COMP_TYPE_STATS;
+
 #define LAST_NEW_MV_INDEX 6
 static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEARESTMV, { LAST_FRAME, NONE_FRAME } },
@@ -9774,8 +9781,12 @@ static int compound_type_rd(
   int rs2;
   int_mv best_mv[2];
   int best_tmp_rate_mv = *rate_mv;
-  INTERINTER_COMPOUND_DATA best_compound_data;
-  best_compound_data.type = COMPOUND_AVERAGE;
+  BEST_COMP_TYPE_STATS best_type_stats;
+  // Initializing BEST_COMP_TYPE_STATS
+  best_type_stats.best_compound_data.type = COMPOUND_AVERAGE;
+  best_type_stats.best_compmode_interinter_cost = 0;
+  best_type_stats.comp_best_model_rd = INT64_MAX;
+
   uint8_t *preds0[1] = { buffers->pred0 };
   uint8_t *preds1[1] = { buffers->pred1 };
   int strides[1] = { bw };
@@ -9785,7 +9796,7 @@ static int compound_type_rd(
   COMPOUND_TYPE cur_type;
   // Local array to store the mask cost for different compound types
   int masked_type_cost[COMPOUND_TYPES];
-  int best_compmode_interinter_cost = 0;
+
   int calc_pred_masked_compound = 1;
   int64_t comp_dist[COMPOUND_TYPES] = { INT64_MAX, INT64_MAX, INT64_MAX,
                                         INT64_MAX };
@@ -9800,7 +9811,7 @@ static int compound_type_rd(
   *rd = INT64_MAX;
   int rate_sum, tmp_skip_txfm_sb;
   int64_t dist_sum, tmp_skip_sse_sb;
-  int64_t comp_best_model_rd = INT64_MAX;
+
   // Special handling if both compound_average and compound_distwtd
   // are to be searched. In this case, first estimate between the two
   // modes and then call estimate_yrd_for_sb() only for the better of
@@ -9963,19 +9974,20 @@ static int compound_type_rd(
                 &tmp_rate_mv, preds0, preds1, buffers->residual1,
                 buffers->diff10, strides, mi_row, mi_col, rd_stats->rate,
                 tmp_rd_thresh, &calc_pred_masked_compound, comp_rate, comp_dist,
-                comp_model_rd, comp_best_model_rd, &comp_model_rd_cur);
+                comp_model_rd, best_type_stats.comp_best_model_rd,
+                &comp_model_rd_cur);
           }
         }
       }
     }
     if (best_rd_cur < *rd) {
       *rd = best_rd_cur;
-      comp_best_model_rd = comp_model_rd_cur;
-      best_compound_data = mbmi->interinter_comp;
+      best_type_stats.comp_best_model_rd = comp_model_rd_cur;
+      best_type_stats.best_compound_data = mbmi->interinter_comp;
       if (masked_compound_used && cur_type >= COMPOUND_WEDGE) {
         memcpy(buffers->tmp_best_mask_buf, xd->seg_mask, mask_len);
       }
-      best_compmode_interinter_cost = rs2;
+      best_type_stats.best_compmode_interinter_cost = rs2;
       if (have_newmv_in_inter_mode(this_mode)) {
         if (cur_type == COMPOUND_WEDGE) {
           best_tmp_rate_mv = tmp_rate_mv;
@@ -9991,10 +10003,12 @@ static int compound_type_rd(
     mbmi->mv[0].as_int = cur_mv[0].as_int;
     mbmi->mv[1].as_int = cur_mv[1].as_int;
   }
-  if (mbmi->interinter_comp.type != best_compound_data.type) {
-    mbmi->comp_group_idx = (best_compound_data.type < COMPOUND_WEDGE) ? 0 : 1;
-    mbmi->compound_idx = !(best_compound_data.type == COMPOUND_DISTWTD);
-    mbmi->interinter_comp = best_compound_data;
+  if (mbmi->interinter_comp.type != best_type_stats.best_compound_data.type) {
+    mbmi->comp_group_idx =
+        (best_type_stats.best_compound_data.type < COMPOUND_WEDGE) ? 0 : 1;
+    mbmi->compound_idx =
+        !(best_type_stats.best_compound_data.type == COMPOUND_DISTWTD);
+    mbmi->interinter_comp = best_type_stats.best_compound_data;
     memcpy(xd->seg_mask, buffers->tmp_best_mask_buf, mask_len);
   }
   if (have_newmv_in_inter_mode(this_mode)) {
@@ -10009,7 +10023,7 @@ static int compound_type_rd(
   if (!match_found)
     save_comp_rd_search_stat(x, mbmi, comp_rate, comp_dist, comp_model_rd,
                              cur_mv);
-  return best_compmode_interinter_cost;
+  return best_type_stats.best_compmode_interinter_cost;
 }
 
 static INLINE int is_single_newmv_valid(const HandleInterModeArgs *const args,
