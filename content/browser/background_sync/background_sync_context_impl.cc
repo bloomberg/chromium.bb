@@ -51,13 +51,12 @@ void BackgroundSyncContext::FireBackgroundSyncEventsAcrossPartitions(
 
 // static
 void BackgroundSyncContext::GetSoonestWakeupDeltaAcrossPartitions(
-    blink::mojom::BackgroundSyncType sync_type,
     BrowserContext* browser_context,
     base::OnceCallback<void(base::TimeDelta)> callback) {
   DCHECK(browser_context);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BackgroundSyncLauncher::GetSoonestWakeupDelta(sync_type, browser_context,
+  BackgroundSyncLauncher::GetSoonestWakeupDelta(browser_context,
                                                 std::move(callback));
 }
 
@@ -140,23 +139,18 @@ void BackgroundSyncContextImpl::set_wakeup_delta_for_testing(
 }
 
 void BackgroundSyncContextImpl::GetSoonestWakeupDelta(
-    blink::mojom::BackgroundSyncType sync_type,
-    base::Time last_browser_wakeup_for_periodic_sync,
     base::OnceCallback<void(base::TimeDelta)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
-          &BackgroundSyncContextImpl::GetSoonestWakeupDeltaOnIOThread, this,
-          sync_type, last_browser_wakeup_for_periodic_sync),
+          &BackgroundSyncContextImpl::GetSoonestWakeupDeltaOnIOThread, this),
       base::BindOnce(&BackgroundSyncContextImpl::DidGetSoonestWakeupDelta, this,
                      std::move(callback)));
 }
 
-base::TimeDelta BackgroundSyncContextImpl::GetSoonestWakeupDeltaOnIOThread(
-    blink::mojom::BackgroundSyncType sync_type,
-    base::Time last_browser_wakeup_for_periodic_sync) {
+base::TimeDelta BackgroundSyncContextImpl::GetSoonestWakeupDeltaOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!test_wakeup_delta_.is_max())
@@ -164,8 +158,9 @@ base::TimeDelta BackgroundSyncContextImpl::GetSoonestWakeupDeltaOnIOThread(
   if (!background_sync_manager_)
     return base::TimeDelta::Max();
 
+  // TODO(crbug.com/925297): Add a wakeup task for PERIODIC_SYNC registrations.
   return background_sync_manager_->GetSoonestWakeupDelta(
-      sync_type, last_browser_wakeup_for_periodic_sync);
+      blink::mojom::BackgroundSyncType::ONE_SHOT);
 }
 
 void BackgroundSyncContextImpl::DidGetSoonestWakeupDelta(
