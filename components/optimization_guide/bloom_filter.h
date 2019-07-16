@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CORE_BLOOM_FILTER_H_
-#define COMPONENTS_PREVIEWS_CORE_BLOOM_FILTER_H_
+#ifndef COMPONENTS_OPTIMIZATION_GUIDE_BLOOM_FILTER_H_
+#define COMPONENTS_OPTIMIZATION_GUIDE_BLOOM_FILTER_H_
 
 #include <stdint.h>
 #include <string>
@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 
-namespace previews {
+namespace optimization_guide {
 
 // A vector of bytes (or 8-bit integers).
 typedef std::vector<uint8_t> ByteVector;
@@ -59,6 +59,6 @@ class BloomFilter {
   DISALLOW_COPY_AND_ASSIGN(BloomFilter);
 };
 
-}  // namespace previews
+}  // namespace optimization_guide
 
-#endif  // COMPONENTS_PREVIEWS_CORE_BLOOM_FILTER_H_
+#endif  // COMPONENTS_OPTIMIZATION_GUIDE_BLOOM_FILTER_H_

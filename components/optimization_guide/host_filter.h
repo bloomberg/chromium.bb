@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CORE_HOST_FILTER_H_
-#define COMPONENTS_PREVIEWS_CORE_HOST_FILTER_H_
+#ifndef COMPONENTS_OPTIMIZATION_GUIDE_HOST_FILTER_H_
+#define COMPONENTS_OPTIMIZATION_GUIDE_HOST_FILTER_H_
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "components/previews/core/bloom_filter.h"
+#include "components/optimization_guide/bloom_filter.h"
 #include "url/gurl.h"
 
-namespace previews {
+namespace optimization_guide {
 
 // HostFilter is a simple Host filter for keeping track of a set of strings
 // that are represented by a Bloom filter.
@@ -46,6 +46,6 @@ class HostFilter {
   DISALLOW_COPY_AND_ASSIGN(HostFilter);
 };
 
-}  // namespace previews
+}  // namespace optimization_guide
 
-#endif  // COMPONENTS_PREVIEWS_CORE_BLOOM_FILTER_H_
+#endif  // COMPONENTS_OPTIMIZATION_GUIDE_HOST_FILTER_H_

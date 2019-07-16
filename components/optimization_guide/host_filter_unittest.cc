@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/core/host_filter.h"
+#include "components/optimization_guide/host_filter.h"
 
 #include "base/macros.h"
-#include "components/previews/core/bloom_filter.h"
+#include "components/optimization_guide/bloom_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace previews {
+namespace optimization_guide {
 
 namespace {
 
@@ -61,4 +61,4 @@ TEST(HostFilterTest, TestContainsHostSuffixMinSuffix) {
 
 }  // namespace
 
-}  // namespace previews
+}  // namespace optimization_guide

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/core/host_filter.h"
+#include "components/optimization_guide/host_filter.h"
 
 #include <string>
 
-namespace previews {
+namespace optimization_guide {
 
 // Maximum number of suffixes to check per url.
 const int kMaxSuffixCount = 5;
@@ -50,4 +50,4 @@ bool HostFilter::ContainsHostSuffix(const GURL& url) const {
   return false;
 }
 
-}  // namespace previews
+}  // namespace optimization_guide

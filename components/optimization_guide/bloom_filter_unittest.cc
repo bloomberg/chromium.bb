@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/core/bloom_filter.h"
+#include "components/optimization_guide/bloom_filter.h"
 
 #include <stdint.h>
 #include <string>
@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace previews {
+namespace optimization_guide {
 
 namespace {
 
@@ -115,4 +115,4 @@ TEST(BloomFilterTest, ByteVectorTooSmall) {
 }
 #endif
 
-}  // namespace previews
+}  // namespace optimization_guide

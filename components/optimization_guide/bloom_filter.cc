@@ -1,8 +1,8 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/core/bloom_filter.h"
+#include "components/optimization_guide/bloom_filter.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "third_party/smhasher/src/MurmurHash3.h"
 
-namespace previews {
+namespace optimization_guide {
 
 namespace {
 
@@ -77,4 +77,4 @@ void BloomFilter::Add(const std::string& str) {
   }
 }
 
-}  // namespace previews
+}  // namespace optimization_guide
