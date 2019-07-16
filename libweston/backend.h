@@ -88,5 +88,79 @@ weston_output_transform_coordinate(struct weston_output *output,
 				   double device_x, double device_y,
 				   double *x, double *y);
 
+/* weston_seat */
+
+void
+notify_axis(struct weston_seat *seat, const struct timespec *time,
+	    struct weston_pointer_axis_event *event);
+void
+notify_axis_source(struct weston_seat *seat, uint32_t source);
+
+void
+notify_button(struct weston_seat *seat, const struct timespec *time,
+	      int32_t button, enum wl_pointer_button_state state);
+
+void
+notify_key(struct weston_seat *seat, const struct timespec *time, uint32_t key,
+	   enum wl_keyboard_key_state state,
+	   enum weston_key_state_update update_state);
+void
+notify_keyboard_focus_in(struct weston_seat *seat, struct wl_array *keys,
+			 enum weston_key_state_update update_state);
+void
+notify_keyboard_focus_out(struct weston_seat *seat);
+
+void
+notify_motion(struct weston_seat *seat, const struct timespec *time,
+	      struct weston_pointer_motion_event *event);
+void
+notify_motion_absolute(struct weston_seat *seat, const struct timespec *time,
+		       double x, double y);
+void
+notify_modifiers(struct weston_seat *seat, uint32_t serial);
+
+void
+notify_pointer_frame(struct weston_seat *seat);
+
+void
+notify_pointer_focus(struct weston_seat *seat, struct weston_output *output,
+		     double x, double y);
+
+/* weston_touch_device */
+
+void
+notify_touch_normalized(struct weston_touch_device *device,
+			const struct timespec *time,
+			int touch_id,
+			double x, double y,
+			const struct weston_point2d_device_normalized *norm,
+			int touch_type);
+
+/** Feed in touch down, motion, and up events, non-calibratable device.
+ *
+ * @sa notify_touch_cal
+ */
+static inline void
+notify_touch(struct weston_touch_device *device, const struct timespec *time,
+	     int touch_id, double x, double y, int touch_type)
+{
+	notify_touch_normalized(device, time, touch_id, x, y, NULL, touch_type);
+}
+
+void
+notify_touch_frame(struct weston_touch_device *device);
+
+void
+notify_touch_cancel(struct weston_touch_device *device);
+
+void
+notify_touch_calibrator(struct weston_touch_device *device,
+			const struct timespec *time, int32_t slot,
+			const struct weston_point2d_device_normalized *norm,
+			int touch_type);
+void
+notify_touch_calibrator_cancel(struct weston_touch_device *device);
+void
+notify_touch_calibrator_frame(struct weston_touch_device *device);
 
 #endif
