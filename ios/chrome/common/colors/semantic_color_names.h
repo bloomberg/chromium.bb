@@ -9,6 +9,7 @@
 
 extern NSString* const kDestructiveTintColor;
 extern NSString* const kDisabledTintColor;
+extern NSString* const kScrimBackgroundColor;
 extern NSString* const kSolidButtonTextColor;
 extern NSString* const kTintColor;
 
