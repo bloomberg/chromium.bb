@@ -132,8 +132,7 @@ class OutOfProcessInstance : public pp::Instance,
                                                const base::char16* term,
                                                bool case_sensitive) override;
   void DocumentLoadComplete(
-      const PDFEngine::DocumentFeatures& document_features,
-      uint32_t file_size) override;
+      const PDFEngine::DocumentFeatures& document_features) override;
   void DocumentLoadFailed() override;
   pp::Instance* GetPluginInstance() override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
