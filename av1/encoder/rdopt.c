@@ -9778,6 +9778,32 @@ static INLINE void update_mbmi_for_compound_type(MB_MODE_INFO *mbmi,
   mbmi->compound_idx = (cur_type != COMPOUND_DISTWTD);
 }
 
+// Updates rd cost and relevant compound type data for the best compound type
+static INLINE void update_best_info(const MB_MODE_INFO *const mbmi, int64_t *rd,
+                                    BEST_COMP_TYPE_STATS *best_type_stats,
+                                    int64_t best_rd_cur,
+                                    int64_t comp_model_rd_cur, int rs2) {
+  *rd = best_rd_cur;
+  best_type_stats->comp_best_model_rd = comp_model_rd_cur;
+  best_type_stats->best_compound_data = mbmi->interinter_comp;
+  best_type_stats->best_compmode_interinter_cost = rs2;
+}
+
+// Updates best_mv for masked compound types
+static INLINE void update_mask_best_mv(const MB_MODE_INFO *const mbmi,
+                                       int_mv *best_mv, int_mv *cur_mv,
+                                       const COMPOUND_TYPE cur_type,
+                                       int *best_tmp_rate_mv, int tmp_rate_mv) {
+  if (cur_type == COMPOUND_WEDGE) {
+    *best_tmp_rate_mv = tmp_rate_mv;
+    best_mv[0].as_int = mbmi->mv[0].as_int;
+    best_mv[1].as_int = mbmi->mv[1].as_int;
+  } else {
+    best_mv[0].as_int = cur_mv[0].as_int;
+    best_mv[1].as_int = cur_mv[1].as_int;
+  }
+}
+
 static int compound_type_rd(
     const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_col,
     int mi_row, int_mv *cur_mv, int mode_search_mask, int masked_compound_used,
@@ -9993,22 +10019,13 @@ static int compound_type_rd(
       }
     }
     if (best_rd_cur < *rd) {
-      *rd = best_rd_cur;
-      best_type_stats.comp_best_model_rd = comp_model_rd_cur;
-      best_type_stats.best_compound_data = mbmi->interinter_comp;
+      update_best_info(mbmi, rd, &best_type_stats, best_rd_cur,
+                       comp_model_rd_cur, rs2);
       if (masked_compound_used && cur_type >= COMPOUND_WEDGE) {
         memcpy(buffers->tmp_best_mask_buf, xd->seg_mask, mask_len);
-      }
-      best_type_stats.best_compmode_interinter_cost = rs2;
-      if (have_newmv_in_inter_mode(this_mode)) {
-        if (cur_type == COMPOUND_WEDGE) {
-          best_tmp_rate_mv = tmp_rate_mv;
-          best_mv[0].as_int = mbmi->mv[0].as_int;
-          best_mv[1].as_int = mbmi->mv[1].as_int;
-        } else {
-          best_mv[0].as_int = cur_mv[0].as_int;
-          best_mv[1].as_int = cur_mv[1].as_int;
-        }
+        if (have_newmv_in_inter_mode(this_mode))
+          update_mask_best_mv(mbmi, best_mv, cur_mv, cur_type,
+                              &best_tmp_rate_mv, tmp_rate_mv);
       }
     }
     // reset to original mvs for next iteration
