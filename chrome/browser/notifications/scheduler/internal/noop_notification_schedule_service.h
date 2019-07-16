@@ -2,30 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOTIFICATION_SCHEDULE_SERVICE_IMPL_H_
-#define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOTIFICATION_SCHEDULE_SERVICE_IMPL_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOOP_NOTIFICATION_SCHEDULE_SERVICE_H_
+#define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOOP_NOTIFICATION_SCHEDULE_SERVICE_H_
 
-#include <memory>
-#include <string>
-
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
 #include "chrome/browser/notifications/scheduler/public/user_action_handler.h"
 
 namespace notifications {
 
-class NotificationScheduler;
-struct NotificationParams;
-
-class NotificationScheduleServiceImpl
+class NoopNotificationScheduleService
     : public NotificationScheduleService,
       public NotificationBackgroundTaskScheduler::Handler,
       public UserActionHandler {
  public:
-  explicit NotificationScheduleServiceImpl(
-      std::unique_ptr<NotificationScheduler> scheduler);
-  ~NotificationScheduleServiceImpl() override;
+  NoopNotificationScheduleService();
+  ~NoopNotificationScheduleService() override;
 
  private:
   // NotificationScheduleService implementation.
@@ -50,16 +41,9 @@ class NotificationScheduleServiceImpl
                      ActionButtonType button_type) override;
   void OnDismiss(const std::string& notification_id) override;
 
-  // Called after initialization is done.
-  void OnInitialized(bool success);
-
-  // Provides the actual notification scheduling functionalities.
-  std::unique_ptr<NotificationScheduler> scheduler_;
-
-  base::WeakPtrFactory<NotificationScheduleServiceImpl> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(NotificationScheduleServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(NoopNotificationScheduleService);
 };
 
 }  // namespace notifications
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOTIFICATION_SCHEDULE_SERVICE_IMPL_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOOP_NOTIFICATION_SCHEDULE_SERVICE_H_
