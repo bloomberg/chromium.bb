@@ -2476,6 +2476,15 @@ void RenderWidget::ConvertViewportToWindow(blink::WebRect* rect) {
   }
 }
 
+void RenderWidget::ConvertViewportToWindow(blink::WebFloatRect* rect) {
+  if (compositor_deps_->IsUseZoomForDSFEnabled()) {
+    rect->x /= GetOriginalScreenInfo().device_scale_factor;
+    rect->y /= GetOriginalScreenInfo().device_scale_factor;
+    rect->width /= GetOriginalScreenInfo().device_scale_factor;
+    rect->height /= GetOriginalScreenInfo().device_scale_factor;
+  }
+}
+
 void RenderWidget::ConvertWindowToViewport(blink::WebFloatRect* rect) {
   if (compositor_deps_->IsUseZoomForDSFEnabled()) {
     rect->x *= GetOriginalScreenInfo().device_scale_factor;
