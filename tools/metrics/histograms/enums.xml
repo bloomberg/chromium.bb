@@ -28840,6 +28840,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
              gpu_info.can_lose_context=True"/>
 </enum>
 
+<enum name="GridTabSwitcherThumbnailFetchingResult">
+  <summary>The result of thumbnail fetching in the Grid Tab Switcher.</summary>
+  <int value="0" label="Got JPEG thumbnail"/>
+  <int value="1" label="Got ETC1 thumbnail"/>
+  <int value="2" label="Got nothing"/>
+</enum>
+
 <enum name="GsaAccountChangeNotificationSource">
   <int value="0" label="Service"/>
   <int value="1" label="Broadcast"/>
