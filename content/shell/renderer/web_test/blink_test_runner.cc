@@ -415,8 +415,7 @@ void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(
   if (!interfaces->TestIsRunning())
     return;
 
-  RenderThread::Get()->Send(
-      new WebTestHostMsg_WebTestRuntimeFlagsChanged(changed_values));
+  Send(new WebTestHostMsg_WebTestRuntimeFlagsChanged(changed_values));
 }
 
 void BlinkTestRunner::TestFinished() {
@@ -431,8 +430,7 @@ void BlinkTestRunner::TestFinished() {
   // If we're not in the main frame, then ask the browser to redirect the call
   // to the main frame instead.
   if (!is_main_window_ || !render_view()->GetMainRenderFrame()) {
-    RenderThread::Get()->Send(
-        new WebTestHostMsg_TestFinishedInSecondaryRenderer());
+    Send(new WebTestHostMsg_TestFinishedInSecondaryRenderer());
     return;
   }
 
