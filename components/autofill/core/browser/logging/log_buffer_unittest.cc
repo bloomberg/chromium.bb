@@ -13,20 +13,24 @@
 
 namespace autofill {
 
-TEST(LogBuffer, EscapeStrings) {
+TEST(LogBuffer, JSONSerializeString) {
   LogBuffer buffer;
   buffer << "<foo><!--\"";
   std::string json;
   EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
-  EXPECT_EQ(R"({"type":"text","value":"&lt;foo&gt;&lt;!--&quot;"})", json);
+  // JSON takes care of serializing the <, we don't want &lt; as that would then
+  // be escaped twice.
+  EXPECT_EQ(R"({"type":"text","value":"\u003Cfoo>\u003C!--\""})", json);
 }
 
-TEST(LogBuffer, EscapeUtf16Strings) {
+TEST(LogBuffer, JSONSerializeString16) {
   LogBuffer buffer;
   buffer << base::ASCIIToUTF16("<foo><!--\"");
   std::string json;
   EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
-  EXPECT_EQ(R"({"type":"text","value":"&lt;foo&gt;&lt;!--&quot;"})", json);
+  // JSON takes care of serializing the <, we don't want &lt; as that would then
+  // be escaped twice.
+  EXPECT_EQ(R"({"type":"text","value":"\u003Cfoo>\u003C!--\""})", json);
 }
 
 TEST(LogBuffer, SupportNumbers) {
@@ -152,7 +156,7 @@ TEST(LogBuffer, CanStreamCustomObjects) {
       /**/ R"({"children":[)"                   // tr
       /****/ R"({"children":[{"type":"text","value":"y"}],)"
       /******/ R"("type":"node","value":"td"},)"
-      /****/ R"({"children":[{"type":"text","value":"foobar&lt;!--"}],)"
+      /****/ R"({"children":[{"type":"text","value":"foobar\u003C!--"}],)"
       /******/ R"("type":"node","value":"td"}],)"
       /**/ R"("type":"node","value":"tr"}],"type":"node","value":"table"})",
       json);

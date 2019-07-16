@@ -6,7 +6,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/logging/log_buffer.h"
-#include "net/base/escape.h"
 
 namespace autofill {
 
@@ -106,8 +105,9 @@ LogBuffer& operator<<(LogBuffer& buf, base::StringPiece text) {
 
   base::Value::DictStorage storage;
   storage.try_emplace("type", std::make_unique<base::Value>("text"));
-  storage.try_emplace("value",
-                      std::make_unique<base::Value>(net::EscapeForHTML(text)));
+  // This text is not HTML escaped because the rest of the frame work takes care
+  // of that and it must not be escaped twice.
+  storage.try_emplace("value", std::make_unique<base::Value>(text));
   base::Value node_to_add(std::move(storage));
   AppendChildToLastNode(&buf.buffer_, std::move(node_to_add));
   return buf;
@@ -133,7 +133,7 @@ LogBuffer& operator<<(LogBuffer& buf, const GURL& url) {
     return buf;
   if (!url.is_valid())
     return buf << "Invalid URL";
-  return buf << net::EscapeForHTML(url.GetOrigin().spec());
+  return buf << url.GetOrigin().spec();
 }
 
 }  // namespace autofill
