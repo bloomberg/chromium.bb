@@ -17,7 +17,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "mojo/public/cpp/system/file_data_pipe_producer.h"
+#include "mojo/public/cpp/system/data_pipe_producer.h"
+#include "mojo/public/cpp/system/file_data_source.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -81,11 +82,11 @@ class DataPipeReader {
   DISALLOW_COPY_AND_ASSIGN(DataPipeReader);
 };
 
-class FileDataPipeProducerTest : public testing::Test {
+class DataPipeProducerTest : public testing::Test {
  public:
-  FileDataPipeProducerTest() { CHECK(temp_dir_.CreateUniqueTempDir()); }
+  DataPipeProducerTest() { CHECK(temp_dir_.CreateUniqueTempDir()); }
 
-  ~FileDataPipeProducerTest() override = default;
+  ~DataPipeProducerTest() override = default;
 
  protected:
   base::FilePath CreateTempFileWithContents(const std::string& contents) {
@@ -100,36 +101,26 @@ class FileDataPipeProducerTest : public testing::Test {
   }
 
   static void WriteFromFileThenCloseWriter(
-      std::unique_ptr<FileDataPipeProducer> producer,
+      std::unique_ptr<DataPipeProducer> producer,
       base::File file) {
-    FileDataPipeProducer* raw_producer = producer.get();
-    raw_producer->WriteFromFile(
-        std::move(file),
-        base::BindOnce([](std::unique_ptr<FileDataPipeProducer> producer,
+    DataPipeProducer* raw_producer = producer.get();
+    raw_producer->Write(
+        std::make_unique<FileDataSource>(std::move(file)),
+        base::BindOnce([](std::unique_ptr<DataPipeProducer> producer,
                           MojoResult result) {},
                        std::move(producer)));
   }
 
   static void WriteFromFileThenCloseWriter(
-      std::unique_ptr<FileDataPipeProducer> producer,
+      std::unique_ptr<DataPipeProducer> producer,
       base::File file,
       size_t max_bytes) {
-    FileDataPipeProducer* raw_producer = producer.get();
-    raw_producer->WriteFromFile(
-        std::move(file), max_bytes,
-        base::BindOnce([](std::unique_ptr<FileDataPipeProducer> producer,
+    DataPipeProducer* raw_producer = producer.get();
+    raw_producer->Write(
+        std::make_unique<FileDataSource>(std::move(file), max_bytes),
+        base::BindOnce([](std::unique_ptr<DataPipeProducer> producer,
                           MojoResult result) {},
                        std::move(producer)));
-  }
-
-  static void WriteFromPathThenCloseWriter(
-      std::unique_ptr<FileDataPipeProducer> producer,
-      const base::FilePath& path) {
-    FileDataPipeProducer* raw_producer = producer.get();
-    raw_producer->WriteFromPath(
-        path, base::BindOnce([](std::unique_ptr<FileDataPipeProducer> producer,
-                                MojoResult result) {},
-                             std::move(producer)));
   }
 
  private:
@@ -137,7 +128,7 @@ class FileDataPipeProducerTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   int tmp_file_id_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(FileDataPipeProducerTest);
+  DISALLOW_COPY_AND_ASSIGN(DataPipeProducerTest);
 };
 
 struct DataPipeObserverData {
@@ -146,7 +137,7 @@ struct DataPipeObserverData {
   int done_called = 0;
 };
 
-class TestObserver : public FileDataPipeProducer::Observer {
+class TestObserver : public DataPipeProducer::Observer {
  public:
   explicit TestObserver(DataPipeObserverData* observer_data)
       : observer_data_(observer_data) {}
@@ -174,7 +165,7 @@ class TestObserver : public FileDataPipeProducer::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
-TEST_F(FileDataPipeProducerTest, WriteFromFile) {
+TEST_F(DataPipeProducerTest, WriteFromFile) {
   const std::string kTestStringFragment = "Hello, world!";
   constexpr size_t kNumRepetitions = 1000;
   std::string test_string;
@@ -192,8 +183,8 @@ TEST_F(FileDataPipeProducerTest, WriteFromFile) {
   DataPipeObserverData observer_data;
   auto observer = std::make_unique<TestObserver>(&observer_data);
   WriteFromFileThenCloseWriter(
-      std::make_unique<FileDataPipeProducer>(std::move(pipe.producer_handle),
-                                             std::move(observer)),
+      std::make_unique<DataPipeProducer>(std::move(pipe.producer_handle),
+                                         std::move(observer)),
       std::move(file));
   loop.Run();
 
@@ -203,7 +194,7 @@ TEST_F(FileDataPipeProducerTest, WriteFromFile) {
   EXPECT_EQ(1, observer_data.done_called);
 }
 
-TEST_F(FileDataPipeProducerTest, WriteFromFilePartial) {
+TEST_F(DataPipeProducerTest, WriteFromFilePartial) {
   const std::string kTestString = "abcdefghijklmnopqrstuvwxyz";
   base::FilePath path = CreateTempFileWithContents(kTestString);
   constexpr size_t kBytesToWrite = 7;
@@ -217,8 +208,8 @@ TEST_F(FileDataPipeProducerTest, WriteFromFilePartial) {
   DataPipeObserverData observer_data;
   auto observer = std::make_unique<TestObserver>(&observer_data);
   WriteFromFileThenCloseWriter(
-      std::make_unique<FileDataPipeProducer>(std::move(pipe.producer_handle),
-                                             std::move(observer)),
+      std::make_unique<DataPipeProducer>(std::move(pipe.producer_handle),
+                                         std::move(observer)),
       std::move(file), kBytesToWrite);
   loop.Run();
 
@@ -228,7 +219,7 @@ TEST_F(FileDataPipeProducerTest, WriteFromFilePartial) {
   EXPECT_EQ(1, observer_data.done_called);
 }
 
-TEST_F(FileDataPipeProducerTest, WriteFromInvalidFile) {
+TEST_F(DataPipeProducerTest, WriteFromInvalidFile) {
   base::FilePath path(FILE_PATH_LITERAL("<nonexistent-file>"));
   constexpr size_t kBytesToWrite = 7;
 
@@ -241,8 +232,8 @@ TEST_F(FileDataPipeProducerTest, WriteFromInvalidFile) {
 
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   WriteFromFileThenCloseWriter(
-      std::make_unique<FileDataPipeProducer>(std::move(pipe.producer_handle),
-                                             std::move(observer)),
+      std::make_unique<DataPipeProducer>(std::move(pipe.producer_handle),
+                                         std::move(observer)),
       std::move(file), kBytesToWrite);
   loop.Run();
 
@@ -252,35 +243,7 @@ TEST_F(FileDataPipeProducerTest, WriteFromInvalidFile) {
   EXPECT_EQ(1, observer_data.done_called);
 }
 
-TEST_F(FileDataPipeProducerTest, WriteFromPath) {
-  const std::string kTestStringFragment = "Hello, world!";
-  constexpr size_t kNumRepetitions = 1000;
-  std::string test_string;
-  for (size_t i = 0; i < kNumRepetitions; ++i)
-    test_string += kTestStringFragment;
-
-  base::FilePath path = CreateTempFileWithContents(test_string);
-
-  base::RunLoop loop;
-  DataPipe pipe(16);
-  DataPipeReader reader(std::move(pipe.consumer_handle), 16,
-                        loop.QuitClosure());
-
-  DataPipeObserverData observer_data;
-  auto observer = std::make_unique<TestObserver>(&observer_data);
-  WriteFromPathThenCloseWriter(
-      std::make_unique<FileDataPipeProducer>(std::move(pipe.producer_handle),
-                                             std::move(observer)),
-      path);
-  loop.Run();
-
-  EXPECT_EQ(test_string, reader.data());
-  EXPECT_EQ(0, observer_data.num_read_errors);
-  EXPECT_EQ(test_string.size(), observer_data.bytes_read);
-  EXPECT_EQ(1, observer_data.done_called);
-}
-
-TEST_F(FileDataPipeProducerTest, TinyFile) {
+TEST_F(DataPipeProducerTest, TinyFile) {
   const std::string kTestString = ".";
   base::FilePath path = CreateTempFileWithContents(kTestString);
   base::RunLoop loop;
@@ -289,10 +252,11 @@ TEST_F(FileDataPipeProducerTest, TinyFile) {
                         loop.QuitClosure());
   DataPipeObserverData observer_data;
   auto observer = std::make_unique<TestObserver>(&observer_data);
-  WriteFromPathThenCloseWriter(
-      std::make_unique<FileDataPipeProducer>(std::move(pipe.producer_handle),
-                                             std::move(observer)),
-      path);
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  WriteFromFileThenCloseWriter(
+      std::make_unique<DataPipeProducer>(std::move(pipe.producer_handle),
+                                         std::move(observer)),
+      std::move(file));
   loop.Run();
 
   EXPECT_EQ(kTestString, reader.data());
@@ -301,7 +265,7 @@ TEST_F(FileDataPipeProducerTest, TinyFile) {
   EXPECT_EQ(1, observer_data.done_called);
 }
 
-TEST_F(FileDataPipeProducerTest, HugeFile) {
+TEST_F(DataPipeProducerTest, HugeFile) {
   // We want a file size that is many times larger than the data pipe size.
   // 63MB is large enough, while being small enough to fit in a typical tmpfs.
   constexpr size_t kHugeFileSize = 63 * 1024 * 1024;
@@ -322,10 +286,11 @@ TEST_F(FileDataPipeProducerTest, HugeFile) {
 
   DataPipeObserverData observer_data;
   auto observer = std::make_unique<TestObserver>(&observer_data);
-  WriteFromPathThenCloseWriter(
-      std::make_unique<FileDataPipeProducer>(std::move(pipe.producer_handle),
-                                             std::move(observer)),
-      path);
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  WriteFromFileThenCloseWriter(
+      std::make_unique<DataPipeProducer>(std::move(pipe.producer_handle),
+                                         std::move(observer)),
+      std::move(file));
   loop.Run();
 
   EXPECT_EQ(test_string, reader.data());
