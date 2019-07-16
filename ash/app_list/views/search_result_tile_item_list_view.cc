@@ -301,8 +301,7 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
             });
 
   for (auto* result : policy_tiles_results) {
-    // if the app is requesting to be placed in an index out of bounds
-    if (result->display_index() + 1 > display_results.size()) {
+    if (result->display_index() > display_results.size() - 1) {
       display_results.emplace_back(result);
     } else {
       display_results.emplace(display_results.begin() + result->display_index(),
