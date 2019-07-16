@@ -56,6 +56,17 @@ class DirectoryTreeNamingController {
   }
 
   /**
+   * Returns the '.label' class element child of this.currentDirectoryItem_.
+   * @private
+   * @return {!HTMLElement}
+   */
+  getLabelElement_() {
+    const element = this.currentDirectoryItem_.firstElementChild;
+    const label = element.querySelector('.label');
+    return /** @type {!HTMLElement} */ (assert(label));
+  }
+
+  /**
    * Attaches naming controller to specified directory item and start rename.
    * @param {!DirectoryItem} directoryItem An html element of a node of the
    *     target.
@@ -159,12 +170,9 @@ class DirectoryTreeNamingController {
     new Promise(util.rename.bind(null, entry, newName))
         .then(
             newEntry => {
-              // Show new name before detaching input element to prevent showing
-              // old name.
-              const label =
-                  this.currentDirectoryItem_.firstElementChild.querySelector(
-                      '.label');
-              label.textContent = newName;
+              // Put the new name in the .label element before detaching the
+              // <input> to prevent showing the old name.
+              this.getLabelElement_().textContent = newName;
 
               this.currentDirectoryItem_.entry = newEntry;
               this.currentDirectoryItem_.updateSubDirectories(
@@ -183,7 +191,7 @@ class DirectoryTreeNamingController {
             },
             error => {
               this.directoryModel_.setIgnoringCurrentDirectoryDeletion(
-                  false /* not ignore*/);
+                  false /* not ignore */);
               this.detach_();
 
               this.alertDialog_.show(util.getRenameErrorMessage(
@@ -200,12 +208,10 @@ class DirectoryTreeNamingController {
   performExternalDriveRename_(entry, newName) {
     // Invoke external drive rename
     chrome.fileManagerPrivate.renameVolume(this.volumeInfo_.volumeId, newName);
-    // Show new name before detaching input element to prevent showing old
-    // name.
-    const label =
-        this.currentDirectoryItem_.firstElementChild.querySelector('.label');
-    label.textContent = newName;
 
+    // Put the new name in the .label element before detaching the <input> to
+    // prevent showing the old name.
+    this.getLabelElement_().textContent = newName;
     this.detach_();
   }
 
@@ -217,8 +223,8 @@ class DirectoryTreeNamingController {
     if (!this.editting_) {
       return;
     }
-    this.editting_ = false;
 
+    this.editting_ = false;
     this.detach_();
   }
 
