@@ -8124,6 +8124,7 @@ static INLINE void interp_model_rd_eval(
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   RD_STATS tmp_rd_stats;
+  av1_init_rd_stats(&tmp_rd_stats);
 
   // Skip inter predictor if the predictor is already avilable.
   if (!is_skip_build_pred)
