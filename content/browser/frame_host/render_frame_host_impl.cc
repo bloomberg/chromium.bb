@@ -4321,18 +4321,13 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     registry_->AddInterface(base::BindRepeating(
         [](RenderFrameHostImpl* frame,
            blink::mojom::NativeFileSystemManagerRequest request) {
-          scoped_refptr<NativeFileSystemManagerImpl> manager =
+          NativeFileSystemManagerImpl::BindRequestFromUIThread(
               static_cast<StoragePartitionImpl*>(
-                  frame->GetProcess()->GetStoragePartition())
-                  ->GetNativeFileSystemManager();
-          base::PostTaskWithTraits(
-              FROM_HERE, {BrowserThread::IO},
-              base::BindOnce(
-                  &NativeFileSystemManagerImpl::BindRequest, std::move(manager),
-                  NativeFileSystemManagerImpl::BindingContext(
-                      frame->GetLastCommittedOrigin(),
-                      frame->GetProcess()->GetID(), frame->GetRoutingID()),
-                  std::move(request)));
+                  frame->GetProcess()->GetStoragePartition()),
+              NativeFileSystemManagerImpl::BindingContext(
+                  frame->GetLastCommittedOrigin(), frame->GetProcess()->GetID(),
+                  frame->GetRoutingID()),
+              std::move(request));
         },
         base::Unretained(this)));
   }
