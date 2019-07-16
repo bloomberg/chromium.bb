@@ -1,5 +1,5 @@
 # liblouis: Irish Braille Code Grade 1 uncontracted
-# Version: beta2 2019
+# Version: INBAF May 2019 
 # -----------
 #-display-name: Irish uncontracted braille
 #
@@ -178,7 +178,7 @@ display ~ 45
 math ~ 4-35
 
 # display version number
-word beta2 1356-1236
+word leaganbealtaine2019 1356-1236
 
 #Irish Long accent signs (sínte fada)
 uplow \x00c1\x00e1 12346 Áá
