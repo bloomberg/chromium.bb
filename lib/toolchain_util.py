@@ -21,7 +21,7 @@ ORDERFILE_GS_URL_UNVETTED = \
     'gs://chromeos-prebuilt/afdo-job/orderfiles/unvetted'
 ORDERFILE_GS_URL_VETTED = \
     'gs://chromeos-prebuilt/afdo-job/orderfiles/vetted'
-ORDERFILE_COMPRESSION_SUFFIX = '.tar.xz'
+ORDERFILE_COMPRESSION_SUFFIX = '.xz'
 
 
 class Error(Exception):
@@ -116,22 +116,21 @@ class GenerateChromeOrderfile(object):
       raise GenerateChromeOrderfileError(
           'Unable to run %s to process orderfile.' % (cmd))
 
+    # Return path inside chroot
     return result
 
   def _CreateTarball(self, targets):
     """This command runs outside of chroot."""
     ret = []
     for t in targets:
-      tar_name = os.path.basename(t) + ORDERFILE_COMPRESSION_SUFFIX
+      # The input t is the path inside chroot
+      input_path = os.path.join(self.working_dir, os.path.basename(t))
       # Put output tarball in the out_dir
-      target = os.path.join(self.output_dir, tar_name)
-      # CreateTarball runs within tempdir, so need to use the relative
-      # path of the output tarball
-      cros_build_lib.CreateTarball(
-          os.path.relpath(target, self.working_dir),
-          cwd=self.working_dir,
-          inputs=[os.path.basename(t)])
-      ret.append(tar_name)
+      compressed = os.path.basename(t) + ORDERFILE_COMPRESSION_SUFFIX
+      output_path = os.path.join(self.output_dir, compressed)
+      cros_build_lib.CompressFile(input_path, output_path)
+      # Only return the basename
+      ret.append(compressed)
     return ret
 
   def Perform(self):

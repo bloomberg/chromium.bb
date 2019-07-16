@@ -84,34 +84,33 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
     chrome_nm = os.path.join(self.working_dir, self.chrome_version + '.nm')
     input_orderfile = os.path.join(self.working_dir,
                                    self.chrome_version + '.orderfile')
-    names = [self.chrome_version + '.nm', self.chrome_version + '.orderfile']
+    inputs = [chrome_nm, input_orderfile]
+    compressed_names = [os.path.basename(x) for x in inputs]
     outputs = [
-        os.path.relpath(
-            os.path.join(self.out_dir,
-                         n + toolchain_util.ORDERFILE_COMPRESSION_SUFFIX),
-            self.working_dir) for n in names
+        os.path.join(self.out_dir,
+                     n + toolchain_util.ORDERFILE_COMPRESSION_SUFFIX)
+        for n in compressed_names
     ]
-    self.PatchObject(cros_build_lib, 'CreateTarball')
-    self.test_obj._CreateTarball([chrome_nm, input_orderfile])
-    calls = [
-        mock.call(o, cwd=self.working_dir, inputs=[n])
-        for (n, o) in zip(names, outputs)
-    ]
-    cros_build_lib.CreateTarball.assert_has_calls(calls)
+    self.PatchObject(cros_build_lib, 'CompressFile')
+    self.test_obj._CreateTarball(inputs)
+    calls = [mock.call(n, o) for n, o in zip(inputs, outputs)]
+    cros_build_lib.CompressFile.assert_has_calls(calls)
 
   def testSuccessRun(self):
     """Test the main function is running successfully."""
     # Patch the two functions that generate artifacts from inputs that are
     # non-existent without actually building Chrome
     chrome_nm = os.path.join(self.working_dir, self.chrome_version + '.nm')
-    osutils.Touch(chrome_nm)
+    with open(chrome_nm, 'w') as f:
+      print('Write something in the nm file', file=f)
     self.PatchObject(
         toolchain_util.GenerateChromeOrderfile,
         '_GenerateChromeNM',
         return_value=chrome_nm)
     chrome_orderfile = os.path.join(self.working_dir,
                                     self.chrome_version + '.orderfile')
-    osutils.Touch(chrome_orderfile)
+    with open(chrome_orderfile, 'w') as f:
+      print('Write something in the orderfile', file=f)
     self.PatchObject(
         toolchain_util.GenerateChromeOrderfile,
         '_PostProcessOrderfile',
@@ -137,7 +136,8 @@ class UpdateChromeEbuildWithOrderfileTest(cros_test_lib.MockTempDirTestCase):
   # pylint: disable=protected-access
   def setUp(self):
     self.board = 'board'
-    self.orderfile = 'chromeos-chrome-1.1.orderfile.tar.xz'
+    self.orderfile = 'chromeos-chrome-1.1.orderfile' + \
+        toolchain_util.ORDERFILE_COMPRESSION_SUFFIX
     self.test_obj = toolchain_util.UpdateChromeEbuildWithOrderfile(
         self.board, self.orderfile)
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)

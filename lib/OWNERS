@@ -1,2 +1,4 @@
 per-file cros_test*=achuith@chromium.org
 per-file vm*=achuith@chromium.org
+
+per-file toolchain_util*=file:chromiumos/third_party/toolchain-utils:OWNERS.toolchain
