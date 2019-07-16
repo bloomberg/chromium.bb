@@ -33,6 +33,7 @@ class IndexedDBKeyRange;
 namespace content {
 namespace {
 
+const char kBadTransactionMode[] = "Bad transaction mode";
 const char kTransactionAlreadyExists[] = "Transaction already exists";
 
 }  // namespace
@@ -90,6 +91,12 @@ void DatabaseImpl::CreateTransaction(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected())
     return;
+
+  if (mode != blink::mojom::IDBTransactionMode::ReadOnly &&
+      mode != blink::mojom::IDBTransactionMode::ReadWrite) {
+    mojo::ReportBadMessage(kBadTransactionMode);
+    return;
+  }
 
   if (connection_->GetTransaction(transaction_id)) {
     mojo::ReportBadMessage(kTransactionAlreadyExists);
