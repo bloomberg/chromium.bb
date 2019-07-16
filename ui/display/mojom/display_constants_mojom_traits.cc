@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/mojo/display_constants_struct_traits.h"
+#include "ui/display/mojom/display_constants_mojom_traits.h"
 
 namespace mojo {
 

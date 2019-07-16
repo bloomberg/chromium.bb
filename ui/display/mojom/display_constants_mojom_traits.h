@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_MOJO_DISPLAY_CONSTANTS_STRUCT_TRAITS_H_
-#define UI_DISPLAY_MOJO_DISPLAY_CONSTANTS_STRUCT_TRAITS_H_
+#ifndef UI_DISPLAY_MOJOM_DISPLAY_CONSTANTS_MOJOM_TRAITS_H_
+#define UI_DISPLAY_MOJOM_DISPLAY_CONSTANTS_MOJOM_TRAITS_H_
 
-#include "ui/display/mojo/display_constants.mojom.h"
+#include "ui/display/mojom/display_constants.mojom.h"
 #include "ui/display/types/display_constants.h"
 
 namespace mojo {
@@ -28,4 +28,4 @@ struct EnumTraits<display::mojom::HDCPState, display::HDCPState> {
 
 }  // namespace mojo
 
-#endif  // UI_DISPLAY_MOJO_DISPLAY_CONSTANTS_STRUCT_TRAITS_H_
+#endif  // UI_DISPLAY_MOJOM_DISPLAY_CONSTANTS_MOJOM_TRAITS_H_

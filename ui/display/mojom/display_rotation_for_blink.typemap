@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//ui/display/mojo/display.mojom"
+mojom = "//ui/display/mojom/display.mojom"
 public_headers = [ "//ui/display/display.h" ]
-traits_headers = [ "//ui/display/mojo/display_struct_traits.h" ]
+traits_headers = [ "//ui/display/mojom/display_mojom_traits.h" ]
 public_deps = [
   "//ui/display",
-  "//ui/display/mojo:interfaces",
+  "//ui/display/mojom:mojom",
 ]
 type_mappings = [ "display.mojom.Rotation=display::Display::Rotation" ]

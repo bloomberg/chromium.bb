@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//ui/display/mojo/gamma_ramp_rgb_entry.mojom"
+mojom = "//ui/display/mojom/gamma_ramp_rgb_entry.mojom"
 public_headers = [ "//ui/display/types/gamma_ramp_rgb_entry.h" ]
-traits_headers = [ "//ui/display/mojo/gamma_ramp_rgb_entry_struct_traits.h" ]
+traits_headers = [ "//ui/display/mojom/gamma_ramp_rgb_entry_mojom_traits.h" ]
 sources = [
-  "//ui/display/mojo/gamma_ramp_rgb_entry_struct_traits.cc",
+  "//ui/display/mojom/gamma_ramp_rgb_entry_mojom_traits.cc",
 ]
 public_deps = [
   "//ui/display",

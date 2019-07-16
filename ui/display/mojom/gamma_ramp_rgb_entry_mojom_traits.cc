@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/mojo/gamma_ramp_rgb_entry_struct_traits.h"
+#include "ui/display/mojom/gamma_ramp_rgb_entry_mojom_traits.h"
 
 namespace mojo {
 

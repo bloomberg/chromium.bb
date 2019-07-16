@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/mojo/display_snapshot_struct_traits.h"
+#include "ui/display/mojom/display_snapshot_mojom_traits.h"
 
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "ui/display/types/display_constants.h"

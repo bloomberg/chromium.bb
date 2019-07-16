@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_MOJO_DISPLAY_SNAPSHOT_MOJO_STRUCT_TRAITS_H_
-#define UI_DISPLAY_MOJO_DISPLAY_SNAPSHOT_MOJO_STRUCT_TRAITS_H_
+#ifndef UI_DISPLAY_MOJOM_DISPLAY_SNAPSHOT_MOJOM_TRAITS_H_
+#define UI_DISPLAY_MOJOM_DISPLAY_SNAPSHOT_MOJOM_TRAITS_H_
 
 #include "ipc/ipc_message_utils.h"
-#include "ui/display/mojo/display_constants_struct_traits.h"
-#include "ui/display/mojo/display_mode_struct_traits.h"
-#include "ui/display/mojo/display_snapshot.mojom.h"
+#include "ui/display/mojom/display_constants_mojom_traits.h"
+#include "ui/display/mojom/display_mode_mojom_traits.h"
+#include "ui/display/mojom/display_snapshot.mojom.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
@@ -119,4 +119,4 @@ struct StructTraits<display::mojom::DisplaySnapshotDataView,
 
 }  // namespace mojo
 
-#endif  // UI_DISPLAY_MOJO_DISPLAY_SNAPSHOT_MOJO_STRUCT_TRAITS_H_
+#endif  // UI_DISPLAY_MOJOM_DISPLAY_SNAPSHOT_MOJOM_TRAITS_H_

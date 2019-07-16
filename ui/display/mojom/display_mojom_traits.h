@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_MOJO_DISPLAY_STRUCT_TRAITS_H_
-#define UI_DISPLAY_MOJO_DISPLAY_STRUCT_TRAITS_H_
+#ifndef UI_DISPLAY_MOJOM_DISPLAY_MOJOM_TRAITS_H_
+#define UI_DISPLAY_MOJOM_DISPLAY_MOJOM_TRAITS_H_
 
 #include "ui/display/display.h"
-#include "ui/display/mojo/display.mojom.h"
+#include "ui/display/mojom/display.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
 namespace mojo {
@@ -95,4 +95,4 @@ struct StructTraits<display::mojom::DisplayDataView, display::Display> {
 
 }  // namespace mojo
 
-#endif  // UI_DISPLAY_MOJO_DISPLAY_STRUCT_TRAITS_H_
+#endif  // UI_DISPLAY_MOJOM_DISPLAY_MOJOM_TRAITS_H_
