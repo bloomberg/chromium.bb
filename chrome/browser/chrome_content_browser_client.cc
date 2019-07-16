@@ -1722,25 +1722,6 @@ bool ChromeContentBrowserClient::ShouldAllowOpenURL(
   return true;
 }
 
-namespace {
-
-// Returns whether a SiteInstance holds a NTP. TODO(mastiz): This
-// really really really needs to be moved to a shared place where all the code
-// that needs to know this can access it. See http://crbug.com/624410.
-bool IsNTPSiteInstance(SiteInstance* site_instance) {
-  // While using SiteInstance::GetSiteURL() is unreliable and the wrong thing to
-  // use for making security decisions 99.44% of the time, for detecting the NTP
-  // it is reliable and the correct way. Again, see http://crbug.com/624410.
-  return site_instance &&
-         site_instance->GetSiteURL().SchemeIs(chrome::kChromeSearchScheme) &&
-         (site_instance->GetSiteURL().host_piece() ==
-              chrome::kChromeSearchRemoteNtpHost ||
-          site_instance->GetSiteURL().host_piece() ==
-              chrome::kChromeSearchLocalNtpHost);
-}
-
-}  // namespace
-
 void ChromeContentBrowserClient::OverrideNavigationParams(
     SiteInstance* site_instance,
     ui::PageTransition* transition,
@@ -1750,9 +1731,10 @@ void ChromeContentBrowserClient::OverrideNavigationParams(
   DCHECK(transition);
   DCHECK(is_renderer_initiated);
   DCHECK(referrer);
-  // TODO(crbug.com/624410): Factor the predicate to identify a URL as an NTP
-  // to a shared library.
-  if (IsNTPSiteInstance(site_instance) &&
+  // While using SiteInstance::GetSiteURL() is unreliable and the wrong thing to
+  // use for making security decisions 99.44% of the time, for detecting the NTP
+  // it is reliable and the correct way. See http://crbug.com/624410.
+  if (site_instance && search::IsNTPURL(site_instance->GetSiteURL()) &&
       ui::PageTransitionCoreTypeIs(*transition, ui::PAGE_TRANSITION_LINK)) {
     // Clicks on tiles of the new tab page should be treated as if a user
     // clicked on a bookmark.  This is consistent with native implementations
@@ -1775,8 +1757,11 @@ void ChromeContentBrowserClient::OverrideNavigationParams(
 bool ChromeContentBrowserClient::ShouldStayInParentProcessForNTP(
     const GURL& url,
     SiteInstance* parent_site_instance) {
-  return url.SchemeIs(chrome::kChromeSearchScheme) &&
-         IsNTPSiteInstance(parent_site_instance);
+  // While using SiteInstance::GetSiteURL() is unreliable and the wrong thing to
+  // use for making security decisions 99.44% of the time, for detecting the NTP
+  // it is reliable and the correct way. See http://crbug.com/624410.
+  return url.SchemeIs(chrome::kChromeSearchScheme) && parent_site_instance &&
+         search::IsNTPURL(parent_site_instance->GetSiteURL());
 }
 
 bool ChromeContentBrowserClient::IsSuitableHost(
