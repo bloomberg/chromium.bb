@@ -37,6 +37,7 @@ class QueuePumpScheduler final : public MainMessagePump::Scheduler {
     std::vector<std::pair<std::string,int>> d_tunables;
     unsigned int d_importantWorkBudget = 0;
     unsigned int d_idleWorkBudget = 0;
+    double d_niceness = 1.0;
 
   public:
     static const std::string& name();
