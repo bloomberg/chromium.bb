@@ -23,6 +23,7 @@
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/profile_key_startup_accessor.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -713,6 +714,8 @@ void DownloadManagerService::CreateInProgressDownloadManager() {
           factory->Clone()));
   in_progress_manager_->set_download_start_observer(
       DownloadControllerBase::Get());
+  in_progress_manager->set_intermediate_path_cb(
+      base::BindRepeating(&DownloadTargetDeterminer::GetCrDownloadPath));
   download::SimpleDownloadManagerCoordinator* coordinator =
       SimpleDownloadManagerCoordinatorFactory::GetForKey(
           ProfileKeyStartupAccessor::GetInstance()->profile_key());

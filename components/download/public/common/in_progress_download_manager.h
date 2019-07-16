@@ -148,6 +148,15 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     download_start_observer_ = observer;
   }
 
+  // Callback to generate an intermediate file path from the given target file
+  // path;
+  using IntermediatePathCallback =
+      base::RepeatingCallback<base::FilePath(const base::FilePath&)>;
+  void set_intermediate_path_cb(
+      const IntermediatePathCallback& intermediate_path_cb) {
+    intermediate_path_cb_ = intermediate_path_cb;
+  }
+
   // Called to get all in-progress DownloadItemImpl.
   // TODO(qinmin): remove this method once InProgressDownloadManager owns
   // all in-progress downloads.
@@ -248,6 +257,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
 
   // callback to check if an origin is secure.
   IsOriginSecureCallback is_origin_secure_cb_;
+
+  // callback to generate the intermediate file path.
+  IntermediatePathCallback intermediate_path_cb_;
 
   // A list of in-progress download items, could be null if DownloadManagerImpl
   // is managing all downloads.
