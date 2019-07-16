@@ -682,10 +682,10 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
     # Check uploading tarball
     self.PatchObject(stage._upload_queue, 'put', autospec=True)
     stage._CollectPGOProfiles()
-    llvm_profdata = os.path.join(self.build_root, 'chroot', stage.archive_path,
-                                 'llvm.profdata')
-    profraw_list = os.path.join(self.build_root, 'chroot', stage.archive_path,
-                                'profraw_list')
+    llvm_profdata = path_util.ToChrootPath(
+        os.path.join(stage.archive_path, 'llvm.profdata'))
+    profraw_list = path_util.ToChrootPath(
+        os.path.join(stage.archive_path, 'profraw_list'))
     self.assertEqual(['llvm-profdata', 'merge',
                       '-output', llvm_profdata,
                       '-f', profraw_list],

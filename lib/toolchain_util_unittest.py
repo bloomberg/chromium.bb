@@ -140,6 +140,7 @@ class UpdateChromeEbuildWithOrderfileTest(cros_test_lib.MockTempDirTestCase):
     self.orderfile = 'chromeos-chrome-1.1.orderfile.tar.xz'
     self.test_obj = toolchain_util.UpdateChromeEbuildWithOrderfile(
         self.board, self.orderfile)
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
 
   def testFindChromeEbuild(self):
     ebuild_path = '/path/to/chromeos-chrome/chromeos-chrome-1.1.ebuild'
