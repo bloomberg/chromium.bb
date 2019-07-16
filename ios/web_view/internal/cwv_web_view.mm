@@ -112,6 +112,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
       _javaScriptDialogPresenter;
   std::map<std::string, web::WebState::ScriptCommandCallback>
       _scriptCommandCallbacks;
+  CRWSessionStorage* _cachedSessionStorage;
 }
 
 // Redefine these properties as readwrite to define setters, which send KVO
@@ -567,8 +568,18 @@ static NSString* gUserAgentProduct = nil;
 
 - (void)encodeRestorableStateWithCoder:(NSCoder*)coder {
   [super encodeRestorableStateWithCoder:coder];
-  [coder encodeObject:_webState->BuildSessionStorage()
-               forKey:kSessionStorageKey];
+
+  // It is possible for this instance to be encoded when the |_webState| is a
+  // nullptr, i.e. when this method is called after |shutDown| has occurred.
+  CRWSessionStorage* sessionStorage;
+  if (_webState) {
+    sessionStorage = _webState->BuildSessionStorage();
+  } else if (_cachedSessionStorage) {
+    sessionStorage = _cachedSessionStorage;
+  } else {
+    return;
+  }
+  [coder encodeObject:sessionStorage forKey:kSessionStorageKey];
 }
 
 - (void)decodeRestorableStateWithCoder:(NSCoder*)coder {
@@ -726,6 +737,10 @@ static NSString* gUserAgentProduct = nil;
 #pragma mark - Internal Methods
 
 - (void)shutDown {
+  // To handle the case where -[CWVWebView encodeRestorableStateWithCoder:] is
+  // called after this method, precompute the session storage so it may be used
+  // during encoding later.
+  _cachedSessionStorage = _webState->BuildSessionStorage();
   _webState.reset();
 }
 
