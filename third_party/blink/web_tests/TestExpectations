@@ -2191,6 +2191,9 @@ crbug.com/983788 http/tests/cookies/http-get-cookie-set-in-js.html [ Pass Failur
 crbug.com/983788 http/tests/cookies/same-site/popup-cross-site.html [ Pass Timeout ]
 crbug.com/983788 http/tests/cookies/same-site/popup-cross-site-post.html [ Pass Timeout ]
 crbug.com/984438 external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Failure Pass ]
+crbug.com/982148 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/same-origin/http-rp/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Pass Timeout ]
+crbug.com/982148 [ Win7 ] virtual/not-omt-sw-fetch/external/wpt/referrer-policy/same-origin/http-rp/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Pass Timeout ]
+crbug.com/982148 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/same-origin/http-rp/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Pass Timeout ]
 
 ### sheriff 2018-05-28
 
