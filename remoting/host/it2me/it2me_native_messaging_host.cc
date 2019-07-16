@@ -16,7 +16,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -27,7 +26,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/name_value_map.h"
-#include "remoting/base/oauth_token_getter.h"
+#include "remoting/base/passthrough_oauth_token_getter.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_exit_codes.h"
@@ -93,30 +92,6 @@ void PolicyErrorCallback(
   DCHECK(callback);
   task_runner->PostTask(FROM_HERE, callback);
 }
-
-// An OAuthTokenGetter implementation that simply passes |username| and
-// |access_token| when CallWithToken() is called.
-class PassthroughOAuthTokenGetter : public OAuthTokenGetter {
- public:
-  PassthroughOAuthTokenGetter(const std::string& username,
-                              const std::string& access_token)
-      : username_(username), access_token_(access_token) {}
-
-  ~PassthroughOAuthTokenGetter() override = default;
-
-  void CallWithToken(OAuthTokenGetter::TokenCallback on_access_token) override {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(on_access_token),
-                                  OAuthTokenGetter::Status::SUCCESS, username_,
-                                  access_token_));
-  }
-
-  void InvalidateCache() override { NOTIMPLEMENTED(); }
-
- private:
-  std::string username_;
-  std::string access_token_;
-};
 
 }  // namespace
 
