@@ -3572,6 +3572,7 @@ jumbo_split_static_library("browser") {
       "//ash/public/cpp",
       "//chrome/browser/chromeos",
       "//chrome/services/cups_proxy",
+      "//chrome/services/cups_proxy/public/mojom",
       "//chromeos/components/account_manager",
       "//chromeos/services/assistant/public:feature_flags",
       "//chromeos/services/cellular_setup",
