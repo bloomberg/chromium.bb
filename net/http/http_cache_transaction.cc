@@ -1019,7 +1019,7 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
   mode_ = NONE;
 
   // Keep track of the fraction of requests that we can double-key.
-  UMA_HISTOGRAM_BOOLEAN("HttpCache.TopFrameOriginPresent",
+  UMA_HISTOGRAM_BOOLEAN("HttpCache.NetworkIsolationKeyPresent",
                         request_->network_isolation_key.IsFullyPopulated());
 
   if (!ShouldPassThrough()) {
