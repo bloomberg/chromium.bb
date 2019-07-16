@@ -25,7 +25,7 @@ class DirectoryTreeNamingController {
     this.currentDirectoryItem_ = null;
 
     /** @private {boolean} */
-    this.editting_ = false;
+    this.editing_ = false;
 
     /** @private {boolean} */
     this.isRemovableRoot_ = false;
@@ -103,7 +103,7 @@ class DirectoryTreeNamingController {
     this.inputElement_.select();
     this.inputElement_.focus();
 
-    this.editting_ = true;
+    this.editing_ = true;
   }
 
   /**
@@ -111,10 +111,10 @@ class DirectoryTreeNamingController {
    * @private
    */
   commitRename_() {
-    if (!this.editting_) {
+    if (!this.editing_) {
       return;
     }
-    this.editting_ = false;
+    this.editing_ = false;
 
     const entry = this.currentDirectoryItem_.entry;
     const newName = this.inputElement_.value;
@@ -221,11 +221,11 @@ class DirectoryTreeNamingController {
    * @private
    */
   cancelRename_() {
-    if (!this.editting_) {
+    if (!this.editing_) {
       return;
     }
 
-    this.editting_ = false;
+    this.editing_ = false;
     this.detach_();
   }
 
