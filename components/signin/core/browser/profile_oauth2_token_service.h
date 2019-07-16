@@ -210,6 +210,20 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   void UpdateAuthErrorForTesting(const CoreAccountId& account_id,
                                  const GoogleServiceAuthError& error);
 
+  int GetTokenCacheCountForTesting();
+
+  void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
+
+  // Returns the current number of pending fetchers matching given params.
+  size_t GetNumPendingRequestsForTesting(
+      const std::string& client_id,
+      const CoreAccountId& account_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes) const;
+
+  // Override |token_manager_| for testing.
+  void OverrideAccessTokenManagerForTesting(
+      std::unique_ptr<OAuth2AccessTokenManager> token_manager);
+
  private:
   friend class identity::IdentityManager;
 

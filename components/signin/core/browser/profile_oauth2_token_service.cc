@@ -287,6 +287,29 @@ void ProfileOAuth2TokenService::UpdateAuthErrorForTesting(
   GetDelegate()->UpdateAuthError(account_id, error);
 }
 
+int ProfileOAuth2TokenService::GetTokenCacheCountForTesting() {
+  return token_manager_->token_cache().size();
+}
+
+void ProfileOAuth2TokenService::
+    set_max_authorization_token_fetch_retries_for_testing(int max_retries) {
+  token_manager_->set_max_authorization_token_fetch_retries_for_testing(
+      max_retries);
+}
+
+size_t ProfileOAuth2TokenService::GetNumPendingRequestsForTesting(
+    const std::string& client_id,
+    const CoreAccountId& account_id,
+    const OAuth2AccessTokenManager::ScopeSet& scopes) const {
+  return token_manager_->GetNumPendingRequestsForTesting(client_id, account_id,
+                                                         scopes);
+}
+
+void ProfileOAuth2TokenService::OverrideAccessTokenManagerForTesting(
+    std::unique_ptr<OAuth2AccessTokenManager> token_manager) {
+  token_manager_ = std::move(token_manager);
+}
+
 void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
     const CoreAccountId& account_id) {
   // Check if the newly-updated token is valid (invalid tokens are inserted when

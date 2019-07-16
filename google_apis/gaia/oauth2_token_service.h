@@ -78,26 +78,10 @@ class OAuth2TokenService : public OAuth2AccessTokenManager::Delegate {
   void OnAccessTokenFetched(const CoreAccountId& account_id,
                             const GoogleServiceAuthError& error) override;
 
-  // Deprecated. It's moved to OAuth2AccessTokenManager.
-  void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
-  // Returns the current number of pending fetchers matching given params.
-  // Deprecated. It's moved to OAuth2AccessTokenManager.
-  size_t GetNumPendingRequestsForTesting(
-      const std::string& client_id,
-      const CoreAccountId& account_id,
-      const OAuth2AccessTokenManager::ScopeSet& scopes) const;
-  // Override |token_manager_| for testing.
-  void OverrideAccessTokenManagerForTesting(
-      std::unique_ptr<OAuth2AccessTokenManager> token_manager);
-
   OAuth2TokenServiceDelegate* GetDelegate();
   const OAuth2TokenServiceDelegate* GetDelegate() const;
 
   OAuth2AccessTokenManager* GetAccessTokenManager();
-
-  // TODO(https://crbug.com/967598): Remove this. It's opened only for
-  // OAuth2TokenServiceTest.
-  int GetTokenCacheCount();
 
  protected:
   // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager
