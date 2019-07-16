@@ -618,3 +618,20 @@ class ChromeDriver(object):
 
   def GenerateTestReport(self, message):
     self.ExecuteCommand(Command.GENERATE_TEST_REPORT, {'message': message})
+
+  def AddVirtualAuthenticator(self, protocol=None, transport=None,
+                              hasResidentKey=None, hasUserVerification=None,
+                              isUserVerified=None):
+    options = {}
+    if protocol is not None:
+      options['protocol'] = protocol
+    if transport is not None:
+      options['transport'] = transport
+    if hasResidentKey is not None:
+      options['hasResidentKey'] = hasResidentKey
+    if hasUserVerification is not None:
+      options['hasUserVerification'] = hasUserVerification
+    if isUserVerified is not None:
+      options['isUserVerified'] = isUserVerified
+
+    return self.ExecuteCommand(Command.ADD_VIRTUAL_AUTHENTICATOR, options)

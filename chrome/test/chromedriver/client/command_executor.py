@@ -170,6 +170,8 @@ class Command(object):
       _Method.POST, '/session/:sessionId/chromium/send_command_and_get_result')
   GENERATE_TEST_REPORT = (
       _Method.POST, '/session/:sessionId/reporting/generate_test_report')
+  ADD_VIRTUAL_AUTHENTICATOR = (
+      _Method.POST, '/session/:sessionId/webauthn/authenticator')
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')
