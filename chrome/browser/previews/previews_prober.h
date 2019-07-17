@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -38,6 +39,8 @@ class NetworkConnectionTracker;
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
 }  // namespace network
+
+typedef base::RepeatingCallback<void(bool)> PreviewsProberOnCompleteCallback;
 
 // This class is a utility to probe a given URL with a given set of behaviors.
 // This can be used for determining whether a specific network resource is
@@ -161,6 +164,10 @@ class PreviewsProber
   // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
+  // Sets a repeating callback to notify the completion of a probe and whether
+  // it was successful.
+  void SetOnCompleteCallback(PreviewsProberOnCompleteCallback callback);
+
  protected:
   // Exposes |tick_clock| and |clock| for testing.
   PreviewsProber(
@@ -272,6 +279,10 @@ class PreviewsProber
   std::unique_ptr<base::android::ApplicationStatusListener>
       application_status_listener_;
 #endif
+
+  // An optional callback to notify of a completed probe. This callback passes a
+  // bool to indicate success of the completed probe.
+  PreviewsProberOnCompleteCallback on_complete_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

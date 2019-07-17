@@ -514,6 +514,11 @@ base::Optional<bool> PreviewsProber::LastProbeWasSuccessful() {
   return entry.value().is_success();
 }
 
+void PreviewsProber::SetOnCompleteCallback(
+    PreviewsProberOnCompleteCallback callback) {
+  on_complete_callback_ = std::move(callback);
+}
+
 void PreviewsProber::RecordProbeResult(bool success) {
   PreviewsProberCacheEntry entry;
   entry.set_is_success(success);
@@ -533,6 +538,9 @@ void PreviewsProber::RecordProbeResult(bool success) {
     RemoveOldestDictionaryEntry(update.Get());
 
   cached_probe_results_ = update.Get()->CreateDeepCopy();
+
+  if (on_complete_callback_)
+    on_complete_callback_.Run(success);
 }
 
 std::string PreviewsProber::GetCacheKeyForCurrentNetwork() const {
