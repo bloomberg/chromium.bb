@@ -5,7 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
-mojom("interfaces") {
+mojom("mojom") {
   sources = [
     "discardable_shared_memory_manager.mojom",
   ]
