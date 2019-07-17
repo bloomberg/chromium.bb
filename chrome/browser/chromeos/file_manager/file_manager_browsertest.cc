@@ -649,7 +649,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveBackupPhotos").EnableDriveFs(),
         TestCase("driveAvailableOfflineGearMenu").DisableDriveFs(),
         TestCase("driveAvailableOfflineGearMenu").EnableDriveFs(),
-        TestCase("driveAvailableOfflineDirectoryGearMenu")));
+        TestCase("driveAvailableOfflineDirectoryGearMenu"),
+        TestCase("driveLinkToDirectory").EnableDriveFs(),
+        TestCase("driveLinkOpenFileThroughLinkedDirectory").EnableDriveFs(),
+        TestCase("driveLinkOpenFileThroughTransitiveLink").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Transfer, /* transfer.js */
