@@ -4,10 +4,6 @@
 
 #include "services/device/generic_sensor/platform_sensor_provider_winrt.h"
 
-#include <comdef.h>
-
-#include "base/memory/singleton.h"
-
 namespace device {
 
 PlatformSensorProviderWinrt::PlatformSensorProviderWinrt() = default;

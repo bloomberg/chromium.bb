@@ -7,11 +7,6 @@
 
 #include "services/device/generic_sensor/platform_sensor_provider.h"
 
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
-
 namespace device {
 
 class PlatformSensorReaderWin;
@@ -34,8 +29,6 @@ class PlatformSensorProviderWinrt final : public PlatformSensorProvider {
                             const CreateSensorCallback& callback) override;
 
  private:
-  friend struct base::DefaultSingletonTraits<PlatformSensorProviderWinrt>;
-
   void SensorReaderCreated(
       mojom::SensorType type,
       SensorReadingSharedBuffer* reading_buffer,

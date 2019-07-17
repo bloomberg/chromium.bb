@@ -162,8 +162,6 @@ class PlatformSensorProviderWinrt final : public PlatformSensorProvider {
                             const CreateSensorCallback& callback) override;
 
  private:
-  friend struct base::DefaultSingletonTraits<PlatformSensorProviderWinrt>;
-
   PlatformSensorProviderWinrt();
 
   std::unique_ptr<PlatformSensorReaderWin> CreateSensorReader(
@@ -516,17 +514,7 @@ SensorReaderCreator::CreateSensorReader(mojom::SensorType type) {
   return PlatformSensorReaderWinrt::Create(type);
 }
 
-// static
-PlatformSensorProviderWinrt* PlatformSensorProviderWinrt::GetInstance() {
-  return base::Singleton<
-      PlatformSensorProviderWinrt,
-      base::LeakySingletonTraits<PlatformSensorProviderWinrt>>::get();
-}
-
-PlatformSensorProviderWinrt::PlatformSensorProviderWinrt()
-    : com_sta_task_runner_(base::CreateCOMSTATaskRunnerWithTraits(
-          base::TaskPriority::USER_VISIBLE)),
-      sensor_reader_creator_(std::make_unique<SensorReaderCreator>()) {}
+PlatformSensorProviderWinrt::PlatformSensorProviderWinrt() = default;
 
 PlatformSensorProviderWinrt::~PlatformSensorProviderWinrt() = default;
 
