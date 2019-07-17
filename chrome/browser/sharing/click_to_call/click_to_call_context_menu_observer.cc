@@ -148,8 +148,7 @@ void ClickToCallContextMenuObserver::SendClickToCallMessage(
                      AsWeakPtr()));
 }
 
-void ClickToCallContextMenuObserver::OnMessageSent(
-    base::Optional<std::string> message_id) const {
+void ClickToCallContextMenuObserver::OnMessageSent(bool sucess) const {
   // TODO(himanshujaju) Add metrics.
 }
 
