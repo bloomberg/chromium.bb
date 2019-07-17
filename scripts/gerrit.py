@@ -49,6 +49,14 @@ GERRIT_APPROVAL_MAP = {
 # entries that we summarize in non-verbose mode.
 GERRIT_SUMMARY_CATS = ('CR', 'CQ', 'V',)
 
+# Shorter strings for CL status messages.
+GERRIT_SUMMARY_MAP = {
+    'ABANDONED': 'ABD',
+    'MERGED': 'MRG',
+    'NEW': 'NEW',
+    'WIP': 'WIP',
+}
+
 
 def red(s):
   return COLOR.Color(terminal.Color.RED, s)
@@ -133,6 +141,12 @@ def PrettyPrintCl(opts, cl, lims=None, show_approvals=True):
     lims = {'url': 0, 'project': 0}
 
   status = ''
+
+  if opts.verbose:
+    status += '%s ' % (cl['status'],)
+  else:
+    status += '%s ' % (GERRIT_SUMMARY_MAP.get(cl['status'], cl['status']),)
+
   if show_approvals and not opts.verbose:
     approvs = GetApprovalSummary(opts, cl)
     for cat in GERRIT_SUMMARY_CATS:
