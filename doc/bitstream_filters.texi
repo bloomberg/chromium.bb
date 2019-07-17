@@ -120,7 +120,7 @@ add extradata to all packets
 @end table
 @end table
 
-If not specified it is assumed @samp{e}.
+If not specified it is assumed @samp{k}.
 
 For example the following @command{ffmpeg} command forces a global
 header (thus disabling individual packet headers) in the H.264 packets
@@ -360,6 +360,15 @@ will replace the current ones if the stream is already cropped.
 
 These fields are set in pixels.  Note that some sizes may not be
 representable if the chroma is subsampled (H.265 section 7.4.3.2.1).
+
+@item level
+Set the level in the VPS and SPS.  See H.265 section A.4 and tables
+A.6 and A.7.
+
+The argument must be the name of a level (for example, @samp{5.1}), a
+@emph{general_level_idc} value (for example, @samp{153} for level 5.1),
+or the special name @samp{auto} indicating that the filter should
+attempt to guess the level from the input stream properties.
 
 @end table
 

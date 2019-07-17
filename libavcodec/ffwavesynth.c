@@ -113,18 +113,12 @@ static uint32_t lcg_next(uint32_t *s)
     return *s;
 }
 
-static void lcg_seek(uint32_t *s, int64_t dt)
+static void lcg_seek(uint32_t *s, uint32_t dt)
 {
     uint32_t a, c, t = *s;
 
-    if (dt >= 0) {
-        a = LCG_A;
-        c = LCG_C;
-    } else { /* coefficients for a step backward */
-        a = LCG_AI;
-        c = (uint32_t)(LCG_AI * LCG_C);
-        dt = -dt;
-    }
+    a = LCG_A;
+    c = LCG_C;
     while (dt) {
         if (dt & 1)
             t = a * t + c;
@@ -221,7 +215,7 @@ static void wavesynth_seek(struct wavesynth_context *ws, int64_t ts)
     ws->next_inter = i;
     ws->next_ts = i < ws->nb_inter ? ws->inter[i].ts_start : INF_TS;
     *last = -1;
-    lcg_seek(&ws->dither_state, ts - ws->cur_ts);
+    lcg_seek(&ws->dither_state, (uint32_t)ts - ws->cur_ts);
     if (ws->pink_need) {
         int64_t pink_ts_cur  = (ws->cur_ts + PINK_UNIT - 1) & ~(PINK_UNIT - 1);
         int64_t pink_ts_next = ts & ~(PINK_UNIT - 1);
@@ -267,7 +261,10 @@ static int wavesynth_parse_extradata(AVCodecContext *avc)
         in->type     = AV_RL32(edata + 16);
         in->channels = AV_RL32(edata + 20);
         edata += 24;
-        if (in->ts_start < cur_ts || in->ts_end <= in->ts_start)
+        if (in->ts_start < cur_ts ||
+            in->ts_end <= in->ts_start ||
+            (uint64_t)in->ts_end - in->ts_start > INT64_MAX
+        )
             return AVERROR(EINVAL);
         cur_ts = in->ts_start;
         dt = in->ts_end - in->ts_start;

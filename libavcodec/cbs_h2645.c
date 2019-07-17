@@ -24,7 +24,6 @@
 #include "cbs_internal.h"
 #include "cbs_h264.h"
 #include "cbs_h265.h"
-#include "golomb.h"
 #include "h264.h"
 #include "h264_sei.h"
 #include "h2645_parse.h"
@@ -252,22 +251,30 @@ static int cbs_write_se_golomb(CodedBitstreamContext *ctx, PutBitContext *pbc,
 
 #define u(width, name, range_min, range_max) \
         xu(width, name, current->name, range_min, range_max, 0)
-#define flag(name) u(1, name, 0, 1)
+#define ub(width, name) \
+        xu(width, name, current->name, 0, MAX_UINT_BITS(width), 0)
+#define flag(name) ub(1, name)
 #define ue(name, range_min, range_max) \
         xue(name, current->name, range_min, range_max, 0)
 #define i(width, name, range_min, range_max) \
         xi(width, name, current->name, range_min, range_max, 0)
+#define ib(width, name) \
+        xi(width, name, current->name, MIN_INT_BITS(width), MAX_INT_BITS(width), 0)
 #define se(name, range_min, range_max) \
         xse(name, current->name, range_min, range_max, 0)
 
 #define us(width, name, range_min, range_max, subs, ...) \
         xu(width, name, current->name, range_min, range_max, subs, __VA_ARGS__)
+#define ubs(width, name, subs, ...) \
+        xu(width, name, current->name, 0, MAX_UINT_BITS(width), subs, __VA_ARGS__)
 #define flags(name, subs, ...) \
         xu(1, name, current->name, 0, 1, subs, __VA_ARGS__)
 #define ues(name, range_min, range_max, subs, ...) \
         xue(name, current->name, range_min, range_max, subs, __VA_ARGS__)
 #define is(width, name, range_min, range_max, subs, ...) \
         xi(width, name, current->name, range_min, range_max, subs, __VA_ARGS__)
+#define ibs(width, name, subs, ...) \
+        xi(width, name, current->name, MIN_INT_BITS(width), MAX_INT_BITS(width), subs, __VA_ARGS__)
 #define ses(name, range_min, range_max, subs, ...) \
         xse(name, current->name, range_min, range_max, subs, __VA_ARGS__)
 
@@ -450,6 +457,7 @@ static void cbs_h264_free_sei_payload(H264RawSEIPayload *payload)
     case H264_SEI_TYPE_RECOVERY_POINT:
     case H264_SEI_TYPE_DISPLAY_ORIENTATION:
     case H264_SEI_TYPE_MASTERING_DISPLAY_COLOUR_VOLUME:
+    case H264_SEI_TYPE_ALTERNATIVE_TRANSFER:
         break;
     case H264_SEI_TYPE_USER_DATA_REGISTERED:
         av_buffer_unref(&payload->payload.user_data_registered.data_ref);
@@ -1635,10 +1643,10 @@ int ff_cbs_h264_add_sei_message(CodedBitstreamContext *ctx,
     return 0;
 }
 
-int ff_cbs_h264_delete_sei_message(CodedBitstreamContext *ctx,
-                                   CodedBitstreamFragment *au,
-                                   CodedBitstreamUnit *nal,
-                                   int position)
+void ff_cbs_h264_delete_sei_message(CodedBitstreamContext *ctx,
+                                    CodedBitstreamFragment *au,
+                                    CodedBitstreamUnit *nal,
+                                    int position)
 {
     H264RawSEI *sei = nal->content;
 
@@ -1653,9 +1661,8 @@ int ff_cbs_h264_delete_sei_message(CodedBitstreamContext *ctx,
             if (&au->units[i] == nal)
                 break;
         }
-        av_assert0(i < au->nb_units && "NAL unit not in access unit.");
 
-        return ff_cbs_delete_unit(ctx, au, i);
+        ff_cbs_delete_unit(ctx, au, i);
     } else {
         cbs_h264_free_sei_payload(&sei->payload[position]);
 
@@ -1663,7 +1670,5 @@ int ff_cbs_h264_delete_sei_message(CodedBitstreamContext *ctx,
         memmove(sei->payload + position,
                 sei->payload + position + 1,
                 (sei->payload_count - position) * sizeof(*sei->payload));
-
-        return 0;
     }
 }

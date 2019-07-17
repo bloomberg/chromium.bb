@@ -23,9 +23,11 @@ FATE_CHECKASM = fate-checkasm-aacpsdsp                                  \
                 fate-checkasm-sbrdsp                                    \
                 fate-checkasm-synth_filter                              \
                 fate-checkasm-sw_rgb                                    \
+                fate-checkasm-v210dec                                   \
                 fate-checkasm-v210enc                                   \
                 fate-checkasm-vf_blend                                  \
                 fate-checkasm-vf_colorspace                             \
+                fate-checkasm-vf_gblur                                  \
                 fate-checkasm-vf_hflip                                  \
                 fate-checkasm-vf_threshold                              \
                 fate-checkasm-videodsp                                  \

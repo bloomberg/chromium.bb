@@ -78,11 +78,11 @@ static int viv_probe(const AVProbeData *p)
     return AVPROBE_SCORE_MAX;
 }
 
-static const unsigned short keybits[32] = {
-     163,  416,  893,   82,  223,  572, 1137,  430,
-     659, 1104,   13,  626,  695,  972, 1465,  686,
-     843, 1216,  317, 1122, 1383,   92,  513, 1158,
-    1243,   48,  573, 1306, 1495,  396, 1009,  350,
+static const uint8_t keybits[32] = {
+ 20,  52, 111,  10,  27,  71, 142,  53,
+ 82, 138,   1,  78,  86, 121, 183,  85,
+105, 152,  39, 140, 172,  11,  64, 144,
+155,   6,  71, 163, 186,  49, 126,  43,
 };
 
 static uint32_t decode_key(uint8_t *buf)
@@ -91,7 +91,7 @@ static uint32_t decode_key(uint8_t *buf)
 
     for (int i = 0; i < 32; i++) {
         unsigned p = keybits[i];
-        key |= !!(buf[p>>3] & (1<<(p&7))) << i;
+        key |= ((buf[p] >> ((i*5+3)&7)) & 1u) << i;
     }
 
     return key;
@@ -178,12 +178,13 @@ static void decode_block(uint8_t *src, uint8_t *dest, unsigned size,
     }
 }
 
-static uint32_t get_v(uint8_t *p)
+static uint32_t get_v(uint8_t *p, int len)
 {
     uint32_t v = 0;
+    const uint8_t *end = p + len;
 
     do {
-        if (v >= UINT_MAX / 128 - *p)
+        if (p >= end || v >= UINT_MAX / 128 - *p)
             return v;
         v <<= 7;
         v += *p & 0x7f;
@@ -204,8 +205,8 @@ static uint8_t *read_vblock(AVIOContext *src, uint32_t *size,
 
     decode_block(tmp, tmp, 4, key, k2, align);
 
-    n = get_v(tmp);
-    if (!n)
+    n = get_v(tmp, 4);
+    if (n < 4)
         return NULL;
 
     buf = av_malloc(n);
@@ -241,13 +242,13 @@ static uint8_t *read_sb_block(AVIOContext *src, unsigned *size,
     k2 = *key;
     decode_block(ibuf, sbuf, 8, *key, &k2, 0);
 
-    n = get_v(sbuf+2);
+    n = get_v(sbuf+2, 6);
 
     if (sbuf[0] != 'S' || sbuf[1] != 'B' || (expected_size>0 && n != expected_size)) {
         uint32_t tmpkey = recover_key(ibuf, expected_size);
         k2 = tmpkey;
         decode_block(ibuf, sbuf, 8, tmpkey, &k2, 0);
-        n = get_v(sbuf+2);
+        n = get_v(sbuf+2, 6);
         if (sbuf[0] != 'S' || sbuf[1] != 'B' || expected_size != n)
             return NULL;
         *key = tmpkey;

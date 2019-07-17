@@ -116,21 +116,26 @@ static int av1_metadata_update_sequence_header(AVBSFContext *bsf,
     return 0;
 }
 
-static int av1_metadata_filter(AVBSFContext *bsf, AVPacket *out)
+static int av1_metadata_filter(AVBSFContext *bsf, AVPacket *pkt)
 {
     AV1MetadataContext *ctx = bsf->priv_data;
-    AVPacket *in = NULL;
     CodedBitstreamFragment *frag = &ctx->access_unit;
     AV1RawOBU td, *obu;
     int err, i;
 
-    err = ff_bsf_get_packet(bsf, &in);
+    err = ff_bsf_get_packet_ref(bsf, pkt);
     if (err < 0)
         return err;
 
-    err = ff_cbs_read_packet(ctx->cbc, frag, in);
+    err = ff_cbs_read_packet(ctx->cbc, frag, pkt);
     if (err < 0) {
         av_log(bsf, AV_LOG_ERROR, "Failed to read packet.\n");
+        goto fail;
+    }
+
+    if (frag->nb_units == 0) {
+        av_log(bsf, AV_LOG_ERROR, "No OBU in packet.\n");
+        err = AVERROR_INVALIDDATA;
         goto fail;
     }
 
@@ -161,35 +166,24 @@ static int av1_metadata_filter(AVBSFContext *bsf, AVPacket *out)
     }
 
     if (ctx->delete_padding) {
-        for (i = 0; i < frag->nb_units; i++) {
-            if (frag->units[i].type == AV1_OBU_PADDING) {
-                err = ff_cbs_delete_unit(ctx->cbc, frag, i);
-                if (err < 0) {
-                    av_log(bsf, AV_LOG_ERROR, "Failed to delete Padding OBU.\n");
-                    goto fail;
-                }
-                --i;
-            }
+        for (i = frag->nb_units - 1; i >= 0; i--) {
+            if (frag->units[i].type == AV1_OBU_PADDING)
+                ff_cbs_delete_unit(ctx->cbc, frag, i);
         }
     }
 
-    err = ff_cbs_write_packet(ctx->cbc, out, frag);
+    err = ff_cbs_write_packet(ctx->cbc, pkt, frag);
     if (err < 0) {
         av_log(bsf, AV_LOG_ERROR, "Failed to write packet.\n");
         goto fail;
     }
-
-    err = av_packet_copy_props(out, in);
-    if (err < 0)
-        goto fail;
 
     err = 0;
 fail:
     ff_cbs_fragment_reset(ctx->cbc, frag);
 
     if (err < 0)
-        av_packet_unref(out);
-    av_packet_free(&in);
+        av_packet_unref(pkt);
 
     return err;
 }
