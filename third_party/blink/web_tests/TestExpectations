@@ -2111,6 +2111,30 @@ crbug.com/875235 virtual/layout_ng_experimental/fast/forms/fieldset/legend-small
 
 # ====== LayoutNG-only failures until here ======
 
+# ====== Style team owned tests from here ======
+
+crbug.com/753671 external/wpt/css/css-content/quotes-001.html [ Failure ]
+crbug.com/753671 external/wpt/css/css-content/quotes-002.html [ Failure ]
+crbug.com/753671 [ Mac10.11 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
+crbug.com/753671 [ Mac10.12 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
+crbug.com/753671 [ Mac10.13 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
+crbug.com/753671 [ Retina ] external/wpt/css/css-content/quotes-006.html [ Failure ]
+crbug.com/753671 [ Mac10.12 ] external/wpt/css/css-content/quotes-007.html [ Failure ]
+crbug.com/753671 [ Mac10.13 ] external/wpt/css/css-content/quotes-007.html [ Failure ]
+crbug.com/753671 [ Retina ] external/wpt/css/css-content/quotes-007.html [ Failure ]
+crbug.com/753671 [ Mac ] external/wpt/css/css-content/quotes-009.html [ Failure ]
+crbug.com/753671 [ Mac10.11 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
+crbug.com/753671 [ Mac10.12 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
+crbug.com/753671 [ Mac10.13 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
+crbug.com/753671 [ Retina ] external/wpt/css/css-content/quotes-012.html [ Failure ]
+crbug.com/753671 external/wpt/css/css-content/quotes-013.html [ Failure ]
+crbug.com/753671 [ Mac ] external/wpt/css/css-content/quotes-014.html [ Failure ]
+crbug.com/753671 external/wpt/css/css-content/quotes-021.html [ Failure ]
+crbug.com/753671 external/wpt/css/css-content/quotes-022.html [ Failure ]
+crbug.com/753671 external/wpt/css/css-content/quotes-025.html [ Failure ]
+crbug.com/753671 external/wpt/css/css-content/quotes-033.html [ Failure ]
+
+# ====== Style team owned tests to here ======
 
 # ====== OOPIF-mode failures from here ======
 
@@ -3235,26 +3259,6 @@ crbug.com/983157 virtual/scalefactor200/external/wpt/css/filter-effects/animatio
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-worker.https.html [ Crash ]
-crbug.com/626703 external/wpt/css/css-content/quotes-013.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-content/quotes-014.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-content/quotes-022.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-content/quotes-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-content/quotes-033.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-content/quotes-021.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-content/quotes-007.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-content/quotes-007.html [ Failure ]
-crbug.com/626703 [ Retina ] external/wpt/css/css-content/quotes-007.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-content/quotes-009.html [ Failure ]
-crbug.com/626703 [ Mac10.11 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
-crbug.com/626703 [ Retina ] external/wpt/css/css-content/quotes-006.html [ Failure ]
-crbug.com/626703 [ Mac10.11 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
-crbug.com/626703 [ Retina ] external/wpt/css/css-content/quotes-012.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-content/quotes-025.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-content/quotes-002.html [ Failure ]
 crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-fraktur-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-stretched-001.tentative.html [ Failure ]
