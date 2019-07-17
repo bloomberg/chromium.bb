@@ -178,6 +178,8 @@ def scrape_owners(root, include_subdirs):
       rel_ancestor = os.path.relpath(ancestor, root)
       if rel_ancestor in data and data[rel_ancestor].get(tag):
         return data[rel_ancestor][tag]
+      if rel_ancestor == '.':
+        break
       ancestor = os.path.dirname(ancestor)
     return
 
