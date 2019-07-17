@@ -3236,19 +3236,14 @@ crbug.com/983157 virtual/scalefactor200/external/wpt/css/filter-effects/animatio
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-worker.https.html [ Crash ]
 crbug.com/626703 external/wpt/css/css-content/quotes-013.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-scroll-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-vertical-002.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-content/quotes-014.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-content/quotes-022.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-content/quotes-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-content/quotes-033.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-content/quotes-021.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-scroll-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-linethrough-001.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-content/quotes-007.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-content/quotes-007.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/css/css-content/quotes-007.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-overline-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-content/quotes-009.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
@@ -3258,12 +3253,8 @@ crbug.com/626703 [ Mac10.11 ] external/wpt/css/css-content/quotes-012.html [ Fai
 crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/css/css-content/quotes-012.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-vertical-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-content/quotes-025.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-underline-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-vertical-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-content/quotes-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-vertical-001.html [ Failure ]
 crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-fraktur-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-stretched-001.tentative.html [ Failure ]
@@ -4674,8 +4665,17 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collap
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]
 
-# Underline offset and thickness
-crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-001.html [ Failure ]
+# Underline offset and thickness are not implemented yet.
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-linethrough-001.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-overline-001.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-scroll-001.html [ Skip ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-width-underline-001.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-vertical-001.html [ Skip ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-width-vertical-002.html [ Skip ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-001.html [ Skip ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-scroll-001.html [ Skip ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-vertical-001.html [ Skip ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-vertical-002.html [ Skip ]
 
 crbug.com/785940 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Failure Pass ]
 
