@@ -7,19 +7,15 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/layers/layer.h"
-#include "content/renderer/media/stream/webmediaplayer_ms.h"
-#include "content/renderer/media/stream/webmediaplayer_ms_compositor.h"
 #include "media/base/media_util.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
@@ -31,7 +27,11 @@
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
+#include "third_party/blink/public/web/modules/mediastream/webmediaplayer_ms.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/modules/mediastream/webmediaplayer_ms_compositor.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 using ::testing::_;
 using ::testing::ByRef;
@@ -41,7 +41,7 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::StrictMock;
 
-namespace content {
+namespace blink {
 
 enum class FrameType {
   NORMAL_FRAME = 0,
@@ -50,7 +50,7 @@ enum class FrameType {
   MIN_TYPE = TEST_BRAKE
 };
 
-class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
+class MockSurfaceLayerBridge : public WebSurfaceLayerBridge {
  public:
   MockSurfaceLayerBridge() {
     ON_CALL(*this, GetSurfaceId).WillByDefault(ReturnRef(surface_id_));
@@ -79,7 +79,7 @@ static const int kStandardWidth = 320;
 static const int kStandardHeight = 240;
 
 class FakeWebMediaPlayerDelegate
-    : public blink::WebMediaPlayerDelegate,
+    : public WebMediaPlayerDelegate,
       public base::SupportsWeakPtr<FakeWebMediaPlayerDelegate> {
  public:
   FakeWebMediaPlayerDelegate() {}
@@ -150,7 +150,7 @@ class FakeWebMediaPlayerDelegate
 
   void SetIsEffectivelyFullscreen(
       int delegate_id,
-      blink::WebFullscreenVideoStatus fullscreen_video_status) override {
+      WebFullscreenVideoStatus fullscreen_video_status) override {
     EXPECT_EQ(delegate_id_, delegate_id);
   }
 
@@ -198,12 +198,12 @@ class ReusableMessageLoopEvent {
 };
 
 // The class is used mainly to inject VideoFrames into WebMediaPlayerMS.
-class MockMediaStreamVideoRenderer : public blink::WebMediaStreamVideoRenderer {
+class MockMediaStreamVideoRenderer : public WebMediaStreamVideoRenderer {
  public:
   MockMediaStreamVideoRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       ReusableMessageLoopEvent* message_loop_controller,
-      const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb)
+      const WebMediaStreamVideoRenderer::RepaintCB& repaint_cb)
       : started_(false),
         standard_size_(kStandardWidth, kStandardHeight),
         task_runner_(task_runner),
@@ -212,7 +212,7 @@ class MockMediaStreamVideoRenderer : public blink::WebMediaStreamVideoRenderer {
         delay_till_next_generated_frame_(
             base::TimeDelta::FromSecondsD(1.0 / 30.0)) {}
 
-  // Implementation of blink::WebMediaStreamVideoRenderer
+  // Implementation of WebMediaStreamVideoRenderer
   void Start() override;
   void Stop() override;
   void Resume() override;
@@ -245,13 +245,13 @@ class MockMediaStreamVideoRenderer : public blink::WebMediaStreamVideoRenderer {
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ReusableMessageLoopEvent* const message_loop_controller_;
-  const blink::WebMediaStreamVideoRenderer::RepaintCB repaint_cb_;
+  const WebMediaStreamVideoRenderer::RepaintCB repaint_cb_;
 
   base::circular_deque<TestFrame> frames_;
   base::TimeDelta delay_till_next_generated_frame_;
 };
 
-class MockMediaStreamAudioRenderer : public blink::WebMediaStreamAudioRenderer {
+class MockMediaStreamAudioRenderer : public WebMediaStreamAudioRenderer {
  public:
   MockMediaStreamAudioRenderer() {}
 
@@ -274,9 +274,10 @@ class MockMediaStreamAudioRenderer : public blink::WebMediaStreamAudioRenderer {
 void MockMediaStreamVideoRenderer::Start() {
   started_ = true;
   paused_ = false;
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&MockMediaStreamVideoRenderer::InjectFrame, this));
+  PostCrossThreadTask(
+      *task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&MockMediaStreamVideoRenderer::InjectFrame,
+                          WrapRefCounted(this)));
 }
 
 void MockMediaStreamVideoRenderer::Stop() {
@@ -381,9 +382,10 @@ void MockMediaStreamVideoRenderer::InjectFrame() {
     }
   }
 
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&MockMediaStreamVideoRenderer::InjectFrame, this),
+  PostDelayedCrossThreadTask(
+      *task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&MockMediaStreamVideoRenderer::InjectFrame,
+                          WrapRefCounted(this)),
       delay_till_next_generated_frame_);
 
   // This will pause the |message_loop_|, and the purpose is to allow the main
@@ -394,9 +396,9 @@ void MockMediaStreamVideoRenderer::InjectFrame() {
     message_loop_controller_->GetClosure().Run();
 }
 
-class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
+class MockWebVideoFrameSubmitter : public WebVideoFrameSubmitter {
  public:
-  // blink::WebVideoFrameSubmitter implementation.
+  // WebVideoFrameSubmitter implementation.
   MOCK_METHOD0(StopUsingProvider, void());
   MOCK_METHOD0(DidReceiveFrame, void());
   MOCK_METHOD2(EnableSubmission, void(viz::SurfaceId, base::TimeTicks));
@@ -420,7 +422,7 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
 
 // The class is used to generate a MockVideoProvider in
 // WebMediaPlayerMS::load().
-class MockRenderFactory : public blink::WebMediaStreamRendererFactory {
+class MockRenderFactory : public WebMediaStreamRendererFactory {
  public:
   MockRenderFactory(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -428,9 +430,9 @@ class MockRenderFactory : public blink::WebMediaStreamRendererFactory {
       : task_runner_(task_runner),
         message_loop_controller_(message_loop_controller) {}
 
-  scoped_refptr<blink::WebMediaStreamVideoRenderer> GetVideoRenderer(
-      const blink::WebMediaStream& web_stream,
-      const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
+  scoped_refptr<WebMediaStreamVideoRenderer> GetVideoRenderer(
+      const WebMediaStream& web_stream,
+      const WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner)
       override;
@@ -439,15 +441,14 @@ class MockRenderFactory : public blink::WebMediaStreamRendererFactory {
     return static_cast<MockMediaStreamVideoRenderer*>(provider_.get());
   }
 
-  scoped_refptr<blink::WebMediaStreamAudioRenderer> GetAudioRenderer(
-      const blink::WebMediaStream& web_stream,
-      blink::WebLocalFrame* web_frame,
+  scoped_refptr<WebMediaStreamAudioRenderer> GetAudioRenderer(
+      const WebMediaStream& web_stream,
+      WebLocalFrame* web_frame,
       const std::string& device_id) override {
     return audio_renderer_;
   }
 
-  void set_audio_renderer(
-      scoped_refptr<blink::WebMediaStreamAudioRenderer> renderer) {
+  void set_audio_renderer(scoped_refptr<WebMediaStreamAudioRenderer> renderer) {
     audio_renderer_ = std::move(renderer);
   }
 
@@ -460,16 +461,15 @@ class MockRenderFactory : public blink::WebMediaStreamRendererFactory {
 
  private:
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<blink::WebMediaStreamVideoRenderer> provider_;
+  scoped_refptr<WebMediaStreamVideoRenderer> provider_;
   ReusableMessageLoopEvent* const message_loop_controller_;
   bool support_video_renderer_ = true;
-  scoped_refptr<blink::WebMediaStreamAudioRenderer> audio_renderer_;
+  scoped_refptr<WebMediaStreamAudioRenderer> audio_renderer_;
 };
 
-scoped_refptr<blink::WebMediaStreamVideoRenderer>
-MockRenderFactory::GetVideoRenderer(
-    const blink::WebMediaStream& web_stream,
-    const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
+scoped_refptr<WebMediaStreamVideoRenderer> MockRenderFactory::GetVideoRenderer(
+    const WebMediaStream& web_stream,
+    const WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner) {
   if (!support_video_renderer_)
@@ -484,8 +484,8 @@ MockRenderFactory::GetVideoRenderer(
 // This is the main class coordinating the tests.
 // Basic workflow:
 // 1. WebMediaPlayerMS::Load will generate and start
-// blink::WebMediaStreamVideoRenderer.
-// 2. blink::WebMediaStreamVideoRenderer will start pushing frames into
+// WebMediaStreamVideoRenderer.
+// 2. WebMediaStreamVideoRenderer will start pushing frames into
 //    WebMediaPlayerMS repeatedly.
 // 3. On WebMediaPlayerMS receiving the first frame, a cc::Layer will be
 //    created.
@@ -496,7 +496,7 @@ MockRenderFactory::GetVideoRenderer(
 //    WebMediaPlayerMSCompositor::UpdateCurrentFrame, GetCurrentFrame for
 //    rendering repeatedly.
 // 6. When WebMediaPlayerMS::pause gets called, it should trigger
-//    blink::WebMediaStreamVideoRenderer::Pause, and then the provider will stop
+//    WebMediaStreamVideoRenderer::Pause, and then the provider will stop
 //    pushing frames into WebMediaPlayerMS, but instead digesting them;
 //    simultanously, it should call cc::VideoFrameProviderClient::StopRendering,
 //    so cc::VideoFrameProviderClient will stop asking frames from
@@ -508,12 +508,12 @@ class WebMediaPlayerMSTest
           testing::tuple<bool /* enable_surface_layer_for_video */,
                          bool /* opaque_frame */,
                          bool /* odd_size_frame */>>,
-      public blink::WebMediaPlayerClient,
+      public WebMediaPlayerClient,
       public cc::VideoFrameProvider::Client {
  public:
   WebMediaPlayerMSTest()
       : render_factory_(new MockRenderFactory(
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+            scheduler::GetSingleThreadTaskRunnerForTesting(),
             &message_loop_controller_)),
         gpu_factories_(new media::MockGpuVideoAcceleratorFactories(nullptr)),
         surface_layer_bridge_(
@@ -521,7 +521,8 @@ class WebMediaPlayerMSTest
         submitter_(std::make_unique<NiceMock<MockWebVideoFrameSubmitter>>()),
         layer_set_(false),
         rendering_(false),
-        background_rendering_(false) {
+        background_rendering_(false),
+        weak_factory_(this) {
     surface_layer_bridge_ptr_ = surface_layer_bridge_.get();
     submitter_ptr_ = submitter_.get();
   }
@@ -542,42 +543,41 @@ class WebMediaPlayerMSTest
   void DurationChanged() override {}
   void SizeChanged() override;
   void SetCcLayer(cc::Layer* layer) override;
-  blink::WebMediaPlayer::TrackId AddAudioTrack(const blink::WebString& id,
-                                               AudioTrackKind,
-                                               const blink::WebString& label,
-                                               const blink::WebString& language,
-                                               bool enabled) override {
-    return blink::WebMediaPlayer::TrackId();
+  WebMediaPlayer::TrackId AddAudioTrack(const WebString& id,
+                                        AudioTrackKind,
+                                        const WebString& label,
+                                        const WebString& language,
+                                        bool enabled) override {
+    return WebMediaPlayer::TrackId();
   }
-  void RemoveAudioTrack(blink::WebMediaPlayer::TrackId) override {}
-  blink::WebMediaPlayer::TrackId AddVideoTrack(const blink::WebString& id,
-                                               VideoTrackKind,
-                                               const blink::WebString& label,
-                                               const blink::WebString& language,
-                                               bool selected) override {
-    return blink::WebMediaPlayer::TrackId();
+  void RemoveAudioTrack(WebMediaPlayer::TrackId) override {}
+  WebMediaPlayer::TrackId AddVideoTrack(const WebString& id,
+                                        VideoTrackKind,
+                                        const WebString& label,
+                                        const WebString& language,
+                                        bool selected) override {
+    return WebMediaPlayer::TrackId();
   }
-  void RemoveVideoTrack(blink::WebMediaPlayer::TrackId) override {}
-  void AddTextTrack(blink::WebInbandTextTrack*) override {}
-  void RemoveTextTrack(blink::WebInbandTextTrack*) override {}
-  void MediaSourceOpened(blink::WebMediaSource*) override {}
+  void RemoveVideoTrack(WebMediaPlayer::TrackId) override {}
+  void AddTextTrack(WebInbandTextTrack*) override {}
+  void RemoveTextTrack(WebInbandTextTrack*) override {}
+  void MediaSourceOpened(WebMediaSource*) override {}
   void RequestSeek(double) override {}
-  void RemotePlaybackCompatibilityChanged(const blink::WebURL& url,
+  void RemotePlaybackCompatibilityChanged(const WebURL& url,
                                           bool is_compatible) override {}
   void OnBecamePersistentVideo(bool) override {}
   bool WasAlwaysMuted() override { return false; }
   bool HasSelectedVideoTrack() override { return false; }
-  blink::WebMediaPlayer::TrackId GetSelectedVideoTrackId() override {
-    return blink::WebMediaPlayer::TrackId();
+  WebMediaPlayer::TrackId GetSelectedVideoTrackId() override {
+    return WebMediaPlayer::TrackId();
   }
   bool HasNativeControls() override { return false; }
   bool IsAudioElement() override { return is_audio_element_; }
   bool IsInAutoPIP() const override { return false; }
   void ActivateViewportIntersectionMonitoring(bool activate) override {}
   void MediaRemotingStarted(
-      const blink::WebString& remote_device_friendly_name) override {}
-  void MediaRemotingStopped(
-      blink::WebLocalizedString::Name error_msg) override {}
+      const WebString& remote_device_friendly_name) override {}
+  void MediaRemotingStopped(WebLocalizedString::Name error_msg) override {}
   void RequestPlay() override {}
   void RequestPause() override {}
   void RequestMuted(bool muted) override {}
@@ -611,20 +611,18 @@ class WebMediaPlayerMSTest
   MOCK_METHOD0(DoDidReceiveFrame, void());
 
   MOCK_METHOD1(DoSetCcLayer, void(bool));
-  MOCK_METHOD1(DoNetworkStateChanged,
-               void(blink::WebMediaPlayer::NetworkState));
-  MOCK_METHOD1(DoReadyStateChanged, void(blink::WebMediaPlayer::ReadyState));
+  MOCK_METHOD1(DoNetworkStateChanged, void(WebMediaPlayer::NetworkState));
+  MOCK_METHOD1(DoReadyStateChanged, void(WebMediaPlayer::ReadyState));
   MOCK_METHOD1(CheckSizeChanged, void(gfx::Size));
-  MOCK_CONST_METHOD0(DisplayType, blink::WebMediaPlayer::DisplayType());
+  MOCK_CONST_METHOD0(DisplayType, WebMediaPlayer::DisplayType());
   MOCK_CONST_METHOD0(CouldPlayIfEnoughData, bool());
 
-  std::unique_ptr<blink::WebSurfaceLayerBridge> CreateMockSurfaceLayerBridge(
-      blink::WebSurfaceLayerBridgeObserver*,
+  std::unique_ptr<WebSurfaceLayerBridge> CreateMockSurfaceLayerBridge(
+      WebSurfaceLayerBridgeObserver*,
       cc::UpdateSubmissionStateCB) {
     return std::move(surface_layer_bridge_);
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
   MockRenderFactory* render_factory_;
   std::unique_ptr<media::MockGpuVideoAcceleratorFactories> gpu_factories_;
   FakeWebMediaPlayerDelegate delegate_;
@@ -648,25 +646,27 @@ class WebMediaPlayerMSTest
   bool layer_set_;
   bool rendering_;
   bool background_rendering_;
+
+  base::WeakPtrFactory<WebMediaPlayerMSTest> weak_factory_;
 };
 
 void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
   enable_surface_layer_for_video_ = testing::get<0>(GetParam());
-  blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode =
+  WebMediaPlayer::SurfaceLayerMode surface_layer_mode =
       enable_surface_layer_for_video_
-          ? blink::WebMediaPlayer::SurfaceLayerMode::kAlways
-          : blink::WebMediaPlayer::SurfaceLayerMode::kNever;
+          ? WebMediaPlayer::SurfaceLayerMode::kAlways
+          : WebMediaPlayer::SurfaceLayerMode::kNever;
   player_ = std::make_unique<WebMediaPlayerMS>(
       nullptr, this, &delegate_, std::make_unique<media::NullMediaLog>(),
-      std::unique_ptr<blink::WebMediaStreamRendererFactory>(render_factory_),
-      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-      blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
-      gpu_factories_.get(), blink::WebString(),
-      base::BindOnce(&WebMediaPlayerMSTest::CreateMockSurfaceLayerBridge,
-                     base::Unretained(this)),
+      std::unique_ptr<WebMediaStreamRendererFactory>(render_factory_),
+      scheduler::GetSingleThreadTaskRunnerForTesting(),
+      scheduler::GetSingleThreadTaskRunnerForTesting(),
+      scheduler::GetSingleThreadTaskRunnerForTesting(),
+      scheduler::GetSingleThreadTaskRunnerForTesting(),
+      scheduler::GetSingleThreadTaskRunnerForTesting(), gpu_factories_.get(),
+      WebString(),
+      WTF::Bind(&WebMediaPlayerMSTest::CreateMockSurfaceLayerBridge,
+                WTF::Unretained(this)),
       std::move(submitter_), surface_layer_mode);
 }
 
@@ -675,13 +675,12 @@ MockMediaStreamVideoRenderer* WebMediaPlayerMSTest::LoadAndGetFrameProvider(
   EXPECT_FALSE(!!render_factory_->provider()) << "There should not be a "
                                                  "FrameProvider yet.";
 
-  EXPECT_CALL(*this, DoNetworkStateChanged(
-                         blink::WebMediaPlayer::kNetworkStateLoading));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveNothing));
-  player_->Load(blink::WebMediaPlayer::kLoadTypeURL,
-                blink::WebMediaPlayerSource(),
-                blink::WebMediaPlayer::kCorsModeUnspecified);
+  EXPECT_CALL(*this,
+              DoNetworkStateChanged(WebMediaPlayer::kNetworkStateLoading));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveNothing));
+  player_->Load(WebMediaPlayer::kLoadTypeURL, WebMediaPlayerSource(),
+                WebMediaPlayer::kCorsModeUnspecified);
   compositor_ = player_->compositor_.get();
   EXPECT_TRUE(!!compositor_);
   compositor_->SetAlgorithmEnabledForTesting(algorithm_enabled);
@@ -698,33 +697,33 @@ MockMediaStreamVideoRenderer* WebMediaPlayerMSTest::LoadAndGetFrameProvider(
 }
 
 void WebMediaPlayerMSTest::NetworkStateChanged() {
-  blink::WebMediaPlayer::NetworkState state = player_->GetNetworkState();
+  WebMediaPlayer::NetworkState state = player_->GetNetworkState();
   DoNetworkStateChanged(state);
-  if (state == blink::WebMediaPlayer::NetworkState::kNetworkStateFormatError ||
-      state == blink::WebMediaPlayer::NetworkState::kNetworkStateDecodeError ||
-      state == blink::WebMediaPlayer::NetworkState::kNetworkStateNetworkError) {
+  if (state == WebMediaPlayer::NetworkState::kNetworkStateFormatError ||
+      state == WebMediaPlayer::NetworkState::kNetworkStateDecodeError ||
+      state == WebMediaPlayer::NetworkState::kNetworkStateNetworkError) {
     message_loop_controller_.GetPipelineStatusCB().Run(
         media::PipelineStatus::PIPELINE_ERROR_NETWORK);
   }
 }
 
 void WebMediaPlayerMSTest::ReadyStateChanged() {
-  blink::WebMediaPlayer::ReadyState state = player_->GetReadyState();
+  WebMediaPlayer::ReadyState state = player_->GetReadyState();
   DoReadyStateChanged(state);
-  if (state == blink::WebMediaPlayer::ReadyState::kReadyStateHaveMetadata &&
+  if (state == WebMediaPlayer::ReadyState::kReadyStateHaveMetadata &&
       !player_->HasAudio()) {
     const auto& size = player_->NaturalSize();
     EXPECT_GT(size.width, 0);
     EXPECT_GT(size.height, 0);
   }
-  if (state == blink::WebMediaPlayer::ReadyState::kReadyStateHaveEnoughData)
+  if (state == WebMediaPlayer::ReadyState::kReadyStateHaveEnoughData)
     player_->Play();
 }
 
 void WebMediaPlayerMSTest::SetCcLayer(cc::Layer* layer) {
   // Make sure that the old layer is still alive, see https://crbug.com/705448.
   if (layer_set_)
-    EXPECT_TRUE(layer_ != nullptr);
+    EXPECT_TRUE(layer_);
   layer_set_ = layer ? true : false;
 
   layer_ = layer;
@@ -745,9 +744,9 @@ void WebMediaPlayerMSTest::StopUsingProvider() {
 void WebMediaPlayerMSTest::StartRendering() {
   if (!rendering_) {
     rendering_ = true;
-    blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
-        FROM_HERE, base::BindOnce(&WebMediaPlayerMSTest::RenderFrame,
-                                  base::Unretained(this)));
+    scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
+        FROM_HERE, WTF::Bind(&WebMediaPlayerMSTest::RenderFrame,
+                             weak_factory_.GetWeakPtr()));
   }
   DoStartRendering();
 }
@@ -780,10 +779,9 @@ void WebMediaPlayerMSTest::RenderFrame() {
     auto frame = compositor_->GetCurrentFrame();
     compositor_->PutCurrentFrame();
   }
-  blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
+  scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&WebMediaPlayerMSTest::RenderFrame,
-                     base::Unretained(this)),
+      WTF::Bind(&WebMediaPlayerMSTest::RenderFrame, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSecondsD(1.0 / 60.0));
 }
 
@@ -794,11 +792,11 @@ void WebMediaPlayerMSTest::SizeChanged() {
 
 TEST_P(WebMediaPlayerMSTest, NoDataDuringLoadForVideo) {
   InitializeWebMediaPlayerMS();
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata))
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveMetadata))
       .Times(0);
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData))
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveEnoughData))
       .Times(0);
 
   LoadAndGetFrameProvider(true);
@@ -813,22 +811,21 @@ TEST_P(WebMediaPlayerMSTest, NoDataDuringLoadForVideo) {
 TEST_P(WebMediaPlayerMSTest, NoWaitForFrameForAudio) {
   InitializeWebMediaPlayerMS();
   is_audio_element_ = true;
-  scoped_refptr<blink::WebMediaStreamAudioRenderer> audio_renderer(
+  scoped_refptr<WebMediaStreamAudioRenderer> audio_renderer(
       new MockMediaStreamAudioRenderer());
   render_factory_->set_audio_renderer(audio_renderer);
-  EXPECT_CALL(*this, DoNetworkStateChanged(
-                         blink::WebMediaPlayer::kNetworkStateLoading));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveNothing));
+  EXPECT_CALL(*this,
+              DoNetworkStateChanged(WebMediaPlayer::kNetworkStateLoading));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveNothing));
 
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveMetadata));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveEnoughData));
 
-  player_->Load(blink::WebMediaPlayer::kLoadTypeURL,
-                blink::WebMediaPlayerSource(),
-                blink::WebMediaPlayer::kCorsModeUnspecified);
+  player_->Load(WebMediaPlayer::kLoadTypeURL, WebMediaPlayerSource(),
+                WebMediaPlayer::kCorsModeUnspecified);
 
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
@@ -840,13 +837,13 @@ TEST_P(WebMediaPlayerMSTest, NoWaitForFrameForAudio) {
 TEST_P(WebMediaPlayerMSTest, NoWaitForFrameForAudioOnly) {
   InitializeWebMediaPlayerMS();
   render_factory_->set_support_video_renderer(false);
-  scoped_refptr<blink::WebMediaStreamAudioRenderer> audio_renderer(
+  scoped_refptr<WebMediaStreamAudioRenderer> audio_renderer(
       new MockMediaStreamAudioRenderer());
   render_factory_->set_audio_renderer(audio_renderer);
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveMetadata));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveEnoughData));
   LoadAndGetFrameProvider(true);
   EXPECT_CALL(*this, DoSetCcLayer(false));
 }
@@ -871,15 +868,15 @@ TEST_P(WebMediaPlayerMSTest, Playing_Normal) {
     EXPECT_CALL(*this, DoSetCcLayer(true));
     EXPECT_CALL(*this, DoStartRendering());
   }
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveMetadata));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveEnoughData));
   EXPECT_CALL(*this,
               CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  const blink::WebSize& natural_size = player_->NaturalSize();
+  const WebSize& natural_size = player_->NaturalSize();
   EXPECT_EQ(kStandardWidth, natural_size.width);
   EXPECT_EQ(kStandardHeight, natural_size.height);
   testing::Mock::VerifyAndClearExpectations(this);
@@ -913,10 +910,10 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPause) {
     EXPECT_CALL(*this, DoSetCcLayer(true));
     EXPECT_CALL(*this, DoStartRendering());
   }
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveMetadata));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveEnoughData));
   gfx::Size frame_size =
       gfx::Size(kStandardWidth - (odd_size_frame ? kOddSizeOffset : 0),
                 kStandardHeight - (odd_size_frame ? kOddSizeOffset : 0));
@@ -964,10 +961,10 @@ TEST_P(WebMediaPlayerMSTest, PlayThenPauseThenPlay) {
     EXPECT_CALL(*this, DoSetCcLayer(true));
     EXPECT_CALL(*this, DoStartRendering());
   }
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveMetadata));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveEnoughData));
   gfx::Size frame_size =
       gfx::Size(kStandardWidth - (odd_size_frame ? kOddSizeOffset : 0),
                 kStandardHeight - (odd_size_frame ? kOddSizeOffset : 0));
@@ -1029,10 +1026,10 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
     EXPECT_CALL(*this, DoSetCcLayer(true));
     EXPECT_CALL(*this, DoStartRendering());
   }
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveMetadata));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveEnoughData));
   EXPECT_CALL(*this,
               CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
   message_loop_controller_.RunAndWaitForStatus(
@@ -1041,7 +1038,7 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
   // Make sure we run all non-delayed tasks (E.G. CheckForFrameChanges) before
   // testing state.
   base::RunLoop().RunUntilIdle();
-  blink::WebSize natural_size = player_->NaturalSize();
+  WebSize natural_size = player_->NaturalSize();
   // Check that height and width are flipped.
   EXPECT_EQ(kStandardHeight, natural_size.width);
   EXPECT_EQ(kStandardWidth, natural_size.height);
@@ -1092,10 +1089,10 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
     EXPECT_CALL(*this, DoSetCcLayer(true));
     EXPECT_CALL(*this, DoStartRendering());
   }
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveMetadata));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveEnoughData));
   EXPECT_CALL(*this,
               CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
   message_loop_controller_.RunAndWaitForStatus(
@@ -1104,7 +1101,7 @@ TEST_P(WebMediaPlayerMSTest, OpacityChange) {
   // Make sure we run all non-delayed tasks before testing state.
   base::RunLoop().RunUntilIdle();
   if (!enable_surface_layer_for_video_) {
-    ASSERT_TRUE(layer_ != nullptr);
+    ASSERT_TRUE(layer_);
     EXPECT_TRUE(layer_->contents_opaque());
   }
 
@@ -1167,10 +1164,10 @@ TEST_P(WebMediaPlayerMSTest, BackgroundRendering) {
     EXPECT_CALL(*this, DoSetCcLayer(true));
     EXPECT_CALL(*this, DoStartRendering());
   }
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveMetadata));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveEnoughData));
   gfx::Size frame_size = gfx::Size(kStandardWidth, kStandardHeight);
   EXPECT_CALL(*this, CheckSizeChanged(frame_size));
   message_loop_controller_.RunAndWaitForStatus(
@@ -1226,10 +1223,10 @@ TEST_P(WebMediaPlayerMSTest, FrameSizeChange) {
     EXPECT_CALL(*this, DoSetCcLayer(true));
     EXPECT_CALL(*this, DoStartRendering());
   }
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveMetadata));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveEnoughData));
   EXPECT_CALL(*this,
               CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
   EXPECT_CALL(*this, CheckSizeChanged(
@@ -1266,10 +1263,10 @@ TEST_P(WebMediaPlayerMSTest, CreateHardwareFrames) {
     EXPECT_CALL(*this, DoSetCcLayer(true));
     EXPECT_CALL(*this, DoStartRendering());
   }
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveMetadata));
+  EXPECT_CALL(*this,
+              DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveEnoughData));
   EXPECT_CALL(*this, CheckSizeChanged(provider->get_standard_size()));
 
   // Run all the tasks that will assign current frame in
@@ -1278,7 +1275,7 @@ TEST_P(WebMediaPlayerMSTest, CreateHardwareFrames) {
   base::RunLoop().RunUntilIdle();
 
   auto frame = compositor_->GetCurrentFrame();
-  ASSERT_TRUE(frame != nullptr);
+  ASSERT_TRUE(frame);
   testing::Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*this, DoSetCcLayer(false));
@@ -1344,4 +1341,4 @@ INSTANTIATE_TEST_SUITE_P(,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool(),
                                             ::testing::Bool()));
-}  // namespace content
+}  // namespace blink

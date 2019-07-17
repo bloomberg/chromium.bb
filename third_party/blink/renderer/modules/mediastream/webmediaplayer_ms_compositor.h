@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_WEBMEDIAPLAYER_MS_COMPOSITOR_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_WEBMEDIAPLAYER_MS_COMPOSITOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_WEBMEDIAPLAYER_MS_COMPOSITOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_WEBMEDIAPLAYER_MS_COMPOSITOR_H_
 
 #include <stddef.h>
 
@@ -11,24 +11,19 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/layers/video_frame_provider.h"
-#include "content/common/content_export.h"
 #include "media/base/media_util.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace base {
 class SingleThreadTaskRunner;
-}
-
-namespace blink {
-class WebMediaStream;
 }
 
 namespace gfx {
@@ -43,8 +38,9 @@ namespace viz {
 class SurfaceId;
 }
 
-namespace content {
+namespace blink {
 class WebMediaPlayerMS;
+class WebMediaStream;
 struct WebMediaPlayerMSCompositorTraits;
 
 // This class is designed to handle the work load on compositor thread for
@@ -56,17 +52,17 @@ struct WebMediaPlayerMSCompositorTraits;
 // smoothness, if REFERENCE_TIMEs are populated for incoming VideoFrames.
 // Otherwise, WebMediaPlayerMSCompositor will simply store the most recent
 // frame, and submit it whenever asked by the compositor.
-class CONTENT_EXPORT WebMediaPlayerMSCompositor
+class BLINK_MODULES_EXPORT WebMediaPlayerMSCompositor
     : public cc::VideoFrameProvider,
-      public base::RefCountedThreadSafe<WebMediaPlayerMSCompositor,
-                                        WebMediaPlayerMSCompositorTraits> {
+      public WTF::ThreadSafeRefCounted<WebMediaPlayerMSCompositor,
+                                       WebMediaPlayerMSCompositorTraits> {
  public:
   WebMediaPlayerMSCompositor(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      const blink::WebMediaStream& web_stream,
-      std::unique_ptr<blink::WebVideoFrameSubmitter> submitter,
-      blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode,
+      const WebMediaStream& web_stream,
+      std::unique_ptr<WebVideoFrameSubmitter> submitter,
+      WebMediaPlayer::SurfaceLayerMode surface_layer_mode,
       const base::WeakPtr<WebMediaPlayerMS>& player);
 
   // Can be called from any thread.
@@ -115,9 +111,8 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   void StopUsingProvider();
 
  private:
-  friend class base::RefCountedThreadSafe<WebMediaPlayerMSCompositor,
-                                          WebMediaPlayerMSCompositorTraits>;
-  friend class base::DeleteHelper<WebMediaPlayerMSCompositor>;
+  friend class WTF::ThreadSafeRefCounted<WebMediaPlayerMSCompositor,
+                                         WebMediaPlayerMSCompositorTraits>;
   friend class WebMediaPlayerMSTest;
   friend struct WebMediaPlayerMSCompositorTraits;
 
@@ -130,6 +125,9 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   // Signals the VideoFrameSubmitter to stop submitting frames.
   void SetIsSurfaceVisible(bool);
 
+  // The use of std::vector here is OK because this method is bound into a
+  // base::OnceCallback instance, and passed to media::VideoRendererAlgorithm
+  // ctor.
   bool MapTimestampsToRenderTimeTicks(
       const std::vector<base::TimeDelta>& timestamps,
       std::vector<base::TimeTicks>* wall_clock_times);
@@ -218,8 +216,9 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   bool stopped_;
   bool render_started_;
 
-  std::unique_ptr<blink::WebVideoFrameSubmitter> submitter_;
+  std::unique_ptr<WebVideoFrameSubmitter> submitter_;
 
+  // TODO(crbug.com/952716): Replace the use of std::map by WTF::HashMap.
   std::map<base::TimeDelta, base::TimeTicks> timestamps_to_clock_times_;
 
   cc::UpdateSubmissionStateCB update_submission_state_callback_;
@@ -234,15 +233,11 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
 };
 
 struct WebMediaPlayerMSCompositorTraits {
- private:
-  friend class base::RefCountedThreadSafe<WebMediaPlayerMSCompositor,
-                                          WebMediaPlayerMSCompositorTraits>;
-
   // Ensure destruction occurs on main thread so that "Web" and other resources
   // are destroyed on the correct thread.
   static void Destruct(const WebMediaPlayerMSCompositor* player);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_WEBMEDIAPLAYER_MS_COMPOSITOR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_WEBMEDIAPLAYER_MS_COMPOSITOR_H_
