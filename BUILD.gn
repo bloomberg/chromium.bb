@@ -10,11 +10,14 @@ import("osp/build/config/services.gni")
 group("gn_all") {
   deps = [
     "cast/common:mdns",
+    "cast/common/certificate/proto",
     "osp",
     "osp/msgs",
     "platform",
     "third_party/abseil",
+    "third_party/protobuf:protoc",
     "third_party/tinycbor",
+    "third_party/zlib",
     "tools/cddl",
     "util",
   ]
