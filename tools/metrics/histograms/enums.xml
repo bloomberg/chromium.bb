@@ -52954,6 +52954,13 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="SharingMessageType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Ping"/>
+  <int value="2" label="Ack"/>
+  <int value="3" label="ClickToCall"/>
+</enum>
+
 <enum name="ShelfAlignmentValue">
   <summary>
     The alignment of the shelf area (see ash/launcher/launcher_view.cc).
