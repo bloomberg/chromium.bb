@@ -118,7 +118,6 @@ class PasswordAccessoryControllerImpl
   base::WeakPtr<ManualFillingController> GetManualFillingController();
 
   url::Origin GetFocusedFrameOrigin() const;
-  std::vector<password_manager::CredentialPair> GetSuggestions() const;
 
   // ------------------------------------------------------------------------
   // Members - Make sure to NEVER store state related to a single frame here!
