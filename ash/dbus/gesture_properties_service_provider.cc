@@ -33,6 +33,12 @@ void GesturePropertiesServiceProvider::Start(
       base::BindRepeating(&GesturePropertiesServiceProvider::ListDevices,
                           weak_ptr_factory_.GetWeakPtr()),
       on_exported);
+  exported_object->ExportMethod(
+      chromeos::kGesturePropertiesServiceInterface,
+      chromeos::kGesturePropertiesServiceListPropertiesMethod,
+      base::BindRepeating(&GesturePropertiesServiceProvider::ListProperties,
+                          weak_ptr_factory_.GetWeakPtr()),
+      on_exported);
 }
 
 void GesturePropertiesServiceProvider::OnExported(
@@ -64,6 +70,16 @@ void ListDevicesCallback(
   response_sender.Run(std::move(response));
 }
 
+void ListPropertiesCallback(
+    std::unique_ptr<dbus::Response> response,
+    const dbus::ExportedObject::ResponseSender& response_sender,
+    const std::vector<std::string>& result) {
+  dbus::MessageWriter writer(response.get());
+  writer.AppendUint32(result.size());
+  writer.AppendArrayOfStrings(result);
+  response_sender.Run(std::move(response));
+}
+
 }  // namespace
 
 void GesturePropertiesServiceProvider::ListDevices(
@@ -74,6 +90,26 @@ void GesturePropertiesServiceProvider::ListDevices(
 
   GetService()->ListDevices(base::BindOnce(
       &ListDevicesCallback, std::move(response), response_sender));
+}
+
+void GesturePropertiesServiceProvider::ListProperties(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader reader(method_call);
+  int32_t device_id;
+  if (!reader.PopInt32(&device_id)) {
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS,
+        "The device ID (int32) is missing."));
+    return;
+  }
+
+  std::unique_ptr<dbus::Response> response =
+      dbus::Response::FromMethodCall(method_call);
+
+  GetService()->ListProperties(
+      device_id, base::BindOnce(&ListPropertiesCallback, std::move(response),
+                                response_sender));
 }
 
 ui::ozone::mojom::GesturePropertiesService*

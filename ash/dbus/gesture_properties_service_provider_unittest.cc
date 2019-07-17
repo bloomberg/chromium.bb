@@ -154,4 +154,53 @@ TEST_F(GesturePropertiesServiceProviderTest, ListDevicesSuccess) {
   EXPECT_FALSE(reader.HasMoreData());
 }
 
+TEST_F(GesturePropertiesServiceProviderTest, ListPropertiesEmpty) {
+  list_properties_response_ = {};
+  EXPECT_CALL(*mock_service_, ListProperties(4, _));
+
+  std::unique_ptr<dbus::Response> response = nullptr;
+  dbus::MethodCall* method_call = new dbus::MethodCall(
+      chromeos::kGesturePropertiesServiceInterface,
+      chromeos::kGesturePropertiesServiceListPropertiesMethod);
+  dbus::MessageWriter writer(method_call);
+  writer.AppendInt32(4);
+  CallDBusMethod(chromeos::kGesturePropertiesServiceListPropertiesMethod,
+                 std::move(method_call), response);
+
+  dbus::MessageReader reader(response.get());
+  EXPECT_EQ(0u, expect_uint32(&reader));
+  dbus::MessageReader array_reader(nullptr);
+  ASSERT_TRUE(reader.PopArray(&array_reader));
+  EXPECT_FALSE(array_reader.HasMoreData());
+  EXPECT_FALSE(reader.HasMoreData());
+}
+
+TEST_F(GesturePropertiesServiceProviderTest, ListPropertiesSuccess) {
+  list_properties_response_ = {"prop 1", "prop 2"};
+  EXPECT_CALL(*mock_service_, ListProperties(4, _));
+
+  std::unique_ptr<dbus::Response> response = nullptr;
+  dbus::MethodCall* method_call = new dbus::MethodCall(
+      chromeos::kGesturePropertiesServiceInterface,
+      chromeos::kGesturePropertiesServiceListPropertiesMethod);
+  dbus::MessageWriter writer(method_call);
+  writer.AppendInt32(4);
+  CallDBusMethod(chromeos::kGesturePropertiesServiceListPropertiesMethod,
+                 std::move(method_call), response);
+
+  dbus::MessageReader reader(response.get());
+  EXPECT_EQ(2u, expect_uint32(&reader));
+  dbus::MessageReader array_reader(nullptr);
+  ASSERT_TRUE(reader.PopArray(&array_reader));
+  EXPECT_EQ("prop 1", expect_string(&array_reader));
+  EXPECT_EQ("prop 2", expect_string(&array_reader));
+  EXPECT_FALSE(array_reader.HasMoreData());
+  EXPECT_FALSE(reader.HasMoreData());
+}
+
+TEST_F(GesturePropertiesServiceProviderTest, ListPropertiesMissingParameter) {
+  CheckMethodErrorsWithNoParameters(
+      chromeos::kGesturePropertiesServiceListPropertiesMethod);
+}
+
 }  // namespace ash
