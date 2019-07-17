@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("mojo_bindings") {
+mojom("mojom") {
   sources = [
     "distillability_service.mojom",
     "distiller_javascript_service.mojom",
