@@ -111,7 +111,7 @@ class MockInputApi(object):
     return found_in_white_list
 
   def LocalPaths(self):
-    return self.files
+    return [file.LocalPath() for file in self.files]
 
   def PresubmitLocalPath(self):
     return self.presubmit_local_path
