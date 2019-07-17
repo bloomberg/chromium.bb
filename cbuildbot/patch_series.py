@@ -746,7 +746,7 @@ class PatchSeries(object):
       errors, a dict of patches to exceptions encountered while applying them.
     """
     self.ResetCheckouts(constants.PATCH_BRANCH, fetch=True)
-    local_changes = reduce(set.union, by_repo.values(), set())
+    local_changes = functools.reduce(set.union, by_repo.values(), set())
     applied_changes, failed_tot, failed_inflight = self.Apply(local_changes)
     errors = {}
     for exception in failed_tot + failed_inflight:
