@@ -632,8 +632,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
         self._run.options.goma_client_json,
         stage_name=self.StageNamePrefix() if use_goma_deps_cache else None)
 
-    goma.ForceUpdate()
-
     # Set USE_GOMA env var so that chrome is built with goma.
     self._portage_extra_env['USE_GOMA'] = 'true'
     self._portage_extra_env.update(goma.GetChrootExtraEnv())
