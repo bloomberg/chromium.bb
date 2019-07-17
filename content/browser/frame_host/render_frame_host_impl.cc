@@ -68,6 +68,7 @@
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/log_console_message.h"
@@ -6254,13 +6255,19 @@ void RenderFrameHostImpl::RegisterAppCacheHost(
   auto* appcache_service_impl = static_cast<AppCacheServiceImpl*>(
       GetProcess()->GetStoragePartition()->GetAppCacheService());
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AppCacheServiceImpl::RegisterHostForFrame,
-                     appcache_service_impl->AsWeakPtr(),
-                     std::move(host_receiver), std::move(frontend_remote),
-                     host_id, routing_id_, GetProcess()->GetID(),
-                     mojo::GetBadMessageCallback()));
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    appcache_service_impl->RegisterHostForFrame(
+        std::move(host_receiver), std::move(frontend_remote), host_id,
+        routing_id_, GetProcess()->GetID(), mojo::GetBadMessageCallback());
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&AppCacheServiceImpl::RegisterHostForFrame,
+                       appcache_service_impl->AsWeakPtr(),
+                       std::move(host_receiver), std::move(frontend_remote),
+                       host_id, routing_id_, GetProcess()->GetID(),
+                       mojo::GetBadMessageCallback()));
+  }
 }
 
 std::unique_ptr<NavigationRequest>
