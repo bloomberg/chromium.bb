@@ -644,14 +644,6 @@ void ShelfLayoutManagerTest::RunGestureDragTests(
   gfx::Point new_point(edge_to_show);
   gfx::Vector2d diff = edge_to_hide - edge_to_show;
   new_point.Offset(diff.x() * 3 / 10, diff.y() * 3 / 10);
-  /*
-  if (shelf->IsHorizontalAlignment())
-    end.set_y(start.y() + shelf_shown.height() * 3 / 10);
-  else if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
-    end.set_x(start.x() - shelf_shown.width() * 3 / 10);
-  else if (SHELF_ALIGNMENT_RIGHT == shelf->alignment())
-    end.set_x(start.x() + shelf_shown.width() * 3 / 10);
-  */
   generator->GestureScrollSequence(edge_to_show, new_point, kTimeDelta, 5);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
