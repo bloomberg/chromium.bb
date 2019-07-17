@@ -853,7 +853,8 @@ void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
                                           BlinkGC::GCReason reason) {
   ThreadHeapStatsCollector::Scope mark_prologue_scope(
       Heap().stats_collector(),
-      ThreadHeapStatsCollector::kAtomicPauseMarkPrologue, "epoch", gc_age_);
+      ThreadHeapStatsCollector::kAtomicPauseMarkPrologue, "epoch", gc_age_,
+      "forced", reason == BlinkGC::GCReason::kForcedGCForTesting);
   EnterAtomicPause();
   EnterGCForbiddenScope();
   // Compaction needs to be canceled when incremental marking ends with a
@@ -1440,7 +1441,8 @@ void ThreadState::AtomicPauseMarkRoots(BlinkGC::StackState stack_state,
                                        BlinkGC::GCReason reason) {
   ThreadHeapStatsCollector::Scope advance_tracing_scope(
       Heap().stats_collector(), ThreadHeapStatsCollector::kAtomicPauseMarkRoots,
-      "epoch", gc_age_);
+      "epoch", gc_age_, "forced",
+      current_gc_data_.reason == BlinkGC::GCReason::kForcedGCForTesting);
   MarkPhaseVisitRoots();
   MarkPhaseVisitNotFullyConstructedObjects();
 }
@@ -1449,14 +1451,17 @@ void ThreadState::AtomicPauseMarkTransitiveClosure() {
   ThreadHeapStatsCollector::Scope advance_tracing_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure, "epoch",
-      gc_age_);
+      gc_age_, "forced",
+      current_gc_data_.reason == BlinkGC::GCReason::kForcedGCForTesting);
   CHECK(MarkPhaseAdvanceMarking(base::TimeTicks::Max()));
 }
 
 void ThreadState::AtomicPauseMarkEpilogue(BlinkGC::MarkingType marking_type) {
   ThreadHeapStatsCollector::Scope stats_scope(
       Heap().stats_collector(),
-      ThreadHeapStatsCollector::kAtomicPauseMarkEpilogue, "epoch", gc_age_);
+      ThreadHeapStatsCollector::kAtomicPauseMarkEpilogue, "epoch", gc_age_,
+      "forced",
+      current_gc_data_.reason == BlinkGC::GCReason::kForcedGCForTesting);
   MarkPhaseEpilogue(marking_type);
   LeaveAtomicPause();
   LeaveGCForbiddenScope();
@@ -1467,7 +1472,9 @@ void ThreadState::AtomicPauseSweepAndCompact(
     BlinkGC::SweepingType sweeping_type) {
   ThreadHeapStatsCollector::EnabledScope stats(
       Heap().stats_collector(),
-      ThreadHeapStatsCollector::kAtomicPauseSweepAndCompact, "epoch", gc_age_);
+      ThreadHeapStatsCollector::kAtomicPauseSweepAndCompact, "epoch", gc_age_,
+      "forced",
+      current_gc_data_.reason == BlinkGC::GCReason::kForcedGCForTesting);
   AtomicPauseScope atomic_pause_scope(this);
 
   DCHECK(InAtomicMarkingPause());
