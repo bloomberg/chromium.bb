@@ -3624,6 +3624,46 @@
         },
         'telemetry_test_name': 'pixel',
       },
+      'context_lost': {
+        'args': [
+          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+        ],
+      },
+      'depth_capture': {
+        'args': [
+          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+        ],
+      },
+      'gpu_process': {
+        'name': 'gpu_process_launch_tests',
+        'args': [
+          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+        ],
+      },
+      'hardware_accelerated_feature': {
+        'args': [
+          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+        ],
+      },
+      'maps': {
+        'name': 'maps_pixel_test',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--os-type',
+          '${os_type}',
+          '--build-revision',
+          '${got_revision}',
+          '--test-machine-name',
+          '${buildername}',
+          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+        ],
+      },
+      'screenshot_sync': {
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+        ],
+      },
     },
 
     'gpu_skia_renderer_vulkan_gtests': {
