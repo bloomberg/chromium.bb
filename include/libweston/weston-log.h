@@ -38,6 +38,7 @@ struct weston_compositor;
 struct weston_log_context;
 struct wl_display;
 struct weston_log_subscriber;
+struct weston_log_subscription;
 
 void
 weston_compositor_enable_debug_protocol(struct weston_compositor *);
@@ -56,14 +57,14 @@ struct weston_debug_stream;
  *
  * @memberof weston_log_scope
  */
-typedef void (*weston_log_scope_cb)(struct weston_log_scope *scope,
-				      void *user_data);
+typedef void (*weston_log_scope_cb)(struct weston_log_subscription *sub,
+				    void *user_data);
 
 struct weston_log_scope *
 weston_compositor_add_log_scope(struct weston_log_context *compositor,
 				  const char *name,
 				  const char *description,
-				  weston_log_scope_cb begin_cb,
+				  weston_log_scope_cb new_subscriber,
 				  void *user_data);
 
 void
@@ -85,7 +86,14 @@ weston_log_scope_printf(struct weston_log_scope *scope,
 			  const char *fmt, ...)
 			  __attribute__ ((format (printf, 2, 3)));
 void
+weston_log_subscription_printf(struct weston_log_subscription *scope,
+				const char *fmt, ...)
+			  __attribute__ ((format (printf, 2, 3)));
+void
 weston_log_scope_complete(struct weston_log_scope *scope);
+
+void
+weston_log_subscription_complete(struct weston_log_subscription *sub);
 
 char *
 weston_log_scope_timestamp(struct weston_log_scope *scope,

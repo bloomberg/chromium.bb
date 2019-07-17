@@ -74,7 +74,7 @@ struct weston_log_context {
 struct weston_log_scope {
 	char *name;
 	char *desc;
-	weston_log_scope_cb begin_cb;
+	weston_log_scope_cb new_subscriber;
 	void *user_data;
 	struct wl_list compositor_link;
 	struct wl_list subscription_list;  /**< weston_log_subscription::source_link */
@@ -164,6 +164,34 @@ weston_log_subscription_destroy_pending(struct weston_log_subscription *sub)
 	free(sub);
 }
 
+static void
+weston_log_subscription_write(struct weston_log_subscription *sub,
+			      const char *data, size_t len)
+{
+	if (sub->owner && sub->owner->write)
+		sub->owner->write(sub->owner, data, len);
+}
+
+static void
+weston_log_subscription_vprintf(struct weston_log_subscription *sub,
+				const char *fmt, va_list ap)
+{
+	static const char oom[] = "Out of memory";
+	char *str;
+	int len;
+
+	if (!weston_log_scope_is_enabled(sub->source))
+		return;
+
+	len = vasprintf(&str, fmt, ap);
+	if (len >= 0) {
+		weston_log_subscription_write(sub, str, len);
+		free(str);
+	} else {
+		weston_log_subscription_write(sub, oom, sizeof oom - 1);
+	}
+}
+
 /** Creates a new subscription using the subscriber by \c owner.
  *
  * The subscription created is added to the \c owner subscription list.
@@ -203,7 +231,7 @@ weston_log_subscription_create(struct weston_log_subscriber *owner,
 	wl_list_insert(&sub->owner->subscription_list, &sub->owner_link);
 
 	weston_log_subscription_add(scope, sub);
-	weston_log_run_begin_cb(scope);
+	weston_log_run_cb_new_subscriber(sub);
 }
 
 /** Destroys the subscription
@@ -306,16 +334,16 @@ weston_log_get_scope(struct weston_log_context *log_ctx, const char *name)
 	return NULL;
 }
 
-/** Wrapper to invoke the weston_log_scope_cb. Allows to call the begin_cb of
+/** Wrapper to invoke the weston_log_scope_cb. Allows to call the cb new_subscriber of
  * a log scope.
  *
  * @internal
  */
 void
-weston_log_run_begin_cb(struct weston_log_scope *scope)
+weston_log_run_cb_new_subscriber(struct weston_log_subscription *sub)
 {
-	if (scope->begin_cb)
-		scope->begin_cb(scope, scope->user_data);
+	if (sub->source->new_subscriber)
+		sub->source->new_subscriber(sub, sub->source->user_data);
 }
 
 /** Advertise the log scope name and the log scope description
@@ -464,7 +492,8 @@ weston_compositor_is_debug_protocol_enabled(struct weston_compositor *wc)
  * @param log_ctx The weston_log_context where to add.
  * @param name The debug stream/scope name; must not be NULL.
  * @param description The log scope description for humans; must not be NULL.
- * @param begin_cb Optional callback when a client subscribes to this scope.
+ * @param new_subscriber Optional callback when a client subscribes to this
+ * scope.
  * @param user_data Optional user data pointer for the callback.
  * @returns A valid pointer on success, NULL on failure.
  *
@@ -480,17 +509,17 @@ weston_compositor_is_debug_protocol_enabled(struct weston_compositor *wc)
  * protocol, the description is printed when a client asks for a list of
  * supported log scopes.
  *
- * \p begin_cb, if not NULL, is called when a client subscribes to the log
+ * \p new_subscriber, if not NULL, is called when a client subscribes to the log
  * scope creating a debug stream. This is for log scopes that need to print
  * messages as a response to a client appearing, e.g. printing a list of
  * windows on demand or a static preamble. The argument \p user_data is
  * passed in to the callback and is otherwise unused.
  *
- * For one-shot debug streams, \c begin_cb should finally call
- * weston_log_scope_complete() to close the stream and tell the client the
- * printing is complete. Otherwise the client expects more data to be written.
- * The complete callback in weston_log_subscriber should be installed to
- * trigger it and it is set-up automatically for the weston-debug protocol.
+ * For one-shot debug streams, \c new_subscriber should finally call
+ * weston_log_subscription_complete() to close the stream and tell the client
+ * the printing is complete. Otherwise the client expects more data to be
+ * written.  The complete callback in weston_log_subscriber should be installed
+ * to trigger it and it is set-up automatically for the weston-debug protocol.
  *
  * As subscription can take place before creating the scope, any pending
  * subscriptions to scope added by weston_log_subscribe(), will be checked
@@ -507,7 +536,7 @@ WL_EXPORT struct weston_log_scope *
 weston_compositor_add_log_scope(struct weston_log_context *log_ctx,
 				const char *name,
 				const char *description,
-				weston_log_scope_cb begin_cb,
+				weston_log_scope_cb new_subscriber,
 				void *user_data)
 {
 	struct weston_log_scope *scope;
@@ -539,7 +568,7 @@ weston_compositor_add_log_scope(struct weston_log_context *log_ctx,
 
 	scope->name = strdup(name);
 	scope->desc = strdup(description);
-	scope->begin_cb = begin_cb;
+	scope->new_subscriber = new_subscriber;
 	scope->user_data = user_data;
 	wl_list_init(&scope->subscription_list);
 
@@ -627,6 +656,16 @@ weston_log_scope_is_enabled(struct weston_log_scope *scope)
 	return !wl_list_empty(&scope->subscription_list);
 }
 
+/** Close the stream's complete callback if one was installed/created.
+ *
+ */
+WL_EXPORT void
+weston_log_subscription_complete(struct weston_log_subscription *sub)
+{
+	if (sub->owner && sub->owner->complete)
+		sub->owner->complete(sub->owner);
+}
+
 /** Close the log scope.
  *
  * @param scope The log scope to complete; may be NULL.
@@ -648,8 +687,7 @@ weston_log_scope_complete(struct weston_log_scope *scope)
 		return;
 
 	wl_list_for_each(sub, &scope->subscription_list, source_link)
-		if (sub->owner && sub->owner->complete)
-			sub->owner->complete(sub->owner);
+		weston_log_subscription_complete(sub);
 }
 
 /** Write log data for a scope
@@ -673,8 +711,7 @@ weston_log_scope_write(struct weston_log_scope *scope,
 		return;
 
 	wl_list_for_each(sub, &scope->subscription_list, source_link)
-		if (sub->owner && sub->owner->write)
-			sub->owner->write(sub->owner, data, len);
+		weston_log_subscription_write(sub, data, len);
 }
 
 /** Write a formatted string for a scope (varargs)
@@ -732,6 +769,26 @@ weston_log_scope_printf(struct weston_log_scope *scope,
 
 	va_start(ap, fmt);
 	weston_log_scope_vprintf(scope, fmt, ap);
+	va_end(ap);
+}
+
+/** Write a formatted string for a subscription
+ *
+ * \param sub The subscription to write for; may be NULL, in which case
+ *              nothing will be written.
+ * \param fmt Printf-style format string and arguments.
+ *
+ * Writes to formatted string to the stream that created the subscription.
+ *
+ */
+WL_EXPORT void
+weston_log_subscription_printf(struct weston_log_subscription *sub,
+			       const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	weston_log_subscription_vprintf(sub, fmt, ap);
 	va_end(ap);
 }
 

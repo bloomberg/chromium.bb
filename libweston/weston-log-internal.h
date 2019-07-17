@@ -88,7 +88,7 @@ struct weston_log_scope *
 weston_log_get_scope(struct weston_log_context *log_ctx, const char *name);
 
 void
-weston_log_run_begin_cb(struct weston_log_scope *scope);
+weston_log_run_cb_new_subscriber(struct weston_log_subscription *sub);
 
 void
 weston_debug_protocol_advertise_scopes(struct weston_log_context *log_ctx,

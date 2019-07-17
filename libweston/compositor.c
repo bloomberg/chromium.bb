@@ -7143,14 +7143,14 @@ weston_compositor_print_scene_graph(struct weston_compositor *ec)
  * and then terminates the stream.
  */
 static void
-debug_scene_graph_cb(struct weston_log_scope *scope, void *data)
+debug_scene_graph_cb(struct weston_log_subscription *sub, void *data)
 {
 	struct weston_compositor *ec = data;
 	char *str = weston_compositor_print_scene_graph(ec);
 
-	weston_log_scope_printf(scope, "%s", str);
+	weston_log_subscription_printf(sub, "%s", str);
 	free(str);
-	weston_log_scope_complete(scope);
+	weston_log_subscription_complete(sub);
 }
 
 /** Create the compositor.
