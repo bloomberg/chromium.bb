@@ -893,21 +893,6 @@ void ThreadState::AtomicPauseEpilogue() {
   }
 }
 
-void ThreadState::EagerSweep() {
-#if defined(ADDRESS_SANITIZER)
-  Heap().PoisonEagerArena();
-#endif
-  DCHECK(CheckThread());
-  // Some objects need to be finalized promptly and cannot be handled
-  // by lazy sweeping. Keep those in a designated heap and sweep it
-  // eagerly.
-  DCHECK(IsSweepingInProgress());
-  SweepForbiddenScope scope(this);
-  ThreadHeapStatsCollector::Scope stats_scope(
-      Heap().stats_collector(), ThreadHeapStatsCollector::kEagerSweep);
-  Heap().Arena(BlinkGC::kEagerSweepArenaIndex)->CompleteSweep();
-}
-
 void ThreadState::CompleteSweep() {
   DCHECK(CheckThread());
   // If we are not in a sweeping phase, there is nothing to do here.
@@ -1527,15 +1512,13 @@ void ThreadState::AtomicPauseSweepAndCompact(
   // Last point where all mark bits are present.
   VerifyMarking(marking_type);
 
-  EagerSweep();
-
-  // Any sweep compaction must happen after pre-finalizers and eager
-  // sweeping, as it will finalize dead objects in compactable arenas
-  // (e.g., backing stores for container objects.)
+  // Any sweep compaction must happen after pre-finalizers, as it will
+  // finalize dead objects in compactable arenas (e.g., backing stores
+  // for container objects.)
   //
   // As per-contract for prefinalizers, those finalizable objects must
   // still be accessible when the prefinalizer runs, hence we cannot
-  // schedule compaction until those have run. Similarly for eager sweeping.
+  // schedule compaction until those have run.
   {
     SweepForbiddenScope scope(this);
     NoAllocationScope no_allocation_scope(this);

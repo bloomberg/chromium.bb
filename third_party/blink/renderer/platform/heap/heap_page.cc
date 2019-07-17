@@ -393,8 +393,6 @@ void BaseArena::CompleteSweep() {
 
 Address BaseArena::AllocateLargeObject(size_t allocation_size,
                                        size_t gc_info_index) {
-  // TODO(sof): should need arise, support eagerly finalized large objects.
-  CHECK(ArenaIndex() != BlinkGC::kEagerSweepArenaIndex);
   LargeObjectArena* large_object_arena = static_cast<LargeObjectArena*>(
       GetThreadState()->Heap().Arena(BlinkGC::kLargeObjectArenaIndex));
   Address large_object = large_object_arena->AllocateLargeObjectPage(
