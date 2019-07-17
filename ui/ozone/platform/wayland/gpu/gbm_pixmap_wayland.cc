@@ -7,6 +7,7 @@
 #include <drm_fourcc.h>
 #include <gbm.h>
 #include <xf86drmMode.h>
+
 #include <memory>
 
 #include "base/files/platform_file.h"
@@ -104,6 +105,10 @@ size_t GbmPixmapWayland::GetDmaBufOffset(size_t plane) const {
 
 size_t GbmPixmapWayland::GetDmaBufPlaneSize(size_t plane) const {
   return gbm_bo_->GetPlaneSize(plane);
+}
+
+size_t GbmPixmapWayland::GetNumberOfPlanes() const {
+  return gbm_bo_->GetNumPlanes();
 }
 
 uint64_t GbmPixmapWayland::GetBufferFormatModifier() const {

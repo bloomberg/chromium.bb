@@ -1357,7 +1357,7 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
   va_attrib_extbuf.width = size.width();
   va_attrib_extbuf.height = size.height();
 
-  const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(buffer_format);
+  const size_t num_planes = pixmap->GetNumberOfPlanes();
   for (size_t i = 0; i < num_planes; ++i) {
     va_attrib_extbuf.pitches[i] = pixmap->GetDmaBufPitch(i);
     va_attrib_extbuf.offsets[i] = pixmap->GetDmaBufOffset(i);

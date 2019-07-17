@@ -87,6 +87,8 @@ base::OnceClosure GpuMemoryBufferImplNativePixmap::AllocateForTesting(
 
 bool GpuMemoryBufferImplNativePixmap::Map() {
   DCHECK(!mapped_);
+  DCHECK_EQ(gfx::NumberOfPlanesForBufferFormat(GetFormat()),
+            handle_.planes.size());
   mapped_ = pixmap_->Map();
   return mapped_;
 }
