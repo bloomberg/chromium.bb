@@ -184,7 +184,8 @@ void AshTestHelper::SetUp(const InitParams& init_params,
 
   app_list_test_helper_ = std::make_unique<AppListTestHelper>();
 
-  new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
+  if (!NewWindowDelegate::GetInstance())
+    new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
 
   // Post shell creation config init.
   switch (init_params.config_type) {
