@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/partition_alloc_memory_dump_provider.h"
+#include "third_party/blink/renderer/platform/instrumentation/partition_alloc_memory_dump_provider.h"
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/format_macros.h"
