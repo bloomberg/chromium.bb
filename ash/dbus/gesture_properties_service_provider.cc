@@ -45,6 +45,12 @@ void GesturePropertiesServiceProvider::Start(
       base::BindRepeating(&GesturePropertiesServiceProvider::GetProperty,
                           weak_ptr_factory_.GetWeakPtr()),
       on_exported);
+  exported_object->ExportMethod(
+      chromeos::kGesturePropertiesServiceInterface,
+      chromeos::kGesturePropertiesServiceSetPropertyMethod,
+      base::BindRepeating(&GesturePropertiesServiceProvider::SetProperty,
+                          weak_ptr_factory_.GetWeakPtr()),
+      on_exported);
 }
 
 void GesturePropertiesServiceProvider::OnExported(
@@ -127,6 +133,41 @@ void GetPropertyCallback(
     }
   }
   response_sender.Run(std::move(response));
+}
+
+void SetPropertyCallback(
+    dbus::MethodCall* method_call,
+    const dbus::ExportedObject::ResponseSender& response_sender,
+    ui::ozone::mojom::SetGesturePropErrorCode error) {
+  std::string error_message;
+  switch (error) {
+    case ui::ozone::mojom::SetGesturePropErrorCode::SUCCESS:
+      response_sender.Run(dbus::Response::FromMethodCall(method_call));
+      return;
+    case ui::ozone::mojom::SetGesturePropErrorCode::NOT_FOUND:
+      error_message = "The device ID or property name specified was not found.";
+      break;
+    case ui::ozone::mojom::SetGesturePropErrorCode::READ_ONLY:
+      error_message = "That property is read-only.";
+      break;
+    case ui::ozone::mojom::SetGesturePropErrorCode::TYPE_MISMATCH:
+      error_message =
+          "The property is of a different type than the value(s) "
+          "provided.";
+      break;
+    case ui::ozone::mojom::SetGesturePropErrorCode::SIZE_MISMATCH:
+      error_message =
+          "The property has a different number of values to that "
+          "provided.";
+      break;
+    case ui::ozone::mojom::SetGesturePropErrorCode::UNKNOWN_ERROR:
+    default:
+      error_message = "An unknown error occurred.";
+      break;
+  }
+  LOG(ERROR) << "SetProperty error: " << error_message;
+  response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+      method_call, DBUS_ERROR_INVALID_ARGS, error_message));
 }
 
 void ListDevicesCallback(
@@ -212,6 +253,104 @@ void GesturePropertiesServiceProvider::GetProperty(
       device_id, property_name,
       base::BindOnce(&GetPropertyCallback, method_call, std::move(response),
                      response_sender));
+}
+
+static ui::ozone::mojom::GesturePropValuePtr GesturePropValueFromVariant(
+    dbus::MessageReader* variant_reader,
+    std::string* error_message) {
+  std::string string_value;
+  if (variant_reader->PopString(&string_value)) {
+    return ui::ozone::mojom::GesturePropValue::NewStr(string_value);
+  }
+
+  dbus::MessageReader array_reader(nullptr);
+  if (!variant_reader->PopArray(&array_reader)) {
+    *error_message =
+        "Value(s) should be specified either as a string or an "
+        "array of the appropriate type.";
+    return nullptr;
+  }
+  switch (array_reader.GetDataType()) {
+    case dbus::Message::DataType::INT32: {
+      std::vector<int32_t> values = {};
+      int32_t value;
+      while (array_reader.PopInt32(&value)) {
+        values.push_back(value);
+      }
+      return ui::ozone::mojom::GesturePropValue::NewInts(values);
+    }
+    case dbus::Message::DataType::INT16: {
+      std::vector<int16_t> values = {};
+      int16_t value;
+      while (array_reader.PopInt16(&value)) {
+        values.push_back(value);
+      }
+      return ui::ozone::mojom::GesturePropValue::NewShorts(values);
+    }
+    case dbus::Message::DataType::BOOL: {
+      std::vector<bool> values = {};
+      bool value;
+      while (array_reader.PopBool(&value)) {
+        values.push_back(value);
+      }
+      return ui::ozone::mojom::GesturePropValue::NewBools(values);
+    }
+    case dbus::Message::DataType::DOUBLE: {
+      std::vector<double> values = {};
+      double value;
+      while (array_reader.PopDouble(&value)) {
+        values.push_back(value);
+      }
+      return ui::ozone::mojom::GesturePropValue::NewReals(values);
+    }
+    case dbus::Message::DataType::STRING: {
+      *error_message =
+          "String properties can only have one value, and so "
+          "should not be specified as arrays.";
+      return nullptr;
+    }
+    default: {
+      *error_message =
+          "Unsupported D-Bus value type; supported types are "
+          "int32, int16, bool, double, and string.";
+      return nullptr;
+    }
+  }
+}
+
+void GesturePropertiesServiceProvider::SetProperty(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  dbus::MessageReader reader(method_call);
+  int32_t device_id;
+  std::string property_name;
+
+  if (!reader.PopInt32(&device_id) || !reader.PopString(&property_name)) {
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS,
+        "The device ID (int32) and/or property name (string) is missing."));
+    return;
+  }
+
+  if (!reader.HasMoreData()) {
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS, "No value(s) specified."));
+    return;
+  }
+
+  std::string error_message;
+  ui::ozone::mojom::GesturePropValuePtr values =
+      GesturePropValueFromVariant(&reader, &error_message);
+
+  if (values.is_null()) {
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS, error_message));
+    return;
+  }
+
+  GetService()->SetProperty(
+      device_id, property_name, std::move(values),
+      base::BindOnce(&SetPropertyCallback, method_call, response_sender));
 }
 
 ui::ozone::mojom::GesturePropertiesService*
