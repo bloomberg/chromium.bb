@@ -1937,7 +1937,9 @@ def _CheckTeamTags(input_api, output_api):
            'OWNERS']
   try:
     if files:
-      input_api.subprocess.check_output(args + files)
+      warnings = input_api.subprocess.check_output(args + files).splitlines()
+      if warnings:
+        return [output_api.PresubmitPromptWarning(warnings[0], warnings[1:])]
     return []
   except input_api.subprocess.CalledProcessError as error:
     return [output_api.PresubmitError(
