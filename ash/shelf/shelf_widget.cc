@@ -304,7 +304,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
                            Shell::Get()->wallpaper_controller()),
       shelf_layout_manager_(new ShelfLayoutManager(this, shelf)),
       delegate_view_(new DelegateView(this)),
-      shelf_view_(new ShelfView(ShelfModel::Get(), shelf_, this)),
+      shelf_view_(new ShelfView(ShelfModel::Get(), shelf_)),
       login_shelf_view_(
           new LoginShelfView(RootWindowController::ForWindow(shelf_container)
                                  ->lock_screen_action_background_controller())),

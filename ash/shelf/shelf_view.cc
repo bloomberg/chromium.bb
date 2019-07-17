@@ -338,10 +338,9 @@ class ShelfView::StartFadeAnimationDelegate : public gfx::AnimationDelegate {
 // static
 const int ShelfView::kMinimumDragDistance = 8;
 
-ShelfView::ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget)
+ShelfView::ShelfView(ShelfModel* model, Shelf* shelf)
     : model_(model),
       shelf_(shelf),
-      shelf_widget_(shelf_widget),
       view_model_(std::make_unique<views::ViewModel>()),
       bounds_animator_(std::make_unique<views::BoundsAnimator>(this)),
       tooltip_(this),
@@ -349,7 +348,6 @@ ShelfView::ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget)
       weak_factory_(this) {
   DCHECK(model_);
   DCHECK(shelf_);
-  DCHECK(shelf_widget_);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->system_tray_model()->virtual_keyboard()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
@@ -525,7 +523,7 @@ void ShelfView::ToggleOverflowBubble() {
   if (!overflow_bubble_)
     overflow_bubble_.reset(new OverflowBubble(shelf_));
 
-  ShelfView* overflow_view = new ShelfView(model_, shelf_, shelf_widget_);
+  ShelfView* overflow_view = new ShelfView(model_, shelf_);
   overflow_view->overflow_mode_ = true;
   overflow_view->Init();
   overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
