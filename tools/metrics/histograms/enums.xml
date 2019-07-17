@@ -14704,6 +14704,7 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="POTENTIALLY_UNWANTED"/>
   <int value="9" label="WHITELISTED_BY_POLICY"/>
   <int value="10" label="ASYNC_SCANNING"/>
+  <int value="11" label="BLOCKED_PASSWORD_PROTECTED"/>
 </enum>
 
 <enum name="DownloadLocationDialogResult">
@@ -51284,6 +51285,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="26" label="SAMPLED_UNSUPPORTED_FILE"/>
   <int value="27" label="VERDICT_UNKNOWN"/>
   <int value="28" label="DOWNLOAD_DESTROYED"/>
+  <int value="29" label="BLOCKED_PASSWORD_PROTECTED"/>
 </enum>
 
 <enum name="SBClientDownloadCheckResult">
@@ -51295,6 +51297,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="POTENTIALLY_UNWANTED"/>
   <int value="6" label="WHITELISTED_BY_POLICY"/>
   <int value="7" label="ASYNC_SCANNING"/>
+  <int value="8" label="BLOCKED_PASSWORD_PROTECTED"/>
 </enum>
 
 <enum name="SBClientDownloadExtensions">
