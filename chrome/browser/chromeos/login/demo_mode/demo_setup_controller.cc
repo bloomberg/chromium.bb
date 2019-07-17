@@ -470,7 +470,7 @@ std::string DemoSetupController::GetSubOrganizationEmail() {
   const std::string country =
       g_browser_process->local_state()->GetString(prefs::kDemoModeCountry);
   const base::flat_set<std::string> kCountriesWithCustomization(
-      {"dk", "fi", "fr", "nl", "no", "se"});
+      {"de", "dk", "fi", "fr", "jp", "nl", "no", "se"});
   if (kCountriesWithCustomization.contains(country))
     return "admin-" + country + "@" + policy::kDemoModeDomain;
   return std::string();
