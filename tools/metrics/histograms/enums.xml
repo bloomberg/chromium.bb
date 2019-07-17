@@ -19927,6 +19927,7 @@ Called by update_net_error_codes.py.-->
   <int value="1359" label="ACTION_GETBADGEBACKGROUNDCOLOR"/>
   <int value="1360" label="ACTION_SETBADGEBACKGROUNDCOLOR"/>
   <int value="1361" label="AUTOTESTPRIVATE_SETARCAPPWINDOWSTATE"/>
+  <int value="1362" label="ACCESSIBILITY_PRIVATE_OPENSETTINGSSUBPAGE"/>
 </enum>
 
 <enum name="ExtensionIconState">
