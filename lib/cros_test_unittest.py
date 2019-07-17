@@ -46,6 +46,9 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
       args: List of commandline arguments.
       error_msg: Error message to check for.
     """
+    # Recreate args as a list if it is given as a string.
+    if isinstance(args, str):
+      args = [args]
     # Putting cros_build_lib.OutputCapturer() before assertRaises(SystemExit)
     # swallows SystemExit exception check.
     with self.assertRaises(SystemExit):
@@ -375,7 +378,7 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
 
   def testParserErrorChromeTest(self):
     """Verify we get a parser error for --chrome-test when no args are given."""
-    self.CheckParserError(['--chrome-test'], '--chrome-test')
+    self.CheckParserError('--chrome-test', '--chrome-test')
 
   def testParserSetsBuildDir(self):
     """Verify that the build directory is set when not specified."""
@@ -388,21 +391,21 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
   def testParserErrorBuild(self):
     """Verify parser errors for building/deploying Chrome."""
     # Parser error if no build directory is specified.
-    self.CheckParserError(['--build'], '--build-dir')
+    self.CheckParserError('--build', '--build-dir')
     # Parser error if build directory is not an existing directory.
     self.CheckParserError(['--deploy', '--build-dir', '/not/a/directory'],
                           'not a directory')
 
   def testParserErrorResultsSrc(self):
     """Verify parser errors for results src/dest directories."""
-    # Parser Error if --results-src is not absolute.
+    # Parser error if --results-src is not absolute.
     self.CheckParserError(['--results-src', 'tmp/results'], 'absolute')
-    # Parser Error if no results destination dir is given.
+    # Parser error if no results destination dir is given.
     self.CheckParserError(['--results-src', '/tmp/results'], 'with results-src')
-    # Parser Error if no results source is given.
+    # Parser error if no results source is given.
     self.CheckParserError(['--results-dest-dir', '/tmp/dest_dir'],
                           'with results-dest-dir')
-    # Parser Error if results destination dir is a file.
+    # Parser error if results destination dir is a file.
     filename = '/tmp/dest_dir_file'
     osutils.Touch(filename)
     self.CheckParserError(['--results-src', '/tmp/results',
@@ -410,22 +413,20 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
 
   def testParserErrorCommands(self):
     """Verify we get parser errors when using certain commands."""
-    # Parser Error if no test command is provided.
-    self.CheckParserError(['--remote-cmd'], 'specify test command')
-    # Parser Error if using chronos without a test command.
-    self.CheckParserError(['--as-chronos'], 'as-chronos')
-    # Parser Error if there are args, but no command.
-    self.CheckParserError(['--some_test some_command'],
+    # Parser error if no test command is provided.
+    self.CheckParserError('--remote-cmd', 'specify test command')
+    # Parser error if using chronos without a test command.
+    self.CheckParserError('--as-chronos', 'as-chronos')
+    # Parser error if there are args, but no command.
+    self.CheckParserError('--some_test some_command',
                           '--remote-cmd or --host-cmd or --chrome-test')
-    # Parser Error when additional args don't start with --.
+    # Parser error when additional args don't start with --.
     self.CheckParserError(['--host-cmd', 'tast', 'run'], 'must start with')
 
-  def testParserErrorWithInvalidCWD(self):
-    """Verify we get a parser error when given a bad cwd."""
-    cwd = '../new_cwd'
-    self.CheckParserError(['--cwd', cwd], 'cwd cannot start with ..')
+  def testParserErrorCWD(self):
+    """Verify we get parser errors when specifying the cwd."""
+    # Parser error if the cwd refers to a parent path.
+    self.CheckParserError(['--cwd', '../new_cwd'], 'cwd cannot start with ..')
 
-  def testParserErrorWithRelativeCWD(self):
-    """Verify we get a parser error when given a relative cwd path."""
-    cwd = 'tmp/cwd'
-    self.CheckParserError(['--cwd', cwd], 'cwd must be an absolute path')
+    # Parser error if the cwd is not an absolute path.
+    self.CheckParserError(['--cwd', 'tmp/cwd'], 'cwd must be an absolute path')
