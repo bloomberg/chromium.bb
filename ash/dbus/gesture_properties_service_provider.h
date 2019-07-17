@@ -55,6 +55,10 @@ class ASH_EXPORT GesturePropertiesServiceProvider
   void ListProperties(dbus::MethodCall* method_call,
                       dbus::ExportedObject::ResponseSender response_sender);
 
+  // Called on UI thread in response to a D-Bus request.
+  void GetProperty(dbus::MethodCall* method_call,
+                   dbus::ExportedObject::ResponseSender response_sender);
+
   ui::ozone::mojom::GesturePropertiesService* GetService();
 
   ui::ozone::mojom::GesturePropertiesServicePtr service_;

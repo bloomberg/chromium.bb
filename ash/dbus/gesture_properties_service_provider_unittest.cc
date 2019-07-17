@@ -21,6 +21,18 @@ namespace ash {
 
 namespace {
 
+bool expect_bool(dbus::MessageReader* reader) {
+  bool result;
+  EXPECT_TRUE(reader->PopBool(&result));
+  return result;
+}
+
+int16_t expect_int16(dbus::MessageReader* reader) {
+  int16_t result;
+  EXPECT_TRUE(reader->PopInt16(&result));
+  return result;
+}
+
 uint32_t expect_uint32(dbus::MessageReader* reader) {
   uint32_t result;
   EXPECT_TRUE(reader->PopUint32(&result));
@@ -39,6 +51,12 @@ std::string expect_string(dbus::MessageReader* reader) {
   return result;
 }
 
+double expect_double(dbus::MessageReader* reader) {
+  double result;
+  EXPECT_TRUE(reader->PopDouble(&result));
+  return result;
+}
+
 }  // namespace
 
 class GesturePropertiesServiceProviderTest : public testing::Test {
@@ -52,7 +70,9 @@ class GesturePropertiesServiceProviderTest : public testing::Test {
     ON_CALL(*mock_service_, ListProperties(_, _))
         .WillByDefault(Invoke(
             this, &GesturePropertiesServiceProviderTest::FakeListProperties));
-
+    ON_CALL(*mock_service_, GetProperty(_, _, _))
+        .WillByDefault(Invoke(
+            this, &GesturePropertiesServiceProviderTest::FakeGetProperty));
     service_provider_ = std::make_unique<GesturePropertiesServiceProvider>();
     service_provider_->set_service_for_test(mock_service_.get());
   }
@@ -70,6 +90,15 @@ class GesturePropertiesServiceProviderTest : public testing::Test {
       ui::ozone::mojom::GesturePropertiesService::ListPropertiesCallback
           callback) {
     std::move(callback).Run(list_properties_response_);
+  }
+
+  void FakeGetProperty(
+      Unused,
+      Unused,
+      ui::ozone::mojom::GesturePropertiesService::GetPropertyCallback
+          callback) {
+    std::move(callback).Run(get_property_read_only_,
+                            std::move(get_property_response_));
   }
 
  protected:
@@ -92,6 +121,19 @@ class GesturePropertiesServiceProviderTest : public testing::Test {
     CallDBusMethod(name, std::move(method_call), response);
   }
 
+  void CallGetProperty(int32_t device_id,
+                       std::string name,
+                       std::unique_ptr<dbus::Response>& response) {
+    dbus::MethodCall* method_call = new dbus::MethodCall(
+        chromeos::kGesturePropertiesServiceInterface,
+        chromeos::kGesturePropertiesServiceGetPropertyMethod);
+    dbus::MessageWriter writer(method_call);
+    writer.AppendInt32(device_id);
+    writer.AppendString(name);
+    CallDBusMethod(chromeos::kGesturePropertiesServiceGetPropertyMethod,
+                   std::move(method_call), response);
+  }
+
   void CheckMethodErrorsWithNoParameters(std::string name) {
     std::unique_ptr<dbus::Response> response = nullptr;
     CallWithoutParameters(name, response);
@@ -100,6 +142,8 @@ class GesturePropertiesServiceProviderTest : public testing::Test {
 
   base::flat_map<int, std::string> list_devices_response_ = {};
   std::vector<std::string> list_properties_response_ = {};
+  bool get_property_read_only_ = true;
+  ui::ozone::mojom::GesturePropValuePtr get_property_response_ = nullptr;
 
   std::unique_ptr<MockGesturePropertiesService> mock_service_;
 
@@ -201,6 +245,128 @@ TEST_F(GesturePropertiesServiceProviderTest, ListPropertiesSuccess) {
 TEST_F(GesturePropertiesServiceProviderTest, ListPropertiesMissingParameter) {
   CheckMethodErrorsWithNoParameters(
       chromeos::kGesturePropertiesServiceListPropertiesMethod);
+}
+
+TEST_F(GesturePropertiesServiceProviderTest, GetPropertySuccessInts) {
+  get_property_read_only_ = false;
+  get_property_response_ =
+      ui::ozone::mojom::GesturePropValue::NewInts({1, 2, 4});
+  EXPECT_CALL(*mock_service_, GetProperty(4, "prop 1", _));
+
+  std::unique_ptr<dbus::Response> response = nullptr;
+  CallGetProperty(4, "prop 1", response);
+
+  dbus::MessageReader reader(response.get());
+  EXPECT_EQ(false, expect_bool(&reader));
+  EXPECT_EQ(3u, expect_uint32(&reader));
+  dbus::MessageReader variant_reader(nullptr);
+  ASSERT_TRUE(reader.PopVariant(&variant_reader));
+  dbus::MessageReader array_reader(nullptr);
+  ASSERT_TRUE(variant_reader.PopArray(&array_reader));
+  EXPECT_EQ(1, expect_int32(&array_reader));
+  EXPECT_EQ(2, expect_int32(&array_reader));
+  EXPECT_EQ(4, expect_int32(&array_reader));
+  EXPECT_FALSE(array_reader.HasMoreData());
+  EXPECT_FALSE(reader.HasMoreData());
+}
+
+TEST_F(GesturePropertiesServiceProviderTest, GetPropertySuccessShorts) {
+  get_property_read_only_ = false;
+  get_property_response_ =
+      ui::ozone::mojom::GesturePropValue::NewShorts({1, 2, 4});
+  EXPECT_CALL(*mock_service_, GetProperty(4, "prop 1", _));
+
+  std::unique_ptr<dbus::Response> response = nullptr;
+  CallGetProperty(4, "prop 1", response);
+
+  dbus::MessageReader reader(response.get());
+  EXPECT_EQ(false, expect_bool(&reader));
+  EXPECT_EQ(3u, expect_uint32(&reader));
+  dbus::MessageReader variant_reader(nullptr);
+  ASSERT_TRUE(reader.PopVariant(&variant_reader));
+  dbus::MessageReader array_reader(nullptr);
+  ASSERT_TRUE(variant_reader.PopArray(&array_reader));
+  EXPECT_EQ(1, expect_int16(&array_reader));
+  EXPECT_EQ(2, expect_int16(&array_reader));
+  EXPECT_EQ(4, expect_int16(&array_reader));
+  EXPECT_FALSE(array_reader.HasMoreData());
+  EXPECT_FALSE(reader.HasMoreData());
+}
+
+TEST_F(GesturePropertiesServiceProviderTest, GetPropertySuccessBools) {
+  get_property_read_only_ = false;
+  get_property_response_ =
+      ui::ozone::mojom::GesturePropValue::NewBools({true, false});
+  EXPECT_CALL(*mock_service_, GetProperty(4, "prop 1", _));
+
+  std::unique_ptr<dbus::Response> response = nullptr;
+  CallGetProperty(4, "prop 1", response);
+
+  dbus::MessageReader reader(response.get());
+  EXPECT_EQ(false, expect_bool(&reader));
+  EXPECT_EQ(2u, expect_uint32(&reader));
+  dbus::MessageReader variant_reader(nullptr);
+  ASSERT_TRUE(reader.PopVariant(&variant_reader));
+  dbus::MessageReader array_reader(nullptr);
+  ASSERT_TRUE(variant_reader.PopArray(&array_reader));
+  EXPECT_EQ(true, expect_bool(&array_reader));
+  EXPECT_EQ(false, expect_bool(&array_reader));
+  EXPECT_FALSE(array_reader.HasMoreData());
+  EXPECT_FALSE(reader.HasMoreData());
+}
+
+TEST_F(GesturePropertiesServiceProviderTest, GetPropertySuccessStr) {
+  get_property_read_only_ = false;
+  get_property_response_ = ui::ozone::mojom::GesturePropValue::NewStr("llama");
+  EXPECT_CALL(*mock_service_, GetProperty(4, "prop 1", _));
+
+  std::unique_ptr<dbus::Response> response = nullptr;
+  CallGetProperty(4, "prop 1", response);
+
+  dbus::MessageReader reader(response.get());
+  EXPECT_EQ(false, expect_bool(&reader));
+  EXPECT_EQ(1u, expect_uint32(&reader));
+  dbus::MessageReader variant_reader(nullptr);
+  ASSERT_TRUE(reader.PopVariant(&variant_reader));
+  EXPECT_EQ("llama", expect_string(&variant_reader));
+  EXPECT_FALSE(reader.HasMoreData());
+}
+
+TEST_F(GesturePropertiesServiceProviderTest, GetPropertySuccessReals) {
+  get_property_read_only_ = false;
+  get_property_response_ =
+      ui::ozone::mojom::GesturePropValue::NewReals({3.14, 6.28});
+  EXPECT_CALL(*mock_service_, GetProperty(4, "prop 1", _));
+
+  std::unique_ptr<dbus::Response> response = nullptr;
+  CallGetProperty(4, "prop 1", response);
+
+  dbus::MessageReader reader(response.get());
+  EXPECT_EQ(false, expect_bool(&reader));
+  EXPECT_EQ(2u, expect_uint32(&reader));
+  dbus::MessageReader variant_reader(nullptr);
+  ASSERT_TRUE(reader.PopVariant(&variant_reader));
+  dbus::MessageReader array_reader(nullptr);
+  ASSERT_TRUE(variant_reader.PopArray(&array_reader));
+  EXPECT_EQ(3.14, expect_double(&array_reader));
+  EXPECT_EQ(6.28, expect_double(&array_reader));
+  EXPECT_FALSE(array_reader.HasMoreData());
+  EXPECT_FALSE(reader.HasMoreData());
+}
+
+TEST_F(GesturePropertiesServiceProviderTest, GetPropertyPropertyDoesntExist) {
+  get_property_read_only_ = true;
+  get_property_response_ = nullptr;
+  EXPECT_CALL(*mock_service_, GetProperty(4, "prop 1", _));
+
+  std::unique_ptr<dbus::Response> response = nullptr;
+  CallGetProperty(4, "prop 1", response);
+  EXPECT_EQ(dbus::Message::MESSAGE_ERROR, response->GetMessageType());
+}
+
+TEST_F(GesturePropertiesServiceProviderTest, GetPropertyMissingParameters) {
+  CheckMethodErrorsWithNoParameters(
+      chromeos::kGesturePropertiesServiceGetPropertyMethod);
 }
 
 }  // namespace ash
