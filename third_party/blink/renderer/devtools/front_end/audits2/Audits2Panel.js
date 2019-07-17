@@ -242,6 +242,12 @@ Audits2.Audits2Panel = class extends UI.Panel {
     this._renderStartView();
   }
 
+  /**
+   * We set the device emulation on the DevTools-side for two reasons:
+   * 1. To workaround some odd device metrics emulation bugs like occuluding viewports
+   * 2. To get the attractive device outline
+   * flags.emulatedFormFactor is always set to none, so Lighthouse doesn't apply its own emulation.
+   */
   async _setupEmulationAndProtocolConnection() {
     const flags = this._controller.getFlags();
 
@@ -250,11 +256,10 @@ Audits2.Audits2Panel = class extends UI.Panel {
     this._emulationOutlineEnabledBefore = emulationModel.deviceOutlineSetting().get();
     emulationModel.toolbarControlsEnabledSetting().set(false);
 
-    if (flags.emulatedFormFactor === 'desktop') {
+    if (flags._devtoolsEmulationType === 'desktop') {
       emulationModel.enabledSetting().set(false);
-      emulationModel.deviceOutlineSetting().set(false);
       emulationModel.emulate(Emulation.DeviceModeModel.Type.None, null, null);
-    } else {
+    } else if (flags._devtoolsEmulationType === 'mobile') {
       emulationModel.enabledSetting().set(true);
       emulationModel.deviceOutlineSetting().set(true);
 
