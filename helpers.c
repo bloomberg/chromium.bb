@@ -531,7 +531,8 @@ void drv_modify_combination(struct driver *drv, uint32_t format, struct format_m
 struct drv_array *drv_query_kms(struct driver *drv)
 {
 	struct drv_array *kms_items;
-	uint64_t plane_type, use_flag;
+	uint64_t plane_type = UINT64_MAX;
+        uint64_t use_flag;
 	uint32_t i, j, k;
 
 	drmModePlanePtr plane;
