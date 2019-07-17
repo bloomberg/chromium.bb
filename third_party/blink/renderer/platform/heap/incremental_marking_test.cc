@@ -94,7 +94,9 @@ class IncrementalMarkingScopeBase {
     heap_.CommitCallbackStacks();
   }
 
-  ~IncrementalMarkingScopeBase() { heap_.DecommitCallbackStacks(); }
+  ~IncrementalMarkingScopeBase() {
+    heap_.DecommitCallbackStacks(BlinkGC::StackState::kNoHeapPointersOnStack);
+  }
 
   ThreadHeap& heap() const { return heap_; }
 

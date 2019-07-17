@@ -171,7 +171,7 @@ void ThreadHeap::CommitCallbackStacks() {
   DCHECK(ephemeron_callbacks_.IsEmpty());
 }
 
-void ThreadHeap::DecommitCallbackStacks() {
+void ThreadHeap::DecommitCallbackStacks(BlinkGC::StackState stack_state) {
   marking_worklist_.reset(nullptr);
   previously_not_fully_constructed_worklist_.reset(nullptr);
   weak_callback_worklist_.reset(nullptr);
@@ -180,14 +180,24 @@ void ThreadHeap::DecommitCallbackStacks() {
   // The fixed point iteration may have found not-fully-constructed objects.
   // Such objects should have already been found through the stack scan though
   // and should thus already be marked.
+  //
+  // Possible reasons for encountering unmarked objects here:
+  // - Object is not allocated through MakeGarbageCollected.
+  // - Type is missing a USING_GARBAGE_COLLECTED_MIXIN annotation which means
+  //   that the GC will always find pointers as in construction.
+  // - Broken stack (roots) scanning.
   if (!not_fully_constructed_worklist_->IsGlobalEmpty()) {
 #if DCHECK_IS_ON()
+    const bool conservative_gc =
+        BlinkGC::StackState::kHeapPointersOnStack == stack_state;
     NotFullyConstructedItem item;
     while (not_fully_constructed_worklist_->Pop(WorklistTaskId::MainThread,
                                                 &item)) {
       HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(
           reinterpret_cast<Address>(const_cast<void*>(item)));
-      DCHECK(header->IsMarked());
+      DCHECK(conservative_gc && header->IsMarked())
+          << " conservative: " << (conservative_gc ? "yes" : "no")
+          << " type: " << header->Name();
     }
 #else
     not_fully_constructed_worklist_->Clear();

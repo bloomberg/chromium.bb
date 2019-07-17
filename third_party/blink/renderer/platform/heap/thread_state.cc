@@ -1661,7 +1661,7 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
     VisitWeakPersistents(visitor);
     Heap().WeakProcessing(visitor);
   }
-  Heap().DecommitCallbackStacks();
+  Heap().DecommitCallbackStacks(current_gc_data_.stack_state);
 
   const size_t marked_bytes = current_gc_data_.visitor->marked_bytes();
   current_gc_data_.visitor.reset();

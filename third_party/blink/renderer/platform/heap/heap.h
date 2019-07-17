@@ -395,7 +395,7 @@ class PLATFORM_EXPORT ThreadHeap {
   static int ArenaIndexForObjectSize(size_t);
 
   void CommitCallbackStacks();
-  void DecommitCallbackStacks();
+  void DecommitCallbackStacks(BlinkGC::StackState);
 
   void InvokeEphemeronCallbacks(Visitor*);
 
