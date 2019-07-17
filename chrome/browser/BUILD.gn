@@ -628,6 +628,7 @@ jumbo_split_static_library("browser") {
     "lookalikes/lookalike_url_navigation_throttle.h",
     "lookalikes/lookalike_url_service.cc",
     "lookalikes/lookalike_url_service.h",
+    "lookalikes/safety_tips/safety_tip_ui.h",
     "mac/bluetooth_utility.h",
     "mac/bluetooth_utility.mm",
     "mac/dock.h",
