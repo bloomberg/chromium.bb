@@ -241,7 +241,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_44, true)
 // If true, ignore TLPR if there is no pending stream data.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_no_pending_stream_data,
-          false)
+          true)
 
 // If true, when detecting losses, use packets_acked of corresponding packet
 // number space.
