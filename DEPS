@@ -902,7 +902,7 @@ deps = {
   },
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'e383c5f55defdb884a77820483d3360617391d78',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '74426f7570fdd23a3bcf7ac0987347197f44c92e',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
