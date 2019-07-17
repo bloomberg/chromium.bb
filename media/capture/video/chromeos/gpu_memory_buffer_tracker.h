@@ -1,25 +1,25 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_VIDEO_SHARED_MEMORY_BUFFER_TRACKER_H_
-#define MEDIA_CAPTURE_VIDEO_SHARED_MEMORY_BUFFER_TRACKER_H_
+#ifndef MEDIA_CAPTURE_VIDEO_CHROMEOS_GPU_MEMORY_BUFFER_TRACKER_H_
+#define MEDIA_CAPTURE_VIDEO_CHROMEOS_GPU_MEMORY_BUFFER_TRACKER_H_
 
-#include "media/capture/video/shared_memory_handle_provider.h"
-#include "media/capture/video/video_capture_buffer_handle.h"
+#include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/video_capture_buffer_tracker.h"
 
 namespace gfx {
 class Size;
-}
+}  // namespace gfx
 
 namespace media {
 
-// Tracker specifics for SharedMemory.
-class SharedMemoryBufferTracker final : public VideoCaptureBufferTracker {
+// Tracker specifics for Chrome OS GpuMemoryBuffer.
+class CAPTURE_EXPORT GpuMemoryBufferTracker final
+    : public VideoCaptureBufferTracker {
  public:
-  SharedMemoryBufferTracker();
-  ~SharedMemoryBufferTracker() override;
+  GpuMemoryBufferTracker();
+  ~GpuMemoryBufferTracker() override;
 
   // Implementation of VideoCaptureBufferTracker:
   bool Init(const gfx::Size& dimensions,
@@ -28,21 +28,19 @@ class SharedMemoryBufferTracker final : public VideoCaptureBufferTracker {
   bool IsReusableForFormat(const gfx::Size& dimensions,
                            VideoPixelFormat format,
                            const mojom::PlaneStridesPtr& strides) override;
-
+  uint32_t GetMemorySizeInBytes() override;
   std::unique_ptr<VideoCaptureBufferHandle> GetMemoryMappedAccess() override;
   mojo::ScopedSharedBufferHandle GetHandleForTransit(bool read_only) override;
   base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC() override;
-#if defined(OS_CHROMEOS)
   gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override;
-#endif
-  uint32_t GetMemorySizeInBytes() override;
 
  private:
-  SharedMemoryHandleProvider provider_;
+  CameraBufferFactory buffer_factory_;
+  std::unique_ptr<gfx::GpuMemoryBuffer> buffer_;
 
-  DISALLOW_COPY_AND_ASSIGN(SharedMemoryBufferTracker);
+  DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferTracker);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_CAPTURE_VIDEO_SHARED_MEMORY_BUFFER_TRACKER_H_
+#endif  // MEDIA_CAPTURE_VIDEO_CHROMEOS_GPU_MEMORY_BUFFER_TRACKER_H_
