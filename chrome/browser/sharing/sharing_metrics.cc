@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sharing/sharing_metrics.h"
 
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 
 namespace {
 
@@ -36,6 +36,16 @@ SharingMessageType PayloadCaseToMessageType(
 
 void LogSharingMessageReceived(
     chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {
-  UMA_HISTOGRAM_ENUMERATION("Sharing.MessageReceivedType",
-                            PayloadCaseToMessageType(payload_case));
+  base::UmaHistogramEnumeration("Sharing.MessageReceivedType",
+                                PayloadCaseToMessageType(payload_case));
+}
+
+void LogClickToCallDevicesToShow(int count) {
+  base::UmaHistogramExactLinear("Sharing.ClickToCallDevicesToShow", count,
+                                /*value_max=*/20);
+}
+
+void LogClickToCallAppsToShow(int count) {
+  base::UmaHistogramExactLinear("Sharing.ClickToCallAppsToShow", count,
+                                /*value_max=*/20);
 }

@@ -12,4 +12,12 @@
 void LogSharingMessageReceived(
     chrome_browser_sharing::SharingMessage::PayloadCase payload_case);
 
+// Logs the number of available devices that are about to be shown in a UI for
+// picking a device to start a phone call on.
+void LogClickToCallDevicesToShow(int count);
+
+// Logs the number of available apps that are about to be shown in a UI for
+// picking an app to start a phone call with.
+void LogClickToCallAppsToShow(int count);
+
 #endif  // CHROME_BROWSER_SHARING_SHARING_METRICS_H_
