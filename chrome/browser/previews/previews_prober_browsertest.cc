@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/previews/previews_prober.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -161,7 +162,14 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, Timeout) {
   EXPECT_FALSE(prober.LastProbeWasSuccessful().value());
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, NetworkChange) {
+// TODO(crbug.com/985099): Test times out in component builds on Linux.
+#if defined(OS_LINUX) && defined(COMPONENT_BUILD)
+#define MAYBE_NetworkChange DISABLED_NetworkChange
+#else
+#define MAYBE_NetworkChange NetworkChange
+#endif
+
+IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, MAYBE_NetworkChange) {
   GURL url = TestURLWithPath("/ok");
   TestDelegate delegate;
   net::HttpRequestHeaders headers;
