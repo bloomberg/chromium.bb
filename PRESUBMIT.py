@@ -17,6 +17,8 @@ _EXCLUDED_PATHS = (
     r"^skia[\\/].*",
     r"^third_party[\\/]blink[\\/].*",
     r"^third_party[\\/]breakpad[\\/].*",
+    # sqlite is an imported third party dependency.
+    r"^third_party[\\/]sqlite[\\/].*",
     r"^v8[\\/].*",
     r".*MakeFile$",
     r".+_autogen\.h$",
