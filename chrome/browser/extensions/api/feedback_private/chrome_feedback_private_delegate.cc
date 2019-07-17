@@ -200,8 +200,12 @@ void ChromeFeedbackPrivateDelegate::FetchExtraLogs(
   constexpr bool scrub = true;
 
   if (system_logs::ContainsIwlwifiLogs(feedback_data->sys_info())) {
+    // TODO (jkardatzke): Modify this so that we are using the same instance of
+    // the anonymizer for the rest of the logs.
+    // We can pass null for the 1st party IDs since we are just anonymizing
+    // wifi data here.
     system_logs::SystemLogsFetcher* fetcher =
-        new system_logs::SystemLogsFetcher(scrub);
+        new system_logs::SystemLogsFetcher(scrub, nullptr);
     fetcher->AddSource(std::make_unique<system_logs::IwlwifiDumpLogSource>());
     fetcher->Fetch(base::BindOnce(&OnFetchedExtraLogs, feedback_data,
                                   std::move(callback)));
