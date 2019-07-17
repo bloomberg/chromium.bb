@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("mojom") {
+mojom("mojo_interfaces") {
   sources = [
     "autofill_agent.mojom",
     "autofill_driver.mojom",
