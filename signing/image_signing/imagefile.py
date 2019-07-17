@@ -409,11 +409,13 @@ def UpdateRecoveryKernelHash(image, keyset):
 
   # Update the KERN-B hash in the KERN-A command line.
   kernA_cmd = _GetKernelCmdLine(loop_kernA)
-  kernB_hash = cros_build_lib.SudoRunCommand([
-      'sha1sum', loop_kernB], redirect_stdout=True).output.split()[0]
+  old_kernB_hash = kernA_cmd.GetKernelParameter('kern_b_hash')
 
-  if kernA_cmd.GetKernelParameter('kern_b_hash'):
-    kernA_cmd.SetKernelParameter('kern_b_hash', kernB_hash)
+  if old_kernB_hash:
+    cmd = 'sha256sum' if len(old_kernB_hash.value) >= 64 else 'sha1sum'
+    new_kernB_hash = cros_build_lib.SudoRunCommand([
+        cmd, loop_kernB], redirect_stdout=True).output.split()[0]
+    kernA_cmd.SetKernelParameter('kern_b_hash', new_kernB_hash)
   logging.info('New cmdline for kernel A is %s', str(kernA_cmd))
   recovery_key = keyset.keys['recovery']
   _UpdateKernelConfig(loop_kernA, kernA_cmd, recovery_key)
