@@ -765,6 +765,10 @@ const char kEnableOutOfBlinkCorsName[] = "Out of blink CORS";
 const char kEnableOutOfBlinkCorsDescription[] =
     "CORS handling logic is moved out of blink.";
 
+const char kCrossOriginEmbedderPolicyName[] = "Cross Origin Embedder Policy";
+const char kCrossOriginEmbedderPolicyDescription[] =
+    "Enable Cross Origin Embedder Policy (https://mikewest.github.io/corpp/).";
+
 const char kExperimentalAccessibilityFeaturesName[] =
     "Experimental accessibility features";
 const char kExperimentalAccessibilityFeaturesDescription[] =

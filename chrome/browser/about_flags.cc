@@ -2759,6 +2759,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableOutOfBlinkCorsDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kOutOfBlinkCors)},
 
+    {"cross-origin-embedder-policy",
+     flag_descriptions::kCrossOriginEmbedderPolicyName,
+     flag_descriptions::kCrossOriginEmbedderPolicyDescription, kOsAll,
+     FEATURE_VALUE_TYPE(network::features::kCrossOriginEmbedderPolicy)},
+
     {"enable-resource-load-scheduler",
      flag_descriptions::kResourceLoadSchedulerName,
      flag_descriptions::kResourceLoadSchedulerDescription, kOsAll,
