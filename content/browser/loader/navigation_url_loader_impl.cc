@@ -1132,7 +1132,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       base::Optional<url::Origin> origin =
           url::Origin::Create(resource_request_->url);
       resource_request_->trusted_network_isolation_key =
-          net::NetworkIsolationKey(origin, origin);
+          net::NetworkIsolationKey(origin.value(), origin);
     }
 
     resource_request_->referrer = GURL(redirect_info_.new_referrer);

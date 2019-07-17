@@ -4886,9 +4886,9 @@ void RenderFrameHostImpl::CommitNavigation(
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information.
   if (!is_same_document) {
-    base::Optional<url::Origin> top_frame_origin =
-        frame_tree_node_->IsMainFrame() ? url::Origin::Create(common_params.url)
-                                        : frame_tree_->root()->current_origin();
+    url::Origin top_frame_origin = frame_tree_node_->IsMainFrame()
+                                       ? url::Origin::Create(common_params.url)
+                                       : frame_tree_->root()->current_origin();
     network_isolation_key_ = net::NetworkIsolationKey(top_frame_origin);
   }
 
