@@ -564,8 +564,6 @@ component("ash") {
     "shelf/shelf_background_animator.cc",
     "shelf/shelf_background_animator.h",
     "shelf/shelf_background_animator_observer.h",
-    "shelf/shelf_bezel_event_handler.cc",
-    "shelf/shelf_bezel_event_handler.h",
     "shelf/shelf_bubble.cc",
     "shelf/shelf_bubble.h",
     "shelf/shelf_button.cc",
