@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/observers/working_set_trimmer_win.h"
+#include "chrome/browser/performance_manager/observers/working_set_trimmer_observer_win.h"
 
 #include <windows.h>  // Must be in front of other Windows header files.
 

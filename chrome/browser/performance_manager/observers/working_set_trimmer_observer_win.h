@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_WORKING_SET_TRIMMER_WIN_H_
-#define CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_WORKING_SET_TRIMMER_WIN_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_WORKING_SET_TRIMMER_OBSERVER_WIN_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_WORKING_SET_TRIMMER_OBSERVER_WIN_H_
 
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/public/graph/graph.h"
@@ -53,4 +53,4 @@ class WorkingSetTrimmer : public GraphOwned,
 
 }  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_WORKING_SET_TRIMMER_WIN_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_WORKING_SET_TRIMMER_OBSERVER_WIN_H_
