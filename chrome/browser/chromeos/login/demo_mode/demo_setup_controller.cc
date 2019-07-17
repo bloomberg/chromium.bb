@@ -27,7 +27,6 @@
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
@@ -463,10 +462,6 @@ bool DemoSetupController::IsOobeDemoSetupFlowInProgress() {
 
 // static
 std::string DemoSetupController::GetSubOrganizationEmail() {
-  if (!base::FeatureList::IsEnabled(
-          switches::kSupportCountryCustomizationInDemoMode)) {
-    return std::string();
-  }
   const std::string country =
       g_browser_process->local_state()->GetString(prefs::kDemoModeCountry);
   const base::flat_set<std::string> kCountriesWithCustomization(
