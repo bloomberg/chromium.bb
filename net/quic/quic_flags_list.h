@@ -109,10 +109,6 @@ QUIC_FLAG(double, FLAGS_quic_pace_time_into_future_srtt_fraction, 0.125f)
 // Mechanism to override version label and ALPN for IETF interop.
 QUIC_FLAG(int32_t, FLAGS_quic_ietf_draft_version, 0)
 
-// Stop checking QuicUnackedPacketMap::HasUnackedRetransmittableFrames and
-// instead rely on the existing check that bytes_in_flight > 0
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_optimize_inflight_check, false)
-
 // If true, stop resetting ideal_next_packet_send_time_ in pacing sender.
 QUIC_FLAG(
     bool,
@@ -228,11 +224,6 @@ QUIC_FLAG(bool, FLAGS_quic_export_server_num_packets_per_write_histogram, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_conservative_cwnd_and_pacing_gains,
           false)
-
-// If true, check whether connection is connected before flush.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_check_connected_before_flush,
-          true)
 
 // When true, QuicConnectionId will allocate long connection IDs on the heap
 // instead of inline in the object.
