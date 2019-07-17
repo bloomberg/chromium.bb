@@ -4267,7 +4267,7 @@ def _CheckTranslationScreenshots(input_api, output_api):
     """
     doc = grit.grd_reader.Parse(grd_path_or_string, dir_path,
         stop_after=None, first_ids_file=None,
-        debug=False, defines=None,
+        debug=False, defines={'_chromium': 1},
         tags_to_ignore=set([PART_FILE_TAG]))
     return {
       msg.attrs['name']:msg for msg in doc.GetChildrenOfType(

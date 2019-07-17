@@ -220,6 +220,10 @@ class MockFile(object):
     """os.path.basename is called on MockFile so we need a len method."""
     return len(self._local_path)
 
+  def replace(self, altsep, sep):
+    """os.path.basename is called on MockFile so we need a replace method."""
+    return self._local_path.replace(altsep, sep)
+
 
 class MockAffectedFile(MockFile):
   def AbsoluteLocalPath(self):
