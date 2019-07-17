@@ -65,9 +65,7 @@ class PasswordManagerDriver
   // Always calls |completed_callback| with a status indicating success/error.
   virtual void FillIntoFocusedField(
       bool is_password,
-      const base::string16& user_provided_credential,
-      base::OnceCallback<void(autofill::mojom::FillingStatus)>
-          compeleted_callback) {}
+      const base::string16& user_provided_credential) {}
 
   // Tells the driver to preview filling form with the |username| and
   // |password|.

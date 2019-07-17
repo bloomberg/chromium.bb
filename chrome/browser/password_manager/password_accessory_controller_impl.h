@@ -48,7 +48,6 @@ class PasswordAccessoryControllerImpl
   void OnOptionSelected(autofill::AccessoryAction selected_action) override;
 
   // PasswordAccessoryController:
-  void OnFilledIntoFocusedField(autofill::mojom::FillingStatus status) override;
   void RefreshSuggestionsForField(
       autofill::mojom::FocusedFieldType focused_field_type,
       bool is_manual_generation_available) override;

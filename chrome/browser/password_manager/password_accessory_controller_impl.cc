@@ -107,10 +107,8 @@ void PasswordAccessoryControllerImpl::OnFillingTriggered(
   if (!driver) {
     return;
   }  // |driver| can be NULL if the tab is being closed.
-  driver->FillIntoFocusedField(
-      selection.is_obfuscated(), selection.display_text(),
-      base::BindOnce(&PasswordAccessoryControllerImpl::OnFilledIntoFocusedField,
-                     base::AsWeakPtr<PasswordAccessoryControllerImpl>(this)));
+  driver->FillIntoFocusedField(selection.is_obfuscated(),
+                               selection.display_text());
 }
 
 // static
@@ -197,11 +195,6 @@ bool PasswordAccessoryControllerImpl::ShouldAcceptFocusEvent(
       focused_field_type == FocusedFieldType::kUnknown)
     return true;
   return false;
-}
-
-void PasswordAccessoryControllerImpl::OnFilledIntoFocusedField(
-    autofill::mojom::FillingStatus status) {
-  GetManualFillingController()->OnFilledIntoFocusedField(status);
 }
 
 void PasswordAccessoryControllerImpl::OnOptionSelected(
