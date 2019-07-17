@@ -35,7 +35,9 @@ const char kAppID[] = "test_app_id";
 const char kFCMToken[] = "test_fcm_token";
 const char kFCMToken2[] = "test_fcm_token_2";
 const char kDevicep256dh[] = "test_p256_dh";
+const char kDevicep256dh2[] = "test_p256_dh_2";
 const char kDeviceAuthSecret[] = "test_auth_secret";
+const char kDeviceAuthSecret2[] = "test_auth_secret_2";
 
 class MockInstanceIDDriver : public InstanceIDDriver {
  public:
@@ -104,11 +106,19 @@ class FakeEncryptionGCMDriver : public FakeGCMDriver {
 
   void GetEncryptionInfo(const std::string& app_id,
                          GetEncryptionInfoCallback callback) override {
-    std::move(callback).Run(kDevicep256dh, kDeviceAuthSecret);
+    std::move(callback).Run(p256dh_, auth_secret_);
+  }
+
+  void SetEncryptionInfo(const std::string& p256dh,
+                         const std::string& auth_secret) {
+    p256dh_ = p256dh;
+    auth_secret_ = auth_secret;
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeEncryptionGCMDriver);
+  std::string p256dh_ = kDevicep256dh;
+  std::string auth_secret_ = kDeviceAuthSecret;
 };
 
 class SharingDeviceRegistrationTest : public testing::Test {
@@ -222,18 +232,34 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
 }
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_VapidKeysUnchanged) {
+  SetInstanceIDFCMToken(kFCMToken);
   SetInstanceIDFCMResult(InstanceID::Result::SUCCESS);
+  std::string guid =
+      fake_local_device_info_provider_.GetLocalDeviceInfo()->guid();
 
   RegisterDeviceSync();
 
   EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
 
-  // Set instance ID result to error. InstanceID shouldn't be invoked.
-  SetInstanceIDFCMResult(InstanceID::Result::UNKNOWN_ERROR);
+  // Instance ID now returns a new token, however it shouldn't be invoked.
+  SetInstanceIDFCMToken(kFCMToken2);
+  // GCMDriver now returns new encryption info.
+  fake_encryption_gcm_driver_.SetEncryptionInfo(kDevicep256dh2,
+                                                kDeviceAuthSecret2);
+
   // Register device again without changing VAPID keys.
   RegisterDeviceSync();
 
   EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
+
+  auto it = devices_.find(guid);
+  ASSERT_NE(devices_.end(), it);
+  SharingSyncPreference::Device device(std::move(it->second));
+  // Encryption info is updated with new value.
+  EXPECT_EQ(kDeviceAuthSecret2, device.auth_secret);
+  EXPECT_EQ(kDevicep256dh2, device.p256dh);
+  // FCM token is not updated.
+  EXPECT_EQ(kFCMToken, device.fcm_token);
 }
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Expired) {
