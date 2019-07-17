@@ -5451,10 +5451,10 @@ RenderFrameHostImpl::GetMojoImageDownloader() {
   return mojo_image_downloader_;
 }
 
-const blink::mojom::FindInPageAssociatedPtr&
+const mojo::AssociatedRemote<blink::mojom::FindInPage>&
 RenderFrameHostImpl::GetFindInPage() {
   if (!find_in_page_ || !find_in_page_.is_bound() ||
-      find_in_page_.encountered_error())
+      !find_in_page_.is_connected())
     GetRemoteAssociatedInterfaces()->GetInterface(&find_in_page_);
   return find_in_page_;
 }
