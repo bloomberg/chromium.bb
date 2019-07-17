@@ -72,10 +72,10 @@ class AudioFocusManager : public mojom::AudioFocusManager,
 
   // mojom::MediaControllerManager.
   void CreateActiveMediaController(
-      mojom::MediaControllerRequest request) override;
+      mojo::PendingReceiver<mojom::MediaController> receiver) override;
   void CreateMediaControllerForSession(
-      mojom::MediaControllerRequest request,
-      const base::UnguessableToken& request_id) override;
+      mojo::PendingReceiver<mojom::MediaController> receiver,
+      const base::UnguessableToken& receiver_id) override;
   void SuspendAllSessions() override;
 
   // Bind to a mojom::AudioFocusManagerRequest.

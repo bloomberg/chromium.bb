@@ -179,19 +179,19 @@ void AudioFocusManager::SetEnforcementMode(mojom::EnforcementMode mode) {
 }
 
 void AudioFocusManager::CreateActiveMediaController(
-    mojom::MediaControllerRequest request) {
+    mojo::PendingReceiver<mojom::MediaController> receiver) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  active_media_controller_.BindToInterface(std::move(request));
+  active_media_controller_.BindToInterface(std::move(receiver));
 }
 
 void AudioFocusManager::CreateMediaControllerForSession(
-    mojom::MediaControllerRequest request,
-    const base::UnguessableToken& request_id) {
+    mojo::PendingReceiver<mojom::MediaController> receiver,
+    const base::UnguessableToken& receiver_id) {
   for (auto& row : audio_focus_stack_) {
-    if (row->id() != request_id)
+    if (row->id() != receiver_id)
       continue;
 
-    row->BindToMediaController(std::move(request));
+    row->BindToMediaController(std::move(receiver));
     break;
   }
 }
