@@ -582,6 +582,7 @@ static aom_codec_err_t decoder_inspect(aom_codec_alg_priv_t *ctx,
                                        void *user_priv) {
   aom_codec_err_t res = AOM_CODEC_OK;
 
+  const uint8_t *const data_end = data + data_sz;
   Av1DecodeReturn *data2 = (Av1DecodeReturn *)user_priv;
 
   if (ctx->frame_workers == NULL) {
@@ -599,6 +600,13 @@ static aom_codec_err_t decoder_inspect(aom_codec_alg_priv_t *ctx,
 
   if (ctx->frame_workers->had_error)
     return update_error_state(ctx, &frame_worker_data->pbi->common.error);
+
+  // Allow extra zero bytes after the frame end
+  while (data < data_end) {
+    const uint8_t marker = data[0];
+    if (marker) break;
+    ++data;
+  }
 
   data2->idx = -1;
   for (int i = 0; i < REF_FRAMES; ++i)
