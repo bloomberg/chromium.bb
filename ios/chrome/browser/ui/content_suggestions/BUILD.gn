@@ -151,6 +151,9 @@ source_set("content_suggestions_constant") {
     "ntp_home_constant.h",
     "ntp_home_constant.mm",
   ]
+  deps = [
+    "//ios/chrome/common/colors",
+  ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
