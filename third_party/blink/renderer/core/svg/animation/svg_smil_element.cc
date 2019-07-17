@@ -1119,7 +1119,6 @@ bool SVGSMILElement::NeedsToProgress(double elapsed, bool seek_to_time) {
     return false;
   }
 
-  previous_interval_begin_ = interval_.begin;
 
   if (is_waiting_for_first_interval_) {
     is_waiting_for_first_interval_ = false;
@@ -1179,14 +1178,19 @@ void SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
 
   // This boolean is quite intricate. (Bug 379751)
   //
-  // The first part is easy, if we get a new interval we start or end.
-  //
-  // The second part, is primarily there for an edge case where
-  // the old interval began and ended on the same animation frame
-  // due to a really short interval.
-  bool interval_did_start_or_end =
-      (new_interval) ||
-      (interval_.begin <= elapsed && interval_.end <= elapsed);
+  // If we get a new interval we send all events
+  bool interval_did_start_or_end = (new_interval && *new_interval != interval_);
+
+  // This catches a tricky edge case where the interval began and ended
+  // on the same frame. So we check if the interval has passed, and
+  // that it's not the same interval as it was last time.
+  bool new_begin_time =
+      (interval_.begin != previous_interval_begin_ && interval_.end <= elapsed);
+
+  if (new_begin_time) {
+    previous_interval_begin_ = interval_.begin;
+    interval_did_start_or_end = true;
+  }
 
   if (new_interval) {
     interval_ = *new_interval;
