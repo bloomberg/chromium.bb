@@ -2253,6 +2253,9 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_IMAGE;
     case ax::mojom::Role::kImageMap:
       return ATK_ROLE_IMAGE_MAP;
+    case ax::mojom::Role::kInlineTextBox:
+      // TODO(jdiggs) This should be ATK_ROLE_STATIC. https://crbug.com/984590
+      return ATK_ROLE_TEXT;
     case ax::mojom::Role::kInputTime:
       return ATK_ROLE_DATE_EDITOR;
     case ax::mojom::Role::kLabelText:
@@ -2271,6 +2274,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kLineBreak:
       // TODO(Accessibility) Having a separate accessible object for line breaks
       // is inconsistent with other implementations. http://crbug.com/873144#c1.
+      // TODO(jdiggs) This should be ATK_ROLE_STATIC. https://crbug.com/984590
       return ATK_ROLE_TEXT;
     case ax::mojom::Role::kLink:
       return ATK_ROLE_LINK;
@@ -2385,6 +2389,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
         default:
           break;
       }
+      // TODO(jdiggs) This should be ATK_ROLE_STATIC. https://crbug.com/984590
       return ATK_ROLE_TEXT;
     }
     case ax::mojom::Role::kStatus:
@@ -2410,7 +2415,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_DESCRIPTION_TERM;
     case ax::mojom::Role::kTitleBar:
       return ATK_ROLE_TITLE_BAR;
-    case ax::mojom::Role::kInlineTextBox:
     case ax::mojom::Role::kTextField:
     case ax::mojom::Role::kSearchBox:
       if (GetData().HasState(ax::mojom::State::kProtected))
