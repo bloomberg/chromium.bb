@@ -179,7 +179,7 @@ bool ContentPasswordManagerDriver::IsMainFrame() const {
   return is_main_frame_;
 }
 
-GURL ContentPasswordManagerDriver::GetLastCommittedURL() const {
+const GURL& ContentPasswordManagerDriver::GetLastCommittedURL() const {
   return render_frame_host_->GetLastCommittedURL();
 }
 

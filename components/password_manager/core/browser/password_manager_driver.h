@@ -100,7 +100,7 @@ class PasswordManagerDriver
   virtual bool IsMainFrame() const = 0;
 
   // Returns the last committed URL of the frame.
-  virtual GURL GetLastCommittedURL() const = 0;
+  virtual const GURL& GetLastCommittedURL() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDriver);
