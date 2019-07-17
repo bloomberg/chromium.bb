@@ -330,7 +330,9 @@ bool NetworkQualityEstimator::IsHangingRequest(
   return true;
 }
 
-void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
+void NetworkQualityEstimator::NotifyHeadersReceived(
+    const URLRequest& request,
+    int64_t prefilter_total_bytes_read) {
   TRACE_EVENT0(NetTracingCategory(),
                "NetworkQualityEstimator::NotifyHeadersReceived");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -377,7 +379,9 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
       request, request.GetExpectedContentSize());
 }
 
-void NetworkQualityEstimator::NotifyBytesRead(const URLRequest& request) {
+void NetworkQualityEstimator::NotifyBytesRead(
+    const URLRequest& request,
+    int64_t prefilter_total_bytes_read) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   throughput_analyzer_->NotifyBytesRead(request);
 }
