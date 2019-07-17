@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/app_startup_parameters.h"
+#include "ios/chrome/app/app_startup_parameters.h"
 
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,10 +26,14 @@ using AppStartupParametersTest = PlatformTest;
 TEST_F(AppStartupParametersTest, QueryParametersPaymentRequest) {
   const UniversalLinkDecodeTestCase test_cases[] = {
       {
-          GURL("https://goo.gl/ioschrome/"), {}, false,
+          GURL("https://goo.gl/ioschrome/"),
+          {},
+          false,
       },
       {
-          GURL("https://goo.gl/ioschrome?payment-request-id"), {}, false,
+          GURL("https://goo.gl/ioschrome?payment-request-id"),
+          {},
+          false,
       },
       {
           GURL("https://goo.gl/ioschrome?payment-request-id=092831-af18l-324"
