@@ -2179,16 +2179,16 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cyan',
       'edgar',
       'elm',
-      'eve',
       'eve-arcnext',
       'fizz',
       'fizz-accelerator',
       'fizz-moblab',
       'flapjack',
+      'gale',
       'gandof',
       'glados',
-      'gale',
-      'gonzo',
+      'gonzo'
+      'grunt',
       'guado',
       'guado-accelerator',
       'hana',
@@ -2273,7 +2273,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'betty', # crbug.com/984316
       'betty-pi-arc', # Promote when we replace betty-arcnext. b/129410042
-      'grunt', # crbug.com/984614
+      'eve', # crbug.com/984952
   ])
 
 

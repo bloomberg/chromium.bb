@@ -73,8 +73,6 @@
     gale-paladin
     gandof-paladin
     glados-paladin
-    gonzo-paladin
-    grunt-paladin
     grunt-unittest-only-paladin
     guado-accelerator-paladin
     guado-paladin
@@ -414,7 +412,6 @@
     gandof-postsubmit
     glados-postsubmit
     gnawty-postsubmit
-    gonzo-postsubmit
     grunt-postsubmit
     guado-accelerator-postsubmit
     guado-postsubmit
@@ -2587,8 +2584,6 @@
     gale-paladin-tryjob
     gandof-paladin-tryjob
     glados-paladin-tryjob
-    gonzo-paladin-tryjob
-    grunt-paladin-tryjob
     grunt-unittest-only-paladin-tryjob
     guado-accelerator-paladin-tryjob
     guado-paladin-tryjob
@@ -2701,7 +2696,6 @@
     gandof-postsubmit-tryjob
     glados-postsubmit-tryjob
     gnawty-postsubmit-tryjob
-    gonzo-postsubmit-tryjob
     grunt-postsubmit-tryjob
     guado-accelerator-postsubmit-tryjob
     guado-postsubmit-tryjob
