@@ -153,12 +153,13 @@ void SVGSMILElement::Condition::ConnectSyncBase(SVGSMILElement& timed_element) {
   DCHECK(!base_id_.IsEmpty());
   DCHECK_EQ(type_, kSyncbase);
   Element* element = timed_element.GetTreeScope().getElementById(base_id_);
-  if (!element || !IsSVGSMILElement(*element)) {
+  auto* svg_smil_element = DynamicTo<SVGSMILElement>(element);
+  if (!svg_smil_element) {
     base_element_ = nullptr;
     return;
   }
-  base_element_ = ToSVGSMILElement(element);
-  ToSVGSMILElement(*element).AddSyncBaseDependent(timed_element);
+  base_element_ = svg_smil_element;
+  svg_smil_element->AddSyncBaseDependent(timed_element);
 }
 
 void SVGSMILElement::Condition::DisconnectSyncBase(
@@ -166,7 +167,7 @@ void SVGSMILElement::Condition::DisconnectSyncBase(
   DCHECK_EQ(type_, kSyncbase);
   if (!base_element_)
     return;
-  ToSVGSMILElement(*base_element_).RemoveSyncBaseDependent(timed_element);
+  To<SVGSMILElement>(*base_element_).RemoveSyncBaseDependent(timed_element);
   base_element_ = nullptr;
 }
 
