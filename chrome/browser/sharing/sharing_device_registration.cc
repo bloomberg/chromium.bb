@@ -48,8 +48,10 @@ void SharingDeviceRegistration::RegisterDevice(RegistrationCallback callback) {
     return;
   }
 
-  if (registered_authorized_entity_ == authorized_entity) {
-    // Authorized entity hasn't changed, return success.
+  auto registration = sharing_sync_preference_->GetFCMRegistration();
+  if (registration && registration->authorized_entity == authorized_entity &&
+      (base::Time::Now() - registration->timestamp < kRegistrationExpiration)) {
+    // Authorized entity hasn't changed nor has expired, return success.
     std::move(callback).Run(Result::SUCCESS);
     return;
   }
@@ -107,14 +109,14 @@ void SharingDeviceRegistration::OnEncryptionInfoReceived(
       fcm_registration_token, std::move(p256dh), std::move(auth_secret),
       device_capabilities);
   sharing_sync_preference_->SetSyncDevice(local_device_info->guid(), device);
-
-  registered_authorized_entity_ = authorized_entity;
+  sharing_sync_preference_->SetFCMRegistration(
+      {authorized_entity, fcm_registration_token, base::Time::Now()});
   std::move(callback).Run(Result::SUCCESS);
 }
 
 void SharingDeviceRegistration::UnregisterDevice(
     RegistrationCallback callback) {
-  registered_authorized_entity_.clear();
+  sharing_sync_preference_->ClearFCMRegistration();
 
   const syncer::DeviceInfo* local_device_info =
       local_device_info_provider_->GetLocalDeviceInfo();

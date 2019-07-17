@@ -106,7 +106,6 @@ class SharingDeviceRegistration {
   VapidKeyManager* vapid_key_manager_;
   gcm::GCMDriver* gcm_driver_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
-  std::string registered_authorized_entity_;
 
   base::WeakPtrFactory<SharingDeviceRegistration> weak_ptr_factory_{this};
 
