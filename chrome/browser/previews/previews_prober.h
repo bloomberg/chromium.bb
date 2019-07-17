@@ -30,6 +30,9 @@
 #include "base/android/application_status_listener.h"
 #endif
 
+class PrefRegistrySimple;
+class PrefService;
+
 namespace network {
 class NetworkConnectionTracker;
 class SimpleURLLoader;
@@ -65,7 +68,9 @@ class PreviewsProber
   // prefs.
   enum class ClientName {
     // TODO(crbug.com/971918): Use in litepages.
-    kLitepages,
+    kLitepages = 0,
+
+    kMaxValue = kLitepages,
   };
 
   // This enum describes the different algorithms that can be used to calculate
@@ -125,6 +130,7 @@ class PreviewsProber
   PreviewsProber(
       Delegate* delegate,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* pref_service,
       ClientName name,
       const GURL& url,
       HttpMethod http_method,
@@ -134,6 +140,9 @@ class PreviewsProber
       const size_t max_cache_entries,
       base::TimeDelta revalidate_cache_after);
   ~PreviewsProber() override;
+
+  // Registers the prefs used in this class.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Sends a probe now if the prober is currently inactive. If the probe is
   // active (i.e.: there are probes in flight), this is a no-op. If
@@ -157,6 +166,7 @@ class PreviewsProber
   PreviewsProber(
       Delegate* delegate,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* pref_service,
       ClientName name,
       const GURL& url,
       HttpMethod http_method,
@@ -189,6 +199,9 @@ class PreviewsProber
   // The name given to this prober instance, used in metrics, prefs, and
   // traffic annotations.
   const std::string name_;
+
+  // The pref key for used to recording |cached_probe_results_| to disk.
+  const std::string pref_key_;
 
   // The URL that will be probed.
   const GURL url_;
@@ -243,6 +256,9 @@ class PreviewsProber
   // This reference is kept around for unregistering |this| as an observer on
   // any thread.
   network::NetworkConnectionTracker* network_connection_tracker_;
+
+  // Reference for saving |cached_probe_results_| to prefs.
+  PrefService* pref_service_;
 
   // Used for setting up the |url_loader_|.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

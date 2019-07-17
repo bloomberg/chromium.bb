@@ -5,6 +5,9 @@
 #include "chrome/browser/previews/previews_prober.h"
 
 #include "build/build_config.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -49,6 +52,7 @@ class TestPreviewsProber : public PreviewsProber {
   TestPreviewsProber(
       PreviewsProber::Delegate* delegate,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* pref_service,
       const PreviewsProber::ClientName name,
       const GURL& url,
       const HttpMethod http_method,
@@ -61,6 +65,7 @@ class TestPreviewsProber : public PreviewsProber {
       const base::Clock* clock)
       : PreviewsProber(delegate,
                        url_loader_factory,
+                       pref_service,
                        name,
                        url,
                        http_method,
@@ -81,7 +86,12 @@ class PreviewsProberTest : public testing::Test {
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
-        test_delegate_() {}
+        test_delegate_(),
+        test_prefs_() {}
+
+  void SetUp() override {
+    PreviewsProber::RegisterProfilePrefs(test_prefs_.registry());
+  }
 
   std::unique_ptr<PreviewsProber> NewProber() {
     return NewProberWithPolicies(PreviewsProber::RetryPolicy(),
@@ -107,7 +117,7 @@ class PreviewsProberTest : public testing::Test {
     net::HttpRequestHeaders headers;
     headers.SetHeader("X-Testing", "Hello world");
     return std::make_unique<TestPreviewsProber>(
-        delegate, test_shared_loader_factory_,
+        delegate, test_shared_loader_factory_, &test_prefs_,
         PreviewsProber::ClientName::kLitepages, kTestUrl,
         PreviewsProber::HttpMethod::kGet, headers, retry_policy, timeout_policy,
         1, kCacheRevalidateAfter, thread_bundle_.GetMockTickClock(),
@@ -175,6 +185,7 @@ class PreviewsProberTest : public testing::Test {
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   TestDelegate test_delegate_;
+  TestingPrefServiceSimple test_prefs_;
 };
 
 TEST_F(PreviewsProberTest, OK) {
@@ -303,6 +314,29 @@ TEST_F(PreviewsProberTest, CacheAutoRevalidation) {
 
   // Fast forward the rest of the way and check the prober is active again.
   FastForward(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_TRUE(prober->is_active());
+}
+
+TEST_F(PreviewsProberTest, PersistentCache) {
+  std::unique_ptr<PreviewsProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive(false);
+  VerifyRequest();
+
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  // Create a new prober instance and verify the cached probe result is used.
+  prober = NewProber();
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  // Fast forward past the cache revalidation and check that the revalidation
+  // time was also persisted.
+  FastForward(kCacheRevalidateAfter);
   EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
   EXPECT_TRUE(prober->is_active());
 }

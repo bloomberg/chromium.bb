@@ -129,6 +129,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, OK) {
   PreviewsProber::TimeoutPolicy timeout_policy;
 
   PreviewsProber prober(&delegate, browser()->profile()->GetURLLoaderFactory(),
+                        browser()->profile()->GetPrefs(),
                         PreviewsProber::ClientName::kLitepages, url,
                         PreviewsProber::HttpMethod::kGet, headers, retry_policy,
                         timeout_policy, 1, base::TimeDelta::FromDays(1));
@@ -150,6 +151,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, Timeout) {
   timeout_policy.base_timeout = base::TimeDelta::FromMilliseconds(1);
 
   PreviewsProber prober(&delegate, browser()->profile()->GetURLLoaderFactory(),
+                        browser()->profile()->GetPrefs(),
                         PreviewsProber::ClientName::kLitepages, url,
                         PreviewsProber::HttpMethod::kGet, headers, retry_policy,
                         timeout_policy, 1, base::TimeDelta::FromDays(1));
@@ -167,6 +169,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, NetworkChange) {
   PreviewsProber::TimeoutPolicy timeout_policy;
 
   PreviewsProber prober(&delegate, browser()->profile()->GetURLLoaderFactory(),
+                        browser()->profile()->GetPrefs(),
                         PreviewsProber::ClientName::kLitepages, url,
                         PreviewsProber::HttpMethod::kGet, headers, retry_policy,
                         timeout_policy, 1, base::TimeDelta::FromDays(1));
