@@ -82,7 +82,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static void ShowIntentPickerBubbleForApps(
       content::WebContents* web_contents,
       std::vector<IntentPickerAppInfo> apps,
-      bool show_remember_selection,
+      bool show_persistence_options,
       IntentPickerResponse callback);
 
   explicit AppsNavigationThrottle(content::NavigationHandle* navigation_handle);
@@ -172,7 +172,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static bool ContainsOnlyPwas(
       const std::vector<apps::IntentPickerAppInfo>& apps);
 
-  static bool ShouldShowRememberSelection(
+  static bool ShouldShowPersistenceOptions(
       std::vector<apps::IntentPickerAppInfo>& apps);
 
   // Overridden for Chrome OS to allow arc handling.

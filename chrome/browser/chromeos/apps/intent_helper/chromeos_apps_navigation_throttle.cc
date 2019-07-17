@@ -133,9 +133,9 @@ void ChromeOsAppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps(
     std::vector<apps::IntentPickerAppInfo> apps) {
   std::vector<apps::IntentPickerAppInfo> apps_for_picker =
       FindPwaForUrl(web_contents, url, std::move(apps));
+  bool show_persistence_options = ShouldShowPersistenceOptions(apps_for_picker);
   apps::AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
-      web_contents, std::move(apps_for_picker),
-      ShouldShowRememberSelection(apps_for_picker),
+      web_contents, std::move(apps_for_picker), show_persistence_options,
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
 }

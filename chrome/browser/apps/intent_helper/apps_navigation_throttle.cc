@@ -117,8 +117,9 @@ void AppsNavigationThrottle::ShowIntentPickerBubble(
     const GURL& url) {
   std::vector<IntentPickerAppInfo> apps = FindPwaForUrl(web_contents, url, {});
 
+  bool show_persistence_options = ShouldShowPersistenceOptions(apps);
   ShowIntentPickerBubbleForApps(
-      web_contents, std::move(apps), ShouldShowRememberSelection(apps),
+      web_contents, std::move(apps), show_persistence_options,
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
 }
@@ -194,7 +195,7 @@ bool AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
 void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
     content::WebContents* web_contents,
     std::vector<IntentPickerAppInfo> apps,
-    bool show_remember_selection,
+    bool show_persistence_options,
     IntentPickerResponse callback) {
   if (apps.empty())
     return;
@@ -207,7 +208,7 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
     return;
   browser->window()->ShowIntentPickerBubble(std::move(apps),
                                             /*enable_stay_in_chrome=*/true,
-                                            show_remember_selection,
+                                            show_persistence_options,
                                             std::move(callback));
 }
 
@@ -344,7 +345,7 @@ bool AppsNavigationThrottle::ContainsOnlyPwas(
 }
 
 // static
-bool AppsNavigationThrottle::ShouldShowRememberSelection(
+bool AppsNavigationThrottle::ShouldShowPersistenceOptions(
     std::vector<apps::IntentPickerAppInfo>& apps) {
   // There is no support persistence for PWA so the selection should be hidden
   // if only PWAs are present.
@@ -379,11 +380,13 @@ void AppsNavigationThrottle::ShowIntentPickerForApps(
       ui_displayed_ = false;
       IntentPickerTabHelper::SetShouldShowIcon(web_contents, true);
       break;
-    case PickerShowState::kPopOut:
+    case PickerShowState::kPopOut: {
+      bool show_persistence_options = ShouldShowPersistenceOptions(apps);
       ShowIntentPickerBubbleForApps(web_contents, std::move(apps),
-                                    ShouldShowRememberSelection(apps),
+                                    show_persistence_options,
                                     std::move(callback));
       break;
+    }
     default:
       NOTREACHED();
   }
