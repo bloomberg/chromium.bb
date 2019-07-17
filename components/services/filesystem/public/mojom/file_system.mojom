@@ -4,7 +4,7 @@
 
 module filesystem.mojom;
 
-import "components/services/filesystem/public/interfaces/directory.mojom";
+import "components/services/filesystem/public/mojom/directory.mojom";
 import "mojo/public/mojom/base/file_error.mojom";
 
 interface FileSystem {
