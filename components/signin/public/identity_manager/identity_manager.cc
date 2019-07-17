@@ -24,6 +24,8 @@
 
 #if defined(OS_ANDROID)
 #include "components/signin/internal/identity_manager/oauth2_token_service_delegate_android.h"
+#elif !defined(OS_IOS)
+#include "components/signin/internal/identity_manager/mutable_profile_oauth2_token_service_delegate.h"
 #endif
 
 namespace identity {
@@ -393,6 +395,9 @@ void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   PrimaryAccountManager::RegisterProfilePrefs(registry);
   AccountFetcherService::RegisterPrefs(registry);
   AccountTrackerService::RegisterPrefs(registry);
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(registry);
+#endif
 }
 
 CoreAccountId IdentityManager::PickAccountIdForAccount(

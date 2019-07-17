@@ -332,9 +332,6 @@ AccountReconcilorTest::AccountReconcilorTest()
                          &pref_service_,
                          account_consistency_,
                          &test_signin_client_) {
-  pref_service_.registry()->RegisterBooleanPref(
-      prefs::kTokenServiceDiceCompatible, false);
-
   signin::SetListAccountsResponseHttpNotFound(&test_url_loader_factory_);
 
   // The reconcilor should not be built before the test can set the account
