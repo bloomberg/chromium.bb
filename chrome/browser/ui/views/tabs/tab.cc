@@ -209,7 +209,8 @@ Tab::Tab(TabController* controller)
 Tab::~Tab() {
   // Observer must be unregistered before child views are destroyed.
   tab_close_button_observer_.reset();
-  controller_->UpdateHoverCard(this, /* should_show */ false);
+  if (controller_->HoverCardIsShowingForTab(this))
+    controller_->UpdateHoverCard(this, /* should_show */ false);
 }
 
 void Tab::AnimationEnded(const gfx::Animation* animation) {

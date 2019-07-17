@@ -108,6 +108,9 @@ class TabController {
   // hovered and whether the card should be shown.
   virtual void UpdateHoverCard(Tab* tab, bool should_show) = 0;
 
+  // Returns true if the hover card is showing for the given tab.
+  virtual bool HoverCardIsShowingForTab(Tab* tab) = 0;
+
   // Returns whether |tab| needs to be painted. When this returns true, |clip|
   // is set to the path which should be clipped out of the current tab's region
   // (for hit testing or painting), if any.  |clip| is only non-empty when
