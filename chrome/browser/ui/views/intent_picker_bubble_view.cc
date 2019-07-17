@@ -134,7 +134,7 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   if (!browser || !BrowserView::GetBrowserViewForBrowser(browser)) {
     std::move(intent_picker_cb)
         .Run(kInvalidLaunchName, apps::mojom::AppType::kUnknown,
-             apps::IntentPickerCloseReason::PICKER_ERROR, false);
+             apps::IntentPickerCloseReason::ERROR_BEFORE_PICKER, false);
     return nullptr;
   }
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);

@@ -284,7 +284,8 @@ AppsNavigationThrottle::Platform AppsNavigationThrottle::GetDestinationPlatform(
       return Platform::ARC;
     case PickerAction::PWA_APP_PRESSED:
       return Platform::PWA;
-    case PickerAction::PICKER_ERROR:
+    case PickerAction::ERROR_BEFORE_PICKER:
+    case PickerAction::ERROR_AFTER_PICKER:
     case PickerAction::DIALOG_DEACTIVATED:
     case PickerAction::CHROME_PRESSED:
     case PickerAction::CHROME_PREFERRED_PRESSED:
@@ -414,8 +415,10 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
     IntentPickerCloseReason close_reason,
     bool should_persist) {
   switch (close_reason) {
-    case IntentPickerCloseReason::PICKER_ERROR:
-      return PickerAction::PICKER_ERROR;
+    case IntentPickerCloseReason::ERROR_BEFORE_PICKER:
+      return PickerAction::ERROR_BEFORE_PICKER;
+    case IntentPickerCloseReason::ERROR_AFTER_PICKER:
+      return PickerAction::ERROR_AFTER_PICKER;
     case IntentPickerCloseReason::DIALOG_DEACTIVATED:
       return PickerAction::DIALOG_DEACTIVATED;
     case IntentPickerCloseReason::PREFERRED_APP_FOUND:
