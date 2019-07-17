@@ -18,11 +18,38 @@ def file_exists(path):
 
 def copy_files(source, dest):
     assert source[-1] != '/'
-    subprocess.check_call(['rsync', '-a', '--delete', source, dest])
+    subprocess.check_call(
+        ['rsync', '--archive', '--checksum', '--delete', source, dest])
+
+
+def copy_dir_overwrite_and_count_changes(source, dest, dry_run=False):
+    assert source[-1] != '/'
+    command = [
+        'rsync', '--archive', '--checksum', '--itemize-changes', '--delete',
+        source + '/', dest
+    ]
+    if dry_run:
+        command.append('--dry-run')
+    output = subprocess.check_output(command)
+
+    # --itemize-changes will print a '.' in the first column if the item is not
+    # being updated, created, or deleted. This happens if only attributes
+    # change, such as a timestamp or permissions. Timestamp changes are
+    # uninteresting for the purposes of determining changed content, but
+    # permissions changes are not. Columns 6-8 are also checked so that files
+    # that have potentially interesting attributes (permissions, owner, or
+    # group) changing are counted, but column 5 for the timestamp is not
+    # considered.
+    changes = 0
+    for line in output.split('\n'):
+        if line == '' or (line[0] == '.' and line[5:8] == '...'):
+            continue
+        changes += 1
+    return changes
 
 
 def move_file(source, dest):
-    os.rename(source, dest)
+    shutil.move(source, dest)
 
 
 def make_dir(at):
@@ -37,6 +64,11 @@ def write_file(path, contents):
 def run_command(args, **kwargs):
     print('Running command: {}'.format(args))
     subprocess.check_call(args, **kwargs)
+
+
+def run_command_output(args, **kwargs):
+    print('Running command: {}'.format(args))
+    return subprocess.check_output(args, **kwargs)
 
 
 class PlistContext(object):

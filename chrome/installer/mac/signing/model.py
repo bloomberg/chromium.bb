@@ -19,7 +19,6 @@ class CodeSignedProduct(object):
                  requirements=None,
                  identifier_requirement=True,
                  sign_with_identifier=False,
-                 resource_rules=None,
                  entitlements=None,
                  verify_options=None):
         """A build product to be codesigned.
@@ -43,9 +42,6 @@ class CodeSignedProduct(object):
             sign_with_identifier: If True, then the identifier will be specified
                 when running the `codesign` command. If False, `codesign` will
                 infer the identifier itself.
-            resource_rules: A file in |Paths.packaging_dir| to specify for
-                `codesign --resource-rules`. macOS has deprecated resource rules
-                and this should not be used for new products.
             entitlements: File name of the entitlements file to sign the product
                 with. The file should reside in the |Paths.packaging_dir|.
             verify_options: Flags to pass to `codesign --verify`, from
@@ -59,7 +55,6 @@ class CodeSignedProduct(object):
         self.requirements = requirements
         self.identifier_requirement = identifier_requirement
         self.sign_with_identifier = sign_with_identifier
-        self.resource_rules = resource_rules
         self.entitlements = entitlements
         if not VerifyOptions.valid(verify_options):
             raise ValueError('Invalid VerifyOptions: {}'.format(verify_options))
@@ -228,6 +223,10 @@ class Distribution(object):
                 return base_config
 
             @property
+            def distribution(self):
+                return this
+
+            @property
             def app_product(self):
                 if this.channel_customize:
                     return '{} {}'.format(base_config.app_product,
@@ -256,8 +255,9 @@ class Distribution(object):
                         this.dmg_name_fragment)
                 return super(DistributionCodeSignConfig, self).dmg_basename
 
-        return DistributionCodeSignConfig(base_config.identity,
-                                          base_config.keychain)
+        return DistributionCodeSignConfig(
+            base_config.identity, base_config.keychain, base_config.notary_user,
+            base_config.notary_password)
 
 
 class Paths(object):
@@ -301,6 +301,12 @@ class Paths(object):
         """Creates a new Paths with the same input and output directories, but
         with |work| set to |new_work|."""
         return Paths(self.input, self.output, new_work)
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        return (self._input == other._input and
+                self._output == other._output and self._work == other._work)
 
     def __repr__(self):
         return 'Paths(input={0.input}, output={0.output}, ' \

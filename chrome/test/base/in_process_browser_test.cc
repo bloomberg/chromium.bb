@@ -71,7 +71,6 @@
 #include "ui/display/display_switches.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/test/base/scoped_bundle_swizzler_mac.h"
 #endif
@@ -173,24 +172,6 @@ InProcessBrowserTest::InProcessBrowserTest(
       autorelease_pool_(NULL)
 #endif  // OS_MACOSX
 {
-#if defined(OS_MACOSX)
-  base::mac::SetOverrideAmIBundled(true);
-
-  base::FilePath file_exe;
-  CHECK(base::PathService::Get(base::FILE_EXE, &file_exe));
-
-  // Override the path to the running executable to make it look like it is
-  // the browser running as the bundled application.
-  base::FilePath chrome_path =
-      file_exe.DirName().Append(chrome::kBrowserProcessExecutablePath);
-  CHECK(base::PathService::Override(base::FILE_EXE, chrome_path));
-
-  // Then override the path to the child process binaries to point back at
-  // the current test executable, otherwise the FILE_EXE overridden above would
-  // be used to launch children.
-  CHECK(base::PathService::Override(content::CHILD_PROCESS_EXE, file_exe));
-#endif  // defined(OS_MACOSX)
-
   CreateTestServer(GetChromeTestDataDir());
   base::FilePath src_dir;
   CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));

@@ -1657,6 +1657,8 @@ bool RenderProcessHostImpl::Init() {
 #if defined(OS_LINUX)
   int flags = renderer_prefix.empty() ? ChildProcessHost::CHILD_ALLOW_SELF
                                       : ChildProcessHost::CHILD_NORMAL;
+#elif defined(OS_MACOSX)
+  int flags = ChildProcessHost::CHILD_RENDERER;
 #else
   int flags = ChildProcessHost::CHILD_NORMAL;
 #endif

@@ -593,6 +593,7 @@ if (!is_android) {
 
     # Runtime dependencies
     data_deps = [
+      "//chrome/browser/resources/media/mei_preload:component",
       "//ppapi:ppapi_tests",
       "//ppapi:power_saver_test_plugin",
       "//remoting/webapp:browser_test_resources",
@@ -2417,10 +2418,6 @@ if (!is_android) {
       sources += [ "../browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_apitest.cc" ]
     }
 
-    if (!is_mac) {
-      data_deps += [ "//chrome/browser/resources/media/mei_preload:component" ]
-    }
-
     if (toolkit_views && !is_chromeos) {
       sources +=
           [ "../browser/ui/screen_capture_notification_ui_browsertest.cc" ]
@@ -3056,7 +3053,6 @@ test("unit_tests") {
     "../common/crash_keys_unittest.cc",
     "../common/heap_profiler_controller_unittest.cc",
     "../common/ini_parser_unittest.cc",
-    "../common/mac/cfbundle_blocker_unittest.mm",
     "../common/mac/mock_launchd.h",
     "../common/mac/mock_launchd.mm",
     "../common/mac/staging_watcher_unittest.mm",
