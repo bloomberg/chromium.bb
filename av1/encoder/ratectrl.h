@@ -62,6 +62,17 @@ enum {
   RATE_FACTOR_LEVELS
 } UENUM1BYTE(RATE_FACTOR_LEVEL);
 
+enum {
+  KF_UPDATE,
+  LF_UPDATE,
+  GF_UPDATE,
+  ARF_UPDATE,
+  OVERLAY_UPDATE,
+  INTNL_OVERLAY_UPDATE,  // Internal Overlay Frame
+  INTNL_ARF_UPDATE,      // Internal Altref Frame
+  FRAME_UPDATE_TYPES
+} UENUM1BYTE(FRAME_UPDATE_TYPE);
+
 typedef struct {
   // Rate targetting variables
   int base_frame_target;  // A baseline frame target before adjustment
@@ -265,6 +276,20 @@ void av1_rc_set_frame_target(struct AV1_COMP *cpi, int target, int width,
 int av1_estimate_q_constant_quality_two_pass(const struct AV1_COMP *cpi,
                                              int width, int height, int *arf_q,
                                              int gf_index);
+
+int av1_calc_pframe_target_size_one_pass_vbr(
+    const struct AV1_COMP *const cpi, FRAME_UPDATE_TYPE frame_update_type);
+
+int av1_calc_iframe_target_size_one_pass_vbr(const struct AV1_COMP *const cpi);
+
+int av1_calc_pframe_target_size_one_pass_cbr(
+    const struct AV1_COMP *cpi, FRAME_UPDATE_TYPE frame_update_type);
+
+int av1_calc_iframe_target_size_one_pass_cbr(const struct AV1_COMP *cpi);
+
+void av1_get_one_pass_rt_params(struct AV1_COMP *cpi,
+                                struct EncodeFrameParams *const frame_params,
+                                unsigned int frame_flags);
 
 #ifdef __cplusplus
 }  // extern "C"

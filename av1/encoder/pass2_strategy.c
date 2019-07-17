@@ -776,97 +776,6 @@ void av1_assign_q_and_bounds_q_mode(AV1_COMP *cpi) {
   rc->avg_frame_qindex[INTER_FRAME] = avg_frame_qindex;
 }
 
-static int calc_pframe_target_size_one_pass_vbr(
-    const AV1_COMP *const cpi, FRAME_UPDATE_TYPE frame_update_type) {
-  static const int af_ratio = 10;
-  const RATE_CONTROL *const rc = &cpi->rc;
-  int target;
-#if USE_ALTREF_FOR_ONE_PASS
-  if (frame_update_type == KF_UPDATE || frame_update_type == GF_UPDATE ||
-      frame_update_type == ARF_UPDATE) {
-    target = (rc->avg_frame_bandwidth * rc->baseline_gf_interval * af_ratio) /
-             (rc->baseline_gf_interval + af_ratio - 1);
-  } else {
-    target = (rc->avg_frame_bandwidth * rc->baseline_gf_interval) /
-             (rc->baseline_gf_interval + af_ratio - 1);
-  }
-#else
-  target = rc->avg_frame_bandwidth;
-#endif
-  return av1_rc_clamp_pframe_target_size(cpi, target, frame_update_type);
-}
-
-static int calc_iframe_target_size_one_pass_vbr(const AV1_COMP *const cpi) {
-  static const int kf_ratio = 25;
-  const RATE_CONTROL *rc = &cpi->rc;
-  const int target = rc->avg_frame_bandwidth * kf_ratio;
-  return av1_rc_clamp_iframe_target_size(cpi, target);
-}
-
-#define FRAME_OVERHEAD_BITS 200
-
-static int calc_pframe_target_size_one_pass_cbr(
-    const AV1_COMP *cpi, FRAME_UPDATE_TYPE frame_update_type) {
-  const AV1EncoderConfig *oxcf = &cpi->oxcf;
-  const RATE_CONTROL *rc = &cpi->rc;
-  const int64_t diff = rc->optimal_buffer_level - rc->buffer_level;
-  const int64_t one_pct_bits = 1 + rc->optimal_buffer_level / 100;
-  int min_frame_target =
-      AOMMAX(rc->avg_frame_bandwidth >> 4, FRAME_OVERHEAD_BITS);
-  int target;
-
-  if (oxcf->gf_cbr_boost_pct) {
-    const int af_ratio_pct = oxcf->gf_cbr_boost_pct + 100;
-    if (frame_update_type == GF_UPDATE || frame_update_type == OVERLAY_UPDATE) {
-      target =
-          (rc->avg_frame_bandwidth * rc->baseline_gf_interval * af_ratio_pct) /
-          (rc->baseline_gf_interval * 100 + af_ratio_pct - 100);
-    } else {
-      target = (rc->avg_frame_bandwidth * rc->baseline_gf_interval * 100) /
-               (rc->baseline_gf_interval * 100 + af_ratio_pct - 100);
-    }
-  } else {
-    target = rc->avg_frame_bandwidth;
-  }
-
-  if (diff > 0) {
-    // Lower the target bandwidth for this frame.
-    const int pct_low = (int)AOMMIN(diff / one_pct_bits, oxcf->under_shoot_pct);
-    target -= (target * pct_low) / 200;
-  } else if (diff < 0) {
-    // Increase the target bandwidth for this frame.
-    const int pct_high =
-        (int)AOMMIN(-diff / one_pct_bits, oxcf->over_shoot_pct);
-    target += (target * pct_high) / 200;
-  }
-  if (oxcf->rc_max_inter_bitrate_pct) {
-    const int max_rate =
-        rc->avg_frame_bandwidth * oxcf->rc_max_inter_bitrate_pct / 100;
-    target = AOMMIN(target, max_rate);
-  }
-  return AOMMAX(min_frame_target, target);
-}
-
-static int calc_iframe_target_size_one_pass_cbr(const AV1_COMP *cpi) {
-  const RATE_CONTROL *rc = &cpi->rc;
-  int target;
-  if (cpi->common.current_frame.frame_number == 0) {
-    target = ((rc->starting_buffer_level / 2) > INT_MAX)
-                 ? INT_MAX
-                 : (int)(rc->starting_buffer_level / 2);
-  } else {
-    int kf_boost = 32;
-    double framerate = cpi->framerate;
-
-    kf_boost = AOMMAX(kf_boost, (int)(2 * framerate - 16));
-    if (rc->frames_since_key < framerate / 2) {
-      kf_boost = (int)(kf_boost * rc->frames_since_key / (framerate / 2));
-    }
-    target = ((16 + kf_boost) * rc->avg_frame_bandwidth) >> 4;
-  }
-  return av1_rc_clamp_iframe_target_size(cpi, target);
-}
-
 static void define_gf_group_pass0(AV1_COMP *cpi,
                                   const EncodeFrameParams *const frame_params) {
   RATE_CONTROL *const rc = &cpi->rc;
@@ -903,15 +812,15 @@ static void define_gf_group_pass0(AV1_COMP *cpi,
     const FRAME_UPDATE_TYPE cur_update_type = gf_group->update_type[cur_index];
     if (cpi->oxcf.rc_mode == AOM_CBR) {
       if (cur_update_type == KEY_FRAME) {
-        target = calc_iframe_target_size_one_pass_cbr(cpi);
+        target = av1_calc_iframe_target_size_one_pass_cbr(cpi);
       } else {
-        target = calc_pframe_target_size_one_pass_cbr(cpi, cur_update_type);
+        target = av1_calc_pframe_target_size_one_pass_cbr(cpi, cur_update_type);
       }
     } else {
       if (cur_update_type == KEY_FRAME) {
-        target = calc_iframe_target_size_one_pass_vbr(cpi);
+        target = av1_calc_iframe_target_size_one_pass_vbr(cpi);
       } else {
-        target = calc_pframe_target_size_one_pass_vbr(cpi, cur_update_type);
+        target = av1_calc_pframe_target_size_one_pass_vbr(cpi, cur_update_type);
       }
     }
     gf_group->bit_allocation[cur_index] = target;
