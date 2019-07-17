@@ -87,7 +87,7 @@ base::OnceClosure GpuMemoryBufferImplNativePixmap::AllocateForTesting(
 
 bool GpuMemoryBufferImplNativePixmap::Map() {
   DCHECK(!mapped_);
-  DCHECK_EQ(gfx::NumberOfPlanesForBufferFormat(GetFormat()),
+  DCHECK_EQ(gfx::NumberOfPlanesForLinearBufferFormat(GetFormat()),
             handle_.planes.size());
   mapped_ = pixmap_->Map();
   return mapped_;
@@ -105,7 +105,7 @@ void GpuMemoryBufferImplNativePixmap::Unmap() {
 }
 
 int GpuMemoryBufferImplNativePixmap::stride(size_t plane) const {
-  DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
+  DCHECK_LT(plane, gfx::NumberOfPlanesForLinearBufferFormat(format_));
   return pixmap_->GetStride(plane);
 }
 

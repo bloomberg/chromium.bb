@@ -90,7 +90,7 @@ class TestPixmap : public gfx::NativePixmap {
   uint64_t GetBufferFormatModifier() const override { return 0; }
   gfx::BufferFormat GetBufferFormat() const override { return format_; }
   size_t GetNumberOfPlanes() const override {
-    return gfx::NumberOfPlanesForBufferFormat(format_);
+    return gfx::NumberOfPlanesForLinearBufferFormat(format_);
   }
   gfx::Size GetBufferSize() const override { return gfx::Size(); }
   uint32_t GetUniqueId() const override { return 0; }
@@ -161,7 +161,7 @@ base::FilePath HeadlessSurfaceFactory::GetPathForWidget(
   if (base_path_.empty() || base_path_ == base::FilePath(kDevNull))
     return base_path_;
 
-  // Disambiguate multiple window output files with the window id.
+    // Disambiguate multiple window output files with the window id.
 #if defined(OS_WIN)
   std::string path =
       base::NumberToString(reinterpret_cast<int>(widget)) + ".png";

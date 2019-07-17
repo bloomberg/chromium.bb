@@ -417,7 +417,7 @@ bool VADisplayState::InitializeOnce() {
   // the version with which the chromium is built since libva is only
   // guaranteed to be backward (and not forward) compatible.
   if (VA_MAJOR_VERSION > major_version ||
-     (VA_MAJOR_VERSION == major_version && VA_MINOR_VERSION > minor_version)) {
+      (VA_MAJOR_VERSION == major_version && VA_MINOR_VERSION > minor_version)) {
     LOG(ERROR) << "The system version " << major_version << "." << minor_version
                << " should be greater than or equal to "
                << VA_MAJOR_VERSION << "." << VA_MINOR_VERSION;
