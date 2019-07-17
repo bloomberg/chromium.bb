@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_SERVICE_H_
-#define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_SERVICE_H_
+#ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_MANAGER_IMPL_H_
+#define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_MANAGER_IMPL_H_
 
 #include <map>
 #include <memory>
@@ -14,8 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/web_applications/components/web_app_ui_delegate.h"
-#include "components/keyed_service/core/keyed_service.h"
+#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 
 class Profile;
 class Browser;
@@ -26,27 +25,21 @@ class WebAppProvider;
 class WebAppDialogManager;
 
 // This KeyedService is a UI counterpart for WebAppProvider.
-class WebAppUiService : public KeyedService,
-                        public BrowserListObserver,
-                        public WebAppUiDelegate {
+class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
  public:
-  static WebAppUiService* Get(Profile* profile);
+  static WebAppUiManagerImpl* Get(Profile* profile);
 
-  explicit WebAppUiService(Profile* profile);
-  ~WebAppUiService() override;
+  explicit WebAppUiManagerImpl(Profile* profile);
+  ~WebAppUiManagerImpl() override;
 
-  // KeyedService
-  void Shutdown() override;
-
-  WebAppDialogManager& dialog_manager() { return *dialog_manager_; }
-
-  // WebAppUiDelegate
+  // WebAppUiManager:
+  WebAppDialogManager& dialog_manager() override;
   size_t GetNumWindowsForApp(const AppId& app_id) override;
   void NotifyOnAllAppWindowsClosed(const AppId& app_id,
                                    base::OnceClosure callback) override;
   void MigrateOSAttributes(const AppId& from, const AppId& to) override;
 
-  // BrowserListObserver
+  // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
 
@@ -55,17 +48,16 @@ class WebAppUiService : public KeyedService,
 
   std::unique_ptr<WebAppDialogManager> dialog_manager_;
 
-  WebAppProvider* provider_;
   Profile* profile_;
 
   std::map<AppId, std::vector<base::OnceClosure>> windows_closed_requests_map_;
   std::map<AppId, size_t> num_windows_for_apps_map_;
 
-  base::WeakPtrFactory<WebAppUiService> weak_ptr_factory_{this};
+  base::WeakPtrFactory<WebAppUiManagerImpl> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(WebAppUiService);
+  DISALLOW_COPY_AND_ASSIGN(WebAppUiManagerImpl);
 };
 
 }  // namespace web_app
 
-#endif  // CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_SERVICE_H_
+#endif  // CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_UI_MANAGER_IMPL_H_

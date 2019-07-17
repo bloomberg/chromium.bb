@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/test/test_web_app_ui_delegate.h"
+#include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 
 #include <utility>
 
@@ -13,21 +13,28 @@
 
 namespace web_app {
 
-TestWebAppUiDelegate::TestWebAppUiDelegate() = default;
+TestWebAppUiManager::TestWebAppUiManager() = default;
 
-TestWebAppUiDelegate::~TestWebAppUiDelegate() = default;
+TestWebAppUiManager::~TestWebAppUiManager() = default;
 
-void TestWebAppUiDelegate::SetNumWindowsForApp(const AppId& app_id,
-                                               size_t num_windows_for_app) {
+WebAppDialogManager& TestWebAppUiManager::dialog_manager() {
+  // TODO(crbug.com/973324): Implement a TestWebAppDialogManager to return here.
+  NOTIMPLEMENTED();
+  static WebAppDialogManager* manager = nullptr;
+  return *manager;
+}
+
+void TestWebAppUiManager::SetNumWindowsForApp(const AppId& app_id,
+                                              size_t num_windows_for_app) {
   app_id_to_num_windows_map_[app_id] = num_windows_for_app;
 }
 
-size_t TestWebAppUiDelegate::GetNumWindowsForApp(const AppId& app_id) {
+size_t TestWebAppUiManager::GetNumWindowsForApp(const AppId& app_id) {
   DCHECK(base::Contains(app_id_to_num_windows_map_, app_id));
   return app_id_to_num_windows_map_[app_id];
 }
 
-void TestWebAppUiDelegate::NotifyOnAllAppWindowsClosed(
+void TestWebAppUiManager::NotifyOnAllAppWindowsClosed(
     const AppId& app_id,
     base::OnceClosure callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
