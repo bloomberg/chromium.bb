@@ -190,6 +190,8 @@ const char kChromeFeaturesServiceIsPluginVmEnabledMethod[] =
     "IsPluginVmEnabled";
 const char kChromeFeaturesServiceIsUsbguardEnabledMethod[] =
     "IsUsbguardEnabled";
+const char kChromeFeaturesServiceIsVmManagementCliAllowedMethod[] =
+    "IsVmManagementCliAllowed";
 const char kChromeFeaturesServiceIsShillSandboxingEnabledMethod[] =
     "IsShillSandboxingEnabled";
 const char kChromeFeaturesServiceIsFsNosymfollowEnabledMethod[] =
