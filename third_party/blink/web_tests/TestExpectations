@@ -6314,3 +6314,9 @@ crbug.com/970079 fast/events/message-port-multi.html [ Pass Failure ]
 crbug.com/970079 storage/indexeddb/structured-clone.html [ Pass Failure ]
 crbug.com/970079 virtual/mouseevent_fractional/fast/events/message-port-multi.html [ Pass Failure ]
 crbug.com/970079 virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
+
+# Sheriff 2019-07-17
+crbug.com/982149 [ Win7 ] external/wpt/referrer-policy/unsafe-url/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Pass Timeout ]
+crbug.com/982149 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/unsafe-url/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Pass Timeout ]
+crbug.com/982149 [ Win7 ] virtual/not-omt-sw-fetch/external/wpt/referrer-policy/unsafe-url/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Pass Timeout ]
+crbug.com/982149 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/unsafe-url/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Pass Timeout ]
