@@ -22,34 +22,6 @@
   "expiration_time": 14400,
   "tests": [
     {
-      "xcode parallelization": true,
-      "include": "eg2_tests.json",
-      "device type": "iPhone X",
-      "os": "13.0",
-      "pool":"Chrome",
-      "host os": "Mac-10.14.4",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.5"
-          }]
-      },
-      "priority": 30
-    },
-    {
-      "xcode parallelization": true,
-      "include": "eg2_tests.json",
-      "device type": "iPad (6th generation)",
-      "os": "13.0",
-      "pool":"Chrome",
-      "host os": "Mac-10.14.4",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.5"
-          }]
-      },
-      "priority": 30
-    },
-    {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s Plus",
       "os": "13.0",
