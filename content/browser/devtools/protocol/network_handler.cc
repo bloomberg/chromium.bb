@@ -2474,7 +2474,7 @@ void NetworkHandler::OnResponseReceivedExtraInfo(
       devtools_request_id, BuildProtocolBlockedSetCookies(response_cookie_list),
       GetHeaders(response_headers),
       response_headers_text.has_value() ? response_headers_text.value()
-                                        : nullptr);
+                                        : Maybe<String>());
 }
 
 }  // namespace protocol
