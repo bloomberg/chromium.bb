@@ -10,6 +10,13 @@
 
 namespace openscreen {
 
+namespace {
+template <typename T>
+constexpr auto unsigned_cast(T from) {
+  return static_cast<typename std::make_unsigned<T>::type>(from);
+}
+}  // namespace
+
 // Convert from one value type to another, clamping to the min/max of the new
 // value type's range if necessary.
 template <typename To, typename From>
@@ -40,12 +47,12 @@ constexpr To saturate_cast(From from) {
     if (from <= From{0}) {
       return To{0};
     }
-    if (from >= std::numeric_limits<To>::max()) {
+    if (unsigned_cast(from) >= std::numeric_limits<To>::max()) {
       return std::numeric_limits<To>::max();
     }
   } else {
     // Case 3: "From" is unsigned, but "To" is signed.
-    if (from >= std::numeric_limits<To>::max()) {
+    if (from >= unsigned_cast(std::numeric_limits<To>::max())) {
       return std::numeric_limits<To>::max();
     }
     // Note: "From" can never be less than "To's" minimum value.
