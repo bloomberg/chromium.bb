@@ -65,6 +65,7 @@ void ProfileReportGenerator::MaybeGenerate(const base::FilePath& path,
         /* is_pretty_print */ false, /* convert_types */ false);
     GetChromePolicyInfo();
     GetExtensionPolicyInfo();
+    GetPolicyFetchTimestampInfo();
   }
 
   CheckReportStatus();
@@ -104,6 +105,10 @@ void ProfileReportGenerator::GetChromePolicyInfo() {
 
 void ProfileReportGenerator::GetExtensionPolicyInfo() {
   AppendExtensionPolicyInfoIntoProfileReport(policies_, report_.get());
+}
+
+void ProfileReportGenerator::GetPolicyFetchTimestampInfo() {
+  AppendMachineLevelUserCloudPolicyFetchTimestamp(report_.get());
 }
 
 void ProfileReportGenerator::OnPluginsLoaded(
