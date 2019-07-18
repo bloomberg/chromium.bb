@@ -9,6 +9,7 @@
 
 namespace openscreen {
 using ::testing::MatchesRegex;
+using ::testing::StartsWith;
 
 TEST(LocationTest, DefaultInitializedLocationIsNullptr) {
   const Location loc;
@@ -31,7 +32,14 @@ TEST(LocationTest, LocationFromHereIsValid) {
   EXPECT_NE(nullptr, loc_from_here.program_counter());
   EXPECT_NE(nullptr, loc_from_here_macro.program_counter());
 
+// Some platforms have only limited Regex support, so we cannot have as
+// thorough a test on those platforms.
+#if GTEST_USES_POSIX_RE
   EXPECT_THAT(loc_from_here.ToString(), MatchesRegex("pc:0x[0-9a-f]+"));
   EXPECT_THAT(loc_from_here_macro.ToString(), MatchesRegex("pc:0x[0-9a-f]+"));
+#else  // GTEST_USES_SIMPLE_RE = 1
+  EXPECT_THAT(loc_from_here.ToString(), StartsWith("pc:0x"));
+  EXPECT_THAT(loc_from_here_macro.ToString(), StartsWith("pc:0x"));
+#endif
 }
 }  // namespace openscreen
