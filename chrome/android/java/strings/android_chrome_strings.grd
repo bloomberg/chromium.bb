@@ -4019,6 +4019,15 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_DEV_UI_MODULE_TITLE" desc="Text shown when the Developer UI module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Developer UI for Chrome…').">
         Developer UI
       </message>
+
+      <!-- SMS strings -->
+      <message name="IDS_SMS_DIALOG_TITLE" desc="Title shown when Chrome is waiting for an SMS on the user's behalf">
+        Phone number verification
+      </message>
+      <message name="IDS_SMS_DIALOG_STATUS_WAITING" desc="Message shown when Chrome is waiting for an SMS on the user's behalf">
+        Waiting for code
+      </message>
+
     </messages>
   </release>
 </grit>
