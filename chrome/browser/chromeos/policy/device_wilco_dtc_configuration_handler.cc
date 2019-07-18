@@ -14,7 +14,6 @@ namespace {
 chromeos::WilcoDtcSupportdManager* GetWilcoDtcSupportdManager() {
   chromeos::WilcoDtcSupportdManager* const wilco_dtc_supportd_manager =
       chromeos::WilcoDtcSupportdManager::Get();
-  DCHECK(wilco_dtc_supportd_manager);
   return wilco_dtc_supportd_manager;
 }
 
@@ -32,14 +31,18 @@ DeviceWilcoDtcConfigurationHandler::~DeviceWilcoDtcConfigurationHandler() {}
 
 void DeviceWilcoDtcConfigurationHandler::OnDeviceExternalDataCleared(
     const std::string& policy) {
-  GetWilcoDtcSupportdManager()->SetConfigurationData(nullptr);
+  auto* wilco_manager = GetWilcoDtcSupportdManager();
+  if (wilco_manager)
+    wilco_manager->SetConfigurationData(nullptr);
 }
 
 void DeviceWilcoDtcConfigurationHandler::OnDeviceExternalDataFetched(
     const std::string& policy,
     std::unique_ptr<std::string> data,
     const base::FilePath& file_path) {
-  GetWilcoDtcSupportdManager()->SetConfigurationData(std::move(data));
+  auto* wilco_manager = GetWilcoDtcSupportdManager();
+  if (wilco_manager)
+    wilco_manager->SetConfigurationData(std::move(data));
 }
 
 void DeviceWilcoDtcConfigurationHandler::Shutdown() {
