@@ -100,6 +100,15 @@ void ThreadGroupNative::RunNextTaskSourceImpl() {
   }
 }
 
+void ThreadGroupNative::UpdateMinAllowedPriorityLockRequired() {
+  // Tasks should yield as soon as there is work of higher priority in
+  // |priority_queue_|.
+  min_allowed_priority_.store(priority_queue_.IsEmpty()
+                                  ? TaskPriority::BEST_EFFORT
+                                  : priority_queue_.PeekSortKey().priority(),
+                              std::memory_order_relaxed);
+}
+
 RunIntentWithRegisteredTaskSource ThreadGroupNative::GetWork() {
   ScopedWorkersExecutor workers_executor(this);
   CheckedAutoLock auto_lock(lock_);
@@ -116,6 +125,7 @@ RunIntentWithRegisteredTaskSource ThreadGroupNative::GetWork() {
 
     task_source = TakeRunIntentWithRegisteredTaskSource(&workers_executor);
   }
+  UpdateMinAllowedPriorityLockRequired();
   return task_source;
 }
 
@@ -148,6 +158,9 @@ void ThreadGroupNative::EnsureEnoughWorkersLockRequired(
             desired_num_pending_threadpool_work - num_pending_threadpool_work_);
     num_pending_threadpool_work_ = desired_num_pending_threadpool_work;
   }
+  // This function is called every time a task source is queued or re-enqueued,
+  // hence the minimum priority needs to be updated.
+  UpdateMinAllowedPriorityLockRequired();
 }
 
 size_t ThreadGroupNative::GetMaxConcurrentNonBlockedTasksDeprecated() const {

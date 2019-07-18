@@ -20,6 +20,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/clamped_math.h"
+#include "base/optional.h"
 #include "base/sequence_token.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -228,9 +229,9 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
   bool MustIncrementMaxTasksLockRequired()
       EXCLUSIVE_LOCKS_REQUIRED(outer_->lock_);
 
-  bool is_running_best_effort_task_lock_required() const
+  TaskPriority current_task_priority_lock_required() const
       EXCLUSIVE_LOCKS_REQUIRED(outer_->lock_) {
-    return read_any().is_running_best_effort_task;
+    return *read_any().current_task_priority;
   }
 
   // Exposed for AnnotateCheckedLockAcquired in
@@ -278,8 +279,8 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
   // Writes from the worker thread protected by |outer_->lock_|. Reads from any
   // thread, protected by |outer_->lock_| when not on the worker thread.
   struct WriteWorkerReadAny {
-    // Whether the worker is currently running a TaskPriority::BEST_EFFORT task.
-    bool is_running_best_effort_task = false;
+    // The priority of the task the worker is currently running if any.
+    base::Optional<TaskPriority> current_task_priority;
 
     // Time when MayBlockScopeEntered() was last called. Reset when
     // BlockingScopeExited() is called.
@@ -581,7 +582,6 @@ RunIntentWithRegisteredTaskSource
 ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(WorkerThread* worker) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(!worker_only().is_running_task);
-  DCHECK(!read_worker().is_running_best_effort_task);
 
   ScopedWorkersExecutor executor(outer_.get());
   CheckedAutoLock auto_lock(outer_->lock_);
@@ -619,18 +619,10 @@ ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(WorkerThread* worker) {
 
   // Running task bookkeeping.
   worker_only().is_running_task = true;
-  ++outer_->num_running_tasks_;
+  outer_->IncrementTasksRunningLockRequired(priority);
   DCHECK(!outer_->idle_workers_stack_.Contains(worker));
-  DCHECK_LE(outer_->num_running_tasks_, outer_->max_tasks_);
-  DCHECK_LE(outer_->num_running_tasks_, kMaxNumberOfWorkers);
+  write_worker().current_task_priority = priority;
 
-  // Running BEST_EFFORT task bookkeeping.
-  if (priority == TaskPriority::BEST_EFFORT) {
-    write_worker().is_running_best_effort_task = true;
-    ++outer_->num_running_best_effort_tasks_;
-    DCHECK_LE(outer_->num_running_best_effort_tasks_,
-              outer_->max_best_effort_tasks_);
-  }
   return task_source;
 }
 
@@ -660,16 +652,9 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::DidProcessTask(
   DCHECK(!incremented_max_tasks_since_blocked_);
 
   // Running task bookkeeping.
-  DCHECK_GT(outer_->num_running_tasks_, 0U);
-  --outer_->num_running_tasks_;
+  outer_->DecrementTasksRunningLockRequired(
+      *read_worker().current_task_priority);
   worker_only().is_running_task = false;
-
-  // Running BEST_EFFORT task bookkeeping.
-  if (read_worker().is_running_best_effort_task) {
-    DCHECK_GT(outer_->num_running_best_effort_tasks_, 0U);
-    --outer_->num_running_best_effort_tasks_;
-    write_worker().is_running_best_effort_task = false;
-  }
 
   if (transaction_with_task_source) {
     outer_->ReEnqueueTaskSourceLockRequired(
@@ -834,7 +819,7 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::BlockingTypeUpgraded() {
     if (!read_worker().may_block_start_time.is_null()) {
       write_worker().may_block_start_time = TimeTicks();
       --outer_->num_unresolved_may_block_;
-      if (read_worker().is_running_best_effort_task)
+      if (*read_worker().current_task_priority == TaskPriority::BEST_EFFORT)
         --outer_->num_unresolved_best_effort_may_block_;
     }
   }
@@ -848,12 +833,11 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::BlockingEnded() {
 
   CheckedAutoLock auto_lock(outer_->lock_);
   if (incremented_max_tasks_since_blocked_) {
-    outer_->DecrementMaxTasksLockRequired(
-        read_worker().is_running_best_effort_task);
+    outer_->DecrementMaxTasksLockRequired(*read_worker().current_task_priority);
   } else {
     DCHECK(!read_worker().may_block_start_time.is_null());
     --outer_->num_unresolved_may_block_;
-    if (read_worker().is_running_best_effort_task)
+    if (*read_worker().current_task_priority == TaskPriority::BEST_EFFORT)
       --outer_->num_unresolved_best_effort_may_block_;
   }
 
@@ -872,7 +856,7 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::MayBlockEntered() {
   DCHECK(read_worker().may_block_start_time.is_null());
   write_worker().may_block_start_time = subtle::TimeTicksNowIgnoringOverride();
   ++outer_->num_unresolved_may_block_;
-  if (read_worker().is_running_best_effort_task)
+  if (*read_worker().current_task_priority == TaskPriority::BEST_EFFORT)
     ++outer_->num_unresolved_best_effort_may_block_;
 
   outer_->MaybeScheduleAdjustMaxTasksLockRequired(&executor);
@@ -888,8 +872,7 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::WillBlockEntered() {
   DCHECK(!incremented_max_tasks_since_blocked_);
   DCHECK(read_worker().may_block_start_time.is_null());
   incremented_max_tasks_since_blocked_ = true;
-  outer_->IncrementMaxTasksLockRequired(
-      read_worker().is_running_best_effort_task);
+  outer_->IncrementMaxTasksLockRequired(*read_worker().current_task_priority);
   outer_->EnsureEnoughWorkersLockRequired(&executor);
 }
 
@@ -933,7 +916,7 @@ bool ThreadGroupImpl::WorkerThreadDelegateImpl::
     incremented_max_tasks_since_blocked_ = true;
 
     --outer_->num_unresolved_may_block_;
-    if (read_any().is_running_best_effort_task)
+    if (*read_any().current_task_priority == TaskPriority::BEST_EFFORT)
       --outer_->num_unresolved_best_effort_may_block_;
 
     return true;
@@ -1067,6 +1050,10 @@ void ThreadGroupImpl::EnsureEnoughWorkersLockRequired(
   if (desired_num_awake_workers == num_awake_workers)
     MaintainAtLeastOneIdleWorkerLockRequired(executor);
 
+  // This function is called every time a task source is (re-)enqueued,
+  // hence the minimum priority needs to be updated.
+  UpdateMinAllowedPriorityLockRequired();
+
   // Ensure that the number of workers is periodically adjusted if needed.
   MaybeScheduleAdjustMaxTasksLockRequired(executor);
 }
@@ -1090,7 +1077,7 @@ void ThreadGroupImpl::AdjustMaxTasks() {
     AnnotateAcquiredLockAlias annotate(lock_, delegate->lock());
     if (delegate->MustIncrementMaxTasksLockRequired()) {
       IncrementMaxTasksLockRequired(
-          delegate->is_running_best_effort_task_lock_required());
+          delegate->current_task_priority_lock_required());
     }
   }
 
@@ -1147,18 +1134,53 @@ bool ThreadGroupImpl::ShouldPeriodicallyAdjustMaxTasksLockRequired() {
          num_unresolved_may_block_ > 0;
 }
 
-void ThreadGroupImpl::DecrementMaxTasksLockRequired(
-    bool is_running_best_effort_task) {
-  --max_tasks_;
-  if (is_running_best_effort_task)
-    --max_best_effort_tasks_;
+void ThreadGroupImpl::UpdateMinAllowedPriorityLockRequired() {
+  if (priority_queue_.IsEmpty() || num_running_tasks_ < max_tasks_) {
+    min_allowed_priority_.store(TaskPriority::BEST_EFFORT,
+                                std::memory_order_relaxed);
+  } else {
+    min_allowed_priority_.store(priority_queue_.PeekSortKey().priority(),
+                                std::memory_order_relaxed);
+  }
 }
 
-void ThreadGroupImpl::IncrementMaxTasksLockRequired(
-    bool is_running_best_effort_task) {
+void ThreadGroupImpl::DecrementTasksRunningLockRequired(TaskPriority priority) {
+  DCHECK_GT(num_running_tasks_, 0U);
+  --num_running_tasks_;
+  if (priority == TaskPriority::BEST_EFFORT) {
+    DCHECK_GT(num_running_best_effort_tasks_, 0U);
+    --num_running_best_effort_tasks_;
+  }
+  UpdateMinAllowedPriorityLockRequired();
+}
+
+void ThreadGroupImpl::IncrementTasksRunningLockRequired(TaskPriority priority) {
+  ++num_running_tasks_;
+  DCHECK_LE(num_running_tasks_, max_tasks_);
+  DCHECK_LE(num_running_tasks_, kMaxNumberOfWorkers);
+  if (priority == TaskPriority::BEST_EFFORT) {
+    ++num_running_best_effort_tasks_;
+    DCHECK_LE(num_running_best_effort_tasks_, num_running_tasks_);
+    DCHECK_LE(num_running_best_effort_tasks_, max_best_effort_tasks_);
+  }
+  UpdateMinAllowedPriorityLockRequired();
+}
+
+void ThreadGroupImpl::DecrementMaxTasksLockRequired(TaskPriority priority) {
+  DCHECK_GE(num_running_tasks_, 0U);
+  DCHECK_GT(max_tasks_, 0U);
+  --max_tasks_;
+  if (priority == TaskPriority::BEST_EFFORT)
+    --max_best_effort_tasks_;
+  UpdateMinAllowedPriorityLockRequired();
+}
+
+void ThreadGroupImpl::IncrementMaxTasksLockRequired(TaskPriority priority) {
+  DCHECK_GE(num_running_tasks_, 0U);
   ++max_tasks_;
-  if (is_running_best_effort_task)
+  if (priority == TaskPriority::BEST_EFFORT)
     ++max_best_effort_tasks_;
+  UpdateMinAllowedPriorityLockRequired();
 }
 
 ThreadGroupImpl::InitializedInStart::InitializedInStart() = default;

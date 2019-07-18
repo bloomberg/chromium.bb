@@ -237,6 +237,15 @@ void ThreadGroup::InvalidateAndHandoffAllTaskSourcesToOtherThreadGroup(
   replacement_thread_group_ = destination_thread_group;
 }
 
+bool ThreadGroup::ShouldYield(TaskPriority priority) const {
+  // It is safe to read |min_allowed_priority_| without a lock since this
+  // variable is atomic, keeping in mind that threads may not immediately see
+  // the new value when it is updated.
+  return !task_tracker_->CanRunPriority(priority) ||
+         priority < TS_UNCHECKED_READ(min_allowed_priority_)
+                        .load(std::memory_order_relaxed);
+}
+
 #if defined(OS_WIN)
 // static
 std::unique_ptr<win::ScopedWindowsThreadEnvironment>

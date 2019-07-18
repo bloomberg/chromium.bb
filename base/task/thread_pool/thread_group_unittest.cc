@@ -397,6 +397,27 @@ TEST_P(ThreadGroupTestAllExecutionModes, CanRunPolicyLoad) {
       &task_tracker_);
 }
 
+// Verifies that ShouldYield() returns true for a priority that is not allowed
+// to run by the CanRunPolicy.
+TEST_P(ThreadGroupTest, CanRunPolicyShouldYield) {
+  StartThreadGroup();
+
+  task_tracker_.SetCanRunPolicy(CanRunPolicy::kNone);
+  thread_group_->DidUpdateCanRunPolicy();
+  EXPECT_TRUE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
+  EXPECT_TRUE(thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+
+  task_tracker_.SetCanRunPolicy(CanRunPolicy::kForegroundOnly);
+  thread_group_->DidUpdateCanRunPolicy();
+  EXPECT_TRUE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
+  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+
+  task_tracker_.SetCanRunPolicy(CanRunPolicy::kAll);
+  thread_group_->DidUpdateCanRunPolicy();
+  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
+  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+}
+
 // Verify that the maximum number of BEST_EFFORT tasks that can run concurrently
 // in a thread group does not affect Sequences with a priority that was
 // increased from BEST_EFFORT to USER_BLOCKING.
@@ -538,6 +559,24 @@ TEST_P(ThreadGroupTestAllExecutionModes, NoWorkerEnvironment) {
   task_ran.Wait();
 }
 #endif
+
+// Verifies that ShouldYield() returns false when there is no pending task.
+TEST_P(ThreadGroupTest, ShouldYieldSingleTask) {
+  StartThreadGroup();
+
+  test::CreateTaskRunner(TaskPriority::USER_BLOCKING,
+                         &mock_pooled_task_runner_delegate_)
+      ->PostTask(
+          FROM_HERE, BindLambdaForTesting([&]() {
+            EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
+            EXPECT_FALSE(
+                thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+            EXPECT_FALSE(
+                thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+          }));
+
+  task_tracker_.FlushForTesting();
+}
 
 // Verify that tasks from a JobTaskSource run at the intended concurrency.
 TEST_P(ThreadGroupTest, ScheduleJobTaskSource) {
