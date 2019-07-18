@@ -20,7 +20,7 @@
 #  <http://www.gnu.org/licenses/>.
 
 # Currently maintained by Sponge Jhan <school510587@yahoo.com.tw>
-# Version: 2019-05
+# Version: 2019-07
 #
 # This table mainly conforms to the rules listed in the
 # following Wikipedia page to braille Han characters:
@@ -90,6 +90,7 @@ letter \x00DF 34568
 letter \x00E0 17-256
 letter \x00E1 17-23
 letter \x00E4 3458
+letter \x00E6 146
 letter \x00E8 157-256
 letter \x00E9 157-23
 letter \x00EC 247-256
@@ -121,8 +122,11 @@ letter \x01D2 1357-25
 letter \x01D4 1367-25
 #end Latin Extended-B
 
+# Most characters of the table belong to IPA Extensions section (U+0250-U+02AF).
+include IPA-unicode-range.uti
+
 #begin IPA Extensions (U+0250-U+02AF)
-letter \x0251 46-1
+noback sign \x025D 235-345-5-1235
 #end IPA Extensions
 
 #begin Spacing Modifier Letters (U+02B0-U+02FF)
@@ -195,6 +199,10 @@ letter \x03DD 46-1236
 letter \x03E0 46-147
 letter \x03E1 46-14
 #end Greek and Coptic
+
+#begin Phonetic Extensions (U+1D00-U+1D7F)
+noback sign \x1D1C 12356
+#end Phonetic Extensions
 
 #begin General Punctuation (U+2000-U+206F)
 sign \x200E 36-345
