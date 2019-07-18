@@ -185,7 +185,7 @@ by a child template that "extends" this file.
              the module installation will not automatically bring in DFM's
              manifest entries. -->
         <meta-data android:name="com.google.ar.core.min_apk_version"
-            android:value="190310000"/>
+            android:value="190531000"/>
         <activity
             android:name="com.google.ar.core.InstallActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
