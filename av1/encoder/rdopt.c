@@ -8464,6 +8464,7 @@ static INLINE void find_best_non_dual_interp_filter(
              filter_sets[i].as_filters.y_filter);
       if (cpi->sf.adaptive_interp_filter_search &&
           (cpi->sf.interp_filter_search_mask & (1 << (i >> 2)))) {
+        skip_pred = (skip_hor & skip_ver);
         continue;
       }
       interpolation_filter_rd(
