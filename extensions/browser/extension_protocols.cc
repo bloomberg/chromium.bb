@@ -266,7 +266,8 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
       // proceed; see crbug.com/703888.
       if (verify_job_.get()) {
         std::string tmp;
-        verify_job_->BytesRead(0, base::data(tmp));
+        verify_job_->BytesRead(base::data(tmp), 0,
+                               base::File::FILE_ERROR_FAILED);
         verify_job_->DoneReading();
       }
     }
@@ -292,7 +293,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     if (result > 0) {
       bytes_read_ += result;
       if (verify_job_.get())
-        verify_job_->BytesRead(result, buffer->data());
+        verify_job_->BytesRead(buffer->data(), result, base::File::FILE_OK);
     }
   }
 
@@ -715,14 +716,21 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
     if (read_result == base::File::FILE_OK) {
       UMA_HISTOGRAM_COUNTS_1M("ExtensionUrlRequest.OnReadCompleteResult",
                               read_result);
-      base::AutoLock auto_lock(lock_);
-      bytes_read_ += num_bytes_read;
-      if (verify_job_.get())
-        verify_job_->BytesRead(num_bytes_read, static_cast<const char*>(data));
     } else {
       net::Error net_error = net::FileErrorToNetError(read_result);
       base::UmaHistogramSparse("ExtensionUrlRequest.OnReadCompleteError",
                                net_error);
+    }
+    {
+      base::AutoLock auto_lock(lock_);
+      bytes_read_ += num_bytes_read;
+      if (verify_job_) {
+        // Note: We still pass the data to |verify_job_|, even if there was a
+        // read error, because some errors are ignorable. See
+        // ContentVerifyJob::BytesRead() for more details.
+        verify_job_->BytesRead(static_cast<const char*>(data), num_bytes_read,
+                               read_result);
+      }
     }
   }
 
