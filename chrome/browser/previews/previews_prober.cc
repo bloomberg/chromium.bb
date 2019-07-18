@@ -5,11 +5,13 @@
 #include "chrome/browser/previews/previews_prober.h"
 
 #include <math.h>
+#include <cmath>
 
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
@@ -39,6 +41,8 @@ namespace {
 const char kCachePrefKeyPrefix[] = "previews.prober.cache";
 
 const char kSuccessHistogram[] = "Previews.Prober.DidSucceed";
+const char kHttpRespCodeHistogram[] = "Previews.Prober.ResponseCode";
+const char kNetErrorHistogram[] = "Previews.Prober.NetError";
 
 // Please keep this up to date with logged histogram suffix
 // |Previews.Prober.Clients| in tools/metrics/histograms/histograms.xml.
@@ -435,7 +439,13 @@ void PreviewsProber::OnURLLoadComplete(
   int response_code = -1;
   if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
     response_code = url_loader_->ResponseInfo()->headers->response_code();
+
+    base::UmaHistogramSparse(AppendNameToHistogram(kHttpRespCodeHistogram),
+                             std::abs(response_code));
   }
+
+  base::UmaHistogramSparse(AppendNameToHistogram(kNetErrorHistogram),
+                           std::abs(url_loader_->NetError()));
 
   bool was_successful = delegate_->IsResponseSuccess(
       static_cast<net::Error>(url_loader_->NetError()),
@@ -455,6 +465,11 @@ void PreviewsProber::OnURLLoadComplete(
 void PreviewsProber::ProcessProbeTimeout() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(url_loader_);
+
+  // Since we manually set the timeout handling of the probe, record the net
+  // error here as well for simplicity.
+  base::UmaHistogramSparse(AppendNameToHistogram(kNetErrorHistogram),
+                           std::abs(net::ERR_TIMED_OUT));
 
   url_loader_.reset();
   successive_timeout_count_++;

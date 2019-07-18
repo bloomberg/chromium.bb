@@ -4,6 +4,8 @@
 
 #include "chrome/browser/previews/previews_prober.h"
 
+#include <cmath>
+
 #include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
@@ -213,6 +215,10 @@ TEST_F(PreviewsProberTest, OK) {
 
   histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
                                       true, 1);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.ResponseCode.Litepages",
+                                      net::HTTP_OK, 1);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.NetError.Litepages",
+                                      std::abs(net::OK), 1);
 }
 
 TEST_F(PreviewsProberTest, OK_Callback) {
@@ -232,6 +238,10 @@ TEST_F(PreviewsProberTest, OK_Callback) {
 
   histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
                                       true, 1);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.ResponseCode.Litepages",
+                                      net::HTTP_OK, 1);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.NetError.Litepages",
+                                      std::abs(net::OK), 1);
 }
 
 TEST_F(PreviewsProberTest, MultipleStart) {
@@ -377,6 +387,10 @@ TEST_F(PreviewsProberTest, PersistentCache) {
 
   histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
                                       true, 1);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.ResponseCode.Litepages",
+                                      net::HTTP_OK, 1);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.NetError.Litepages",
+                                      std::abs(net::OK), 1);
 }
 
 #if defined(OS_ANDROID)
@@ -414,6 +428,10 @@ TEST_F(PreviewsProberTest, NetError) {
 
   histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
                                       false, 4);
+  histogram_tester.ExpectTotalCount("Previews.Prober.ResponseCode.Litepages",
+                                    0);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.NetError.Litepages",
+                                      std::abs(net::ERR_FAILED), 4);
 }
 
 TEST_F(PreviewsProberTest, NetError_Callback) {
@@ -433,6 +451,10 @@ TEST_F(PreviewsProberTest, NetError_Callback) {
 
   histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
                                       false, 4);
+  histogram_tester.ExpectTotalCount("Previews.Prober.ResponseCode.Litepages",
+                                    0);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.NetError.Litepages",
+                                      std::abs(net::ERR_FAILED), 4);
 }
 
 TEST_F(PreviewsProberTest, HttpError) {
@@ -449,6 +471,10 @@ TEST_F(PreviewsProberTest, HttpError) {
 
   histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
                                       false, 4);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.ResponseCode.Litepages",
+                                      net::HTTP_NOT_FOUND, 4);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.NetError.Litepages",
+                                      std::abs(net::OK), 4);
 }
 
 TEST_F(PreviewsProberTest, RandomGUID) {
@@ -505,6 +531,10 @@ TEST_F(PreviewsProberTest, RetryLinear) {
 
   histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
                                       false, 3);
+  histogram_tester.ExpectTotalCount("Previews.Prober.ResponseCode.Litepages",
+                                    0);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.NetError.Litepages",
+                                      std::abs(net::ERR_FAILED), 3);
 }
 
 TEST_F(PreviewsProberTest, RetryExponential) {
@@ -544,6 +574,10 @@ TEST_F(PreviewsProberTest, RetryExponential) {
 
   histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
                                       false, 3);
+  histogram_tester.ExpectTotalCount("Previews.Prober.ResponseCode.Litepages",
+                                    0);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.NetError.Litepages",
+                                      std::abs(net::ERR_FAILED), 3);
 }
 
 TEST_F(PreviewsProberTest, TimeoutLinear) {
@@ -584,6 +618,10 @@ TEST_F(PreviewsProberTest, TimeoutLinear) {
 
   histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
                                       false, 2);
+  histogram_tester.ExpectTotalCount("Previews.Prober.ResponseCode.Litepages",
+                                    0);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.NetError.Litepages",
+                                      std::abs(net::ERR_TIMED_OUT), 2);
 }
 
 TEST_F(PreviewsProberTest, TimeoutExponential) {
@@ -624,6 +662,10 @@ TEST_F(PreviewsProberTest, TimeoutExponential) {
 
   histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
                                       false, 2);
+  histogram_tester.ExpectTotalCount("Previews.Prober.ResponseCode.Litepages",
+                                    0);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.NetError.Litepages",
+                                      std::abs(net::ERR_TIMED_OUT), 2);
 }
 
 TEST_F(PreviewsProberTest, DelegateStopsFirstProbe) {
