@@ -5,6 +5,7 @@
 #include "chrome/browser/previews/previews_prober.h"
 
 #include "base/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -199,6 +200,7 @@ class PreviewsProberTest : public testing::Test {
 };
 
 TEST_F(PreviewsProberTest, OK) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<PreviewsProber> prober = NewProber();
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
@@ -208,9 +210,13 @@ TEST_F(PreviewsProberTest, OK) {
   MakeResponseAndWait(net::HTTP_OK, net::OK);
   EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
+                                      true, 1);
 }
 
 TEST_F(PreviewsProberTest, OK_Callback) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<PreviewsProber> prober = NewProber();
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
@@ -223,6 +229,9 @@ TEST_F(PreviewsProberTest, OK_Callback) {
 
   EXPECT_TRUE(callback_result().has_value());
   EXPECT_TRUE(callback_result().value());
+
+  histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
+                                      true, 1);
 }
 
 TEST_F(PreviewsProberTest, MultipleStart) {
@@ -344,6 +353,7 @@ TEST_F(PreviewsProberTest, CacheAutoRevalidation) {
 }
 
 TEST_F(PreviewsProberTest, PersistentCache) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<PreviewsProber> prober = NewProber();
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
@@ -364,6 +374,9 @@ TEST_F(PreviewsProberTest, PersistentCache) {
   FastForward(kCacheRevalidateAfter);
   EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
   EXPECT_TRUE(prober->is_active());
+
+  histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
+                                      true, 1);
 }
 
 #if defined(OS_ANDROID)
@@ -388,6 +401,7 @@ TEST_F(PreviewsProberTest, DoesntCallSendInForegroundIfInactive) {
 #endif
 
 TEST_F(PreviewsProberTest, NetError) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<PreviewsProber> prober = NewProber();
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
@@ -397,9 +411,13 @@ TEST_F(PreviewsProberTest, NetError) {
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
+                                      false, 4);
 }
 
 TEST_F(PreviewsProberTest, NetError_Callback) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<PreviewsProber> prober = NewProber();
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
@@ -412,9 +430,13 @@ TEST_F(PreviewsProberTest, NetError_Callback) {
 
   EXPECT_TRUE(callback_result().has_value());
   EXPECT_FALSE(callback_result().value());
+
+  histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
+                                      false, 4);
 }
 
 TEST_F(PreviewsProberTest, HttpError) {
+  base::HistogramTester histogram_tester;
   std::unique_ptr<PreviewsProber> prober = NewProber();
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
 
@@ -424,6 +446,9 @@ TEST_F(PreviewsProberTest, HttpError) {
   MakeResponseAndWait(net::HTTP_NOT_FOUND, net::OK);
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
+                                      false, 4);
 }
 
 TEST_F(PreviewsProberTest, RandomGUID) {
@@ -444,6 +469,7 @@ TEST_F(PreviewsProberTest, RandomGUID) {
 }
 
 TEST_F(PreviewsProberTest, RetryLinear) {
+  base::HistogramTester histogram_tester;
   PreviewsProber::RetryPolicy retry_policy;
   retry_policy.max_retries = 2;
   retry_policy.backoff = PreviewsProber::Backoff::kLinear;
@@ -476,9 +502,13 @@ TEST_F(PreviewsProberTest, RetryLinear) {
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
+                                      false, 3);
 }
 
 TEST_F(PreviewsProberTest, RetryExponential) {
+  base::HistogramTester histogram_tester;
   PreviewsProber::RetryPolicy retry_policy;
   retry_policy.max_retries = 2;
   retry_policy.backoff = PreviewsProber::Backoff::kExponential;
@@ -511,9 +541,13 @@ TEST_F(PreviewsProberTest, RetryExponential) {
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
+                                      false, 3);
 }
 
 TEST_F(PreviewsProberTest, TimeoutLinear) {
+  base::HistogramTester histogram_tester;
   PreviewsProber::RetryPolicy retry_policy;
   retry_policy.max_retries = 1;
   retry_policy.base_interval = base::TimeDelta::FromMilliseconds(10);
@@ -547,9 +581,13 @@ TEST_F(PreviewsProberTest, TimeoutLinear) {
   VerifyNoRequests();
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
+                                      false, 2);
 }
 
 TEST_F(PreviewsProberTest, TimeoutExponential) {
+  base::HistogramTester histogram_tester;
   PreviewsProber::RetryPolicy retry_policy;
   retry_policy.max_retries = 1;
   retry_policy.base_interval = base::TimeDelta::FromMilliseconds(10);
@@ -583,9 +621,13 @@ TEST_F(PreviewsProberTest, TimeoutExponential) {
   VerifyNoRequests();
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
   EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
+                                      false, 2);
 }
 
 TEST_F(PreviewsProberTest, DelegateStopsFirstProbe) {
+  base::HistogramTester histogram_tester;
   TestDelegate delegate;
   delegate.set_should_send_next_probe(false);
 
@@ -602,6 +644,8 @@ TEST_F(PreviewsProberTest, DelegateStopsFirstProbe) {
   EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
   EXPECT_FALSE(prober->is_active());
   VerifyNoRequests();
+
+  histogram_tester.ExpectTotalCount("Previews.Prober.DidSucceed.Litepages", 0);
 }
 
 TEST_F(PreviewsProberTest, DelegateStopsRetries) {

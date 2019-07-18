@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/guid.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
@@ -37,10 +38,16 @@ namespace {
 
 const char kCachePrefKeyPrefix[] = "previews.prober.cache";
 
+const char kSuccessHistogram[] = "Previews.Prober.DidSucceed";
+
+// Please keep this up to date with logged histogram suffix
+// |Previews.Prober.Clients| in tools/metrics/histograms/histograms.xml.
+// These names are also used in prefs so they should not be changed without
+// consideration for removing the old value.
 std::string NameForClient(PreviewsProber::ClientName name) {
   switch (name) {
     case PreviewsProber::ClientName::kLitepages:
-      return "litepages";
+      return "Litepages";
   }
   NOTREACHED();
   return std::string();
@@ -541,6 +548,11 @@ void PreviewsProber::RecordProbeResult(bool success) {
 
   if (on_complete_callback_)
     on_complete_callback_.Run(success);
+
+  base::BooleanHistogram::FactoryGet(
+      AppendNameToHistogram(kSuccessHistogram),
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(success);
 }
 
 std::string PreviewsProber::GetCacheKeyForCurrentNetwork() const {
@@ -548,4 +560,9 @@ std::string PreviewsProber::GetCacheKeyForCurrentNetwork() const {
   return base::StringPrintf(
       "%s;%s:%d", GenerateNetworkID(network_connection_tracker_).c_str(),
       url_.host().c_str(), url_.EffectiveIntPort());
+}
+
+std::string PreviewsProber::AppendNameToHistogram(
+    const std::string& histogram) const {
+  return base::StringPrintf("%s.%s", histogram.c_str(), name_.c_str());
 }
