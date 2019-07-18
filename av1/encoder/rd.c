@@ -351,12 +351,6 @@ int av1_compute_rd_mult_based_on_qindex(const AV1_COMP *cpi, int qindex) {
   const int q = av1_dc_quant_QTX(qindex, 0, cpi->common.seq_params.bit_depth);
   int rdmult = q * q;
   rdmult = rdmult * 3 + (rdmult * 2 / 3);
-  if (frame_is_intra_only(&cpi->common) && cpi->oxcf.rc_mode == AOM_Q &&
-      qindex > 64 && qindex <= 192) {
-    // Formula is picked experimentally.
-    rdmult = rdmult * 13 / 4;
-  }
-
   switch (cpi->common.seq_params.bit_depth) {
     case AOM_BITS_8: break;
     case AOM_BITS_10: rdmult = ROUND_POWER_OF_TWO(rdmult, 4); break;
