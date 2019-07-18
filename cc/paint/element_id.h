@@ -1,9 +1,9 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TREES_ELEMENT_ID_H_
-#define CC_TREES_ELEMENT_ID_H_
+#ifndef CC_PAINT_ELEMENT_ID_H_
+#define CC_PAINT_ELEMENT_ID_H_
 
 #include <stddef.h>
 
@@ -13,7 +13,7 @@
 #include <memory>
 
 #include "base/hash/hash.h"
-#include "cc/cc_export.h"
+#include "cc/paint/paint_export.h"
 
 namespace base {
 class Value;
@@ -44,7 +44,7 @@ using ElementIdType = uint64_t;
 // to the layer tree and uses element ids as a stable identifier for animation
 // targets. A Layer's element id can change over the Layer's lifetime because
 // non-default ElementIds are only set during an animation's lifetime.
-struct CC_EXPORT ElementId {
+struct CC_PAINT_EXPORT ElementId {
   explicit ElementId(ElementIdType id) : id_(id) {
     DCHECK_NE(id, kInvalidElementId);
   }
@@ -75,15 +75,16 @@ struct CC_EXPORT ElementId {
   ElementIdType id_;
 };
 
-ElementId CC_EXPORT LayerIdToElementIdForTesting(int layer_id);
+ElementId CC_PAINT_EXPORT LayerIdToElementIdForTesting(int layer_id);
 
-struct CC_EXPORT ElementIdHash {
+struct CC_PAINT_EXPORT ElementIdHash {
   size_t operator()(ElementId key) const;
 };
 
 // Stream operator so ElementId can be used in assertion statements.
-CC_EXPORT std::ostream& operator<<(std::ostream& out, const ElementId& id);
+CC_PAINT_EXPORT std::ostream& operator<<(std::ostream& out,
+                                         const ElementId& id);
 
 }  // namespace cc
 
-#endif  // CC_TREES_ELEMENT_ID_H_
+#endif  // CC_PAINT_ELEMENT_ID_H_
