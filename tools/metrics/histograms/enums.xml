@@ -23929,6 +23929,8 @@ Called by update_net_error_codes.py.-->
   <int value="2965" label="CSSValueAppearanceButtonForSelectRendered"/>
   <int value="2966" label="CSSValueAppearanceListboxForOthersRendered"/>
   <int value="2967" label="CSSValueAppearanceMeterForOthersRendered"/>
+  <int value="2968" label="SVGSMILDiscardElementParsed"/>
+  <int value="2969" label="SVGSMILDiscardElementTriggered"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
