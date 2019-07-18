@@ -774,7 +774,6 @@ class CORE_EXPORT LocalFrameView final
       DocumentLifecycle::LifecycleState target_state);
   void RunPaintLifecyclePhase();
 
-  void PrePaint();
   void PaintTree();
   void UpdateStyleAndLayoutIfNeededRecursive();
 
