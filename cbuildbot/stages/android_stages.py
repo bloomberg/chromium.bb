@@ -233,6 +233,7 @@ class DownloadAndroidDebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
 
     arch = self._run.DetermineAndroidABI(self._current_board)
     variant = self._run.DetermineAndroidVariant(self._current_board)
+    android_target = self._run.DetermineAndroidTarget(self._current_board)
     # For user builds, there are no suffix.
     # For userdebug builds, there is an explicit '_userdebug' suffix.
     suffix = ''
@@ -241,6 +242,7 @@ class DownloadAndroidDebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
 
     symbols_file_url = constants.ANDROID_SYMBOLS_URL_TEMPLATE % {
         'branch': android_build_branch,
+        'target': android_target,
         'arch': arch,
         'version': android_version,
         'variant': variant,

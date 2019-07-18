@@ -117,6 +117,8 @@ class NoAndroidABIError(Exception):
 class NoAndroidVariantError(Exception):
   """For when Android variant cannot be determined."""
 
+class NoAndroidTargetError(Exception):
+  """For when Android target cannot be determined."""
 
 class NoAndroidVersionError(Exception):
   """For when Android version cannot be determined."""
@@ -794,9 +796,8 @@ class _BuilderRunBase(object):
     ebuild_path = portage_util.FindEbuildForBoardPackage(android_package, board)
     host_ebuild_path = path_util.FromChrootPath(ebuild_path)
     # We assume all targets pull from the same branch and that we always
-    # have an ARM_TARGET, ARM_USERDEBUG_TARGET, or an AOSP_X86_USERDEBUG_TARGET.
-    targets = ['ARM_TARGET', 'ARM_USERDEBUG_TARGET',
-               'AOSP_X86_USERDEBUG_TARGET']
+    # have an ARM_TARGET, ARM_USERDEBUG_TARGET, or an X86_USERDEBUG_TARGET.
+    targets = ['ARM_TARGET', 'ARM_USERDEBUG_TARGET', 'X86_USERDEBUG_TARGET']
     ebuild_content = osutils.SourceEnvironment(host_ebuild_path, targets)
     for target in targets:
       if target in ebuild_content:
@@ -847,13 +848,32 @@ class _BuilderRunBase(object):
         'Android Variant cannot be deteremined for the package: %s' %
         android_package)
 
+  def DetermineAndroidTarget(self, board):
+    try:
+      android_package = self.DetermineAndroidPackage(board)
+    except cros_build_lib.RunCommandError:
+      raise NoAndroidTargetError(
+          'Android Target could not be determined for %s' % board)
+    if not android_package:
+      raise NoAndroidTargetError(
+          'Android Target could not be determined for %s (no package?)' %
+          board)
+    if android_package.startswith('chromeos-base/android-vm-'):
+      return 'bertha'
+    elif android_package.startswith('chromeos-base/android-container-'):
+      return 'cheets'
+
+    raise NoAndroidTargetError(
+        'Android Target cannot be determined for the package: %s' %
+        android_package)
 
   def DetermineAndroidPackage(self, board):
     """Returns the active Android container package in use by the board."""
     packages = portage_util.GetPackageDependencies(board, 'virtual/target-os')
     # We assume there is only one Android package in the depgraph.
     for package in packages:
-      if package.startswith('chromeos-base/android-container'):
+      if package.startswith('chromeos-base/android-container-') or \
+         package.startswith('chromeos-base/android-vm-'):
         return package
     return None
 

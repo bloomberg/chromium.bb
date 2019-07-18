@@ -721,7 +721,8 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
         buildroot=self._build_root)
 
     android_packages = [p for p in packages
-                        if p.startswith('chromeos-base/android-container')]
+                        if p.startswith('chromeos-base/android-container-') or \
+                        p.startswith('chromeos-base/android-vm-')]
 
     assert len(android_packages) <= 1
 
@@ -746,8 +747,8 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
     host_ebuild_path = path_util.FromChrootPath(ebuild_path,
                                                 source_path=self._build_root)
     # We assume all targets pull from the same branch and that we always
-    # have an ARM_TARGET or an AOSP_X86_USERDEBUG_TARGET.
-    targets = ['ARM_TARGET', 'AOSP_X86_USERDEBUG_TARGET']
+    # have an ARM_TARGET or an X86_USERDEBUG_TARGET.
+    targets = ['ARM_TARGET', 'X86_USERDEBUG_TARGET']
     ebuild_content = osutils.SourceEnvironment(host_ebuild_path, targets)
     logging.info('Got ebuild env: %s', ebuild_content)
     for target in targets:
@@ -817,6 +818,7 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
     android_version = self.DetermineAndroidVersion(android_package)
     arch = self.DetermineAndroidABI()
     variant = self._run.DetermineAndroidVariant(self._current_board)
+    android_target = self._run.DetermineAndroidTarget(self._current_board)
     # For user builds, there are no suffix.
     # For userdebug builds, there is an explicit '_userdebug' suffix.
     suffix = ''
@@ -829,6 +831,7 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
 
     symbols_file_url = constants.ANDROID_SYMBOLS_URL_TEMPLATE % {
         'branch': android_build_branch,
+        'target': android_target,
         'arch': arch,
         'version': android_version,
         'variant': variant,
