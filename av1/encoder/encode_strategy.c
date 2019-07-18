@@ -173,7 +173,6 @@ static INLINE void update_frames_till_gf_update(AV1_COMP *cpi) {
   }
 }
 
-#if !CONFIG_REALTIME_ONLY
 static INLINE void update_gf_group_index(AV1_COMP *cpi) {
   // Increment the gf group index ready for the next frame. If this is
   // a show_existing_frame with a source other than altref, or if it is not
@@ -184,14 +183,11 @@ static INLINE void update_gf_group_index(AV1_COMP *cpi) {
     ++cpi->gf_group.index;
   }
 }
-#endif
 
 static void update_rc_counts(AV1_COMP *cpi) {
   update_keyframe_counters(cpi);
   update_frames_till_gf_update(cpi);
-#if !CONFIG_REALTIME_ONLY
   update_gf_group_index(cpi);
-#endif
 }
 
 // Get update type of the current frame.
