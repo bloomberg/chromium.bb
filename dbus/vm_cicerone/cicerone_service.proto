@@ -276,6 +276,9 @@ message InstallLinuxPackageRequest {
   // Package ID to install in the form "package_name;version;arch;data". Used
   // when |file_path| is empty.
   string package_id = 5;
+
+  // Command identifier to track installation progress.
+  string command_uuid = 6;
 }
 
 // Response sent back from a InstallLinuxPackage call.
@@ -337,6 +340,10 @@ message InstallLinuxPackageProgressSignal {
   // some cases (that's how it comes out of PackageKit, for example in the case
   // of an unsatisfiable dependency).
   string failure_details = 6;
+
+  // Command identifier that is specified in |InstallLinuxPackageRequest| to
+  // track installation progress.
+  string command_uuid = 7;
 }
 
 // Request to uninstall the package owning the indicated file. Identifying the
