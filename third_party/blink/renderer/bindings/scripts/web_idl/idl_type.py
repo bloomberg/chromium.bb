@@ -14,7 +14,6 @@ from .reference import Proxy
 from .reference import RefById
 from .user_defined_type import UserDefinedType
 
-
 # The implementation class hierarchy of IdlType
 #
 # IdlType
@@ -30,7 +29,6 @@ from .user_defined_type import UserDefinedType
 # + UnionType
 # + NullableType
 # + VariadicType
-
 
 _IDL_TYPE_PASS_KEY = object()
 

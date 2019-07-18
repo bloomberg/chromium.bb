@@ -13,7 +13,7 @@ from .dictionary import Dictionary
 from .dictionary import DictionaryMember
 from .enumeration import Enumeration
 from .extended_attribute import ExtendedAttributes
-from .idl_types import IdlTypeFactory
+from .idl_type import IdlTypeFactory
 from .includes import Includes
 from .interface import Interface
 from .interface import Iterable

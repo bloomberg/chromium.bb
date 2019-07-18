@@ -6,7 +6,7 @@ import unittest
 
 from .extended_attribute import ExtendedAttribute
 from .extended_attribute import ExtendedAttributes
-from .idl_types import IdlTypeFactory
+from .idl_type import IdlTypeFactory
 
 
 class IdlTypesTest(unittest.TestCase):
