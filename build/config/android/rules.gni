@@ -62,11 +62,19 @@ template("create_native_executable_dist") {
 
   _libraries_list = "${target_gen_dir}/${target_name}_library_dependencies.list"
 
-  generated_file("${target_name}__library_list") {
-    forward_variables_from(invoker, [ "deps" ])
+  _sanitizer_runtimes_target_name = "${target_name}__sanitizer_runtimes"
+  group(_sanitizer_runtimes_target_name) {
     metadata = {
       shared_libraries = _sanitizer_runtimes
     }
+  }
+
+  generated_file("${target_name}__library_list") {
+    forward_variables_from(invoker, [ "deps" ])
+    if (!defined(deps)) {
+      deps = []
+    }
+    deps += [ ":${_sanitizer_runtimes_target_name}" ]
     output_conversion = "json"
     outputs = [
       _libraries_list,
