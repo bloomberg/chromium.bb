@@ -9,8 +9,8 @@ from .common import WithExtendedAttributes
 from .common import WithIdentifier
 from .common import WithOwner
 from .identifier_ir_map import IdentifierIRMap
-from .idl_reference_proxy import RefByIdFactory
 from .idl_types import IdlType
+from .reference import RefById
 from .user_defined_type import UserDefinedType
 from .values import DefaultValue
 
@@ -32,7 +32,7 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
                      components=None,
                      debug_info=None):
             assert isinstance(is_partial, bool)
-            assert inherited is None or RefByIdFactory.is_reference(inherited)
+            assert inherited is None or isinstance(inherited, RefById)
             assert isinstance(own_members, (list, tuple)) and all(
                 isinstance(member, DictionaryMember.IR)
                 for member in own_members)

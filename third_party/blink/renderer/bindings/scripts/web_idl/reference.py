@@ -84,6 +84,32 @@ class Proxy(object):
         return self._target_object
 
 
+_REF_BY_ID_PASS_KEY = object()
+
+
+class RefById(Proxy, WithIdentifier):
+    """
+    Represents a reference to an object specified with the given identifier,
+    which reference will be resolved later.
+
+    This reference is also a proxy to the object for convenience so that you
+    can treat this reference as if the object itself.
+    """
+
+    def __init__(self,
+                 identifier,
+                 target_attrs=None,
+                 target_attrs_with_priority=None,
+                 pass_key=None):
+        assert pass_key is _REF_BY_ID_PASS_KEY
+
+        Proxy.__init__(
+            self,
+            target_attrs=target_attrs,
+            target_attrs_with_priority=target_attrs_with_priority)
+        WithIdentifier.__init__(self, identifier)
+
+
 class RefByIdFactory(object):
     """
     Creates a group of references that are later resolvable.
@@ -93,39 +119,19 @@ class RefByIdFactory(object):
     the references at very end of the compilation phases.
     """
 
-    class _RefById(Proxy, WithIdentifier):
-        """
-        Represents a reference to an object specified with the given identifier,
-        which reference will be resolved later.
-
-        This reference is also a proxy to the object for convenience so that you
-        can treat this reference as if the object itself.
-        """
-
-        def __init__(self,
-                     identifier,
-                     target_attrs=None,
-                     target_attrs_with_priority=None):
-            Proxy.__init__(
-                self,
-                target_attrs=target_attrs,
-                target_attrs_with_priority=target_attrs_with_priority)
-            WithIdentifier.__init__(self, identifier)
-
     def __init__(self, target_attrs=None, target_attrs_with_priority=None):
         self._references = set()
         self._did_resolve = False
         self._target_attrs = target_attrs
         self._target_attrs_with_priority = target_attrs_with_priority
 
-    @classmethod
-    def is_reference(cls, obj):
-        return isinstance(obj, cls._RefById)
-
     def create(self, identifier):
         assert not self._did_resolve
-        ref = RefByIdFactory._RefById(identifier, self._target_attrs,
-                                      self._target_attrs_with_priority)
+        ref = RefById(
+            identifier,
+            target_attrs=self._target_attrs,
+            target_attrs_with_priority=self._target_attrs_with_priority,
+            pass_key=_REF_BY_ID_PASS_KEY)
         self._references.add(ref)
         return ref
 

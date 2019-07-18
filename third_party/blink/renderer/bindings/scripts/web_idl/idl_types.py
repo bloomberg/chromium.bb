@@ -10,9 +10,10 @@ from .common import WithCodeGeneratorInfo
 from .common import WithDebugInfo
 from .common import WithExtendedAttributes
 from .common import WithIdentifier
-from .idl_reference_proxy import RefByIdFactory
-from .idl_reference_proxy import Proxy
+from .reference import Proxy
+from .reference import RefById
 from .user_defined_type import UserDefinedType
+
 
 # The implementation class hierarchy of IdlType
 #
@@ -391,7 +392,7 @@ class ReferenceType(IdlType, WithIdentifier, Proxy):
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
-        assert RefByIdFactory.is_reference(ref_to_idl_type)
+        assert isinstance(ref_to_idl_type, RefById)
         IdlType.__init__(
             self,
             is_optional=is_optional,
