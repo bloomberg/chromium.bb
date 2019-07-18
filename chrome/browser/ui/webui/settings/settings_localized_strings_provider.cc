@@ -141,6 +141,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"clear", IDS_SETTINGS_CLEAR},
     {"close", IDS_CLOSE},
     {"confirm", IDS_CONFIRM},
+    {"continue", IDS_SETTINGS_CONTINUE},
     {"controlledByExtension", IDS_SETTINGS_CONTROLLED_BY_EXTENSION},
 #if defined(OS_CHROMEOS)
     {"deviceOff", IDS_SETTINGS_DEVICE_OFF},
@@ -464,8 +465,6 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
     {"aboutUpdateWarningMessage",
      IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_MESSAGE},
     {"aboutUpdateWarningTitle", IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_TITLE},
-    {"aboutUpdateWarningContinue",
-     IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_CONTINUE_BUTTON},
 #endif  // defined(OS_CHROMEOS)
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
@@ -1803,8 +1802,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CHOOSE_PIN_TITLE},
     {"configurePinConfirmPinTitle",
      IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CONFIRM_PIN_TITLE},
-    {"configurePinContinueButton",
-     IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CONTINUE_BUTTON},
     {"configurePinMismatched", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_MISMATCHED},
     {"configurePinTooShort", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_SHORT},
     {"configurePinTooLong", IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_TOO_LONG},
