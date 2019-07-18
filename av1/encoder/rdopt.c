@@ -8537,13 +8537,13 @@ static INLINE int is_comp_rd_match(const AV1_COMP *const cpi,
     if (is_global_mv_block(mi, wm->wmtype) != st->is_global[i]) return 0;
   }
 
-  // Store the stats for compound average
-  comp_rate[COMPOUND_AVERAGE] = st->rate[COMPOUND_AVERAGE];
-  comp_dist[COMPOUND_AVERAGE] = st->dist[COMPOUND_AVERAGE];
-  comp_model_rd[COMPOUND_AVERAGE] = st->comp_model_rd[COMPOUND_AVERAGE];
-  comp_rate[COMPOUND_DISTWTD] = st->rate[COMPOUND_DISTWTD];
-  comp_dist[COMPOUND_DISTWTD] = st->dist[COMPOUND_DISTWTD];
-  comp_model_rd[COMPOUND_DISTWTD] = st->comp_model_rd[COMPOUND_DISTWTD];
+  // Store the stats for COMPOUND_AVERAGE and COMPOUND_DISTWTD
+  for (int comp_type = COMPOUND_AVERAGE; comp_type <= COMPOUND_DISTWTD;
+       comp_type++) {
+    comp_rate[comp_type] = st->rate[comp_type];
+    comp_dist[comp_type] = st->dist[comp_type];
+    comp_model_rd[comp_type] = st->comp_model_rd[comp_type];
+  }
 
   // For compound wedge/segment, reuse data only if NEWMV is not present in
   // either of the directions
