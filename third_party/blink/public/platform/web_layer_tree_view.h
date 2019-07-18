@@ -69,22 +69,6 @@ class WebLayerTreeView {
 
   // Flow control and scheduling ---------------------------------------
 
-  // Prevents any updates to the input for the layer tree, and the layer tree
-  // itself, and the layer tree from becoming visible.
-  virtual std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
-  DeferMainFrameUpdate() {
-    return nullptr;
-  }
-
-  // Start defering commits to the compositor, allowing document lifecycle
-  // updates without committing the layer tree. Commits are deferred
-  // until at most the given |timeout| has passed. If multiple calls are made
-  // when deferal is active then the initial timeout applies.
-  virtual void StartDeferringCommits(base::TimeDelta timeout) {}
-
-  // Immediately stop deferring commits.
-  virtual void StopDeferringCommits(cc::PaintHoldingCommitTrigger) {}
-
   // For when the embedder itself change scales on the page (e.g. devtools)
   // and wants all of the content at the new scale to be crisp.
   virtual void ForceRecalculateRasterScales() {}
