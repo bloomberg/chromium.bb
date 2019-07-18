@@ -1,26 +1,39 @@
 #!/bin/bash
 
-# Copyright 2018 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-INPUT_DIR=${1?first param missing - input directory}
-OUTPUT_DIR=${2?second param missing - output directory}
+# Generates the following tree of certificates:
+#     root_ca_cert (self-signed root)
+#      \
+#       \--> ok_cert (end-entity)
+#      \
+#       \--> intermediate_ca_cert (intermediate CA)
+#        \
+#         \--> ok_cert_by_intermediate (end-identity)
 
-# This script grabs certain certificates from ${INPUT_DIR} and places them under
-# ${OUTPUT_DIR}. It uses openssl's x509 command to only take the certificate
-# sections (and not e.g. private keys).
-# Additionally, this script creates ONC files which contain some of the
-# certificates to be used by tests.
+SRC_DIR="../../../../.."
+export CA_CERT_UTIL_DIR="${SRC_DIR}/chrome/test/data/policy/ca_util"
+source "${CA_CERT_UTIL_DIR}/ca_util.sh"
+export CA_CERT_UTIL_OUT_DIR="./out/"
 
-openssl x509 -in "${INPUT_DIR}/root_ca_cert.pem" -inform PEM \
-  > "${OUTPUT_DIR}/root_ca_cert.pem"
-openssl x509 -in "${INPUT_DIR}/ok_cert.pem" -inform PEM \
-  > "${OUTPUT_DIR}/ok_cert.pem"
-openssl x509 -in "${INPUT_DIR}/intermediate_ca_cert.pem" -inform PEM \
-  > "${OUTPUT_DIR}/intermediate_ca_cert.pem"
-openssl x509 -in "${INPUT_DIR}/ok_cert_by_intermediate.pem" -inform PEM \
-  > "${OUTPUT_DIR}/ok_cert_by_intermediate.pem"
+try rm -rf out
+try mkdir out
+
+CN=root_ca_cert \
+  try root_cert root_ca_cert
+
+CA_ID=root_ca_cert CN="127.0.0.1" \
+  try issue_cert ok_cert leaf_cert_san_ip as_pem
+
+CA_ID=root_ca_cert CN=intermediate_ca_cert \
+  try issue_cert intermediate_ca_cert ca_cert as_pem
+
+CA_ID=intermediate_ca_cert CN="127.0.0.1" \
+  try issue_cert ok_cert_by_intermediate leaf_cert_san_ip as_pem
+
+try rm -rf out
 
 # Read the root CA cert and interemdiate CA cert PEM files and replace newlines
 # with \n literals. This is needed because the ONC JSON does not support
@@ -31,7 +44,7 @@ ROOT_CA_CERT_CONTENTS=$(cat root_ca_cert.pem \
 INTERMEDIATE_CA_CERT_CONTENTS=$(cat intermediate_ca_cert.pem \
   | tr '\n' ',' | sed 's/,/\\n/g')
 
-cat > "${OUTPUT_DIR}/root-ca-cert.onc" << EOL
+cat > root-ca-cert.onc << EOL
 {
   "Certificates": [
     {
@@ -47,7 +60,7 @@ cat > "${OUTPUT_DIR}/root-ca-cert.onc" << EOL
 }
 EOL
 
-cat > "${OUTPUT_DIR}/root-and-intermediate-ca-certs.onc" << EOL
+cat > root-and-intermediate-ca-certs.onc << EOL
 {
   "Certificates": [
     {
