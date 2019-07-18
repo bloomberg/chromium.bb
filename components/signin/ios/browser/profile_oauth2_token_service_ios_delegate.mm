@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate_ios.h"
+#include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
 #include <set>
-#include <utility>
+#include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -17,10 +19,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
+#include "components/signin/ios/browser/device_accounts_provider.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/signin/public/identity_manager/ios/device_accounts_provider.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -117,7 +119,8 @@ SSOAccessTokenFetcher::SSOAccessTokenFetcher(
   DCHECK(provider_);
 }
 
-SSOAccessTokenFetcher::~SSOAccessTokenFetcher() {}
+SSOAccessTokenFetcher::~SSOAccessTokenFetcher() {
+}
 
 void SSOAccessTokenFetcher::Start(const std::string& client_id,
                                   const std::string& client_secret_unused,

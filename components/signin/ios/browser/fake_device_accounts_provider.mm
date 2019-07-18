@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/public/identity_manager/ios/fake_device_accounts_provider.h"
+#include "components/signin/ios/browser/fake_device_accounts_provider.h"
 
 #import <Foundation/Foundation.h>
 
