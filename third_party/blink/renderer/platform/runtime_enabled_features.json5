@@ -850,6 +850,10 @@
       // This is enabled by features::kLazyInitializeMediaControls.
     },
     {
+      name: "LegacyWindowsDWriteFontFallback",
+      // Enabled by features::kLegacyWindowsDWriteFontFallback;
+    },
+    {
       name: "LongTaskV2",
     },
     {
