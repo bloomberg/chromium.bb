@@ -42,6 +42,12 @@ class ChromeNativeFileSystemPermissionContext
 
   // content::NativeFileSystemPermissionContext:
   scoped_refptr<content::NativeFileSystemPermissionGrant>
+  GetReadPermissionGrant(const url::Origin& origin,
+                         const base::FilePath& path,
+                         bool is_directory,
+                         int process_id,
+                         int frame_id) override;
+  scoped_refptr<content::NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
                           bool is_directory,
@@ -84,6 +90,11 @@ class ChromeNativeFileSystemPermissionContext
       int process_id,
       int frame_id,
       base::OnceCallback<void(Grants)> callback);
+
+  // Revokes directory read access for the given origin in the given tab.
+  void RevokeDirectoryReadGrants(const url::Origin& origin,
+                                 int process_id,
+                                 int frame_id);
 
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override;

@@ -231,6 +231,33 @@ BindPermissionActionCallbackToCurrentSequence(
       base::SequencedTaskRunnerHandle::Get(), std::move(callback));
 }
 
+// Read permissions start out as granted, and can change to denied if the user
+// revokes them for a tab. Re-requesting read permission is not currently
+// supported.
+class ReadPermissionGrantImpl
+    : public content::NativeFileSystemPermissionGrant {
+ public:
+  ReadPermissionGrantImpl() {}
+
+  // NativeFileSystemPermissionGrant:
+  PermissionStatus GetStatus() override { return status_; }
+  void RequestPermission(int process_id,
+                         int frame_id,
+                         base::OnceClosure callback) override {
+    // Requesting read permission is not currently supported, so just call the
+    // callback right away.
+    std::move(callback).Run();
+  }
+
+  void RevokePermission() { status_ = PermissionStatus::DENIED; }
+
+ protected:
+  ~ReadPermissionGrantImpl() override = default;
+
+ private:
+  PermissionStatus status_ = PermissionStatus::GRANTED;
+};
+
 }  // namespace
 
 ChromeNativeFileSystemPermissionContext::Grants::Grants() = default;
@@ -366,11 +393,42 @@ struct ChromeNativeFileSystemPermissionContext::OriginState {
   // TODO(mek): Lifetime of grants might change depending on the outcome of
   // the discussions surrounding lifetime of non-persistent permissions.
   std::map<PermissionGrantImpl::Key, PermissionGrantImpl*> grants;
+
+  // Read permissions are keyed off of the tab they are associated with.
+  // TODO(https://crbug.com/984769): This will change when permissions are no
+  // longer scoped to individual tabs.
+  using ReadPermissionKey = std::pair<int, int>;
+  std::map<ReadPermissionKey, scoped_refptr<ReadPermissionGrantImpl>>
+      directory_read_grants;
 };
 
 ChromeNativeFileSystemPermissionContext::
     ChromeNativeFileSystemPermissionContext(content::BrowserContext*) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
+}
+
+scoped_refptr<content::NativeFileSystemPermissionGrant>
+ChromeNativeFileSystemPermissionContext::GetReadPermissionGrant(
+    const url::Origin& origin,
+    const base::FilePath& path,
+    bool is_directory,
+    int process_id,
+    int frame_id) {
+  if (!is_directory) {
+    // No need to keep track of file read permissions, so just return a new
+    // grant.
+    return base::MakeRefCounted<ReadPermissionGrantImpl>();
+  }
+
+  // operator[] might insert a new OriginState in |origins_|, but that is
+  // exactly what we want.
+  auto& origin_state = origins_[origin];
+  auto& existing_grant =
+      origin_state.directory_read_grants[OriginState::ReadPermissionKey(
+          process_id, frame_id)];
+  if (!existing_grant)
+    existing_grant = base::MakeRefCounted<ReadPermissionGrantImpl>();
+  return existing_grant;
 }
 
 scoped_refptr<content::NativeFileSystemPermissionGrant>
@@ -502,10 +560,36 @@ void ChromeNativeFileSystemPermissionContext::GetPermissionGrantsFromUIThread(
       std::move(callback));
 }
 
-ChromeNativeFileSystemPermissionContext::
-    ~ChromeNativeFileSystemPermissionContext() = default;
+void ChromeNativeFileSystemPermissionContext::RevokeDirectoryReadGrants(
+    const url::Origin& origin,
+    int process_id,
+    int frame_id) {
+  auto origin_it = origins_.find(origin);
+  if (origin_it == origins_.end()) {
+    // No grants for origin, return directly.
+    return;
+  }
+  OriginState& origin_state = origin_it->second;
+  auto grant_it = origin_state.directory_read_grants.find(
+      OriginState::ReadPermissionKey(process_id, frame_id));
+  if (grant_it == origin_state.directory_read_grants.end()) {
+    // Nothing to revoke.
+    return;
+  }
+  // Revoke existing grant to stop existing handles from being able to read
+  // directories.
+  grant_it->second->RevokePermission();
+  // And remove grant from map so future handles will get a new grant.
+  origin_state.directory_read_grants.erase(grant_it);
+
+  // TODO(https://crbug.com/984801): Make sure that usage indicators are updated
+  // now that the permission is revoked.
+}
 
 void ChromeNativeFileSystemPermissionContext::ShutdownOnUIThread() {}
+
+ChromeNativeFileSystemPermissionContext::
+    ~ChromeNativeFileSystemPermissionContext() = default;
 
 void ChromeNativeFileSystemPermissionContext::PermissionGrantDestroyed(
     PermissionGrantImpl* grant) {
@@ -513,10 +597,6 @@ void ChromeNativeFileSystemPermissionContext::PermissionGrantDestroyed(
   auto it = origins_.find(grant->origin());
   DCHECK(it != origins_.end());
   it->second.grants.erase(grant->key());
-  if (it->second.grants.empty()) {
-    // No more grants for the origin, so remove the state.
-    origins_.erase(it);
-  }
 }
 
 void ChromeNativeFileSystemPermissionContext::
