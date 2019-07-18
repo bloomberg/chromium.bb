@@ -116,6 +116,11 @@ interface PasswordManagerDriver {
   // password field.
   UserModifiedPasswordField();
 
+  // Notification that the user (not JavaScript) modified the value of a
+  // non-password field with |renderer_id|, and |value| is the current value.
+  UserModifiedNonPasswordField(uint32 renderer_id,
+                               mojo_base.mojom.String16 value);
+
   // Instructs the browser to show a popup with password suggestions. The popup
   // will use |text_direction| for displaying text.
   ShowPasswordSuggestions(mojo_base.mojom.TextDirection text_direction,

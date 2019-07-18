@@ -70,6 +70,9 @@ class FakeContentPasswordManagerDriver : public mojom::PasswordManagerDriver {
 
   void UserModifiedPasswordField() override {}
 
+  void UserModifiedNonPasswordField(uint32_t renderer_id,
+                                    const base::string16& value) override {}
+
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override {}
 
