@@ -21,61 +21,6 @@
       "all"
     ]
   },
-  "Linux ARM": {
-    "gtest_tests": [
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "armv7l-32",
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "nacl_helper_nonsfi_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "armv7l-32",
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "nacl_loader_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "armv7l-32",
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "sandbox_linux_unittests"
-      }
-    ]
-  },
   "Linux Builder Goma Canary": {
     "additional_compile_targets": [
       "all"

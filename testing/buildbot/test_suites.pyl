@@ -4039,16 +4039,6 @@
       },
     },
 
-    'linux_arm_gtests': {
-      'nacl_helper_nonsfi_unittests': {},
-      'nacl_loader_unittests': {},
-      'sandbox_linux_unittests': {
-        'args': [
-          '--test-launcher-print-test-stdio=always',
-        ],
-      },
-     },
-
     #1
     'linux_chromeos_specific_gtests': {
       # Chrome OS only.
