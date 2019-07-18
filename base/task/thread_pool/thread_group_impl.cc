@@ -111,12 +111,7 @@ class ThreadGroupImpl::ScopedWorkersExecutor
     workers_to_start_.AddWorker(std::move(worker));
   }
 
-  void Flush(CheckedLock* held_lock) {
-    static_assert(std::is_pod<BaseScopedWorkersExecutor>::value &&
-                      sizeof(BaseScopedWorkersExecutor) == 1,
-                  "Must add BaseScopedWorkersExecutor::Flush() if it becomes "
-                  "non-trivial");
-
+  void FlushWorkerCreation(CheckedLock* held_lock) {
     if (workers_to_wake_up_.empty() && workers_to_start_.empty())
       return;
     CheckedAutoUnlock auto_unlock(*held_lock);
@@ -597,24 +592,27 @@ ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(WorkerThread* worker) {
   // additional workers if needed (doing this here allows us to reduce
   // potentially expensive create/wake directly on PostTask()).
   outer_->EnsureEnoughWorkersLockRequired(&executor);
-  executor.Flush(&outer_->lock_);
+  executor.FlushWorkerCreation(&outer_->lock_);
 
   if (!CanGetWorkLockRequired(worker))
     return nullptr;
 
-  if (outer_->priority_queue_.IsEmpty()) {
-    OnWorkerBecomesIdleLockRequired(worker);
-    return nullptr;
-  }
+  RunIntentWithRegisteredTaskSource task_source;
+  TaskPriority priority;
+  while (!task_source && !outer_->priority_queue_.IsEmpty()) {
+    // Enforce the CanRunPolicy and that no more than |max_best_effort_tasks_|
+    // BEST_EFFORT tasks run concurrently.
+    priority = outer_->priority_queue_.PeekSortKey().priority();
+    if (!outer_->task_tracker_->CanRunPriority(priority) ||
+        (priority == TaskPriority::BEST_EFFORT &&
+         outer_->num_running_best_effort_tasks_ >=
+             outer_->max_best_effort_tasks_)) {
+      break;
+    }
 
-  // Enforce the CanRunPolicy and that no more than |max_best_effort_tasks_|
-  // BEST_EFFORT tasks run concurrently.
-  const TaskPriority priority =
-      outer_->priority_queue_.PeekSortKey().priority();
-  if (!outer_->task_tracker_->CanRunPriority(priority) ||
-      (priority == TaskPriority::BEST_EFFORT &&
-       outer_->num_running_best_effort_tasks_ >=
-           outer_->max_best_effort_tasks_)) {
+    task_source = outer_->TakeRunIntentWithRegisteredTaskSource(&executor);
+  }
+  if (!task_source) {
     OnWorkerBecomesIdleLockRequired(worker);
     return nullptr;
   }
@@ -633,12 +631,7 @@ ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(WorkerThread* worker) {
     DCHECK_LE(outer_->num_running_best_effort_tasks_,
               outer_->max_best_effort_tasks_);
   }
-
-  // Pop the TaskSource from which to run a task from the PriorityQueue.
-  RegisteredTaskSource task_source = outer_->priority_queue_.PopTaskSource();
-  auto run_intent = task_source->WillRunTask();
-  DCHECK(run_intent);
-  return {std::move(task_source), std::move(run_intent)};
+  return task_source;
 }
 
 void ThreadGroupImpl::WorkerThreadDelegateImpl::DidProcessTask(
@@ -1016,7 +1009,7 @@ size_t ThreadGroupImpl::GetDesiredNumAwakeWorkersLockRequired() const {
   // to run by the CanRunPolicy.
   const size_t num_running_or_queued_can_run_best_effort_task_sources =
       num_running_best_effort_tasks_ +
-      GetNumQueuedCanRunBestEffortTaskSources();
+      GetNumAdditionalWorkersForBestEffortTaskSourcesLockRequired();
 
   const size_t workers_for_best_effort_task_sources =
       std::max(std::min(num_running_or_queued_can_run_best_effort_task_sources,
@@ -1026,7 +1019,7 @@ size_t ThreadGroupImpl::GetDesiredNumAwakeWorkersLockRequired() const {
   // Number of USER_{VISIBLE|BLOCKING} task sources that are running or queued.
   const size_t num_running_or_queued_foreground_task_sources =
       (num_running_tasks_ - num_running_best_effort_tasks_) +
-      GetNumQueuedCanRunForegroundTaskSources();
+      GetNumAdditionalWorkersForForegroundTaskSourcesLockRequired();
 
   const size_t workers_for_foreground_task_sources =
       num_running_or_queued_foreground_task_sources;
@@ -1139,14 +1132,16 @@ bool ThreadGroupImpl::ShouldPeriodicallyAdjustMaxTasksLockRequired() {
 
   const size_t num_running_or_queued_best_effort_task_sources =
       num_running_best_effort_tasks_ +
-      priority_queue_.GetNumTaskSourcesWithPriority(TaskPriority::BEST_EFFORT);
+      GetNumAdditionalWorkersForBestEffortTaskSourcesLockRequired();
   if (num_running_or_queued_best_effort_task_sources > max_best_effort_tasks_ &&
       num_unresolved_best_effort_may_block_ > 0) {
     return true;
   }
 
   const size_t num_running_or_queued_task_sources =
-      num_running_tasks_ + priority_queue_.Size();
+      num_running_tasks_ +
+      GetNumAdditionalWorkersForBestEffortTaskSourcesLockRequired() +
+      GetNumAdditionalWorkersForForegroundTaskSourcesLockRequired();
   constexpr size_t kIdleWorker = 1;
   return num_running_or_queued_task_sources + kIdleWorker > max_tasks_ &&
          num_unresolved_may_block_ > 0;

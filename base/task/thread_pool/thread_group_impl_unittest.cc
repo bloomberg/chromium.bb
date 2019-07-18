@@ -297,6 +297,10 @@ INSTANTIATE_TEST_SUITE_P(
     ThreadGroupImplImplTestParam,
     ::testing::Values(TaskSourceExecutionMode::kSequenced));
 
+INSTANTIATE_TEST_SUITE_P(Job,
+                         ThreadGroupImplImplTestParam,
+                         ::testing::Values(TaskSourceExecutionMode::kJob));
+
 namespace {
 
 class ThreadGroupImplImplStartInBodyTest : public ThreadGroupImplImplTest {
