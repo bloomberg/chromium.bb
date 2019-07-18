@@ -9,6 +9,8 @@ from __future__ import print_function
 
 import os
 
+from google.protobuf import json_format
+
 from chromite.api import router
 from chromite.api.gen.chromite.api import build_api_test_pb2
 from chromite.lib import cros_build_lib
@@ -34,6 +36,12 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
 
     osutils.WriteFile(self.input_file,
                       self._INPUT_JSON_TEMPLATE % self.chroot_dir)
+    osutils.WriteFile(self.output_file, '{}')
+
+    self.subprocess_tempdir = os.path.join(self.chroot_dir, 'tempdir')
+    osutils.SafeMakedirs(self.subprocess_tempdir)
+    self.PatchObject(osutils.TempDir, '__enter__',
+                     return_value=self.subprocess_tempdir)
 
   def testInputOutputMethod(self):
     """Test input/output handling."""
@@ -73,6 +81,16 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
 
     return impl
 
+  def _writeChrootCallOutput(self, content='{}'):
+    def impl(*_args, **_kwargs):
+      """Side effect for inside-chroot calls to the API."""
+      osutils.WriteFile(
+          os.path.join(self.subprocess_tempdir,
+                       router.Router.REEXEC_OUTPUT_FILE),
+          content)
+
+    return impl
+
   def testInsideServiceInsideMethodInsideChroot(self):
     """Test inside/inside/inside works correctly."""
     self.PatchObject(self.router, '_GetMethod',
@@ -96,7 +114,7 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     self.PatchObject(self.router, '_GetMethod',
                      return_value=self._mock_callable(expect_called=False))
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
-    self.rc.return_value = cros_build_lib.CommandResult(returncode=0)
+    self.rc.SetDefaultCmdResult(side_effect=self._writeChrootCallOutput())
 
     service = 'chromite.api.InsideChrootApiService'
     method = 'InsideServiceInsideMethod'
@@ -138,7 +156,7 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     self.PatchObject(self.router, '_GetMethod',
                      return_value=self._mock_callable(expect_called=False))
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
-    self.rc.return_value = cros_build_lib.CommandResult(returncode=0)
+    self.rc.SetDefaultCmdResult(side_effect=self._writeChrootCallOutput())
 
     service = 'chromite.api.OutsideChrootApiService'
     method = 'OutsideServiceInsideMethod'
@@ -146,3 +164,43 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     self.router.Route(service, method, self.input_file, self.output_file)
 
     self.assertCommandContains(['build_api', service_method], enter_chroot=True)
+
+  def testReexecNonemptyOutput(self):
+    """Test calling an inside chroot method that produced output."""
+    osutils.WriteFile(self.output_file, '')
+    self.PatchObject(self.router, '_GetMethod',
+                     return_value=self._mock_callable(expect_called=False))
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
+    self.rc.SetDefaultCmdResult(
+        side_effect=self._writeChrootCallOutput(content='{"result": "foo"}'))
+
+    service = 'chromite.api.OutsideChrootApiService'
+    method = 'OutsideServiceInsideMethod'
+    service_method = '%s/%s' % (service, method)
+    self.router.Route(service, method, self.input_file, self.output_file)
+
+    self.assertCommandContains(['build_api', service_method], enter_chroot=True)
+
+    # It should be writing the result out to our output file.
+    expected = build_api_test_pb2.TestResultMessage()
+    json_format.Parse('{"result": "foo"}', expected)
+    result = build_api_test_pb2.TestResultMessage()
+    json_format.Parse(osutils.ReadFile(self.output_file), result)
+    self.assertEqual(expected, result)
+
+  def testReexecEmptyOutput(self):
+    """Test calling an inside chroot method that produced no output."""
+    osutils.WriteFile(self.output_file, '')
+    self.PatchObject(self.router, '_GetMethod',
+                     return_value=self._mock_callable(expect_called=False))
+    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
+    self.rc.SetDefaultCmdResult(returncode=1)
+
+    service = 'chromite.api.OutsideChrootApiService'
+    method = 'OutsideServiceInsideMethod'
+    service_method = '%s/%s' % (service, method)
+    self.router.Route(service, method, self.input_file, self.output_file)
+
+    self.assertCommandContains(['build_api', service_method], enter_chroot=True)
+    # It should be writing the empty message out.
+    self.assertFileContents(self.output_file, '{}')

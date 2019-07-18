@@ -177,3 +177,138 @@ class PathHandlerTest(cros_test_lib.TempDirTestCase):
     # It should not be deleting the file when it doesn't need to copy it even
     # with delete=True.
     self.assertExists(self.source_file1)
+
+  def test_prefix_inside(self):
+    """Test the transfer inside prefix handling."""
+    message = build_api_test_pb2.TestRequestMessage()
+    message.path.path = self.source_dir
+    message.path.location = common_pb2.Path.OUTSIDE
+
+    with field_handler.handle_paths(message, self.dest_dir,
+                                    direction=field_handler.PathHandler.INSIDE,
+                                    prefix=self.tempdir):
+      new_path = message.path.path
+      # The prefix should be removed.
+      self.assertFalse(new_path.startswith(self.tempdir))
+
+  def test_prefix_outside(self):
+    """Test the transfer outside prefix handling."""
+    message = build_api_test_pb2.TestRequestMessage()
+    message.path.path = self.source_dir.replace(self.tempdir, '')
+    message.path.location = common_pb2.Path.INSIDE
+
+    with field_handler.handle_paths(message, self.dest_dir,
+                                    direction=field_handler.PathHandler.OUTSIDE,
+                                    prefix=self.tempdir):
+      new_path = message.path.path
+      # The source directory should have been properly reconstructed and
+      # everything copied over to the destination.
+      self.assertItemsEqual(os.listdir(self.source_dir), os.listdir(new_path))
+
+
+class HandleResultPathsTest(cros_test_lib.TempDirTestCase):
+  """Tests for handle_result_paths."""
+
+  def setUp(self):
+    # Setup the directories.
+    self.chroot_dir = os.path.join(self.tempdir, 'chroot')
+    self.source_dir = '/source'
+    self.chroot_source = os.path.join(self.chroot_dir,
+                                      self.source_dir.lstrip(os.sep))
+    self.source_dir2 = '/source2'
+    self.chroot_source2 = os.path.join(self.chroot_dir,
+                                       self.source_dir2.lstrip(os.sep))
+    self.dest_dir = os.path.join(self.tempdir, 'destination')
+    osutils.SafeMakedirs(self.chroot_source)
+    osutils.SafeMakedirs(self.chroot_source2)
+    osutils.SafeMakedirs(self.dest_dir)
+
+    # Two files in the same directory inside the chroot.
+    self.source_file1 = os.path.join(self.chroot_source, 'file1')
+    self.source_file1_inside = os.path.join(self.source_dir, 'file1')
+    self.file1_contents = 'file 1'
+    osutils.WriteFile(self.source_file1, self.file1_contents)
+
+    self.file2_contents = 'some data'
+    self.source_file2 = os.path.join(self.chroot_source, 'file2')
+    self.source_file2_inside = os.path.join(self.source_dir, 'file2')
+    osutils.WriteFile(self.source_file2, self.file2_contents)
+
+    # Third file in a different location.
+    self.file3_contents = 'another file'
+    self.source_file3 = os.path.join(self.chroot_source2, 'file3')
+    self.source_file3_inside = os.path.join(self.source_dir2, 'file3')
+    osutils.WriteFile(self.source_file3, self.file3_contents)
+
+    self.request = build_api_test_pb2.TestRequestMessage()
+    self.request.result_path.path.path = self.dest_dir
+    self.request.result_path.path.location = common_pb2.Path.OUTSIDE
+    self.response = build_api_test_pb2.TestResultMessage()
+    self.chroot = chroot_lib.Chroot(path=self.chroot_dir)
+
+  def _path_checks(self, path, destination, contents=None):
+    self.assertTrue(path)
+    self.assertStartsWith(path, destination)
+    self.assertExists(path)
+    if contents:
+      self.assertFileContents(path, contents)
+
+  def test_single_file(self):
+    """Test a single file."""
+    self.response.artifact.path = self.source_file1_inside
+    self.response.artifact.location = common_pb2.Path.INSIDE
+
+    field_handler.handle_result_paths(self.request, self.response, self.chroot)
+
+    self._path_checks(self.response.artifact.path, self.dest_dir,
+                      contents=self.file1_contents)
+
+  def test_single_directory(self):
+    """Test a single directory."""
+    self.response.artifact.path = self.source_dir
+    self.response.artifact.location = common_pb2.Path.INSIDE
+
+    field_handler.handle_result_paths(self.request, self.response, self.chroot)
+
+    self._path_checks(self.response.artifact.path, self.dest_dir)
+    self.assertItemsEqual(os.listdir(self.chroot_source),
+                          os.listdir(self.response.artifact.path))
+
+  def test_multiple_files(self):
+    """Test multiple files."""
+    self.response.artifact.path = self.source_file1_inside
+    self.response.artifact.location = common_pb2.Path.INSIDE
+    self.response.nested_artifact.path.path = self.source_file2_inside
+    self.response.nested_artifact.path.location = common_pb2.Path.INSIDE
+
+    artifact3 = self.response.artifacts.add()
+    artifact3.path = self.source_file3_inside
+    artifact3.location = common_pb2.Path.INSIDE
+
+    field_handler.handle_result_paths(self.request, self.response, self.chroot)
+
+    self._path_checks(self.response.artifact.path, self.dest_dir,
+                      contents=self.file1_contents)
+    self._path_checks(self.response.nested_artifact.path.path, self.dest_dir,
+                      contents=self.file2_contents)
+
+    self.assertEqual(1, len(self.response.artifacts))
+    for artifact in self.response.artifacts:
+      self._path_checks(artifact.path, self.dest_dir,
+                        contents=self.file3_contents)
+
+  def test_multiple_directories(self):
+    """Test multiple directories."""
+    self.response.artifact.path = self.source_dir
+    self.response.artifact.location = common_pb2.Path.INSIDE
+    self.response.nested_artifact.path.path = self.source_dir2
+    self.response.nested_artifact.path.location = common_pb2.Path.INSIDE
+
+    field_handler.handle_result_paths(self.request, self.response, self.chroot)
+
+    self._path_checks(self.response.artifact.path, self.dest_dir)
+    self._path_checks(self.response.nested_artifact.path.path, self.dest_dir)
+
+    expected = os.listdir(self.chroot_source)
+    expected.extend(os.listdir(self.chroot_source2))
+    self.assertItemsEqual(expected, os.listdir(self.response.artifact.path))

@@ -13,7 +13,6 @@ from __future__ import print_function
 
 import importlib
 import os
-import shutil
 
 from google.protobuf import json_format
 from google.protobuf import symbol_database
@@ -80,6 +79,9 @@ class MethodNotFoundError(Error):
 
 class Router(object):
   """Encapsulates the request dispatching logic."""
+
+  REEXEC_INPUT_FILE = 'input.json'
+  REEXEC_OUTPUT_FILE = 'output.json'
 
   def __init__(self):
     self._services = {}
@@ -168,18 +170,20 @@ class Router(object):
     # Get an empty output message instance.
     output_msg = self._sym_db.GetPrototype(method_desc.output_type)()
 
-    # Allow proto-based method name override.
+    # Fetch the method options for chroot and method name overrides.
     method_options = method_desc.GetOptions().Extensions[self._method_options]
-    if method_options.HasField('implementation_name'):
-      method_name = method_options.implementation_name
 
     # Check the chroot settings before running.
     service_options = svc.GetOptions().Extensions[self._service_options]
     if self._ChrootCheck(service_options, method_options):
       # Run inside the chroot instead.
       logging.info('Re-executing the endpoint inside the chroot.')
-      return self._ReexecuteInside(input_msg, output_path, service_name,
-                                   method_name)
+      return self._ReexecuteInside(input_msg, output_msg, output_path,
+                                   service_name, method_name)
+
+    # Allow proto-based method name override.
+    if method_options.HasField('implementation_name'):
+      method_name = method_options.implementation_name
 
     # Import the module and get the method.
     method_impl = self._GetMethod(module_name, method_name)
@@ -225,11 +229,13 @@ class Router(object):
 
     return False
 
-  def _ReexecuteInside(self, input_msg, output_path, service_name, method_name):
+  def _ReexecuteInside(self, input_msg, output_msg, output_path, service_name,
+                       method_name):
     """Re-execute the service inside the chroot.
 
     Args:
       input_msg (Message): The parsed input message.
+      output_msg (Message): The empty output message instance.
       output_path (str): The path for the serialized output.
       service_name (str): The name of the service to run.
       method_name (str): The name of the method to run.
@@ -240,9 +246,9 @@ class Router(object):
     base_dir = os.path.join(chroot.path, 'tmp')
     with field_handler.handle_paths(input_msg, base_dir, prefix=chroot.path):
       with osutils.TempDir(base_dir=base_dir) as tempdir:
-        new_input = os.path.join(tempdir, 'input.json')
+        new_input = os.path.join(tempdir, self.REEXEC_INPUT_FILE)
         chroot_input = '/%s' % os.path.relpath(new_input, chroot.path)
-        new_output = os.path.join(tempdir, 'output.json')
+        new_output = os.path.join(tempdir, self.REEXEC_OUTPUT_FILE)
         chroot_output = '/%s' % os.path.relpath(new_output, chroot.path)
 
         logging.info('Writing input message to: %s', new_input)
@@ -267,7 +273,13 @@ class Router(object):
         logging.info('Endpoint execution completed, return code: %d',
                      result.returncode)
 
-        shutil.move(new_output, output_path)
+        # Transfer result files out of the chroot.
+        output_content = osutils.ReadFile(new_output)
+        if output_content:
+          json_format.Parse(output_content, output_msg)
+          field_handler.handle_result_paths(input_msg, output_msg, chroot)
+
+        osutils.WriteFile(output_path, json_format.MessageToJson(output_msg))
 
         return result.returncode
 
