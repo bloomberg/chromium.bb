@@ -13,9 +13,9 @@ namespace draw_utils {
 namespace {
 
 constexpr int kVerticalSeparator = 4;
-constexpr PageInsetSizes kLeftInsets{5, 1, 3, 7};
-constexpr PageInsetSizes kRightInsets{1, 5, 3, 7};
-constexpr PageInsetSizes kSingleViewInsets{5, 5, 3, 7};
+constexpr PageInsetSizes kLeftInsets{5, 3, 1, 7};
+constexpr PageInsetSizes kRightInsets{1, 3, 5, 7};
+constexpr PageInsetSizes kSingleViewInsets{5, 3, 5, 7};
 
 }  // namespace
 

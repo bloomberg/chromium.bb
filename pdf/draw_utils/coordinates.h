@@ -19,8 +19,8 @@ namespace draw_utils {
 // page was inset on the left side.
 struct PageInsetSizes {
   int left;
-  int right;
   int top;
+  int right;
   int bottom;
 };
 
