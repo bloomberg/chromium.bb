@@ -124,6 +124,7 @@ source_set("chromeos") {
     "//chromeos/login/login_state",
     "//chromeos/login/session",
     "//chromeos/network",
+    "//chromeos/services/assistant/public/cpp:prefs",
     "//chromeos/services/cros_healthd/public/cpp",
     "//chromeos/services/cros_healthd/public/mojom",
     "//chromeos/services/device_sync/public/cpp",
