@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import datetime
 import os
-import re
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import chrome_util
@@ -58,7 +57,6 @@ class CrOSTest(object):
     self.as_chronos = opts.as_chronos
     self.args = opts.args[1:] if opts.args else None
 
-    self.output = opts.output
     self.results_src = opts.results_src
     self.results_dest_dir = opts.results_dest_dir
 
@@ -321,30 +319,12 @@ class CrOSTest(object):
       result = self._device.RemoteCommand(
           ['/usr/local/autotest/bin/vm_sanity.py'], stream_output=True)
 
-    self._OutputResults(result)
     self._FetchResults()
-    return result.returncode
 
-  def _OutputResults(self, result):
-    """Log the output from RunTests.
-
-    Args:
-      result: cros_build_lib.CommandResult object.
-    """
     name = self.args[0] if self.args else 'Test process'
     logging.info('%s exited with status code %d.', name, result.returncode)
-    if not self.output:
-      return
 
-    # Skip SSH warning.
-    suppress_list = [
-        r'Warning: Permanently added .* to the list of known hosts']
-    with open(self.output, 'w') as f:
-      lines = result.output.splitlines(True) if result.output else []
-      for line in lines:
-        for suppress in suppress_list:
-          if not re.search(suppress, line):
-            f.write(line)
+    return result.returncode
 
   def _FetchResults(self):
     """Fetch results files/directories."""
@@ -466,7 +446,6 @@ def ParseCommandLine(argv):
                       'remote command should be the test binary name, such as '
                       'interactive_ui_tests. It is used for building and '
                       'collecting runtime deps files.')
-  parser.add_argument('--output', type='path', help='Save output to file.')
   parser.add_argument('--guest', action='store_true', default=False,
                       help='Run tests in incognito mode.')
   parser.add_argument('--build-dir', type='path',
