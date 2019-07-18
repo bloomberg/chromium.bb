@@ -4108,11 +4108,6 @@
         },
         'results_handler': 'layout tests',
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04'
-            },
-          ],
           'shards': 10,
         },
       },
