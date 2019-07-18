@@ -27,7 +27,7 @@ class Proxy(object):
             |self|.  If None, no attribute has priority over own attributes.
         """
         if target_attrs is not None:
-            assert isinstance(target_attrs, (tuple, list))
+            assert isinstance(target_attrs, (list, set, tuple))
             assert all(isinstance(attr, str) for attr in target_attrs)
         self._target_object = target_object
         self._target_attrs = target_attrs
@@ -52,6 +52,26 @@ class Proxy(object):
         if target_attrs is not None and attribute in target_attrs:
             return getattr(target_object, attribute)
         return object.__getattribute__(self, attribute)
+
+    @staticmethod
+    def get_all_attributes(target_class):
+        """
+        Returns all the attributes of |target_class| including its ancestors'
+        attributes.  Protected attributes (starting with an underscore,
+        including two underscores) are excluded.
+        """
+
+        def collect_attrs_recursively(target_class):
+            attrs_sets = [set(vars(target_class).keys())]
+            for base_class in target_class.__bases__:
+                attrs_sets.append(collect_attrs_recursively(base_class))
+            return set.union(*attrs_sets)
+
+        assert isinstance(target_class, type)
+        return sorted([
+            attr for attr in collect_attrs_recursively(target_class)
+            if not attr.startswith('_')
+        ])
 
     def set_target_object(self, target_object):
         assert self._target_object is None

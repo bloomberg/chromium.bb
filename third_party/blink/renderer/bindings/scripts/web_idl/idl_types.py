@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 
 import exceptions
+
 from blinkbuild.name_style_converter import NameStyleConverter
+
 from .common import WithCodeGeneratorInfo
 from .common import WithDebugInfo
 from .common import WithExtendedAttributes
@@ -378,6 +380,11 @@ class ReferenceType(IdlType, WithIdentifier, Proxy):
     identifier may be resolved to a TypedefType.
     """
 
+    _attrs_to_be_proxied = set(Proxy.get_all_attributes(IdlType)).difference(
+        # attributes not to be proxied
+        set(('code_generator_info', 'debug_info', 'extended_attributes',
+             'is_optional')))
+
     def __init__(self,
                  ref_to_idl_type,
                  is_optional=False,
@@ -392,8 +399,10 @@ class ReferenceType(IdlType, WithIdentifier, Proxy):
             code_generator_info=code_generator_info,
             debug_info=debug_info)
         WithIdentifier.__init__(self, ref_to_idl_type.identifier)
-        # TODO(yukishiino): Set appropriate attributes to proxy.
-        Proxy.__init__(self, target_object=ref_to_idl_type)
+        Proxy.__init__(
+            self,
+            target_object=ref_to_idl_type,
+            target_attrs_with_priority=ReferenceType._attrs_to_be_proxied)
 
 
 class DefinitionType(IdlType, WithIdentifier):
