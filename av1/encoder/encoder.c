@@ -5538,9 +5538,11 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
 
   if (cm->show_existing_frame) {
     current_frame->order_hint = cm->cur_frame->order_hint;
+    current_frame->display_order_hint = cm->cur_frame->display_order_hint;
   } else {
     current_frame->order_hint =
         current_frame->frame_number + frame_params->order_offset;
+    current_frame->display_order_hint = current_frame->order_hint;
     current_frame->order_hint %=
         (1 << (cm->seq_params.order_hint_info.order_hint_bits_minus_1 + 1));
   }

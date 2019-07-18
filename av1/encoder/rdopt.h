@@ -184,6 +184,14 @@ typedef int64_t (*pick_interinter_mask_type)(
     const uint8_t *const p0, const uint8_t *const p1,
     const int16_t *const residual1, const int16_t *const diff10);
 
+static INLINE int av1_encoder_get_relative_dist(const OrderHintInfo *oh, int a,
+                                                int b) {
+  if (!oh->enable_order_hint) return 0;
+
+  assert(a >= 0 && b >= 0);
+  return (a - b);
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

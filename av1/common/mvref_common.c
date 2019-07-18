@@ -843,12 +843,16 @@ void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
 
 void av1_setup_frame_buf_refs(AV1_COMMON *cm) {
   cm->cur_frame->order_hint = cm->current_frame.order_hint;
+  cm->cur_frame->display_order_hint = cm->current_frame.display_order_hint;
 
   MV_REFERENCE_FRAME ref_frame;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame);
-    if (buf != NULL)
+    if (buf != NULL) {
       cm->cur_frame->ref_order_hints[ref_frame - LAST_FRAME] = buf->order_hint;
+      cm->cur_frame->ref_display_order_hint[ref_frame - LAST_FRAME] =
+          buf->display_order_hint;
+    }
   }
 }
 
@@ -1494,7 +1498,8 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int *remapped_ref_idx,
     fwd_end_idx--;
   }
 
-  // Assign all the remaining frame(s), if any, to the earliest reference frame.
+  // Assign all the remaining frame(s), if any, to the earliest reference
+  // frame.
   for (; ref_idx < (INTER_REFS_PER_FRAME - 2); ref_idx++) {
     const MV_REFERENCE_FRAME ref_frame = ref_frame_list[ref_idx];
     if (ref_flag_list[ref_frame - LAST_FRAME] == 1) continue;

@@ -129,6 +129,13 @@ typedef struct RefCntBuffer {
   unsigned int order_hint;
   unsigned int ref_order_hints[INTER_REFS_PER_FRAME];
 
+  // These variables are used only in encoder and compare the absolute
+  // display order hint to compute the relative distance and overcome
+  // the limitation of get_relative_dist() which returns incorrect
+  // distance when a very old frame is used as a reference.
+  unsigned int display_order_hint;
+  unsigned int ref_display_order_hint[INTER_REFS_PER_FRAME];
+
   MV_REF *mvs;
   uint8_t *seg_map;
   struct segmentation seg;
@@ -294,6 +301,7 @@ typedef struct {
   REFERENCE_MODE reference_mode;
 
   unsigned int order_hint;
+  unsigned int display_order_hint;
   unsigned int frame_number;
   SkipModeInfo skip_mode_info;
   int refresh_frame_flags;  // Which ref frames are overwritten by this frame
