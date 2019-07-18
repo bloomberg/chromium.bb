@@ -1,10 +1,13 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_DELEGATE_H_
-#define COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_DELEGATE_H_
+#ifndef COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_IOS_H_
+#define COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_IOS_H_
 
+#include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -98,13 +101,13 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   // Calls to this class are expected to be made from the browser UI thread.
   // The purpose of this checker is to detect access to
   // ProfileOAuth2TokenService from multiple threads in upstream code.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
-  // The client with which this instance was initialied, or NULL.
+  // The client with which this instance was initialied, or null.
   SigninClient* client_ = nullptr;
   std::unique_ptr<DeviceAccountsProvider> provider_;
   AccountTrackerService* account_tracker_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenServiceIOSDelegate);
 };
-#endif  // COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_DELEGATE_H_
+#endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_IOS_H_
