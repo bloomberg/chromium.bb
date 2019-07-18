@@ -7758,6 +7758,15 @@ static void get_inter_predictors_masked_compound(
   }
 }
 
+// Takes a backup of rate, distortion and model_rd for future reuse
+static INLINE void backup_stats(COMPOUND_TYPE cur_type, int32_t *comp_rate,
+                                int64_t *comp_dist, int64_t *comp_model_rd,
+                                RD_STATS *rd_stats, int64_t est_rd) {
+  comp_rate[cur_type] = rd_stats->rate;
+  comp_dist[cur_type] = rd_stats->dist;
+  comp_model_rd[cur_type] = est_rd;
+}
+
 static int64_t masked_compound_type_rd(
     const AV1_COMP *const cpi, MACROBLOCK *x, const int_mv *const cur_mv,
     const BLOCK_SIZE bsize, const PREDICTION_MODE this_mode, int *rs2,
@@ -7869,9 +7878,8 @@ static int64_t masked_compound_type_rd(
       rd =
           RDCOST(x->rdmult, *rs2 + *out_rate_mv + rd_stats.rate, rd_stats.dist);
       // Backup rate and distortion for future reuse
-      comp_rate[compound_type] = rd_stats.rate;
-      comp_dist[compound_type] = rd_stats.dist;
-      comp_model_rd[compound_type] = *comp_model_rd_cur;
+      backup_stats(compound_type, comp_rate, comp_dist, comp_model_rd,
+                   &rd_stats, *comp_model_rd_cur);
     }
   } else {
     assert(comp_dist[compound_type] != INT64_MAX);
@@ -9964,9 +9972,8 @@ static int compound_type_rd(
       best_rd_cur = RDCOST(x->rdmult, rs2 + *rate_mv + est_rd_stats.rate,
                            est_rd_stats.dist);
       // Backup rate and distortion for future reuse
-      comp_rate[best_type] = est_rd_stats.rate;
-      comp_dist[best_type] = est_rd_stats.dist;
-      comp_model_rd[best_type] = est_rd[best_type];
+      backup_stats(best_type, comp_rate, comp_dist, comp_model_rd,
+                   &est_rd_stats, est_rd[best_type]);
       comp_model_rd_cur = est_rd[best_type];
     }
     if (best_type == COMPOUND_AVERAGE) restore_dst_buf(xd, *tmp_dst, 1);
@@ -10009,9 +10016,8 @@ static int compound_type_rd(
                 RDCOST(x->rdmult, rs2 + *rate_mv + rate_sum, dist_sum);
 
             // Backup rate and distortion for future reuse
-            comp_rate[cur_type] = est_rd_stats.rate;
-            comp_dist[cur_type] = est_rd_stats.dist;
-            comp_model_rd[cur_type] = comp_model_rd_cur;
+            backup_stats(cur_type, comp_rate, comp_dist, comp_model_rd,
+                         &est_rd_stats, comp_model_rd_cur);
           }
         } else {
           // Calculate RD cost based on stored stats
