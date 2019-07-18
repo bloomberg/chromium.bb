@@ -5518,6 +5518,8 @@ if (!is_android) {
         "../browser/notifications/notification_platform_bridge_win_interactive_uitest.cc",
         "../browser/notifications/win/fake_itoastnotifier.cc",
         "../browser/notifications/win/fake_itoastnotifier.h",
+        "../browser/ui/views/accessibility/uia_accessibility_event_waiter.cc",
+        "../browser/ui/views/accessibility/uia_accessibility_event_waiter.h",
         "../browser/ui/views/touch_events_interactive_uitest_win.cc",
       ]
       deps += [
