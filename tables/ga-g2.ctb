@@ -6,7 +6,7 @@
 #
 #+locale:ga
 #+type:literary
-#+contraction:yes
+#+contraction:full
 #+grade:2
 #+system:INBAF
 
