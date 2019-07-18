@@ -15,6 +15,7 @@
 <link rel="import" href="cups_printer_shared_css.html">
 <link rel="import" href="cups_printers_list.html">
 <link rel="import" href="cups_saved_printers.html">
+<link rel="import" href="cups_nearby_printers.html">
 
 <dom-module id="settings-cups-printers">
   <template>
@@ -124,6 +125,10 @@
           </cr-button>
         </div>
       </div>
+
+      <settings-cups-nearby-printers search-term="[[searchTerm]]"
+          active-printer="{{activePrinter}}">
+      </settings-cups-nearby-printers>
     </template>
 
     <settings-cups-add-printer-dialog id="addPrinterDialog"
