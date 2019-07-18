@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/common/mojom/autofill_types_mojom_traits.h"
+#include "components/autofill/core/common/mojom/autofill_types_struct_traits.h"
 
 #include "base/i18n/rtl.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
