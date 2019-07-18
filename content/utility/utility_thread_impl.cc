@@ -46,10 +46,12 @@ class ServiceBinderImpl {
   ~ServiceBinderImpl() = default;
 
   void BindServiceInterface(mojo::GenericPendingReceiver receiver) {
-    // NOTE: The signals watcher are irrelevant. This watcher is never armed.
+    // We watch for and terminate on PEER_CLOSED, but we also terminate if the
+    // watcher is cancelled (meaning the local endpoint was closed rather than
+    // the peer). Hence any breakage of the service pipe leads to termination.
     auto watcher = std::make_unique<mojo::SimpleWatcher>(
-        FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL);
-    watcher->Watch(receiver.pipe(), MOJO_HANDLE_SIGNAL_READABLE,
+        FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
+    watcher->Watch(receiver.pipe(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
                    MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
                    base::BindRepeating(&ServiceBinderImpl::OnServicePipeClosed,
                                        base::Unretained(this), watcher.get()));
@@ -62,10 +64,9 @@ class ServiceBinderImpl {
   void OnServicePipeClosed(mojo::SimpleWatcher* which,
                            MojoResult result,
                            const mojo::HandleSignalsState& state) {
-    // This must be a cancellation notification (meaning the watched pipe has
-    // been closed locally) because we never arm the watcher to allow any other
-    // notifications.
-    DCHECK_EQ(MOJO_RESULT_CANCELLED, result);
+    // NOTE: It doesn't matter whether this was peer closure or local closure,
+    // and those are the only two ways this method can be invoked.
+
     auto it = service_pipe_watchers_.find(which);
     DCHECK(it != service_pipe_watchers_.end());
     service_pipe_watchers_.erase(it);

@@ -284,6 +284,8 @@ jumbo_source_set("browser_sources") {
     "serial_delegate.h",
     "service_process_host.cc",
     "service_process_host.h",
+    "service_process_info.cc",
+    "service_process_info.h",
     "service_worker_context.h",
     "service_worker_context_observer.h",
     "service_worker_running_info.h",
