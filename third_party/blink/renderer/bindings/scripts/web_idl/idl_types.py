@@ -32,6 +32,83 @@ from .user_defined_type import UserDefinedType
 # + VariadicType
 
 
+_IDL_TYPE_PASS_KEY = object()
+
+
+class IdlTypeFactory(object):
+    """
+    Creates a group of instances of IdlType, over which you can iterate later.
+
+    There are two phases; instantiation phase and iteration phase.  The factory
+    is initially in the instantiation phase and you can create instances of
+    IdlType.  Once it enters to the iteration phase (through the first attempt
+    to iterate), you can no longer create a new instance.
+    """
+
+    def __init__(self):
+        self._idl_types = set()
+        # |_is_frozen| is initially False and you can create new instances of
+        # IdlType.  The first invocation of |for_each| freezes the factory and
+        # you can no longer create a new instance of IdlType.
+        self._is_frozen = False
+
+    def for_each(self, callback):
+        """
+        Applies |callback| to all the instances of IdlType created by this
+        factory.
+
+        Instantiation of IdlType is no longer possible.
+
+        Args:
+            callback: A callable that takes an IdlType as only the argument.
+                Return value is not used.
+        """
+        assert callable(callback)
+        self._is_frozen = True
+        for idl_type in self._idl_types:
+            callback(idl_type)
+
+    def simple_type(self, *args, **kwargs):
+        return self._create(SimpleType, args, kwargs)
+
+    def reference_type(self, *args, **kwargs):
+        return self._create(ReferenceType, args, kwargs)
+
+    def definition_type(self, *args, **kwargs):
+        return self._create(DefinitionType, args, kwargs)
+
+    def typedef_type(self, *args, **kwargs):
+        return self._create(TypedefType, args, kwargs)
+
+    def sequence_type(self, *args, **kwargs):
+        return self._create(SequenceType, args, kwargs)
+
+    def frozen_array_type(self, *args, **kwargs):
+        return self._create(FrozenArrayType, args, kwargs)
+
+    def record_type(self, *args, **kwargs):
+        return self._create(RecordType, args, kwargs)
+
+    def promise_type(self, *args, **kwargs):
+        return self._create(PromiseType, args, kwargs)
+
+    def union_type(self, *args, **kwargs):
+        return self._create(UnionType, args, kwargs)
+
+    def nullable_type(self, *args, **kwargs):
+        return self._create(NullableType, args, kwargs)
+
+    def variadic_type(self, *args, **kwargs):
+        return self._create(VariadicType, args, kwargs)
+
+    def _create(self, idl_type_concrete_class, args, kwargs):
+        assert not self._is_frozen
+        idl_type = idl_type_concrete_class(
+            *args, pass_key=_IDL_TYPE_PASS_KEY, **kwargs)
+        self._idl_types.add(idl_type)
+        return idl_type
+
+
 class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
     """
     Represents a 'type' in Web IDL
@@ -53,8 +130,10 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
                  is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
-                 debug_info=None):
+                 debug_info=None,
+                 pass_key=None):
         assert isinstance(is_optional, bool)
+        assert pass_key is _IDL_TYPE_PASS_KEY
         WithExtendedAttributes.__init__(self, extended_attributes)
         WithCodeGeneratorInfo.__init__(self, code_generator_info)
         WithDebugInfo.__init__(self, debug_info)
@@ -314,7 +393,8 @@ class SimpleType(IdlType):
                  is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
-                 debug_info=None):
+                 debug_info=None,
+                 pass_key=None):
         assert name in SimpleType._VALID_TYPES, (
             'Unknown type name: {}'.format(name))
         IdlType.__init__(
@@ -322,7 +402,8 @@ class SimpleType(IdlType):
             is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
-            debug_info=debug_info)
+            debug_info=debug_info,
+            pass_key=pass_key)
         self._name = name
 
     # IdlType overrides
@@ -391,14 +472,16 @@ class ReferenceType(IdlType, WithIdentifier, Proxy):
                  is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
-                 debug_info=None):
+                 debug_info=None,
+                 pass_key=None):
         assert isinstance(ref_to_idl_type, RefById)
         IdlType.__init__(
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
-            debug_info=debug_info)
+            debug_info=debug_info,
+            pass_key=pass_key)
         WithIdentifier.__init__(self, ref_to_idl_type.identifier)
         Proxy.__init__(
             self,
@@ -418,12 +501,14 @@ class DefinitionType(IdlType, WithIdentifier):
     def __init__(self,
                  user_def_type,
                  code_generator_info=None,
-                 debug_info=None):
+                 debug_info=None,
+                 pass_key=None):
         assert isinstance(user_def_type, UserDefinedType)
         IdlType.__init__(
             self,
             code_generator_info=code_generator_info,
-            debug_info=debug_info)
+            debug_info=debug_info,
+            pass_key=pass_key)
         WithIdentifier.__init__(self, user_def_type.identifier)
         self._definition = user_def_type
 
@@ -474,11 +559,16 @@ class TypedefType(IdlType, WithIdentifier):
     can track down the typedef'ed type to |original_type|.
     """
 
-    def __init__(self, typedef, code_generator_info=None, debug_info=None):
+    def __init__(self,
+                 typedef,
+                 code_generator_info=None,
+                 debug_info=None,
+                 pass_key=None):
         IdlType.__init__(
             self,
             code_generator_info=code_generator_info,
-            debug_info=debug_info)
+            debug_info=debug_info,
+            pass_key=pass_key)
         WithIdentifier.__init__(self, typedef.identifier)
         self._typedef = typedef
 
@@ -514,14 +604,16 @@ class _ArrayLikeType(IdlType):
                  is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
-                 debug_info=None):
+                 debug_info=None,
+                 pass_key=None):
         assert isinstance(element_type, IdlType)
         IdlType.__init__(
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
-            debug_info=debug_info)
+            debug_info=debug_info,
+            pass_key=pass_key)
         self._element_type = element_type
 
     # IdlType overrides
@@ -538,14 +630,16 @@ class SequenceType(_ArrayLikeType):
                  is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
-                 debug_info=None):
+                 debug_info=None,
+                 pass_key=None):
         _ArrayLikeType.__init__(
             self,
             element_type,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
-            debug_info=debug_info)
+            debug_info=debug_info,
+            pass_key=pass_key)
 
     # IdlType overrides
     @property
@@ -571,14 +665,16 @@ class FrozenArrayType(_ArrayLikeType):
                  is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
-                 debug_info=None):
+                 debug_info=None,
+                 pass_key=None):
         _ArrayLikeType.__init__(
             self,
             element_type,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
-            debug_info=debug_info)
+            debug_info=debug_info,
+            pass_key=pass_key)
 
     # IdlType overrides
     @property
@@ -605,7 +701,8 @@ class RecordType(IdlType):
                  is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
-                 debug_info=None):
+                 debug_info=None,
+                 pass_key=None):
         assert isinstance(key_type, IdlType)
         assert isinstance(value_type, IdlType)
         IdlType.__init__(
@@ -613,7 +710,8 @@ class RecordType(IdlType):
             is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
-            debug_info=debug_info)
+            debug_info=debug_info,
+            pass_key=pass_key)
         self._key_type = key_type
         self._value_type = value_type
 
@@ -649,14 +747,16 @@ class PromiseType(IdlType):
                  is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
-                 debug_info=None):
+                 debug_info=None,
+                 pass_key=None):
         assert isinstance(result_type, IdlType)
         IdlType.__init__(
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
-            debug_info=debug_info)
+            debug_info=debug_info,
+            pass_key=pass_key)
         self._result_type = result_type
 
     # IdlType overrides
@@ -691,7 +791,8 @@ class UnionType(IdlType):
                  is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
-                 debug_info=None):
+                 debug_info=None,
+                 pass_key=None):
         assert isinstance(member_types, (list, tuple))
         assert all(isinstance(member, IdlType) for member in member_types)
         IdlType.__init__(
@@ -699,7 +800,8 @@ class UnionType(IdlType):
             is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
-            debug_info=debug_info)
+            debug_info=debug_info,
+            pass_key=pass_key)
         self._member_types = tuple(member_types)
 
     # IdlType overrides
@@ -739,14 +841,16 @@ class NullableType(IdlType):
                  is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
-                 debug_info=None):
+                 debug_info=None,
+                 pass_key=None):
         assert isinstance(inner_type, IdlType)
         IdlType.__init__(
             self,
             is_optional=is_optional,
             extended_attributes=extended_attributes,
             code_generator_info=code_generator_info,
-            debug_info=debug_info)
+            debug_info=debug_info,
+            pass_key=pass_key)
         self._inner_type = inner_type
 
     # IdlType overrides
@@ -785,12 +889,16 @@ class NullableType(IdlType):
 class VariadicType(IdlType):
     """Represents a type used for variadic arguments."""
 
-    def __init__(self, element_type, code_generator_info=None,
-                 debug_info=None):
+    def __init__(self,
+                 element_type,
+                 code_generator_info=None,
+                 debug_info=None,
+                 pass_key=None):
         IdlType.__init__(
             self,
             code_generator_info=code_generator_info,
-            debug_info=debug_info)
+            debug_info=debug_info,
+            pass_key=pass_key)
         assert isinstance(element_type, IdlType)
         self._element_type = element_type
 
