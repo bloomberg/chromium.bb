@@ -1627,6 +1627,11 @@ weston_compositor_add_key_binding(struct weston_compositor *compositor,
 				  enum weston_keyboard_modifier modifier,
 				  weston_key_binding_handler_t binding,
 				  void *data);
+struct weston_binding *
+weston_compositor_add_debug_binding(struct weston_compositor *compositor,
+				    uint32_t key,
+				    weston_key_binding_handler_t binding,
+				    void *data);
 
 typedef void (*weston_modifier_binding_handler_t)(struct weston_keyboard *keyboard,
 					          enum weston_keyboard_modifier modifier,

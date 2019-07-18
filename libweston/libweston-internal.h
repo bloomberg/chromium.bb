@@ -79,11 +79,6 @@ weston_compositor_add_head(struct weston_compositor *compositor,
 void
 weston_compositor_add_pending_output(struct weston_output *output,
 				     struct weston_compositor *compositor);
-struct weston_binding *
-weston_compositor_add_debug_binding(struct weston_compositor *compositor,
-				    uint32_t key,
-				    weston_key_binding_handler_t binding,
-				    void *data);
 bool
 weston_compositor_import_dmabuf(struct weston_compositor *compositor,
 				struct linux_dmabuf_buffer *buffer);
