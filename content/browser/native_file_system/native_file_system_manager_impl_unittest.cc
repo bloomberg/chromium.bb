@@ -109,10 +109,11 @@ TEST_F(NativeFileSystemManagerImplTest, GetSandboxedFileSystem_Permissions) {
 TEST_F(NativeFileSystemManagerImplTest, CreateFileEntryFromPath_Permissions) {
   const base::FilePath kTestPath(dir_.GetPath().AppendASCII("foo"));
 
-  EXPECT_CALL(permission_context_,
-              GetWritePermissionGrant(
-                  kTestOrigin, kTestPath, /*is_directory=*/false,
-                  NativeFileSystemPermissionContext::UserAction::kOpen))
+  EXPECT_CALL(
+      permission_context_,
+      GetWritePermissionGrant(
+          kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
+          NativeFileSystemPermissionContext::UserAction::kOpen))
       .WillOnce(testing::Return(ask_grant_));
 
   blink::mojom::NativeFileSystemEntryPtr entry =
@@ -130,10 +131,11 @@ TEST_F(NativeFileSystemManagerImplTest,
        CreateWritableFileEntryFromPath_Permissions) {
   const base::FilePath kTestPath(dir_.GetPath().AppendASCII("foo"));
 
-  EXPECT_CALL(permission_context_,
-              GetWritePermissionGrant(
-                  kTestOrigin, kTestPath, /*is_directory=*/false,
-                  NativeFileSystemPermissionContext::UserAction::kSave))
+  EXPECT_CALL(
+      permission_context_,
+      GetWritePermissionGrant(
+          kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
+          NativeFileSystemPermissionContext::UserAction::kSave))
       .WillOnce(testing::Return(allow_grant_));
 
   blink::mojom::NativeFileSystemEntryPtr entry =
@@ -151,10 +153,11 @@ TEST_F(NativeFileSystemManagerImplTest,
        CreateDirectoryEntryFromPath_Permissions) {
   const base::FilePath kTestPath(dir_.GetPath().AppendASCII("foo"));
 
-  EXPECT_CALL(permission_context_,
-              GetWritePermissionGrant(
-                  kTestOrigin, kTestPath, /*is_directory=*/true,
-                  NativeFileSystemPermissionContext::UserAction::kOpen))
+  EXPECT_CALL(
+      permission_context_,
+      GetWritePermissionGrant(
+          kTestOrigin, kTestPath, /*is_directory=*/true, kProcessId, kFrameId,
+          NativeFileSystemPermissionContext::UserAction::kOpen))
       .WillOnce(testing::Return(ask_grant_));
 
   blink::mojom::NativeFileSystemEntryPtr entry =

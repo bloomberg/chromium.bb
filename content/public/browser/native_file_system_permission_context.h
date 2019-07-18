@@ -39,10 +39,17 @@ class NativeFileSystemPermissionContext {
   // user has already granted write access to a directory, this method could
   // return that existing grant when figuring the grant to use for a file in
   // that directory.
+  // |process_id| and |frame_id| are the frame in which the handle is used. Once
+  // postMessage is implemented this isn't meaningful anymore and should be
+  // removed, but until then they can be used for more accurate usage tracking.
+  // TODO(https://crbug.com/984769): Eliminate process_id and frame_id from
+  // this method when grants stop being scoped to a frame.
   virtual scoped_refptr<NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
                           bool is_directory,
+                          int process_id,
+                          int frame_id,
                           UserAction user_action) = 0;
 
   // Displays a dialog to confirm that the user intended to give read access to

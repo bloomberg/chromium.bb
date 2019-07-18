@@ -45,6 +45,8 @@ class ChromeNativeFileSystemPermissionContext
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
                           bool is_directory,
+                          int process_id,
+                          int frame_id,
                           UserAction user_action) override;
   void ConfirmSensitiveDirectoryAccess(
       const url::Origin& origin,
@@ -68,13 +70,19 @@ class ChromeNativeFileSystemPermissionContext
     std::vector<base::FilePath> file_write_grants;
     std::vector<base::FilePath> directory_write_grants;
   };
-  Grants GetPermissionGrants(const url::Origin& origin);
+  Grants GetPermissionGrants(const url::Origin& origin,
+                             int process_id,
+                             int frame_id);
 
   // This method must be called on the UI thread, and calls the callback with a
   // snapshot of the currently granted permissions after looking them up.
+  // TODO(https://crbug.com/984769): Eliminate process_id and frame_id from this
+  // method when grants stop being scoped to a frame.
   static void GetPermissionGrantsFromUIThread(
       content::BrowserContext* browser_context,
       const url::Origin& origin,
+      int process_id,
+      int frame_id,
       base::OnceCallback<void(Grants)> callback);
 
   // RefcountedKeyedService:

@@ -212,6 +212,7 @@ NativeFileSystemManagerImpl::CreateDirectoryEntryFromPath(
   if (permission_context_) {
     write_grant = permission_context_->GetWritePermissionGrant(
         binding_context.origin, directory_path, /*is_directory=*/true,
+        binding_context.process_id, binding_context.frame_id,
         NativeFileSystemPermissionContext::UserAction::kOpen);
   } else {
     // Auto-deny all write grants if no permisson context is available, unless
@@ -540,7 +541,8 @@ NativeFileSystemManagerImpl::CreateFileEntryFromPathImpl(
   scoped_refptr<NativeFileSystemPermissionGrant> write_grant;
   if (permission_context_) {
     write_grant = permission_context_->GetWritePermissionGrant(
-        binding_context.origin, file_path, /*is_directory=*/false, user_action);
+        binding_context.origin, file_path, /*is_directory=*/false,
+        binding_context.process_id, binding_context.frame_id, user_action);
   } else {
     // Auto-deny all write grants if no permisson context is available, unless
     // Experimental Web Platform features are enabled.
