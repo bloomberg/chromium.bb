@@ -205,6 +205,41 @@ class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):
       self.assertExists(f)
 
 
+class BundleVmFilesTest(cros_test_lib.TempDirTestCase):
+  """BundleVmFiles tests."""
+
+  def testBundleVmFiles(self):
+    """"Verifies that the correct files are bundled"""
+    # Create the chroot instance.
+    chroot_path = os.path.join(self.tempdir, 'chroot')
+    chroot = chroot_lib.Chroot(path=chroot_path)
+
+    # Create the test_results_dir
+    test_results_dir = 'test/results'
+
+    # Create a set of files where some should get bundled up as VM files.
+    # Add a suffix (123) to one of the files matching the VM pattern prefix.
+    vm_files = ('file1.txt',
+                'file2.txt',
+                'chromiumos_qemu_disk.bin' + '123',
+                'chromiumos_qemu_mem.bin'
+               )
+
+    target_test_dir = os.path.join(chroot_path, test_results_dir)
+    cros_test_lib.CreateOnDiskHierarchy(target_test_dir, vm_files)
+
+    # Create the output directory.
+    output_dir = os.path.join(self.tempdir, 'output_dir')
+    osutils.SafeMakedirs(output_dir)
+
+    archives = artifacts.BundleVmFiles(
+        chroot, test_results_dir, output_dir)
+    expected_archive_files = [
+        output_dir + '/chromiumos_qemu_disk.bin' + '123.tar',
+        output_dir + '/chromiumos_qemu_mem.bin.tar']
+    self.assertItemsEqual(archives, expected_archive_files)
+
+
 class BuildFirmwareArchiveTest(cros_test_lib.TempDirTestCase):
   """BuildFirmwareArchive tests."""
 

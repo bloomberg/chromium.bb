@@ -12,7 +12,6 @@ import os
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.cbuildbot import commands
-from chromite.cbuildbot.stages import vm_test_stages
 from chromite.lib import build_target_util
 from chromite.lib import chroot_lib
 from chromite.lib import constants
@@ -308,8 +307,7 @@ def BundleSimpleChromeArtifacts(input_proto, output_proto):
     output_proto.artifacts.add().path = file_name
 
 
-@validate.require('chroot.path', 'sysroot.path', 'test_results_dir',
-                  'output_dir')
+@validate.require('chroot.path', 'test_results_dir', 'output_dir')
 def BundleVmFiles(input_proto, output_proto):
   """Tar VM disk and memory files.
 
@@ -317,14 +315,12 @@ def BundleVmFiles(input_proto, output_proto):
     input_proto (SysrootBundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
   """
-  chroot = input_proto.chroot.path
-  sysroot = input_proto.sysroot.path.lstrip(os.sep)
-  test_results_dir = input_proto.test_results_dir.lstrip(os.sep)
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  test_results_dir = input_proto.test_results_dir
   output_dir = input_proto.output_dir
 
-  # TODO(crbug.com/954344): Replace with a chromite/service implementation.
-  image_dir = os.path.join(chroot, sysroot, test_results_dir)
-  archives = vm_test_stages.ArchiveVMFilesFromImageDir(image_dir, output_dir)
+  archives = artifacts.BundleVmFiles(
+      chroot, test_results_dir, output_dir)
   for archive in archives:
     output_proto.artifacts.add().path = archive
 

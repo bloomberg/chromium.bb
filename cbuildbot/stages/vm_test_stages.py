@@ -14,7 +14,6 @@ archiving results and VM images in case of failure.
 from __future__ import print_function
 
 import datetime
-import fnmatch
 import os
 import re
 import shutil
@@ -755,57 +754,7 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
     The paths to the tarballs.
   """
   images_dir = os.path.join(buildroot, 'chroot', test_results_dir.lstrip('/'))
-  return ArchiveVMFilesFromImageDir(images_dir, archive_path)
-
-
-def ArchiveVMFilesFromImageDir(images_dir, archive_path):
-  """Archives the VM memory and disk images into tarballs.
-
-  This method performs the work that used to be done in ArchiveVMFiles, but
-  removes the dependence on the default chroot location. This was created for
-  the build api. Unless you're working on that you probably want the other one.
-
-  TODO(crbug.com/954344): Refactor to an appropriate lib module.
-
-  See:
-    ArchiveVMFiles()
-
-  Args:
-    images_dir (str): The directory containing the images to archive.
-    archive_path (str): The directory where the archives should be created.
-
-  Returns:
-    list[str] - The paths to the tarballs.
-  """
-  images = []
-  for path, _, filenames in os.walk(images_dir):
-    images.extend([
-        os.path.join(path, filename)
-        for filename in fnmatch.filter(filenames, constants.VM_DISK_PREFIX +
-                                       '*')
-    ])
-    images.extend([
-        os.path.join(path, filename)
-        for filename in fnmatch.filter(filenames, constants.VM_MEM_PREFIX + '*')
-    ])
-
-  tar_files = []
-  for image_path in images:
-    image_rel_path = os.path.relpath(image_path, images_dir)
-    image_parent_dir = os.path.dirname(image_path)
-    image_file = os.path.basename(image_path)
-    tarball_path = os.path.join(archive_path,
-                                "%s.tar" % image_rel_path.replace('/', '_'))
-    # Note that tar will chdir to |image_parent_dir|, so that |image_file|
-    # is at the top-level of the tar file.
-    cros_build_lib.CreateTarball(
-        tarball_path,
-        image_parent_dir,
-        compression=cros_build_lib.COMP_BZIP2,
-        inputs=[image_file])
-    tar_files.append(tarball_path)
-
-  return tar_files
+  return cros_build_lib.ArchiveFilesFromImageDir(images_dir, archive_path)
 
 
 def RunCrosVMTest(board, image_dir):

@@ -11,6 +11,7 @@ This service houses the high level business logic for all created artifacts.
 from __future__ import print_function
 
 import collections
+import fnmatch
 import glob
 import json
 import os
@@ -131,6 +132,61 @@ def BundleSimpleChromeArtifacts(chroot, sysroot, build_target, output_dir):
   files.append(ArchiveChromeEbuildEnv(sysroot, output_dir))
 
   return files
+
+
+def BundleVmFiles(chroot, test_results_dir, output_dir):
+  """Gather all of the VM files.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot to be used.
+    test_results_dir (str): Test directory relative to chroot.
+    output_dir (str): Where all result files should be stored.
+  """
+  image_dir = chroot.full_path(test_results_dir)
+  archives = ArchiveFilesFromImageDir(image_dir, output_dir)
+  return archives
+
+
+# TODO(mmortensen): Refactor ArchiveFilesFromImageDir to be part of a library
+# module. I tried moving it to lib/vm.py but this causes a circular dependency.
+def ArchiveFilesFromImageDir(images_dir, archive_path):
+  """Archives the files into tarballs if they match a prefix from prefix_list.
+
+  Create and return a list of tarballs from the images_dir of files that match
+  VM disk and memory prefixes.
+
+  Args:
+    images_dir (str): The directory containing the images to archive.
+    archive_path (str): The directory where the archives should be created.
+
+  Returns:
+    list[str] - The paths to the tarballs.
+  """
+  images = []
+  for prefix in [constants.VM_DISK_PREFIX, constants.VM_MEM_PREFIX]:
+    for path, _, filenames in os.walk(images_dir):
+      images.extend([
+          os.path.join(path, filename)
+          for filename in fnmatch.filter(filenames, prefix + '*')
+      ])
+
+  tar_files = []
+  for image_path in images:
+    image_rel_path = os.path.relpath(image_path, images_dir)
+    image_parent_dir = os.path.dirname(image_path)
+    image_file = os.path.basename(image_path)
+    tarball_path = os.path.join(archive_path,
+                                "%s.tar" % image_rel_path.replace('/', '_'))
+    # Note that tar will chdir to |image_parent_dir|, so that |image_file|
+    # is at the top-level of the tar file.
+    cros_build_lib.CreateTarball(
+        tarball_path,
+        image_parent_dir,
+        compression=cros_build_lib.COMP_BZIP2,
+        inputs=[image_file])
+    tar_files.append(tarball_path)
+
+  return tar_files
 
 
 def ArchiveChromeEbuildEnv(sysroot, output_dir):

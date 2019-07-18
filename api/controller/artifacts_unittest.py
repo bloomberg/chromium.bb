@@ -13,7 +13,6 @@ import os
 from chromite.api.controller import artifacts
 from chromite.api.gen.chromite.api import artifacts_pb2
 from chromite.cbuildbot import commands
-from chromite.cbuildbot.stages import vm_test_stages
 from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -527,16 +526,6 @@ class BundleVmFilesTest(cros_test_lib.MockTestCase):
     with self.assertRaises(cros_build_lib.DieSystemExit):
       artifacts.BundleVmFiles(in_proto, out_proto)
 
-  def testSysrootMissing(self):
-    """Test error handling for missing sysroot."""
-    in_proto = self._GetInput(chroot='/chroot/dir',
-                              test_results_dir='/test/results',
-                              output_dir='/tmp/output')
-    out_proto = self._GetOutput()
-
-    with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleVmFiles(in_proto, out_proto)
-
   def testTestResultsDirMissing(self):
     """Test error handling for missing test results directory."""
     in_proto = self._GetInput(chroot='/chroot/dir', sysroot='/build/board',
@@ -562,13 +551,12 @@ class BundleVmFilesTest(cros_test_lib.MockTestCase):
                               output_dir='/tmp/output')
     out_proto = self._GetOutput()
     expected_files = ['/tmp/output/f1.tar', '/tmp/output/f2.tar']
-    patch = self.PatchObject(vm_test_stages, 'ArchiveVMFilesFromImageDir',
+    patch = self.PatchObject(artifacts_svc, 'BundleVmFiles',
                              return_value=expected_files)
 
     artifacts.BundleVmFiles(in_proto, out_proto)
 
-    patch.assert_called_with('/chroot/dir/build/board/test/results',
-                             '/tmp/output')
+    patch.assert_called_with(mock.ANY, '/test/results', '/tmp/output')
 
     # Make sure we have artifacts, and that every artifact is an expected file.
     self.assertTrue(out_proto.artifacts)
