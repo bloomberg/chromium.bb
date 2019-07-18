@@ -17,9 +17,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
-#include "mojo/public/cpp/system/string_data_source.h"
+#include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -458,15 +457,15 @@ TEST_F(BlobBuilderFromStreamTestWithDelayedLimits, LargeStream) {
   builder.Start(kData.size(), std::move(pipe.consumer_handle), nullptr);
 
   context_->set_limits_for_testing(limits_);
-  auto data_producer =
-      std::make_unique<mojo::DataPipeProducer>(std::move(pipe.producer_handle));
+  auto data_producer = std::make_unique<mojo::StringDataPipeProducer>(
+      std::move(pipe.producer_handle));
   auto* producer_ptr = data_producer.get();
   producer_ptr->Write(
-      std::make_unique<mojo::StringDataSource>(
-          kData, mojo::StringDataSource::AsyncWritingMode::
-                     STRING_STAYS_VALID_UNTIL_COMPLETION),
+      kData,
+      mojo::StringDataPipeProducer::AsyncWritingMode::
+          STRING_STAYS_VALID_UNTIL_COMPLETION,
       base::BindOnce(
-          base::DoNothing::Once<std::unique_ptr<mojo::DataPipeProducer>,
+          base::DoNothing::Once<std::unique_ptr<mojo::StringDataPipeProducer>,
                                 MojoResult>(),
           std::move(data_producer)));
   pipe.producer_handle.reset();

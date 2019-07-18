@@ -19,8 +19,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/system/data_pipe_producer.h"
-#include "mojo/public/cpp/system/string_data_source.h"
+#include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -201,16 +200,16 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
 
   const std::string kTestString = "Hello, world!";
   mojo::DataPipe data_pipe(static_cast<uint32_t>(kTestString.size()));
-  std::unique_ptr<mojo::DataPipeProducer> producer =
-      std::make_unique<mojo::DataPipeProducer>(
+  std::unique_ptr<mojo::StringDataPipeProducer> producer =
+      std::make_unique<mojo::StringDataPipeProducer>(
           std::move(data_pipe.producer_handle));
 
-  mojo::DataPipeProducer* raw_producer = producer.get();
+  mojo::StringDataPipeProducer* raw_producer = producer.get();
   raw_producer->Write(
-      std::make_unique<mojo::StringDataSource>(
-          kTestString, mojo::StringDataSource::AsyncWritingMode::
-                           STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION),
-      base::BindOnce([](std::unique_ptr<mojo::DataPipeProducer> producer,
+      kTestString,
+      mojo::StringDataPipeProducer::AsyncWritingMode::
+          STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION,
+      base::BindOnce([](std::unique_ptr<mojo::StringDataPipeProducer> producer,
                         MojoResult result) {},
                      std::move(producer)));
 

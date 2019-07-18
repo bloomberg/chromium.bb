@@ -22,10 +22,6 @@ bool FilteredDataSource::IsValid() const {
   return source_->IsValid();
 }
 
-int64_t FilteredDataSource::GetLength() const {
-  return source_->GetLength();
-}
-
 FilteredDataSource::ReadResult FilteredDataSource::Read(
     int64_t offset,
     base::span<char> buffer) {

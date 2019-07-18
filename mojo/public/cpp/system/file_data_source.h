@@ -5,10 +5,11 @@
 #ifndef MOJO_PUBLIC_CPP_SYSTEM_FILE_DATA_SOURCE_H_
 #define MOJO_PUBLIC_CPP_SYSTEM_FILE_DATA_SOURCE_H_
 
+#include <limits>
+
 #include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/system_export.h"
 
@@ -22,18 +23,17 @@ class MOJO_CPP_SYSTEM_EXPORT FileDataSource final
   static MojoResult ConvertFileErrorToMojoResult(base::File::Error error);
 
   FileDataSource(base::File file,
-                 base::Optional<int64_t> max_bytes = base::nullopt);
+                 size_t max_bytes = std::numeric_limits<size_t>::max());
   ~FileDataSource() override;
 
  private:
   // DataPipeProducer::DataSource:
   bool IsValid() const override;
-  int64_t GetLength() const override;
   ReadResult Read(int64_t offset, base::span<char> buffer) override;
 
   base::File file_;
-  const int64_t base_offset_;
-  const int64_t max_bytes_;
+  size_t max_bytes_;
+  int64_t base_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(FileDataSource);
 };
