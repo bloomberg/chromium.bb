@@ -360,21 +360,6 @@
       'cros_browser_sanity_test': {},
     },
 
-    'chromeos_experimental_remote_device_isolated_tests': {
-      'telemetry_unittests': {
-        'args': [
-          '--browser=cros-chrome',
-          # The magic hostname that resolves to a CrOS device in the test lab.
-          '--remote=variable_chromeos_device_hostname',
-          '--jobs=1',
-        ],
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/549140
-          'shards': 12,
-        },
-      },
-    },
-
     'chromeos_isolated_scripts': {
       'telemetry_perf_unittests': {
         'args': [
@@ -415,6 +400,18 @@
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
           'shards': 2,
+        },
+      },
+      'telemetry_unittests': {
+        'args': [
+          '--browser=cros-chrome',
+          # The magic hostname that resolves to a CrOS device in the test lab.
+          '--remote=variable_chromeos_device_hostname',
+          '--jobs=1',
+        ],
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/549140
+          'shards': 12,
         },
       },
     },
