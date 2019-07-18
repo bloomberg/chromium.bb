@@ -11,6 +11,7 @@
 #include "platform/api/logging.h"
 #include "streaming/cast/packet_util.h"
 #include "streaming/cast/rtcp_session.h"
+#include "util/integer_division.h"
 #include "util/std_util.h"
 
 namespace openscreen {
@@ -288,12 +289,9 @@ void CompoundRtcpBuilder::AppendCastFeedbackAckFields(
       if (octet_index >= num_ack_bitvector_octets) {
         // Compute how many additional octets are needed.
         constexpr int kIncrement = sizeof(uint32_t);
-        const auto DivideRoundingUp = [](int a, int b) {
-          return (a + (b - 1)) / b;
-        };
         const int num_additional =
-            DivideRoundingUp((octet_index + 1) - num_ack_bitvector_octets,
-                             kIncrement) *
+            DividePositivesRoundingUp(
+                (octet_index + 1) - num_ack_bitvector_octets, kIncrement) *
             kIncrement;
 
         // If there is not enough room in the buffer to add more ACKs, then do
