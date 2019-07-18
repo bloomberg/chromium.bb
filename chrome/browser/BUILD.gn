@@ -1095,6 +1095,8 @@ jumbo_split_static_library("browser") {
     "performance_manager/persistence/site_data/site_data_cache.h",
     "performance_manager/persistence/site_data/site_data_cache_facade.cc",
     "performance_manager/persistence/site_data/site_data_cache_facade.h",
+    "performance_manager/persistence/site_data/site_data_cache_facade_factory.cc",
+    "performance_manager/persistence/site_data/site_data_cache_facade_factory.h",
     "performance_manager/persistence/site_data/site_data_cache_factory.cc",
     "performance_manager/persistence/site_data/site_data_cache_factory.h",
     "performance_manager/persistence/site_data/site_data_cache_impl.cc",
