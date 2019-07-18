@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('multidevice', function() {
-
   /**
    * Default Host device for PageContentData.
    */

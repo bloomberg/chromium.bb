@@ -168,11 +168,7 @@ suite('InternetDetailPage', function() {
         Type: 'WiFi',
         Source: 'Device',
         ProxySettings: {
-          Type: {
-            Active: 'Manual',
-            Effective: 'UserPolicy',
-            UserEditable: false
-          }
+          Type: {Active: 'Manual', Effective: 'UserPolicy', UserEditable: false}
         }
       }]);
       internetDetailPage.init('wifi_user_guid', 'WiFi', 'wifi_user');

@@ -31,7 +31,6 @@ class TestGoogleAssistantBrowserProxy extends TestBrowserProxy {
 }
 
 suite('GoogleAssistantHandler', function() {
-
   /** @type {SettingsGoogleAssistantPageElement} */
   let page = null;
 
