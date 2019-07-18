@@ -7,9 +7,7 @@
 
 #include "base/macros.h"
 #include "base/threading/sequence_bound.h"
-#include "content/common/service_control.mojom.h"
 #include "content/public/browser/service_process_host.h"
-#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 
@@ -25,7 +23,6 @@ class ServiceProcessHostImpl : public ServiceProcessHost {
  private:
   class IOThreadState;
 
-  mojo::Remote<mojom::ServiceControl> remote_control_;
   base::SequenceBound<IOThreadState> io_thread_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcessHostImpl);

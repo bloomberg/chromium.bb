@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
+#include "content/common/child_process.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "ipc/ipc_sender.h"
@@ -102,6 +103,9 @@ class CONTENT_EXPORT UtilityProcessHost
   // Used when the utility process is going to host a service. |identity| is
   // the identity of the service being launched.
   void SetServiceIdentity(const service_manager::Identity& identity);
+
+  // Returns a control interface for the running child process.
+  mojom::ChildProcess* GetChildProcess();
 
  private:
   // Starts the child process if needed, returns true on success.

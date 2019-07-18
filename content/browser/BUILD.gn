@@ -553,7 +553,6 @@ jumbo_source_set("browser") {
     "browser_child_process_host_impl.cc",
     "browser_child_process_host_impl.h",
     "browser_context.cc",
-    "browser_ipc_logging.cc",
     "browser_main.cc",
     "browser_main.h",
     "browser_main_loop.cc",
@@ -2466,7 +2465,6 @@ jumbo_source_set("browser") {
     set_sources_assignment_filter(sources_assignment_filter)
 
     sources -= [
-      "browser_ipc_logging.cc",
       "media/session/audio_focus_delegate_default.cc",
       "tracing/tracing_ui.cc",
       "tracing/tracing_ui.h",

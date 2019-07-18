@@ -15,7 +15,6 @@
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
-#include "content/common/service_control.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
 #include "content/public/utility/content_utility_client.h"
@@ -39,21 +38,20 @@ namespace content {
 
 namespace {
 
-class ServiceControlImpl : public mojom::ServiceControl {
+class ServiceBinderImpl {
  public:
-  explicit ServiceControlImpl(
+  explicit ServiceBinderImpl(
       scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner)
       : main_thread_task_runner_(std::move(main_thread_task_runner)) {}
-  ~ServiceControlImpl() override = default;
+  ~ServiceBinderImpl() = default;
 
-  // mojom::ServiceControl:
-  void BindServiceInterface(mojo::GenericPendingReceiver receiver) override {
+  void BindServiceInterface(mojo::GenericPendingReceiver receiver) {
     // NOTE: The signals watcher are irrelevant. This watcher is never armed.
     auto watcher = std::make_unique<mojo::SimpleWatcher>(
         FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL);
     watcher->Watch(receiver.pipe(), MOJO_HANDLE_SIGNAL_READABLE,
                    MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
-                   base::BindRepeating(&ServiceControlImpl::OnServicePipeClosed,
+                   base::BindRepeating(&ServiceBinderImpl::OnServicePipeClosed,
                                        base::Unretained(this), watcher.get()));
     service_pipe_watchers_.insert(std::move(watcher));
     HandleServiceRequestOnIOThread(std::move(receiver),
@@ -80,7 +78,7 @@ class ServiceControlImpl : public mojom::ServiceControl {
     }
   }
 
-  scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
 
   // These trap signals on any (unowned) primordial service pipes. We don't
   // actually care about the signals so these never get armed. We only watch for
@@ -89,15 +87,14 @@ class ServiceControlImpl : public mojom::ServiceControl {
   std::set<std::unique_ptr<mojo::SimpleWatcher>, base::UniquePtrComparator>
       service_pipe_watchers_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceControlImpl);
+  DISALLOW_COPY_AND_ASSIGN(ServiceBinderImpl);
 };
 
-void BindServiceControl(
-    const scoped_refptr<base::SequencedTaskRunner>& main_thread_task_runner,
-    mojom::ServiceControlRequest request) {
-  mojo::MakeSelfOwnedReceiver<mojom::ServiceControl>(
-      std::make_unique<ServiceControlImpl>(main_thread_task_runner),
-      std::move(request));
+ChildThreadImpl::Options::ServiceBinder GetServiceBinder() {
+  static base::NoDestructor<ServiceBinderImpl> binder(
+      base::ThreadTaskRunnerHandle::Get());
+  return base::BindRepeating(&ServiceBinderImpl::BindServiceInterface,
+                             base::Unretained(binder.get()));
 }
 
 }  // namespace
@@ -133,6 +130,7 @@ UtilityThreadImpl::UtilityThreadImpl(base::RepeatingClosure quit_closure)
     : ChildThreadImpl(std::move(quit_closure),
                       ChildThreadImpl::Options::Builder()
                           .AutoStartServiceManagerConnection(false)
+                          .ServiceBinder(GetServiceBinder())
                           .Build()) {
   Init();
 }
@@ -142,6 +140,7 @@ UtilityThreadImpl::UtilityThreadImpl(const InProcessChildThreadParams& params)
                       ChildThreadImpl::Options::Builder()
                           .AutoStartServiceManagerConnection(false)
                           .InBrowserProcess(params)
+                          .ServiceBinder(GetServiceBinder())
                           .Build()) {
   Init();
 }
@@ -198,8 +197,6 @@ void UtilityThreadImpl::Init() {
   ChildProcess::current()->AddRefProcess();
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
-  registry->AddInterface<mojom::ServiceControl>(base::BindRepeating(
-      &BindServiceControl, base::ThreadTaskRunnerHandle::Get()));
 #if !defined(OS_ANDROID)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           service_manager::switches::kNoneSandboxAndElevatedPrivileges)) {

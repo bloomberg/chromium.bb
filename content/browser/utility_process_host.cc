@@ -292,6 +292,11 @@ void UtilityProcessHost::SetServiceIdentity(
   service_identity_ = identity;
 }
 
+mojom::ChildProcess* UtilityProcessHost::GetChildProcess() {
+  return static_cast<ChildProcessHostImpl*>(process_->GetHost())
+      ->child_process();
+}
+
 bool UtilityProcessHost::StartProcess() {
   if (started_)
     return true;

@@ -9,24 +9,27 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "content/browser/utility_process_host.h"
+#include "content/common/child_process.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 
 class ServiceProcessHostImpl::IOThreadState {
  public:
   IOThreadState(ServiceProcessHostImpl::Options options,
-                const std::string& service_interface_name,
-                mojo::PendingReceiver<mojom::ServiceControl> receiver) {
+                mojo::GenericPendingReceiver receiver) {
+    DCHECK(receiver.interface_name().has_value());
+
     UtilityProcessHost* host = new UtilityProcessHost();
     host->SetName(!options.display_name.empty()
                       ? options.display_name
-                      : base::UTF8ToUTF16(service_interface_name));
-    host->SetMetricsName(service_interface_name);
+                      : base::UTF8ToUTF16(*receiver.interface_name()));
+    host->SetMetricsName(*receiver.interface_name());
     host->SetSandboxType(options.sandbox_type);
     host->Start();
-    host->BindInterface(mojom::ServiceControl::Name_, receiver.PassPipe());
+    host->GetChildProcess()->BindServiceInterface(std::move(receiver));
     utility_process_host_ = host->AsWeakPtr();
   }
 
@@ -45,11 +48,8 @@ ServiceProcessHostImpl::ServiceProcessHostImpl(
     : io_thread_state_(
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
           std::move(options),
-          service_interface_name.as_string(),
-          remote_control_.BindNewPipeAndPassReceiver()) {
-  remote_control_->BindServiceInterface(mojo::GenericPendingReceiver(
-      service_interface_name, std::move(receiving_pipe)));
-}
+          mojo::GenericPendingReceiver(service_interface_name,
+                                       std::move(receiving_pipe))) {}
 
 ServiceProcessHostImpl::~ServiceProcessHostImpl() = default;
 
