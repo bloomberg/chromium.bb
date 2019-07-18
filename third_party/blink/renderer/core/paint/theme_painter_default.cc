@@ -351,6 +351,7 @@ bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,
   cc::PaintCanvas* canvas = i.context.Canvas();
   extra_params.slider.vertical =
       o.StyleRef().Appearance() == kSliderVerticalPart;
+  extra_params.slider.in_drag = false;
 
   PaintSliderTicks(o, i, rect);
 
