@@ -467,7 +467,6 @@ mojom("mojo_bindings") {
 
   sources = [
     "associated_interfaces.mojom",
-    "child.mojom",
     "child_process.mojom",
     "document_scoped_interface_bundle.mojom",
     "download/mhtml_file_writer.mojom",

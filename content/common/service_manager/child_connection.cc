@@ -12,7 +12,6 @@
 #include "base/process/process.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/common/child.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -88,7 +87,6 @@ class ChildConnection::IOThreadContext
           mojo::PendingRemote<service_manager::mojom::Service>(
               std::move(service_pipe), 0),
           std::move(metadata_receiver));
-      connector_->BindInterface(child_identity, &child_);
     }
   }
 
@@ -108,8 +106,6 @@ class ChildConnection::IOThreadContext
   // Usable from the IO thread only.
   std::unique_ptr<service_manager::Connector> connector_;
   service_manager::Identity child_identity_;
-  // ServiceManagerConnection in the child monitors the lifetime of this pipe.
-  mojom::ChildPtr child_;
   mojo::Remote<service_manager::mojom::ProcessMetadata> remote_metadata_;
   // Hold onto the process, and thus its process handle, so that the pid will
   // remain valid.
