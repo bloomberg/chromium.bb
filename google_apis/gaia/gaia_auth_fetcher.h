@@ -249,12 +249,8 @@ class GaiaAuthFetcher {
   static const char kAccountDeletedErrorCode[];
   static const char kAccountDisabledError[];
   static const char kAccountDisabledErrorCode[];
-  static const char kBadAuthenticationError[];
-  static const char kBadAuthenticationErrorCode[];
   static const char kCaptchaError[];
   static const char kCaptchaErrorCode[];
-  static const char kServiceUnavailableError[];
-  static const char kServiceUnavailableErrorCode[];
   static const char kErrorParam[];
   static const char kErrorUrlParam[];
   static const char kCaptchaUrlParam[];
@@ -404,8 +400,10 @@ class GaiaAuthFetcher {
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, AccountDeletedError);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, AccountDisabledError);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, BadAuthenticationError);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, BadAuthenticationShortError);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, IncomprehensibleError);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, ServiceUnavailableError);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, ServiceUnavailableShortError);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, CheckNormalErrorCode);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, CheckTwoFactorResponse);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, LoginNetFailure);
