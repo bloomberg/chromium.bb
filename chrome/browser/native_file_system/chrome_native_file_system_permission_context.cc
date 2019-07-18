@@ -249,12 +249,17 @@ class ReadPermissionGrantImpl
     std::move(callback).Run();
   }
 
-  void RevokePermission() { status_ = PermissionStatus::DENIED; }
+  void RevokePermission() {
+    status_ = PermissionStatus::DENIED;
+    NotifyPermissionStatusChanged();
+  }
 
  protected:
   ~ReadPermissionGrantImpl() override = default;
 
  private:
+  // This member should only be updated via RevokePermission(), to make sure
+  // observers are properly notified about any change in status.
   PermissionStatus status_ = PermissionStatus::GRANTED;
 };
 
@@ -325,7 +330,10 @@ class ChromeNativeFileSystemPermissionContext::PermissionGrantImpl
 
   void SetStatus(PermissionStatus status) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    if (status_ == status)
+      return;
     status_ = status;
+    NotifyPermissionStatusChanged();
   }
 
   void RequestPermission(int process_id,
@@ -357,10 +365,10 @@ class ChromeNativeFileSystemPermissionContext::PermissionGrantImpl
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     switch (result) {
       case PermissionAction::GRANTED:
-        status_ = PermissionStatus::GRANTED;
+        SetStatus(PermissionStatus::GRANTED);
         break;
       case PermissionAction::DENIED:
-        status_ = PermissionStatus::DENIED;
+        SetStatus(PermissionStatus::DENIED);
         break;
       case PermissionAction::DISMISSED:
       case PermissionAction::IGNORED:
@@ -381,6 +389,8 @@ class ChromeNativeFileSystemPermissionContext::PermissionGrantImpl
   const Key key_;
   const bool is_directory_;
 
+  // This member should only be updated via SetStatus(), to make sure observers
+  // are properly notified about any change in status.
   PermissionStatus status_ = PermissionStatus::ASK;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionGrantImpl);
@@ -581,9 +591,6 @@ void ChromeNativeFileSystemPermissionContext::RevokeDirectoryReadGrants(
   grant_it->second->RevokePermission();
   // And remove grant from map so future handles will get a new grant.
   origin_state.directory_read_grants.erase(grant_it);
-
-  // TODO(https://crbug.com/984801): Make sure that usage indicators are updated
-  // now that the permission is revoked.
 }
 
 void ChromeNativeFileSystemPermissionContext::ShutdownOnUIThread() {}
