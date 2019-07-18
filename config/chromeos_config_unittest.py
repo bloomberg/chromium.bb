@@ -696,7 +696,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
       if config.master:
         configs = self.site_config.GetSlavesForMaster(config)
         self.assertEqual(
-            len(map(repr, configs)), len(set(map(repr, configs))),
+            len(configs), len(set(repr(x) for x in configs)),
             'Duplicate board in slaves of %s will cause upload prebuilts'
             ' failures' % build_name)
 

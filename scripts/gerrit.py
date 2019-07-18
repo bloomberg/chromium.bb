@@ -276,7 +276,7 @@ def _BreadthFirstSearch(to_visit, children, visited_key=lambda x: x):
     |children| any number of times.
   """
   to_visit = list(to_visit)
-  seen = set(map(visited_key, to_visit))
+  seen = set(visited_key(x) for x in to_visit)
   for node in to_visit:
     for child in children(node):
       key = visited_key(child)

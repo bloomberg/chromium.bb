@@ -80,7 +80,8 @@ def InstallPackages(input_proto, output_proto):
 
   sysroot_path = input_proto.sysroot.path
   build_target_name = input_proto.sysroot.build_target.name
-  packages = map(controller_util.PackageInfoToString, input_proto.packages)
+  packages = [controller_util.PackageInfoToString(x)
+              for x in input_proto.packages]
 
   build_target = build_target_util.BuildTarget(build_target_name)
   target_sysroot = sysroot_lib.Sysroot(sysroot_path)

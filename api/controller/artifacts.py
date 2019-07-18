@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import functools
 import os
 
 from chromite.api import validate
@@ -75,7 +74,7 @@ def BundleTestUpdatePayloads(input_proto, output_proto):
   img_types = [constants.IMAGE_TYPE_TEST, constants.IMAGE_TYPE_DEV,
                constants.IMAGE_TYPE_BASE]
   img_names = [constants.IMAGE_TYPE_TO_NAME[t] for t in img_types]
-  img_paths = map(functools.partial(os.path.join, img_dir), img_names)
+  img_paths = [os.path.join(img_dir, x) for x in img_names]
   valid_images = [x for x in img_paths if os.path.exists(x)]
 
   if not valid_images:

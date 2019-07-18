@@ -1064,7 +1064,7 @@ def CWPProfileToVersionTuple(url):
       CWP_CHROME_PROFILE_NAME_PATTERN % tuple(
           r'([0-9]+)' for _ in range(0, 4)))
   fn_mat.replace('.', '\\.')
-  return map(int, re.match(fn_mat, os.path.basename(url)).groups())
+  return [int(x) for x in re.match(fn_mat, os.path.basename(url)).groups()]
 
 
 def GetCWPProfile(cpv, source, _buildroot, gs_context):
@@ -1084,7 +1084,7 @@ def GetCWPProfile(cpv, source, _buildroot, gs_context):
     None otherwise.
   """
   ver_mat = r'([0-9]+)\.[0-9]+\.([0-9]+)\.([0-9]+)_rc-r[0-9]+'
-  target = map(int, re.match(ver_mat, cpv.version).groups())
+  target = [int(x) for x in re.match(ver_mat, cpv.version).groups()]
 
   # Check 2 most recent milestones.
   #
@@ -1110,7 +1110,7 @@ def GetCWPProfile(cpv, source, _buildroot, gs_context):
         CWP_CHROME_PROFILE_NAME_PATTERN % (milestone, '*', '*', '*'))
     try:
       res = gs_context.List(gs_ls_url)
-      versions += map(CWPProfileToVersionTuple, [r.url for r in res])
+      versions.extend(CWPProfileToVersionTuple(x) for x in [r.url for r in res])
     except gs.GSNoSuchKey:
       pass
 
@@ -1146,7 +1146,8 @@ def GetAvailableKernelProfiles():
   matches = [x for x in all_matches if x]
   versions = {}
   for m in matches:
-    versions.setdefault(m.group(1), []).append(map(int, m.groups()[1:]))
+    versions.setdefault(m.group(1), []).append(
+        [int(x) for x in m.groups()[1:]])
   for v in versions:
     versions[v].sort()
   return versions

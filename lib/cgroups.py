@@ -517,7 +517,7 @@ class Cgroup(object):
     # that's ultra rare, but the potential exists thus we ask the kernel
     # instead.  What sucks however is that python releases the GIL; thus
     # consuming code has to know of this, and protect against it.
-    return map(int, os.listdir('/proc/self/task'))
+    return [int(x) for x in os.listdir('/proc/self/task')]
 
   @EnsureInitialized
   def TransferPid(self, pid, allow_missing=False):
@@ -541,7 +541,7 @@ class Cgroup(object):
   def KillProcesses(self, poll_interval=0.05, remove=False, sigterm_timeout=10):
     """Kill all processes in this namespace."""
 
-    my_pids = set(map(str, self._GetCurrentProcessThreads()))
+    my_pids = set(str(x) for x in self._GetCurrentProcessThreads())
 
     def _SignalPids(pids, signum):
       cros_build_lib.SudoRunCommand(

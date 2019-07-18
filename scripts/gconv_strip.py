@@ -294,7 +294,7 @@ def GconvStrip(opts):
     used_filenames = MultipleStringMatch(strings,
                                          osutils.ReadFile(filename, mode='rb'))
 
-    global_used = map(operator.or_, global_used, used_filenames)
+    global_used = [operator.or_(*x) for x in zip(global_used, used_filenames)]
     # Check the debug flag to avoid running an useless loop.
     if opts.debug and any(used_filenames):
       logging.debug('File %s:', filename)

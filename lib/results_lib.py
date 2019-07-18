@@ -212,7 +212,7 @@ class _Results(object):
     for entry in self._results_log:
       if entry.result != self.SUCCESS:
         break
-      out.write(self.SPLIT_TOKEN.join(map(str, entry)) + '\n')
+      out.write(self.SPLIT_TOKEN.join(str(x) for x in entry) + '\n')
 
   def RestoreCompletedStages(self, out):
     """Load the successfully completed stages from the provided file |out|."""

@@ -1011,8 +1011,8 @@ class EBuild(object):
     info = self.GetSourceInfo(srcroot, manifest)
     srcdirs = info.srcdirs
     subtrees = info.subtrees
-    commit_ids = map(self.GetCommitId, srcdirs)
-    tree_ids = map(self.GetTreeId, subtrees)
+    commit_ids = [self.GetCommitId(x) for x in srcdirs]
+    tree_ids = [self.GetTreeId(x) for x in subtrees]
     variables = dict(CROS_WORKON_COMMIT=self.FormatBashArray(commit_ids),
                      CROS_WORKON_TREE=self.FormatBashArray(tree_ids))
 

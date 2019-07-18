@@ -85,8 +85,8 @@ class _LKGMCandidateInfo(manifest_version.VersionInfo):
 
   def VersionComponents(self):
     """Return an array of ints of the version fields for comparing."""
-    return map(int, [self.build_number, self.branch_build_number,
-                     self.patch_number, self.revision_number])
+    return [int(x) for x in [self.build_number, self.branch_build_number,
+                             self.patch_number, self.revision_number]]
 
   def IncrementVersion(self):
     """Increments the version by incrementing the revision #."""

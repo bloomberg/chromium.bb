@@ -382,23 +382,23 @@ class UtilitiesTest(ManifestTestCase, cros_test_lib.MockTestCase):
 
   def testCanBranchProjectAcceptsBranchableProjects(self):
     """Test CanBranchProject returns true when project is branchable."""
-    for project in map(self.ProjectFor, BRANCHED_PROJECTS):
-      self.assertTrue(CanBranchProject(project))
+    for project in BRANCHED_PROJECTS:
+      self.assertTrue(CanBranchProject(self.ProjectFor(project)))
 
   def testCanBranchProjectRejectsNonBranchableProjects(self):
     """Test CanBranchProject returns false when project is not branchable."""
-    for project in map(self.ProjectFor, NON_BRANCHED_PROJECTS):
-      self.assertFalse(CanBranchProject(project))
+    for project in NON_BRANCHED_PROJECTS:
+      self.assertFalse(CanBranchProject(self.ProjectFor(project)))
 
   def testCanPinProjectAcceptsPinnedProjects(self):
     """Test CanPinProject returns true when project is pinned."""
-    for project in map(self.ProjectFor, PINNED_PROJECTS):
-      self.assertTrue(CanPinProject(project))
+    for project in PINNED_PROJECTS:
+      self.assertTrue(CanPinProject(self.ProjectFor(project)))
 
   def testCanPinProjectRejectsNonPinnedProjects(self):
     """Test CanPinProject returns false when project is not pinned."""
-    for project in map(self.ProjectFor, BRANCHED_PROJECTS + TOT_PROJECTS):
-      self.assertFalse(CanPinProject(project))
+    for project in BRANCHED_PROJECTS + TOT_PROJECTS:
+      self.assertFalse(CanPinProject(self.ProjectFor(project)))
 
   def testTotMutualExclusivity(self):
     """Test CanBranch/PinProject both return false only when project is TOT."""

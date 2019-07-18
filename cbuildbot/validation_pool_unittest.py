@@ -719,7 +719,7 @@ class TestCoreLogic(_Base):
           list1,
           list2,
           msg=('Comparison failed:\n list1: %r\n list2: %r' %
-               (map(mangle, list1), map(mangle, list2))))
+               ([mangle(x) for x in list1], [mangle(x) for x in list2])))
 
     compare(results[0], lcq_delegation_patches)
     self.assertEqual(len(results[1]), 0)
@@ -1225,7 +1225,8 @@ class TestCreateDisjointTransactions(_Base):
       expected_plans = [sorted(plan) for plan in expected_plans]
 
     # Verify the plans match, and that no changes were rejected.
-    self.assertEqual(set(map(str, plans)), set(map(str, expected_plans)))
+    self.assertEqual(set(str(x) for x in plans),
+                     set(str(x) for x in expected_plans))
     self.assertEqual(0, remove.call_count)
     self.assertEqual([], failed)
 
@@ -1372,9 +1373,11 @@ class BaseSubmitPoolTestCase(_Base):
         _, actually_rejected = pool.SubmitChanges(verified_cls)
 
     # Check that the right patches were submitted and rejected.
-    self.assertItemsEqual(map(str, rejected), map(str, actually_rejected))
+    self.assertItemsEqual([str(x) for x in rejected],
+                          [str(x) for x in actually_rejected])
     actually_submitted = self.pool_mock.GetSubmittedChanges()
-    self.assertEqual(map(str, submitted), map(str, actually_submitted))
+    self.assertEqual([str(x) for x in submitted],
+                     [str(x) for x in actually_submitted])
 
   def GetNotifyArg(self, change, key):
     """Look up a call to notify about |change| and grab |key| from it.

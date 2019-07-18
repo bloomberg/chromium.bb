@@ -70,15 +70,16 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
         ['/sbin/mkfs.ext4', state],
         # Create the GPT headers and entry for the stateful partition.
         ['cgpt', 'create', self.image],
-        ['cgpt', 'add', self.image, '-t', 'data', '-l',
-         constants.CROS_PART_STATEFUL, '-b', _STATEFUL_OFFSET / _SECTOR_SIZE,
-         '-s', _STATEFUL_SIZE / _SECTOR_SIZE, '-i', 1],
+        ['cgpt', 'add', self.image, '-t', 'data',
+         '-l', str(constants.CROS_PART_STATEFUL),
+         '-b', str(_STATEFUL_OFFSET / _SECTOR_SIZE),
+         '-s', str(_STATEFUL_SIZE / _SECTOR_SIZE), '-i', '1'],
         # Copy the stateful partition into the GPT image.
         ['dd', 'if=%s' % state, 'of=%s' % self.image, 'conv=notrunc', 'bs=4K',
          'seek=%d' % (_STATEFUL_OFFSET / _BLOCK_SIZE),
          'count=%s' % (_STATEFUL_SIZE / _BLOCK_SIZE)])
     for cmd in commands:
-      cros_build_lib.RunCommand(map(str, cmd), quiet=True)
+      cros_build_lib.RunCommand(cmd, quiet=True)
 
     # Run the preparation script on the image.
     cros_oobe_autoconfig.main([self.image] + list(_TEST_CLI_PARAMETERS)[1:])

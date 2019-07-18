@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import functools
 import os
 
 from chromite.lib import cros_test_lib
@@ -86,6 +85,5 @@ class FindFilesMatchingTest(cros_test_lib.TempDirTestCase):
                                         target='path',
                                         cwd=self.tempdir)
     # Convert the csv paths to be relative to the tempdir.
-    expected = map(functools.partial(os.path.relpath, start=self.tempdir),
-                   self.csvs)
+    expected = [os.path.relpath(x, start=self.tempdir) for x in self.csvs]
     self.assertItemsEqual(expected, result)

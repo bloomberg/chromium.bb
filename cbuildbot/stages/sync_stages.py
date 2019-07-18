@@ -144,7 +144,7 @@ class PatchChangesStage(generic_stages.BuilderStage):
     for conflict in duplicates:
       logging.error(
           "Changes %s conflict with each other- they have same id %s., ".join(
-              map(str, conflict)), conflict[0].id)
+              str(x) for x in conflict), conflict[0].id)
 
     cros_build_lib.Die("Duplicate patches were encountered: %s", duplicates)
 
@@ -170,7 +170,7 @@ class PatchChangesStage(generic_stages.BuilderStage):
 
   def HandleApplyFailures(self, failures):
     cros_build_lib.Die("Failed applying patches: %s", "\n".join(
-        map(str, failures)))
+        str(x) for x in failures))
 
   def PerformStage(self):
 
@@ -307,7 +307,8 @@ class BootstrapStage(PatchChangesStage):
       # patches to the internal manifest, and this means we may flag a conflict
       # here even if the patch applies cleanly. TODO(davidjames): Fix this.
       logging.PrintBuildbotStepWarnings()
-      logging.error('Failed applying patches: %s\n'.join(map(str, failures)))
+      logging.error('Failed applying patches: %s\n'.join(
+          str(x) for x in failures))
     else:
       PatchChangesStage.HandleApplyFailures(self, failures)
 

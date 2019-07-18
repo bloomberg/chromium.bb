@@ -42,7 +42,7 @@ def main(argv):
   args = parser.parse_args(argv)
 
   with open(args.eventlogfile) as f:
-    events = map(json.loads, f.readlines())
+    events = [json.loads(x) for x in f]
 
   events.sort(key=lambda event: -event["finish_time"])
   threads_starttime = []

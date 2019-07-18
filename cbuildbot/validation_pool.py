@@ -1286,8 +1286,9 @@ class ValidationPool(object):
     old_changes = cros_patch.PatchCache(changes)
 
     if list(changes) != list(reloaded_changes):
-      logging.error('Changes: %s', map(str, changes))
-      logging.error('Reloaded changes: %s', map(str, reloaded_changes))
+      logging.error('Changes: %s', ' '.join(str(x) for x in changes))
+      logging.error('Reloaded changes: %s',
+                    ' '.join(str(x) for x in reloaded_changes))
       for change in set(changes) - set(reloaded_changes):
         logging.error('%s disappeared after reloading', change)
       for change in set(reloaded_changes) - set(changes):

@@ -184,7 +184,7 @@ class ChromeOnCrosBisector(git_bisector.GitBisector):
           'culprit commit should not be in Chrome repository.')
       logging.notice(
           'Bisect log:\n' +
-          '\n'.join(map(self.CommitInfoToStr, self.bisect_log)))
+          '\n'.join(self.CommitInfoToStr(x) for x in self.bisect_log))
       return False
     return True
 

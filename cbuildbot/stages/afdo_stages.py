@@ -181,7 +181,7 @@ class AFDOUpdateKernelEbuildStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     version_info = self._run.GetVersionInfo()
-    build_version = map(int, version_info.VersionString().split('.'))
+    build_version = [int(x) for x in version_info.VersionString().split('.')]
     chrome_version = int(version_info.chrome_branch)
     target_version = [chrome_version] + build_version
     profile_versions = afdo.GetAvailableKernelProfiles()

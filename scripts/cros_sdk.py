@@ -624,7 +624,7 @@ def _ProxySimSetup(options):
       'Listen %s:%u' % (PROXY_HOST_IP, PROXY_PORT),
       'ServerName %s' % PROXY_HOST_IP,
       'ProxyRequests On',
-      'AllowCONNECT %s' % ' '.join(map(str, PROXY_CONNECT_PORTS)),
+      'AllowCONNECT %s' % ' '.join(str(x) for x in PROXY_CONNECT_PORTS),
   ] + [
       'LoadModule %s %s' % (mod, os.path.join(apache_module_path, so))
       for (mod, so) in apache_modules

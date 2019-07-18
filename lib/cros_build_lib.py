@@ -1369,7 +1369,7 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
   # option; assume 0:0 (ie, initial state).
   major = minor = 0
   if api.returncode == 0:
-    major, minor = map(int, api.output.strip().split('.', 1))
+    major, minor = (int(x) for x in api.output.strip().split('.', 1))
 
   if validate_version and major != constants.REEXEC_API_MAJOR:
     raise ApiMismatchError(
