@@ -4025,6 +4025,10 @@ def ApplyCustomOverrides(site_config):
           'useflags': config_lib.append_useflags(['kiosk_next']),
       },
 
+      'jacuzzi-release': {
+          'sign_types': ['recovery', 'factory'],
+      },
+
       'kukui-release': {
           'sign_types': ['recovery', 'factory'],
       },
