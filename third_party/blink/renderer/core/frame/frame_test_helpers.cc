@@ -315,7 +315,8 @@ WebRemoteFrameImpl* CreateRemoteChild(
   return frame;
 }
 
-WebViewHelper::WebViewHelper() : web_view_(nullptr) {}
+WebViewHelper::WebViewHelper()
+    : web_view_(nullptr), platform_(Platform::Current()) {}
 
 WebViewHelper::~WebViewHelper() {
   // Close the WebViewImpl before the WebViewClient/WebWidgetClient are
@@ -437,6 +438,10 @@ void WebViewHelper::LoadAhem() {
 }
 
 void WebViewHelper::Reset() {
+  DCHECK_EQ(platform_, Platform::Current())
+      << "Platform::Current() should be the same for the life of a test, "
+         "including shutdown.";
+
   if (test_web_view_client_)
     test_web_view_client_->DestroyChildViews();
   if (web_view_) {
@@ -468,6 +473,9 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
       WebView::Create(test_web_view_client_,
                       /*is_hidden=*/false,
                       /*compositing_enabled=*/true, opener));
+  // This property must be set at initialization time, it is not supported to be
+  // changed afterward, and does nothing.
+  web_view_->GetSettings()->SetViewportEnabled(viewport_enabled_);
   web_view_->GetSettings()->SetJavaScriptEnabled(true);
   web_view_->GetSettings()->SetPluginsEnabled(true);
   // Enable (mocked) network loads of image URLs, as this simplifies

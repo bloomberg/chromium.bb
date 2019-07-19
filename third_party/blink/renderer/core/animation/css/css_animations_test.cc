@@ -24,8 +24,8 @@ class CSSAnimationsTest : public RenderingTest {
     platform()->SetAutoAdvanceNowToPendingTasks(false);
     // Advance timer manually as RenderingTest expects the time to be non-zero.
     platform()->AdvanceClockSeconds(1.);
-    RenderingTest::SetUp();
     EnableCompositing();
+    RenderingTest::SetUp();
     SetUpAnimationClockForTesting();
   }
 
