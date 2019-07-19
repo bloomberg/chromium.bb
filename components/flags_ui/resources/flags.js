@@ -282,7 +282,7 @@ var FlagSearch = function() {
   this.unavailableExperiments_ = Object.assign({}, FlagSearch.SearchContent);
 
   this.searchBox_ = $('search');
-  this.noMatchMsg_ = document.querySelectorAll('.no-match');
+  this.noMatchMsg_ = document.querySelectorAll('.tab-content .no-match');
 
   this.searchIntervalId_ = null;
   this.initialized = false;
