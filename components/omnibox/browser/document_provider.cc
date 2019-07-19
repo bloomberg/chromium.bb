@@ -503,6 +503,9 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     if (result->GetDictionary("metadata", &metadata)) {
       if (metadata->GetString("mimeType", &mimetype)) {
         match.document_type = GetIconForMIMEType(mimetype);
+        match.RecordAdditionalInfo(
+            "document type",
+            AutocompleteMatch::DocumentTypeString(match.document_type));
       }
       std::string update_time;
       metadata->GetString("updateTime", &update_time);
