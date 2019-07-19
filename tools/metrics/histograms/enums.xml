@@ -52493,6 +52493,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="31" label="LONG_RUNNING_MESSAGE"/>
   <int value="32" label="BACKGROUND_FETCH_SUCCESS"/>
   <int value="33" label="PERIODIC_SYNC"/>
+  <int value="34" label="CONTENT_DELETE"/>
 </enum>
 
 <enum name="ServiceWorkerPreparationType">
