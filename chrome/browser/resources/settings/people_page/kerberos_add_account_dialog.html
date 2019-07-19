@@ -33,7 +33,12 @@
       }
 
       #general-error-container {
-        height: 48px;
+        height: 80px;
+      }
+
+      #config-error-container {
+        height: 64px;
+        margin-top: 16px;
       }
 
       #rememberPasswordContainer {
@@ -122,6 +127,13 @@
           <settings-textarea id="config" value="{{editableConfig_}}" rows=12
               spellcheck="false" disabled="[[isManaged_]]">
           </settings-textarea>
+
+          <div id="config-error-container">
+            <div hidden="[[!showError_(configErrorText_)]]">
+              <iron-icon id="general-error-icon" icon="cr:warning"></iron-icon>
+              <div id="config-error-message">[[configErrorText_]]</div>
+            </div>
+          </div>
         </div>
 
         <div slot="button-container">
@@ -129,7 +141,8 @@
               on-click="onAdvancedConfigCancel_">
             $i18n{cancel}
           </cr-button>
-          <cr-button class="action-button" on-click="onAdvancedConfigSave_">
+          <cr-button class="action-button" on-click="onAdvancedConfigSave_"
+              disabled="[[inProgress_]]">
             $i18n{save}
           </cr-button>
         </div>
