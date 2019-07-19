@@ -166,6 +166,17 @@ class CONTENT_EXPORT BackgroundSyncManager
       base::TimeDelta wakeup_delta,
       base::Time last_browser_wakeup_time);
 
+  // Each origin has a max_frequency decided by the browser. This picks the
+  // correct starting point to add to |delay| to so that the resulting
+  // |delay_until| for the |registration| ensures the minimum gap between
+  // periodicsync events fired for the origin.
+  base::Time GetDelayUntilAfterApplyingMinGapForOrigin(
+      const url::Origin& origin,
+      base::TimeDelta delay) const;
+
+  base::Time GetSoonestPeriodicSyncEventTimeForOrigin(
+      const url::Origin& origin) const;
+
  protected:
   BackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> context,

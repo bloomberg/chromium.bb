@@ -838,7 +838,8 @@ void BackgroundSyncManager::RegisterDidGetDelay(
   // We don't fire periodic Background Sync registrations immediately after
   // registration, so set delay_until to override its default value.
   if (registration.sync_type() == BackgroundSyncType::PERIODIC) {
-    registration.set_delay_until(clock_->Now() + delay);
+    registration.set_delay_until(GetDelayUntilAfterApplyingMinGapForOrigin(
+        registration.origin(), delay));
   }
 
   ServiceWorkerRegistration* sw_registration =
@@ -1388,6 +1389,50 @@ base::TimeDelta BackgroundSyncManager::MaybeApplyBrowserWakeupCountLimit(
   return std::max(soonest_wakeup_delta, time_till_next_allowed_browser_wakeup);
 }
 
+base::Time BackgroundSyncManager::GetDelayUntilAfterApplyingMinGapForOrigin(
+    const url::Origin& origin,
+    base::TimeDelta delay) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::Time now_plus_delay = clock_->Now() + delay;
+  base::Time soonest_wakeup_time_for_origin =
+      GetSoonestPeriodicSyncEventTimeForOrigin(origin);
+  if (soonest_wakeup_time_for_origin.is_null())
+    return now_plus_delay;
+
+  if (now_plus_delay <= soonest_wakeup_time_for_origin)
+    return soonest_wakeup_time_for_origin;
+  else
+    return soonest_wakeup_time_for_origin + delay;
+}
+
+base::Time BackgroundSyncManager::GetSoonestPeriodicSyncEventTimeForOrigin(
+    const url::Origin& origin) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::Time soonest_wakeup_time = base::Time();
+  for (const auto& active_registration : active_registrations_) {
+    if (active_registration.second.origin != origin)
+      continue;
+
+    const auto& tag_and_registrations =
+        active_registration.second.registration_map;
+    for (const auto& tag_and_registration : tag_and_registrations) {
+      if (/* sync_type= */ tag_and_registration.first.second !=
+          BackgroundSyncType::PERIODIC) {
+        continue;
+      }
+      if (tag_and_registration.second.delay_until().is_null())
+        continue;
+      if (soonest_wakeup_time.is_null() ||
+          tag_and_registration.second.delay_until() < soonest_wakeup_time) {
+        soonest_wakeup_time = tag_and_registration.second.delay_until();
+      }
+    }
+  }
+  return soonest_wakeup_time;
+}
+
 void BackgroundSyncManager::ScheduleDelayedProcessingOfRegistrations(
     blink::mojom::BackgroundSyncType sync_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1701,7 +1746,8 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
              registration->sync_type() == BackgroundSyncType::PERIODIC) {
     registration->set_sync_state(blink::mojom::BackgroundSyncState::PENDING);
     registration_completed = false;
-    registration->set_delay_until(clock_->Now() + delay);
+    registration->set_delay_until(GetDelayUntilAfterApplyingMinGapForOrigin(
+        registration->origin(), delay));
 
     if (ShouldLogToDevTools(registration->sync_type())) {
       std::string delay_ms = delay.is_max()
