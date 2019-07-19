@@ -57,6 +57,7 @@ public class TouchlessDialogPresenterTest {
     }
 
     @Test
+    @DisabledTest(message = "crbug.com/984004")
     @SmallTest
     @Feature({"TouchlessModalDialog"})
     public void testItemSelection() throws Exception {
