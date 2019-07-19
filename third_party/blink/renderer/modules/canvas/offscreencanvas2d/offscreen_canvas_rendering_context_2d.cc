@@ -330,6 +330,7 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
   if (GetState().HasRealizedFont() && new_font == GetState().UnparsedFont())
     return;
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
   OffscreenFontCache& font_cache = GetOffscreenFontCache();
 
   Font* cached_font = font_cache.GetFont(new_font);
@@ -362,6 +363,9 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
     ModifiableState().SetFont(font, Host()->GetFontSelector());
   }
   ModifiableState().SetUnparsedFont(new_font);
+  base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+  base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
+      "OffscreenCanvas.TextMetrics.SetFont", elapsed);
 }
 
 static inline TextDirection ToTextDirection(

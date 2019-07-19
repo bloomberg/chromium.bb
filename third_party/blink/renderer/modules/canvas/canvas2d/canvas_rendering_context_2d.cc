@@ -494,6 +494,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
   if (!canvas()->GetDocument().GetFrame())
     return;
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
   canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
 
   // The following early exit is dependent on the cache not being empty
@@ -573,6 +574,10 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       new_font);  // Create a string copy since newFont can be
                   // deleted inside realizeSaves.
   ModifiableState().SetUnparsedFont(new_font_safe_copy);
+
+  base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+  base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
+      "Canvas.TextMetrics.SetFont", elapsed);
 }
 
 void CanvasRenderingContext2D::DidProcessTask(
