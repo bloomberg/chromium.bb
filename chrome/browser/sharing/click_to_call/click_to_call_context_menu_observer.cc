@@ -11,6 +11,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_constants.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
@@ -142,19 +143,8 @@ void ClickToCallContextMenuObserver::SendClickToCallMessage(
   LogClickToCallSelectedDeviceIndex(kSharingClickToCallUiContextMenu,
                                     chosen_device_index);
 
-  SharingMessage sharing_message;
-  sharing_message.mutable_click_to_call_message()->set_phone_number(
-      url_.GetContent());
-
-  sharing_service_->SendMessageToDevice(
-      devices_[chosen_device_index].guid(), kSharingClickToCallMessageTTL,
-      sharing_message,
-      base::BindOnce(&ClickToCallContextMenuObserver::OnMessageSent,
-                     AsWeakPtr()));
-}
-
-void ClickToCallContextMenuObserver::OnMessageSent(bool sucess) const {
-  // TODO(himanshujaju) Add metrics.
+  ClickToCallSharingDialogController::DeviceSelected(
+      proxy_->GetWebContents(), url_, devices_[chosen_device_index]);
 }
 
 gfx::ImageSkia ClickToCallContextMenuObserver::GetContextMenuIcon() const {

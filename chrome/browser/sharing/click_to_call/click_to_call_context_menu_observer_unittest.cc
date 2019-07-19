@@ -24,6 +24,7 @@
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -76,6 +77,9 @@ class ClickToCallContextMenuObserverTest : public testing::Test {
   ~ClickToCallContextMenuObserverTest() override = default;
 
   void SetUp() override {
+    web_contents_ = content::WebContentsTester::CreateTestWebContents(
+        menu_.GetBrowserContext(), nullptr);
+    menu_.set_web_contents(web_contents_.get());
     SharingServiceFactory::GetInstance()->SetTestingFactory(
         menu_.GetBrowserContext(),
         base::BindRepeating([](content::BrowserContext* context)
@@ -115,6 +119,7 @@ class ClickToCallContextMenuObserverTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   MockRenderViewContextMenu menu_{/* incognito= */ false};
+  std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<ClickToCallContextMenuObserver> observer_;
   SharingMessage sharing_message;
 

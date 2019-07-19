@@ -47,6 +47,7 @@ class ClickToCallIconView : public PageActionIconView {
   // PageActionIconView:
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  const gfx::VectorIcon& GetVectorIconBadge() const override;
   bool IsTriggerableEvent(const ui::Event& event) override;
 
   // gfx::AnimationDelegate:
@@ -58,6 +59,7 @@ class ClickToCallIconView : public PageActionIconView {
 
   SkColor loader_color_;
   std::unique_ptr<gfx::ThrobAnimation> loading_animation_;
+  bool show_error_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ClickToCallIconView);
 };

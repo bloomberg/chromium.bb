@@ -8,19 +8,32 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
 #include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/ink_drop.h"
 
 namespace {
+
 // Height of the loader bar in DIP.
 constexpr float kLoaderHeight = 4.0f;
 // Width of the loader bar in percent of its range.
 constexpr float kLoaderWidth = 0.2f;
+
+ClickToCallSharingDialogController* GetControllerFromWebContents(
+    content::WebContents* web_contents) {
+  if (!web_contents)
+    return nullptr;
+
+  return ClickToCallSharingDialogController::GetOrCreateFromWebContents(
+      web_contents);
+}
+
 }  // namespace
 
 ClickToCallIconView::ClickToCallIconView(PageActionIconView::Delegate* delegate)
@@ -34,10 +47,26 @@ ClickToCallIconView::ClickToCallIconView(PageActionIconView::Delegate* delegate)
 ClickToCallIconView::~ClickToCallIconView() = default;
 
 views::BubbleDialogDelegateView* ClickToCallIconView::GetBubble() const {
-  return ClickToCallDialogView::GetBubbleView();
+  auto* controller = GetControllerFromWebContents(GetWebContents());
+  return controller
+             ? static_cast<ClickToCallDialogView*>(controller->GetDialog())
+             : nullptr;
 }
 
 bool ClickToCallIconView::Update() {
+  auto* controller = GetControllerFromWebContents(GetWebContents());
+  if (controller) {
+    if (controller->is_loading())
+      StartLoadingAnimation();
+    else
+      StopLoadingAnimation();
+
+    if (show_error_ != controller->send_failed()) {
+      show_error_ = controller->send_failed();
+      UpdateIconImage();
+    }
+  }
+
   const bool is_bubble_showing = IsBubbleShowing();
   const bool is_visible = is_bubble_showing || loading_animation_;
   const bool visibility_changed = GetVisible() != is_visible;
@@ -130,6 +159,11 @@ void ClickToCallIconView::OnExecuting(
 const gfx::VectorIcon& ClickToCallIconView::GetVectorIcon() const {
   // TODO(crbug.com/972059): Should we have our own icon?
   return kSendTabToSelfIcon;
+}
+
+const gfx::VectorIcon& ClickToCallIconView::GetVectorIconBadge() const {
+  // TODO(crbug.com/972059): Should we have our own icon?
+  return show_error_ ? kBlockedBadgeIcon : gfx::kNoneIcon;
 }
 
 base::string16 ClickToCallIconView::GetTextForTooltipAndAccessibleName() const {
