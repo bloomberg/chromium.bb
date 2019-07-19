@@ -325,6 +325,9 @@ extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[];
 extern const char kEnableDeferAllScriptName[];
 extern const char kEnableDeferAllScriptDescription[];
 
+extern const char kEnableDeferAllScriptWithoutOptimizationHintsName[];
+extern const char kEnableDeferAllScriptWithoutOptimizationHintsDescription[];
+
 extern const char kEnableSaveDataName[];
 extern const char kEnableSaveDataDescription[];
 

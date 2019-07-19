@@ -4110,6 +4110,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-defer-all-script", flag_descriptions::kEnableDeferAllScriptName,
      flag_descriptions::kEnableDeferAllScriptDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kDeferAllScriptPreviews)},
+    {"enable-defer-all-script-without-optimization-hints",
+     flag_descriptions::kEnableDeferAllScriptWithoutOptimizationHintsName,
+     flag_descriptions::
+         kEnableDeferAllScriptWithoutOptimizationHintsDescription,
+     kOsAll,
+     SINGLE_VALUE_TYPE(
+         previews::switches::kEnableDeferAllScriptWithoutOptimizationHints)},
 
 #if defined(OS_CHROMEOS)
     {"enable-assistant-routines",

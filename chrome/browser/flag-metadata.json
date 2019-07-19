@@ -1317,6 +1317,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "enable-defer-all-script-without-optimization-hints",
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-layout-ng",
     "owners": [ "layout-dev@chromium.org" ],
     "expiry_milestone": 80

@@ -526,6 +526,13 @@ const char kEnableDeferAllScriptName[] = "DeferAllScript previews";
 const char kEnableDeferAllScriptDescription[] =
     "Enable deferring synchronous script on slow pages.";
 
+const char kEnableDeferAllScriptWithoutOptimizationHintsName[] =
+    "Skip checking optimization hints for Defer Script previews";
+const char kEnableDeferAllScriptWithoutOptimizationHintsDescription[] =
+    "Skips checking optimization hints for Defer Script previews and assumes "
+    "that the ECT trigger threshold is set to 4G (which is otherwise provided "
+    "by the optimization hints). Rest of the checks are still executed.";
+
 const char kEnableSaveDataName[] = "Enables save data feature";
 const char kEnableSaveDataDescription[] =
     "Enables save data feature. May cause user's traffic to be proxied via "

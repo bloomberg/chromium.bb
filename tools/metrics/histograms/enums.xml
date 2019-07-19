@@ -34525,6 +34525,8 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:enabled"/>
   <int value="-933316841" label="enable-permissions-blacklist"/>
   <int value="-932474660" label="VirtualDesks:enabled"/>
+  <int value="-932261921"
+      label="enable-defer-all-script-without-optimization-hints"/>
   <int value="-929944930"
       label="AutofillRationalizeRepeatedServerPredictions:disabled"/>
   <int value="-928138978" label="IPH_DemoMode:disabled"/>
