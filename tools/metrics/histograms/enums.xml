@@ -24069,6 +24069,11 @@ Called by update_net_error_codes.py.-->
   <int value="10" label="FAILED_TO_CREATE_LEAF"/>
   <int value="11" label="UNHANDLED_TOKEN"/>
   <int value="12" label="TASK_QUEUE_STARVATION"/>
+  <int value="13" label="CONTENT_STORAGE_MISSING_ITEM"/>
+  <int value="14" label="ITEM_NOT_PARSED"/>
+  <int value="15" label="STORAGE_MISS_BEYOND_THRESHOLD"/>
+  <int value="16" label="CONTENT_MUTATION_FAILED"/>
+  <int value="17" label="ROOT_NOT_BOUND_TO_FEATURE"/>
 </enum>
 
 <enum name="FeedRequestReason">
