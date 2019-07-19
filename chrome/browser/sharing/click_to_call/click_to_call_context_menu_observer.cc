@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_constants.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -149,9 +149,8 @@ void ClickToCallContextMenuObserver::SendClickToCallMessage(
 gfx::ImageSkia ClickToCallContextMenuObserver::GetContextMenuIcon() const {
   bool dark_mode_enabled =
       ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled();
-  const gfx::VectorIcon* vector_icon = &kHardwareSmartphoneIcon;
   const views::MenuConfig& menu_config = views::MenuConfig::instance();
   return gfx::CreateVectorIcon(
-      *vector_icon, menu_config.touchable_icon_size,
+      vector_icons::kCallIcon, menu_config.touchable_icon_size,
       dark_mode_enabled ? gfx::kGoogleGrey500 : gfx::kChromeIconGrey);
 }

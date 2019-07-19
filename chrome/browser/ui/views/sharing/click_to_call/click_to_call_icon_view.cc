@@ -10,6 +10,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
 #include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/geometry/rect.h"
@@ -172,12 +173,10 @@ void ClickToCallIconView::OnExecuting(
     PageActionIconView::ExecuteSource execute_source) {}
 
 const gfx::VectorIcon& ClickToCallIconView::GetVectorIcon() const {
-  // TODO(crbug.com/972059): Should we have our own icon?
-  return kSendTabToSelfIcon;
+  return vector_icons::kCallIcon;
 }
 
 const gfx::VectorIcon& ClickToCallIconView::GetVectorIconBadge() const {
-  // TODO(crbug.com/972059): Should we have our own icon?
   return show_error_ ? kBlockedBadgeIcon : gfx::kNoneIcon;
 }
 
