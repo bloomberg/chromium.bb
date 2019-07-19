@@ -38,13 +38,15 @@ ClickToCallSharingDialogController::GetOrCreateFromWebContents(
 // static
 void ClickToCallSharingDialogController::ShowDialog(
     content::WebContents* web_contents,
-    const GURL& url) {
+    const GURL& url,
+    bool hide_default_handler) {
   auto* controller = GetOrCreateFromWebContents(web_contents);
   // Invalidate old dialog results.
   controller->last_dialog_id_++;
   controller->phone_url_ = url;
   controller->is_loading_ = false;
   controller->send_failed_ = false;
+  controller->hide_default_handler_ = hide_default_handler;
   controller->ShowNewDialog();
 }
 
@@ -115,10 +117,13 @@ ClickToCallSharingDialogController::GetSyncedDevices() {
 }
 
 std::vector<App> ClickToCallSharingDialogController::GetApps() {
+  std::vector<App> apps;
+  if (hide_default_handler_)
+    return apps;
+
   base::string16 app_name =
       shell_integration::GetApplicationNameForProtocol(phone_url_);
 
-  std::vector<App> apps;
   if (!app_name.empty()) {
     apps.emplace_back(vector_icons::kOpenInNewIcon, std::move(app_name),
                       std::string());

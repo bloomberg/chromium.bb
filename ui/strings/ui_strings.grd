@@ -991,6 +991,9 @@ need to be translated for each locale.-->
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK" desc="The label to be shown on the dialog when user click on a phone number for the link to a help page to turn on sync.">
         learn how to troubleshoot Click to Call
       </message>
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SEND_SUCCESS" desc="The label to be shown next to the omnibox icon after a phone number got sent to a users device.">
+        Sent to device
+      </message>
     </messages>
   </release>
 </grit>

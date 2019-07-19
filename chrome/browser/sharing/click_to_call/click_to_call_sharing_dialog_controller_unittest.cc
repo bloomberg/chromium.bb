@@ -77,7 +77,7 @@ class ClickToCallSharingDialogControllerTest : public testing::Test {
               std::make_unique<SharingFCMHandler>(nullptr, nullptr));
         }));
     ClickToCallSharingDialogController::ShowDialog(
-        web_contents_.get(), GURL(base::StrCat({"tel:", kPhoneNumber})));
+        web_contents_.get(), GURL(base::StrCat({"tel:", kPhoneNumber})), false);
     click_to_call_sharing_dialog_controller_ =
         ClickToCallSharingDialogController::GetOrCreateFromWebContents(
             web_contents_.get());

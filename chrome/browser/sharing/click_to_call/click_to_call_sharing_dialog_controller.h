@@ -28,7 +28,9 @@ class ClickToCallSharingDialogController
  public:
   static ClickToCallSharingDialogController* GetOrCreateFromWebContents(
       content::WebContents* web_contents);
-  static void ShowDialog(content::WebContents* web_contents, const GURL& url);
+  static void ShowDialog(content::WebContents* web_contents,
+                         const GURL& url,
+                         bool hide_default_handler);
   static void DeviceSelected(content::WebContents* web_contents,
                              const GURL& url,
                              const SharingDeviceInfo& device);
@@ -83,6 +85,7 @@ class ClickToCallSharingDialogController
   ClickToCallDialog* dialog_ = nullptr;
   bool is_loading_ = false;
   bool send_failed_ = false;
+  bool hide_default_handler_ = false;
 
   // ID of the last shown dialog used to ignore events from old dialogs.
   int last_dialog_id_ = 0;

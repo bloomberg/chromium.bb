@@ -42,6 +42,7 @@ ClickToCallIconView::ClickToCallIconView(PageActionIconView::Delegate* delegate)
                          delegate) {
   SetVisible(false);
   UpdateLoaderColor();
+  SetUpForInOutAnimation();
 }
 
 ClickToCallIconView::~ClickToCallIconView() = default;
@@ -56,20 +57,25 @@ views::BubbleDialogDelegateView* ClickToCallIconView::GetBubble() const {
 bool ClickToCallIconView::Update() {
   auto* controller = GetControllerFromWebContents(GetWebContents());
   if (controller) {
-    if (controller->is_loading())
-      StartLoadingAnimation();
-    else
-      StopLoadingAnimation();
-
     if (show_error_ != controller->send_failed()) {
       show_error_ = controller->send_failed();
       UpdateIconImage();
     }
+
+    if (controller->is_loading())
+      StartLoadingAnimation();
+    else
+      StopLoadingAnimation();
   }
 
   const bool is_bubble_showing = IsBubbleShowing();
-  const bool is_visible = is_bubble_showing || loading_animation_;
+  const bool is_visible =
+      is_bubble_showing || loading_animation_ || label()->GetVisible();
   const bool visibility_changed = GetVisible() != is_visible;
+
+  if (is_bubble_showing || loading_animation_)
+    ResetSlideAnimation(/*show=*/false);
+
   SetVisible(is_visible);
   UpdateInkDrop(is_bubble_showing);
   return visibility_changed;
@@ -88,6 +94,10 @@ void ClickToCallIconView::StartLoadingAnimation() {
 void ClickToCallIconView::StopLoadingAnimation() {
   if (!loading_animation_)
     return;
+
+  if (!show_error_)
+    AnimateIn(IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SEND_SUCCESS);
+
   loading_animation_.reset();
   SchedulePaint();
 }
@@ -129,6 +139,11 @@ void ClickToCallIconView::AnimationProgressed(const gfx::Animation* animation) {
   if (animation != loading_animation_.get())
     return PageActionIconView::AnimationProgressed(animation);
   SchedulePaint();
+}
+
+void ClickToCallIconView::AnimationEnded(const gfx::Animation* animation) {
+  PageActionIconView::AnimationEnded(animation);
+  Update();
 }
 
 void ClickToCallIconView::OnThemeChanged() {

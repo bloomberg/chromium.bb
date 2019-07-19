@@ -52,6 +52,7 @@ class ClickToCallIconView : public PageActionIconView {
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
  private:
   void UpdateInkDrop(bool activate);
