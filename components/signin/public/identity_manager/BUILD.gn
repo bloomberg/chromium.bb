@@ -34,7 +34,6 @@ source_set("identity_manager") {
 
   public_deps = [
     "//base",
-    "//components/account_id",
     "//components/keyed_service/core",
     "//components/signin/public/base",
     "//components/signin/public/base:signin_buildflags",

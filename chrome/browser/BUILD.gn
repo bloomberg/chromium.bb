@@ -1568,6 +1568,8 @@ jumbo_split_static_library("browser") {
     "signin/account_consistency_mode_manager.h",
     "signin/account_consistency_mode_manager_factory.cc",
     "signin/account_consistency_mode_manager_factory.h",
+    "signin/account_id_from_account_info.cc",
+    "signin/account_id_from_account_info.h",
     "signin/account_investigator_factory.cc",
     "signin/account_investigator_factory.h",
     "signin/account_reconcilor_factory.cc",
@@ -1862,6 +1864,7 @@ jumbo_split_static_library("browser") {
   public_deps = [
     "//base",
     "//chrome/common",
+    "//components/account_id",
     "//components/autofill/core/browser",
     "//components/nacl/common:buildflags",
     "//components/payments/core",
