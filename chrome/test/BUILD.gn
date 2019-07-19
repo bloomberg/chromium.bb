@@ -3388,6 +3388,8 @@ test("unit_tests") {
     "//crypto:platform",
     "//crypto:test_support",
     "//device/bluetooth:mocks",
+    "//device/fido",
+    "//device/fido:test_support",
     "//extensions/buildflags",
     "//google_apis",
     "//gpu:test_support",
