@@ -5,7 +5,9 @@
      found in the LICENSE file.
  -->
 
-<resources xmlns:android="http://schemas.android.com/apk/res/android">
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+           xmlns:tools="http://schemas.android.com/tools"
+           tools:ignore="MissingTranslation,UnusedResources">
     <string name="app_name">Chromecast Android Shell</string>
     <string name="browser_process_initialization_failed">Initialization failed.</string>
 </resources>
