@@ -382,7 +382,12 @@ class SymbolsTest(image_test_lib.ImageTestCase):
     # not executable on the main CPU, so we treat them as blobs that we load
     # into external hardware/devices. This is ensured by PermissionTest.
     # TestNoExecutableInFirmwareFolder.
-    permitted_pattern = os.path.join('dir-ROOT-A', 'lib', 'firmware', '*')
+    permitted_patterns = (
+        os.path.join('dir-ROOT-A', 'lib', 'firmware', '*'),
+
+        # Jetstream firmware package.
+        os.path.join('dir-ROOT-A', 'usr', 'share', 'fastrpc', '*'),
+    )
 
     for root, _, filenames in os.walk(image_test_lib.ROOT_A):
       for filename in filenames:
@@ -390,7 +395,7 @@ class SymbolsTest(image_test_lib.ImageTestCase):
         if os.path.islink(full_name) or not os.path.isfile(full_name):
           continue
 
-        if fnmatch.fnmatch(full_name, permitted_pattern):
+        if any(fnmatch.fnmatch(full_name, x) for x in permitted_patterns):
           continue
 
         try:
