@@ -139,6 +139,8 @@ class ReportingHeaderParserTest : public ReportingTestBase,
   const GURL kUrl2_ = GURL("https://origin2.test/path");
   const url::Origin kOrigin2_ =
       url::Origin::Create(GURL("https://origin2.test/"));
+  const GURL kUrlEtld_ = GURL("https://co.uk/foo.html/");
+  const url::Origin kOriginEtld_ = url::Origin::Create(kUrlEtld_);
   const GURL kEndpoint_ = GURL("https://endpoint.test/");
   const GURL kEndpoint2_ = GURL("https://endpoint2.test/");
   const GURL kEndpoint3_ = GURL("https://endpoint3.test/");
@@ -358,6 +360,34 @@ TEST_P(ReportingHeaderParserTest, IncludeSubdomainsFalse) {
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
+}
+
+TEST_P(ReportingHeaderParserTest, IncludeSubdomainsEtldRejected) {
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_}};
+
+  std::string header = ConstructHeaderGroupString(
+      MakeEndpointGroup(kGroup_, endpoints, OriginSubdomains::INCLUDE));
+  ParseHeader(kUrlEtld_, header);
+
+  EXPECT_EQ(0u, cache()->GetEndpointGroupCountForTesting());
+  EXPECT_FALSE(EndpointGroupExistsInCache(kOriginEtld_, kGroup_,
+                                          OriginSubdomains::INCLUDE));
+  EXPECT_EQ(0u, cache()->GetEndpointCount());
+  EXPECT_FALSE(EndpointExistsInCache(kOriginEtld_, kGroup_, kEndpoint_));
+}
+
+TEST_P(ReportingHeaderParserTest, NonIncludeSubdomainsEtldAccepted) {
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_}};
+
+  std::string header = ConstructHeaderGroupString(
+      MakeEndpointGroup(kGroup_, endpoints, OriginSubdomains::EXCLUDE));
+  ParseHeader(kUrlEtld_, header);
+
+  EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
+  EXPECT_TRUE(EndpointGroupExistsInCache(kOriginEtld_, kGroup_,
+                                         OriginSubdomains::EXCLUDE));
+  EXPECT_EQ(1u, cache()->GetEndpointCount());
+  EXPECT_TRUE(EndpointExistsInCache(kOriginEtld_, kGroup_, kEndpoint_));
 }
 
 TEST_P(ReportingHeaderParserTest, IncludeSubdomainsNotBoolean) {
