@@ -503,6 +503,15 @@ const char kFlagPermissionAuthenticatedWrite[] =
     "permission-authenticated-write";
 const char kFlagPermissionSecureRead[] = "permission-secure-read";
 const char kFlagPermissionSecureWrite[] = "permission-secure-write";
+
+// Bluetooth GATT Characteristic errors.
+const char kErrorFailed[] = "org.bluez.Error.Failed";
+const char kErrorInProgress[] = "org.bluez.Error.InProgress";
+const char kErrorInvalidValueLength[] = "org.bluez.Error.InvalidValueLength";
+const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
+const char kErrorNotConnected[] = "org.bluez.Error.NotConnected";
+const char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
+const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
 }  // namespace bluetooth_gatt_characteristic
 
 namespace bluetooth_gatt_descriptor {
@@ -532,6 +541,14 @@ const char kFlagEncryptRead[] = "encrypt-read";
 const char kFlagEncryptWrite[] = "encrypt-write";
 const char kFlagEncryptAuthenticatedRead[] = "encrypt-authenticated-read";
 const char kFlagEncryptAuthenticatedWrite[] = "encrypt-authenticated-write";
+
+// Bluetooth GATT Descriptor errors.
+const char kErrorFailed[] = "org.bluez.Error.Failed";
+const char kErrorInProgress[] = "org.bluez.Error.InProgress";
+const char kErrorInvalidValueLength[] = "org.bluez.Error.InvalidValueLength";
+const char kErrorNotAuthorized[] = "org.bluez.Error.NotAuthorized";
+const char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
+const char kErrorNotSupported[] = "org.bluez.Error.NotSupported";
 }  // namespace bluetooth_gatt_descriptor
 
 namespace bluetooth_gatt_manager {
