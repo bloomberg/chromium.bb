@@ -2758,8 +2758,6 @@ static_library("test_support") {
     "http/transport_security_state_test_util.h",
     "log/test_net_log.cc",
     "log/test_net_log.h",
-    "log/test_net_log_entry.cc",
-    "log/test_net_log_entry.h",
     "log/test_net_log_util.cc",
     "log/test_net_log_util.h",
     "nqe/network_quality_estimator_test_util.cc",
