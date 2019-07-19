@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/service.h"
+#include "components/autofill_assistant/browser/service_impl.h"
 
 #include <string>
 #include <utility>
@@ -58,22 +58,23 @@ net::NetworkTrafficAnnotationTag traffic_annotation =
 namespace autofill_assistant {
 
 // static
-std::unique_ptr<Service> Service::Create(content::BrowserContext* context,
-                                         Client* client) {
+std::unique_ptr<ServiceImpl> ServiceImpl::Create(
+    content::BrowserContext* context,
+    Client* client) {
   GURL server_url(client->GetServerUrl());
   DCHECK(server_url.is_valid());
 
-  return std::make_unique<Service>(
+  return std::make_unique<ServiceImpl>(
       client->GetApiKey(), server_url, context, client->GetAccessTokenFetcher(),
       client->GetLocale(), client->GetCountryCode());
 }
 
-Service::Service(const std::string& api_key,
-                 const GURL& server_url,
-                 content::BrowserContext* context,
-                 AccessTokenFetcher* access_token_fetcher,
-                 const std::string& locale,
-                 const std::string& country_code)
+ServiceImpl::ServiceImpl(const std::string& api_key,
+                         const GURL& server_url,
+                         content::BrowserContext* context,
+                         AccessTokenFetcher* access_token_fetcher,
+                         const std::string& locale,
+                         const std::string& country_code)
     : context_(context),
       api_key_(api_key),
       access_token_fetcher_(access_token_fetcher),
@@ -95,11 +96,11 @@ Service::Service(const std::string& api_key,
   VLOG(1) << "Using script domain " << script_action_server_url_.host();
 }
 
-Service::~Service() {}
+ServiceImpl::~ServiceImpl() {}
 
-void Service::GetScriptsForUrl(const GURL& url,
-                               const TriggerContext& trigger_context,
-                               ResponseCallback callback) {
+void ServiceImpl::GetScriptsForUrl(const GURL& url,
+                                   const TriggerContext& trigger_context,
+                                   ResponseCallback callback) {
   DCHECK(url.is_valid());
 
   SendRequest(AddLoader(script_server_url_,
@@ -108,12 +109,12 @@ void Service::GetScriptsForUrl(const GURL& url,
                         std::move(callback)));
 }
 
-void Service::GetActions(const std::string& script_path,
-                         const GURL& url,
-                         const TriggerContext& trigger_context,
-                         const std::string& global_payload,
-                         const std::string& script_payload,
-                         ResponseCallback callback) {
+void ServiceImpl::GetActions(const std::string& script_path,
+                             const GURL& url,
+                             const TriggerContext& trigger_context,
+                             const std::string& global_payload,
+                             const std::string& script_payload,
+                             ResponseCallback callback) {
   DCHECK(!script_path.empty());
 
   SendRequest(AddLoader(script_action_server_url_,
@@ -123,7 +124,7 @@ void Service::GetActions(const std::string& script_path,
                         std::move(callback)));
 }
 
-void Service::GetNextActions(
+void ServiceImpl::GetNextActions(
     const TriggerContext& trigger_context,
     const std::string& previous_global_payload,
     const std::string& previous_script_payload,
@@ -137,7 +138,7 @@ void Service::GetNextActions(
       std::move(callback)));
 }
 
-void Service::SendRequest(Loader* loader) {
+void ServiceImpl::SendRequest(Loader* loader) {
   if (access_token_.empty() && auth_enabled_) {
     // Trigger a fetch of the access token. All loaders in loaders_ will be
     // started later on, the access token is available.
@@ -148,12 +149,12 @@ void Service::SendRequest(Loader* loader) {
   StartLoader(loader);
 }
 
-Service::Loader::Loader() : retried_with_fresh_access_token(false) {}
-Service::Loader::~Loader() {}
+ServiceImpl::Loader::Loader() : retried_with_fresh_access_token(false) {}
+ServiceImpl::Loader::~Loader() {}
 
-Service::Loader* Service::AddLoader(const GURL& url,
-                                    const std::string& request_body,
-                                    ResponseCallback callback) {
+ServiceImpl::Loader* ServiceImpl::AddLoader(const GURL& url,
+                                            const std::string& request_body,
+                                            ResponseCallback callback) {
   std::unique_ptr<Loader> loader = std::make_unique<Loader>();
   loader->url = url;
   loader->request_body = request_body;
@@ -163,7 +164,7 @@ Service::Loader* Service::AddLoader(const GURL& url,
   return loader_ptr;
 }
 
-void Service::StartLoader(Loader* loader) {
+void ServiceImpl::StartLoader(Loader* loader) {
   if (loader->loader)
     return;
 
@@ -194,12 +195,13 @@ void Service::StartLoader(Loader* loader) {
       content::BrowserContext::GetDefaultStoragePartition(context_)
           ->GetURLLoaderFactoryForBrowserProcess()
           .get(),
-      base::BindOnce(&Service::OnURLLoaderComplete, base::Unretained(this),
+      base::BindOnce(&ServiceImpl::OnURLLoaderComplete, base::Unretained(this),
                      loader));
 }
 
-void Service::OnURLLoaderComplete(Loader* loader,
-                                  std::unique_ptr<std::string> response_body) {
+void ServiceImpl::OnURLLoaderComplete(
+    Loader* loader,
+    std::unique_ptr<std::string> response_body) {
   auto loader_it = loaders_.find(loader);
   DCHECK(loader_it != loaders_.end());
 
@@ -243,17 +245,17 @@ void Service::OnURLLoaderComplete(Loader* loader,
   std::move(loader_instance->callback).Run(true, response_body_str);
 }
 
-void Service::FetchAccessToken() {
+void ServiceImpl::FetchAccessToken() {
   if (fetching_token_)
     return;
 
   fetching_token_ = true;
   access_token_fetcher_->FetchAccessToken(base::BindOnce(
-      &Service::OnFetchAccessToken, weak_ptr_factory_.GetWeakPtr()));
+      &ServiceImpl::OnFetchAccessToken, weak_ptr_factory_.GetWeakPtr()));
 }
 
-void Service::OnFetchAccessToken(bool success,
-                                 const std::string& access_token) {
+void ServiceImpl::OnFetchAccessToken(bool success,
+                                     const std::string& access_token) {
   fetching_token_ = false;
 
   if (!success) {
@@ -272,7 +274,7 @@ void Service::OnFetchAccessToken(bool success,
 }
 
 // static
-ClientContextProto Service::CreateClientContext(
+ClientContextProto ServiceImpl::CreateClientContext(
     const std::string& locale,
     const std::string& country_code) {
   ClientContextProto context;

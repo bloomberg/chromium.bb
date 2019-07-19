@@ -1186,6 +1186,7 @@ chrome_common_shared_library("libchromefortest") {
     "//base/test:test_support",
     "//chrome:chrome_android_core",
     "//chrome/browser/android/metrics:ukm_utils_for_test",
+    "//components/autofill_assistant/browser:test_support",
     "//components/crash/android:crash_android",
     "//components/heap_profiling:test_support",
     "//components/minidump_uploader",
@@ -1480,6 +1481,7 @@ java_group("chrome_public_base_module_java_for_test") {
   deps = [
     ":browser_java_test_support",
     ":chrome_public_base_module_java",
+    "//chrome/android/features/autofill_assistant:autofill_assistant_java_test_support",
     "//chrome/browser/android/metrics:ukm_utils_java",
     "//components/heap_profiling:heap_profiling_java_test_support",
     "//components/minidump_uploader:minidump_uploader_java",
