@@ -10,7 +10,7 @@
 #include "base/version.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/patch/public/mojom/constants.mojom.h"
-#include "components/services/unzip/public/interfaces/constants.mojom.h"
+#include "components/services/unzip/public/mojom/constants.mojom.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/net/network_chromium.h"
 #include "components/update_client/patch/patch_impl.h"

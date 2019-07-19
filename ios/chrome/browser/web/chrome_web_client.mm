@@ -12,7 +12,7 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/services/patch/patch_service.h"
 #include "components/services/patch/public/mojom/constants.mojom.h"
-#include "components/services/unzip/public/interfaces/constants.mojom.h"
+#include "components/services/unzip/public/mojom/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
