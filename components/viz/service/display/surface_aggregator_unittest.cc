@@ -4397,23 +4397,25 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTest) {
   SurfaceId surface_id(root_sink_->frame_sink_id(), root_local_surface_id_);
 
   CompositorFrame aggregated_frame;
-  aggregator_.SetOutputColorSpace(color_space1, color_space1);
+  aggregator_.SetOutputColorSpace(color_space1);
   aggregated_frame = AggregateFrame(surface_id);
   EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
   EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[0]->color_space);
   EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[1]->color_space);
 
-  aggregator_.SetOutputColorSpace(color_space2, color_space2);
+  aggregator_.SetOutputColorSpace(color_space2);
   aggregated_frame = AggregateFrame(surface_id);
   EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
   EXPECT_EQ(color_space2, aggregated_frame.render_pass_list[0]->color_space);
   EXPECT_EQ(color_space2, aggregated_frame.render_pass_list[1]->color_space);
 
-  aggregator_.SetOutputColorSpace(color_space1, color_space3);
+  aggregator_.SetOutputColorSpace(color_space3);
   aggregated_frame = AggregateFrame(surface_id);
   EXPECT_EQ(3u, aggregated_frame.render_pass_list.size());
-  EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[0]->color_space);
-  EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[1]->color_space);
+  EXPECT_EQ(color_space3.GetBlendingColorSpace(),
+            aggregated_frame.render_pass_list[0]->color_space);
+  EXPECT_EQ(color_space3.GetBlendingColorSpace(),
+            aggregated_frame.render_pass_list[1]->color_space);
   EXPECT_EQ(color_space3, aggregated_frame.render_pass_list[2]->color_space);
 }
 

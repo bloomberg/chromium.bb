@@ -237,7 +237,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
-  display_->SetColorSpace(color_space_1, color_space_1);
+  display_->SetColorSpace(color_space_1);
 
   EXPECT_FALSE(scheduler_->damaged);
   EXPECT_FALSE(scheduler_->has_new_root_surface);
@@ -300,7 +300,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
     scheduler_->swapped = false;
     EXPECT_EQ(color_space_1, output_surface_->last_reshape_color_space());
-    display_->SetColorSpace(color_space_2, color_space_2);
+    display_->SetColorSpace(color_space_2);
     display_->DrawAndSwap();
     EXPECT_EQ(color_space_2, output_surface_->last_reshape_color_space());
     EXPECT_TRUE(scheduler_->swapped);

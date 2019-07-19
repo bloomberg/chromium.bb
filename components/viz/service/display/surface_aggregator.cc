@@ -503,13 +503,13 @@ void SurfaceAggregator::EmitSurfaceContent(
 
     RenderPassId remapped_pass_id = RemapPassId(source.id, surface_id);
 
-    copy_pass->SetAll(remapped_pass_id, source.output_rect, source.output_rect,
-                      source.transform_to_root_target, source.filters,
-                      source.backdrop_filters, source.backdrop_filter_bounds,
-                      blending_color_space_, source.has_transparent_background,
-                      source.cache_render_pass,
-                      source.has_damage_from_contributing_content,
-                      source.generate_mipmap);
+    copy_pass->SetAll(
+        remapped_pass_id, source.output_rect, source.output_rect,
+        source.transform_to_root_target, source.filters,
+        source.backdrop_filters, source.backdrop_filter_bounds,
+        output_color_space_.GetBlendingColorSpace(),
+        source.has_transparent_background, source.cache_render_pass,
+        source.has_damage_from_contributing_content, source.generate_mipmap);
 
     MoveMatchingRequests(source.id, &copy_requests, &copy_pass->copy_requests);
 
@@ -1066,9 +1066,9 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
     copy_pass->SetAll(
         remapped_pass_id, output_rect, damage_rect, transform_to_root_target,
         source.filters, source.backdrop_filters, source.backdrop_filter_bounds,
-        blending_color_space_, source.has_transparent_background,
-        source.cache_render_pass, source.has_damage_from_contributing_content,
-        source.generate_mipmap);
+        output_color_space_.GetBlendingColorSpace(),
+        source.has_transparent_background, source.cache_render_pass,
+        source.has_damage_from_contributing_content, source.generate_mipmap);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
                     frame.device_scale_factor(), child_to_parent_map,
@@ -1634,11 +1634,7 @@ void SurfaceAggregator::SetFullDamageForSurface(const SurfaceId& surface_id) {
 }
 
 void SurfaceAggregator::SetOutputColorSpace(
-    const gfx::ColorSpace& blending_color_space,
     const gfx::ColorSpace& output_color_space) {
-  blending_color_space_ = blending_color_space.IsValid()
-                              ? blending_color_space
-                              : gfx::ColorSpace::CreateSRGB();
   output_color_space_ = output_color_space.IsValid()
                             ? output_color_space
                             : gfx::ColorSpace::CreateSRGB();
