@@ -175,6 +175,8 @@ class VM(device.Device):
     self.start = opts.start
     self.stop = opts.stop
 
+    self.chroot_path = opts.chroot_path
+
     self.cache_dir = os.path.abspath(opts.cache_dir)
     assert os.path.isdir(self.cache_dir), "Cache directory doesn't exist"
 
@@ -272,8 +274,7 @@ class VM(device.Device):
 
     # Check chroot.
     if not self.qemu_path:
-      qemu_path = os.path.join(
-          constants.SOURCE_ROOT, constants.DEFAULT_CHROOT_DIR, qemu_exe_path)
+      qemu_path = os.path.join(self.chroot_path, qemu_exe_path)
       if os.path.isfile(qemu_path):
         self.qemu_path = qemu_path
 
@@ -574,6 +575,9 @@ class VM(device.Device):
                         help='Do not display video output.')
     parser.add_argument('--ssh-port', type=int, default=VM.SSH_PORT,
                         help='ssh port to communicate with VM.')
+    parser.add_argument('--chroot-path', type='path',
+                        default=os.path.join(constants.SOURCE_ROOT,
+                                             constants.DEFAULT_CHROOT_DIR))
     parser.add_argument('--cache-dir', type='path',
                         default=path_util.GetCacheDir(),
                         help='Cache directory to use.')
