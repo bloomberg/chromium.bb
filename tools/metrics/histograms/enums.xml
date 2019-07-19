@@ -44126,10 +44126,32 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OptimizationGuideProcessHintsResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="FailedInvalidParameters"/>
-  <int value="2" label="FailedReadingFile"/>
-  <int value="3" label="FailedInvalidConfiguration"/>
+  <int value="0" label="Success">
+    Hints were processed and at least one supported hint was stored.
+  </int>
+  <int value="1" label="Failed with invalid parameters">
+    Component was sent for processing but there was either no component file to
+    read or the version was invalid.
+  </int>
+  <int value="2" label="Failed reading component file">
+    Component file was received but there was an error reading the file
+    containing the hints.
+  </int>
+  <int value="3" label="Component file contained invalid configuration">
+    Component file was received and read successfully but did not contain a
+    valid configuration.
+  </int>
+  <int value="4" label="Failed processing">
+    Failed to finish processing same version previously so skipping to avoid
+    potential crash loop.
+  </int>
+  <int value="5" label="Skipped hints processing">
+    Skipped processing hints, likely because the hint cache already contains the
+    same version.
+  </int>
+  <int value="6" label="No supported hints found">
+    Hints processed but no supported hints found.
+  </int>
 </enum>
 
 <enum name="OptOutBlacklistReason">
@@ -48057,6 +48079,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PreviewsProcessHintsResult">
+  <obsolete>
+    Merged into OptimizationGuideProcessHintsResult as of 07/2019.
+  </obsolete>
   <int value="0" label="No hints found">
     Previews processed but no Previews hints found.
   </int>
