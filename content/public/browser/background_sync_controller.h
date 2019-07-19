@@ -41,17 +41,34 @@ class CONTENT_EXPORT BackgroundSyncController {
   virtual void GetParameterOverrides(BackgroundSyncParameters* parameters) {}
 
   // Notification that a service worker registration with origin |origin| just
-  // registered a background sync event. Also includes information about the
-  // registration.
-  virtual void NotifyBackgroundSyncRegistered(const url::Origin& origin,
-                                              bool can_fire,
-                                              bool is_reregistered) {}
+  // registered a one-shot background sync event. Also includes information
+  // about the registration.
+  virtual void NotifyOneShotBackgroundSyncRegistered(const url::Origin& origin,
+                                                     bool can_fire,
+                                                     bool is_reregistered) {}
 
   // Notification that a service worker registration with origin |origin| just
-  // completed a background sync registration. Also include the |status_code|
-  // the registration finished with, the number of attempts, and the max
-  // allowed number of attempts.
-  virtual void NotifyBackgroundSyncCompleted(
+  // registered a periodic background sync event. Also includes information
+  // about the registration.
+  virtual void NotifyPeriodicBackgroundSyncRegistered(const url::Origin& origin,
+                                                      int min_interval,
+                                                      bool is_reregistered) {}
+
+  // Notification that a service worker registration with origin |origin| just
+  // completed a one-shot background sync registration. Also include the
+  // |status_code| the registration finished with, the number of attempts, and
+  // the max allowed number of attempts.
+  virtual void NotifyOneShotBackgroundSyncCompleted(
+      const url::Origin& origin,
+      blink::ServiceWorkerStatusCode status_code,
+      int num_attempts,
+      int max_attempts) {}
+
+  // Notification that a service worker registration with origin |origin| just
+  // completed a periodic background sync registration. Also include the
+  // |status_code| the registration finished with, the number of attempts, and
+  // the max allowed number of attempts.
+  virtual void NotifyPeriodicBackgroundSyncCompleted(
       const url::Origin& origin,
       blink::ServiceWorkerStatusCode status_code,
       int num_attempts,

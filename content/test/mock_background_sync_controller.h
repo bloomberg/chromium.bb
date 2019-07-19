@@ -24,9 +24,9 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   ~MockBackgroundSyncController() override = default;
 
   // BackgroundSyncController:
-  void NotifyBackgroundSyncRegistered(const url::Origin& origin,
-                                      bool can_fire,
-                                      bool is_reregistered) override;
+  void NotifyOneShotBackgroundSyncRegistered(const url::Origin& origin,
+                                             bool can_fire,
+                                             bool is_reregistered) override;
   void ScheduleBrowserWakeUp(
       blink::mojom::BackgroundSyncType sync_type) override;
   void GetParameterOverrides(BackgroundSyncParameters* parameters) override;

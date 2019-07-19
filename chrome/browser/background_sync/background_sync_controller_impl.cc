@@ -137,24 +137,45 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
   return;
 }
 
-void BackgroundSyncControllerImpl::NotifyBackgroundSyncRegistered(
+void BackgroundSyncControllerImpl::NotifyOneShotBackgroundSyncRegistered(
     const url::Origin& origin,
     bool can_fire,
     bool is_reregistered) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  background_sync_metrics_.MaybeRecordRegistrationEvent(origin, can_fire,
-                                                        is_reregistered);
+  background_sync_metrics_.MaybeRecordOneShotSyncRegistrationEvent(
+      origin, can_fire, is_reregistered);
 }
 
-void BackgroundSyncControllerImpl::NotifyBackgroundSyncCompleted(
+void BackgroundSyncControllerImpl::NotifyPeriodicBackgroundSyncRegistered(
+    const url::Origin& origin,
+    int min_interval,
+    bool is_reregistered) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  background_sync_metrics_.MaybeRecordPeriodicSyncRegistrationEvent(
+      origin, min_interval, is_reregistered);
+}
+
+void BackgroundSyncControllerImpl::NotifyOneShotBackgroundSyncCompleted(
     const url::Origin& origin,
     blink::ServiceWorkerStatusCode status_code,
     int num_attempts,
     int max_attempts) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  background_sync_metrics_.MaybeRecordCompletionEvent(
+  background_sync_metrics_.MaybeRecordOneShotSyncCompletionEvent(
+      origin, status_code, num_attempts, max_attempts);
+}
+
+void BackgroundSyncControllerImpl::NotifyPeriodicBackgroundSyncCompleted(
+    const url::Origin& origin,
+    blink::ServiceWorkerStatusCode status_code,
+    int num_attempts,
+    int max_attempts) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  background_sync_metrics_.MaybeRecordPeriodicSyncEventCompletion(
       origin, status_code, num_attempts, max_attempts);
 }
 

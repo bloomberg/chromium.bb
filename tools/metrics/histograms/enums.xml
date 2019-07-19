@@ -52423,6 +52423,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="All"/>
 </enum>
 
+<enum name="ServiceWorkerEventStatus">
+  <int value="0" label="Completed"/>
+  <int value="1" label="Rejected"/>
+  <int value="2" label="Aborted"/>
+  <int value="3" label="Timeout"/>
+</enum>
+
 <enum name="ServiceWorkerInstalledScriptsManager.FinishedReason">
   <int value="0" label="NOT_FINISHED"/>
   <int value="1" label="SUCCESS"/>

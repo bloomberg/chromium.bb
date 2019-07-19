@@ -6,7 +6,7 @@
 
 namespace content {
 
-void MockBackgroundSyncController::NotifyBackgroundSyncRegistered(
+void MockBackgroundSyncController::NotifyOneShotBackgroundSyncRegistered(
     const url::Origin& origin,
     bool can_fire,
     bool is_reregistered) {
