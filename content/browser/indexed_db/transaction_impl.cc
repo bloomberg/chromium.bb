@@ -99,6 +99,7 @@ void TransactionImpl::CreateObjectStore(int64_t object_store_id,
   if (transaction_->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "CreateObjectStore must be called from a version change transaction.");
+    return;
   }
 
   IndexedDBConnection* connection = transaction_->connection();
@@ -119,6 +120,7 @@ void TransactionImpl::DeleteObjectStore(int64_t object_store_id) {
   if (transaction_->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
     mojo::ReportBadMessage(
         "DeleteObjectStore must be called from a version change transaction.");
+    return;
   }
 
   IndexedDBConnection* connection = transaction_->connection();
