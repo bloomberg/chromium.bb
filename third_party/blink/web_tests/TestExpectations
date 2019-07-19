@@ -6297,3 +6297,7 @@ crbug.com/982149 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/
 # Sheriff 2019-07-18
 crbug.com/985232 [ Win7 ] external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/dynamic-imports-credentials.sub.html [ Pass Failure ]
 crbug.com/985232 [ Win7 ] virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/dynamic-imports-credentials.sub.html [ Pass Failure ]
+
+# TODO (michaelludwig) - Remove after Skia rebaseline
+crbug.com/985769 compositing/reflections/nested-reflection-transformed2.html [ Pass Failure ]
+crbug.com/985769 virtual/disable-blink-gen-property-trees/compositing/reflections/nested-reflection-transformed2.html [ Pass Failure ]
