@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/background_sync/background_sync_registration.h"
-
-#include "base/bind.h"
-#include "base/location.h"
-#include "base/logging.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "content/public/browser/background_sync_registration.h"
 
 namespace content {
+
+BackgroundSyncRegistration::BackgroundSyncRegistration() = default;
+BackgroundSyncRegistration::BackgroundSyncRegistration(
+    const BackgroundSyncRegistration& other) = default;
+BackgroundSyncRegistration& BackgroundSyncRegistration::operator=(
+    const BackgroundSyncRegistration& other) = default;
+BackgroundSyncRegistration::~BackgroundSyncRegistration() = default;
 
 bool BackgroundSyncRegistration::Equals(
     const BackgroundSyncRegistration& other) const {

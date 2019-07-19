@@ -2,30 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_REGISTRATION_H_
-#define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_REGISTRATION_H_
+#ifndef CONTENT_PUBLIC_BROWSER_BACKGROUND_SYNC_REGISTRATION_H_
+#define CONTENT_PUBLIC_BROWSER_BACKGROUND_SYNC_REGISTRATION_H_
 
 #include <stdint.h>
 
-#include <list>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "content/browser/background_sync/background_sync.pb.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 
 class CONTENT_EXPORT BackgroundSyncRegistration {
  public:
-  BackgroundSyncRegistration() = default;
-  BackgroundSyncRegistration(const BackgroundSyncRegistration& other) = default;
+  BackgroundSyncRegistration();
+  BackgroundSyncRegistration(const BackgroundSyncRegistration& other);
   BackgroundSyncRegistration& operator=(
-      const BackgroundSyncRegistration& other) = default;
-  ~BackgroundSyncRegistration() = default;
+      const BackgroundSyncRegistration& other);
+  ~BackgroundSyncRegistration();
 
   bool Equals(const BackgroundSyncRegistration& other) const;
   bool IsFiring() const;
@@ -59,6 +58,10 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
                : blink::mojom::BackgroundSyncType::ONE_SHOT;
   }
 
+  const url::Origin& origin() const { return origin_; }
+
+  void set_origin(const url::Origin& origin) { origin_ = origin; }
+
  private:
   blink::mojom::SyncRegistrationOptions options_;
   blink::mojom::BackgroundSyncState sync_state_ =
@@ -66,12 +69,13 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   int num_attempts_ = 0;
   int max_attempts_ = 0;
   base::Time delay_until_;
+  url::Origin origin_;
 
   // This member is not persisted to disk. It should be false until the client
-  // has acknowledged tha it has resolved its registration promise.
+  // has acknowledged that it has resolved its registration promise.
   bool resolved_ = false;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_REGISTRATION_H_
+#endif  // CONTENT_PUBLIC_BROWSER_BACKGROUND_SYNC_REGISTRATION_H_

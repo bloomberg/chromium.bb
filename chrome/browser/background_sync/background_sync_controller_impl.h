@@ -16,6 +16,7 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/background_sync_registration.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
@@ -78,10 +79,7 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   void ScheduleBrowserWakeUp(
       blink::mojom::BackgroundSyncType sync_type) override;
   base::TimeDelta GetNextEventDelay(
-      const url::Origin& origin,
-      int64_t min_interval,
-      int num_attempts,
-      blink::mojom::BackgroundSyncType sync_type,
+      const content::BackgroundSyncRegistration& registration,
       content::BackgroundSyncParameters* parameters) override;
   std::unique_ptr<BackgroundSyncEventKeepAlive>
   CreateBackgroundSyncEventKeepAlive() override;

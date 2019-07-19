@@ -199,7 +199,6 @@ std::unique_ptr<BackgroundSyncParameters> GetControllerParameters(
 base::TimeDelta GetNextEventDelay(
     scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
     const BackgroundSyncRegistration& registration,
-    const url::Origin& origin,
     std::unique_ptr<BackgroundSyncParameters> parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -209,9 +208,8 @@ base::TimeDelta GetNextEventDelay(
   if (!background_sync_controller)
     return base::TimeDelta::Max();
 
-  return background_sync_controller->GetNextEventDelay(
-      origin, registration.options()->min_interval, registration.num_attempts(),
-      registration.sync_type(), parameters.get());
+  return background_sync_controller->GetNextEventDelay(registration,
+                                                       parameters.get());
 }
 
 void OnSyncEventFinished(scoped_refptr<ServiceWorkerVersion> active_version,
@@ -763,6 +761,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
 
   BackgroundSyncRegistration registration;
 
+  registration.set_origin(origin);
   *registration.options() = std::move(options);
 
   // TODO(crbug.com/963487): This section below is really confusing. Add a
@@ -776,7 +775,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
-            &GetNextEventDelay, service_worker_context_, registration, origin,
+            &GetNextEventDelay, service_worker_context_, registration,
             std::make_unique<BackgroundSyncParameters>(*parameters_)),
         base::BindOnce(&BackgroundSyncManager::RegisterDidGetDelay,
                        weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
@@ -1610,7 +1609,7 @@ void BackgroundSyncManager::EventCompleteImpl(
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
-            &GetNextEventDelay, service_worker_context_, *registration, origin,
+            &GetNextEventDelay, service_worker_context_, *registration,
             std::make_unique<BackgroundSyncParameters>(*parameters_)),
         base::BindOnce(&BackgroundSyncManager::EventCompleteDidGetDelay,
                        weak_ptr_factory_.GetWeakPtr(),

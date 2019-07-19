@@ -15,6 +15,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/background_sync_parameters.h"
+#include "content/public/browser/background_sync_registration.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -195,21 +196,21 @@ int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(
 }
 
 base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
-    const url::Origin& origin,
-    int64_t min_interval,
-    int num_attempts,
-    blink::mojom::BackgroundSyncType sync_type,
+    const content::BackgroundSyncRegistration& registration,
     content::BackgroundSyncParameters* parameters) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(parameters);
 
+  int num_attempts = registration.num_attempts();
+
   if (!num_attempts) {
     // First attempt.
-    switch (sync_type) {
+    switch (registration.sync_type()) {
       case blink::mojom::BackgroundSyncType::ONE_SHOT:
         return base::TimeDelta();
       case blink::mojom::BackgroundSyncType::PERIODIC:
-        int site_engagement_factor = GetSiteEngagementPenalty(origin.GetURL());
+        int site_engagement_factor =
+            GetSiteEngagementPenalty(registration.origin().GetURL());
         if (!site_engagement_factor)
           return base::TimeDelta::Max();
 
@@ -217,7 +218,7 @@ base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
             site_engagement_factor *
             parameters->min_periodic_sync_events_interval.InMilliseconds();
         return base::TimeDelta::FromMilliseconds(
-            std::max(min_interval, effective_gap_ms));
+            std::max(registration.options()->min_interval, effective_gap_ms));
     }
   }
 

@@ -9,6 +9,7 @@
 
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/background_sync_registration.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom-shared.h"
 
@@ -63,13 +64,11 @@ class CONTENT_EXPORT BackgroundSyncController {
       blink::mojom::BackgroundSyncType sync_type) {}
 
   // Calculates the delay after which the next sync event should be fired
-  // for a BackgroundSync registration. The delay is based on the |sync_type|.
+  // for a BackgroundSync registration. The delay is based on the sync_type of
+  // the |registration|.
   virtual base::TimeDelta GetNextEventDelay(
-      const url::Origin& origin,
-      int64_t min_interval,
-      int num_attempts,
-      blink::mojom::BackgroundSyncType sync_type,
-      BackgroundSyncParameters* parameters) = 0;
+      const BackgroundSyncRegistration& registration,
+      content::BackgroundSyncParameters* parameters) = 0;
 
   // Keeps the browser alive to allow a one-shot Background Sync registration
   // to finish firing one sync event.
