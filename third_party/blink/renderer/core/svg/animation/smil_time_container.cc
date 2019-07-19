@@ -441,7 +441,7 @@ void SMILTimeContainer::ApplyAnimations(double elapsed) {
 #endif
   HeapVector<Member<SVGSMILElement>> animations_to_apply;
   for (auto& sandwich : active_sandwiches_) {
-    if (SVGSMILElement* animation = sandwich->UpdateAnimationValues())
+    if (SVGSMILElement* animation = sandwich->ApplyAnimationValues())
       animations_to_apply.push_back(animation);
   }
   active_sandwiches_.Shrink(0);
@@ -453,14 +453,11 @@ void SMILTimeContainer::ApplyAnimations(double elapsed) {
     return;
   }
 
+  // Everything bellow handles "discard" elements.
   UseCounter::Count(&GetDocument(), WebFeature::kSVGSMILAnimationAppliedEffect);
 
   std::sort(animations_to_apply.begin(), animations_to_apply.end(),
             PriorityCompare(elapsed));
-
-  // Apply results to target elements.
-  for (const auto& timed_element : animations_to_apply)
-    timed_element->ApplyResultsToTarget();
 
 #if DCHECK_IS_ON()
   prevent_scheduled_animations_changes_ = false;
