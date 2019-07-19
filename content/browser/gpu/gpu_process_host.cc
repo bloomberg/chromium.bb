@@ -1086,6 +1086,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
 #if defined(OS_LINUX)
   int child_flags = gpu_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF
                                          : ChildProcessHost::CHILD_NORMAL;
+#elif defined(OS_MACOSX)
+  int child_flags = ChildProcessHost::CHILD_GPU;
 #else
   int child_flags = ChildProcessHost::CHILD_NORMAL;
 #endif
