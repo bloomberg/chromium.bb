@@ -54,6 +54,10 @@ source_set("identity_manager") {
     deps += [ "//components/user_manager" ]
   }
 
+  if (is_ios) {
+    deps += [ "ios" ]
+  }
+
   allow_circular_includes_from = [
     # This target is a pair with internal/identity_manager. They always go
     # together and include headers from each other.
