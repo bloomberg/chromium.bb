@@ -1031,7 +1031,54 @@ class ResourceScheduler::Client
       }
     }
 
+    if (IsNonDelayableRequestAnticipated()) {
+      return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
+    }
+
     return START_REQUEST;
+  }
+
+  // Returns true if a non-delayable request is expected to arrive soon.
+  bool IsNonDelayableRequestAnticipated() const {
+    base::Optional<double> http_rtt_multiplier =
+        params_for_network_quality_
+            .http_rtt_multiplier_for_proactive_throttling;
+
+    if (!http_rtt_multiplier.has_value())
+      return false;
+
+    if (http_rtt_multiplier <= 0)
+      return false;
+
+    // Currently, the heuristic for predicting the arrival of a non-delayable
+    // request makes a prediction only if a non-delayable request has started
+    // previously in this resource scheduler client.
+    if (!last_non_delayable_request_start_.has_value())
+      return false;
+
+    base::Optional<base::TimeDelta> http_rtt =
+        network_quality_estimator_->GetHttpRTT();
+    if (!http_rtt.has_value())
+      return false;
+
+    base::TimeDelta threshold_for_proactive_throttling =
+        http_rtt.value() * http_rtt_multiplier.value();
+    base::TimeDelta time_since_last_non_delayable_request_start =
+        tick_clock_->NowTicks() - last_non_delayable_request_start_.value();
+
+    if (time_since_last_non_delayable_request_start >=
+        threshold_for_proactive_throttling) {
+      // Last non-delayable request started more than
+      // |threshold_for_proactive_throttling| back. The algorithm estimates that
+      // by this time any non-delayable that were triggered by requests that
+      // started long time back would have arrived at resource scheduler by now.
+      //
+      // On the other hand, if the last non-delayable request started recently,
+      // then it's likely that the parsing of the response from that recently
+      // started request would trigger additional non-delayable requests.
+      return false;
+    }
+    return true;
   }
 
   // It is common for a burst of messages to come from the renderer which
