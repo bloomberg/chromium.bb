@@ -443,11 +443,11 @@ testcase.saveFileDialogDefaultFilter = async () => {
 };
 
 /**
- * Check context menu on File List for file picker dialog.
- * File picker dialog displays fewer menu options. For example copy/paste
- * commands are disabled.
- * Right-click on a file/folder should show context menu, whereas right-clicking
- * on the blank parts of file list should NOT display the context menu.
+ * Tests that context menu on File List for file picker dialog.
+ * File picker dialog displays fewer menu options than full Files app. For
+ * example copy/paste commands are disabled. Right-click on a file/folder should
+ * show context menu, whereas right-clicking on the blank parts of file list
+ * should NOT display the context menu.
  *
  * crbug.com/917975 crbug.com/983507.
  */
