@@ -1,14 +1,8 @@
 <!doctype html>
-<html lang=en>
-<head>
+<title>WPT WebGPU CTS</title>
 <meta charset=utf-8>
-<meta name="variant" content="?q=cts:buffers/mapWriteAsync:">
-<meta name="variant" content="?q=cts:buffers/setSubData:">
-<meta name="variant" content="?q=cts:command_buffer/basic:">
-<meta name="variant" content="?q=cts:command_buffer/compute/basic:">
-<meta name="variant" content="?q=cts:command_buffer/copies:">
-<meta name="variant" content="?q=cts:command_buffer/render/basic:">
-<title></title>
+<link rel="help" href="https://gpuweb.github.io/gpuweb/">
+
 <script src=/resources/testharness.js></script>
 <script src=/resources/testharnessreport.js></script>
 <style>
@@ -18,9 +12,13 @@
     height: 15em;
 }
 </style>
-</head>
-<body>
+
 <textarea id=results></textarea>
 <script type=module src="runtime/wpt.js"></script>
-</body>
-</html>
+
+<meta name="variant" content="?q=cts:buffers/mapWriteAsync:">
+<meta name="variant" content="?q=cts:buffers/setSubData:">
+<meta name="variant" content="?q=cts:command_buffer/basic:">
+<meta name="variant" content="?q=cts:command_buffer/compute/basic:">
+<meta name="variant" content="?q=cts:command_buffer/copies:">
+<meta name="variant" content="?q=cts:command_buffer/render/basic:">
