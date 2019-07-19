@@ -4675,43 +4675,37 @@
     },
 
     'viz_chromeos_fyi_gtests': {
-       'viz_content_unittests': {
-        'args': [
-          '--enable-features=VizDisplayCompositor',
-        ],
-        'test': 'content_unittests',
-       },
-       'viz_interactive_ui_tests': {
+       'non_viz_interactive_ui_tests': {
          'args': [
-          '--enable-features=VizDisplayCompositor',
+          '--disable-features=VizDisplayCompositor',
         ],
          'test': 'interactive_ui_tests',
        },
     },
 
     'viz_chromeos_gtests': {
-      # TODO(jonross): remove once Viz field trials for ChromeOS are enabled.
-      'viz_browser_tests': {
+      # TODO(kylechar): Remove once VizDisplayCompositor is lauched on CrOS.
+      'non_viz_browser_tests': {
         'args': [
-          '--enable-features=VizDisplayCompositor',
+          '--disable-features=VizDisplayCompositor',
         ],
         'swarming': {
           'shards': 10,
         },
         'test': 'browser_tests',
       },
-      'viz_content_browsertests': {
+      'non_viz_content_browsertests': {
         'args': [
-          '--enable-features=VizDisplayCompositor',
+          '--disable-features=VizDisplayCompositor',
         ],
         'swarming': {
           'shards': 10,
         },
         'test': 'content_browsertests',
       },
-      'viz_content_unittests': {
+      'non_viz_content_unittests': {
         'args': [
-          '--enable-features=VizDisplayCompositor',
+          '--disable-features=VizDisplayCompositor',
         ],
         'test': 'content_unittests',
       },
