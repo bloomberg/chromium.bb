@@ -33,12 +33,26 @@
       }
 
       #general-error-container {
-        height: 80px;
+        height: 56px;
       }
 
       #config-error-container {
-        height: 64px;
+        height: 40px;
         margin-top: 16px;
+      }
+
+      #general-error-message,
+      #config-error-message {
+        color: var(--settings-error-color);
+      }
+
+      .inner-error-container {
+        display: flex;
+      }
+
+      iron-icon[icon='cr:error'] {
+        fill: var(--settings-error-color);
+        margin-inline-end: 8px;
       }
 
       #rememberPasswordContainer {
@@ -61,8 +75,9 @@
         </h2>
 
         <div id="general-error-container">
-          <div hidden="[[!showError_(generalErrorText_)]]">
-            <iron-icon id="general-error-icon" icon="cr:warning"></iron-icon>
+          <div class="inner-error-container"
+              hidden="[[!showError_(generalErrorText_)]]">
+            <iron-icon id="error-icon" icon="cr:error"></iron-icon>
             <div id="general-error-message">[[generalErrorText_]]</div>
           </div>
         </div>
@@ -129,8 +144,9 @@
           </settings-textarea>
 
           <div id="config-error-container">
-            <div hidden="[[!showError_(configErrorText_)]]">
-              <iron-icon id="general-error-icon" icon="cr:warning"></iron-icon>
+            <div class="inner-error-container"
+                hidden="[[!showError_(configErrorText_)]]">
+              <iron-icon id="error-icon" icon="cr:error"></iron-icon>
               <div id="config-error-message">[[configErrorText_]]</div>
             </div>
           </div>
