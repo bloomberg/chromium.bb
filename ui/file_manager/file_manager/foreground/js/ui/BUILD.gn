@@ -457,6 +457,7 @@ js_library("providers_menu") {
 
 js_library("search_box") {
   deps = [
+    ":autocomplete_list",
     "../../../common/js:file_type",
     "../../../common/js:metrics",
     "../../../common/js:util",
@@ -465,9 +466,16 @@ js_library("search_box") {
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr:ui",
-    "//ui/webui/resources/js/cr/ui:autocomplete_list",
   ]
   externs_list = [ "../../../../externs/search_item.js" ]
+}
+
+js_library("autocomplete_list") {
+  deps = [
+    "//ui/webui/resources/js/cr/ui:list",
+    "//ui/webui/resources/js/cr/ui:list_single_selection_model",
+    "//ui/webui/resources/js/cr/ui:position_util",
+  ]
 }
 
 js_library("suggest_apps_dialog") {
