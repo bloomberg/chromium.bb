@@ -1337,6 +1337,13 @@ void RecordDownloadResumed(bool has_strong_validators) {
                             has_strong_validators);
 }
 
+void RecordDownloadConnectionInfo(
+    net::HttpResponseInfo::ConnectionInfo connection_info) {
+  base::UmaHistogramEnumeration(
+      "Download.ConnectionInfo", connection_info,
+      net::HttpResponseInfo::ConnectionInfo::NUM_OF_CONNECTION_INFOS);
+}
+
 #if defined(OS_ANDROID)
 void RecordFirstBackgroundDownloadInterruptReason(
     DownloadInterruptReason reason,
