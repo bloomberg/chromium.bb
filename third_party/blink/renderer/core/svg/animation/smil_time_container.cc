@@ -79,7 +79,13 @@ void SMILTimeContainer::Schedule(SVGSMILElement* animation,
   DCHECK(!prevent_scheduled_animations_changes_);
 #endif
 
-  auto key = std::make_pair(target, attribute_name);
+  // Separate out Discard and AnimateMotion
+  QualifiedName name = (animation->HasTagName(svg_names::kAnimateMotionTag) ||
+                        animation->HasTagName(svg_names::kDiscardTag))
+                           ? animation->TagQName()
+                           : attribute_name;
+
+  auto key = std::make_pair(target, name);
   auto& sandwich =
       scheduled_animations_.insert(key, nullptr).stored_value->value;
   if (!sandwich)
@@ -101,7 +107,13 @@ void SMILTimeContainer::Unschedule(SVGSMILElement* animation,
   DCHECK(!prevent_scheduled_animations_changes_);
 #endif
 
-  auto key = std::make_pair(target, attribute_name);
+  // Separate out Discard and AnimateMotion
+  QualifiedName name = (animation->HasTagName(svg_names::kAnimateMotionTag) ||
+                        animation->HasTagName(svg_names::kDiscardTag))
+                           ? animation->TagQName()
+                           : attribute_name;
+
+  auto key = std::make_pair(target, name);
   AnimationsMap::iterator it = scheduled_animations_.find(key);
   CHECK(it != scheduled_animations_.end());
 
