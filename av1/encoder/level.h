@@ -54,7 +54,7 @@ typedef struct {
 } FrameWindowBuffer;
 
 typedef struct {
-  int max_bitrate;  // In bps.
+  int max_bitrate;  // Max bitrate in any 1-second window, in bps.
   int max_tile_size;
   int max_superres_tile_width;
   int min_cropped_tile_width;
@@ -62,7 +62,8 @@ typedef struct {
   int tile_width_is_valid;
   int min_frame_width;
   int min_frame_height;
-  double total_time_encoded;
+  double total_compressed_size;  // In bytes.
+  double total_time_encoded;     // In seconds.
   double min_cr;
 } AV1LevelStats;
 

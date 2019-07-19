@@ -747,7 +747,7 @@ static void get_temporal_parallel_params(int scalability_mode_idc,
 
 static TARGET_LEVEL_FAIL_ID check_level_constraints(
     const AV1LevelInfo *const level_info, AV1_LEVEL level, int tier,
-    int is_still_picture, BITSTREAM_PROFILE profile) {
+    int is_still_picture, BITSTREAM_PROFILE profile, int check_bitrate) {
   const DECODER_MODEL *const decoder_model = &level_info->decoder_models[level];
   const DECODER_MODEL_STATUS decoder_model_status = decoder_model->status;
   if (decoder_model_status != DECODER_MODEL_OK &&
@@ -851,11 +851,16 @@ static TARGET_LEVEL_FAIL_ID check_level_constraints(
       break;
     }
 
-    const double max_bitrate =
-        get_max_bitrate(target_level_spec, tier, profile);
-    if ((double)level_stats->max_bitrate > max_bitrate) {
-      fail_id = BITRATE_TOO_HIGH;
-      break;
+    if (check_bitrate) {
+      // Check average bitrate instead of max_bitrate.
+      const double bitrate_limit =
+          get_max_bitrate(target_level_spec, tier, profile);
+      const double avg_bitrate = level_stats->total_compressed_size * 8.0 /
+                                 level_stats->total_time_encoded;
+      if (avg_bitrate > bitrate_limit) {
+        fail_id = BITRATE_TOO_HIGH;
+        break;
+      }
     }
 
     if (target_level_spec->level > SEQ_LEVEL_5_1) {
@@ -1083,8 +1088,8 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
     level_stats->min_frame_width = AOMMIN(level_stats->min_frame_width, width);
     level_stats->min_frame_height =
         AOMMIN(level_stats->min_frame_height, height);
-    if (show_frame) level_stats->total_time_encoded = total_time_encoded;
     level_stats->min_cr = AOMMIN(level_stats->min_cr, compression_ratio);
+    level_stats->total_compressed_size += (double)size;
 
     // update level_spec
     // TODO(kyslov@) update all spec fields
@@ -1108,6 +1113,7 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
           show_frame ? count_frames(buffer, TICKS_PER_SEC) : 0;
       scan_past_frames(buffer, encoded_frames_in_last_second, level_spec,
                        level_stats);
+      level_stats->total_time_encoded = total_time_encoded;
     }
 
     DECODER_MODEL *const decoder_models = level_info->decoder_models;
@@ -1120,7 +1126,7 @@ void av1_update_level_info(AV1_COMP *cpi, size_t size, int64_t ts_start,
     if (target_level < SEQ_LEVELS) {
       const int tier = seq_params->tier[i];
       const TARGET_LEVEL_FAIL_ID fail_id = check_level_constraints(
-          level_info, target_level, tier, is_still_picture, profile);
+          level_info, target_level, tier, is_still_picture, profile, 0);
       if (fail_id != TARGET_LEVEL_OK) {
         const int target_level_major = 2 + (target_level >> 2);
         const int target_level_minor = target_level & 3;
@@ -1145,7 +1151,7 @@ aom_codec_err_t av1_get_seq_level_idx(const AV1_COMP *cpi, int *seq_level_idx) {
     assert(level_info != NULL);
     for (int level = 0; level < SEQ_LEVELS; ++level) {
       const TARGET_LEVEL_FAIL_ID fail_id = check_level_constraints(
-          level_info, level, tier, is_still_picture, profile);
+          level_info, level, tier, is_still_picture, profile, 1);
       if (fail_id == TARGET_LEVEL_OK) {
         seq_level_idx[op] = level;
         break;
