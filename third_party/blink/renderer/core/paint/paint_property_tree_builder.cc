@@ -1734,6 +1734,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
     if (!content_to_parent_space.IsIdentity()) {
       TransformPaintPropertyNode::State state{
           TransformationMatrix(content_to_parent_space)};
+      state.flattens_inherited_transform =
+          context_.current.should_flatten_inherited_transform;
       OnUpdate(properties_->UpdateReplacedContentTransform(
           *context_.current.transform, std::move(state)));
     } else {
@@ -1751,6 +1753,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
     // replaced object fit.
     if (properties_->ReplacedContentTransform()) {
       context_.current.transform = properties_->ReplacedContentTransform();
+      // TODO(pdr): SVG does not support 3D transforms so this should be
+      // should_flatten_inherited_transform = true.
       context_.current.should_flatten_inherited_transform = false;
       context_.current.rendering_context_id = 0;
     }

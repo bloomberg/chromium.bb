@@ -3479,6 +3479,24 @@ TEST_P(PaintPropertyTreeBuilderTest, ReplacedSvgContentWithIsolation) {
             svg_properties->ReplacedContentTransform());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ReplacedContentTransformFlattening) {
+  SetBodyInnerHTML(R"HTML(
+    <svg id="svg"
+        style="transform: perspective(100px) rotateY(0deg);"
+        width="100px"
+        height="200px"
+        viewBox="50 50 100 100">
+    </svg>
+  )HTML");
+
+  const auto* svg = ToLayoutBoxModelObject(GetLayoutObjectByElementId("svg"));
+  const auto* svg_properties = svg->FirstFragment().PaintProperties();
+
+  const auto* replaced_transform = svg_properties->ReplacedContentTransform();
+  EXPECT_TRUE(replaced_transform->FlattensInheritedTransform());
+  EXPECT_TRUE(replaced_transform->Parent()->FlattensInheritedTransform());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, ContainPaintOrStyleLayoutTreeState) {
   for (const char* containment : {"paint", "style layout"}) {
     SCOPED_TRACE(containment);
