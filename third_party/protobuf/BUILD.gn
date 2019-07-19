@@ -146,7 +146,10 @@ static_library("protobuf_full") {
     "../zlib",
   ]
 
-  configs += [ ":protobuf_warnings" ]
+  configs += [
+    ":protobuf_warnings",
+    "../zlib:zlib_config",
+  ]
   public_configs = [ ":protobuf_config" ]
 
   defines = [ "HAVE_ZLIB" ]
