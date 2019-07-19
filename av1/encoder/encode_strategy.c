@@ -875,7 +875,7 @@ void av1_update_ref_frame_map(AV1_COMP *cpi,
     default: assert(0 && "unknown type");
   }
 
-  if (!cpi->ext_refresh_frame_flags_pending) return;
+  return;
 
   // If check_frame_refs_short_signaling() decided to set
   // frame_refs_short_signaling=1 then we update remapped_ref_idx[] here.  Every
