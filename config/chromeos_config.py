@@ -2187,8 +2187,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'gale',
       'gandof',
       'glados',
-      'gonzo'
-      'grunt',
+      'gonzo',
       'guado',
       'guado-accelerator',
       'hana',
@@ -2274,6 +2273,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'betty', # crbug.com/984316
       'betty-pi-arc', # Promote when we replace betty-arcnext. b/129410042
       'eve', # crbug.com/984952
+      'grunt', # crbug.com/984614
   ])
 
 
