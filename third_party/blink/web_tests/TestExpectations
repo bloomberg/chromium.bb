@@ -4657,8 +4657,6 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-scroll-00
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-vertical-001.html [ Skip ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-vertical-002.html [ Skip ]
 
-crbug.com/785940 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Failure Pass ]
-
 crbug.com/912362 external/wpt/web-animations/timing-model/timelines/timelines.html [ Failure ]
 
 # Decoding test timeout on Win7. Marked flaky to get imported in case it's flaky timeout everywhere.

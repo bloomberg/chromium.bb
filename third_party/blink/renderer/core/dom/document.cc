@@ -7533,6 +7533,11 @@ AnimationClock& Document::GetAnimationClock() {
   return GetPage()->Animator().Clock();
 }
 
+const AnimationClock& Document::GetAnimationClock() const {
+  DCHECK(GetPage());
+  return GetPage()->Animator().Clock();
+}
+
 Document& Document::EnsureTemplateDocument() {
   if (IsTemplateDocument())
     return *this;
