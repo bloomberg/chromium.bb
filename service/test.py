@@ -120,7 +120,7 @@ def DebugInfoTest(sysroot_path):
   return result.returncode == 0
 
 
-def CreateMoblabVm(workspace_dir, image_dir):
+def CreateMoblabVm(workspace_dir, chroot_dir, image_dir):
   """Create the moblab VMs.
 
   Assumes that image_dir is in exactly the state it was after building
@@ -128,12 +128,13 @@ def CreateMoblabVm(workspace_dir, image_dir):
 
   Args:
     workspace_dir (str): Workspace for the moblab VM.
+    chroot_dir (str): Directory containing the chroot for the moblab VM.
     image_dir (str): Directory containing the VM image.
 
   Returns:
     MoblabVm: The resulting VM.
   """
-  vms = moblab_vm.MoblabVm(workspace_dir)
+  vms = moblab_vm.MoblabVm(workspace_dir, chroot_dir=chroot_dir)
   vms.Create(image_dir, dut_image_dir=image_dir, create_vm_images=False)
   return vms
 

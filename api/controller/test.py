@@ -163,7 +163,7 @@ def MoblabVmTest(input_proto, _output_proto):
 
   # Now we can run the tests.
   with chroot.tempdir() as workspace_dir, chroot.tempdir() as results_dir:
-    vms = test.CreateMoblabVm(workspace_dir, image_payload_dir)
+    vms = test.CreateMoblabVm(workspace_dir, chroot.path, image_payload_dir)
     cache_dir = test.PrepareMoblabVmImageCache(vms, builder, cache_payload_dirs)
     test.RunMoblabVmTest(chroot, vms, builder, cache_dir, results_dir)
     test.ValidateMoblabVmTest(results_dir)

@@ -166,8 +166,9 @@ class CreateMoblabVmTest(MoblabVmTestCase):
     self.mock_vm_create = self.PatchObject(moblab_vm.MoblabVm, 'Create')
 
   def testBasic(self):
-    vms = test.CreateMoblabVm(self.tempdir, self.image_dir)
+    vms = test.CreateMoblabVm(self.tempdir, self.chroot.path, self.image_dir)
     self.assertEqual(vms.workspace, self.tempdir)
+    self.assertEqual(vms.chroot, self.chroot.path)
     self.assertEqual(
         self.mock_vm_create.call_args_list,
         [mock.call(self.image_dir, dut_image_dir=self.image_dir,
