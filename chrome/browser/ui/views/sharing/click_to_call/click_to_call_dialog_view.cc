@@ -24,9 +24,8 @@ namespace {
 ClickToCallDialogView* g_bubble_ = nullptr;
 
 // Icon sizes in DIP.
-// TODO(yasmo): Confirm the number with the team designer.
-constexpr int kPrimaryIconSize = 20;
-constexpr int kPrimaryIconBorderWidth = 6;
+constexpr int kPrimaryIconSize = 16;
+constexpr int kPrimaryIconBorderWidth = 8;
 
 SkColor GetColorfromTheme() {
   const ui::NativeTheme* native_theme =
