@@ -196,7 +196,6 @@ crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.htm
 crbug.com/841567 virtual/threaded/fast/scrolling/absolute-position-behind-scrollbar.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/fixed-position-behind-scrollbar.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/listbox-wheel-event.html [ Failure Pass ]
-crbug.com/841567 virtual/fractional_scrolling_threaded/fast/scrolling/listbox-wheel-event.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/overflow-scrollability.html [ Failure Pass Timeout ]
 crbug.com/841567 virtual/threaded/fast/scrolling/scrollbar-tickmarks-hittest.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/same-page-navigate.html [ Failure Pass ]
@@ -230,14 +229,8 @@ crbug.com/857490 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 
 # Currently on main thread scrolling path, scrollend gets fired without waiting for scroll/fling snap animation. (The virtual/threaded version of the test passes.)
 crbug.com/907601 fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
-crbug.com/907601 virtual/fractional_scrolling/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
-crbug.com/907601 virtual/fractional_scrolling_threaded/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
 crbug.com/907601 virtual/scroll_customization/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
 crbug.com/907601 external/wpt/dom/events/scrolling/scrollend-event-fired-after-snap.html [ Skip ]
-
-# Tests not yet passing with Blink FractionalScrollOffsets enabled.
-crbug.com/414283 virtual/fractional_scrolling/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure Pass ]
-crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure Pass ]
 
 crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
 
@@ -751,7 +744,6 @@ crbug.com/591099 fast/multicol/vertical-lr/float-paginate.html [ Failure ]
 crbug.com/591099 fast/multicol/vertical-lr/nested-columns.html [ Failure ]
 crbug.com/591099 fast/multicol/vertical-lr/unsplittable-inline-block.html [ Failure ]
 crbug.com/591099 fast/text/ellipsis-with-self-painting-layer.html [ Failure ]
-crbug.com/591099 virtual/fractional_scrolling_threaded/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Failure ]
 
 # LayoutNG failures that needs to be triaged
 crbug.com/591099 fast/text/selection/selection-rect-line-height-too-small.html [ Failure ]
@@ -2150,7 +2142,6 @@ crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-transform-
 crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/responsive/viewport-unit-transform-responsive.html [ Skip ]
 crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Timeout ]
 crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/responsive/viewport-unit-translate-responsive.html [ Skip ]
-crbug.com/891427 virtual/fractional_scrolling/fast/scrolling/editor-command-scroll-page-scale.html [ Pass Failure ]
 crbug.com/891427 fast/replaced/replaced-breaking.html [ Failure ]
 crbug.com/891427 virtual/android/fullscreen/rendering/backdrop-video.html [ Failure ]
 crbug.com/891427 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
@@ -2355,10 +2346,8 @@ crbug.com/770028 external/wpt/dom/events/document-level-touchmove-event-listener
 # Only virtual/threaded version of these tests pass (or running them with --enable-threaded-compositing).
 crbug.com/936891 fast/scrolling/document-level-touchmove-event-listener-passive-by-default.html [ Skip ]
 crbug.com/936891 virtual/scroll_customization/fast/scrolling/document-level-touchmove-event-listener-passive-by-default.html [ Skip ]
-crbug.com/936891 virtual/fractional_scrolling/fast/scrolling/document-level-touchmove-event-listener-passive-by-default.html [ Skip ]
 crbug.com/936891 fast/scrolling/document-level-wheel-event-listener-passive-by-default.html [ Skip ]
 crbug.com/936891 virtual/scroll_customization/fast/scrolling/document-level-wheel-event-listener-passive-by-default.html [ Skip ]
-crbug.com/936891 virtual/fractional_scrolling/fast/scrolling/document-level-wheel-event-listener-passive-by-default.html [ Skip ]
 
 crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Failure ]
 
@@ -2883,7 +2872,6 @@ crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ Failur
 crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ Failure ]
 
 ### Tests added for non-fast scrolling regions that break as a result of compositor scrolling.
-crbug.com/817600 virtual/fractional_scrolling_threaded/fast/scrolling/non-composited-scroller-in-sticky.html [ Failure ]
 crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-absolute-scroller.html [ Failure ]
 crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-position-fixed-scroller.html [ Failure ]
 crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-sticky.html [ Failure ]
@@ -3135,10 +3123,6 @@ crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/mouse-autoscrolling-on-scroll
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
@@ -3147,10 +3131,6 @@ crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-scroll
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
@@ -5309,7 +5289,6 @@ crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/aut
 
 # Does not work on Mac
 crbug.com/793771 [ Mac ] media/controls/scrubbing.html [ Skip ]
-crbug.com/916902 [ Mac ] virtual/fractional_scrolling/fast/scrolling/overflow-scrollability.html [ Skip ]
 
 # Different paths may have different anti-aliasing pixels 2018-02-21
 skbug.com/7641 external/wpt/css/css-paint-api/paint2d-paths.https.html [ Failure Pass ]
@@ -5777,7 +5756,6 @@ crbug.com/719023 fast/mediarecorder/MediaRecorder-isTypeSupported-avc1.html [ Pa
 crbug.com/719023 media_capabilities/encodingInfo-avc1.html [ Pass Failure ]
 
 # Sheriff 2019-01-07
-crbug.com/919492 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/overflow-scrollability.html [ Timeout Pass ]
 crbug.com/919587 [ Linux ] virtual/threaded/fast/idle-callback/idle_periods.html [ Pass Failure ]
 
 # WebRTC Unified Plan
@@ -6243,7 +6221,6 @@ crbug.com/959129 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline
 # Sheriff 2019-06-20
 crbug.com/977153 [ Mac ] fast/forms/validation-bubble-appearance-wrap.html [ Pass Failure ]
 crbug.com/976045 fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
-crbug.com/976045 virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/976045 virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/976045 virtual/threaded/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 
