@@ -32,6 +32,12 @@
 
 namespace device {
 
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+using mojom::UsbTransferType;
+
 void HandleTransferCompletion(PlatformUsbTransferHandle transfer);
 
 namespace {

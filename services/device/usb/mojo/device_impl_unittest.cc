@@ -40,6 +40,8 @@ using mojom::UsbControlTransferRecipient;
 using mojom::UsbControlTransferType;
 using mojom::UsbDevicePtr;
 using mojom::UsbIsochronousPacketPtr;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
 
 namespace usb {
 

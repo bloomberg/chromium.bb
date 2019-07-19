@@ -26,6 +26,8 @@ namespace device {
 
 using mojom::UsbControlTransferParamsPtr;
 using mojom::UsbControlTransferRecipient;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
 
 namespace usb {
 

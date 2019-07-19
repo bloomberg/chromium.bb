@@ -28,6 +28,12 @@
 
 namespace device {
 
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+using mojom::UsbTransferType;
+
 namespace {
 
 uint8_t ConvertEndpointDirection(UsbTransferDirection direction) {
