@@ -25,4 +25,16 @@ TEST(FontFallbackLinuxTest, NoType1InFallbackFonts) {
   }
 }
 
+TEST(FontFallbackLinuxTest, Fallbacks) {
+  Font default_font("sans", 13);
+  std::vector<Font> fallbacks = GetFallbackFonts(default_font);
+  EXPECT_FALSE(fallbacks.empty());
+
+  // The first fallback should be 'DejaVu Sans' which is the default linux
+  // fonts. The fonts on linux are mock with test_fonts (see
+  // third_party/tests_font).
+  if (!fallbacks.empty())
+    EXPECT_EQ(fallbacks[0].GetFontName(), "DejaVu Sans");
+}
+
 }  // namespace gfx
