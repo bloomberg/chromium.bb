@@ -191,4 +191,40 @@ bool StructTraits<arc::mojom::SizeDataView, gfx::Size>::Read(
   out->SetSize(data.width(), data.height());
   return true;
 }
+
+// static
+bool StructTraits<arc::mojom::MediaVideoFramePlaneDataView,
+                  media::VideoFrameLayout::Plane>::
+    Read(arc::mojom::MediaVideoFramePlaneDataView data,
+         media::VideoFrameLayout::Plane* out) {
+  out->offset = data.offset();
+  out->stride = data.stride();
+  out->size = data.size();
+  return true;
+}
+
+// static
+bool StructTraits<arc::mojom::VideoFrameLayoutDataView,
+                  std::unique_ptr<media::VideoFrameLayout>>::
+    Read(arc::mojom::VideoFrameLayoutDataView data,
+         std::unique_ptr<media::VideoFrameLayout>* out) {
+  media::VideoPixelFormat format;
+  gfx::Size coded_size;
+  std::vector<media::VideoFrameLayout::Plane> planes;
+  if (!data.ReadFormat(&format) || !data.ReadCodedSize(&coded_size) ||
+      !data.ReadPlanes(&planes)) {
+    return false;
+  }
+
+  base::Optional<media::VideoFrameLayout> layout =
+      media::VideoFrameLayout::CreateWithPlanes(
+          format, coded_size, std::move(planes), data.buffer_addr_align(),
+          data.modifier());
+  if (!layout)
+    return false;
+
+  *out = std::make_unique<media::VideoFrameLayout>(*layout);
+  return true;
+}
+
 }  // namespace mojo

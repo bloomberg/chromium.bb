@@ -93,3 +93,22 @@ struct Size {
   int32 width;
   int32 height;
 };
+
+// The information of a plane of a video frame that describes how physical
+// buffers are allocated.
+struct MediaVideoFramePlane {
+  int32 stride;
+  uint32 offset;
+  uint32 size;
+};
+
+// The layout that describes how physical buffers are allocated for a video
+// frame.
+struct VideoFrameLayout {
+  VideoPixelFormat format;
+  Size coded_size;
+  array<MediaVideoFramePlane> planes;
+  bool is_multi_planar;
+  uint32 buffer_addr_align;
+  uint64 modifier;
+};

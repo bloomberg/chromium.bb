@@ -117,4 +117,18 @@ if (is_chromeos) {
       "//ui/base/ime:text_input_types",
     ]
   }
+
+  source_set("unit_tests") {
+    testonly = true
+    sources = [
+      "video_accelerator_struct_traits_unittest.cc",
+    ]
+
+    deps = [
+      ":common",
+      "//media",
+      "//mojo/public/cpp/test_support:test_utils",
+      "//testing/gtest",
+    ]
+  }
 }
