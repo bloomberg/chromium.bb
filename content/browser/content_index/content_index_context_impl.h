@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_CONTENT_INDEX_CONTENT_INDEX_CONTEXT_H_
-#define CONTENT_BROWSER_CONTENT_INDEX_CONTENT_INDEX_CONTEXT_H_
+#ifndef CONTENT_BROWSER_CONTENT_INDEX_CONTENT_INDEX_CONTEXT_IMPL_H_
+#define CONTENT_BROWSER_CONTENT_INDEX_CONTENT_INDEX_CONTEXT_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "content/browser/content_index/content_index_database.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_index_context.h"
 
 namespace content {
 
@@ -17,11 +18,12 @@ class ServiceWorkerContextWrapper;
 
 // Owned by the Storage Partition. Components that want to query or modify the
 // Content Index database should hold a reference to this.
-class CONTENT_EXPORT ContentIndexContext
-    : public base::RefCountedThreadSafe<ContentIndexContext,
+class CONTENT_EXPORT ContentIndexContextImpl
+    : public ContentIndexContext,
+      public base::RefCountedThreadSafe<ContentIndexContextImpl,
                                         BrowserThread::DeleteOnIOThread> {
  public:
-  ContentIndexContext(
+  ContentIndexContextImpl(
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
 
@@ -30,22 +32,27 @@ class CONTENT_EXPORT ContentIndexContext
 
   ContentIndexDatabase& database();
 
+  // ContentIndexContent implementation.
+  void GetIcon(int64_t service_worker_registration_id,
+               const std::string& description_id,
+               base::OnceCallback<void(SkBitmap)> icon_callback) override;
+
  private:
-  friend class base::DeleteHelper<ContentIndexContext>;
-  friend class base::RefCountedThreadSafe<ContentIndexContext,
+  friend class base::DeleteHelper<ContentIndexContextImpl>;
+  friend class base::RefCountedThreadSafe<ContentIndexContextImpl,
                                           BrowserThread::DeleteOnIOThread>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
 
-  ~ContentIndexContext();
+  ~ContentIndexContextImpl() override;
 
   ContentIndexDatabase content_index_database_;
 
   // Whether initialization DB tasks should run on start-up.
   bool should_initialize_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ContentIndexContext);
+  DISALLOW_COPY_AND_ASSIGN(ContentIndexContextImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_CONTENT_INDEX_CONTENT_INDEX_CONTEXT_H_
+#endif  // CONTENT_BROWSER_CONTENT_INDEX_CONTENT_INDEX_CONTEXT_IMPL_H_

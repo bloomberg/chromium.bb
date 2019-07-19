@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/content_index/content_index_context.h"
+#include "content/browser/content_index/content_index_context_impl.h"
 
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
@@ -10,7 +10,7 @@
 
 namespace content {
 
-ContentIndexContext::ContentIndexContext(
+ContentIndexContextImpl::ContentIndexContextImpl(
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : content_index_database_(browser_context,
@@ -19,7 +19,7 @@ ContentIndexContext::ContentIndexContext(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-void ContentIndexContext::InitializeOnIOThread() {
+void ContentIndexContextImpl::InitializeOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!should_initialize_)
@@ -28,16 +28,26 @@ void ContentIndexContext::InitializeOnIOThread() {
   content_index_database_.InitializeProviderWithEntries();
 }
 
-void ContentIndexContext::Shutdown() {
+void ContentIndexContextImpl::GetIcon(
+    int64_t service_worker_registration_id,
+    const std::string& description_id,
+    base::OnceCallback<void(SkBitmap)> icon_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  content_index_database_.GetIcon(service_worker_registration_id,
+                                  description_id, std::move(icon_callback));
+}
+
+void ContentIndexContextImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content_index_database_.Shutdown();
 }
 
-ContentIndexDatabase& ContentIndexContext::database() {
+ContentIndexDatabase& ContentIndexContextImpl::database() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return content_index_database_;
 }
 
-ContentIndexContext::~ContentIndexContext() = default;
+ContentIndexContextImpl::~ContentIndexContextImpl() = default;
 
 }  // namespace content
