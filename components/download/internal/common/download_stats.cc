@@ -1180,10 +1180,6 @@ void RecordParallelizableDownloadStats(
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Download.EstimatedTimeSavedWithParallelDownload",
         time_saved.InMilliseconds(), 0, kMillisecondsPerHour, 50);
-  } else {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Download.EstimatedTimeWastedWithParallelDownload",
-        -time_saved.InMilliseconds(), 0, kMillisecondsPerHour, 50);
   }
 }
 
