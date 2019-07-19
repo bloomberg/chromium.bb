@@ -31,6 +31,9 @@ class CC_EXPORT SchedulerSettings {
   // compositor, and enabled for renderers (unless there are too few cores).
   bool main_frame_before_activation_enabled = false;
 
+  // Whether commits should happen directly to the active tree, skipping the
+  // pending tree. This is turned on only for the UI compositor (and in some
+  // tests).
   bool commit_to_active_tree = false;
   bool using_synchronous_renderer_compositor = false;
   bool enable_latency_recovery = true;
