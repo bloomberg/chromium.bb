@@ -4120,6 +4120,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantRoutines)},
 #endif  // OS_CHROMEOS
 
+#if defined(OS_CHROMEOS)
+    {"gaia-action-buttons", flag_descriptions::kGaiaActionButtonsName,
+     flag_descriptions::kGaiaActionButtonsDescription, kOsCrOSOwnerOnly,
+     FEATURE_VALUE_TYPE(chromeos::features::kGaiaActionButtons)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

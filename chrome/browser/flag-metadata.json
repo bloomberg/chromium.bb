@@ -2141,6 +2141,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "gaia-action-buttons",
+    "owners": [ "jeroendh", "rsorokin" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "gdi-text-printing",
     "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76
