@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/canvas/offscreencanvas2d/offscreen_canvas_rendering_context_2d.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/renderer/bindings/modules/v8/offscreen_rendering_context.h"
 #include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
@@ -517,6 +518,7 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
 
 TextMetrics* OffscreenCanvasRenderingContext2D::measureText(
     const String& text) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
   const Font& font = AccessFont();
 
   TextDirection direction;
@@ -526,9 +528,13 @@ TextMetrics* OffscreenCanvasRenderingContext2D::measureText(
   else
     direction = ToTextDirection(GetState().GetDirection());
 
-  return MakeGarbageCollected<TextMetrics>(font, direction,
-                                           GetState().GetTextBaseline(),
-                                           GetState().GetTextAlign(), text);
+  TextMetrics* text_metrics = MakeGarbageCollected<TextMetrics>(
+      font, direction, GetState().GetTextBaseline(), GetState().GetTextAlign(),
+      text);
+  base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+  base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
+      "OffscreenCanvas.TextMetrics.MeasureText", elapsed);
+  return text_metrics;
 }
 
 const Font& OffscreenCanvasRenderingContext2D::AccessFont() {

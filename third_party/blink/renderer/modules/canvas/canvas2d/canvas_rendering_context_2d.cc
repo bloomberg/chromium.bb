@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -788,6 +789,7 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   if (!canvas()->GetDocument().GetFrame())
     return MakeGarbageCollected<TextMetrics>();
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
   canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
 
   const Font& font = AccessFont();
@@ -799,9 +801,13 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   else
     direction = ToTextDirection(GetState().GetDirection(), canvas());
 
-  return MakeGarbageCollected<TextMetrics>(font, direction,
-                                           GetState().GetTextBaseline(),
-                                           GetState().GetTextAlign(), text);
+  TextMetrics* text_metrics = MakeGarbageCollected<TextMetrics>(
+      font, direction, GetState().GetTextBaseline(), GetState().GetTextAlign(),
+      text);
+  base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+  base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
+      "Canvas.TextMetrics.MeasureText", elapsed);
+  return text_metrics;
 }
 
 void CanvasRenderingContext2D::DrawTextInternal(
