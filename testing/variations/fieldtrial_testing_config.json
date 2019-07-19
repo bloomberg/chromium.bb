@@ -2468,7 +2468,7 @@
             ]
         }
     ],
-    "HeapProfilerReporting": [
+    "HeapProfiling": [
         {
             "platforms": [
                 "android",
