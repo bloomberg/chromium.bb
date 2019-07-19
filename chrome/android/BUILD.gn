@@ -129,6 +129,16 @@ if (enable_vr) {
   }
 }
 
+if (enable_feed_in_chrome) {
+  android_resources("chrome_feed_java_resources") {
+    resource_dirs = [ "//chrome/android/feed/core/java/res" ]
+    deps = [
+      ":chrome_app_java_resources",
+    ]
+    custom_package = "org.chromium.chrome.feed"
+  }
+}
+
 if (notouch_build) {
   android_resources("chrome_touchless_java_resources") {
     resource_dirs = [ "//chrome/android/touchless/java/res" ]
@@ -446,6 +456,9 @@ android_library("chrome_java") {
     deps += [ ":chrome_vr_java_resources" ]
   }
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
+  if (enable_feed_in_chrome) {
+    deps += [ ":chrome_feed_java_resources" ]
+  }
   if (notouch_build) {
     deps += [ ":chrome_touchless_java_resources" ]
   }
