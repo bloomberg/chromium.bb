@@ -730,6 +730,46 @@ const FeatureEntry::Choice kMemlogSamplingRateChoices[] = {
      heap_profiling::kMemlogSamplingRate5MB},
 };
 
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+const FeatureEntry::FeatureParam kOmniboxDocumentProviderServerScoring[] = {
+    {"DocumentUseServerScore", "true"},
+    {"DocumentUseClientScore", "false"},
+    {"DocumentCapScorePerRank", "false"},
+    {"DocumentBoostOwned", "false"},
+};
+const FeatureEntry::FeatureParam
+    kOmniboxDocumentProviderServerScoringCappedByRank[] = {
+        {"DocumentUseServerScore", "true"},
+        {"DocumentUseClientScore", "false"},
+        {"DocumentCapScorePerRank", "true"},
+        {"DocumentBoostOwned", "true"},
+};
+const FeatureEntry::FeatureParam kOmniboxDocumentProviderClientScoring[] = {
+    {"DocumentUseServerScore", "false"},
+    {"DocumentUseClientScore", "true"},
+    {"DocumentCapScorePerRank", "false"},
+    {"DocumentBoostOwned", "false"},
+};
+const FeatureEntry::FeatureParam
+    kOmniboxDocumentProviderServerAndClientScoring[] = {
+        {"DocumentUseServerScore", "true"},
+        {"DocumentUseClientScore", "true"},
+        {"DocumentCapScorePerRank", "false"},
+        {"DocumentBoostOwned", "false"},
+};
+
+const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
+    {"server scores", kOmniboxDocumentProviderServerScoring,
+     base::size(kOmniboxDocumentProviderServerScoring), nullptr},
+    {"server scores capped by rank",
+     kOmniboxDocumentProviderServerScoringCappedByRank,
+     base::size(kOmniboxDocumentProviderServerScoringCappedByRank), nullptr},
+    {"client scores", kOmniboxDocumentProviderClientScoring,
+     base::size(kOmniboxDocumentProviderClientScoring), nullptr},
+    {"server and client scores", kOmniboxDocumentProviderServerAndClientScoring,
+     base::size(kOmniboxDocumentProviderServerAndClientScoring), nullptr}};
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches4[] = {
@@ -2580,7 +2620,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"omnibox-drive-suggestions",
      flag_descriptions::kOmniboxDriveSuggestionsName,
      flag_descriptions::kOmniboxDriveSuggestionsDescriptions, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kDocumentProvider)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kDocumentProvider,
+                                    kOmniboxDocumentProviderVariations,
+                                    "OmniboxBundledExperimentV1")},
     {"omnibox-deduplicate-drive-urls",
      flag_descriptions::kOmniboxDeduplicateDriveUrlsName,
      flag_descriptions::kOmniboxDeduplicateDriveUrlsDescription, kOsDesktop,

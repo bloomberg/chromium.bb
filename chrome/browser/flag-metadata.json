@@ -2496,13 +2496,13 @@
   },
   {
     "name": "omnibox-drive-suggestions",
-    "owners": [ "skare", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
   },
   {
     "name": "omnibox-deduplicate-drive-urls",
-    "owners": [ "skare", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
   },
   {
     "name": "omnibox-experimental-keyword-mode",
