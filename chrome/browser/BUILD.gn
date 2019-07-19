@@ -4138,7 +4138,7 @@ jumbo_split_static_library("browser") {
     ]
     deps += [
       "//components/printing/browser",
-      "//components/services/pdf_compositor/public/interfaces",
+      "//components/services/pdf_compositor/public/mojom",
       "//printing",
     ]
 
