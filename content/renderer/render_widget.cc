@@ -1371,6 +1371,11 @@ void RenderWidget::WillBeginCompositorFrame() {
   // is done.
   UpdateTextInputState();
   UpdateSelectionBounds();
+
+  if (auto* frame_widget = GetFrameWidget()) {
+    frame_widget->UpdateRenderThrottlingStatus(is_throttled_,
+                                               subtree_throttled_);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2334,6 +2339,9 @@ void RenderWidget::OnSetInheritedEffectiveTouchAction(
 
 void RenderWidget::OnUpdateRenderThrottlingStatus(bool is_throttled,
                                                   bool subtree_throttled) {
+  is_throttled_ = is_throttled;
+  subtree_throttled_ = subtree_throttled;
+
   if (auto* frame_widget = GetFrameWidget())
     frame_widget->UpdateRenderThrottlingStatus(is_throttled, subtree_throttled);
 }
