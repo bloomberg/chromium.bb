@@ -9606,6 +9606,7 @@ Called by update_net_error_codes.py.-->
   <int value="52" label="HID permission data"/>
   <int value="54" label="Screen wake lock"/>
   <int value="55" label="System wake lock"/>
+  <int value="56" label="Legacy cookie access"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
