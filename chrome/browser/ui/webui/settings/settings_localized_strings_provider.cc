@@ -1750,7 +1750,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
               autofill::PersonalDataManagerFactory::GetForProfile(profile),
               profile->GetPrefs(),
               ProfileSyncServiceFactory::GetForProfile(profile),
-              /*is_test_mode=*/false));
+              /*is_test_mode=*/false,
+              /*log_manager=*/nullptr));
 
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
