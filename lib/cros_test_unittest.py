@@ -429,6 +429,18 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     self.CheckChromeTestCommands(test_exe, test_label, self._tester.build_dir,
                                  test_args)
 
+  def testFetchResults(self):
+    """Verify that results files/directories are copied from the DUT."""
+    self._tester.results_src = ['/tmp/results/cmd_results',
+                                '/tmp/results/filename.txt',
+                                '/tmp/results/test_results']
+    self._tester.results_dest_dir = self.TempFilePath('results_dir')
+    osutils.SafeMakedirs(self._tester.results_dest_dir)
+    self._tester.Run()
+    for filename in self._tester.results_src:
+      self.assertCommandContains(['scp', 'root@localhost:%s' % filename,
+                                  self._tester.results_dest_dir])
+
   def testParserErrorChromeTest(self):
     """Verify we get a parser error for --chrome-test when no args are given."""
     self.CheckParserError('--chrome-test', '--chrome-test')
