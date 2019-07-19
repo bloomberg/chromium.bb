@@ -986,6 +986,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         OnClearClip(properties_->ClearMaskClip());
       }
 
+      CompositorElementId mask_compositor_element_id;
+      if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+          (mask_clip || has_spv1_composited_clip_path)) {
+        mask_compositor_element_id = CompositorElementIdFromUniqueObjectId(
+            object_.UniqueId(), CompositorElementIdNamespace::kEffectMask);
+      }
+
       EffectPaintPropertyNode::State state;
       state.local_transform_space = context_.current.transform;
       state.output_clip = output_clip;
@@ -1005,6 +1012,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           layer->UpdateCompositorFilterOperationsForBackdropFilter(
               state.backdrop_filter, &state.backdrop_filter_bounds);
           layer->ClearBackdropFilterOnEffectNodeDirty();
+          if (!state.backdrop_filter.IsEmpty()) {
+            state.backdrop_mask_element_id = mask_compositor_element_id;
+          }
         }
       }
       if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
@@ -1073,10 +1083,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         mask_state.blend_mode = SkBlendMode::kDstIn;
         if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
             RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-          mask_state.compositor_element_id =
-              CompositorElementIdFromUniqueObjectId(
-                  object_.UniqueId(),
-                  CompositorElementIdNamespace::kEffectMask);
+          mask_state.compositor_element_id = mask_compositor_element_id;
         }
         OnUpdate(properties_->UpdateMask(*properties_->Effect(),
                                          std::move(mask_state)));
