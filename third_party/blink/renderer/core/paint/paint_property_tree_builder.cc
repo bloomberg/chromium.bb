@@ -1826,6 +1826,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
 
       state.scrolls_outer_viewport = box.IsGlobalRootScroller();
 
+      // TODO(bokan): We probably don't need to pass ancestor reasons down the
+      // scroll tree. On the compositor, in
+      // LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint, we walk up
+      // the scroll tree looking at all the ancestor MainThreadScrollingReasons.
+      // https://crbug.com/985127.
       auto ancestor_reasons =
           context_.current.scroll->GetMainThreadScrollingReasons();
       state.main_thread_scrolling_reasons =
@@ -1968,14 +1973,17 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
 
   if (object_.IsLayoutView()) {
     const auto* initial_fixed_transform = context_.fixed_position.transform;
-    const auto* initial_fixed_scroll = context_.fixed_position.scroll;
 
     context_.fixed_position = context_.current;
     context_.fixed_position.fixed_position_children_fixed_to_root = true;
 
-    // Fixed position transform and scroll nodes should not be affected.
+    // Fixed position transform should not be affected.
     context_.fixed_position.transform = initial_fixed_transform;
-    context_.fixed_position.scroll = initial_fixed_scroll;
+
+    // Scrolling in a fixed position element should chain up through the
+    // LayoutView.
+    if (properties_->Scroll())
+      context_.fixed_position.scroll = properties_->Scroll();
     if (properties_->ScrollTranslation()) {
       // Also undo the ScrollOrigin part in paint offset that was added when
       // ScrollTranslation was updated.
