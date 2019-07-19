@@ -60641,6 +60641,12 @@ Full version information for the fingerprint enum values:
   <int value="3" label="kOtherFailure"/>
 </enum>
 
+<enum name="WebApkDistributor">
+  <int value="0" label="Browser"/>
+  <int value="1" label="Device Policy"/>
+  <int value="2" label="Other"/>
+</enum>
+
 <enum name="WebApkGooglePlayInstallResult">
   <int value="0" label="Success"/>
   <int value="1" label="Install delegate unavailable"/>
@@ -60723,6 +60729,12 @@ Full version information for the fingerprint enum values:
   <int value="0" label="Enough space to install."/>
   <int value="1" label="Enough space to install after freeing up cache."/>
   <int value="2" label="Not enough space to install."/>
+</enum>
+
+<enum name="WebApkLifetimeLaunchCount">
+  <int value="0" label="Never launched."/>
+  <int value="1" label="Launched once."/>
+  <int value="2" label="Launched multiple times."/>
 </enum>
 
 <enum name="WebApkOpenResult">
