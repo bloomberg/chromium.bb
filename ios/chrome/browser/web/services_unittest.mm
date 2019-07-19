@@ -4,8 +4,8 @@
 
 #include "base/macros.h"
 #include "base/test/bind_test_util.h"
-#include "components/services/patch/public/interfaces/constants.mojom.h"
-#include "components/services/patch/public/interfaces/file_patcher.mojom.h"
+#include "components/services/patch/public/mojom/constants.mojom.h"
+#include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/public/interfaces/unzipper.mojom.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
