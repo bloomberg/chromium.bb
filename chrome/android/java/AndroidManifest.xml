@@ -343,6 +343,16 @@ by a child template that "extends" this file.
             </intent-filter>
         </activity>
 
+        <activity android:name="org.chromium.chrome.browser.media.PictureInPictureActivity"
+                  android:exported="false"
+                  android:noHistory="true"
+                  android:theme="@style/Theme.Chromium.Activity"
+                  android:excludeFromRecents="true"
+                  android:configChanges=
+                       "screenSize|smallestScreenSize|screenLayout|orientation"
+                  {{ self.supports_video_persistence() }}>
+        </activity>
+
         <!-- We have a separate activity-alias for audio so that we can disable audio handling
              without disabling video and image handling. We need this because there are memory
              restrictions for music players on Android Go, so we want to only handle video and
