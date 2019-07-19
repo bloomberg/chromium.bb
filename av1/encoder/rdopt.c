@@ -9992,6 +9992,7 @@ static int compound_type_rd(
       comp_model_rd_cur = est_rd[best_type];
     }
     if (best_type == COMPOUND_AVERAGE) restore_dst_buf(xd, *tmp_dst, 1);
+    // Update stats for best compound type
     if (best_rd_cur < *rd) {
       update_best_info(mbmi, rd, &best_type_stats, best_rd_cur,
                        comp_model_rd_cur, rs2);
@@ -10001,12 +10002,14 @@ static int compound_type_rd(
   // If COMPOUND_AVERAGE is not valid, use the spare buffer
   if (valid_comp_types[0] != COMPOUND_AVERAGE) restore_dst_buf(xd, *tmp_dst, 1);
 
+  // Loop over valid compound types
   for (int i = 0; i < valid_type_count; i++) {
     cur_type = valid_comp_types[i];
     comp_model_rd_cur = INT64_MAX;
     tmp_rate_mv = *rate_mv;
     best_rd_cur = INT64_MAX;
 
+    // Case COMPOUND_AVERAGE and COMPOUND_DISTWTD
     if (cur_type < COMPOUND_WEDGE) {
       update_mbmi_for_compound_type(mbmi, cur_type);
       rs2 = masked_type_cost[cur_type];
@@ -10017,6 +10020,8 @@ static int compound_type_rd(
           av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
                                         AOM_PLANE_Y, AOM_PLANE_Y);
           if (cur_type == COMPOUND_AVERAGE) *is_luma_interp_done = 1;
+
+          // Compute RD cost for the current type
           RD_STATS est_rd_stats;
           const int64_t tmp_rd_thresh = AOMMIN(*rd, rd_thresh) - mode_rd;
           const int64_t est_rd =
@@ -10045,8 +10050,11 @@ static int compound_type_rd(
       // use spare buffer for following compound type try
       if (cur_type == COMPOUND_AVERAGE) restore_dst_buf(xd, *tmp_dst, 1);
     } else {
+      // Handle masked compound types
       update_mbmi_for_compound_type(mbmi, cur_type);
       rs2 = masked_type_cost[cur_type];
+      // Evaluate COMPOUND_WEDGE / COMPOUND_DIFFWTD if approximated cost is
+      // within threshold
       int64_t approx_rd = ((*rd / cpi->max_comp_type_rd_threshold_div) *
                            cpi->max_comp_type_rd_threshold_mul);
 
@@ -10060,6 +10068,7 @@ static int compound_type_rd(
             best_type_stats.comp_best_model_rd, &comp_model_rd_cur);
       }
     }
+    // Update stats for best compound type
     if (best_rd_cur < *rd) {
       update_best_info(mbmi, rd, &best_type_stats, best_rd_cur,
                        comp_model_rd_cur, rs2);
