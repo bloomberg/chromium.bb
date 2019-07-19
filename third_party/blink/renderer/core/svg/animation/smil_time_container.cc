@@ -391,8 +391,8 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
   if (!GetDocument().IsActive())
     return;
 
-  UpdateAnimations(elapsed, seek_to_time);
-  ApplyAnimations(elapsed);
+  UpdateAnimationTimings(elapsed, seek_to_time);
+  ApplyAnimationValues(elapsed);
 
   SMILTime earliest_fire_time = SMILTime::Unresolved();
   for (auto& sandwich : scheduled_animations_) {
@@ -407,7 +407,8 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
   ScheduleAnimationFrame(delay_time);
 }
 
-void SMILTimeContainer::UpdateAnimations(double elapsed, bool seek_to_time) {
+void SMILTimeContainer::UpdateAnimationTimings(double elapsed,
+                                               bool seek_to_time) {
   DCHECK(GetDocument().IsActive());
 
 #if DCHECK_IS_ON()
@@ -447,7 +448,7 @@ void SMILTimeContainer::UpdateAnimations(double elapsed, bool seek_to_time) {
   }
 }
 
-void SMILTimeContainer::ApplyAnimations(double elapsed) {
+void SMILTimeContainer::ApplyAnimationValues(double elapsed) {
 #if DCHECK_IS_ON()
   prevent_scheduled_animations_changes_ = true;
 #endif
