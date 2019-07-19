@@ -23,7 +23,7 @@ from chromite.cbuildbot import trybot_patch_pool
 
 
 REMOTE = 'remote'
-STAGING = 'staging'
+INFRA_TESTING = 'infra-testing'
 LOCAL = 'local'
 CBUILDBOT = 'cbuildbot'
 
@@ -95,7 +95,7 @@ def CbuildbotArgs(options):
   """
   args = []
 
-  if options.where in (REMOTE, STAGING):
+  if options.where in (REMOTE, INFRA_TESTING):
     if options.production:
       args.append('--buildbot')
     else:
@@ -302,15 +302,15 @@ def PushLocalPatches(local_patches, user_email, dryrun=False):
   return extra_args
 
 
-def RunRemote(site_config, options, patch_pool, staging=False,
+def RunRemote(site_config, options, patch_pool, infra_testing=False,
               production=False):
   """Schedule remote tryjobs."""
   logging.info('Scheduling remote tryjob(s): %s',
                ', '.join(options.build_configs))
 
   luci_builder = None
-  if staging:
-    luci_builder = config_lib.LUCI_BUILDER_STAGING
+  if infra_testing:
+    luci_builder = config_lib.LUCI_BUILDER_INFRA_TESTING
   # Production tryjobs actually execute in the Release group
   elif production:
     luci_builder = config_lib.LUCI_BUILDER_RELEASE
@@ -440,7 +440,7 @@ def VerifyOptions(options, site_config):
       if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
         cros_build_lib.Die('No confirmation.')
 
-  if options.where in (REMOTE, STAGING):
+  if options.where in (REMOTE, INFRA_TESTING):
     if options.buildroot:
       cros_build_lib.Die('--buildroot is not used for remote tryjobs.')
 
@@ -517,8 +517,9 @@ List Examples:
         default=REMOTE,
         help='Run the tryjob on a remote builder. (default)')
     where_ex.add_argument(
-        '--staging', dest='where', action='store_const', const=STAGING,
-        help='Run the tryjob against the staging swarming pool.')
+        '--infra-testing', dest='where', action='store_const',
+        const=INFRA_TESTING,
+        help='Run the tryjob against the infra-testing swarming pool.')
     where_ex.add_argument(
         '--swarming', dest='where', action='store_const', const=REMOTE,
         help='Run the tryjob on a swarming builder. (deprecated)')
@@ -651,8 +652,9 @@ List Examples:
 
     if self.options.where == REMOTE:
       return RunRemote(site_config, self.options, patch_pool)
-    elif self.options.where == STAGING:
-      return RunRemote(site_config, self.options, patch_pool, staging=True)
+    elif self.options.where == INFRA_TESTING:
+      return RunRemote(site_config, self.options, patch_pool,
+                       infra_testing=True)
     elif self.options.production:
       return RunRemote(site_config, self.options, patch_pool, production=True)
     elif self.options.where == LOCAL:

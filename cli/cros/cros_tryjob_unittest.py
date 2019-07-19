@@ -620,8 +620,8 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--remote-trybot', '-b', 'master', '-g', '123',
     ])
 
-  def testCbuildbotArgsSimpleStaging(self):
-    args_in = ['--staging', '-g', '123', 'foo-build']
+  def testCbuildbotArgsSimpleInfraTesting(self):
+    args_in = ['--infra-testing', '-g', '123', 'foo-build']
 
     args_out = self.helperOptionsToCbuildbotArgs(args_in)
 
