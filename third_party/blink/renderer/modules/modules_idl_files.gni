@@ -861,6 +861,7 @@ modules_dictionary_idl_files =
           "xr/xr_reference_space_event_init.idl",
           "xr/xr_render_state_init.idl",
           "xr/xr_session_event_init.idl",
+          "xr/xr_session_init.idl",
           "xr/xr_webgl_layer_init.idl",
           "xr/xr_world_tracking_state_init.idl",
         ],
