@@ -341,7 +341,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
-#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
@@ -454,7 +453,6 @@
 #include "components/crash/content/browser/crash_memory_metrics_collector_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/java_interfaces.h"
-#include "services/proxy_resolver/proxy_resolver_service.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
@@ -4122,15 +4120,6 @@ void ChromeContentBrowserClient::RunServiceInstanceOnIOThread(
         std::move(*receiver));
     return;
   }
-
-#if defined(OS_ANDROID)
-  if (identity.name() == proxy_resolver::mojom::kProxyResolverServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<proxy_resolver::ProxyResolverService>(
-            std::move(*receiver)));
-    return;
-  }
-#endif
 
   if (identity.name() == heap_profiling::mojom::kServiceName) {
     heap_profiling::HeapProfilingService::GetServiceFactory().Run(
