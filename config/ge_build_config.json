@@ -1576,14 +1576,6 @@
         {
           "board_name": "coral",
           "name": "epaulette",
-          "test_suites": [
-            "bvt-inline",
-            "bvt-tast-cq",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild",
-            "bvt-tast-informational"
-          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
@@ -1624,14 +1616,6 @@
         {
           "board_name": "coral",
           "name": "rabbid",
-          "test_suites": [
-            "bvt-inline",
-            "bvt-tast-cq",
-            "bvt-arc",
-            "bvt-cq",
-            "bvt-perbuild",
-            "bvt-tast-informational"
-          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
