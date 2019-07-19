@@ -29,20 +29,14 @@ class UsbDevice;
 // UsbDeviceHandle class provides basic I/O related functionalities.
 class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
  public:
-  struct IsochronousPacket {
-    uint32_t length;
-    uint32_t transferred_length;
-    mojom::UsbTransferStatus status;
-  };
-
   using ResultCallback = base::OnceCallback<void(bool)>;
   using TransferCallback =
       base::OnceCallback<void(mojom::UsbTransferStatus,
                               scoped_refptr<base::RefCountedBytes>,
                               size_t)>;
-  using IsochronousTransferCallback =
-      base::OnceCallback<void(scoped_refptr<base::RefCountedBytes>,
-                              const std::vector<IsochronousPacket>& packets)>;
+  using IsochronousTransferCallback = base::OnceCallback<void(
+      scoped_refptr<base::RefCountedBytes>,
+      std::vector<mojom::UsbIsochronousPacketPtr> packets)>;
 
   virtual scoped_refptr<UsbDevice> GetDevice() const = 0;
 
