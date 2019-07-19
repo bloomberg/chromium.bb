@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
@@ -132,8 +133,9 @@ std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
     auto inserted = device_names.insert(device->client_name());
     if (inserted.second) {
       device_candidates.emplace_back(
-          device->guid(), device->client_name(), device->device_type(),
-          device->last_updated_timestamp(), device_capabilities);
+          device->guid(), base::UTF8ToUTF16(device->client_name()),
+          device->device_type(), device->last_updated_timestamp(),
+          device_capabilities);
     }
   }
 

@@ -9,6 +9,7 @@
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_constants.h"
 #include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
@@ -106,9 +107,9 @@ MATCHER_P(ProtoEquals, message, "") {
 
 // Check the call to sharing service when a device is chosen.
 TEST_F(ClickToCallSharingDialogControllerTest, OnDeviceChosen) {
-  SharingDeviceInfo sharing_device_info(kReceiverGuid, kReceiverName,
-                                        sync_pb::SyncEnums::TYPE_PHONE,
-                                        base::Time::Now(), 1);
+  SharingDeviceInfo sharing_device_info(
+      kReceiverGuid, base::UTF8ToUTF16(kReceiverName),
+      sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_click_to_call_message()->set_phone_number(
       kPhoneNumber);

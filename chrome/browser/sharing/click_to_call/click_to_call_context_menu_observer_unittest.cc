@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/mock_render_view_context_menu.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_constants.h"
@@ -104,7 +105,7 @@ class ClickToCallContextMenuObserverTest : public testing::Test {
     for (int i = 0; i < count; i++) {
       devices.emplace_back(
           base::StrCat({"guid", base::NumberToString(i)}),
-          base::StrCat({"name", base::NumberToString(i)}),
+          base::UTF8ToUTF16(base::StrCat({"name", base::NumberToString(i)})),
           sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(),
           static_cast<int>(SharingDeviceCapability::kTelephony));
     }

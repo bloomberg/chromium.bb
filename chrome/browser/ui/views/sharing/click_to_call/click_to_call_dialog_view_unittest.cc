@@ -93,11 +93,11 @@ class ClickToCallDialogViewTest : public ChromeViewsTestBase {
 
   std::vector<SharingDeviceInfo> SetUpDevices() {
     std::vector<SharingDeviceInfo> devices;
-    devices.emplace_back("device_guid_1", "device1",
+    devices.emplace_back("device_guid_1", base::UTF8ToUTF16("device1"),
                          sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
-    devices.emplace_back("device_guid_2", "device2",
+    devices.emplace_back("device_guid_2", base::UTF8ToUTF16("device2"),
                          sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
-    devices.emplace_back("device_guid_3", "device3",
+    devices.emplace_back("device_guid_3", base::UTF8ToUTF16("device3"),
                          sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
     return devices;
   }
@@ -133,9 +133,9 @@ TEST_F(ClickToCallDialogViewTest, PopulateDialogView) {
 }
 
 TEST_F(ClickToCallDialogViewTest, DevicePressed) {
-  SharingDeviceInfo sharing_device_info("device_guid_2", "device2",
-                                        sync_pb::SyncEnums::TYPE_PHONE,
-                                        base::Time::Now(), 1);
+  SharingDeviceInfo sharing_device_info(
+      "device_guid_2", base::UTF8ToUTF16("device2"),
+      sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
   EXPECT_CALL(*controller_.get(), GetSyncedDevices())
       .WillOnce(Return(ByMove(std::move(devices_))));
   EXPECT_CALL(*controller_.get(), GetApps())

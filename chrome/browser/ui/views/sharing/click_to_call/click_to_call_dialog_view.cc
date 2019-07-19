@@ -170,8 +170,7 @@ void ClickToCallDialogView::InitListView() {
   for (const auto& device : devices_) {
     auto dialog_button = std::make_unique<HoverButton>(
         this, CreateDeviceIcon(device.device_type()),
-        base::UTF8ToUTF16(device.human_readable_name()),
-        base::string16() /* Subtitle */);
+        device.human_readable_name(), /* subtitle= */ base::string16());
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
     dialog_buttons_.push_back(AddChildView(std::move(dialog_button)));
@@ -182,7 +181,7 @@ void ClickToCallDialogView::InitListView() {
   for (const auto& app : apps_) {
     auto dialog_button =
         std::make_unique<HoverButton>(this, CreateIconView(app.icon), app.name,
-                                      base::string16() /* Subtitle */);
+                                      /* subtitle= */ base::string16());
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
     dialog_buttons_.push_back(AddChildView(std::move(dialog_button)));

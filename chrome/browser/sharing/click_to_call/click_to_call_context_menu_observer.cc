@@ -72,13 +72,13 @@ void ClickToCallContextMenuObserver::InitMenu(
         IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
             IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
-            base::UTF8ToUTF16(devices_[0].human_readable_name())));
+            devices_[0].human_readable_name()));
 #else
     proxy_->AddMenuItemWithIcon(
         IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
             IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
-            base::UTF8ToUTF16(devices_[0].human_readable_name())),
+            devices_[0].human_readable_name()),
         GetContextMenuIcon());
 #endif
   } else {
@@ -105,8 +105,7 @@ void ClickToCallContextMenuObserver::BuildSubMenu() {
   for (const auto& device : devices_) {
     if (command_id > kSubMenuLastDeviceCommandId)
       break;
-    sub_menu_model_->AddItem(command_id++,
-                             base::UTF8ToUTF16(device.human_readable_name()));
+    sub_menu_model_->AddItem(command_id++, device.human_readable_name());
   }
 }
 
