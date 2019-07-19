@@ -7,6 +7,7 @@ export function encodeSelectively(s: string): string {
   ret = ret.replace(/%2C/g, ',');
   ret = ret.replace(/%2F/g, '/');
   ret = ret.replace(/%3A/g, ':');
+  ret = ret.replace(/%3D/g, '=');
   ret = ret.replace(/%7B/g, '{');
   ret = ret.replace(/%7D/g, '}');
   return ret;
@@ -16,7 +17,7 @@ export function makeQueryString(spec: TestSpecID, testcase?: TestCaseID): string
   let s = spec.suite + ':';
   s += spec.path + ':';
   if (testcase !== undefined) {
-    s += testcase.test + ':';
+    s += testcase.test + '=';
     if (testcase.params) {
       s += JSON.stringify(testcase.params);
     }

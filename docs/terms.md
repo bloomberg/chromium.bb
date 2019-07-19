@@ -170,7 +170,7 @@ Each filter may match one of:
 - `S:s` In one suite `S`, all specs whose paths start with `s` (which may be empty).
 - `S:s:t` In one spec `S:s`, all tests whose names start with `t` (which may be empty).
 - `S:s:t~c` In one test `S:s:t`, all cases whose params are a superset of `c`.
-- `S:s:t:c` In one test `S:s:t`, the single case whose params equal `c` (empty string = `{}`).
+- `S:s:t=c` In one test `S:s:t`, the single case whose params equal `c` (empty string = `{}`).
 
 **Type:** `TestFilter`
 

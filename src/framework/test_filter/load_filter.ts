@@ -51,12 +51,12 @@ export async function loadFilter(
     // - cts:buffers/mapWriteAsync:basic~{}
     // - cts:buffers/mapWriteAsync:basic~{filter:"params"}
     return new FilterByParamsMatch({ suite, path }, test, params).iterate(loader);
-  } else if (token === ':') {
-    // - cts:buffers/mapWriteAsync:basic:
-    // - cts:buffers/mapWriteAsync:basic:{}
-    // - cts:buffers/mapWriteAsync:basic:{exact:"params"}
+  } else if (token === '=') {
+    // - cts:buffers/mapWriteAsync:basic=
+    // - cts:buffers/mapWriteAsync:basic={}
+    // - cts:buffers/mapWriteAsync:basic={exact:"params"}
     return new FilterByParamsExact({ suite, path }, test, params).iterate(loader);
   } else {
-    throw new Error("invalid character after test name; must be '~' or ':'");
+    throw new Error("invalid character after test name; must be '~' or '='");
   }
 }

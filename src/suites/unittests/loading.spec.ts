@@ -10,6 +10,7 @@ import { TestFilterResult } from '../../framework/test_filter/index.js';
 import { objectEquals } from '../../framework/util/index.js';
 
 import { UnitTest } from './unit_test.js';
+import { makeQueryString } from '../../framework/url_query.js';
 
 const listingData: { [k: string]: TestSuiteListingEntry[] } = {
   suite1: [
@@ -84,10 +85,10 @@ class FakeTestFileLoader implements TestFileLoader {
 }
 
 class LoadingTest extends UnitTest {
-  loader: TestLoader = new TestLoader(new FakeTestFileLoader());
+  static readonly loader: TestLoader = new TestLoader(new FakeTestFileLoader());
 
   async load(filters: string[]): Promise<TestFilterResult[]> {
-    return Array.from(await this.loader.loadTestsFromCmdLine(filters));
+    return Array.from(await LoadingTest.loader.loadTestsFromCmdLine(filters));
   }
 
   async singleGroup(query: string): Promise<RunCase[]> {
@@ -149,11 +150,19 @@ g.test('partial group', async t => {
 });
 
 g.test('partial test/exact', async t => {
-  t.expect((await t.singleGroup('suite1:foo:hello:')).length === 1);
-  t.expect((await t.singleGroup('suite1:baz:zed:')).length === 0);
-  t.expect((await t.singleGroup('suite1:baz:zed:')).length === 0);
-  t.expect((await t.singleGroup('suite1:baz:zed:{}')).length === 0);
-  t.expect((await t.singleGroup('suite1:baz:zed:{"a":1,"b":2}')).length === 1);
+  t.expect((await t.singleGroup('suite1:foo:hello=')).length === 1);
+  t.expect((await t.singleGroup('suite1:baz:zed=')).length === 0);
+  t.expect((await t.singleGroup('suite1:baz:zed=')).length === 0);
+  t.expect((await t.singleGroup('suite1:baz:zed={}')).length === 0);
+  t.expect((await t.singleGroup('suite1:baz:zed={"a":1,"b":2}')).length === 1);
+});
+
+g.test('partial test/makeQueryString', async t => {
+  const s = makeQueryString(
+    { suite: 'suite1', path: 'baz' },
+    { test: 'zed', params: { a: 1, b: 2 } }
+  );
+  t.expect((await t.singleGroup(s)).length === 1);
 });
 
 g.test('partial test/match', async t => {
