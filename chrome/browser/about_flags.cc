@@ -4111,6 +4111,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDeferAllScriptDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kDeferAllScriptPreviews)},
 
+#if defined(OS_CHROMEOS)
+    {"enable-assistant-routines",
+     flag_descriptions::kEnableAssistantRoutinesName,
+     flag_descriptions::kEnableAssistantRoutinesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantRoutines)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

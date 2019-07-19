@@ -856,6 +856,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-assistant-routines",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-async-dns",
     "owners": [ "ericorth", "net-dev" ],
     "expiry_milestone": 81
