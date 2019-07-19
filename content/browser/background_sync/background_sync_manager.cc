@@ -79,9 +79,10 @@ constexpr int kMinIntervalForOneShotSync = -1;
 const char kBackgroundSyncUserDataKey[] = "BackgroundSyncUserData";
 
 void RecordFailureAndPostError(
+    BackgroundSyncType sync_type,
     BackgroundSyncStatus status,
     BackgroundSyncManager::StatusAndRegistrationCallback callback) {
-  BackgroundSyncMetrics::CountRegisterFailure(status);
+  BackgroundSyncMetrics::CountRegisterFailure(sync_type, status);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), status, nullptr));
@@ -347,7 +348,8 @@ void BackgroundSyncManager::Register(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+    RecordFailureAndPostError(GetBackgroundSyncType(options),
+                              BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
                               std::move(callback));
     return;
   }
@@ -659,7 +661,8 @@ void BackgroundSyncManager::RegisterCheckIfHasMainFrame(
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
+    RecordFailureAndPostError(GetBackgroundSyncType(options),
+                              BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
                               std::move(callback));
     return;
   }
@@ -679,7 +682,8 @@ void BackgroundSyncManager::RegisterDidCheckIfMainFrame(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!has_main_frame_client) {
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NOT_ALLOWED,
+    RecordFailureAndPostError(GetBackgroundSyncType(options),
+                              BACKGROUND_SYNC_STATUS_NOT_ALLOWED,
                               std::move(callback));
     return;
   }
@@ -693,13 +697,15 @@ void BackgroundSyncManager::RegisterImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+    RecordFailureAndPostError(GetBackgroundSyncType(options),
+                              BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
                               std::move(callback));
     return;
   }
 
   if (options.tag.length() > kMaxTagLength) {
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NOT_ALLOWED,
+    RecordFailureAndPostError(GetBackgroundSyncType(options),
+                              BACKGROUND_SYNC_STATUS_NOT_ALLOWED,
                               std::move(callback));
     return;
   }
@@ -707,7 +713,8 @@ void BackgroundSyncManager::RegisterImpl(
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
+    RecordFailureAndPostError(GetBackgroundSyncType(options),
+                              BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
                               std::move(callback));
     return;
   }
@@ -731,7 +738,8 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (permission_statuses.first == PermissionStatus::DENIED) {
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_PERMISSION_DENIED,
+    RecordFailureAndPostError(GetBackgroundSyncType(options),
+                              BACKGROUND_SYNC_STATUS_PERMISSION_DENIED,
                               std::move(callback));
     return;
   }
@@ -741,7 +749,8 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {
     // The service worker was shut down in the interim.
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
+    RecordFailureAndPostError(GetBackgroundSyncType(options),
+                              BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
                               std::move(callback));
     return;
   }
@@ -783,6 +792,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
               ? BackgroundSyncMetrics::REGISTRATION_COULD_FIRE
               : BackgroundSyncMetrics::REGISTRATION_COULD_NOT_FIRE;
       BackgroundSyncMetrics::CountRegisterSuccess(
+          existing_registration->sync_type(), options.min_interval,
           registration_could_fire,
           BackgroundSyncMetrics::REGISTRATION_IS_DUPLICATE);
 
@@ -846,7 +856,8 @@ void BackgroundSyncManager::RegisterDidGetDelay(
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {
     // The service worker was shut down in the interim.
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
+    RecordFailureAndPostError(registration.sync_type(),
+                              BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
                               std::move(callback));
     return;
   }
@@ -1025,14 +1036,15 @@ void BackgroundSyncManager::RegisterDidStore(
   if (status == blink::ServiceWorkerStatusCode::kErrorNotFound) {
     // The service worker registration is gone.
     active_registrations_.erase(sw_registration_id);
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+    RecordFailureAndPostError(registration.sync_type(),
+                              BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
                               std::move(callback));
     return;
   }
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     BackgroundSyncMetrics::CountRegisterFailure(
-        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
+        registration.sync_type(), BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     DisableAndClearManager(base::BindOnce(
         std::move(callback), BACKGROUND_SYNC_STATUS_STORAGE_ERROR, nullptr));
     return;
@@ -1043,6 +1055,7 @@ void BackgroundSyncManager::RegisterDidStore(
           ? BackgroundSyncMetrics::REGISTRATION_COULD_FIRE
           : BackgroundSyncMetrics::REGISTRATION_COULD_NOT_FIRE;
   BackgroundSyncMetrics::CountRegisterSuccess(
+      registration.sync_type(), registration.options()->min_interval,
       registration_could_fire,
       BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE);
 
@@ -1519,8 +1532,8 @@ void BackgroundSyncManager::FireReadyEventsImpl(
   // Record the total time taken after all events have run to completion.
   base::RepeatingClosure events_completed_barrier_closure =
       base::BarrierClosure(to_fire.size(),
-                           base::BindOnce(&OnAllSyncEventsCompleted, start_time,
-                                          to_fire.size()));
+                           base::BindOnce(&OnAllSyncEventsCompleted, sync_type,
+                                          start_time, to_fire.size()));
 
   for (auto& registration_info : to_fire) {
     const BackgroundSyncRegistration* registration =
@@ -1582,11 +1595,11 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
   const bool last_chance =
       registration->num_attempts() == registration->max_attempts() - 1;
 
+  auto sync_type = registration_info->sync_type;
   HasMainFrameProviderHost(
       url::Origin::Create(service_worker_registration->scope().GetOrigin()),
-      base::BindOnce(&BackgroundSyncMetrics::RecordEventStarted));
+      base::BindOnce(&BackgroundSyncMetrics::RecordEventStarted, sync_type));
 
-  auto sync_type = registration_info->sync_type;
   if (sync_type == BackgroundSyncType::ONE_SHOT) {
     DispatchSyncEvent(
         registration->options()->tag,
@@ -1642,6 +1655,7 @@ void BackgroundSyncManager::EventComplete(
   HasMainFrameProviderHost(
       origin,
       base::BindOnce(&BackgroundSyncMetrics::RecordEventResult,
+                     registration_info->sync_type,
                      status_code == blink::ServiceWorkerStatusCode::kOk));
 
   op_scheduler_.ScheduleOperation(
@@ -1832,11 +1846,13 @@ void BackgroundSyncManager::EventCompleteDidStore(
 
 // static
 void BackgroundSyncManager::OnAllSyncEventsCompleted(
+    BackgroundSyncType sync_type,
     const base::TimeTicks& start_time,
     int number_of_batched_sync_events) {
   // Record the combined time taken by all sync events.
   BackgroundSyncMetrics::RecordBatchSyncEventComplete(
-      base::TimeTicks::Now() - start_time, number_of_batched_sync_events);
+      sync_type, base::TimeTicks::Now() - start_time,
+      number_of_batched_sync_events);
 }
 
 void BackgroundSyncManager::OnRegistrationDeletedImpl(

@@ -1510,6 +1510,7 @@ test("content_unittests") {
     "../browser/background_fetch/storage/image_helpers_unittest.cc",
     "../browser/background_sync/background_sync_launcher_unittest.cc",
     "../browser/background_sync/background_sync_manager_unittest.cc",
+    "../browser/background_sync/background_sync_metrics_unittest.cc",
     "../browser/background_sync/background_sync_network_observer_unittest.cc",
     "../browser/background_sync/background_sync_service_impl_test_harness.cc",
     "../browser/background_sync/background_sync_service_impl_test_harness.h",
