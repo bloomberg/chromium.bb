@@ -7842,21 +7842,31 @@ static int64_t masked_compound_type_rd(
     return INT64_MAX;
   }
 
-  // Reuse data if matching record is found
+  // Compute cost if matching record not found, else, reuse data
   if (comp_rate[compound_type] == INT_MAX) {
-    if (have_newmv_in_inter_mode(this_mode) &&
-        compound_type == COMPOUND_WEDGE &&
-        !cpi->sf.disable_interinter_wedge_newmv_search) {
+    // Check whether new MV search for wedge is to be done
+    int wedge_newmv_search = have_newmv_in_inter_mode(this_mode) &&
+                             (compound_type == COMPOUND_WEDGE) &&
+                             (!cpi->sf.disable_interinter_wedge_newmv_search);
+    // Search for new MV if needed and build predictor
+    if (wedge_newmv_search) {
       *out_rate_mv = interinter_compound_motion_search(
           cpi, x, cur_mv, bsize, this_mode, mi_row, mi_col);
       av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, ctx, bsize,
                                     AOM_PLANE_Y, AOM_PLANE_Y);
-
-      model_rd_sb_fn[MODELRD_TYPE_MASKED_COMPOUND](
-          cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &rate_sum, &dist_sum,
-          &tmp_skip_txfm_sb, &tmp_skip_sse_sb, NULL, NULL, NULL);
-      rd = RDCOST(x->rdmult, *rs2 + *out_rate_mv + rate_sum, dist_sum);
-      *comp_model_rd_cur = rd;
+    } else {
+      *out_rate_mv = rate_mv;
+      av1_build_wedge_inter_predictor_from_buf(xd, bsize, 0, 0, preds0, strides,
+                                               preds1, strides);
+    }
+    // Get the RD cost from model RD
+    model_rd_sb_fn[MODELRD_TYPE_MASKED_COMPOUND](
+        cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &rate_sum, &dist_sum,
+        &tmp_skip_txfm_sb, &tmp_skip_sse_sb, NULL, NULL, NULL);
+    rd = RDCOST(x->rdmult, *rs2 + *out_rate_mv + rate_sum, dist_sum);
+    *comp_model_rd_cur = rd;
+    // Override with best if current is worse than best for new MV
+    if (wedge_newmv_search) {
       if (rd >= best_rd_cur) {
         mbmi->mv[0].as_int = cur_mv[0].as_int;
         mbmi->mv[1].as_int = cur_mv[1].as_int;
@@ -7865,25 +7875,15 @@ static int64_t masked_compound_type_rd(
                                                  strides, preds1, strides);
         *comp_model_rd_cur = best_rd_cur;
       }
-    } else {
-      *out_rate_mv = rate_mv;
-      av1_build_wedge_inter_predictor_from_buf(xd, bsize, 0, 0, preds0, strides,
-                                               preds1, strides);
-      model_rd_sb_fn[MODELRD_TYPE_MASKED_COMPOUND](
-          cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &rate_sum, &dist_sum,
-          &tmp_skip_txfm_sb, &tmp_skip_sse_sb, NULL, NULL, NULL);
-      *comp_model_rd_cur =
-          RDCOST(x->rdmult, *rs2 + *out_rate_mv + rate_sum, dist_sum);
     }
-
-    RD_STATS rd_stats;
-
     if (cpi->sf.prune_comp_type_by_model_rd &&
         (*comp_model_rd_cur > comp_best_model_rd) &&
         comp_best_model_rd != INT64_MAX) {
       *comp_model_rd_cur = INT64_MAX;
       return INT64_MAX;
     }
+    // Compute RD cost for the current type
+    RD_STATS rd_stats;
     const int64_t tmp_mode_rd = RDCOST(x->rdmult, *rs2 + *out_rate_mv, 0);
     const int64_t tmp_rd_thresh = rd_thresh - tmp_mode_rd;
     rd = estimate_yrd_for_sb(cpi, bsize, x, tmp_rd_thresh, &rd_stats);
@@ -7895,6 +7895,7 @@ static int64_t masked_compound_type_rd(
                    &rd_stats, *comp_model_rd_cur);
     }
   } else {
+    // Reuse data as matching record is found
     assert(comp_dist[compound_type] != INT64_MAX);
     // When disable_interinter_wedge_newmv_search is set, motion refinement is
     // disabled. Hence rate and distortion can be reused in this case as well
