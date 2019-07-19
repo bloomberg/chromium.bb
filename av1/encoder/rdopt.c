@@ -8327,8 +8327,8 @@ static INLINE void pred_dual_interp_filter_rd(
 
   // pred_filter_search = 1: pred_filter is enabled and only horz pred matching
   if (pred_filt_type == INTERP_HORZ_EQ_VERT_NEQ) {
-    for (filter_idx = af_horiz; filter_idx < (DUAL_FILTER_SET_SIZE);
-         filter_idx += SWITCHABLE_FILTERS) {
+    for (filter_idx = (DUAL_FILTER_SET_SIZE - SWITCHABLE_FILTERS + af_horiz);
+         filter_idx >= 0; filter_idx -= SWITCHABLE_FILTERS) {
       if (filter_idx) {
         interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
                                 orig_dst, rd, rd_stats_y, rd_stats,
@@ -8339,8 +8339,8 @@ static INLINE void pred_dual_interp_filter_rd(
   } else if (pred_filt_type == INTERP_HORZ_NEQ_VERT_EQ) {
     // pred_filter_search = 2: pred_filter is enabled and
     //                         only vert pred matching
-    for (filter_idx = (af_vert * SWITCHABLE_FILTERS);
-         filter_idx <= ((af_vert * SWITCHABLE_FILTERS) + 2); filter_idx += 1) {
+    for (filter_idx = (af_vert * SWITCHABLE_FILTERS + 2);
+         filter_idx >= ((af_vert * SWITCHABLE_FILTERS)); filter_idx -= 1) {
       if (filter_idx) {
         interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
                                 orig_dst, rd, rd_stats_y, rd_stats,
@@ -8806,7 +8806,7 @@ static int64_t interpolation_filter_search(
       // Use full interpolation filter search
       // REG_REG filter type is evaluated beforehand, so loop is repeated over
       // REG_SMOOTH to SHARP_SHARP for full interpolation filter search
-      for (i = 1; i <= filter_set_size; ++i) {
+      for (i = filter_set_size; i > REG_REG; --i) {
         interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
                                 orig_dst, rd, &rd_stats_luma, &rd_stats,
                                 switchable_rate, dst_bufs, i, switchable_ctx,
