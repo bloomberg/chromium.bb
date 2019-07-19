@@ -27,15 +27,11 @@ class UdpReadCallback {
 
     IPEndpoint source;
     IPEndpoint original_destination;
-    size_t length;
+    ssize_t length;
     // TODO(btolsch): When this gets to implementation, make sure the callback
     // is never called with a |socket| that could have been destroyed (e.g.
     // between queueing the read data and running the task).
     UdpSocket* socket;
-
-    // Override the default implementation since we want the number of elements,
-    // not kUdpMaxPacketSize.
-    size_t size() const { return length; }
   };
 
   virtual ~UdpReadCallback() = default;
