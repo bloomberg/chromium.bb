@@ -32,4 +32,9 @@ bool OverlayCandidateValidator::AttemptWithStrategies(
   return false;
 }
 
+gfx::Rect OverlayCandidateValidator::GetOverlayDamageRectForOutputSurface(
+    const OverlayCandidate& candidate) const {
+  return ToEnclosedRect(candidate.display_rect);
+}
+
 }  // namespace viz
