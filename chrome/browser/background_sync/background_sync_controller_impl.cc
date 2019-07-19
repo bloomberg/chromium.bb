@@ -195,6 +195,20 @@ int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(
   return kEngagementLevelNonePenalty;
 }
 
+base::TimeDelta BackgroundSyncControllerImpl::SnapToMaxOriginFrequency(
+    int64_t min_interval,
+    int64_t min_gap_for_origin) {
+  DCHECK_GE(min_gap_for_origin, 0);
+  DCHECK_GE(min_interval, 0);
+
+  if (min_interval < min_gap_for_origin)
+    return base::TimeDelta::FromMilliseconds(min_gap_for_origin);
+  if (min_interval % min_gap_for_origin == 0)
+    return base::TimeDelta::FromMilliseconds(min_interval);
+  return base::TimeDelta::FromMilliseconds(
+      (min_interval / min_gap_for_origin + 1) * min_gap_for_origin);
+}
+
 base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
     const content::BackgroundSyncRegistration& registration,
     content::BackgroundSyncParameters* parameters) {
@@ -217,8 +231,8 @@ base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
         int64_t effective_gap_ms =
             site_engagement_factor *
             parameters->min_periodic_sync_events_interval.InMilliseconds();
-        return base::TimeDelta::FromMilliseconds(
-            std::max(registration.options()->min_interval, effective_gap_ms));
+        return SnapToMaxOriginFrequency(registration.options()->min_interval,
+                                        effective_gap_ms);
     }
   }
 

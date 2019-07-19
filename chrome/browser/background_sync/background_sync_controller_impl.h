@@ -92,6 +92,12 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   // blink::mojom::EngagementLevel::NONE.
   int GetSiteEngagementPenalty(const GURL& url) const;
 
+  // Once we've identified the minimum number of hours between each periodicsync
+  // event for an origin, every delay calculated for the origin should be a
+  // multiple of the same.
+  base::TimeDelta SnapToMaxOriginFrequency(int64_t min_interval,
+                                           int64_t min_gap_for_origin);
+
   Profile* profile_;  // This object is owned by profile_.
 
   // Same lifetime as |profile_|.

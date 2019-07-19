@@ -38,6 +38,8 @@ const char kTag[] = "test_tag";
 
 constexpr base::TimeDelta kSmallerThanMinGap = base::TimeDelta::FromHours(11);
 constexpr base::TimeDelta kLargerThanMinGap = base::TimeDelta::FromHours(13);
+constexpr base::TimeDelta kLargerThanMinGapExpectedDelay =
+    base::TimeDelta::FromHours(24);
 
 std::unique_ptr<KeyedService> BuildTestHistoryService(
     const base::FilePath& file_path,
@@ -200,7 +202,26 @@ TEST_F(BackgroundSyncControllerImplTest, GetNextEventDelay) {
           /* min_interval= */ kLargerThanMinGap.InMilliseconds(),
           /* num_attempts= */ 0, blink::mojom::BackgroundSyncType::PERIODIC),
       &sync_parameters);
-  EXPECT_EQ(delay, kLargerThanMinGap);
+  EXPECT_EQ(delay, kLargerThanMinGapExpectedDelay);
+
+  // Periodic Sync: zero attempts.
+  // |min_interval| a multiple of kMinGapBetweenPeriodicSyncEvents.
+  delay = controller_->GetNextEventDelay(
+      MakeBackgroundSyncRegistration(
+          /* min_interval= */ 2 *
+              kLargerThanMinGapExpectedDelay.InMilliseconds(),
+          /* num_attempts= */ 0, blink::mojom::BackgroundSyncType::PERIODIC),
+      &sync_parameters);
+  EXPECT_EQ(delay, 2 * kLargerThanMinGapExpectedDelay);
+
+  // Periodic Sync: zero attempts.
+  // |min_interval| is zero.
+  delay = controller_->GetNextEventDelay(
+      MakeBackgroundSyncRegistration(
+          /* min_interval= */ 0,
+          /* num_attempts= */ 0, blink::mojom::BackgroundSyncType::PERIODIC),
+      &sync_parameters);
+  EXPECT_EQ(delay, sync_parameters.min_periodic_sync_events_interval);
 
   // One-shot Sync.
   delay = controller_->GetNextEventDelay(
