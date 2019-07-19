@@ -124,6 +124,7 @@ void ClickToCallDialogView::ButtonPressed(views::Button* sender,
   DCHECK(index < devices_.size() + apps_.size());
 
   if (index < devices_.size()) {
+    LogClickToCallSelectedDeviceIndex(kSharingClickToCallUiDialog, index);
     controller_->OnDeviceChosen(devices_[index], base::DoNothing());
     CloseBubble();
     return;
@@ -132,6 +133,7 @@ void ClickToCallDialogView::ButtonPressed(views::Button* sender,
   index -= devices_.size();
 
   if (index < apps_.size()) {
+    LogClickToCallSelectedAppIndex(kSharingClickToCallUiDialog, index);
     controller_->OnAppChosen(apps_[index]);
     CloseBubble();
   }
