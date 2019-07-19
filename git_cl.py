@@ -37,11 +37,6 @@ import uuid
 import webbrowser
 import zlib
 
-try:
-  import readline  # pylint: disable=import-error,W0611
-except ImportError:
-  pass
-
 from third_party import colorama
 from third_party import httplib2
 import auth
