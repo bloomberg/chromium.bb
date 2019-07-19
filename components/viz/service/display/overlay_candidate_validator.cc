@@ -5,6 +5,7 @@
 #include "components/viz/service/display/overlay_candidate_validator.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
 
@@ -34,7 +35,7 @@ bool OverlayCandidateValidator::AttemptWithStrategies(
 
 gfx::Rect OverlayCandidateValidator::GetOverlayDamageRectForOutputSurface(
     const OverlayCandidate& candidate) const {
-  return ToEnclosedRect(candidate.display_rect);
+  return gfx::ToEnclosedRect(candidate.display_rect);
 }
 
 }  // namespace viz
