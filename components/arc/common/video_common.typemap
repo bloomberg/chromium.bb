@@ -5,6 +5,7 @@
 mojom = "//components/arc/common/video_common.mojom"
 public_headers = [
   "//components/arc/video_accelerator/video_frame_plane.h",
+  "//media/base/decode_status.h",
   "//media/base/video_codecs.h",
   "//media/base/video_frame_layout.h",
   "//media/base/video_types.h",
@@ -27,6 +28,7 @@ deps = [
 ]
 
 type_mappings = [
+  "arc.mojom.DecodeStatus=media::DecodeStatus",
   "arc.mojom.MediaVideoFramePlane=media::VideoFrameLayout::Plane",
   "arc.mojom.Size=gfx::Size",
   "arc.mojom.VideoCodecProfile=media::VideoCodecProfile",
