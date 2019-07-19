@@ -52295,6 +52295,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Remote"/>
 </enum>
 
+<enum name="SendWebPushMessageResult">
+  <int value="0" label="Successful"/>
+  <int value="1" label="Encryption failed"/>
+  <int value="2" label="Failed to create JWT"/>
+  <int value="3" label="Network error"/>
+  <int value="4" label="Server error"/>
+  <int value="5" label="Failed to parse response"/>
+</enum>
+
 <enum name="ServiceProcessEventType">
   <int value="0" label="SERVICE_EVENT_INITIALIZE"/>
   <int value="1" label="SERVICE_EVENT_ENABLED_ON_LAUNCH"/>
