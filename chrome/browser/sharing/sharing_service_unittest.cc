@@ -15,6 +15,7 @@
 #include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
@@ -44,7 +45,7 @@ const char kAuthSecret[] = "auth_secret";
 const char kFcmToken[] = "fcm_token";
 const char kDeviceName[] = "other_name";
 const char kMessageId[] = "message_id";
-const int kTtlSeconds = 10;
+constexpr base::TimeDelta kTtl = base::TimeDelta::FromSeconds(10);
 
 class FakeGCMDriver : public gcm::FakeGCMDriver {
  public:
@@ -275,7 +276,8 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_Expired) {
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
 
   // Forward time until device expires.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromDays(10));
+  scoped_task_environment_.FastForwardBy(kDeviceExpiration +
+                                         base::TimeDelta::FromMilliseconds(1));
 
   std::vector<SharingDeviceInfo> candidates =
       GetSharingService()->GetDeviceCandidates(kNoCapabilities);
@@ -337,8 +339,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
 
   GetSharingService()->SendMessageToDevice(
-      id, base::TimeDelta::FromSeconds(kTtlSeconds),
-      chrome_browser_sharing::SharingMessage(),
+      id, kTtl, chrome_browser_sharing::SharingMessage(),
       base::BindOnce(&SharingServiceTest::OnMessageSent,
                      base::Unretained(this)));
 
@@ -367,8 +368,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceExpired) {
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
 
   GetSharingService()->SendMessageToDevice(
-      id, base::TimeDelta::FromSeconds(kTtlSeconds),
-      chrome_browser_sharing::SharingMessage(),
+      id, kTtl, chrome_browser_sharing::SharingMessage(),
       base::BindOnce(&SharingServiceTest::OnMessageSent,
                      base::Unretained(this)));
 
@@ -377,7 +377,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceExpired) {
   EXPECT_EQ(kFcmToken, fake_gcm_driver_.fcm_token());
 
   // Advance time so send message will expire.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
+  scoped_task_environment_.FastForwardBy(kSendMessageTimeout);
   EXPECT_TRUE(send_message_success().has_value());
   EXPECT_FALSE(*send_message_success());
 
@@ -449,7 +449,8 @@ TEST_F(SharingServiceTest, DeviceRegistrationTransientError) {
   sharing_device_registration_->SetResult(
       SharingDeviceRegistration::Result::SUCCESS);
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(5));
+  scoped_task_environment_.FastForwardBy(
+      base::TimeDelta::FromMilliseconds(kRetryBackoffPolicy.initial_delay_ms));
   EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
   EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 }

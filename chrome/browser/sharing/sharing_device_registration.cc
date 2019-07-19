@@ -12,7 +12,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
-#include "chrome/browser/sharing/fcm_constants.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
