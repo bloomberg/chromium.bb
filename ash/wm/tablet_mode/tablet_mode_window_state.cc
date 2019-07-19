@@ -198,12 +198,15 @@ TabletModeWindowState::~TabletModeWindowState() {
   creator_->WindowStateDestroyed(window_);
 }
 
-void TabletModeWindowState::LeaveTabletMode(wm::WindowState* window_state) {
-  // Only do bounds change animation if the window is the top window or a window
-  // showing in splitview, and the window has changed its state. Otherwise,
-  // restore its bounds immediately.
+void TabletModeWindowState::LeaveTabletMode(wm::WindowState* window_state,
+                                            bool was_in_overview) {
+  // Only do bounds change animation if the window was showing in overview,
+  // or the top window or a window showing in splitview before leaving tablet
+  // mode, and the window has changed its state. Otherwise, restore its bounds
+  // immediately.
   EnterAnimationType animation_type =
-      window_state->IsSnapped() || IsTopWindow(window_state->window())
+      was_in_overview || window_state->IsSnapped() ||
+              IsTopWindow(window_state->window())
           ? DEFAULT
           : IMMEDIATE;
   if (old_state_->GetType() == window_state->GetStateType() &&
