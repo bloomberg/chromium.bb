@@ -18,6 +18,7 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
+#include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
@@ -231,9 +232,9 @@ void SharingService::UnregisterDevice() {
 }
 
 void SharingService::OnDeviceRegistered(
-    SharingDeviceRegistration::Result result) {
+    SharingDeviceRegistrationResult result) {
   switch (result) {
-    case SharingDeviceRegistration::Result::SUCCESS:
+    case SharingDeviceRegistrationResult::kSuccess:
       backoff_entry_.InformOfRequest(true);
       if (state_ == State::REGISTERING) {
         if (IsSyncEnabled()) {
@@ -253,8 +254,8 @@ void SharingService::OnDeviceRegistered(
       // For registration as result of VAPID key change, state_ will be
       // State::ACTIVE, and we don't need to start listeners.
       break;
-    case SharingDeviceRegistration::Result::FCM_TRANSIENT_ERROR:
-    case SharingDeviceRegistration::Result::SYNC_SERVICE_ERROR:
+    case SharingDeviceRegistrationResult::kFcmTransientError:
+    case SharingDeviceRegistrationResult::kSyncServiceError:
       backoff_entry_.InformOfRequest(false);
       // Transient error - try again after a delay.
       LOG(ERROR) << "Device registration failed with transient error";
@@ -265,8 +266,8 @@ void SharingService::OnDeviceRegistered(
                          weak_ptr_factory_.GetWeakPtr()),
           backoff_entry_.GetTimeUntilRelease());
       break;
-    case SharingDeviceRegistration::Result::ENCRYPTION_ERROR:
-    case SharingDeviceRegistration::Result::FCM_FATAL_ERROR:
+    case SharingDeviceRegistrationResult::kEncryptionError:
+    case SharingDeviceRegistrationResult::kFcmFatalError:
       backoff_entry_.InformOfRequest(false);
       // No need to bother retrying in the case of one of fatal errors.
       LOG(ERROR) << "Device registration failed with fatal error";
@@ -275,7 +276,7 @@ void SharingService::OnDeviceRegistered(
 }
 
 void SharingService::OnDeviceUnregistered(
-    SharingDeviceRegistration::Result result) {
+    SharingDeviceRegistrationResult result) {
   if (IsSyncEnabled() &&
       base::FeatureList::IsEnabled(kSharingDeviceRegistration)) {
     // In case sync is enabled during un-registration, register it.
@@ -286,7 +287,7 @@ void SharingService::OnDeviceUnregistered(
   }
 
   // Unregistration failure is ignored, and will be attempted in next restart.
-  if (result != SharingDeviceRegistration::Result::SUCCESS)
+  if (result != SharingDeviceRegistrationResult::kSuccess)
     LOG(ERROR) << "Device unregistration failed";
 }
 

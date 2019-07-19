@@ -18,6 +18,7 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
+#include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -141,14 +142,14 @@ class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
     std::move(callback).Run(result_);
   }
 
-  void SetResult(SharingDeviceRegistration::Result result) { result_ = result; }
+  void SetResult(SharingDeviceRegistrationResult result) { result_ = result; }
 
   int registration_attempts() { return registration_attempts_; }
   int unregistration_attempts() { return unregistration_attempts_; }
 
  private:
-  SharingDeviceRegistration::Result result_ =
-      SharingDeviceRegistration::Result::SUCCESS;
+  SharingDeviceRegistrationResult result_ =
+      SharingDeviceRegistrationResult::kSuccess;
   int registration_attempts_ = 0;
   int unregistration_attempts_ = 0;
 };
@@ -406,7 +407,7 @@ TEST_F(SharingServiceTest, DeviceRegistration) {
 
   // Expect registration to be successful on sync state changed.
   sharing_device_registration_->SetResult(
-      SharingDeviceRegistration::Result::SUCCESS);
+      SharingDeviceRegistrationResult::kSuccess);
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
@@ -438,7 +439,7 @@ TEST_F(SharingServiceTest, DeviceRegistrationTransientError) {
 
   // Retry will be scheduled on transient error received.
   sharing_device_registration_->SetResult(
-      SharingDeviceRegistration::Result::FCM_TRANSIENT_ERROR);
+      SharingDeviceRegistrationResult::kFcmTransientError);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
   EXPECT_EQ(SharingService::State::REGISTERING,
@@ -447,7 +448,7 @@ TEST_F(SharingServiceTest, DeviceRegistrationTransientError) {
   // Retry should be scheduled by now. Next retry after 5 minutes will be
   // successful.
   sharing_device_registration_->SetResult(
-      SharingDeviceRegistration::Result::SUCCESS);
+      SharingDeviceRegistrationResult::kSuccess);
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   scoped_task_environment_.FastForwardBy(
       base::TimeDelta::FromMilliseconds(kRetryBackoffPolicy.initial_delay_ms));
@@ -460,7 +461,7 @@ TEST_F(SharingServiceTest, DeviceUnregistrationFeatureDisabled) {
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   sharing_device_registration_->SetResult(
-      SharingDeviceRegistration::Result::SUCCESS);
+      SharingDeviceRegistrationResult::kSuccess);
 
   EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
@@ -498,7 +499,7 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
 
   // Expect registration to be successful on sync state changed.
   sharing_device_registration_->SetResult(
-      SharingDeviceRegistration::Result::SUCCESS);
+      SharingDeviceRegistrationResult::kSuccess);
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
