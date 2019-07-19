@@ -147,20 +147,26 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
                                 '"out_amd64-generic/Release/%s %s"'
                                 % (test_exe, args)])
 
-  def testBasic(self):
+  @mock.patch('chromite.lib.vm.VM.IsRunning', return_value=True)
+  def testBasic(self, isrunning_mock):
     """Tests basic functionality."""
     self._tester.Run()
-    # Check VM got launched.
-    self.assertCommandContains([self._tester._device.qemu_path, '-enable-kvm'])
-    # Wait for VM to be responsive.
-    self.assertCommandContains([
-        'ssh', '-p', '9222', 'root@localhost', '--', 'true'
-    ])
+    isrunning_mock.assert_called()
     # Run vm_sanity.
     self.assertCommandContains([
         'ssh', '-p', '9222', 'root@localhost', '--',
         '/usr/local/autotest/bin/vm_sanity.py'
     ])
+
+  def testStartVM(self):
+    """Verify that a new VM is started before running tests."""
+    self._tester.start_vm = True
+    self._tester.Run()
+    # Check if new VM got launched.
+    self.assertCommandContains([self._tester._device.qemu_path, '-enable-kvm'])
+    # Check if new VM is responsive.
+    self.assertCommandContains(
+        ['ssh', '-p', '9222', 'root@localhost', '--', 'true'])
 
   def testDeployChrome(self):
     """Tests basic deploy chrome command."""
