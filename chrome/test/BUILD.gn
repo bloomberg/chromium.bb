@@ -6332,7 +6332,7 @@ if (is_chromeos) {
   }
 }
 
-if (is_mac || is_win) {
+if (is_mac || is_win || is_android) {
   group("rendering_representative_perf_tests") {
     testonly = true
     deps = [

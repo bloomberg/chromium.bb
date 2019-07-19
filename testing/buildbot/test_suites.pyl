@@ -4487,10 +4487,26 @@
       },
     },
 
-    'rendering_representative_perf_tests_isolated_scripts': {
+    'rendering_desktop_representative_perf_tests_isolated_scripts': {
       'rendering_representative_perf_tests': {
         'isolate_name': 'rendering_representative_perf_tests',
-        'args': [],
+        'args': [
+          "../../tools/perf/run_benchmark",
+          "--benchmarks=rendering.desktop",
+        ],
+        'swarming': {},
+        'experiment_percentage': 100,
+      }
+    },
+
+    'rendering_mobile_representative_perf_tests_isolated_scripts': {
+      'rendering_representative_perf_tests': {
+        'isolate_name': 'rendering_representative_perf_tests',
+        'args': [
+          "../../tools/perf/run_benchmark",
+          "--benchmarks=rendering.mobile",
+          "--browser=android-chromium"
+        ],
         'swarming': {},
         'experiment_percentage': 100,
       }
@@ -5065,9 +5081,14 @@
 
     # BEGIN composition test suites used by the GPU bots
 
-    'gpu_angle_and_representative_perf_fyi_isolated_scripts': [
+    'gpu_angle_and_desktop_representative_perf_fyi_isolated_scripts': [
       'gpu_angle_perf_isolated_scripts',
-      'rendering_representative_perf_tests_isolated_scripts',
+      'rendering_desktop_representative_perf_tests_isolated_scripts',
+    ],
+
+    'gpu_angle_and_mobile_representative_perf_fyi_isolated_scripts': [
+      'gpu_angle_perf_isolated_scripts',
+      'rendering_mobile_representative_perf_tests_isolated_scripts',
     ],
 
     'gpu_angle_deqp_android_gtests': [
@@ -5132,7 +5153,7 @@
       'gpu_angle_perf_isolated_scripts',
       'gpu_command_buffer_perf_passthrough_isolated_scripts',
       'gpu_command_buffer_perf_validating_isolated_scripts',
-      'rendering_representative_perf_tests_isolated_scripts',
+      'rendering_desktop_representative_perf_tests_isolated_scripts',
     ],
 
     'gpu_angle_fyi_win_optional_isolated_scripts': [
