@@ -75,6 +75,7 @@ function renderTemplate(experimentalFeaturesData) {
       e.preventDefault();
       for (var j= 0; j < tabEls.length; ++j) {
         tabEls[j].parentNode.classList.toggle('selected', tabEls[j] == this);
+        tabEls[j].setAttribute('aria-selected', tabEls[j] == this);
       }
     });
   }
@@ -117,7 +118,9 @@ function highlightReferencedFlag() {
       // Switch to unavailable tab if the flag is in this section.
       if ($('tab-content-unavailable').contains(el)) {
         $('tab-available').parentNode.classList.remove('selected');
+        $('tab-available').setAttribute('aria-selected', 'false');
         $('tab-unavailable').parentNode.classList.add('selected');
+        $('tab-unavailable').setAttribute('aria-selected', 'true');
       }
       el.scrollIntoView();
     }
