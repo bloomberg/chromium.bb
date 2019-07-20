@@ -16,27 +16,10 @@
 class NativeFileSystemDirectoryAccessConfirmationViewTest
     : public DialogBrowserTest {
  public:
-  void SetUpOnMainThread() override {
-    // Release builds may strip out unused string resources when
-    // enable_resource_whitelist_generation is enabled. Manually override the
-    // strings needed by the dialog to ensure they are available for tests.
-    // TODO(https://crbug.com/979659): Remove these overrides once the strings
-    // are referenced from the Chrome binary.
-    auto& shared_resource_bundle = ui::ResourceBundle::GetSharedInstance();
-    shared_resource_bundle.OverrideLocaleStringResource(
-        IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TITLE,
-        base::ASCIIToUTF16("Let site read this folder?"));
-    shared_resource_bundle.OverrideLocaleStringResource(
-        IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TEXT,
-        base::ASCIIToUTF16("$1 will be able to read all files in the following "
-                           "folder. This site can see any changes to the "
-                           "folder only while this tab is open."));
-  }
-
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     widget_ = NativeFileSystemDirectoryAccessConfirmationView::ShowDialog(
-        kTestOrigin, base::FilePath(FILE_PATH_LITERAL("/foo/bar")),
+        kTestOrigin, base::FilePath(FILE_PATH_LITERAL("/foo/bar/MyProject")),
         base::BindLambdaForTesting([&](PermissionAction result) {
           callback_called_ = true;
           callback_result_ = result;

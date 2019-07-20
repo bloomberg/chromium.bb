@@ -9540,10 +9540,13 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- Native File System directory access confirmation dialog. -->
     <message name="IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TITLE" desc="Title of dialog asking user if they intended to share a particular directory">
-      Let site read this folder?
+      Let site view files?
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TEXT" desc="Text of dialog asking user if they intended to share a particular directory">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to read all files in the following folder. This site can see any changes to the folder only while this tab is open.
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to view all files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph>. The site can see any changes to the folder until you close this tab.
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_ALLOW_BUTTON" desc="'allow' button in the dialog asking user if they intended to share a particular directory">
+      View files
     </message>
 
     <!-- Relaunch notification bubble and dialog. -->
