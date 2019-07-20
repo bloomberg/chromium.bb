@@ -377,6 +377,40 @@ include litdigits6Dots.uti
 # Greek Diphthongs #
 ####################
 
+# For the diphthong contractions to be mroe easily coded,
+# we first remove accents that don't generate any braille.
+
+# The Dialytika isn't rendered in braille.
+noback correct "\x03AA" "\x0399" # ΪΙ Capital Iota with Dialytika
+noback correct "\x03CA" "\x0CB9" # ϊι Small Iota with Dialytika
+noback correct "\x0390" "\x03AF" # ΐί Small Iota with Dialytika and Tonos
+noback correct "\x1FD3" "\x1F77" # ΐί Small Iota with Dialytika and Oxia
+noback correct "\x1FD2" "\x1F76" # ῒὶ Small Iota with Dialytika and Varia
+noback correct "\x1FD7" "\x1FD6" # ῗῖ Small Iota with Dialytika and Perispomeni
+noback correct "\x03AB" "\x03A5" # ΫΥ Capital Upsilon with Dialytika
+noback correct "\x03CB" "\x03C5" # ϋυ Small Upsilon with Dialytika
+noback correct "\x03B0" "\x03CD" # ΰύ Small Upsilon with Dialytika and Tonos
+noback correct "\x1FE3" "\x1F7B" # ΰύ Small Upsilon with Dialytika and Oxia
+noback correct "\x1FE2" "\x1F7A" # ῢὺ Small Upsilon with Dialytika and Varia
+noback correct "\x1FE7" "\x1FE6" # ῧῦ Small Upsilon with Dialytika and Perispomeni
+
+# The Psili when not used with any other accent isn't rendered in braille.
+noback correct "\x1F08" "\x0391" # ἈΑ Capital Alpha with Psili
+noback correct "\x1F18" "\x0395" # ἘΕ Capital Epsilon with Psili
+noback correct "\x1F28" "\x0397" # ἨΗ Capital Eta with Psili
+noback correct "\x1F38" "\x0399" # ἸΙ Capital Iota with Psili
+noback correct "\x1F48" "\x039F" # ὈΟ Capital Omicron with Psili
+noback correct "\x1F68" "\x03A9" # ὨΩ Capital Omega with Psili
+noback correct "\x1F00" "\x03B1" # ἀα Small Alpha with Psili
+noback correct "\x1F10" "\x03B5" # ἐε Small Epsilon with Psili
+noback correct "\x1F20" "\x03B7" # ἠη Small Eta with Psili
+noback correct "\x1F30" "\x03B9" # ἰι Small Iota with Psili
+noback correct "\x1F40" "\x03BF" # ὀο Small Omicron with Psili
+noback correct "\x1FE4" "\x03C1" # ῤρ Small Rho with Psili
+noback correct "\x1F50" "\x03C5" # ὐυ Small Upsilon with Psili
+noback correct "\x1F60" "\x03C9" # ὠω Small Omega with Psili
+
+# These are the diphthong contractions.
 always \x03B1\x03B9	126	# αι Alpha Iota
 always \x03B1\x03C5	16	# αυ Alpha Upsilon
 always \x03B5\x03B9	146	# ει Epsilon Iota
@@ -386,6 +420,9 @@ always \x03BF\x03B9	246	# οι Omicron Iota
 always \X03BF\x03C5	136	# ου Omicron Upsilon
 always \x03C5\x03B9	12456	# υι Upsilon Iota
 
+# Accents are always applied to the second vowel of a diphthong.
+
+# For forward translation, move the accents to before the contraction.
 noback pass2 @1[%accent]@24	*@126	# αι Alpha Iota
 noback pass2 @1[%accent]@13456	*@16	# αυ Alpha Upsilon
 noback pass2 @15[%accent]@24	*@146	# ει Epsilon Iota
@@ -395,6 +432,7 @@ noback pass2 @135[%accent]@24	*@246	# οι Omicron Iota
 noback pass2 @135[%accent]@13456	*@136	# ου Omicron Upsilon
 noback pass2 @13456[%accent]@24	*@12456	# υι Upsilon Iota
 
+# For back translation, move the accents to before the second vowel.
 nofor pass2 [%accent]@126	@1*@24	# αι Alpha Iota
 nofor pass2 [%accent]@16	@1*@13456	# αυ Alpha Upsilon
 nofor pass2 [%accent]@146	@15*@24	# ει Epsilon Iota
