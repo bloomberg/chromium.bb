@@ -138,15 +138,13 @@ bool PaintLayerCompositor::RootShouldAlwaysComposite() const {
   // If compositing is disabled for the WebView, then nothing composites.
   if (!has_accelerated_compositing_)
     return false;
+  // Local roots composite always, when compositing is enabled globally.
+  if (layout_view_.GetFrame()->IsLocalRoot())
+    return true;
   // Some non-local roots of embedded content do not have a LocalFrameView
   // so they are not visible and should not get compositor layers.
   if (!layout_view_.GetFrameView())
     return false;
-  // Otherwise, local roots composite always.
-  // TODO(danakj): Move this above GetFrameView(). Local roots must always
-  // composite.
-  if (layout_view_.GetFrame()->IsLocalRoot())
-    return true;
   // Non-local root frames will composite only if needed for scrolling.
   return CompositingReasonFinder::RequiresCompositingForScrollableFrame(
       layout_view_);
