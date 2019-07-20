@@ -4290,6 +4290,21 @@
             ]
         }
     ],
+    "ReorderBookmarks": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ReorderBookmarks",
+                    "enable_features": [
+                        "ReorderBookmarks"
+                    ]
+                }
+            ]
+        }
+    ],
     "ReportCertificateErrors": [
         {
             "platforms": [
