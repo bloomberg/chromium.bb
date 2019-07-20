@@ -195,7 +195,8 @@ def InstallXcodeBinaries():
     return
 
   # Otherwise manually accept the license. This will prompt for sudo.
-  print('Accepting new Xcode license.')
+  print('Accepting new Xcode license. Requires sudo.')
+  sys.stdout.flush()
   args = ['sudo', 'defaults', 'write', current_license_path,
           'IDEXcodeVersionForAgreedToGMLicense', cipd_xcode_version]
   subprocess.call(args)
