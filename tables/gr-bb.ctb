@@ -250,7 +250,9 @@ letter	\x03C9	2456	# ω Small Omega
 
 # symbols
 sign	\x03D5	124	# ϕ Phi
-#
+punctuation	\x0387	23	# · Ano Telesa (Semicolon)
+punctuation	\x1FBD	3	# ᾽ Koronis (Apostrophe)
+
 # accents
 sign	\x1FFE	125	# ῾ Dasia (rough breathing)
 sign	\x1FEF	4	# ` Varia (Grave)
