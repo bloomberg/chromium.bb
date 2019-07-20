@@ -2851,10 +2851,6 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
   settings.commit_to_active_tree = !is_threaded;
   settings.is_layer_tree_for_subframe = is_for_subframe;
 
-  // For web contents, layer transforms should scale up the contents of layers
-  // to keep content always crisp when possible.
-  settings.layer_transforms_should_scale_layer_contents = true;
-
   settings.main_frame_before_activation_enabled =
       cmd.HasSwitch(cc::switches::kEnableMainFrameBeforeActivation);
 
