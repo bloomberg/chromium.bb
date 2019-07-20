@@ -6,12 +6,14 @@
 
 #include <utility>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -157,6 +159,11 @@ bool IsTabDraggingSourceWindow(aura::Window* window) {
 bool IsTopWindow(aura::Window* window) {
   DCHECK(window);
   return window == TabletModeWindowManager::GetTopWindow();
+}
+
+bool IsSnapped(WindowStateType state) {
+  return state == WindowStateType::kLeftSnapped ||
+         state == WindowStateType::kRightSnapped;
 }
 
 }  // namespace
@@ -327,9 +334,13 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
       if (current_state_type_ != WindowStateType::kMaximized &&
           current_state_type_ != WindowStateType::kFullscreen &&
           current_state_type_ != WindowStateType::kMinimized) {
-        WindowStateType new_state =
-            GetMaximizedOrCenteredWindowType(window_state);
-        UpdateWindow(window_state, new_state, true /* animated */);
+        // If an already snapped window gets added to the workspace it should
+        // not be maximized, rather retain its previous state.
+        const WindowStateType new_state =
+            IsSnapped(current_state_type_)
+                ? window_state->GetStateType()
+                : GetMaximizedOrCenteredWindowType(window_state);
+        UpdateWindow(window_state, new_state, /*animated=*/true);
       }
       break;
     case wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED:
