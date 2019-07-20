@@ -4,12 +4,17 @@
 
 package org.chromium.chrome.browser.explore_sites;
 
+import org.chromium.chrome.R;
+
 /** CategoryCardViewHolderFactory for Dense Title Right variation. */
 public class CategoryCardViewHolderFactoryDenseTitleRight extends CategoryCardViewHolderFactory {
     @Override
     protected int getTileViewResource() {
-        return org.chromium.chrome.R.layout.explore_sites_dense_tile_right_view;
+        return R.layout.explore_sites_dense_tile_right_view;
     }
 
-    // TODO(angelii): Add overrides for getCategoryCardViewResource when implemented
+    @Override
+    protected int getCategoryCardViewResource() {
+        return R.layout.explore_sites_dense_category_card_view;
+    }
 }
