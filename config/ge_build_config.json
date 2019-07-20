@@ -2042,7 +2042,37 @@
         },
         {
           "board_name": "hatch",
+          "name": "helios",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "hatch",
+          "name": "kindred",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "hatch",
+          "name": "kled",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "hatch",
           "name": "kohaku",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "hatch",
+          "name": "unprovisioned_helios",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "hatch",
+          "name": "unprovisioned_kindred",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
