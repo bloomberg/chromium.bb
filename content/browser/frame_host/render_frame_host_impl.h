@@ -1338,14 +1338,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // crashes).
   bool CreateNetworkServiceDefaultFactoryAndObserve(
       const base::Optional<url::Origin>& origin,
-      network::mojom::URLLoaderFactoryRequest default_factory_request);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+          default_factory_receiver);
 
   // |origin| is the origin that the RenderFrame is either committing (in the
   // case of navigation) or has last committed (when handling network process
   // crashes).
   bool CreateNetworkServiceDefaultFactoryInternal(
       const base::Optional<url::Origin>& origin,
-      network::mojom::URLLoaderFactoryRequest default_factory_request);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+          default_factory_receiver);
 
   // Returns true if the ExecuteJavaScript() API can be used on this host.
   bool CanExecuteJavaScript();
