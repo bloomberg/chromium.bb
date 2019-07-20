@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/services/leveldb/leveldb_struct_traits.h"
+#include "components/services/leveldb/leveldb_mojom_traits.h"
 
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -41,7 +41,7 @@ StructTraits<leveldb::mojom::OpenOptionsDataView, leveldb_env::Options>::
     shared_block_read_cache(const leveldb_env::Options& options) {
   // The Mojo wrapper for leveldb only supports using one of two different
   // shared caches. Chrome's Mojo wrapper does not currently support custom
-  // caches, nor NULL to have leveldb create the block read cache.
+  // caches, nor nullptr to have leveldb create the block read cache.
   if (!options.block_cache) {
     // Specify either Default or Web.
     NOTREACHED();
