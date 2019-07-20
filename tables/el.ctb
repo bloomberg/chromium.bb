@@ -385,7 +385,7 @@ include litdigits6Dots.uti
 
 # The Dialytika isn't rendered in braille.
 noback correct "\x03AA" "\x0399" # ΪΙ Capital Iota with Dialytika
-noback correct "\x03CA" "\x0CB9" # ϊι Small Iota with Dialytika
+noback correct "\x03CA" "\x03B9" # ϊι Small Iota with Dialytika
 noback correct "\x0390" "\x03AF" # ΐί Small Iota with Dialytika and Tonos
 noback correct "\x1FD3" "\x1F77" # ΐί Small Iota with Dialytika and Oxia
 noback correct "\x1FD2" "\x1F76" # ῒὶ Small Iota with Dialytika and Varia
