@@ -9463,19 +9463,19 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- Native File System permission dialog -->
     <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TITLE" desc="Title of dialog for confirming write access to a file using the Native File System API">
-      Save changes to original file?
+      Save changes to <ph name="FILENAME">$1<ex>README.md</ex></ph>?
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TITLE" desc="Title of dialog for confirming write access to a directory and the files it contains using the Native File System API">
-      Save changes to original files?
+      Save changes to files?
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TEXT" desc="Text of the dialog for confirming write access to files using the Native File System API">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to save your changes directly to the following file. This site can save changes only while this tab is open.
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to save your changes directly to <ph name="FILENAME">$2<ex>README.md</ex></ph>. The site can save changes until you close this tab.
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TEXT" desc="Text of the dialog for confirming write access to a directory using the Native File System API">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to save your changes directly to the files in the following folder. This site can save changes only while this tab is open.
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> will be able to save your changes directly to the files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph>. The site can save changes until you close this tab.
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_ALLOW_TEXT" desc="Text of the 'allow' button in the dialog for confirming write access to files or directories using the Native File System API">
-      Save to original file
+      Save changes
     </message>
 
     <!-- Native File System usage indicator -->
