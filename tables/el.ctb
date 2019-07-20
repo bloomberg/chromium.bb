@@ -162,15 +162,15 @@ uplow \x1F6D\x1F65 26-245 # Ὥὥ Omega with Dasia and Oxia
 uplow \x1F6B\x1F63 12356-245 # Ὣὣ Omega with Dasia and Varia
 uplow \x1F6F\x1F67 235-245 # Ὧὧ Omega with Dasia and Perispomeni
 
-uppercase \x1FBC 35 # ᾼ Capital Alpha with Prosgegrammeni
-uppercase \x1F88 35 # ᾈ Capital Alpha with Psili and Prosgegrammeni
-uppercase \x1F8C 356-35 # ᾌ Capital Alpha with Psili and Oxia and Prosgegrammeni
-uppercase \x1F8A 23456-35 # ᾊ Capital Alpha with Psili and Varia and Prosgegrammeni
-uppercase \x1F8E 256-35 # ᾎ Capital Alpha with Psili and Perispomeni and Prosgegrammeni
-uppercase \x1F89 1236-35 # ᾉ Capital Alpha with Dasia and Prosgegrammeni
-uppercase \x1F8D 26-35 # ᾍ Capital Alpha with Dasia and Oxia and Prosgegrammeni
-uppercase \x1F8B 12356-35 # ᾋ Capital Alpha with Dasia and Varia and Prosgegrammeni
-uppercase \x1F8F 235-35 # ᾏ Capital Alpha with Dasia and Perispomeni and Prosgegrammeni
+uppercase \x1FBC 1-35 # ᾼ Capital Alpha with Prosgegrammeni
+uppercase \x1F88 1-35 # ᾈ Capital Alpha with Psili and Prosgegrammeni
+uppercase \x1F8C 356-1-35 # ᾌ Capital Alpha with Psili and Oxia and Prosgegrammeni
+uppercase \x1F8A 23456-1-35 # ᾊ Capital Alpha with Psili and Varia and Prosgegrammeni
+uppercase \x1F8E 256-1-35 # ᾎ Capital Alpha with Psili and Perispomeni and Prosgegrammeni
+uppercase \x1F89 1236-1-35 # ᾉ Capital Alpha with Dasia and Prosgegrammeni
+uppercase \x1F8D 26-1-35 # ᾍ Capital Alpha with Dasia and Oxia and Prosgegrammeni
+uppercase \x1F8B 12356-1-35 # ᾋ Capital Alpha with Dasia and Varia and Prosgegrammeni
+uppercase \x1F8F 235-1-35 # ᾏ Capital Alpha with Dasia and Perispomeni and Prosgegrammeni
 uppercase \x1FCC 3456 # ῌ Capital Eta with Prosgegrammeni
 uppercase \x1F98 3456 # ᾘ Capital Eta with Psili and Prosgegrammeni
 uppercase \x1F9C 356-3456 # ᾜ Capital Eta with Psili and Oxia and Prosgegrammeni
@@ -191,18 +191,18 @@ uppercase \x1FAB 12356-2456 # ᾫ Capital Omega with Dasia and Varia and Prosgeg
 uppercase \x1FAF 235-2456 # ᾯ Capital Omega with Dasia and Perispomeni and Prosgegrammeni
 
 lowercase \x1FB6 6-1 # ᾶ Small Alpha with Perispomeni
-lowercase \x1FB3 35 # ᾳ Small Alpha with Ypogegrammeni
-lowercase \x1FB4 5-35 # ᾴ Small Alpha with Oxia and Ypogegrammeni
-lowercase \x1FB2 4-35 # ᾲ Small Alpha with Varia and Ypogegrammeni
-lowercase \x1FB7 6-35 # ᾷ Small Alpha with Perispomeni and Ypogegrammeni
-lowercase \x1F80 35 # ᾀ Small Alpha with Psili and Ypogegrammeni
-lowercase \x1F84 356-35 # ᾄ Small Alpha with Psili and Oxia and Ypogegrammeni
-lowercase \x1F82 23456-35 # ᾂ Small Alpha with Psili and Varia and Ypogegrammeni
-lowercase \x1F86 256-35 # ᾆ Small Alpha with Psili and Perispomeni and Ypogegrammeni
-lowercase \x1F81 1236-35 # ᾁ Small Alpha with Dasia and Ypogegrammeni
-lowercase \x1F85 26-35 # ᾅ Small Alpha with Dasia and Oxia and Ypogegrammeni
-lowercase \x1F83 12356-35 # ᾃ Small Alpha with Dasia and Varia and Ypogegrammeni
-lowercase \x1F87 235-35 # ᾇ Small Alpha with Dasia and Perispomeni and Ypogegrammeni
+lowercase \x1FB3 1-35 # ᾳ Small Alpha with Ypogegrammeni
+lowercase \x1FB4 5-1-35 # ᾴ Small Alpha with Oxia and Ypogegrammeni
+lowercase \x1FB2 4-1-35 # ᾲ Small Alpha with Varia and Ypogegrammeni
+lowercase \x1FB7 6-1-35 # ᾷ Small Alpha with Perispomeni and Ypogegrammeni
+lowercase \x1F80 1-35 # ᾀ Small Alpha with Psili and Ypogegrammeni
+lowercase \x1F84 356-1-35 # ᾄ Small Alpha with Psili and Oxia and Ypogegrammeni
+lowercase \x1F82 23456-1-35 # ᾂ Small Alpha with Psili and Varia and Ypogegrammeni
+lowercase \x1F86 256-1-35 # ᾆ Small Alpha with Psili and Perispomeni and Ypogegrammeni
+lowercase \x1F81 1236-1-35 # ᾁ Small Alpha with Dasia and Ypogegrammeni
+lowercase \x1F85 26-1-35 # ᾅ Small Alpha with Dasia and Oxia and Ypogegrammeni
+lowercase \x1F83 12356-1-35 # ᾃ Small Alpha with Dasia and Varia and Ypogegrammeni
+lowercase \x1F87 235-1-35 # ᾇ Small Alpha with Dasia and Perispomeni and Ypogegrammeni
 lowercase \x1FC6 6-345 # ῆ Small Eta with Perispomeni
 lowercase \x1FC3 3456 # ῃ Small Eta with Ypogegrammeni
 lowercase \x1FC4 5-3456 # ῄ Small Eta with Oxia and Ypogegrammeni
