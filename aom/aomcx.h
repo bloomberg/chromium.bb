@@ -853,6 +853,15 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_DUAL_FILTER,
 
+  /*!\brief Codec control function to turn on / off delta quantization in chroma
+   * planes usage for a sequence.
+   *
+   * This will enable or disable use of chroma deltaq.
+   * The default value is 0.
+   *
+   */
+  AV1E_SET_ENABLE_CHROMA_DELTAQ,
+
   /*!\brief Codec control function to turn on / off masked compound usage
    * for a sequence.
    *
@@ -1352,6 +1361,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ALLOW_REF_FRAME_MVS, int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DUAL_FILTER, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_DUAL_FILTER
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_CHROMA_DELTAQ, int)
+#define AOM_CTRL_AV1E_SET_ENABLE_CHROMA_DELTAQ
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_MASKED_COMP, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_MASKED_COMP

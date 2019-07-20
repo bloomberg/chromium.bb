@@ -460,6 +460,10 @@ static const arg_def_t enable_dual_filter =
     ARG_DEF(NULL, "enable-dual-filter", 1,
             "Enable dual filter "
             "(0: false, 1: true (default))");
+static const arg_def_t enable_chroma_deltaq =
+    ARG_DEF(NULL, "enable-chroma-deltaq", 1,
+            "Enable chroma delta quant "
+            "(0: false (default), 1: true)");
 static const arg_def_t enable_intra_edge_filter =
     ARG_DEF(NULL, "enable-intra-edge-filter", 1,
             "Enable intra edge filtering "
@@ -808,6 +812,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &min_partition_size,
                                        &max_partition_size,
                                        &enable_dual_filter,
+                                       &enable_chroma_deltaq,
                                        &enable_intra_edge_filter,
                                        &enable_order_hint,
                                        &enable_tx64,
@@ -909,6 +914,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_MIN_PARTITION_SIZE,
                                         AV1E_SET_MAX_PARTITION_SIZE,
                                         AV1E_SET_ENABLE_DUAL_FILTER,
+                                        AV1E_SET_ENABLE_CHROMA_DELTAQ,
                                         AV1E_SET_ENABLE_INTRA_EDGE_FILTER,
                                         AV1E_SET_ENABLE_ORDER_HINT,
                                         AV1E_SET_ENABLE_TX64,
