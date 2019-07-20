@@ -5336,7 +5336,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   navigation_control_.reset();
   frame_input_handler_.reset();
 
-  // Disconnect with ImageDownloader Mojo service in RenderFrame.
+  // Disconnect with ImageDownloader Mojo service in Blink.
   mojo_image_downloader_.reset();
 
   // The geolocation service and sensor provider proxy may attempt to cancel

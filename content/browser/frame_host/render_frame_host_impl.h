@@ -1896,7 +1896,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RFH.
   std::unique_ptr<PermissionServiceContext> permission_service_context_;
 
-  // Holder of Mojo connection with ImageDownloader service in RenderFrame.
+  // Holder of Mojo connection with ImageDownloader service in Blink.
   blink::mojom::ImageDownloaderPtr mojo_image_downloader_;
 
   // Holder of Mojo connection with FindInPage service in Blink.
