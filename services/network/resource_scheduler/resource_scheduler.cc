@@ -109,14 +109,38 @@ static const net::RequestPriority kDelayablePriorityThreshold = net::MEDIUM;
 // requests should be blocked.
 static const size_t kInFlightNonDelayableRequestCountPerClientThreshold = 1;
 
-// Duration after which the timer to dispatch long queued requests should fire.
-// The request needs to be queued for at least 15 seconds before it can be
-// dispatched. Choosing 5 seconds as the checking interval ensures that the
-// queue is not checked too frequently. The interval is also not too long, so
-// we do not expect too many long queued requests to go on the network at the
-// same time.
-constexpr base::TimeDelta kLongQueuedRequestsDispatchPeriodicity =
-    base::TimeDelta::FromSeconds(5);
+// Returns the duration after which the timer to dispatch queued requests should
+// fire.
+base::TimeDelta GetQueuedRequestsDispatchPeriodicity() {
+  // This primarily affects two types of requests:
+  // (i) Requests that have been queued for too long, and firing of timer may
+  // result in some of those requests being dispatched to the network.
+  // Such requests need to be queued for at least 15 seconds before they can be
+  // dispatched.
+  // (ii) Requests that were throttled proactively in anticipation of arrival
+  // of higher priority requests. These requests need to be unthrottled after
+  // their queuing duration expires. The queuing duration is a function of HTTP
+  // RTT and can be of the order of 100 milliseconds.
+  //
+  // Note that the timer is active and fires periodically only if
+  // there is at least one queued request.
+
+  // When kProactivelyThrottleLowPriorityRequests is not enabled, it's
+  // sufficient to choose a longer periodicity (implying that timer will be
+  // fired less frequently) since the requests are queued for at least 15
+  // seconds anyways. Firing the timer a bit later is not going to delay the
+  // dispatch of the request by a significant amount.
+  if (!base::FeatureList::IsEnabled(
+          features::kProactivelyThrottleLowPriorityRequests)) {
+    return base::TimeDelta::FromSeconds(5);
+  }
+
+  // Choosing 100 milliseconds as the checking interval ensurs that the
+  // queue is not checked too frequently. The interval is also not too long, so
+  // we do not expect too many requests to go on the network at the
+  // same time.
+  return base::TimeDelta::FromMilliseconds(100);
+}
 
 struct ResourceScheduler::RequestPriorityParams {
   RequestPriorityParams()
@@ -1242,6 +1266,8 @@ ResourceScheduler::ResourceScheduler(bool enabled,
     : tick_clock_(tick_clock ? tick_clock
                              : base::DefaultTickClock::GetInstance()),
       enabled_(enabled),
+      queued_requests_dispatch_periodicity_(
+          GetQueuedRequestsDispatchPeriodicity()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(tick_clock_);
 
@@ -1378,7 +1404,7 @@ void ResourceScheduler::StartLongQueuedRequestsDispatchTimerIfNeeded() {
     return;
 
   long_queued_requests_dispatch_timer_.Start(
-      FROM_HERE, kLongQueuedRequestsDispatchPeriodicity, this,
+      FROM_HERE, queued_requests_dispatch_periodicity_, this,
       &ResourceScheduler::OnLongQueuedRequestsDispatchTimerFired);
 }
 
