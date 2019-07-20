@@ -1,4 +1,4 @@
-# liblouis: Table for Septuagint and Greek New Testament in Unicode
+# liblouis: Unofficial table used by some for classical and biblical Greek.
 #
 # -----------
 #-display-name: Ancient Greek braille
@@ -34,6 +34,11 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
+
+# There's no known official documentation for this table. It isn't the table
+# used in Greece. It's based on a table used in other countries, such as
+# England and the United States, for classical and biblical Greek. It's
+# possible that some people are still using it.
 
 space \t 7 tab
 space \x00a0 9 unbreakable space
