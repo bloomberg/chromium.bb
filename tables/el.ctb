@@ -265,8 +265,11 @@ midnum , 2 # Decimal Point
 
 punctuation	:	25	# : Colon
 
-punctuation	\x0387	23	# · Greek Semicolon
+punctuation	\x0387	23	# · Ano Telesa (Semicolon)
+punctuation	\x1FBD	3	# ᾽ Koronis (Apostrophe)
 punctuation	\x2015	6-36	# ― Dialog (Horizontal) Bar
+punctuation	\x2018	3	# ‘ Left Single Quote
+punctuation	\x2019	3	# ’ Right Single Quote
 punctuation	\x2026	3-3-3	# … Horizontal Ellipsis
 
 #########
