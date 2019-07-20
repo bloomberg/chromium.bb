@@ -79,6 +79,9 @@ sign	\x1FDD	12356	# ῝ Rough and Grave Accent (Dasia and Varia)
 sign	\x1FDE	26	# ῞ Rough and Acute Accent (Dasia and Oxia)
 sign	\x1FDF	235	# ῟ Rough and Circumflex Accent (Dasia and Perispomeni)
 
+#            ⠈ v   ⠐ o   ⠠ p   ⠾ p+v ⠴ p+o ⠲ p+p ⠧ d   ⠷ d+v ⠢ d+o ⠖ d+p
+class accent \x1FEF\x0384\x1FC0\x1FCD\x1FCE\x1FCF\x1FFE\x1FDD\x1FDE\x1FDF
+
 ##########################
 # Greek Accented Letters #
 ##########################
@@ -383,25 +386,23 @@ always \x03BF\x03B9	246	# οι Omicron Iota
 always \X03BF\x03C5	136	# ου Omicron Upsilon
 always \x03C5\x03B9	12456	# υι Upsilon Iota
 
-# The Tonos accent, if present, is always on the second letter.
-always \x03B1\x03AF	5-126	# αί Alpha Iota
-always \x03B1\x03CD	5-16	# αύ Alpha Upsilon
-always \x03B5\x03AF	5-146	# εί Epsilon Iota
-always \x03B5\x03CD	5-156	# εύ Epsilon Upsilon
-always \x03B7\x03CD	5-1256	# ηύ Eta Upsilon
-always \x03BF\x03AF	5-246	# οί Omicron Iota
-always \X03BF\x03CD	5-136	# ού Omicron Upsilon
-always \x03C5\x03AF	5-12456	# υί Upsilon Iota
+noback pass2 @1[%accent]@24	*@126	# αι Alpha Iota
+noback pass2 @1[%accent]@13456	*@16	# αυ Alpha Upsilon
+noback pass2 @15[%accent]@24	*@146	# ει Epsilon Iota
+noback pass2 @15[%accent]@13456	*@156	# ευ Epsilon Upsilon
+noback pass2 @345[%accent]@13456	*@1256	# ηυ Eta Upsilon
+noback pass2 @135[%accent]@24	*@246	# οι Omicron Iota
+noback pass2 @135[%accent]@13456	*@136	# ου Omicron Upsilon
+noback pass2 @13456[%accent]@24	*@12456	# υι Upsilon Iota
 
-# The Oxia accent, if present, is always on the second letter.
-always \x03B1\x1F77	5-126	# αί Alpha Iota
-always \x03B1\x1F7B	5-16	# αύ Alpha Upsilon
-always \x03B5\x1F77	5-146	# εί Epsilon Iota
-always \x03B5\x1F7B	5-156	# εύ Epsilon Upsilon
-always \x03B7\x1F7B	5-1256	# ηύ Eta Upsilon
-always \x03BF\x1F77	5-246	# οί Omicron Iota
-always \X03BF\x1F7B	5-136	# ού Omicron Upsilon
-always \x03C5\x1F77	5-12456	# υί Upsilon Iota
+nofor pass2 [%accent]@126	@1*@24	# αι Alpha Iota
+nofor pass2 [%accent]@16	@1*@13456	# αυ Alpha Upsilon
+nofor pass2 [%accent]@146	@15*@24	# ει Epsilon Iota
+nofor pass2 [%accent]@156	@15*@13456	# ευ Epsilon Upsilon
+nofor pass2 [%accent]@1256	@345*@13456	# ηυ Eta Upsilon
+nofor pass2 [%accent]@246	@135*@24	# οι Omicron Iota
+nofor pass2 [%accent]@136	@135*@13456	# ου Omicron Upsilon
+nofor pass2 [%accent]@12456	@13456*@24	# υι Upsilon Iota
 
 ##############
 # Indicators #
