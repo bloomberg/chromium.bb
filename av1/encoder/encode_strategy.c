@@ -823,6 +823,8 @@ void av1_update_ref_frame_map(AV1_COMP *cpi,
   // expressed than converting the frame update type.
   if (frame_is_sframe(cm)) frame_update_type = KEY_FRAME;
 
+  if (is_frame_droppable(cpi)) return;
+
   switch (frame_update_type) {
     case KEY_FRAME:
       stack_reset(ref_buffer_stack->lst_stack,
@@ -1028,6 +1030,8 @@ int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
        frame_params->frame_type == KEY_FRAME)) {
     return 0;
   }
+
+  if (is_frame_droppable(cpi)) return 0;
 
   int refresh_mask = 0;
 
