@@ -1,6 +1,13 @@
-# LibLouis Table for Greek Braille - Common Rules
+# LibLouis table for both modern and ancient Greek braille
 # ελληνικό σύστημα μπράιγ [Greek Braille System]
 # κέντρο εκπαίδευσης και αποκατάστασης τυφλών [Center for Education and Rehabilitation for the Blind]
+#
+# -----------
+#-name: ελληνικό σύστημα μπράιγ [Greek Braille System]
+#-display-name: Greek (modern and ancient)
+#
+#+locale:el
+#+type:literary
 
 # Copyright (C) 2017 Dave Mielke: <dave@mielke.cc>, [http://mielke.cc/]
 #
