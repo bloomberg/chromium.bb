@@ -37,10 +37,11 @@
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-# There's no known official documentation for this table. It isn't the table
-# used in Greece. It's based on a table used in other countries, such as
-# England and the United States, for classical and biblical Greek. It's
-# possible that some people are still using it.
+# This braille code isn't used in Greece. We're not aware of any official
+# documentation for it. It's based on a braille code developed by scholars who
+# study classical and biblical Greek. It's possible that some people are still
+# using it. One known user is Professor Panagiotis Antonopoulos, who was using
+# it for several years at Oxford back around 1980.
 
 space \t 7 tab
 space \x00a0 9 unbreakable space
@@ -249,11 +250,6 @@ letter	\x03C6	124	# φ Small Phi
 letter	\x03C7	12346	# χ Small Chi
 letter	\x03C8	13456	# ψ Small Psi
 letter	\x03C9	2456	# ω Small Omega
-
-# symbols
-sign	\x03D5	124	# ϕ Phi
-punctuation	\x0387	23	# · Ano Telesa (Semicolon)
-punctuation	\x1FBD	3	# ᾽ Koronis (Apostrophe)
 
 # accents
 sign	\x1FFE	125	# ῾ Dasia (rough breathing)
@@ -509,5 +505,8 @@ letter \x1FA5 125-5-2456-35 # ᾥ Small Omega with Dasia and Oxia and Ypogegramm
 letter \x1FA3 125-4-2456-35 # ᾣ Small Omega with Dasia and Varia and Ypogegrammeni
 letter \x1FA7 125-6-2456-35 # ᾧ Small Omega with Dasia and Perispomeni and Ypogegrammeni
 
-# Miscellaneous
+# symbols
+sign	\x03D5	124	# ϕ Phi
+punctuation	\x0387	23	# · Ano Teleia (Semicolon)
+punctuation	\x1FBD	3	# ᾽ Koronis (Apostrophe)
 noback sign \x25CF 16	# 9679 black circle
