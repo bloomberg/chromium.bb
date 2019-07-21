@@ -818,6 +818,11 @@ void av1_update_ref_frame_map(AV1_COMP *cpi,
                               int ref_map_index,
                               RefBufferStack *ref_buffer_stack) {
   AV1_COMMON *const cm = &cpi->common;
+  // TODO(jingning): Consider the S-frame same as key frame for the
+  // reference frame tracking purpose. The logic might be better
+  // expressed than converting the frame update type.
+  if (frame_is_sframe(cm)) frame_update_type = KEY_FRAME;
+
   switch (frame_update_type) {
     case KEY_FRAME:
       stack_reset(ref_buffer_stack->lst_stack,
