@@ -1,7 +1,7 @@
-# liblouis: Unofficial table used by some for classical and biblical Greek.
+# liblouis: Unofficial table used by some for studying classical and biblical Greek.
 #
 # -----------
-#-display-name: Ancient Greek braille
+#-display-name: Greek braille used by some scholars
 #
 #+locale:grc
 #
@@ -38,10 +38,10 @@
 #  <http://www.gnu.org/licenses/>.
 
 # This braille code isn't used in Greece. We're not aware of any official
-# documentation for it. It's based on a braille code developed by scholars who
-# study classical and biblical Greek. It's possible that some people are still
-# using it. One known user is Professor Panagiotis Antonopoulos, who was using
-# it for several years at Oxford back around 1980.
+# documentation for it. It's based on a braille code developed by scholars to
+# facilitate their study of classical and biblical Greek. It's possible that
+# some people are still using it. One known user is Professor Panagiotis
+# Antonopoulos, who was using it for several years at Oxford back around 1980.
 
 space \t 7 tab
 space \x00a0 9 unbreakable space
