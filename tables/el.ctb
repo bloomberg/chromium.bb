@@ -65,19 +65,19 @@ endword \x03C2 234
 # Greek Accents #
 #################
 
-sign	\x1FEF	4	# ` Grave Accent (Varia)
-sign	\x0384	5	# ΄ Acute Accent (Tonos)
-sign	\x1FFD	5	# ´ Acute Accent (Oxia)
-sign	\x1FC0	6	# ῀ Circumflex Accent (Perispomeni)
+sign	\x1FEF	4	# ` Varia Accent (Grave)
+sign	\x0384	5	# ΄ Tonos Accent (Acute)
+sign	\x1FFD	5	# ´ Oxia Accent (Acute)
+sign	\x1FC0	6	# ῀ Perispomeni Accent (Circumflex)
 
-sign	\x1FCD	23456	# ῍ Smooth and Grave Accent (Psili and Varia)
-sign	\x1FCE	356	# ῎ Smooth and Acute Accent (Psili and Oxia)
-sign	\x1FCF	256	# ῏ Smooth and Circumflex Accent (Psili and Perispomeni)
+sign	\x1FCD	23456	# ῍ Psili and Varia Accents (Smooth Breathing and Grave)
+sign	\x1FCE	356	# ῎ Psili and Oxia Accents (Smooth Breathing and Acute)
+sign	\x1FCF	256	# ῏ Psili and Perispomeni Accents (Smooth Breathing and Circumflex)
 
-sign	\x1FFE	1236	# ῾ Rough Breathing Accent (Dasia)
-sign	\x1FDD	12356	# ῝ Rough and Grave Accent (Dasia and Varia)
-sign	\x1FDE	26	# ῞ Rough and Acute Accent (Dasia and Oxia)
-sign	\x1FDF	235	# ῟ Rough and Circumflex Accent (Dasia and Perispomeni)
+sign	\x1FFE	1236	# ῾ Dasia Accent (Rough Breathing)
+sign	\x1FDD	12356	# ῝ Dasia and Varia Accents (Rough Breathing and Grave)
+sign	\x1FDE	26	# ῞ Dasia and Oxia Accents (Rough Breathing and Acute)
+sign	\x1FDF	235	# ῟ Dasia and Perispomeni Accents (Rough Breathing and Circumflex)
 
 #            ⠈ v   ⠐ o   ⠠ p   ⠾ p+v ⠴ p+o ⠲ p+p ⠧ d   ⠷ d+v ⠢ d+o ⠖ d+p
 class accent \x1FEF\x0384\x1FC0\x1FCD\x1FCE\x1FCF\x1FFE\x1FDD\x1FDE\x1FDF
@@ -265,7 +265,7 @@ midnum , 2 # Decimal Point
 
 punctuation	:	25	# : Colon
 
-punctuation	\x0387	23	# · Ano Telesa (Semicolon)
+punctuation	\x0387	23	# · Ano Teleia (Semicolon)
 punctuation	\x1FBD	3	# ᾽ Koronis (Apostrophe)
 punctuation	\x2015	6-36	# ― Dialog (Horizontal) Bar
 punctuation	\x2018	3	# ‘ Left Single Quote
