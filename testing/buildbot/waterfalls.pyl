@@ -3658,7 +3658,7 @@
       },
       'Linux CFI': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',
