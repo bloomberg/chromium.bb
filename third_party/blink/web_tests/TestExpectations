@@ -4098,7 +4098,7 @@ crbug.com/626703 external/wpt/css/css-fonts/font-feature-settings-descriptor-01.
 crbug.com/626703 [ Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
 
-crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Timeout ]
+crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Timeout Crash ]
 crbug.com/626703 external/wpt/websockets/Create-Secure-extensions-empty.any.html [ Timeout ]
 crbug.com/626703 external/wpt/websockets/Create-Secure-extensions-empty.any.worker.html [ Timeout ]
 crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-classic.sub.html [ Skip ]
