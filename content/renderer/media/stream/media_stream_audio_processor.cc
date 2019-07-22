@@ -499,8 +499,7 @@ void MediaStreamAudioProcessor::OnRenderThreadChanged() {
 webrtc::AudioProcessorInterface::AudioProcessorStatistics
 MediaStreamAudioProcessor::GetStats(bool has_remote_tracks) {
   AudioProcessorStatistics stats;
-  stats.typing_noise_detected =
-      (base::subtle::Acquire_Load(&typing_detected_) != false);
+  stats.typing_noise_detected = base::subtle::Acquire_Load(&typing_detected_);
   stats.apm_statistics = audio_processing_->GetStatistics(has_remote_tracks);
   return stats;
 }
