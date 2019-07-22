@@ -109,28 +109,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - UIViewController
 
-- (NSArray<UIBarButtonItem*>*)toolbarItems {
-  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
-    UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
-        initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
-                             target:nil
-                             action:nil];
-    return @[
-      self.deleteButton,
-      flexibleSpace,
-      self.addPaymentMethodButton,
-    ];
-  }
-  return [super toolbarItems];
-}
-
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.tableView.accessibilityIdentifier = kAutofillCreditCardTableViewId;
 
   base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));
-  [self.deleteButton setEnabled:NO];
+  [self setToolbarItems:@[ [self flexibleSpace], self.addPaymentMethodButton ]
+               animated:YES];
   [self updateUIForEditState];
   [self loadModel];
 }
@@ -138,9 +124,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {
   [super setEditing:editing animated:animated];
   if (editing) {
+    self.deleteButton.enabled = NO;
+    [self showDeleteButton];
     [self setSwitchItemEnabled:NO itemType:ItemTypeAutofillCardSwitch];
   } else {
-    [self.deleteButton setEnabled:NO];
+    [self hideDeleteButton];
     [self setSwitchItemEnabled:YES itemType:ItemTypeAutofillCardSwitch];
   }
 }
@@ -328,7 +316,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // edit mode, selection is handled by the superclass. When not in edit mode
   // selection presents the editing controller for the selected entry.
   if (self.editing) {
-    [self.deleteButton setEnabled:YES];
+    self.deleteButton.enabled = YES;
     return;
   }
 
@@ -355,7 +343,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
 
   if (self.tableView.indexPathsForSelectedRows.count == 0)
-    [self.deleteButton setEnabled:NO];
+    self.deleteButton.enabled = NO;
 }
 
 #pragma mark - UITableViewDataSource
@@ -482,6 +470,30 @@ typedef NS_ENUM(NSInteger, ItemType) {
                action:@selector(handleAddPayment:)];
   }
   return _addPaymentMethodButton;
+}
+
+#pragma mark - Private
+
+// Create a flexible space item to be used in the toolbar.
+- (UIBarButtonItem*)flexibleSpace {
+  return [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
+}
+
+// Adds delete button to the bottom toolbar.
+- (void)showDeleteButton {
+  NSArray* customToolbarItems =
+      @[ self.deleteButton, [self flexibleSpace], self.addPaymentMethodButton ];
+  [self setToolbarItems:customToolbarItems animated:YES];
+}
+
+// Removes delete button from the bottom toolbar.
+- (void)hideDeleteButton {
+  NSArray* customToolbarItems =
+      @[ [self flexibleSpace], self.addPaymentMethodButton ];
+  [self setToolbarItems:customToolbarItems animated:YES];
 }
 
 @end
