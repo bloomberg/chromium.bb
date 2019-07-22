@@ -68,6 +68,9 @@ class StackwalkerARM64 : public Stackwalker {
   }
 
  private:
+  // Strip pointer authentication codes from an address.
+  uint64_t PtrauthStrip(uint64_t ptr);
+
   // Implementation of Stackwalker, using arm64 context and stack conventions.
   virtual StackFrame* GetContextFrame();
   virtual StackFrame* GetCallerFrame(const CallStack* stack,
@@ -95,6 +98,10 @@ class StackwalkerARM64 : public Stackwalker {
   // CONTEXT_VALID_ALL in real use; it is only changeable for the sake of
   // unit tests.
   uint64_t context_frame_validity_;
+
+  // A mask of the valid address bits, determined from the address range of
+  // modules_.
+  uint64_t address_range_mask_;
 };
 
 
