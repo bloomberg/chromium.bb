@@ -315,6 +315,9 @@ class ASH_EXPORT ShelfView : public views::View,
     else
       return std::max(0, last_visible_index_ + 1);
   }
+  views::View* first_visible_button_for_testing() {
+    return view_model_->view_at(first_visible_index());
+  }
   ShelfWidget* shelf_widget() const { return shelf_->shelf_widget(); }
   OverflowBubble* overflow_bubble() { return overflow_bubble_.get(); }
   views::ViewModel* view_model() { return view_model_.get(); }
