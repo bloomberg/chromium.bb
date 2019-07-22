@@ -61,7 +61,7 @@ void Service::OnBindInterface(const service_manager::BindSourceInfo& info,
 }
 
 void Service::BindVizMainRequest(mojom::VizMainRequest request) {
-  viz_main_->Bind(std::move(request));
+  NOTIMPLEMENTED();
 }
 
 void Service::PreSandboxStartup() {

@@ -16,6 +16,7 @@ namespace viz {
 
 class VizMainImpl;
 
+// TODO(kylechar): Delete this service since it's unused.
 class Service : public service_manager::Service, public gpu::GpuSandboxHelper {
  public:
   explicit Service(service_manager::mojom::ServiceRequest request);
