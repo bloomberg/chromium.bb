@@ -3411,14 +3411,10 @@ static void scale_references(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MV_REFERENCE_FRAME ref_frame;
-  const AOM_REFFRAME ref_mask[INTER_REFS_PER_FRAME] = {
-    AOM_LAST_FLAG, AOM_LAST2_FLAG, AOM_LAST3_FLAG, AOM_GOLD_FLAG,
-    AOM_BWD_FLAG,  AOM_ALT2_FLAG,  AOM_ALT_FLAG
-  };
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     // Need to convert from AOM_REFFRAME to index into ref_mask (subtract 1).
-    if (cpi->ref_frame_flags & ref_mask[ref_frame - 1]) {
+    if (cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frame]) {
       BufferPool *const pool = cm->buffer_pool;
       const YV12_BUFFER_CONFIG *const ref =
           get_ref_frame_yv12_buf(cm, ref_frame);
