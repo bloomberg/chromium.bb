@@ -1167,23 +1167,21 @@ class WebContentsSplitCacheBrowserTestEnabled
       public ::testing::WithParamInterface<bool> {
  public:
   WebContentsSplitCacheBrowserTestEnabled() {
-    if (GetParam()) {
-      feature_list.InitWithFeatures(
-          {/* Enabled features */
-           // To enable kPlzDedicatedWorker, we also need to enable
-           // kOffMainThreadDedicatedWorkerScriptFetch and
-           // kNetworkService.
-           net::features::kSplitCacheByNetworkIsolationKey,
-           blink::features::kPlzDedicatedWorker,
-           blink::features::kOffMainThreadDedicatedWorkerScriptFetch,
-           network::features::kNetworkService},
-          {/* Disabled features */});
-    } else {
-      feature_list.InitWithFeatures(
-          {/* Enabled feature */ net::features::
-               kSplitCacheByNetworkIsolationKey},
-          {/* Disabled feature */ blink::features::kPlzDedicatedWorker});
+    std::vector<base::Feature> enabled_features;
+    enabled_features.push_back(net::features::kSplitCacheByNetworkIsolationKey);
+
+    // When the test parameter is true and network service is available, we
+    // test the split cache with PlzDedicatedWorker enabled, which itself
+    // requires OffMainThreadWorkerScriptFetch to be enabled.  We cannot
+    // enable PlzDedicatedWorker without also enabling NetworkService.
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+        GetParam()) {
+      enabled_features.push_back(blink::features::kPlzDedicatedWorker);
+      enabled_features.push_back(
+          blink::features::kOffMainThreadDedicatedWorkerScriptFetch);
     }
+
+    feature_list.InitWithFeatures(enabled_features, {});
   }
 
  private:
@@ -1481,7 +1479,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
       GenURL("e.com", "/worker.js")));
 }
 
-INSTANTIATE_TEST_SUITE_P(SplitCacheParamByPlzDedicatedWorker,
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          WebContentsSplitCacheBrowserTestEnabled,
                          ::testing::Values(true, false));
 
