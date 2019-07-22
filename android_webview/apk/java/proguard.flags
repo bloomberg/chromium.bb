@@ -68,12 +68,6 @@
     java.nio.channels.FileLock sExclusiveFileLock;
 }
 
-# Accessed via reflection but not present in all builds
--keep class com.android.webview.chromium.AwSafeBrowsingApiHandler {
-  AwSafeBrowsingApiHandler(...);
-}
--dontnote com.android.webview.chromium.AwSafeBrowsingApiHandler
-
 # We strip some unused resources when preprocessing the GMS client libs.
 -dontwarn com.google.android.gms.R**
 
