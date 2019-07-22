@@ -55,7 +55,8 @@ static void amdgpu_userptr_test(void);
 static void amdgpu_semaphore_test(void);
 static void amdgpu_sync_dependency_test(void);
 static void amdgpu_bo_eviction_test(void);
-static void amdgpu_dispatch_test(void);
+static void amdgpu_compute_dispatch_test(void);
+static void amdgpu_gfx_dispatch_test(void);
 static void amdgpu_draw_test(void);
 static void amdgpu_gpu_reset_test(void);
 
@@ -79,7 +80,8 @@ CU_TestInfo basic_tests[] = {
 	{ "Command submission Test (SDMA)", amdgpu_command_submission_sdma },
 	{ "SW semaphore Test",  amdgpu_semaphore_test },
 	{ "Sync dependency Test",  amdgpu_sync_dependency_test },
-	{ "Dispatch Test",  amdgpu_dispatch_test },
+	{ "Dispatch Test (Compute)",  amdgpu_compute_dispatch_test },
+	{ "Dispatch Test (GFX)",  amdgpu_gfx_dispatch_test },
 	{ "Draw Test",  amdgpu_draw_test },
 	{ "GPU reset Test", amdgpu_gpu_reset_test },
 	CU_TEST_INFO_NULL,
@@ -2448,7 +2450,8 @@ static void amdgpu_memcpy_dispatch_test(amdgpu_device_handle device_handle,
 	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 }
-static void amdgpu_dispatch_test(void)
+
+static void amdgpu_compute_dispatch_test(void)
 {
 	int r;
 	struct drm_amdgpu_info_hw_ip info;
@@ -2463,6 +2466,13 @@ static void amdgpu_dispatch_test(void)
 		amdgpu_memset_dispatch_test(device_handle, AMDGPU_HW_IP_COMPUTE, ring_id);
 		amdgpu_memcpy_dispatch_test(device_handle, AMDGPU_HW_IP_COMPUTE, ring_id);
 	}
+}
+
+static void amdgpu_gfx_dispatch_test(void)
+{
+	int r;
+	struct drm_amdgpu_info_hw_ip info;
+	uint32_t ring_id;
 
 	r = amdgpu_query_hw_ip_info(device_handle, AMDGPU_HW_IP_GFX, 0, &info);
 	CU_ASSERT_EQUAL(r, 0);
@@ -3170,5 +3180,6 @@ static void amdgpu_gpu_reset_test(void)
 	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
-	amdgpu_dispatch_test();
+	amdgpu_compute_dispatch_test();
+	amdgpu_gfx_dispatch_test();
 }
