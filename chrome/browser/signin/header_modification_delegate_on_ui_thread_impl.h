@@ -2,27 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_HEADER_MODIFICATION_DELEGATE_IMPL_H_
-#define CHROME_BROWSER_SIGNIN_HEADER_MODIFICATION_DELEGATE_IMPL_H_
+#ifndef CHROME_BROWSER_SIGNIN_HEADER_MODIFICATION_DELEGATE_ON_UI_THREAD_IMPL_H_
+#define CHROME_BROWSER_SIGNIN_HEADER_MODIFICATION_DELEGATE_ON_UI_THREAD_IMPL_H_
 
 #include "chrome/browser/signin/header_modification_delegate.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "content/public/browser/browser_thread.h"
 
-class ProfileIOData;
-
-namespace content {
-class ResourceContext;
-}
+class Profile;
 
 namespace signin {
 
 // This class wraps the FixAccountConsistencyRequestHeader and
 // ProcessAccountConsistencyResponseHeaders in the HeaderModificationDelegate
 // interface.
-class HeaderModificationDelegateImpl : public HeaderModificationDelegate {
+class HeaderModificationDelegateOnUIThreadImpl
+    : public HeaderModificationDelegate {
  public:
-  explicit HeaderModificationDelegateImpl(
-      content::ResourceContext* resource_context);
-  ~HeaderModificationDelegateImpl() override;
+  explicit HeaderModificationDelegateOnUIThreadImpl(Profile* profile);
+  ~HeaderModificationDelegateOnUIThreadImpl() override;
 
   // HeaderModificationDelegate
   bool ShouldInterceptNavigation(
@@ -33,11 +31,12 @@ class HeaderModificationDelegateImpl : public HeaderModificationDelegate {
                        const GURL& redirect_url) override;
 
  private:
-  ProfileIOData* const io_data_;
+  Profile* profile_;
+  scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 
-  DISALLOW_COPY_AND_ASSIGN(HeaderModificationDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(HeaderModificationDelegateOnUIThreadImpl);
 };
 
 }  // namespace signin
 
-#endif  // CHROME_BROWSER_SIGNIN_HEADER_MODIFICATION_DELEGATE_IMPL_H_
+#endif  // CHROME_BROWSER_SIGNIN_HEADER_MODIFICATION_DELEGATE_ON_UI_THREAD_IMPL_H_

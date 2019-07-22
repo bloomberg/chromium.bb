@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/header_modification_delegate_impl.h"
+#include "chrome/browser/signin/header_modification_delegate_on_io_thread_impl.h"
 
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
@@ -12,13 +12,15 @@
 
 namespace signin {
 
-HeaderModificationDelegateImpl::HeaderModificationDelegateImpl(
-    content::ResourceContext* resource_context)
+HeaderModificationDelegateOnIOThreadImpl::
+    HeaderModificationDelegateOnIOThreadImpl(
+        content::ResourceContext* resource_context)
     : io_data_(ProfileIOData::FromResourceContext(resource_context)) {}
 
-HeaderModificationDelegateImpl::~HeaderModificationDelegateImpl() = default;
+HeaderModificationDelegateOnIOThreadImpl::
+    ~HeaderModificationDelegateOnIOThreadImpl() = default;
 
-bool HeaderModificationDelegateImpl::ShouldInterceptNavigation(
+bool HeaderModificationDelegateOnIOThreadImpl::ShouldInterceptNavigation(
     content::NavigationUIData* navigation_ui_data) {
   if (io_data_->IsOffTheRecord())
     return false;
@@ -41,14 +43,25 @@ bool HeaderModificationDelegateImpl::ShouldInterceptNavigation(
   return true;
 }
 
-void HeaderModificationDelegateImpl::ProcessRequest(
+void HeaderModificationDelegateOnIOThreadImpl::ProcessRequest(
     ChromeRequestAdapter* request_adapter,
     const GURL& redirect_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  FixAccountConsistencyRequestHeader(request_adapter, redirect_url, io_data_);
+  FixAccountConsistencyRequestHeader(
+      request_adapter, redirect_url, io_data_->IsOffTheRecord(),
+      io_data_->incognito_availibility()->GetValue(),
+      io_data_->account_consistency(),
+      io_data_->google_services_account_id()->GetValue(),
+#if defined(OS_CHROMEOS)
+      io_data_->account_consistency_mirror_required()->GetValue(),
+#endif
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+      io_data_->IsSyncEnabled(), io_data_->GetSigninScopedDeviceId(),
+#endif
+      io_data_->GetCookieSettings());
 }
 
-void HeaderModificationDelegateImpl::ProcessResponse(
+void HeaderModificationDelegateOnIOThreadImpl::ProcessResponse(
     ResponseAdapter* response_adapter,
     const GURL& redirect_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
