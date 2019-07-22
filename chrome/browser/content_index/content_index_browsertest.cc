@@ -256,4 +256,13 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, LaunchUrl) {
                              base::CompareCase::SENSITIVE));
 }
 
+IN_PROC_BROWSER_TEST_F(ContentIndexTest, UserDeletedEntryDispatchesEvent) {
+  RunScript("AddContent('my-id')");
+  base::RunLoop().RunUntilIdle();  // Wait for the provider to get the content.
+
+  provider()->RemoveItem(offline_items().at("my-id").id);
+  EXPECT_EQ(RunScript("waitForMessageFromServiceWorker()"), "my-id");
+  EXPECT_TRUE(GetAllItems().empty());
+}
+
 }  // namespace

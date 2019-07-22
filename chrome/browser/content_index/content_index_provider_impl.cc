@@ -214,7 +214,17 @@ void ContentIndexProviderImpl::DidGetEntryToOpen(
 }
 
 void ContentIndexProviderImpl::RemoveItem(const ContentId& id) {
-  NOTIMPLEMENTED();
+  auto components = GetEntryKeyComponents(id.id);
+
+  auto* storage_partition = content::BrowserContext::GetStoragePartitionForSite(
+      profile_, components.origin.GetURL(), /* can_create= */ false);
+
+  if (!storage_partition || !storage_partition->GetContentIndexContext())
+    return;
+
+  storage_partition->GetContentIndexContext()->OnUserDeletedItem(
+      components.service_worker_registration_id, components.origin,
+      components.description_id);
 }
 
 void ContentIndexProviderImpl::CancelDownload(const ContentId& id) {
