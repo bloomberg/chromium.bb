@@ -17,6 +17,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
@@ -431,6 +432,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
       }];
 }
 
+// Opens new view controller |AutofillAddCreditCardViewController| for fillig
+// credit card details.
+- (void)handleAddPayment:(id)sender {
+  DCHECK(base::FeatureList::IsEnabled(kSettingsAddPaymentMethod));
+  AutofillAddCreditCardViewController* addCreditCardViewController =
+      [[AutofillAddCreditCardViewController alloc] init];
+
+  UINavigationController* navigationController = [[UINavigationController alloc]
+      initWithRootViewController:addCreditCardViewController];
+
+  [self presentViewController:navigationController animated:YES completion:nil];
+}
+
 #pragma mark PersonalDataManagerObserver
 
 - (void)onPersonalDataChanged {
@@ -465,9 +479,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                           IDS_IOS_MANUAL_FALLBACK_ADD_PAYMENT_METHOD)
                 style:UIBarButtonItemStylePlain
                target:self
-               action:nil];
-    // TODO(crbug.com/984561): Add action to navigate to the add credit card
-    // details screen here.
+               action:@selector(handleAddPayment:)];
   }
   return _addPaymentMethodButton;
 }
