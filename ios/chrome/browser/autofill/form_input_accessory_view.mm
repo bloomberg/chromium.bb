@@ -24,10 +24,10 @@
 
 namespace {
 
-// The width for the white gradient UIImageView.
+// The width for the white gradient UIView.
 constexpr CGFloat ManualFillGradientWidth = 44;
 
-// The margin for the white gradient UIImageView.
+// The margin for the white gradient UIView.
 constexpr CGFloat ManualFillGradientMargin = 14;
 
 // The spacing between the items in the navigation view.
@@ -49,6 +49,9 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
 // The navigation delegate if any.
 @property(nonatomic, nullable, weak) id<FormInputAccessoryViewDelegate>
     delegate;
+
+// Gradient layer to disolve the leading view's end.
+@property(nonatomic, strong) CAGradientLayer* gradientLayer;
 
 @property(nonatomic, weak) UIButton* previousButton;
 
@@ -74,6 +77,11 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
   [self setUpWithLeadingView:leadingView
           customTrailingView:nil
           navigationDelegate:delegate];
+}
+
+- (void)layoutSubviews {
+  [super layoutSubviews];
+  self.gradientLayer.frame = self.gradientLayer.superlayer.bounds;
 }
 
 #pragma mark - UIInputViewAudioFeedback
@@ -151,10 +159,18 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
 
   self.backgroundColor = UIColor.cr_systemBackgroundColor;
 
-  UIImage* gradientImage = [[UIImage imageNamed:@"mf_gradient"]
-      resizableImageWithCapInsets:UIEdgeInsetsZero
-                     resizingMode:UIImageResizingModeStretch];
-  UIImageView* gradientView = [[UIImageView alloc] initWithImage:gradientImage];
+  CAGradientLayer* gradientLayer = [[CAGradientLayer alloc] init];
+  gradientLayer.colors = @[
+    (id)[[UIColor clearColor] CGColor], (id)[[UIColor whiteColor] CGColor]
+  ];
+  gradientLayer.startPoint = CGPointMake(0, 0.5);
+  gradientLayer.endPoint = CGPointMake(0.6, 0.5);
+  self.gradientLayer = gradientLayer;
+
+  UIView* gradientView = [[UIView alloc] init];
+  gradientView.userInteractionEnabled = NO;
+  gradientView.backgroundColor = UIColor.cr_systemBackgroundColor;
+  gradientView.layer.mask = gradientLayer;
   gradientView.translatesAutoresizingMaskIntoConstraints = NO;
   if (base::i18n::IsRTL()) {
     gradientView.transform = CGAffineTransformMakeRotation(M_PI);
