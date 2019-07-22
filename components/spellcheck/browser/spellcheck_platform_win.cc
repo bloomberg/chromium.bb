@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/com_init_util.h"
 #include "base/win/windows_types.h"
 #include "base/win/windows_version.h"
 #include "components/spellcheck/common/spellcheck_common.h"
@@ -214,7 +215,7 @@ void WindowsSpellChecker::RecordMissingLanguagePacksCount(
 
 void WindowsSpellChecker::CreateSpellCheckerFactoryInBackgroundThread() {
   DCHECK(!main_task_runner_->BelongsToCurrentThread());
-  DCHECK(SUCCEEDED(::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED)));
+  base::win::AssertComApartmentType(base::win::ComApartmentType::STA);
 
   if (!spellcheck::WindowsVersionSupportsSpellchecker() ||
       FAILED(::CoCreateInstance(__uuidof(::SpellCheckerFactory), nullptr,
