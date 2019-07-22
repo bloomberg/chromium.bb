@@ -888,23 +888,18 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
           ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
           : base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter.png"));
 
-  if (renderer_type() == RENDERER_SKIA_VK) {
-    if (raster_type() == GPU) {
-      // Vulkan with GPU raster has 4 pixels errors (the circle mask shape is
-      // slight different).
-      float percentage_pixels_large_error = 0.04f;  // 4px / (100*100)
-      float percentage_pixels_small_error = 0.0f;
-      float average_error_allowed_in_bad_pixels = 182.f;
-      int large_error_allowed = 182;
-      int small_error_allowed = 0;
-      pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
-          true /* discard_alpha */, percentage_pixels_large_error,
-          percentage_pixels_small_error, average_error_allowed_in_bad_pixels,
-          large_error_allowed, small_error_allowed);
-    } else if (raster_type() == ZERO_COPY) {
-      pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(
-          true /* discard_alpha  */);
-    }
+  if (renderer_type() == RENDERER_SKIA_VK && raster_type() == GPU) {
+    // Vulkan with GPU raster has 4 pixels errors (the circle mask shape is
+    // slight different).
+    float percentage_pixels_large_error = 0.04f;  // 4px / (100*100)
+    float percentage_pixels_small_error = 0.0f;
+    float average_error_allowed_in_bad_pixels = 182.f;
+    int large_error_allowed = 182;
+    int small_error_allowed = 0;
+    pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
+        true /* discard_alpha */, percentage_pixels_large_error,
+        percentage_pixels_small_error, average_error_allowed_in_bad_pixels,
+        large_error_allowed, small_error_allowed);
   }
 
   RunPixelResourceTest(background, image_name);
@@ -1115,7 +1110,6 @@ class LayerTreeHostMaskAsBlendingPixelTest
   bool force_shaders_;
 };
 
-// TODO(crbug.com/963446): Enable these tests for Vulkan.
 MaskTestConfig const kTestConfigs[] = {
     MaskTestConfig{{LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE}, 0},
     MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY}, 0},
