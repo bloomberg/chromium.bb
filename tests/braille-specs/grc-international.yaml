@@ -21,8 +21,8 @@ tests:
   - ⠨⠁⠨⠃⠨⠛⠨⠙⠨⠑⠨⠵⠨⠱⠨⠹⠨⠊⠨⠅⠨⠇⠨⠍⠨⠝⠨⠭⠨⠕⠨⠏⠨⠗⠨⠎⠨⠞⠨⠥⠨⠋⠨⠯⠨⠽⠨⠺
 
 - # accents
-  - ῾ ΄`´῀ ͺι
-  - ⠓ ⠈⠠⠈⠐ ⠔⠔
+  - ᾿ ῾ ΄ ` ´ ῀
+  - ⠴ ⠓ ⠈ ⠠ ⠈ ⠐
 
 - # lowercase letters with dasia
   - ἁ ἑ ἡ ἱ ὁ ὑ ὡ ῥ
@@ -98,35 +98,35 @@ tests:
 
 - # lowercase letters with psili
   - ἀ ἐ ἠ ἰ ὀ ὐ ὠ ῤ
-  - ⠁ ⠑ ⠱ ⠊ ⠕ ⠥ ⠺ ⠗
+  - ⠴⠁ ⠴⠑ ⠴⠱ ⠴⠊ ⠴⠕ ⠴⠥ ⠴⠺ ⠴⠗
 
 - # lowercase letters with psili and oxia
   - ἄ ἔ ἤ ἴ ὄ ὔ ὤ
-  - ⠈⠁ ⠈⠑ ⠈⠱ ⠈⠊ ⠈⠕ ⠈⠥ ⠈⠺
+  - ⠴⠈⠁ ⠴⠈⠑ ⠴⠈⠱ ⠴⠈⠊ ⠴⠈⠕ ⠴⠈⠥ ⠴⠈⠺
 
 - # lowercase letters with psili and oxia and ypogegrammeni
   - ᾄ ᾔ ᾤ
-  - ⠈⠁⠔ ⠈⠱⠔ ⠈⠺⠔
+  - ⠴⠈⠁⠔ ⠴⠈⠱⠔ ⠴⠈⠺⠔
 
 - # lowercase letters with psili and perispomeni
   - ἆ ἦ ἶ ὖ ὦ
-  - ⠐⠁ ⠐⠱ ⠐⠊ ⠐⠥ ⠐⠺
+  - ⠴⠐⠁ ⠴⠐⠱ ⠴⠐⠊ ⠴⠐⠥ ⠴⠐⠺
 
 - # lowercase letters with psili and perispomeni and ypogegrammeni
   - ᾆ ᾖ ᾦ
-  - ⠐⠁⠔ ⠐⠱⠔ ⠐⠺⠔
+  - ⠴⠐⠁⠔ ⠴⠐⠱⠔ ⠴⠐⠺⠔
 
 - # lowercase letters with psili and varia
   - ἂ ἒ ἢ ἲ ὂ ὒ ὢ
-  - ⠠⠁ ⠠⠑ ⠠⠱ ⠠⠊ ⠠⠕ ⠠⠥ ⠠⠺
+  - ⠴⠠⠁ ⠴⠠⠑ ⠴⠠⠱ ⠴⠠⠊ ⠴⠠⠕ ⠴⠠⠥ ⠴⠠⠺
 
 - # lowercase letters with psili and varia and ypogegrammeni
   - ᾂ ᾒ ᾢ
-  - ⠠⠁⠔ ⠠⠱⠔ ⠠⠺⠔
+  - ⠴⠠⠁⠔ ⠴⠠⠱⠔ ⠴⠠⠺⠔
 
 - # lowercase letters with psili and ypogegrammeni
   - ᾀ ᾐ ᾠ
-  - ⠁⠔ ⠱⠔ ⠺⠔
+  - ⠴⠁⠔ ⠴⠱⠔ ⠴⠺⠔
 
 - # lowercase letters with tonos
   - ά έ ή ί ό ύ ώ
@@ -198,35 +198,35 @@ tests:
 
 - # uppercase letters with psili
   - Ἀ Ἐ Ἠ Ἰ Ὀ Ὠ
-  - ⠨⠁ ⠨⠑ ⠨⠱ ⠨⠊ ⠨⠕ ⠨⠺
+  - ⠨⠴⠁ ⠨⠴⠑ ⠨⠴⠱ ⠨⠴⠊ ⠨⠴⠕ ⠨⠴⠺
 
 - # uppercase letters with psili and oxia
   - Ἄ Ἔ Ἤ Ἴ Ὄ Ὤ
-  - ⠨⠈⠁ ⠨⠈⠑ ⠨⠈⠱ ⠨⠈⠊ ⠨⠈⠕ ⠨⠈⠺
+  - ⠨⠴⠈⠁ ⠨⠴⠈⠑ ⠨⠴⠈⠱ ⠨⠴⠈⠊ ⠨⠴⠈⠕ ⠨⠴⠈⠺
 
 - # uppercase letters with psili and oxia and prosgegrammeni
   - ᾌ ᾜ ᾬ
-  - ⠨⠈⠁⠔ ⠨⠈⠱⠔ ⠨⠈⠺⠔
+  - ⠨⠴⠈⠁⠔ ⠨⠴⠈⠱⠔ ⠨⠴⠈⠺⠔
 
 - # uppercase letters with psili and perispomeni
   - Ἆ Ἦ Ἶ Ὦ
-  - ⠨⠐⠁ ⠨⠐⠱ ⠨⠐⠊ ⠨⠐⠺
+  - ⠨⠴⠐⠁ ⠨⠴⠐⠱ ⠨⠴⠐⠊ ⠨⠴⠐⠺
 
 - # uppercase letters with psili and perispomeni and prosgegrammeni
   - ᾎ ᾞ ᾮ
-  - ⠨⠐⠁⠔ ⠨⠐⠱⠔ ⠨⠐⠺⠔
+  - ⠨⠴⠐⠁⠔ ⠨⠴⠐⠱⠔ ⠨⠴⠐⠺⠔
 
 - # uppercase letters with psili and prosgegrammeni
   - ᾈ ᾘ ᾨ
-  - ⠨⠁⠔ ⠨⠱⠔ ⠨⠺⠔
+  - ⠨⠴⠁⠔ ⠨⠴⠱⠔ ⠨⠴⠺⠔
 
 - # uppercase letters with psili and varia
   - Ἂ Ἒ Ἢ Ἲ Ὂ Ὢ
-  - ⠨⠠⠁ ⠨⠠⠑ ⠨⠠⠱ ⠨⠠⠊ ⠨⠠⠕ ⠨⠠⠺
+  - ⠨⠴⠠⠁ ⠨⠴⠠⠑ ⠨⠴⠠⠱ ⠨⠴⠠⠊ ⠨⠴⠠⠕ ⠨⠴⠠⠺
 
 - # uppercase letters with psili and varia and prosgegrammeni
   - ᾊ ᾚ ᾪ
-  - ⠨⠠⠁⠔ ⠨⠠⠱⠔ ⠨⠠⠺⠔
+  - ⠨⠴⠠⠁⠔ ⠨⠴⠠⠱⠔ ⠨⠴⠠⠺⠔
 
 - # uppercase letters with tonos
   - Ά Έ Ή Ί Ό Ύ Ώ
