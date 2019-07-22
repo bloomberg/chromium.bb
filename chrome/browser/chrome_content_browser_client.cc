@@ -5541,7 +5541,7 @@ ChromeContentBrowserClient::GetOriginPolicyErrorPage(
       error_reason, handle);
 }
 
-bool ChromeContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() {
+bool ChromeContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
   // We require --user-data-dir flag too so that no dangerous changes are made
   // in the user's regular profile.
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
