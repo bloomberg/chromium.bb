@@ -4,6 +4,10 @@
 #-display-name: Greek international braille
 #
 #+locale: grc
+#+type: literary
+#+dots: 6
+#+contraction: no
+#+direction: forward
 #
 # TODO: Please correct the metadata above. It is not meant to be
 # accurate nor complete. It hasn't been verified by the table
