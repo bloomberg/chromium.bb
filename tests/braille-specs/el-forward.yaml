@@ -46,7 +46,7 @@ tests:
 
 - # lowercase letters with dasia and oxia and ypogegrammeni
   - ᾅ ᾕ ᾥ
-  - ⠢⠔ ⠢⠼ ⠢⠺
+  - ⠢⠁⠔ ⠢⠼ ⠢⠺
 
 - # lowercase letters with dasia and perispomeni
   - ἇ ἧ ἷ ὗ ὧ
@@ -54,7 +54,7 @@ tests:
 
 - # lowercase letters with dasia and perispomeni and ypogegrammeni
   - ᾇ ᾗ ᾧ
-  - ⠖⠔ ⠖⠼ ⠖⠺
+  - ⠖⠁⠔ ⠖⠼ ⠖⠺
 
 - # lowercase letters with dasia and varia
   - ἃ ἓ ἣ ἳ ὃ ὓ ὣ
@@ -62,11 +62,11 @@ tests:
 
 - # lowercase letters with dasia and varia and ypogegrammeni
   - ᾃ ᾓ ᾣ
-  - ⠷⠔ ⠷⠼ ⠷⠺
+  - ⠷⠁⠔ ⠷⠼ ⠷⠺
 
 - # lowercase letters with dasia and ypogegrammeni
   - ᾁ ᾑ ᾡ
-  - ⠧⠔ ⠧⠼ ⠧⠺
+  - ⠧⠁⠔ ⠧⠼ ⠧⠺
 
 - # lowercase letters with dialytika
   - ϊ ϋ
@@ -98,7 +98,7 @@ tests:
 
 - # lowercase letters with oxia and ypogegrammeni
   - ᾴ ῄ ῴ
-  - ⠐⠔ ⠐⠼ ⠐⠺
+  - ⠐⠁⠔ ⠐⠼ ⠐⠺
 
 - # lowercase letters with perispomeni
   - ᾶ ῆ ῖ ῦ ῶ
@@ -106,7 +106,7 @@ tests:
 
 - # lowercase letters with perispomeni and ypogegrammeni
   - ᾷ ῇ ῷ
-  - ⠠⠔ ⠠⠼ ⠠⠺
+  - ⠠⠁⠔ ⠠⠼ ⠠⠺
 
 - # lowercase letters with psili
   - ἀ ἐ ἠ ἰ ὀ ὐ ὠ ῤ
@@ -118,7 +118,7 @@ tests:
 
 - # lowercase letters with psili and oxia and ypogegrammeni
   - ᾄ ᾔ ᾤ
-  - ⠴⠔ ⠴⠼ ⠴⠺
+  - ⠴⠁⠔ ⠴⠼ ⠴⠺
 
 - # lowercase letters with psili and perispomeni
   - ἆ ἦ ἶ ὖ ὦ
@@ -126,7 +126,7 @@ tests:
 
 - # lowercase letters with psili and perispomeni and ypogegrammeni
   - ᾆ ᾖ ᾦ
-  - ⠲⠔ ⠲⠼ ⠲⠺
+  - ⠲⠁⠔ ⠲⠼ ⠲⠺
 
 - # lowercase letters with psili and varia
   - ἂ ἒ ἢ ἲ ὂ ὒ ὢ
@@ -134,11 +134,11 @@ tests:
 
 - # lowercase letters with psili and varia and ypogegrammeni
   - ᾂ ᾒ ᾢ
-  - ⠾⠔ ⠾⠼ ⠾⠺
+  - ⠾⠁⠔ ⠾⠼ ⠾⠺
 
 - # lowercase letters with psili and ypogegrammeni
   - ᾀ ᾐ ᾠ
-  - ⠔ ⠼ ⠺
+  - ⠁⠔ ⠼ ⠺
 
 - # lowercase letters with tonos
   - ά έ ή ί ό ύ ώ
@@ -150,7 +150,7 @@ tests:
 
 - # lowercase letters with varia and ypogegrammeni
   - ᾲ ῂ ῲ
-  - ⠈⠔ ⠈⠼ ⠈⠺
+  - ⠈⠁⠔ ⠈⠼ ⠈⠺
 
 - # lowercase letters with vrachy
   - ᾰ ῐ ῠ
@@ -158,7 +158,7 @@ tests:
 
 - # lowercase letters with ypogegrammeni
   - ᾳ ῃ ῳ
-  - ⠔ ⠼ ⠺
+  - ⠁⠔ ⠼ ⠺
 
 - # uppercase letters with dasia
   - Ἁ Ἑ Ἡ Ἱ Ὁ Ὑ Ὡ Ῥ
@@ -170,7 +170,7 @@ tests:
 
 - # uppercase letters with dasia and oxia and prosgegrammeni
   - ᾍ ᾝ ᾭ
-  - ⠨⠢⠔ ⠨⠢⠼ ⠨⠢⠺
+  - ⠨⠢⠁⠔ ⠨⠢⠼ ⠨⠢⠺
 
 - # uppercase letters with dasia and perispomeni
   - Ἇ Ἧ Ἷ Ὗ Ὧ
@@ -178,11 +178,11 @@ tests:
 
 - # uppercase letters with dasia and perispomeni and prosgegrammeni
   - ᾏ ᾟ ᾯ
-  - ⠨⠖⠔ ⠨⠖⠼ ⠨⠖⠺
+  - ⠨⠖⠁⠔ ⠨⠖⠼ ⠨⠖⠺
 
 - # uppercase letters with dasia and prosgegrammeni
   - ᾉ ᾙ ᾩ
-  - ⠨⠧⠔ ⠨⠧⠼ ⠨⠧⠺
+  - ⠨⠧⠁⠔ ⠨⠧⠼ ⠨⠧⠺
 
 - # uppercase letters with dasia and varia
   - Ἃ Ἓ Ἣ Ἳ Ὃ Ὓ Ὣ
@@ -190,7 +190,7 @@ tests:
 
 - # uppercase letters with dasia and varia and prosgegrammeni
   - ᾋ ᾛ ᾫ
-  - ⠨⠷⠔ ⠨⠷⠼ ⠨⠷⠺
+  - ⠨⠷⠁⠔ ⠨⠷⠼ ⠨⠷⠺
 
 - # uppercase letters with dialytika
   - Ϊ Ϋ
@@ -206,7 +206,7 @@ tests:
 
 - # uppercase letters with prosgegrammeni
   - ᾼ ῌ ῼ
-  - ⠨⠔ ⠨⠼ ⠨⠺
+  - ⠨⠁⠔ ⠨⠼ ⠨⠺
 
 - # uppercase letters with psili
   - Ἀ Ἐ Ἠ Ἰ Ὀ Ὠ
@@ -218,7 +218,7 @@ tests:
 
 - # uppercase letters with psili and oxia and prosgegrammeni
   - ᾌ ᾜ ᾬ
-  - ⠨⠴⠔ ⠨⠴⠼ ⠨⠴⠺
+  - ⠨⠴⠁⠔ ⠨⠴⠼ ⠨⠴⠺
 
 - # uppercase letters with psili and perispomeni
   - Ἆ Ἦ Ἶ Ὦ
@@ -226,11 +226,11 @@ tests:
 
 - # uppercase letters with psili and perispomeni and prosgegrammeni
   - ᾎ ᾞ ᾮ
-  - ⠨⠲⠔ ⠨⠲⠼ ⠨⠲⠺
+  - ⠨⠲⠁⠔ ⠨⠲⠼ ⠨⠲⠺
 
 - # uppercase letters with psili and prosgegrammeni
   - ᾈ ᾘ ᾨ
-  - ⠨⠔ ⠨⠼ ⠨⠺
+  - ⠨⠁⠔ ⠨⠼ ⠨⠺
 
 - # uppercase letters with psili and varia
   - Ἂ Ἒ Ἢ Ἲ Ὂ Ὢ
@@ -238,7 +238,7 @@ tests:
 
 - # uppercase letters with psili and varia and prosgegrammeni
   - ᾊ ᾚ ᾪ
-  - ⠨⠾⠔ ⠨⠾⠼ ⠨⠾⠺
+  - ⠨⠾⠁⠔ ⠨⠾⠼ ⠨⠾⠺
 
 - # uppercase letters with tonos
   - Ά Έ Ή Ί Ό Ύ Ώ
