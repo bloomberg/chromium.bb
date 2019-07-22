@@ -142,6 +142,13 @@
       },
     },
   },
+  'arm64': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'arm64',
+      },
+    },
+  },
   'bullhead': {
     'swarming': {
       'dimensions': {

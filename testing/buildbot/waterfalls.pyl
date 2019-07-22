@@ -1657,6 +1657,10 @@
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
         },
+        'mixins': [
+          'arm64',
+          'linux-xenial',
+        ],
       },
       'fuchsia-fyi-x64-dbg': {
         'additional_compile_targets': [
