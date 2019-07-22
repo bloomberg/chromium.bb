@@ -6310,3 +6310,5 @@ crbug.com/986018 fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass
 # Sheriff 2019-07-22
 crbug.com/986019 [ Linux Win ] virtual/threaded/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
 crbug.com/986282 [ Linux Win ] external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Pass Failure ]
+crbug.com/986019 [ Linux ] virtual/threaded/animations/play-state.html [ Pass Timeout ]
+crbug.com/986019 [ Linux ] virtual/disable-blink-gen-property-trees/animations/play-state.html [ Pass Timeout ]
