@@ -91,7 +91,7 @@ void RecordJobResult(JobResultForHistogram result) {
 }
 
 // Returns the equivalient CupsPrintJob#State from a CupsJob#JobState.
-chromeos::CupsPrintJob::State ConvertState(printing::CupsJob::JobState state) {
+State ConvertState(printing::CupsJob::JobState state) {
   switch (state) {
     case printing::CupsJob::PENDING:
       return State::STATE_WAITING;
@@ -124,29 +124,28 @@ bool JobContainsReason(const ::printing::CupsJob& job,
 
 // Extracts an ErrorCode from PrinterStatus#reasons.  Returns NO_ERROR if there
 // are no reasons which indicate an error.
-chromeos::CupsPrintJob::ErrorCode ErrorCodeFromReasons(
-    const printing::PrinterStatus& printer_status) {
+ErrorCode ErrorCodeFromReasons(const printing::PrinterStatus& printer_status) {
   for (const auto& reason : printer_status.reasons) {
     switch (reason.reason) {
       case PrinterReason::MEDIA_EMPTY:
       case PrinterReason::MEDIA_NEEDED:
       case PrinterReason::MEDIA_LOW:
-        return chromeos::CupsPrintJob::ErrorCode::OUT_OF_PAPER;
+        return ErrorCode::OUT_OF_PAPER;
       case PrinterReason::MEDIA_JAM:
-        return chromeos::CupsPrintJob::ErrorCode::PAPER_JAM;
+        return ErrorCode::PAPER_JAM;
       case PrinterReason::TONER_EMPTY:
       case PrinterReason::TONER_LOW:
-        return chromeos::CupsPrintJob::ErrorCode::OUT_OF_INK;
+        return ErrorCode::OUT_OF_INK;
       case PrinterReason::TIMED_OUT:
-        return chromeos::CupsPrintJob::ErrorCode::PRINTER_UNREACHABLE;
+        return ErrorCode::PRINTER_UNREACHABLE;
       case PrinterReason::DOOR_OPEN:
       case PrinterReason::COVER_OPEN:
-        return chromeos::CupsPrintJob::ErrorCode::DOOR_OPEN;
+        return ErrorCode::DOOR_OPEN;
       default:
         break;
     }
   }
-  return chromeos::CupsPrintJob::ErrorCode::NO_ERROR;
+  return ErrorCode::NO_ERROR;
 }
 
 // Update the current printed page.  Returns true of the page has been updated.
@@ -186,9 +185,8 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
     case ::printing::CupsJob::STOPPED:
       // If cups job STOPPED but with filter failure, treat as ERROR
       if (JobContainsReason(job, kJobCompletedWithErrors)) {
-        print_job->set_error_code(
-            chromeos::CupsPrintJob::ErrorCode::FILTER_FAILED);
-        print_job->set_state(chromeos::CupsPrintJob::State::STATE_ERROR);
+        print_job->set_error_code(ErrorCode::FILTER_FAILED);
+        print_job->set_state(State::STATE_ERROR);
       } else {
         print_job->set_state(ConvertState(job.state));
       }
