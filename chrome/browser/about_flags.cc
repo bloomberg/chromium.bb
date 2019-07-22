@@ -2623,10 +2623,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kDocumentProvider,
                                     kOmniboxDocumentProviderVariations,
                                     "OmniboxBundledExperimentV1")},
-    {"omnibox-deduplicate-drive-urls",
-     flag_descriptions::kOmniboxDeduplicateDriveUrlsName,
-     flag_descriptions::kOmniboxDeduplicateDriveUrlsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kDedupeGoogleDriveURLs)},
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
     {"enable-speculative-service-worker-start-on-query-input",

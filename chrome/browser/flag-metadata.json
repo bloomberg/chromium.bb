@@ -2510,11 +2510,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "omnibox-deduplicate-drive-urls",
-    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "omnibox-experimental-keyword-mode",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76

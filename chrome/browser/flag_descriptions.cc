@@ -2721,12 +2721,6 @@ const char kOmniboxDriveSuggestionsDescriptions[] =
     "Display suggestions for Google Drive documents in the omnibox when Google "
     "is the default search engine.";
 
-const char kOmniboxDeduplicateDriveUrlsName[] =
-    "Deduplicate Google Drive suggestions in the Omnibox";
-const char kOmniboxDeduplicateDriveUrlsDescription[] =
-    "Present at most one result for the same Drive document across bookmarks, "
-    "history, document, etc. suggestions.";
-
 const char kOmniboxExperimentalKeywordModeName[] =
     "Omnibox Experimental Keyword Mode";
 const char kOmniboxExperimentalKeywordModeDescription[] =

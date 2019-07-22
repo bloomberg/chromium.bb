@@ -598,11 +598,9 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
 
   // Special-case canonicalizing Docs URLs. This logic is self-contained and
   // will not participate in the TemplateURL canonicalization.
-  if (base::FeatureList::IsEnabled(omnibox::kDedupeGoogleDriveURLs)) {
-    GURL docs_url = DocumentProvider::GetURLForDeduping(url);
-    if (docs_url.is_valid())
-      return docs_url;
-  }
+  GURL docs_url = DocumentProvider::GetURLForDeduping(url);
+  if (docs_url.is_valid())
+    return docs_url;
 
   GURL stripped_destination_url = url;
 
