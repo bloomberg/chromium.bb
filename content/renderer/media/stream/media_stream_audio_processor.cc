@@ -719,7 +719,8 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
                "capture_delay_ms", capture_delay_ms, "render_delay_ms",
                render_delay_ms);
 
-  const int total_delay_ms = capture_delay_ms + render_delay_ms;
+  const int total_delay_ms =
+      static_cast<int>(capture_delay_ms) + render_delay_ms;
   if (total_delay_ms > 300 && large_delay_log_count_ < 10) {
     LOG(WARNING) << "Large audio delay, capture delay: " << capture_delay_ms
                  << "ms; render delay: " << render_delay_ms << "ms";
