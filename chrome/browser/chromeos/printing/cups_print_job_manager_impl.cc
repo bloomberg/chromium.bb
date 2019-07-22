@@ -106,7 +106,7 @@ State ConvertState(printing::CupsJob::JobState state) {
     case printing::CupsJob::STOPPED:
       return State::STATE_SUSPENDED;
     case printing::CupsJob::ABORTED:
-      return State::STATE_ERROR;
+      return State::STATE_FAILED;
     case printing::CupsJob::UNKNOWN:
       break;
   }
@@ -186,7 +186,7 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
       // If cups job STOPPED but with filter failure, treat as ERROR
       if (JobContainsReason(job, kJobCompletedWithErrors)) {
         print_job->set_error_code(ErrorCode::FILTER_FAILED);
-        print_job->set_state(State::STATE_ERROR);
+        print_job->set_state(State::STATE_FAILED);
       } else {
         print_job->set_state(ConvertState(job.state));
       }
@@ -489,7 +489,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
       // Declare all lost jobs errors.
       RecordJobResult(LOST);
       CupsPrintJob* job = entry.second.get();
-      job->set_state(CupsPrintJob::State::STATE_ERROR);
+      job->set_state(CupsPrintJob::State::STATE_FAILED);
       NotifyJobStateUpdate(job->GetWeakPtr());
     }
 
@@ -525,8 +525,8 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
       case State::STATE_CANCELLED:
         NotifyJobCanceled(job);
         break;
-      case State::STATE_ERROR:
-        NotifyJobError(job);
+      case State::STATE_FAILED:
+        NotifyJobFailed(job);
         break;
       case State::STATE_DOCUMENT_DONE:
         NotifyJobDone(job);
