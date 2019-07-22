@@ -10,6 +10,7 @@ from __future__ import print_function
 import mock
 import os
 import stat
+import unittest
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import constants
@@ -163,6 +164,7 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     self._vm._SetQemuPath()
     self.assertEqual(self._vm.qemu_path, qemu_path)
 
+  @unittest.skip('Flaking on all bots (crbug.com/965128)')
   @mock.patch('chromite.lib.vm.VM._CheckQemuMinVersion')
   def testSystemQemuPath(self, check_min_version_mock):
     """Verify that QEMU in the system is picked up by vm.VM."""
