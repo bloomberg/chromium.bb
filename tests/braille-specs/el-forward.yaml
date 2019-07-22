@@ -20,18 +20,6 @@ tests:
   -   ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ
   - ⠨⠨⠁⠃⠛⠙⠑⠵⠜⠹⠊⠅⠇⠍⠝⠭⠕⠏⠗⠎⠞⠽⠋⠓⠯⠚
 
-- # capital letter indicator
-  - αβγ Δεζ ΗΘΙ
-  - ⠁⠃⠛ ⠨⠙⠑⠵ ⠨⠨⠜⠹⠊
-
-- # diphthongs
-  - ου αυ αι ει ευ υι ηυ οι
-  - ⠥ ⠡ ⠣ ⠩ ⠱ ⠻ ⠳ ⠪
-
-- # accented diphthongs
-  - ού αύ αί εί εύ υί ηύ οί
-  - ⠐⠥ ⠐⠡ ⠐⠣ ⠐⠩ ⠐⠱ ⠐⠻ ⠐⠳ ⠐⠪
-
 - # accents
   - ῾ ΄`´῀ ῍῎῏ ῝῞῟
   - ⠧ ⠐⠈⠐⠠ ⠾⠴⠲ ⠷⠢⠖
@@ -201,8 +189,8 @@ tests:
   - ⠨⠁ ⠨⠊ ⠨⠽
 
 - # uppercase letters with oxia
-  - Ά Έ Ή Ί Ύ Ό Ώ
-  - ⠨⠐⠁ ⠨⠐⠑ ⠨⠐⠜ ⠨⠐⠊ ⠨⠐⠽ ⠨⠐⠕ ⠨⠐⠚
+  - Ά Έ Ή Ί Ό Ύ Ώ
+  - ⠨⠐⠁ ⠨⠐⠑ ⠨⠐⠜ ⠨⠐⠊ ⠨⠐⠕ ⠨⠐⠽ ⠨⠐⠚
 
 - # uppercase letters with prosgegrammeni
   - ᾼ ῌ ῼ
@@ -245,12 +233,24 @@ tests:
   - ⠨⠐⠁ ⠨⠐⠑ ⠨⠐⠜ ⠨⠐⠊ ⠨⠐⠕ ⠨⠐⠽ ⠨⠐⠚
 
 - # uppercase letters with varia
-  - Ὰ Ὲ Ὴ Ὶ Ὺ Ὸ Ὼ
-  - ⠨⠈⠁ ⠨⠈⠑ ⠨⠈⠜ ⠨⠈⠊ ⠨⠈⠽ ⠨⠈⠕ ⠨⠈⠚
+  - Ὰ Ὲ Ὴ Ὶ Ὸ Ὺ Ὼ
+  - ⠨⠈⠁ ⠨⠈⠑ ⠨⠈⠜ ⠨⠈⠊ ⠨⠈⠕ ⠨⠈⠽ ⠨⠈⠚
 
 - # uppercase letters with vrachy
   - Ᾰ Ῐ Ῠ
   - ⠨⠁ ⠨⠊ ⠨⠽
+
+- # capital letter indicator
+  - αβγ Δεζ ΗΘΙ
+  - ⠁⠃⠛ ⠨⠙⠑⠵ ⠨⠨⠜⠹⠊
+
+- # diphthongs
+  - ου αυ αι ει ευ υι ηυ οι
+  - ⠥ ⠡ ⠣ ⠩ ⠱ ⠻ ⠳ ⠪
+
+- # accented diphthongs
+  - ού αύ αί εί εύ υί ηύ οί
+  - ⠐⠥ ⠐⠡ ⠐⠣ ⠐⠩ ⠐⠱ ⠐⠻ ⠐⠳ ⠐⠪
 
 - # number
   - 123.456.789,01
