@@ -54,7 +54,6 @@ public class AutofillAssistantAutostartTest {
      */
     @Test
     @MediumTest
-    @FlakyTest(message = "crbug.com/986026")
     public void testAutostart() throws Exception {
         AutofillAssistantTestScript script = new AutofillAssistantTestScript(
                 SupportedScriptProto.newBuilder()
