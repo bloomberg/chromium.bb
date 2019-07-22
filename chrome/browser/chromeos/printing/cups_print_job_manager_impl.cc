@@ -128,16 +128,20 @@ chromeos::CupsPrintJob::ErrorCode ErrorCodeFromReasons(
     const printing::PrinterStatus& printer_status) {
   for (const auto& reason : printer_status.reasons) {
     switch (reason.reason) {
-      case PrinterReason::MEDIA_JAM:
       case PrinterReason::MEDIA_EMPTY:
       case PrinterReason::MEDIA_NEEDED:
       case PrinterReason::MEDIA_LOW:
+        return chromeos::CupsPrintJob::ErrorCode::OUT_OF_PAPER;
+      case PrinterReason::MEDIA_JAM:
         return chromeos::CupsPrintJob::ErrorCode::PAPER_JAM;
       case PrinterReason::TONER_EMPTY:
       case PrinterReason::TONER_LOW:
         return chromeos::CupsPrintJob::ErrorCode::OUT_OF_INK;
       case PrinterReason::TIMED_OUT:
         return chromeos::CupsPrintJob::ErrorCode::PRINTER_UNREACHABLE;
+      case PrinterReason::DOOR_OPEN:
+      case PrinterReason::COVER_OPEN:
+        return chromeos::CupsPrintJob::ErrorCode::DOOR_OPEN;
       default:
         break;
     }

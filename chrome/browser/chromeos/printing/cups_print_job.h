@@ -30,7 +30,9 @@ class CupsPrintJob {
   enum class ErrorCode {
     NO_ERROR,
     PAPER_JAM,
+    OUT_OF_PAPER,
     OUT_OF_INK,
+    DOOR_OPEN,
     PRINTER_UNREACHABLE,
     FILTER_FAILED,
     UNKNOWN_ERROR,
