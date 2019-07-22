@@ -168,7 +168,7 @@ def get_git_version():
       ['git', '--version'],
       stdout=subprocess2.PIPE, stderr=subprocess2.PIPE)
   stdout, _ = p.communicate()
-  match = GIT_VERSION_RE.match(stdout)
+  match = GIT_VERSION_RE.match(stdout.decode('utf-8'))
   if not match:
     return None
   return '%s.%s.%s' % match.groups()

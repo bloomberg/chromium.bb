@@ -4,18 +4,19 @@
 # found in the LICENSE file.
 
 import sys
-import urllib2
+
+from third_party.six.moves import urllib
+from third_party.six.moves import input # pylint: disable=redefined-builtin
 
 import metrics_utils
 
 
 def main():
-  metrics = raw_input()
+  metrics = input()
   try:
-    urllib2.urlopen(metrics_utils.APP_URL + '/upload', metrics)
-  except urllib2.HTTPError:
-    pass
-  except urllib2.URLError:
+    urllib.request.urlopen(
+        metrics_utils.APP_URL + '/upload', metrics.encode('utf-8'))
+  except (urllib.error.HTTPError, urllib.error.URLError):
     pass
 
   return 0
