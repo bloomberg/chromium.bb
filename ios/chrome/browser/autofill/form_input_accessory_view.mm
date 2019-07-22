@@ -10,9 +10,10 @@
 #include "base/logging.h"
 #include "components/autofill/core/common/autofill_features.h"
 #import "ios/chrome/browser/autofill/form_input_navigator.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -106,7 +107,6 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
   DCHECK(!self.subviews.count);  // This should only be called once.
   DCHECK(leadingView);
   self.leadingView = leadingView;
-
   leadingView.translatesAutoresizingMaskIntoConstraints = NO;
 
   UIView* trailingView;
@@ -125,6 +125,7 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
     return;
   }
 
+  self.tintColor = [UIColor colorNamed:kTintColor];
   self.translatesAutoresizingMaskIntoConstraints = NO;
   UIView* leadingViewContainer = [[UIView alloc] init];
   leadingViewContainer.translatesAutoresizingMaskIntoConstraints = NO;
@@ -148,26 +149,25 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
     [trailingView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
   ]];
 
-    self.backgroundColor = UIColor.whiteColor;
+  self.backgroundColor = UIColor.cr_systemBackgroundColor;
 
-    UIImage* gradientImage = [[UIImage imageNamed:@"mf_gradient"]
-        resizableImageWithCapInsets:UIEdgeInsetsZero
-                       resizingMode:UIImageResizingModeStretch];
-    UIImageView* gradientView =
-        [[UIImageView alloc] initWithImage:gradientImage];
-    gradientView.translatesAutoresizingMaskIntoConstraints = NO;
-    if (base::i18n::IsRTL()) {
-      gradientView.transform = CGAffineTransformMakeRotation(M_PI);
-    }
+  UIImage* gradientImage = [[UIImage imageNamed:@"mf_gradient"]
+      resizableImageWithCapInsets:UIEdgeInsetsZero
+                     resizingMode:UIImageResizingModeStretch];
+  UIImageView* gradientView = [[UIImageView alloc] initWithImage:gradientImage];
+  gradientView.translatesAutoresizingMaskIntoConstraints = NO;
+  if (base::i18n::IsRTL()) {
+    gradientView.transform = CGAffineTransformMakeRotation(M_PI);
+  }
     [self insertSubview:gradientView belowSubview:trailingView];
 
     UIView* topGrayLine = [[UIView alloc] init];
-    topGrayLine.backgroundColor = UIColor.cr_manualFillSeparatorColor;
+    topGrayLine.backgroundColor = UIColor.cr_systemGray2Color;
     topGrayLine.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:topGrayLine];
 
     UIView* bottomGrayLine = [[UIView alloc] init];
-    bottomGrayLine.backgroundColor = UIColor.cr_manualFillSeparatorColor;
+    bottomGrayLine.backgroundColor = UIColor.cr_systemGray2Color;
     bottomGrayLine.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:bottomGrayLine];
 
@@ -209,7 +209,6 @@ UIImage* ButtonImage(NSString* name) {
     UIButton* previousButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [previousButton setImage:[UIImage imageNamed:@"mf_arrow_up"]
                     forState:UIControlStateNormal];
-    previousButton.tintColor = UIColor.cr_manualFillTintColor;
     [previousButton addTarget:self
                        action:@selector(previousButtonTapped)
              forControlEvents:UIControlEventTouchUpInside];
@@ -221,7 +220,6 @@ UIImage* ButtonImage(NSString* name) {
     UIButton* nextButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [nextButton setImage:[UIImage imageNamed:@"mf_arrow_down"]
                 forState:UIControlStateNormal];
-    nextButton.tintColor = UIColor.cr_manualFillTintColor;
     [nextButton addTarget:self
                    action:@selector(nextButtonTapped)
          forControlEvents:UIControlEventTouchUpInside];
@@ -233,7 +231,6 @@ UIImage* ButtonImage(NSString* name) {
     UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeSystem];
     NSString* title = l10n_util::GetNSString(IDS_IOS_AUTOFILL_INPUT_BAR_DONE);
     [closeButton setTitle:title forState:UIControlStateNormal];
-    closeButton.tintColor = UIColor.cr_manualFillTintColor;
     [closeButton addTarget:self
                     action:@selector(closeButtonTapped)
           forControlEvents:UIControlEventTouchUpInside];
