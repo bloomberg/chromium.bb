@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_VIEW_CREATION_UTIL_H_
-#define IOS_WEB_PUBLIC_WEB_VIEW_CREATION_UTIL_H_
+#ifndef IOS_WEB_COMMON_WEB_VIEW_CREATION_UTIL_H_
+#define IOS_WEB_COMMON_WEB_VIEW_CREATION_UTIL_H_
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
@@ -39,4 +39,4 @@ WKWebView* BuildWKWebViewWithCustomContextMenu(
 
 }  // web
 
-#endif  // IOS_WEB_PUBLIC_WEB_VIEW_CREATION_UTIL_H_
+#endif  // IOS_WEB_COMMON_WEB_VIEW_CREATION_UTIL_H_

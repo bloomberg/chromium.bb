@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/web_view_creation_util.h"
+#import "ios/web/common/web_view_creation_util.h"
 
 #include "base/logging.h"
 #include "ios/web/public/user_agent.h"
