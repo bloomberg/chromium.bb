@@ -21,16 +21,6 @@
 
 include grc-international-common.uti
 
-# accents
-sign	\x1FBF	356	# ᾿ Psili (smooth breathing)
-sign	\x1FFE	125	# ῾ Dasia (rough breathing)
-sign	\x1FEF	6	# ` Varia (Grave)
-sign	\x0384	4	# ΄ Tonos (Acute)
-sign	\x1FFD	4	# ´ Oxia (Acute)
-sign	\x1FC0	5	# ῀ Perispomeni (Circumflex)
-sign	\x037A	35	# ͺ Ypogegrammeni (subscript Iota)
-sign	\x1FBE	35	# ι Prosgegrammeni (prescript Iota)
-
 # uppercase accented letters which have lowercase equivalents
 letter \x0386 46-4-1 # Ά Capital Alpha with Tonos
 letter \x1FBB 46-4-1 # Ά Capital Alpha with Oxia

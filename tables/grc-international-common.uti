@@ -82,3 +82,13 @@ sign	\x03D5	124	# ϕ Phi
 punctuation	\x0387	23	# · Ano Teleia (Semicolon)
 punctuation	\x1FBD	3	# ᾽ Koronis (Apostrophe)
 
+# accents
+sign	\x1FBF	356	# ᾿ Psili (smooth breathing)
+sign	\x1FFE	125	# ῾ Dasia (rough breathing)
+sign	\x1FEF	6	# ` Varia (Grave)
+sign	\x0384	4	# ΄ Tonos (Acute)
+sign	\x1FFD	4	# ´ Oxia (Acute)
+sign	\x1FC0	5	# ῀ Perispomeni (Circumflex)
+sign	\x037A	35	# ͺ Ypogegrammeni (subscript Iota)
+sign	\x1FBE	35	# ι Prosgegrammeni (prescript Iota)
+
