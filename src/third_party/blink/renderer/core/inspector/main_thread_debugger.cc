@@ -250,18 +250,9 @@ void MainThreadDebugger::runMessageLoopOnPause(int context_group_id) {
 
   // Wait for continue or step command.
   if (client_message_loop_) {
-    auto breakCb  = gin::Debug::GetDebugBreakCallback();
-    auto resumeCb = gin::Debug::GetDebugResumeCallback();
-
-    if (breakCb) {
-      breakCb();
-    }
-
+    gin::Debug::SignalDebugBreak();
     client_message_loop_->Run(paused_frame);
-
-    if (resumeCb) {
-      resumeCb();
-    }
+    gin::Debug::SignalDebugResume();
   }
 }
 
