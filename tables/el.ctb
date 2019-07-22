@@ -9,7 +9,7 @@
 #+locale: el
 #+type: literary
 #+dots: 6
-#+contraction: no
+#+contraction: full
 #+direction: both
 #
 #-copyright: 2017, Dave Mielke
