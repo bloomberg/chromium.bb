@@ -8310,6 +8310,36 @@ static INLINE INTERP_PRED_TYPE is_pred_filter_search_allowed(
   return pred_filter_enable * pred_filter_type;
 }
 
+static DUAL_FILTER_TYPE find_best_interp_rd_facade(
+    MACROBLOCK *const x, const AV1_COMP *const cpi,
+    const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
+    const BUFFER_SET *const orig_dst, int64_t *const rd, RD_STATS *rd_stats_y,
+    RD_STATS *rd_stats, int *const switchable_rate,
+    const BUFFER_SET *dst_bufs[2], const int switchable_ctx[2],
+    const int skip_pred, uint16_t allow_interp_mask, int is_w4_or_h4) {
+  int tmp_skip_pred = skip_pred;
+  DUAL_FILTER_TYPE best_filt_type = REG_REG;
+
+  // If no filter are set to be evaluated, return from function
+  if (allow_interp_mask == 0x0) return best_filt_type;
+  // For block width or height is 4, skip the pred evaluation of SHARP_SHARP
+  tmp_skip_pred = is_w4_or_h4 ? cpi->default_interp_skip_flags : skip_pred;
+
+  // Loop over the all filter types and evaluate for only allowed filter types
+  for (int filt_type = SHARP_SHARP; filt_type >= REG_REG; --filt_type) {
+    const int is_filter_allowed =
+        get_interp_filter_allowed_mask(allow_interp_mask, filt_type);
+    if (is_filter_allowed)
+      if (interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
+                                  orig_dst, rd, rd_stats_y, rd_stats,
+                                  switchable_rate, dst_bufs, filt_type,
+                                  switchable_ctx, tmp_skip_pred))
+        best_filt_type = filt_type;
+    tmp_skip_pred = skip_pred;
+  }
+  return best_filt_type;
+}
+
 static INLINE void pred_dual_interp_filter_rd(
     MACROBLOCK *const x, const AV1_COMP *const cpi,
     const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
@@ -8319,48 +8349,30 @@ static INLINE void pred_dual_interp_filter_rd(
     const int skip_pred, INTERP_PRED_TYPE pred_filt_type, int_interpfilters *af,
     int_interpfilters *lf) {
   (void)lf;
-  int filter_idx = 0;
-  InterpFilter af_horiz = INTERP_INVALID, af_vert = INTERP_INVALID;
-  af_horiz = af->as_filters.x_filter;
-  af_vert = af->as_filters.y_filter;
-  assert(pred_filt_type != INTERP_HORZ_NEQ_VERT_NEQ);
+  assert(pred_filt_type > INTERP_HORZ_NEQ_VERT_NEQ);
+  assert(pred_filt_type < INTERP_PRED_TYPE_ALL);
+  uint16_t allowed_interp_mask = 0;
 
-  // pred_filter_search = 1: pred_filter is enabled and only horz pred matching
   if (pred_filt_type == INTERP_HORZ_EQ_VERT_NEQ) {
-    for (filter_idx = (DUAL_FILTER_SET_SIZE - SWITCHABLE_FILTERS + af_horiz);
-         filter_idx >= 0; filter_idx -= SWITCHABLE_FILTERS) {
-      if (filter_idx) {
-        interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
-                                orig_dst, rd, rd_stats_y, rd_stats,
-                                switchable_rate, dst_bufs, filter_idx,
-                                switchable_ctx, skip_pred);
-      }
-    }
+    // pred_filter_search = 1: Only horizontal filter is matching
+    allowed_interp_mask =
+        av1_interp_dual_filt_mask[pred_filt_type - 1][af->as_filters.x_filter];
   } else if (pred_filt_type == INTERP_HORZ_NEQ_VERT_EQ) {
-    // pred_filter_search = 2: pred_filter is enabled and
-    //                         only vert pred matching
-    for (filter_idx = (af_vert * SWITCHABLE_FILTERS + 2);
-         filter_idx >= ((af_vert * SWITCHABLE_FILTERS)); filter_idx -= 1) {
-      if (filter_idx) {
-        interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
-                                orig_dst, rd, rd_stats_y, rd_stats,
-                                switchable_rate, dst_bufs, filter_idx,
-                                switchable_ctx, skip_pred);
-      }
-    }
-  } else if (pred_filt_type == INTERP_HORZ_EQ_VERT_EQ) {
-    // pred_filter_search = 3: pred_filter is enabled and
-    //                         both vert, horz pred matching
-    filter_idx = af_horiz + (af_vert * SWITCHABLE_FILTERS);
-    if (filter_idx) {
-      interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
-                              orig_dst, rd, rd_stats_y, rd_stats,
-                              switchable_rate, dst_bufs, filter_idx,
-                              switchable_ctx, skip_pred);
-    }
+    // pred_filter_search = 2: Only vertical filter is matching
+    allowed_interp_mask =
+        av1_interp_dual_filt_mask[pred_filt_type - 1][af->as_filters.y_filter];
   } else {
-    assert(0);
+    // pred_filter_search = 3: Both horizontal and vertical filter are matching
+    int filt_type =
+        af->as_filters.x_filter + af->as_filters.y_filter * SWITCHABLE_FILTERS;
+    set_interp_filter_allowed_mask(&allowed_interp_mask, filt_type);
   }
+  // REG_REG is already been evaluated in the beginning
+  reset_interp_filter_allowed_mask(&allowed_interp_mask, REG_REG);
+  find_best_interp_rd_facade(x, cpi, tile_data, bsize, mi_row, mi_col, orig_dst,
+                             rd, rd_stats_y, rd_stats, switchable_rate,
+                             dst_bufs, switchable_ctx, skip_pred,
+                             allowed_interp_mask, 0);
 }
 // Evaluate dual filter type
 // a) Using above, left block interp filter
