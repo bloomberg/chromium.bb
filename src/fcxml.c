@@ -3620,7 +3620,7 @@ bail0:
 	    FcConfigMessage (0, FcSevereError, "Cannot %s default config file", load ? "load" : "scan");
 	return FcFalse;
     }
-    return FcTrue;
+    return ret;
 }
 
 FcBool
