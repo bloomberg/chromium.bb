@@ -68,6 +68,9 @@ static_library("router") {
   if (enable_extensions) {
     deps += [
       "discovery",
+      "//components/mirroring/mojom:host",
+      "//components/mirroring/mojom:service",
+      "//components/translate/content/common",
       "//mojo/public/cpp/bindings",
       "//ui/base:buildflags",
     ]
