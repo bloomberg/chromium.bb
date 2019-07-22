@@ -84,7 +84,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void DidCreateNewDocument() override;
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
-  void AccessibilityModeChanged() override;
+  void AccessibilityModeChanged(const ui::AXMode& mode) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // blink::mojom::RendererPreferenceObserver implementation.

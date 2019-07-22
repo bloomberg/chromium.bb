@@ -206,14 +206,13 @@ void RenderAccessibilityImpl::DidCommitProvisionalLoad(
   ax_image_annotator_.release();
 }
 
-void RenderAccessibilityImpl::AccessibilityModeChanged() {
+void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
   ui::AXMode old_mode = tree_source_.accessibility_mode();
-  ui::AXMode new_mode = render_frame_->accessibility_mode();
-  if (old_mode == new_mode)
+  if (old_mode == mode)
     return;
-  tree_source_.SetAccessibilityMode(new_mode);
+  tree_source_.SetAccessibilityMode(mode);
 
-  SetAccessibilityCrashKey(new_mode);
+  SetAccessibilityCrashKey(mode);
 
 #if !defined(OS_ANDROID)
   // Inline text boxes can be enabled globally on all except Android.
@@ -224,7 +223,7 @@ void RenderAccessibilityImpl::AccessibilityModeChanged() {
     if (web_view) {
       WebSettings* settings = web_view->GetSettings();
       if (settings) {
-        if (new_mode.has_mode(ui::AXMode::kInlineTextBoxes)) {
+        if (mode.has_mode(ui::AXMode::kInlineTextBoxes)) {
           settings->SetInlineTextBoxAccessibilityEnabled(true);
           tree_source_.GetRoot().LoadInlineTextBoxes();
         } else {
@@ -238,7 +237,7 @@ void RenderAccessibilityImpl::AccessibilityModeChanged() {
   serializer_.Reset();
   const WebDocument& document = GetMainDocument();
   if (!document.IsNull()) {
-    StartOrStopLabelingImages(old_mode, new_mode);
+    StartOrStopLabelingImages(old_mode, mode);
 
     // If there are any events in flight, |HandleAXEvent| will refuse to process
     // our new event.
