@@ -47,6 +47,7 @@ const char kAttemptsBeforeSuccessHistogram[] =
     "Previews.Prober.NumAttemptsBeforeSuccess";
 const char kHttpRespCodeHistogram[] = "Previews.Prober.ResponseCode";
 const char kNetErrorHistogram[] = "Previews.Prober.NetError";
+const char kCacheEntryAgeHistogram[] = "Previews.Prober.CacheEntryAge";
 
 // Please keep this up to date with logged histogram suffix
 // |Previews.Prober.Clients| in tools/metrics/histograms/histograms.xml.
@@ -560,9 +561,20 @@ base::Optional<bool> PreviewsProber::LastProbeWasSuccessful() {
   if (!entry.has_value())
     return base::nullopt;
 
-  // Check if the cache entry should be revalidated.
-  if (clock_->Now() >=
-      LastModifiedTimeFromCacheEntry(entry.value()) + revalidate_cache_after_) {
+  base::TimeDelta cache_entry_age =
+      clock_->Now() - LastModifiedTimeFromCacheEntry(entry.value());
+
+  base::LinearHistogram::FactoryTimeGet(
+      AppendNameToHistogram(kCacheEntryAgeHistogram),
+      base::TimeDelta::FromHours(0) /* minimum */,
+      base::TimeDelta::FromHours(72) /* maximum */, 50 /* bucket_count */,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(cache_entry_age.InHours());
+
+  // Check if the cache entry should be revalidated because it has expired or
+  // cache_entry_age is negative because the clock was moved back.
+  if (cache_entry_age >= revalidate_cache_after_ ||
+      cache_entry_age < base::TimeDelta()) {
     SendNowIfInactive(false);
   }
 

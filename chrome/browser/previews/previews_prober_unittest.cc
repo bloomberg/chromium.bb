@@ -817,3 +817,29 @@ TEST_F(PreviewsProberTest, DelegateStopsRetries) {
   EXPECT_FALSE(prober->is_active());
   VerifyNoRequests();
 }
+
+TEST_F(PreviewsProberTest, CacheEntryAge) {
+  base::HistogramTester histogram_tester;
+
+  std::unique_ptr<PreviewsProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive(false);
+  VerifyRequest();
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectUniqueSample("Previews.Prober.CacheEntryAge.Litepages",
+                                      0, 1);
+
+  FastForward(base::TimeDelta::FromHours(24));
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+
+  histogram_tester.ExpectBucketCount("Previews.Prober.CacheEntryAge.Litepages",
+                                     0, 1);
+  histogram_tester.ExpectBucketCount("Previews.Prober.CacheEntryAge.Litepages",
+                                     24, 1);
+  histogram_tester.ExpectTotalCount("Previews.Prober.CacheEntryAge.Litepages",
+                                    2);
+}
