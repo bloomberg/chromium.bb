@@ -15,9 +15,8 @@
 
 namespace android_webview {
 
-class AwBrowserProcess;
 class AwContentBrowserClient;
-class MemoryMetricsLogger;
+class AwBrowserProcess;
 
 class AwBrowserMainParts : public content::BrowserMainParts {
  public:
@@ -36,8 +35,6 @@ class AwBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<base::SingleThreadTaskExecutor> main_task_executor_;
 
   AwContentBrowserClient* browser_client_;
-
-  std::unique_ptr<MemoryMetricsLogger> metrics_logger_;
 
   std::unique_ptr<AwBrowserProcess> browser_process_;
 

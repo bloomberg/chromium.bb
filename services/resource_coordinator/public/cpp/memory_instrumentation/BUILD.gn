@@ -45,14 +45,3 @@ component("memory_instrumentation") {
     "//services/service_manager/public/cpp",
   ]
 }
-
-source_set("browser") {
-  sources = [
-    "browser_metrics.cc",
-    "browser_metrics.h",
-  ]
-
-  deps = [
-    "//base",
-  ]
-}
