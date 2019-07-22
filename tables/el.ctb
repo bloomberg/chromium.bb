@@ -3,14 +3,25 @@
 # κέντρο εκπαίδευσης και αποκατάστασης τυφλών [Center for Education and Rehabilitation for the Blind]
 #
 # -----------
-#-name: ελληνικό σύστημα μπράιγ [Greek Braille System]
-#-display-name: Greek (modern and ancient)
+#-name: ελληνικό σύστημα μπράιγ
+#-display-name: Greek braille
 #
-#+locale:el
-#+type:literary
-
+#+locale: el
+#+type: literary
+#+dots: 6
+#+contraction: no
+#+direction: both
+#
+#-copyright: 2017, Dave Mielke
+#-license: LGPLv2.1
+#
+#-author-name: Dave Mielke
+#-author-email: dave@mielke.cc
+#-author-url: http://mielke.cc/
+# -----------
+#
 # Copyright (C) 2017 Dave Mielke: <dave@mielke.cc>, [http://mielke.cc/]
-#
+
 # This file is part of LibLouis.
 #
 # LibLouis is free software. You may redistribute it and/or modify it
