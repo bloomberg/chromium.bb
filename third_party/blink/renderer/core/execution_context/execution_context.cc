@@ -281,4 +281,9 @@ bool ExecutionContext::IsSameAgentCluster(
   return this_id == other_id;
 }
 
+bool ExecutionContext::RequireTrustedTypes() const {
+  return GetSecurityContext().TrustedTypesRequiredByPolicy() &&
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(this);
+}
+
 }  // namespace blink

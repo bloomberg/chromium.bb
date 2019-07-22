@@ -300,6 +300,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   virtual TrustedTypePolicyFactory* GetTrustedTypes() const { return nullptr; }
 
+  bool RequireTrustedTypes() const;
+
  protected:
   explicit ExecutionContext(v8::Isolate* isolate, Agent* agent);
   ~ExecutionContext() override;

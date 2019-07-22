@@ -99,8 +99,8 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   String addressSpaceForBindings() const;
 
   void SetRequireTrustedTypes();
-  bool RequireTrustedTypes() const;
   void SetRequireTrustedTypesForTesting();  // Skips sanity checks.
+  bool TrustedTypesRequiredByPolicy() const;
 
   // https://w3c.github.io/webappsec-upgrade-insecure-requests/#upgrade-insecure-navigations-set
   void SetInsecureNavigationsSet(const std::vector<unsigned>& set) {

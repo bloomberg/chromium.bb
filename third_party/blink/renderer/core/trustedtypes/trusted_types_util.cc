@@ -98,8 +98,7 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
 }
 
 bool RequireTrustedTypes(const ExecutionContext* execution_context) {
-  return execution_context &&
-         execution_context->GetSecurityContext().RequireTrustedTypes();
+  return execution_context && execution_context->RequireTrustedTypes();
 }
 
 TrustedTypePolicy* GetDefaultPolicy(const ExecutionContext* execution_context) {
