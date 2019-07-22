@@ -86,6 +86,7 @@
 #include <v8.h>
 #include <blpwtk2_stringref.h>
 
+
 namespace blpwtk2 {
 
 class Profile;
@@ -94,6 +95,21 @@ class StringRef;
 class WebView;
 class WebViewDelegate;
 class WebViewHostObserver;
+
+                          // =====================
+                          // class ToolkitDelegate
+                          // =====================
+
+// Abstract protocol representing an event listener for debug/resume signals
+// An embedder may implement this interface and register an instance with the
+// toolkit. This grants the embedder the ability to take specific
+// actions when the engine is paused or resumed at a javascript breakpoint
+// or other alerts to be implemented at a future point
+class BLPWTK2_EXPORT ToolkitDelegate {
+  public:
+     virtual void onDebugBreak() = 0;
+     virtual void onDebugResume() = 0;
+};
 
                         // =============
                         // class Toolkit
@@ -184,16 +200,17 @@ class Toolkit {
         // (in milliseconds)
 
 
+    virtual void registerToolkitDelegate(ToolkitDelegate *delegate) = 0;
+        // register a listener for toolkit events
+
+    virtual void clearToolkitDelegate(ToolkitDelegate *delegate) = 0;
+        // clear out a listener for toolkit events
 
     // patch section: embedder ipc
 
-
     // patch section: expose v8 platform
 
-
     // patch section: multi-heap tracer
-
-
 
   protected:
     virtual ~Toolkit();
@@ -202,7 +219,6 @@ class Toolkit {
         // This ensures that the same allocator that was used to create the
         // Toolkit object is also used to delete the object.
 };
-
 }  // close namespace blpwtk2
 
 #endif  // INCLUDED_BLPWTK2_TOOLKIT_H

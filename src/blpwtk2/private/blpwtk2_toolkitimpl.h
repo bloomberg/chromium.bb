@@ -44,6 +44,8 @@
 #include <string>
 #include <vector>
 
+#include <gin/public/debug.h>
+
 namespace base {
 class FilePath;
 class Thread;
@@ -74,7 +76,8 @@ class StringRef;
 // ToolkitFactory::create is called, and it is deleted when Toolkit::destroy()
 // is called.  Note that chromium threads are only started when the first
 // WebView is created.
-class ToolkitImpl : public Toolkit {
+class ToolkitImpl : public Toolkit,
+                    public gin::Debug::DebugSignalHandler {
     // DATA
     ContentMainDelegateImpl d_mainDelegate;
     std::unique_ptr<content::ContentMainRunner> d_mainRunner;
@@ -102,7 +105,8 @@ class ToolkitImpl : public Toolkit {
 
     // patch section: multi-heap tracer
 
-
+    // contains registered event listeners
+    std::set<ToolkitDelegate*> d_delegates;
 
     ~ToolkitImpl() override;
         // Shutdown all threads and delete the toolkit.  To ensure the same
@@ -158,16 +162,20 @@ class ToolkitImpl : public Toolkit {
 
 
 
-    // patch section: embedder ipc
+    void registerToolkitDelegate(ToolkitDelegate *delegate) override;
+    void clearToolkitDelegate(ToolkitDelegate *delegate) override;
 
+    void onDebugBreak() override;
+    void onDebugResume() override;
+
+    void registerToolkitDelegate(ToolkitDelegate *delegate) override;
+    void clearToolkitDelegate(ToolkitDelegate *delegate) override;
+
+    // patch section: embedder ipc
 
     // patch section: expose v8 platform
 
-
     // patch section: multi-heap tracer
-
-
-
 };
 
 }  // close namespace blpwtk2
