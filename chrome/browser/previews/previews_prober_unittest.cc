@@ -479,6 +479,51 @@ TEST_F(PreviewsProberTest, HttpError) {
                                       std::abs(net::OK), 4);
 }
 
+TEST_F(PreviewsProberTest, TimeUntilSuccess) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<PreviewsProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive(false);
+  VerifyRequest();
+
+  FastForward(base::TimeDelta::FromMilliseconds(11000));
+
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectTotalCount(
+      "Previews.Prober.TimeUntilFailure.Litepages", 0);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.Prober.TimeUntilSuccess.Litepages", 11000, 1);
+}
+
+TEST_F(PreviewsProberTest, TimeUntilFailure) {
+  base::HistogramTester histogram_tester;
+
+  PreviewsProber::RetryPolicy retry_policy;
+  retry_policy.max_retries = 0;
+
+  std::unique_ptr<PreviewsProber> prober =
+      NewProberWithRetryPolicy(retry_policy);
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive(false);
+  VerifyRequest();
+
+  FastForward(base::TimeDelta::FromMilliseconds(11000));
+
+  MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
+  EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectTotalCount(
+      "Previews.Prober.TimeUntilSuccess.Litepages", 0);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.Prober.TimeUntilFailure.Litepages", 11000, 1);
+}
+
 TEST_F(PreviewsProberTest, RandomGUID) {
   PreviewsProber::RetryPolicy retry_policy;
   retry_policy.use_random_urls = true;
