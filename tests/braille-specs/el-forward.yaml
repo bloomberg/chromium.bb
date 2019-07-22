@@ -244,13 +244,25 @@ tests:
   - αβγ Δεζ ΗΘΙ
   - ⠁⠃⠛ ⠨⠙⠑⠵ ⠨⠨⠜⠹⠊
 
-- # diphthongs
+- # unaccented diphthongs
   - ου αυ αι ει ευ υι ηυ οι
   - ⠥ ⠡ ⠣ ⠩ ⠱ ⠻ ⠳ ⠪
 
-- # accented diphthongs
-  - ού αύ αί εί εύ υί ηύ οί
-  - ⠐⠥ ⠐⠡ ⠐⠣ ⠐⠩ ⠐⠱ ⠐⠻ ⠐⠳ ⠐⠪
+- # diphthongs with Psili
+  - οὐ αὐ αἰ εἰ εὐ υἰ ηὐ οἰ
+  - ⠥ ⠡ ⠣ ⠩ ⠱ ⠻ ⠳ ⠪
+
+- # diphthongs with Dialytika
+  - οϋ αϋ αϊ εϊ εϋ υϊ ηϋ οϊ
+  - ⠥ ⠡ ⠣ ⠩ ⠱ ⠻ ⠳ ⠪
+
+- # diphthongs with Dasia
+  - οὑ αὑ αἱ εἱ εὑ υἱ ηὑ οἱ
+  - ⠧⠥ ⠧⠡ ⠧⠣ ⠧⠩ ⠧⠱ ⠧⠻ ⠧⠳ ⠧⠪
+
+- # diphthongs with Dasia
+  - οὓ οὕ οὗ οὒ οὔ οὖ
+  - ⠷⠥ ⠢⠥ ⠖⠥ ⠾⠥ ⠴⠥ ⠲⠥
 
 - # number
   - 123.456.789,01
