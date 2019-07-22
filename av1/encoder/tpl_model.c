@@ -440,16 +440,13 @@ static YV12_BUFFER_CONFIG *get_framebuf(
   }
 }
 
-static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
-                              int frame_idx) {
+static void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
   const GF_GROUP *gf_group = &cpi->gf_group;
   if (frame_idx == gf_group->size) return;
   TplDepFrame *tpl_frame = &cpi->tpl_frame[frame_idx];
   const YV12_BUFFER_CONFIG *this_frame = tpl_frame->gf_picture;
   const YV12_BUFFER_CONFIG *ref_frame[7] = { NULL, NULL, NULL, NULL,
                                              NULL, NULL, NULL };
-
-  (void)gf_picture;
 
   AV1_COMMON *cm = &cpi->common;
   struct scale_factors sf;
@@ -546,11 +543,9 @@ static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
   }
 }
 
-#define REF_IDX(ref) ((ref)-LAST_FRAME)
-
 static void init_gop_frames_for_tpl(
     AV1_COMP *cpi, const EncodeFrameParams *const init_frame_params,
-    YV12_BUFFER_CONFIG **gf_picture, GF_GROUP *gf_group, int *tpl_group_frames,
+    GF_GROUP *gf_group, int *tpl_group_frames,
     const EncodeFrameInput *const frame_input) {
   AV1_COMMON *cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
@@ -563,8 +558,6 @@ static void init_gop_frames_for_tpl(
   EncodeFrameParams frame_params = *init_frame_params;
 
   int ref_picture_map[REF_FRAMES];
-  (void)gf_picture;
-
   for (int i = 0; i < FRAME_BUFFERS && frame_idx < INTER_REFS_PER_FRAME + 1;
        ++i) {
     if (frame_bufs[i].ref_count == 0) {
@@ -595,7 +588,7 @@ static void init_gop_frames_for_tpl(
   int use_arf = gf_group->update_type[1] == ARF_UPDATE;
   const int gop_length =
       AOMMIN(gf_group->size - 1 + use_arf, MAX_LENGTH_TPL_FRAME_STATS - 1);
-  for (gf_index = gf_group->index; gf_index <= gop_length; ++gf_index) {
+  for (gf_index = cur_frame_idx; gf_index <= gop_length; ++gf_index) {
     TplDepFrame *tpl_frame = &cpi->tpl_frame[gf_index];
     FRAME_UPDATE_TYPE frame_update_type = gf_group->update_type[gf_index];
     if (gf_index == gf_group->size) {
@@ -686,7 +679,7 @@ static void init_gop_frames_for_tpl(
     ++frame_display_index;
   }
 
-  av1_get_ref_frames(cpi, gf_group->update_type[gf_group->index],
+  av1_get_ref_frames(cpi, gf_group->update_type[cur_frame_idx],
                      &cpi->ref_buffer_stack);
 }
 
@@ -703,12 +696,9 @@ static void init_tpl_stats(AV1_COMP *cpi) {
 void av1_tpl_setup_stats(AV1_COMP *cpi,
                          const EncodeFrameParams *const frame_params,
                          const EncodeFrameInput *const frame_input) {
-  YV12_BUFFER_CONFIG
-  *gf_picture_buffer[MAX_LENGTH_TPL_FRAME_STATS + REF_FRAMES];
-  YV12_BUFFER_CONFIG **gf_picture = &gf_picture_buffer[REF_FRAMES];
   GF_GROUP *gf_group = &cpi->gf_group;
 
-  init_gop_frames_for_tpl(cpi, frame_params, gf_picture, gf_group,
+  init_gop_frames_for_tpl(cpi, frame_params, gf_group,
                           &cpi->tpl_gf_group_frames, frame_input);
 
   init_tpl_stats(cpi);
@@ -724,7 +714,7 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
         if (gf_group->update_type[frame_idx] == INTNL_OVERLAY_UPDATE)
           is_process = 0;
 
-      if (is_process) mc_flow_dispenser(cpi, gf_picture, frame_idx);
+      if (is_process) mc_flow_dispenser(cpi, frame_idx);
     }
   }
 }
