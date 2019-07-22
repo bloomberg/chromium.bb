@@ -77,6 +77,7 @@ sk_sp<SkPromiseImageTexture> CreatePromiseTexture(
                            vk_image_info.format,
                            vk_image_info.mipLevels,
                            VK_QUEUE_FAMILY_EXTERNAL,
+                           GrProtected::kNo,
                            fYcbcrConversionInfo};
 
   // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
