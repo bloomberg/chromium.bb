@@ -6320,3 +6320,4 @@ crbug.com/986286 external/wpt/fetch/api/response/response-consume-empty.html [ P
 crbug.com/986286 virtual/blink-cors/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
 crbug.com/986286 virtual/not-omt-sw-fetch/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
 crbug.com/986286 virtual/omt-worker-fetch/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
+crbug.com/986457 [ Linux ] http/tests/misc/object-image-error-with-onload.html [ Pass Failure ]
