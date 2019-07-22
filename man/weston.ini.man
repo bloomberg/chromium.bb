@@ -548,11 +548,12 @@ present. This seat can be constrained like any other.
 .TP 7
 .BI "allow_hdcp=" true
 Allows HDCP support for this output. If set to true, HDCP can be tried for the
-content-protection, provided by the backends, on this output.
-The content-protection can actually be realized, only if the hardwares (source
-and sink) support HDCP, and the backend has the implementation of
-content-protection protocol. By default, HDCP support is always allowed for an
-output.
+content-protection, provided by the backends, on this output. By
+default, HDCP support is always allowed for an output. The
+content-protection can actually be realized, only if the hardware
+(source and sink) support HDCP, and the backend has the implementation
+of content-protection protocol. Currently, no backend actually
+implements HDCP yet.
 .RE
 .SH "INPUT-METHOD SECTION"
 .TP 7
