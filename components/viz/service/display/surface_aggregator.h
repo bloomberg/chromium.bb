@@ -59,6 +59,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // to the output surface.
   void SetOutputColorSpace(const gfx::ColorSpace& output_color_space);
 
+  void SetMaximumTextureSize(int max_texture_size);
+
   bool NotifySurfaceDamageAndCheckForDisplayDamage(const SurfaceId& surface_id);
 
  private:
@@ -228,6 +230,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // blending color space (e.g. for HDR), then a final render pass to convert
   // between the two will be added. This space must always be valid.
   gfx::ColorSpace output_color_space_ = gfx::ColorSpace::CreateSRGB();
+  // Maximum texture size which if positive, will limit the size of render
+  // passes.
+  int max_texture_size_ = 0;
   // The id for the final color conversion render pass.
   RenderPassId color_conversion_render_pass_id_ = 0;
   // The id for the optional render pass used to apply the display transform.

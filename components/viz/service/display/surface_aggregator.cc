@@ -522,8 +522,13 @@ void SurfaceAggregator::EmitSurfaceContent(
 
     RenderPassId remapped_pass_id = RemapPassId(source.id, surface_id);
 
+    gfx::Rect output_rect = source.output_rect;
+    if (max_texture_size_ > 0) {
+      output_rect.set_width(std::min(output_rect.width(), max_texture_size_));
+      output_rect.set_height(std::min(output_rect.height(), max_texture_size_));
+    }
     copy_pass->SetAll(
-        remapped_pass_id, source.output_rect, source.output_rect,
+        remapped_pass_id, output_rect, output_rect,
         source.transform_to_root_target, source.filters,
         source.backdrop_filters, source.backdrop_filter_bounds,
         output_color_space_.GetBlendingColorSpace(),
@@ -1642,6 +1647,11 @@ void SurfaceAggregator::SetOutputColorSpace(
   output_color_space_ = output_color_space.IsValid()
                             ? output_color_space
                             : gfx::ColorSpace::CreateSRGB();
+}
+
+void SurfaceAggregator::SetMaximumTextureSize(int max_texture_size) {
+  DCHECK_GE(max_texture_size, 0);
+  max_texture_size_ = max_texture_size;
 }
 
 bool SurfaceAggregator::NotifySurfaceDamageAndCheckForDisplayDamage(
