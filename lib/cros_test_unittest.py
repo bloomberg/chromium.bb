@@ -364,6 +364,17 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     # Ensure target directory is removed at the end of the test.
     self.assertCommandContains(['rm', '-rf', '/usr/local/cros_test'])
 
+  def testRunDeviceCmdWithSetCwd(self):
+    """Verify a run device command call when giving a cwd."""
+    self._tester.remote_cmd = True
+    self._tester.cwd = '/usr/local/autotest'
+    self._tester.args = ['./bin/vm_sanity.py']
+
+    self._tester.Run()
+
+    # Ensure command runs in the autotest directory.
+    self.assertCommandContains('"cd /usr/local/autotest && ./bin/vm_sanity.py"')
+
   def testRunDeviceCmdWithoutSrcFiles(self):
     """Verify running a remote command when src files are not specified.
 
