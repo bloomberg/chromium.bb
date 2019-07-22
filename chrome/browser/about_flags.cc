@@ -29,6 +29,7 @@
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/flag_descriptions.h"
+#include "chrome/browser/notifications/scheduler/public/features.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -1132,6 +1133,14 @@ const FeatureEntry::FeatureVariation kLazyImageLoadingVariations[] = {
      "'loading=lazy')",
      kLazyImageLoadingAutomatic, base::size(kLazyImageLoadingAutomatic),
      nullptr}};
+
+const FeatureEntry::Choice kNotificationSchedulerChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::
+         kNotificationSchedulerImmediateBackgroundTaskDescription,
+     notifications::switches::kNotificationSchedulerImmediateBackgroundTask,
+     ""},
+};
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -4175,6 +4184,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kGaiaActionButtonsDescription, kOsCrOSOwnerOnly,
      FEATURE_VALUE_TYPE(chromeos::features::kGaiaActionButtons)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"notification-scheduler-debug-options",
+     flag_descriptions::kNotificationSchedulerDebugOptionName,
+     flag_descriptions::kNotificationSchedulerDebugOptionDescription,
+     kOsAndroid, MULTI_VALUE_TYPE(kNotificationSchedulerChoices)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

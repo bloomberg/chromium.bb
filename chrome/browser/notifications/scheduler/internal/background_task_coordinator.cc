@@ -7,12 +7,14 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/numerics/ranges.h"
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
+#include "chrome/browser/notifications/scheduler/public/features.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 
 namespace notifications {
@@ -142,6 +144,14 @@ class BackgroundTaskCoordinatorHelper {
         background_task_time_.value() - clock_->Now();
     window_start_time = base::ClampToRange(window_start_time, base::TimeDelta(),
                                            base::TimeDelta::Max());
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kNotificationSchedulerImmediateBackgroundTask)) {
+      background_task_->Schedule(
+          task_start_time, base::TimeDelta(),
+          base::TimeDelta() + base::TimeDelta::FromMinutes(1));
+      return;
+    }
 
     background_task_->Schedule(
         task_start_time, window_start_time,

@@ -1291,6 +1291,14 @@ const char kNotificationIndicatorDescription[] =
     "notification is active. This will also enable notifications in context "
     "menus.";
 
+const char kNotificationSchedulerDebugOptionName[] =
+    "Notification scheduler debug options";
+const char kNotificationSchedulerDebugOptionDescription[] =
+    "Enable debugging mode to override certain behavior of notification "
+    "scheduler system for easier manual testing.";
+const char kNotificationSchedulerImmediateBackgroundTaskDescription[] =
+    "Show scheduled notification right away.";
+
 const char kNotificationsNativeFlagName[] = "Enable native notifications.";
 const char kNotificationsNativeFlagDescription[] =
     "Enable support for using the native notification toasts and notification "
