@@ -75,7 +75,6 @@ class MockClientSocketHandleFactory {
             nullptr /* proxy_delegate */,
             nullptr /* http_user_agent_settings */,
             SSLClientSocketContext(),
-            SSLClientSocketContext(),
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,
             nullptr /* net_log */,
