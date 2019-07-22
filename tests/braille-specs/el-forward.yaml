@@ -260,7 +260,11 @@ tests:
   - οὑ αὑ αἱ εἱ εὑ υἱ ηὑ οἱ
   - ⠧⠥ ⠧⠡ ⠧⠣ ⠧⠩ ⠧⠱ ⠧⠻ ⠧⠳ ⠧⠪
 
-- # diphthongs with Psili,Dasia and Varia,Oxia,Perispomeni
+- # diphthongs with Tonos,Varia,Oxia,Perispomeni
+  - ού οὺ ού οῦ
+  - ⠐⠥ ⠈⠥ ⠐⠥ ⠠⠥
+
+- # diphthongs with Dasia,Psili and Varia,Oxia,Perispomeni
   - οὓ οὕ οὗ οὒ οὔ οὖ
   - ⠷⠥ ⠢⠥ ⠖⠥ ⠾⠥ ⠴⠥ ⠲⠥
 
