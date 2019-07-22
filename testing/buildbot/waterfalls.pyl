@@ -3315,6 +3315,7 @@
       },
       'Linux Builder': {
         'mixins': [
+          'code-coverage',
           'linux-trusty',
         ],
         'additional_compile_targets': [
@@ -3350,6 +3351,7 @@
       },
       'Linux Tests': {
         'mixins': [
+          'code-coverage',
           'linux-xenial',
         ],
         'test_suites': {
