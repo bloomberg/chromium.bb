@@ -267,8 +267,6 @@ class ASH_EXPORT AppListControllerImpl
       UpdateAnimationSettingsCallback callback) override;
   void UpdateAfterHomeLauncherShown() override;
   base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
-  bool ShouldShowShelfOnHomeScreen() const override;
-  bool ShouldShowStatusAreaOnHomeScreen() const override;
   void NotifyHomeLauncherAnimationTransition(AnimationTrigger trigger,
                                              bool launcher_will_show) override;
 
