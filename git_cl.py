@@ -3096,7 +3096,7 @@ def _add_codereview_select_options(parser):
 
 def _process_codereview_select_options(parser, options):
   if options.rietveld:
-    parser.error('--rietveld is no longer supported')
+    parser.error('--rietveld is no longer supported.')
   options.forced_codereview = None
   if options.gerrit:
     options.forced_codereview = 'gerrit'
@@ -4153,7 +4153,7 @@ def CMDstatus(parser, args):
   auth_config = auth.extract_auth_config_from_options(options)
 
   if options.issue is not None and not options.field:
-    parser.error('--field must be specified with --issue')
+    parser.error('--field must be specified with --issue.')
 
   if options.field:
     cl = Changelist(auth_config=auth_config, issue=options.issue,
@@ -4372,12 +4372,12 @@ def CMDcomments(parser, args):
     try:
       issue = int(options.issue)
     except ValueError:
-      DieWithError('A review issue id is expected to be a number')
+      DieWithError('A review issue ID is expected to be a number.')
 
   cl = Changelist(issue=issue, codereview='gerrit', auth_config=auth_config)
 
   if not cl.IsGerrit():
-    parser.error('rietveld is not supported')
+    parser.error('Rietveld is not supported.')
 
   if options.comment:
     cl.AddComment(options.comment, options.publish)
@@ -4435,7 +4435,7 @@ def CMDdescription(parser, args):
     target_issue_arg = ParseIssueNumberArgument(args[0],
                                                 options.forced_codereview)
     if not target_issue_arg.valid:
-      parser.error('invalid codereview url or CL id')
+      parser.error('Invalid issue ID or URL.')
 
   kwargs = {
     'auth_config': auth.extract_auth_config_from_options(options),
@@ -4792,12 +4792,12 @@ def CMDupload(parser, args):
 
   if options.message_file:
     if options.message:
-      parser.error('only one of --message and --message-file allowed.')
+      parser.error('Only one of --message and --message-file allowed.')
     options.message = gclient_utils.FileRead(options.message_file)
     options.message_file = None
 
   if options.cq_dry_run and options.use_commit_queue:
-    parser.error('only one of --use-commit-queue and --cq-dry-run allowed.')
+    parser.error('Only one of --use-commit-queue and --cq-dry-run allowed.')
 
   if options.use_commit_queue:
     options.send_mail = True
@@ -4901,7 +4901,7 @@ def CMDland(parser, args):
   cl = Changelist(auth_config=auth_config)
 
   if not cl.IsGerrit():
-    parser.error('rietveld is not supported')
+    parser.error('Rietveld is not supported.')
 
   if not cl.GetIssue():
     DieWithError('You must upload the change first to Gerrit.\n'
@@ -4952,18 +4952,18 @@ def CMDpatch(parser, args):
 
   if options.reapply:
     if options.newbranch:
-      parser.error('--reapply works on the current branch only')
+      parser.error('--reapply works on the current branch only.')
     if len(args) > 0:
-      parser.error('--reapply implies no additional arguments')
+      parser.error('--reapply implies no additional arguments.')
 
     cl = Changelist(auth_config=auth_config,
                     codereview=options.forced_codereview)
     if not cl.GetIssue():
-      parser.error('current branch must have an associated issue')
+      parser.error('Current branch must have an associated issue.')
 
     upstream = cl.GetUpstreamBranch()
     if upstream is None:
-      parser.error('No upstream branch specified. Cannot reset branch')
+      parser.error('No upstream branch specified. Cannot reset branch.')
 
     RunGit(['reset', '--hard', upstream])
     if options.pull:
@@ -4973,12 +4973,12 @@ def CMDpatch(parser, args):
                             options.directory)
 
   if len(args) != 1 or not args[0]:
-    parser.error('Must specify issue number or url')
+    parser.error('Must specify issue number or URL.')
 
   target_issue_arg = ParseIssueNumberArgument(args[0],
                                               options.forced_codereview)
   if not target_issue_arg.valid:
-    parser.error('invalid codereview url or CL id')
+    parser.error('Invalid issue ID or URL.')
 
   cl_kwargs = {
       'auth_config': auth_config,
@@ -5005,7 +5005,7 @@ def CMDpatch(parser, args):
 
   if cl.IsGerrit():
     if options.reject:
-      parser.error('--reject is not supported with Gerrit codereview.')
+      parser.error('--reject is not supported with Gerrit code review.')
     if options.directory:
       parser.error('--directory is not supported with Gerrit codereview.')
 
@@ -5124,7 +5124,7 @@ def CMDtry(parser, args):
   cl = Changelist(auth_config=auth_config, issue=options.issue,
                   codereview=options.forced_codereview)
   if not cl.GetIssue():
-    parser.error('Need to upload first')
+    parser.error('Need to upload first.')
 
   if cl.IsGerrit():
     # HACK: warm up Gerrit change detail cache to save on RPCs.
@@ -5194,15 +5194,15 @@ def CMDtry_results(parser, args):
       issue=options.issue, codereview=options.forced_codereview,
       auth_config=auth_config)
   if not cl.GetIssue():
-    parser.error('Need to upload first')
+    parser.error('Need to upload first.')
 
   patchset = options.patchset
   if not patchset:
     patchset = cl.GetMostRecentPatchset()
     if not patchset:
-      parser.error('Codereview doesn\'t know about issue %s. '
+      parser.error('Code review host doesn\'t know about issue %s. '
                    'No access to issue or wrong issue number?\n'
-                   'Either upload first, or pass --patchset explicitly' %
+                   'Either upload first, or pass --patchset explicitly.' %
                    cl.GetIssue())
 
   try:
@@ -5283,7 +5283,7 @@ def CMDset_commit(parser, args):
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
   if options.dry_run and options.clear:
-    parser.error('Make up your mind: both --dry-run and --clear not allowed')
+    parser.error('Only one of --dry-run and --clear are allowed.')
 
   cl = Changelist(auth_config=auth_config, issue=options.issue,
                   codereview=options.forced_codereview)
@@ -5294,7 +5294,7 @@ def CMDset_commit(parser, args):
   else:
     state = _CQState.COMMIT
   if not cl.GetIssue():
-    parser.error('Must upload the issue first')
+    parser.error('Must upload the issue first.')
   cl.SetCQState(state)
   return 0
 
@@ -5313,7 +5313,7 @@ def CMDset_close(parser, args):
                   codereview=options.forced_codereview)
   # Ensure there actually is an issue to close.
   if not cl.GetIssue():
-    DieWithError('ERROR No issue to close')
+    DieWithError('ERROR: No issue to close.')
   cl.CloseIssue()
   return 0
 
@@ -5403,7 +5403,7 @@ def CMDowners(parser, args):
 
   if args:
     if len(args) > 1:
-      parser.error('Unknown args')
+      parser.error('Unknown args.')
     base_branch = args[0]
   else:
     # Default to diffing against the common ancestor of the upstream branch.
@@ -5721,7 +5721,7 @@ def CMDcheckout(parser, args):
 
   issue_arg = ParseIssueNumberArgument(args[0])
   if not issue_arg.valid:
-    parser.error('invalid codereview url or CL id')
+    parser.error('Invalid issue ID or URL.')
 
   target_issue = str(issue_arg.issue)
 
@@ -5830,7 +5830,7 @@ def main(argv):
       raise
     DieWithError(
         ('AppEngine is misbehaving and returned HTTP %d, again. Keep faith '
-          'and retry or visit go/isgaeup.\n%s') % (e.code, str(e)))
+         'and retry or visit go/isgaeup.\n%s') % (e.code, str(e)))
   return 0
 
 
