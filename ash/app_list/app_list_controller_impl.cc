@@ -457,6 +457,10 @@ void AppListControllerImpl::ShowAppList() {
   presenter_.Show(GetDisplayIdToShowAppListOn(), base::TimeTicks());
 }
 
+aura::Window* AppListControllerImpl::GetWindow() {
+  return presenter_.GetWindow();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // app_list::AppListModelObserver:
 

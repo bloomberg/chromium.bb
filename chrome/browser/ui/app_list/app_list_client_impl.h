@@ -90,6 +90,7 @@ class AppListClientImpl
 
   // AppListControllerDelegate overrides:
   void DismissView() override;
+  aura::Window* GetAppListWindow() override;
   int64_t GetAppListDisplayId() override;
   void GetAppInfoDialogBounds(GetAppInfoDialogBoundsCallback callback) override;
   bool IsAppPinned(const std::string& app_id) override;

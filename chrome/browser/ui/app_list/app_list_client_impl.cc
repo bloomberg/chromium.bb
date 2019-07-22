@@ -429,6 +429,10 @@ void AppListClientImpl::DismissView() {
   app_list_controller_->DismissAppList();
 }
 
+aura::Window* AppListClientImpl::GetAppListWindow() {
+  return app_list_controller_->GetWindow();
+}
+
 int64_t AppListClientImpl::GetAppListDisplayId() {
   return display_id_;
 }

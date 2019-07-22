@@ -126,6 +126,7 @@ class ASH_EXPORT AppListControllerImpl
   void GetAppInfoDialogBounds(GetAppInfoDialogBoundsCallback callback) override;
   void ShowAppListAndSwitchToState(ash::AppListState state) override;
   void ShowAppList() override;
+  aura::Window* GetWindow() override;
 
   // app_list::AppListModelObserver:
   void OnAppListItemAdded(app_list::AppListItem* item) override;
