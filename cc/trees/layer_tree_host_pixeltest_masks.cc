@@ -1003,22 +1003,16 @@ class LayerTreeHostMaskAsBlendingPixelTest
             Layer::LayerMaskType::SINGLE_TEXTURE_MASK),
         use_antialiasing_(GetParam().flags & kUseAntialiasing),
         force_shaders_(GetParam().flags & kForceShaders) {
-    float percentage_pixels_small_error = 0.f;
     float percentage_pixels_error = 0.f;
+    float percentage_pixels_small_error = 0.f;
     float average_error_allowed_in_bad_pixels = 0.f;
     int large_error_allowed = 0;
     int small_error_allowed = 0;
-    if (use_antialiasing_) {
+    if (renderer_type() != RENDERER_SOFTWARE) {
+      percentage_pixels_error = 6.0f;
       percentage_pixels_small_error = 2.f;
-      percentage_pixels_error = 6.7f;
-      average_error_allowed_in_bad_pixels = 3.5f;
-      large_error_allowed = 15;
-      small_error_allowed = 1;
-    } else if (raster_type() != SOFTWARE) {
-      percentage_pixels_small_error = 2.f;
-      percentage_pixels_error = 6.5f;
-      average_error_allowed_in_bad_pixels = 3.5f;
-      large_error_allowed = 15;
+      average_error_allowed_in_bad_pixels = 2.1f;
+      large_error_allowed = 11;
       small_error_allowed = 1;
     } else {
 #if defined(ARCH_CPU_ARM64)
@@ -1132,6 +1126,11 @@ MaskTestConfig const kTestConfigs[] = {
     MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY}, 0},
     MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY},
                    kUseAntialiasing},
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_VK, ZERO_COPY}, 0},
+    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_VK, ZERO_COPY},
+                   kUseAntialiasing},
+#endif
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
