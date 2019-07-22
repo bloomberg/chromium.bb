@@ -11425,6 +11425,10 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="GetBootAttribute"/>
   <int value="2" label="SetBootAttribute"/>
   <int value="3" label="FlushAndSignBootAttributes"/>
+  <int value="4" label="SignBootLockbox"/>
+  <int value="5" label="VerifyBootLockbox"/>
+  <int value="6" label="FinalizeBootLockbox"/>
+  <int value="7" label="TpmIsBeingOwned"/>
 </enum>
 
 <enum name="CryptohomeDiskCleanupProgress">
