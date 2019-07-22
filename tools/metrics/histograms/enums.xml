@@ -28924,6 +28924,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="HadUserInput">
+  <obsolete>
+    Removed July 2019.
+  </obsolete>
   <int value="0" label="Did not have user input"/>
   <int value="1" label="Had user input"/>
 </enum>
