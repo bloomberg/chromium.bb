@@ -26,7 +26,7 @@ tests:
 
 - # lowercase letters with dasia
   - ἁ ἑ ἡ ἱ ὁ ὑ ὡ ῥ
-  - ⠓⠁ ⠓⠑ ⠓⠱ ⠓⠊ ⠓⠕ ⠓⠥ ⠓⠺ ⠓⠗
+  - ⠓⠁ ⠓⠑ ⠓⠱ ⠓⠊ ⠓⠕ ⠓⠥ ⠓⠺ ⠗⠓
 
 - # lowercase letters with dasia and oxia
   - ἅ ἕ ἥ ἵ ὅ ὕ ὥ
@@ -150,7 +150,7 @@ tests:
 
 - # uppercase letters with dasia
   - Ἁ Ἑ Ἡ Ἱ Ὁ Ὑ Ὡ Ῥ
-  - ⠨⠓⠁ ⠨⠓⠑ ⠨⠓⠱ ⠨⠓⠊ ⠨⠓⠕ ⠨⠓⠥ ⠨⠓⠺ ⠨⠓⠗
+  - ⠨⠓⠁ ⠨⠓⠑ ⠨⠓⠱ ⠨⠓⠊ ⠨⠓⠕ ⠨⠓⠥ ⠨⠓⠺ ⠨⠗⠓
 
 - # uppercase letters with dasia and oxia
   - Ἅ Ἕ Ἥ Ἵ Ὅ Ὕ Ὥ

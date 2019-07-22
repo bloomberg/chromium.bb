@@ -78,7 +78,7 @@ letter \x1F4A 46-356-6-135 # Ὂ Capital Omicron with Psili and Varia
 letter \x1F49 46-125-135 # Ὁ Capital Omicron with Dasia
 letter \x1F4D 46-125-4-135 # Ὅ Capital Omicron with Dasia and Oxia
 letter \x1F4B 46-125-6-135 # Ὃ Capital Omicron with Dasia and Varia
-letter \x1FEC 46-125-1235 # Ῥ Capital Rho with Dasia
+letter \x1FEC 46-1235-125 # Ῥ Capital Rho with Dasia
 letter \x03AB 46-136 # Ϋ Capital Upsilon with Dialytika
 letter \x038E 46-4-136 # Ύ Capital Upsilon with Tonos
 letter \x1FEB 46-4-136 # Ύ Capital Upsilon with Oxia
@@ -158,7 +158,7 @@ letter \x1F42 356-6-135 # ὂ Small Omicron with Psili and Varia
 letter \x1F41 125-135 # ὁ Small Omicron with Dasia
 letter \x1F45 125-4-135 # ὅ Small Omicron with Dasia and Oxia
 letter \x1F43 125-6-135 # ὃ Small Omicron with Dasia and Varia
-letter \x1FE5 125-1235 # ῥ Small Rho with Dasia
+letter \x1FE5 1235-125 # ῥ Small Rho with Dasia
 letter \x03CB 136 # ϋ Small Upsilon with Dialytika
 letter \x03CD 4-136 # ύ Small Upsilon with Tonos
 letter \x1F7B 4-136 # ύ Small Upsilon with Oxia
