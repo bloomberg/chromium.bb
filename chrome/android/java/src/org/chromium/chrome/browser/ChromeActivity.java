@@ -12,7 +12,6 @@ import android.app.assist.AssistContent;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -21,7 +20,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Handler;
-import android.os.Process;
 import android.os.SystemClock;
 import android.support.annotation.CallSuper;
 import android.support.annotation.IntDef;
@@ -1136,17 +1134,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 createContextReporterIfNeeded();
             });
         }
-
-        DeferredStartupHandler.getInstance().addDeferredTask(() -> {
-            if (isActivityFinishingOrDestroyed()) return;
-            Context context = ContextUtils.getApplicationContext();
-            Boolean ReadPermissionGranted = Boolean.valueOf(
-                    context.checkPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                            Process.myPid(), Process.myUid())
-                    == PackageManager.PERMISSION_GRANTED);
-            RecordHistogram.recordEnumeratedHistogram(
-                    "Android.Permissions.ReadStorage", ReadPermissionGranted ? 1 : 0, 2);
-        });
     }
 
     /**

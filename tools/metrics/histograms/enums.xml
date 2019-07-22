@@ -5994,6 +5994,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BooleanHasReadStoragePermission">
+  <obsolete>
+    Removed from the code in July 2019. See https://crbug.com/975701.
+  </obsolete>
   <int value="0" label="Lacks Read Storage Permission"/>
   <int value="1" label="Has Read Storage Permission"/>
 </enum>
