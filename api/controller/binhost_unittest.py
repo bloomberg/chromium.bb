@@ -7,13 +7,16 @@
 
 from __future__ import print_function
 
+from chromite.api import api_config
 from chromite.api.controller import binhost
 from chromite.api.gen.chromite.api import binhost_pb2
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.service import binhost as binhost_service
 
-class PrepareBinhostUploadsTest(cros_test_lib.MockTestCase):
+
+class PrepareBinhostUploadsTest(cros_test_lib.MockTestCase,
+                                api_config.ApiConfigMixin):
   """Unittests for PrepareBinhostUploads."""
 
   def setUp(self):
@@ -24,16 +27,29 @@ class PrepareBinhostUploadsTest(cros_test_lib.MockTestCase):
     self.PatchObject(binhost_service, 'UpdatePackageIndex',
                      return_value='/build/target/packages/Packages')
 
+    self.response = binhost_pb2.PrepareBinhostUploadsResponse()
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(binhost_service, 'GetPrebuiltsRoot')
+
+    request = binhost_pb2.PrepareBinhostUploadsRequest()
+    request.build_target.name = 'target'
+    request.uri = 'gs://chromeos-prebuilt/target'
+    rc = binhost.PrepareBinhostUploads(request, self.response,
+                                       self.validate_only_config)
+    patch.assert_not_called()
+    self.assertEqual(rc, 0)
+
   def testPrepareBinhostUploads(self):
     """PrepareBinhostUploads returns Packages and tar files."""
     input_proto = binhost_pb2.PrepareBinhostUploadsRequest()
     input_proto.build_target.name = 'target'
     input_proto.uri = 'gs://chromeos-prebuilt/target'
-    output_proto = binhost_pb2.PrepareBinhostUploadsResponse()
-    binhost.PrepareBinhostUploads(input_proto, output_proto)
-    self.assertEqual(output_proto.uploads_dir, '/build/target/packages')
+    binhost.PrepareBinhostUploads(input_proto, self.response, self.api_config)
+    self.assertEqual(self.response.uploads_dir, '/build/target/packages')
     self.assertItemsEqual(
-        [ut.path for ut in output_proto.upload_targets],
+        [ut.path for ut in self.response.upload_targets],
         ['Packages', 'foo.tbz2', 'bar.tbz2'])
 
   def testPrepareBinhostUploadsNonGsUri(self):
@@ -41,13 +57,26 @@ class PrepareBinhostUploadsTest(cros_test_lib.MockTestCase):
     input_proto = binhost_pb2.PrepareBinhostUploadsRequest()
     input_proto.build_target.name = 'target'
     input_proto.uri = 'https://foo.bar'
-    output_proto = binhost_pb2.PrepareBinhostUploadsResponse()
     with self.assertRaises(ValueError):
-      binhost.PrepareBinhostUploads(input_proto, output_proto)
+      binhost.PrepareBinhostUploads(input_proto, self.response, self.api_config)
 
 
-class SetBinhostTest(cros_test_lib.MockTestCase):
+class SetBinhostTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
   """Unittests for SetBinhost."""
+
+  def setUp(self):
+    self.response = binhost_pb2.SetBinhostResponse()
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(binhost_service, 'GetPrebuiltsRoot')
+
+    request = binhost_pb2.PrepareBinhostUploadsRequest()
+    request.build_target.name = 'target'
+    request.uri = 'gs://chromeos-prebuilt/target'
+    binhost.PrepareBinhostUploads(request, self.response,
+                                  self.validate_only_config)
+    patch.assert_not_called()
 
   def testSetBinhost(self):
     """SetBinhost calls service with correct args."""
@@ -60,17 +89,29 @@ class SetBinhostTest(cros_test_lib.MockTestCase):
     input_proto.key = binhost_pb2.POSTSUBMIT_BINHOST
     input_proto.uri = 'gs://chromeos-prebuilt/target'
 
-    output_proto = binhost_pb2.SetBinhostResponse()
+    binhost.SetBinhost(input_proto, self.response, self.api_config)
 
-    binhost.SetBinhost(input_proto, output_proto)
-
-    self.assertEqual(output_proto.output_file, '/path/to/BINHOST.conf')
+    self.assertEqual(self.response.output_file, '/path/to/BINHOST.conf')
     set_binhost.assert_called_once_with(
         'target', 'PARALLEL_POSTSUBMIT_BINHOST',
         'gs://chromeos-prebuilt/target', private=True)
 
-class RegenBuildCacheTest(cros_test_lib.MockTestCase):
+
+class RegenBuildCacheTest(cros_test_lib.MockTestCase,
+                          api_config.ApiConfigMixin):
   """Unittests for RegenBuildCache."""
+
+  def setUp(self):
+    self.response = binhost_pb2.RegenBuildCacheResponse()
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(binhost_service, 'RegenBuildCache')
+
+    request = binhost_pb2.RegenBuildCacheRequest()
+    request.overlay_type = binhost_pb2.OVERLAYTYPE_BOTH
+    binhost.RegenBuildCache(request, self.response, self.validate_only_config)
+    patch.assert_not_called()
 
   def testRegenBuildCache(self):
     """RegenBuildCache calls service with the correct args."""
@@ -78,20 +119,17 @@ class RegenBuildCacheTest(cros_test_lib.MockTestCase):
 
     input_proto = binhost_pb2.RegenBuildCacheRequest()
     input_proto.overlay_type = binhost_pb2.OVERLAYTYPE_BOTH
-    output_proto = binhost_pb2.RegenBuildCacheResponse()
 
-    binhost.RegenBuildCache(input_proto, output_proto)
+    binhost.RegenBuildCache(input_proto, self.response, self.api_config)
     regen_cache.assert_called_once_with('both')
 
   def testRequiresOverlayType(self):
     """RegenBuildCache dies if overlay_type not specified."""
     regen_cache = self.PatchObject(binhost_service, 'RegenBuildCache')
-    die = self.PatchObject(cros_build_lib, 'Die')
 
     input_proto = binhost_pb2.RegenBuildCacheRequest()
     input_proto.overlay_type = binhost_pb2.OVERLAYTYPE_UNSPECIFIED
-    output_proto = binhost_pb2.RegenBuildCacheResponse()
 
-    binhost.RegenBuildCache(input_proto, output_proto)
-    die.assert_called_once()
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      binhost.RegenBuildCache(input_proto, self.response, self.api_config)
     regen_cache.assert_not_called()

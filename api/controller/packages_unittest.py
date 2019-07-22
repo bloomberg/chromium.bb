@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import mock
 
+from chromite.api import api_config
 from chromite.api.controller import packages as packages_controller
 from chromite.api.gen.chromite.api import binhost_pb2
 from chromite.api.gen.chromite.api import packages_pb2
@@ -19,7 +20,7 @@ from chromite.lib import portage_util
 from chromite.service import packages as packages_service
 
 
-class UprevTest(cros_test_lib.MockTestCase):
+class UprevTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
   """Uprev tests."""
 
   _PUBLIC = binhost_pb2.OVERLAYTYPE_PUBLIC
@@ -29,6 +30,7 @@ class UprevTest(cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.uprev_patch = self.PatchObject(packages_service, 'uprev_build_targets')
+    self.response = packages_pb2.UprevPackagesResponse()
 
   def _GetRequest(self, targets=None, overlay_type=None, output_dir=None):
     return packages_pb2.UprevPackagesRequest(
@@ -37,24 +39,28 @@ class UprevTest(cros_test_lib.MockTestCase):
         output_dir=output_dir,
     )
 
-  def _GetResponse(self):
-    return packages_pb2.UprevPackagesResponse()
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(packages_service, 'uprev_build_targets')
+
+    targets = ['foo', 'bar']
+    request = self._GetRequest(targets=targets, overlay_type=self._BOTH)
+    packages_controller.Uprev(request, self.response, self.validate_only_config)
+    patch.assert_not_called()
 
   def testNoOverlayTypeFails(self):
     """No overlay type provided should fail."""
     request = self._GetRequest(targets=['foo'])
-    response = self._GetResponse()
 
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      packages_controller.Uprev(request, response)
+      packages_controller.Uprev(request, self.response, self.api_config)
 
   def testOverlayTypeNoneFails(self):
     """Overlay type none means nothing here and should fail."""
     request = self._GetRequest(targets=['foo'], overlay_type=self._NONE)
-    response = self._GetResponse()
 
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      packages_controller.Uprev(request, response)
+      packages_controller.Uprev(request, self.response, self.api_config)
 
   def testSuccess(self):
     """Test overall successful argument handling."""
@@ -64,11 +70,10 @@ class UprevTest(cros_test_lib.MockTestCase):
     expected_type = constants.BOTH_OVERLAYS
     request = self._GetRequest(targets=targets, overlay_type=self._BOTH,
                                output_dir=output_dir)
-    response = self._GetResponse()
     uprev_patch = self.PatchObject(packages_service, 'uprev_build_targets',
                                    return_value=changed)
 
-    packages_controller.Uprev(request, response)
+    packages_controller.Uprev(request, self.response, self.api_config)
 
     # Make sure the type is right, verify build targets after.
     uprev_patch.assert_called_once_with(mock.ANY, expected_type, mock.ANY,
@@ -77,22 +82,22 @@ class UprevTest(cros_test_lib.MockTestCase):
     call_targets = uprev_patch.call_args[0][0]
     self.assertItemsEqual(targets, [t.name for t in call_targets])
 
-    for ebuild in response.modified_ebuilds:
+    for ebuild in self.response.modified_ebuilds:
       self.assertIn(ebuild.path, changed)
       changed.remove(ebuild.path)
     self.assertFalse(changed)
 
 
-class GetBestVisibleTest(cros_test_lib.MockTestCase):
+class GetBestVisibleTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
   """GetBestVisible tests."""
+
+  def setUp(self):
+    self.response = packages_pb2.GetBestVisibleResponse()
 
   def _GetRequest(self, atom=None):
     return packages_pb2.GetBestVisibleRequest(
         atom=atom,
     )
-
-  def _GetResponse(self):
-    return packages_pb2.GetBestVisibleResponse()
 
   def _MakeCpv(self, category, package, version):
     unused = {
@@ -110,13 +115,21 @@ class GetBestVisibleTest(cros_test_lib.MockTestCase):
         **unused
     )
 
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(packages_service, 'get_best_visible')
+
+    request = self._GetRequest(atom='chromeos-chrome')
+    packages_controller.GetBestVisible(request, self.response,
+                                       self.validate_only_config)
+    patch.assert_not_called()
+
   def testNoAtomFails(self):
     """No atom provided should fail."""
     request = self._GetRequest()
-    response = self._GetResponse()
-
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      packages_controller.GetBestVisible(request, response)
+      packages_controller.GetBestVisible(request, self.response,
+                                         self.api_config)
 
   def testSuccess(self):
     """Test overall success, argument handling, result forwarding."""
@@ -124,11 +137,10 @@ class GetBestVisibleTest(cros_test_lib.MockTestCase):
     self.PatchObject(packages_service, 'get_best_visible', return_value=cpv)
 
     request = self._GetRequest(atom='chromeos-chrome')
-    response = self._GetResponse()
 
-    packages_controller.GetBestVisible(request, response)
+    packages_controller.GetBestVisible(request, self.response, self.api_config)
 
-    package_info = response.package_info
+    package_info = self.response.package_info
     self.assertEqual(package_info.category, cpv.category)
     self.assertEqual(package_info.package_name, cpv.package)
     self.assertEqual(package_info.version, cpv.version)

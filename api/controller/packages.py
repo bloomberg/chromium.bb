@@ -24,14 +24,11 @@ _OVERLAY_TYPE_TO_NAME = {
 }
 
 
-def Uprev(input_proto, output_proto):
+@validate.require('overlay_type')
+@validate.is_in('overlay_type', _OVERLAY_TYPE_TO_NAME)
+@validate.validation_complete
+def Uprev(input_proto, output_proto, _config):
   """Uprev all cros workon ebuilds that have changes."""
-  if not input_proto.overlay_type:
-    cros_build_lib.Die('Overlay type is required.')
-  elif input_proto.overlay_type not in _OVERLAY_TYPE_TO_NAME:
-    cros_build_lib.Die('Overlay type must be one of: %s',
-                       ', '.join(_OVERLAY_TYPE_TO_NAME.values()))
-
   target_names = [t.name for t in input_proto.build_targets]
   build_targets = [build_target_util.BuildTarget(t) for t in target_names]
   overlay_type = _OVERLAY_TYPE_TO_NAME[input_proto.overlay_type]
@@ -48,6 +45,8 @@ def Uprev(input_proto, output_proto):
   for path in uprevved:
     output_proto.modified_ebuilds.add().path = path
 
+
+@validate.validation_complete
 def UprevVersionedPackage(_input_proto, _output_proto):
   """Uprev a versioned package.
 
@@ -55,8 +54,10 @@ def UprevVersionedPackage(_input_proto, _output_proto):
   """
   pass
 
+
 @validate.require('atom')
-def GetBestVisible(input_proto, output_proto):
+@validate.validation_complete
+def GetBestVisible(input_proto, output_proto, _config):
   """Returns the best visible PackageInfo for the indicated atom."""
   cpv = packages.get_best_visible(input_proto.atom)
   package_info = common_pb2.PackageInfo()

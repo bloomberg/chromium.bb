@@ -21,7 +21,8 @@ _ACCEPTED_LICENSES = '@CHROMEOS'
 
 
 @validate.require('build_target.name')
-def Create(input_proto, output_proto):
+@validate.validation_complete
+def Create(input_proto, output_proto, _config):
   """Create or replace a sysroot."""
   update_chroot = not input_proto.flags.chroot_current
   replace_sysroot = input_proto.flags.replace
@@ -45,7 +46,9 @@ def Create(input_proto, output_proto):
 
 
 @validate.require('sysroot.path', 'sysroot.build_target.name')
-def InstallToolchain(input_proto, output_proto):
+@validate.exists('sysroot.path')
+@validate.validation_complete
+def InstallToolchain(input_proto, output_proto, _config):
   """Install the toolchain into a sysroot."""
   compile_source = input_proto.flags.compile_source
 
@@ -55,9 +58,6 @@ def InstallToolchain(input_proto, output_proto):
   build_target = build_target_util.BuildTarget(name=build_target_name)
   target_sysroot = sysroot_lib.Sysroot(sysroot_path)
   run_configs = sysroot.SetupBoardRunConfig(usepkg=not compile_source)
-
-  if not target_sysroot.Exists():
-    cros_build_lib.Die('Sysroot has not been created. Run Create first.')
 
   _LogBinhost(build_target.name)
 
@@ -73,7 +73,8 @@ def InstallToolchain(input_proto, output_proto):
 
 
 @validate.require('sysroot.path', 'sysroot.build_target.name')
-def InstallPackages(input_proto, output_proto):
+@validate.validation_complete
+def InstallPackages(input_proto, output_proto, _config):
   """Install packages into a sysroot, building as necessary and permitted."""
   compile_source = input_proto.flags.compile_source
   event_file = input_proto.flags.event_file

@@ -65,13 +65,37 @@ def exists(*fields):
   return decorator
 
 
+def is_in(field, values):
+  """Validate |field| does not contain |value|.
+
+  Args:
+    field (str): The field being checked. May be . separated nested fields.
+    values (list): The possible values field may take.
+  """
+  assert field
+  assert values
+
+  def decorator(func):
+    def _is_in(input_proto, *args, **kwargs):
+      logging.debug('Validating %s is in %r', field, values)
+      value = _value(field, input_proto)
+
+      if value not in values:
+        cros_build_lib.Die('%s (%r) must be in %r', field, value, values)
+
+      return func(input_proto, *args, **kwargs)
+
+    return _is_in
+
+  return decorator
+
+
 #pylint: disable=docstring-misnamed-args
 def require(*fields):
   """Verify |fields| have all been set.
 
   Args:
-    fields (str): The fields being checked. May be . separated nested
-      fields.
+    fields (str): The fields being checked. May be . separated nested fields.
   """
   assert fields
 

@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.api import controller
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.cbuildbot import commands
@@ -44,26 +45,34 @@ def _GetImageDir(build_root, target):
 
 
 @validate.require('build_target.name', 'output_dir')
-def BundleImageZip(input_proto, output_proto):
+@validate.exists('output_dir')
+@validate.validation_complete
+def BundleImageZip(input_proto, output_proto, _config):
   """Bundle image.zip.
 
   Args:
     input_proto (BundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
+    _config (api_config.ApiConfig): The API call config.
   """
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
   image_dir = _GetImageDir(constants.SOURCE_ROOT, target)
+
   archive = artifacts.BundleImageZip(output_dir, image_dir)
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
-def BundleTestUpdatePayloads(input_proto, output_proto):
+@validate.require('build_target.name', 'output_dir')
+@validate.exists('output_dir')
+@validate.validation_complete
+def BundleTestUpdatePayloads(input_proto, output_proto, _config):
   """Generate minimal update payloads for the build target for testing.
 
   Args:
     input_proto (BundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
+    _config (api_config.ApiConfig): The API call config.
   """
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
@@ -88,17 +97,17 @@ def BundleTestUpdatePayloads(input_proto, output_proto):
     output_proto.artifacts.add().path = payload
 
 
-def BundleAutotestFiles(input_proto, output_proto):
+@validate.require('output_dir')
+@validate.exists('output_dir')
+def BundleAutotestFiles(input_proto, output_proto, config):
   """Tar the autotest files for a build target.
 
   Args:
     input_proto (BundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
+    config (api_config.ApiConfig): The API call config.
   """
   output_dir = input_proto.output_dir
-  if not output_dir:
-    cros_build_lib.Die('output_dir is required.')
-
   target = input_proto.build_target.name
   if target:
     # Legacy call, build out sysroot path from default source root and the
@@ -121,6 +130,11 @@ def BundleAutotestFiles(input_proto, output_proto):
     sysroot = sysroot_lib.Sysroot(os.path.join(chroot.path,
                                                sysroot_path.lstrip(os.sep)))
 
+  # TODO(saklein): Switch to the validate_only decorator when legacy handling
+  #   is removed.
+  if config.validate_only:
+    return controller.RETURN_CODE_VALID_INPUT
+
   if not sysroot.Exists():
     cros_build_lib.Die('Sysroot path must exist: %s', sysroot.path)
 
@@ -135,12 +149,14 @@ def BundleAutotestFiles(input_proto, output_proto):
 
 
 @validate.require('output_dir')
-def BundleTastFiles(input_proto, output_proto):
+@validate.exists('output_dir')
+def BundleTastFiles(input_proto, output_proto, config):
   """Tar the tast files for a build target.
 
   Args:
     input_proto (BundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
+    config (api_config.ApiConfig): The API call config.
   """
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
@@ -160,8 +176,13 @@ def BundleTastFiles(input_proto, output_proto):
   if not sysroot_path:
     cros_build_lib.Die('sysroot.path is required.')
 
+  # TODO(saklein): Switch to the validation_complete decorator when legacy
+  #   handling is removed.
+  if config.validate_only:
+    return controller.RETURN_CODE_VALID_INPUT
+
   sysroot = sysroot_lib.Sysroot(sysroot_path)
-  if not sysroot.Exists(chroot):
+  if not sysroot.Exists(chroot=chroot):
     cros_build_lib.Die('Sysroot must exist.')
 
   archive = artifacts.BundleTastFiles(chroot, sysroot, output_dir)
@@ -174,12 +195,16 @@ def BundleTastFiles(input_proto, output_proto):
   output_proto.artifacts.add().path = archive
 
 
-def BundlePinnedGuestImages(input_proto, output_proto):
+@validate.require('build_target.name', 'output_dir')
+@validate.exists('output_dir')
+@validate.validation_complete
+def BundlePinnedGuestImages(input_proto, output_proto, _config):
   """Tar the pinned guest images for a build target.
 
   Args:
     input_proto (BundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
+    _config (api_config.ApiConfig): The API call config.
   """
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
@@ -196,19 +221,18 @@ def BundlePinnedGuestImages(input_proto, output_proto):
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
-def FetchPinnedGuestImages(input_proto, output_proto):
+@validate.require('sysroot.path')
+@validate.validation_complete
+def FetchPinnedGuestImages(input_proto, output_proto, _config):
   """Get the pinned guest image information."""
   sysroot_path = input_proto.sysroot.path
-  if not sysroot_path:
-    cros_build_lib.Die('sysroot.path is required.')
 
   chroot = controller_util.ParseChroot(input_proto.chroot)
   sysroot = sysroot_lib.Sysroot(sysroot_path)
 
   if not chroot.exists():
     cros_build_lib.Die('Chroot does not exist: %s', chroot.path)
-
-  if not sysroot.Exists(chroot=chroot):
+  elif not sysroot.Exists(chroot=chroot):
     cros_build_lib.Die('Sysroot does not exist: %s',
                        chroot.full_path(sysroot.path))
 
@@ -221,17 +245,27 @@ def FetchPinnedGuestImages(input_proto, output_proto):
 
 
 @validate.require('output_dir', 'sysroot.path')
-def BundleFirmware(input_proto, output_proto):
+@validate.exists('output_dir')
+@validate.validation_complete
+def BundleFirmware(input_proto, output_proto, _config):
   """Tar the firmware images for a build target.
 
   Args:
     input_proto (BundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
+    _config (api_config.ApiConfig): The API call config.
   """
   output_dir = input_proto.output_dir
   chroot = controller_util.ParseChroot(input_proto.chroot)
   sysroot_path = input_proto.sysroot.path
   sysroot = sysroot_lib.Sysroot(sysroot_path)
+
+  if not chroot.exists():
+    cros_build_lib.Die('Chroot does not exist: %s', chroot.path)
+  elif not sysroot.Exists(chroot=chroot):
+    cros_build_lib.Die('Sysroot does not exist: %s',
+                       chroot.full_path(sysroot.path))
+
   archive = artifacts.BuildFirmwareArchive(chroot, sysroot, output_dir)
 
   if archive is None:
@@ -239,16 +273,17 @@ def BundleFirmware(input_proto, output_proto):
         'Could not create firmware archive. No firmware found for %s.',
         sysroot_path)
 
-  output_proto.artifacts.add().path = os.path.join(output_dir, archive)
+  output_proto.artifacts.add().path = archive
 
 
 @validate.exists('output_dir')
-def BundleEbuildLogs(input_proto, output_proto):
+def BundleEbuildLogs(input_proto, output_proto, config):
   """Tar the ebuild logs for a build target.
 
   Args:
     input_proto (BundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
+    config (api_config.ApiConfig): The API call config.
   """
   output_dir = input_proto.output_dir
   sysroot_path = input_proto.sysroot.path
@@ -262,6 +297,11 @@ def BundleEbuildLogs(input_proto, output_proto):
     chroot.path = os.path.join(build_root, 'chroot')
     sysroot_path = os.path.join('/build', target)
 
+  # TODO(saklein): Switch to validation_complete decorator after legacy
+  #   handling has been cleaned up.
+  if config.validate_only:
+    return controller.RETURN_CODE_VALID_INPUT
+
   sysroot = sysroot_lib.Sysroot(sysroot_path)
   archive = artifacts.BundleEBuildLogsTarball(chroot, sysroot, output_dir)
   if archive is None:
@@ -271,21 +311,15 @@ def BundleEbuildLogs(input_proto, output_proto):
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
-def BundleSimpleChromeArtifacts(input_proto, output_proto):
+@validate.require('output_dir', 'sysroot.build_target.name', 'sysroot.path')
+@validate.exists('output_dir')
+@validate.validation_complete
+def BundleSimpleChromeArtifacts(input_proto, output_proto, _config):
   """Create the simple chrome artifacts."""
   # Required args.
   sysroot_path = input_proto.sysroot.path
   build_target_name = input_proto.sysroot.build_target.name
   output_dir = input_proto.output_dir
-
-  if not build_target_name:
-    cros_build_lib.Die('build_target.name is required')
-  if not output_dir:
-    cros_build_lib.Die('output_dir is required.')
-  if not os.path.exists(output_dir):
-    cros_build_lib.Die('output_dir (%s) does not exist.', output_dir)
-  if not sysroot_path:
-    cros_build_lib.Die('sysroot.path is required.')
 
   # Optional args.
   chroot_path = input_proto.chroot.path or constants.DEFAULT_CHROOT_PATH
@@ -314,12 +348,15 @@ def BundleSimpleChromeArtifacts(input_proto, output_proto):
 
 
 @validate.require('chroot.path', 'test_results_dir', 'output_dir')
-def BundleVmFiles(input_proto, output_proto):
+@validate.exists('output_dir')
+@validate.validation_complete
+def BundleVmFiles(input_proto, output_proto, _config):
   """Tar VM disk and memory files.
 
   Args:
     input_proto (SysrootBundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
+    _config (api_config.ApiConfig): The API call config.
   """
   chroot = controller_util.ParseChroot(input_proto.chroot)
   test_results_dir = input_proto.test_results_dir
@@ -330,29 +367,27 @@ def BundleVmFiles(input_proto, output_proto):
   for archive in archives:
     output_proto.artifacts.add().path = archive
 
-def BundleOrderfileGenerationArtifacts(input_proto, output_proto):
+
+@validate.require('build_target.name', 'output_dir')
+@validate.exists('output_dir')
+@validate.validation_complete
+def BundleOrderfileGenerationArtifacts(input_proto, output_proto, _config):
   """Create tarballs of all the artifacts of orderfile_generate builder.
 
   Args:
     input_proto (BundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
+    _config (api_config.ApiConfig): The API call config.
   """
   # Required args.
-  build_target_name = input_proto.build_target.name
+  build_target = build_target_util.BuildTarget(input_proto.build_target.name)
   output_dir = input_proto.output_dir
-
-  if not build_target_name:
-    cros_build_lib.Die('build_target.name is required.')
-  if not output_dir:
-    cros_build_lib.Die('output_dir is required.')
-  elif not os.path.isdir(output_dir):
-    cros_build_lib.Die('output_dir does not exist.')
 
   chroot = controller_util.ParseChroot(input_proto.chroot)
 
   try:
     results = artifacts.BundleOrderfileGenerationArtifacts(
-        chroot, input_proto.build_target, output_dir)
+        chroot, build_target, output_dir)
   except artifacts.Error as e:
     cros_build_lib.Die('Error %s raised in BundleSimpleChromeArtifacts: %s',
                        type(e), e)

@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 from chromite.api import router as router_lib
+from chromite.api import validate
 
 # API version number.
 # The major version MUST be updated on breaking changes.
@@ -18,14 +19,16 @@ VERSION_MINOR = 0
 VERSION_BUG = 0
 
 
-def GetMethods(_input_proto, output_proto):
+@validate.validation_complete
+def GetMethods(_input_proto, output_proto, _config):
   """List all of the registered methods."""
   router = router_lib.GetRouter()
   for method in router.ListMethods():
     output_proto.methods.add().method = method
 
 
-def GetVersion(_input_proto, output_proto):
+@validate.validation_complete
+def GetVersion(_input_proto, output_proto, _config):
   """Get the Build API major version number."""
   output_proto.version.major = VERSION_MAJOR
   output_proto.version.minor = VERSION_MINOR

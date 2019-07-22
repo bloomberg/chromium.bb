@@ -25,7 +25,8 @@ ANDROIDPIN_MASK_PATH = os.path.join(constants.SOURCE_ROOT,
 
 
 @validate.require('tracking_branch', 'package_name', 'android_build_branch')
-def MarkStable(input_proto, output_proto):
+@validate.validation_complete
+def MarkStable(input_proto, output_proto, _config):
   """Uprev Android, if able.
 
   Uprev Android, verify that the newly uprevved package can be emerged, and
@@ -35,7 +36,8 @@ def MarkStable(input_proto, output_proto):
 
   Args:
     input_proto (MarkStableRequest): The input proto.
-    output_proto (MarkStableReSponse): The output proto.
+    output_proto (MarkStableResponse): The output proto.
+    _config (api_config.ApiConfig): The call config.
   """
   tracking_branch = input_proto.tracking_branch
   package_name = input_proto.package_name
@@ -72,14 +74,15 @@ def MarkStable(input_proto, output_proto):
     output_proto.status = android_pb2.MARK_STABLE_STATUS_EARLY_EXIT
 
 
-def UnpinVersion(_input_proto, _output_proto):
+@validate.validation_complete
+def UnpinVersion(_input_proto, _output_proto, _config):
   """Unpin the Android version.
 
   See AndroidService documentation in api/proto/android.proto.
 
   Args:
     _input_proto (UnpinVersionRequest): The input proto. (not used.)
-    _output_proto (google.protobuf.Empty): The output proto. (not used.)
+    _output_proto (UnpinVersionResponse): The output proto. (not used.)
+    _config (api_config.ApiConfig): The call config.
   """
-
   osutils.SafeUnlink(ANDROIDPIN_MASK_PATH)

@@ -43,6 +43,40 @@ class ExistsTest(cros_test_lib.TempDirTestCase):
     impl(common_pb2.Chroot(path=path))
 
 
+class IsInTest(cros_test_lib.TestCase):
+  """Tests for the is_in validator."""
+
+  def test_in(self):
+    """Test a valid value."""
+    @validate.is_in('path', ['/chroot/path', '/other/chroot/path'])
+    def impl(*_args):
+      pass
+
+    # Make sure all of the values work.
+    impl(common_pb2.Chroot(path='/chroot/path'))
+    impl(common_pb2.Chroot(path='/other/chroot/path'))
+
+  def test_not_in(self):
+    """Test an invalid value."""
+    @validate.is_in('path', ['/chroot/path', '/other/chroot/path'])
+    def impl(*_args):
+      pass
+
+    # Should be failing on the invalid value.
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      impl(common_pb2.Chroot(path='/bad/value'))
+
+  def test_not_set(self):
+    """Test an unset value."""
+    @validate.is_in('path', ['/chroot/path', '/other/chroot/path'])
+    def impl(*_args):
+      pass
+
+    # Should be failing without a value set.
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      impl(common_pb2.Chroot())
+
+
 class RequiredTest(cros_test_lib.TestCase):
   """Tests for the required validator."""
 
