@@ -234,7 +234,7 @@ TEST_P(ErrorBlockTest, DISABLED_Speed) {
 
 using ::testing::make_tuple;
 
-#if (HAVE_SSE2 || HAVE_AVX)
+#if (HAVE_SSE2)
 INSTANTIATE_TEST_CASE_P(
     SSE2, ErrorBlockTest,
     ::testing::Values(make_tuple(&av1_highbd_block_error_sse2,
@@ -242,7 +242,10 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(&av1_highbd_block_error_sse2,
                                  &av1_highbd_block_error_c, AOM_BITS_12),
                       make_tuple(&av1_highbd_block_error_sse2,
-                                 &av1_highbd_block_error_c, AOM_BITS_8)));
+                                 &av1_highbd_block_error_c, AOM_BITS_8),
+                      make_tuple(&BlockError8BitWrapper<av1_block_error_sse2>,
+                                 &BlockError8BitWrapper<av1_block_error_c>,
+                                 AOM_BITS_8)));
 #endif  // HAVE_SSE2
 
 #if (HAVE_AVX2)
