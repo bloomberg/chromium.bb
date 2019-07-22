@@ -2328,7 +2328,7 @@
         'skip_merge_script': True,
         'mixins': [
           'gpu_pool',
-          'pie',
+          'android_q',
           'walleye',
         ],
         'additional_compile_targets': [
@@ -2344,7 +2344,7 @@
         'skip_merge_script': True,
         'mixins': [
           'gpu_pool',
-          'pie',
+          'android_q',
           'walleye',
         ],
         'test_suites': {
@@ -2356,7 +2356,7 @@
         'skip_merge_script': True,
         'mixins': [
           'gpu_pool',
-          'pie',
+          'android_q',
           'walleye',
         ],
         'additional_compile_targets': [
@@ -2372,7 +2372,7 @@
         'skip_merge_script': True,
         'mixins': [
           'gpu_pool',
-          'pie',
+          'android_q',
           'walleye',
         ],
         'test_suites': {
