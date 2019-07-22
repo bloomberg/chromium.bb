@@ -296,16 +296,14 @@ grit("generate_components_resources") {
   inputs = [
     _whitelist,
   ]
-  _about_credits_file_bro =
-      get_label_info("//components/resources", "target_gen_dir") +
-      "/about_credits.bro"
+  _about_credits_file = get_label_info("//components/resources",
+                                       "target_gen_dir") + "/about_credits.html"
 
   grit_flags = [
     "-w",
     rebase_path(_whitelist, root_build_dir),
     "-E",
-    "about_credits_file=" +
-        rebase_path(_about_credits_file_bro, root_build_dir),
+    "about_credits_file=" + rebase_path(_about_credits_file, root_build_dir),
   ]
   outputs = [
     "grit/components_resources.h",
@@ -313,7 +311,7 @@ grit("generate_components_resources") {
   ]
 
   deps = [
-    "//components/resources:compressed_about_credits",
+    "//components/resources:about_credits",
   ]
 }
 
