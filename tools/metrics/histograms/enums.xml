@@ -25244,6 +25244,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="FirstMeaningfulPaintOrdering">
+  <obsolete>
+    Removed July 2019.
+  </obsolete>
   <int value="0" label="FMP 0-quiet &lt; FMP 2-quiet"/>
   <int value="1" label="FMP 0-quiet &gt; FMP 2-quiet"/>
   <int value="2" label="FMP 0-quiet = FMP 2-quiet"/>
@@ -42230,6 +42233,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NetworkQuietStatus">
+  <obsolete>
+    Removed July 2019.
+  </obsolete>
   <int value="0" label="Had network 0-quiet for 0.5 seconds"/>
   <int value="1" label="Had network 2-quiet for 2 seconds"/>
 </enum>
