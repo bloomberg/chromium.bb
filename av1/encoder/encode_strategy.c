@@ -853,18 +853,10 @@ void av1_update_ref_frame_map(AV1_COMP *cpi,
                  ref_map_index);
       break;
     case OVERLAY_UPDATE:
-      if (cpi->preserve_arf_as_gld || cm->show_existing_frame) {
-        ref_map_index = stack_pop(ref_buffer_stack->arf_stack,
-                                  &ref_buffer_stack->arf_stack_size);
-        stack_push(ref_buffer_stack->gld_stack,
-                   &ref_buffer_stack->gld_stack_size, ref_map_index);
-      } else {
-        stack_pop(ref_buffer_stack->arf_stack,
-                  &ref_buffer_stack->arf_stack_size);
-        update_arf_stack(cpi, ref_map_index, ref_buffer_stack);
-        stack_push(ref_buffer_stack->gld_stack,
-                   &ref_buffer_stack->gld_stack_size, ref_map_index);
-      }
+      ref_map_index = stack_pop(ref_buffer_stack->arf_stack,
+                                &ref_buffer_stack->arf_stack_size);
+      stack_push(ref_buffer_stack->gld_stack, &ref_buffer_stack->gld_stack_size,
+                 ref_map_index);
       break;
     case INTNL_OVERLAY_UPDATE:
       ref_map_index = stack_pop(ref_buffer_stack->arf_stack,
@@ -1052,11 +1044,9 @@ int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
       refresh_mask |= cpi->ext_refresh_alt2_ref_frame << ref_frame_map_idx;
 
     if (frame_update_type == OVERLAY_UPDATE) {
-      if (!cpi->preserve_arf_as_gld) {
-        ref_frame_map_idx = get_ref_frame_map_idx(cm, ALTREF_FRAME);
-        if (ref_frame_map_idx != INVALID_IDX)
-          refresh_mask |= cpi->ext_refresh_golden_frame << ref_frame_map_idx;
-      }
+      ref_frame_map_idx = get_ref_frame_map_idx(cm, ALTREF_FRAME);
+      if (ref_frame_map_idx != INVALID_IDX)
+        refresh_mask |= cpi->ext_refresh_golden_frame << ref_frame_map_idx;
     } else {
       ref_frame_map_idx = get_ref_frame_map_idx(cm, GOLDEN_FRAME);
       if (ref_frame_map_idx != INVALID_IDX)
@@ -1127,21 +1117,7 @@ int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
                      ->lst_stack[ref_buffer_stack->lst_stack_size - 1];
       }
       break;
-    case OVERLAY_UPDATE:
-      if (!cpi->preserve_arf_as_gld) {
-        if (free_fb_index != INVALID_IDX) {
-          refresh_mask = 1 << free_fb_index;
-        } else if (ref_buffer_stack->arf_stack_size) {
-          refresh_mask =
-              1 << ref_buffer_stack
-                       ->arf_stack[ref_buffer_stack->arf_stack_size - 1];
-        } else {
-          refresh_mask =
-              1 << ref_buffer_stack
-                       ->lst_stack[ref_buffer_stack->lst_stack_size - 1];
-        }
-      }
-      break;
+    case OVERLAY_UPDATE: break;
     case INTNL_OVERLAY_UPDATE: break;
     default: assert(0); break;
   }
@@ -1173,14 +1149,7 @@ int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
       refresh_mask |= 1 << get_ref_frame_map_idx(cm, LAST3_FRAME);
       refresh_mask |= 1 << get_ref_frame_map_idx(cm, GOLDEN_FRAME);
       break;
-    case OVERLAY_UPDATE:
-      if (!cpi->preserve_arf_as_gld) {
-        // The result of our OVERLAY should become the GOLDEN_FRAME but we'd
-        // like to keep the old GOLDEN as our new ALTREF.  So we refresh the
-        // ALTREF and swap around the ALTREF and GOLDEN references.
-        refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF_FRAME);
-      }
-      break;
+    case OVERLAY_UPDATE: break;
     case ARF_UPDATE:
       refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF_FRAME);
       break;
