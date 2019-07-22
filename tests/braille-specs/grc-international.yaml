@@ -8,7 +8,7 @@
 display: unicode-without-blank.dis
 table:
   locale: grc
-  __assert-match: gr-bb.ctb
+  __assert-match: grc-international.utb
 flags: {testmode: forward}
 tests:
 
