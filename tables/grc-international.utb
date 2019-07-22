@@ -198,4 +198,4 @@ sign	\x00A7	12356-234-23456	# § SECTION SIGN
 sign	\x00A9	12356-14-23456	# © COPYRIGHT SIGN 
 sign	\x25CF	12356-16-23456	# ● black circle
 
-include grc-international.uti
+include grc-international-decomposed.uti
