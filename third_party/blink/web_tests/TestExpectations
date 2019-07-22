@@ -3470,7 +3470,6 @@ crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/response/r
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-https/xhr-request/no-redirect/upgrade-protocol.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/http-rp/cross-origin/http-http/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/response/response-consume-empty.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/http-rp/cross-origin/http-http/iframe-tag/swap-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/meta-referrer/cross-origin/http-http/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/module-worker/keep-origin-redirect/insecure-protocol.http.html [ Timeout ]
@@ -6312,3 +6311,9 @@ crbug.com/986019 [ Linux Win ] virtual/threaded/animations/web-animations/animat
 crbug.com/986282 [ Linux Win ] external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Pass Failure ]
 crbug.com/986019 [ Linux ] virtual/threaded/animations/play-state.html [ Pass Timeout ]
 crbug.com/986019 [ Linux ] virtual/disable-blink-gen-property-trees/animations/play-state.html [ Pass Timeout ]
+
+# ecosystem-infra sheriff 2019-07-22
+crbug.com/986286 external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
+crbug.com/986286 virtual/blink-cors/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
+crbug.com/986286 virtual/not-omt-sw-fetch/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
+crbug.com/986286 virtual/omt-worker-fetch/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
