@@ -28,3 +28,15 @@ tests:
   - ⠁⠃⠛⠰⠙⠑⠵⠜⠹⠊⠅⠰⠇⠍⠝ ⠭⠕⠏
   - αβγdezηθικlmn ξοπ
 
+- # unaccented diphthongs
+  - ⠥ ⠡ ⠣ ⠩ ⠱ ⠻ ⠳ ⠪
+  - ου αυ αι ει ευ υι ηυ οι
+
+- # diphthongs with Dasia
+  - ⠧⠥ ⠧⠡ ⠧⠣ ⠧⠩ ⠧⠱ ⠧⠻ ⠧⠳ ⠧⠪
+  - οὑ αὑ αἱ εἱ εὑ υἱ ηὑ οἱ
+
+- # diphthongs with Psili,Dasia and Varia,Oxia,Perispomeni
+  - ⠷⠥ ⠢⠥ ⠖⠥ ⠾⠥ ⠴⠥ ⠲⠥
+  - οὓ οὕ οὗ οὒ οὔ οὖ
+
