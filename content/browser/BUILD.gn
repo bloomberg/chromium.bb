@@ -188,7 +188,6 @@ jumbo_source_set("browser") {
     "//services/video_capture/public/mojom:constants",
     "//services/video_capture/public/uma",
     "//services/viz/privileged/interfaces",
-    "//services/viz/public/cpp:manifest",
     "//services/viz/public/cpp/gpu",
     "//services/viz/public/interfaces",
     "//skia",

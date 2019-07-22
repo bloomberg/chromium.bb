@@ -498,7 +498,6 @@ source_set("run_all_unittests") {
     deps += [
       "//mojo/core/embedder",
       "//services/service_manager/public/cpp/test:test_support",
-      "//services/viz/public/interfaces:constants",
       "//ui/ozone",
     ]
   }

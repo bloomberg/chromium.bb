@@ -347,7 +347,6 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "services/strings/grit/services_strings.h"
-#include "services/viz/public/interfaces/constants.mojom.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
@@ -2353,17 +2352,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     const service_manager::Identity& identity,
     base::CommandLine* command_line) {
-#if defined(OS_CHROMEOS)
-  if (identity.name() == viz::mojom::kVizServiceName) {
-    if (ui::OzonePlatform::EnsureInstance()->GetMessageLoopTypeForGpu() ==
-        base::MessageLoop::TYPE_UI) {
-      command_line->AppendSwitch(switches::kMessageLoopTypeUi);
-    }
-    content::GpuDataManager::GetInstance()->AppendGpuCommandLine(
-        command_line, content::GPU_PROCESS_KIND_SANDBOXED);
-  }
-#endif
-
 #if defined(OS_MACOSX)
   // On Mac, the video-capture and audio services require a CFRunLoop, provided
   // by a UI message loop, to run AVFoundation and CoreAudio code.
