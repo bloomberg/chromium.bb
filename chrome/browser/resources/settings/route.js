@@ -258,9 +258,10 @@ cr.define('settings', function() {
         r.MULTIDEVICE_FEATURES.createChild('/multidevice/features/smartLock');
 
     // TODO(hsuregan): Remove once this file is forked.
-    if (loadTimeData.getBoolean('showOSSettings')) {
+    if (loadTimeData.getBoolean('isOSSettings')) {
       r.PERSONALIZATION =
           r.BASIC.createSection('/personalization', 'personalization');
+      r.CHANGE_PICTURE = r.PERSONALIZATION.createChild('/changePicture');
     }
     // </if>
 
@@ -331,7 +332,10 @@ cr.define('settings', function() {
       r.MANAGE_PROFILE = r.PEOPLE.createChild('/manageProfile');
       // </if>
       // <if expr="chromeos">
-      r.CHANGE_PICTURE = r.PEOPLE.createChild('/changePicture');
+      // TODO(crbug.com/950007): Remove when SplitSettings is the default.
+      if (!loadTimeData.getBoolean('isOSSettings')) {
+        r.CHANGE_PICTURE = r.PEOPLE.createChild('/changePicture');
+      }
       r.ACCOUNTS = r.PEOPLE.createChild('/accounts');
       r.ACCOUNT_MANAGER = r.PEOPLE.createChild('/accountManager');
       r.KERBEROS_ACCOUNTS = r.PEOPLE.createChild('/kerberosAccounts');
