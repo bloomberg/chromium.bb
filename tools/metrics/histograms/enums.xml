@@ -34199,6 +34199,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1411733990" label="OmniboxDedupeGoogleDriveURLs:disabled"/>
   <int value="-1411003295" label="disable-encrypted-media"/>
   <int value="-1410394131" label="EvDetailsInPageInfo:enabled"/>
+  <int value="-1410001116"
+      label="EnableAmbientAuthenticationInGuestSession:disabled"/>
   <int value="-1409643943" label="enable-child-account-detection"/>
   <int value="-1408869905"
       label="AutofillEnforceMinRequiredFieldsForQuery:disabled"/>
@@ -34894,6 +34896,8 @@ from previous Chrome versions.
   <int value="-438379844" label="SwapSideVolumeButtonsForOrientation:enabled"/>
   <int value="-436470115" label="TouchpadAndWheelScrollLatching:enabled"/>
   <int value="-435914745" label="ClipboardContentSetting:disabled"/>
+  <int value="-433879402"
+      label="EnableAmbientAuthenticationInIncognito:disabled"/>
   <int value="-430360431" label="disable-password-generation"/>
   <int value="-428599163" label="NTPDownloadSuggestions:enabled"/>
   <int value="-426815606" label="HomepageTile:enabled"/>
@@ -34973,6 +34977,8 @@ from previous Chrome versions.
   <int value="-328361990" label="enable-experimental-extension-apis"/>
   <int value="-327272022" label="AutofillRejectCompanyBirthyearName:enabled"/>
   <int value="-326083626" label="AppBanners:disabled"/>
+  <int value="-324786035"
+      label="EnableAmbientAuthenticationInGuestSession:enabled"/>
   <int value="-323964300" label="ArcVpn:enabled"/>
   <int value="-323831744" label="token-binding:enabled"/>
   <int value="-323508281" label="VrWebInputEditing:disabled"/>
@@ -35301,6 +35307,7 @@ from previous Chrome versions.
   <int value="132560299"
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:disabled"/>
   <int value="133482330" label="AppNotificationStatusMessaging:enabled"/>
+  <int value="138345654" label="enable-ambient-authentication-in-incognito"/>
   <int value="143725809" label="DownloadProgressInfoBar:enabled"/>
   <int value="146229312" label="WebPaymentsExperimentalFeatures:enabled"/>
   <int value="147342055" label="ChromeHomeClearUrlOnOpen:disabled"/>
@@ -35391,6 +35398,8 @@ from previous Chrome versions.
   <int value="304901781" label="NewUsbBackend:enabled"/>
   <int value="306641800" label="AndroidSiteSettingsUIRefresh:disabled"/>
   <int value="307543404" label="disable-team-drives"/>
+  <int value="307670929"
+      label="enable-ambient-authentication-in-guest-session"/>
   <int value="310143091"
       label="AutofillImportNonFocusableCreditCardForms:enabled"/>
   <int value="313253630" label="AutofillRefreshStyleAndroid:enabled"/>
@@ -35997,6 +36006,8 @@ from previous Chrome versions.
   <int value="1196644408" label="performance-monitor-gathering"/>
   <int value="1196834473" label="disable-smart-virtual-keyboard"/>
   <int value="1198839129" label="OfflinePagesLivePageSharing:enabled"/>
+  <int value="1201008500"
+      label="EnableAmbientAuthenticationInIncognito:enabled"/>
   <int value="1201441984"
       label="new-password-form-parsing-for-saving:disabled"/>
   <int value="1205849612" label="enable-sync-synced-notifications"/>
