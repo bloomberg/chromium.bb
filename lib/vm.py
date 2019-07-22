@@ -478,7 +478,7 @@ class VM(device.Device):
     self._WaitForSSHPort()
     self._RmVMDir()
 
-  def _WaitForProcs(self):
+  def _WaitForProcs(self, sleep=2):
     """Wait for expected processes to launch."""
     class _TooFewPidsException(Exception):
       """Exception for _GetRunningPids to throw."""
@@ -495,15 +495,15 @@ class VM(device.Device):
             exception=_TooFewPidsException,
             max_retry=5,
             functor=lambda: _GetRunningPids(exe, numpids),
-            sleep=2)
+            sleep=sleep)
       except _TooFewPidsException:
         raise VMError('_WaitForProcs failed: timed out while waiting for '
                       '%d %s processes to start.' % (numpids, exe))
 
     # We could also wait for session_manager, nacl_helper, etc, but chrome is
-    # the long pole. We expect the parent, 2 zygotes, gpu-process, renderer.
-    # This could potentially break with Mustash.
-    _WaitForProc('chrome', 5)
+    # the long pole. We expect the parent, 2 zygotes, gpu-process,
+    # utility-process, 3 renderers.
+    _WaitForProc('chrome', 8)
 
   def WaitForBoot(self):
     """Wait for the VM to boot up.
