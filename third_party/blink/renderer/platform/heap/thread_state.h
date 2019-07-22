@@ -279,42 +279,27 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void NotifySweepDone();
   void PostSweep();
 
-  // Support for disallowing allocation. Mainly used for sanity
-  // checks asserts.
+  // Returns whether it is currently allowed to allocate an object. Mainly used
+  // for sanity checks asserts.
   bool IsAllocationAllowed() const {
     // Allocation is not allowed during atomic marking pause, but it is allowed
     // during atomic sweeping pause.
     return !InAtomicMarkingPause() && !no_allocation_count_;
   }
-  void EnterNoAllocationScope() { no_allocation_count_++; }
-  void LeaveNoAllocationScope() { no_allocation_count_--; }
+
+  // Returns whether it is currently forbidden to trigger a GC.
   bool IsGCForbidden() const { return gc_forbidden_count_; }
-  void EnterGCForbiddenScope() { gc_forbidden_count_++; }
-  void LeaveGCForbiddenScope() {
-    DCHECK_GT(gc_forbidden_count_, 0u);
-    gc_forbidden_count_--;
-  }
+
+  // Returns whether it is currently forbidden to sweep objects.
   bool SweepForbidden() const { return sweep_forbidden_; }
+
+  // Returns whether is is currently forbidden to resurrect objects.
   bool IsObjectResurrectionForbidden() const {
     return object_resurrection_forbidden_;
   }
-  void EnterObjectResurrectionForbiddenScope() {
-    DCHECK(!object_resurrection_forbidden_);
-    object_resurrection_forbidden_ = true;
-  }
-  void LeaveObjectResurrectionForbiddenScope() {
-    DCHECK(object_resurrection_forbidden_);
-    object_resurrection_forbidden_ = false;
-  }
+
   bool in_atomic_pause() const { return in_atomic_pause_; }
-  void EnterAtomicPause() {
-    DCHECK(!in_atomic_pause_);
-    in_atomic_pause_ = true;
-  }
-  void LeaveAtomicPause() {
-    DCHECK(in_atomic_pause_);
-    in_atomic_pause_ = false;
-  }
+
   bool InAtomicMarkingPause() const {
     return in_atomic_pause() && IsMarkingInProgress();
   }
@@ -457,6 +442,33 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   ThreadState();
   ~ThreadState() override;
 
+  void EnterNoAllocationScope() { no_allocation_count_++; }
+  void LeaveNoAllocationScope() { no_allocation_count_--; }
+
+  void EnterObjectResurrectionForbiddenScope() {
+    DCHECK(!object_resurrection_forbidden_);
+    object_resurrection_forbidden_ = true;
+  }
+  void LeaveObjectResurrectionForbiddenScope() {
+    DCHECK(object_resurrection_forbidden_);
+    object_resurrection_forbidden_ = false;
+  }
+
+  void EnterAtomicPause() {
+    DCHECK(!in_atomic_pause_);
+    in_atomic_pause_ = true;
+  }
+  void LeaveAtomicPause() {
+    DCHECK(in_atomic_pause_);
+    in_atomic_pause_ = false;
+  }
+
+  void EnterGCForbiddenScope() { gc_forbidden_count_++; }
+  void LeaveGCForbiddenScope() {
+    DCHECK_GT(gc_forbidden_count_, 0u);
+    gc_forbidden_count_--;
+  }
+
   // The following methods are used to compose RunAtomicPause. Public users
   // should use the CollectGarbage entrypoint. Internal users should use these
   // methods to compose a full garbage collection.
@@ -598,6 +610,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   friend class incremental_marking_test::IncrementalMarkingScope;
   friend class incremental_marking_test::IncrementalMarkingTestDriver;
+  friend class HeapAllocator;
   template <typename T>
   friend class PrefinalizerRegistration;
   friend class TestGCScope;
