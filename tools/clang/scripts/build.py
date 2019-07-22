@@ -53,6 +53,13 @@ BUG_REPORT_URL = ('https://crbug.com and run'
                   ' tools/clang/scripts/process_crashreports.py'
                   ' (only works inside Google) which will upload a report')
 
+MAC_XCODE_ROOT = os.path.join(
+    CHROMIUM_DIR, 'build/mac_files/xcode_binaries/Contents/Developer')
+MAC_XCODE_PATH = os.path.join(
+    MAC_XCODE_ROOT, 'Toolchains/XcodeDefault.xctoolchain/usr/bin')
+MAC_XCODE_SYSROOT = os.path.join(
+    MAC_XCODE_ROOT, 'Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk')
+
 
 def RunCommand(command, msvc_arch=None, env=None, fail_hard=True):
   """Run command and return success (True) or failure; or if fail_hard is
@@ -246,13 +253,13 @@ def MaybeDownloadHostGcc(args):
 
 
 def SetMacXcodePath():
-  """Set DEVELOPER_DIR to the path to hermetic Xcode.app on Mac OS X."""
+  """Add hermetic Xcode binaries to PATH on Mac OS X."""
   if sys.platform != 'darwin':
     return
 
-  xcode_path = os.path.join(CHROMIUM_DIR, 'build', 'mac_files', 'Xcode.app')
-  if os.path.exists(xcode_path):
-    os.environ['DEVELOPER_DIR'] = xcode_path
+  # xcode_binaries contains just a few binaries, not a full Xcode install --
+  # so setting DEVELOPER_DIR doesn't work. Just set PATH.
+  os.environ['PATH'] = MAC_XCODE_PATH + os.pathsep + os.environ.get('PATH', '')
 
 
 def VerifyVersionOfBuiltClangMatchesVERSION():
@@ -637,9 +644,7 @@ def main():
                 '-target', 'x86_64-unknown-unknown', '-O2', '-g', '-std=c++14',
                  '-fno-exceptions', '-fno-rtti', '-w', '-c', training_source]
     if sys.platform == 'darwin':
-      train_cmd.extend(['-stdlib=libc++', '-isysroot',
-                        subprocess.check_output(['xcrun',
-                                                 '--show-sdk-path']).rstrip()])
+      train_cmd.extend(['-stdlib=libc++', '-isysroot', MAC_XCODE_SYSROOT])
     RunCommand(train_cmd, msvc_arch='x64')
 
     # Merge profiles.
@@ -681,8 +686,7 @@ def main():
   if sys.platform == 'darwin' and args.bootstrap:
     # When building on 10.9, /usr/include usually doesn't exist, and while
     # Xcode's clang automatically sets a sysroot, self-built clangs don't.
-    cflags = ['-isysroot', subprocess.check_output(
-        ['xcrun', '--show-sdk-path']).rstrip()]
+    cflags = ['-isysroot', MAC_XCODE_SYSROOT]
     cxxflags = ['-stdlib=libc++'] + cflags
     ldflags += ['-stdlib=libc++']
     deployment_target = '10.7'
