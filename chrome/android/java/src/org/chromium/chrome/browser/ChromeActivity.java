@@ -38,6 +38,7 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
+import org.chromium.base.annotations.UsedByReflection;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
@@ -1232,6 +1233,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     // @SuppressWarnings with @Override
     @SuppressWarnings("MissingOverride")
     @TargetApi(29)
+    @UsedByReflection("Called from Android Q")
     public void onPerformDirectAction(String actionId, Bundle arguments,
             CancellationSignal cancellationSignal, Consumer<Bundle> callback) {
         if (mDirectActionInitializer == null) return;
@@ -1245,6 +1247,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     //  - replace Consumer with Consumer<List<DirectAction>>
     @SuppressWarnings("MissingOverride")
     @TargetApi(29)
+    @UsedByReflection("Called from Android Q")
     public void onGetDirectActions(CancellationSignal cancellationSignal, Consumer callback) {
         if (mDirectActionInitializer == null) return;
 
