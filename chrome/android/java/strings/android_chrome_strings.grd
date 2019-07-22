@@ -2571,6 +2571,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_DOWNLOAD_MANAGER_LIST_ITEM_DESCRIPTION" desc="Text containing the download list item description.">
         <ph name="FILE_SIZE">%1$s<ex>1.56 MB</ex></ph> <ph name="SEPARATOR">•</ph> <ph name="DESCRIPTION">%2$s<ex>www.example.com</ex></ph>
       </message>
+      <message name="IDS_DOWNLOAD_MANAGER_LIST_ITEM_DESCRIPTION_NO_SIZE" desc="Text containing the download list item description.">
+        <ph name="DESCRIPTION">%1$s<ex>www.example.com</ex></ph>
+      </message>
       <message name="IDS_DOWNLOAD_MANAGER_FILES_TAB" desc="Tab text for showing the files a user explicitly downloaded.">
         My Files
       </message>
