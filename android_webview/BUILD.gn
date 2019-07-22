@@ -927,11 +927,11 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
-    "java/src/org/chromium/android_webview/ui/util/CrashInfoLoader.java",
     "java/src/org/chromium/android_webview/ui/util/UploadedCrashesInfoLoader.java",
   ]
   deps = [
     ":android_webview_commandline_java",
+    ":android_webview_crash_info_java",
     ":android_webview_platform_services_java",
     ":android_webview_services_java",
     ":android_webview_variations_utils_java",
@@ -1079,6 +1079,15 @@ android_library("platform_service_bridge_upstream_implementation_java") {
   ]
 }
 
+android_library("android_webview_crash_info_java") {
+  java_files =
+      [ "java/src/org/chromium/android_webview/ui/util/CrashInfoLoader.java" ]
+
+  deps = [
+    "//base:base_java",
+  ]
+}
+
 android_library("android_webview_commandline_java") {
   java_files = [
     "java/src/org/chromium/android_webview/command_line/CommandLineUtil.java",
@@ -1102,6 +1111,7 @@ android_library("android_webview_services_java") {
   ]
   deps = [
     ":android_webview_commandline_java",
+    ":android_webview_crash_info_java",
     ":android_webview_platform_services_java",
     ":android_webview_variations_utils_java",
     ":system_webview_manifest",
