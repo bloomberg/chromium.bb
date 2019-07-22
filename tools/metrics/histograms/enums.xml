@@ -6852,6 +6852,15 @@ Unknown properties are collapsed to zero. -->
   <int value="7" label="Not Implemented Error"/>
 </enum>
 
+<enum name="CacheStorageIndexResult">
+  <int value="0" label="OK"/>
+  <int value="1" label="Failed to Parse"/>
+  <int value="2" label="Missing Origin"/>
+  <int value="3" label="Empty Origin URL"/>
+  <int value="4" label="Path Mismatch"/>
+  <int value="5" label="Path FileInfo Failed"/>
+</enum>
+
 <enum name="CALayerResult">
   <int value="0" label="Success"/>
   <int value="1" label="Unknown failure"/>
