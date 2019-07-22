@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.api import api_config as api_config_lib
 from chromite.api import router as router_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -29,6 +30,12 @@ def GetParser():
   parser.add_argument(
       '--output-json', type='path', required=True,
       help='The path to which the result protobuf message should be written.')
+  # Run configuration options.
+  parser.add_argument(
+      '--validate-only', action='store_true', default=False,
+      help='When set, only runs the argument validation logic. Calls produce'
+           'a return code of 0 iff the arguments comprise a valid call to the'
+           'endpoint, or 1 otherwise.')
 
   return parser
 
@@ -60,6 +67,8 @@ def _ParseArgs(argv, router):
   if not os.path.exists(opts.input_json):
     parser.error('Input file does not exist.')
 
+  opts.config = api_config_lib.ApiConfig(validate_only=opts.validate_only)
+
   opts.Freeze()
   return opts
 
@@ -71,7 +80,7 @@ def main(argv):
 
   try:
     return router.Route(opts.service, opts.method, opts.input_json,
-                        opts.output_json)
+                        opts.output_json, opts.config)
   except router_lib.Error as e:
     # Handle router_lib.Error derivatives nicely, but let anything else bubble
     # up.

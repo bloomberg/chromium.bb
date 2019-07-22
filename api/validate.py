@@ -38,6 +38,7 @@ def _value(field, message):
 
   return value
 
+
 #pylint: disable=docstring-misnamed-args
 def exists(*fields):
   """Validate that the paths in |fields| exist.
@@ -88,3 +89,20 @@ def require(*fields):
     return _require
 
   return decorator
+
+
+def validation_complete(func):
+  """Automatically skip the endpoint when called after all other validators.
+
+  This decorator MUST be applied after all other validate decorators.
+  The config can be checked manually if there is non-decorator validation, but
+  this is much cleaner if it is all done in decorators.
+  """
+  def _validate_only(request, response, configs, *args, **kwargs):
+    if configs.validate_only:
+      # Avoid calling the endpoint.
+      return 0
+    else:
+      return func(request, response, configs, *args, **kwargs)
+
+  return _validate_only

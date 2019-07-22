@@ -124,7 +124,7 @@ class Router(object):
 
     return sorted(services)
 
-  def Route(self, service_name, method_name, input_path, output_path):
+  def Route(self, service_name, method_name, input_path, output_path, config):
     """Dispatch the request.
 
     Args:
@@ -132,6 +132,7 @@ class Router(object):
       method_name (str): The name of the method being called.
       input_path (str): The path to the input message file.
       output_path (str): The path where the output message should be written.
+      config (api_config.ApiConfig): The optional call configs.
 
     Returns:
       int: The return code.
@@ -179,7 +180,7 @@ class Router(object):
       # Run inside the chroot instead.
       logging.info('Re-executing the endpoint inside the chroot.')
       return self._ReexecuteInside(input_msg, output_msg, output_path,
-                                   service_name, method_name)
+                                   service_name, method_name, config)
 
     # Allow proto-based method name override.
     if method_options.HasField('implementation_name'):
@@ -189,7 +190,7 @@ class Router(object):
     method_impl = self._GetMethod(module_name, method_name)
 
     # Successfully located; call and return.
-    return_code = method_impl(input_msg, output_msg)
+    return_code = method_impl(input_msg, output_msg, config)
     if return_code is None:
       return_code = controller.RETURN_CODE_SUCCESS
 
@@ -230,7 +231,7 @@ class Router(object):
     return False
 
   def _ReexecuteInside(self, input_msg, output_msg, output_path, service_name,
-                       method_name):
+                       method_name, config):
     """Re-execute the service inside the chroot.
 
     Args:
@@ -239,6 +240,7 @@ class Router(object):
       output_path (str): The path for the serialized output.
       service_name (str): The name of the service to run.
       method_name (str): The name of the method to run.
+      config (api_config.ApiConfig): The optional call configs.
     """
     # Parse the chroot and clear the chroot field in the input message.
     chroot = field_handler.handle_chroot(input_msg)
@@ -256,6 +258,9 @@ class Router(object):
 
         cmd = ['build_api', '%s/%s' % (service_name, method_name),
                '--input-json', chroot_input, '--output-json', chroot_output]
+
+        if config.validate_only:
+          cmd.append('--validate-only')
 
         try:
           result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
