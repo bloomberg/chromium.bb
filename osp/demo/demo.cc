@@ -29,6 +29,8 @@
 #include "platform/api/logging.h"
 #include "platform/api/network_interface.h"
 #include "platform/api/time.h"
+#include "platform/api/trace_logging.h"
+#include "platform/impl/text_trace_logging_platform.h"
 #include "third_party/tinycbor/src/src/cbor.h"
 
 namespace openscreen {
@@ -370,6 +372,7 @@ CommandWaitResult WaitForCommand(pollfd* pollfd) {
 }
 
 void RunControllerPollLoop(presentation::Controller* controller) {
+  TRACE_SCOPED(TraceCategory::CastFlinging, "RunControllerPollLoop");
   ReceiverObserver receiver_observer;
   RequestDelegate request_delegate;
   ConnectionDelegate connection_delegate;
@@ -377,8 +380,9 @@ void RunControllerPollLoop(presentation::Controller* controller) {
   presentation::Controller::ConnectRequest connect_request;
 
   pollfd stdin_pollfd{STDIN_FILENO, POLLIN};
-
-  do {
+  uint64_t it = 1;
+  while (true) {
+    TRACE_SCOPED(TraceCategory::CastFlinging, "ControllerPollIteration", it);
     write(STDOUT_FILENO, "$ ", 2);
 
     CommandWaitResult command_result = WaitForCommand(&stdin_pollfd);
@@ -413,7 +417,9 @@ void RunControllerPollLoop(presentation::Controller* controller) {
       request_delegate.connection->Terminate(
           presentation::TerminationReason::kControllerTerminateCalled);
     }
-  } while (true);
+
+    it += 2;  // +2 to keep the ids for reciever and controller distinct.
+  };
 
   watch = presentation::Controller::ReceiverWatch();
 }
@@ -478,8 +484,11 @@ void HandleReceiverCommand(absl::string_view command,
 void RunReceiverPollLoop(pollfd& file_descriptor,
                          NetworkServiceManager* manager,
                          ReceiverDelegate& delegate) {
+  TRACE_SCOPED(TraceCategory::CastFlinging, "RunReceiverPollLoop");
   pollfd stdin_pollfd{STDIN_FILENO, POLLIN};
-  do {
+  uint64_t it = 2;
+  while (true) {
+    TRACE_SCOPED(TraceCategory::CastFlinging, "ReceiverPollIteration", it);
     write(STDOUT_FILENO, "$ ", 2);
 
     CommandWaitResult command_result = WaitForCommand(&stdin_pollfd);
@@ -490,7 +499,9 @@ void RunReceiverPollLoop(pollfd& file_descriptor,
     HandleReceiverCommand(command_result.command_line.command,
                           command_result.command_line.argument_tail, delegate,
                           manager);
-  } while (true);
+
+    it += 2;  // +2 to keep the ids for reciever and controller distinct.
+  }
 }
 
 void CleanupPublisherDemo(NetworkServiceManager* manager) {
@@ -596,6 +607,8 @@ int main(int argc, char** argv) {
 
   LogLevel level = args.is_verbose ? LogLevel::kVerbose : LogLevel::kInfo;
   openscreen::platform::SetLogLevel(level);
+  openscreen::platform::TextTraceLoggingPlatform text_logging_platform;
+  TRACE_SET_DEFAULT_PLATFORM(&text_logging_platform);
 
   if (is_receiver_demo) {
     openscreen::PublisherDemo(args.friendly_server_name);

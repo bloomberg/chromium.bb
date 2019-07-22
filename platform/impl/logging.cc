@@ -10,6 +10,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "platform/api/trace_logging.h"
+
 namespace openscreen {
 namespace platform {
 namespace {
@@ -38,8 +40,10 @@ void LogWithLevel(LogLevel level,
     return;
 
   std::stringstream ss;
-  ss << "[" << level << ":" << file << ":" << line << "] " << msg << std::endl;
-  const auto bytes_written = write(g_log_fd, ss.str().c_str(), ss.str().size());
+  ss << "[" << level << ":" << file << "(" << line << "):T" << std::hex
+     << TRACE_CURRENT_ID << "] " << msg << '\n';
+  const auto ss_str = ss.str();
+  const auto bytes_written = write(g_log_fd, ss_str.c_str(), ss_str.size());
   OSP_DCHECK(bytes_written);
 }
 

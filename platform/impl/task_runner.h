@@ -18,6 +18,7 @@
 #include "absl/types/optional.h"
 #include "platform/api/network_runner.h"
 #include "platform/api/time.h"
+#include "platform/api/trace_logging.h"
 #include "platform/base/error.h"
 
 namespace openscreen {
@@ -74,6 +75,21 @@ class TaskRunnerImpl final : public TaskRunner {
   void RunUntilIdleForTesting();
 
  private:
+  // Wrapper around a Task used to store the TraceId Metadata along with the
+  // task itself, and to set the current TraceIdHierarchy before executing the
+  // task.
+  class TaskWithMetadata {
+   public:
+    // NOTE: Conversion constructor required due to condition_variable library.
+    TaskWithMetadata(Task task);
+
+    void operator()();
+
+   private:
+    Task task_;
+    TraceIdHierarchy trace_ids_;
+  };
+
   // Run all tasks already in the task queue. If the queue is empty, wait for
   // either (1) a delayed task to become available, or (2) a task to be added
   // to the queue.
@@ -109,8 +125,9 @@ class TaskRunnerImpl final : public TaskRunner {
   // notifying the run loop to wake up when it is waiting for a task to be added
   // to the queue in |run_loop_wakeup_|.
   std::mutex task_mutex_;
-  std::vector<Task> tasks_ GUARDED_BY(task_mutex_);
-  std::multimap<Clock::time_point, Task> delayed_tasks_ GUARDED_BY(task_mutex_);
+  std::vector<TaskWithMetadata> tasks_ GUARDED_BY(task_mutex_);
+  std::multimap<Clock::time_point, TaskWithMetadata> delayed_tasks_
+      GUARDED_BY(task_mutex_);
 
   // When |task_waiter_| is nullptr, |run_loop_wakeup_| is used for sleeping the
   // task runner.  Otherwise, |run_loop_wakeup_| isn't used and |task_waiter_|
@@ -122,7 +139,7 @@ class TaskRunnerImpl final : public TaskRunner {
   // To prevent excessive re-allocation of the underlying array of the |tasks_|
   // vector, use an A/B vector-swap mechanism. |running_tasks_| starts out
   // empty, and is swapped with |tasks_| when it is time to run the Tasks.
-  std::vector<Task> running_tasks_;
+  std::vector<TaskWithMetadata> running_tasks_;
 
   OSP_DISALLOW_COPY_AND_ASSIGN(TaskRunnerImpl);
 };

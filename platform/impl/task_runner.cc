@@ -9,6 +9,14 @@
 namespace openscreen {
 namespace platform {
 
+TaskRunnerImpl::TaskWithMetadata::TaskWithMetadata(Task task)
+    : task_(std::move(task)), trace_ids_(TRACE_HIERARCHY) {}
+
+void TaskRunnerImpl::TaskWithMetadata::operator()() {
+  TRACE_SET_HIERARCHY(trace_ids_);
+  std::move(task_)();
+}
+
 TaskRunnerImpl::TaskRunnerImpl(platform::ClockNowFunctionPtr now_function,
                                TaskWaiter* event_waiter,
                                Clock::duration waiter_timeout)
@@ -21,7 +29,7 @@ TaskRunnerImpl::~TaskRunnerImpl() = default;
 
 void TaskRunnerImpl::PostPackagedTask(Task task) {
   std::lock_guard<std::mutex> lock(task_mutex_);
-  tasks_.push_back(std::move(task));
+  tasks_.emplace_back(std::move(task));
   if (task_waiter_) {
     task_waiter_->OnTaskPosted();
   } else {
@@ -77,7 +85,7 @@ void TaskRunnerImpl::RunCurrentTasksForTesting() {
     running_tasks_.swap(tasks_);
   }
 
-  for (Task& task : running_tasks_) {
+  for (TaskWithMetadata& task : running_tasks_) {
     // Move the task to the stack so that its bound state is freed immediately
     // after being run.
     std::move(task)();
@@ -99,7 +107,7 @@ void TaskRunnerImpl::RunCurrentTasksBlocking() {
   }
 
   OSP_DVLOG << "Running " << running_tasks_.size() << " tasks...";
-  for (Task& task : running_tasks_) {
+  for (TaskWithMetadata& task : running_tasks_) {
     // Move the task to the stack so that its bound state is freed immediately
     // after being run.
     std::move(task)();
