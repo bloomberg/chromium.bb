@@ -152,6 +152,8 @@ inline bool IsCollapsibleSpace(UChar c) {
 // It makes the line breaker easier to handle.
 inline bool IsControlItemCharacter(UChar c) {
   return c == kNewlineCharacter || c == kTabulationCharacter ||
+         // Make ZWNJ a control character so that it can prevent kerning.
+         c == kZeroWidthNonJoinerCharacter ||
          // Include ignorable character here to avoids shaping/rendering
          // these glyphs, and to help the line breaker to ignore them.
          ShouldIgnore(c);
@@ -717,7 +719,9 @@ void NGInlineItemsBuilderTemplate<
       if (c == kNewlineCharacter) {
         AppendForcedBreak(layout_object);
         start++;
-      } else if (c == kTabulationCharacter) {
+        continue;
+      }
+      if (c == kTabulationCharacter) {
         wtf_size_t end = string.Find(
             [](UChar c) { return c != kTabulationCharacter; }, start + 1);
         if (end == kNotFound)
@@ -725,11 +729,14 @@ void NGInlineItemsBuilderTemplate<
         AppendTextItem(NGInlineItem::kControl,
                        StringView(string, start, end - start), layout_object);
         start = end;
-      } else {
+        continue;
+      }
+      // ZWNJ splits item, but it should be text.
+      if (c != kZeroWidthNonJoinerCharacter) {
         Append(NGInlineItem::kControl, c, layout_object);
         start++;
+        continue;
       }
-      continue;
     }
 
     wtf_size_t end = string.Find(IsControlItemCharacter, start + 1);

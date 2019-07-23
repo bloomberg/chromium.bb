@@ -675,6 +675,9 @@ crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 # Layout team disagrees with the spec for this particular test.
 crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
+# Fails only on Linux bots. Pass on all other bots and on local Linux.
+crbug.com/985620 [ Linux ] fast/text/zwnj-disables-kerning.html [ Failure ]
+
 # ====== Layout team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
