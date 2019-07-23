@@ -377,8 +377,8 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
             EXPECT_EQ(web_app::LaunchContainer::kDefault,
                       finalize_options().force_launch_container);
-            EXPECT_EQ(web_app::InstallFinalizer::Source::kDefaultInstalled,
-                      finalize_options().source);
+            EXPECT_EQ(WebappInstallSource::INTERNAL_DEFAULT,
+                      finalize_options().install_source);
 
             run_loop.Quit();
           }));
@@ -570,9 +570,8 @@ TEST_F(BookmarkAppInstallationTaskTest,
                                 result.code);
                       EXPECT_TRUE(result.app_id.has_value());
 
-                      EXPECT_EQ(
-                          web_app::InstallFinalizer::Source::kDefaultInstalled,
-                          finalize_options().source);
+                      EXPECT_EQ(WebappInstallSource::INTERNAL_DEFAULT,
+                                finalize_options().install_source);
                       run_loop.Quit();
                     }));
 
@@ -594,9 +593,8 @@ TEST_F(BookmarkAppInstallationTaskTest,
                                 result.code);
                       EXPECT_TRUE(result.app_id.has_value());
 
-                      EXPECT_EQ(
-                          web_app::InstallFinalizer::Source::kPolicyInstalled,
-                          finalize_options().source);
+                      EXPECT_EQ(WebappInstallSource::EXTERNAL_POLICY,
+                                finalize_options().install_source);
                       run_loop.Quit();
                     }));
 
@@ -622,8 +620,8 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholder) {
 
         EXPECT_EQ(1u, finalizer()->num_create_os_shortcuts_calls());
         EXPECT_EQ(1u, finalizer()->finalize_options_list().size());
-        EXPECT_EQ(web_app::InstallFinalizer::Source::kPolicyInstalled,
-                  finalize_options().source);
+        EXPECT_EQ(WebappInstallSource::EXTERNAL_POLICY,
+                  finalize_options().install_source);
         const WebApplicationInfo& web_app_info =
             finalizer()->web_app_info_list().at(0);
 
