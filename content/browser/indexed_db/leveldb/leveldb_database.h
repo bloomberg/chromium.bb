@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -97,6 +98,10 @@ class CONTENT_EXPORT LevelDBDatabase
 
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
+  base::WeakPtr<TransactionalLevelDBDatabase> AsWeakPtr() {
+    return weak_factory_for_iterators_.GetWeakPtr();
+  }
+
  private:
   friend class LevelDBSnapshot;
   friend class LevelDBIteratorImpl;
@@ -138,6 +143,9 @@ class CONTENT_EXPORT LevelDBDatabase
   uint32_t max_iterators_ = 0;
 
   std::string file_name_for_tracing;
+
+  base::WeakPtrFactory<TransactionalLevelDBDatabase>
+      weak_factory_for_iterators_{this};
 };
 
 }  // namespace content
