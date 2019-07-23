@@ -652,6 +652,7 @@
     arm-llvm-next-toolchain
     arm64-llvm-next-toolchain
   orderfile-generate-toolchain
+  orderfile-verify-toolchain
 
 == utility ==
   chromeos-infra-go

@@ -1113,18 +1113,8 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       description='Builds Chrome OS using top-of-tree LLVM',
   )
 
-  # This build config is dedicated to improve code layout of Chrome. It adopts
-  # the Call-Chain Clustering (C3) approach and other techniques to improve
-  # the code layout. It builds Chrome and generates an orderfile as a result.
-  # The orderfile will be uploaded so Chrome in the future production will use
-  # the orderfile to improve code layout.
-  #
-  # This builder is not a toolchain builder, i.e. it won't build all the
-  # toolchain. Instead, it's a release builder. It's put here because it
-  # belongs to the toolchain team.
-
   site_config.AddTemplate(
-      'orderfile_generate_toolchain',
+      'afdo_toolchain',
       site_config.templates.full,
       site_config.templates.official,
       site_config.templates.internal,
@@ -1137,24 +1127,44 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       chrome_sdk=False,
       paygen=False,
       signer_tests=False,
+      useflags=config_lib.append_useflags(['-cros-debug']),
+      display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
+  )
+
+  site_config.AddTemplate(
+      'afdo_verify',
+      site_config.templates.afdo_toolchain,
+      images=['base', 'test'],
+      image_test=True,
+      unittests=True,
+      afdo_use=True,
+  )
+  # This build config is dedicated to improve code layout of Chrome. It adopts
+  # the Call-Chain Clustering (C3) approach and other techniques to improve
+  # the code layout. It builds Chrome and generates an orderfile as a result.
+  # The orderfile will be uploaded so Chrome in the future production will use
+  # the orderfile to improve code layout.
+  #
+  # This builder is not a toolchain builder, i.e. it won't build all the
+  # toolchain. Instead, it's a release builder. It's put here because it
+  # belongs to the toolchain team.
+
+  site_config.AddTemplate(
+      'orderfile_generate_toolchain',
+      site_config.templates.afdo_toolchain,
       afdo_use=True,
       orderfile_generate=True,
       useflags=config_lib.append_useflags(['orderfile_generate']),
-      display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
       description='Build Chrome and generate an orderfile for better layout',
   )
 
   site_config.AddTemplate(
       'orderfile_verify_toolchain',
-      site_config.templates.release,
-      images=['base', 'test'],
-      paygen=False,
-      signer_tests=False,
+      site_config.templates.afdo_verify,
       orderfile_verify=True,
       useflags=config_lib.append_useflags(['orderfile_verify',
                                            '-reorder_text_sections',
                                            'strict_toolchain_checks']),
-      display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
       description='Verify the most recent orderfile is building correctly',
   )
 
@@ -1299,7 +1309,12 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.orderfile_verify_toolchain,
       # Only test on X86 for now.
       boards=['eve'],
-      # TODO: Add a schedule
+      # 2 PM UTC is 6 AM PST (no daylight savings)
+      # Start this builder 4 hours after orderfile-generate-toolchain
+      schedule='0 14 * * *',
+      health_alert_recipients=['c-compiler-chrome@google.com'],
+      # Send emails if this builder fails once
+      health_threshold=1,
   )
 
   # This config is manually run when we want to generate a 'release' AFDO
