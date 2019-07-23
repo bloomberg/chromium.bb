@@ -15,9 +15,8 @@ import py_utils
 class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Isolated
   # ChromeOS and Android are currently hard coded to return None for minidump
-  # paths, so disable on those platforms. Windows 7 doesn't find any minidump
-  # paths for some reason.
-  @decorators.Disabled('chromeos', 'android', 'win7')
+  # paths, so disable on those platforms.
+  @decorators.Disabled('chromeos', 'android')
   def testSymbolizeMinidump(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var sam = "car";', 'sam')
@@ -89,10 +88,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
       self.assertTrue(crash_function in sections[4])
 
   @decorators.Isolated
-  # Disabled on Mac 10.12 (Sierra) due to it not getting a stack trace to
-  # symbolize from the second crash.
-  # Test is flaky on 10.13 (HighSierra). See https://crbug.com/986644.
-  @decorators.Disabled('chromeos', 'android', 'win7', 'sierra', 'highsierra')
+  @decorators.Disabled('chromeos', 'android')
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var cat = "dog";', 'cat')
