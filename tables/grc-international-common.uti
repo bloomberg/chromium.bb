@@ -91,4 +91,5 @@ sign	\x1FFD	4	# ´ Oxia (Acute)
 sign	\x1FC0	5	# ῀ Perispomeni (Circumflex)
 sign	\x037A	35	# ͺ Ypogegrammeni (subscript Iota)
 sign	\x1FBE	35	# ι Prosgegrammeni (prescript Iota)
+sign	\x00AF	456	# ¯ Macron
 

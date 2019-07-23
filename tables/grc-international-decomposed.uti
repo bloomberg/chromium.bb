@@ -25,7 +25,7 @@ include grc-international-common.uti
 letter \x0386 46-4-1 # Ά Capital Alpha with Tonos
 letter \x1FBB 46-4-1 # Ά Capital Alpha with Oxia
 letter \x1FBA 46-6-1 # Ὰ Capital Alpha with Varia
-letter \x1FB9 46-1 # Ᾱ Capital Alpha with Macron
+letter \x1FB9 46-456-1 # Ᾱ Capital Alpha with Macron
 letter \x1FB8 46-1 # Ᾰ Capital Alpha with Vrachy
 letter \x1F08 46-356-1 # Ἀ Capital Alpha with Psili
 letter \x1F0C 46-356-4-1 # Ἄ Capital Alpha with Psili and Oxia
@@ -59,7 +59,7 @@ letter \x03AA 46-24 # Ϊ Capital Iota with Dialytika
 letter \x038A 46-4-24 # Ί Capital Iota with Tonos
 letter \x1FDB 46-4-24 # Ί Capital Iota with Oxia
 letter \x1FDA 46-6-24 # Ὶ Capital Iota with Varia
-letter \x1FD9 46-24 # Ῑ Capital Iota with Macron
+letter \x1FD9 46-456-24 # Ῑ Capital Iota with Macron
 letter \x1FD8 46-24 # Ῐ Capital Iota with Vrachy
 letter \x1F38 46-356-24 # Ἰ Capital Iota with Psili
 letter \x1F3C 46-356-4-24 # Ἴ Capital Iota with Psili and Oxia
@@ -83,7 +83,7 @@ letter \x03AB 46-136 # Ϋ Capital Upsilon with Dialytika
 letter \x038E 46-4-136 # Ύ Capital Upsilon with Tonos
 letter \x1FEB 46-4-136 # Ύ Capital Upsilon with Oxia
 letter \x1FEA 46-6-136 # Ὺ Capital Upsilon with Varia
-letter \x1FE9 46-136 # Ῡ Capital Upsilon with Macron
+letter \x1FE9 46-456-136 # Ῡ Capital Upsilon with Macron
 letter \x1FE8 46-136 # Ῠ Capital Upsilon with Vrachy
 letter \x1F59 46-125-136 # Ὑ Capital Upsilon with Dasia
 letter \x1F5D 46-125-4-136 # Ὕ Capital Upsilon with Dasia and Oxia
@@ -105,7 +105,7 @@ letter \x1F6F 46-125-5-2456 # Ὧ Capital Omega with Dasia and Perispomeni
 letter \x03AC 4-1 # ά Small Alpha with Tonos
 letter \x1F71 4-1 # ά Small Alpha with Oxia
 letter \x1F70 6-1 # ὰ Small Alpha with Varia
-letter \x1FB1 1 # ᾱ Small Alpha with Macron
+letter \x1FB1 456-1 # ᾱ Small Alpha with Macron
 letter \x1FB0 1 # ᾰ Small Alpha with Vrachy
 letter \x1F00 356-1 # ἀ Small Alpha with Psili
 letter \x1F04 356-4-1 # ἄ Small Alpha with Psili and Oxia
@@ -139,7 +139,7 @@ letter \x03CA 24 # ϊ Small Iota with Dialytika
 letter \x03AF 4-24 # ί Small Iota with Tonos
 letter \x1F77 4-24 # ί Small Iota with Oxia
 letter \x1F76 6-24 # ὶ Small Iota with Varia
-letter \x1FD1 24 # ῑ Small Iota with Macron
+letter \x1FD1 456-24 # ῑ Small Iota with Macron
 letter \x1FD0 24 # ῐ Small Iota with Vrachy
 letter \x1F30 356-24 # ἰ Small Iota with Psili
 letter \x1F34 356-4-24 # ἴ Small Iota with Psili and Oxia
@@ -163,7 +163,7 @@ letter \x03CB 136 # ϋ Small Upsilon with Dialytika
 letter \x03CD 4-136 # ύ Small Upsilon with Tonos
 letter \x1F7B 4-136 # ύ Small Upsilon with Oxia
 letter \x1F7A 6-136 # ὺ Small Upsilon with Varia
-letter \x1FE1 136 # ῡ Small Upsilon with Macron
+letter \x1FE1 456-136 # ῡ Small Upsilon with Macron
 letter \x1FE0 136 # ῠ Small Upsilon with Vrachy
 letter \x1F51 125-136 # ὑ Small Upsilon with Dasia
 letter \x1F55 125-4-136 # ὕ Small Upsilon with Dasia and Oxia
