@@ -152,6 +152,14 @@ def InstallXcodeBinaries():
   args = [
       'cipd', 'ensure', '-root', binaries_root, '-ensure-file', '-'
   ]
+
+  # Buildbot slaves need to use explicit credentials. LUCI bots should NOT set
+  # this variable. This is temporary code used to make official Xcode bots
+  # happy. https://crbug.com/986488
+  creds = os.environ.get('MAC_TOOLCHAIN_CREDS')
+  if creds:
+    args.extend(['--service-account-json', creds])
+
   p = subprocess.Popen(
       args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
       stderr=subprocess.PIPE)
