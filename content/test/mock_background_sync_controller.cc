@@ -36,6 +36,9 @@ base::TimeDelta MockBackgroundSyncController::GetNextEventDelay(
     BackgroundSyncParameters* parameters) {
   DCHECK(parameters);
 
+  if (suspended_periodic_sync_origins_.count(registration.origin()))
+    return base::TimeDelta::Max();
+
   int num_attempts = registration.num_attempts();
 
   if (!num_attempts) {

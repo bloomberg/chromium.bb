@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/background_sync/background_sync_metrics.h"
+#include "chrome/browser/engagement/site_engagement_observer.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -36,6 +37,7 @@ class SiteEngagementService;
 class GURL;
 
 class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
+                                     public SiteEngagementObserver,
                                      public KeyedService {
  public:
   static const char kFieldTrialName[];
@@ -97,6 +99,13 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   CreateBackgroundSyncEventKeepAlive() override;
   void NoteSuspendedPeriodicSyncOrigins(
       std::set<url::Origin> suspended_origins) override;
+
+  // SiteEngagementObserver overrides.
+  void OnEngagementEvent(
+      content::WebContents* web_contents,
+      const GURL& url,
+      double score,
+      SiteEngagementService::EngagementType engagement_type) override;
 
  private:
   // Gets the site engagement penalty for |url|, which is inversely proportional

@@ -257,6 +257,15 @@ class BackgroundSyncManagerTest
         sync_type, last_browser_wakeup_for_periodic_sync);
   }
 
+  void SuspendPeriodicSyncRegistrations(std::set<url::Origin> origins) {
+    GetController()->NoteSuspendedPeriodicSyncOrigins(std::move(origins));
+  }
+
+  void RevivePeriodicSyncRegistrations(url::Origin origin) {
+    GetController()->ReviveSuspendedPeriodicSyncOrigin(origin);
+    test_background_sync_manager()->RevivePeriodicSyncRegistrations(origin);
+  }
+
  protected:
   MOCK_METHOD1(OnEventReceived,
                void(const devtools::proto::BackgroundServiceEvent&));
@@ -1226,6 +1235,43 @@ TEST_F(BackgroundSyncManagerTest, PeriodicSyncFiresWhenExpected) {
 
   EXPECT_EQ(1, periodic_sync_events_called_);
   EXPECT_TRUE(GetRegistration(sync_options_2_));
+}
+
+TEST_F(BackgroundSyncManagerTest, TestSupensionAndRevival) {
+  InitPeriodicSyncEventTest();
+  auto thirteen_hours = base::TimeDelta::FromHours(13);
+  sync_options_2_.min_interval = thirteen_hours.InMilliseconds();
+  sync_options_1_.min_interval = thirteen_hours.InMilliseconds();
+
+  auto origin = url::Origin::Create(GURL(kScope1).GetOrigin());
+
+  SuspendPeriodicSyncRegistrations({origin});
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_TRUE(Register(sync_options_2_));
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
+  EXPECT_EQ(0, periodic_sync_events_called_);
+
+  // Advance clock.
+  test_clock_.Advance(thirteen_hours);
+  FireReadyEvents();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, periodic_sync_events_called_);
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
+
+  RevivePeriodicSyncRegistrations(std::move(origin));
+  base::RunLoop().RunUntilIdle();
+
+  // Advance clock.
+  test_clock_.Advance(thirteen_hours);
+  FireReadyEvents();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, periodic_sync_events_called_);
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
+  Unregister(sync_options_1_);
+  Unregister(sync_options_2_);
 }
 
 TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptFails) {

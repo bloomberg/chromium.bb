@@ -51,6 +51,9 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   BackgroundSyncParameters* background_sync_parameters() {
     return &background_sync_parameters_;
   }
+  void ReviveSuspendedPeriodicSyncOrigin(url::Origin origin_to_revive) {
+    suspended_periodic_sync_origins_.erase(origin_to_revive);
+  }
 
  private:
   int registration_count_ = 0;

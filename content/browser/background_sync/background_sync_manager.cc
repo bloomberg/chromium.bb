@@ -1511,6 +1511,135 @@ base::Time BackgroundSyncManager::GetSoonestPeriodicSyncEventTimeForOrigin(
   return soonest_wakeup_time;
 }
 
+void BackgroundSyncManager::RevivePeriodicSyncRegistrations(
+    url::Origin origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (disabled_)
+    return;
+
+  op_scheduler_.ScheduleOperation(
+      CacheStorageSchedulerOp::kBackgroundSync,
+      base::BindOnce(&BackgroundSyncManager::ReviveOriginImpl,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(origin),
+                     MakeEmptyCompletion()));
+}
+
+void BackgroundSyncManager::ReviveOriginImpl(url::Origin origin,
+                                             base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (disabled_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
+    return;
+  }
+
+  // Create a list of registrations to revive.
+  std::vector<const BackgroundSyncRegistration*> to_revive;
+  std::map<const BackgroundSyncRegistration*, int64_t>
+      service_worker_registration_ids;
+
+  for (const auto& active_registration : active_registrations_) {
+    int64_t service_worker_registration_id = active_registration.first;
+    if (active_registration.second.origin != origin)
+      continue;
+
+    for (const auto& key_and_registration :
+         active_registration.second.registration_map) {
+      const BackgroundSyncRegistration* registration =
+          &key_and_registration.second;
+      if (!registration->is_suspended())
+        continue;
+
+      to_revive.push_back(registration);
+      service_worker_registration_ids[registration] =
+          service_worker_registration_id;
+    }
+  }
+
+  if (to_revive.empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
+    return;
+  }
+
+  base::RepeatingClosure received_new_delays_closure = base::BarrierClosure(
+      to_revive.size(),
+      base::BindOnce(
+          &BackgroundSyncManager::DidReceiveDelaysForSuspendedRegistrations,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  for (const auto* registration : to_revive) {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(
+            &GetNextEventDelay, service_worker_context_, *registration,
+            std::make_unique<BackgroundSyncParameters>(*parameters_)),
+        base::BindOnce(&BackgroundSyncManager::ReviveDidGetNextEventDelay,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       service_worker_registration_ids[registration],
+                       *registration, received_new_delays_closure));
+  }
+}
+
+void BackgroundSyncManager::ReviveDidGetNextEventDelay(
+    int64_t service_worker_registration_id,
+    BackgroundSyncRegistration registration,
+    base::OnceClosure done_closure,
+    base::TimeDelta delay) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (delay.is_max()) {
+    std::move(done_closure).Run();
+    return;
+  }
+
+  BackgroundSyncRegistration* active_registration =
+      LookupActiveRegistration(blink::mojom::BackgroundSyncRegistrationInfo(
+          service_worker_registration_id, registration.options()->tag,
+          registration.sync_type()));
+  if (!active_registration) {
+    std::move(done_closure).Run();
+    return;
+  }
+
+  active_registration->set_delay_until(clock_->Now() + delay);
+
+  StoreRegistrations(
+      service_worker_registration_id,
+      base::BindOnce(&BackgroundSyncManager::ReviveDidStoreRegistration,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     service_worker_registration_id, std::move(done_closure)));
+}
+
+void BackgroundSyncManager::ReviveDidStoreRegistration(
+    int64_t service_worker_registration_id,
+    base::OnceClosure done_closure,
+    blink::ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (status == blink::ServiceWorkerStatusCode::kErrorNotFound) {
+    // The service worker registration is gone.
+    active_registrations_.erase(service_worker_registration_id);
+    std::move(done_closure).Run();
+  }
+
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
+    DisableAndClearManager(std::move(done_closure));
+    return;
+  }
+
+  std::move(done_closure).Run();
+}
+
+void BackgroundSyncManager::DidReceiveDelaysForSuspendedRegistrations(
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ScheduleDelayedProcessingOfRegistrations(BackgroundSyncType::PERIODIC);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
+}
+
 void BackgroundSyncManager::ScheduleDelayedProcessingOfRegistrations(
     blink::mojom::BackgroundSyncType sync_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1549,8 +1678,6 @@ void BackgroundSyncManager::FireReadyEventsImpl(
   }
 
   // Find the registrations that are ready to run.
-  // TODO(crbug.com/925297): Periodically re-evaluate suspended Periodic Sync
-  // registrations.
   std::vector<blink::mojom::BackgroundSyncRegistrationInfoPtr> to_fire;
 
   for (auto& sw_reg_id_and_registrations : active_registrations_) {
