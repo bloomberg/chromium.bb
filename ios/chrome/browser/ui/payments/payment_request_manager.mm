@@ -61,7 +61,6 @@
 #include "ios/web/public/deprecated/url_verification_constants.h"
 #include "ios/web/public/favicon/favicon_status.h"
 #include "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #include "ios/web/public/navigation/navigation_item.h"
@@ -682,7 +681,8 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
   BOOL connectionSecure =
       _activeWebState->GetLastCommittedURL().SchemeIs(url::kHttpsScheme);
   // Payment Request is only enabled in main frame.
-  web::WebFrame* main_frame = web::GetMainWebFrame(_activeWebState);
+  web::WebFrame* main_frame =
+      _activeWebState->GetWebFramesManager()->GetMainWebFrame();
   autofill::AutofillManager* autofillManager =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(_activeWebState,
                                                            main_frame)

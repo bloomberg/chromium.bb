@@ -50,6 +50,7 @@ class BrowserState;
 class NavigationManager;
 class SessionCertificatePolicyCache;
 class WebFrame;
+class WebFramesManager;
 class WebInterstitial;
 class WebStateDelegate;
 class WebStateInterfaceProvider;
@@ -152,6 +153,11 @@ class WebState : public base::SupportsUserData {
   // null.
   virtual const NavigationManager* GetNavigationManager() const = 0;
   virtual NavigationManager* GetNavigationManager() = 0;
+
+  // Gets the WebFramesManager associated with this WebState. Can never return
+  // null.
+  virtual const WebFramesManager* GetWebFramesManager() const = 0;
+  virtual WebFramesManager* GetWebFramesManager() = 0;
 
   // Gets the SessionCertificatePolicyCache for this WebState.  Can never return
   // null.

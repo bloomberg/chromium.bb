@@ -87,6 +87,7 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
       is_loading_(false),
       is_being_destroyed_(false),
       web_controller_(nil),
+      web_frames_manager_(*this),
       interstitial_(nullptr),
       created_with_opener_(params.created_with_opener),
       weak_factory_(this) {
@@ -278,12 +279,20 @@ void WebStateImpl::OnFaviconUrlUpdated(
     observer.FaviconUrlUpdated(this, candidates);
 }
 
+const NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() const {
+  return *navigation_manager_;
+}
+
 NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() {
   return *navigation_manager_;
 }
 
-const NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() const {
-  return *navigation_manager_;
+const WebFramesManagerImpl& WebStateImpl::GetWebFramesManagerImpl() const {
+  return web_frames_manager_;
+}
+
+WebFramesManagerImpl& WebStateImpl::GetWebFramesManagerImpl() {
+  return web_frames_manager_;
 }
 
 const SessionCertificatePolicyCacheImpl&
@@ -615,6 +624,14 @@ const NavigationManager* WebStateImpl::GetNavigationManager() const {
 
 NavigationManager* WebStateImpl::GetNavigationManager() {
   return &GetNavigationManagerImpl();
+}
+
+const WebFramesManager* WebStateImpl::GetWebFramesManager() const {
+  return &web_frames_manager_;
+}
+
+WebFramesManager* WebStateImpl::GetWebFramesManager() {
+  return &web_frames_manager_;
 }
 
 const SessionCertificatePolicyCache*

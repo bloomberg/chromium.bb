@@ -555,9 +555,7 @@ static NSString* gUserAgentProduct = nil;
       base::mac::ObjCCastStrict<JsSuggestionManager>(
           [_webState->GetJSInjectionReceiver()
               instanceOfClass:[JsSuggestionManager class]]);
-  web::WebFramesManager* framesManager =
-      web::WebFramesManager::FromWebState(_webState.get());
-  [JSSuggestionManager setWebFramesManager:framesManager];
+  [JSSuggestionManager setWebFramesManager:_webState->GetWebFramesManager()];
   return [[CWVAutofillController alloc] initWithWebState:_webState.get()
                                            autofillAgent:autofillAgent
                                        JSAutofillManager:JSAutofillManager

@@ -19,6 +19,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
+#import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/java_script_dialog_callback.h"
@@ -65,7 +66,9 @@ class WebUIIOS;
 //  - SessionWindows are transient owners, passing ownership into WebControllers
 //    during session restore, and discarding owned copies of WebStateImpls after
 //    writing them out for session saves.
-class WebStateImpl : public WebState, public NavigationManagerDelegate {
+class WebStateImpl : public WebState,
+                     public NavigationManagerDelegate,
+                     public WebFramesManagerDelegate {
  public:
   // Constructor for WebStateImpls created for new sessions.
   explicit WebStateImpl(const CreateParams& params);
@@ -112,6 +115,10 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Returns the NavigationManager for this WebState.
   const NavigationManagerImpl& GetNavigationManagerImpl() const;
   NavigationManagerImpl& GetNavigationManagerImpl();
+
+  // Returns the associated WebFramesManagerImpl.
+  const WebFramesManagerImpl& GetWebFramesManagerImpl() const;
+  WebFramesManagerImpl& GetWebFramesManagerImpl();
 
   // Returns the SessionCertificatePolicyCacheImpl for this WebStateImpl.
   const SessionCertificatePolicyCacheImpl&
@@ -167,10 +174,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void CommitPreviewingViewController(
       UIViewController* previewing_view_controller);
 
-  // Called when a new frame is available in the web_state.
-  void OnWebFrameAvailable(web::WebFrame* frame);
-  // Called when a frame is removed  in the web_state
-  void OnWebFrameUnavailable(web::WebFrame* frame);
+  // WebFramesManagerDelegate.
+  void OnWebFrameAvailable(web::WebFrame* frame) override;
+  void OnWebFrameUnavailable(web::WebFrame* frame) override;
 
   // WebState:
   WebStateDelegate* GetDelegate() override;
@@ -186,6 +192,8 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void Stop() override;
   const NavigationManager* GetNavigationManager() const override;
   NavigationManager* GetNavigationManager() override;
+  const WebFramesManager* GetWebFramesManager() const override;
+  WebFramesManager* GetWebFramesManager() override;
   const SessionCertificatePolicyCache* GetSessionCertificatePolicyCache()
       const override;
   SessionCertificatePolicyCache* GetSessionCertificatePolicyCache() override;
@@ -331,6 +339,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // The NavigationManagerImpl that stores session info for this WebStateImpl.
   std::unique_ptr<NavigationManagerImpl> navigation_manager_;
+
+  // The associated WebFramesManagerImpl.
+  WebFramesManagerImpl web_frames_manager_;
 
   // The SessionCertificatePolicyCacheImpl that stores the certificate policy
   // information for this WebStateImpl.
