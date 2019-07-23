@@ -3303,6 +3303,11 @@ void RenderWidget::SetHasTouchEventHandlers(bool has_handlers) {
   Send(new WidgetHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
 }
 
+void RenderWidget::SetHaveScrollEventHandlers(bool have_handlers) {
+  layer_tree_view_->layer_tree_host()->SetHaveScrollEventHandlers(
+      have_handlers);
+}
+
 void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {
   if (input_event_queue_)
     input_event_queue_->SetNeedsLowLatency(needs_low_latency);

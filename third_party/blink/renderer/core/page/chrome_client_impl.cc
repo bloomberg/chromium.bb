@@ -1059,17 +1059,16 @@ void ChromeClientImpl::StopDeferringCommits(
 
 void ChromeClientImpl::SetHasScrollEventHandlers(LocalFrame* frame,
                                                  bool has_event_handlers) {
-  // |frame| might be null if called via TreeScopeAdopter::
-  // moveNodeToNewDocument() and the new document has no frame attached.
-  // Since a document without a frame cannot attach one later, it is safe to
-  // exit early.
+  // |frame| might be null if called via
+  // TreeScopeAdopter::MoveNodeToNewDocument() and the new document has no frame
+  // attached. Since a document without a frame cannot attach one later, it is
+  // safe to exit early.
   if (!frame)
     return;
 
-  WebFrameWidgetBase* widget =
-      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
-  if (widget && widget->GetLayerTreeView())
-    widget->GetLayerTreeView()->SetHaveScrollEventHandlers(has_event_handlers);
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget()->Client();
+  client->SetHaveScrollEventHandlers(has_event_handlers);
 }
 
 void ChromeClientImpl::SetNeedsLowLatencyInput(LocalFrame* frame,

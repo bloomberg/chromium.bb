@@ -193,6 +193,9 @@ class WebWidgetClient {
   // Called to update if touch events should be sent.
   virtual void SetHasTouchEventHandlers(bool) {}
 
+  // Called to update if scroll events should be sent.
+  virtual void SetHaveScrollEventHandlers(bool) {}
+
   // Called to update whether low latency input mode is enabled or not.
   virtual void SetNeedsLowLatencyInput(bool) {}
 
