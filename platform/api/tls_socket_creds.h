@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(jophba): Need unittests.
+// TODO(jophba): Add comprehensive suite of unittests.
 
 #ifndef PLATFORM_API_TLS_SOCKET_CREDS_H_
 #define PLATFORM_API_TLS_SOCKET_CREDS_H_
@@ -17,8 +17,8 @@ namespace openscreen {
 
 struct TlsSocketCreds {
  public:
-  // TODO(jophba): add TLS certificate
-  // TODO(jophba): add RSA Private key
+  // TODO(jophba): add TLS certificate member.
+  // TODO(jophba): add RSA Private key member.
   std::vector<uint8_t> tls_cert_der;
   std::vector<uint8_t> tls_pk_sha256_hash;
 

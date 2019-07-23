@@ -56,7 +56,7 @@ func readAllStreams(ctx context.Context, session quic.Session, streams chan<- io
 
 // Returns a quic.Session object with a .OpenStreamSync method to send streams
 func DialAsQuicClient(ctx context.Context, hostname string, port int) (quic.Session, error) {
-	// TODO: Change InsecureSkipVerify
+	// TODO(pthatcher): Change InsecureSkipVerify
 	tlsConfig := &tls.Config{InsecureSkipVerify: true}
 	addr := fmt.Sprintf("%s:%d", hostname, port)
 	session, err := quic.DialAddrContext(ctx, addr, tlsConfig, nil)

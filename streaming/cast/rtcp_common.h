@@ -144,7 +144,8 @@ struct PacketNack {
   FrameId frame_id;
   FramePacketId packet_id;
 
-  // Comparison operators. Define more when you need them! TODO: In C++20, just
+  // Comparison operators. Define more when you need them!
+  // TODO(miu): In C++20, just
   // replace all of this with one operator<=>() definition to get them all for
   // free.
   constexpr bool operator==(const PacketNack& other) const {

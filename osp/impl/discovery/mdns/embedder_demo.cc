@@ -210,9 +210,9 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
     }
   }
   for (const auto& a_event : mdns_adapter->TakeAResponses()) {
-    // TODO: If multiple SRV records specify the same domain, the A will only
-    // update the first.  I didn't think this would happen but I noticed this
-    // happens for cast groups.
+    // TODO(btolsch): If multiple SRV records specify the same domain, the A
+    // will only update the first.  I didn't think this would happen but I
+    // noticed this happens for cast groups.
     auto it =
         std::find_if(g_services->begin(), g_services->end(),
                      [&a_event](const std::pair<mdns::DomainName, Service>& s) {

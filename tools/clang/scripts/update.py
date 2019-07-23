@@ -429,9 +429,6 @@ def VeryifyVersionOfBuiltClangMatchesVERSION():
   `if use_head_revision:` block in main() first)."""
   clang = os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')
   if sys.platform == 'win32':
-    # TODO: Parse `clang-cl /?` output for built clang's version and check that
-    # to check the binary we're actually shipping? But clang-cl.exe is just
-    # a copy of clang.exe, so this does check the same thing.
     clang += '.exe'
   version_out = subprocess.check_output([clang, '--version'])
   version_out = re.match(r'clang version ([0-9.]+)', version_out).group(1)

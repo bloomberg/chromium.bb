@@ -346,7 +346,7 @@ ErrorOr<UdpPacket> UdpSocketPosix::ReceiveMessage() {
 }
 
 // TODO(yakimakha): Consider changing the interface to accept UdpPacket as
-// an input parameter
+// an input parameter.
 Error UdpSocketPosix::SendMessage(const void* data,
                                   size_t length,
                                   const IPEndpoint& dest) {

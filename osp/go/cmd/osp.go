@@ -4,8 +4,7 @@
 
 package main
 
-// TODO: 
-//  Add response messages from receiver
+// TODO(pthatcher): Add response messages from receiver
 
 //  Inject JS into viewURL to using .Eval and .Bind to send and receiver presentation connection messages
 
@@ -44,7 +43,7 @@ func flingUrl(ctx context.Context, target string, url string) {
 	entries, err := osp.BrowseMdns(ctx)
 	if (err != nil) {
 		log.Fatalf("Failed to browse mDNS: %v\n", err)
-	} 
+	}
 	for entry := range entries {
 		if entry.Instance == target {
 			log.Printf("Fling %s to %s:%d\n", url, entry.HostName, entry.Port)
@@ -82,7 +81,7 @@ func main() {
 	if len(args) < 1 {
 		log.Fatalln("Usage: osp server name; osp browse; osp fling url; osp view url")
 	}
-	
+
 	ctx := context.Background()
 
 	cmd := args[0]

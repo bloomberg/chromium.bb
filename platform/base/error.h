@@ -127,8 +127,7 @@ std::ostream& operator<<(std::ostream& out, const Error& error);
 //   }
 // }
 //
-// TODO(mfoltz):
-// - Add support for type conversions
+// TODO(mfoltz): Add support for type conversions.
 template <typename Value>
 class ErrorOr {
  public:

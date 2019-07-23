@@ -216,7 +216,7 @@ void MdnsResponderService::HandleMdnsEvents() {
     }
 
     // TODO(btolsch): Verify UTF-8 here.
-    std::string friendly_name = instance_name.GetLabels()[0];
+    std::string friendly_name(instance_name.GetLabels()[0]);
 
     if (receiver_info_entry == receiver_info_.end()) {
       ServiceInfo receiver_info{

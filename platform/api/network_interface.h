@@ -55,7 +55,7 @@ struct InterfaceInfo {
 };
 
 struct IPSubnet {
-  // TODO(btolsch): Only needed until c++14.
+  // TODO(btolsch): Remove once we are on C++14.
   IPSubnet();
   IPSubnet(const IPAddress& address, uint8_t prefix_length);
   ~IPSubnet();

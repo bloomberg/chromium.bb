@@ -190,7 +190,7 @@ AstNode* ParseNumber(Parser* p) {
   Parser p_speculative{p->data};
   if (!absl::ascii_isdigit(p_speculative.data[0]) &&
       p_speculative.data[0] != '-') {
-    // TODO(btolsch): hexfloat, fraction, exponent.
+    // TODO(btolsch): Add support for hexfloat, fraction, exponent.
     return nullptr;
   }
   if (p_speculative.data[0] == '-') {
