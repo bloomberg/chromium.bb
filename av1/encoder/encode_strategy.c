@@ -1146,15 +1146,15 @@ void av1_get_ref_frames(AV1_COMP *const cpi,
 
   if (gld_stack_size) {
     cm->remapped_ref_idx[GOLDEN_FRAME - LAST_FRAME] =
-        ref_buffer_stack->gld_stack[gld_stack_size - 1];
+        ref_buffer_stack->gld_stack[0];
 
     if (gld_stack_size > 1) {
       if (arf_stack_size <= 1)
         cm->remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] =
-            ref_buffer_stack->gld_stack[0];
+            ref_buffer_stack->gld_stack[1];
       else
         cm->remapped_ref_idx[LAST3_FRAME - LAST_FRAME] =
-            ref_buffer_stack->gld_stack[0];
+            ref_buffer_stack->gld_stack[1];
     }
   }
 
