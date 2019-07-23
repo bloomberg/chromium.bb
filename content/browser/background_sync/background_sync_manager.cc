@@ -603,6 +603,7 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
     return;
   }
 
+  std::set<url::Origin> suspended_periodic_sync_origins;
   for (const std::pair<int64_t, std::string>& data : user_data) {
     BackgroundSyncRegistrationsProto registrations_proto;
     if (registrations_proto.ParseFromString(data.second)) {
@@ -638,6 +639,9 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
         registration->set_num_attempts(registration_proto.num_attempts());
         registration->set_delay_until(
             base::Time::FromInternalValue(registration_proto.delay_until()));
+        if (registration->is_suspended()) {
+          suspended_periodic_sync_origins.insert(registration->origin());
+        }
         registration->set_resolved();
         if (registration_proto.has_max_attempts())
           registration->set_max_attempts(registration_proto.max_attempts());
@@ -649,6 +653,8 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
 
   FireReadyEvents(BackgroundSyncType::ONE_SHOT, base::DoNothing::Once());
   FireReadyEvents(BackgroundSyncType::PERIODIC, base::DoNothing::Once());
+  proxy_.SendSuspendedPeriodicSyncOrigins(
+      std::move(suspended_periodic_sync_origins));
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 

@@ -6,6 +6,9 @@
 
 namespace content {
 
+MockBackgroundSyncController::MockBackgroundSyncController() = default;
+MockBackgroundSyncController::~MockBackgroundSyncController() = default;
+
 void MockBackgroundSyncController::NotifyOneShotBackgroundSyncRegistered(
     const url::Origin& origin,
     bool can_fire,
@@ -57,6 +60,13 @@ base::TimeDelta MockBackgroundSyncController::GetNextEventDelay(
 std::unique_ptr<BackgroundSyncController::BackgroundSyncEventKeepAlive>
 MockBackgroundSyncController::CreateBackgroundSyncEventKeepAlive() {
   return nullptr;
+}
+
+void MockBackgroundSyncController::NoteSuspendedPeriodicSyncOrigins(
+    std::set<url::Origin> suspended_origins) {
+  for (auto& origin : suspended_origins) {
+    suspended_periodic_sync_origins_.insert(std::move(origin));
+  }
 }
 
 }  // namespace content

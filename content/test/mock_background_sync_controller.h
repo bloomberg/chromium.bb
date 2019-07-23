@@ -20,8 +20,8 @@ namespace content {
 // Mocks a BackgroundSyncController, tracking state for use in tests.
 class MockBackgroundSyncController : public BackgroundSyncController {
  public:
-  MockBackgroundSyncController() = default;
-  ~MockBackgroundSyncController() override = default;
+  MockBackgroundSyncController();
+  ~MockBackgroundSyncController() override;
 
   // BackgroundSyncController:
   void NotifyOneShotBackgroundSyncRegistered(const url::Origin& origin,
@@ -35,6 +35,8 @@ class MockBackgroundSyncController : public BackgroundSyncController {
       BackgroundSyncParameters* parameters) override;
   std::unique_ptr<BackgroundSyncController::BackgroundSyncEventKeepAlive>
   CreateBackgroundSyncEventKeepAlive() override;
+  void NoteSuspendedPeriodicSyncOrigins(
+      std::set<url::Origin> suspended_registrations) override;
 
   int registration_count() const { return registration_count_; }
   const url::Origin& registration_origin() const {
@@ -57,6 +59,7 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   int run_in_background_for_one_shot_sync_count_ = 0;
   int run_in_background_for_periodic_sync_count_ = 0;
   BackgroundSyncParameters background_sync_parameters_;
+  std::set<url::Origin> suspended_periodic_sync_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBackgroundSyncController);
 };

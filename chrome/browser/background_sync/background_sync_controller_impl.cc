@@ -191,10 +191,13 @@ void BackgroundSyncControllerImpl::ScheduleBrowserWakeUp(
 #endif
 }
 
-int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(
-    const GURL& url) const {
+int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(const GURL& url) {
   blink::mojom::EngagementLevel engagement_level =
       site_engagement_service_->GetEngagementLevel(url);
+  if (engagement_level == blink::mojom::EngagementLevel::NONE) {
+    suspended_periodic_sync_origins_.insert(
+        url::Origin::Create(url.GetOrigin()));
+  }
 
   switch (engagement_level) {
     case blink::mojom::EngagementLevel::NONE:
@@ -283,3 +286,11 @@ BackgroundSyncControllerImpl::BackgroundSyncEventKeepAliveImpl::
 BackgroundSyncControllerImpl::BackgroundSyncEventKeepAliveImpl::
     ~BackgroundSyncEventKeepAliveImpl() = default;
 #endif
+
+void BackgroundSyncControllerImpl::NoteSuspendedPeriodicSyncOrigins(
+    std::set<url::Origin> suspended_origins) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  for (auto& origin : suspended_origins)
+    suspended_periodic_sync_origins_.insert(std::move(origin));
+}
