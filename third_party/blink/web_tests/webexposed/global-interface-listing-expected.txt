@@ -4938,6 +4938,11 @@ interface NFCErrorEvent : Event
     attribute @@toStringTag
     getter error
     method constructor
+interface NFCReadingEvent : Event
+    attribute @@toStringTag
+    getter message
+    getter serialNumber
+    method constructor
 interface NFCWriter
     attribute @@toStringTag
     method constructor

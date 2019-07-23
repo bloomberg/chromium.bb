@@ -24,6 +24,8 @@ blink_modules_sources("nfc") {
     "nfc_proxy.h",
     "nfc_reader.cc",
     "nfc_reader.h",
+    "nfc_reading_event.cc",
+    "nfc_reading_event.h",
     "nfc_type_converters.cc",
     "nfc_type_converters.h",
     "nfc_utils.cc",
