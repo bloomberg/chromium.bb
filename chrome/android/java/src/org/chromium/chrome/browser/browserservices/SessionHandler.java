@@ -8,38 +8,21 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.widget.RemoteViews;
-
-import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
  * Interface to handle browser services calls whenever the session id matched.
  * TODO(yusufo): Add a way to handle mayLaunchUrl as well.
  */
-public interface BrowserSessionContentHandler {
-    /**
-     * Loads a new url inside the {@link BrowserSessionContentHandler}, and tracks
-     * its load time.
-     *
-     * @param params The params to use while loading the url.
-     * @param timestamp The intent arrival timestamp, as returned by
-     *                  {@link SystemClock#elapsedRealtime()}.
-     */
-    void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp);
+public interface SessionHandler {
 
     /**
-     * @return The session this {@link BrowserSessionContentHandler} is associated with.
+     * @return The session this {@link SessionHandler} is associated with.
      */
     CustomTabsSessionToken getSession();
-
-    /**
-     * Check whether an intent is valid or should be ignored within this content handler.
-     * @param intent The intent to check.
-     * @return Whether the intent should be ignored.
-     */
-    boolean shouldIgnoreIntent(Intent intent);
 
     /**
      * Finds the action button with the given id, and updates it with the new content.
@@ -73,4 +56,16 @@ public interface BrowserSessionContentHandler {
      * @return the class of the Activity the content handler is running in.
      */
     Class<? extends Activity> getActivityClass();
+
+    /**
+     * Attempts to handles a new intent (without starting a new activity).
+     * Returns whether has handled.
+     */
+    boolean handleIntent(Intent intent);
+
+    /**
+     * Checks whether the given referrer can be used as valid within the Activity hosting this
+     * handler.
+     */
+    boolean canUseReferrer(Uri referrer);
 }
