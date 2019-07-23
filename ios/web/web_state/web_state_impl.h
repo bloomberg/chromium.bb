@@ -210,9 +210,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const override;
   bool IsShowingWebInterstitial() const override;
   WebInterstitial* GetWebInterstitial() const override;
-  void AddScriptCommandCallback(const ScriptCommandCallback& callback,
-                                const std::string& command_prefix) override;
-  void RemoveScriptCommandCallback(const std::string& command_prefix) override;
+  std::unique_ptr<ScriptCommandSubscription> AddScriptCommandCallback(
+      const ScriptCommandCallback& callback,
+      const std::string& command_prefix) override;
   id<CRWWebViewProxy> GetWebViewProxy() const override;
   WebStateInterfaceProvider* GetWebStateInterfaceProvider() override;
   void DidChangeVisibleSecurityState() override;
@@ -365,7 +365,8 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   base::string16 empty_string16_;
 
   // Callbacks associated to command prefixes.
-  std::map<std::string, ScriptCommandCallback> script_command_callbacks_;
+  std::map<std::string, base::CallbackList<ScriptCommandCallbackSignature>>
+      script_command_callbacks_;
 
   // Whether this WebState has an opener.  See
   // WebState::CreateParams::created_with_opener_ for more details.

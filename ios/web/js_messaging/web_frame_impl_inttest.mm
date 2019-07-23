@@ -211,7 +211,8 @@ TEST_F(WebFrameImplIntTest, JavaScriptMessageFromMainFrame) {
         EXPECT_EQ(GetMainWebFrame(web_state()), sender_frame);
       });
 
-  web_state()->AddScriptCommandCallback(callback, "senderFrameTestCommand");
+  auto subscription =
+      web_state()->AddScriptCommandCallback(callback, "senderFrameTestCommand");
   __block WebFramesManagerImpl* manager =
       WebFramesManagerImpl::FromWebState(web_state());
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
@@ -222,7 +223,6 @@ TEST_F(WebFrameImplIntTest, JavaScriptMessageFromMainFrame) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return command_received;
   }));
-  web_state()->RemoveScriptCommandCallback("senderFrameTestCommand");
 }
 
 // Tests that an iframe WebFrame is passed to the callback when sending a
@@ -240,7 +240,8 @@ TEST_F(WebFrameImplIntTest, JavaScriptMessageFromFrame) {
         EXPECT_EQ(GetChildWebFrameForWebState(web_state()), sender_frame);
       });
 
-  web_state()->AddScriptCommandCallback(callback, "senderFrameTestCommand");
+  auto subscription =
+      web_state()->AddScriptCommandCallback(callback, "senderFrameTestCommand");
   __block WebFramesManagerImpl* manager =
       WebFramesManagerImpl::FromWebState(web_state());
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
@@ -252,6 +253,5 @@ TEST_F(WebFrameImplIntTest, JavaScriptMessageFromFrame) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return command_received;
   }));
-  web_state()->RemoveScriptCommandCallback("senderFrameTestCommand");
 }
 }

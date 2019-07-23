@@ -598,8 +598,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self.UIHandler close];
   [self.JSNavigationHandler close];
   [self.requestController close];
-  _faviconManager.reset();
-  _jsWindowErrorManager.reset();
   self.swipeRecognizerProvider = nil;
   [self.legacyNativeController close];
   [self.requestController close];

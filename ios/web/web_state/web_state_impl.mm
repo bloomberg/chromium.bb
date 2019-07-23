@@ -126,7 +126,6 @@ WebStateImpl::~WebStateImpl() {
     observer.WebStateDestroyed();
   for (auto& observer : policy_deciders_)
     observer.ResetWebState();
-  DCHECK(script_command_callbacks_.empty());
   SetDelegate(nullptr);
 }
 
@@ -213,7 +212,7 @@ void WebStateImpl::OnScriptCommandReceived(const std::string& command,
   if (it == script_command_callbacks_.end())
     return;
 
-  it->second.Run(value, page_url, user_is_interacting, sender_frame);
+  it->second.Notify(value, page_url, user_is_interacting, sender_frame);
 }
 
 void WebStateImpl::SetIsLoading(bool is_loading) {
@@ -744,21 +743,14 @@ GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
   return result;
 }
 
-void WebStateImpl::AddScriptCommandCallback(
-    const ScriptCommandCallback& callback,
-    const std::string& command_prefix) {
+std::unique_ptr<WebState::ScriptCommandSubscription>
+WebStateImpl::AddScriptCommandCallback(const ScriptCommandCallback& callback,
+                                       const std::string& command_prefix) {
   DCHECK(!command_prefix.empty());
   DCHECK(command_prefix.find_first_of('.') == std::string::npos);
-  DCHECK(script_command_callbacks_.find(command_prefix) ==
-         script_command_callbacks_.end());
-  script_command_callbacks_[command_prefix] = callback;
-}
-
-void WebStateImpl::RemoveScriptCommandCallback(
-    const std::string& command_prefix) {
-  DCHECK(script_command_callbacks_.find(command_prefix) !=
-         script_command_callbacks_.end());
-  script_command_callbacks_.erase(command_prefix);
+  DCHECK(script_command_callbacks_.count(command_prefix) == 0 ||
+         script_command_callbacks_[command_prefix].empty());
+  return script_command_callbacks_[command_prefix].Add(callback);
 }
 
 id<CRWWebViewProxy> WebStateImpl::GetWebViewProxy() const {
