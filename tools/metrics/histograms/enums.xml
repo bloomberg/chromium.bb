@@ -6138,6 +6138,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BooleanIsUseRelinker">
+  <obsolete>
+    Removed in 2019-07.
+  </obsolete>
   <int value="0" label="Didn't use relinker"/>
   <int value="1" label="Used relinker"/>
 </enum>

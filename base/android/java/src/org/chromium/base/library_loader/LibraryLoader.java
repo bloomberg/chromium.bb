@@ -4,8 +4,6 @@
 
 package org.chromium.base.library_loader;
 
-import static org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -27,9 +25,11 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.compat.ApiHelperForM;
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.File;
@@ -82,9 +82,6 @@ public class LibraryLoader {
 
     // Shared preferences key for the reached code profiler.
     private static final String REACHED_CODE_PROFILER_ENABLED_KEY = "reached_code_profiler_enabled";
-
-    private static final EnumeratedHistogramSample sRelinkerCountHistogram =
-            new EnumeratedHistogramSample("ChromiumAndroidLinker.RelinkerFallbackCount", 2);
 
     // The singleton instance of LibraryLoader. Never null (not final for tests).
     private static LibraryLoader sInstance = new LibraryLoader();
@@ -303,14 +300,6 @@ public class LibraryLoader {
         }
     }
 
-    static void incrementRelinkerCountHitHistogram() {
-        sRelinkerCountHistogram.record(1);
-    }
-
-    static void incrementRelinkerCountNotHitHistogram() {
-        sRelinkerCountHistogram.record(0);
-    }
-
     // Experience shows that on some devices, the system sometimes fails to extract native libraries
     // at installation or update time from the APK. This function will extract the library and
     // return the extracted file path.
@@ -364,13 +353,11 @@ public class LibraryLoader {
                         try {
                             // Load the library using this Linker. May throw UnsatisfiedLinkError.
                             loadLibraryWithCustomLinkerAlreadyLocked(linker, libFilePath);
-                            incrementRelinkerCountNotHitHistogram();
                         } catch (UnsatisfiedLinkError e) {
                             if (!isInZipFile()
                                     && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
                                 loadLibraryWithCustomLinkerAlreadyLocked(
                                         linker, getExtractedLibraryPath(appInfo, library));
-                                incrementRelinkerCountHitHistogram();
                             } else {
                                 Log.e(TAG, "Unable to load library: " + library);
                                 throw(e);
@@ -623,6 +610,11 @@ public class LibraryLoader {
                 Log.w(TAG, "failed to set UBSAN_OPTIONS", e);
             }
         }
+    }
+
+    @CalledByNative
+    public static void onUmaRecordingReadyInRenderer() {
+        CachedMetrics.commitCachedMetrics();
     }
 
     // Android system sometimes fails to extract libraries from APK (https://crbug.com/806998).

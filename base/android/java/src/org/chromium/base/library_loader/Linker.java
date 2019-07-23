@@ -556,13 +556,11 @@ public abstract class Linker {
         }
         try {
             System.loadLibrary(LINKER_JNI_LIBRARY);
-            LibraryLoader.incrementRelinkerCountNotHitHistogram();
         } catch (UnsatisfiedLinkError e) {
             if (LibraryLoader.PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
                 System.load(LibraryLoader.getExtractedLibraryPath(
                         ContextUtils.getApplicationContext().getApplicationInfo(),
                         LINKER_JNI_LIBRARY));
-                LibraryLoader.incrementRelinkerCountHitHistogram();
             } else {
                 // Cannot continue if we cannot load the linker. Technically we could try to
                 // load the library with the system linker on Android M+, but this should never
