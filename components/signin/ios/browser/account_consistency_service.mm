@@ -21,7 +21,7 @@
 #include "components/signin/public/base/account_consistency_method.h"
 #include "ios/web/common/web_view_creation_util.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/web_state/web_state_policy_decider.h"
+#import "ios/web/public/navigation/web_state_policy_decider.h"
 #include "net/base/mac/url_conversions.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"

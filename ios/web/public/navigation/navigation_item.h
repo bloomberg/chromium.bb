@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_NAVIGATION_ITEM_H_
-#define IOS_WEB_PUBLIC_NAVIGATION_ITEM_H_
+#ifndef IOS_WEB_PUBLIC_NAVIGATION_NAVIGATION_ITEM_H_
+#define IOS_WEB_PUBLIC_NAVIGATION_NAVIGATION_ITEM_H_
 
 #include <memory>
 
@@ -127,4 +127,4 @@ class NavigationItem : public base::SupportsUserData {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_NAVIGATION_ITEM_H_
+#endif  // IOS_WEB_PUBLIC_NAVIGATION_NAVIGATION_ITEM_H_

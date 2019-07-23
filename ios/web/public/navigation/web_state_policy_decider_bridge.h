@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_POLICY_DECIDER_BRIDGE_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_POLICY_DECIDER_BRIDGE_H_
+#ifndef IOS_WEB_PUBLIC_NAVIGATION_WEB_STATE_POLICY_DECIDER_BRIDGE_H_
+#define IOS_WEB_PUBLIC_NAVIGATION_WEB_STATE_POLICY_DECIDER_BRIDGE_H_
 
 #import <Foundation/Foundation.h>
 
-#import "ios/web/public/web_state/web_state_policy_decider.h"
+#import "ios/web/public/navigation/web_state_policy_decider.h"
 
 // Objective-C interface for web::WebStatePolicyDecider.
-@protocol CRWWebStatePolicyDecider<NSObject>
+@protocol CRWWebStatePolicyDecider <NSObject>
 @optional
 
 // Invoked by |WebStatePolicyDeciderBridge::ShouldAllowRequest|.
@@ -49,4 +49,4 @@ class WebStatePolicyDeciderBridge : public web::WebStatePolicyDecider {
 
 }  // web
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_POLICY_DECIDER_BRIDGE_H_
+#endif  // IOS_WEB_PUBLIC_NAVIGATION_WEB_STATE_POLICY_DECIDER_BRIDGE_H_

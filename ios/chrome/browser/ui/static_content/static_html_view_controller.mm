@@ -18,7 +18,7 @@
 #import "ios/web/common/web_view_creation_util.h"
 #import "ios/web/public/deprecated/crw_context_menu_delegate.h"
 #import "ios/web/public/deprecated/crw_native_content.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"

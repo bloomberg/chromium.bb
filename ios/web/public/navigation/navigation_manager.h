@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_NAVIGATION_MANAGER_H_
-#define IOS_WEB_PUBLIC_NAVIGATION_MANAGER_H_
+#ifndef IOS_WEB_PUBLIC_NAVIGATION_NAVIGATION_MANAGER_H_
+#define IOS_WEB_PUBLIC_NAVIGATION_NAVIGATION_MANAGER_H_
 
 #include <stddef.h>
 
 #include "base/callback.h"
-#include "ios/web/public/browser_url_rewriter.h"
 #include "ios/web/public/deprecated/navigation_item_list.h"
-#include "ios/web/public/referrer.h"
-#include "ios/web/public/reload_type.h"
+#include "ios/web/public/navigation/browser_url_rewriter.h"
+#include "ios/web/public/navigation/referrer.h"
+#include "ios/web/public/navigation/reload_type.h"
 #include "ios/web/public/user_agent.h"
 #include "ui/base/page_transition_types.h"
 
@@ -230,4 +230,4 @@ class NavigationManager {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_NAVIGATION_MANAGER_H_
+#endif  // IOS_WEB_PUBLIC_NAVIGATION_NAVIGATION_MANAGER_H_

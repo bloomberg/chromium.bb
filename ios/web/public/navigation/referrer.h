@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_REFERRER_H_
-#define IOS_WEB_PUBLIC_REFERRER_H_
+#ifndef IOS_WEB_PUBLIC_NAVIGATION_REFERRER_H_
+#define IOS_WEB_PUBLIC_NAVIGATION_REFERRER_H_
 
 #include "base/logging.h"
 #include "url/gurl.h"
@@ -36,4 +36,4 @@ struct Referrer {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_REFERRER_H_
+#endif  // IOS_WEB_PUBLIC_NAVIGATION_REFERRER_H_

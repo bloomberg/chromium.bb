@@ -21,7 +21,7 @@ source_set("common") {
 
   deps = [
     "//base",
-    "//ios/web/public:referrer",
+    "//ios/web/public/navigation",
     "//net",
     "//url",
   ]
@@ -55,7 +55,7 @@ source_set("unittests") {
   deps = [
     ":common",
     "//base",
-    "//ios/web/public:referrer",
+    "//ios/web/public/navigation",
     "//net",
     "//testing/gtest",
     "//url",
