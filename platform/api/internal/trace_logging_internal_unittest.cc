@@ -11,11 +11,13 @@
 #include "gtest/gtest.h"
 #include "platform/api/trace_logging.h"
 
+// TODO(issue/52): Remove duplicate code from trace logging+internal unit tests
 namespace openscreen {
 namespace platform {
 namespace internal {
 
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::Invoke;
 
 class MockLoggingPlatform : public TraceLoggingPlatform {
@@ -59,7 +61,7 @@ void ValidateTraceTimestampDiff(const char* name,
                                 Error error) {
   const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
       end_time - start_time);
-  EXPECT_GE(elapsed.count(), milliseconds);
+  EXPECT_GE(static_cast<uint64_t>(elapsed.count()), milliseconds);
 }
 
 template <Error::Code result>
