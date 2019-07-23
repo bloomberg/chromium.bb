@@ -3530,11 +3530,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAssistantAppSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantAppSupport)},
 
-    {"enable-assistant-key-remapping",
-     flag_descriptions::kEnableAssistantKeyRemappingName,
-     flag_descriptions::kEnableAssistantKeyRemappingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantKeyRemapping)},
-
     {"enable-assistant-media-session-integration",
      flag_descriptions::kEnableAssistantMediaSessionIntegrationName,
      flag_descriptions::kEnableAssistantMediaSessionIntegrationDescription,

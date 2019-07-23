@@ -3126,11 +3126,6 @@ const char kEnableAssistantAppSupportName[] = "Enable Assistant App Support";
 const char kEnableAssistantAppSupportDescription[] =
     "Enable the Assistant App Support feature";
 
-const char kEnableAssistantKeyRemappingName[] =
-    "Enable Assistant Key Remapping";
-const char kEnableAssistantKeyRemappingDescription[] =
-    "Allow Assistant key remapping in the keyboard settings.";
-
 const char kEnableAssistantLauncherIntegrationName[] =
     "Assistant & Launcher integration";
 const char kEnableAssistantLauncherIntegrationDescription[] =
