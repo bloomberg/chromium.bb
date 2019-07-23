@@ -290,7 +290,6 @@ static void set_good_speed_features_framesize_independent(
     sf->disable_filter_search_var_thresh = 100;
     sf->comp_inter_joint_search_thresh = BLOCK_SIZES_ALL;
 
-    sf->partition_search_breakout_rate_thr = 80;
     sf->allow_partition_search_skip = 1;
     sf->disable_wedge_search_var_thresh = 100;
     sf->disable_wedge_search_edge_thresh = 0;
