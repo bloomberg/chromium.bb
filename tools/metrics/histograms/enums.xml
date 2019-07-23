@@ -891,6 +891,17 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Account Corruption Detected"/>
 </enum>
 
+<enum name="AccountReconcilorInconsistencyReason">
+  <int value="0" label="Consistent"/>
+  <int value="1" label="Sync cookie missing"/>
+  <int value="2" label="Sync account auth error"/>
+  <int value="3" label="First web account token missing"/>
+  <int value="4" label="Secondary cookie missing"/>
+  <int value="5" label="Secondary token missing"/>
+  <int value="6" label="Cookie Token mismatch"/>
+  <int value="7" label="Sync cookie not first"/>
+</enum>
+
 <enum name="AccountRelation">
   <int value="0" label="Empty cookie jar"/>
   <int value="1" label="No signed in, single signed out match"/>
