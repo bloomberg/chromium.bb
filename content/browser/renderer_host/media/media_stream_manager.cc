@@ -2055,13 +2055,13 @@ void MediaStreamManager::OnMediaStreamUIWindowId(
   if (!window_id)
     return;
 
-  if (video_type != MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE)
+  if (!blink::IsVideoDesktopCaptureMediaType(video_type))
     return;
 
   // Pass along for desktop screen and window capturing when
   // DesktopCaptureDevice is used.
   for (const MediaStreamDevice& device : devices) {
-    if (device.type != MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE)
+    if (!blink::IsVideoDesktopCaptureMediaType(device.type))
       continue;
 
     DesktopMediaID media_id = DesktopMediaID::Parse(device.id);
