@@ -391,7 +391,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
                                          const String& url,
                                          const FloatRect& rect,
                                          base::TimeTicks start_time,
-                                         base::TimeTicks response_end,
+                                         base::TimeTicks load_time,
                                          const AtomicString& identifier,
                                          const IntSize& intrinsic_size,
                                          const AtomicString& id,
@@ -399,7 +399,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
   DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled(GetExecutionContext()));
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
       name, url, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
-      MonotonicTimeToDOMHighResTimeStamp(response_end), identifier,
+      MonotonicTimeToDOMHighResTimeStamp(load_time), identifier,
       intrinsic_size.Width(), intrinsic_size.Height(), id, element);
   if (HasObserverFor(PerformanceEntry::kElement)) {
     UseCounter::Count(GetExecutionContext(),
