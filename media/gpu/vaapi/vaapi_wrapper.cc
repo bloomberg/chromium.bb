@@ -7,15 +7,14 @@
 #include <dlfcn.h>
 #include <string.h>
 #include <unistd.h>
-
-#include <algorithm>
-#include <type_traits>
-#include <utility>
-
 #include <va/va.h>
 #include <va/va_drm.h>
 #include <va/va_drmcommon.h>
 #include <va/va_version.h>
+
+#include <algorithm>
+#include <type_traits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

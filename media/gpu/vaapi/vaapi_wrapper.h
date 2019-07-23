@@ -12,12 +12,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <va/va.h>
 
 #include <set>
 #include <string>
 #include <vector>
-
-#include <va/va.h>
 
 #include "base/files/file.h"
 #include "base/gtest_prod_util.h"

@@ -4,13 +4,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <va/va.h>
 
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include <va/va.h>
 
 // This has to be included first.
 // See http://code.google.com/p/googletest/issues/detail?id=371
