@@ -25025,6 +25025,13 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Unable to open"/>
 </enum>
 
+<enum name="FileManagerFormatFileSystemType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="FAT32"/>
+  <int value="2" label="exFAT"/>
+  <int value="3" label="NTFS"/>
+</enum>
+
 <enum name="FileManagerListType">
   <int value="0" label="Uninitialized"/>
   <int value="1" label="List view (detail)"/>
