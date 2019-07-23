@@ -168,8 +168,11 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       return;
     }
 
-    auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
-    if (!worker_process_host) {
+    // TODO(cammie): Change this approach when we support shared workers
+    // creating dedicated workers, as there might be no ancestor frame.
+    RenderFrameHostImpl* ancestor_render_frame_host =
+        GetAncestorRenderFrameHost();
+    if (!ancestor_render_frame_host) {
       client_->OnScriptLoadStartFailed();
       return;
     }
@@ -179,7 +182,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         pending_default_factory;
     CreateNetworkFactory(
         pending_default_factory.InitWithNewPipeAndPassReceiver(),
-        worker_process_host);
+        ancestor_render_frame_host);
     subresource_loader_factories->pending_default_factory() =
         std::move(pending_default_factory);
 
@@ -215,20 +218,20 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   }
 
   void CreateNetworkFactory(network::mojom::URLLoaderFactoryRequest request,
-                            RenderProcessHost* worker_process_host) {
+                            RenderFrameHostImpl* render_frame_host) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(render_frame_host);
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
 
     // Get the origin of the frame tree's root to use as top-frame origin.
-    // TODO(cammie): Change this approach when we support shared workers
-    // creating dedicated workers, as there might be no ancestor frame.
-    RenderFrameHostImpl* ancestor_render_frame_host =
-        GetAncestorRenderFrameHost();
-    url::Origin top_frame_origin(ancestor_render_frame_host->frame_tree_node()
+    // TODO(crbug.com/986167): Resolve issue of potential race condition.
+    url::Origin top_frame_origin(render_frame_host->frame_tree_node()
                                      ->frame_tree()
                                      ->root()
                                      ->current_origin());
 
+    RenderProcessHost* worker_process_host = render_frame_host->GetProcess();
+    DCHECK(worker_process_host);
     worker_process_host->CreateURLLoaderFactory(
         origin_, nullptr /* preferences */,
         net::NetworkIsolationKey(top_frame_origin, origin_),
