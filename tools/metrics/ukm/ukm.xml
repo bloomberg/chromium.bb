@@ -4817,6 +4817,10 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="Experimental.PaintTiming.NavigationToLargestContentPaint">
+    <obsolete>
+      Deprecated 7/2019, replaced by
+      PaintTiming.NavigationToLargestContentfulPaint.MainFrame.
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest content (text or
@@ -4825,6 +4829,10 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="Experimental.PaintTiming.NavigationToLargestContentPaintAllFrames">
+    <obsolete>
+      Deprecated 7/2019, replaced by
+      PaintTiming.NavigationToLargestContentfulPaint
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest content (text or
@@ -5342,6 +5350,22 @@ be describing additional metrics about the same event.
         </statistics>
       </history>
     </aggregation>
+  </metric>
+  <metric name="PaintTiming.NavigationToLargestContentfulPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest content (text or
+      image) within viewport, across all frames. See http://bit.ly/fcp_plus_plus
+      for more details.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.NavigationToLargestContentfulPaint.MainFrame">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest content (text or
+      image) within viewport, in the main frame. See http://bit.ly/fcp_plus_plus
+      for more details.
+    </summary>
   </metric>
   <metric name="ParseTiming.NavigationToParseStart">
     <summary>
