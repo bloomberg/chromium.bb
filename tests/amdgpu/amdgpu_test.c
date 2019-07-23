@@ -474,7 +474,7 @@ static void amdgpu_disable_suites()
 			fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
 
 	/* This test was ran on GFX9 only */
-	if (family_id < AMDGPU_FAMILY_AI || family_id > AMDGPU_FAMILY_RV)
+	//if (family_id < AMDGPU_FAMILY_AI || family_id > AMDGPU_FAMILY_RV)
 		if (amdgpu_set_test_active(BASIC_TESTS_STR, "GPU reset Test", CU_FALSE))
 			fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
 }
