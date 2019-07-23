@@ -485,6 +485,7 @@
     },
     {
       name: "DisplayLocking",
+      status: "experimental",
     },
     {
       name: "DocumentCookie",
