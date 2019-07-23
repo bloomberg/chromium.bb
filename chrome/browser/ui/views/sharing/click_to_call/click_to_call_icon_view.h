@@ -51,6 +51,7 @@ class ClickToCallIconView : public PageActionIconView {
   const gfx::VectorIcon& GetVectorIcon() const override;
   const gfx::VectorIcon& GetVectorIconBadge() const override;
   bool IsTriggerableEvent(const ui::Event& event) override;
+  double WidthMultiplier() const override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -59,6 +60,7 @@ class ClickToCallIconView : public PageActionIconView {
  private:
   void UpdateInkDrop(bool activate);
   void UpdateLoaderColor();
+  void UpdateOpacity();
 
   SkColor loader_color_;
   std::unique_ptr<gfx::ThrobAnimation> loading_animation_;

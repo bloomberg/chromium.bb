@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -25,6 +26,10 @@ namespace {
 constexpr float kLoaderHeight = 4.0f;
 // Width of the loader bar in percent of its range.
 constexpr float kLoaderWidth = 0.2f;
+
+// TODO(knollr): move these into IconLabelBubbleView.
+constexpr int kIconTextSpacing = 8;
+constexpr int kIconTextSpacingTouch = 10;
 
 ClickToCallSharingDialogController* GetControllerFromWebContents(
     content::WebContents* web_contents) {
@@ -141,20 +146,55 @@ void ClickToCallIconView::PaintButtonContents(gfx::Canvas* canvas) {
   canvas->DrawRoundRect(bounds, bounds.height() / 2, flags);
 }
 
+double ClickToCallIconView::WidthMultiplier() const {
+  double multiplier = PageActionIconView::WidthMultiplier();
+
+  double min_width = image()->GetPreferredSize().width() + GetInsets().width();
+  double spacing = ui::MaterialDesignController::touch_ui()
+                       ? kIconTextSpacingTouch
+                       : kIconTextSpacing;
+  double label_width = label()->GetPreferredSize().width();
+  double max_width = min_width + spacing + label_width;
+
+  // We offset the width multiplier to start expanding the label straight away
+  // instead of completely hide the icon and expanding it from zero width.
+  double offset = min_width / max_width;
+  return multiplier * (1 - offset) + offset;
+}
+
 void ClickToCallIconView::AnimationProgressed(const gfx::Animation* animation) {
-  if (animation != loading_animation_.get())
+  if (animation != loading_animation_.get()) {
+    UpdateOpacity();
     return PageActionIconView::AnimationProgressed(animation);
+  }
   SchedulePaint();
 }
 
 void ClickToCallIconView::AnimationEnded(const gfx::Animation* animation) {
   PageActionIconView::AnimationEnded(animation);
+  UpdateOpacity();
   Update();
 }
 
 void ClickToCallIconView::OnThemeChanged() {
   PageActionIconView::OnThemeChanged();
   UpdateLoaderColor();
+}
+
+void ClickToCallIconView::UpdateOpacity() {
+  if (!IsShrinking()) {
+    DestroyLayer();
+    SetTextSubpixelRenderingEnabled(true);
+    return;
+  }
+
+  if (!layer()) {
+    SetPaintToLayer();
+    SetTextSubpixelRenderingEnabled(false);
+    layer()->SetFillsBoundsOpaquely(false);
+  }
+
+  layer()->SetOpacity(PageActionIconView::WidthMultiplier());
 }
 
 void ClickToCallIconView::UpdateInkDrop(bool activate) {
