@@ -593,9 +593,11 @@ crbug.com/847274 virtual/layout_ng_experimental/external/wpt/css/css-contain/con
 crbug.com/880802 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-paint-021.html [ Failure ]
 crbug.com/882367 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-paint-clip-015.html [ Failure ]
 crbug.com/882367 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-paint-clip-016.html [ Failure ]
+crbug.com/845235 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-size-flexbox-001.html [ Failure ]
 crbug.com/955170 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-size-replaced-003a.html [ Failure ]
 crbug.com/955163 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-size-replaced-003b.html [ Failure ]
 crbug.com/955163 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-size-replaced-003c.html [ Failure ]
+crbug.com/845235 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-size-scrollbars-002.html [ Failure ]
 crbug.com/882383 virtual/layout_ng_experimental/external/wpt/css/css-contain/counter-scoping-001.html [ Failure ]
 crbug.com/882383 virtual/layout_ng_experimental/external/wpt/css/css-contain/counter-scoping-002.html [ Failure ]
 crbug.com/882383 virtual/layout_ng_experimental/external/wpt/css/css-contain/counter-scoping-003.html [ Failure ]
@@ -609,6 +611,8 @@ crbug.com/881057 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-
 crbug.com/880802 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-ignored-cases-ruby-stacking-and-clipping-001.html [ Failure ]
 crbug.com/881057 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-stacking-context-001b.html [ Failure ]
 crbug.com/965491 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-fieldset-002.html [ Failure ]
+crbug.com/845235 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-flex-001.html [ Failure ]
+crbug.com/845235 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-inline-flex-001.html [ Failure ]
 
 # [css-align]
 
@@ -2032,7 +2036,6 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-column-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-column-wrap.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-row-wrap-reverse.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_inline-abspos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_inline.html [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_margin-collapse.html [ Failure ]
