@@ -203,6 +203,8 @@ class MockGSSAPILibrary : public GSSAPILibrary {
 
 }  // namespace test
 
+using MockAuthLibrary = test::MockGSSAPILibrary;
+
 }  // namespace net
 
 #endif  // NET_HTTP_MOCK_GSSAPI_LIBRARY_POSIX_H_

@@ -36,6 +36,8 @@
 #include "net/http/mock_sspi_library_win.h"
 #elif BUILDFLAG(USE_EXTERNAL_GSSAPI)
 #include "net/http/mock_gssapi_library_posix.h"
+#else
+#error "use_kerberos is true, but no Kerberos implementation available."
 #endif
 
 using net::test::IsError;
@@ -44,16 +46,6 @@ using net::test::IsOk;
 namespace net {
 
 constexpr char kFakeToken[] = "FakeToken";
-
-#if defined(OS_ANDROID)
-using MockAuthLibrary = net::android::DummySpnegoAuthenticator;
-#elif defined(OS_WIN)
-using MockAuthLibrary = MockSSPILibrary;
-#elif BUILDFLAG(USE_EXTERNAL_GSSAPI)
-using MockAuthLibrary = test::MockGSSAPILibrary;
-#else
-#error "use_kerberos is true, but no Kerberos implementation available."
-#endif
 
 class HttpAuthHandlerNegotiateTest : public PlatformTest,
                                      public WithScopedTaskEnvironment {
