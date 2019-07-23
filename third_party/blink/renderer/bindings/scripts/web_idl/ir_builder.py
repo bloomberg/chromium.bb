@@ -8,6 +8,7 @@ from .attribute import Attribute
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
 from .common import DebugInfo
+from .common import Location
 from .constant import Constant
 from .dictionary import Dictionary
 from .dictionary import DictionaryMember
@@ -317,7 +318,7 @@ class _IRBuilder(object):
 
     def _build_debug_info(self, node):
         return DebugInfo(
-            location=DebugInfo.Location(
+            location=Location(
                 filepath=node.GetProperty('FILENAME'),
                 line_number=node.GetProperty('LINENO'),
                 column_number=node.GetProperty('POSITION')))

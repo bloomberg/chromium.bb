@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from .database import Database
+from .database import DatabaseBody
+from .dictionary import Dictionary
 from .identifier_ir_map import IdentifierIRMap
 from .idl_type import IdlTypeFactory
 from .reference import RefByIdFactory
@@ -49,27 +52,28 @@ class IdlCompiler(object):
         self._ref_to_idl_type_factory = ref_to_idl_type_factory
         self._ref_to_idl_def_factory = ref_to_idl_def_factory
         self._idl_type_factory = idl_type_factory
+        self._db = DatabaseBody()
+        self._did_run = False  # Run only once.
 
     def build_database(self):
-        self._merge_partials()
-        self._merge_mixins()
-        self._resolve_inheritances()
-        self._resolve_exposures()
-        self._define_unions()
-        self._generate_database()
+        assert not self._did_run
+        self._did_run = True
 
-    def _generate_database(self):
-        """
-        Returns an IDL database based on this compiler.
-        """
-        pass
-
-    def _merge_partials(self):
-        """
-        Merges partial definitions with corresponding non-partial definitions.
-        """
+        # Merge partial definitions.
+        self._merge_partial_interfaces()
         self._merge_partial_dictionaries()
-        # TODO(peria): Implement this. http:///crbug.com/839389
+
+        # Updates on IRs are finished.  Create API objects.
+        self._create_public_objects()
+
+        # Resolve references.
+        self._resolve_references_to_idl_type()
+        self._resolve_references_to_idl_def()
+
+        return Database(self._db)
+
+    def _merge_partial_interfaces(self):
+        pass
 
     def _merge_partial_dictionaries(self):
         old_dictionaries = self._ir_map.find_by_kind(
@@ -92,31 +96,27 @@ class IdlCompiler(object):
                 ])
             self._ir_map.add(new_dictionary)
 
-    def _merge_mixins(self):
-        """
-        Merges mixins with interfaces that connected with includes statements.
-        """
-        self._ir_map.move_to_new_phase()
-        # TODO(peria): Implement this. http:///crbug.com/839389
+    def _create_public_objects(self):
+        """Creates public representations of compiled objects."""
+        dictionary_irs = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.DICTIONARY)
+        for ir in dictionary_irs.itervalues():
+            self._db.register(DatabaseBody.Kind.DICTIONARY, Dictionary(ir))
 
-    def _resolve_inheritances(self):
-        """
-        Resolves inheritances and [Unforgeable]
-        """
-        self._ir_map.move_to_new_phase()
-        # TODO(peria): Implement this. http:///crbug.com/839389
+    def _resolve_references_to_idl_type(self):
+        def resolve(ref):
+            # Resolve to stubs for the time being.
+            ref.set_target_object(False)
 
-    def _resolve_exposures(self):
-        """
-        Links [Exposed] interfaces/namespaces with [Global] interfaces
-        """
-        self._ir_map.move_to_new_phase()
-        # TODO(peria): Implement this. http:///crbug.com/839389
+        self._ref_to_idl_type_factory.for_each(resolve)
 
-    def _define_unions(self):
-        """
-        Create a definition of union, that is unique in union types that have
-        same flattened-like members.
-        """
-        self._ir_map.move_to_new_phase()
-        # TODO(peria): Implement this. http:///crbug.com/839389
+    def _resolve_references_to_idl_def(self):
+        def resolve(ref):
+            try:
+                ref.set_target_object(
+                    self._db.find_by_identifier(ref.identifier))
+            except KeyError:
+                # Resolve to stubs for the time being.
+                ref.set_target_object(False)
+
+        self._ref_to_idl_def_factory.for_each(resolve)
