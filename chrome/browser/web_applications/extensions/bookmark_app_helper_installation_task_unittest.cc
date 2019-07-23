@@ -25,15 +25,17 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/web_applications/bookmark_apps/bookmark_app_install_manager.h"
+#include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/web_application_info.h"
@@ -325,7 +327,9 @@ class BookmarkAppHelperInstallationTaskTest
 
  private:
   void SetUpTestingFactories() {
-    auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());
+    auto* provider = web_app::TestWebAppProvider::Get(profile());
+    provider->Start();
+
     BookmarkAppInstallManager* install_manager =
         static_cast<BookmarkAppInstallManager*>(&provider->install_manager());
 

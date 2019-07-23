@@ -278,9 +278,7 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    DCHECK(profile()->AsTestingProfile());
-    auto* provider = static_cast<web_app::TestWebAppProvider*>(
-        web_app::WebAppProvider::Get(profile()));
+    auto* provider = web_app::TestWebAppProvider::Get(profile());
 
     auto registrar = std::make_unique<web_app::TestAppRegistrar>();
     registrar_ = registrar.get();
@@ -300,6 +298,8 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
     provider->SetRegistrar(std::move(registrar));
     provider->SetInstallManager(std::move(install_manager));
     provider->SetInstallFinalizer(std::move(install_finalizer));
+
+    provider->Start();
   }
 
  protected:
