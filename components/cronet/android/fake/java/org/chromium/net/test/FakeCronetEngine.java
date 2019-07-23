@@ -37,6 +37,8 @@ final class FakeCronetEngine extends CronetEngineBase {
      * Builds a {@link FakeCronetEngine}. This implements CronetEngine.Builder.
      */
     static class Builder extends CronetEngineBuilderImpl {
+        private FakeCronetController mController;
+
         /**
          * Builder for {@link FakeCronetEngine}.
          *
@@ -50,7 +52,13 @@ final class FakeCronetEngine extends CronetEngineBase {
         public FakeCronetEngine build() {
             return new FakeCronetEngine(this);
         }
+
+        void setController(FakeCronetController controller) {
+            mController = controller;
+        }
     }
+
+    private final FakeCronetController mController;
 
     private final Object mLock = new Object();
 
@@ -67,8 +75,23 @@ final class FakeCronetEngine extends CronetEngineBase {
      * @param builder a {@link CronetEngineBuilderImpl} to build this {@link CronetEngine}
      *                implementation from.
      */
-    private FakeCronetEngine(CronetEngineBuilderImpl builder) {
-        // TODO(kirchman): Retrieve fields from the builder necessary for a URL request.
+    private FakeCronetEngine(FakeCronetEngine.Builder builder) {
+        if (builder.mController != null) {
+            mController = builder.mController;
+        } else {
+            mController = new FakeCronetController();
+        }
+        FakeCronetController.addFakeCronetEngine(this);
+    }
+
+    /**
+     * Gets the controller associated with this instance that will be used for responses to
+     * {@link UrlRequest}s.
+     *
+     * @return the {@link FakeCronetCntroller} that controls this {@link FakeCronetEngine}.
+     */
+    FakeCronetController getController() {
+        return mController;
     }
 
     @Override
@@ -100,6 +123,7 @@ final class FakeCronetEngine extends CronetEngineBase {
                 mIsShutdown = true;
             }
         }
+        FakeCronetController.removeFakeCronetEngine(this);
     }
 
     @Override
