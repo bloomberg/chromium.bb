@@ -6,6 +6,7 @@ package org.chromium.chrome.test.pagecontroller.controllers.ntp;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.pagecontroller.controllers.PageController;
+import org.chromium.chrome.test.pagecontroller.controllers.tabswitcher.TabSwitcherController;
 import org.chromium.chrome.test.pagecontroller.controllers.urlpage.UrlPage;
 import org.chromium.chrome.test.pagecontroller.utils.IUi2Locator;
 import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
@@ -243,6 +244,18 @@ public class NewTabPageController extends PageController {
     public void clickLoadMoreArticles() {
         scrollToBottom();
         mUtils.click(LOCATOR_MORE_BUTTON);
+    }
+
+    /**
+     * Open the tab switcher at the top.  This will cause the page to scroll to the top.
+     * @return The TabSwitcher Page Controller.
+     */
+    public TabSwitcherController openTabSwitcher() {
+        scrollToTop();
+        mUtils.click(LOCATOR_TAB_SWITCHER);
+        TabSwitcherController inst = TabSwitcherController.getInstance();
+        inst.verify();
+        return inst;
     }
 
     /**
