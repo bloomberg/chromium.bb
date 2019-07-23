@@ -173,6 +173,8 @@ static_library("test_support") {
     "fake_cryptauth_key_creator.h",
     "fake_cryptauth_key_proof_computer.cc",
     "fake_cryptauth_key_proof_computer.h",
+    "fake_cryptauth_metadata_syncer.cc",
+    "fake_cryptauth_metadata_syncer.h",
     "fake_cryptauth_scheduler.cc",
     "fake_cryptauth_scheduler.h",
     "fake_cryptauth_v2_enroller.cc",
