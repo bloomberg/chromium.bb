@@ -2183,7 +2183,6 @@ enum WebFeature {
   kV8RemotePlayback_Prompt_Method = 2781,
   kLayoutShiftExplicitlyRequested = 2782,
   kMediaSessionSkipAd = 2783,
-  kAdFrameSizeIntervention = 2784,
   kV8UserActivation_HasBeenActive_AttributeGetter = 2785,
   kV8UserActivation_IsActive_AttributeGetter = 2786,
   kTextEncoderEncodeInto = 2787,

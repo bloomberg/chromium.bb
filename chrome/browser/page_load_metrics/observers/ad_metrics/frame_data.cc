@@ -63,8 +63,7 @@ FrameData::FrameData(FrameTreeNodeId frame_tree_node_id)
       user_activation_status_(UserActivationStatus::kNoActivation),
       is_display_none_(false),
       visibility_(FrameVisibility::kVisible),
-      frame_size_(gfx::Size()),
-      size_intervention_status_(FrameSizeInterventionStatus::kNone) {}
+      frame_size_(gfx::Size()) {}
 
 FrameData::~FrameData() = default;
 
@@ -116,11 +115,6 @@ void FrameData::ProcessResourceLoadInFrame(
     bytes_ += resource->encoded_body_length;
     if (is_same_origin)
       same_origin_bytes_ += resource->encoded_body_length;
-  }
-
-  if (bytes_ > kFrameSizeInterventionByteThreshold &&
-      user_activation_status_ == UserActivationStatus::kNoActivation) {
-    size_intervention_status_ = FrameSizeInterventionStatus::kTriggered;
   }
 
   if (resource->reported_as_ad_resource) {
