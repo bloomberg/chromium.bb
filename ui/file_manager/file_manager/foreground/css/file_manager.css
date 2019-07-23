@@ -173,7 +173,7 @@ div.splitter {
 .ejectable > span.label {
   left: 48px;
   position: absolute;
-  width: calc(100% - 48px - 40px);
+  width: calc(100% - 48px - 40px - 3px);
 }
 
 #directory-tree .tree-row .rename-placeholder {
@@ -228,7 +228,7 @@ div.splitter {
   flex: none;
   height: 40px;
   position: absolute;
-  right: 0;
+  right: 3px;
   width: 40px;
   z-index: 1;  /* Make sure the icon is on upper layer than paper-ripple. */
 }
