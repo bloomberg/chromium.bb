@@ -699,15 +699,25 @@ void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
   // See if network isolation key needs to be updated.
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information
-  // TODO(crbug.com/950069): Also add the case for kUpdateInitiatingFrameOrigin.
-  if ((update_network_isolation_key_on_redirect_ ==
-       mojom::UpdateNetworkIsolationKeyOnRedirect::
-           kUpdateTopFrameAndInitiatingFrameOrigin) &&
-      !url_request_->network_isolation_key().IsEmpty()) {
-    url::Origin new_origin = url::Origin::Create(*(deferred_redirect_url_));
-    url_request_->set_network_isolation_key(
-        net::NetworkIsolationKey(new_origin /* top frame origin */,
-                                 new_origin /* initiating frame origin */));
+  if (url_request_->network_isolation_key().IsFullyPopulated() &&
+      update_network_isolation_key_on_redirect_ !=
+          mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate) {
+    const GURL& url = new_url ? new_url.value() : *deferred_redirect_url_;
+    const url::Origin& new_origin = url::Origin::Create(url);
+
+    if (update_network_isolation_key_on_redirect_ ==
+        mojom::UpdateNetworkIsolationKeyOnRedirect::
+            kUpdateTopFrameAndFrameOrigin) {
+      url_request_->set_network_isolation_key(net::NetworkIsolationKey(
+          new_origin /* top frame origin */, new_origin /* frame origin */));
+    } else if (update_network_isolation_key_on_redirect_ ==
+               mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateFrameOrigin) {
+      base::Optional<url::Origin> top_frame_origin =
+          url_request_->network_isolation_key().GetTopFrameOrigin();
+      DCHECK(top_frame_origin);
+      url_request_->set_network_isolation_key(
+          net::NetworkIsolationKey(top_frame_origin.value(), new_origin));
+    }
   }
 
   deferred_redirect_url_.reset();
