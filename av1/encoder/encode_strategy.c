@@ -1059,10 +1059,7 @@ int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
     return refresh_mask;
   }
 
-  // See update_ref_frame_map() for a thorough description of the reference
-  // buffer management strategy currently in use.  This function just decides
-  // which buffers should be refreshed.
-
+  // Search for the open slot to store the current frame.
   int free_fb_index = get_free_ref_map_index(ref_buffer_stack);
   switch (frame_update_type) {
     case KF_UPDATE:
@@ -1122,57 +1119,6 @@ int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
     default: assert(0); break;
   }
 
-  return refresh_mask;
-
-  refresh_mask = 0;
-
-  switch (frame_update_type) {
-    case KF_UPDATE:
-      // Note that a real shown key-frame or S-frame refreshes every buffer,
-      // handled in a special case above.  This case is for frames which aren't
-      // really a shown key-frame or S-frame but want to refresh all the
-      // important buffers.
-      refresh_mask |= 1 << get_ref_frame_map_idx(cm, LAST3_FRAME);
-      refresh_mask |= 1 << get_ref_frame_map_idx(cm, EXTREF_FRAME);
-      refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF2_FRAME);
-      refresh_mask |= 1 << get_ref_frame_map_idx(cm, GOLDEN_FRAME);
-      refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF_FRAME);
-      break;
-    case LF_UPDATE:
-      // Refresh LAST3, which becomes the new LAST while LAST becomes LAST2
-      // and LAST2 becomes the new LAST3 (like a FIFO but circular)
-      refresh_mask |= 1 << get_ref_frame_map_idx(cm, LAST3_FRAME);
-      break;
-    case GF_UPDATE:
-      // In addition to refreshing the GF buffer, we refresh LAST3 and push it
-      // into the last-frame FIFO.
-      refresh_mask |= 1 << get_ref_frame_map_idx(cm, LAST3_FRAME);
-      refresh_mask |= 1 << get_ref_frame_map_idx(cm, GOLDEN_FRAME);
-      break;
-    case OVERLAY_UPDATE: break;
-    case ARF_UPDATE:
-      refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF_FRAME);
-      break;
-    case INTNL_OVERLAY_UPDATE:
-      // INTNL_OVERLAY may be a show_existing_frame in which case we don't
-      // refresh anything and the BWDREF or ALTREF2 being shown becomes the new
-      // LAST_FRAME.  But, if it's not a show_existing_frame, then we update as
-      // though it's a normal LF_UPDATE: we refresh LAST3 and
-      // update_ref_frame_map() makes that the new LAST_FRAME.
-      refresh_mask |= 1 << get_ref_frame_map_idx(cm, LAST3_FRAME);
-      break;
-    case INTNL_ARF_UPDATE:
-      if (cpi->oxcf.pass != 1) {
-        // Push the new ARF2 onto the bwdref stack.  We refresh EXTREF which is
-        // at the bottom of the stack then move it to the top.
-        refresh_mask |= 1 << get_ref_frame_map_idx(cm, EXTREF_FRAME);
-      } else {
-        // ARF2 just gets stored in the ARF2 slot, no reference map change.
-        refresh_mask |= 1 << get_ref_frame_map_idx(cm, ALTREF2_FRAME);
-      }
-      break;
-    default: assert(0); break;
-  }
   return refresh_mask;
 }
 
