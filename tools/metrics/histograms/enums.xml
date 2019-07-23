@@ -29674,6 +29674,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="HttpServerPropertiesUpdatePrefsLocation">
+  <obsolete>
+    Deprecated as of July 2019.
+  </obsolete>
   <int value="0" label="SUPPORTS_SPDY"/>
   <int value="1" label="HTTP_11_REQUIRED"/>
   <int value="2" label="SET_ALTERNATIVE_SERVICE"/>
