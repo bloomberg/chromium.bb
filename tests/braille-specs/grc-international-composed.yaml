@@ -6,7 +6,6 @@
 # without any warranty.
 
 display: unicode-without-blank.dis
-table: {locale: grc}
 table: spaces.uti,grc-international-composed.uti
 flags: {testmode: forward}
 tests:

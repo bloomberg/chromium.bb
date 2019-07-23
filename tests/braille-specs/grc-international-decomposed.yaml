@@ -6,8 +6,8 @@
 # without any warranty.
 
 display: unicode-without-blank.dis
-table: {locale: grc}
 table: spaces.uti,grc-international-decomposed.uti
+table: grc-international.utb
 flags: {testmode: forward}
 tests:
 
