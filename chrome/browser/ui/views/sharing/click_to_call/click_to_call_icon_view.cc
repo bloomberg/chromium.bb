@@ -123,11 +123,12 @@ void ClickToCallIconView::PaintButtonContents(gfx::Canvas* canvas) {
   float start = std::max(0.0f, (progress - kLoaderWidth) / (1 - kLoaderWidth));
   float end = std::min(1.0f, progress / (1 - kLoaderWidth));
   // Convert percentages to actual location.
-  start = start * (range - kLoaderHeight);
-  end = end * (range - kLoaderHeight) + kLoaderHeight;
+  const float size = kLoaderHeight * scale;
+  start = start * (range - size);
+  end = end * (range - size) + size;
 
-  gfx::RectF bounds(start + offset, icon_bounds.bottom() - kLoaderHeight,
-                    end - start, kLoaderHeight);
+  gfx::RectF bounds(start + offset, icon_bounds.bottom() - size, end - start,
+                    size);
 
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
