@@ -69,6 +69,7 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_GET_FAILED = 34;
   CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_SET_FAILED = 35;
   CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_FINALIZE_FAILED = 36;
+  CRYPTOHOME_ERROR_UPDATE_USER_ACTIVITY_TIMESTAMP_FAILED = 37;
 }
 
 // This is used by MountRequest to store details about the mount to create
@@ -668,12 +669,16 @@ message UpdateCurrentUserActivityTimestampRequest {
   // user activity.
   // For instance, if the unix timestamp now is x, if this value is 5,
   // then the last user activity happened at x-5 unix timestamp.
+  // Note that negative values for this parameter is reserved, and should not
+  // be used.
   int32 time_shift_sec = 1;
 }
 
 // Output parameters for UpdateCurrentUserActivityTimestamp()
 message UpdateCurrentUserActivityTimestampReply {
-  // Always successful.
+  // This will be set if there's a problem updating the user activity timestamp
+  // for any user.
+  CryptohomeErrorCode error = 1;
 }
 
 // Input parameters to GetSanitizedUsername()
