@@ -248,6 +248,8 @@ void FrameData::RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const {
         pre_activation_foreground_duration().InMilliseconds());
   }
 
+  builder.SetCpuTime_PeakWindowedPercent(peak_windowed_cpu_percent_);
+
   builder
       .SetVisibility_FrameWidth(
           ukm::GetExponentialBucketMinForCounts1000(frame_size().width()))

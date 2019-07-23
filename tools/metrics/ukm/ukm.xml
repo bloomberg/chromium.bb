@@ -89,6 +89,13 @@ be describing additional metrics about the same event.
     with non-zero bytes. Recorded when a page is destroyed or when the app is
     backgrounded on mobile.
   </summary>
+  <metric name="CpuTime.PeakWindowedPercent">
+    <summary>
+      The peak percentage of CPU utilization attributed to the frame in any 30
+      second window prior to user activation. Frames that exist for less than 30
+      seconds still use 30 seconds as the denominator for the calculation.
+    </summary>
+  </metric>
   <metric name="CpuTime.PreActivation">
     <summary>
       Wall time of tasks attributed to the frame after the frame recieved user
