@@ -84,8 +84,9 @@ const char* const kChromeSettingsSubPages[] = {
 const char* const kChromeOSSettingsSubPages[] = {
     chrome::kAccessibilitySubPage, chrome::kBluetoothSubPage,
     chrome::kDateTimeSubPage,      chrome::kDisplaySubPage,
-    chrome::kInternetSubPage,      chrome::kPowerSubPage,
-    chrome::kStylusSubPage,
+    chrome::kInternetSubPage,      chrome::kNativePrintingSettingsSubPage,
+    chrome::kPowerSubPage,         chrome::kStylusSubPage,
+    chrome::kWiFiSettingsSubPage,
 };
 #endif  // defined(OS_CHROMEOS)
 
