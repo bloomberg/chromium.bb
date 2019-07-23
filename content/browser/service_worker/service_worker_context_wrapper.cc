@@ -1118,19 +1118,6 @@ void ServiceWorkerContextWrapper::RemoveObserver(
   core_observer_list_->RemoveObserver(observer);
 }
 
-base::WeakPtr<ServiceWorkerProviderHost>
-ServiceWorkerContextWrapper::PreCreateHostForWorker(
-    int process_id,
-    blink::mojom::ServiceWorkerProviderType provider_type,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!context_core_)
-    return nullptr;
-  return ServiceWorkerProviderHost::PreCreateForWebWorker(
-      context_core_->AsWeakPtr(), process_id, provider_type, out_provider_info);
-}
-
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
   for (auto& observer : observer_list_)
     observer.OnDestruct(static_cast<ServiceWorkerContext*>(this));

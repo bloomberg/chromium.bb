@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WORKER_HOST_WORKER_SCRIPT_LOADER_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -16,7 +17,7 @@ class SharedURLLoaderFactory;
 namespace content {
 
 class AppCacheHost;
-class ServiceWorkerProviderHost;
+class ServiceWorkerNavigationHandleCore;
 class ResourceContext;
 class WorkerScriptLoader;
 
@@ -26,8 +27,7 @@ class WorkerScriptLoader;
 // It's an error to call CreateLoaderAndStart() more than a total of one time
 // across this object or any of its clones.
 //
-// This is created per one web worker. All functions of this class must be
-// called on the IO thread.
+// This is created per one web worker. It lives on the IO thread.
 class CONTENT_EXPORT WorkerScriptLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
@@ -41,7 +41,7 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
   // factories used for non-http(s) URLs, e.g., a chrome-extension:// URL.
   WorkerScriptLoaderFactory(
       int process_id,
-      base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
+      ServiceWorkerNavigationHandleCore* service_worker_handle_core,
       base::WeakPtr<AppCacheHost> appcache_host,
       const ResourceContextGetter& resource_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
@@ -62,7 +62,7 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
 
  private:
   const int process_id_;
-  base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
+  base::WeakPtr<ServiceWorkerNavigationHandleCore> service_worker_handle_core_;
   base::WeakPtr<AppCacheHost> appcache_host_;
   ResourceContextGetter resource_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;

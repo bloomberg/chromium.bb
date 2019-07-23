@@ -48,9 +48,10 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler {
 
   // Same as above but for a dedicated worker or shared worker. Called on the IO
   // thread.
-  static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorker(
+  static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorkerIO(
       const network::ResourceRequest& resource_request,
-      ServiceWorkerProviderHost* host);
+      int process_id,
+      ServiceWorkerNavigationHandleCore* navigation_handle_core);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestHandler);

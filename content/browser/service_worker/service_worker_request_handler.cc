@@ -98,15 +98,11 @@ ServiceWorkerRequestHandler::CreateForNavigationIO(
 
 // static
 std::unique_ptr<NavigationLoaderInterceptor>
-ServiceWorkerRequestHandler::CreateForWorker(
+ServiceWorkerRequestHandler::CreateForWorkerIO(
     const network::ResourceRequest& resource_request,
-    ServiceWorkerProviderHost* host) {
-  DCHECK(host);
-  DCHECK(resource_request.resource_type ==
-             static_cast<int>(ResourceType::kWorker) ||
-         resource_request.resource_type ==
-             static_cast<int>(ResourceType::kSharedWorker))
-      << resource_request.resource_type;
+    int process_id,
+    ServiceWorkerNavigationHandleCore* navigation_handle_core) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.
@@ -115,9 +111,38 @@ ServiceWorkerRequestHandler::CreateForWorker(
     return nullptr;
   }
 
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  if (!navigation_handle_core->context_wrapper())
+    return nullptr;
+  ServiceWorkerContextCore* context =
+      navigation_handle_core->context_wrapper()->context();
+  if (!context)
+    return nullptr;
+
+  auto resource_type =
+      static_cast<ResourceType>(resource_request.resource_type);
+  auto provider_type = blink::mojom::ServiceWorkerProviderType::kUnknown;
+  switch (resource_type) {
+    case ResourceType::kWorker:
+      provider_type =
+          blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker;
+      break;
+    case ResourceType::kSharedWorker:
+      provider_type = blink::mojom::ServiceWorkerProviderType::kForSharedWorker;
+      break;
+    default:
+      NOTREACHED() << resource_request.resource_type;
+      return nullptr;
+  }
+
+  // Initialize the SWProviderHost.
+  base::WeakPtr<ServiceWorkerProviderHost> host =
+      ServiceWorkerProviderHost::PreCreateForWebWorker(
+          context->AsWeakPtr(), process_id, provider_type, &provider_info);
+  navigation_handle_core->OnCreatedProviderHost(host, std::move(provider_info));
+
   return std::make_unique<ServiceWorkerControlleeRequestHandler>(
-      host->context(), host->AsWeakPtr(),
-      static_cast<ResourceType>(resource_request.resource_type),
+      context->AsWeakPtr(), host, resource_type,
       resource_request.skip_service_worker);
 }
 

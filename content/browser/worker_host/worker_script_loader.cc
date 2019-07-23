@@ -9,7 +9,7 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/redirect_util.h"
@@ -24,7 +24,7 @@ WorkerScriptLoader::WorkerScriptLoader(
     uint32_t options,
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
-    base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
+    base::WeakPtr<ServiceWorkerNavigationHandleCore> service_worker_handle_core,
     base::WeakPtr<AppCacheHost> appcache_host,
     const ResourceContextGetter& resource_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
@@ -35,20 +35,26 @@ WorkerScriptLoader::WorkerScriptLoader(
       options_(options),
       resource_request_(resource_request),
       client_(std::move(client)),
-      service_worker_provider_host_(service_worker_provider_host),
+      service_worker_handle_core_(std::move(service_worker_handle_core)),
       resource_context_getter_(resource_context_getter),
       default_loader_factory_(std::move(default_loader_factory)),
       traffic_annotation_(traffic_annotation),
       url_loader_client_binding_(this) {
-  if (service_worker_provider_host_) {
-    std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
-        ServiceWorkerRequestHandler::CreateForWorker(
-            resource_request_, service_worker_provider_host_.get());
-    if (service_worker_interceptor)
-      interceptors_.push_back(std::move(service_worker_interceptor));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor;
+  if (!service_worker_handle_core_) {
+    // The DedicatedWorkerHost or SharedWorkerHost is already destroyed.
+    Abort();
+    return;
   }
 
-  // TODO(http://crbug.com/824858): Run interceptors on UI thread.
+  service_worker_interceptor = ServiceWorkerRequestHandler::CreateForWorkerIO(
+      resource_request_, process_id_, service_worker_handle_core_.get());
+  if (service_worker_interceptor)
+    interceptors_.push_back(std::move(service_worker_interceptor));
+
+  // TODO(http://crbug.com/985259): Run interceptors on UI thread.
   if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled() &&
       appcache_host) {
     std::unique_ptr<NavigationLoaderInterceptor> appcache_interceptor =
@@ -67,16 +73,19 @@ base::WeakPtr<WorkerScriptLoader> WorkerScriptLoader::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+void WorkerScriptLoader::Abort() {
+  CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+}
+
 void WorkerScriptLoader::Start() {
   DCHECK(!completed_);
 
   ResourceContext* resource_context = resource_context_getter_.Run();
   if (!resource_context) {
-    CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+    Abort();
     return;
   }
 
-  // TODO(http://crbug.com/824840): Support interceptors on the UI thread.
   if (interceptor_index_ < interceptors_.size()) {
     auto* interceptor = interceptors_[interceptor_index_++].get();
     interceptor->MaybeCreateLoader(
@@ -291,8 +300,9 @@ void WorkerScriptLoader::CommitCompleted(
   DCHECK(!completed_);
   completed_ = true;
 
-  if (service_worker_provider_host_ && status.error_code == net::OK)
-    service_worker_provider_host_->CompleteWebWorkerPreparation();
+  if (service_worker_handle_core_ && status.error_code == net::OK)
+    service_worker_handle_core_->OnBeginWorkerCommit();
+
   client_->OnComplete(status);
 
   // We're done. Ensure we no longer send messages to our client, and no longer

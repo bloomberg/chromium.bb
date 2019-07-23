@@ -19,8 +19,11 @@
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
+#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -51,6 +54,7 @@
 
 namespace content {
 
+// static
 void WorkerScriptFetchInitiator::Start(
     int worker_process_id,
     const GURL& script_url,
@@ -60,6 +64,7 @@ void WorkerScriptFetchInitiator::Start(
         outside_fetch_client_settings_object,
     ResourceType resource_type,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    ServiceWorkerNavigationHandle* service_worker_handle,
     AppCacheNavigationHandleCore* appcache_handle_core,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override,
@@ -172,7 +177,8 @@ void WorkerScriptFetchInitiator::Start(
           storage_partition->url_loader_factory_getter(),
           std::move(factory_bundle_for_browser),
           std::move(subresource_loader_factories), resource_context,
-          std::move(service_worker_context), appcache_handle_core,
+          std::move(service_worker_context), service_worker_handle->core(),
+          appcache_handle_core,
           blob_url_loader_factory ? blob_url_loader_factory->Clone() : nullptr,
           url_loader_factory_override ? url_loader_factory_override->Clone()
                                       : nullptr,
@@ -259,6 +265,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
         subresource_loader_factories,
     ResourceContext* resource_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    ServiceWorkerNavigationHandleCore* service_worker_handle_core,
     AppCacheNavigationHandleCore* appcache_handle_core,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         blob_url_loader_factory_info,
@@ -267,6 +274,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(resource_context);
+  DCHECK(service_worker_handle_core);
 
   auto resource_type =
       static_cast<ResourceType>(resource_request->resource_type);
@@ -283,12 +291,6 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
       NOTREACHED() << resource_request->resource_type;
       break;
   }
-
-  // Set up for service worker.
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
-  base::WeakPtr<ServiceWorkerProviderHost> service_worker_host =
-      service_worker_context->PreCreateHostForWorker(
-          worker_process_id, provider_type, &provider_info);
 
   // Create the URL loader factory for WorkerScriptLoaderFactory to use to load
   // the main script.
@@ -350,19 +352,17 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
 
   WorkerScriptFetcher::CreateAndStart(
       std::make_unique<WorkerScriptLoaderFactory>(
-          worker_process_id, std::move(service_worker_host),
+          worker_process_id, service_worker_handle_core,
           std::move(appcache_host), resource_context_getter,
           std::move(url_loader_factory)),
       std::move(throttles), std::move(resource_request),
       base::BindOnce(WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO,
-                     std::move(callback), std::move(provider_info),
+                     std::move(callback),
                      std::move(subresource_loader_factories)));
 }
 
 void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
     CompletionCallback callback,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr
-        service_worker_provider_info,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
@@ -391,8 +391,7 @@ void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
-          std::move(callback), std::move(service_worker_provider_info),
-          std::move(subresource_loader_factories),
+          std::move(callback), std::move(subresource_loader_factories),
           std::move(main_script_load_params), std::move(controller),
           std::move(controller_service_worker_object_host), success));
 }
