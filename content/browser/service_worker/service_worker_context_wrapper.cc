@@ -290,6 +290,11 @@ void ServiceWorkerContextWrapper::set_storage_partition(
   process_manager_->set_storage_partition(storage_partition_);
 }
 
+BrowserContext* ServiceWorkerContextWrapper::browser_context() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return process_manager()->browser_context();
+}
+
 ResourceContext* ServiceWorkerContextWrapper::resource_context() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return resource_context_;

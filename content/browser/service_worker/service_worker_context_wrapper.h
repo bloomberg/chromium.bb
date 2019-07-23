@@ -96,6 +96,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   void set_storage_partition(StoragePartitionImpl* storage_partition);
 
+  // UI thread.
+  BrowserContext* browser_context();
+
   // The ResourceContext for the associated BrowserContext. This should only
   // be accessed on the IO thread, and can be null during initialization and
   // shutdown.

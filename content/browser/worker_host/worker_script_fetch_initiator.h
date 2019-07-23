@@ -77,6 +77,12 @@ class WorkerScriptFetchInitiator {
       StoragePartitionImpl* storage_partition,
       CompletionCallback callback);
 
+  // Returns the BrowserThread::ID that the WorkerScriptLoaderFactory will be
+  // running on.
+  // TODO(crbug.com/824840): Remove this when non-NavigationLoaderOnUI code is
+  // removed.
+  static BrowserThread::ID GetLoaderThreadID();
+
  private:
   // Creates a loader factory bundle. Must be called on the UI thread.
   static std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CreateFactoryBundle(
@@ -108,7 +114,23 @@ class WorkerScriptFetchInitiator {
           url_loader_factory_override_info,
       CompletionCallback callback);
 
-  static void DidCreateScriptLoaderOnIO(
+  static void CreateScriptLoaderOnUI(
+      int worker_process_id,
+      std::unique_ptr<network::ResourceRequest> resource_request,
+      StoragePartitionImpl* storage_partition,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          factory_bundle_for_browser_info,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories,
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+      ServiceWorkerNavigationHandle* service_worker_handle,
+      AppCacheNavigationHandleCore* appcache_handle_core,
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory>
+          url_loader_factory_override,
+      CompletionCallback callback);
+
+  static void DidCreateScriptLoader(
       CompletionCallback callback,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,

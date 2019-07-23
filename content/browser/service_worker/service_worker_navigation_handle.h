@@ -71,6 +71,8 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandle {
       int render_frame_id,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info);
 
+  void OnBeginWorkerCommit();
+
   blink::mojom::ServiceWorkerProviderInfoForClientPtr TakeProviderInfo() {
     return std::move(provider_info_);
   }
@@ -79,6 +81,10 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandle {
 
   const ServiceWorkerContextWrapper* context_wrapper() const {
     return context_wrapper_.get();
+  }
+
+  base::WeakPtr<ServiceWorkerNavigationHandle> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
   }
 
  private:

@@ -54,6 +54,23 @@
 
 namespace content {
 
+namespace {
+
+// Runs |task| on the thread specified by |thread_id| if already on that thread,
+// otherwise posts a task to that thread.
+void RunOrPostTask(const base::Location& from_here,
+                   BrowserThread::ID thread_id,
+                   base::OnceClosure task) {
+  if (BrowserThread::CurrentlyOn(thread_id)) {
+    std::move(task).Run();
+    return;
+  }
+
+  base::PostTaskWithTraits(from_here, {thread_id}, std::move(task));
+}
+
+}  // namespace
+
 // static
 void WorkerScriptFetchInitiator::Start(
     int worker_process_id,
@@ -160,8 +177,22 @@ void WorkerScriptFetchInitiator::Start(
 
   AddAdditionalRequestHeaders(resource_request.get(), browser_context);
 
-  // Bounce to the IO thread to setup service worker and appcache support in
-  // case the request for the worker script will need to be intercepted by them.
+  // When navigation on UI is enabled, service worker and appcache work on the
+  // UI thread.
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    CreateScriptLoaderOnUI(
+        worker_process_id, std::move(resource_request), storage_partition,
+        std::move(factory_bundle_for_browser),
+        std::move(subresource_loader_factories),
+        std::move(service_worker_context), service_worker_handle,
+        appcache_handle_core, std::move(blob_url_loader_factory),
+        std::move(url_loader_factory_override), std::move(callback));
+    return;
+  }
+
+  // Otherwise, bounce to the IO thread to setup service worker and appcache
+  // support in case the request for the worker script will need to be
+  // intercepted by them.
   //
   // This passes |resource_context| to the IO thread. |resource_context| will
   // not be destroyed before the task runs, because the shutdown sequence is:
@@ -183,6 +214,12 @@ void WorkerScriptFetchInitiator::Start(
           url_loader_factory_override ? url_loader_factory_override->Clone()
                                       : nullptr,
           std::move(callback)));
+}
+
+BrowserThread::ID WorkerScriptFetchInitiator::GetLoaderThreadID() {
+  return NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()
+             ? BrowserThread::UI
+             : BrowserThread::IO;
 }
 
 std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
@@ -253,6 +290,89 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
       /*should_update_existing_headers=*/false, renderer_preferences);
 
   SetFetchMetadataHeadersForBrowserInitiatedRequest(resource_request);
+}
+
+void WorkerScriptFetchInitiator::CreateScriptLoaderOnUI(
+    int worker_process_id,
+    std::unique_ptr<network::ResourceRequest> resource_request,
+    StoragePartitionImpl* storage_partition,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        factory_bundle_for_browser_info,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        subresource_loader_factories,
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    ServiceWorkerNavigationHandle* service_worker_handle,
+    AppCacheNavigationHandleCore* appcache_handle_core,
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override,
+    CompletionCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Create the URL loader factory for WorkerScriptLoaderFactory to use to load
+  // the main script.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
+  if (blob_url_loader_factory) {
+    // If we have a blob_url_loader_factory just use that directly rather than
+    // creating a new URLLoaderFactoryBundle.
+    url_loader_factory = std::move(blob_url_loader_factory);
+  } else if (url_loader_factory_override) {
+    // For unit tests.
+    url_loader_factory = std::move(url_loader_factory_override);
+  } else {
+    // Add the default factory to the bundle for browser.
+    DCHECK(factory_bundle_for_browser_info);
+
+    // Get the direct network factory. This doesn't support reconnection to the
+    // network service after a crash, but it's OK since it's used only for a
+    // single request to fetch the worker's main script during startup. If the
+    // network service crashes, worker startup should simply fail.
+    network::mojom::URLLoaderFactoryPtr network_factory_ptr;
+    auto network_factory =
+        storage_partition->GetURLLoaderFactoryForBrowserProcess();
+    network_factory->Clone(mojo::MakeRequest(&network_factory_ptr));
+
+    factory_bundle_for_browser_info->pending_default_factory() =
+        network_factory_ptr.PassInterface();
+    url_loader_factory = base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
+        std::move(factory_bundle_for_browser_info));
+  }
+
+  base::WeakPtr<AppCacheHost> appcache_host =
+      appcache_handle_core ? appcache_handle_core->host()->GetWeakPtr()
+                           : nullptr;
+
+  // Start loading a web worker main script.
+  // TODO(nhiroki): Figure out what we should do in |wc_getter| for loading web
+  // worker's main script. Returning the WebContents of the closest ancestor's
+  // frame is a possible option, but it doesn't work when a shared worker
+  // creates a dedicated worker after the closest ancestor's frame is gone. The
+  // frame tree node ID has the same issue.
+  base::RepeatingCallback<WebContents*()> wc_getter =
+      base::BindRepeating([]() -> WebContents* { return nullptr; });
+  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
+      GetContentClient()->browser()->CreateURLLoaderThrottles(
+          *resource_request, storage_partition->browser_context(), wc_getter,
+          nullptr /* navigation_ui_data */,
+          RenderFrameHost::kNoFrameTreeNodeId);
+
+  // Create a BrowserContext getter using |service_worker_context|.
+  // This context is aware of shutdown and safely returns a nullptr
+  // instead of a destroyed BrowserContext in that case.
+  auto browser_context_getter =
+      base::BindRepeating(&ServiceWorkerContextWrapper::browser_context,
+                          std::move(service_worker_context));
+
+  WorkerScriptFetcher::CreateAndStart(
+      std::make_unique<WorkerScriptLoaderFactory>(
+          worker_process_id, service_worker_handle,
+          /*service_worker_handle_core=*/nullptr, std::move(appcache_host),
+          browser_context_getter,
+          base::RepeatingCallback<ResourceContext*(void)>(),
+          std::move(url_loader_factory)),
+      std::move(throttles), std::move(resource_request),
+      base::BindOnce(WorkerScriptFetchInitiator::DidCreateScriptLoader,
+                     std::move(callback),
+                     std::move(subresource_loader_factories)));
 }
 
 void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
@@ -352,23 +472,26 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
 
   WorkerScriptFetcher::CreateAndStart(
       std::make_unique<WorkerScriptLoaderFactory>(
-          worker_process_id, service_worker_handle_core,
-          std::move(appcache_host), resource_context_getter,
-          std::move(url_loader_factory)),
+          worker_process_id,
+          /*service_worker_handle=*/nullptr, service_worker_handle_core,
+          std::move(appcache_host),
+          base::RepeatingCallback<BrowserContext*(void)>(),
+          resource_context_getter, std::move(url_loader_factory)),
       std::move(throttles), std::move(resource_request),
-      base::BindOnce(WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO,
+      base::BindOnce(WorkerScriptFetchInitiator::DidCreateScriptLoader,
                      std::move(callback),
                      std::move(subresource_loader_factories)));
 }
 
-void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
+void WorkerScriptFetchInitiator::DidCreateScriptLoader(
     CompletionCallback callback,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
     bool success) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // This can be the UI thread or IO thread.
+  DCHECK_CURRENTLY_ON(GetLoaderThreadID());
 
   // If a URLLoaderFactory for AppCache is supplied, use that.
   if (subresource_loader_params &&
@@ -388,8 +511,8 @@ void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
         subresource_loader_params->controller_service_worker_object_host;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
+  RunOrPostTask(
+      FROM_HERE, BrowserThread::UI,
       base::BindOnce(
           std::move(callback), std::move(subresource_loader_factories),
           std::move(main_script_load_params), std::move(controller),
