@@ -141,7 +141,7 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
         embedded_test_server()->GetURL(kChangePasswordUrl).spec());
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_adaptor_->identity_test_env();
   }
 

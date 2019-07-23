@@ -126,7 +126,7 @@ class FakeDeviceSyncImplFactory
 
   // chromeos::device_sync::DeviceSyncImpl::Factory:
   std::unique_ptr<chromeos::device_sync::DeviceSyncBase> BuildInstance(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       service_manager::Connector* connector,
       const chromeos::device_sync::GcmDeviceInfoProvider*

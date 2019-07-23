@@ -79,9 +79,9 @@ bool SignInInternalsUI::OverrideHandleWebUIMessage(
           "chrome.signin.getSigninInfo.handleReply",
           *about_signin_internals->GetSigninStatus());
 
-      identity::IdentityManager* identity_manager =
+      signin::IdentityManager* identity_manager =
           IdentityManagerFactory::GetForProfile(profile);
-      identity::AccountsInCookieJarInfo accounts_in_cookie_jar =
+      signin::AccountsInCookieJarInfo accounts_in_cookie_jar =
           identity_manager->GetAccountsInCookieJar();
       if (accounts_in_cookie_jar.accounts_are_fresh) {
         about_signin_internals->OnAccountsInCookieUpdated(

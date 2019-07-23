@@ -142,7 +142,7 @@ const syncer::SyncService* GetSyncService(Profile* profile) {
   return nullptr;
 }
 
-const identity::IdentityManager* GetIdentityManagerForOriginalProfile(
+const signin::IdentityManager* GetIdentityManagerForOriginalProfile(
     Profile* profile) {
   return IdentityManagerFactory::GetForProfile(profile->GetOriginalProfile());
 }

@@ -234,7 +234,7 @@ void ChromeSigninClient::OnNetworkError(int response_code) {
 
 void ChromeSigninClient::OnAccessTokenAvailable(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   access_token_fetcher_.reset();
 
   // Exchange the access token for a handle that can be used for later
@@ -315,11 +315,11 @@ void ChromeSigninClient::MaybeFetchSigninTokenHandle() {
       if (identity_manager->HasPrimaryAccount()) {
         const identity::ScopeSet scopes{GaiaConstants::kGoogleUserInfoEmail};
         access_token_fetcher_ =
-            std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+            std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
                 "chrome_signin_client", identity_manager, scopes,
                 base::BindOnce(&ChromeSigninClient::OnAccessTokenAvailable,
                                base::Unretained(this)),
-                identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+                signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
       }
     }
   }
