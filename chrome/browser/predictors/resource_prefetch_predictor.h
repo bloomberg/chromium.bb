@@ -237,7 +237,7 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   // Updates information about final redirect destination for the |key| in
   // |redirect_data| and correspondingly updates the predictor database.
   void LearnRedirect(const std::string& key,
-                     const std::string& final_redirect,
+                     const GURL& final_redirect,
                      RedirectDataMap* redirect_data);
 
   void LearnOrigins(const std::string& host,
