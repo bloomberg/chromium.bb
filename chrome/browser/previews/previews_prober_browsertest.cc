@@ -16,6 +16,7 @@
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/test/network_connection_change_simulator.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -31,20 +32,6 @@ void WaitForCompletedProbe(PreviewsProber* prober) {
       return;
     base::RunLoop().RunUntilIdle();
   }
-}
-
-void SimulateNetworkChange(network::mojom::ConnectionType type) {
-  if (!content::IsInProcessNetworkService()) {
-    network::mojom::NetworkServiceTestPtr network_service_test;
-    content::GetSystemConnector()->BindInterface(
-        content::mojom::kNetworkServiceName, &network_service_test);
-    base::RunLoop run_loop;
-    network_service_test->SimulateNetworkChange(type, run_loop.QuitClosure());
-    run_loop.Run();
-    return;
-  }
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::ConnectionType(type));
 }
 
 }  // namespace
@@ -165,14 +152,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, Timeout) {
   EXPECT_FALSE(prober.LastProbeWasSuccessful().value());
 }
 
-// TODO(crbug.com/985099): Test times out in component builds on Linux.
-#if defined(OS_LINUX) && defined(COMPONENT_BUILD)
-#define MAYBE_NetworkChange DISABLED_NetworkChange
-#else
-#define MAYBE_NetworkChange NetworkChange
-#endif
+IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, NetworkChange) {
+  content::NetworkConnectionChangeSimulator().SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_2G);
 
-IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, MAYBE_NetworkChange) {
   GURL url = TestURLWithPath("/ok");
   TestDelegate delegate;
   net::HttpRequestHeaders headers;
@@ -185,7 +168,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, MAYBE_NetworkChange) {
                         PreviewsProber::HttpMethod::kGet, headers, retry_policy,
                         timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
                         base::TimeDelta::FromDays(1));
-  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_4G);
+
+  content::NetworkConnectionChangeSimulator().SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_4G);
   WaitForCompletedProbe(&prober);
 
   EXPECT_TRUE(prober.LastProbeWasSuccessful().value());
