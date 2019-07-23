@@ -403,8 +403,8 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
            'view_test_results.html?%s for this run\'s test results') % (
       error_image_cloud_storage_bucket, upload_dir)
 
-  # TODO(https://crbug.com/983600): Remove this once the truncated images are
-  # determined to be legitimate or due to upload issues.
+  # Not used consistently, but potentially useful for debugging issues on the
+  # bots, so kept around for future use.
   @classmethod
   def _UploadGoldErrorImageToCloudStorage(cls, image_name, screenshot):
     machine_name = re.sub(r'\W+', '_',
@@ -505,10 +505,6 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       if self.GetParsedCommandLineOptions().local_run:
         logging.error(
             'Image produced by %s: file://%s', image_name, png_temp_file)
-      else:
-        # TODO(https://crbug.com/983600): Remove this once the truncated images
-        # are determined to be legitimate or due to upload issues.
-        self._UploadGoldErrorImageToCloudStorage(image_name, screenshot)
       if not self.GetParsedCommandLineOptions().no_skia_gold_failure:
         raise Exception('goldctl command failed')
 
