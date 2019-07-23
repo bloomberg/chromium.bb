@@ -6304,12 +6304,9 @@ crbug.com/985869 [ Linux Win7 ] http/tests/security/contentSecurityPolicy/object
 crbug.com/985869 [ Linux Win7 ] virtual/blink-cors/http/tests/security/contentSecurityPolicy/object-src-no-url-allowed.html [ Pass Failure ]
 
 # Sheriff 2019-07-20
-crbug.com/986019 [ Linux Win ] animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
 crbug.com/986018 fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass Failure ]
 
 # Sheriff 2019-07-22
-crbug.com/986019 [ Linux Win ] virtual/threaded/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
-crbug.com/986019 [ Linux Win ] virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
 crbug.com/986282 [ Linux Win ] external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Pass Failure ]
 crbug.com/986019 [ Linux ] virtual/threaded/animations/play-state.html [ Pass Timeout ]
 crbug.com/986019 [ Linux ] virtual/disable-blink-gen-property-trees/animations/play-state.html [ Pass Timeout ]
@@ -6323,3 +6320,7 @@ crbug.com/986457 [ Linux ] http/tests/misc/object-image-error-with-onload.html [
 crbug.com/986477 [ Win ] external/wpt/cookies/path/match.html [ Pass Timeout ]
 crbug.com/986477 [ Win ] virtual/samesite-by-default-cookies/external/wpt/cookies/path/match.html [ Pass Timeout ]
 
+# Sheriff 2019-07-23
+crbug.com/986019 animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
+crbug.com/986019 virtual/threaded/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
+crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
