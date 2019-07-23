@@ -190,9 +190,9 @@ def InstallXcodeBinaries():
   # Use puppet's sudoers script to accept the license if its available.
   license_accept_script = '/usr/local/bin/xcode_accept_license.py'
   if os.path.exists(license_accept_script):
-    args = ['sudo', license_accept_script, '--xcode_version',
+    args = ['sudo', license_accept_script, '--xcode-version',
             cipd_xcode_version, '--license-version', cipd_license_version]
-    subprocess.call(args)
+    subprocess.check_call(args)
     return 0
 
   # Otherwise manually accept the license. This will prompt for sudo.
@@ -200,12 +200,12 @@ def InstallXcodeBinaries():
   sys.stdout.flush()
   args = ['sudo', 'defaults', 'write', current_license_path,
           'IDEXcodeVersionForAgreedToGMLicense', cipd_xcode_version]
-  subprocess.call(args)
+  subprocess.check_call(args)
   args = ['sudo', 'defaults', 'write', current_license_path,
           'IDELastGMLicenseAgreedTo', cipd_license_version]
-  subprocess.call(args)
+  subprocess.check_call(args)
   args = ['sudo', 'plutil', '-convert', 'xml1', current_license_path]
-  subprocess.call(args)
+  subprocess.check_call(args)
 
   return 0
 
