@@ -42719,6 +42719,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Shortcut customized"/>
 </enum>
 
+<enum name="NTPCustomizedShortcutSettings">
+  <int value="0" label="Most Visited is enabled"/>
+  <int value="1" label="Custom links is enabled"/>
+  <int value="2" label="Shortcuts are hidden"/>
+</enum>
+
 <enum name="NTPCustomizeLocalImageBackgroundAction">
   <int value="0" label="'Cancel' clicked in the 'Upload an image' dialog"/>
   <int value="1" label="'Done' clicked in the 'Upload an image' dialog"/>
@@ -42733,6 +42739,8 @@ Called by update_net_trust_anchors.py.-->
       label="All custom shortcuts were restored (via menu or message pop-up)."/>
   <int value="5" label="A custom shortcut was added."/>
   <int value="6" label="A custom shortcut was updated."/>
+  <int value="7" label="The type of shortcuts displayed was changed."/>
+  <int value="8" label="The visibility of shortcuts was changed."/>
 </enum>
 
 <enum name="NtpFollowAction">

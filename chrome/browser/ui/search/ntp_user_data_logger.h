@@ -92,6 +92,9 @@ class NTPUserDataLogger
   // Returns whether a custom background is configured. Virtual for testing.
   virtual bool CustomBackgroundIsConfigured() const;
 
+  // Returns the current user shortcut settings. Virtual for testing.
+  virtual std::pair<bool, bool> GetCurrentShortcutSettings() const;
+
   // Logs a number of statistics regarding the NTP. Called when an NTP tab is
   // about to be deactivated (be it by switching tabs, losing focus or closing
   // the tab/shutting down Chrome), or when the user navigates to a URL.

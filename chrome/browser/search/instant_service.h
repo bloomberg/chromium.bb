@@ -156,6 +156,12 @@ class InstantService : public KeyedService,
   // Check if a custom background has been set by the user.
   bool IsCustomBackgroundSet();
 
+  // Returns the current shortcut settings as a pair consisting of shortcut type
+  // (i.e. true if Most Visited, false if custom links) and visibility. These
+  // correspond to values stored in |kNtpUseMostVisitedTiles| and
+  // |kNtpShortcutsVisible| respectively.
+  std::pair<bool, bool> GetCurrentShortcutSettings();
+
   // Reset all NTP customizations to default. Marked virtual for mocking in
   // tests.
   virtual void ResetToDefault();
