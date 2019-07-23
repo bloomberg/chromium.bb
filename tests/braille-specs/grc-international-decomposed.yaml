@@ -6,23 +6,10 @@
 # without any warranty.
 
 display: unicode-without-blank.dis
-table:
-  locale: grc
-  __assert-match: grc-international.utb
+table: {locale: grc}
+table: spaces.uti,grc-international-decomposed.uti
 flags: {testmode: forward}
 tests:
-
-- # lowercase letters
-  - αβγδεζηθικλμνξοπρστυφχψως
-  - ⠁⠃⠛⠙⠑⠵⠱⠹⠊⠅⠇⠍⠝⠭⠕⠏⠗⠎⠞⠥⠋⠯⠽⠺⠎
-
-- # uppercase letters
-  - ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ
-  - ⠨⠁⠨⠃⠨⠛⠨⠙⠨⠑⠨⠵⠨⠱⠨⠹⠨⠊⠨⠅⠨⠇⠨⠍⠨⠝⠨⠭⠨⠕⠨⠏⠨⠗⠨⠎⠨⠞⠨⠥⠨⠋⠨⠯⠨⠽⠨⠺
-
-- # accents
-  - ᾿ ῾ ΄ ` ´ ῀ ͺ ι ¯
-  - ⠴ ⠓ ⠈ ⠠ ⠈ ⠐ ⠔ ⠔ ⠸
 
 - # lowercase letters with dasia
   - ἁ ἑ ἡ ἱ ὁ ὑ ὡ ῥ
