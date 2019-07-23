@@ -71,10 +71,6 @@ message UpgradeArcContainerRequest {
   // Option to disable ACTION_BOOT_COMPLETED broadcast for 3rd party apps.
   optional bool skip_boot_completed_broadcast = 2 [default = false];
 
-  // Option to enable package manager service to scan /vendor/priv-app
-  // directory.
-  optional bool scan_vendor_priv_app = 3 [default = false];
-
   // Optional mode for packages cache tests.
   optional PackageCacheMode packages_cache_mode = 4 [default = DEFAULT];
 
