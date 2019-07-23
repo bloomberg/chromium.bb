@@ -8661,6 +8661,21 @@ static INLINE void save_comp_rd_search_stat(MACROBLOCK *x,
   }
 }
 
+static INLINE int find_interp_filter_match(MACROBLOCK *const x,
+                                           const AV1_COMP *const cpi,
+                                           const InterpFilter assign_filter,
+                                           const int need_search) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = xd->mi[0];
+  int match_found_idx = -1;
+  if (cpi->sf.skip_repeat_interpolation_filter_search && need_search)
+    match_found_idx = find_interp_filter_in_stats(x, mbmi);
+
+  if (!need_search || match_found_idx == -1)
+    set_default_interp_filters(mbmi, assign_filter);
+  return match_found_idx;
+}
+
 static INLINE void calc_interp_skip_pred_flag(MACROBLOCK *const x,
                                               const AV1_COMP *const cpi,
                                               int *skip_hor, int *skip_ver) {
@@ -8737,9 +8752,10 @@ static int64_t interpolation_filter_search(
   (void)single_filter;
   int match_found_idx = -1;
   const InterpFilter assign_filter = cm->interp_filter;
-  if (cpi->sf.skip_repeat_interpolation_filter_search && need_search) {
-    match_found_idx = find_interp_filter_in_stats(x, mbmi);
-  }
+
+  match_found_idx =
+      find_interp_filter_match(x, cpi, assign_filter, need_search);
+
   if (match_found_idx != -1) {
     const int comp_idx = mbmi->compound_idx;
     *rd = x->interp_filter_stats[comp_idx][match_found_idx].rd;
@@ -8747,9 +8763,7 @@ static int64_t interpolation_filter_search(
         x->interp_filter_stats[comp_idx][match_found_idx].pred_sse;
     return 0;
   }
-  if (!need_search || match_found_idx == -1) {
-    set_default_interp_filters(mbmi, assign_filter);
-  }
+
   int switchable_ctx[2];
   switchable_ctx[0] = av1_get_pred_context_switchable_interp(xd, 0);
   switchable_ctx[1] = av1_get_pred_context_switchable_interp(xd, 1);
@@ -8791,8 +8805,7 @@ static int64_t interpolation_filter_search(
   if (args->modelled_rd != NULL) {
     if (has_second_ref(mbmi)) {
       const int ref_mv_idx = mbmi->ref_mv_idx;
-      int refs[2] = { mbmi->ref_frame[0],
-                      (mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1]) };
+      MV_REFERENCE_FRAME *refs = mbmi->ref_frame;
       const int mode0 = compound_ref0_mode(mbmi->mode);
       const int mode1 = compound_ref1_mode(mbmi->mode);
       const int64_t mrd = AOMMIN(args->modelled_rd[mode0][ref_mv_idx][refs[0]],
@@ -10628,15 +10641,9 @@ static int64_t handle_inter_mode(
           // Find matching interp filter or set to default interp filter
           const int need_search =
               av1_is_interp_needed(xd) && av1_is_interp_search_needed(xd);
-          int match_found = -1;
           const InterpFilter assign_filter = cm->interp_filter;
           int is_luma_interp_done = 0;
-          if (cpi->sf.skip_repeat_interpolation_filter_search && need_search) {
-            match_found = find_interp_filter_in_stats(x, mbmi);
-          }
-          if (!need_search || match_found == -1) {
-            set_default_interp_filters(mbmi, assign_filter);
-          }
+          find_interp_filter_match(x, cpi, assign_filter, need_search);
 
           int64_t best_rd_compound;
           int64_t rd_thresh;
