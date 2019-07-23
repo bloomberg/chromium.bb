@@ -43,6 +43,7 @@
  *   EDIT_DICTIONARY: (undefined|!settings.Route),
  *   EXTERNAL_STORAGE_PREFERENCES: (undefined|!settings.Route),
  *   FINGERPRINT: (undefined|!settings.Route),
+ *   FILES: (undefined|!settings.Route),
  *   FONTS: (undefined|!settings.Route),
  *   GOOGLE_ASSISTANT: (undefined|!settings.Route),
  *   IMPORT_DATA: (undefined|!settings.Route),
@@ -257,12 +258,6 @@ cr.define('settings', function() {
     r.SMART_LOCK =
         r.MULTIDEVICE_FEATURES.createChild('/multidevice/features/smartLock');
 
-    // TODO(hsuregan): Remove once this file is forked.
-    if (loadTimeData.getBoolean('isOSSettings')) {
-      r.PERSONALIZATION =
-          r.BASIC.createSection('/personalization', 'personalization');
-      r.CHANGE_PICTURE = r.PERSONALIZATION.createChild('/changePicture');
-    }
     // </if>
 
     if (pageVisibility.appearance !== false) {
@@ -333,7 +328,11 @@ cr.define('settings', function() {
       // </if>
       // <if expr="chromeos">
       // TODO(crbug.com/950007): Remove when SplitSettings is the default.
-      if (!loadTimeData.getBoolean('isOSSettings')) {
+      if (loadTimeData.getBoolean('isOSSettings')) {
+        r.PERSONALIZATION =
+            r.BASIC.createSection('/personalization', 'personalization');
+        r.CHANGE_PICTURE = r.PERSONALIZATION.createChild('/changePicture');
+      } else {
         r.CHANGE_PICTURE = r.PEOPLE.createChild('/changePicture');
       }
       r.ACCOUNTS = r.PEOPLE.createChild('/accounts');
@@ -449,7 +448,14 @@ cr.define('settings', function() {
       if (pageVisibility.downloads !== false) {
         r.DOWNLOADS = r.ADVANCED.createSection('/downloads', 'downloads');
         // <if expr="chromeos">
-        r.SMB_SHARES = r.DOWNLOADS.createChild('/smbShares');
+        // TODO(crbug.com/950007): Make unconditional and remove 'else' block
+        //     when SplitSettings is the default.
+        if (loadTimeData.getBoolean('isOSSettings')) {
+          r.FILES = r.ADVANCED.createSection('/files', 'files');
+          r.SMB_SHARES = r.FILES.createChild('/smbShares');
+        } else {
+          r.SMB_SHARES = r.DOWNLOADS.createChild('/smbShares');
+        }
         // </if>
       }
 
