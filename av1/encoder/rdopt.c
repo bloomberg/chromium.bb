@@ -8665,6 +8665,58 @@ static INLINE void save_comp_rd_search_stat(MACROBLOCK *x,
   }
 }
 
+static INLINE void calc_interp_skip_pred_flag(MACROBLOCK *const x,
+                                              const AV1_COMP *const cpi,
+                                              int *skip_hor, int *skip_ver) {
+  const AV1_COMMON *cm = &cpi->common;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = xd->mi[0];
+  const int num_planes = av1_num_planes(cm);
+  const int is_compound = has_second_ref(mbmi);
+  assert(is_intrabc_block(mbmi) == 0);
+  for (int ref = 0; ref < 1 + is_compound; ++ref) {
+    const struct scale_factors *const sf =
+        get_ref_scale_factors_const(cm, mbmi->ref_frame[ref]);
+    // TODO(any): Refine skip flag calculation considering scaling
+    if (av1_is_scaled(sf)) {
+      *skip_hor = 0;
+      *skip_ver = 0;
+      break;
+    }
+    const MV mv = mbmi->mv[ref].as_mv;
+    int skip_hor_plane = 0;
+    int skip_ver_plane = 0;
+    for (int plane_idx = 0; plane_idx < AOMMAX(1, (num_planes - 1));
+         ++plane_idx) {
+      struct macroblockd_plane *const pd = &xd->plane[plane_idx];
+      const int bw = pd->width;
+      const int bh = pd->height;
+      const MV mv_q4 = clamp_mv_to_umv_border_sb(
+          xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
+      const int sub_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
+      const int sub_y = (mv_q4.row & SUBPEL_MASK) << SCALE_EXTRA_BITS;
+      skip_hor_plane |= ((sub_x == 0) << plane_idx);
+      skip_ver_plane |= ((sub_y == 0) << plane_idx);
+    }
+    *skip_hor &= skip_hor_plane;
+    *skip_ver &= skip_ver_plane;
+    // It is not valid that "luma MV is sub-pel, whereas chroma MV is not"
+    assert(*skip_hor != 2);
+    assert(*skip_ver != 2);
+  }
+  // When compond prediction type is compound segment wedge, luma MC and chroma
+  // MC need to go hand in hand as mask generated during luma MC is reuired for
+  // chroma MC. If skip_hor = 0 and skip_ver = 1, mask used for chroma MC during
+  // vertical filter decision may be incorrect as temporary MC evaluation
+  // overwrites the mask. Make skip_ver as 0 for this case so that mask is
+  // populated during luma MC
+  if (is_compound && mbmi->compound_idx == 1 &&
+      mbmi->interinter_comp.type == COMPOUND_DIFFWTD) {
+    assert(mbmi->comp_group_idx == 1);
+    if (*skip_hor == 0 && *skip_ver == 1) *skip_ver = 0;
+  }
+}
+
 static int64_t interpolation_filter_search(
     MACROBLOCK *const x, const AV1_COMP *const cpi,
     const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
@@ -8764,48 +8816,8 @@ static int64_t interpolation_filter_search(
   // skip_flag=3 corresponds to "Skip both luma and chroma MC"
   int skip_hor = cpi->default_interp_skip_flags;
   int skip_ver = cpi->default_interp_skip_flags;
-  const int is_compound = has_second_ref(mbmi);
-  assert(is_intrabc_block(mbmi) == 0);
-  for (int j = 0; j < 1 + is_compound; ++j) {
-    const struct scale_factors *const sf =
-        get_ref_scale_factors_const(cm, mbmi->ref_frame[j]);
-    // TODO(any): Refine skip flag calculation considering scaling
-    if (av1_is_scaled(sf)) {
-      skip_hor = 0;
-      skip_ver = 0;
-      break;
-    }
-    const MV mv = mbmi->mv[j].as_mv;
-    int skip_hor_plane = 0;
-    int skip_ver_plane = 0;
-    for (int k = 0; k < AOMMAX(1, (num_planes - 1)); ++k) {
-      struct macroblockd_plane *const pd = &xd->plane[k];
-      const int bw = pd->width;
-      const int bh = pd->height;
-      const MV mv_q4 = clamp_mv_to_umv_border_sb(
-          xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
-      const int sub_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
-      const int sub_y = (mv_q4.row & SUBPEL_MASK) << SCALE_EXTRA_BITS;
-      skip_hor_plane |= ((sub_x == 0) << k);
-      skip_ver_plane |= ((sub_y == 0) << k);
-    }
-    skip_hor = skip_hor & skip_hor_plane;
-    skip_ver = skip_ver & skip_ver_plane;
-    // It is not valid that "luma MV is sub-pel, whereas chroma MV is not"
-    assert(skip_hor != 2);
-    assert(skip_ver != 2);
-  }
-  // When compond prediction type is compound segment wedge, luma MC and chroma
-  // MC need to go hand in hand as mask generated during luma MC is reuired for
-  // chroma MC. If skip_hor = 0 and skip_ver = 1, mask used for chroma MC during
-  // vertical filter decision may be incorrect as temporary MC evaluation
-  // overwrites the mask. Make skip_ver as 0 for this case so that mask is
-  // populated during luma MC
-  if (is_compound && mbmi->compound_idx == 1 &&
-      mbmi->interinter_comp.type == COMPOUND_DIFFWTD) {
-    assert(mbmi->comp_group_idx == 1);
-    if (skip_hor == 0 && skip_ver == 1) skip_ver = 0;
-  }
+  calc_interp_skip_pred_flag(x, cpi, &skip_hor, &skip_ver);
+
   // do interp_filter search
   const int filter_set_size = DUAL_FILTER_SET_SIZE;
   restore_dst_buf(xd, *tmp_dst, num_planes);
