@@ -1388,6 +1388,9 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
   if (registration.sync_state() != blink::mojom::BackgroundSyncState::PENDING)
     return false;
 
+  if (registration.is_suspended())
+    return false;
+
   if (clock_->Now() < registration.delay_until())
     return false;
 
