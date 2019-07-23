@@ -90,7 +90,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   void OnLargestContentfulPaintUpdated(base::TimeTicks paint_time,
                                        uint64_t paint_size,
-                                       base::TimeTicks response_end,
+                                       base::TimeTicks load_time,
                                        const AtomicString& id,
                                        const String& url,
                                        Element*);

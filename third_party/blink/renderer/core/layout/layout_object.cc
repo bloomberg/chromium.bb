@@ -3513,9 +3513,15 @@ void LayoutObject::ImageChanged(ImageResourceContent* image,
   ImageChanged(static_cast<WrappedImagePtr>(image), defer);
 }
 
-void LayoutObject::ImageNotifyFinished(ImageResourceContent*) {
+void LayoutObject::ImageNotifyFinished(ImageResourceContent* image) {
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
     cache->ImageLoaded(this);
+
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+    if (LocalFrameView* frame_view = GetFrameView()) {
+      frame_view->GetPaintTimingDetector().NotifyImageFinished(*this, image);
+    }
+  }
 }
 
 Element* LayoutObject::OffsetParent(const Element* base) const {

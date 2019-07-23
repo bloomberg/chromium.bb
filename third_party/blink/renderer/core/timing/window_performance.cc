@@ -442,13 +442,13 @@ void WindowPerformance::AddLayoutJankFraction(double jank_fraction,
 void WindowPerformance::OnLargestContentfulPaintUpdated(
     base::TimeTicks paint_time,
     uint64_t paint_size,
-    base::TimeTicks response_end,
+    base::TimeTicks load_time,
     const AtomicString& id,
     const String& url,
     Element* element) {
   auto* entry = MakeGarbageCollected<LargestContentfulPaint>(
       MonotonicTimeToDOMHighResTimeStamp(paint_time), paint_size,
-      MonotonicTimeToDOMHighResTimeStamp(response_end), id, url, element);
+      MonotonicTimeToDOMHighResTimeStamp(load_time), id, url, element);
   if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
     NotifyObserversOfEntry(*entry);
   AddLargestContentfulPaint(entry);
