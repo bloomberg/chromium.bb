@@ -112,15 +112,14 @@ void RecordTokenChanged(const std::string& existing_token,
   DCHECK(!new_token.empty());
   TokenStateTransition transition = TokenStateTransition::kCount;
   if (existing_token.empty()) {
-    transition = (new_token == OAuth2TokenServiceDelegate::kInvalidRefreshToken)
+    transition = (new_token == GaiaConstants::kInvalidRefreshToken)
                      ? TokenStateTransition::kNoneToInvalid
                      : TokenStateTransition::kNoneToRegular;
-  } else if (existing_token ==
-             OAuth2TokenServiceDelegate::kInvalidRefreshToken) {
+  } else if (existing_token == GaiaConstants::kInvalidRefreshToken) {
     transition = TokenStateTransition::kInvalidToRegular;
   } else {
     // Existing token is a regular token.
-    transition = (new_token == OAuth2TokenServiceDelegate::kInvalidRefreshToken)
+    transition = (new_token == GaiaConstants::kInvalidRefreshToken)
                      ? TokenStateTransition::kRegularToInvalid
                      : TokenStateTransition::kRegularToRegular;
   }
@@ -130,18 +129,16 @@ void RecordTokenChanged(const std::string& existing_token,
 
 // Record metrics when a token was loaded.
 void RecordTokenLoaded(const std::string& token) {
-  RecordTokenStateTransition(
-      (token == OAuth2TokenServiceDelegate::kInvalidRefreshToken)
-          ? TokenStateTransition::kLoadInvalid
-          : TokenStateTransition::kLoadRegular);
+  RecordTokenStateTransition((token == GaiaConstants::kInvalidRefreshToken)
+                                 ? TokenStateTransition::kLoadInvalid
+                                 : TokenStateTransition::kLoadRegular);
 }
 
 // Record metrics when a token was revoked.
 void RecordTokenRevoked(const std::string& token) {
-  RecordTokenStateTransition(
-      (token == OAuth2TokenServiceDelegate::kInvalidRefreshToken)
-          ? TokenStateTransition::kInvalidToNone
-          : TokenStateTransition::kRegularToNone);
+  RecordTokenStateTransition((token == GaiaConstants::kInvalidRefreshToken)
+                                 ? TokenStateTransition::kInvalidToNone
+                                 : TokenStateTransition::kRegularToNone);
 }
 
 std::string ApplyAccountIdPrefix(const std::string& account_id) {
@@ -569,7 +566,8 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
       set_load_credentials_state(
           LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT);
     }
-    AddAccountStatus(loading_primary_account_id_, kInvalidRefreshToken,
+    AddAccountStatus(loading_primary_account_id_,
+                     GaiaConstants::kInvalidRefreshToken,
                      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                              CREDENTIALS_MISSING));
@@ -696,7 +694,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
         if (load_account && revoke_all_tokens_on_load_) {
           if (account_id == loading_primary_account_id_) {
             RevokeCredentialsOnServer(refresh_token);
-            refresh_token = kInvalidRefreshToken;
+            refresh_token = GaiaConstants::kInvalidRefreshToken;
             PersistCredentials(account_id, refresh_token);
           } else {
             load_account = false;
@@ -757,7 +755,8 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentialsInMemory(
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
 
-  bool is_refresh_token_invalidated = refresh_token == kInvalidRefreshToken;
+  bool is_refresh_token_invalidated =
+      refresh_token == GaiaConstants::kInvalidRefreshToken;
   GoogleServiceAuthError error =
       is_refresh_token_invalidated
           ? GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
@@ -859,7 +858,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsOnServer(
     const std::string& refresh_token) {
   DCHECK(!refresh_token.empty());
 
-  if (refresh_token == kInvalidRefreshToken)
+  if (refresh_token == GaiaConstants::kInvalidRefreshToken)
     return;
 
   // Keep track or all server revoke requests.  This way they can be deleted

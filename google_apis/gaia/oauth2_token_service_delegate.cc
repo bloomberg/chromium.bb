@@ -9,10 +9,6 @@
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-// static
-const char OAuth2TokenServiceDelegate::kInvalidRefreshToken[] =
-    "invalid_refresh_token";
-
 OAuth2TokenServiceDelegate::ScopedBatchChange::ScopedBatchChange(
     OAuth2TokenServiceDelegate* delegate)
     : delegate_(delegate) {

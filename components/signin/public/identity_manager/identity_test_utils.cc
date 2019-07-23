@@ -16,6 +16,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/test_identity_manager_observer.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 
 #if defined(OS_ANDROID)
@@ -245,11 +246,11 @@ void SetRefreshTokenForAccount(IdentityManager* identity_manager,
 
 void SetInvalidRefreshTokenForAccount(IdentityManager* identity_manager,
                                       const std::string& account_id) {
-  UpdateRefreshTokenForAccount(
-      identity_manager->GetTokenService(),
+  UpdateRefreshTokenForAccount(identity_manager->GetTokenService(),
 
-      identity_manager->GetAccountTrackerService(), identity_manager,
-      account_id, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
+                               identity_manager->GetAccountTrackerService(),
+                               identity_manager, account_id,
+                               GaiaConstants::kInvalidRefreshToken);
 }
 
 void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,

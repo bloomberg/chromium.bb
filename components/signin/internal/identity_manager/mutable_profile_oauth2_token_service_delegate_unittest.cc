@@ -428,7 +428,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   // is in the refresh_token map.
   EXPECT_EQ(1U, oauth2_service_delegate_->refresh_tokens_.size());
   EXPECT_EQ(
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+      GaiaConstants::kInvalidRefreshToken,
       oauth2_service_delegate_->refresh_tokens_[account_id].refresh_token);
   // Setup a DB with tokens that don't require upgrade and clear memory.
   oauth2_service_delegate_->UpdateCredentials(account_id, "refresh_token");
@@ -679,7 +679,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
       primary_account.account_id));
   EXPECT_EQ(
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+      GaiaConstants::kInvalidRefreshToken,
       oauth2_service_delegate_->refresh_tokens_[primary_account.account_id]
           .refresh_token);
   EXPECT_EQ(
@@ -844,8 +844,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, UpdateInvalidToken) {
   InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);
   ASSERT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
   oauth2_service_delegate_->UpdateCredentials(
-      account_id,
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken);
+      account_id, GaiaConstants::kInvalidRefreshToken);
   EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
   EXPECT_EQ(1, auth_error_changed_count_);
   ExpectOneTokenAvailableNotification();
@@ -913,14 +912,13 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, LoadInvalidToken) {
   InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
   std::map<std::string, std::string> tokens;
   const CoreAccountId account_id("account_id");
-  tokens["AccountId-account_id"] =
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken;
+  tokens["AccountId-account_id"] = GaiaConstants::kInvalidRefreshToken;
 
   oauth2_service_delegate_->LoadAllCredentialsIntoMemory(tokens);
 
   EXPECT_EQ(1u, oauth2_service_delegate_->GetAccounts().size());
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(account_id));
-  EXPECT_STREQ(MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+  EXPECT_STREQ(GaiaConstants::kInvalidRefreshToken,
                oauth2_service_delegate_->GetRefreshToken(account_id).c_str());
 
   // The account is in authentication error.
@@ -1359,8 +1357,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, OnAuthErrorChanged) {
   // Start with the SigninErrorController in error state, so that it calls
   // OnErrorChanged() from AddProvider().
   oauth2_service_delegate_->UpdateCredentials(
-      "error_account_id",
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken);
+      "error_account_id", GaiaConstants::kInvalidRefreshToken);
 
   TokenServiceErrorObserver token_service_observer(
       oauth2_service_delegate_.get());
@@ -1391,8 +1388,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GetAuthError) {
             oauth2_service_delegate_->GetAuthError("foo"));
   // Add account with invalid token.
   oauth2_service_delegate_->UpdateCredentials(
-      "account_id_2",
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken);
+      "account_id_2", GaiaConstants::kInvalidRefreshToken);
   EXPECT_EQ(GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                 GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                     CREDENTIALS_REJECTED_BY_CLIENT),
@@ -1447,8 +1443,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
       oauth2_service_delegate_.get());
   oauth2_service_delegate_->AddObserver(&token_service_observer);
   oauth2_service_delegate_->UpdateCredentials(
-      "account_id",
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken);
+      "account_id", GaiaConstants::kInvalidRefreshToken);
   EXPECT_TRUE(token_service_observer.token_available_);
   EXPECT_TRUE(token_service_observer.error_changed_);
   oauth2_service_delegate_->RemoveObserver(&token_service_observer);
@@ -1479,7 +1474,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ClearTokensOnStartup) {
   EXPECT_FALSE(
       oauth2_service_delegate_->RefreshTokenIsAvailable(secondary_account));
   EXPECT_STREQ(
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+      GaiaConstants::kInvalidRefreshToken,
       oauth2_service_delegate_->GetRefreshToken(primary_account).c_str());
   EXPECT_EQ(GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                 GoogleServiceAuthError::InvalidGaiaCredentialsReason::
@@ -1502,7 +1497,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ClearTokensOnStartup) {
   EXPECT_FALSE(
       oauth2_service_delegate_->RefreshTokenIsAvailable(secondary_account));
   EXPECT_STREQ(
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+      GaiaConstants::kInvalidRefreshToken,
       oauth2_service_delegate_->GetRefreshToken(primary_account).c_str());
   EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
 }
@@ -1569,9 +1564,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
         "Signin.RefreshTokenUpdated.ToValidToken.Source",
         Source::kDiceResponseHandler_Signin, 1);
 
-    token_service.UpdateCredentials(
-        "account_id_2", OAuth2TokenServiceDelegate::kInvalidRefreshToken,
-        Source::kDiceResponseHandler_Signin);
+    token_service.UpdateCredentials("account_id_2",
+                                    GaiaConstants::kInvalidRefreshToken,
+                                    Source::kDiceResponseHandler_Signin);
     EXPECT_EQ("DiceResponseHandler::Signin",
               source_for_refresh_token_available_);
     h_tester.ExpectUniqueSample(

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
+
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 
 namespace {
@@ -111,7 +113,7 @@ void FakeOAuth2TokenServiceDelegate::IssueRefreshTokenForUser(
     // rejected by the client and is thus not valid. So set the appropriate
     // error in that case. This logic is essentially duplicated from
     // MutableProfileOAuth2TokenServiceDelegate.
-    if (token == kInvalidRefreshToken) {
+    if (token == GaiaConstants::kInvalidRefreshToken) {
       refresh_tokens_[account_id]->error =
           GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
               GoogleServiceAuthError::InvalidGaiaCredentialsReason::
