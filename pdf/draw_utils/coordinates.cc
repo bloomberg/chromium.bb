@@ -22,7 +22,6 @@ PageInsetSizes GetPageInsetsForTwoUpView(
     size_t num_of_pages,
     const PageInsetSizes& single_view_insets,
     int horizontal_separator) {
-  DCHECK_GE(page_index, 0u);
   DCHECK_LT(page_index, num_of_pages);
 
   // Don't change |two_up_insets| if the page is on the left side and is the
