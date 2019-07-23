@@ -22,10 +22,7 @@ struct UdpSocketPosix : public UdpSocket {
   Error SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) final;
   Error JoinMulticastGroup(const IPAddress& address,
                            NetworkInterfaceIndex ifindex) final;
-  ErrorOr<size_t> ReceiveMessage(void* data,
-                                 size_t length,
-                                 IPEndpoint* src,
-                                 IPEndpoint* original_destination) final;
+  ErrorOr<UdpPacket> ReceiveMessage() final;
   Error SendMessage(const void* data,
                     size_t length,
                     const IPEndpoint& dest) final;

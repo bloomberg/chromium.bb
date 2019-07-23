@@ -24,10 +24,9 @@ NetworkRunnerImpl::NetworkRunnerImpl(
 
 Error NetworkRunnerImpl::ReadRepeatedly(UdpSocket* socket,
                                         UdpReadCallback* callback) {
-  NetworkReader::Callback func =
-      [callback, this](std::unique_ptr<UdpReadCallback::Packet> packet) {
-        callback->OnRead(std::move(packet), this);
-      };
+  NetworkReader::Callback func = [callback, this](UdpPacket packet) {
+    callback->OnRead(std::move(packet), this);
+  };
   return network_loop_->ReadRepeatedly(socket, func);
 }
 

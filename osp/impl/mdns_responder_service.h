@@ -46,8 +46,7 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
       const std::vector<platform::NetworkInterfaceIndex> whitelist,
       const std::map<std::string, std::string>& txt_data);
 
-  void HandleNewEvents(
-      const std::vector<platform::UdpReadCallback::Packet>& data);
+  void HandleNewEvents(const std::vector<platform::UdpPacket>& packets);
 
   // ServiceListenerImpl::Delegate overrides.
   void StartListener() override;

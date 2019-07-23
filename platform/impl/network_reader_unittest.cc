@@ -60,28 +60,19 @@ class TestingNetworkWaiter final : public NetworkReader {
   // Public method to call wait, since usually this method is internally
   // callable only.
   Error WaitTesting(Clock::duration timeout) { return WaitAndRead(timeout); }
-
-  MOCK_METHOD1(
-      ReadFromSocket,
-      ErrorOr<std::unique_ptr<UdpReadCallback::Packet>>(UdpSocket* socket));
 };
 
 class MockCallbacks {
  public:
-  std::function<void(std::unique_ptr<UdpReadCallback::Packet>)>
-  GetReadCallback() {
-    return [this](std::unique_ptr<UdpReadCallback::Packet> packet) {
-      this->ReadCallback(std::move(packet));
-    };
+  std::function<void(UdpPacket)> GetReadCallback() {
+    return [this](UdpPacket packet) { this->ReadCallback(std::move(packet)); };
   }
 
   std::function<void()> GetWriteCallback() {
     return [this]() { this->WriteCallback(); };
   }
 
-  void ReadCallback(std::unique_ptr<UdpReadCallback::Packet> packet) {
-    ReadCallbackInternal();
-  }
+  void ReadCallback(UdpPacket packet) { ReadCallbackInternal(); }
 
   MOCK_METHOD0(ReadCallbackInternal, void());
   MOCK_METHOD0(WriteCallback, void());
@@ -194,7 +185,7 @@ TEST(NetworkReaderTest, WaitSuccessfullyCalledOnAllWatchedSockets) {
   TestingNetworkWaiter network_waiter(std::move(mock_waiter),
                                       task_runner.get());
   auto timeout = Clock::duration(0);
-  auto packet = std::make_unique<UdpReadCallback::Packet>();
+  UdpPacket packet;
   MockCallbacks callbacks;
 
   network_waiter.ReadRepeatedly(socket.get(), callbacks.GetReadCallback());
@@ -217,27 +208,26 @@ TEST(NetworkReaderTest, WaitSuccessfulReadAndCallCallback) {
       std::unique_ptr<NetworkWaiter>(mock_waiter_ptr);
   std::unique_ptr<TaskRunner> task_runner =
       std::unique_ptr<TaskRunner>(task_runner_ptr);
-  std::unique_ptr<MockUdpSocket> socket =
-      std::make_unique<MockUdpSocket>(UdpSocket::Version::kV4);
+  MockUdpSocket socket(UdpSocket::Version::kV4);
   TestingNetworkWaiter network_waiter(std::move(mock_waiter),
                                       task_runner.get());
   auto timeout = Clock::duration(0);
-  auto packet = std::make_unique<UdpReadCallback::Packet>();
+  UdpPacket packet;
   MockCallbacks callbacks;
 
-  network_waiter.ReadRepeatedly(socket.get(), callbacks.GetReadCallback());
+  network_waiter.ReadRepeatedly(&socket, callbacks.GetReadCallback());
 
   EXPECT_CALL(*mock_waiter_ptr, AwaitSocketsReadable(_, timeout))
-      .WillOnce(Return(ByMove(std::vector<UdpSocket*>{socket.get()})));
+      .WillOnce(Return(ByMove(std::vector<UdpSocket*>{&socket})));
   EXPECT_CALL(callbacks, ReadCallbackInternal()).Times(1);
-  EXPECT_CALL(network_waiter, ReadFromSocket(socket.get()))
+  EXPECT_CALL(socket, ReceiveMessage())
       .WillOnce(Return(ByMove(std::move(packet))));
   EXPECT_EQ(network_waiter.WaitTesting(timeout), Error::Code::kNone);
   EXPECT_EQ(task_runner_ptr->tasks_posted, uint32_t{1});
 
   // Set deletion callback because otherwise the destructor tries to call a
   // callback on the deleted object when it goes out of scope.
-  socket->SetDeletionCallback([](UdpSocket* socket) {});
+  socket.SetDeletionCallback([](UdpSocket* socket) {});
 }
 
 TEST(NetworkReaderTest, WaitFailsIfReadingSocketFails) {
@@ -246,27 +236,25 @@ TEST(NetworkReaderTest, WaitFailsIfReadingSocketFails) {
       std::unique_ptr<NetworkWaiter>(mock_waiter_ptr);
   std::unique_ptr<TaskRunner> task_runner =
       std::unique_ptr<TaskRunner>(new MockTaskRunner());
-  std::unique_ptr<MockUdpSocket> socket =
-      std::make_unique<MockUdpSocket>(UdpSocket::Version::kV4);
+  MockUdpSocket socket(UdpSocket::Version::kV4);
   TestingNetworkWaiter network_waiter(std::move(mock_waiter),
                                       task_runner.get());
   auto timeout = Clock::duration(0);
-  auto packet = std::make_unique<UdpReadCallback::Packet>();
   MockCallbacks callbacks;
 
-  network_waiter.ReadRepeatedly(socket.get(), callbacks.GetReadCallback());
+  network_waiter.ReadRepeatedly(&socket, callbacks.GetReadCallback());
 
   EXPECT_CALL(*mock_waiter_ptr, AwaitSocketsReadable(_, timeout))
-      .WillOnce(Return(ByMove(std::vector<UdpSocket*>{socket.get()})));
+      .WillOnce(Return(ByMove(std::vector<UdpSocket*>{&socket})));
   EXPECT_CALL(callbacks, ReadCallbackInternal()).Times(0);
-  EXPECT_CALL(network_waiter, ReadFromSocket(socket.get()))
+  EXPECT_CALL(socket, ReceiveMessage())
       .WillOnce(Return(ByMove(Error::Code::kGenericPlatformError)));
   EXPECT_EQ(network_waiter.WaitTesting(timeout),
             Error::Code::kGenericPlatformError);
 
   // Set deletion callback because otherwise the destructor tries to call a
   // callback on the deleted object when it goes out of scope.
-  socket->SetDeletionCallback([](UdpSocket* socket) {});
+  socket.SetDeletionCallback([](UdpSocket* socket) {});
 }
 
 }  // namespace platform

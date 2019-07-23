@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "platform/api/network_interface.h"
+#include "platform/api/udp_read_callback.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
 #include "platform/base/macros.h"
@@ -79,13 +80,8 @@ class UdpSocket {
   // received. Note that a non-Error return value of 0 is a valid result,
   // indicating an empty message has been received. Also note that
   // Error::Code::kAgain might be returned if there is no message currently
-  // ready for receive, which can be expected during normal operation. |src| and
-  // |original_destination| are optional output arguments that provide the
-  // source of the message and its intended destination, respectively.
-  virtual ErrorOr<size_t> ReceiveMessage(void* data,
-                                         size_t length,
-                                         IPEndpoint* src,
-                                         IPEndpoint* original_destination) = 0;
+  // ready for receive, which can be expected during normal operation.
+  virtual ErrorOr<UdpPacket> ReceiveMessage() = 0;
 
   // Sends a message and returns the number of bytes sent, on success.
   // Error::Code::kAgain might be returned to indicate the operation would

@@ -12,35 +12,21 @@
 namespace openscreen {
 namespace platform {
 
-Error ReceiveDataFromEvent(const UdpSocketReadableEvent& read_event,
-                           UdpReadCallback::Packet* data) {
-  OSP_DCHECK(data);
-  ErrorOr<size_t> len = read_event.socket->ReceiveMessage(
-      &data[0], data->size(), &data->source, &data->original_destination);
-  if (!len) {
-    OSP_LOG_ERROR << "ReceiveMessage() on socket failed: "
-                  << len.error().message();
-    return len.error();
-  }
-  OSP_DCHECK_LE(len.value(), static_cast<size_t>(kUdpMaxPacketSize));
-  data->length = len.value();
-  data->socket = read_event.socket;
-  return Error::None();
-}
-
-std::vector<UdpReadCallback::Packet> HandleUdpSocketReadEvents(
-    const Events& events) {
-  std::vector<UdpReadCallback::Packet> data;
+std::vector<UdpPacket> HandleUdpSocketReadEvents(const Events& events) {
+  std::vector<UdpPacket> packets(events.udp_readable_events.size());
   for (const auto& read_event : events.udp_readable_events) {
-    UdpReadCallback::Packet next_data;
-    if (ReceiveDataFromEvent(read_event, &next_data).ok())
-      data.emplace_back(std::move(next_data));
+    ErrorOr<UdpPacket> result = read_event.socket->ReceiveMessage();
+    if (result) {
+      packets.emplace_back(result.MoveValue());
+    } else {
+      OSP_LOG_ERROR << "ReceiveMessage() on socket failed: "
+                    << result.error().message();
+    }
   }
-  return data;
+  return packets;
 }
 
-std::vector<UdpReadCallback::Packet> OnePlatformLoopIteration(
-    EventWaiterPtr waiter) {
+std::vector<UdpPacket> OnePlatformLoopIteration(EventWaiterPtr waiter) {
   ErrorOr<Events> events = WaitForEvents(waiter);
   if (!events)
     return {};

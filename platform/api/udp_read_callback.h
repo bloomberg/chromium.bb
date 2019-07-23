@@ -5,39 +5,20 @@
 #ifndef PLATFORM_API_UDP_READ_CALLBACK_H_
 #define PLATFORM_API_UDP_READ_CALLBACK_H_
 
-#include <array>
-#include <cstdint>
-#include <memory>
-
-#include "platform/base/ip_address.h"
+#include "platform/api/udp_packet.h"
 
 namespace openscreen {
 namespace platform {
 
 class NetworkRunner;
-class UdpSocket;
-
-static constexpr int kUdpMaxPacketSize = 1 << 16;
 
 class UdpReadCallback {
  public:
-  struct Packet : std::array<uint8_t, kUdpMaxPacketSize> {
-    Packet() = default;
-    ~Packet() = default;
-
-    IPEndpoint source;
-    IPEndpoint original_destination;
-    ssize_t length;
-    // TODO(btolsch): When this gets to implementation, make sure the callback
-    // is never called with a |socket| that could have been destroyed (e.g.
-    // between queueing the read data and running the task).
-    UdpSocket* socket;
-  };
-
   virtual ~UdpReadCallback() = default;
-
-  virtual void OnRead(std::unique_ptr<Packet> data,
-                      NetworkRunner* network_runner) = 0;
+  // TODO(btolsch): When this gets to implementation, make sure the callback
+  // is never called with a |packet| from a socket that could have been
+  // destroyed (e.g. between queueing the read data and running the task).
+  virtual void OnRead(UdpPacket packet, NetworkRunner* network_runner) = 0;
 };
 
 }  // namespace platform

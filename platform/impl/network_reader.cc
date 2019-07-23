@@ -11,24 +11,6 @@
 
 namespace openscreen {
 namespace platform {
-namespace {
-
-class ReadCallbackExecutor {
- public:
-  ReadCallbackExecutor(std::unique_ptr<UdpReadCallback::Packet> data,
-                       NetworkReader::Callback function)
-      : function_(function) {
-    data_ = std::move(data);
-  }
-
-  void operator()() { function_(std::move(data_)); }
-
- private:
-  std::unique_ptr<UdpReadCallback::Packet> data_;
-  NetworkReader::Callback function_;
-};
-
-}  // namespace
 
 NetworkReader::NetworkReader(TaskRunner* task_runner)
     : NetworkReader(task_runner, NetworkWaiter::Create()) {}
@@ -85,37 +67,26 @@ Error NetworkReader::WaitAndRead(Clock::duration timeout) {
         continue;
       }
 
-      ErrorOr<std::unique_ptr<UdpReadCallback::Packet>> read_packet =
-          ReadFromSocket(mapped_socket->first);
+      ErrorOr<UdpPacket> read_packet = mapped_socket->first->ReceiveMessage();
       if (read_packet.is_error()) {
         error = read_packet.error();
         continue;
       }
 
-      // FIXME: Investigate removing ReadCallbackExecutor.
-      auto task =
-          ReadCallbackExecutor(read_packet.MoveValue(), mapped_socket->second);
-      task_runner_->PostTask(std::move(task));
+      // Capture the UdpPacket by move into |arg| here to transfer the ownership
+      // and avoid copying the UdpPacket. This move constructs the UdpPacket
+      // inside of the lambda. Then the UdpPacket |arg| is passed by move to the
+      // callback function |func|.
+      auto executor = [arg = read_packet.MoveValue(),
+                       func = mapped_socket->second]() mutable {
+        func(std::move(arg));
+      };
+
+      task_runner_->PostTask(std::move(executor));
     }
   }
 
   return error;
-}
-
-ErrorOr<std::unique_ptr<UdpReadCallback::Packet>> NetworkReader::ReadFromSocket(
-    UdpSocket* socket) {
-  // TODO(rwkeane): Use circular buffer in Socket instead of new packet.
-  auto data = std::make_unique<UdpReadCallback::Packet>();
-  ErrorOr<size_t> read_bytes = socket->ReceiveMessage(
-      &(*data)[0], data->size(), &data->source, &data->original_destination);
-  if (read_bytes.is_error()) {
-    return read_bytes.error();
-  }
-
-  data->socket = socket;
-  data->length = read_bytes.value();
-
-  return data;
 }
 
 void NetworkReader::RunUntilStopped() {

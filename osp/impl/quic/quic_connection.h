@@ -71,8 +71,7 @@ class QuicConnection {
   // Passes a received UDP packet to the QUIC implementation.  If this contains
   // any stream data, it will be passed automatically to the relevant
   // QuicStream::Delegate objects.
-  virtual void OnDataReceived(
-      const platform::UdpReadCallback::Packet& data) = 0;
+  virtual void OnDataReceived(const platform::UdpPacket& packet) = 0;
 
   virtual std::unique_ptr<QuicStream> MakeOutgoingStream(
       QuicStream::Delegate* delegate) = 0;
