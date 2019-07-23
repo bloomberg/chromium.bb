@@ -811,6 +811,10 @@ bool InstantService::IsCustomBackgroundSet() {
   return true;
 }
 
+bool InstantService::AreShortcutsCustomized() {
+  return most_visited_info_->items_are_custom_links;
+}
+
 std::pair<bool, bool> InstantService::GetCurrentShortcutSettings() {
   bool using_most_visited =
       pref_service_->GetBoolean(prefs::kNtpUseMostVisitedTiles);

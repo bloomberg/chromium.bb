@@ -92,6 +92,10 @@ class NTPUserDataLogger
   // Returns whether a custom background is configured. Virtual for testing.
   virtual bool CustomBackgroundIsConfigured() const;
 
+  // Returns whether the user has customized their shortcuts. Will always be
+  // false if Most Visited shortcuts are enabled. Virtual for testing.
+  virtual bool AreShortcutsCustomized() const;
+
   // Returns the current user shortcut settings. Virtual for testing.
   virtual std::pair<bool, bool> GetCurrentShortcutSettings() const;
 

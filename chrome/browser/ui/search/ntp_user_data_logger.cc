@@ -533,6 +533,12 @@ bool NTPUserDataLogger::CustomBackgroundIsConfigured() const {
   return instant_service->IsCustomBackgroundSet();
 }
 
+bool NTPUserDataLogger::AreShortcutsCustomized() const {
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile_);
+  return instant_service->AreShortcutsCustomized();
+}
+
 std::pair<bool, bool> NTPUserDataLogger::GetCurrentShortcutSettings() const {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile_);
@@ -616,12 +622,18 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     LogShortcutCustomizationAvailability(
         ShortcutCustomization::SHORTCUT_CUSTOMIZATION_AVAILABLE);
     LogCustomizedShortcutSettings(GetCurrentShortcutSettings());
-  }
 
-  if (CustomBackgroundIsConfigured()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "NewTabPage.Customized",
-        LoggingEventToCustomizedFeature(NTP_BACKGROUND_CUSTOMIZED));
+    if (AreShortcutsCustomized()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "NewTabPage.Customized",
+          LoggingEventToCustomizedFeature(NTP_SHORTCUT_CUSTOMIZED));
+    }
+
+    if (CustomBackgroundIsConfigured()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "NewTabPage.Customized",
+          LoggingEventToCustomizedFeature(NTP_BACKGROUND_CUSTOMIZED));
+    }
   }
 
   has_emitted_ = true;
