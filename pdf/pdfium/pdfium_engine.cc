@@ -3139,7 +3139,8 @@ pp::Rect PDFiumEngine::GetVisibleRect() const {
 pp::Rect PDFiumEngine::GetPageScreenRect(int page_index) const {
   const pp::Rect& page_rect = pages_[page_index]->rect();
   return GetScreenRect(draw_utils::GetSurroundingRect(
-      page_rect, kSingleViewInsets, document_size_.width(), kBottomSeparator));
+      page_rect.y(), page_rect.height(), kSingleViewInsets,
+      document_size_.width(), kBottomSeparator));
 }
 
 pp::Rect PDFiumEngine::GetScreenRect(const pp::Rect& rect) const {
