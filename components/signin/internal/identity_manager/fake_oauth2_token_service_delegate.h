@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_FAKE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
-#define CHROME_BROWSER_SIGNIN_FAKE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#ifndef COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_FAKE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#define COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_FAKE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 
@@ -41,7 +41,7 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
   void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& refresh_token) override;
   void RevokeCredentials(const CoreAccountId& account_id) override;
-  void ExtractCredentials(OAuth2TokenService* to_service,
+  void ExtractCredentials(ProfileOAuth2TokenService* to_service,
                           const CoreAccountId& account_id) override;
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
@@ -83,4 +83,4 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(FakeOAuth2TokenServiceDelegate);
 };
-#endif
+#endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_FAKE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_

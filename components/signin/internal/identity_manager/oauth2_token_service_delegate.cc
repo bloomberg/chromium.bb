@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -23,8 +22,7 @@ OAuth2TokenServiceDelegate::ScopedBatchChange::~ScopedBatchChange() {
 OAuth2TokenServiceDelegate::OAuth2TokenServiceDelegate()
     : batch_change_depth_(0) {}
 
-OAuth2TokenServiceDelegate::~OAuth2TokenServiceDelegate() {
-}
+OAuth2TokenServiceDelegate::~OAuth2TokenServiceDelegate() = default;
 
 bool OAuth2TokenServiceDelegate::ValidateAccountId(
     const CoreAccountId& account_id) const {
@@ -124,7 +122,7 @@ void OAuth2TokenServiceDelegate::LoadCredentials(
 }
 
 void OAuth2TokenServiceDelegate::ExtractCredentials(
-    OAuth2TokenService* to_service,
+    ProfileOAuth2TokenService* to_service,
     const CoreAccountId& account_id) {
   NOTREACHED();
 }

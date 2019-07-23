@@ -7,10 +7,10 @@
 #include <string>
 
 #include "base/macros.h"
-#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/fake_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"

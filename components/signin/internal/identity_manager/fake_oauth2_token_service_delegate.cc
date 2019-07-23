@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/fake_oauth2_token_service_delegate.h"
 
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 
@@ -28,8 +29,7 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 
 FakeOAuth2TokenServiceDelegate::AccountInfo::AccountInfo(
     const std::string& refresh_token)
-    : refresh_token(refresh_token),
-      error(GoogleServiceAuthError::NONE) {}
+    : refresh_token(refresh_token), error(GoogleServiceAuthError::NONE) {}
 
 FakeOAuth2TokenServiceDelegate::FakeOAuth2TokenServiceDelegate()
     : shared_factory_(
@@ -37,8 +37,7 @@ FakeOAuth2TokenServiceDelegate::FakeOAuth2TokenServiceDelegate()
               &test_url_loader_factory_)),
       backoff_entry_(&kBackoffPolicy) {}
 
-FakeOAuth2TokenServiceDelegate::~FakeOAuth2TokenServiceDelegate() {
-}
+FakeOAuth2TokenServiceDelegate::~FakeOAuth2TokenServiceDelegate() = default;
 
 std::unique_ptr<OAuth2AccessTokenFetcher>
 FakeOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
@@ -90,7 +89,8 @@ void FakeOAuth2TokenServiceDelegate::RevokeAllCredentials() {
 
 void FakeOAuth2TokenServiceDelegate::LoadCredentials(
     const CoreAccountId& primary_account_id) {
-  set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
+  set_load_credentials_state(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
   FireRefreshTokensLoaded();
 }
 
@@ -129,7 +129,7 @@ void FakeOAuth2TokenServiceDelegate::RevokeCredentials(
 }
 
 void FakeOAuth2TokenServiceDelegate::ExtractCredentials(
-    OAuth2TokenService* to_service,
+    ProfileOAuth2TokenService* to_service,
     const CoreAccountId& account_id) {
   auto it = refresh_tokens_.find(account_id);
   DCHECK(it != refresh_tokens_.end());

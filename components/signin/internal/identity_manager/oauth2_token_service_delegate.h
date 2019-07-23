@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
-#define GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#ifndef COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#define COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 
 #include <memory>
 #include <set>
@@ -14,9 +14,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
+#include "components/signin/public/identity_manager/load_credentials_state.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
 
 namespace network {
@@ -26,23 +26,13 @@ class SharedURLLoaderFactory;
 class OAuth2AccessTokenFetcher;
 class OAuth2AccessTokenConsumer;
 class OAuth2TokenServiceObserver;
+class ProfileOAuth2TokenService;
 
 // Abstract base class to fetch and maintain refresh tokens from various
 // entities. Concrete subclasses should implement RefreshTokenIsAvailable and
 // CreateAccessTokenFetcher properly.
 class OAuth2TokenServiceDelegate {
  public:
-  enum LoadCredentialsState {
-    LOAD_CREDENTIALS_NOT_STARTED,
-    LOAD_CREDENTIALS_IN_PROGRESS,
-    LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-    LOAD_CREDENTIALS_FINISHED_WITH_DB_CANNOT_BE_OPENED,
-    LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS,
-    LOAD_CREDENTIALS_FINISHED_WITH_DECRYPT_ERRORS,
-    LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT,
-    LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS,
-  };
-
   OAuth2TokenServiceDelegate();
   virtual ~OAuth2TokenServiceDelegate();
 
@@ -115,7 +105,7 @@ class OAuth2TokenServiceDelegate {
   virtual void LoadCredentials(const CoreAccountId& primary_account_id);
 
   // Returns the state of the load credentials operation.
-  LoadCredentialsState load_credentials_state() const {
+  signin::LoadCredentialsState load_credentials_state() const {
     return load_credentials_state_;
   }
 
@@ -123,7 +113,7 @@ class OAuth2TokenServiceDelegate {
   // and moves them to |to_service|. The credentials are not revoked on the
   // server, but the OnRefreshTokenRevoked() notification is sent to the
   // observers.
-  virtual void ExtractCredentials(OAuth2TokenService* to_service,
+  virtual void ExtractCredentials(ProfileOAuth2TokenService* to_service,
                                   const CoreAccountId& account_id);
 
   // Attempts to fix the error if possible.  Returns true if the error was fixed
@@ -152,7 +142,7 @@ class OAuth2TokenServiceDelegate {
   // -----------------------------------------------------------------------
 
  protected:
-  void set_load_credentials_state(LoadCredentialsState state) {
+  void set_load_credentials_state(signin::LoadCredentialsState state) {
     load_credentials_state_ = state;
   }
 
@@ -183,7 +173,8 @@ class OAuth2TokenServiceDelegate {
       observer_list_;
 
   // The state of the load credentials operation.
-  LoadCredentialsState load_credentials_state_ = LOAD_CREDENTIALS_NOT_STARTED;
+  signin::LoadCredentialsState load_credentials_state_ =
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_NOT_STARTED;
 
   void StartBatchChanges();
   void EndBatchChanges();
@@ -194,4 +185,4 @@ class OAuth2TokenServiceDelegate {
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenServiceDelegate);
 };
 
-#endif  // GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
