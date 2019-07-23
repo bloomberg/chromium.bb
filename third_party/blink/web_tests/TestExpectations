@@ -6341,10 +6341,6 @@ crbug.com/986019 [ Linux ] virtual/threaded/animations/play-state.html [ Pass Ti
 crbug.com/986019 [ Linux ] virtual/disable-blink-gen-property-trees/animations/play-state.html [ Pass Timeout ]
 
 # ecosystem-infra sheriff 2019-07-22
-crbug.com/986286 external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
-crbug.com/986286 virtual/blink-cors/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
-crbug.com/986286 virtual/not-omt-sw-fetch/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
-crbug.com/986286 virtual/omt-worker-fetch/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
 crbug.com/986457 [ Linux ] http/tests/misc/object-image-error-with-onload.html [ Pass Failure ]
 crbug.com/986477 [ Win ] external/wpt/cookies/path/match.html [ Pass Timeout ]
 crbug.com/986477 [ Win ] virtual/samesite-by-default-cookies/external/wpt/cookies/path/match.html [ Pass Timeout ]
@@ -6356,4 +6352,3 @@ crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/web-animati
 crbug.com/986666 animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
 crbug.com/986666 virtual/threaded/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
 crbug.com/986666 virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
-
