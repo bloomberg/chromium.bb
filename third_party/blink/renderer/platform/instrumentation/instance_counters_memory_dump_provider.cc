@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/instance_counters_memory_dump_provider.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters_memory_dump_provider.h"
 
 #include "base/trace_event/process_memory_dump.h"
-#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
