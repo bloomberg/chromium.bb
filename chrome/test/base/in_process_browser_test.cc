@@ -106,10 +106,6 @@
 #include "ui/views/test/test_desktop_screen_x11.h"
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/extension_api_frame_id_map.h"
-#endif
-
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/test/views/accessibility_checker.h"
 #include "ui/views/views_delegate.h"
@@ -315,14 +311,6 @@ void InProcessBrowserTest::TearDown() {
   BrowserTestBase::TearDown();
   OSCryptMocker::TearDown();
   ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(nullptr);
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // By now, all the WebContents should be destroyed, Ensure that we are not
-  // leaking memory in ExtensionAPIFrameIdMap. crbug.com/817205.
-  EXPECT_EQ(
-      0u,
-      extensions::ExtensionApiFrameIdMap::Get()->GetFrameDataCountForTesting());
-#endif
 
 #if defined(OS_CHROMEOS)
   chromeos::device_sync::DeviceSyncImpl::Factory::SetInstanceForTesting(
