@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -1407,6 +1408,23 @@ void URLLoader::SetRawResponseHeaders(
 
 void URLLoader::SetRawRequestHeadersAndNotify(
     net::HttpRawRequestHeaders headers) {
+  if (network_service_client_ && devtools_request_id()) {
+    std::vector<network::mojom::HttpRawHeaderPairPtr> header_array;
+    header_array.reserve(headers.headers().size());
+
+    for (const auto& header : headers.headers()) {
+      network::mojom::HttpRawHeaderPairPtr pair =
+          network::mojom::HttpRawHeaderPair::New();
+      pair->key = header.first;
+      pair->value = header.second;
+      header_array.push_back(std::move(pair));
+    }
+
+    network_service_client_->OnRawRequest(
+        GetProcessId(), GetRenderFrameId(), devtools_request_id().value(),
+        url_request_->maybe_sent_cookies(), std::move(header_array));
+  }
+
   if (network_context_client_) {
     net::CookieStatusList reported_cookies;
     for (const auto& cookie_and_status : url_request_->maybe_sent_cookies()) {
@@ -1423,8 +1441,6 @@ void URLLoader::SetRawRequestHeadersAndNotify(
           reported_cookies);
     }
   }
-
-  // TODO(crbug.com/856777): Add OnRawRequest once implemented
 
   if (want_raw_headers_)
     raw_request_headers_.Assign(std::move(headers));
@@ -1588,6 +1604,39 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
 }
 
 void URLLoader::ReportFlaggedResponseCookies() {
+  if (network_service_client_ && devtools_request_id() &&
+      url_request_->response_headers()) {
+    std::vector<network::mojom::HttpRawHeaderPairPtr> header_array;
+
+    size_t iterator = 0;
+    std::string name, value;
+    while (url_request_->response_headers()->EnumerateHeaderLines(
+        &iterator, &name, &value)) {
+      network::mojom::HttpRawHeaderPairPtr pair =
+          network::mojom::HttpRawHeaderPair::New();
+      pair->key = name;
+      pair->value = value;
+      header_array.push_back(std::move(pair));
+    }
+
+    // Only send the "raw" header text when the headers were actually send in
+    // text form (i.e. not QUIC or SPDY)
+    base::Optional<std::string> raw_response_headers;
+
+    const net::HttpResponseInfo& response_info = url_request_->response_info();
+
+    if (!response_info.DidUseQuic() && !response_info.was_fetched_via_spdy) {
+      raw_response_headers =
+          base::make_optional(net::HttpUtil::ConvertHeadersBackToHTTPResponse(
+              url_request_->response_headers()->raw_headers()));
+    }
+
+    network_service_client_->OnRawResponse(
+        GetProcessId(), GetRenderFrameId(), devtools_request_id().value(),
+        url_request_->maybe_stored_cookies(), std::move(header_array),
+        raw_response_headers);
+  }
+
   if (network_context_client_) {
     net::CookieStatusList reported_cookies;
     for (const auto& cookie_line_and_status :
@@ -1606,9 +1655,6 @@ void URLLoader::ReportFlaggedResponseCookies() {
           reported_cookies);
     }
   }
-
-  // TODO(crbug.com/856777): add OnRawResponse once implemented.
-  // (might want to change method name at that point).
 }
 
 }  // namespace network
