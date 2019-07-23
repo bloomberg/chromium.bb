@@ -211,7 +211,13 @@ delete StdToastElement.prototype.connectedCallback;
 export function showToast(message, options = {}) {
   const toast = new StdToastElement(message);
 
-  const {action, closeButton, ...showOptions} = options;
+  const {
+    action,
+    closeButton,
+    type,
+    ...showOptions
+  } = options;
+
   if (isElement(action)) {
     toast.action = action;
   } else if (action !== undefined) {
@@ -227,6 +233,10 @@ export function showToast(message, options = {}) {
 
   if (closeButton !== undefined) {
     toast.closeButton = closeButton;
+  }
+
+  if (type !== undefined) {
+    toast.type = type;
   }
 
   document.body.append(toast);
