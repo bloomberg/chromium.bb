@@ -3400,7 +3400,6 @@ crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-r
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/iframe-tag/no-redirect/upgrade-protocol.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/a-tag/no-redirect/same-origin-insecure.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/cross-origin/http-https/iframe-tag/swap-origin-redirect/cross-origin.http.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/at-property/external/wpt/css/css-properties-values-api/idlharness.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/attr-referrer/same-origin/http-https/script-tag/keep-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/swap-origin-redirect/same-origin-insecure.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/meta-referrer/cross-origin/http-http/iframe-tag/keep-origin-redirect/cross-origin.http.html [ Timeout ]
