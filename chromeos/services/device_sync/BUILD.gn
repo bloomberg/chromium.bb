@@ -169,6 +169,8 @@ static_library("test_support") {
     "fake_cryptauth_enrollment_manager.h",
     "fake_cryptauth_gcm_manager.cc",
     "fake_cryptauth_gcm_manager.h",
+    "fake_cryptauth_group_private_key_sharer.cc",
+    "fake_cryptauth_group_private_key_sharer.h",
     "fake_cryptauth_key_creator.cc",
     "fake_cryptauth_key_creator.h",
     "fake_cryptauth_key_proof_computer.cc",
