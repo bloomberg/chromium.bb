@@ -54,7 +54,7 @@ class CONTENT_EXPORT LevelDBIteratorImpl : public content::LevelDBIterator {
 
   // State used to facilitate memory purging. Sometimes this is destroyed before
   // we are, so use a WeakPtr.
-  base::WeakPtr<TransactionalLevelDBDatabase> db_;
+  base::WeakPtr<LevelDBDatabase> db_;
   IteratorState iterator_state_ = IteratorState::ACTIVE;
   std::string key_before_eviction_;
   const leveldb::Snapshot* snapshot_;

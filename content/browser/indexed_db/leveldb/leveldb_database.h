@@ -98,7 +98,7 @@ class CONTENT_EXPORT LevelDBDatabase
 
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
-  base::WeakPtr<TransactionalLevelDBDatabase> AsWeakPtr() {
+  base::WeakPtr<LevelDBDatabase> AsWeakPtr() {
     return weak_factory_for_iterators_.GetWeakPtr();
   }
 
@@ -144,8 +144,7 @@ class CONTENT_EXPORT LevelDBDatabase
 
   std::string file_name_for_tracing;
 
-  base::WeakPtrFactory<TransactionalLevelDBDatabase>
-      weak_factory_for_iterators_{this};
+  base::WeakPtrFactory<LevelDBDatabase> weak_factory_for_iterators_{this};
 };
 
 }  // namespace content
