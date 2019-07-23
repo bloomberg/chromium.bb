@@ -1123,9 +1123,8 @@ VaapiWrapper::GetSupportedDecodeProfiles() {
 }
 
 // static
-bool VaapiWrapper::IsJpegDecodeSupported() {
-  return VASupportedProfiles::Get().IsProfileSupported(kDecode,
-                                                       VAProfileJPEGBaseline);
+bool VaapiWrapper::IsDecodeSupported(VAProfile va_profile) {
+  return VASupportedProfiles::Get().IsProfileSupported(kDecode, va_profile);
 }
 
 // static

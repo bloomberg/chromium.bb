@@ -18,6 +18,7 @@
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "media/parsers/jpeg_parser.h"
+#include "media/parsers/webp_parser.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -33,13 +34,15 @@ bool IsJpegImage(base::span<const uint8_t> encoded_data) {
 
 ImageDecodeAcceleratorType GetImageType(
     base::span<const uint8_t> encoded_data) {
-  static_assert(static_cast<int>(ImageDecodeAcceleratorType::kMaxValue) == 1,
+  static_assert(static_cast<int>(ImageDecodeAcceleratorType::kMaxValue) == 2,
                 "GetImageType() must be adapted to support all image types in "
                 "ImageDecodeAcceleratorType");
 
-  // Currently, only JPEG images are supported.
   if (IsJpegImage(encoded_data))
     return ImageDecodeAcceleratorType::kJpeg;
+
+  if (media::IsLossyWebPImage(encoded_data))
+    return ImageDecodeAcceleratorType::kWebP;
 
   return ImageDecodeAcceleratorType::kUnknown;
 }

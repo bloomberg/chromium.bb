@@ -282,7 +282,7 @@ void VaapiMjpegDecodeAccelerator::Decode(
 }
 
 bool VaapiMjpegDecodeAccelerator::IsSupported() {
-  return VaapiWrapper::IsJpegDecodeSupported();
+  return VaapiWrapper::IsDecodeSupported(VAProfileJPEGBaseline);
 }
 
 }  // namespace media
