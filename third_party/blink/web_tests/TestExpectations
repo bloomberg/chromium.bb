@@ -6329,3 +6329,7 @@ crbug.com/986477 [ Win ] virtual/samesite-by-default-cookies/external/wpt/cookie
 crbug.com/986019 animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
 crbug.com/986019 virtual/threaded/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
 crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
+crbug.com/986666 animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
+crbug.com/986666 virtual/threaded/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
+crbug.com/986666 virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
+
