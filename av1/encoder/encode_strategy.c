@@ -800,19 +800,7 @@ static void update_arf_stack(AV1_COMP *cpi, int ref_map_index,
   }
 }
 
-// Assign new_ref in the new mapping to point at the reference buffer pointed at
-// by old_ref in the old_map.  The new mapping is stored in *new_map, while the
-// old map comes from cm->remapped_ref_idx[].
-static void assign_new_map(AV1_COMMON *const cm, int *new_map, int new_ref,
-                           int old_ref) {
-  new_map[new_ref - LAST_FRAME] = cm->remapped_ref_idx[old_ref - LAST_FRAME];
-}
-
-// Generate a new reference frame mapping.  This function updates
-// cm->remapped_ref_idx[] depending on the frame_update_type of this frame.
-// This determines which references (e.g. LAST_FRAME, ALTREF_FRAME) point at the
-// 8 underlying buffers and, together with get_refresh_frame_flags(), implements
-// our reference frame management strategy.
+// Update reference frame stack info.
 void av1_update_ref_frame_map(AV1_COMP *cpi,
                               FRAME_UPDATE_TYPE frame_update_type,
                               int ref_map_index,
@@ -868,111 +856,6 @@ void av1_update_ref_frame_map(AV1_COMP *cpi,
   }
 
   return;
-
-  // If check_frame_refs_short_signaling() decided to set
-  // frame_refs_short_signaling=1 then we update remapped_ref_idx[] here.  Every
-  // reference will still map to the same RefCntBuffer (through ref_frame_map[])
-  // after this, but that does not necessarily mean that remapped_ref_idx[] is
-  // unchanged.
-  if (cm->current_frame.frame_refs_short_signaling) {
-    const int lst_map_idx = get_ref_frame_map_idx(cm, LAST_FRAME);
-    const int gld_map_idx = get_ref_frame_map_idx(cm, GOLDEN_FRAME);
-    av1_set_frame_refs(cm, cm->remapped_ref_idx, lst_map_idx, gld_map_idx);
-  }
-
-  // For shown keyframes and S-frames all buffers are refreshed, but we don't
-  // change any of the mapping.
-  if ((cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) ||
-      frame_is_sframe(cm)) {
-    return;
-  }
-
-  // Initialize the new reference map as a copy of the old one.
-  int new_map[REF_FRAMES];
-  memcpy(new_map, cm->remapped_ref_idx, sizeof(new_map));
-
-  // The reference management strategy is currently as follows.  See
-  // gop_structure.c for more details of the structure and DOI
-  // 10.1109/DCC.2018.00045 for a higher-level explanation
-  //
-  // * ALTREF_FRAME and GOLDEN_FRAME are kept separate from the other
-  //   references.  When we code an ALTREF it refreshes the ALTREF buffer.  When
-  //   we code an OVERLAY the old GOLDEN becomes the new ALTREF and the old
-  //   ALTREF (possibly refreshed by the OVERLAY) becomes the new GOLDEN.
-  // * LAST_FRAME, LAST2_FRAME, and LAST3_FRAME work like a FIFO.  When we code
-  //   a frame which does a last-frame update we pick a buffer to refresh and
-  //   then point the LAST_FRAME reference at it.  The old LAST_FRAME becomes
-  //   LAST2_FRAME and the old LAST2_FRAME becomes LAST3_FRAME.  The old
-  //   LAST3_FRAME is re-used somewhere else.
-  // * BWDREF, ALTREF2, and EXTREF act like a stack structure, so we can
-  //   "push" and "pop" internal alt-ref frames through the three references.
-  // * When we code a BRF or internal-ARF (they work the same in this
-  //   structure) we push it onto the bwdref stack.  Because we have a finite
-  //   number of buffers, we actually refresh EXTREF, the bottom of the stack,
-  //   and rotate the three references to make EXTREF the top.
-  // * When we code an INTNL_OVERLAY we refresh BWDREF, then pop it off of the
-  //   bwdref stack and push it into the last-frame FIFO.  The old LAST3
-  //   buffer gets pushed out of the last-frame FIFO and becomes the new
-  //   EXTREF, bottom of the bwdref stack.
-  // * LAST_BIPRED just acts like a LAST_FRAME.  The BWDREF will have an
-  //   INTNL_OVERLAY and so can do its own ref map update.
-  //
-  // Note that this function runs *after* a frame has been coded, so it does not
-  // affect reference assignment of the current frame, it only affects future
-  // frames.  This is why we refresh buffers using the old reference map before
-  // remapping them.
-  //
-  // show_existing_frames don't refresh any buffers or send the reference map to
-  // the decoder, but we can still update our reference map if we want to: the
-  // decoder will update its map next time we code a non-show-existing frame.
-
-  if (frame_update_type == OVERLAY_UPDATE) {
-    // We want the old golden-frame to become our new ARF so swap the
-    // references.  If cpi->preserve_arf_as_gld == 0 then we will refresh the
-    // old ARF before it becomes our new GF
-    assign_new_map(cm, new_map, ALTREF_FRAME, GOLDEN_FRAME);
-    assign_new_map(cm, new_map, GOLDEN_FRAME, ALTREF_FRAME);
-  } else if (frame_update_type == INTNL_OVERLAY_UPDATE &&
-             encode_show_existing_frame(cm)) {
-    // Note that because encode_show_existing_frame(cm) we don't refresh any
-    // buffers.
-    // Pop BWDREF (shown as current frame) from the bwdref stack and make it
-    // the new LAST_FRAME.
-    assign_new_map(cm, new_map, LAST_FRAME, BWDREF_FRAME);
-
-    // Progress the last-frame FIFO and the bwdref stack
-    assign_new_map(cm, new_map, LAST2_FRAME, LAST_FRAME);
-    assign_new_map(cm, new_map, LAST3_FRAME, LAST2_FRAME);
-    assign_new_map(cm, new_map, BWDREF_FRAME, ALTREF2_FRAME);
-    assign_new_map(cm, new_map, ALTREF2_FRAME, EXTREF_FRAME);
-    assign_new_map(cm, new_map, EXTREF_FRAME, LAST3_FRAME);
-  } else if (frame_update_type == INTNL_ARF_UPDATE &&
-             !cm->show_existing_frame) {
-    // We want to push the current frame onto the bwdref stack.  We refresh
-    // EXTREF (the old bottom of the stack) and rotate the references so it
-    // becomes BWDREF, the top of the stack.
-    assign_new_map(cm, new_map, BWDREF_FRAME, EXTREF_FRAME);
-    assign_new_map(cm, new_map, ALTREF2_FRAME, BWDREF_FRAME);
-    assign_new_map(cm, new_map, EXTREF_FRAME, ALTREF2_FRAME);
-  }
-
-  if ((frame_update_type == LF_UPDATE || frame_update_type == GF_UPDATE ||
-       frame_update_type == INTNL_OVERLAY_UPDATE) &&
-      !encode_show_existing_frame(cm) &&
-      (!cm->show_existing_frame || frame_update_type == INTNL_OVERLAY_UPDATE)) {
-    // A standard last-frame: we refresh the LAST3_FRAME buffer and then push it
-    // into the last-frame FIFO.
-    assign_new_map(cm, new_map, LAST3_FRAME, LAST2_FRAME);
-    assign_new_map(cm, new_map, LAST2_FRAME, LAST_FRAME);
-    assign_new_map(cm, new_map, LAST_FRAME, LAST3_FRAME);
-  }
-
-  memcpy(cm->remapped_ref_idx, new_map, sizeof(new_map));
-
-#if DUMP_REF_FRAME_IMAGES == 1
-  // Dump out all reference frame images.
-  dump_ref_frame_images(cpi);
-#endif  // DUMP_REF_FRAME_IMAGES
 }
 
 static int get_free_ref_map_index(const RefBufferStack *ref_buffer_stack) {
