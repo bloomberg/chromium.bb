@@ -25,8 +25,21 @@
 #include "av1/encoder/encode_strategy.h"
 #include "av1/encoder/reconinter_enc.h"
 
-#define MC_FLOW_BSIZE 16
-#define MC_FLOW_NUM_PELS (MC_FLOW_BSIZE * MC_FLOW_BSIZE)
+#define MC_FLOW_BSIZE_1D 16
+#define MC_FLOW_NUM_PELS (MC_FLOW_BSIZE_1D * MC_FLOW_BSIZE_1D)
+
+static BLOCK_SIZE convert_length_to_bsize(int length) {
+  switch (length) {
+    case 64: return BLOCK_64X64;
+    case 32: return BLOCK_32X32;
+    case 16: return BLOCK_16X16;
+    case 8: return BLOCK_8X8;
+    case 4: return BLOCK_4X4;
+    default:
+      assert(0 && "Invalid block size for tpl model");
+      return BLOCK_16X16;
+  }
+}
 
 static void wht_fwd_txfm(int16_t *src_diff, int bw, tran_low_t *coeff,
                          TX_SIZE tx_size, int is_hbd) {
@@ -455,19 +468,7 @@ static void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
   MACROBLOCK *x = &td->mb;
   MACROBLOCKD *xd = &x->e_mbd;
   int mi_row, mi_col;
-#if MC_FLOW_BSIZE == 64
-  const BLOCK_SIZE bsize = BLOCK_64X64;
-#elif MC_FLOW_BSIZE == 32
-  const BLOCK_SIZE bsize = BLOCK_32X32;
-#elif MC_FLOW_BSIZE == 16
-  const BLOCK_SIZE bsize = BLOCK_16X16;
-#elif MC_FLOW_BSIZE == 8
-  const BLOCK_SIZE bsize = BLOCK_8X8;
-#elif MC_FLOW_BSIZE == 4
-  const BLOCK_SIZE bsize = BLOCK_4X4;
-#else
-#error "Invalid block size for tpl model"
-#endif  // MC_FLOW_BSIZE == 64
+  const BLOCK_SIZE bsize = convert_length_to_bsize(MC_FLOW_BSIZE_1D);
   av1_tile_init(&xd->tile, cm, 0, 0);
 
   DECLARE_ALIGNED(32, uint16_t, predictor16[MC_FLOW_NUM_PELS * 3]);
@@ -905,19 +906,7 @@ void av1_tpl_setup_forward_stats(AV1_COMP *cpi) {
   ThreadData *td = &cpi->td;
   MACROBLOCK *x = &td->mb;
   MACROBLOCKD *xd = &x->e_mbd;
-#if MC_FLOW_BSIZE == 64
-  const BLOCK_SIZE bsize = BLOCK_64X64;
-#elif MC_FLOW_BSIZE == 32
-  const BLOCK_SIZE bsize = BLOCK_32X32;
-#elif MC_FLOW_BSIZE == 16
-  const BLOCK_SIZE bsize = BLOCK_16X16;
-#elif MC_FLOW_BSIZE == 8
-  const BLOCK_SIZE bsize = BLOCK_8X8;
-#elif MC_FLOW_BSIZE == 4
-  const BLOCK_SIZE bsize = BLOCK_4X4;
-#else
-#error "Invalid block size for tpl model"
-#endif  // MC_FLOW_BSIZE == 64
+  const BLOCK_SIZE bsize = convert_length_to_bsize(MC_FLOW_BSIZE_1D);
 
   const GF_GROUP *gf_group = &cpi->gf_group;
   assert(IMPLIES(gf_group->size > 0, gf_group->index < gf_group->size));
