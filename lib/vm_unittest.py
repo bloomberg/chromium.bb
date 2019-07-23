@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import logging
 import mock
 import os
 import socket
@@ -17,6 +16,7 @@ import unittest
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock

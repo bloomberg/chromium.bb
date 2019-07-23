@@ -34,7 +34,7 @@ load-plugins=chromite.cli.cros.lint
 # R9301: logging is deprecated. Use "from chromite.lib import cros_logging as
 # logging" to import chromite/lib/cros_logging
 enable=
-    cros-logging-import
+    cros-logging-import,
     apply-builtin,
     backtick,
     bad-python3-import,
