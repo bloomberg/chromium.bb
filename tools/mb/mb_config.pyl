@@ -635,6 +635,7 @@
       'android-kitkat-arm-rel': 'android_release_trybot',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
+      'android-oreo-arm64-rel': 'android_release_trybot_arm64_webview_google',
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
       'android-binary-size': 'android_binary_size',
@@ -1098,6 +1099,11 @@
 
     'android_release_trybot_arm64': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
+    ],
+
+    'android_release_trybot_arm64_webview_google': [
+      'android', 'release_trybot', 'arm64', 'strip_debug_info',
+      'webview_google',
     ],
 
     'android_shared_release_bot_x64': [
