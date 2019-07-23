@@ -79,6 +79,7 @@ letter	\x03E1	2346	# ϡ Small Sampi
 
 # symbols
 sign	\x03D5	124	# ϕ Phi
+punctuation	\x037E	26	# ; Question Mark
 punctuation	\x0387	23	# · Ano Teleia (Semicolon)
 punctuation	\x1FBD	3	# ᾽ Koronis (Apostrophe)
 
