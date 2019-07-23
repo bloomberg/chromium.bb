@@ -875,14 +875,16 @@ class BranchTest(ManifestTestCase, cros_test_lib.MockTestCase):
     Branch(self.checkout, 'new-branch').Create()
     self.assertEqual(
         self.bump_version.call_args_list,
-        [mock.call('branch', 'new-branch', mock.ANY, dry_run=True)])
+        [mock.call('branch', 'new-branch', mock.ANY, dry_run=True),
+         mock.call('build', 'master', mock.ANY, dry_run=True)])
 
   def testCreateBumpsPatchNumber(self):
     """Test WhichVersionShouldBump bumps patch number on X.X.0 version."""
     self.SetVersion('1.2.0')
     Branch(self.checkout, 'new-branch').Create()
     self.assertEqual(self.bump_version.call_args_list,
-                     [mock.call('patch', 'new-branch', mock.ANY, dry_run=True)])
+                     [mock.call('patch', 'new-branch', mock.ANY, dry_run=True),
+                      mock.call('branch', 'master', mock.ANY, dry_run=True)])
 
   def testCreateDiesOnNonzeroPatchNumber(self):
     """Test WhichVersionShouldBump dies on X.X.X version."""
@@ -1618,6 +1620,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     self.AssertCrosBranchMatchesManifest('new-branch', self.full_manifest)
     self.AssertManifestsRepaired('new-branch')
     self.AssertVersion('new-branch', 12, 3, 1, 0)
+    self.AssertVersion('master', 12, 4, 0, 0)
 
   def testCreateDryRun(self):
     """Test create runs without --push."""
@@ -1672,6 +1675,7 @@ class FunctionalTest(ManifestTestCase, cros_test_lib.TempDirTestCase):
     self.AssertCrosBranchMatchesManifest('old-branch', self.full_manifest)
     self.AssertManifestsRepaired('old-branch')
     self.AssertVersion('old-branch', 12, 3, 1, 0)
+    self.AssertVersion('master', 12, 4, 0, 0)
 
   def testCreateOverwriteMissingForce(self):
     """Test create dies when it tries to overwrite without --force."""

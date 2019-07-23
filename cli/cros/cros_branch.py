@@ -579,6 +579,18 @@ class Branch(object):
         self.name,
         'Bump %s number after creating branch %s.' % (which_version, self.name),
         dry_run=not push)
+    # Increment branch/build number for source 'master' branch.
+    # manifest_version already does this for release branches.
+    # TODO(@jackneus): Make this less of a hack.
+    # In reality, this whole tool is being deleted pretty soon.
+    if self.__class__.__name__ != 'ReleaseBranch':
+      source_version = 'branch' if which_version == 'patch' else 'build'
+      self.checkout.BumpVersion(
+          source_version,
+          'master',
+          'Bump %s number for source branch after creating branch %s' %
+          (source_version, self.name),
+          dry_run=not push)
 
   def Rename(self, original, push=False, force=False):
     """Create this branch by renaming some other branch.
