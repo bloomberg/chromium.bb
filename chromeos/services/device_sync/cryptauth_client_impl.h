@@ -15,10 +15,10 @@
 #include "chromeos/services/device_sync/cryptauth_api_call_flow.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
-#include "components/signin/public/identity_manager/access_token_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace signin {
+struct AccessTokenInfo;
 class IdentityManager;
 class PrimaryAccountAccessTokenFetcher;
 }  // namespace signin
