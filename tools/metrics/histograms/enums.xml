@@ -9101,6 +9101,9 @@ Called by update_net_error_codes.py.-->
   <int value="14" label="Animation has an unsupported CSS property"/>
   <int value="15"
       label="There are multiple transform animations on the target element"/>
+  <int value="16"
+      label="Custom property contains different value types in keyframe
+             animation"/>
 </enum>
 
 <enum name="CompositorFrameSinkSubmitResult">
