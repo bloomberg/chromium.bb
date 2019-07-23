@@ -517,6 +517,13 @@ void AppListClientImpl::LaunchApp(Profile* profile,
     DismissView();
 }
 
+void AppListClientImpl::NotifySearchResultsForLogging(
+    const base::string16& trimmed_query,
+    const ash::SearchResultIdWithPositionIndices& results,
+    int position_index) {
+  search_ranking_event_logger_.Log(trimmed_query, results, position_index);
+}
+
 ash::ShelfLaunchSource AppListClientImpl::AppListSourceToLaunchSource(
     AppListSource source) {
   switch (source) {

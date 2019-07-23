@@ -1161,6 +1161,17 @@ void AppListControllerImpl::OnSearchResultVisibilityChanged(
     client_->OnSearchResultVisibilityChanged(id, visibility);
 }
 
+void AppListControllerImpl::NotifySearchResultsForLogging(
+    const base::string16& raw_query,
+    const ash::SearchResultIdWithPositionIndices& results,
+    int position_index) {
+  if (client_) {
+    base::string16 query;
+    base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
+    client_->NotifySearchResultsForLogging(query, results, position_index);
+  }
+}
+
 bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
   if (!chromeos::switches::IsAssistantEnabled())
     return false;
