@@ -2194,6 +2194,23 @@ crbug.com/891427 [ Mac Win7 ] virtual/mouseevent_fractional/fast/events/touch/ge
 
 # ====== OOPIF-mode failures until here ======
 
+# ====== Cascade failures from here ======
+
+# These expectations are copied from the main expectations; they also fail
+# without the CSSCascade feature enabled.
+crbug.com/626703 virtual/cascade/external/wpt/css/css-scoping/shadow-directionality-001.tentative.html [ Failure ]
+crbug.com/626703 virtual/cascade/external/wpt/css/css-scoping/shadow-directionality-002.tentative.html [ Failure ]
+crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-from-no-value.html [ Skip ]
+crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-to-no-value.html [ Skip ]
+crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-transition-property-variable-before-value.html [ Skip ]
+crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-value-before-transition-property-variable.html [ Skip ]
+crbug.com/552085 virtual/cascade/external/wpt/css/css-cascade/important-prop.html [ Failure ]
+
+# This is for some reason WontFix'd in the main expectations (see NeverFixTests).
+# That seems wrong, as we should support 'revert' eventually.
+crbug.com/579788 virtual/cascade/external/wpt/css/css-cascade/revert-val-001.html [ Skip ]
+
+# ====== Cascade failures until here ======
 
 ### sheriff 2019-07-16
 crbug.com/983799 [ Win ] http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]

@@ -330,6 +330,9 @@
       name: "CSSCalcAsInt",
       status: "test",
     },
+    {
+      name: "CSSCascade",
+    },
     // Support for the CSS color-scheme property from the css-color-adjust spec.
     // https://drafts.csswg.org/css-color-adjust/#color-scheme-prop
     {
