@@ -11,7 +11,6 @@ import mock
 import os
 import socket
 import stat
-import unittest
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import constants
@@ -167,7 +166,6 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     self._vm._SetQemuPath()
     self.assertEqual(self._vm.qemu_path, qemu_path)
 
-  @unittest.skip('Flaking on all bots (crbug.com/965128)')
   @mock.patch('chromite.lib.vm.VM._CheckQemuMinVersion')
   def testSystemQemuPath(self, check_min_version_mock):
     """Verify that QEMU in the system is picked up by vm.VM."""
@@ -175,7 +173,7 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     os.environ[cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV] = 'None'
 
     # Skip the Chroot.
-    constants.SOURCE_ROOT = '/temp'
+    self._vm.chroot_path = 'fake/path'
 
     # Checks the QEMU path in the system.
     qemu_path = self.TempFilePath('qemu-system-x86_64')
