@@ -3395,6 +3395,10 @@ void RenderWidget::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
       target_offset, use_anchor, new_page_scale, duration);
 }
 
+void RenderWidget::ForceRecalculateRasterScales() {
+  layer_tree_view_->layer_tree_host()->SetNeedsRecalculateRasterScales();
+}
+
 void RenderWidget::RequestDecode(const cc::PaintImage& image,
                                  base::OnceCallback<void(bool)> callback) {
   layer_tree_view_->layer_tree_host()->QueueImageDecode(image,

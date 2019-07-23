@@ -455,6 +455,7 @@ class CONTENT_EXPORT RenderWidget
                                bool use_anchor,
                                float new_page_scale,
                                double duration_sec) override;
+  void ForceRecalculateRasterScales() override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
   void NotifySwapTime(ReportTimeCallback callback) override;

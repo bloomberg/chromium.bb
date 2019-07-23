@@ -508,7 +508,9 @@ void ChromeClientImpl::PageScaleFactorChanged() const {
   web_view_->PageScaleFactorChanged();
 }
 
-void ChromeClientImpl::MainFrameScrollOffsetChanged() const {
+void ChromeClientImpl::MainFrameScrollOffsetChanged(
+    LocalFrame& main_frame) const {
+  DCHECK(main_frame.IsMainFrame());
   web_view_->MainFrameScrollOffsetChanged();
 }
 

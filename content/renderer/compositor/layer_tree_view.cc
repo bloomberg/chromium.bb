@@ -188,10 +188,6 @@ void LayerTreeView::SetNeedsBeginFrame() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-void LayerTreeView::ForceRecalculateRasterScales() {
-  layer_tree_host_->SetNeedsRecalculateRasterScales();
-}
-
 void LayerTreeView::SetHaveScrollEventHandlers(bool has_handlers) {
   layer_tree_host_->SetHaveScrollEventHandlers(has_handlers);
 }

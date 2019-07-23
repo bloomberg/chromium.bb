@@ -285,6 +285,10 @@ class WebWidgetClient {
                                        float new_page_scale,
                                        double duration_sec) {}
 
+  // For when the embedder itself change scales on the page (e.g. devtools)
+  // and wants all of the content at the new scale to be crisp.
+  virtual void ForceRecalculateRasterScales() {}
+
   // Requests an image decode and will have the |callback| run asynchronously
   // when it completes. Forces a new main frame to occur that will trigger
   // pushing the decode through the compositor.

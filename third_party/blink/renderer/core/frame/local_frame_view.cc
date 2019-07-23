@@ -3571,8 +3571,10 @@ void LocalFrameView::ClipPaintRect(FloatRect* paint_rect) const {
 
 void LocalFrameView::DidChangeScrollOffset() {
   GetFrame().Client()->DidChangeScrollOffset();
-  if (GetFrame().IsMainFrame())
-    GetFrame().GetPage()->GetChromeClient().MainFrameScrollOffsetChanged();
+  if (GetFrame().IsMainFrame()) {
+    GetFrame().GetPage()->GetChromeClient().MainFrameScrollOffsetChanged(
+        GetFrame());
+  }
 }
 
 ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
