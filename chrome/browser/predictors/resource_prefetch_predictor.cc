@@ -59,8 +59,13 @@ void InitializeOnDBSequence(
 
 }  // namespace
 
-PreconnectRequest::PreconnectRequest(const GURL& origin, int num_sockets)
-    : origin(origin), num_sockets(num_sockets) {
+PreconnectRequest::PreconnectRequest(
+    const GURL& origin,
+    int num_sockets,
+    net::NetworkIsolationKey network_isolation_key)
+    : origin(origin),
+      num_sockets(num_sockets),
+      network_isolation_key(std::move(network_isolation_key)) {
   DCHECK_GE(num_sockets, 0);
 }
 
