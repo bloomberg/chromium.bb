@@ -41,7 +41,8 @@ void DesktopProfileSessionDurationsService::OnSessionStarted(
 }
 
 void DesktopProfileSessionDurationsService::OnSessionEnded(
-    base::TimeDelta session_length) {
+    base::TimeDelta session_length,
+    base::TimeTicks session_end) {
   metrics_recorder_->OnSessionEnded(session_length);
 }
 

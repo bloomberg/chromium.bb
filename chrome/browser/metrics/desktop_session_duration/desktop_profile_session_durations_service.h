@@ -34,7 +34,8 @@ class DesktopProfileSessionDurationsService
 
   // DesktopSessionDurationtracker::Observer:
   void OnSessionStarted(base::TimeTicks session_start) override;
-  void OnSessionEnded(base::TimeDelta session_length) override;
+  void OnSessionEnded(base::TimeDelta session_length,
+                      base::TimeTicks session_end) override;
 
   // KeyedService:
   void Shutdown() override;
