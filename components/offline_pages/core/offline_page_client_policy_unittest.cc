@@ -23,9 +23,8 @@ bool isTemporary(const OfflinePageClientPolicy& policy) {
 }
 }  // namespace
 
-class ClientPolicyControllerTest : public testing::Test {
+class ClientPolicyTest : public testing::Test {
  public:
-
   // testing::Test
   void SetUp() override {}
   void TearDown() override {}
@@ -40,7 +39,7 @@ class ClientPolicyControllerTest : public testing::Test {
                                           bool expectation);
 };
 
-void ClientPolicyControllerTest::ExpectTemporary(std::string name_space) {
+void ClientPolicyTest::ExpectTemporary(std::string name_space) {
   EXPECT_TRUE(base::Contains(GetTemporaryPolicyNamespaces(), name_space))
       << "Namespace " << name_space
       << " had incorrect lifetime type when getting temporary namespaces.";
@@ -53,15 +52,15 @@ void ClientPolicyControllerTest::ExpectTemporary(std::string name_space) {
       << " had incorrect lifetime type when getting persistent namespaces.";
 }
 
-void ClientPolicyControllerTest::ExpectDownloadSupport(std::string name_space,
-                                                       bool expectation) {
+void ClientPolicyTest::ExpectDownloadSupport(std::string name_space,
+                                             bool expectation) {
   EXPECT_EQ(expectation, GetPolicy(name_space).is_supported_by_download)
       << "Namespace " << name_space
       << " had incorrect download support when directly checking if supported"
          " by download.";
 }
 
-void ClientPolicyControllerTest::ExpectPersistent(std::string name_space) {
+void ClientPolicyTest::ExpectPersistent(std::string name_space) {
   EXPECT_FALSE(base::Contains(GetTemporaryPolicyNamespaces(), name_space))
       << "Namespace " << name_space
       << " had incorrect lifetime type when getting temporary namespaces.";
@@ -74,9 +73,8 @@ void ClientPolicyControllerTest::ExpectPersistent(std::string name_space) {
       << " had incorrect lifetime type when getting persistent namespaces.";
 }
 
-void ClientPolicyControllerTest::ExpectRestrictedToTabFromClientId(
-    std::string name_space,
-    bool expectation) {
+void ClientPolicyTest::ExpectRestrictedToTabFromClientId(std::string name_space,
+                                                         bool expectation) {
   EXPECT_EQ(expectation,
             GetPolicy(name_space).is_restricted_to_tab_from_client_id)
       << "Namespace " << name_space
@@ -84,7 +82,7 @@ void ClientPolicyControllerTest::ExpectRestrictedToTabFromClientId(
          " is restricted to the tab from the client id field";
 }
 
-void ClientPolicyControllerTest::ExpectRequiresSpecificUserSettings(
+void ClientPolicyTest::ExpectRequiresSpecificUserSettings(
     std::string name_space,
     bool expectation) {
   EXPECT_EQ(expectation, GetPolicy(name_space).requires_specific_user_settings)
@@ -93,7 +91,7 @@ void ClientPolicyControllerTest::ExpectRequiresSpecificUserSettings(
          " when prefetch settings are disabled.";
 }
 
-TEST_F(ClientPolicyControllerTest, FallbackTest) {
+TEST_F(ClientPolicyTest, FallbackTest) {
   const OfflinePageClientPolicy& policy = GetPolicy(kUndefinedNamespace);
   EXPECT_EQ(policy.name_space, kDefaultNamespace);
   EXPECT_TRUE(isTemporary(policy));
@@ -110,7 +108,7 @@ TEST_F(ClientPolicyControllerTest, FallbackTest) {
   ExpectRequiresSpecificUserSettings(kDefaultNamespace, false);
 }
 
-TEST_F(ClientPolicyControllerTest, CheckBookmarkDefined) {
+TEST_F(ClientPolicyTest, CheckBookmarkDefined) {
   OfflinePageClientPolicy policy = GetPolicy(kBookmarkNamespace);
   EXPECT_EQ(policy.name_space, kBookmarkNamespace);
   EXPECT_TRUE(isTemporary(policy));
@@ -120,7 +118,7 @@ TEST_F(ClientPolicyControllerTest, CheckBookmarkDefined) {
   ExpectRequiresSpecificUserSettings(kBookmarkNamespace, false);
 }
 
-TEST_F(ClientPolicyControllerTest, CheckLastNDefined) {
+TEST_F(ClientPolicyTest, CheckLastNDefined) {
   OfflinePageClientPolicy policy = GetPolicy(kLastNNamespace);
   EXPECT_EQ(policy.name_space, kLastNNamespace);
   EXPECT_TRUE(isTemporary(policy));
@@ -130,7 +128,7 @@ TEST_F(ClientPolicyControllerTest, CheckLastNDefined) {
   ExpectRequiresSpecificUserSettings(kLastNNamespace, false);
 }
 
-TEST_F(ClientPolicyControllerTest, CheckAsyncDefined) {
+TEST_F(ClientPolicyTest, CheckAsyncDefined) {
   OfflinePageClientPolicy policy = GetPolicy(kAsyncNamespace);
   EXPECT_EQ(policy.name_space, kAsyncNamespace);
   EXPECT_FALSE(isTemporary(policy));
@@ -140,7 +138,7 @@ TEST_F(ClientPolicyControllerTest, CheckAsyncDefined) {
   ExpectRequiresSpecificUserSettings(kAsyncNamespace, false);
 }
 
-TEST_F(ClientPolicyControllerTest, CheckCCTDefined) {
+TEST_F(ClientPolicyTest, CheckCCTDefined) {
   OfflinePageClientPolicy policy = GetPolicy(kCCTNamespace);
   EXPECT_EQ(policy.name_space, kCCTNamespace);
   EXPECT_TRUE(isTemporary(policy));
@@ -150,7 +148,7 @@ TEST_F(ClientPolicyControllerTest, CheckCCTDefined) {
   ExpectRequiresSpecificUserSettings(kCCTNamespace, true);
 }
 
-TEST_F(ClientPolicyControllerTest, CheckDownloadDefined) {
+TEST_F(ClientPolicyTest, CheckDownloadDefined) {
   OfflinePageClientPolicy policy = GetPolicy(kDownloadNamespace);
   EXPECT_EQ(policy.name_space, kDownloadNamespace);
   EXPECT_FALSE(isTemporary(policy));
@@ -160,7 +158,7 @@ TEST_F(ClientPolicyControllerTest, CheckDownloadDefined) {
   ExpectRequiresSpecificUserSettings(kDownloadNamespace, false);
 }
 
-TEST_F(ClientPolicyControllerTest, CheckNTPSuggestionsDefined) {
+TEST_F(ClientPolicyTest, CheckNTPSuggestionsDefined) {
   OfflinePageClientPolicy policy = GetPolicy(kNTPSuggestionsNamespace);
   EXPECT_EQ(policy.name_space, kNTPSuggestionsNamespace);
   EXPECT_FALSE(isTemporary(policy));
@@ -170,7 +168,7 @@ TEST_F(ClientPolicyControllerTest, CheckNTPSuggestionsDefined) {
   ExpectRequiresSpecificUserSettings(kNTPSuggestionsNamespace, false);
 }
 
-TEST_F(ClientPolicyControllerTest, CheckSuggestedArticlesDefined) {
+TEST_F(ClientPolicyTest, CheckSuggestedArticlesDefined) {
   OfflinePageClientPolicy policy = GetPolicy(kSuggestedArticlesNamespace);
   EXPECT_EQ(policy.name_space, kSuggestedArticlesNamespace);
   EXPECT_TRUE(isTemporary(policy));
@@ -180,7 +178,7 @@ TEST_F(ClientPolicyControllerTest, CheckSuggestedArticlesDefined) {
   ExpectRequiresSpecificUserSettings(kSuggestedArticlesNamespace, false);
 }
 
-TEST_F(ClientPolicyControllerTest, CheckLivePageSharingDefined) {
+TEST_F(ClientPolicyTest, CheckLivePageSharingDefined) {
   OfflinePageClientPolicy policy = GetPolicy(kLivePageSharingNamespace);
   EXPECT_EQ(policy.name_space, kLivePageSharingNamespace);
   EXPECT_TRUE(isTemporary(policy));
@@ -190,7 +188,7 @@ TEST_F(ClientPolicyControllerTest, CheckLivePageSharingDefined) {
   ExpectRequiresSpecificUserSettings(kLivePageSharingNamespace, false);
 }
 
-TEST_F(ClientPolicyControllerTest, AllTemporaryNamespaces) {
+TEST_F(ClientPolicyTest, AllTemporaryNamespaces) {
   std::vector<std::string> all_namespaces = GetAllPolicyNamespaces();
   const std::vector<std::string>& cache_reset_namespaces_list =
       GetTemporaryPolicyNamespaces();
