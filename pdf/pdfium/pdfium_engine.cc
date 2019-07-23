@@ -2833,17 +2833,24 @@ pp::Size PDFiumEngine::GetPageSize(int index) {
   return size;
 }
 
-void PDFiumEngine::EnlargePage(size_t page_index,
-                               size_t num_of_pages,
-                               pp::Size* page_size) {
+draw_utils::PageInsetSizes PDFiumEngine::GetInsetSizes(
+    size_t page_index,
+    size_t num_of_pages) const {
   DCHECK_LT(page_index, num_of_pages);
 
-  draw_utils::PageInsetSizes inset_sizes = kSingleViewInsets;
   if (two_up_view_) {
-    inset_sizes = draw_utils::GetPageInsetsForTwoUpView(
+    return draw_utils::GetPageInsetsForTwoUpView(
         page_index, num_of_pages, kSingleViewInsets, kHorizontalSeparator);
   }
 
+  return kSingleViewInsets;
+}
+
+void PDFiumEngine::EnlargePage(size_t page_index,
+                               size_t num_of_pages,
+                               pp::Size* page_size) const {
+  draw_utils::PageInsetSizes inset_sizes =
+      GetInsetSizes(page_index, num_of_pages);
   page_size->Enlarge(inset_sizes.left + inset_sizes.right,
                      inset_sizes.top + inset_sizes.bottom);
 }
@@ -2851,15 +2858,9 @@ void PDFiumEngine::EnlargePage(size_t page_index,
 void PDFiumEngine::InsetPage(size_t page_index,
                              size_t num_of_pages,
                              double multiplier,
-                             pp::Rect* rect) {
-  DCHECK_LT(page_index, num_of_pages);
-
-  draw_utils::PageInsetSizes inset_sizes = kSingleViewInsets;
-  if (two_up_view_) {
-    inset_sizes = draw_utils::GetPageInsetsForTwoUpView(
-        page_index, num_of_pages, kSingleViewInsets, kHorizontalSeparator);
-  }
-
+                             pp::Rect* rect) const {
+  draw_utils::PageInsetSizes inset_sizes =
+      GetInsetSizes(page_index, num_of_pages);
   rect->Inset(static_cast<int>(ceil(inset_sizes.left * multiplier)),
               static_cast<int>(ceil(inset_sizes.top * multiplier)),
               static_cast<int>(ceil(inset_sizes.right * multiplier)),
