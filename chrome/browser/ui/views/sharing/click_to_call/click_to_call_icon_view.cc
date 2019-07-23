@@ -57,25 +57,29 @@ views::BubbleDialogDelegateView* ClickToCallIconView::GetBubble() const {
 
 bool ClickToCallIconView::Update() {
   auto* controller = GetControllerFromWebContents(GetWebContents());
-  if (controller) {
-    if (show_error_ != controller->send_failed()) {
-      show_error_ = controller->send_failed();
-      UpdateIconImage();
-    }
+  if (!controller)
+    return false;
 
-    if (controller->is_loading())
-      StartLoadingAnimation();
-    else
-      StopLoadingAnimation();
+  if (show_error_ != controller->send_failed()) {
+    show_error_ = controller->send_failed();
+    UpdateIconImage();
   }
 
+  if (controller->is_loading())
+    StartLoadingAnimation();
+  else
+    StopLoadingAnimation();
+
   const bool is_bubble_showing = IsBubbleShowing();
+
+  if (is_bubble_showing || loading_animation_ || last_controller_ != controller)
+    ResetSlideAnimation(/*show=*/false);
+
+  last_controller_ = controller;
+
   const bool is_visible =
       is_bubble_showing || loading_animation_ || label()->GetVisible();
   const bool visibility_changed = GetVisible() != is_visible;
-
-  if (is_bubble_showing || loading_animation_)
-    ResetSlideAnimation(/*show=*/false);
 
   SetVisible(is_visible);
   UpdateInkDrop(is_bubble_showing);

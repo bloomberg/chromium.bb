@@ -22,6 +22,8 @@ namespace ui {
 class Event;
 }  // namespace ui
 
+class ClickToCallSharingDialogController;
+
 // The location bar icon to show the click to call bubble where the user can
 // choose to send a phone number to a target device or use an OS handler app.
 class ClickToCallIconView : public PageActionIconView {
@@ -61,6 +63,7 @@ class ClickToCallIconView : public PageActionIconView {
   SkColor loader_color_;
   std::unique_ptr<gfx::ThrobAnimation> loading_animation_;
   bool show_error_ = false;
+  ClickToCallSharingDialogController* last_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ClickToCallIconView);
 };
