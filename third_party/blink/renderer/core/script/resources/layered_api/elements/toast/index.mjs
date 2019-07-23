@@ -13,6 +13,7 @@
 import * as reflection from '../internal/reflection.mjs';
 
 const DEFAULT_DURATION = 3000;
+const TYPES = new Set(['success', 'warning', 'error']);
 
 function stylesheetFactory() {
   let stylesheet;
@@ -37,6 +38,18 @@ function stylesheetFactory() {
 
         .default-closebutton {
           user-select: none;
+        }
+
+        :host([type=success i]) {
+          border-color: green;
+        }
+
+        :host([type=warning i]) {
+          border-color: orange;
+        }
+
+        :host([type=error i]) {
+          border-color: red;
         }
       `);
       // TODO(jacksteinberg): use offset-block-end: / offset-inline-end: over bottom: / right:
@@ -125,6 +138,25 @@ export class StdToastElement extends HTMLElement {
     } else {
       this.setAttribute('closebutton', val);
     }
+  }
+
+  get type() {
+    const typeAttr = this.getAttribute('type');
+    if (typeAttr === null) {
+      return '';
+    }
+
+    const typeAttrLower = typeAttr.toLowerCase();
+
+    if (TYPES.has(typeAttrLower)) {
+      return typeAttrLower;
+    }
+
+    return '';
+  }
+
+  set type(val) {
+    this.setAttribute('type', val);
   }
 
   show({duration = DEFAULT_DURATION} = {}) {
