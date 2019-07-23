@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/service_manager_connection_impl.h"
+#include "ios/web/service/service_manager_connection_impl.h"
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_WEB_STATE_WEB_STATE_INTERFACE_PROVIDER_H_
-#define IOS_WEB_WEB_STATE_WEB_STATE_INTERFACE_PROVIDER_H_
+#ifndef IOS_WEB_PUBLIC_SERVICE_WEB_STATE_INTERFACE_PROVIDER_H_
+#define IOS_WEB_PUBLIC_SERVICE_WEB_STATE_INTERFACE_PROVIDER_H_
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -36,4 +36,4 @@ class WebStateInterfaceProvider
 
 }  // namespace web
 
-#endif  // IOS_WEB_WEB_STATE_WEB_STATE_INTERFACE_PROVIDER_H_
+#endif  // IOS_WEB_PUBLIC_SERVICE_WEB_STATE_INTERFACE_PROVIDER_H_

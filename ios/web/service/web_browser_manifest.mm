@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/web_browser_manifest.h"
+#import "ios/web/service/web_browser_manifest.h"
 
 #include "base/no_destructor.h"
 #include "ios/web/public/service_names.mojom.h"

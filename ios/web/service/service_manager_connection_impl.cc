@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/service_manager_connection_impl.h"
+#include "ios/web/service/service_manager_connection_impl.h"
 
 #include <queue>
 #include <utility>
@@ -39,10 +39,9 @@ class ServiceManagerConnectionImpl::IOThreadContext
     : public base::RefCountedThreadSafe<IOThreadContext>,
       public service_manager::Service {
  public:
-  IOThreadContext(
-      service_manager::mojom::ServiceRequest service_request,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-      service_manager::mojom::ConnectorRequest connector_request)
+  IOThreadContext(service_manager::mojom::ServiceRequest service_request,
+                  scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+                  service_manager::mojom::ConnectorRequest connector_request)
       : pending_service_request_(std::move(service_request)),
         io_task_runner_(io_task_runner),
         pending_connector_request_(std::move(connector_request)),

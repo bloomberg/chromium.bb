@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_SERVICE_MANAGER_SERVICE_MANAGER_CONNECTION_IMPL_H_
-#define IOS_WEB_SERVICE_MANAGER_SERVICE_MANAGER_CONNECTION_IMPL_H_
+#ifndef IOS_WEB_SERVICE_SERVICE_MANAGER_CONNECTION_IMPL_H_
+#define IOS_WEB_SERVICE_SERVICE_MANAGER_CONNECTION_IMPL_H_
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "ios/web/public/service_manager_connection.h"
+#include "ios/web/public/service/service_manager_connection.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -63,4 +63,4 @@ class ServiceManagerConnectionImpl : public ServiceManagerConnection {
 
 }  // namespace web
 
-#endif  // IOS_WEB_SERVICE_MANAGER_SERVICE_MANAGER_CONNECTION_IMPL_H_
+#endif  // IOS_WEB_SERVICE_SERVICE_MANAGER_CONNECTION_IMPL_H_

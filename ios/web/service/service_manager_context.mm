@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/service_manager_context.h"
+#include "ios/web/service/service_manager_context.h"
 
 #include <algorithm>
 #include <memory>
@@ -17,13 +17,13 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "ios/web/public/service_manager_connection.h"
+#include "ios/web/public/service/service_manager_connection.h"
 #include "ios/web/public/service_names.mojom.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "ios/web/public/web_client.h"
-#include "ios/web/service_manager_connection_impl.h"
-#import "ios/web/web_browser_manifest.h"
+#include "ios/web/service/service_manager_connection_impl.h"
+#import "ios/web/service/web_browser_manifest.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
@@ -155,9 +155,7 @@ class ServiceManagerContext::InProcessServiceManagerContext
     metadata->SetPID(base::GetCurrentProcId());
   }
 
-  void ShutDownOnIOThread() {
-    service_manager_.reset();
-  }
+  void ShutDownOnIOThread() { service_manager_.reset(); }
 
   std::unique_ptr<service_manager::ServiceManager> service_manager_;
 
