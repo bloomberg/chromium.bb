@@ -26,11 +26,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+#if !BUILDFLAG(USE_KERBEROS)
+#error "use_kerberos should be true to use Negotiate authentication scheme."
+#endif
+
 #if defined(OS_ANDROID)
 #include "net/android/dummy_spnego_authenticator.h"
 #elif defined(OS_WIN)
 #include "net/http/mock_sspi_library_win.h"
-#elif defined(OS_POSIX)
+#elif BUILDFLAG(USE_EXTERNAL_GSSAPI)
 #include "net/http/mock_gssapi_library_posix.h"
 #endif
 
@@ -42,11 +46,13 @@ namespace net {
 constexpr char kFakeToken[] = "FakeToken";
 
 #if defined(OS_ANDROID)
-typedef net::android::DummySpnegoAuthenticator MockAuthLibrary;
+using MockAuthLibrary = net::android::DummySpnegoAuthenticator;
 #elif defined(OS_WIN)
-typedef MockSSPILibrary MockAuthLibrary;
-#elif defined(OS_POSIX)
-typedef test::MockGSSAPILibrary MockAuthLibrary;
+using MockAuthLibrary = MockSSPILibrary;
+#elif BUILDFLAG(USE_EXTERNAL_GSSAPI)
+using MockAuthLibrary = test::MockGSSAPILibrary;
+#else
+#error "use_kerberos is true, but no Kerberos implementation available."
 #endif
 
 class HttpAuthHandlerNegotiateTest : public PlatformTest,
@@ -66,10 +72,9 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
     http_auth_preferences_->set_auth_android_negotiate_account_type(
         "org.chromium.test.DummySpnegoAuthenticator");
     MockAuthLibrary::EnsureTestAccountExists();
-#endif
-#if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_ANDROID))
+#else
     factory_->set_library(base::WrapUnique(auth_library_));
-#endif
+#endif  // !OS_ANDROID
   }
 
 #if defined(OS_ANDROID)
@@ -83,7 +88,7 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
     security_package_->cbMaxToken = 1337;
     mock_library->ExpectQuerySecurityPackageInfo(
         L"Negotiate", SEC_E_OK, security_package_.get());
-#elif defined(OS_POSIX)
+#else
     // Copied from an actual transaction!
     static const char kAuthResponse[] =
         "\x60\x82\x02\xCA\x06\x09\x2A\x86\x48\x86\xF7\x12\x01\x02\x02\x01"
@@ -172,7 +177,7 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
                                           queries[i].expected_input_token,
                                           queries[i].output_token);
     }
-#endif  // defined(OS_POSIX)
+#endif  // !OS_WIN
   }
 
 #if defined(OS_POSIX)
@@ -203,7 +208,6 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
                                         query.expected_input_token,
                                         query.output_token);
   }
-
 #endif  // defined(OS_POSIX)
 
   int CreateHandler(bool disable_cname_lookup,
@@ -268,7 +272,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, DisableCname) {
                     nullptr, &request_info, callback.callback(), &token)));
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/alias", auth_handler->spn_for_testing());
-#elif defined(OS_POSIX)
+#else
   EXPECT_EQ("HTTP@alias", auth_handler->spn_for_testing());
 #endif
 }
@@ -286,7 +290,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, DisableCnameStandardPort) {
                     nullptr, &request_info, callback.callback(), &token)));
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/alias", auth_handler->spn_for_testing());
-#elif defined(OS_POSIX)
+#else
   EXPECT_EQ("HTTP@alias", auth_handler->spn_for_testing());
 #endif
 }
@@ -304,7 +308,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, DisableCnameNonstandardPort) {
                     nullptr, &request_info, callback.callback(), &token)));
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/alias:500", auth_handler->spn_for_testing());
-#elif defined(OS_POSIX)
+#else
   EXPECT_EQ("HTTP@alias:500", auth_handler->spn_for_testing());
 #endif
 }
@@ -322,7 +326,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, CnameSync) {
                     nullptr, &request_info, callback.callback(), &token)));
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/canonical.example.com", auth_handler->spn_for_testing());
-#elif defined(OS_POSIX)
+#else
   EXPECT_EQ("HTTP@canonical.example.com", auth_handler->spn_for_testing());
 #endif
 }
@@ -342,7 +346,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, CnameAsync) {
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 #if defined(OS_WIN)
   EXPECT_EQ("HTTP/canonical.example.com", auth_handler->spn_for_testing());
-#elif defined(OS_POSIX)
+#else
   EXPECT_EQ("HTTP@canonical.example.com", auth_handler->spn_for_testing());
 #endif
 }
@@ -383,7 +387,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, NoKerberosCredentials) {
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_MISSING_AUTH_CREDENTIALS));
 }
 
-#if BUILDFLAG(DLOPEN_KERBEROS)
+#if BUILDFLAG(USE_EXTERNAL_GSSAPI)
 TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
   MockAllowHttpAuthPreferences http_auth_preferences;
   std::unique_ptr<HttpAuthHandlerNegotiate::Factory> negotiate_factory(
@@ -401,7 +405,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
   EXPECT_THAT(rv, IsError(ERR_UNSUPPORTED_AUTH_SCHEME));
   EXPECT_TRUE(generic_handler.get() == nullptr);
 }
-#endif  // BUILDFLAG(DLOPEN_KERBEROS)
+#endif  // BUILDFLAG(USE_EXTERNAL_GSSAPI)
 
 // AllowGssapiLibraryLoad() is only supported on Chrome OS.
 #if defined(OS_CHROMEOS)

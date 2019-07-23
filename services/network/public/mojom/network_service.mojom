@@ -180,8 +180,10 @@ struct HttpAuthStaticParams {
   // behavior of NetworkService when no HttpAuthStaticParams is specified.
   array<string> supported_schemes;
 
-  // File name the GSSAPI library to load. Only supported on
-  // (OS_POSIX && !OS_ANDROID && !OS_CHROMEOS && OS_IOS) platforms.
+  // File name the GSSAPI library to load. Only supported on platforms where an
+  // external GSSAPI library is necessary for Kerberos/SPNEGO support. See the
+  // |use_external_gssapi| variable definition in //net/BUILD.gn for details on
+  // platforms where this setting is applicable.
   string gssapi_library_name;
 };
 

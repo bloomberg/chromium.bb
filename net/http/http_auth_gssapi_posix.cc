@@ -333,11 +333,9 @@ bool GSSAPISharedLibrary::Init() {
 
 bool GSSAPISharedLibrary::InitImpl() {
   DCHECK(!initialized_);
-#if BUILDFLAG(DLOPEN_KERBEROS)
   gssapi_library_ = LoadSharedLibrary();
   if (gssapi_library_ == nullptr)
     return false;
-#endif  // BUILDFLAG(DLOPEN_KERBEROS)
   initialized_ = true;
   return true;
 }
@@ -390,8 +388,6 @@ base::NativeLibrary GSSAPISharedLibrary::LoadSharedLibrary() {
   return nullptr;
 }
 
-#if BUILDFLAG(DLOPEN_KERBEROS)
-
 namespace {
 
 template <typename T>
@@ -438,24 +434,6 @@ bool GSSAPISharedLibrary::BindMethods(base::NativeLibrary lib) {
   wrap_size_limit_ = nullptr;
   return false;
 }
-
-#else  // DLOPEN_KERBEROS
-
-bool GSSAPISharedLibrary::BindMethods(base::NativeLibrary lib) {
-  // When not using dlopen(), statically bind to libgssapi methods.
-  import_name_ = gss_import_name;
-  release_name_ = gss_release_name;
-  release_buffer_ = gss_release_buffer;
-  display_name_ = gss_display_name;
-  display_status_ = gss_display_status;
-  init_sec_context_ = gss_init_sec_context;
-  wrap_size_limit_ = gss_wrap_size_limit;
-  delete_sec_context_ = gss_delete_sec_context;
-  inquire_context_ = gss_inquire_context;
-  return true;
-}
-
-#endif  // DLOPEN_KERBEROS
 
 OM_uint32 GSSAPISharedLibrary::import_name(
     OM_uint32* minor_status,

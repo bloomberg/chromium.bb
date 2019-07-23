@@ -491,8 +491,7 @@ void NetworkService::SetUpHttpAuth(
 
   http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
       &http_auth_preferences_, http_auth_static_params->supported_schemes
-#if (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)) || \
-    defined(OS_FUCHSIA)
+#if BUILDFLAG(USE_EXTERNAL_GSSAPI)
       ,
       http_auth_static_params->gssapi_library_name
 #endif

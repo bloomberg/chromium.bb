@@ -94,7 +94,6 @@ TEST(HttpAuthGSSAPIPOSIXTest, GSSAPIStartup) {
   EXPECT_TRUE(gssapi.get()->Init());
 }
 
-#if BUILDFLAG(DLOPEN_KERBEROS)
 TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMissing) {
   std::unique_ptr<GSSAPILibrary> gssapi(
       new GSSAPISharedLibrary("/this/library/does/not/exist"));
@@ -131,7 +130,6 @@ TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMethodsMissing) {
   // TODO(asanka): Once GSSAPI library loading starts emitting NetLogs verify
   // that the missing method is correctly identified.
 }
-#endif  // DLOPEN_KERBEROS
 
 TEST(HttpAuthGSSAPIPOSIXTest, GSSAPICycle) {
   std::unique_ptr<test::MockGSSAPILibrary> mock_library(
