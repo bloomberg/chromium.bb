@@ -136,14 +136,6 @@ crbug.com/883500 [ android-chromium no-use-vulkan qualcomm-adreno-(tm)-418 ] Pix
 # context loss which results in hardware decoder loss.
 crbug.com/580386 [ android ] Pixel_Video_Context_Loss_MP4 [ Skip ]
 
-# Fails on Mac Pro FYI Release (AMD)
-crbug.com/925744 [ mac amd-0x679e ] Pixel_Video_MP4 [ Skip ]
-crbug.com/925744 [ mac amd-0x679e ] Pixel_Video_Context_Loss_MP4 [ Skip ]
-crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
-crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
-crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
-crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
-
 # Fails on multiple Android devices.
 crbug.com/927107 [ android no-skia-renderer ] Pixel_CSS3DBlueBox [ Failure ]
 
