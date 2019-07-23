@@ -5144,15 +5144,23 @@ void RenderFrameHostImpl::CommitNavigation(
       auto* storage_partition = static_cast<StoragePartitionImpl*>(
           BrowserContext::GetStoragePartition(
               GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(
-              &PrefetchURLLoaderService::GetFactory,
-              storage_partition->GetPrefetchURLLoaderService(),
-              prefetch_loader_factory.InitWithNewPipeAndPassReceiver(),
-              frame_tree_node_->frame_tree_node_id(),
-              std::move(factory_bundle_for_prefetch),
-              EnsurePrefetchedSignedExchangeCache()));
+      if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+        storage_partition->GetPrefetchURLLoaderService()->GetFactory(
+            prefetch_loader_factory.InitWithNewPipeAndPassReceiver(),
+            frame_tree_node_->frame_tree_node_id(),
+            std::move(factory_bundle_for_prefetch),
+            EnsurePrefetchedSignedExchangeCache());
+      } else {
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::IO},
+            base::BindOnce(
+                &PrefetchURLLoaderService::GetFactory,
+                storage_partition->GetPrefetchURLLoaderService(),
+                prefetch_loader_factory.InitWithNewPipeAndPassReceiver(),
+                frame_tree_node_->frame_tree_node_id(),
+                std::move(factory_bundle_for_prefetch),
+                EnsurePrefetchedSignedExchangeCache()));
+      }
     }
 
     mojom::NavigationClient* navigation_client = nullptr;
