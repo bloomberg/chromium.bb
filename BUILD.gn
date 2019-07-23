@@ -14,6 +14,7 @@ group("all") {
     ":system_api-cryptohome-goprotos",
     ":system_api-cryptohome-protos",
     ":system_api-dlcservice-protos",
+    ":system_api-kerberos-goprotos",
     ":system_api-kerberos-protos",
     ":system_api-login_manager-goprotos",
     ":system_api-login_manager-protos",
@@ -129,6 +130,14 @@ proto_library("system_api-kerberos-protos") {
     "${proto_in_dir}/kerberos_service.proto",
   ]
   standalone = true
+}
+
+goproto_library("system_api-kerberos-goprotos") {
+  proto_in_dir = "dbus/kerberos"
+  proto_out_dir = "go/src/chromiumos/system_api/kerberos_proto"
+  sources = [
+    "${proto_in_dir}/kerberos_service.proto",
+  ]
 }
 
 proto_library("system_api-login_manager-protos") {
