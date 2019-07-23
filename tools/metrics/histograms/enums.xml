@@ -12994,6 +12994,7 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Push Messaging"/>
   <int value="5" label="Notifications"/>
   <int value="6" label="Payment Handler"/>
+  <int value="7" label="Periodic Background Sync"/>
 </enum>
 
 <enum name="DevToolsPanel">

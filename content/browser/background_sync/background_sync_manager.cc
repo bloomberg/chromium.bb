@@ -277,6 +277,27 @@ BackgroundSyncType GetBackgroundSyncType(
                                     : BackgroundSyncType::PERIODIC;
 }
 
+std::string GetSyncEventName(const BackgroundSyncType sync_type) {
+  if (sync_type == BackgroundSyncType::ONE_SHOT)
+    return "sync";
+  else
+    return "periodicsync";
+}
+
+DevToolsBackgroundService GetDevToolsBackgroundService(
+    BackgroundSyncType sync_type) {
+  if (sync_type == BackgroundSyncType::ONE_SHOT)
+    return DevToolsBackgroundService::kBackgroundSync;
+  else
+    return DevToolsBackgroundService::kPeriodicBackgroundSync;
+}
+
+std::string GetDelayAsString(base::TimeDelta delay) {
+  if (delay.is_max())
+    return "infinite";
+  return base::NumberToString(delay.InMilliseconds());
+}
+
 std::string GetEventStatusString(blink::ServiceWorkerStatusCode status_code) {
   // The |status_code| is derived from blink::mojom::ServiceWorkerEventStatus.
   switch (status_code) {
@@ -868,6 +889,16 @@ void BackgroundSyncManager::RegisterDidGetDelay(
     return;
   }
 
+  if (registration.sync_type() == BackgroundSyncType::PERIODIC &&
+      ShouldLogToDevTools(registration.sync_type())) {
+    devtools_context_->LogBackgroundServiceEventOnIO(
+        sw_registration_id, registration.origin(),
+        DevToolsBackgroundService::kPeriodicBackgroundSync,
+        /* event_name= */ "Got next event delay",
+        /* instance_id= */ registration.options()->tag,
+        {{"Next Attempt Delay (ms)", GetDelayAsString(delay)}});
+  }
+
   AddOrUpdateActiveRegistration(
       sw_registration_id,
       url::Origin::Create(sw_registration->scope().GetOrigin()), registration);
@@ -1115,9 +1146,20 @@ void BackgroundSyncManager::RemoveActiveRegistration(
 
   BackgroundSyncRegistrations* registrations =
       &active_registrations_[registration_info.service_worker_registration_id];
+  const url::Origin& origin = registrations->origin;
 
   registrations->registration_map.erase(
       {registration_info.tag, registration_info.sync_type});
+
+  if (registration_info.sync_type == BackgroundSyncType::PERIODIC &&
+      ShouldLogToDevTools(registration_info.sync_type)) {
+    devtools_context_->LogBackgroundServiceEventOnIO(
+        registration_info.service_worker_registration_id, origin,
+        DevToolsBackgroundService::kPeriodicBackgroundSync,
+        /* event_name= */ "Unregistered periodicsync",
+        /* instance_id= */ registration_info.tag,
+        /* event_metadata= */ {});
+  }
 }
 
 void BackgroundSyncManager::AddOrUpdateActiveRegistration(
@@ -1135,12 +1177,16 @@ void BackgroundSyncManager::AddOrUpdateActiveRegistration(
       ->registration_map[{sync_registration.options()->tag, sync_type}] =
       sync_registration;
 
-  if (ShouldLogToDevTools(sync_type)) {
+  if (ShouldLogToDevTools(sync_registration.sync_type())) {
+    std::map<std::string, std::string> event_metadata;
+    if (sync_registration.sync_type() == BackgroundSyncType::PERIODIC) {
+      event_metadata["minInterval"] =
+          base::NumberToString(sync_registration.options()->min_interval);
+    }
     devtools_context_->LogBackgroundServiceEventOnIO(
-        sw_registration_id, origin, DevToolsBackgroundService::kBackgroundSync,
-        /* event_name= */ "Registered sync",
-        /* instance_id= */ sync_registration.options()->tag,
-        /* event_metadata= */ {});
+        sw_registration_id, origin, GetDevToolsBackgroundService(sync_type),
+        /* event_name= */ "Registered " + GetSyncEventName(sync_type),
+        /* instance_id= */ sync_registration.options()->tag, event_metadata);
   }
 }
 
@@ -1241,7 +1287,15 @@ void BackgroundSyncManager::DispatchPeriodicSyncEvent(
       base::BindOnce(&OnSyncEventFinished, active_version, request_id,
                      std::move(repeating_callback)));
 
-  // TODO(crbug.com/961238): Record Periodic Sync events for DevTools.
+  if (devtools_context_->IsRecording(
+          DevToolsBackgroundService::kPeriodicBackgroundSync)) {
+    devtools_context_->LogBackgroundServiceEventOnIO(
+        active_version->registration_id(), active_version->script_origin(),
+        DevToolsBackgroundService::kPeriodicBackgroundSync,
+        /* event_name= */ "Dispatched periodicsync event",
+        /* instance_id= */ tag,
+        /* event_metadata= */ {});
+  }
 }
 
 base::CancelableOnceClosure& BackgroundSyncManager::get_delayed_task(
@@ -1759,7 +1813,7 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
     if (ShouldLogToDevTools(registration->sync_type())) {
       devtools_context_->LogBackgroundServiceEventOnIO(
           registration_info->service_worker_registration_id, origin,
-          DevToolsBackgroundService::kBackgroundSync,
+          GetDevToolsBackgroundService(registration->sync_type()),
           /* event_name= */ "Sync event reregistered",
           /* instance_id= */ registration_info->tag,
           /* event_metadata= */ {});
@@ -1771,17 +1825,20 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
     registration->set_delay_until(GetDelayUntilAfterApplyingMinGapForOrigin(
         registration->origin(), delay));
 
+    std::string event_name = GetSyncEventName(registration->sync_type()) +
+                             (succeeded ? " event completed" : " event failed");
+    std::map<std::string, std::string> event_metadata = {
+        {"Next Attempt Delay (ms)", GetDelayAsString(delay)}};
+    if (!succeeded) {
+      event_metadata.emplace("Failure Reason",
+                             GetEventStatusString(status_code));
+    }
+
     if (ShouldLogToDevTools(registration->sync_type())) {
-      std::string delay_ms = delay.is_max()
-                                 ? "infinite"
-                                 : base::NumberToString(delay.InMilliseconds());
       devtools_context_->LogBackgroundServiceEventOnIO(
           registration_info->service_worker_registration_id, origin,
-          DevToolsBackgroundService::kBackgroundSync,
-          /* event_name= */ "Sync event failed",
-          /* instance_id= */ registration_info->tag,
-          {{"Next Attempt Delay (ms)", delay_ms},
-           {"Failure Reason", GetEventStatusString(status_code)}});
+          GetDevToolsBackgroundService(registration->sync_type()), event_name,
+          /* instance_id= */ registration_info->tag, event_metadata);
     }
   }
 
@@ -1792,7 +1849,7 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
     if (ShouldLogToDevTools(registration->sync_type())) {
       devtools_context_->LogBackgroundServiceEventOnIO(
           registration_info->service_worker_registration_id, origin,
-          DevToolsBackgroundService::kBackgroundSync,
+          GetDevToolsBackgroundService(registration->sync_type()),
           /* event_name= */ "Sync completed",
           /* instance_id= */ registration_info->tag,
           {{"Status", GetEventStatusString(status_code)}});
@@ -1915,9 +1972,8 @@ blink::ServiceWorkerStatusCode BackgroundSyncManager::CanEmulateSyncEvent(
 }
 
 bool BackgroundSyncManager::ShouldLogToDevTools(BackgroundSyncType sync_type) {
-  return sync_type == BackgroundSyncType::ONE_SHOT &&
-         devtools_context_->IsRecording(
-             DevToolsBackgroundService::kBackgroundSync);
+  return devtools_context_->IsRecording(
+      GetDevToolsBackgroundService(sync_type));
 }
 
 }  // namespace content

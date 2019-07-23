@@ -395,7 +395,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   void SetMaxSyncAttemptsImpl(int max_sync_attempts,
                               base::OnceClosure callback);
 
-  // Whether an event should be logged for debuggability.
+  // Whether an event should be logged for debuggability, for |sync_type|.
   bool ShouldLogToDevTools(blink::mojom::BackgroundSyncType sync_type);
 
   base::OnceClosure MakeEmptyCompletion();
