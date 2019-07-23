@@ -12352,6 +12352,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileNTPPaused">
+  <owner>skym@chromium.org</owner>
+  <owner>carloks@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The New Tab Page (NTP) was open when Chrome was backgrounded by the user.
+  </description>
+</action>
+
 <action name="MobileNTPRecentlyClosed">
   <obsolete>
     Deprecated as of 01/2017. Replaced with
