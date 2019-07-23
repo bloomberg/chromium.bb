@@ -652,9 +652,6 @@ typedef struct SPEED_FEATURES {
   // adaptive interp_filter search to allow skip of certain filter types.
   int adaptive_interp_filter_search;
 
-  // mask for skip evaluation of certain interp_filter type.
-  INTERP_FILTER_MASK interp_filter_search_mask;
-
   // Flag used to control the ref_best_rd based gating for chroma
   int perform_best_rd_based_gating_for_chroma;
 
@@ -727,6 +724,9 @@ typedef struct SPEED_FEATURES {
 
   // Use modeled (currently CurvFit model) RDCost for fast non-RD mode
   int use_modeled_non_rd_cost;
+
+  // Filter mask to allow certain interp_filter type.
+  uint16_t interp_filter_search_mask;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
