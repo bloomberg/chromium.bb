@@ -12786,6 +12786,24 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="New key accelerator is used"/>
 </enum>
 
+<enum name="DesksCreationRemovalSource">
+  <int value="0" label="Button pressed"/>
+  <int value="1" label="Keyboard shortcut"/>
+</enum>
+
+<enum name="DesksMoveWindowFromActiveDeskSource">
+  <int value="0" label="Drag and drop"/>
+  <int value="1" label="Move-window-to-desk keyboard shortcut"/>
+</enum>
+
+<enum name="DesksSwitchSource">
+  <int value="0" label="New-desk keyboard shortcut"/>
+  <int value="1" label="Active desk was removed"/>
+  <int value="2" label="Desk-switch keyboard shortcut"/>
+  <int value="3" label="Mini_view button press"/>
+  <int value="4" label="Window on desk activated"/>
+</enum>
+
 <enum name="DesktopCaptureCounters">
   <int value="0" label="Screen capturer created."/>
   <int value="1" label="Window capturer created."/>
