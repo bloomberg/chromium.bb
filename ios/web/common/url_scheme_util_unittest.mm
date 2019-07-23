@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/url_scheme_util.h"
+#import "ios/web/common/url_scheme_util.h"
 
 #import <Foundation/Foundation.h>
 
