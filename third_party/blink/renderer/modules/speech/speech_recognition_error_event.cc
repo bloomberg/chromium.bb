@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/modules/speech/speech_recognition_error.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_error_event.h"
 
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -59,28 +59,29 @@ static String ErrorCodeToString(mojom::blink::SpeechRecognitionErrorCode code) {
   return String();
 }
 
-SpeechRecognitionError* SpeechRecognitionError::Create(
+SpeechRecognitionErrorEvent* SpeechRecognitionErrorEvent::Create(
     mojom::blink::SpeechRecognitionErrorCode code,
     const String& message) {
-  return MakeGarbageCollected<SpeechRecognitionError>(ErrorCodeToString(code),
-                                                      message);
+  return MakeGarbageCollected<SpeechRecognitionErrorEvent>(
+      ErrorCodeToString(code), message);
 }
 
-SpeechRecognitionError* SpeechRecognitionError::Create(
+SpeechRecognitionErrorEvent* SpeechRecognitionErrorEvent::Create(
     const AtomicString& event_name,
-    const SpeechRecognitionErrorInit* initializer) {
-  return MakeGarbageCollected<SpeechRecognitionError>(event_name, initializer);
+    const SpeechRecognitionErrorEventInit* initializer) {
+  return MakeGarbageCollected<SpeechRecognitionErrorEvent>(event_name,
+                                                           initializer);
 }
 
-SpeechRecognitionError::SpeechRecognitionError(const String& error,
-                                               const String& message)
+SpeechRecognitionErrorEvent::SpeechRecognitionErrorEvent(const String& error,
+                                                         const String& message)
     : Event(event_type_names::kError, Bubbles::kNo, Cancelable::kNo),
       error_(error),
       message_(message) {}
 
-SpeechRecognitionError::SpeechRecognitionError(
+SpeechRecognitionErrorEvent::SpeechRecognitionErrorEvent(
     const AtomicString& event_name,
-    const SpeechRecognitionErrorInit* initializer)
+    const SpeechRecognitionErrorEventInit* initializer)
     : Event(event_name, initializer) {
   if (initializer->hasError())
     error_ = initializer->error();
@@ -88,8 +89,8 @@ SpeechRecognitionError::SpeechRecognitionError(
     message_ = initializer->message();
 }
 
-const AtomicString& SpeechRecognitionError::InterfaceName() const {
-  return event_interface_names::kSpeechRecognitionError;
+const AtomicString& SpeechRecognitionErrorEvent::InterfaceName() const {
+  return event_interface_names::kSpeechRecognitionErrorEvent;
 }
 
 }  // namespace blink

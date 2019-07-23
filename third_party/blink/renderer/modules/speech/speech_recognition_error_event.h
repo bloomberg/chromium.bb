@@ -23,30 +23,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_ERROR_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_ERROR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_ERROR_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_ERROR_EVENT_H_
 
 #include "third_party/blink/public/mojom/speech/speech_recognition_error_code.mojom-blink.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/speech/speech_recognition_error_init.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_error_event_init.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-class MODULES_EXPORT SpeechRecognitionError final : public Event {
+class MODULES_EXPORT SpeechRecognitionErrorEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechRecognitionError* Create(
+  static SpeechRecognitionErrorEvent* Create(
       mojom::blink::SpeechRecognitionErrorCode,
       const String&);
-  static SpeechRecognitionError* Create(const AtomicString&,
-                                        const SpeechRecognitionErrorInit*);
+  static SpeechRecognitionErrorEvent* Create(
+      const AtomicString&,
+      const SpeechRecognitionErrorEventInit*);
 
-  SpeechRecognitionError(const String&, const String&);
-  SpeechRecognitionError(const AtomicString&,
-                         const SpeechRecognitionErrorInit*);
+  SpeechRecognitionErrorEvent(const String&, const String&);
+  SpeechRecognitionErrorEvent(const AtomicString&,
+                              const SpeechRecognitionErrorEventInit*);
 
   const String& error() { return error_; }
   const String& message() { return message_; }
@@ -62,4 +63,4 @@ class MODULES_EXPORT SpeechRecognitionError final : public Event {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_ERROR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_ERROR_EVENT_H_

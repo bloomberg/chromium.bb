@@ -4,7 +4,7 @@
 
 // https://w3c.github.io/speech-api/#dictdef-speechrecognitionerroreventinit
 
-dictionary SpeechRecognitionErrorInit : EventInit {
+dictionary SpeechRecognitionErrorEventInit : EventInit {
     DOMString error;
     DOMString message;
 };

@@ -27,8 +27,8 @@
 
 [
     NoInterfaceObject,
-    Constructor(DOMString type, optional SpeechRecognitionErrorInit initDict)
-] interface SpeechRecognitionError : Event {
+    Constructor(DOMString type, optional SpeechRecognitionErrorEventInit eventInitDict)
+] interface SpeechRecognitionErrorEvent : Event {
     readonly attribute DOMString error;
     readonly attribute DOMString message;
 };
