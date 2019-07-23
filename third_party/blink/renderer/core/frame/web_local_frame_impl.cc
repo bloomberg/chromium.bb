@@ -2493,15 +2493,15 @@ void WebLocalFrameImpl::AdvanceFocusInForm(WebFocusType focus_type) {
   next_element->focus();
 }
 
-bool WebLocalFrameImpl::CanFocusedFieldBeAutofilled() const {
+bool WebLocalFrameImpl::TryToShowTouchToFillForFocusedElement() {
+  if (!autofill_client_)
+    return false;
+
   DCHECK(GetFrame()->GetDocument());
   auto* focused_form_control_element = ToHTMLFormControlElementOrNull(
       GetFrame()->GetDocument()->FocusedElement());
-
-  if (!focused_form_control_element)
-    return false;
-
-  return autofill_client_->HasFillData(focused_form_control_element);
+  return focused_form_control_element &&
+         autofill_client_->TryToShowTouchToFill(focused_form_control_element);
 }
 
 void WebLocalFrameImpl::PerformMediaPlayerAction(
