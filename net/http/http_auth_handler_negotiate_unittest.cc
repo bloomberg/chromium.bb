@@ -426,7 +426,7 @@ class TestAuthSystem : public HttpNegotiateAuthSystem {
   ~TestAuthSystem() override = default;
 
   // HttpNegotiateAuthSystem implementation:
-  bool Init() override { return true; }
+  bool Init(const NetLogWithSource&) override { return true; }
   bool NeedsIdentity() const override { return true; }
   bool AllowsExplicitCredentials() const override { return true; }
 
@@ -439,6 +439,7 @@ class TestAuthSystem : public HttpNegotiateAuthSystem {
                         const std::string& spn,
                         const std::string& channel_bindings,
                         std::string* auth_token,
+                        const NetLogWithSource& net_log,
                         net::CompletionOnceCallback callback) override {
     *auth_token = kFakeToken;
     return net::OK;

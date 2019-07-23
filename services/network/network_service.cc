@@ -150,7 +150,9 @@ class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
   ~NetworkServiceAuthNegotiateAndroid() override = default;
 
   // HttpNegotiateAuthSystem implementation:
-  bool Init() override { return auth_negotiate_.Init(); }
+  bool Init(const net::NetLogWithSource& net_log) override {
+    return auth_negotiate_.Init(net_log);
+  }
 
   bool NeedsIdentity() const override {
     return auth_negotiate_.NeedsIdentity();
@@ -169,6 +171,7 @@ class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
                         const std::string& spn,
                         const std::string& channel_bindings,
                         std::string* auth_token,
+                        const net::NetLogWithSource& net_log,
                         net::CompletionOnceCallback callback) override {
     network_service_->client()->OnGenerateHttpNegotiateAuthToken(
         auth_negotiate_.server_auth_token(), auth_negotiate_.can_delegate(),

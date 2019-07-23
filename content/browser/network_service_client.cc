@@ -695,7 +695,7 @@ void NetworkServiceClient::OnGenerateHttpNegotiateAuthToken(
   auth_negotiate->set_can_delegate(can_delegate);
 
   auto auth_token = std::make_unique<std::string>();
-  auth_negotiate_raw->GenerateAuthToken(
+  auth_negotiate_raw->GenerateAuthTokenAndroid(
       nullptr, spn, std::string(), auth_token.get(),
       base::BindOnce(&FinishGenerateNegotiateAuthToken,
                      std::move(auth_negotiate), std::move(auth_token),
