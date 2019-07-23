@@ -2921,7 +2921,8 @@ void RenderFrameHostImpl::RequestTextSurroundingSelection(
     TextSurroundingSelectionCallback callback,
     int max_length) {
   DCHECK(!callback.is_null());
-  frame_->GetTextSurroundingSelection(max_length, std::move(callback));
+  GetSurroundingText()->GetTextSurroundingSelection(max_length,
+                                                    std::move(callback));
 }
 
 void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
@@ -5488,6 +5489,14 @@ RenderFrameHostImpl::GetFindInPage() {
       !find_in_page_.is_connected())
     GetRemoteAssociatedInterfaces()->GetInterface(&find_in_page_);
   return find_in_page_;
+}
+
+const mojo::AssociatedRemote<blink::mojom::SurroundingText>&
+RenderFrameHostImpl::GetSurroundingText() {
+  if (!surrounding_text_ || !surrounding_text_.is_bound() ||
+      !surrounding_text_.is_connected())
+    GetRemoteAssociatedInterfaces()->GetInterface(&surrounding_text_);
+  return surrounding_text_;
 }
 
 void RenderFrameHostImpl::ResetLoadingState() {
