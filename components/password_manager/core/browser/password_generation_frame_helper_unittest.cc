@@ -59,7 +59,10 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
   explicit TestPasswordManagerDriver(PasswordManagerClient* client)
       : password_manager_(client),
         password_generation_manager_(client, this),
-        password_autofill_manager_(this, nullptr, client) {}
+        password_autofill_manager_(this, nullptr, client) {
+    ON_CALL(*this, GetLastCommittedURL())
+        .WillByDefault(testing::Return(empty_url_));
+  }
   ~TestPasswordManagerDriver() override {}
 
   // PasswordManagerDriver implementation.
@@ -83,8 +86,10 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
   }
 
   MOCK_METHOD0(AllowToRunFormClassifier, void());
+  MOCK_CONST_METHOD0(GetLastCommittedURL, GURL());
 
  private:
+  GURL empty_url_;
   PasswordManager password_manager_;
   PasswordGenerationFrameHelper password_generation_manager_;
   PasswordAutofillManager password_autofill_manager_;
@@ -477,6 +482,33 @@ TEST_F(PasswordGenerationFrameHelperTest, UpdatePasswordSyncStateIncognito) {
       .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
 
   EXPECT_FALSE(IsGenerationEnabled());
+}
+
+TEST_F(PasswordGenerationFrameHelperTest, GenerationDisabledForGoogle) {
+  EXPECT_CALL(*client_, IsSavingAndFillingEnabled(_))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*client_, GetPasswordSyncState())
+      .WillRepeatedly(testing::Return(SYNCING_NORMAL_ENCRYPTION));
+
+  GURL accounts_url = GURL("https://accounts.google.com/path?q=1");
+  EXPECT_CALL(*GetTestDriver(), GetLastCommittedURL())
+      .WillOnce(testing::Return(accounts_url));
+  EXPECT_FALSE(IsGenerationEnabled());
+
+  GURL myaccount_url = GURL("https://myaccount.google.com/path?q=1");
+  EXPECT_CALL(*GetTestDriver(), GetLastCommittedURL())
+      .WillOnce(testing::Return(myaccount_url));
+  EXPECT_FALSE(IsGenerationEnabled());
+
+  GURL google_url = GURL("https://subdomain1.subdomain2.google.com/path");
+  EXPECT_CALL(*GetTestDriver(), GetLastCommittedURL())
+      .WillOnce(testing::Return(google_url));
+  EXPECT_FALSE(IsGenerationEnabled());
+
+  GURL non_google_url = GURL("https://example.com");
+  EXPECT_CALL(*GetTestDriver(), GetLastCommittedURL())
+      .WillOnce(testing::Return(non_google_url));
+  EXPECT_TRUE(IsGenerationEnabled());
 }
 
 }  // namespace password_manager
