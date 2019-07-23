@@ -167,6 +167,8 @@ static_library("test_support") {
     "fake_cryptauth_ecies_encryptor.h",
     "fake_cryptauth_enrollment_manager.cc",
     "fake_cryptauth_enrollment_manager.h",
+    "fake_cryptauth_feature_status_getter.cc",
+    "fake_cryptauth_feature_status_getter.h",
     "fake_cryptauth_gcm_manager.cc",
     "fake_cryptauth_gcm_manager.h",
     "fake_cryptauth_group_private_key_sharer.cc",
