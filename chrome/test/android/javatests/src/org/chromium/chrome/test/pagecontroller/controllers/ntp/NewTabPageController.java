@@ -57,14 +57,24 @@ public class NewTabPageController extends PageController {
                     com.google.android.libraries.feed.basicstream.R.id.feed_stream_recycler_view,
                     R.id.card_contents);
 
+    private ArticleCardController mAriticleCardController;
     private SuggestionTileController mSuggestionsTileController;
 
     private static final NewTabPageController sInstance = new NewTabPageController();
     private NewTabPageController() {
+        mAriticleCardController = ArticleCardController.getInstance();
         mSuggestionsTileController = SuggestionTileController.getInstance();
     }
     public static NewTabPageController getInstance() {
         return sInstance;
+    }
+
+    public ArticleCardController.ImplementationType getArticleImplementationType() {
+        if (mLocatorHelper.isOnScreen(LOCATOR_FEED_STREAM_RECYCLER_VIEW)) {
+            return ArticleCardController.ImplementationType.FEED;
+        } else {
+            return ArticleCardController.ImplementationType.ZINE;
+        }
     }
 
     /**
@@ -155,6 +165,10 @@ public class NewTabPageController extends PageController {
         }
     }
 
+    public List<ArticleCardController.Info> getAllLoadedArticles() {
+        return getAllLoadedArticles(getArticleImplementationType());
+    }
+
     /**
      * Get all suggestion tiles.  This will cause the page to scroll to the top.
      * @return List of suggestion infos, possibly empty.
@@ -167,11 +181,52 @@ public class NewTabPageController extends PageController {
     }
 
     /**
+     * Get all loaded articles.  This will cause the page to scroll to top then down to the bottom.
+     * @param implementationType The article implementation type, FEED or ZINE.
+     * @return                      List of article card infos, this is a list to preserve the
+     *                              order of the articles as they appeared on the screen.
+     */
+    public List<ArticleCardController.Info> getAllLoadedArticles(
+            ArticleCardController.ImplementationType implementationType) {
+        scrollToTop();
+        List<ArticleCardController.Info> allArticles =
+                mAriticleCardController.parseScreenForArticles(implementationType);
+        do {
+            scrollTowardsBottom(SCROLL_SWIPE_FRACTION);
+            List<ArticleCardController.Info> currentArticles =
+                    mAriticleCardController.parseScreenForArticles(implementationType);
+            for (ArticleCardController.Info article : currentArticles) {
+                if (!allArticles.contains(article)) {
+                    allArticles.add(article);
+                }
+            }
+        } while (!hasScrolledToBottom());
+
+        return allArticles;
+    }
+
+    /**
+     * Perform the default card action by tapping on it.  This will cause the page to scroll to top
+     * then down to where the article is located (or hit bottom if it isn't found).
+     * @param article The article info.
+     * @return        UrlPage Controller where the article will be loaded.
+     */
+    public UrlPage clickArticle(ArticleCardController.Info article) {
+        scrollToTop();
+        IUi2Locator locator = ArticleCardController.getInstance().getLocator(article);
+        mUtils.swipeUpVerticallyUntilFound(locator, LOCATOR_BOTTOM_OF_PAGE);
+        mUtils.click(locator);
+        UrlPage inst = UrlPage.getInstance();
+        inst.verify();
+        return inst;
+    }
+
+    /**
      * The default action is the one that gets performed when the user taps on the tile icon
      * (opens site in a new page).  If user long taps, then a menu is shown providing more choices
      * (not yet implemented).  This will cause the page to scroll to the top.
      */
-    public UrlPage performDefaultSuggestionTileAction(SuggestionTileController.Info tile) {
+    public UrlPage clickSuggestionTile(SuggestionTileController.Info tile) {
         scrollToTop();
         IUi2Locator locator = mSuggestionsTileController.getLocator(tile);
         mUtils.swipeUpVerticallyUntilFound(locator, LOCATOR_BOTTOM_OF_PAGE);
@@ -198,6 +253,16 @@ public class NewTabPageController extends PageController {
         scrollToTop();
         mUtils.click(LOCATOR_MENU_BUTTON);
         ChromeMenu inst = ChromeMenu.getInstance();
+        inst.verify();
+        return inst;
+    }
+
+    public ArticleActionsMenu openArticleContextMenu(ArticleCardController.Info card) {
+        scrollToTop();
+        IUi2Locator locator = mAriticleCardController.getLocator(card);
+        mUtils.swipeUpVerticallyUntilFound(locator, LOCATOR_BOTTOM_OF_PAGE);
+        mUtils.longClick(locator);
+        ArticleActionsMenu inst = ArticleActionsMenu.getInstance();
         inst.verify();
         return inst;
     }
