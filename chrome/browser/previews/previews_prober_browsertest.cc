@@ -19,6 +19,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -133,7 +134,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, OK) {
                         browser()->profile()->GetPrefs(),
                         PreviewsProber::ClientName::kLitepages, url,
                         PreviewsProber::HttpMethod::kGet, headers, retry_policy,
-                        timeout_policy, 1, base::TimeDelta::FromDays(1));
+                        timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
+                        base::TimeDelta::FromDays(1));
   prober.SendNowIfInactive(false);
   WaitForCompletedProbe(&prober);
 
@@ -155,7 +157,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, Timeout) {
                         browser()->profile()->GetPrefs(),
                         PreviewsProber::ClientName::kLitepages, url,
                         PreviewsProber::HttpMethod::kGet, headers, retry_policy,
-                        timeout_policy, 1, base::TimeDelta::FromDays(1));
+                        timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
+                        base::TimeDelta::FromDays(1));
   prober.SendNowIfInactive(false);
   WaitForCompletedProbe(&prober);
 
@@ -180,7 +183,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsProberBrowserTest, MAYBE_NetworkChange) {
                         browser()->profile()->GetPrefs(),
                         PreviewsProber::ClientName::kLitepages, url,
                         PreviewsProber::HttpMethod::kGet, headers, retry_policy,
-                        timeout_policy, 1, base::TimeDelta::FromDays(1));
+                        timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
+                        base::TimeDelta::FromDays(1));
   SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_4G);
   WaitForCompletedProbe(&prober);
 
