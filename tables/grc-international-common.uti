@@ -77,20 +77,22 @@ letter	\x03DD	1236	# ϝ Small Digamma
 letter	\x03DF	12345	# ϟ Small Koppa
 letter	\x03E1	2346	# ϡ Small Sampi
 
-# symbols
-sign	\x03D5	124	# ϕ Phi
-punctuation	\x037E	26	# ; Question Mark
-punctuation	\x0387	23	# · Ano Teleia (Semicolon)
-punctuation	\x1FBD	3	# ᾽ Koronis (Apostrophe)
-
 # accents
 sign	\x1FBF	356	# ᾿ Psili (smooth breathing)
 sign	\x1FFE	125	# ῾ Dasia (rough breathing)
-sign	\x1FEF	6	# ` Varia (Grave)
 sign	\x0384	4	# ΄ Tonos (Acute)
 sign	\x1FFD	4	# ´ Oxia (Acute)
 sign	\x1FC0	5	# ῀ Perispomeni (Circumflex)
+sign	\x1FEF	6	# ` Varia (Grave)
 sign	\x037A	35	# ͺ Ypogegrammeni (subscript Iota)
 sign	\x1FBE	35	# ι Prosgegrammeni (prescript Iota)
 sign	\x00AF	456	# ¯ Macron
+
+# symbols
+sign	\x03D5	124	# ϕ Phi
+
+# punctuation
+punctuation	\x037E	26	# ; Question Mark
+punctuation	\x0387	23	# · Ano Teleia (Semicolon)
+punctuation	\x1FBD	3	# ᾽ Koronis (Apostrophe)
 
