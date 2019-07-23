@@ -170,12 +170,3 @@ source_set("generated") {
     "//v8",
   ]
 }
-
-generate_web_idl_collection("modules_web_idl_collection") {
-  # |sources| contains all IDL files under modules/.
-  sources = modules_definition_idl_files + modules_static_interface_idl_files +
-            modules_static_dependency_idl_files
-  output = "web_idl_collection_for_modules.pickle"
-  component = "modules"
-  output_dir = bindings_modules_output_dir
-}

@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 from .identifier_ir_map import IdentifierIRMap
+from .idl_type import IdlTypeFactory
+from .reference import RefByIdFactory
 
 
 class IdlCompiler(object):
@@ -26,8 +28,27 @@ class IdlCompiler(object):
     the details.
     """
 
-    def __init__(self, ir_map):
+    def __init__(self, ir_map, ref_to_idl_type_factory, ref_to_idl_def_factory,
+                 idl_type_factory):
+        """
+        Args:
+            ir_map: IdentifierIRMap filled with the initial IRs of IDL
+                definitions.
+            ref_to_idl_type_factory: RefByIdFactory that created all references
+                to IdlType.
+            ref_to_idl_def_factory: RefByIdFactory that created all references
+                to UserDefinedType.
+            idl_type_factory: IdlTypeFactory that created all instances of
+                IdlType.
+        """
+        assert isinstance(ir_map, IdentifierIRMap)
+        assert isinstance(ref_to_idl_type_factory, RefByIdFactory)
+        assert isinstance(ref_to_idl_def_factory, RefByIdFactory)
+        assert isinstance(idl_type_factory, IdlTypeFactory)
         self._ir_map = ir_map
+        self._ref_to_idl_type_factory = ref_to_idl_type_factory
+        self._ref_to_idl_def_factory = ref_to_idl_def_factory
+        self._idl_type_factory = idl_type_factory
 
     def build_database(self):
         self._merge_partials()
