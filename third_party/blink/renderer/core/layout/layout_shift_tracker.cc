@@ -6,6 +6,7 @@
 
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/blink/public/platform/web_pointer_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -321,15 +322,20 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
   }
 #endif
 
-  ReportShift(score_delta, weighted_score_delta);
+  if (pointerdown_pending_data_.saw_pointerdown) {
+    pointerdown_pending_data_.score_delta += score_delta;
+    pointerdown_pending_data_.weighted_score_delta += weighted_score_delta;
+  } else {
+    ReportShift(score_delta, weighted_score_delta);
+  }
 
   if (use_sweep_line) {
-    if (!region_experimental_.IsEmpty() && !HadRecentInput()) {
+    if (!region_experimental_.IsEmpty()) {
       SetLayoutShiftRects(region_experimental_.GetRects(), 1, true);
     }
     region_experimental_.Reset();
   } else {
-    if (!region_.IsEmpty() && !HadRecentInput()) {
+    if (!region_.IsEmpty()) {
       SetLayoutShiftRects(region_.Rects(), granularity_scale, false);
     }
     region_ = Region();
@@ -341,7 +347,7 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
 void LayoutShiftTracker::ReportShift(double score_delta,
                                      double weighted_score_delta) {
   LocalFrame& frame = frame_view_->GetFrame();
-  bool had_recent_input = HadRecentInput();
+  bool had_recent_input = timer_.IsActive();
 
   if (!had_recent_input) {
     score_ += score_delta;
@@ -379,24 +385,44 @@ void LayoutShiftTracker::ReportShift(double score_delta,
 }
 
 void LayoutShiftTracker::NotifyInput(const WebInputEvent& event) {
-  bool event_is_meaningful =
-      event.GetType() == WebInputEvent::kMouseDown ||
-      event.GetType() == WebInputEvent::kKeyDown ||
-      event.GetType() == WebInputEvent::kRawKeyDown ||
+  const WebInputEvent::Type type = event.GetType();
+  const bool saw_pointerdown = pointerdown_pending_data_.saw_pointerdown;
+  const bool pointerdown_became_tap =
+      saw_pointerdown && type == WebInputEvent::kPointerUp;
+  const bool event_type_stops_pointerdown_buffering =
+      type == WebInputEvent::kPointerUp ||
+      type == WebInputEvent::kPointerCausedUaAction ||
+      type == WebInputEvent::kPointerCancel;
+
+  // Only non-hovering pointerdown requires buffering.
+  const bool is_hovering_pointerdown =
+      type == WebInputEvent::kPointerDown &&
+      static_cast<const WebPointerEvent&>(event).hovering;
+
+  const bool should_trigger_shift_exclusion =
+      type == WebInputEvent::kMouseDown || type == WebInputEvent::kKeyDown ||
+      type == WebInputEvent::kRawKeyDown ||
       // We need to explicitly include tap, as if there are no listeners, we
       // won't receive the pointer events.
-      event.GetType() == WebInputEvent::kGestureTap ||
-      // Ignore kPointerDown, since it might be a scroll.
-      event.GetType() == WebInputEvent::kPointerUp;
+      type == WebInputEvent::kGestureTap || is_hovering_pointerdown ||
+      pointerdown_became_tap;
 
-  if (!event_is_meaningful)
-    return;
+  if (should_trigger_shift_exclusion) {
+    observed_input_or_scroll_ = true;
 
-  observed_input_or_scroll_ = true;
+    // This cancels any previously scheduled task from the same timer.
+    timer_.StartOneShot(kTimerDelay, FROM_HERE);
+    UpdateInputTimestamp(event.TimeStamp());
+  }
 
-  // This cancels any previously scheduled task from the same timer.
-  timer_.StartOneShot(kTimerDelay, FROM_HERE);
-  UpdateInputTimestamp(event.TimeStamp());
+  if (saw_pointerdown && event_type_stops_pointerdown_buffering) {
+    double score_delta = pointerdown_pending_data_.score_delta;
+    if (score_delta > 0)
+      ReportShift(score_delta, pointerdown_pending_data_.weighted_score_delta);
+    pointerdown_pending_data_ = PointerdownPendingData();
+  }
+  if (type == WebInputEvent::kPointerDown && !is_hovering_pointerdown)
+    pointerdown_pending_data_.saw_pointerdown = true;
 }
 
 void LayoutShiftTracker::UpdateInputTimestamp(base::TimeTicks timestamp) {
@@ -422,10 +448,6 @@ void LayoutShiftTracker::NotifyViewportSizeChanged() {
   // This cancels any previously scheduled task from the same timer.
   timer_.StartOneShot(kTimerDelay, FROM_HERE);
   UpdateInputTimestamp(base::TimeTicks::Now());
-}
-
-bool LayoutShiftTracker::HadRecentInput() {
-  return timer_.IsActive();
 }
 
 bool LayoutShiftTracker::IsActive() {

@@ -42,7 +42,6 @@ class CORE_EXPORT LayoutShiftTracker {
   void NotifyInput(const WebInputEvent&);
   void NotifyScroll(ScrollType, ScrollOffset delta);
   void NotifyViewportSizeChanged();
-  bool HadRecentInput();
   bool IsActive();
   double Score() const { return score_; }
   double WeightedScore() const { return weighted_score_; }
@@ -84,6 +83,22 @@ class CORE_EXPORT LayoutShiftTracker {
   // frame at the time the shift occurred, e.g. x0.5 if the subframe occupied
   // half of the main frame's reported size; see SubframeWeightingFactor().
   double weighted_score_;
+
+  // Stores information related to buffering layout shifts after pointerdown.
+  // We accumulate score deltas in this object until we know whether the
+  // pointerdown should be treated as a tap (triggering layout shift exclusion)
+  // or a scroll (not triggering layout shift exclusion).  Once the correct
+  // treatment is known, the pending layout shifts are reported appropriately
+  // and the PointerdownPendingData object is reset.
+  struct PointerdownPendingData {
+    PointerdownPendingData()
+        : saw_pointerdown(false), score_delta(0), weighted_score_delta(0) {}
+    bool saw_pointerdown;
+    double score_delta;
+    double weighted_score_delta;
+  };
+
+  PointerdownPendingData pointerdown_pending_data_;
 
   // The per-animation-frame impact region.
   Region region_;
