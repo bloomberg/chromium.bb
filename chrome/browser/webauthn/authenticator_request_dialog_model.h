@@ -421,6 +421,8 @@ class AuthenticatorRequestDialogModel {
 
   const std::string& relying_party_id() const { return relying_party_id_; }
 
+  bool request_may_start_over() const { return request_may_start_over_; }
+
  private:
   // Contains the state that will be reset when calling StartOver(). StartOver()
   // might be called at an arbitrary point of execution.
@@ -493,6 +495,11 @@ class AuthenticatorRequestDialogModel {
       selection_callback_;
 
   bool incognito_mode_ = false;
+
+  // request_may_start_over_ indicates whether a button to retry the request
+  // should be included on the dialog sheet shown when encountering certain
+  // errors.
+  bool request_may_start_over_ = true;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};
 

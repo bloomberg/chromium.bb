@@ -17,6 +17,7 @@ AuthenticatorRequestClientDelegate::~AuthenticatorRequestClientDelegate() =
     default;
 
 bool AuthenticatorRequestClientDelegate::DoesBlockRequestOnFailure(
+    const ::device::FidoAuthenticator* authenticator,
     InterestingFailureReason reason) {
   return false;
 }
