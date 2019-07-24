@@ -14,15 +14,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"
-
-namespace {
-// Placeholder colors and alphas. TODO(crbug.com/933384): get rid of
-// these and make colors configurable, with same defaults as existing
-// ink drops.
-constexpr SkColor kInstallableInkDropBaseColor = SK_ColorBLACK;
-constexpr float kInstallableInkDropHighlightedOpacity = 0.08;
-constexpr float kInstallableInkDropActivatedOpacity = 0.16;
-}  // namespace
+#include "ui/views/animation/installable_ink_drop_config.h"
 
 namespace views {
 
@@ -45,19 +37,18 @@ void InstallableInkDropPainter::Paint(gfx::Canvas* canvas,
   // If fully filled, there is no need to draw the highlight, and we can draw
   // the activated color more efficiently as a rectangle.
   if (state_->flood_fill_progress == 1.0f) {
-    canvas->FillRect(
-        gfx::Rect(size),
-        SkColorSetA(kInstallableInkDropBaseColor,
-                    kInstallableInkDropActivatedOpacity * SK_AlphaOPAQUE));
+    canvas->FillRect(gfx::Rect(size),
+                     SkColorSetA(config_->base_color,
+                                 config_->ripple_opacity * SK_AlphaOPAQUE));
     return;
   }
 
   if (state_->highlighted_ratio > 0.0f) {
     canvas->FillRect(
         gfx::Rect(size),
-        SkColorSetA(kInstallableInkDropBaseColor,
-                    kInstallableInkDropHighlightedOpacity *
-                        state_->highlighted_ratio * SK_AlphaOPAQUE));
+        SkColorSetA(config_->base_color, config_->highlight_opacity *
+                                             state_->highlighted_ratio *
+                                             SK_AlphaOPAQUE));
   }
 
   if (state_->flood_fill_progress > 0.0f) {
@@ -71,9 +62,8 @@ void InstallableInkDropPainter::Paint(gfx::Canvas* canvas,
 
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(
-        SkColorSetA(kInstallableInkDropBaseColor,
-                    kInstallableInkDropActivatedOpacity * SK_AlphaOPAQUE));
+    flags.setColor(SkColorSetA(config_->base_color,
+                               config_->ripple_opacity * SK_AlphaOPAQUE));
     canvas->DrawCircle(state_->flood_fill_center, cur_radius, flags);
   }
 }
