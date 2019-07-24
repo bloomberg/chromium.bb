@@ -2564,8 +2564,8 @@ void CrostiniManager::SuspendImminent(
 
 void CrostiniManager::SuspendDone(const base::TimeDelta& sleep_duration) {
   // https://crbug.com/968060.  Sshfs is unmounted before suspend,
-  // call RestartCrostini to force remount if VM is running.
-  if (IsVmRunning(kCrostiniDefaultVmName)) {
+  // call RestartCrostini to force remount if container is running.
+  if (GetContainerInfo(kCrostiniDefaultVmName, kCrostiniDefaultContainerName)) {
     RestartCrostini(kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
                     base::DoNothing());
   }
