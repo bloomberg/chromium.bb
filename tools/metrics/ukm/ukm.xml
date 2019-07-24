@@ -6147,6 +6147,28 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PreviewsDeferAllScript" singular="True">
+  <owner>dougarnett@chromium.org</owner>
+  <summary>
+    Metrics associated with the intervention of deferring the execution of
+    synchronous script (typically due to a DeferAllScript Preview). This is
+    recorded when the HTML parsing of a mainframe has completed.
+  </summary>
+  <metric name="force_deferred_scripts_mainframe">
+    <summary>
+      The total number of mainframe scripts (inline and external) whose
+      execution was force deferred (i.e., that otherwise would have been render
+      blocking).
+    </summary>
+  </metric>
+  <metric name="force_deferred_scripts_mainframe_external">
+    <summary>
+      The total number of mainframe external scripts whose execution was force
+      deferred (i.e., that otherwise would have been render blocking).
+    </summary>
+  </metric>
+</event>
+
 <event name="PreviewsResourceLoadingHints" singular="True">
   <owner>jegray@chromium.org</owner>
   <summary>
