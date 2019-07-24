@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/webaudio/base_audio_context_tracker.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -12,23 +12,22 @@
 
 namespace blink {
 
-const char BaseAudioContextTracker::kSupplementName[] =
-    "BaseAudioContextTracker";
+const char AudioGraphTracer::kSupplementName[] = "AudioGraphTracer";
 
-void BaseAudioContextTracker::ProvideToPage(Page& page) {
-  page.ProvideSupplement(MakeGarbageCollected<BaseAudioContextTracker>());
+void AudioGraphTracer::ProvideAudioGraphTracerTo(Page& page) {
+  page.ProvideSupplement(MakeGarbageCollected<AudioGraphTracer>());
 }
 
-BaseAudioContextTracker::BaseAudioContextTracker()
+AudioGraphTracer::AudioGraphTracer()
     : inspector_agent_(nullptr) {}
 
-void BaseAudioContextTracker::Trace(blink::Visitor* visitor) {
+void AudioGraphTracer::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspector_agent_);
   visitor->Trace(contexts_);
   Supplement<Page>::Trace(visitor);
 }
 
-void BaseAudioContextTracker::SetInspectorAgent(InspectorWebAudioAgent* agent) {
+void AudioGraphTracer::SetInspectorAgent(InspectorWebAudioAgent* agent) {
   inspector_agent_ = agent;
   if (!inspector_agent_)
     return;
@@ -36,7 +35,7 @@ void BaseAudioContextTracker::SetInspectorAgent(InspectorWebAudioAgent* agent) {
     inspector_agent_->DidCreateBaseAudioContext(context);
 }
 
-void BaseAudioContextTracker::DidCreateBaseAudioContext(
+void AudioGraphTracer::DidCreateBaseAudioContext(
     BaseAudioContext* context) {
   DCHECK(!contexts_.Contains(context));
 
@@ -45,7 +44,7 @@ void BaseAudioContextTracker::DidCreateBaseAudioContext(
     inspector_agent_->DidCreateBaseAudioContext(context);
 }
 
-void BaseAudioContextTracker::DidDestroyBaseAudioContext(
+void AudioGraphTracer::DidDestroyBaseAudioContext(
     BaseAudioContext* context) {
   DCHECK(contexts_.Contains(context));
 
@@ -54,7 +53,7 @@ void BaseAudioContextTracker::DidDestroyBaseAudioContext(
     inspector_agent_->DidDestroyBaseAudioContext(context);
 }
 
-void BaseAudioContextTracker::DidChangeBaseAudioContext(
+void AudioGraphTracer::DidChangeBaseAudioContext(
     BaseAudioContext* context) {
   DCHECK(contexts_.Contains(context));
 
@@ -62,7 +61,7 @@ void BaseAudioContextTracker::DidChangeBaseAudioContext(
     inspector_agent_->DidChangeBaseAudioContext(context);
 }
 
-BaseAudioContext* BaseAudioContextTracker::GetContextById(String contextId) {
+BaseAudioContext* AudioGraphTracer::GetContextById(String contextId) {
   for (const auto& context : contexts_) {
     if (context->Uuid() == contextId)
       return context;
@@ -71,13 +70,13 @@ BaseAudioContext* BaseAudioContextTracker::GetContextById(String contextId) {
   return nullptr;
 }
 
-BaseAudioContextTracker* BaseAudioContextTracker::FromPage(Page* page) {
-  return Supplement<Page>::From<BaseAudioContextTracker>(page);
+AudioGraphTracer* AudioGraphTracer::FromPage(Page* page) {
+  return Supplement<Page>::From<AudioGraphTracer>(page);
 }
 
-BaseAudioContextTracker* BaseAudioContextTracker::FromDocument(
+AudioGraphTracer* AudioGraphTracer::FromDocument(
     const Document& document) {
-  return BaseAudioContextTracker::FromPage(document.GetPage());
+  return AudioGraphTracer::FromPage(document.GetPage());
 }
 
 }  // namespace blink

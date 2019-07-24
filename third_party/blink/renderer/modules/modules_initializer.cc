@@ -78,7 +78,7 @@
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
 #include "third_party/blink/renderer/modules/vr/navigator_vr.h"
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
-#include "third_party/blink/renderer/modules/webaudio/base_audio_context_tracker.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/inspector_web_audio_agent.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_client.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_manager.h"
@@ -298,7 +298,7 @@ void ModulesInitializer::ProvideModulesToPage(Page& page,
   ::blink::ProvideDatabaseClientTo(page,
                                    MakeGarbageCollected<DatabaseClient>());
   StorageNamespace::ProvideSessionStorageNamespaceTo(page, client);
-  BaseAudioContextTracker::ProvideToPage(page);
+  AudioGraphTracer::ProvideAudioGraphTracerTo(page);
 }
 
 void ModulesInitializer::ForceNextWebGLContextCreationToFail() const {

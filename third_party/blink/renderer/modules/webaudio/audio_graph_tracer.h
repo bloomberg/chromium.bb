@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_BASE_AUDIO_CONTEXT_TRACKER_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_BASE_AUDIO_CONTEXT_TRACKER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_GRAPH_TRACER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_GRAPH_TRACER_H_
 
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -18,17 +18,17 @@ class Document;
 class InspectorWebAudioAgent;
 class Page;
 
-class MODULES_EXPORT BaseAudioContextTracker final
-    : public GarbageCollected<BaseAudioContextTracker>,
+class MODULES_EXPORT AudioGraphTracer final
+    : public GarbageCollected<AudioGraphTracer>,
       public Supplement<Page> {
-  USING_GARBAGE_COLLECTED_MIXIN(BaseAudioContextTracker);
+  USING_GARBAGE_COLLECTED_MIXIN(AudioGraphTracer);
 
  public:
   static const char kSupplementName[];
 
-  static void ProvideToPage(Page&);
+  static void ProvideAudioGraphTracerTo(Page&);
 
-  BaseAudioContextTracker();
+  AudioGraphTracer();
 
   void Trace(blink::Visitor*) override;
 
@@ -45,8 +45,8 @@ class MODULES_EXPORT BaseAudioContextTracker final
 
   BaseAudioContext* GetContextById(const String contextId);
 
-  static BaseAudioContextTracker* FromPage(Page*);
-  static BaseAudioContextTracker* FromDocument(const Document&);
+  static AudioGraphTracer* FromPage(Page*);
+  static AudioGraphTracer* FromDocument(const Document&);
 
  private:
   Member<InspectorWebAudioAgent> inspector_agent_;
@@ -55,4 +55,4 @@ class MODULES_EXPORT BaseAudioContextTracker final
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_BASE_AUDIO_CONTEXT_TRACKER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_GRAPH_TRACER_H_
