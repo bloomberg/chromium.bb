@@ -6346,3 +6346,4 @@ crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/play-state.
 crbug.com/987108 [ Mac ] fast/forms/select/disabled-select-change-index.html [ Failure ]
 crbug.com/987132 [ Mac ] fast/forms/select/option-strip-whitespace.html [ Failure ]
 crbug.com/986282 external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Pass Failure ]
+crbug.com/987138 [ Linux Win ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
