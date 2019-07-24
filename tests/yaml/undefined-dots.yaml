@@ -59,3 +59,32 @@ tests:
     - "  "
     - outputPos: [0, 1, 1]
       mode: [noUndefined]
+
+table: |
+  include tables/unicode-without-blank.dis
+  include tables/spaces.uti
+  include tables/latinLetterDef6Dots.uti
+  include tables/loweredDigits6Dots.uti
+  sign \\ 16
+  sign ' 3
+flags: {testmode: forward}
+tests:
+  - - \x2026
+    - ⠄⠡⠭⠆⠴⠆⠖⠄
+  - - \x2026
+    - ""
+    - mode: [noUndefined]
+
+table: |
+  include tables/unicode-without-blank.dis
+  include tables/spaces.uti
+  include tables/latinLetterDef6Dots.uti
+  include tables/loweredDigits6Dots.uti
+  sign \\ 16
+  sign ' 3
+  undefined 1368
+flags: {testmode: forward}
+tests:
+  - - \x2026
+    - ⢥
+
