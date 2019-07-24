@@ -191,4 +191,33 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, ReceiveMultiple) {
   EXPECT_EQ("hello2", result.GetList()[1].GetString());
 }
 
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
+  GURL url = GetTestUrl(nullptr, "simple_page.html");
+  NavigateToURL(shell(), url);
+
+  auto* provider = new NiceMock<MockSmsProvider>();
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
+      base::WrapUnique(provider));
+
+  std::string script = R"(
+    // kicks off an sms receiver call, but deliberately leaves it hanging.
+    navigator.sms.receive({timeout: 60});
+    true
+  )";
+
+  base::RunLoop loop;
+
+  EXPECT_CALL(*provider, Retrieve()).WillOnce(Invoke([&loop]() {
+    loop.Quit();
+  }));
+
+  EXPECT_EQ(true, EvalJs(shell(), script));
+
+  loop.Run();
+
+  shell()->Close();
+
+  provider->NotifyReceive(url::Origin::Create(url), "hello");
+}
+
 }  // namespace content
