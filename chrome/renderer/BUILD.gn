@@ -143,7 +143,7 @@ jumbo_static_library("renderer") {
     "//components/omnibox/common",
     "//components/page_image_annotation/content/renderer",
     "//components/plugins/renderer",
-    "//components/rappor/public/interfaces",
+    "//components/rappor/public/mojom",
     "//components/resources:components_resources",
     "//components/safe_browsing/common:interfaces",
     "//components/safe_browsing/renderer:throttles",

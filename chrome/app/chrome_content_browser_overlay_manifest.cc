@@ -31,7 +31,7 @@
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
 #include "components/dom_distiller/content/common/mojom/distiller_javascript_service.mojom.h"
 #include "components/metrics/public/interfaces/call_stack_profile_collector.mojom.h"
-#include "components/rappor/public/interfaces/rappor_recorder.mojom.h"
+#include "components/rappor/public/mojom/rappor_recorder.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
