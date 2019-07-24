@@ -9,13 +9,20 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/viz/common/display/overlay_strategy.h"
 #include "components/viz/common/quads/render_pass.h"
-#include "components/viz/service/display/ca_layer_overlay.h"
-#include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
+
+#if defined(OS_WIN)
+#include "components/viz/service/display/dc_layer_overlay.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "components/viz/service/display/ca_layer_overlay.h"
+#endif
 
 namespace cc {
 class DisplayResourceProvider;
@@ -28,6 +35,19 @@ class ContextProvider;
 
 class VIZ_SERVICE_EXPORT OverlayProcessor {
  public:
+#if defined(OS_ANDROID)
+  using CandidateList = OverlayCandidateList;
+#elif defined(OS_MACOSX)
+  using CandidateList = CALayerOverlayList;
+#elif defined(OS_WIN)
+  using CandidateList = DCLayerOverlayList;
+#elif defined(USE_OZONE)
+  using CandidateList = OverlayCandidateList;
+#else
+  // Default.
+  using CandidateList = OverlayCandidateList;
+#endif
+
   using FilterOperationsMap =
       base::flat_map<RenderPassId, cc::FilterOperations*>;
 
@@ -106,9 +126,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       const SkMatrix44& output_color_matrix,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_backdrop_filters,
-      OverlayCandidateList* overlay_candidates,
-      CALayerOverlayList* ca_layer_overlays,
-      DCLayerOverlayList* dc_layer_overlays,
+      CandidateList* overlay_candidates,
       gfx::Rect* damage_rect,
       std::vector<gfx::Rect>* content_bounds);
 
@@ -120,9 +138,11 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       const gfx::BufferFormat& buffer_format,
       const gfx::ColorSpace& color_space) const;
 
+#if defined(OS_WIN)
   void SetDCHasHwOverlaySupportForTesting() {
     dc_processor_->SetHasHwOverlaySupport();
   }
+#endif
 
  protected:
   explicit OverlayProcessor(const ContextProvider* context_provider);
@@ -141,16 +161,14 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       RenderPass* render_pass,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_backdrop_filters,
-      OverlayCandidateList* overlay_candidates,
-      CALayerOverlayList* ca_layer_overlays,
+      CandidateList* overlay_candidates,
       gfx::Rect* damage_rect);
   bool ProcessForDCLayers(
       DisplayResourceProvider* resource_provider,
       RenderPassList* render_passes,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_backdrop_filters,
-      OverlayCandidateList* overlay_candidates,
-      DCLayerOverlayList* dc_layer_overlays,
+      CandidateList* overlay_candidates,
       gfx::Rect* damage_rect);
   // Update |damage_rect| by removing damage casued by |candidates|.
   void UpdateDamageRect(OverlayCandidateList* candidates,
@@ -159,7 +177,9 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
                         const QuadList* quad_list,
                         gfx::Rect* damage_rect);
 
+#if defined(OS_WIN)
   std::unique_ptr<DCLayerOverlayProcessor> dc_processor_;
+#endif
 
   bool output_surface_already_handled_;
   DISALLOW_COPY_AND_ASSIGN(OverlayProcessor);
