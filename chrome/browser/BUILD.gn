@@ -3707,7 +3707,7 @@ jumbo_split_static_library("browser") {
       "//components/browser_watcher:browser_watcher_client",
       "//components/browser_watcher:stability_client",
       "//components/chrome_cleaner/public/constants",
-      "//components/chrome_cleaner/public/mojom",
+      "//components/chrome_cleaner/public/interfaces",
       "//components/download/quarantine",
       "//third_party/crashpad/crashpad/client:client",
       "//third_party/iaccessible2",
