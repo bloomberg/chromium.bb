@@ -4,6 +4,10 @@
 
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/sms/sms_provider.h"
+#include "content/browser/sms/sms_service.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/sms_dialog.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -14,10 +18,36 @@
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::NiceMock;
+using ::testing::Return;
 
 namespace content {
 
 namespace {
+
+class MockSmsDialog : public SmsDialog {
+ public:
+  MockSmsDialog() : SmsDialog() {}
+  ~MockSmsDialog() override = default;
+
+  MOCK_METHOD3(Open,
+               void(RenderFrameHost*, base::OnceClosure, base::OnceClosure));
+  MOCK_METHOD0(Close, void());
+  MOCK_METHOD0(EnableContinueButton, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSmsDialog);
+};
+
+class MockWebContentsDelegate : public WebContentsDelegate {
+ public:
+  MockWebContentsDelegate() = default;
+  ~MockWebContentsDelegate() override = default;
+
+  MOCK_METHOD0(CreateSmsDialog, std::unique_ptr<SmsDialog>());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockWebContentsDelegate);
+};
 
 class MockSmsProvider : public SmsProvider {
  public:
@@ -41,6 +71,8 @@ class SmsBrowserTest : public ContentBrowserTest {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
   }
+
+  NiceMock<MockWebContentsDelegate> delegate_;
 };
 
 }  // namespace
@@ -48,6 +80,27 @@ class SmsBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   NavigateToURL(shell(), url);
+
+  shell()->web_contents()->SetDelegate(&delegate_);
+
+  auto* dialog = new NiceMock<MockSmsDialog>();
+
+  base::OnceClosure on_continue_callback;
+
+  EXPECT_CALL(delegate_, CreateSmsDialog())
+      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
+
+  EXPECT_CALL(*dialog, Open(_, _, _))
+      .WillOnce(Invoke([&on_continue_callback](content::RenderFrameHost*,
+                                               base::OnceClosure on_continue,
+                                               base::OnceClosure on_cancel) {
+        on_continue_callback = std::move(on_continue);
+      }));
+
+  EXPECT_CALL(*dialog, EnableContinueButton())
+      .WillOnce(Invoke([&on_continue_callback]() {
+        std::move(on_continue_callback).Run();
+      }));
 
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
@@ -71,6 +124,41 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, ReceiveMultiple) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   NavigateToURL(shell(), url);
+
+  shell()->web_contents()->SetDelegate(&delegate_);
+
+  auto* dialog1 = new NiceMock<MockSmsDialog>();
+  auto* dialog2 = new NiceMock<MockSmsDialog>();
+
+  base::OnceClosure on_continue_callback1;
+  base::OnceClosure on_continue_callback2;
+
+  EXPECT_CALL(delegate_, CreateSmsDialog())
+      .WillOnce(Return(ByMove(base::WrapUnique(dialog1))))
+      .WillOnce(Return(ByMove(base::WrapUnique(dialog2))));
+
+  EXPECT_CALL(*dialog1, Open(_, _, _))
+      .WillOnce(Invoke([&on_continue_callback1](content::RenderFrameHost*,
+                                                base::OnceClosure on_continue,
+                                                base::OnceClosure on_cancel) {
+        on_continue_callback1 = std::move(on_continue);
+      }));
+
+  EXPECT_CALL(*dialog2, Open(_, _, _))
+      .WillOnce(Invoke([&on_continue_callback2](content::RenderFrameHost*,
+                                                base::OnceClosure on_continue,
+                                                base::OnceClosure on_cancel) {
+        on_continue_callback2 = std::move(on_continue);
+      }));
+
+  EXPECT_CALL(*dialog1, EnableContinueButton())
+      .WillOnce(Invoke([&on_continue_callback1]() {
+        std::move(on_continue_callback1).Run();
+      }));
+  EXPECT_CALL(*dialog2, EnableContinueButton())
+      .WillOnce(Invoke([&on_continue_callback2]() {
+        std::move(on_continue_callback2).Run();
+      }));
 
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
