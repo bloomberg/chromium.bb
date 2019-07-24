@@ -538,6 +538,32 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
                    ->IsViewSourceMode());
 }
 
+// Ensure that content initiated navigations to googlechrome: URLs are blocked.
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
+                       GoogleChromeNavigation_RendererInitiated) {
+  TestNavigationObserver observer(shell()->web_contents());
+  GURL kUrl(embedded_test_server()->GetURL("/simple_links.html"));
+  NavigateToURL(shell(), kUrl);
+  EXPECT_EQ(kUrl, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  std::unique_ptr<ConsoleObserverDelegate> console_delegate(
+      new ConsoleObserverDelegate(
+          shell()->web_contents(),
+          "Not allowed to load local resource: googlechrome://"));
+  shell()->web_contents()->SetDelegate(console_delegate.get());
+
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "window.domAutomationController.send(clickGoogleChromeLink());",
+      &success));
+  EXPECT_TRUE(success);
+  console_delegate->Wait();
+  // Original page shouldn't navigate away.
+  EXPECT_EQ(kUrl, shell()->web_contents()->GetURL());
+}
+
 // Ensure that closing a page by running its beforeunload handler doesn't hang
 // if there's an ongoing navigation.
 IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, UnloadDuringNavigation) {
