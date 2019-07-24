@@ -1117,7 +1117,19 @@ enum aome_enc_control_id {
    * ratio of each frame to be higher than the given value divided by 100.
    * E.g. 850 means minimum compression ratio of 8.5.
    */
-  AV1E_SET_MIN_CR
+  AV1E_SET_MIN_CR,
+
+  /*!\brief Codec control function to set the layer id.
+   */
+  AV1E_SET_SVC_LAYER_ID = 150,
+
+  /*!\brief Codec control function to set SVC paramaeters.
+   */
+  AV1E_SET_SVC_PARAMS = 151,
+
+  /*!\brief Codec control function to set SVC reference frame map.
+   */
+  AV1E_SET_SVC_REF_IDX = 152
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1206,6 +1218,35 @@ typedef enum {
   AOM_TUNE_CDEF_DIST,
   AOM_TUNE_DAALA_DIST
 } aom_tune_metric;
+
+#define AOM_MAX_LAYERS 32   /**< Max number of layers */
+#define AOM_MAX_SS_LAYERS 4 /**< Max number of spatial layers */
+#define AOM_MAX_TS_LAYERS 8 /**< Max number of temporal layers */
+
+/*!brief Struct for spatial and temporal layer ID */
+typedef struct aom_svc_layer_id {
+  int spatial_layer_id;  /**< Spatial layer ID */
+  int temporal_layer_id; /**< Temporal layer ID */
+} aom_svc_layer_id_t;
+
+/*!brief Parameter type for SVC */
+typedef struct aom_svc_params {
+  int number_spatial_layers;                 /**< Number of spatial layers */
+  int number_temporal_layers;                /**< Number of temporal layers */
+  int max_quantizers[AOM_MAX_LAYERS];        /**< Max Q for each layer */
+  int min_quantizers[AOM_MAX_LAYERS];        /**< Min Q for each layer */
+  int scaling_factor_num[AOM_MAX_SS_LAYERS]; /**< Scaling factor-numerator */
+  int scaling_factor_den[AOM_MAX_SS_LAYERS]; /**< Scaling factor-denominator */
+  /*! Target bitrate for each layer */
+  int layer_target_bitrate[AOM_MAX_LAYERS];
+  /*! Frame rate factor for each temporal layer */
+  int framerate_factor[AOM_MAX_TS_LAYERS];
+} aom_svc_params_t;
+
+/*!brief Parameter type for SVC */
+typedef struct aom_svc_ref_idx {
+  int ref_idx[8]; /**< Reference buffer slot */
+} aom_svc_ref_idx_t;
 
 /*!\cond */
 /*!\brief Encoder control function parameter type
@@ -1544,6 +1585,15 @@ AOM_CTRL_USE_TYPE(AV1E_SET_TIER_MASK, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_MIN_CR, unsigned int)
 #define AOM_CTRL_AV1E_SET_MIN_CR
+
+AOM_CTRL_USE_TYPE(AV1E_SET_SVC_LAYER_ID, aom_svc_layer_id_t *)
+#define AOME_CTRL_AV1E_SET_SVC_LAYER_ID
+
+AOM_CTRL_USE_TYPE(AV1E_SET_SVC_PARAMS, aom_svc_params_t *)
+#define AOME_CTRL_AV1E_SET_SVC_PARAMS
+
+AOM_CTRL_USE_TYPE(AV1E_SET_SVC_REF_IDX, aom_svc_ref_idx_t *)
+#define AOME_CTRL_AV1E_SET_SVC_REF_IDX
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

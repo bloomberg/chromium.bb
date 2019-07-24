@@ -2147,6 +2147,51 @@ static aom_codec_err_t ctrl_set_number_spatial_layers(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_OK;
 }
 
+static aom_codec_err_t ctrl_set_layer_id(aom_codec_alg_priv_t *ctx,
+                                         va_list args) {
+  aom_svc_layer_id_t *const data = va_arg(args, aom_svc_layer_id_t *);
+  ctx->cpi->common.spatial_layer_id = data->spatial_layer_id;
+  ctx->cpi->common.temporal_layer_id = data->temporal_layer_id;
+  return AOM_CODEC_OK;
+}
+
+static aom_codec_err_t ctrl_set_svc_params(aom_codec_alg_priv_t *ctx,
+                                           va_list args) {
+  AV1_COMP *const cpi = ctx->cpi;
+  aom_svc_params_t *const params = va_arg(args, aom_svc_params_t *);
+  cpi->common.number_spatial_layers = params->number_spatial_layers;
+  cpi->common.number_temporal_layers = params->number_temporal_layers;
+  if (cpi->common.number_spatial_layers > 1 ||
+      cpi->common.number_temporal_layers > 1) {
+    unsigned int sl, tl;
+    cpi->use_svc = 1;
+    for (sl = 0; sl < cpi->common.number_spatial_layers; ++sl) {
+      for (tl = 0; tl < cpi->common.number_temporal_layers; ++tl) {
+        const int layer =
+            LAYER_IDS_TO_IDX(sl, tl, cpi->common.number_temporal_layers);
+        LAYER_CONTEXT *lc = &cpi->svc.layer_context[layer];
+        lc->max_q = params->max_quantizers[layer];
+        lc->min_q = params->min_quantizers[layer];
+        lc->scaling_factor_num = params->scaling_factor_num[sl];
+        lc->scaling_factor_den = params->scaling_factor_den[sl];
+        lc->layer_target_bitrate = params->layer_target_bitrate[layer];
+        lc->framerate_factor = params->framerate_factor[tl];
+      }
+    }
+  }
+  return AOM_CODEC_OK;
+}
+
+static aom_codec_err_t ctrl_set_svc_ref_idx(aom_codec_alg_priv_t *ctx,
+                                            va_list args) {
+  AV1_COMP *const cpi = ctx->cpi;
+  aom_svc_ref_idx_t *const data = va_arg(args, aom_svc_ref_idx_t *);
+  cpi->svc.apply_external_ref_idx = 1;
+  for (unsigned int i = 0; i < INTER_REFS_PER_FRAME; ++i)
+    cpi->svc.ref_idx[i] = data->ref_idx[i];
+  return AOM_CODEC_OK;
+}
+
 static aom_codec_err_t ctrl_set_tune_content(aom_codec_alg_priv_t *ctx,
                                              va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
@@ -2351,6 +2396,9 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_TARGET_SEQ_LEVEL_IDX, ctrl_set_target_seq_level_idx },
   { AV1E_SET_TIER_MASK, ctrl_set_tier_mask },
   { AV1E_SET_MIN_CR, ctrl_set_min_cr },
+  { AV1E_SET_SVC_LAYER_ID, ctrl_set_layer_id },
+  { AV1E_SET_SVC_PARAMS, ctrl_set_svc_params },
+  { AV1E_SET_SVC_REF_IDX, ctrl_set_svc_ref_idx },
 
   // Getters
   { AOME_GET_LAST_QUANTIZER, ctrl_get_quantizer },

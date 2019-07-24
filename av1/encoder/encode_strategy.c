@@ -1371,8 +1371,12 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                                force_refresh_all);
 
   if (oxcf->pass == 0 || oxcf->pass == 2) {
-    if (!cpi->ext_refresh_frame_flags_pending)
+    if (!cpi->ext_refresh_frame_flags_pending) {
       av1_get_ref_frames(cpi, &cpi->ref_buffer_stack);
+    } else if (cpi->svc.apply_external_ref_idx) {
+      for (unsigned int i = 0; i < INTER_REFS_PER_FRAME; i++)
+        cm->remapped_ref_idx[i] = cpi->svc.ref_idx[i];
+    }
 
     // Work out which reference frame slots may be used.
     frame_params.ref_frame_flags = get_ref_frame_flags(cpi);

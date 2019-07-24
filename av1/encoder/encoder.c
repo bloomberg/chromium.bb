@@ -1055,7 +1055,7 @@ static void set_bitstream_level_tier(SequenceHeader *seq, AV1_COMMON *cm,
 }
 
 static void init_seq_coding_tools(SequenceHeader *seq, AV1_COMMON *cm,
-                                  const AV1EncoderConfig *oxcf) {
+                                  const AV1EncoderConfig *oxcf, int use_svc) {
   seq->still_picture = (oxcf->limit == 1);
   seq->reduced_still_picture_hdr = seq->still_picture;
   seq->reduced_still_picture_hdr &= !oxcf->full_still_picture_hdr;
@@ -1064,7 +1064,7 @@ static void init_seq_coding_tools(SequenceHeader *seq, AV1_COMMON *cm,
   seq->order_hint_info.enable_order_hint = oxcf->enable_order_hint;
   seq->frame_id_numbers_present_flag =
       !(seq->still_picture && seq->reduced_still_picture_hdr) &&
-      !oxcf->large_scale_tile && oxcf->error_resilient_mode;
+      !oxcf->large_scale_tile && oxcf->error_resilient_mode && !use_svc;
   if (seq->still_picture && seq->reduced_still_picture_hdr) {
     seq->order_hint_info.enable_order_hint = 0;
     seq->force_screen_content_tools = 2;
@@ -1202,6 +1202,11 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
 
   // Single thread case: use counts in common.
   cpi->td.counts = &cpi->counts;
+
+  cpi->use_svc = 0;
+  cpi->svc.apply_external_ref_idx = 0;
+  cm->number_spatial_layers = 1;
+  cm->number_temporal_layers = 1;
 
   // change includes all joint functionality
   av1_change_config(cpi, oxcf);
@@ -2606,7 +2611,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   if (!cpi->seq_params_locked) {
     seq_params->operating_points_cnt_minus_1 =
         cm->number_spatial_layers > 1 ? cm->number_spatial_layers - 1 : 0;
-    init_seq_coding_tools(&cm->seq_params, cm, oxcf);
+    init_seq_coding_tools(&cm->seq_params, cm, oxcf, cpi->use_svc);
   }
 }
 

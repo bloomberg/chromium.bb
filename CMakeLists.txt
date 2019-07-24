@@ -353,9 +353,14 @@ if(CONFIG_AV1_ENCODER)
                                     $<TARGET_OBJECTS:aom_common_app_util>
                                     $<TARGET_OBJECTS:aom_encoder_app_util>)
 
+    add_executable(svc_encoder_rtc "${AOM_ROOT}/examples/svc_encoder_rtc.c"
+                                   $<TARGET_OBJECTS:aom_common_app_util>
+                                   $<TARGET_OBJECTS:aom_encoder_app_util>)
+
     # Maintain a list of encoder example targets.
     list(APPEND AOM_ENCODER_EXAMPLE_TARGETS aomenc lossless_encoder noise_model
-                set_maps simple_encoder scalable_encoder twopass_encoder)
+                set_maps simple_encoder scalable_encoder twopass_encoder
+                svc_encoder_rtc)
   endif()
 
   if(ENABLE_TOOLS)

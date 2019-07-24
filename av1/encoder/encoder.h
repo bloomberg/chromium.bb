@@ -157,6 +157,23 @@ enum {
   SS_CFG_TOTAL = 2
 } UENUM1BYTE(SS_CFG_OFFSET);
 
+typedef struct {
+  int max_q;
+  int min_q;
+  int framerate_factor;
+  int layer_target_bitrate;
+  int scaling_factor_num;
+  int scaling_factor_den;
+  RATE_CONTROL rc;
+} LAYER_CONTEXT;
+
+typedef struct SVC {
+  int apply_external_ref_idx;
+  // Layer context used for rate control in one pass temporal CBR mode.
+  LAYER_CONTEXT layer_context[AOM_MAX_LAYERS];
+  int ref_idx[INTER_REFS_PER_FRAME];
+} SVC;
+
 #define MAX_LENGTH_TPL_FRAME_STATS (27 + 9)
 
 typedef struct TplDepStats {
@@ -1008,6 +1025,7 @@ typedef struct AV1_COMP {
   // Stores the default value of skip flag depending on chroma format
   // Set as 1 for monochrome and 3 for other color formats
   int default_interp_skip_flags;
+  int preserve_arf_as_gld;
   MultiThreadHandle multi_thread_ctxt;
   void (*row_mt_sync_read_ptr)(AV1RowMTSync *const, int, int);
   void (*row_mt_sync_write_ptr)(AV1RowMTSync *const, int, int, const int);
@@ -1048,6 +1066,9 @@ typedef struct AV1_COMP {
   int8_t nearest_future_ref;
 
   double *ssim_rdmult_scaling_factors;
+
+  int use_svc;
+  SVC svc;
 } AV1_COMP;
 
 typedef struct {
