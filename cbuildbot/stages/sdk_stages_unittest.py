@@ -18,6 +18,7 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sdk_stages
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import perf_uploader
 from chromite.lib import portage_util
@@ -335,3 +336,20 @@ class SDKUprevStageTest(generic_stages_unittest.AbstractStageTestCase):
             'SDK_LATEST_VERSION': self._VERSION,
             'TC_PATH': '2017/09/%(target)s-2017.09.01.155318.tar.xz'
         })
+
+
+class SDKUtilTest(cros_test_lib.RunCommandTempDirTestCase):
+  """Tests various utility functions."""
+
+  def testCreateTarballBasic(self):
+    """Basic sanity checks for CreateTarball."""
+    sdk_stages.CreateTarball(self.tempdir, '/chromite.tar')
+    self.assertCommandContains(['tar', '/chromite.tar', '.'])
+
+  def testCreateTarballExclude(self):
+    """Verify CreateTarball exclude_path handling."""
+    sdk_stages.CreateTarball(self.tempdir, '/chromite.tar',
+                             exclude_paths=['tmp', 'usr/lib/debug'])
+    self.assertCommandContains(
+        ['tar', '--anchored', '--exclude=./tmp/*',
+         '--exclude=./usr/lib/debug/*', '/chromite.tar', '.'])

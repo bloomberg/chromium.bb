@@ -56,7 +56,8 @@ def CreateTarball(source_root, tarball_path, exclude_paths=None):
   # statically linked.
   extra_args = None
   if exclude_paths is not None:
-    extra_args = ['--exclude=%s/*' % path for path in exclude_paths]
+    extra_args = ['--anchored']
+    extra_args.extend('--exclude=./%s/*' % x for x in exclude_paths)
   # Options for maximum compression.
   extra_env = {'XZ_OPT': '-e9'}
   cros_build_lib.CreateTarball(
