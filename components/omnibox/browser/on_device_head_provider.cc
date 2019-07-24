@@ -14,8 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
-#include "components/component_updater/component_updater_paths.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/on_device_head_provider.h"
@@ -27,7 +25,6 @@
 namespace {
 const int kBaseRelevance = 99;
 const size_t kMaxRequestId = std::numeric_limits<size_t>::max() - 1;
-constexpr char kOnDeviceHeadComponentId[] = "feejiaigafnbpeeogmhmjfmkcjplcneb";
 
 bool IsDefaultSearchProviderGoogle(
     const TemplateURLService* template_url_service) {
@@ -81,17 +78,13 @@ OnDeviceHeadProvider::OnDeviceHeadProvider(
       listener_(listener),
       serving_(nullptr),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      on_device_search_request_id_(0),
-      observer_(this) {
-  if (client_ != nullptr) {
-    auto* component_update_service = client_->GetComponentUpdateService();
-    if (component_update_service != nullptr) {
-      observer_.Add(component_update_service);
-    }
+      on_device_search_request_id_(0) {
+  auto* model_update_listener = OnDeviceModelUpdateListener::GetInstance();
+  if (model_update_listener) {
+    model_update_subscription_ = model_update_listener->AddModelUpdateCallback(
+        base::BindRepeating(&OnDeviceHeadProvider::OnModelUpdate,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&OnDeviceHeadProvider::LoadPreInstalledModel,
-                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 OnDeviceHeadProvider::~OnDeviceHeadProvider() {
@@ -128,6 +121,9 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
   // If the input text has not changed, the result can be reused.
   if (minimal_changes)
     return;
+
+  // Load the new model first before fulfilling the request if it's available.
+  MaybeResetServingInstanceFromNewModel();
 
   matches_.clear();
   if (!input.text().empty() && serving_) {
@@ -168,68 +164,21 @@ void OnDeviceHeadProvider::Stop(bool clear_cached_results,
   done_ = true;
 }
 
-std::string OnDeviceHeadProvider::GetModelFilenameFromInstalledDirectory()
-    const {
-  // The model file name always ends with "_index.bin"
-  base::FileEnumerator model_enum(installed_directory_, false,
-                                  base::FileEnumerator::FILES,
-                                  FILE_PATH_LITERAL("*_index.bin"));
-
-  base::FilePath model_file_path = model_enum.Next();
-  std::string model_filename;
-
-  if (!model_file_path.empty()) {
-#if defined(OS_WIN)
-    model_filename = base::WideToUTF8(model_file_path.value());
-#else
-    model_filename = model_file_path.value();
-#endif  // defined(OS_WIN)
-  }
-
-  return model_filename;
+void OnDeviceHeadProvider::OnModelUpdate(
+    const std::string& new_model_filename) {
+  if (new_model_filename != current_model_filename_ &&
+      new_model_filename_.empty())
+    new_model_filename_ = new_model_filename;
 }
 
-// static
-void OnDeviceHeadProvider::OverrideEnumDirOnDeviceHeadSuggestForTest(
-    const base::FilePath file_path) {
-  base::PathService::Override(component_updater::DIR_ON_DEVICE_HEAD_SUGGEST,
-                              file_path);
-}
+void OnDeviceHeadProvider::MaybeResetServingInstanceFromNewModel() {
+  if (new_model_filename_.empty())
+    return;
 
-// TODO(crbug/925072): Consider to add a listener here and in
-// OnDeviceHeadSuggestInstallerPolicy::ComponentReady to load the on device
-// model; see discussion at https://chromium-review.googlesource.com/1686677.
-void OnDeviceHeadProvider::LoadPreInstalledModel() {
-  // Retry the loading for at most 3 times or until the model is successfully
-  // loaded.
-  for (int i = 3;;) {
-    CreateOnDeviceHeadServingInstance();
-    --i;
-    if (serving_ || i <= 0)
-      return;
-    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(15));
-  }
-}
-
-void OnDeviceHeadProvider::DeleteInstalledDirectory() {
-  // TODO(crbug/925072): Maybe log event if deletion fails.
-  if (base::PathExists(installed_directory_))
-    base::DeleteFile(installed_directory_, true);
-
-  installed_directory_.clear();
-}
-
-void OnDeviceHeadProvider::CreateOnDeviceHeadServingInstance() {
-  base::FilePath file_path;
-  base::PathService::Get(component_updater::DIR_ON_DEVICE_HEAD_SUGGEST,
-                         &file_path);
-
-  if (!file_path.empty() && file_path != installed_directory_) {
-    DeleteInstalledDirectory();
-    installed_directory_ = file_path;
-    serving_ = OnDeviceHeadServing::Create(
-        GetModelFilenameFromInstalledDirectory(), provider_max_matches_);
-  }
+  serving_ =
+      OnDeviceHeadServing::Create(new_model_filename_, provider_max_matches_);
+  current_model_filename_ = new_model_filename_;
+  new_model_filename_.clear();
 }
 
 void OnDeviceHeadProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
@@ -295,17 +244,4 @@ void OnDeviceHeadProvider::SearchDone(
 
   done_ = true;
   listener_->OnProviderUpdate(true);
-}
-
-// We use component updater to fetch the on device model, which will fire
-// Events::COMPONENT_UPDATED when the download is finished. In this case we will
-// reload the new model and maybe clean up the old one.
-void OnDeviceHeadProvider::OnEvent(Events event, const std::string& id) {
-  if (event != Events::COMPONENT_UPDATED || id != kOnDeviceHeadComponentId)
-    return;
-
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&OnDeviceHeadProvider::CreateOnDeviceHeadServingInstance,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
