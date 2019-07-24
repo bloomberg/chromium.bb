@@ -7398,6 +7398,29 @@ histogram as enum -->
   <int value="4" label="STABLE"/>
 </enum>
 
+<enum name="ChromeColorsInfo">
+  <int value="0" label="OTHER"/>
+  <int value="1" label="PISTACHIO"/>
+  <int value="2" label="SEAFOAM"/>
+  <int value="3" label="MIST"/>
+  <int value="4" label="FLAMINGO"/>
+  <int value="5" label="WINE"/>
+  <int value="6" label="LAVENDER"/>
+  <int value="7" label="ELEPHANT"/>
+  <int value="8" label="SUNSET"/>
+  <int value="9" label="BANANA"/>
+  <int value="10" label="KIWI"/>
+  <int value="11" label="ROBINS EGG"/>
+  <int value="12" label="BLUE"/>
+  <int value="13" label="PINE"/>
+  <int value="14" label="OCEANIC"/>
+  <int value="15" label="BORDEAUX"/>
+  <int value="16" label="EGGPLANT"/>
+  <int value="17" label="NAVY"/>
+  <int value="18" label="MIDNIGHT"/>
+  <int value="19" label="RASPBERRY"/>
+</enum>
+
 <enum name="ChromeDownloadCountType">
   <int value="0" label="Initiated by Navigation (Obsolete)"/>
   <int value="1" label="Initiated by Context Menu (Obsolete)"/>
