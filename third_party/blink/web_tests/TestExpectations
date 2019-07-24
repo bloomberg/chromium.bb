@@ -3253,6 +3253,8 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-offer.html [ Timeout ]
+crbug.com/626703 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-offer.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-overline-001.html [ Failure ]
