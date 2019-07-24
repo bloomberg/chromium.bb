@@ -1,3 +1,1 @@
-set noparent
-tbroch@chromium.org
-ejcaruso@chromium.org
+include /power_manager/OWNERS
