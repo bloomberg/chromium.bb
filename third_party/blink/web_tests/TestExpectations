@@ -2495,7 +2495,6 @@ crbug.com/626703 external/wpt/css/css-text/word-break/word-break-normal-tdd-000.
 
 crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-001.html [ Failure ]
 crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-003.html [ Failure ]
-crbug.com/974371 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-006.html [ Failure ]
 
 # The 'overflow-wrap: anywhere' feature is not implemented yet
 crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-001.html [ Skip ]
