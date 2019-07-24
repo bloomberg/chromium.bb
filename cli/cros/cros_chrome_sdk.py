@@ -96,7 +96,8 @@ class SDKFetcher(object):
 
   def __init__(self, cache_dir, board, clear_cache=False, chrome_src=None,
                sdk_path=None, toolchain_path=None, silent=False,
-               use_external_config=None, require_exact_version=False):
+               use_external_config=None, require_exact_version=False,
+               fallback_versions=VERSIONS_TO_CONSIDER):
     """Initialize the class.
 
     Args:
@@ -114,6 +115,8 @@ class SDKFetcher(object):
         force usage of the external configuration if both external and internal
         are available.
       require_exact_version: Use exact SDK version only.
+      fallback_versions: The number of versions to consider.
+        TODO(crbug.com/976858): Deprecate require_exact_version.
     """
     site_config = config_lib.GetConfig()
 
@@ -134,7 +137,7 @@ class SDKFetcher(object):
     self.chrome_src = chrome_src
     self.sdk_path = sdk_path
     self.toolchain_path = toolchain_path
-    self.require_exact_version = require_exact_version
+    self.fallback_versions = 0 if require_exact_version else fallback_versions
     self.silent = silent
 
     # For external configs, there is no need to run 'gsutil config', because
@@ -395,7 +398,7 @@ class SDKFetcher(object):
     if not version.endswith('.0.0'):
       return None
     version_base = int(version.split('.')[0])
-    version_base_min = version_base - self.VERSIONS_TO_CONSIDER
+    version_base_min = max(version_base - self.fallback_versions, 0)
 
     for v in range(version_base - 1, version_base_min, -1):
       version_file = '%s/LATEST-%d.0.0' % (self.gs_base, v)
@@ -421,7 +424,7 @@ class SDKFetcher(object):
     """
     version_file = '%s/LATEST-%s' % (self.gs_base, version)
     full_version = self._GetFullVersionFromStorage(version_file)
-    if full_version is None and not self.require_exact_version:
+    if full_version is None:
       logging.warning('No LATEST file matching SDK version %s', version)
       return self._GetFullVersionFromRecentLatest(version)
     return full_version
@@ -772,6 +775,10 @@ class ChromeSDKCommand(command.CliCommand):
         '--require-exact-version', default=False, action='store_true',
         help='Use the exact SDK version; do not attempt to use previous '
              'versions.')
+    parser.add_argument(
+        '--fallback-versions', default=SDKFetcher.VERSIONS_TO_CONSIDER,
+        help='The number of recent LATEST files to consider in the case that '
+             'the specified version is missing.')
     parser.add_argument(
         'cmd', nargs='*', default=None,
         help='The command to execute in the SDK environment.  Defaults to '
@@ -1349,7 +1356,8 @@ class ChromeSDKCommand(command.CliCommand):
         toolchain_path=self.options.toolchain_path,
         silent=self.silent,
         use_external_config=self.options.use_external_config,
-        require_exact_version=self.options.require_exact_version
+        require_exact_version=self.options.require_exact_version,
+        fallback_versions=self.options.fallback_versions
     )
 
     prepare_version = self.options.version
