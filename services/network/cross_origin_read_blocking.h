@@ -163,6 +163,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
                              SupportsRangeRequests);
     FRIEND_TEST_ALL_PREFIXES(content::CrossSiteDocumentResourceHandlerTest,
                              CORBProtectionLogging);
+    FRIEND_TEST_ALL_PREFIXES(ResponseAnalyzerTest, CORBProtectionLogging);
 
     // Three conclusions are possible from looking at the headers:
     //   - Allow: response doesn't need to be blocked (e.g. if it is same-origin
