@@ -130,11 +130,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   // Remove context lost observer.
   virtual void RemoveContextLostObserver(ContextLostObserver* observer) = 0;
 
-  // Only used for SkiaOutputSurfaceImpl unit tests.
-  virtual void ScheduleGpuTaskForTesting(
-      base::OnceClosure callback,
-      std::vector<gpu::SyncToken> sync_tokens) = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurface);
 };

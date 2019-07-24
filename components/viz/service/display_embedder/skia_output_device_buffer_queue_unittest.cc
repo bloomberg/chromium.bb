@@ -110,7 +110,12 @@ class TestOnGpu : public ::testing::Test {
   void ScheduleGpuTask(base::OnceClosure callback) {
     auto wrap = base::BindOnce(&TestOnGpu::CallOnGpuAndUnblockMain,
                                base::Unretained(this), std::move(callback));
-    gpu_service_holder_->ScheduleGpuTask(std::move(wrap));
+
+    auto* gpu_service_impl = gpu_service_holder_->gpu_service();
+    gpu_service_impl->scheduler()->ScheduleTask(gpu::Scheduler::Task(
+        gpu_service_impl->skia_output_surface_sequence_id(), std::move(wrap),
+        std::vector<gpu::SyncToken>()));
+
     wait_.Wait();
   }
 

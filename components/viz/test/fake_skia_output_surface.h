@@ -103,10 +103,6 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   // calls.
   void SetOutOfOrderCallbacks(bool out_of_order_callbacks);
 
-  void ScheduleGpuTaskForTesting(
-      base::OnceClosure callback,
-      std::vector<gpu::SyncToken> sync_tokesn) override;
-
  private:
   explicit FakeSkiaOutputSurface(
       scoped_refptr<ContextProvider> context_provider);

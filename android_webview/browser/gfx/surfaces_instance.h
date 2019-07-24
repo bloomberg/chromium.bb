@@ -26,10 +26,6 @@ class Size;
 class Transform;
 }
 
-namespace gl {
-class GLShareGroup;
-}
-
 namespace viz {
 class BeginFrameSource;
 class CompositorFrameSinkSupport;
@@ -112,7 +108,6 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   gfx::Size surface_size_;
 
-  scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gpu::SharedContextState> shared_context_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesInstance);

@@ -179,8 +179,9 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
 
   std::vector<gpu::SyncToken> resource_sync_tokens;
   resource_sync_tokens.push_back(sync_token);
-  output_surface_->ScheduleGpuTaskForTesting(std::move(closure),
-                                             std::move(resource_sync_tokens));
+  auto sequence_id = gpu_service()->skia_output_surface_sequence_id();
+  gpu_service()->scheduler()->ScheduleTask(gpu::Scheduler::Task(
+      sequence_id, std::move(closure), std::move(resource_sync_tokens)));
   BlockMainThread();
   EXPECT_TRUE(on_finished_called);
 
