@@ -16,9 +16,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
+using ::testing::ByMove;
 using ::testing::Invoke;
 using ::testing::NiceMock;
 using ::testing::Return;
+using ::testing::StrictMock;
 
 namespace content {
 
@@ -218,6 +220,47 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
   shell()->Close();
 
   provider->NotifyReceive(url::Origin::Create(url), "hello");
+}
+
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
+  GURL url = GetTestUrl(nullptr, "simple_page.html");
+  NavigateToURL(shell(), url);
+
+  auto* provider = new NiceMock<MockSmsProvider>();
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
+      base::WrapUnique(provider));
+
+  StrictMock<MockWebContentsDelegate> delegate;
+  shell()->web_contents()->SetDelegate(&delegate);
+
+  auto* dialog = new StrictMock<MockSmsDialog>();
+
+  EXPECT_CALL(delegate, CreateSmsDialog())
+      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
+
+  EXPECT_CALL(*dialog, Open(_, _, _))
+      .WillOnce(
+          Invoke([](content::RenderFrameHost*, base::OnceClosure on_continue,
+                    base::OnceClosure on_cancel) {
+            // Simulates the user pressing "cancel".
+            std::move(on_cancel).Run();
+          }));
+
+  EXPECT_CALL(*dialog, Close()).WillOnce(Return());
+
+  std::string script = R"(
+    (async () => {
+      try {
+        await navigator.sms.receive({timeout: 10});
+        return false;
+      } catch (e) {
+        // Expects an exception to be thrown.
+        return e.name;
+      }
+    }) ();
+  )";
+
+  EXPECT_EQ("AbortError", EvalJs(shell(), script));
 }
 
 }  // namespace content
