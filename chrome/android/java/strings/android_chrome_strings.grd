@@ -195,7 +195,7 @@ CHAR-LIMIT guidelines:
         Close
       </message>
       <message name="IDS_NO_THANKS" desc="Generic label to say no thanks for a feature. [CHAR-LIMIT=32]">
-        No Thanks
+        No thanks
       </message>
       <message name="IDS_NEXT" desc="Generic label for a button to advance to the next item. [CHAR-LIMIT=20]">
         Next
