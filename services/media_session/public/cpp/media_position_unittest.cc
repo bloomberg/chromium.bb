@@ -104,4 +104,71 @@ TEST_F(MediaPositionTest, TestPositionUpdatedSlowerPlayback) {
 
   EXPECT_EQ(updated_position.InSeconds(), 400);
 }
+
+TEST_F(MediaPositionTest, TestNotEquals_AllDifferent) {
+  EXPECT_NE(MediaPosition(.5 /* playback_rate */,
+                          base::TimeDelta::FromSeconds(600) /* duration */,
+                          base::TimeDelta::FromSeconds(300) /* position */),
+            MediaPosition(1.0 /* playback_rate */,
+                          base::TimeDelta::FromSeconds(800) /* duration */,
+                          base::TimeDelta::FromSeconds(100) /* position */));
+}
+
+TEST_F(MediaPositionTest, TestNotEquals_DifferentDuration) {
+  MediaPosition position_1(.5 /* playback_rate */,
+                           base::TimeDelta::FromSeconds(600) /* duration */,
+                           base::TimeDelta::FromSeconds(300) /* position */);
+
+  MediaPosition position_2(.5 /* playback_rate */,
+                           base::TimeDelta::FromSeconds(1000) /* duration */,
+                           base::TimeDelta::FromSeconds(300) /* position */);
+
+  position_1.last_updated_time_ = position_2.last_updated_time_;
+
+  EXPECT_NE(position_1, position_2);
+}
+
+TEST_F(MediaPositionTest, TestNotEquals_DifferentPlaybackRate) {
+  MediaPosition position_1(.5 /* playback_rate */,
+                           base::TimeDelta::FromSeconds(600) /* duration */,
+                           base::TimeDelta::FromSeconds(300) /* position */);
+
+  MediaPosition position_2(1.0 /* playback_rate */,
+                           base::TimeDelta::FromSeconds(600) /* duration */,
+                           base::TimeDelta::FromSeconds(300) /* position */);
+
+  position_1.last_updated_time_ = position_2.last_updated_time_;
+
+  EXPECT_NE(position_1, position_2);
+}
+
+TEST_F(MediaPositionTest, TestEquals_AllSame) {
+  MediaPosition position_1(.5 /* playback_rate */,
+                           base::TimeDelta::FromSeconds(600) /* duration */,
+                           base::TimeDelta::FromSeconds(300) /* position */);
+
+  MediaPosition position_2(.5 /* playback_rate */,
+                           base::TimeDelta::FromSeconds(600) /* duration */,
+                           base::TimeDelta::FromSeconds(300) /* position */);
+
+  position_1.last_updated_time_ = position_2.last_updated_time_;
+
+  EXPECT_EQ(position_1, position_2);
+}
+
+TEST_F(MediaPositionTest, TestEquals_SameButDifferentTime) {
+  MediaPosition position_1(1.0 /* playback_rate */,
+                           base::TimeDelta::FromSeconds(600) /* duration */,
+                           base::TimeDelta::FromSeconds(0) /* position */);
+
+  MediaPosition position_2(1.0 /* playback_rate */,
+                           base::TimeDelta::FromSeconds(600) /* duration */,
+                           base::TimeDelta::FromSeconds(10) /* position */);
+
+  position_2.last_updated_time_ = position_1.last_updated_time_;
+  position_1.last_updated_time_ -= base::TimeDelta::FromSeconds(10);
+
+  EXPECT_EQ(position_1, position_2);
+}
+
 }  // namespace media_session
