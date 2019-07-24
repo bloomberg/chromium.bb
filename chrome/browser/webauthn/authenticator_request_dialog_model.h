@@ -367,7 +367,8 @@ class AuthenticatorRequestDialogModel {
 
   void UpdateAuthenticatorReferencePairingMode(
       base::StringPiece authenticator_id,
-      bool is_in_pairing_mode);
+      bool is_in_pairing_mode,
+      base::string16 display_name);
 
   // SelectAccount is called to trigger an account selection dialog.
   void SelectAccount(

@@ -99,8 +99,10 @@ class ChromeAuthenticatorRequestDelegate
   void FidoAuthenticatorRemoved(base::StringPiece authenticator_id) override;
   void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
                                   std::string new_authenticator_id) override;
-  void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
-                                           bool is_in_pairing_mode) override;
+  void FidoAuthenticatorPairingModeChanged(
+      base::StringPiece authenticator_id,
+      bool is_in_pairing_mode,
+      base::string16 display_name) override;
   void BluetoothAdapterPowerChanged(bool is_powered_on) override;
   bool SupportsPIN() const override;
   void CollectPIN(
