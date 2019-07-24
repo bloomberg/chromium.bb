@@ -17501,6 +17501,7 @@ Called by update_net_error_codes.py.-->
   <int value="574" label="BrowserGuestModeEnforced"/>
   <int value="575" label="BuiltinCertificateVerifierEnabled"/>
   <int value="576" label="CrostiniRootAccessAllowed"/>
+  <int value="577" label="VmManagementCliAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
