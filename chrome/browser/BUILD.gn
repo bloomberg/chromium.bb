@@ -3463,6 +3463,8 @@ jumbo_split_static_library("browser") {
       "usb/web_usb_chooser_desktop.h",
       "usb/web_usb_detector.cc",
       "usb/web_usb_detector.h",
+      "web_launch/web_launch_files_helper.cc",
+      "web_launch/web_launch_files_helper.h",
     ]
     deps += [
       ":theme_properties",

@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/inspector_indexed_db_agent.h"
 #include "third_party/blink/renderer/modules/installation/installation_service_impl.h"
 #include "third_party/blink/renderer/modules/installedapp/installed_app_controller.h"
+#include "third_party/blink/renderer/modules/launch/web_launch_service_impl.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_manager.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
@@ -161,6 +162,10 @@ void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
   if (frame.IsMainFrame()) {
     frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
         &CopylessPasteServer::BindMojoRequest, WrapWeakPersistent(&frame)));
+  }
+  if (RuntimeEnabledFeatures::FileHandlingEnabled()) {
+    frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
+        &WebLaunchServiceImpl::Create, WrapWeakPersistent(&frame)));
   }
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &InstallationServiceImpl::Create, WrapWeakPersistent(&frame)));
