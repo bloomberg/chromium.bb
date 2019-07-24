@@ -293,6 +293,13 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void ReinitializeGLState();
   void RestoreGLState();
 
+  // TODO(weiliangc): Once overlay processor could schedule overlays, remove
+  // these functions.
+  // Sends over an output surface information as it is a overlay plane. This is
+  // used for BufferQueue. For not-BufferQueue cases, this function will do
+  // nothing.
+  void ScheduleOutputSurfaceAsOverlay();
+  // Schedule overlays sends overlay candidate to the GPU.
   void ScheduleCALayers();
   void ScheduleDCLayers();
   void ScheduleOverlays();

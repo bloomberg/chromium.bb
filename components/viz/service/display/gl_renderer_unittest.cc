@@ -4193,8 +4193,9 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
     processor->AllowMultipleCandidates();
     renderer_->SetOverlayProcessor(processor);
 
-    test_context_support_->SetScheduleOverlayPlaneCallback(base::BindRepeating(
-        &MockOverlayScheduler::Schedule, base::Unretained(&overlay_scheduler)));
+    test_context_support_->SetScheduleOverlayPlaneCallback(
+        base::BindRepeating(&MockOverlayScheduler::Schedule,
+                            base::Unretained(&overlay_scheduler_)));
   }
 
   ~GLRendererWithGpuFenceTest() override {
@@ -4233,7 +4234,7 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
   std::unique_ptr<ClientResourceProvider> child_resource_provider_;
   RendererSettings settings_;
   std::unique_ptr<FakeRendererGL> renderer_;
-  MockOverlayScheduler overlay_scheduler;
+  MockOverlayScheduler overlay_scheduler_;
 };
 
 TEST_F(GLRendererWithGpuFenceTest, GpuFenceIdIsUsedWithRootRenderPassOverlay) {
@@ -4243,7 +4244,7 @@ TEST_F(GLRendererWithGpuFenceTest, GpuFenceIdIsUsedWithRootRenderPassOverlay) {
       gfx::Transform(), cc::FilterOperations());
   root_pass->has_transparent_background = false;
 
-  EXPECT_CALL(overlay_scheduler,
+  EXPECT_CALL(overlay_scheduler_,
               Schedule(0, gfx::OVERLAY_TRANSFORM_NONE, kSurfaceOverlayTextureId,
                        gfx::Rect(viewport_size), _, _, kGpuFenceId))
       .Times(1);
@@ -4280,11 +4281,11 @@ TEST_F(GLRendererWithGpuFenceTest,
       flipped, nearest_neighbor,
       /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 
-  EXPECT_CALL(overlay_scheduler,
+  EXPECT_CALL(overlay_scheduler_,
               Schedule(0, gfx::OVERLAY_TRANSFORM_NONE, kSurfaceOverlayTextureId,
                        gfx::Rect(viewport_size), _, _, kGpuFenceId))
       .Times(1);
-  EXPECT_CALL(overlay_scheduler,
+  EXPECT_CALL(overlay_scheduler_,
               Schedule(1, gfx::OVERLAY_TRANSFORM_NONE, _,
                        gfx::Rect(viewport_size), _, _, kGpuNoFenceId))
       .Times(1);
