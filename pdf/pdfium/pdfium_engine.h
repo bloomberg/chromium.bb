@@ -289,6 +289,13 @@ class PDFiumEngine : public PDFEngine,
                  double multiplier,
                  pp::Rect* rect) const;
 
+  // If |two_up_view_| is true, returns the index of the page beside
+  // |page_index| page. Returns base::nullopt if there is no adjacent page or
+  // if |two_up_view_| is false.
+  base::Optional<size_t> GetAdjacentPageIndexForTwoUpView(
+      size_t page_index,
+      size_t num_of_pages) const;
+
   void GetAllScreenRectsUnion(const std::vector<PDFiumRange>& rect_range,
                               const pp::Point& offset_point,
                               std::vector<pp::Rect>* rect_vector) const;

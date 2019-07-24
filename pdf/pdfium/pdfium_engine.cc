@@ -2867,6 +2867,22 @@ void PDFiumEngine::InsetPage(size_t page_index,
               static_cast<int>(ceil(inset_sizes.bottom * multiplier)));
 }
 
+base::Optional<size_t> PDFiumEngine::GetAdjacentPageIndexForTwoUpView(
+    size_t page_index,
+    size_t num_of_pages) const {
+  DCHECK_LT(page_index, num_of_pages);
+
+  if (!two_up_view_)
+    return base::nullopt;
+
+  int adjacent_page_offset = page_index % 2 ? -1 : 1;
+  size_t adjacent_page_index = page_index + adjacent_page_offset;
+  if (adjacent_page_index >= num_of_pages)
+    return base::nullopt;
+
+  return adjacent_page_index;
+}
+
 int PDFiumEngine::StartPaint(int page_index, const pp::Rect& dirty) {
   // For the first time we hit paint, do nothing and just record the paint for
   // the next callback.  This keeps the UI responsive in case the user is doing
@@ -3143,9 +3159,20 @@ pp::Rect PDFiumEngine::GetVisibleRect() const {
 
 pp::Rect PDFiumEngine::GetPageScreenRect(int page_index) const {
   const pp::Rect& page_rect = pages_[page_index]->rect();
+  draw_utils::PageInsetSizes inset_sizes =
+      GetInsetSizes(page_index, pages_.size());
+
+  int max_page_height = page_rect.height();
+  base::Optional<size_t> adjacent_page_index =
+      GetAdjacentPageIndexForTwoUpView(page_index, pages_.size());
+  if (adjacent_page_index.has_value()) {
+    max_page_height = std::max(
+        max_page_height, pages_[adjacent_page_index.value()]->rect().height());
+  }
+
   return GetScreenRect(draw_utils::GetSurroundingRect(
-      page_rect.y(), page_rect.height(), kSingleViewInsets,
-      document_size_.width(), kBottomSeparator));
+      page_rect.y(), max_page_height, inset_sizes, document_size_.width(),
+      kBottomSeparator));
 }
 
 pp::Rect PDFiumEngine::GetScreenRect(const pp::Rect& rect) const {
