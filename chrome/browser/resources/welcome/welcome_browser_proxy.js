@@ -8,7 +8,6 @@
  */
 
 cr.define('welcome', function() {
-
   /** @interface */
   class WelcomeBrowserProxy {
     /** @param {?string} redirectUrl the URL to go to, after signing in. */
