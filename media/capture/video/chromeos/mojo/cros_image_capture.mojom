@@ -44,4 +44,16 @@ interface CrosImageCapture {
   SetFpsRange(string source_id, uint32 stream_width, uint32 stream_height,
               int32 min_fps, int32 max_fps)
       => (bool is_success);
+
+  // Invoked when the intent is fulfilled or is failed. For the intent which
+  // expects to have result, it is fulfilled when the captured is done and is
+  // failed if the session ends without finishing the capture. For the intent
+  // which don't expect any result, it is fulfilled when the camera app is
+  // successfully launched and is failed when the camera fails to launch.
+  // |intent_id| should be the same id that was specified in the query when
+  // launching the camera app. |is_success| indicates the result status of the
+  // intent. The |captured_data| will be delivered to the handler as a byte
+  // array.
+  OnIntentHandled(uint32 intent_id, bool is_success,
+                  array<uint8> captured_data);
 };

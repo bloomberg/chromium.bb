@@ -16,9 +16,11 @@ namespace media {
 
 RendererFacingCrosImageCapture::RendererFacingCrosImageCapture(
     cros::mojom::CrosImageCapturePtr api_ptr,
-    DeviceIdMappingCallback mapping_callback)
+    DeviceIdMappingCallback mapping_callback,
+    IntentCallback intent_callback)
     : cros_image_capture_(std::move(api_ptr)),
       mapping_callback_(std::move(mapping_callback)),
+      intent_callback_(std::move(intent_callback)),
       weak_ptr_factory_(this) {}
 
 RendererFacingCrosImageCapture::~RendererFacingCrosImageCapture() = default;
@@ -84,6 +86,13 @@ void RendererFacingCrosImageCapture::SetFpsRange(const std::string& source_id,
           &RendererFacingCrosImageCapture::SetFpsRangeWithRealId,
           weak_ptr_factory_.GetWeakPtr(), stream_width, stream_height,
           min_frame_rate, max_frame_rate, std::move(callback))));
+}
+
+void RendererFacingCrosImageCapture::OnIntentHandled(
+    uint32_t intent_id,
+    bool is_success,
+    const std::vector<uint8_t>& captured_data) {
+  intent_callback_.Run(intent_id, is_success, captured_data);
 }
 
 }  // namespace media
