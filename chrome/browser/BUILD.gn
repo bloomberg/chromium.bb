@@ -3784,8 +3784,6 @@ jumbo_split_static_library("browser") {
   if (is_mac) {
     allow_circular_includes_from += [ "//chrome/browser/apps/app_shim" ]
     sources += [
-      "apps/intent_helper/mac_apps_navigation_throttle.h",
-      "apps/intent_helper/mac_apps_navigation_throttle.mm",
       "badging/badge_manager_delegate_mac.cc",
       "badging/badge_manager_delegate_mac.h",
       "download/drag_download_item_mac.mm",
@@ -3808,9 +3806,6 @@ jumbo_split_static_library("browser") {
       "ImageCaptureCore.framework",
       "OpenGL.framework",
       "QuartzCore.framework",
-
-      # TODO(avi): When we move to the 10.15 SDK, -weak_framework SafariServices
-      # here and remove the manual framework opening code.
       "SecurityInterface.framework",
     ]
   }
