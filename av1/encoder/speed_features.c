@@ -359,20 +359,27 @@ static void set_good_speed_features_framesize_independent(
     sf->intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC_H_V_CFL;
     sf->intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V_CFL;
-    sf->tx_size_search_method = USE_LARGESTALL;
-    sf->mv.search_method = BIGDIA;
+
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
-    sf->adaptive_rd_thresh = 4;
-    sf->mode_search_skip_flags =
-        (cm->current_frame.frame_type == KEY_FRAME)
-            ? 0
-            : FLAG_SKIP_INTRA_DIRMISMATCH | FLAG_SKIP_INTRA_BESTINTER |
-                  FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR |
-                  FLAG_EARLY_TERMINATE;
-    sf->disable_filter_search_var_thresh = 200;
-    sf->use_fast_coef_costing = 1;
-    sf->partition_search_breakout_rate_thr = 300;
-    sf->use_transform_domain_distortion = 2;
+
+    // TODO(any): The following features have no impact on quality and speed,
+    // and are disabled.
+    // sf->disable_filter_search_var_thresh = 200;
+    // sf->use_fast_coef_costing = 1;
+    // sf->partition_search_breakout_rate_thr = 300;
+
+    // TODO(any): The following features give really bad quality/speed trade
+    // off. Needs to be re-worked.
+    // sf->tx_size_search_method = USE_LARGESTALL;
+    // sf->mv.search_method = BIGDIA;
+    // sf->adaptive_rd_thresh = 4;
+    // sf->mode_search_skip_flags =
+    //     (cm->current_frame.frame_type == KEY_FRAME)
+    //     ? 0
+    //     : FLAG_SKIP_INTRA_DIRMISMATCH | FLAG_SKIP_INTRA_BESTINTER |
+    //     FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR |
+    //     FLAG_EARLY_TERMINATE;
+    // sf->use_transform_domain_distortion = 2;
   }
 
   if (speed >= 6) {
