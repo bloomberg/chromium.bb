@@ -3414,7 +3414,7 @@
       },
       'linux-ozone-rel': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'chrome',
