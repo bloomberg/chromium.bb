@@ -34,15 +34,6 @@ void InstallableInkDropPainter::Paint(gfx::Canvas* canvas,
   DCHECK_GE(state_->highlighted_ratio, 0.0f);
   DCHECK_LE(state_->highlighted_ratio, 1.0f);
 
-  // If fully filled, there is no need to draw the highlight, and we can draw
-  // the activated color more efficiently as a rectangle.
-  if (state_->flood_fill_progress == 1.0f) {
-    canvas->FillRect(gfx::Rect(size),
-                     SkColorSetA(config_->base_color,
-                                 config_->ripple_opacity * SK_AlphaOPAQUE));
-    return;
-  }
-
   if (state_->highlighted_ratio > 0.0f) {
     canvas->FillRect(
         gfx::Rect(size),
@@ -51,7 +42,13 @@ void InstallableInkDropPainter::Paint(gfx::Canvas* canvas,
                                              SK_AlphaOPAQUE));
   }
 
-  if (state_->flood_fill_progress > 0.0f) {
+  // If fully filled, we can draw the activated color more efficiently as a
+  // rectangle.
+  if (state_->flood_fill_progress == 1.0f) {
+    canvas->FillRect(gfx::Rect(size),
+                     SkColorSetA(config_->base_color,
+                                 config_->ripple_opacity * SK_AlphaOPAQUE));
+  } else if (state_->flood_fill_progress > 0.0f) {
     // We interpolate between a circle of radius 2 and a circle whose radius is
     // the diagonal of |size|.
     const float min_radius = 2.0f;
