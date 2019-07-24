@@ -342,16 +342,18 @@ static void set_good_speed_features_framesize_independent(
     sf->disable_loop_restoration_chroma =
         (boosted || cm->allow_screen_content_tools) ? 0 : 1;
     sf->reduce_wiener_window_size = !boosted;
-    sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
     sf->cb_pred_filter_search = 1;
     sf->adaptive_mode_search = 1;
     sf->alt_ref_search_fp = 1;
     sf->skip_sharp_interp_filter_search = 1;
     sf->perform_coeff_opt = is_boosted_arf2_bwd_type ? 2 : 4;
     sf->adaptive_txb_search_level = boosted ? 2 : 3;
+    sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
   }
 
   if (speed >= 5) {
+    // Note(yunqing): This recode feature causes big quality drop in vbr
+    // encoding. Need to work on it.
     sf->recode_loop = ALLOW_RECODE_KFMAXBW;
     sf->intra_y_mode_mask[TX_64X64] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC_H_V_CFL;
@@ -359,8 +361,6 @@ static void set_good_speed_features_framesize_independent(
     sf->intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC_H_V_CFL;
     sf->intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V_CFL;
-
-    sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
 
     // TODO(any): The following features have no impact on quality and speed,
     // and are disabled.
