@@ -2395,13 +2395,6 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 
 crbug.com/686118 http/tests/security/setDomainRelaxationForbiddenForURLScheme.html [ Crash Pass ]
 
-# Service worker updates need to succeed when the script shrinks.
-crbug.com/986688 external/wpt/service-workers/service-worker/update.https.html [ Skip ]
-crbug.com/986688 virtual/blink-cors/external/wpt/service-workers/service-worker/update.https.html [ Skip ]
-crbug.com/986688 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update.https.html [ Skip ]
-crbug.com/986688 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/update.https.html [ Skip ]
-crbug.com/986688 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update.https.html [ Skip ]
-
 # In external/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
