@@ -106,6 +106,8 @@ typedef enum {
 	partialTrans = 256
 } translationModes;
 
+#define noUndefinedDots noUndefined
+
 LIBLOUIS_API
 char *EXPORT_CALL
 lou_version(void);
