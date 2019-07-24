@@ -398,3 +398,29 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(logger.messages, 'chrome pids: '
                      '[756, 905, 1065, 1092, 1096, 1171, 1180, 1181]\n')
     pid_mocker.assert_called()
+
+  @mock.patch('chromite.lib.vm.VM._WaitForProcs')
+  @mock.patch('chromite.lib.device.Device.WaitForBoot')
+  @mock.patch('chromite.lib.vm.VM.Start')
+  def testWaitForBoot(self, start_mock, boot_mock, procs_mock):
+    """Verify that we wait for the VM to boot up under different conditions."""
+    # Testing with an existing VM directory and hardware emulation.
+    self._vm.vm_dir = self.TempFilePath('vm_dir')
+    osutils.SafeMakedirs(self._vm.vm_dir)
+    self._vm.enable_kvm = True
+    self._vm.WaitForBoot()
+    start_mock.assert_not_called()
+    boot_mock.assert_called()
+    procs_mock.assert_not_called()
+
+    start_mock.reset_mock()
+    boot_mock.reset_mock()
+    procs_mock.reset_mock()
+
+    # Testing with a non-existent VM directory and software emulation.
+    self._vm._RmVMDir()
+    self._vm.enable_kvm = False
+    self._vm.WaitForBoot()
+    start_mock.assert_called()
+    boot_mock.assert_called()
+    procs_mock.assert_called()
