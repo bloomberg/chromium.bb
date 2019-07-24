@@ -220,14 +220,25 @@ def IsPatchesFileDone(robo_configuration):
     return True
   return False
 
+@RequiresCleanWorkingDirectory
 def UpdatePatchesFileUnconditionally(robo_configuration):
   """Update the patches file."""
   WritePatchesReadme(robo_configuration)
   AddAndCommit(robo_configuration,
                robo_configuration.patches_commit_title())
 
+def IsChromiumReadmeDone(robo_configuration):
+  """Return False if and only if README.chromium isn't checked in."""
+  if IsCommitOnThisBranch(
+                          robo_configuration,
+                          robo_configuration.readme_chromium_commit_title()):
+    log("Skipping README.chromium file since already committed")
+    return True
+  return False
+
+@RequiresCleanWorkingDirectory
 def UpdateChromiumReadmeWithUpstream(robo_configuration):
-  """Update the upstream info in README.chromium."""
+  """Update the upstream info in README.chromium and commit the result."""
   log("Updating merge info in README.chromium")
   merge_sha1 = FindUpstreamMergeParent(robo_configuration)
   robo_configuration.chdir_to_ffmpeg_home();
@@ -241,3 +252,5 @@ def UpdateChromiumReadmeWithUpstream(robo_configuration):
                   readme)
   with open("README.chromium", "w") as f:
     f.write(readme)
+  AddAndCommit(robo_configuration,
+               robo_configuration.readme_chromium_commit_title())

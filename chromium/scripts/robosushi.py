@@ -104,6 +104,7 @@ steps = {
         "do_fn": robo_branch.UpdatePatchesFileUnconditionally },
   "update_chromium_readme":
       { "desc": "Rewrite README.chromium to reflect the upstream SHA-1.",
+        "skip_fn": robo_branch.IsChromiumReadmeDone,
         "do_fn": robo_branch.UpdateChromiumReadmeWithUpstream },
   "run_tests":
       { "desc": "Compile and run ffmpeg_regression_tests and media_unittests",

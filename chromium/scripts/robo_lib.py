@@ -39,6 +39,8 @@ class RoboConfiguration:
     self._gn_commit_title = "GN Configuration"
     # Title of the commit with chromium/patches/README.
     self._patches_commit_title = "Chromium patches file"
+    # Title of the commit with README.chromium
+    self._readme_chromium_commit_title = "README.chromium file"
     self.EnsureHostInfo()
     self.EnsureChromeSrc()
 
@@ -111,6 +113,9 @@ class RoboConfiguration:
 
   def patches_commit_title(self):
     return self._patches_commit_title
+
+  def readme_chromium_commit_title(self):
+    return self._readme_chromium_commit_title
 
   def nasm_path(self):
     return self._nasm_path
