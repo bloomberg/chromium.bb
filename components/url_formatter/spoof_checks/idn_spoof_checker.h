@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_URL_FORMATTER_IDN_SPOOF_CHECKER_H_
-#define COMPONENTS_URL_FORMATTER_IDN_SPOOF_CHECKER_H_
+#ifndef COMPONENTS_URL_FORMATTER_SPOOF_CHECKS_IDN_SPOOF_CHECKER_H_
+#define COMPONENTS_URL_FORMATTER_SPOOF_CHECKS_IDN_SPOOF_CHECKER_H_
 
 #include <memory>
 #include <string>
@@ -97,11 +97,11 @@ class IDNSpoofChecker {
   std::unique_ptr<icu::Transliterator> diacritic_remover_;
   std::unique_ptr<icu::Transliterator> extra_confusable_mapper_;
 
-  FRIEND_TEST_ALL_PREFIXES(UrlFormatterTest, IDNToUnicode);
+  FRIEND_TEST_ALL_PREFIXES(IDNSpoofCheckerTest, IDNToUnicode);
   IDNSpoofChecker(const IDNSpoofChecker&) = delete;
   void operator=(const IDNSpoofChecker&) = delete;
 };
 
 }  // namespace url_formatter
 
-#endif  // COMPONENTS_URL_FORMATTER_IDN_SPOOF_CHECKER_H_
+#endif  // COMPONENTS_URL_FORMATTER_SPOOF_CHECKS_IDN_SPOOF_CHECKER_H_
