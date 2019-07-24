@@ -4,6 +4,8 @@
 
 #include "media/capture/video/chromeos/renderer_facing_cros_image_capture.h"
 
+#include <errno.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -11,6 +13,8 @@
 
 #include "base/task/post_task.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/capture/mojom/image_capture.mojom.h"
+#include "media/capture/video/chromeos/mojo/camera_common.mojom.h"
 
 namespace media {
 
@@ -28,7 +32,10 @@ RendererFacingCrosImageCapture::~RendererFacingCrosImageCapture() = default;
 void RendererFacingCrosImageCapture::GetCameraInfoWithRealId(
     GetCameraInfoCallback callback,
     const base::Optional<std::string>& device_id) {
-  DCHECK(device_id.has_value());
+  if (!device_id.has_value()) {
+    std::move(callback).Run({});
+    return;
+  }
   cros_image_capture_->GetCameraInfo(*device_id, std::move(callback));
 }
 
@@ -36,7 +43,10 @@ void RendererFacingCrosImageCapture::SetReprocessOptionWithRealId(
     cros::mojom::Effect effect,
     SetReprocessOptionCallback callback,
     const base::Optional<std::string>& device_id) {
-  DCHECK(device_id.has_value());
+  if (!device_id.has_value()) {
+    std::move(callback).Run(-EINVAL, {});
+    return;
+  }
   cros_image_capture_->SetReprocessOption(*device_id, effect,
                                           std::move(callback));
 }
@@ -48,7 +58,10 @@ void RendererFacingCrosImageCapture::SetFpsRangeWithRealId(
     const int32_t max_frame_rate,
     SetFpsRangeCallback callback,
     const base::Optional<std::string>& device_id) {
-  DCHECK(device_id.has_value());
+  if (!device_id.has_value()) {
+    std::move(callback).Run(false);
+    return;
+  }
   cros_image_capture_->SetFpsRange(*device_id, stream_width, stream_height,
                                    min_frame_rate, max_frame_rate,
                                    std::move(callback));

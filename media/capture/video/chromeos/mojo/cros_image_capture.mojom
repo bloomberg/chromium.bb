@@ -21,8 +21,9 @@ enum Effect {
 interface CrosImageCapture {
   // Gets camera information |camera_info| which includes camera facing,
   // characteristics, orientation, etc. The |source_id| might need translation
-  // to be actual video device id.
-  GetCameraInfo(string source_id) => (CameraInfo camera_info);
+  // to be actual video device id. For invalid |source_id|, the returned
+  // |camera_info| would be empty.
+  GetCameraInfo(string source_id) => (CameraInfo? camera_info);
 
   // Sets reprocess option to bind with the coming take photo request. When this
   // method is called, the reprocess option will be queued. All reprocess
@@ -30,8 +31,12 @@ interface CrosImageCapture {
   // Capture API is triggered and all the queued reprocess options will be bound
   // to that take photo request. The |source_id| might need translation to be
   // actual video device id.
+  // The result |status| would be set to 0 for success and the corresponding
+  // result will be put in |blob|. If it fails, the |status| indicates the error
+  // type and |blob| might be empty. For invalid |source_id|, it returns
+  // -EINVAL.
   SetReprocessOption(string source_id, Effect effect)
-      => (int32 status, media.mojom.Blob blob);
+      => (int32 status, media.mojom.Blob? blob);
 
   // Sets the fps range for upcoming configured camera stream.
   // The |source_id| might need translation to be actual video device id.
