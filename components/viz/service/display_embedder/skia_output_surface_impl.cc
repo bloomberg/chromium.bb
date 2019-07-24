@@ -27,6 +27,7 @@
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/ipc/single_task_sequence.h"
 #include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_context.h"
@@ -119,6 +120,9 @@ SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
       std::move(impl_on_gpu_), &event);
   ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
   event.Wait();
+
+  // Delete task sequence.
+  task_sequence_ = nullptr;
 }
 
 void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
@@ -531,6 +535,10 @@ void SkiaOutputSurfaceImpl::SetCapabilitiesForTesting(
 
 bool SkiaOutputSurfaceImpl::Initialize() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // Before start scheduling GPU task, set up |task_sequence_|.
+  task_sequence_ = dependency_->CreateSequence();
+
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -563,8 +571,9 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event,
   context_lost_callback =
       CreateSafeCallback(dependency_.get(), context_lost_callback);
   impl_on_gpu_ = SkiaOutputSurfaceImplOnGpu::Create(
-      dependency_.get(), renderer_settings_, did_swap_buffer_complete_callback,
-      buffer_presented_callback, context_lost_callback);
+      dependency_.get(), renderer_settings_, task_sequence_->GetSequenceId(),
+      did_swap_buffer_complete_callback, buffer_presented_callback,
+      context_lost_callback);
   if (!impl_on_gpu_) {
     *result = false;
   } else {
@@ -641,10 +650,16 @@ void SkiaOutputSurfaceImpl::BufferPresented(
   }
 }
 
+void SkiaOutputSurfaceImpl::ScheduleGpuTaskForTesting(
+    base::OnceClosure callback,
+    std::vector<gpu::SyncToken> sync_tokens) {
+  ScheduleGpuTask(std::move(callback), std::move(sync_tokens));
+}
+
 void SkiaOutputSurfaceImpl::ScheduleGpuTask(
     base::OnceClosure callback,
     std::vector<gpu::SyncToken> sync_tokens) {
-  dependency_->ScheduleGpuTask(std::move(callback), std::move(sync_tokens));
+  task_sequence_->ScheduleTask(std::move(callback), std::move(sync_tokens));
 }
 
 GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(

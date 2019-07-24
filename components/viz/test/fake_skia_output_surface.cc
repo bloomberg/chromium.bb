@@ -342,4 +342,10 @@ void FakeSkiaOutputSurface::SwapBuffersAck() {
   client_->DidReceivePresentationFeedback({now, base::TimeDelta(), 0});
 }
 
+void FakeSkiaOutputSurface::ScheduleGpuTaskForTesting(
+    base::OnceClosure callback,
+    std::vector<gpu::SyncToken> sync_tokesn) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace viz
