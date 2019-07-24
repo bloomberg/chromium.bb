@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
@@ -555,6 +556,7 @@ std::unique_ptr<SkiaOutputSurfaceImplOnGpu> SkiaOutputSurfaceImplOnGpu::Create(
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
     const BufferPresentedCallback& buffer_presented_callback,
     const ContextLostCallback& context_lost_callback) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::Create");
   auto impl_on_gpu = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
       util::PassKey<SkiaOutputSurfaceImplOnGpu>(), deps, renderer_settings,
       did_swap_buffer_complete_callback, buffer_presented_callback,
@@ -614,6 +616,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
     gfx::OverlayTransform transform,
     SkSurfaceCharacterization* characterization,
     base::WaitableEvent* event) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::Reshape");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(gr_context());
 
@@ -647,6 +650,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     std::vector<gpu::SyncToken> sync_tokens,
     uint64_t sync_fence_release,
     base::OnceClosure on_finished) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
   DCHECK(!scoped_output_device_paint_);
@@ -758,6 +762,7 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleOutputSurfaceAsOverlay(
 }
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::SwapBuffers");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(scoped_output_device_paint_);
   DCHECK(output_device_);
@@ -790,6 +795,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     std::vector<ImageContext*> image_contexts,
     std::vector<gpu::SyncToken> sync_tokens,
     uint64_t sync_fence_release) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
 
@@ -849,6 +855,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
 
 void SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource(
     std::vector<std::unique_ptr<ImageContext>> image_contexts) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!image_contexts.empty());
   for (auto& image_context : image_contexts) {
@@ -863,6 +870,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     const copy_output::RenderPassGeometry& geometry,
     const gfx::ColorSpace& color_space,
     std::unique_ptr<CopyOutputRequest> request) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::CopyOutput");
   // TODO(crbug.com/898595): Do this on the GPU instead of CPU with Vulkan.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   bool from_fbo0 = !id;
@@ -1096,6 +1104,7 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
     const std::vector<ImageContext*>& image_contexts,
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::BeginAccessImages");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto* context : image_contexts) {
     // Skip the context if it has been processed.
@@ -1222,6 +1231,7 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
 
 void SkiaOutputSurfaceImplOnGpu::EndAccessImages(
     const std::vector<ImageContext*>& image_contexts) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::EndAccessImages");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto* context : image_contexts) {
     if (!context->representation_is_being_accessed)
@@ -1270,6 +1280,8 @@ void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
 }
 
 bool SkiaOutputSurfaceImplOnGpu::Initialize() {
+  TRACE_EVENT1("viz", "SkiaOutputSurfaceImplOnGpu::Initialize",
+               "is_using_vulkan", is_using_vulkan());
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 #if defined(USE_OZONE)
