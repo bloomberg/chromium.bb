@@ -62,6 +62,12 @@ customize.LOG_TYPE = {
   NTP_BACKGROUND_DEFAULT_SELECTED: 73,
   // The 'No background' tile was deselected in the richer picker.
   NTP_BACKGROUND_DEFAULT_DESELECTED: 74,
+  // The custom links option in the shortcuts submenu was clicked.
+  NTP_CUSTOMIZE_SHORTCUT_CUSTOM_LINKS_CLICKED: 78,
+  // The Most Visited option in the shortcuts submenu was clicked.
+  NTP_CUSTOMIZE_SHORTCUT_MOST_VISITED_CLICKED: 79,
+  // The visibility toggle in the shortcuts submenu was clicked.
+  NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED: 80,
 };
 
 /**
@@ -1941,29 +1947,39 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
 
   const clOption = $(customize.IDS.SHORTCUTS_OPTION_CUSTOM_LINKS);
   clOption.onclick = function() {
+    if (customize.selectedOptions.shortcutType !== clOption) {
+      ntpApiHandle.logEvent(
+          customize.LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_CUSTOM_LINKS_CLICKED);
+    }
     customize.richerPicker_selectShortcutType(clOption);
   };
   clOption.onkeydown = function(event) {
     if (event.keyCode === customize.KEYCODES.ENTER ||
         event.keyCode === customize.KEYCODES.SPACE) {
-      customize.richerPicker_selectShortcutType(clOption);
+      clOption.click();
     }
   };
 
   const mvOption = $(customize.IDS.SHORTCUTS_OPTION_MOST_VISITED);
   mvOption.onclick = function() {
+    if (customize.selectedOptions.shortcutType !== mvOption) {
+      ntpApiHandle.logEvent(
+          customize.LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_MOST_VISITED_CLICKED);
+    }
     customize.richerPicker_selectShortcutType(mvOption);
   };
   mvOption.onkeydown = function(event) {
     if (event.keyCode === customize.KEYCODES.ENTER ||
         event.keyCode === customize.KEYCODES.SPACE) {
-      customize.richerPicker_selectShortcutType(mvOption);
+      mvOption.click();
     }
   };
 
   const hideToggle = $(customize.IDS.SHORTCUTS_HIDE_TOGGLE);
   hideToggle.onchange = function(event) {
     customize.richerPicker_toggleShortcutHide(hideToggle.checked);
+    ntpApiHandle.logEvent(
+        customize.LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED);
   };
   hideToggle.onkeydown = function(event) {
     if (event.keyCode === customize.KEYCODES.ENTER ||

@@ -163,7 +163,15 @@ enum NTPLoggingEventType {
   // The NTP background image was reset in the richer picker.
   NTP_BACKGROUND_IMAGE_RESET = 77,
 
-  NTP_EVENT_TYPE_LAST = NTP_BACKGROUND_IMAGE_RESET
+  // The 'My shortcuts' (i.e. custom links) option was clicked in the richer
+  // picker.
+  NTP_CUSTOMIZE_SHORTCUT_CUSTOM_LINKS_CLICKED = 78,
+  // The 'Most visited sites' option was clicked in the richer picker.
+  NTP_CUSTOMIZE_SHORTCUT_MOST_VISITED_CLICKED = 79,
+  // The 'Hide shortcuts' toggle was clicked in the richer picker.
+  NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED = 80,
+
+  NTP_EVENT_TYPE_LAST = NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED
 };
 
 // The different types of events that are logged for NTP search suggestions,

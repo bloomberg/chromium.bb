@@ -14036,6 +14036,33 @@ should be able to be added at any place in this file.
   <description>The richer picker was opened.</description>
 </action>
 
+<action name="NTPRicherPicker.Shortcuts.CustomLinksClicked">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    The 'My shortcuts' (i.e. custom links) option was clicked in the richer
+    picker shortcuts submenu.
+  </description>
+</action>
+
+<action name="NTPRicherPicker.Shortcuts.MostVisitedClicked">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    The 'Most visited sites' option was clicked in the richer picker shortcuts
+    submenu.
+  </description>
+</action>
+
+<action name="NTPRicherPicker.Shortcuts.VisibilityToggleClicked">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    The 'Hide shortcuts' toggle was clicked in the richer picker shortcuts
+    submenu.
+  </description>
+</action>
+
 <action name="OfflinePages.Edit.RemoveButtonClicked">
   <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
   <owner>jianli@chromium.org</owner>

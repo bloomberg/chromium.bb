@@ -87,6 +87,36 @@ enum VoiceError {
   VOICE_ERROR_MAX
 };
 
+// Converts |NTPLoggingEventType| to a |VoiceError|, if the value
+// is an error value. Otherwise, |VOICE_ERROR_MAX| is returned.
+VoiceError LoggingEventToVoiceError(NTPLoggingEventType event) {
+  switch (event) {
+    case NTP_VOICE_ERROR_ABORTED:
+      return VOICE_ERROR_ABORTED;
+    case NTP_VOICE_ERROR_AUDIO_CAPTURE:
+      return VOICE_ERROR_AUDIO_CAPTURE;
+    case NTP_VOICE_ERROR_BAD_GRAMMAR:
+      return VOICE_ERROR_BAD_GRAMMAR;
+    case NTP_VOICE_ERROR_LANGUAGE_NOT_SUPPORTED:
+      return VOICE_ERROR_LANGUAGE_NOT_SUPPORTED;
+    case NTP_VOICE_ERROR_NETWORK:
+      return VOICE_ERROR_NETWORK;
+    case NTP_VOICE_ERROR_NO_MATCH:
+      return VOICE_ERROR_NO_MATCH;
+    case NTP_VOICE_ERROR_NO_SPEECH:
+      return VOICE_ERROR_NO_SPEECH;
+    case NTP_VOICE_ERROR_NOT_ALLOWED:
+      return VOICE_ERROR_NOT_ALLOWED;
+    case NTP_VOICE_ERROR_OTHER:
+      return VOICE_ERROR_OTHER;
+    case NTP_VOICE_ERROR_SERVICE_NOT_ALLOWED:
+      return VOICE_ERROR_SERVICE_NOT_ALLOWED;
+    default:
+      NOTREACHED();
+      return VOICE_ERROR_MAX;
+  }
+}
+
 // Logs BackgroundCustomization availability on the NTP.
 void LogBackgroundCustomizationAvailability(
     BackgroundCustomization availability) {
@@ -234,36 +264,6 @@ CustomizeShortcutAction LoggingEventToCustomizeShortcutAction(
   return CustomizeShortcutAction::CUSTOMIZE_SHORTCUT_ACTION_REMOVE;
 }
 
-// Converts |NTPLoggingEventType| to a |VoiceError|, if the value
-// is an error value. Otherwise, |VOICE_ERROR_MAX| is returned.
-VoiceError LoggingEventToVoiceError(NTPLoggingEventType event) {
-  switch (event) {
-    case NTP_VOICE_ERROR_ABORTED:
-      return VOICE_ERROR_ABORTED;
-    case NTP_VOICE_ERROR_AUDIO_CAPTURE:
-      return VOICE_ERROR_AUDIO_CAPTURE;
-    case NTP_VOICE_ERROR_BAD_GRAMMAR:
-      return VOICE_ERROR_BAD_GRAMMAR;
-    case NTP_VOICE_ERROR_LANGUAGE_NOT_SUPPORTED:
-      return VOICE_ERROR_LANGUAGE_NOT_SUPPORTED;
-    case NTP_VOICE_ERROR_NETWORK:
-      return VOICE_ERROR_NETWORK;
-    case NTP_VOICE_ERROR_NO_MATCH:
-      return VOICE_ERROR_NO_MATCH;
-    case NTP_VOICE_ERROR_NO_SPEECH:
-      return VOICE_ERROR_NO_SPEECH;
-    case NTP_VOICE_ERROR_NOT_ALLOWED:
-      return VOICE_ERROR_NOT_ALLOWED;
-    case NTP_VOICE_ERROR_OTHER:
-      return VOICE_ERROR_OTHER;
-    case NTP_VOICE_ERROR_SERVICE_NOT_ALLOWED:
-      return VOICE_ERROR_SERVICE_NOT_ALLOWED;
-    default:
-      NOTREACHED();
-      return VOICE_ERROR_MAX;
-  }
-}
-
 // Converts a richer picker background related |NTPLoggingEventType|
 // to the corresponding UserAction string.
 const char* LoggingEventToBackgroundUserActionName(NTPLoggingEventType event) {
@@ -306,6 +306,22 @@ const char* LoggingEventToMenuUserActionName(NTPLoggingEventType event) {
       return "NTPRicherPicker.CancelClicked";
     case NTP_CUSTOMIZATION_MENU_DONE:
       return "NTPRicherPicker.DoneClicked";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+// Converts a richer picker shortcut related |NTPLoggingEventType| to the
+// corresponding UserAction string.
+const char* LoggingEventToShortcutUserActionName(NTPLoggingEventType event) {
+  switch (event) {
+    case NTP_CUSTOMIZE_SHORTCUT_CUSTOM_LINKS_CLICKED:
+      return "NTPRicherPicker.Shortcuts.CustomLinksClicked";
+    case NTP_CUSTOMIZE_SHORTCUT_MOST_VISITED_CLICKED:
+      return "NTPRicherPicker.Shortcuts.MostVisitedClicked";
+    case NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED:
+      return "NTPRicherPicker.Shortcuts.VisibilityToggleClicked";
     default:
       NOTREACHED();
       return nullptr;
@@ -522,6 +538,11 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
     case NTP_CUSTOMIZATION_MENU_CANCEL:
     case NTP_CUSTOMIZATION_MENU_DONE:
       RecordAction(LoggingEventToMenuUserActionName(event));
+      break;
+    case NTP_CUSTOMIZE_SHORTCUT_CUSTOM_LINKS_CLICKED:
+    case NTP_CUSTOMIZE_SHORTCUT_MOST_VISITED_CLICKED:
+    case NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED:
+      RecordAction(LoggingEventToShortcutUserActionName(event));
       break;
   }
 }
