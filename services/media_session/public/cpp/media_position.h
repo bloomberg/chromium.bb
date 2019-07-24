@@ -67,7 +67,7 @@ struct COMPONENT_EXPORT(MEDIA_SESSION_BASE_CPP) MediaPosition {
                            TestNotEquals_DifferentPlaybackRate);
 
   // Playback rate of the media.
-  double playback_rate_;
+  double playback_rate_ = 0;
 
   // Duration of the media.
   base::TimeDelta duration_;
