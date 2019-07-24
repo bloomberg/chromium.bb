@@ -97,7 +97,6 @@
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_ANDROID)
-#include "base/android/build_info.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/app/crashpad.h"
 #include "media/mojo/services/android_mojo_media_client.h"
@@ -309,14 +308,6 @@ CastContentBrowserClient::media_pipeline_backend_manager() {
 std::unique_ptr<::media::AudioManager>
 CastContentBrowserClient::CreateAudioManager(
     ::media::AudioLogFactory* audio_log_factory) {
-#if defined(OS_ANDROID)
-  // Disable CMA backend on builds older than N.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_NOUGAT) {
-    return nullptr;
-  }
-#endif  // defined(OS_ANDROID)
-
   // Create the audio thread and initialize the CastSessionIdMap. We need to
   // initialize the CastSessionIdMap as soon as possible, so that the task
   // runner gets set before any calls to it.
@@ -347,14 +338,6 @@ CastContentBrowserClient::CreateAudioManager(
 }
 
 bool CastContentBrowserClient::OverridesAudioManager() {
-  // See CreateAudioManager().
-#if defined(OS_ANDROID)
-  // Disable CMA backend on builds older than N.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_NOUGAT) {
-    return false;
-  }
-#endif  // defined(OS_ANDROID)
   return true;
 }
 
