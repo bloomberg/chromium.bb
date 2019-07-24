@@ -2962,11 +2962,16 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
   const pp::Rect& dirty_in_screen =
       progressive_paints_[progressive_index].rect();
   FPDF_BITMAP bitmap = progressive_paints_[progressive_index].bitmap();
+  draw_utils::PageInsetSizes inset_sizes =
+      GetInsetSizes(page_index, pages_.size());
 
   pp::Rect page_rect = pages_[page_index]->rect();
-  if (page_rect.x() > 0) {
-    pp::Rect left = draw_utils::GetLeftFillRect(page_rect, kSingleViewInsets,
-                                                kBottomSeparator);
+  if (page_rect.x() > 0 && (!two_up_view_ || page_index % 2 == 0)) {
+    // If in two-up view, only need to draw the left empty space for left pages
+    // since the gap between the left and right page will be drawn by the left
+    // page.
+    pp::Rect left =
+        draw_utils::GetLeftFillRect(page_rect, inset_sizes, kBottomSeparator);
     left = GetScreenRect(left).Intersect(dirty_in_screen);
 
     FPDFBitmap_FillRect(bitmap, left.x() - dirty_in_screen.x(),
@@ -2976,7 +2981,7 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
 
   if (page_rect.right() < document_size_.width()) {
     pp::Rect right = draw_utils::GetRightFillRect(
-        page_rect, kSingleViewInsets, document_size_.width(), kBottomSeparator);
+        page_rect, inset_sizes, document_size_.width(), kBottomSeparator);
     right = GetScreenRect(right).Intersect(dirty_in_screen);
 
     FPDFBitmap_FillRect(bitmap, right.x() - dirty_in_screen.x(),
@@ -2984,9 +2989,8 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
                         right.height(), client_->GetBackgroundColor());
   }
 
-  // Paint separator.
-  pp::Rect bottom = draw_utils::GetBottomFillRect(page_rect, kSingleViewInsets,
-                                                  kBottomSeparator);
+  pp::Rect bottom =
+      draw_utils::GetBottomFillRect(page_rect, inset_sizes, kBottomSeparator);
   bottom = GetScreenRect(bottom).Intersect(dirty_in_screen);
 
   FPDFBitmap_FillRect(bitmap, bottom.x() - dirty_in_screen.x(),
