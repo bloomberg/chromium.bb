@@ -62,6 +62,7 @@ class BrowserMainRunner;
 class ProcessHostImpl;
 class Profile;
 class StringRef;
+class LogMessageThrottler;
 
                         // =================
                         // class ToolkitImpl
@@ -102,7 +103,7 @@ class ToolkitImpl : public Toolkit {
 
     // patch section: multi-heap tracer
 
-
+    std::shared_ptr<LogMessageThrottler> d_logMessageThrottler;
 
     ~ToolkitImpl() override;
         // Shutdown all threads and delete the toolkit.  To ensure the same
@@ -141,7 +142,8 @@ class ToolkitImpl : public Toolkit {
                          const std::string&              hostChannel,
                          const std::vector<std::string>& cmdLineSwitches,
                          bool                            isolated,
-                         const std::string&              profileDir);
+                         const std::string&              profileDir,
+                         std::shared_ptr<LogMessageThrottler> logMessageThrottler);
 
     // blpwtk2::Toolkit overrides
     bool hasDevTools() override;

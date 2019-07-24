@@ -74,6 +74,8 @@ struct ToolkitCreateParamsImpl final
 
 
 
+    ToolkitCreateParams::LogThrottleType d_logThrottleType {ToolkitCreateParams::LogThrottleType::kWarningThrottle};
+
     ToolkitCreateParamsImpl();
 };
 
@@ -291,6 +293,11 @@ void ToolkitCreateParams::disableIsolatedProfile()
 
 
 
+void ToolkitCreateParams::setLogThrottleType(LogThrottleType throttleType)
+{
+    d_impl->d_logThrottleType = throttleType;
+}
+
 ThreadMode ToolkitCreateParams::threadMode() const
 {
     return d_impl->d_threadMode;
@@ -431,6 +438,11 @@ bool ToolkitCreateParams::isIsolatedProfile() const
 // patch section: renderer ui
 
 
+
+ToolkitCreateParams::LogThrottleType ToolkitCreateParams::logThrottleType() const
+{
+    return d_impl->d_logThrottleType;
+}
 
 }  // close namespace blpwtk2
 
