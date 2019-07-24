@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -53,6 +54,9 @@ struct OnDeviceHeadProvider::OnDeviceHeadProviderParams {
 
   // Indicates whether this request failed or not.
   bool failed = false;
+
+  // The time when this request is created.
+  base::TimeTicks creation_time;
 
   OnDeviceHeadProviderParams(size_t request_id, const AutocompleteInput& input)
       : request_id(request_id), input(input) {}
@@ -192,7 +196,7 @@ void OnDeviceHeadProvider::DoSearch(
     std::unique_ptr<OnDeviceHeadProviderParams> params) {
   if (serving_ && params &&
       params->request_id == on_device_search_request_id_) {
-    // TODO(crbug.com/925072): Add model search time to UMA.
+    params->creation_time = base::TimeTicks::Now();
     base::string16 trimmed_input;
     base::TrimWhitespace(params->input.text(), base::TRIM_ALL, &trimmed_input);
     auto results = serving_->GetSuggestionsForPrefix(
@@ -223,6 +227,8 @@ void OnDeviceHeadProvider::SearchDone(
       client()->GetTemplateURLService();
 
   if (IsDefaultSearchProviderGoogle(template_url_service) && !params->failed) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Omnibox.OnDeviceHeadSuggest.ResultCount",
+                                params->suggestions.size(), 1, 5, 6);
     matches_.clear();
     int relevance =
         (params->input.type() != metrics::OmniboxInputType::URL)
@@ -240,6 +246,8 @@ void OnDeviceHeadProvider::SearchDone(
           template_url_service->search_terms_data(),
           /*accepted_suggestion=*/TemplateURLRef::NO_SUGGESTION_CHOSEN));
     }
+    UMA_HISTOGRAM_TIMES("Omnibox.OnDeviceHeadSuggest.AsyncQueryTime",
+                        base::TimeTicks::Now() - params->creation_time);
   }
 
   done_ = true;
