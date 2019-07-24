@@ -400,7 +400,7 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
     : metrics_state_manager_(state_manager) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordCommandLineMetrics();
-  incognito_observer_ = std::make_unique<IncognitoObserver>(
+  incognito_observer_ = IncognitoObserver::Create(
       base::BindRepeating(&ChromeMetricsServiceClient::UpdateRunningServices,
                           weak_ptr_factory_.GetWeakPtr()));
 }
