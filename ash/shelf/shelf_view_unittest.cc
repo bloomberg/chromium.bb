@@ -3894,6 +3894,28 @@ TEST_F(ShelfViewFocusTest, FocusCyclingBetweenShelfAndStatusWidget) {
   ExpectNotFocused(status_area_);
 }
 
+// Verifies that hitting the Esc key can consistently unfocus the shelf.
+TEST_F(ShelfViewFocusTest, UnfocusWithEsc) {
+  // The home button is focused at start.
+  EXPECT_TRUE(shelf_view_->GetHomeButton()->HasFocus());
+
+  // Focus the status area.
+  DoShiftTab();
+  ExpectNotFocused(shelf_view_);
+  ExpectFocused(status_area_);
+
+  // Advance backwards to the last element of the shelf.
+  DoShiftTab();
+  ExpectNotFocused(status_area_);
+  ExpectFocused(shelf_view_);
+
+  // Press Escape. Nothing should be focused.
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, ui::EF_NONE);
+  shelf_view_->GetWidget()->OnKeyEvent(&key_event);
+  ExpectNotFocused(status_area_);
+  ExpectNotFocused(shelf_view_);
+}
+
 class ShelfViewOverflowFocusTest : public ShelfViewFocusTest {
  public:
   ShelfViewOverflowFocusTest() = default;
