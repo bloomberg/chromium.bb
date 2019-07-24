@@ -1583,7 +1583,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tasks/JourneyManager.java",
   "java/src/org/chromium/chrome/browser/tasks/TaskRecognizer.java",
   "java/src/org/chromium/chrome/browser/tasks/TasksUma.java",
-  "java/src/org/chromium/chrome/browser/tasks/tabgroup/TabGroupModelFilter.java",
   "java/src/org/chromium/chrome/browser/toolbar/AppThemeColorProvider.java",
   "java/src/org/chromium/chrome/browser/toolbar/HomeButton.java",
   "java/src/org/chromium/chrome/browser/toolbar/IdentityDiscController.java",
