@@ -445,21 +445,15 @@ TEST_F(NetworkServiceTest, AuthEnableNegotiatePort) {
 TEST_F(NetworkServiceTest, DnsClientEnableDisable) {
   // HostResolver::GetDnsConfigAsValue() returns nullptr if the stub resolver is
   // disabled.
-  EXPECT_FALSE(service()
-                   ->host_resolver_manager()
-                   ->GetInsecureDnsClientEnabledForTesting());
+  EXPECT_FALSE(service()->host_resolver_manager()->GetDnsConfigAsValue());
   service()->ConfigureStubHostResolver(
       true /* stub_resolver_enabled */,
       base::nullopt /* dns_over_https_servers */);
-  EXPECT_TRUE(service()
-                  ->host_resolver_manager()
-                  ->GetInsecureDnsClientEnabledForTesting());
+  EXPECT_TRUE(service()->host_resolver_manager()->GetDnsConfigAsValue());
   service()->ConfigureStubHostResolver(
       false /* stub_resolver_enabled */,
       base::nullopt /* dns_over_https_servers */);
-  EXPECT_FALSE(service()
-                   ->host_resolver_manager()
-                   ->GetInsecureDnsClientEnabledForTesting());
+  EXPECT_FALSE(service()->host_resolver_manager()->GetDnsConfigAsValue());
 }
 
 TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
@@ -469,6 +463,10 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
   const bool kServer2UsePost = true;
   const std::string kServer3 = "https://grapefruit/resolver/query{?dns}";
   const bool kServer3UsePost = false;
+
+  // HostResolver::GetDnsClientForTesting() returns nullptr if the stub resolver
+  // is disabled.
+  EXPECT_FALSE(service()->host_resolver_manager()->GetDnsConfigAsValue());
 
   // Create the primary NetworkContext before enabling DNS over HTTPS.
   mojom::NetworkContextPtr network_context;
