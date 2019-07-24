@@ -2210,6 +2210,10 @@ crbug.com/552085 virtual/cascade/external/wpt/css/css-cascade/important-prop.htm
 # That seems wrong, as we should support 'revert' eventually.
 crbug.com/579788 virtual/cascade/external/wpt/css/css-cascade/revert-val-001.html [ Skip ]
 
+# Flaky tests:
+crbug.com/987224 virtual/cascade/external/wpt/css/css-typed-om/interfaces.html [ Pass Timeout ]
+crbug.com/987224 virtual/cascade/external/wpt/css/css-paint-api/idlharness.html [ Pass Timeout ]
+
 # ====== Cascade failures until here ======
 
 ### sheriff 2019-07-16
