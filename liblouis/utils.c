@@ -264,7 +264,7 @@ _lou_debugHook(void) {
 #endif
 
 static const int validTranslationModes[] = { noContractions, compbrlAtCursor, dotsIO,
-	compbrlLeftCursor, ucBrl, noUndefinedDots, partialTrans };
+	compbrlLeftCursor, ucBrl, noUndefined, partialTrans };
 
 int EXPORT_CALL
 _lou_isValidMode(int mode) {

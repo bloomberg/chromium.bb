@@ -890,7 +890,7 @@ back_updatePositions(const widechar *outChars, int inLength, int outLength,
 static int
 undefinedDots(widechar dots, int mode, OutString *output, int pos, int *posMapping) {
 	posMapping[pos] = output->length;
-	if (mode & noUndefinedDots) return 1;
+	if (mode & noUndefined) return 1;
 
 	/* Print out dot numbers */
 	widechar buffer[20];

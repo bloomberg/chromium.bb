@@ -43,7 +43,7 @@ tests:
     - \\456/
   - - ⠸
     - ""
-    - mode: [noUndefinedDots]
+    - mode: [noUndefined]
 
 table: |
   include tables/spaces.uti
@@ -58,4 +58,4 @@ tests:
   - - " _ "
     - "  "
     - outputPos: [0, 1, 1]
-      mode: [noUndefinedDots]
+      mode: [noUndefined]

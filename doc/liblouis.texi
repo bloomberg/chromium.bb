@@ -2777,7 +2777,7 @@ positions as in the following example:
 A list of translation modes that should be used for this test. If not
 defined defaults to 0. Valid mode values are @samp{noContractions},
 @samp{compbrlAtCursor}, @samp{dotsIO}, @samp{compbrlLeftCursor},
-@samp{ucBrl}, @samp{noUndefinedDots} or @samp{partialTrans}.
+@samp{ucBrl}, @samp{noUndefined} or @samp{partialTrans}.
 
 For a description of the various translation mode flags, please see
 the function @ref{lou_translateString}.
@@ -3222,7 +3222,7 @@ translating input typed on a braille keyboard to provide a rough idea
 to the user of the characters they are typing before the word is
 complete.
 
-@item noUndefinedDots
+@item noUndefined
 Setting this bit disables the output of dot numbers when
 back-translating undefined Braille patterns. When back translating
 input from a braille keyboard cell by cell, it is desirable to output
@@ -3235,7 +3235,7 @@ This works automatically for indicators liblouis knows about such as
 capital sign, number sign, etc., but it does not work for indicators
 which are not (and cannot be) specifically defined as indicators. For
 example, in UEB, dots 4 5 6 alone produces the text "\456/". Setting
-the noUndefinedDots mode suppresses this dot number output.
+the noUndefined mode suppresses this dot number output.
 
 @end table
 
@@ -3309,7 +3309,7 @@ should be done.
 
 There are two additional modes that only apply to back-translation. By
 default, if a dot pattern in the input is undefined, the dot numbers
-will be included in the output. If the @code{noUndefinedDots} mode is
+will be included in the output. If the @code{noUndefined} mode is
 set, this does not occur; an undefined dot pattern simply produces no
 output. The @code{partialTrans} mode specifies that the input should be
 treated as an incomplete word. That is, rules that apply only for
@@ -3779,7 +3779,7 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  abrege decrement pre cornf comf scano cornm cornp po
 @c  LocalWords:  h's brl testtrans UCS asis libyaml url yaml formtype
 @c  LocalWords:  testmode iftex unicode ueb xfail eo noContractions
-@c  LocalWords:  dotsIO ucBrl noUndefinedDots partialTrans capsletter
+@c  LocalWords:  dotsIO ucBrl noUndefined partialTrans capsletter
 @c  LocalWords:  abc doctest inString enum cp outbufbuf logcallback fprint
 @c  LocalWords:  lbu EOF heckTable fn ispell getTypeformForEmphClass
 @c  LocalWords:  indexTables begcapsword endcapsword typeforms

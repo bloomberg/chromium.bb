@@ -102,7 +102,7 @@ typedef enum {
 	// for historic reasons 8 and 16 are free
 	compbrlLeftCursor = 32,
 	ucBrl = 64,
-	noUndefinedDots = 128,
+	noUndefined = 128,
 	partialTrans = 256
 } translationModes;
 
