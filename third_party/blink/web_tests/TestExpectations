@@ -6351,3 +6351,4 @@ crbug.com/986666 virtual/disable-blink-gen-property-trees/animations/web-animati
 crbug.com/986019 animations/play-state.html [ Pass Timeout ]
 crbug.com/986019 virtual/threaded/animations/play-state.html [ Pass Timeout ]
 crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/play-state.html [ Pass Timeout ]
+crbug.com/987108 [ Mac ] fast/forms/select/disabled-select-change-index.html [ Failure ]
