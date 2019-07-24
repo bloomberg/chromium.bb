@@ -3656,45 +3656,43 @@ static void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
                           MACROBLOCK *const x, const TileInfo *const tile_info,
                           int mi_row, int mi_col, int num_planes) {
   AV1_COMMON *const cm = &cpi->common;
-  MACROBLOCKD *const xd = &x->e_mbd;
   const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
-  const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
-  const int mib_size = cm->seq_params.mib_size;
+  assert(delta_q_info->delta_q_present_flag);
 
+  const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
   // Delta-q modulation based on variance
   av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, sb_size);
 
   int current_qindex = cm->base_qindex;
-  if (cm->delta_q_info.delta_q_present_flag) {
-    if (cpi->oxcf.deltaq_mode == DELTA_Q_PERCEPTUAL) {
-      if (DELTA_Q_PERCEPTUAL_MODULATION == 1) {
-        const int block_wavelet_energy_level =
-            av1_block_wavelet_energy_level(cpi, x, sb_size);
-        x->sb_energy_level = block_wavelet_energy_level;
-        current_qindex = av1_compute_q_from_energy_level_deltaq_mode(
-            cpi, block_wavelet_energy_level);
-      } else {
-        const int block_var_level = av1_log_block_var(cpi, x, sb_size);
-        x->sb_energy_level = block_var_level;
-        current_qindex =
-            av1_compute_q_from_energy_level_deltaq_mode(cpi, block_var_level);
-      }
-    } else if (cpi->oxcf.deltaq_mode == DELTA_Q_OBJECTIVE) {
-      assert(cpi->oxcf.enable_tpl_model);
-      // Setup deltaq based on tpl stats
+  if (cpi->oxcf.deltaq_mode == DELTA_Q_PERCEPTUAL) {
+    if (DELTA_Q_PERCEPTUAL_MODULATION == 1) {
+      const int block_wavelet_energy_level =
+          av1_block_wavelet_energy_level(cpi, x, sb_size);
+      x->sb_energy_level = block_wavelet_energy_level;
+      current_qindex = av1_compute_q_from_energy_level_deltaq_mode(
+          cpi, block_wavelet_energy_level);
+    } else {
+      const int block_var_level = av1_log_block_var(cpi, x, sb_size);
+      x->sb_energy_level = block_var_level;
       current_qindex =
-          get_q_for_deltaq_objective(cpi, sb_size, 0, mi_row, mi_col);
+          av1_compute_q_from_energy_level_deltaq_mode(cpi, block_var_level);
     }
+  } else if (cpi->oxcf.deltaq_mode == DELTA_Q_OBJECTIVE) {
+    assert(cpi->oxcf.enable_tpl_model);
+    // Setup deltaq based on tpl stats
+    current_qindex =
+        get_q_for_deltaq_objective(cpi, sb_size, 0, mi_row, mi_col);
   }
 
-  const int qmask = ~(delta_q_info->delta_q_res - 1);
-  current_qindex = clamp(current_qindex, delta_q_info->delta_q_res,
-                         256 - delta_q_info->delta_q_res);
+  const int delta_q_res = delta_q_info->delta_q_res;
+  current_qindex =
+      clamp(current_qindex, delta_q_res, 256 - delta_q_info->delta_q_res);
 
+  MACROBLOCKD *const xd = &x->e_mbd;
   const int sign_deltaq_index =
       current_qindex - xd->current_qindex >= 0 ? 1 : -1;
-
-  const int deltaq_deadzone = delta_q_info->delta_q_res / 4;
+  const int deltaq_deadzone = delta_q_res / 4;
+  const int qmask = ~(delta_q_res - 1);
   int abs_deltaq_index = abs(current_qindex - xd->current_qindex);
   abs_deltaq_index = (abs_deltaq_index + deltaq_deadzone) & qmask;
   current_qindex = xd->current_qindex + sign_deltaq_index * abs_deltaq_index;
@@ -3709,26 +3707,29 @@ static void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
   // keep track of any non-zero delta-q used
   td->deltaq_used |= (xd->delta_qindex != 0);
 
-  if (cm->delta_q_info.delta_q_present_flag && cpi->oxcf.deltalf_mode) {
-    const int lfmask = ~(delta_q_info->delta_lf_res - 1);
+  if (cpi->oxcf.deltalf_mode) {
+    const int delta_lf_res = delta_q_info->delta_lf_res;
+    const int lfmask = ~(delta_lf_res - 1);
     const int delta_lf_from_base =
-        ((xd->delta_qindex / 2 + delta_q_info->delta_lf_res / 2) & lfmask);
+        ((xd->delta_qindex / 2 + delta_lf_res / 2) & lfmask);
+    const int8_t delta_lf =
+        (int8_t)clamp(delta_lf_from_base, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
+    const int frame_lf_count =
+        av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+    const int mib_size = cm->seq_params.mib_size;
+    const int mi_stide = cm->mi_stride;
+    int mi_index_base = mi_row * mi_stide + mi_col;
 
     // pre-set the delta lf for loop filter. Note that this value is set
     // before mi is assigned for each block in current superblock
     for (int j = 0; j < AOMMIN(mib_size, cm->mi_rows - mi_row); j++) {
       for (int k = 0; k < AOMMIN(mib_size, cm->mi_cols - mi_col); k++) {
-        cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)].delta_lf_from_base =
-            (int8_t)clamp(delta_lf_from_base, -MAX_LOOP_FILTER,
-                          MAX_LOOP_FILTER);
-        const int frame_lf_count =
-            av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+        cm->mi[mi_index_base + k].delta_lf_from_base = delta_lf;
         for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
-          cm->mi[(mi_row + j) * cm->mi_stride + (mi_col + k)].delta_lf[lf_id] =
-              (int8_t)clamp(delta_lf_from_base, -MAX_LOOP_FILTER,
-                            MAX_LOOP_FILTER);
+          cm->mi[mi_index_base + k].delta_lf[lf_id] = delta_lf;
         }
       }
+      mi_index_base += mi_stide;
     }
   }
 }
