@@ -159,7 +159,9 @@ void PaintLayerScrollableArea::DidScroll(const FloatPoint& position) {
   CHECK(!HasBeenDisposed());
 }
 
-void PaintLayerScrollableArea::Dispose() {
+void PaintLayerScrollableArea::DisposeImpl() {
+  rare_data_.reset();
+
   if (InResizeMode() && !GetLayoutBox()->DocumentBeingDestroyed()) {
     if (LocalFrame* frame = GetLayoutBox()->GetFrame())
       frame->GetEventHandler().ResizeScrollableAreaDestroyed();
@@ -212,11 +214,9 @@ void PaintLayerScrollableArea::Dispose() {
   if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer())
     sequencer->DidDisposeScrollableArea(*this);
 
-  layer_ = nullptr;
-}
+  RunScrollCompleteCallbacks();
 
-bool PaintLayerScrollableArea::HasBeenDisposed() const {
-  return !layer_;
+  layer_ = nullptr;
 }
 
 void PaintLayerScrollableArea::Trace(blink::Visitor* visitor) {
@@ -2927,13 +2927,6 @@ bool PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::
     PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
   return scrollable_area_->GetLayoutBox()
       ->PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
-}
-
-void PaintLayerScrollableArea::DisposeImpl() {
-  if (!HasBeenDisposed())
-    Dispose();
-  rare_data_.reset();
-  ScrollableArea::DisposeImpl();
 }
 
 }  // namespace blink
