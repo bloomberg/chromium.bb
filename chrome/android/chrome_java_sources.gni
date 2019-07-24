@@ -1692,6 +1692,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webapps/WebApkActivity8.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkActivity9.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkInfo.java",
+  "java/src/org/chromium/chrome/browser/webapps/WebApkHandlerDelegate.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkInstallService.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkInstaller.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkManagedActivity.java",

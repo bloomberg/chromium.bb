@@ -2640,6 +2640,8 @@ jumbo_split_static_library("browser") {
       "android/web_contents_factory.cc",
       "android/webapk/chrome_webapk_host.cc",
       "android/webapk/chrome_webapk_host.h",
+      "android/webapk/webapk_handler_delegate.cc",
+      "android/webapk/webapk_handler_delegate.h",
       "android/webapk/webapk_icon_hasher.cc",
       "android/webapk/webapk_icon_hasher.h",
       "android/webapk/webapk_info.cc",
