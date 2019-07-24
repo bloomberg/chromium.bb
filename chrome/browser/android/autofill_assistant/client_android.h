@@ -117,6 +117,9 @@ class ClientAndroid : public Client,
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   std::unique_ptr<Controller> controller_;
 
+  // True if Start() was called. This turns on the tracking of dropouts.
+  bool started_ = false;
+
   std::unique_ptr<UiControllerAndroid> ui_controller_android_;
 
   base::OnceCallback<void(bool, const std::string&)>

@@ -109,7 +109,7 @@ ClientAndroid::ClientAndroid(content::WebContents* web_contents)
 }
 
 ClientAndroid::~ClientAndroid() {
-  if (controller_ != nullptr) {
+  if (controller_ != nullptr && started_) {
     // In the case of an unexpected closing of the activity or tab, controller_
     // will not yet have been cleaned up (since that happens when a web
     // contents object gets destroyed).
@@ -131,6 +131,11 @@ bool ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jobjectArray>& parameter_values,
                           const JavaParamRef<jobject>& joverlay_coordinator,
                           jlong jservice) {
+  // When Start() is called, AA_START should have been measured. From now on,
+  // the client is responsible for keeping track of dropouts, so that for each
+  // AA_START there's a corresponding dropout.
+  started_ = true;
+
   std::unique_ptr<Service> service = nullptr;
   if (jservice) {
     service.reset(static_cast<Service*>(reinterpret_cast<void*>(jservice)));
@@ -377,7 +382,8 @@ void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
   if (ui_controller_android_ && ui_controller_android_->IsAttached())
     DestroyUI();
 
-  Metrics::RecordDropOut(reason);
+  if (started_)
+    Metrics::RecordDropOut(reason);
 
   // Delete the controller in a separate task. This avoids tricky ordering
   // issues when Shutdown is called from the controller.
@@ -413,6 +419,7 @@ void ClientAndroid::CreateController(std::unique_ptr<Service> service) {
 
 void ClientAndroid::DestroyController() {
   controller_.reset();
+  started_ = false;
 }
 
 bool ClientAndroid::NeedsUI() {
