@@ -106,6 +106,10 @@ class ClientAndroid : public Client,
   bool NeedsUI();
   void OnListDirectActions(const base::android::JavaRef<jobject>& jcallback);
 
+  // Returns the index of a direct action with that name, to pass to
+  // UiDelegate::PerformUserAction() or -1 if not found.
+  int FindDirectAction(const std::string& action_name);
+
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   content::WebContents* web_contents_;

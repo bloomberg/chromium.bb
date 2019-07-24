@@ -52,6 +52,10 @@ namespace {
 const char* const kDefaultAutofillAssistantServerUrl =
     "https://automate-pa.googleapis.com";
 
+// A direct action that corresponds to pressing the close or cancel button on
+// the UI.
+const char* const kCancelActionName = "cancel";
+
 // Fills a map from two Java arrays of strings of the same length.
 void FillStringMapFromJava(JNIEnv* env,
                            const JavaRef<jobjectArray>& names,
@@ -228,6 +232,10 @@ void ClientAndroid::OnListDirectActions(
     }
   }
 
+  // Cancel is always available when the UI is up.
+  if (ui_controller_android_)
+    names.insert(kCancelActionName);
+
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantClient_sendDirectActionList(
       env, java_object_, jcallback,
@@ -243,13 +251,36 @@ bool ClientAndroid::PerformDirectAction(
     const base::android::JavaParamRef<jobjectArray>& jargument_names,
     const base::android::JavaParamRef<jobjectArray>& jargument_values,
     const base::android::JavaParamRef<jobject>& joverlay_coordinator) {
+  std::string action_name =
+      base::android::ConvertJavaStringToUTF8(env, jaction_name);
+
+  int action_index = FindDirectAction(action_name);
+
+  // Cancel through the UI if it is up. This allows the user to undo. This is
+  // always available, even if no action was found and action_index == -1.
+  if (action_name == kCancelActionName && ui_controller_android_) {
+    ui_controller_android_->CloseOrCancel(action_index);
+    return true;
+  }
+
+  if (action_index == -1)
+    return false;
+
+  // If an overlay is already shown, then show the rest of the UI immediately.
+  if (joverlay_coordinator) {
+    AttachUI(joverlay_coordinator);
+  }
+
+  return controller_->PerformUserActionWithContext(
+      action_index, CreateTriggerContext(env, jexperiment_ids, jargument_names,
+                                         jargument_values));
+}
+
+int ClientAndroid::FindDirectAction(const std::string& action_name) {
   // It's too late to create a controller. This should have been done in
   // ListDirectActions.
   if (!controller_)
-    return false;
-
-  std::string action_name =
-      base::android::ConvertJavaStringToUTF8(env, jaction_name);
+    return -1;
 
   const std::vector<UserAction>& user_actions = controller_->GetUserActions();
   int user_action_count = user_actions.size();
@@ -260,19 +291,11 @@ bool ClientAndroid::PerformDirectAction(
 
     const std::set<std::string>& action_names =
         user_action.direct_action().names;
-    if (action_names.count(action_name) != 0) {
-      // If an overlay is already shown, then show the rest of the UI
-      // immediately.
-      if (joverlay_coordinator) {
-        AttachUI(joverlay_coordinator);
-      }
-
-      return controller_->PerformUserActionWithContext(
-          i, CreateTriggerContext(env, jexperiment_ids, jargument_names,
-                                  jargument_values));
-    }
+    if (action_names.count(action_name) != 0)
+      return i;
   }
-  return false;
+
+  return -1;
 }
 
 void ClientAndroid::AttachUI() {
