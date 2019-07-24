@@ -227,6 +227,23 @@ def ArchiveChromeEbuildEnv(sysroot, output_dir):
   return result_path
 
 
+def BundleImageZip(output_dir, image_dir):
+  """Bundle image.zip.
+
+  Args:
+    output_dir (str): The location outside the chroot where the files should be
+      stored.
+    image_dir (str): The directory containing the image.
+  """
+
+  filename = 'image.zip'
+  zipfile = os.path.join(output_dir, filename)
+  cros_build_lib.RunCommand(['zip', zipfile, '-r', '.'],
+                            cwd=image_dir,
+                            capture_output=True)
+  return filename
+
+
 def CreateChromeRoot(chroot, build_target, output_dir):
   """Create the chrome sysroot.
 

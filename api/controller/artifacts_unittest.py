@@ -97,15 +97,15 @@ class BundleImageZipTest(BundleTestCase):
 
   def testBundleImageZip(self):
     """BundleImageZip calls cbuildbot/commands with correct args."""
-    build_image_zip = self.PatchObject(
-        commands, 'BuildImageZip', return_value='image.zip')
+    bundle_image_zip = self.PatchObject(
+        artifacts_svc, 'BundleImageZip', return_value='image.zip')
     self.PatchObject(os.path, 'exists', return_value=True)
     artifacts.BundleImageZip(self.input_proto, self.output_proto)
     self.assertEqual(
         [artifact.path for artifact in self.output_proto.artifacts],
         ['/tmp/artifacts/image.zip'])
     self.assertEqual(
-        build_image_zip.call_args_list,
+        bundle_image_zip.call_args_list,
         [mock.call('/tmp/artifacts', '/cros/src/build/images/target/latest')])
 
   def testBundleImageZipNoImageDir(self):

@@ -43,6 +43,7 @@ def _GetImageDir(build_root, target):
   return image_dir
 
 
+@validate.require('build_target.name', 'output_dir')
 def BundleImageZip(input_proto, output_proto):
   """Bundle image.zip.
 
@@ -53,7 +54,7 @@ def BundleImageZip(input_proto, output_proto):
   target = input_proto.build_target.name
   output_dir = input_proto.output_dir
   image_dir = _GetImageDir(constants.SOURCE_ROOT, target)
-  archive = commands.BuildImageZip(output_dir, image_dir)
+  archive = artifacts.BundleImageZip(output_dir, image_dir)
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
