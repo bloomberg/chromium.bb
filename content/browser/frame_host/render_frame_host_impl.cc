@@ -6140,6 +6140,13 @@ void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
 
 #if defined(OS_ANDROID)
 void RenderFrameHostImpl::BindNFCRequest(device::mojom::NFCRequest request) {
+  // https://w3c.github.io/web-nfc/#security-policies
+  // WebNFC API must be only accessible from top level browsing context.
+  if (GetParent()) {
+    mojo::ReportBadMessage(
+        "WebNFC is only allowed in a top-level browsing context.");
+    return;
+  }
   if (delegate_)
     delegate_->GetNFC(std::move(request));
 }
