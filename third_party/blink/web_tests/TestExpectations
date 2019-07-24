@@ -6333,8 +6333,6 @@ crbug.com/986018 fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass
 
 # Sheriff 2019-07-22
 crbug.com/986282 [ Linux Win ] external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Pass Failure ]
-crbug.com/986019 [ Linux ] virtual/threaded/animations/play-state.html [ Pass Timeout ]
-crbug.com/986019 [ Linux ] virtual/disable-blink-gen-property-trees/animations/play-state.html [ Pass Timeout ]
 
 # ecosystem-infra sheriff 2019-07-22
 crbug.com/986457 [ Linux ] http/tests/misc/object-image-error-with-onload.html [ Pass Failure ]
@@ -6348,3 +6346,8 @@ crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/web-animati
 crbug.com/986666 animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
 crbug.com/986666 virtual/threaded/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
 crbug.com/986666 virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
+
+# Sheriff 2019-07-24
+crbug.com/986019 animations/play-state.html [ Pass Timeout ]
+crbug.com/986019 virtual/threaded/animations/play-state.html [ Pass Timeout ]
+crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/play-state.html [ Pass Timeout ]
