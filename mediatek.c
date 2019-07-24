@@ -40,7 +40,7 @@ static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8,     DRM_FORMAT
 						   DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
 #else
 static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU420,
-						   DRM_FORMAT_YVU420_ANDROID };
+						   DRM_FORMAT_YVU420_ANDROID, DRM_FORMAT_NV12 };
 #endif
 
 static int mediatek_init(struct driver *drv)
@@ -62,6 +62,7 @@ static int mediatek_init(struct driver *drv)
 	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata, BO_USE_HW_VIDEO_DECODER);
 	drv_modify_combination(drv, DRM_FORMAT_YVU420_ANDROID, &metadata, BO_USE_HW_VIDEO_DECODER);
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata, BO_USE_HW_VIDEO_DECODER);
 
 #ifdef MTK_MT8183
 	/* Only for MT8183 Camera subsystem */
@@ -235,7 +236,7 @@ static uint32_t mediatek_resolve_format(struct driver *drv, uint32_t format, uin
 		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
 			return DRM_FORMAT_NV12;
 #endif
-		return DRM_FORMAT_YVU420;
+		return DRM_FORMAT_NV12;
 	default:
 		return format;
 	}
