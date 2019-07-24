@@ -225,12 +225,8 @@ pass the `--no-skia-gold-failure` flag to not fail the test on a failed image
 comparison.
 
 Example usage:
-`run_gpu_integration_test.py pixel --download-refimg-from-cloud-storage
---use-skia-gold --no-skia-gold-failure --build-revision aabbccdd
---test-machine-name local`
-
-The `--download-refimg-from-cloud-storage` is a temporary hold-over from the
-legacy pixel tests, and will be removed in the near future.
+`run_gpu_integration_test.py pixel --no-skia-gold-failure --build-revision
+aabbccdd --test-machine-name local`
 
 ## Working On Gold
 
