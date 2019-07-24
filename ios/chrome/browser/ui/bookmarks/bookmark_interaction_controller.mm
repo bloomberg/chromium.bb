@@ -260,7 +260,8 @@ enum class PresentedState {
     self.currentPresentedState = PresentedState::BOOKMARK_EDITOR;
     BookmarkEditViewController* bookmarkEditor =
         [[BookmarkEditViewController alloc] initWithBookmark:node
-                                                browserState:_browserState];
+                                                browserState:_browserState
+                                                  dispatcher:self.dispatcher];
     self.bookmarkEditor = bookmarkEditor;
     self.bookmarkEditor.delegate = self;
     editorController = bookmarkEditor;
@@ -270,7 +271,8 @@ enum class PresentedState {
         [BookmarkFolderEditorViewController
             folderEditorWithBookmarkModel:self.bookmarkModel
                                    folder:node
-                             browserState:_browserState];
+                             browserState:_browserState
+                               dispatcher:self.dispatcher];
     folderEditor.delegate = self;
     self.folderEditor = folderEditor;
     editorController = folderEditor;
