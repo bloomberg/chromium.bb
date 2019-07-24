@@ -79,9 +79,9 @@ GL_EXPORT extern const base::Feature kDirectCompositionComplexOverlays;
 GL_EXPORT extern const base::Feature kDirectCompositionGpuVSync;
 GL_EXPORT extern const base::Feature kDirectCompositionNonrootOverlays;
 GL_EXPORT extern const base::Feature kDirectCompositionPreferNV12Overlays;
+GL_EXPORT extern const base::Feature kDirectCompositionPresentationFeedback;
 GL_EXPORT extern const base::Feature kDirectCompositionUseNV12DecodeSwapChain;
 GL_EXPORT extern const base::Feature kDefaultANGLEOpenGL;
-GL_EXPORT extern const base::Feature kSwapChainFrameStatistics;
 extern const base::Feature kTrackCurrentShaders;
 
 }  // namespace features
