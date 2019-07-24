@@ -294,7 +294,18 @@ be describing additional metrics about the same event.
       https://goo.gl/tr1oTZ for a detailed explanation. In milliseconds.
     </summary>
   </metric>
+  <metric name="SubFrame.LayoutInstability.CumulativeShiftScore">
+    <summary>
+      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      occurred during the session, in the AMP subframe. This metric's integral
+      value is 100x the fractional jank score described in the explainer.
+    </summary>
+  </metric>
   <metric name="SubFrame.LayoutStability.JankScore">
+    <obsolete>
+      Removed July 2019 in favor of
+      SubFrame.LayoutInstability.CumulativeShiftScore.
+    </obsolete>
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
       occurred during the session, in the AMP subframe. This metric's integral
@@ -5105,7 +5116,34 @@ be describing additional metrics about the same event.
       Set to 1 if the main resource is an inner response of a signed exchange.
     </summary>
   </metric>
+  <metric name="LayoutInstability.CumulativeShiftScore">
+    <summary>
+      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      occurred on the page (including all subframes) during the session. This
+      metric's integral value is 100x the fractional jank score described in the
+      explainer.
+    </summary>
+  </metric>
+  <metric name="LayoutInstability.CumulativeShiftScore.MainFrame">
+    <summary>
+      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      occurred in the main frame during the session. This metric's integral
+      value is 100x the fractional jank score described in the explainer.
+    </summary>
+  </metric>
+  <metric
+      name="LayoutInstability.CumulativeShiftScore.MainFrame.BeforeInputOrScroll">
+    <summary>
+      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      occurred in the main frame during the session, before any user input or
+      document scroll. This metric's integral value is 100x the fractional jank
+      score described in the explainer.
+    </summary>
+  </metric>
   <metric name="LayoutStability.JankScore">
+    <obsolete>
+      Removed July 2019 in favor of LayoutInstability.CumulativeShiftScore.
+    </obsolete>
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
       occurred on the page (including all subframes) during the session. This
@@ -5114,6 +5152,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="LayoutStability.JankScore.MainFrame">
+    <obsolete>
+      Removed July 2019 in favor of
+      LayoutInstability.CumulativeShiftScore.MainFrame.
+    </obsolete>
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
       occurred in the main frame during the session. This metric's integral
@@ -5121,6 +5163,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="LayoutStability.JankScore.MainFrame.BeforeInputOrScroll">
+    <obsolete>
+      Removed July 2019 in favor of
+      LayoutInstability.CumulativeShiftScore.MainFrame.BeforeInputOrScroll.
+    </obsolete>
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
       occurred in the main frame during the session, before any user input or

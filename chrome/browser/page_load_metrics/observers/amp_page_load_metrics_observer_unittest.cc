@@ -350,7 +350,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics) {
       entry.get(), "SubFrame.PaintTiming.NavigationToLargestContentPaint", 10);
 }
 
-TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutStability) {
+TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutInstability) {
   GURL amp_url("https://ampviewer.com/page");
 
   NavigationSimulator::CreateRendererInitiated(GURL("https://ampviewer.com/"),
@@ -381,14 +381,14 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutStability) {
       ->CommitSameDocument();
 
   histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.AMP.Experimental.LayoutStability.JankScore.Subframe",
+      "PageLoad.Clients.AMP.LayoutInstability.CumulativeShiftScore.Subframe",
       10, 1);
 
   ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
   ASSERT_NE(nullptr, entry.get());
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
   test_ukm_recorder().ExpectEntryMetric(
-      entry.get(), "SubFrame.LayoutStability.JankScore", 100);
+      entry.get(), "SubFrame.LayoutInstability.CumulativeShiftScore", 100);
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetricsFullNavigation) {

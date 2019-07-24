@@ -42,10 +42,10 @@ const char kHistogramAMPSubframeFirstInputDelay[] =
     "InteractiveTiming.FirstInputDelay4.Subframe";
 const char kHistogramAMPSubframeFirstInputDelayFullNavigation[] =
     "InteractiveTiming.FirstInputDelay4.Subframe.FullNavigation";
-const char kHistogramAMPSubframeLayoutStabilityShiftScore[] =
-    "Experimental.LayoutStability.JankScore.Subframe";
-const char kHistogramAMPSubframeLayoutStabilityShiftScoreFullNavigation[] =
-    "Experimental.LayoutStability.JankScore.Subframe.FullNavigation";
+const char kHistogramAMPSubframeLayoutInstabilityShiftScore[] =
+    "LayoutInstability.CumulativeShiftScore.Subframe";
+const char kHistogramAMPSubframeLayoutInstabilityShiftScoreFullNavigation[] =
+    "LayoutInstability.CumulativeShiftScore.Subframe.FullNavigation";
 
 GURL GetCanonicalizedSameDocumentUrl(const GURL& url) {
   if (!url.has_ref())
@@ -421,7 +421,7 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
       std::min(subframe_info.render_data.layout_shift_score, 10.0f);
 
   // For UKM, report (shift_score * 100) as an int in the range [0, 1000].
-  builder.SetSubFrame_LayoutStability_JankScore(
+  builder.SetSubFrame_LayoutInstability_CumulativeShiftScore(
       static_cast<int>(roundf(clamped_shift_score * 100.0f)));
 
   // For UMA, report (shift_score * 10) an an int in the range [0,100].
@@ -429,13 +429,13 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
   if (current_main_frame_nav_info_->is_same_document_navigation) {
     UMA_HISTOGRAM_COUNTS_100(
         std::string(kHistogramPrefix)
-            .append(kHistogramAMPSubframeLayoutStabilityShiftScore),
+            .append(kHistogramAMPSubframeLayoutInstabilityShiftScore),
         uma_value);
   } else {
     UMA_HISTOGRAM_COUNTS_100(
         std::string(kHistogramPrefix)
             .append(
-                kHistogramAMPSubframeLayoutStabilityShiftScoreFullNavigation),
+                kHistogramAMPSubframeLayoutInstabilityShiftScoreFullNavigation),
         uma_value);
   }
 
