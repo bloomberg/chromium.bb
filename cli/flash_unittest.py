@@ -28,7 +28,7 @@ from chromite.lib.paygen import paygen_stateful_payload_lib
 
 class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
   """Mock out RemoteDeviceUpdater."""
-  TARGET = 'chromite.lib.auto_updater.ChromiumOSFlashUpdater'
+  TARGET = 'chromite.lib.auto_updater.ChromiumOSUpdater'
   ATTRS = ('UpdateStateful', 'UpdateRootfs', 'SetupRootfsUpdate',
            'RebootAndVerify')
 

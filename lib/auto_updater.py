@@ -13,34 +13,20 @@ TODO(xixuan): Make this lib support other update logics, including:
   install firmware images with FAFT
   install android/brillo
 
-TODO(xixuan): crbugs.com/631837, re-consider the structure of this file,
-like merging check functions into one class.
+ChromiumOSUpdater includes:
+  ----Check-----
+  * Check functions, including kernel/version/cgpt check.
 
-Currently, this lib supports ChromiumOSFlashUpdater and ChromiumOSUpdater.
-
-    ---------------
-    | BaseUpdater | : Updater
-    ---------------
-           |
-           |
-     -------------------------
-     | ChromiumOSFlashUpdater | : Chromium OS Updater by cros flash
-     -------------------------
-                 |
-                 |
-            ---------------------
-            | ChromiumOSUpdater | : Chromium OS Updater by cros flash
-            ---------------------   with more checks
-
-ChromiumOSFlashUpdater includes:
   ----Precheck---
   * Pre-check payload's existence before auto-update.
   * Pre-check if the device can run its devserver.
+  * Pre-check for stateful/rootfs update/whole update.
 
   ----Tranfer----
   * Transfer devserver package at first.
   * Transfer rootfs update files if rootfs update is required.
   * Transfer stateful update files if stateful update is required.
+  * @retry to all transfer functions.
 
   ----Auto-Update---
   * Do rootfs partition update if it's required.
@@ -50,18 +36,6 @@ ChromiumOSFlashUpdater includes:
   ----Verify----
   * Do verification if it's required.
   * Disable rootfs verification in device if it's required.
-
-ChromiumOSUpdater adds:
-  ----Check-----
-  * Check functions, including kernel/version/cgpt check.
-
-  ----Precheck---
-  * Pre-check for stateful/rootfs update/whole update.
-
-  ----Tranfer----
-  * Add @retry to all transfer functions.
-
-  ----Verify----
   * Post-check stateful/rootfs update/whole update.
 """
 
@@ -169,7 +143,7 @@ class BaseUpdater(object):
     self.payload_dir = payload_dir
 
 
-class ChromiumOSFlashUpdater(BaseUpdater):
+class ChromiumOSUpdater(BaseUpdater):
   """Used to update DUT with image."""
   # stateful update files
   LOCAL_STATEFUL_UPDATE_FILENAME = 'stateful_update'
@@ -204,17 +178,29 @@ class ChromiumOSFlashUpdater(BaseUpdater):
   # return from reboot' bug is solved.
   REBOOT_TIMEOUT = 480
 
-  def __init__(self, device, payload_dir, dev_dir='', tempdir=None,
-               original_payload_dir=None, do_rootfs_update=True,
-               do_stateful_update=True, reboot=True, disable_verification=False,
-               clobber_stateful=False, yes=False, payload_filename=None,
-               send_payload_in_parallel=False, experimental_au=False):
-    """Initialize a ChromiumOSFlashUpdater for auto-update a chromium OS device.
+  REMOTE_STATEFUL_PATH_TO_CHECK = ('/var', '/home', '/mnt/stateful_partition')
+  REMOTE_STATEFUL_TEST_FILENAME = '.test_file_to_be_deleted'
+  REMOTE_UPDATED_MARKERFILE_PATH = '/run/update_engine_autoupdate_completed'
+  REMOTE_LAB_MACHINE_FILE_PATH = '/mnt/stateful_partition/.labmachine'
+  KERNEL_A = {'name': 'KERN-A', 'kernel': 2, 'root': 3}
+  KERNEL_B = {'name': 'KERN-B', 'kernel': 4, 'root': 5}
+  KERNEL_UPDATE_TIMEOUT = 180
+
+  def __init__(self, device, build_name, payload_dir, dev_dir='',
+               log_file=None, tempdir=None, original_payload_dir=None,
+               clobber_stateful=True, local_devserver=False, yes=False,
+               do_rootfs_update=True, do_stateful_update=True,
+               reboot=True, disable_verification=False,
+               send_payload_in_parallel=False,
+               payload_filename=None, experimental_au=False):
+    """Initialize a ChromiumOSUpdater for auto-update a chromium OS device.
 
     Args:
       device: the ChromiumOSDevice to be updated.
+      build_name: the target update version for the device.
       payload_dir: the directory of payload(s).
       dev_dir: the directory of the devserver that runs the CrOS auto-update.
+      log_file: The file to save running logs.
       tempdir: the temp directory in caller, not in the device. For example,
           the tempdir for cros flash is /tmp/cros-flash****/, used to
           temporarily keep files when transferring devserver package, and
@@ -233,6 +219,8 @@ class ChromiumOSFlashUpdater(BaseUpdater):
           device. The default is False.
       clobber_stateful: whether to do a clean stateful update. The default is
           False.
+      local_devserver: Indicate whether users use their local devserver.
+          Default: False.
       yes: Assume "yes" (True) for any prompt. The default is False. However,
           it should be set as True if we want to disable all the prompts for
           auto-update.
@@ -244,11 +232,12 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       experimental_au: Use experimental features of auto updater instead. It
           should be deprecated once crbug.com/872441 is fixed.
     """
-    super(ChromiumOSFlashUpdater, self).__init__(device, payload_dir)
-    if tempdir is not None:
-      self.tempdir = tempdir
-    else:
-      self.tempdir = tempfile.mkdtemp(prefix='cros-update')
+    super(ChromiumOSUpdater, self).__init__(device, payload_dir)
+
+    self.tempdir = (tempdir if tempdir is not None
+                    else tempfile.mkdtemp(prefix='cros-update'))
+    self.inactive_kernel = None
+    self.update_version = None if local_devserver else build_name
 
     self.dev_dir = dev_dir
     self.original_payload_dir = original_payload_dir
@@ -275,6 +264,16 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       self.payload_mode = self.PAYLOAD_MODE_SCP
     self.perf_id = None
     self.experimental_au = experimental_au
+
+    if log_file:
+      log_kwargs = {
+        'log_stdout_to_file': log_file,
+        'append_to_file': True,
+        'combine_stdout_stderr': True,
+      }
+      self._cmd_kwargs.update(log_kwargs)
+      self._cmd_kwargs_omit_error.update(log_kwargs)
+
 
   @property
   def is_au_endtoendtest(self):
@@ -561,7 +560,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     else:
       return ds_wrapper.ROOTFS_FILENAME
 
-  def TransferDevServerPackage(self):
+  def _TransferDevServerPackage(self):
     """Transfer devserver package to work directory of the remote device."""
     logging.info('Copying devserver package to device...')
     src_dir = os.path.join(self.tempdir, 'src')
@@ -582,7 +581,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     if self.original_payload_dir:
       self._TransferRequiredPackage()
 
-  def TransferRootfsUpdate(self):
+  def _TransferRootfsUpdate(self):
     """Transfer files for rootfs update.
 
     Copy the update payload to the remote device for rootfs update.
@@ -615,7 +614,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     # devserver staging. Rename to update.gz so DUTs devserver can respond.
     self.device.RunCommand(['mv', current_path, expected_path])
 
-  def TransferStatefulUpdate(self):
+  def _TransferStatefulUpdate(self):
     """Transfer files for stateful update.
 
     The stateful update bin and the corresponding payloads are copied to the
@@ -648,18 +647,6 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     payload = os.path.join(self.payload_dir, ds_wrapper.STATEFUL_FILENAME)
     self.device.CopyToWorkDir(payload, mode=self.payload_mode,
                               log_output=True, **self._cmd_kwargs)
-
-  def RestoreStateful(self):
-    """Restore stateful partition for device."""
-    logging.warning('Restoring the stateful partition')
-    self.RunUpdateStateful()
-    self._Reboot('stateful partition restoration')
-    try:
-      self._CheckDevserverCanRun()
-      logging.info('Stateful partition restored.')
-    except DevserverCannotStartError as e:
-      raise ChromiumOSUpdateError(
-          'Unable to restore stateful partition: %s', e)
 
   def ResetStatefulPartition(self):
     """Clear any pending stateful update request."""
@@ -876,7 +863,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     old_root_dev = self.GetRootDev(self.device)
     self.device.Reboot()
     if self._clobber_stateful:
-      self.device.BaseRunCommand(['mkdir', '-p', self.device.work_dir])
+      self.device.RunCommand(['mkdir', '-p', self.device.work_dir])
 
     if self._do_rootfs_update:
       logging.notice('Verifying that the device has been updated...')
@@ -1009,78 +996,6 @@ class ChromiumOSFlashUpdater(BaseUpdater):
                                   error_stage)
     except remote_access.SSHConnectionError:
       raise ChromiumOSUpdateError('Failed to connect at %s' % error_stage)
-
-
-class ChromiumOSUpdater(ChromiumOSFlashUpdater):
-  """Used to auto-update Cros DUT with image.
-
-  Different from ChromiumOSFlashUpdater, which only contains cros-flash
-  related auto-update methods, ChromiumOSUpdater includes pre-setup and
-  post-check methods for both rootfs and stateful update. It also contains
-  various single check functions, like CheckVersion() and _ResetUpdateEngine().
-
-  Furthermore, this class adds retry to package transfer-related functions.
-  """
-  REMOTE_STATEFUL_PATH_TO_CHECK = ['/var', '/home', '/mnt/stateful_partition']
-  REMOTE_STATEFUL_TEST_FILENAME = '.test_file_to_be_deleted'
-  REMOTE_UPDATED_MARKERFILE_PATH = '/run/update_engine_autoupdate_completed'
-  REMOTE_LAB_MACHINE_FILE_PATH = '/mnt/stateful_partition/.labmachine'
-  KERNEL_A = {'name': 'KERN-A', 'kernel': 2, 'root': 3}
-  KERNEL_B = {'name': 'KERN-B', 'kernel': 4, 'root': 5}
-  KERNEL_UPDATE_TIMEOUT = 180
-
-  def __init__(self, device, build_name, payload_dir, dev_dir='',
-               log_file=None, tempdir=None, original_payload_dir=None,
-               clobber_stateful=True, local_devserver=False, yes=False,
-               payload_filename=None, experimental_au=False):
-    """Initialize a ChromiumOSUpdater for auto-update a chromium OS device.
-
-    Args:
-      device: the ChromiumOSDevice to be updated.
-      build_name: the target update version for the device.
-      payload_dir: the directory of payload(s).
-      dev_dir: the directory of the devserver that runs the CrOS auto-update.
-      log_file: The file to save running logs.
-      tempdir: the temp directory in caller, not in the device. For example,
-          the tempdir for cros flash is /tmp/cros-flash****/, used to
-          temporarily keep files when transferring devserver package, and
-          reserve devserver and update engine logs.
-      original_payload_dir: The directory containing payloads whose version is
-          the same as current host's rootfs partition. If it's None, will first
-          try installing the matched stateful.tgz with the host's rootfs
-          Partition when restoring stateful. Otherwise, install the target
-          stateful.tgz.
-      clobber_stateful: whether to do a clean stateful update. The default is
-          True for CrOS update.
-      local_devserver: Indicate whether users use their local devserver.
-          Default: False.
-      yes: Assume "yes" (True) for any prompt. The default is False. However,
-          it should be set as True if we want to disable all the prompts for
-          auto-update.
-      payload_filename: Filename of exact payload file to use for
-          update instead of the default: update.gz.
-      experimental_au: Use experimental features of auto updater instead. It
-          should be deprecated once crbug.com/872441 is fixed.
-    """
-    super(ChromiumOSUpdater, self).__init__(
-        device, payload_dir, dev_dir=dev_dir, tempdir=tempdir,
-        original_payload_dir=original_payload_dir,
-        clobber_stateful=clobber_stateful, yes=yes,
-        payload_filename=payload_filename, experimental_au=experimental_au)
-
-    if log_file:
-      self._cmd_kwargs['log_stdout_to_file'] = log_file
-      self._cmd_kwargs['append_to_file'] = True
-      self._cmd_kwargs['combine_stdout_stderr'] = True
-      self._cmd_kwargs_omit_error['log_stdout_to_file'] = log_file
-      self._cmd_kwargs_omit_error['append_to_file'] = True
-      self._cmd_kwargs_omit_error['combine_stdout_stderr'] = True
-
-    self.inactive_kernel = None
-    if local_devserver:
-      self.update_version = None
-    else:
-      self.update_version = build_name
 
   def _cgpt(self, flag, kernel, dev='$(rootdev -s -d)'):
     """Return numeric cgpt value for the specified flag, kernel, device."""
@@ -1264,7 +1179,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     retry_util.RetryException(
         cros_build_lib.RunCommandError,
         MAX_RETRY,
-        super(ChromiumOSUpdater, self).TransferDevServerPackage,
+        self._TransferDevServerPackage,
         delay_sec=DELAY_SEC_FOR_RETRY)
 
   def TransferRootfsUpdate(self):
@@ -1276,7 +1191,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     retry_util.RetryException(
         cros_build_lib.RunCommandError,
         MAX_RETRY,
-        super(ChromiumOSUpdater, self).TransferRootfsUpdate,
+        self._TransferRootfsUpdate,
         delay_sec=DELAY_SEC_FOR_RETRY)
 
   def TransferStatefulUpdate(self):
@@ -1288,7 +1203,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     retry_util.RetryException(
         cros_build_lib.RunCommandError,
         MAX_RETRY,
-        super(ChromiumOSUpdater, self).TransferStatefulUpdate,
+        self._TransferStatefulUpdate,
         delay_sec=DELAY_SEC_FOR_RETRY)
 
   def PreSetupCrOSUpdate(self):
@@ -1364,20 +1279,15 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
           devserver_bin, **self._cmd_kwargs_omit_error):
         logging.info('Devserver files not found on device. Resending them...')
         self.TransferDevServerPackage()
-        self.TransferStatefulUpdate()
 
       return True
     except cros_build_lib.RunCommandError as e:
       logging.warning('Failed to verify whether packages still exist: %s', e)
       return False
 
-  def _CheckDevserverCanRun(self):
-    """Check if devserver can successfully run for ChromiumOSUpdater."""
-    self._IfDevserverPackageInstalled()
-    super(ChromiumOSUpdater, self)._CheckDevserverCanRun()
-
   def CheckDevserverRun(self):
     """Check whether devserver can start."""
+    self._IfDevserverPackageInstalled()
     self._CheckDevserverCanRun()
     logging.info('Devserver successfully start.')
 
@@ -1385,10 +1295,17 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     """Restore stateful partition for device."""
     logging.warning('Restoring the stateful partition')
     self.PreSetupStatefulUpdate()
+    self.TransferStatefulUpdate()
     use_original_build = bool(self.original_payload_dir)
     self.UpdateStateful(use_original_build=use_original_build)
     self.PostCheckStatefulUpdate()
-    self.CheckDevserverRun()
+    self._Reboot('stateful partition restoration')
+    try:
+      self.CheckDevserverRun()
+      logging.info('Stateful partition restored.')
+    except DevserverCannotStartError as e:
+      raise ChromiumOSUpdateError(
+          'Unable to restore stateful partition: %s' % e)
 
   def PostCheckRootfsUpdate(self):
     """Post-check for rootfs update for CrOS host."""
