@@ -81,6 +81,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   static std::unique_ptr<SkiaOutputSurfaceImplOnGpu> Create(
       SkiaOutputSurfaceDependency* deps,
       const RendererSettings& renderer_settings,
+      const gpu::SequenceId sequence_id,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
       const BufferPresentedCallback& buffer_presented_callback,
       const ContextLostCallback& context_lost_callback);
@@ -89,6 +90,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       util::PassKey<SkiaOutputSurfaceImplOnGpu> pass_key,
       SkiaOutputSurfaceDependency* deps,
       const RendererSettings& renderer_settings,
+      const gpu::SequenceId sequence_id,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
       const BufferPresentedCallback& buffer_presented_callback,
       const ContextLostCallback& context_lost_callback);
@@ -212,6 +214,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       shared_image_representation_factory_;
   VulkanContextProvider* const vulkan_context_provider_;
   const RendererSettings renderer_settings_;
+  // This is only used to lazily create DirectContextProviderDelegate for
+  // readback using GLRendererCopier.
+  // TODO(samans): Remove |sequence_id| once readback always uses Skia.
+  const gpu::SequenceId sequence_id_;
   const DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
   const BufferPresentedCallback buffer_presented_callback_;
   const ContextLostCallback context_lost_callback_;

@@ -240,12 +240,13 @@ scoped_refptr<gpu::gles2::FeatureInfo> CreateFeatureInfo(
 }
 
 scoped_refptr<gpu::SyncPointClientState> CreateSyncPointClientState(
-    SkiaOutputSurfaceDependency* deps) {
+    SkiaOutputSurfaceDependency* deps,
+    gpu::SequenceId sequence_id) {
   auto command_buffer_id = gpu::CommandBufferId::FromUnsafeValue(
       g_next_command_buffer_id.GetNext() + 1);
   return deps->GetSyncPointManager()->CreateSyncPointClientState(
       gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE, command_buffer_id,
-      deps->GetSequenceId());
+      sequence_id);
 }
 
 std::unique_ptr<gpu::SharedImageRepresentationFactory>
@@ -553,13 +554,14 @@ void SkiaOutputSurfaceImplOnGpu::OffscreenSurface::set_surface(
 std::unique_ptr<SkiaOutputSurfaceImplOnGpu> SkiaOutputSurfaceImplOnGpu::Create(
     SkiaOutputSurfaceDependency* deps,
     const RendererSettings& renderer_settings,
+    const gpu::SequenceId sequence_id,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
     const BufferPresentedCallback& buffer_presented_callback,
     const ContextLostCallback& context_lost_callback) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::Create");
   auto impl_on_gpu = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
       util::PassKey<SkiaOutputSurfaceImplOnGpu>(), deps, renderer_settings,
-      did_swap_buffer_complete_callback, buffer_presented_callback,
+      sequence_id, did_swap_buffer_complete_callback, buffer_presented_callback,
       context_lost_callback);
   if (!impl_on_gpu->Initialize())
     impl_on_gpu = nullptr;
@@ -570,16 +572,19 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     util::PassKey<SkiaOutputSurfaceImplOnGpu> /* pass_key */,
     SkiaOutputSurfaceDependency* deps,
     const RendererSettings& renderer_settings,
+    const gpu::SequenceId sequence_id,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
     const BufferPresentedCallback& buffer_presented_callback,
     const ContextLostCallback& context_lost_callback)
     : dependency_(std::move(deps)),
       feature_info_(CreateFeatureInfo(dependency_)),
-      sync_point_client_state_(CreateSyncPointClientState(dependency_)),
+      sync_point_client_state_(
+          CreateSyncPointClientState(dependency_, sequence_id)),
       shared_image_representation_factory_(
           CreateSharedImageRepresentationFactory(dependency_)),
       vulkan_context_provider_(dependency_->GetVulkanContextProvider()),
       renderer_settings_(renderer_settings),
+      sequence_id_(sequence_id),
       did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback),
       buffer_presented_callback_(buffer_presented_callback),
       context_lost_callback_(context_lost_callback),
@@ -909,7 +914,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
           dependency_->GetGpuFeatureInfo(), context_state_.get(),
           dependency_->GetMailboxManager(),
           dependency_->GetSharedImageManager(),
-          CreateSyncPointClientState(dependency_));
+          CreateSyncPointClientState(dependency_, sequence_id_));
       context_provider_ = base::MakeRefCounted<DirectContextProvider>(
           context_state_->context(), gl_surface_, supports_alpha_,
           gpu_preferences_, feature_info_.get(), std::move(client));
