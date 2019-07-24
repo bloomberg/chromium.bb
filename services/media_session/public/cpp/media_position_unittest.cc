@@ -15,7 +15,8 @@ TEST_F(MediaPositionTest, TestPositionUpdated) {
       1 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
       base::TimeDelta::FromSeconds(300) /* position */);
 
-  base::Time now = base::Time::Now() + base::TimeDelta::FromSeconds(100);
+  base::TimeTicks now =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(100);
   base::TimeDelta updated_position = media_position.GetPositionAtTime(now);
 
   EXPECT_EQ(updated_position.InSeconds(), 400);
@@ -26,7 +27,8 @@ TEST_F(MediaPositionTest, TestPositionUpdatedTwice) {
       1 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
       base::TimeDelta::FromSeconds(200) /* position */);
 
-  base::Time now = base::Time::Now() + base::TimeDelta::FromSeconds(100);
+  base::TimeTicks now =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(100);
   base::TimeDelta updated_position = media_position.GetPositionAtTime(now);
 
   EXPECT_EQ(updated_position.InSeconds(), 300);
@@ -42,7 +44,8 @@ TEST_F(MediaPositionTest, TestPositionUpdatedPastDuration) {
       1 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
       base::TimeDelta::FromSeconds(300) /* position */);
 
-  base::Time now = base::Time::Now() + base::TimeDelta::FromSeconds(400);
+  base::TimeTicks now =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(400);
   base::TimeDelta updated_position = media_position.GetPositionAtTime(now);
 
   // Verify that the position has been updated to the end of the total duration.
@@ -64,7 +67,8 @@ TEST_F(MediaPositionTest, TestNegativePosition) {
       -1 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
       base::TimeDelta::FromSeconds(300) /* position */);
 
-  base::Time now = base::Time::Now() + base::TimeDelta::FromSeconds(400);
+  base::TimeTicks now =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(400);
   base::TimeDelta updated_position = media_position.GetPositionAtTime(now);
 
   // Verify that the position does not go below 0.
@@ -88,7 +92,8 @@ TEST_F(MediaPositionTest, TestPositionUpdatedFasterPlayback) {
       2 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
       base::TimeDelta::FromSeconds(300) /* position */);
 
-  base::Time now = base::Time::Now() + base::TimeDelta::FromSeconds(100);
+  base::TimeTicks now =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(100);
   base::TimeDelta updated_position = media_position.GetPositionAtTime(now);
 
   EXPECT_EQ(updated_position.InSeconds(), 500);
@@ -99,7 +104,8 @@ TEST_F(MediaPositionTest, TestPositionUpdatedSlowerPlayback) {
       .5 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
       base::TimeDelta::FromSeconds(300) /* position */);
 
-  base::Time now = base::Time::Now() + base::TimeDelta::FromSeconds(200);
+  base::TimeTicks now =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(200);
   base::TimeDelta updated_position = media_position.GetPositionAtTime(now);
 
   EXPECT_EQ(updated_position.InSeconds(), 400);

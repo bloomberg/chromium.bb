@@ -38,11 +38,11 @@ struct COMPONENT_EXPORT(MEDIA_SESSION_BASE_CPP) MediaPosition {
   double playback_rate() const;
 
   // Return the time the position state was last updated.
-  base::Time last_updated_time() const;
+  base::TimeTicks last_updated_time() const;
 
   // Return the updated position of the media, assuming current time is
   // |time|.
-  base::TimeDelta GetPositionAtTime(base::Time time) const;
+  base::TimeDelta GetPositionAtTime(base::TimeTicks time) const;
 
   bool operator==(const MediaPosition&) const;
   bool operator!=(const MediaPosition&) const;
@@ -76,7 +76,7 @@ struct COMPONENT_EXPORT(MEDIA_SESSION_BASE_CPP) MediaPosition {
   base::TimeDelta position_;
 
   // Last time |position_| was updated.
-  base::Time last_updated_time_;
+  base::TimeTicks last_updated_time_;
 };
 
 }  // namespace media_session
