@@ -1449,8 +1449,7 @@ class InputApiUnittest(PresubmitTestsBase):
         self.fake_change,
         presubmit_path='foo/path/PRESUBMIT.py',
         is_committing=False, gerrit_obj=None, verbose=False)
-    input_api.tempfile.NamedTemporaryFile = self.mox.CreateMock(
-        input_api.tempfile.NamedTemporaryFile)
+    self.mox.StubOutWithMock(presubmit.tempfile, 'NamedTemporaryFile')
     input_api.tempfile.NamedTemporaryFile(
         delete=False).AndReturn(MockTemporaryFile('foo'))
     input_api.tempfile.NamedTemporaryFile(
