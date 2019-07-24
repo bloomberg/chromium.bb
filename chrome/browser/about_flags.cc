@@ -4150,7 +4150,8 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-autofill-save-card-show-no-thanks",
      flag_descriptions::kEnableAutofillSaveCardShowNoThanksName,
-     flag_descriptions::kEnableAutofillSaveCardShowNoThanksDescription, kOsAll,
+     flag_descriptions::kEnableAutofillSaveCardShowNoThanksDescription,
+     kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillSaveCardShowNoThanks)},
 
 #if defined(OS_ANDROID)
