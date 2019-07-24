@@ -334,7 +334,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics) {
       "PageLoad.Clients.AMP.PaintTiming.InputToFirstContentfulPaint.Subframe",
       1);
   histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.AMP.PaintTiming.InputToLargestContentPaint.Subframe",
+      "PageLoad.Clients.AMP.PaintTiming.InputToLargestContentfulPaint.Subframe",
       1);
   histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.AMP.InteractiveTiming.FirstInputDelay4.Subframe", 1);
@@ -347,7 +347,8 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics) {
   test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.PaintTiming.NavigationToFirstContentfulPaint", 5);
   test_ukm_recorder().ExpectEntryMetric(
-      entry.get(), "SubFrame.PaintTiming.NavigationToLargestContentPaint", 10);
+      entry.get(), "SubFrame.PaintTiming.NavigationToLargestContentfulPaint",
+      10);
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutInstability) {
@@ -434,7 +435,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetricsFullNavigation) {
       "FullNavigation",
       1);
   histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.AMP.PaintTiming.InputToLargestContentPaint.Subframe."
+      "PageLoad.Clients.AMP.PaintTiming.InputToLargestContentfulPaint.Subframe."
       "FullNavigation",
       1);
   histogram_tester().ExpectTotalCount(
@@ -449,7 +450,8 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetricsFullNavigation) {
   test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.PaintTiming.NavigationToFirstContentfulPaint", 5);
   test_ukm_recorder().ExpectEntryMetric(
-      entry.get(), "SubFrame.PaintTiming.NavigationToLargestContentPaint", 10);
+      entry.get(), "SubFrame.PaintTiming.NavigationToLargestContentfulPaint",
+      10);
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, SubFrameRecordOnFullNavigation) {

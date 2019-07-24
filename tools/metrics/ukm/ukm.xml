@@ -329,7 +329,18 @@ be describing additional metrics about the same event.
       A contentful paint includes a paint of text, image, SVG, or canvas.
     </summary>
   </metric>
+  <metric name="SubFrame.PaintTiming.NavigationToLargestContentfulPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest content (text or
+      image) within viewport, in the AMP subframe. See
+      http://bit.ly/largest_contentful_paint_explainer for more details.
+    </summary>
+  </metric>
   <metric name="SubFrame.PaintTiming.NavigationToLargestContentPaint">
+    <obsolete>
+      Deprecated 7/2019
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest content (text or

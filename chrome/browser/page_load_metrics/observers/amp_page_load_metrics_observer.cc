@@ -34,10 +34,10 @@ const char kHistogramAMPSubframeFirstContentfulPaint[] =
     "PaintTiming.InputToFirstContentfulPaint.Subframe";
 const char kHistogramAMPSubframeFirstContentfulPaintFullNavigation[] =
     "PaintTiming.InputToFirstContentfulPaint.Subframe.FullNavigation";
-const char kHistogramAMPSubframeLargestContentPaint[] =
-    "PaintTiming.InputToLargestContentPaint.Subframe";
-const char kHistogramAMPSubframeLargestContentPaintFullNavigation[] =
-    "PaintTiming.InputToLargestContentPaint.Subframe.FullNavigation";
+const char kHistogramAMPSubframeLargestContentfulPaint[] =
+    "PaintTiming.InputToLargestContentfulPaint.Subframe";
+const char kHistogramAMPSubframeLargestContentfulPaintFullNavigation[] =
+    "PaintTiming.InputToLargestContentfulPaint.Subframe.FullNavigation";
 const char kHistogramAMPSubframeFirstInputDelay[] =
     "InteractiveTiming.FirstInputDelay4.Subframe";
 const char kHistogramAMPSubframeFirstInputDelayFullNavigation[] =
@@ -372,7 +372,7 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
     if (AssignTimeAndSizeForLargestContentfulPaint(
             subframe_info.timing->paint_timing, &largest_content_paint_time,
             &largest_content_paint_size, &largest_content_type)) {
-      builder.SetSubFrame_PaintTiming_NavigationToLargestContentPaint(
+      builder.SetSubFrame_PaintTiming_NavigationToLargestContentfulPaint(
           largest_content_paint_time.value().InMilliseconds());
 
       // Adjust by the navigation_input_delta.
@@ -381,12 +381,13 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
       if (current_main_frame_nav_info_->is_same_document_navigation) {
         PAGE_LOAD_HISTOGRAM(
             std::string(kHistogramPrefix)
-                .append(kHistogramAMPSubframeLargestContentPaint),
+                .append(kHistogramAMPSubframeLargestContentfulPaint),
             largest_content_paint_time.value());
       } else {
         PAGE_LOAD_HISTOGRAM(
             std::string(kHistogramPrefix)
-                .append(kHistogramAMPSubframeLargestContentPaintFullNavigation),
+                .append(
+                    kHistogramAMPSubframeLargestContentfulPaintFullNavigation),
             largest_content_paint_time.value());
       }
     }
