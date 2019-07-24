@@ -55,6 +55,11 @@ class ToolkitCreateParams
         kSeverityFatal = 4,
     };
 
+    enum class LogThrottleType {
+        kNoThrottle = 0,
+        kWarningThrottle, /* Throttle warning, error, fatal messages */
+    };
+
     // The callback function that will be invoked whenever a log message
     // happens.
     typedef void(*LogMessageHandler)(LogMessageSeverity severity,
@@ -227,6 +232,8 @@ class ToolkitCreateParams
 
 
 
+    BLPWTK2_EXPORT void setLogThrottleType(LogThrottleType throttleType);
+
     // ACCESSORS
     ThreadMode threadMode() const;
     bool useDefaultPrintSettings() const;
@@ -254,7 +261,7 @@ class ToolkitCreateParams
     bool isInProcessResizeOptimizationDisabled() const;
     StringRef profileDirectory() const;
     bool isIsolatedProfile() const;
-
+    LogThrottleType logThrottleType() const;
 
 
     // patch section: embedder ipc
