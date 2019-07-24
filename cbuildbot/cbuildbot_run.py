@@ -824,9 +824,10 @@ class _BuilderRunBase(object):
     """Returns the Android variant in use by the active container ebuild."""
     try:
       android_package = self.DetermineAndroidPackage(board)
-    except cros_build_lib.RunCommandError:
+    except cros_build_lib.RunCommandError as rce:
       raise NoAndroidVariantError(
-          'Android Variant could not be determined for %s' % board)
+          'Android Variant could not be determined for %s; original error: %s' %
+          (board, rce))
     if not android_package:
       raise NoAndroidVariantError(
           'Android Variant could not be determined for %s (no package?)' %
