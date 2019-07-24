@@ -1154,9 +1154,11 @@ void NewTabPageBindings::SetCustomBackgroundURLWithAttributions(
   if (background_url.empty()) {
     search_box->LogEvent(
         NTPLoggingEventType::NTP_CUSTOMIZE_RESTORE_BACKGROUND_CLICKED);
+    search_box->LogEvent(NTPLoggingEventType::NTP_BACKGROUND_IMAGE_RESET);
   } else {
     search_box->LogEvent(
         NTPLoggingEventType::NTP_CUSTOMIZE_CHROME_BACKGROUND_DONE);
+    search_box->LogEvent(NTPLoggingEventType::NTP_BACKGROUND_IMAGE_SET);
   }
 }
 
