@@ -254,6 +254,19 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
 }
 
 void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
+  if (app_launch_data.launched_from ==
+      ash::AppListLaunchedFrom::kLaunchedFromGrid) {
+    // Log the AppResult from the grid to the UKM system.
+    app_launch_event_logger_.OnGridClicked(app_launch_data.id);
+  } else if (app_launch_data.launch_type ==
+             ash::AppListLaunchType::kAppSearchResult) {
+    // Log the AppResult (either in the search result page, or in chip form in
+    // AppsGridView) to the UKM system.
+    app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(
+        app_launch_data.id, app_launch_data.suggestion_index,
+        static_cast<int>(app_launch_data.launched_from));
+  }
+
   if (ModelForType(app_launch_data.ranking_item_type) == Model::MIXED_TYPES) {
     if (results_list_group_ranker_) {
       results_list_group_ranker_->Record(base::NumberToString(
