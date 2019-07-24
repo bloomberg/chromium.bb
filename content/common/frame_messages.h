@@ -537,6 +537,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommitNavigationParams)
 #if defined(OS_ANDROID)
   IPC_STRUCT_TRAITS_MEMBER(data_url_as_string)
 #endif
+  IPC_STRUCT_TRAITS_MEMBER(is_browser_initiated)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::ParsedFeaturePolicyDeclaration)

@@ -778,6 +778,8 @@ NavigationRequest::NavigationRequest(
       std::move(navigation_initiator)));
 
   navigation_entry_offset_ = EstimateHistoryOffset();
+
+  commit_params_.is_browser_initiated = browser_initiated_;
 }
 
 NavigationRequest::~NavigationRequest() {
