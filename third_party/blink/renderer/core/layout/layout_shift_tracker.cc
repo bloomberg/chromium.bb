@@ -203,7 +203,7 @@ void LayoutShiftTracker::ObjectShifted(
 
 #if DCHECK_IS_ON()
   LocalFrame& frame = frame_view_->GetFrame();
-  if (!HadRecentInput() && ShouldLog(frame)) {
+  if (ShouldLog(frame)) {
     DVLOG(2) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
              << frame.GetDocument()->Url().GetString() << ", "
              << source.DebugName() << " moved from " << old_rect.ToString()
@@ -307,45 +307,21 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
           ? double(frame_max_distance_) / viewport_max_dimension
           : 1.0;
   double score_delta = impact_fraction * move_distance_factor;
-
-  if (!HadRecentInput())
-    score_ += score_delta;
+  double weighted_score_delta = score_delta * SubframeWeightingFactor();
 
   overall_max_distance_ = std::max(overall_max_distance_, frame_max_distance_);
 
-  LocalFrame& frame = frame_view_->GetFrame();
 #if DCHECK_IS_ON()
-  if (!HadRecentInput() && ShouldLog(frame)) {
+  LocalFrame& frame = frame_view_->GetFrame();
+  if (ShouldLog(frame)) {
     DVLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
              << frame.GetDocument()->Url().GetString() << ", viewport was "
              << (impact_fraction * 100) << "% impacted with distance fraction "
-             << move_distance_factor << "; raising score to " << score_;
+             << move_distance_factor;
   }
 #endif
 
-  TRACE_EVENT_INSTANT2("loading", "LayoutShift", TRACE_EVENT_SCOPE_THREAD,
-                       "data", PerFrameTraceData(score_delta, HadRecentInput()),
-                       "frame", ToTraceValue(&frame));
-
-  if (!HadRecentInput()) {
-    double weighted_score_delta = score_delta * SubframeWeightingFactor();
-    if (weighted_score_delta > 0) {
-      weighted_score_ += weighted_score_delta;
-      frame.Client()->DidObserveLayoutShift(weighted_score_delta,
-                                            observed_input_or_scroll_);
-    }
-  }
-
-  if (RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
-          frame.GetDocument()) &&
-      frame.DomWindow()) {
-    WindowPerformance* performance =
-        DOMWindowPerformance::performance(*frame.DomWindow());
-    if (performance) {
-      performance->AddLayoutJankFraction(score_delta, HadRecentInput(),
-                                         most_recent_input_timestamp_);
-    }
-  }
+  ReportShift(score_delta, weighted_score_delta);
 
   if (use_sweep_line) {
     if (!region_experimental_.IsEmpty() && !HadRecentInput()) {
@@ -360,6 +336,46 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
   }
   frame_max_distance_ = 0.0;
   frame_scroll_delta_ = ScrollOffset();
+}
+
+void LayoutShiftTracker::ReportShift(double score_delta,
+                                     double weighted_score_delta) {
+  LocalFrame& frame = frame_view_->GetFrame();
+  bool had_recent_input = HadRecentInput();
+
+  if (!had_recent_input) {
+    score_ += score_delta;
+    if (weighted_score_delta > 0) {
+      weighted_score_ += weighted_score_delta;
+      frame.Client()->DidObserveLayoutShift(weighted_score_delta,
+                                            observed_input_or_scroll_);
+    }
+  }
+
+  if (RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
+          frame.GetDocument()) &&
+      frame.DomWindow()) {
+    WindowPerformance* performance =
+        DOMWindowPerformance::performance(*frame.DomWindow());
+    if (performance) {
+      performance->AddLayoutJankFraction(score_delta, had_recent_input,
+                                         most_recent_input_timestamp_);
+    }
+  }
+
+  TRACE_EVENT_INSTANT2("loading", "LayoutShift", TRACE_EVENT_SCOPE_THREAD,
+                       "data", PerFrameTraceData(score_delta, had_recent_input),
+                       "frame", ToTraceValue(&frame));
+
+#if DCHECK_IS_ON()
+  if (ShouldLog(frame)) {
+    DVLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
+             << frame.GetDocument()->Url().GetString() << ", layout shift of "
+             << score_delta
+             << (had_recent_input ? " excluded by recent input" : " reported")
+             << "; cumulative score is " << score_;
+  }
+#endif
 }
 
 void LayoutShiftTracker::NotifyInput(const WebInputEvent& event) {

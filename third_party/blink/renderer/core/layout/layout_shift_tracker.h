@@ -58,6 +58,7 @@ class CORE_EXPORT LayoutShiftTracker {
                      const PropertyTreeState&,
                      FloatRect old_rect,
                      FloatRect new_rect);
+  void ReportShift(double score_delta, double weighted_score_delta);
   void TimerFired(TimerBase*) {}
   std::unique_ptr<TracedValue> PerFrameTraceData(double score_delta,
                                                  bool input_detected) const;
