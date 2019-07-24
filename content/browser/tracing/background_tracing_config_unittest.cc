@@ -690,12 +690,12 @@ TEST_F(BackgroundTracingConfigTest, BufferLimitConfig) {
 
   notifier.set_type(net::NetworkChangeNotifier::CONNECTION_2G);
 #if defined(OS_ANDROID)
-  EXPECT_EQ(300u, config->GetTraceConfig(true).GetTraceBufferSizeInKb());
+  EXPECT_EQ(300u, config->GetTraceConfig().GetTraceBufferSizeInKb());
   EXPECT_EQ(600u, config->GetTraceUploadLimitKb());
 #endif
 
   notifier.set_type(net::NetworkChangeNotifier::CONNECTION_WIFI);
-  EXPECT_LE(800u, config->GetTraceConfig(true).GetTraceBufferSizeInKb());
+  EXPECT_LE(800u, config->GetTraceConfig().GetTraceBufferSizeInKb());
   EXPECT_EQ(500u, config->GetTraceUploadLimitKb());
 }
 

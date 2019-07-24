@@ -63,9 +63,17 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
       const base::DictionaryValue* dict,
       BackgroundTracingConfigImpl::CategoryPreset category_preset);
 
-  base::trace_event::TraceConfig GetTraceConfig(bool requires_anonymized_data);
+  base::trace_event::TraceConfig GetTraceConfig() const;
 
   size_t GetTraceUploadLimitKb() const;
+  int interning_reset_interval_ms() const {
+    return interning_reset_interval_ms_;
+  }
+
+  void set_requires_anonymized_data(bool value) {
+    requires_anonymized_data_ = value;
+  }
+  bool requires_anonymized_data() const { return requires_anonymized_data_; }
 
   static std::unique_ptr<BackgroundTracingConfigImpl> PreemptiveFromDict(
       const base::DictionaryValue* dict);
@@ -107,6 +115,7 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
   std::string scenario_name_;
   std::string custom_categories_;
 
+  bool requires_anonymized_data_ = false;
   bool trace_browser_process_only_ = false;
 
   // The default memory overhead of running background tracing for various
@@ -124,6 +133,7 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
   // compression ratio grows up to 8x if the buffer size is around 100MB.
   int upload_limit_network_kb_ = 1024;
   int upload_limit_kb_ = kUploadLimitKb;
+  int interning_reset_interval_ms_ = 5000;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundTracingConfigImpl);
 };

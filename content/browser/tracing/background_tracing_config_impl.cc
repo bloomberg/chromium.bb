@@ -56,6 +56,7 @@ const char kConfigMobileNetworkBuferSizeKb[] = "mobile_network_buffer_size_kb";
 const char kConfigMaxBufferSizeKb[] = "max_buffer_size_kb";
 const char kConfigUploadLimitKb[] = "upload_limit_kb";
 const char kConfigUploadLimitNetworkKb[] = "upload_limit_network_kb";
+const char kConfigInterningResetIntervalMs[] = "interning_reset_interval_ms";
 
 }  // namespace
 
@@ -234,8 +235,7 @@ void BackgroundTracingConfigImpl::AddReactiveRule(
   }
 }
 
-TraceConfig BackgroundTracingConfigImpl::GetTraceConfig(
-    bool requires_anonymized_data) {
+TraceConfig BackgroundTracingConfigImpl::GetTraceConfig() const {
   base::trace_event::TraceRecordMode record_mode =
       (tracing_mode() == BackgroundTracingConfigImpl::REACTIVE)
           ? base::trace_event::RECORD_UNTIL_FULL
@@ -251,7 +251,7 @@ TraceConfig BackgroundTracingConfigImpl::GetTraceConfig(
     chrome_config.SetProcessFilterConfig(process_config);
   }
 
-  if (requires_anonymized_data) {
+  if (requires_anonymized_data_) {
     chrome_config.EnableArgumentFilter();
   }
 
@@ -509,6 +509,9 @@ void BackgroundTracingConfigImpl::SetBufferSizeLimits(
   }
   if (dict->GetInteger(kConfigUploadLimitNetworkKb, &value)) {
     upload_limit_network_kb_ = value;
+  }
+  if (dict->GetInteger(kConfigInterningResetIntervalMs, &value)) {
+    interning_reset_interval_ms_ = value;
   }
 }
 

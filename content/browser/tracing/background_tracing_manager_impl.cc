@@ -145,6 +145,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
   }
 
   bool requires_anonymized_data = (data_filtering == ANONYMIZE_DATA);
+  config_impl->set_requires_anonymized_data(requires_anonymized_data);
 
   // If the profile hasn't loaded or been created yet, this is a startup
   // scenario and we have to wait until initialization is finished to validate
@@ -169,8 +170,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
   }
 
   active_scenario_ = std::make_unique<BackgroundTracingActiveScenario>(
-      std::move(config_impl), requires_anonymized_data,
-      std::move(receive_callback),
+      std::move(config_impl), std::move(receive_callback),
       base::BindOnce(&BackgroundTracingManagerImpl::OnScenarioAborted,
                      base::Unretained(this)));
 
@@ -307,7 +307,7 @@ void BackgroundTracingManagerImpl::ValidateStartupScenario() {
 
   if (!delegate_->IsAllowedToBeginBackgroundScenario(
           *active_scenario_->GetConfig(),
-          active_scenario_->requires_anonymized_data())) {
+          active_scenario_->GetConfig()->requires_anonymized_data())) {
     AbortScenario();
   }
 }
@@ -398,10 +398,11 @@ void BackgroundTracingManagerImpl::WhenIdle(
 }
 
 bool BackgroundTracingManagerImpl::IsAllowedFinalization() const {
-  return !delegate_ || (active_scenario_ &&
-                        delegate_->IsAllowedToEndBackgroundScenario(
-                            *active_scenario_->GetConfig(),
-                            active_scenario_->requires_anonymized_data()));
+  return !delegate_ ||
+         (active_scenario_ &&
+          delegate_->IsAllowedToEndBackgroundScenario(
+              *active_scenario_->GetConfig(),
+              active_scenario_->GetConfig()->requires_anonymized_data()));
 }
 
 std::unique_ptr<base::DictionaryValue>
