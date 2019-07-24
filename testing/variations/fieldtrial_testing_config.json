@@ -1918,6 +1918,21 @@
             ]
         }
     ],
+    "DownloadsAutoResumptionNative": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DownloadsAutoResumptionNative"
+                    ]
+                }
+            ]
+        }
+    ],
     "DownloadsLocationChange": [
         {
             "platforms": [
