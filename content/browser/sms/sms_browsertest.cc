@@ -263,4 +263,27 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
   EXPECT_EQ("AbortError", EvalJs(shell(), script));
 }
 
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TimesOut) {
+  GURL url = GetTestUrl(nullptr, "simple_page.html");
+  NavigateToURL(shell(), url);
+
+  auto* provider = new NiceMock<MockSmsProvider>();
+  BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
+      base::WrapUnique(provider));
+
+  std::string script = R"(
+    (async () => {
+      try {
+        await navigator.sms.receive({timeout: 1});
+        return false;
+      } catch (e) {
+        // Expects an exception to be thrown.
+        return e.name;
+      }
+    }) ();
+  )";
+
+  EXPECT_EQ("TimeoutError", EvalJs(shell(), script));
+}
+
 }  // namespace content
