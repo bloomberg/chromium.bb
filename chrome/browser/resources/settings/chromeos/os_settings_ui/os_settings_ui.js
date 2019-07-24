@@ -133,6 +133,8 @@ Polymer({
           loadTimeData.getString('controlledSettingNoOwner'),
       controlledSettingParent:
           loadTimeData.getString('controlledSettingParent'),
+      controlledSettingChildRestriction:
+          loadTimeData.getString('controlledSettingChildRestriction'),
     };
 
     CrOncStrings = {
