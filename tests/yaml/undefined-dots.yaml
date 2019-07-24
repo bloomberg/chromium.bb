@@ -87,4 +87,7 @@ flags: {testmode: forward}
 tests:
   - - \x2026
     - ⢥
+  - - \x2026
+    - ⢥
+    - mode: [noUndefined]
 
