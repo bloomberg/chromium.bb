@@ -1424,7 +1424,7 @@ void NavigationRequest::OnResponseStarted(
     if (!instance->HasSite() &&
         SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
             instance->GetIsolationContext(), common_params_.url)) {
-      instance->SetSite(common_params_.url);
+      instance->ConvertToDefaultOrSetSite(common_params_.url);
     }
   }
 
