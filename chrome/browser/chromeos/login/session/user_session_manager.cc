@@ -2208,6 +2208,9 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // Show legacy U2F notification if applicable.
   MaybeShowU2FNotification();
 
+  // Show Release Notes notification if applicable.
+  MaybeShowReleaseNotesNotification(profile);
+
   g_browser_process->platform_part()
       ->browser_policy_connector_chromeos()
       ->GetTPMAutoUpdateModePolicyHandler()
@@ -2319,6 +2322,7 @@ void UserSessionManager::Shutdown() {
   first_run::GoodiesDisplayer::Delete();
   always_on_vpn_manager_.reset();
   u2f_notification_.reset();
+  release_notes_notification_.reset();
 }
 
 void UserSessionManager::SetSwitchesForUser(
@@ -2345,6 +2349,18 @@ void UserSessionManager::MaybeShowU2FNotification() {
   if (!u2f_notification_) {
     u2f_notification_ = std::make_unique<U2FNotification>();
     u2f_notification_->Check();
+  }
+}
+
+void UserSessionManager::MaybeShowReleaseNotesNotification(Profile* profile) {
+  if (!base::FeatureList::IsEnabled(features::kReleaseNotes))
+    return;
+  if (!ProfileHelper::IsPrimaryProfile(profile))
+    return;
+  if (!release_notes_notification_) {
+    release_notes_notification_ =
+        std::make_unique<ReleaseNotesNotification>(profile);
+    release_notes_notification_->MaybeShowReleaseNotes();
   }
 }
 

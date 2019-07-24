@@ -17161,6 +17161,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ReleaseNotes.LaunchedAboutPage">
+  <owner>yulunwu@chromium.org</owner>
+  <description>
+    Release Notes was launched from clicking link in about page.
+  </description>
+</action>
+
+<action name="ReleaseNotes.LaunchedNotification">
+  <owner>yulunwu@chromium.org</owner>
+  <description>
+    Release Notes was launched from clicking notification.
+  </description>
+</action>
+
+<action name="ReleaseNotes.NotificationShown">
+  <owner>yulunwu@chromium.org</owner>
+  <description>Release Notes notification was shown.</description>
+</action>
+
+<action name="ReleaseNotes.ShowReleaseNotes">
+  <owner>yulunwu@chromium.org</owner>
+  <description>Release Notes app was launched.</description>
+</action>
+
 <action name="Reload">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
