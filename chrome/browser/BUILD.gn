@@ -1974,6 +1974,7 @@ jumbo_split_static_library("browser") {
     "//components/leveldb_proto/content:factory",
     "//components/metrics:call_stack_profile_collector",
     "//components/metrics:component_metrics",
+    "//components/metrics:demographic_metrics_provider",
     "//components/metrics:gpu",
     "//components/metrics:net",
     "//components/metrics:ui",
@@ -3653,7 +3654,7 @@ jumbo_split_static_library("browser") {
     ]
   }
 
-  if (is_chromeos || enable_extensions) {
+  if (is_chromeos || enable_extensions || is_android) {
     sources += [
       "metrics/cached_metrics_profile.cc",
       "metrics/cached_metrics_profile.h",
