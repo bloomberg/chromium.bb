@@ -70,6 +70,8 @@ class BackgroundTracingActiveScenario {
   CONTENT_EXPORT void SetRuleTriggeredCallbackForTesting(
       const base::RepeatingClosure& callback);
 
+  size_t GetTraceUploadLimitKb() const;
+
  private:
   bool StartTracing();
   void BeginFinalizing(
