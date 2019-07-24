@@ -50,7 +50,8 @@ static float GetMoveDistance(const FloatRect& old_rect,
   return std::max(fabs(location_delta.Width()), fabs(location_delta.Height()));
 }
 
-static float RegionGranularityScale(const IntRect& viewport) {
+float LayoutShiftTracker::RegionGranularityScale(
+    const IntRect& viewport) const {
   if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
     return kSweepLineRegionGranularity;
 
@@ -121,7 +122,7 @@ LayoutShiftTracker::LayoutShiftTracker(LocalFrameView* frame_view)
       observed_input_or_scroll_(false),
       most_recent_input_timestamp_initialized_(false) {}
 
-void LayoutShiftTracker::AccumulateJank(
+void LayoutShiftTracker::ObjectShifted(
     const LayoutObject& source,
     const PropertyTreeState& property_tree_state,
     FloatRect old_rect,
@@ -144,7 +145,7 @@ void LayoutShiftTracker::AccumulateJank(
 
   // Ignore layout objects that move (in the coordinate space of the paint
   // invalidation container) on scroll.
-  // TODO(skobes): Find a way to detect when these objects jank.
+  // TODO(skobes): Find a way to detect when these objects shift.
   if (source.IsFixedPositioned() || source.IsStickyPositioned())
     return;
 
@@ -232,8 +233,8 @@ void LayoutShiftTracker::NotifyObjectPrePaint(
   if (!IsActive())
     return;
 
-  AccumulateJank(object, property_tree_state, FloatRect(old_visual_rect),
-                 FloatRect(new_visual_rect));
+  ObjectShifted(object, property_tree_state, FloatRect(old_visual_rect),
+                FloatRect(new_visual_rect));
 }
 
 void LayoutShiftTracker::NotifyCompositedLayerMoved(
@@ -247,8 +248,8 @@ void LayoutShiftTracker::NotifyCompositedLayerMoved(
   if (!layout_object.FirstFragment().HasLocalBorderBoxProperties())
     return;
 
-  AccumulateJank(layout_object, PropertyTreeStateFor(layout_object),
-                 old_layer_rect, new_layer_rect);
+  ObjectShifted(layout_object, PropertyTreeStateFor(layout_object),
+                old_layer_rect, new_layer_rect);
 }
 
 double LayoutShiftTracker::SubframeWeightingFactor() const {
@@ -296,8 +297,8 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
       double(scaled_viewport.Width()) * double(scaled_viewport.Height());
   uint64_t region_area =
       use_sweep_line ? region_experimental_.Area() : region_.Area();
-  double jank_fraction = region_area / viewport_area;
-  DCHECK_GT(jank_fraction, 0);
+  double impact_fraction = region_area / viewport_area;
+  DCHECK_GT(impact_fraction, 0);
 
   DCHECK_GT(frame_max_distance_, 0.0);
   double viewport_max_dimension = std::max(viewport.Width(), viewport.Height());
@@ -305,11 +306,10 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
       (frame_max_distance_ < viewport_max_dimension)
           ? double(frame_max_distance_) / viewport_max_dimension
           : 1.0;
-  double jank_fraction_with_move_distance =
-      jank_fraction * move_distance_factor;
+  double score_delta = impact_fraction * move_distance_factor;
 
   if (!HadRecentInput())
-    score_ += jank_fraction_with_move_distance;
+    score_ += score_delta;
 
   overall_max_distance_ = std::max(overall_max_distance_, frame_max_distance_);
 
@@ -318,24 +318,21 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
   if (!HadRecentInput() && ShouldLog(frame)) {
     DVLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
              << frame.GetDocument()->Url().GetString() << ", viewport was "
-             << (jank_fraction * 100) << "% janked with distance fraction "
+             << (impact_fraction * 100) << "% impacted with distance fraction "
              << move_distance_factor << "; raising score to " << score_;
   }
 #endif
 
-  TRACE_EVENT_INSTANT2(
-      "loading", "LayoutShift", TRACE_EVENT_SCOPE_THREAD, "data",
-      PerFrameTraceData(jank_fraction, jank_fraction_with_move_distance,
-                        granularity_scale, HadRecentInput()),
-      "frame", ToTraceValue(&frame));
+  TRACE_EVENT_INSTANT2("loading", "LayoutShift", TRACE_EVENT_SCOPE_THREAD,
+                       "data", PerFrameTraceData(score_delta, HadRecentInput()),
+                       "frame", ToTraceValue(&frame));
 
   if (!HadRecentInput()) {
-    double weighted_jank_fraction_with_move_distance =
-        jank_fraction_with_move_distance * SubframeWeightingFactor();
-    if (weighted_jank_fraction_with_move_distance > 0) {
-      weighted_score_ += weighted_jank_fraction_with_move_distance;
-      frame.Client()->DidObserveLayoutShift(
-          weighted_jank_fraction_with_move_distance, observed_input_or_scroll_);
+    double weighted_score_delta = score_delta * SubframeWeightingFactor();
+    if (weighted_score_delta > 0) {
+      weighted_score_ += weighted_score_delta;
+      frame.Client()->DidObserveLayoutShift(weighted_score_delta,
+                                            observed_input_or_scroll_);
     }
   }
 
@@ -345,8 +342,7 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*frame.DomWindow());
     if (performance) {
-      performance->AddLayoutJankFraction(jank_fraction_with_move_distance,
-                                         HadRecentInput(),
+      performance->AddLayoutJankFraction(score_delta, HadRecentInput(),
                                          most_recent_input_timestamp_);
     }
   }
@@ -425,21 +421,22 @@ bool LayoutShiftTracker::IsActive() {
 }
 
 std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
-    double jank_fraction,
-    double jank_fraction_with_move_distance,
-    double granularity_scale,
+    double score_delta,
     bool input_detected) const {
   auto value = std::make_unique<TracedValue>();
-  value->SetDouble("score", jank_fraction);
-  value->SetDouble("score_with_move_distance",
-                   jank_fraction_with_move_distance);
+  value->SetDouble("score", score_delta);
   value->SetDouble("cumulative_score", score_);
   value->SetDouble("overall_max_distance", overall_max_distance_);
   value->SetDouble("frame_max_distance", frame_max_distance_);
+
+  float granularity_scale = RegionGranularityScale(
+      IntRect(IntPoint(),
+              frame_view_->GetScrollableArea()->VisibleContentRect().Size()));
   if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
     RegionToTracedValue(region_experimental_, granularity_scale, *value);
   else
     RegionToTracedValue(region_, granularity_scale, *value);
+
   value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
   value->SetBoolean("had_recent_input", input_detected);
   return value;

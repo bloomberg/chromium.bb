@@ -54,16 +54,14 @@ class CORE_EXPORT LayoutShiftTracker {
   }
 
  private:
-  void AccumulateJank(const LayoutObject&,
-                      const PropertyTreeState&,
-                      FloatRect old_rect,
-                      FloatRect new_rect);
+  void ObjectShifted(const LayoutObject&,
+                     const PropertyTreeState&,
+                     FloatRect old_rect,
+                     FloatRect new_rect);
   void TimerFired(TimerBase*) {}
-  std::unique_ptr<TracedValue> PerFrameTraceData(
-      double jank_fraction,
-      double jank_fraction_with_move_distance,
-      double granularity_scale,
-      bool input_detected) const;
+  std::unique_ptr<TracedValue> PerFrameTraceData(double score_delta,
+                                                 bool input_detected) const;
+  float RegionGranularityScale(const IntRect& viewport) const;
   double SubframeWeightingFactor() const;
   WebVector<gfx::Rect> ConvertIntRectsToGfxRects(
       const Vector<IntRect>& int_rects,
@@ -76,23 +74,25 @@ class CORE_EXPORT LayoutShiftTracker {
   // This owns us.
   UntracedMember<LocalFrameView> frame_view_;
 
-  // The cumulative jank score for this LocalFrame, unweighted, with move
-  // distance applied.
+  // The document cumulative layout shift (DCLS) score for this LocalFrame,
+  // unweighted, with move distance applied.
   double score_;
 
-  // The cumulative jank score for this LocalFrame, with each increase weighted
-  // by the extent to which the LocalFrame visibly occupied the main frame at
-  // the time the jank occurred, e.g. x0.5 if the subframe occupied half of the
-  // main frame's reported size; see SubframeWeightingFactor().
+  // The cumulative layout shift score for this LocalFrame, with each increase
+  // weighted by the extent to which the LocalFrame visibly occupied the main
+  // frame at the time the shift occurred, e.g. x0.5 if the subframe occupied
+  // half of the main frame's reported size; see SubframeWeightingFactor().
   double weighted_score_;
 
-  // The per-animation-frame jank region.
+  // The per-animation-frame impact region.
   Region region_;
 
-  // Experimental jank region implementation using sweep-line algorithm.
+  // Experimental impact region implementation using sweep-line algorithm.
   LayoutShiftRegion region_experimental_;
 
-  // Tracks the short period after an input event during which we ignore jank.
+  // Tracks the short period after an input event during which we ignore shifts
+  // for the purpose of cumulative scoring, and report them to the web perf API
+  // with hadRecentInput == true.
   TaskRunnerTimer<LayoutShiftTracker> timer_;
 
   // The maximum distance any layout object has moved in the current animation
