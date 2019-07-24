@@ -22,7 +22,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "net/base/escape.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/url_util.h"
 #include "net/dns/dns_config_service.h"
@@ -444,55 +443,23 @@ TEST_F(NetworkServiceTest, AuthEnableNegotiatePort) {
 #if !defined(OS_IOS)
 
 TEST_F(NetworkServiceTest, DnsClientEnableDisable) {
-  // Set valid DnsConfig.
-  net::DnsConfig config;
-  config.nameservers.push_back(net::IPEndPoint());
-  service()->host_resolver_manager()->SetBaseDnsConfigForTesting(config);
-
+  // HostResolver::GetDnsConfigAsValue() returns nullptr if the stub resolver is
+  // disabled.
+  EXPECT_FALSE(service()
+                   ->host_resolver_manager()
+                   ->GetInsecureDnsClientEnabledForTesting());
   service()->ConfigureStubHostResolver(
-      true /* insecure_dns_client_enabled */,
-      net::DnsConfig::SecureDnsMode::OFF,
+      true /* stub_resolver_enabled */,
       base::nullopt /* dns_over_https_servers */);
   EXPECT_TRUE(service()
                   ->host_resolver_manager()
                   ->GetInsecureDnsClientEnabledForTesting());
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
-            service()->host_resolver_manager()->GetSecureDnsModeForTesting());
-
   service()->ConfigureStubHostResolver(
-      false /* insecure_dns_client_enabled */,
-      net::DnsConfig::SecureDnsMode::OFF,
+      false /* stub_resolver_enabled */,
       base::nullopt /* dns_over_https_servers */);
   EXPECT_FALSE(service()
                    ->host_resolver_manager()
                    ->GetInsecureDnsClientEnabledForTesting());
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
-            service()->host_resolver_manager()->GetSecureDnsModeForTesting());
-
-  service()->ConfigureStubHostResolver(
-      false /* insecure_dns_client_enabled */,
-      net::DnsConfig::SecureDnsMode::AUTOMATIC,
-      base::nullopt /* dns_over_https_servers */);
-  EXPECT_FALSE(service()
-                   ->host_resolver_manager()
-                   ->GetInsecureDnsClientEnabledForTesting());
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
-            service()->host_resolver_manager()->GetSecureDnsModeForTesting());
-
-  std::vector<mojom::DnsOverHttpsServerPtr> dns_over_https_servers_ptr;
-  mojom::DnsOverHttpsServerPtr dns_over_https_server =
-      mojom::DnsOverHttpsServer::New();
-  dns_over_https_server->server_template = "https://foo/";
-  dns_over_https_server->use_post = true;
-  dns_over_https_servers_ptr.emplace_back(std::move(dns_over_https_server));
-  service()->ConfigureStubHostResolver(false /* insecure_dns_client_enabled */,
-                                       net::DnsConfig::SecureDnsMode::AUTOMATIC,
-                                       std::move(dns_over_https_servers_ptr));
-  EXPECT_FALSE(service()
-                   ->host_resolver_manager()
-                   ->GetInsecureDnsClientEnabledForTesting());
-  EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC,
-            service()->host_resolver_manager()->GetSecureDnsModeForTesting());
 }
 
 TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
@@ -520,8 +487,7 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
   dns_over_https_server->use_post = kServer1UsePost;
   dns_over_https_servers_ptr.emplace_back(std::move(dns_over_https_server));
 
-  service()->ConfigureStubHostResolver(false /* insecure_dns_client_enabled */,
-                                       net::DnsConfig::SecureDnsMode::AUTOMATIC,
+  service()->ConfigureStubHostResolver(true /* stub_resolver_enabled */,
                                        std::move(dns_over_https_servers_ptr));
   EXPECT_TRUE(service()->host_resolver_manager()->GetDnsConfigAsValue());
   const auto* dns_over_https_servers =
@@ -544,8 +510,7 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
   dns_over_https_server->use_post = kServer3UsePost;
   dns_over_https_servers_ptr.emplace_back(std::move(dns_over_https_server));
 
-  service()->ConfigureStubHostResolver(true /* insecure_dns_client_enabled */,
-                                       net::DnsConfig::SecureDnsMode::SECURE,
+  service()->ConfigureStubHostResolver(true /* stub_resolver_enabled */,
                                        std::move(dns_over_https_servers_ptr));
   EXPECT_TRUE(service()->host_resolver_manager()->GetDnsConfigAsValue());
   dns_over_https_servers =

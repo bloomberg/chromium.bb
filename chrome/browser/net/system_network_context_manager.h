@@ -130,8 +130,7 @@ class SystemNetworkContextManager {
 
   // Returns configuration that would be sent to the stub DNS resolver.
   static void GetStubResolverConfigForTesting(
-      bool* insecure_stub_resolver_enabled,
-      net::DnsConfig::SecureDnsMode* secure_dns_mode,
+      bool* stub_resolver_enabled,
       base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
           dns_over_https_servers);
 
