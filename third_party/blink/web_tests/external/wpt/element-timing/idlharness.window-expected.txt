@@ -1,0 +1,21 @@
+This is a testharness.js-based test.
+PASS idl_test setup
+PASS Partial interface Element: original interface defined
+PASS PerformanceElementTiming interface: existence and properties of interface object
+PASS PerformanceElementTiming interface object length
+PASS PerformanceElementTiming interface object name
+PASS PerformanceElementTiming interface: existence and properties of interface prototype object
+PASS PerformanceElementTiming interface: existence and properties of interface prototype object's "constructor" property
+PASS PerformanceElementTiming interface: existence and properties of interface prototype object's @@unscopables property
+PASS PerformanceElementTiming interface: attribute renderTime
+PASS PerformanceElementTiming interface: attribute loadTime
+PASS PerformanceElementTiming interface: attribute intersectionRect
+PASS PerformanceElementTiming interface: attribute identifier
+PASS PerformanceElementTiming interface: attribute naturalWidth
+PASS PerformanceElementTiming interface: attribute naturalHeight
+PASS PerformanceElementTiming interface: attribute id
+PASS PerformanceElementTiming interface: attribute element
+PASS PerformanceElementTiming interface: attribute url
+FAIL Element interface: attribute elementTiming assert_true: The prototype object must have a property "elementTiming" expected true got false
+Harness: the test ran to completion.
+
