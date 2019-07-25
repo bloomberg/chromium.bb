@@ -297,12 +297,6 @@ class TastTest(RemoteTest):
           './' + os.path.relpath(self._on_device_script, self._path_to_outdir)
       ]
     else:
-      self._test_cmd += [
-          # Since we're not in a chroot, the tast bin won't automatically handle
-          # ssh auth. So point it to the ssh keys in chromite.
-          '--private-key',
-          os.path.join(CHROMITE_PATH, 'ssh_keys', 'testing_rsa'),
-      ]
       # Capture tast's results in the logs dir as well.
       if self._logs_dir:
         self._test_cmd += [
