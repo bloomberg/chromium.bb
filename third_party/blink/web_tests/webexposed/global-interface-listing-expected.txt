@@ -1990,6 +1990,7 @@ interface Element : Node
     getter computedName
     getter computedRole
     getter displayLock
+    getter elementTiming
     getter firstElementChild
     getter id
     getter innerHTML
@@ -2118,6 +2119,7 @@ interface Element : Node
     setter ariaValueText
     setter classList
     setter className
+    setter elementTiming
     setter id
     setter innerHTML
     setter invisible
