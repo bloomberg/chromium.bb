@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_DETECTED_TEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_DETECTED_TEXT_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -27,7 +26,6 @@ class MODULES_EXPORT DetectedText final : public ScriptWrappable {
     return corner_points_;
   }
 
-  ScriptValue toJSONForBinding(ScriptState*) const;
   void Trace(blink::Visitor*) override;
 
  private:

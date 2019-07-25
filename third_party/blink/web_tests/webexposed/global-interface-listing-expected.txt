@@ -1502,20 +1502,17 @@ interface DetectedBarcode
     getter format
     getter rawValue
     method constructor
-    method toJSON
 interface DetectedFace
     attribute @@toStringTag
     getter boundingBox
     getter landmarks
     method constructor
-    method toJSON
 interface DetectedText
     attribute @@toStringTag
     getter boundingBox
     getter cornerPoints
     getter rawValue
     method constructor
-    method toJSON
 interface DeviceMotionEvent : Event
     attribute @@toStringTag
     getter acceleration

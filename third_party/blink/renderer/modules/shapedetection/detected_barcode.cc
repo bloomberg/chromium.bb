@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/shapedetection/detected_barcode.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
 
@@ -53,22 +52,6 @@ DetectedBarcode::DetectedBarcode(String raw_value,
       bounding_box_(bounding_box),
       format_(format),
       corner_points_(corner_points) {}
-
-ScriptValue DetectedBarcode::toJSONForBinding(ScriptState* script_state) const {
-  V8ObjectBuilder result(script_state);
-  result.AddString("rawValue", rawValue());
-  result.Add("boundingBox", boundingBox()->toJSONForBinding(script_state));
-  result.AddString("format", format());
-  Vector<ScriptValue> corner_points;
-  for (const auto& corner_point : corner_points_) {
-    V8ObjectBuilder builder(script_state);
-    builder.AddNumber("x", corner_point->x());
-    builder.AddNumber("y", corner_point->y());
-    corner_points.push_back(builder.GetScriptValue());
-  }
-  result.Add("cornerPoints", corner_points);
-  return result.GetScriptValue();
-}
 
 void DetectedBarcode::Trace(blink::Visitor* visitor) {
   visitor->Trace(bounding_box_);
