@@ -450,6 +450,13 @@ void RecordIsSameProcessMetrics(ui::PageTransition transition,
   NOTREACHED() << "Invalid page transition: " << transition;
 }
 
+// Use this to get a new unique ID for a NavigationHandle during construction.
+// The returned ID is guaranteed to be nonzero (zero is the "no ID" indicator).
+int64_t CreateUniqueHandleID() {
+  static int64_t unique_id_counter = 0;
+  return ++unique_id_counter;
+}
+
 }  // namespace
 
 // static
@@ -989,6 +996,7 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   }
 
   handle_state_ = NavigationRequest::INITIAL;
+  navigation_handle_id_ = CreateUniqueHandleID();
 
   std::unique_ptr<NavigationHandleImpl> navigation_handle = base::WrapUnique(
       new NavigationHandleImpl(this, nav_entry_id_, std::move(headers)));

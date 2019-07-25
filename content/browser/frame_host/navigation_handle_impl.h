@@ -268,9 +268,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // corresponding provider is created in the renderer.
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
-  // The unique id to identify this to navigation with.
-  int64_t navigation_id_;
-
   // Stores the reload type, or NONE if it's not a reload.
   ReloadType reload_type_;
 

@@ -459,6 +459,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   const net::ProxyServer& proxy_server() { return proxy_server_; }
 
+  int64_t navigation_handle_id() { return navigation_handle_id_; }
+
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
   // once NavigationHandleImpl has become a wrapper around NavigationRequest.
@@ -951,6 +953,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   // Which proxy server was used for this navigation, if any.
   net::ProxyServer proxy_server_;
+
+  // The unique id to identify the NavigationHandle with.
+  int64_t navigation_handle_id_ = 0;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 
