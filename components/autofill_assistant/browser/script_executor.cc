@@ -524,6 +524,10 @@ bool ScriptExecutor::SetForm(
   return delegate_->SetForm(std::move(form), std::move(callback));
 }
 
+void ScriptExecutor::RequireUI() {
+  delegate_->RequireUI();
+}
+
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
   bool success = result && ProcessNextActionResponse(response);
   DVLOG(2) << __func__ << " result=" << result;

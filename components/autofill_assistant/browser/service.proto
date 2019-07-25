@@ -146,6 +146,14 @@ message SupportedScriptProto {
     // When set to true this script will be run from WaitForDom actions with
     // allow_interrupt=true.
     optional bool interrupt = 9;
+
+    // Message to show once the script has been started. This is shown while
+    // loading the actions.
+    optional string start_message = 10;
+
+    // Show the UI if it's not shown yet. Setting this to false is useful for
+    // scripts started by direct actions.
+    optional bool needs_ui = 11 [default = true];
   }
   optional PresentationProto presentation = 2;
 }
@@ -722,6 +730,10 @@ message SelectOptionProto {
 // Contain a localized text message from the server.
 message TellProto {
   optional string message = 1;
+
+  // Show the UI if it's not shown yet, such as when a script has been started
+  // by a direct action.
+  optional bool needs_ui = 2 [default = true];
 }
 
 // Contain all arguments to focus on an element.

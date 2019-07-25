@@ -41,6 +41,49 @@ static constexpr int kAutostartInitialProgress = 5;
 // Parameter that allows setting the color of the overlay.
 static const char* const kOverlayColorParameterName = "OVERLAY_COLORS";
 
+// Returns true if the state requires a UI to be shown.
+//
+// Note that the UI might be shown in RUNNING state, even if it doesn't require
+// it.
+bool StateNeedsUI(AutofillAssistantState state) {
+  switch (state) {
+    case AutofillAssistantState::STARTING:
+    case AutofillAssistantState::PROMPT:
+    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
+    case AutofillAssistantState::MODAL_DIALOG:
+      return true;
+
+    case AutofillAssistantState::INACTIVE:
+    case AutofillAssistantState::TRACKING:
+    case AutofillAssistantState::STOPPED:
+    case AutofillAssistantState::RUNNING:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// Returns true if reaching that state signals the end of a flow.
+bool StateEndsFlow(AutofillAssistantState state) {
+  switch (state) {
+    case AutofillAssistantState::TRACKING:
+    case AutofillAssistantState::STOPPED:
+      return true;
+
+    case AutofillAssistantState::INACTIVE:
+    case AutofillAssistantState::STARTING:
+    case AutofillAssistantState::PROMPT:
+    case AutofillAssistantState::RUNNING:
+    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
+    case AutofillAssistantState::MODAL_DIALOG:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace
 
 Controller::Controller(content::WebContents* web_contents,
@@ -215,6 +258,14 @@ bool Controller::IsNavigatingToNewDocument() {
 
 bool Controller::HasNavigationError() {
   return navigation_error_;
+}
+
+void Controller::RequireUI() {
+  if (needs_ui_)
+    return;
+
+  needs_ui_ = true;
+  client_->AttachUI();
 }
 
 void Controller::AddListener(ScriptExecutorDelegate::Listener* listener) {
@@ -446,15 +497,17 @@ void Controller::EnterState(AutofillAssistantState state) {
   DCHECK(state_ != AutofillAssistantState::STOPPED ||
          (state == AutofillAssistantState::TRACKING && tracking_));
 
-  bool old_needs_ui = NeedsUI();
   state_ = state;
 
   for (ControllerObserver& observer : observers_) {
     observer.OnStateChanged(state);
   }
 
-  if (!old_needs_ui && NeedsUI())
-    client_->AttachUI();
+  if (!needs_ui_ && StateNeedsUI(state)) {
+    RequireUI();
+  } else if (needs_ui_ && StateEndsFlow(state)) {
+    needs_ui_ = false;
+  }
 
   if (ShouldCheckScripts()) {
     GetOrCheckScripts();
@@ -538,7 +591,8 @@ void Controller::OnPeriodicScriptCheck() {
     std::string script_path = autostart_timeout_script_path_;
     autostart_timeout_script_path_.clear();
     periodic_script_check_scheduled_ = false;
-    ExecuteScript(script_path, TriggerContext::CreateEmpty(), state_);
+    ExecuteScript(script_path, /* start_message= */ "", /* needs_ui= */ false,
+                  TriggerContext::CreateEmpty(), state_);
     return;
   }
 
@@ -622,11 +676,18 @@ void Controller::OnGetScripts(const GURL& url,
 }
 
 void Controller::ExecuteScript(const std::string& script_path,
+                               const std::string& start_message,
+                               bool needs_ui,
                                std::unique_ptr<TriggerContext> context,
                                AutofillAssistantState end_state) {
   DCHECK(!script_tracker()->running());
 
+  if (!start_message.empty())
+    SetStatusMessage(start_message);
+
   EnterState(AutofillAssistantState::RUNNING);
+  if (needs_ui)
+    RequireUI();
 
   touchable_element_area()->Clear();
 
@@ -712,20 +773,30 @@ bool Controller::MaybeAutostartScript(
   if (!allow_autostart())
     return false;
 
-  int autostart_count = 0;
-  std::string autostart_path;
-  for (const auto& script : runnable_scripts) {
-    if (script.autostart) {
-      autostart_count++;
-      autostart_path = script.path;
+  int autostart_index = -1;
+  for (size_t i = 0; i < runnable_scripts.size(); i++) {
+    if (runnable_scripts[i].autostart) {
+      if (autostart_index != -1) {
+        // To many autostartable scripts.
+        return false;
+      }
+      autostart_index = i;
     }
   }
-  if (autostart_count == 1) {
-    ExecuteScript(autostart_path, TriggerContext::CreateEmpty(),
-                  AutofillAssistantState::PROMPT);
-    return true;
-  }
-  return false;
+
+  if (autostart_index == -1)
+    return false;
+
+  // Copying the strings is necessary, as ExecuteScript will invalidate
+  // runnable_scripts by calling ScriptTracker::ClearRunnableScripts.
+  //
+  // TODO(b/138367403): Cleanup this dangerous issue.
+  std::string path = runnable_scripts[autostart_index].path;
+  std::string start_message = runnable_scripts[autostart_index].start_message;
+  bool needs_ui = runnable_scripts[autostart_index].needs_ui;
+  ExecuteScript(path, start_message, needs_ui, TriggerContext::CreateEmpty(),
+                AutofillAssistantState::PROMPT);
+  return true;
 }
 
 void Controller::InitFromParameters() {
@@ -772,12 +843,6 @@ void Controller::Track(std::unique_ptr<TriggerContext> trigger_context,
   }
 }
 
-bool Controller::NeedsUI() const {
-  return state_ != AutofillAssistantState::INACTIVE &&
-         state_ != AutofillAssistantState::TRACKING &&
-         state_ != AutofillAssistantState::STOPPED;
-}
-
 bool Controller::Start(const GURL& deeplink_url,
                        std::unique_ptr<TriggerContext> trigger_context) {
   if (state_ != AutofillAssistantState::INACTIVE &&
@@ -803,10 +868,10 @@ AutofillAssistantState Controller::GetState() {
   return state_;
 }
 
-void Controller::OnScriptSelected(const std::string& script_path,
+void Controller::OnScriptSelected(const ScriptHandle& handle,
                                   std::unique_ptr<TriggerContext> context) {
-  DCHECK(!script_path.empty());
-  ExecuteScript(script_path, std::move(context),
+  ExecuteScript(handle.path, handle.start_message, handle.needs_ui,
+                std::move(context),
                 state_ == AutofillAssistantState::TRACKING
                     ? AutofillAssistantState::TRACKING
                     : AutofillAssistantState::PROMPT);
@@ -1025,6 +1090,7 @@ void Controller::OnScriptError(const std::string& error_message,
   if (state_ == AutofillAssistantState::STOPPED)
     return;
 
+  RequireUI();
   SetStatusMessage(error_message);
   EnterStoppedState();
 
@@ -1151,9 +1217,8 @@ void Controller::OnRunnableScriptsChanged(
     if (!user_action.has_triggers())
       continue;
 
-    user_action.SetCallback(base::BindOnce(&Controller::OnScriptSelected,
-                                           weak_ptr_factory_.GetWeakPtr(),
-                                           script.path));
+    user_action.SetCallback(base::BindOnce(
+        &Controller::OnScriptSelected, weak_ptr_factory_.GetWeakPtr(), script));
     user_actions->emplace_back(std::move(user_action));
   }
 

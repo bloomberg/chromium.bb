@@ -193,6 +193,7 @@ class ScriptExecutor : public ActionDelegate,
   bool SetForm(std::unique_ptr<FormProto> form,
                base::RepeatingCallback<void(const FormProto::Result*)> callback)
       override;
+  void RequireUI() override;
 
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to
