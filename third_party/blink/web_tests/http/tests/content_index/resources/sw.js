@@ -7,6 +7,27 @@ async function postMessageToWindow(msg) {
     client.postMessage(msg);
 }
 
+async function reregisterContent() {
+  try {
+    await self.registration.index.add({
+      id: 'new id',
+      title: 'same title',
+      description: 'same description',
+      category: 'article',
+      iconUrl: '/resources/square.png',
+      launchUrl: 'resources/',
+    });
+    await postMessageToWindow('Successfully registered');
+  } catch (e) {
+    await postMessageToWindow(e.message);
+  }
+}
+
 self.addEventListener('contentdelete', event => {
+  if (event.id === 'register-again') {
+    event.waitUntil(reregisterContent());
+    return;
+  }
+
   event.waitUntil(postMessageToWindow(event.id));
 });
