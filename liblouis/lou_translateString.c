@@ -2218,16 +2218,9 @@ undefinedCharacter(widechar c, const TranslationTableHeader *table, int pos,
 					    cursorStatus);
 	}
 
-	widechar dots[20];
-	const char *text;
-
-	if (mode & noUndefined) {
-		text = "";
-	} else {
-		text = _lou_showString(&c, 1);
-	}
-
+	const char *text = (mode & noUndefined)? "": _lou_showString(&c, 1);
 	size_t length = strlen(text);
+	widechar dots[20];
 
 	for (unsigned int k=0; k<length; k+=1)
 		dots[k] = _lou_getDotsForChar(text[k]);
