@@ -4567,6 +4567,11 @@ test("unit_tests") {
       "//components/safe_browsing/renderer:websocket_sb_handshake_throttle_unittest",
       "//components/safe_browsing/triggers:ad_redirect_trigger",
     ]
+
+    # TODO(drubery): Once b/138388200 has been addressed, enable this on Windows.
+    if (!is_win) {
+      sources += [ "../browser/safe_browsing/download_protection/multipart_uploader_unittest.cc" ]
+    }
   } else if (safe_browsing_mode == 2) {
     sources += [ "../browser/safe_browsing/telemetry/android/android_telemetry_service_unittest.cc" ]
     deps += []
