@@ -128,22 +128,21 @@ const char* GetPrefNameForType(UserSelectableType type) {
 // prefs.
 int GetBirthYearOffset(PrefService* pref_service) {
   int offset =
-      pref_service->GetInteger(prefs::kSyncDemographicsBirthYearNoiseOffset);
+      pref_service->GetInteger(prefs::kSyncDemographicsBirthYearOffset);
   if (offset == kUserDemographicsBirthYearNoiseOffsetDefaultValue) {
     // Generate a random offset when not cached in prefs.
     offset = base::RandInt(-kUserDemographicsBirthYearNoiseOffsetRange,
                            kUserDemographicsBirthYearNoiseOffsetRange);
-    pref_service->SetInteger(prefs::kSyncDemographicsBirthYearNoiseOffset,
-                             offset);
+    pref_service->SetInteger(prefs::kSyncDemographicsBirthYearOffset, offset);
   }
   return offset;
 }
 
-// Determines whether the user can provide birth year considering that: (1) it
+// Determines whether the user can provide demographics considering that: (1) it
 // is not possible to infer the month and the day of the birth date when the
 // user is in an age transition, and (2) only users of at least 18 years old can
 // report demographics.
-bool CanUserProvideBirthYear(base::Time now, int user_birth_year) {
+bool CanProvideDemographics(base::Time now, int user_birth_year, int offset) {
   base::Time::Exploded exploded_now_time;
   now.LocalExplode(&exploded_now_time);
   // Use > rather than >= because we want to be sure that the user is at
@@ -155,26 +154,21 @@ bool CanUserProvideBirthYear(base::Time now, int user_birth_year) {
   // respectively). If we make sure that the minimal age is at least 21, we are
   // 100% sure that the user will be at least 20 years old when reporting
   // demographics.
-  return exploded_now_time.year - user_birth_year >
+  return exploded_now_time.year - (user_birth_year + offset) >
          kUserDemographicsMinAgeInYears;
 }
 
 // Gets user's birth year from prefs.
-base::Optional<int> GetUserBirthYear(PrefService* pref_service,
-                                     base::Time now) {
-  int birth_year = pref_service->GetInteger(prefs::kSyncDemographicsBirthYear);
+base::Optional<int> GetUserBirthYear(
+    const base::DictionaryValue* demographics) {
+  const base::Value* value =
+      demographics->FindPath(prefs::kSyncDemographics_BirthYearPath);
+  int birth_year = (value != nullptr && value->is_int())
+                       ? value->GetInt()
+                       : kUserDemographicsBirthYearDefaultValue;
 
   // Verify that there is a birth year.
   if (birth_year == kUserDemographicsBirthYearDefaultValue)
-    return base::nullopt;
-
-  // Add noise to birth year.
-  birth_year += GetBirthYearOffset(pref_service);
-
-  DCHECK(!now.is_null());
-
-  // Verify that the user is old enough to provide demographics.
-  if (!CanUserProvideBirthYear(now, birth_year))
     return base::nullopt;
 
   return birth_year;
@@ -182,8 +176,12 @@ base::Optional<int> GetUserBirthYear(PrefService* pref_service,
 
 // Gets user's gender from prefs.
 base::Optional<metrics::UserDemographicsProto_Gender> GetUserGender(
-    const PrefService& pref_service) {
-  int gender_int = pref_service.GetInteger(prefs::kSyncDemographicsGender);
+    const base::DictionaryValue* demographics) {
+  const base::Value* value =
+      demographics->FindPath(prefs::kSyncDemographics_GenderPath);
+  int gender_int = (value != nullptr && value->is_int())
+                       ? value->GetInt()
+                       : kUserDemographicsGenderDefaultValue;
 
   // Verify gender is not default.
   if (gender_int == kUserDemographicsGenderDefaultValue)
@@ -269,15 +267,12 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterFilePathPref(prefs::kLocalSyncBackendDir, base::FilePath());
 
   // Demographic prefs.
-  registry->RegisterIntegerPref(
-      prefs::kSyncDemographicsBirthYear, kUserDemographicsBirthYearDefaultValue,
+  registry->RegisterDictionaryPref(
+      prefs::kSyncDemographics,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterIntegerPref(
-      prefs::kSyncDemographicsBirthYearNoiseOffset,
+      prefs::kSyncDemographicsBirthYearOffset,
       kUserDemographicsBirthYearNoiseOffsetDefaultValue);
-  registry->RegisterIntegerPref(
-      prefs::kSyncDemographicsGender, kUserDemographicsGenderDefaultValue,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 
   // Obsolete prefs that will be removed after a grace period.
   RegisterObsoleteUserTypePrefs(registry);
@@ -310,9 +305,11 @@ void SyncPrefs::ClearPreferences() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Clear user demographics.
-  pref_service_->ClearPref(prefs::kSyncDemographicsBirthYear);
-  pref_service_->ClearPref(prefs::kSyncDemographicsBirthYearNoiseOffset);
-  pref_service_->ClearPref(prefs::kSyncDemographicsGender);
+  // Note that we retain kSyncDemographicsBirthYearOffset. If the user resumes
+  // syncing, causing these prefs to be recreated, we don't want them to start
+  // reporting a different randomized birth year as this could narrow down or
+  // even reveal their true birth year.
+  pref_service_->ClearPref(prefs::kSyncDemographics);
 
   ClearDirectoryConsistencyPreferences();
 
@@ -598,19 +595,31 @@ base::Optional<UserDemographics> SyncPrefs::GetUserDemographics(
   if (now.is_null())
     return base::nullopt;
 
-  // Get birth year and gender.
-  base::Optional<int> birth_year = GetUserBirthYear(pref_service_, now);
+  // Get the pref that contains the demographic info.
+  const base::DictionaryValue* demographics =
+      pref_service_->GetDictionary(prefs::kSyncDemographics);
+  DCHECK(demographics != nullptr);
+
+  // Get the user's birth year.
+  base::Optional<int> birth_year = GetUserBirthYear(demographics);
   if (!birth_year.has_value())
     return base::nullopt;
+
+  // Get the user's gender.
   base::Optional<metrics::UserDemographicsProto_Gender> gender =
-      GetUserGender(*pref_service_);
+      GetUserGender(demographics);
   if (!gender.has_value())
     return base::nullopt;
 
-  // Set birth year and gender in demographics.
+  // Get the offset and do one last check that demographics are allowed.
+  int offset = GetBirthYearOffset(pref_service_);
+  if (!CanProvideDemographics(now, *birth_year, offset))
+    return base::nullopt;
+
+  // Set gender and offset birth year in demographics.
   UserDemographics user_demographics;
-  user_demographics.birth_year = *birth_year;
   user_demographics.gender = *gender;
+  user_demographics.birth_year = *birth_year + offset;
 
   return user_demographics;
 }
