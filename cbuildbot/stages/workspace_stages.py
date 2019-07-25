@@ -803,8 +803,8 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
   def DetermineAndroidVariant(self, package):
     """Returns the Android variant in use by the active container ebuild."""
 
-    all_use_flags = portage_util.GetInstalledPackgeUseFlags(
-        package, self._current_board)
+    all_use_flags = portage_util.GetInstalledPackageUseFlags(
+        package, self._current_board, buildroot=self._build_root)
     for use_flags in all_use_flags.value():
       for use_flag in use_flags:
         if 'cheets_userdebug' in use_flag or 'cheets_sdk_userdebug' in use_flag:
