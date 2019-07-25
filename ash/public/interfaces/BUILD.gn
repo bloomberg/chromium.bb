@@ -23,7 +23,7 @@ mojom("interfaces") {
     "//chromeos/components/proximity_auth/public/mojom",
     "//chromeos/services/assistant/public/mojom",
     "//components/account_id/interfaces",
-    "//components/sync/mojo:interfaces",
+    "//components/sync/mojom",
     "//mojo/public/mojom/base",
     "//services/content/public/mojom",
     "//services/preferences/public/mojom",

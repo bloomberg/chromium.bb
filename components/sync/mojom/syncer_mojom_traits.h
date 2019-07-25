@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_MOJO_SYNCER_STRUCT_TRAITS_H_
-#define COMPONENTS_SYNC_MOJO_SYNCER_STRUCT_TRAITS_H_
+#ifndef COMPONENTS_SYNC_MOJOM_SYNCER_MOJOM_TRAITS_H_
+#define COMPONENTS_SYNC_MOJOM_SYNCER_MOJOM_TRAITS_H_
 
 #include <string>
 
 #include "components/sync/model/string_ordinal.h"
-#include "components/sync/mojo/syncer.mojom-shared.h"
+#include "components/sync/mojom/syncer.mojom-shared.h"
 
 namespace mojo {
 
@@ -33,4 +33,4 @@ struct StructTraits<syncer::mojom::StringOrdinalDataView,
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_SYNC_MOJO_SYNCER_STRUCT_TRAITS_H_
+#endif  // COMPONENTS_SYNC_MOJOM_SYNCER_MOJOM_TRAITS_H_
