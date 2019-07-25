@@ -138,6 +138,7 @@ customize.IDS = {
   LINK_ICON: 'link-icon',
   MENU: 'bg-sel-menu',
   OPTIONS_TITLE: 'edit-bg-title',
+  REFRESH_DAILY_WRAPPER: 'refresh-daily-wrapper',
   RESTORE_DEFAULT: 'edit-bg-restore-default',
   RESTORE_DEFAULT_TEXT: 'edit-bg-restore-default-text',
   SHORTCUTS_BUTTON: 'shortcuts-button',
@@ -475,6 +476,7 @@ customize.richerPicker_resetImageMenu = function() {
       customize.IDS.BACKGROUNDS_MENU;
   customize.richerPicker_openBackgroundSubmenu.title = '';
   backgroundMenu.scrollTop = 0;
+  $(customize.IDS.REFRESH_DAILY_WRAPPER).hidden = true;
 };
 
 /**
@@ -1231,6 +1233,7 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
   } else {
     $(customize.IDS.TILES).focus();
   }
+  $(customize.IDS.REFRESH_DAILY_WRAPPER).hidden = false;
 };
 
 /**

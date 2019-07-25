@@ -833,15 +833,15 @@ html[dir=rtl] .menu-option {
 }
 
 #menu-header {
+  display: flex;
   height: 80px;
 }
 
 #menu-title-wrapper {
-  display: inline-block;
+  display: block;
   height: 80px;
   line-height: 80px;
-  margin-inline-start: -14px;
-  position: absolute;
+  margin-inline-start: -12px;
 }
 
 #menu-title {
@@ -1006,8 +1006,9 @@ html[dir=rtl] .menu-option {
 }
 
 #menu-back-wrapper {
-  display: inline-block;
+  display: block;
   height: 80px;
+  vertical-align: top;
 }
 
 #menu-back {
@@ -1715,4 +1716,35 @@ html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
 #colors-theme-uninstall {
   height: fit-content;
   margin-inline-end: 16px;
+}
+
+#refresh-daily-wrapper {
+  height: 80px;
+  line-height: 80px;
+  margin-inline-end: 24px;
+  margin-inline-start: auto;
+  position: relative;
+  vertical-align: top;
+}
+
+#refresh-toggle-wrapper {
+  display: inline-block;
+  height: 16px;
+  margin-inline-end: 12px;
+  margin-top: 31px;
+  position: relative;
+  width: 34px;
+}
+
+#refresh-text-wrapper {
+  display: inline-block;
+  height: 80px;
+  line-height: 80px;
+  vertical-align: top;
+}
+
+#refresh-text {
+  font-size: 16px;
+  user-select: none;
+  width: fit-content;
 }
