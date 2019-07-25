@@ -168,6 +168,11 @@ const base::Feature kDirectCompositionComplexOverlays{
 const base::Feature kDirectCompositionGpuVSync{
     "DirectCompositionGpuVSync", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use presentation feedback event queries (must be enabled) to limit latency.
+const base::Feature kDirectCompositionLowLatencyPresentation{
+    "DirectCompositionLowLatencyPresentation",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allow using overlays for non-root render passes.
 const base::Feature kDirectCompositionNonrootOverlays{
     "DirectCompositionNonrootOverlays", base::FEATURE_DISABLED_BY_DEFAULT};

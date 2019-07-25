@@ -167,6 +167,12 @@ bool SupportsPresentationFeedback() {
              features::kDirectCompositionPresentationFeedback) &&
          base::FeatureList::IsEnabled(features::kDirectCompositionGpuVSync);
 }
+
+bool SupportsLowLatencyPresentation() {
+  return base::FeatureList::IsEnabled(
+             features::kDirectCompositionLowLatencyPresentation) &&
+         SupportsPresentationFeedback();
+}
 }  // namespace
 
 DirectCompositionSurfaceWin::PendingFrame::PendingFrame(
@@ -196,6 +202,7 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
           std::make_unique<GLSurfacePresentationHelper>(vsync_provider.get())),
       vsync_provider_(std::move(vsync_provider)),
       vsync_callback_(std::move(vsync_callback)),
+      max_pending_frames_(settings.max_pending_frames),
       weak_factory_(this) {
   // Call GetWeakPtr() on main thread before calling on vsync thread so that the
   // internal weak reference is initialized in a thread-safe way.
@@ -584,11 +591,6 @@ void DirectCompositionSurfaceWin::CheckPendingFrames() {
   if (pending_frames_.empty())
     return;
 
-  base::TimeTicks vsync_time = base::TimeTicks::Now();
-  base::TimeDelta vsync_interval = base::TimeDelta::FromSecondsD(1. / 60);
-
-  vsync_provider_->GetVSyncParametersIfAvailable(&vsync_time, &vsync_interval);
-
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
   d3d11_device_->GetImmediateContext(&context);
   while (!pending_frames_.empty()) {
@@ -602,7 +604,7 @@ void DirectCompositionSurfaceWin::CheckPendingFrames() {
       break;
     std::move(frame.callback)
         .Run(
-            gfx::PresentationFeedback(vsync_time, vsync_interval,
+            gfx::PresentationFeedback(last_vsync_time_, last_vsync_interval_,
                                       gfx::PresentationFeedback::kVSync |
                                           gfx::PresentationFeedback::kHWClock));
     pending_frames_.pop_front();
@@ -632,14 +634,32 @@ void DirectCompositionSurfaceWin::EnqueuePendingFrame(
 }
 
 void DirectCompositionSurfaceWin::OnVSync(base::TimeTicks vsync_time,
-                                          base::TimeDelta vsync_interval) {
-  if (vsync_callback_)
-    vsync_callback_.Run(vsync_time, vsync_interval);
+                                          base::TimeDelta interval) {
+  if (!SupportsLowLatencyPresentation() && vsync_callback_)
+    vsync_callback_.Run(vsync_time, interval);
 
   if (SupportsPresentationFeedback()) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DirectCompositionSurfaceWin::CheckPendingFrames,
-                              weak_ptr_));
+        FROM_HERE,
+        base::Bind(&DirectCompositionSurfaceWin::HandleVSyncOnMainThread,
+                   weak_ptr_, vsync_time, interval));
+  }
+}
+
+void DirectCompositionSurfaceWin::HandleVSyncOnMainThread(
+    base::TimeTicks vsync_time,
+    base::TimeDelta interval) {
+  last_vsync_time_ = vsync_time;
+  last_vsync_interval_ = interval;
+
+  CheckPendingFrames();
+
+  UMA_HISTOGRAM_COUNTS_100("GPU.DirectComposition.NumPendingFrames",
+                           pending_frames_.size());
+
+  if (SupportsLowLatencyPresentation() && vsync_callback_ &&
+      pending_frames_.size() < max_pending_frames_) {
+    vsync_callback_.Run(vsync_time, interval);
   }
 }
 

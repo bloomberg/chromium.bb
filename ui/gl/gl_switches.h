@@ -77,6 +77,7 @@ GL_EXPORT extern const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches;
 namespace features {
 GL_EXPORT extern const base::Feature kDirectCompositionComplexOverlays;
 GL_EXPORT extern const base::Feature kDirectCompositionGpuVSync;
+GL_EXPORT extern const base::Feature kDirectCompositionLowLatencyPresentation;
 GL_EXPORT extern const base::Feature kDirectCompositionNonrootOverlays;
 GL_EXPORT extern const base::Feature kDirectCompositionPreferNV12Overlays;
 GL_EXPORT extern const base::Feature kDirectCompositionPresentationFeedback;

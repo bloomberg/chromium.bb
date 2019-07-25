@@ -32,6 +32,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   struct Settings {
     bool disable_nv12_dynamic_textures = false;
     bool disable_larger_than_screen_overlays = false;
+    size_t max_pending_frames = 2;
   };
 
   DirectCompositionSurfaceWin(
@@ -148,6 +149,9 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   void EnqueuePendingFrame(PresentationCallback callback);
   void CheckPendingFrames();
 
+  void HandleVSyncOnMainThread(base::TimeTicks vsync_time,
+                               base::TimeDelta interval);
+
   HWND window_ = nullptr;
   ChildWindowWin child_window_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -160,9 +164,12 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   const VSyncCallback vsync_callback_;
   bool vsync_callback_enabled_ = false;
   VSyncThreadWin* vsync_thread_ = nullptr;
+  base::TimeTicks last_vsync_time_;
+  base::TimeDelta last_vsync_interval_;
 
   // Queue of pending presentation callbacks.
   base::circular_deque<PendingFrame> pending_frames_;
+  const size_t max_pending_frames_;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
   Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;
