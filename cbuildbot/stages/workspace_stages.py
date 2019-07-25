@@ -800,6 +800,35 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
       # is also the last possible ABI, so returning by default.
       return 'arm'
 
+  def DetermineAndroidVariant(self, package):
+    """Returns the Android variant in use by the active container ebuild."""
+
+    all_use_flags = portage_util.GetInstalledPackgeUseFlags(
+        package, self._current_board)
+    for use_flags in all_use_flags.value():
+      for use_flag in use_flags:
+        if 'cheets_userdebug' in use_flag or 'cheets_sdk_userdebug' in use_flag:
+          return 'userdebug'
+        elif 'cheets_user' in use_flag or 'cheets_sdk_user' in use_flag:
+          return 'user'
+
+    # We iterated through all the flags and could not find user or userdebug.
+    # This should not be possible given that this code is only ran by
+    # builders, which will never use local images.
+    raise cbuildbot_run.NoAndroidVariantError(
+        'Android Variant cannot be determined for the packge: %s' %
+        package)
+
+  def DetermineAndroidTarget(self, package):
+    if package.startswith('chromeos-base/android-vm-'):
+      return 'bertha'
+    if package.startswith('chromeos-base/android-container-'):
+      return 'cheets'
+
+    raise cbuildbot_run.NoAndroidTargetError(
+        'Android Target cannot be determined for the package: %s' %
+        package)
+
   def DownloadAndroidSymbols(self):
     """Helper to download android container symbols, as needed.
 
@@ -817,8 +846,8 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
     android_build_branch = self.DetermineAndroidBranch(android_package)
     android_version = self.DetermineAndroidVersion(android_package)
     arch = self.DetermineAndroidABI()
-    variant = self._run.DetermineAndroidVariant(self._current_board)
-    android_target = self._run.DetermineAndroidTarget(self._current_board)
+    variant = self.DetermineAndroidVariant(android_package)
+    android_target = self.DetermineAndroidTarget(android_package)
     # For user builds, there are no suffix.
     # For userdebug builds, there is an explicit '_userdebug' suffix.
     suffix = ''
