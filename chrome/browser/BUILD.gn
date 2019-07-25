@@ -1887,6 +1887,7 @@ jumbo_split_static_library("browser") {
     "//base:i18n",
     "//base/allocator:buildflags",
     "//base/util/values:values_util",
+    "//build:branding_buildflags",
     "//cc",
     "//chrome:extra_resources",
     "//chrome:resources",
