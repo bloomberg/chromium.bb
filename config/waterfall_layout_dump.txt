@@ -176,6 +176,8 @@
     gru-factory-gru-9017.B-factorybranch
   factory-grunt-11164.B-buildspec
     grunt-factory-grunt-11164.B-factorybranch
+  factory-mistral-12361.B-buildspec
+    mistral-factory-mistral-12361.B-factorybranch
   factory-nami-10715.B-buildspec
     kalista-factory-nami-10715.B-factorybranch
     nami-factory-nami-10715.B-factorybranch
@@ -1645,6 +1647,8 @@
     gru-factory-gru-9017.B-factorybranch-tryjob
   factory-grunt-11164.B-buildspec-tryjob
     grunt-factory-grunt-11164.B-factorybranch-tryjob
+  factory-mistral-12361.B-buildspec-tryjob
+    mistral-factory-mistral-12361.B-factorybranch-tryjob
   factory-nami-10715.B-buildspec-tryjob
     kalista-factory-nami-10715.B-factorybranch-tryjob
     nami-factory-nami-10715.B-factorybranch-tryjob
@@ -2503,6 +2507,7 @@
     atlas-master-factorybranch-tryjob
     coral-master-factorybranch-tryjob
     eve-master-factorybranch-tryjob
+    mistral-master-factorybranch-tryjob
     octopus-master-factorybranch-tryjob
     rammus-master-factorybranch-tryjob
     sarien-master-factorybranch-tryjob
@@ -2934,9 +2939,11 @@
   master-vmpi-android-pfq-tryjob
     eve-arcvm-vmpi-android-pfq-tryjob
   mistral-compile-only-pre-cq
+  mistral-factory-mistral-12361.B-factorybranch-tryjob
   mistral-full-tryjob
   mistral-llvm-next-toolchain-tryjob
   mistral-llvm-toolchain-tryjob
+  mistral-master-factorybranch-tryjob
   mistral-no-vmtest-pre-cq
   mistral-paladin-tryjob
   mistral-payloads-tryjob

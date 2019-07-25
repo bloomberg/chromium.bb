@@ -3520,10 +3520,11 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
       (ACTIVE, 'factory-octopus-11512.B', ['octopus']),
       (ACTIVE, 'factory-atlas-11907.B', ['atlas']),
       (ACTIVE, 'factory-sarien-12033.B', ['sarien']),
+      (ACTIVE, 'factory-mistral-12361.B', ['mistral']),
       # This is intended to create master branch tryjobs, NOT for production
       # builds. Update the associated list of boards as needed.
       (None, 'master', ['atlas', 'octopus', 'rammus', 'coral', 'eve',
-                        'sarien']),
+                        'sarien', 'mistral']),
   ]
 
   _FACTORYBRANCH_TIMEOUT = 12 * 60 * 60
