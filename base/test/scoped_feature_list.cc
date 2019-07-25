@@ -114,6 +114,8 @@ std::string HexEncodeString(const std::string& input) {
 
 // Inverse of HexEncodeString().
 std::string HexDecodeString(const std::string& input) {
+  if (input.empty())
+    return std::string();
   std::vector<uint8_t> bytes;
   bool result = HexStringToBytes(input, &bytes);
   DCHECK(result);

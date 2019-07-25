@@ -275,6 +275,27 @@ TEST_F(ScopedFeatureListTest, ParamsWithSpecialCharsPreserved) {
   EXPECT_EQ(kValue, GetFieldTrialParamValueByFeature(kTestFeature1, kParam));
 }
 
+TEST_F(ScopedFeatureListTest, ParamsWithEmptyValue) {
+  const char kParam[] = "p";
+  const char kEmptyValue[] = "";
+  FieldTrialParams params = {{kParam, kEmptyValue}};
+
+  test::ScopedFeatureList feature_list0;
+  feature_list0.InitWithFeaturesAndParameters({{kTestFeature1, params}}, {});
+  EXPECT_EQ(kEmptyValue,
+            GetFieldTrialParamValueByFeature(kTestFeature1, kParam));
+  {
+    const char kValue1[] = "normal";
+    FieldTrialParams params1 = {{kParam, kValue1}};
+    test::ScopedFeatureList feature_list1;
+    feature_list1.InitWithFeaturesAndParameters({{kTestFeature1, params1}}, {});
+
+    EXPECT_EQ(kValue1, GetFieldTrialParamValueByFeature(kTestFeature1, kParam));
+  }
+  EXPECT_EQ(kEmptyValue,
+            GetFieldTrialParamValueByFeature(kTestFeature1, kParam));
+}
+
 TEST_F(ScopedFeatureListTest, EnableFeatureOverrideDisable) {
   test::ScopedFeatureList feature_list1;
   feature_list1.InitWithFeatures({}, {kTestFeature1});
