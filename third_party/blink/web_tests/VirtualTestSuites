@@ -526,6 +526,12 @@
              "--disable-smooth-scrolling"]
   },
   {
+    "prefix": "compositor_threaded_scrollbar_scrolling",
+    "base": "paint/invalidation/scroll/sticky",
+    "args": ["--enable-threaded-compositing",
+             "--enable-prefer-compositing-to-lcd-text"]
+  },
+  {
     "prefix": "main_thread_scrollbar_gestures",
     "base": "fast/scrolling/scrollbars",
     "args": ["--enable-features=ScrollbarInjectScrollGestures"]
