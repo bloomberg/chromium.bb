@@ -5990,6 +5990,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Has distilled data"/>
 </enum>
 
+<enum name="BooleanHasNoSniff">
+  <int value="0" label="Does not have nosniff"/>
+  <int value="1" label="Has nosniff"/>
+</enum>
+
 <enum name="BooleanHasPath">
   <int value="0" label="No path"/>
   <int value="1" label="Has path"/>

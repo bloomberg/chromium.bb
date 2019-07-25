@@ -2568,6 +2568,9 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, CORBProtectionLogging) {
   const bool seems_sensitive_from_cache_heuristic =
       network::CrossOriginReadBlocking::ResponseAnalyzer::
           SeemsSensitiveFromCacheHeuristic(response->head);
+  const bool expect_nosniff =
+      network::CrossOriginReadBlocking::ResponseAnalyzer::HasNoSniff(
+          response->head);
 
   // Call OnResponseStarted.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
@@ -2675,6 +2678,15 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, CORBProtectionLogging) {
             testing::ElementsAre(base::Bucket(supports_range_requests, 1)));
         expected_counts[cors_protected + blocked_with_range_support] = 1;
       }
+      if (scenario.mime_type_bucket == MimeTypeBucket::kProtected &&
+          scenario.protection_decision ==
+              CrossOriginProtectionDecision::kBlock) {
+        EXPECT_THAT(histograms.GetAllSamples(
+                        cors_protected + ".BlockedWithoutSniffing.HasNoSniff"),
+                    testing::ElementsAre(base::Bucket(expect_nosniff, 1)));
+        expected_counts[cors_protected + ".BlockedWithoutSniffing.HasNoSniff"] =
+            1;
+      }
     }
     if (seems_sensitive_from_cache_heuristic) {
       expected_counts[cache_base + mime_type_bucket] = 1;
@@ -2688,6 +2700,15 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, CORBProtectionLogging) {
                                      blocked_with_range_support),
             testing::ElementsAre(base::Bucket(supports_range_requests, 1)));
         expected_counts[cache_protected + blocked_with_range_support] = 1;
+      }
+      if (scenario.mime_type_bucket == MimeTypeBucket::kProtected &&
+          scenario.protection_decision ==
+              CrossOriginProtectionDecision::kBlock) {
+        EXPECT_THAT(histograms.GetAllSamples(
+                        cache_protected + ".BlockedWithoutSniffing.HasNoSniff"),
+                    testing::ElementsAre(base::Bucket(expect_nosniff, 1)));
+        expected_counts[cache_protected +
+                        ".BlockedWithoutSniffing.HasNoSniff"] = 1;
       }
     }
 

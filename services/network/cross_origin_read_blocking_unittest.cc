@@ -1862,6 +1862,113 @@ const TestScenario kScenarios[] = {
         Verdict::kAllowBecauseOutOfData,  // verdict
         0,                                // verdict_packet
     },
+
+    // These responses confirm we are correctly reporting when a nosniff header
+    // is present. This should *only* be reported when a blocked, sensitive,
+    // protected mime-type response has a nosniff header.
+    //
+    // This first response satisfies all criteria except it does not have a
+    // nosniff header.
+    {
+        "Cache heuristic with no nosniff header",
+        __LINE__,
+        "http://a.com/resource.html",  // target_url
+        "http://a.com/",               // initiator_origin
+        "http://a.com/",               // initiator_site_lock
+        "HTTP/1.1 200 OK\n"
+        "Cache-Control: private\n"
+        "Vary: origin",                             // response_headers
+        "text/html",                                // response_content_type
+        MimeType::kHtml,                            // canonical_mime_type
+        MimeTypeBucket::kProtected,                 // mime_type_bucket
+        {"<html><head>this should sniff as HTML"},  // packets
+        true,                                       // resource_is_sensitive
+        CrossOriginProtectionDecision::
+            kBlockedAfterSniffing,  // protection_decision
+        Verdict::kAllow,            // verdict
+        0,                          // verdict_packet
+    },
+    // These next responses have nosniff headers but are missing one of the
+    // other criteria.
+    {
+        "Cache heuristic with nosniff header but not a protected type",
+        __LINE__,
+        "http://a.com/resource.js",  // target_url
+        "http://a.com/",             // initiator_origin
+        "http://a.com/",             // initiator_site_lock
+        "HTTP/1.1 200 OK\n"
+        "X-Content-Type-Options: nosniff\n"
+        "Cache-Control: private\n"
+        "Vary: origin",            // response_headers
+        "application/javascript",  // response_content_type
+        MimeType::kOthers,         // canonical_mime_type
+        MimeTypeBucket::kPublic,   // mime_type_bucket
+        {"var x=3;"},              // packets
+        true,                      // resource_is_sensitive
+        CrossOriginProtectionDecision::
+            kAllowedAfterSniffing,  // protection_decision
+        Verdict::kAllow,            // verdict
+        0,                          // verdict_packet
+    },
+    {
+        "Cache heuristic with nosniff header but protection decision != kBlock",
+        __LINE__,
+        "http://a.com/resource.html",  // target_url
+        "http://a.com/",               // initiator_origin
+        "http://a.com/",               // initiator_site_lock
+        "HTTP/1.1 200 OK\n"
+        "X-Content-Type-Options: nosniff\n"
+        "Access-Control-Allow-Origin: *\n"
+        "Cache-Control: private\n"
+        "Vary: origin",                             // response_headers
+        "text/html",                                // response_content_type
+        MimeType::kHtml,                            // canonical_mime_type
+        MimeTypeBucket::kProtected,                 // mime_type_bucket
+        {"<html><head>this should sniff as HTML"},  // packets
+        true,                                       // resource_is_sensitive
+        CrossOriginProtectionDecision::kAllow,      // protection_decision
+        Verdict::kAllow,                            // verdict
+        kVerdictPacketForHeadersBasedVerdict,       // verdict_packet
+    },
+    // These responses satisfies all criteria and should report its nosniff
+    // header.
+    {
+        "Nosniff header and satisfies the CORS heuristic",
+        __LINE__,
+        "http://a.com/resource.html",  // target_url
+        "http://a.com/",               // initiator_origin
+        "http://a.com/",               // initiator_site_lock
+        "HTTP/1.1 200 OK\n"
+        "X-Content-Type-Options: nosniff\n"
+        "Access-Control-Allow-Origin: http://www.a.com/",  // response_headers
+        "text/html",                                // response_content_type
+        MimeType::kHtml,                            // canonical_mime_type
+        MimeTypeBucket::kProtected,                 // mime_type_bucket
+        {"<html><head>this should sniff as HTML"},  // packets
+        true,                                       // resource_is_sensitive
+        CrossOriginProtectionDecision::kBlock,      // protection_decision
+        Verdict::kAllow,                            // verdict
+        kVerdictPacketForHeadersBasedVerdict,       // verdict_packet
+    },
+    {
+        "Nosniff header and satisfies the Cache heuristic",
+        __LINE__,
+        "http://a.com/resource.html",  // target_url
+        "http://a.com/",               // initiator_origin
+        "http://a.com/",               // initiator_site_lock
+        "HTTP/1.1 200 OK\n"
+        "X-Content-Type-Options: nosniff\n"
+        "Cache-Control: private\n"
+        "Vary: origin",                            // response_headers
+        "text/html",                               // response_content_type
+        MimeType::kHtml,                           // canonical_mime_type
+        MimeTypeBucket::kProtected,                // mime_type_bucket
+        {/* empty body doesn't sniff as html */},  // packets
+        true,                                      // resource_is_sensitive
+        CrossOriginProtectionDecision::kBlock,     // protection_decision
+        Verdict::kAllow,                           // verdict
+        kVerdictPacketForHeadersBasedVerdict,      // verdict_packet
+    },
 };
 
 }  // namespace
@@ -2142,6 +2249,8 @@ TEST_P(ResponseAnalyzerTest, CORBProtectionLogging) {
   const bool supports_range_requests =
       network::CrossOriginReadBlocking::ResponseAnalyzer::SupportsRangeRequests(
           response);
+  const bool expect_nosniff =
+      network::CrossOriginReadBlocking::ResponseAnalyzer::HasNoSniff(response);
 
   // Run the analyzer and confirm it allows/blocks correctly.
   RunAnalyzerOnScenario(response);
@@ -2193,6 +2302,7 @@ TEST_P(ResponseAnalyzerTest, CORBProtectionLogging) {
     std::string cache_base = "SiteIsolation.CORBProtection.CacheHeuristic";
     std::string cors_protected = cors_base + ".ProtectedMimeType";
     std::string cache_protected = cache_base + ".ProtectedMimeType";
+    std::string blocked_nosniff = ".BlockedWithoutSniffing.HasNoSniff";
     if (seems_sensitive_from_cors_heuristic) {
       expected_counts[cors_base + mime_type_bucket] = 1;
       EXPECT_THAT(histograms.GetAllSamples(cors_base + mime_type_bucket),
@@ -2205,6 +2315,13 @@ TEST_P(ResponseAnalyzerTest, CORBProtectionLogging) {
                                      blocked_with_range_support),
             testing::ElementsAre(base::Bucket(supports_range_requests, 1)));
         expected_counts[cors_protected + blocked_with_range_support] = 1;
+      }
+      if (scenario.mime_type_bucket == MimeTypeBucket::kProtected &&
+          scenario.protection_decision ==
+              CrossOriginProtectionDecision::kBlock) {
+        EXPECT_THAT(histograms.GetAllSamples(cors_protected + blocked_nosniff),
+                    testing::ElementsAre(base::Bucket(expect_nosniff, 1)));
+        expected_counts[cors_protected + blocked_nosniff] = 1;
       }
     }
     if (seems_sensitive_from_cache_heuristic) {
@@ -2219,6 +2336,13 @@ TEST_P(ResponseAnalyzerTest, CORBProtectionLogging) {
                                      blocked_with_range_support),
             testing::ElementsAre(base::Bucket(supports_range_requests, 1)));
         expected_counts[cache_protected + blocked_with_range_support] = 1;
+      }
+      if (scenario.mime_type_bucket == MimeTypeBucket::kProtected &&
+          scenario.protection_decision ==
+              CrossOriginProtectionDecision::kBlock) {
+        EXPECT_THAT(histograms.GetAllSamples(cache_protected + blocked_nosniff),
+                    testing::ElementsAre(base::Bucket(expect_nosniff, 1)));
+        expected_counts[cache_protected + blocked_nosniff] = 1;
       }
     }
 
