@@ -1381,8 +1381,8 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
     }
     url_loader_factory_getter =
         base::MakeRefCounted<FileSystemDownloadURLLoaderFactoryGetter>(
-            params->url(), rfh, /*is_navigation=*/false,
-            storage_partition->GetFileSystemContext(), storage_domain);
+            params->url(), rfh, storage_partition->GetFileSystemContext(),
+            storage_domain);
   } else if (params->url().SchemeIs(url::kDataScheme)) {
     url_loader_factory_getter =
         CreateDownloadURLLoaderFactoryGetterFromURLLoaderFactory(

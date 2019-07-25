@@ -1789,8 +1789,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
     const std::string storage_domain;
     non_network_url_loader_factories_[url::kFileSystemScheme] =
-        CreateFileSystemURLLoaderFactory(frame_tree_node->current_frame_host(),
-                                         /*is_navigation=*/true,
+        CreateFileSystemURLLoaderFactory(ChildProcessHost::kInvalidUniqueID,
+                                         frame_tree_node->frame_tree_node_id(),
                                          partition->GetFileSystemContext(),
                                          storage_domain);
   }
