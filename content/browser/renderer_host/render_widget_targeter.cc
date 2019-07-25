@@ -56,11 +56,11 @@ class TracingUmaTracker {
   TracingUmaTracker(TracingUmaTracker&& tracker) = default;
 
   void StopAndRecord() {
-    Stop();
+    StopButNotRecord();
     UmaHistogramTimes(metric_name_, base::TimeTicks::Now() - start_time_);
   }
 
-  void Stop() {
+  void StopButNotRecord() {
     TRACE_EVENT_ASYNC_END0(
         kTracingCategory, metric_name_,
         TRACE_ID_WITH_SCOPE("UmaTracker", TRACE_ID_LOCAL(id_)));
@@ -160,7 +160,7 @@ void RenderWidgetTargeter::TargetingRequest::StartQueueingTimeTracker() {
 
 void RenderWidgetTargeter::TargetingRequest::StopQueueingTimeTracker() {
   if (tracker)
-    tracker->Stop();
+    tracker->StopAndRecord();
 }
 
 bool RenderWidgetTargeter::TargetingRequest::IsWebInputEventRequest() const {
@@ -400,7 +400,7 @@ void RenderWidgetTargeter::FoundFrameSinkId(
     const viz::FrameSinkId& frame_sink_id,
     const gfx::PointF& transformed_location) {
   if (is_verification_request) {
-    tracker.Stop();
+    tracker.StopButNotRecord();
   } else {
     tracker.StopAndRecord();
   }
