@@ -6333,7 +6333,6 @@ crbug.com/985869 [ Linux Win7 ] virtual/blink-cors/http/tests/security/contentSe
 crbug.com/986018 fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass Failure ]
 
 # ecosystem-infra sheriff 2019-07-22
-crbug.com/986457 [ Linux ] http/tests/misc/object-image-error-with-onload.html [ Pass Failure ]
 crbug.com/986477 [ Win ] external/wpt/cookies/path/match.html [ Pass Timeout ]
 crbug.com/986477 [ Win ] virtual/samesite-by-default-cookies/external/wpt/cookies/path/match.html [ Pass Timeout ]
 
