@@ -47,17 +47,22 @@ tests:
 
 table: |
   include tables/spaces.uti
-  include tables/latinLetterDef8Dots.uti
-  display _ 456
-  sign _ 46-36
+  include tables/latinLetterDef6Dots.uti
+  display + 346
+  display + 346
+  display % 146
+  display ( 12356
+  display ) 23456
 flags: {testmode: backward}
 tests:
-  - - " _ "
-    - " \\\\456/ "
-    - outputPos: [0, 1, 6]
-  - - " _ "
+  - - "( +% )"
+    - "\\\\12356/ \\\\346/\\\\146/ \\\\23456/"
+    - outputPos: [0, 7, 8, 13, 18, 19]
+      inputPos: [0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 5, 5, 5, 5, 5, 5, 5]
+  - - "( +% )"
     - "  "
-    - outputPos: [0, 1, 1]
+    - outputPos: [0, 0, 1, 1, 1, 1]
+      inputPos: [0, 2]
       mode: [noUndefined]
 
 table: |
@@ -69,12 +74,14 @@ table: |
   sign ' 3
 flags: {testmode: forward}
 tests:
-  - - "xyz\u2026jkl"
-    - ⠭⠽⠵⠄⠡⠭⠆⠴⠆⠖⠄⠚⠅⠇
-    - outputPos: [0, 1, 2, 3, 11, 12, 13]
-  - - "xyz\u2026jkl"
+  - - "\u2018xyz\u2026\u22EEjkl\u2019"
+    - ⠄⠡⠭⠆⠴⠂⠦⠄⠭⠽⠵⠄⠡⠭⠆⠴⠆⠖⠄⠄⠡⠭⠆⠆⠑⠑⠄⠚⠅⠇⠄⠡⠭⠆⠴⠂⠔⠄
+    - outputPos: [0, 8, 9, 10, 11, 19, 27, 28, 29, 30]
+      inputPos: [0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 7, 8, 9, 9, 9, 9, 9, 9, 9, 9]
+  - - "\u2018xyz\u2026\u22EEjkl\u2019"
     - "⠭⠽⠵⠚⠅⠇"
-    - outputPos: [0, 1, 2, 2, 3, 4, 5]
+    - outputPos: [0, 0, 1, 2, 2, 2, 3, 4, 5, 5]
+      inputPos: [1, 2, 3, 6, 7, 8]
       mode: [noUndefined]
 
 table: |
