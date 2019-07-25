@@ -5868,9 +5868,10 @@ String Document::lastModified() const {
   // FIXME: If this document came from the file system, the HTML5
   // specificiation tells us to read the last modification date from the file
   // system.
-  if (!found_date)
+  if (!found_date) {
     date.SetMillisecondsSinceEpochForDateTime(
-        ConvertToLocalTime(CurrentTimeMS()));
+        ConvertToLocalTime(base::Time::Now().ToDoubleT() * 1000.0));
+  }
   return String::Format("%02d/%02d/%04d %02d:%02d:%02d", date.Month() + 1,
                         date.MonthDay(), date.FullYear(), date.Hour(),
                         date.Minute(), date.Second());

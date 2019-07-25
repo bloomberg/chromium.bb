@@ -804,8 +804,8 @@ void InspectorNetworkAgent::WillSendRequestInternal(
     maybe_frame_id = frame_id;
   GetFrontend()->requestWillBeSent(
       request_id, loader_id, documentURL, std::move(request_info),
-      base::TimeTicks::Now().since_origin().InSecondsF(), CurrentTime(),
-      std::move(initiator_object),
+      base::TimeTicks::Now().since_origin().InSecondsF(),
+      base::Time::Now().ToDoubleT(), std::move(initiator_object),
       BuildObjectForResourceResponse(redirect_response), resource_type,
       std::move(maybe_frame_id), request.HasUserGesture());
   if (is_handling_sync_xhr_)
@@ -1245,8 +1245,8 @@ void InspectorNetworkAgent::WillSendWebSocketHandshakeRequest(
           .build();
   GetFrontend()->webSocketWillSendHandshakeRequest(
       IdentifiersFactory::SubresourceRequestId(identifier),
-      base::TimeTicks::Now().since_origin().InSecondsF(), CurrentTime(),
-      std::move(request_object));
+      base::TimeTicks::Now().since_origin().InSecondsF(),
+      base::Time::Now().ToDoubleT(), std::move(request_object));
 }
 
 void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
