@@ -542,6 +542,13 @@ INSTANTIATE_TEST_SUITE_P(
             /*birth_year_offset=*/-2,
             /*gender=*/metrics::UserDemographicsProto::GENDER_FEMALE,
             /*should_return_demographics=*/false},
+        // Test where birth year should not be provided because age of user is
+        // |kUserDemographicsMaxAge| + 1, which is over the max age.
+        DemographicsTestParam{
+            /*birth_year=*/1933,
+            /*birth_year_offset=*/0,
+            /*gender=*/metrics::UserDemographicsProto::GENDER_FEMALE,
+            /*should_return_demographics=*/false},
         // Test where gender should not be provided because it has a low
         // population that can have their privacy compromised because of high
         // entropy.

@@ -143,19 +143,35 @@ int GetBirthYearOffset(PrefService* pref_service) {
 // user is in an age transition, and (2) only users of at least 18 years old can
 // report demographics.
 bool CanProvideDemographics(base::Time now, int user_birth_year, int offset) {
+  // Compute user age.
   base::Time::Exploded exploded_now_time;
   now.LocalExplode(&exploded_now_time);
-  // Use > rather than >= because we want to be sure that the user is at
-  // least |kUserDemographicsMinAgeInYears| without disclosing their birth date,
-  // which requires to add an extra year margin to minimal age to be safe. For
-  // example, if we are in 2019-07-10 (now) and the user was born in 1999-08-10,
-  // the user is not yet 20 years old (minimal age) but we cannot know that
-  // because we only have access to the year of the dates (2019 and 1999
-  // respectively). If we make sure that the minimal age is at least 21, we are
-  // 100% sure that the user will be at least 20 years old when reporting
-  // demographics.
-  return exploded_now_time.year - (user_birth_year + offset) >
-         kUserDemographicsMinAgeInYears;
+  int user_age = exploded_now_time.year - (user_birth_year + offset);
+
+  // Verify if the user's age has a population size in the age distribution of
+  // the society that is big enough to not rise entropy of the user. At a
+  // certain point, as the age increase, the size of the population starts
+  // declining sharply as you can see in this rough representation of the age
+  // distribution:
+  // |       ________         max age
+  // |______/        \_________ |
+  // |                          |\
+  // |                          | \
+  // +--------------------------|---------
+  //  0 10 20 30 40 50 60 70 80 90 100+
+  if (user_age > kUserDemographicsMaxAgeInYears)
+    return false;
+
+  // Verify if user is old enough. Use > rather than >= because we want to be
+  // sure that the user is at least |kUserDemographicsMinAgeInYears| without
+  // disclosing their birth date, which requires to add an extra year margin to
+  // minimal age to be safe. For example, if we are in 2019-07-10 (now) and the
+  // user was born in 1999-08-10, the user is not yet 20 years old (minimal age)
+  // but we cannot know that because we only have access to the year of the
+  // dates (2019 and 1999 respectively). If we make sure that the minimal age is
+  // at least 21, we are 100% sure that the user will be at least 20 years old
+  // when reporting demographics.
+  return user_age > kUserDemographicsMinAgeInYears;
 }
 
 // Gets user's birth year from prefs.
