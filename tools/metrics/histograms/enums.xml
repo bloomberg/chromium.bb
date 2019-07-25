@@ -24175,6 +24175,10 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Fetch failure"/>
 </enum>
 
+<!-- Keep elements in sync with components/feed/core/feed_logging_metrics.cc and
+ third_party/feed/src/src/main/java/com/google/android/libraries/feed/api/host/logging/InternalFeedError.java
+ -->
+
 <enum name="FeedInternalError">
   <int value="0" label="SWITCH_TO_EPHEMERAL"/>
   <int value="1" label="NO_URL_FOR_OPEN"/>
