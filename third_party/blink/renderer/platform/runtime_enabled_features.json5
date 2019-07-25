@@ -1569,11 +1569,7 @@
       implied_by: ["ExperimentalProductivityFeatures"]
     },
     {
-      name: "UpdateHoverFromLayoutChangeAtBeginFrame",
-      settable_from_internals: true,
-    },
-    {
-      name: "UpdateHoverFromScrollAtBeginFrame",
+      name: "UpdateHoverAtBeginFrame",
       settable_from_internals: true,
     },
     {
