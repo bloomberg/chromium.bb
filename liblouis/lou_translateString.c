@@ -2217,11 +2217,9 @@ undefinedCharacter(widechar c, const TranslationTableHeader *table, int pos,
 		TranslationTableRule *rule =
 				(TranslationTableRule *)&table->ruleArea[table->undefined];
 
-		if (!for_updatePositions(&rule->charsdots[rule->charslen], rule->charslen,
-					rule->dotslen, 0, pos, input, output, posMapping, cursorPosition,
-					cursorStatus))
-			return 0;
-		return 1;
+		return 	for_updatePositions(&rule->charsdots[rule->charslen], rule->charslen,
+					    rule->dotslen, 0, pos, input, output, posMapping, cursorPosition,
+					    cursorStatus);
 	}
 
 	if (!(mode & noUndefined)) {
@@ -2230,9 +2228,8 @@ undefinedCharacter(widechar c, const TranslationTableHeader *table, int pos,
 		for (k = 0; k < (int)strlen(display); k++)
 			displayDots[k] = _lou_getDotsForChar(display[k]);
 
-		if (!for_updatePositions(displayDots, 1, (int)strlen(display), 0, pos, input, output,
-					posMapping, cursorPosition, cursorStatus))
-			return 0;
+		return for_updatePositions(displayDots, 1, (int)strlen(display), 0, pos, input, output,
+					   posMapping, cursorPosition, cursorStatus);
 	}
 
 	return 1;
