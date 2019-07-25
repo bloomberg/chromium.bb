@@ -318,7 +318,6 @@
 == full ==
   master-full
     amd64-generic-full
-    amd64-generic-goma-full
     arm-generic-full
     arm64-generic-full
     kevin-full
@@ -693,7 +692,6 @@
   amd64-generic-full-tryjob
   amd64-generic-fuzzer-tryjob
   amd64-generic-goma-canary-chromium-pfq-informational-tryjob
-  amd64-generic-goma-full-tryjob
   amd64-generic-incremental-tryjob
   amd64-generic-linux-v4_14-buildtest-compile-only-pre-cq
   amd64-generic-linux-v4_14-pre-cq
@@ -2541,7 +2539,6 @@
     veyron_rialto-chrome-pfq-tryjob
   master-full-tryjob
     amd64-generic-full-tryjob
-    amd64-generic-goma-full-tryjob
     arm-generic-full-tryjob
     arm64-generic-full-tryjob
     kevin-full-tryjob

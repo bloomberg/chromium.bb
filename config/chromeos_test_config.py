@@ -617,7 +617,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       # to validate informational Tast tests on amd64-generic:
       # https://crbug.com/946858
       'amd64-generic-full': site_config.templates.tast_vm_canary_tests,
-      'amd64-generic-goma-full': site_config.templates.tast_vm_canary_tests,
       'betty-arc64-release': site_config.templates.tast_vm_canary_tests,
       'betty-release': site_config.templates.tast_vm_canary_tests,
 
