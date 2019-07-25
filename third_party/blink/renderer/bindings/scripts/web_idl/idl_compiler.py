@@ -74,7 +74,39 @@ class IdlCompiler(object):
         return Database(self._db)
 
     def _merge_partial_interfaces(self):
-        pass
+        def merge_partials(old_interfaces, partial_interfaces):
+            for identifier, old_interface in old_interfaces.iteritems():
+                new_interface = old_interface.make_copy()
+                for partial in partial_interfaces.get(identifier, []):
+                    new_interface.add_components(partial.components)
+                    new_interface.debug_info.add_locations(
+                        partial.debug_info.all_locations)
+                    new_interface.attributes.extend([
+                        attribute.make_copy()
+                        for attribute in partial.attributes
+                    ])
+                    new_interface.constants.extend([
+                        constant.make_copy() for constant in partial.constants
+                    ])
+                    new_interface.operations.extend([
+                        operation.make_copy()
+                        for operation in partial.operations
+                    ])
+
+            self._ir_map.add(new_interface)
+
+        old_interfaces = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.INTERFACE)
+        partial_interfaces = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE)
+        old_mixins = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.INTERFACE_MIXIN)
+        partial_mixins = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN)
+
+        self._ir_map.move_to_new_phase()
+        merge_partials(old_interfaces, partial_interfaces)
+        merge_partials(old_mixins, partial_mixins)
 
     def _merge_partial_dictionaries(self):
         old_dictionaries = self._ir_map.find_by_kind(

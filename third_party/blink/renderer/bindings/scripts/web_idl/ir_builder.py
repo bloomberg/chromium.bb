@@ -111,16 +111,12 @@ class _IRBuilder(object):
         attributes = []
         constants = []
         operations = []
-        property_handlers = []
         for member in members:
             if isinstance(member, Attribute.IR):
                 attributes.append(member)
             elif isinstance(member, Operation.IR):
-                assert member.identifier or member.is_property_handler
                 if member.identifier:
                     operations.append(member)
-                if member.is_property_handler:
-                    property_handlers.append(member)
             elif isinstance(member, Constant.IR):
                 constants.append(member)
             else:
@@ -195,9 +191,6 @@ class _IRBuilder(object):
                 arguments=arguments,
                 return_type=return_type,
                 is_static=bool(node.GetProperty('STATIC')),
-                is_getter=bool(node.GetProperty('GETTER')),
-                is_setter=bool(node.GetProperty('SETTER')),
-                is_deleter=bool(node.GetProperty('DELETER')),
                 extended_attributes=extended_attributes,
                 component=self._component,
                 debug_info=self._build_debug_info(node))
