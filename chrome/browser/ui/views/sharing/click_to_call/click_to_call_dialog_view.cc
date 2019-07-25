@@ -165,7 +165,7 @@ void ClickToCallDialogView::ButtonPressed(views::Button* sender,
 void ClickToCallDialogView::InitListView() {
   int tag = 0;
   // Devices:
-  LogClickToCallDevicesToShow(devices_.size());
+  LogClickToCallDevicesToShow(kSharingClickToCallUiDialog, devices_.size());
   for (const auto& device : devices_) {
     auto dialog_button = std::make_unique<HoverButton>(
         this, CreateDeviceIcon(device.device_type()),
@@ -176,7 +176,7 @@ void ClickToCallDialogView::InitListView() {
   }
 
   // Apps:
-  LogClickToCallAppsToShow(apps_.size());
+  LogClickToCallAppsToShow(kSharingClickToCallUiDialog, apps_.size());
   for (const auto& app : apps_) {
     auto dialog_button =
         std::make_unique<HoverButton>(this, CreateIconView(app.icon), app.name,

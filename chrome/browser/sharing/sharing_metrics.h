@@ -45,21 +45,27 @@ void LogSharingUnegistrationResult(SharingDeviceRegistrationResult result);
 void LogSharingVapidKeyCreationResult(SharingVapidKeyCreationResult result);
 
 // Logs the number of available devices that are about to be shown in a UI for
-// picking a device to start a phone call on.
-void LogClickToCallDevicesToShow(int count);
+// picking a device to start a phone call on. The |histogram_suffix| indicates
+// in which UI this event happened and must match one from SharingClickToCallUi
+// defined in histograms.xml - use the constants defined in this file for that.
+void LogClickToCallDevicesToShow(const char* histogram_suffix, int count);
 
 // Logs the number of available apps that are about to be shown in a UI for
-// picking an app to start a phone call with.
-void LogClickToCallAppsToShow(int count);
+// picking an app to start a phone call with. The |histogram_suffix| indicates
+// in which UI this event happened and must match one from SharingClickToCallUi
+// defined in histograms.xml - use the constants defined in this file for that.
+void LogClickToCallAppsToShow(const char* histogram_suffix, int count);
 
 // Logs the |index| of the device selected by the user for Click to Call. The
 // |histogram_suffix| indicates in which UI this event happened and must match
-// one from SharingClickToCallUi defined in histograms.xml.
+// one from SharingClickToCallUi defined in histograms.xml - use the constants
+// defined in this file for that.
 void LogClickToCallSelectedDeviceIndex(const char* histogram_suffix, int index);
 
 // Logs the |index| of the app selected by the user for Click to Call. The
 // |histogram_suffix| indicates in which UI this event happened and must match
-// one from SharingClickToCallUi defined in histograms.xml.
+// one from SharingClickToCallUi defined in histograms.xml - use the constants
+// defined in this file for that.
 void LogClickToCallSelectedAppIndex(const char* histogram_suffix, int index);
 
 // Logs to UMA the time from sending a FCM message from the Sharing service
