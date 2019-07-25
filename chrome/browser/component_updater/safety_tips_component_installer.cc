@@ -22,7 +22,7 @@ using component_updater::ComponentUpdateService;
 
 namespace {
 
-const base::FilePath::CharType kConfigBinaryPbFileName[] =
+const base::FilePath::CharType kSafetyTipsConfigBinaryPbFileName[] =
     FILE_PATH_LITERAL("safety_tips.pb");
 
 // The SHA256 of the SubjectPublicKeyInfo used to sign the extension.
@@ -32,8 +32,8 @@ const uint8_t kSafetyTipsPublicKeySHA256[32] = {
     0xd1, 0x16, 0x1e, 0xd4, 0x63, 0x21, 0xfe, 0x79, 0x5d, 0x02, 0x30,
     0xc2, 0xcf, 0x4a, 0x9c, 0x8a, 0x39, 0xcc, 0x4a, 0x00, 0xce};
 
-std::unique_ptr<chrome_browser_safety_tips::SafetyTipsConfig> LoadProtoFromDisk(
-    const base::FilePath& pb_path) {
+std::unique_ptr<chrome_browser_safety_tips::SafetyTipsConfig>
+LoadSafetyTipsProtoFromDisk(const base::FilePath& pb_path) {
   std::string binary_pb;
   if (!base::ReadFileToString(pb_path, &binary_pb)) {
     // The file won't exist on new installations, so this is not always an
@@ -79,7 +79,7 @@ void SafetyTipsComponentInstallerPolicy::OnCustomUninstall() {}
 
 base::FilePath SafetyTipsComponentInstallerPolicy::GetInstalledPath(
     const base::FilePath& base) {
-  return base.Append(kConfigBinaryPbFileName);
+  return base.Append(kSafetyTipsConfigBinaryPbFileName);
 }
 
 void SafetyTipsComponentInstallerPolicy::ComponentReady(
@@ -99,7 +99,7 @@ void SafetyTipsComponentInstallerPolicy::ComponentReady(
   // gave us without checking the default proto from the resource bundle.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&LoadProtoFromDisk, pb_path),
+      base::BindOnce(&LoadSafetyTipsProtoFromDisk, pb_path),
       base::BindOnce(&safety_tips::SetProto));
 }
 
