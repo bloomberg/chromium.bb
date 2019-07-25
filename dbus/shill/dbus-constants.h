@@ -451,7 +451,6 @@ const char kTypeDHCP[] = "dhcp";
 const char kTypeBOOTP[] = "bootp";
 const char kTypeZeroConf[] = "zeroconf";
 const char kTypeDHCP6[] = "dhcp6";
-const char kTypePPP[] = "ppp";
 
 // Flimflam error options.
 const char kErrorAaaFailed[] = "aaa-failed";
@@ -574,6 +573,11 @@ const char kWifiSupportedFrequenciesProperty[] = "WiFi.SupportedFrequencies";
 
 // Technology types (augments "Flimflam type options" above).
 const char kTypeEthernetEap[] = "etherneteap";
+const char kTypeTunnel[] = "tunnel";
+const char kTypeLoopback[] = "loopback";
+const char kTypePPP[] = "ppp";
+const char kTypeGuestInterface[] = "guest_interface";
+const char kTypeUnknown[] = "unknown";
 
 // Error strings.
 const char kErrorEapAuthenticationFailed[] = "eap-authentication-failed";
