@@ -832,6 +832,29 @@ TEST_F('OSSettingsResetPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+// Test fixture for the "Search and assistant" page.
+// eslint-disable-next-line no-var
+var OSSettingsSearchPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'chromeos/os_search_page/os_search_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'test_search_engines_browser_proxy.js',
+      'os_search_page_test.js',
+    ]);
+  }
+};
+
+// Settings tests are flaky on debug. See https://crbug.com/968608.
+TEST_F('OSSettingsSearchPageTest', 'MAYBE_AllJsTests', () => {
+  mocha.run();
+});
+
 // Test fixture for the Smb Shares page.
 // eslint-disable-next-line no-var
 var OSSettingsSmbPageTest = class extends OSSettingsBrowserTest {
