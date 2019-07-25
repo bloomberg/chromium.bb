@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.support.annotation.IntDef;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,6 +38,8 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
     public final ImageView thumbnail;
     public final ButtonCompat createGroupButton;
     public final View backgroundView;
+    public final View selectedViewBelowLollipop;
+    public final View dividerView;
     public final ImageView actionButton;
 
     private int mTabId;
@@ -47,13 +48,12 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
         super(itemView);
         this.thumbnail = itemView.findViewById(R.id.tab_thumbnail);
         this.title = itemView.findViewById(R.id.tab_title);
-        // TODO(yuezhanggg): Remove this when the strip is properly tinted. (crbug/939915)
-        title.setTextColor(
-                ContextCompat.getColor(itemView.getContext(), R.color.default_text_color_dark));
         this.favicon = itemView.findViewById(R.id.tab_favicon);
         this.actionButton = itemView.findViewById(R.id.action_button);
         this.createGroupButton = itemView.findViewById(R.id.create_group_button);
         this.backgroundView = itemView.findViewById(R.id.background_view);
+        this.selectedViewBelowLollipop = itemView.findViewById(R.id.selected_view_below_lollipop);
+        this.dividerView = itemView.findViewById(R.id.divider_view);
     }
 
     public static TabGridViewHolder create(ViewGroup parent, int itemViewType) {
