@@ -270,7 +270,7 @@ const base::Feature kMouseSubframeNoImplicitCapture{
 
 // If enabled, the URLLoaderRequestController lives on the UI thread.
 const base::Feature kNavigationLoaderOnUI{"NavigationLoaderOnUI",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Transmit the response body datapipe to the renderer process in
 // CommitNavigation() so that it can start reading earlier.
