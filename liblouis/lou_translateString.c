@@ -2218,19 +2218,22 @@ undefinedCharacter(widechar c, const TranslationTableHeader *table, int pos,
 					    cursorStatus);
 	}
 
-	if (!(mode & noUndefined)) {
-		widechar dots[20];
-		const char *text = _lou_showString(&c, 1);
-		size_t length = strlen(text);
+	widechar dots[20];
+	const char *text;
 
-		for (unsigned int k=0; k<length; k+=1)
-			dots[k] = _lou_getDotsForChar(text[k]);
-
-		return for_updatePositions(dots, 1, length, 0, pos, input, output,
-					   posMapping, cursorPosition, cursorStatus);
+	if (mode & noUndefined) {
+		text = "";
+	} else {
+		text = _lou_showString(&c, 1);
 	}
 
-	return 1;
+	size_t length = strlen(text);
+
+	for (unsigned int k=0; k<length; k+=1)
+		dots[k] = _lou_getDotsForChar(text[k]);
+
+	return for_updatePositions(dots, 1, length, 0, pos, input, output,
+				   posMapping, cursorPosition, cursorStatus);
 }
 
 static int
