@@ -6,34 +6,9 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/modules/shapedetection/landmark.h"
 
 namespace blink {
-
-DetectedFace* DetectedFace::Create() {
-  return MakeGarbageCollected<DetectedFace>(
-      DOMRectReadOnly::Create(0, 0, 0, 0));
-}
-
-DetectedFace* DetectedFace::Create(DOMRectReadOnly* bounding_box) {
-  return MakeGarbageCollected<DetectedFace>(bounding_box);
-}
-
-DetectedFace* DetectedFace::Create(
-    DOMRectReadOnly* bounding_box,
-    const HeapVector<Member<Landmark>>& landmarks) {
-  return MakeGarbageCollected<DetectedFace>(bounding_box, landmarks);
-}
-
-DOMRectReadOnly* DetectedFace::boundingBox() const {
-  return bounding_box_.Get();
-}
-
-const HeapVector<Member<Landmark>>& DetectedFace::landmarks() const {
-  return landmarks_;
-}
-
-DetectedFace::DetectedFace(DOMRectReadOnly* bounding_box)
-    : bounding_box_(bounding_box) {}
 
 DetectedFace::DetectedFace(DOMRectReadOnly* bounding_box,
                            const HeapVector<Member<Landmark>>& landmarks)

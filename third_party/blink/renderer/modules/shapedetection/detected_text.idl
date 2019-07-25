@@ -5,7 +5,6 @@
 // https://wicg.github.io/shape-detection-api/text.html#detectedtext-section
 
 [
-    Constructor,
     Serializable,
     RuntimeEnabled=ShapeDetection
 ] interface DetectedText {

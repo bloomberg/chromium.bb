@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 53 tests; 50 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 53 tests; 52 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS FaceDetector interface: existence and properties of interface object
 PASS FaceDetector interface object length
@@ -12,9 +12,7 @@ PASS FaceDetector must be primary interface of faceDetector
 PASS Stringification of faceDetector
 PASS FaceDetector interface: faceDetector must inherit property "detect(ImageBitmapSource)" with the proper type
 PASS FaceDetector interface: calling detect(ImageBitmapSource) on faceDetector with too few arguments must throw TypeError
-FAIL DetectedFace interface: existence and properties of interface object assert_throws: interface object didn't throw TypeError when called as a constructor function "function() {
-                new interface_object();
-            }" did not throw
+PASS DetectedFace interface: existence and properties of interface object
 PASS DetectedFace interface object length
 PASS DetectedFace interface object name
 PASS DetectedFace interface: existence and properties of interface prototype object
@@ -39,9 +37,7 @@ PASS Stringification of barcodeDetector
 PASS BarcodeDetector interface: barcodeDetector must inherit property "getSupportedFormats()" with the proper type
 PASS BarcodeDetector interface: barcodeDetector must inherit property "detect(ImageBitmapSource)" with the proper type
 PASS BarcodeDetector interface: calling detect(ImageBitmapSource) on barcodeDetector with too few arguments must throw TypeError
-FAIL DetectedBarcode interface: existence and properties of interface object assert_throws: interface object didn't throw TypeError when called as a constructor function "function() {
-                new interface_object();
-            }" did not throw
+PASS DetectedBarcode interface: existence and properties of interface object
 PASS DetectedBarcode interface object length
 PASS DetectedBarcode interface object name
 PASS DetectedBarcode interface: existence and properties of interface prototype object

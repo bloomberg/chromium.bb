@@ -6,33 +6,9 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
 
 namespace blink {
-
-DetectedText* DetectedText::Create() {
-  HeapVector<Member<Point2D>> empty_list;
-  return MakeGarbageCollected<DetectedText>(
-      g_empty_string, DOMRectReadOnly::Create(0, 0, 0, 0), empty_list);
-}
-
-DetectedText* DetectedText::Create(String raw_value,
-                                   DOMRectReadOnly* bounding_box,
-                                   HeapVector<Member<Point2D>> corner_points) {
-  return MakeGarbageCollected<DetectedText>(raw_value, bounding_box,
-                                            corner_points);
-}
-
-const String& DetectedText::rawValue() const {
-  return raw_value_;
-}
-
-DOMRectReadOnly* DetectedText::boundingBox() const {
-  return bounding_box_.Get();
-}
-
-const HeapVector<Member<Point2D>>& DetectedText::cornerPoints() const {
-  return corner_points_;
-}
 
 DetectedText::DetectedText(String raw_value,
                            DOMRectReadOnly* bounding_box,
