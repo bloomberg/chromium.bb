@@ -643,6 +643,12 @@ def host_cmd(args, unknown_args):
   if args.verbose:
     cros_run_test_cmd.append('--debug')
 
+  if args.logs_dir:
+    cros_run_test_cmd += [
+        '--results-src', '/var/log/',
+        '--results-dest-dir', args.logs_dir,
+    ]
+
   test_env = setup_env()
   if args.deploy_chrome:
     cros_run_test_cmd += [
