@@ -37,6 +37,9 @@ namespace {
 // total amount of time of the dwell.
 const float kStartGestureDelayRatio = 1 / 6.0;
 
+// How much distance to travel with each generated scroll event.
+const int kScrollDelta = 10;
+
 bool IsModifierKey(const ui::KeyboardCode key_code) {
   return key_code == ui::VKEY_SHIFT || key_code == ui::VKEY_LSHIFT ||
          key_code == ui::VKEY_CONTROL || key_code == ui::VKEY_LCONTROL ||
@@ -220,16 +223,16 @@ void AutoclickController::DoScrollAction(ScrollPadAction action) {
   float scroll_y = 0.0f;
   switch (action) {
     case ScrollPadAction::kScrollUp:
-      scroll_y = ui::MouseWheelEvent::kWheelDelta;
+      scroll_y = kScrollDelta;
       break;
     case ScrollPadAction::kScrollDown:
-      scroll_y = -ui::MouseWheelEvent::kWheelDelta;
+      scroll_y = -kScrollDelta;
       break;
     case ScrollPadAction::kScrollLeft:
-      scroll_x = ui::MouseWheelEvent::kWheelDelta;
+      scroll_x = kScrollDelta;
       break;
     case ScrollPadAction::kScrollRight:
-      scroll_x = -ui::MouseWheelEvent::kWheelDelta;
+      scroll_x = -kScrollDelta;
       break;
     case ScrollPadAction::kScrollClose:
       NOTREACHED();
