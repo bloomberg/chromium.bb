@@ -22,7 +22,6 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -107,12 +106,6 @@ std::unique_ptr<views::View> ClickToCallDialogView::CreateFootnoteView() {
 }
 
 void ClickToCallDialogView::LinkClicked(views::Link* source, int event_flags) {
-  controller_->OnHelpTextClicked();
-}
-
-void ClickToCallDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                                   const gfx::Range& range,
-                                                   int event_flags) {
   controller_->OnHelpTextClicked();
 }
 
@@ -225,17 +218,11 @@ void ClickToCallDialogView::InitEmptyView() {
 }
 
 void ClickToCallDialogView::InitErrorView() {
-  const base::string16 link = l10n_util::GetStringUTF16(
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK);
-  size_t offset;
-  const base::string16 text = l10n_util::GetStringFUTF16(
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE, link, &offset);
-  auto label = std::make_unique<views::StyledLabel>(text, this);
-
-  views::StyledLabel::RangeStyleInfo link_style =
-      views::StyledLabel::RangeStyleInfo::CreateForLink();
-  label->AddStyleRange(gfx::Range(offset, offset + link.length()), link_style);
-
+  auto label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(
+          IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE),
+      views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_SECONDARY);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(std::move(label));
 }
 
