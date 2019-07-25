@@ -398,5 +398,16 @@ TEST_F(ScopedFeatureListTest, ScopedFeatureListIsNoopWhenNotInitialized) {
   ExpectFeatures("*TestFeature1", std::string());
 }
 
+TEST(ScopedFeatureListTestWithMemberList, ScopedFeatureListLocalOverride) {
+  test::ScopedFeatureList initial_feature_list;
+  initial_feature_list.InitAndDisableFeature(kTestFeature1);
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitAndEnableFeatureWithParameters(kTestFeature1,
+                                                       {{"mode", "nobugs"}});
+    ASSERT_TRUE(FeatureList::IsEnabled(kTestFeature1));
+  }
+}
+
 }  // namespace test
 }  // namespace base
