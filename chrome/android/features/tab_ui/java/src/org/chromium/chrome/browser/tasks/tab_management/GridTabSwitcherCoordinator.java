@@ -227,6 +227,9 @@ public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
         if (mTabGridDialogCoordinator != null) {
             mTabGridDialogCoordinator.destroy();
         }
+        if (mUndoGroupSnackbarController != null) {
+            mUndoGroupSnackbarController.destroy();
+        }
         mMediator.destroy();
         mLifecycleDispatcher.unregister(this);
     }
