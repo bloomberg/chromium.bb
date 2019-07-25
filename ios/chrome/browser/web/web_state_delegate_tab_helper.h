@@ -5,8 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_WEB_WEB_STATE_DELEGATE_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_WEB_WEB_STATE_DELEGATE_TAB_HELPER_H_
 
+#include "base/memory/weak_ptr.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_user_data.h"
+
+class OverlayResponse;
 
 // Tab helper that handles the WebStateDelegate implementation.
 class WebStateDelegateTabHelper
@@ -29,6 +32,12 @@ class WebStateDelegateTabHelper
   explicit WebStateDelegateTabHelper(web::WebState* web_state);
   friend class web::WebStateUserData<WebStateDelegateTabHelper>;
   WEB_STATE_USER_DATA_KEY_DECL();
+
+  // Callback for HTTP authentication dialogs.
+  void OnHTTPAuthOverlayFinished(web::WebStateDelegate::AuthCallback callback,
+                                 OverlayResponse* response);
+
+  base::WeakPtrFactory<WebStateDelegateTabHelper> weak_factory_;
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_WEB_STATE_DELEGATE_TAB_HELPER_H_
