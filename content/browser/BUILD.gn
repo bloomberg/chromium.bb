@@ -2404,6 +2404,11 @@ jumbo_source_set("browser") {
       "ENABLE_SCREEN_CAPTURE=1",
     ]
     libs += [ "jnigraphics" ]
+
+    if (notouch_build) {
+      # There should be an API to let the embedder control this.
+      defines += [ "DISABLE_OVERSCROLL" ]
+    }
   } else {
     # Not Android.
     sources += [
