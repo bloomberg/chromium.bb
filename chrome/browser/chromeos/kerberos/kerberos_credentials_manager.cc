@@ -392,6 +392,10 @@ const char* KerberosCredentialsManager::GetDefaultKerberosConfig() {
   return kDefaultKerberosConfig;
 }
 
+bool KerberosCredentialsManager::IsKerberosEnabled() {
+  return local_state_->GetBoolean(prefs::kKerberosEnabled);
+}
+
 void KerberosCredentialsManager::OnPolicyUpdated(
     const policy::PolicyNamespace& ns,
     const policy::PolicyMap& previous,
@@ -745,7 +749,7 @@ void KerberosCredentialsManager::DoValidateActivePrincipal(
 }
 
 void KerberosCredentialsManager::UpdateEnabledFromPref() {
-  if (local_state_->GetBoolean(prefs::kKerberosEnabled)) {
+  if (IsKerberosEnabled()) {
     // Kerberos got enabled, re-populate managed accounts.
     VLOG(1) << "Kerberos got enabled, populating managed accounts";
     UpdateAccountsFromPref();
@@ -784,7 +788,7 @@ void KerberosCredentialsManager::UpdateAddAccountsAllowedFromPref() {
 }
 
 void KerberosCredentialsManager::UpdateAccountsFromPref() {
-  if (!local_state_->GetBoolean(prefs::kKerberosEnabled)) {
+  if (!IsKerberosEnabled()) {
     VLOG(1) << "Kerberos disabled";
     NotifyRequiresLoginPassword(false);
     // All managed accounts have already been removed here. No need to call

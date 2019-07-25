@@ -73,6 +73,9 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   // Returns the default Kerberos configuration (krb5.conf).
   static const char* GetDefaultKerberosConfig();
 
+  // Returns true if the Kerberos feature is enabled.
+  bool IsKerberosEnabled();
+
   // PolicyService:
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
                        const policy::PolicyMap& previous,
