@@ -95,10 +95,7 @@ config("feature_flags") {
     defines += [ "NO_TCMALLOC" ]
   }
   if (is_asan || is_hwasan || is_lsan || is_tsan || is_msan) {
-    defines += [
-      "MEMORY_TOOL_REPLACES_ALLOCATOR",
-      "MEMORY_SANITIZER_INITIAL_SIZE",
-    ]
+    defines += [ "MEMORY_TOOL_REPLACES_ALLOCATOR" ]
   }
   if (is_asan) {
     defines += [ "ADDRESS_SANITIZER" ]
