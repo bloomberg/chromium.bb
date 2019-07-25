@@ -44282,6 +44282,25 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Failed"/>
 </enum>
 
+<enum name="OptimizationGuideOptimizationFilterStatus">
+  <int value="0" label="Found a server blacklist configuration">
+    Found configuration data for a server blacklist.
+  </int>
+  <int value="1" label="Created a server blacklist">
+    Successfully created a server blacklist.
+  </int>
+  <int value="2" label="Bad configuration details">
+    Failed to create a server blacklist per bad configuration.
+  </int>
+  <int value="3" label="Data size too large">
+    Failed to create a server blacklist because it would use too much RAM.
+  </int>
+  <int value="4" label="Found duplicate config">
+    Failed to create a server blacklist because it has more than one
+    configuration.
+  </int>
+</enum>
+
 <enum name="OptimizationGuideProcessHintsResult">
   <int value="0" label="Success">
     Hints were processed and at least one supported hint was stored.
@@ -48217,6 +48236,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PreviewsOptimizationFilterStatus">
+  <obsolete>
+    Replaced by OptimizationGuideOptimizationFilterStatus in 07/2019.
+  </obsolete>
   <int value="0" label="Found a server blacklist configuration">
     Found configuration data for a server blacklist.
   </int>
