@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_EXO_WM_HELPER_CAST_SHELL_H_
-#define CHROMECAST_BROWSER_EXO_WM_HELPER_CAST_SHELL_H_
+#ifndef CHROMECAST_BROWSER_EXO_CAST_WM_HELPER_H_
+#define CHROMECAST_BROWSER_EXO_CAST_WM_HELPER_H_
 
 #include <cstdint>
 #include <map>
@@ -54,11 +54,11 @@ namespace exo {
 
 // A CastShell-specific helper class for accessing WindowManager related
 // features.
-class WMHelperCastShell : public WMHelper, public VSyncTimingManager::Delegate {
+class CastWMHelper : public WMHelper, public VSyncTimingManager::Delegate {
  public:
-  WMHelperCastShell(chromecast::CastWindowManagerAura* cast_window_manager_aura,
-                    chromecast::CastScreen* cast_screen);
-  ~WMHelperCastShell() override;
+  CastWMHelper(chromecast::CastWindowManagerAura* cast_window_manager_aura,
+               chromecast::CastScreen* cast_screen);
+  ~CastWMHelper() override;
 
   // Overridden from WMHelper
   void AddActivationObserver(wm::ActivationChangeObserver* observer) override;
@@ -139,9 +139,9 @@ class WMHelperCastShell : public WMHelper, public VSyncTimingManager::Delegate {
   LifetimeManager lifetime_manager_;
   VSyncTimingManager vsync_timing_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMHelperCastShell);
+  DISALLOW_COPY_AND_ASSIGN(CastWMHelper);
 };
 
 }  // namespace exo
 
-#endif  // CHROMECAST_BROWSER_EXO_WM_HELPER_CAST_SHELL_H_
+#endif  // CHROMECAST_BROWSER_EXO_CAST_WM_HELPER_H_

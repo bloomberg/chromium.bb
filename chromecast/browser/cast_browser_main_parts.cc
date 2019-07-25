@@ -119,7 +119,6 @@
 
 #if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
 #include "chromecast/browser/exo/wayland_server_controller.h"
-#include "chromecast/browser/exo/wm_helper_cast_shell.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)

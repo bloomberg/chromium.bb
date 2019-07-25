@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/exo/wm_helper_cast_shell.h"
+#include "chromecast/browser/exo/cast_wm_helper.h"
 
 #include "base/memory/singleton.h"
 #include "chromecast/browser/cast_browser_process.h"
@@ -46,7 +46,7 @@ std::vector<display::ManagedDisplayMode> GetDisplayModes(
 
 }  // namespace
 
-WMHelperCastShell::WMHelperCastShell(
+CastWMHelper::CastWMHelper(
     chromecast::CastWindowManagerAura* cast_window_manager_aura,
     chromecast::CastScreen* cast_screen)
     : cast_window_manager_aura_(cast_window_manager_aura),
@@ -55,66 +55,66 @@ WMHelperCastShell::WMHelperCastShell(
   cast_screen_->AddObserver(&display_observer_);
 }
 
-WMHelperCastShell::~WMHelperCastShell() {
+CastWMHelper::~CastWMHelper() {
   cast_screen_->RemoveObserver(&display_observer_);
 }
 
-void WMHelperCastShell::AddActivationObserver(
+void CastWMHelper::AddActivationObserver(
     wm::ActivationChangeObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void WMHelperCastShell::RemoveActivationObserver(
+void CastWMHelper::RemoveActivationObserver(
     wm::ActivationChangeObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void WMHelperCastShell::AddFocusObserver(
+void CastWMHelper::AddFocusObserver(
     aura::client::FocusChangeObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void WMHelperCastShell::RemoveFocusObserver(
+void CastWMHelper::RemoveFocusObserver(
     aura::client::FocusChangeObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void WMHelperCastShell::AddDragDropObserver(DragDropObserver* observer) {
+void CastWMHelper::AddDragDropObserver(DragDropObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void WMHelperCastShell::RemoveDragDropObserver(DragDropObserver* observer) {
+void CastWMHelper::RemoveDragDropObserver(DragDropObserver* observer) {
   NOTIMPLEMENTED();
 }
 
-void WMHelperCastShell::SetDragDropDelegate(aura::Window* window) {
+void CastWMHelper::SetDragDropDelegate(aura::Window* window) {
   aura::client::SetDragDropDelegate(window, this);
 }
 
-void WMHelperCastShell::ResetDragDropDelegate(aura::Window* window) {
+void CastWMHelper::ResetDragDropDelegate(aura::Window* window) {
   aura::client::SetDragDropDelegate(window, nullptr);
 }
 
-VSyncTimingManager& WMHelperCastShell::GetVSyncTimingManager() {
+VSyncTimingManager& CastWMHelper::GetVSyncTimingManager() {
   return vsync_timing_manager_;
 }
 
-void WMHelperCastShell::OnDragEntered(const ui::DropTargetEvent& event) {}
+void CastWMHelper::OnDragEntered(const ui::DropTargetEvent& event) {}
 
-int WMHelperCastShell::OnDragUpdated(const ui::DropTargetEvent& event) {
+int CastWMHelper::OnDragUpdated(const ui::DropTargetEvent& event) {
   NOTIMPLEMENTED();
   return 0;
 }
 
-void WMHelperCastShell::OnDragExited() {}
+void CastWMHelper::OnDragExited() {}
 
-int WMHelperCastShell::OnPerformDrop(const ui::DropTargetEvent& event,
-                                     std::unique_ptr<ui::OSExchangeData> data) {
+int CastWMHelper::OnPerformDrop(const ui::DropTargetEvent& event,
+                                std::unique_ptr<ui::OSExchangeData> data) {
   NOTIMPLEMENTED();
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
-void WMHelperCastShell::AddVSyncParameterObserver(
+void CastWMHelper::AddVSyncParameterObserver(
     viz::mojom::VSyncParameterObserverPtr observer) {
   cast_window_manager_aura_->GetRootWindow()
       ->layer()
@@ -122,103 +122,103 @@ void WMHelperCastShell::AddVSyncParameterObserver(
       ->AddVSyncParameterObserver(std::move(observer));
 }
 
-const display::ManagedDisplayInfo& WMHelperCastShell::GetDisplayInfo(
+const display::ManagedDisplayInfo& CastWMHelper::GetDisplayInfo(
     int64_t display_id) const {
   return display_observer_.GetDisplayInfo(display_id);
 }
 
-const std::vector<uint8_t>& WMHelperCastShell::GetDisplayIdentificationData(
+const std::vector<uint8_t>& CastWMHelper::GetDisplayIdentificationData(
     int64_t display_id) const {
   NOTIMPLEMENTED();
   static std::vector<uint8_t> no_data;
   return no_data;
 }
 
-bool WMHelperCastShell::GetActiveModeForDisplayId(
+bool CastWMHelper::GetActiveModeForDisplayId(
     int64_t display_id,
     display::ManagedDisplayMode* mode) const {
   return display_observer_.GetActiveModeForDisplayId(display_id, mode);
 }
 
-aura::Window* WMHelperCastShell::GetPrimaryDisplayContainer(int container_id) {
+aura::Window* CastWMHelper::GetPrimaryDisplayContainer(int container_id) {
   return cast_window_manager_aura_->GetRootWindow();
 }
 
-aura::Window* WMHelperCastShell::GetActiveWindow() const {
+aura::Window* CastWMHelper::GetActiveWindow() const {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-aura::Window* WMHelperCastShell::GetFocusedWindow() const {
+aura::Window* CastWMHelper::GetFocusedWindow() const {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-aura::Window* WMHelperCastShell::GetRootWindowForNewWindows() const {
+aura::Window* CastWMHelper::GetRootWindowForNewWindows() const {
   return cast_window_manager_aura_->GetRootWindow();
 }
 
-aura::client::CursorClient* WMHelperCastShell::GetCursorClient() {
+aura::client::CursorClient* CastWMHelper::GetCursorClient() {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-void WMHelperCastShell::AddPreTargetHandler(ui::EventHandler* handler) {
+void CastWMHelper::AddPreTargetHandler(ui::EventHandler* handler) {
   cast_window_manager_aura_->GetRootWindow()->AddPreTargetHandler(handler);
 }
 
-void WMHelperCastShell::PrependPreTargetHandler(ui::EventHandler* handler) {
+void CastWMHelper::PrependPreTargetHandler(ui::EventHandler* handler) {
   NOTIMPLEMENTED();
 }
 
-void WMHelperCastShell::RemovePreTargetHandler(ui::EventHandler* handler) {
+void CastWMHelper::RemovePreTargetHandler(ui::EventHandler* handler) {
   cast_window_manager_aura_->GetRootWindow()->RemovePreTargetHandler(handler);
 }
 
-void WMHelperCastShell::AddPostTargetHandler(ui::EventHandler* handler) {
+void CastWMHelper::AddPostTargetHandler(ui::EventHandler* handler) {
   cast_window_manager_aura_->GetRootWindow()->AddPostTargetHandler(handler);
 }
 
-void WMHelperCastShell::RemovePostTargetHandler(ui::EventHandler* handler) {
+void CastWMHelper::RemovePostTargetHandler(ui::EventHandler* handler) {
   cast_window_manager_aura_->GetRootWindow()->RemovePostTargetHandler(handler);
 }
 
-bool WMHelperCastShell::InTabletMode() const {
+bool CastWMHelper::InTabletMode() const {
   NOTIMPLEMENTED();
   return false;
 }
 
-double WMHelperCastShell::GetDefaultDeviceScaleFactor() const {
+double CastWMHelper::GetDefaultDeviceScaleFactor() const {
   NOTIMPLEMENTED();
   return 1.0;
 }
 
-void WMHelperCastShell::SetImeBlocked(aura::Window* window, bool ime_blocked) {
+void CastWMHelper::SetImeBlocked(aura::Window* window, bool ime_blocked) {
   NOTIMPLEMENTED();
 }
 
-bool WMHelperCastShell::IsImeBlocked(aura::Window* window) const {
+bool CastWMHelper::IsImeBlocked(aura::Window* window) const {
   NOTIMPLEMENTED();
   return false;
 }
 
-WMHelper::LifetimeManager* WMHelperCastShell::GetLifetimeManager() {
+WMHelper::LifetimeManager* CastWMHelper::GetLifetimeManager() {
   return &lifetime_manager_;
 }
 
-aura::client::CaptureClient* WMHelperCastShell::GetCaptureClient() {
+aura::client::CaptureClient* CastWMHelper::GetCaptureClient() {
   return cast_window_manager_aura_->capture_client();
 }
 
-WMHelperCastShell::CastDisplayObserver::CastDisplayObserver() {}
+CastWMHelper::CastDisplayObserver::CastDisplayObserver() {}
 
-WMHelperCastShell::CastDisplayObserver::~CastDisplayObserver() {}
+CastWMHelper::CastDisplayObserver::~CastDisplayObserver() {}
 
-void WMHelperCastShell::CastDisplayObserver::OnWillProcessDisplayChanges() {}
+void CastWMHelper::CastDisplayObserver::OnWillProcessDisplayChanges() {}
 
-void WMHelperCastShell::CastDisplayObserver::OnDidProcessDisplayChanges() {}
+void CastWMHelper::CastDisplayObserver::OnDidProcessDisplayChanges() {}
 
-void WMHelperCastShell::CastDisplayObserver::OnDisplayAdded(
+void CastWMHelper::CastDisplayObserver::OnDisplayAdded(
     const display::Display& new_display) {
   display::ManagedDisplayInfo md(new_display.id(), "CastDisplayInfo", true);
   md.SetRotation(new_display.rotation(),
@@ -229,12 +229,12 @@ void WMHelperCastShell::CastDisplayObserver::OnDisplayAdded(
   display_info_.emplace(new_display.id(), md);
 }
 
-void WMHelperCastShell::CastDisplayObserver::OnDisplayRemoved(
+void CastWMHelper::CastDisplayObserver::OnDisplayRemoved(
     const display::Display& old_display) {
   display_info_.erase(old_display.id());
 }
 
-void WMHelperCastShell::CastDisplayObserver::OnDisplayMetricsChanged(
+void CastWMHelper::CastDisplayObserver::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
   if (display_info_.find(display.id()) == display_info_.end())
@@ -246,15 +246,14 @@ void WMHelperCastShell::CastDisplayObserver::OnDisplayMetricsChanged(
 }
 
 const display::ManagedDisplayInfo&
-WMHelperCastShell::CastDisplayObserver::GetDisplayInfo(
-    int64_t display_id) const {
+CastWMHelper::CastDisplayObserver::GetDisplayInfo(int64_t display_id) const {
   auto iter = display_info_.find(display_id);
   DCHECK(iter != display_info_.end())
       << "Failed to find display " << display_id;
   return iter->second;
 }
 
-bool WMHelperCastShell::CastDisplayObserver::GetActiveModeForDisplayId(
+bool CastWMHelper::CastDisplayObserver::GetActiveModeForDisplayId(
     int64_t display_id,
     display::ManagedDisplayMode* mode) const {
   auto iter = display_info_.find(display_id);
