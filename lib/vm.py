@@ -298,9 +298,10 @@ class VM(device.Device):
 
   def _GetBuiltVMImagePath(self):
     """Get path of a locally built VM image."""
-    vm_image_path = os.path.join(constants.SOURCE_ROOT, 'src/build/images',
-                                 cros_build_lib.GetBoard(self.board),
-                                 'latest', constants.VM_IMAGE_BIN)
+    vm_image_path = os.path.join(
+        constants.SOURCE_ROOT, 'src/build/images',
+        cros_build_lib.GetBoard(self.board, strict=True),
+        'latest', constants.VM_IMAGE_BIN)
     return vm_image_path if os.path.isfile(vm_image_path) else None
 
   def _GetCacheVMImagePath(self):

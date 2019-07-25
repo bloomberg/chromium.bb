@@ -174,7 +174,8 @@ To install the debug symbols for all available packages, run:
     if not self.board:
       if self.remote:
         self.board = cros_build_lib.GetBoard(device_board=device.board,
-                                             override_board=self.board)
+                                             override_board=self.board,
+                                             strict=True)
       else:
         raise GdbCannotDetectBoardError('Cannot determine which board to use. '
                                         'Please specify the with --board flag.')

@@ -1646,7 +1646,7 @@ def SetDefaultBoard(board):
   return True
 
 
-def GetBoard(device_board, override_board=None, force=False):
+def GetBoard(device_board, override_board=None, force=False, strict=False):
   """Gets the board name to use.
 
   Ask user to confirm when |override_board| and |device_board| are
@@ -1656,19 +1656,22 @@ def GetBoard(device_board, override_board=None, force=False):
     device_board: The board detected on the device.
     override_board: Overrides the board.
     force: Force using the default board if |device_board| is None.
+    strict: If True, abort if no valid board can be found.
 
   Returns:
     Returns the first non-None board in the following order:
     |override_board|, |device_board|, and GetDefaultBoard().
 
   Raises:
-    DieSystemExit: If user enters no.
+    DieSystemExit: If board is not set or user enters no.
   """
   if override_board:
     return override_board
 
   board = device_board or GetDefaultBoard()
   if not device_board:
+    if not board and strict:
+      Die('No board specified and no default board found.')
     msg = 'Cannot detect board name; using default board %s.' % board
     if not force and not BooleanPrompt(default=False, prolog=msg):
       Die('Exiting...')
