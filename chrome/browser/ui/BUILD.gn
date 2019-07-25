@@ -3635,7 +3635,7 @@ jumbo_split_static_library("ui") {
       "//components/drive",
       "//components/guest_view/browser",
       "//extensions/browser",
-      "//extensions/common:mojo",
+      "//extensions/common:mojom",
       "//extensions/components/native_app_window",
       "//extensions/strings",
     ]
