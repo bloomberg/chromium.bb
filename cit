@@ -5,4 +5,4 @@
 
 base_dir=$(dirname "$0")
 
-PYTHONDONTWRITEBYTECODE=1 exec python "$base_dir/cit.py" "$@"
+PYTHONDONTWRITEBYTECODE=1 exec vpython "$base_dir/cit.py" "$@"

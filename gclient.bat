@@ -12,4 +12,4 @@ call "%~dp0update_depot_tools.bat" %*
 set PATH=%PATH%;%~dp0
 
 :: Defer control.
-python "%~dp0gclient.py" %*
+vpython "%~dp0gclient.py" %*
