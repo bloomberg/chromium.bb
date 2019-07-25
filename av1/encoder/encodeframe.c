@@ -4132,8 +4132,8 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
     }
 
     // TODO(angiebird): Let inter_mode_rd_model_estimation support multi-tile.
-    if (cpi->sf.inter_mode_rd_model_estimation == 1 && cm->tile_cols == 1 &&
-        cm->tile_rows == 1) {
+    if (!use_nonrd_mode && cpi->sf.inter_mode_rd_model_estimation == 1 &&
+        cm->tile_cols == 1 && cm->tile_rows == 1) {
       av1_inter_mode_data_fit(tile_data, x->rdmult);
     }
     if (tile_data->allow_update_cdf && (cpi->row_mt == 1) &&
@@ -4281,7 +4281,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   const TileInfo *const tile_info = &this_tile->tile_info;
   int mi_row;
 
-  av1_inter_mode_data_init(this_tile);
+  if (!cpi->sf.use_fast_nonrd_pick_mode) av1_inter_mode_data_init(this_tile);
 
   av1_zero_above_context(cm, &td->mb.e_mbd, tile_info->mi_col_start,
                          tile_info->mi_col_end, tile_row);
@@ -4293,7 +4293,8 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   td->mb.m_search_count_ptr = &this_tile->m_search_count;
   td->mb.ex_search_count_ptr = &this_tile->ex_search_count;
 
-  cfl_init(&td->mb.e_mbd.cfl, &cm->seq_params);
+  if (!cpi->sf.use_fast_nonrd_pick_mode)
+    cfl_init(&td->mb.e_mbd.cfl, &cm->seq_params);
 
   av1_crc32c_calculator_init(&td->mb.mb_rd_record.crc_calculator);
 

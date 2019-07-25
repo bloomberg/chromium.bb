@@ -69,8 +69,9 @@ static const REF_MODE ref_mode_set[RT_INTER_MODES] = {
 static const THR_MODES mode_idx[REF_FRAMES][4] = {
   { THR_DC, THR_V_PRED, THR_H_PRED, THR_SMOOTH },
   { THR_NEARESTMV, THR_NEARMV, THR_GLOBALMV, THR_NEWMV },
+  { THR_NEARESTL2, THR_NEARL2, THR_GLOBALL2, THR_NEWL2 },
+  { THR_NEARESTL3, THR_NEARL3, THR_GLOBALL3, THR_NEWL3 },
   { THR_NEARESTG, THR_NEARG, THR_GLOBALMV, THR_NEWG },
-  { THR_NEARESTA, THR_NEARA, THR_GLOBALMV, THR_NEWA },
 };
 
 static const PREDICTION_MODE intra_mode_list[] = { DC_PRED, V_PRED, H_PRED,
@@ -1015,6 +1016,21 @@ static void estimate_block_intra(int plane, int block, int row, int col,
   args->rdc->dist += this_rdc.dist;
 }
 
+static INLINE void update_thresh_freq_fact(AV1_COMP *cpi, MACROBLOCK *x,
+                                           BLOCK_SIZE bsize,
+                                           MV_REFERENCE_FRAME ref_frame,
+                                           THR_MODES best_mode_idx,
+                                           PREDICTION_MODE mode) {
+  THR_MODES thr_mode_idx = mode_idx[ref_frame][mode_offset(mode)];
+  int *freq_fact = &x->thresh_freq_fact[bsize][thr_mode_idx];
+  if (thr_mode_idx == best_mode_idx) {
+    *freq_fact -= (*freq_fact >> 4);
+  } else {
+    *freq_fact = AOMMIN(*freq_fact + RD_THRESH_INC,
+                        cpi->sf.adaptive_rd_thresh * RD_THRESH_MAX_FACT);
+  }
+}
+
 void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                        MACROBLOCK *x, int mi_row, int mi_col,
                                        RD_STATS *rd_cost, BLOCK_SIZE bsize,
@@ -1551,6 +1567,28 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (best_pred->data != orig_dst.buf && is_inter_mode(mi->mode)) {
       aom_convolve_copy(best_pred->data, best_pred->stride, pd->dst.buf,
                         pd->dst.stride, 0, 0, 0, 0, bw, bh);
+    }
+  }
+  if (cpi->sf.adaptive_rd_thresh) {
+    THR_MODES best_mode_idx =
+        mode_idx[best_pickmode.best_ref_frame][mode_offset(mi->mode)];
+    if (best_pickmode.best_ref_frame == INTRA_FRAME) {
+      // Only consider the modes that are included in the intra_mode_list.
+      int intra_modes = sizeof(intra_mode_list) / sizeof(PREDICTION_MODE);
+      int i;
+      for (i = 0; i < intra_modes; i++) {
+        update_thresh_freq_fact(cpi, x, bsize, INTRA_FRAME, best_mode_idx,
+                                intra_mode_list[i]);
+      }
+    } else {
+      for (ref_frame = LAST_FRAME; ref_frame <= GOLDEN_FRAME; ++ref_frame) {
+        PREDICTION_MODE this_mode;
+        if (best_pickmode.best_ref_frame != ref_frame) continue;
+        for (this_mode = NEARESTMV; this_mode <= NEWMV; ++this_mode) {
+          update_thresh_freq_fact(cpi, x, bsize, ref_frame, best_mode_idx,
+                                  this_mode);
+        }
+      }
     }
   }
 
