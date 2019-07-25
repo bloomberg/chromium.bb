@@ -818,9 +818,6 @@ extern const char kOmniboxLocalEntitySuggestionsDescription[];
 extern const char kOmniboxMaterialDesignWeatherIconsName[];
 extern const char kOmniboxMaterialDesignWeatherIconsDescription[];
 
-extern const char kOmniboxNewAnswerLayoutName[];
-extern const char kOmniboxNewAnswerLayoutDescription[];
-
 extern const char kOmniboxRichEntitySuggestionsName[];
 extern const char kOmniboxRichEntitySuggestionsDescription[];
 
