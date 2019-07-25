@@ -3327,6 +3327,8 @@ jumbo_split_static_library("browser") {
       "search/promos/promo_service_observer.h",
       "search/search_engine_base_url_tracker.cc",
       "search/search_engine_base_url_tracker.h",
+      "search/search_provider_observer.cc",
+      "search/search_provider_observer.h",
       "search/search_suggest/search_suggest_data.cc",
       "search/search_suggest/search_suggest_data.h",
       "search/search_suggest/search_suggest_loader.h",

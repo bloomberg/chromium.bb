@@ -5630,6 +5630,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Checked"/>
 </enum>
 
+<enum name="BooleanChromeColorsChangesConfirmed">
+  <int value="0" label="Reverted"/>
+  <int value="1" label="Confirmed"/>
+</enum>
+
 <enum name="BooleanCleared">
   <int value="0" label="Not cleared"/>
   <int value="1" label="Cleared"/>
@@ -7424,6 +7429,12 @@ histogram as enum -->
   <int value="17" label="NAVY"/>
   <int value="18" label="MIDNIGHT"/>
   <int value="19" label="RASPBERRY"/>
+</enum>
+
+<enum name="ChromeColorsRevertReason">
+  <int value="0" label="User action"/>
+  <int value="1" label="Search provider change"/>
+  <int value="2" label="Tab closed"/>
 </enum>
 
 <enum name="ChromeDownloadCountType">
