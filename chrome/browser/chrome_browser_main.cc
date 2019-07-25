@@ -61,6 +61,7 @@
 #include "chrome/browser/component_updater/optimization_hints_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
+#include "chrome/browser/component_updater/safety_tips_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
@@ -547,6 +548,8 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
     component_updater::RegisterVrAssetsComponent(cus);
   }
 #endif
+
+  RegisterSafetyTipsComponent(cus, path);
 }
 
 #if !defined(OS_ANDROID)
