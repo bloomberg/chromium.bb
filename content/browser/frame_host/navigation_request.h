@@ -29,6 +29,7 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/previews_state.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/base/proxy_server.h"
 #include "services/network/public/cpp/origin_policy.h"
 
 #if defined(OS_ANDROID)
@@ -455,6 +456,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
       ThrottleChecksFinishedCallback callback) {
     complete_callback_for_testing_ = std::move(callback);
   }
+
+  const net::ProxyServer& proxy_server() { return proxy_server_; }
 
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
@@ -945,6 +948,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // Used to navigate to the main resource URL of the BundledExchanges, and
   // load it from the corresponding entry.
   std::unique_ptr<BundledExchangesFactory> bundled_exchanges_factory_;
+
+  // Which proxy server was used for this navigation, if any.
+  net::ProxyServer proxy_server_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

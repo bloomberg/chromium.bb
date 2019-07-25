@@ -401,7 +401,7 @@ bool NavigationHandleImpl::WasResponseCached() {
 }
 
 const net::ProxyServer& NavigationHandleImpl::GetProxyServer() {
-  return proxy_server_;
+  return navigation_request_->proxy_server();
 }
 
 void NavigationHandleImpl::InitServiceWorkerHandle(

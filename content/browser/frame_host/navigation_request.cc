@@ -1388,7 +1388,7 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // This must be set before DetermineCommittedPreviews is called.
-  navigation_handle_->set_proxy_server(response_head->head.proxy_server);
+  proxy_server_ = response_head->head.proxy_server;
 
   // Update the previews state of the request.
   common_params_.previews_state =
