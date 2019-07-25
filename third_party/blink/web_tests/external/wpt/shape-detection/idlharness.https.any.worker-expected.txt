@@ -11,8 +11,8 @@ PASS FaceDetector must be primary interface of faceDetector
 PASS Stringification of faceDetector
 PASS FaceDetector interface: faceDetector must inherit property "detect(ImageBitmapSource)" with the proper type
 PASS FaceDetector interface: calling detect(ImageBitmapSource) on faceDetector with too few arguments must throw TypeError
-PASS DetectedFace interface: existence and properties of interface object
-FAIL DetectedFace must be primary interface of detectedFace assert_own_property: self does not have own property "DetectedFace" expected property "DetectedFace" missing
+FAIL DetectedFace interface: existence and properties of interface object assert_false: expected false got true
+PASS DetectedFace must be primary interface of detectedFace
 PASS Stringification of detectedFace
 FAIL DetectedFace interface: detectedFace must not have property "boundingBox" assert_false: expected false got true
 FAIL DetectedFace interface: detectedFace must not have property "landmarks" assert_false: expected false got true
@@ -29,8 +29,8 @@ PASS Stringification of barcodeDetector
 PASS BarcodeDetector interface: barcodeDetector must inherit property "getSupportedFormats()" with the proper type
 PASS BarcodeDetector interface: barcodeDetector must inherit property "detect(ImageBitmapSource)" with the proper type
 PASS BarcodeDetector interface: calling detect(ImageBitmapSource) on barcodeDetector with too few arguments must throw TypeError
-PASS DetectedBarcode interface: existence and properties of interface object
-FAIL DetectedBarcode must be primary interface of detectedBarcode assert_own_property: self does not have own property "DetectedBarcode" expected property "DetectedBarcode" missing
+FAIL DetectedBarcode interface: existence and properties of interface object assert_false: expected false got true
+PASS DetectedBarcode must be primary interface of detectedBarcode
 PASS Stringification of detectedBarcode
 FAIL DetectedBarcode interface: detectedBarcode must not have property "boundingBox" assert_false: expected false got true
 FAIL DetectedBarcode interface: detectedBarcode must not have property "rawValue" assert_false: expected false got true

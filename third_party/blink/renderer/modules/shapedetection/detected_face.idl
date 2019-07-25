@@ -6,6 +6,8 @@
 
 [
     Serializable,
+    Exposed=(Window,Worker),
+    SecureContext,
     RuntimeEnabled=ShapeDetection
 ] interface DetectedFace {
     // TODO(xianglu): Implement any other fields. https://crbug.com/646083

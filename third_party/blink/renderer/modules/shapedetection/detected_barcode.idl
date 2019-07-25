@@ -6,6 +6,8 @@
 
 [
     Serializable,
+    Exposed=(Window,Worker),
+    SecureContext,
     RuntimeEnabled=ShapeDetection
 ] interface DetectedBarcode {
     // TODO(mcasas): Implement missing fields. https://crbug.com/646083

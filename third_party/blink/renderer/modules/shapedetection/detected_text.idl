@@ -6,6 +6,8 @@
 
 [
     Serializable,
+    Exposed=(Window,Worker),
+    SecureContext,
     RuntimeEnabled=ShapeDetection
 ] interface DetectedText {
     [SameObject] readonly attribute DOMString rawValue;
