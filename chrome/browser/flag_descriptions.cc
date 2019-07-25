@@ -1308,6 +1308,11 @@ const char kNotificationsNativeFlagDescription[] =
     "Enable support for using the native notification toasts and notification "
     "center on platforms where these are available.";
 
+const char kUpdateHoverAtBeginFrameName[] = "Update hover at the begin frame";
+const char kUpdateHoverAtBeginFrameDescription[] =
+    "Recompute hover state at BeginFrame for layout and scroll based mouse "
+    "moves, rather than old timing-based mechanism.";
+
 const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
 const char kUseMultiloginEndpointDescription[] =
     "Use Gaia OAuth multilogin for identity consistency.";

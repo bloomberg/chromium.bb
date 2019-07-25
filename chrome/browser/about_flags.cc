@@ -4208,6 +4208,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNotificationSchedulerDebugOptionDescription,
      kOsAndroid, MULTI_VALUE_TYPE(kNotificationSchedulerChoices)},
 
+    {"update-hover-at-begin-frame",
+     flag_descriptions::kUpdateHoverAtBeginFrameName,
+     flag_descriptions::kUpdateHoverAtBeginFrameDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kUpdateHoverAtBeginFrame)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

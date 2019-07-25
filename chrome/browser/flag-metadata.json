@@ -3234,6 +3234,11 @@
     "name": "enable-streamlined-usb-printer-setup",
     "owners": [ "baileyberro" ],
     "expiry_milestone": 77
+  },
+  {
+    "name": "update-hover-at-begin-frame",
+    "owners": [ "lanwei", "input-dev" ],
+    "expiry_milestone": 81
   }
 
   // This is an alphabetized list; please do your part to keep it organized by
