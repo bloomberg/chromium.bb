@@ -9,21 +9,24 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace autofill {
+class LogRouter;
+}
+
 namespace content {
 class BrowserContext;
 }
 
 namespace password_manager {
 
-class PasswordManagerInternalsService;
-
-// BrowserContextKeyedServiceFactory for PasswordManagerInternalsService. It
-// does not override BrowserContextKeyedServiceFactory::GetBrowserContextToUse,
+// BrowserContextKeyedServiceFactory for a LogRouter for password manager
+// internals. It does not override
+// BrowserContextKeyedServiceFactory::GetBrowserContextToUse,
 // which means that no service is returned in Incognito.
 class PasswordManagerInternalsServiceFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-  static PasswordManagerInternalsService* GetForBrowserContext(
+  static autofill::LogRouter* GetForBrowserContext(
       content::BrowserContext* context);
 
   static PasswordManagerInternalsServiceFactory* GetInstance();

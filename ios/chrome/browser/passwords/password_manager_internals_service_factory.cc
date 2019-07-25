@@ -8,17 +8,18 @@
 #include <utility>
 
 #include "base/no_destructor.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 
 namespace ios {
 
+using autofill::LogRouter;
+
 // static
-password_manager::PasswordManagerInternalsService*
-PasswordManagerInternalsServiceFactory::GetForBrowserState(
+LogRouter* PasswordManagerInternalsServiceFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  return static_cast<password_manager::PasswordManagerInternalsService*>(
+  return static_cast<LogRouter*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
@@ -40,7 +41,7 @@ PasswordManagerInternalsServiceFactory::
 std::unique_ptr<KeyedService>
 PasswordManagerInternalsServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  return std::make_unique<password_manager::PasswordManagerInternalsService>();
+  return std::make_unique<LogRouter>();
 }
 
 }  // namespace ios

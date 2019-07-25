@@ -9,8 +9,8 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
-namespace password_manager {
-class PasswordManagerInternalsService;
+namespace autofill {
+class LogRouter;
 }
 
 namespace ios {
@@ -21,7 +21,7 @@ class ChromeBrowserState;
 class PasswordManagerInternalsServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:
-  static password_manager::PasswordManagerInternalsService* GetForBrowserState(
+  static autofill::LogRouter* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
 
   static PasswordManagerInternalsServiceFactory* GetInstance();

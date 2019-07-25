@@ -4,16 +4,17 @@
 
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 
+#include "components/autofill/core/browser/logging/log_router.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/password_manager/core/browser/password_manager_internals_service.h"
 
 namespace password_manager {
 
+using autofill::LogRouter;
+
 // static
-PasswordManagerInternalsService*
-PasswordManagerInternalsServiceFactory::GetForBrowserContext(
+LogRouter* PasswordManagerInternalsServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<PasswordManagerInternalsService*>(
+  return static_cast<LogRouter*>(
       GetInstance()->GetServiceForBrowserContext(context, /* create = */ true));
 }
 
@@ -26,16 +27,14 @@ PasswordManagerInternalsServiceFactory::GetInstance() {
 PasswordManagerInternalsServiceFactory::PasswordManagerInternalsServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "PasswordManagerInternalsService",
-          BrowserContextDependencyManager::GetInstance()) {
-}
+          BrowserContextDependencyManager::GetInstance()) {}
 
 PasswordManagerInternalsServiceFactory::
-    ~PasswordManagerInternalsServiceFactory() {
-}
+    ~PasswordManagerInternalsServiceFactory() {}
 
 KeyedService* PasswordManagerInternalsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* /* context */) const {
-  return new PasswordManagerInternalsService();
+  return new LogRouter();
 }
 
 }  // namespace password_manager

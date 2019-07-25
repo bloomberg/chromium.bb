@@ -15,16 +15,15 @@ class BrowserContext;
 
 namespace autofill {
 
-class AutofillInternalsService;
+class LogRouter;
 
-// BrowserContextKeyedServiceFactory for AutofillInternalsService. It
+// BrowserContextKeyedServiceFactory for a LogRouter for autofill internals. It
 // does not override BrowserContextKeyedServiceFactory::GetBrowserContextToUse,
 // which means that no service is returned in Incognito.
 class AutofillInternalsServiceFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-  static AutofillInternalsService* GetForBrowserContext(
-      content::BrowserContext* context);
+  static LogRouter* GetForBrowserContext(content::BrowserContext* context);
 
   static AutofillInternalsServiceFactory* GetInstance();
 

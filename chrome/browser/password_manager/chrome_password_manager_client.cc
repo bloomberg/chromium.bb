@@ -49,7 +49,6 @@
 #include "components/password_manager/core/browser/http_auth_manager_impl.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
-#include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
@@ -125,7 +124,6 @@ using autofill::mojom::FocusedFieldType;
 using password_manager::BadMessageReason;
 using password_manager::ContentPasswordManagerDriverFactory;
 using password_manager::PasswordManagerClientHelper;
-using password_manager::PasswordManagerInternalsService;
 using password_manager::PasswordManagerMetricsRecorder;
 using password_manager::metrics_util::PasswordType;
 using sessions::SerializedNavigationEntry;

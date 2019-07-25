@@ -4,15 +4,15 @@
 
 #include "components/autofill/content/browser/autofill_internals_service_factory.h"
 
-#include "components/autofill/core/browser/autofill_internals_service.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace autofill {
 
 // static
-AutofillInternalsService* AutofillInternalsServiceFactory::GetForBrowserContext(
+LogRouter* AutofillInternalsServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<AutofillInternalsService*>(
+  return static_cast<LogRouter*>(
       GetInstance()->GetServiceForBrowserContext(context, /* create = */ true));
 }
 
@@ -31,7 +31,7 @@ AutofillInternalsServiceFactory::~AutofillInternalsServiceFactory() {}
 
 KeyedService* AutofillInternalsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* /* context */) const {
-  return new AutofillInternalsService();
+  return new LogRouter();
 }
 
 }  // namespace autofill

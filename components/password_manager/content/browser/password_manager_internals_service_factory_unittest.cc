@@ -5,14 +5,14 @@
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 
 #include "components/autofill/core/browser/logging/log_receiver.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using password_manager::PasswordManagerInternalsService;
+using autofill::LogRouter;
 using password_manager::PasswordManagerInternalsServiceFactory;
 
 namespace {
@@ -48,31 +48,32 @@ class PasswordManagerInternalsServiceFactoryTest : public testing::Test {
 // service.
 TEST_F(PasswordManagerInternalsServiceFactoryTest, ServiceActiveNonIncognito) {
   browser_context_.set_is_off_the_record(false);
-  PasswordManagerInternalsService* service =
+  LogRouter* log_router =
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(
           &browser_context_);
   testing::StrictMock<MockLogReceiver> receiver;
 
-  ASSERT_TRUE(service);
-  EXPECT_EQ(std::vector<base::Value>(), service->RegisterReceiver(&receiver));
+  ASSERT_TRUE(log_router);
+  EXPECT_EQ(std::vector<base::Value>(),
+            log_router->RegisterReceiver(&receiver));
 
   base::Value log_entry = autofill::LogRouter::CreateEntryForText(kTestText);
   EXPECT_CALL(receiver, LogEntry(testing::Eq(testing::ByRef(log_entry))))
       .Times(1);
-  service->ProcessLog(kTestText);
+  log_router->ProcessLog(kTestText);
 
-  service->UnregisterReceiver(&receiver);
+  log_router->UnregisterReceiver(&receiver);
 }
 
 // When the browser profile is incognito, it should not be possible to activate
 // the service.
 TEST_F(PasswordManagerInternalsServiceFactoryTest, ServiceNotActiveIncognito) {
   browser_context_.set_is_off_the_record(true);
-  PasswordManagerInternalsService* service =
+  LogRouter* log_router =
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(
           &browser_context_);
   // BrowserContextKeyedServiceFactory::GetBrowserContextToUse should return
   // nullptr for |browser_context|, because |browser_context| is incognito.
   // Therefore the returned |service| should also be nullptr.
-  EXPECT_FALSE(service);
+  EXPECT_FALSE(log_router);
 }
