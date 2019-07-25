@@ -15,7 +15,6 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
-#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
@@ -46,8 +45,6 @@ SharingDeviceRegistration::~SharingDeviceRegistration() = default;
 void SharingDeviceRegistration::RegisterDevice(RegistrationCallback callback) {
   base::Optional<std::string> authorized_entity = GetAuthorizationEntity();
   if (!authorized_entity) {
-    LogSharingRegistrationResult(
-        SharingDeviceRegistrationResult::kEncryptionError);
     std::move(callback).Run(SharingDeviceRegistrationResult::kEncryptionError);
     return;
   }
@@ -83,16 +80,12 @@ void SharingDeviceRegistration::OnFCMTokenReceived(
     case instance_id::InstanceID::NETWORK_ERROR:
     case instance_id::InstanceID::SERVER_ERROR:
     case instance_id::InstanceID::ASYNC_OPERATION_PENDING:
-      LogSharingRegistrationResult(
-          SharingDeviceRegistrationResult::kFcmTransientError);
       std::move(callback).Run(
           SharingDeviceRegistrationResult::kFcmTransientError);
       break;
     case instance_id::InstanceID::INVALID_PARAMETER:
     case instance_id::InstanceID::UNKNOWN_ERROR:
     case instance_id::InstanceID::DISABLED:
-      LogSharingRegistrationResult(
-          SharingDeviceRegistrationResult::kFcmFatalError);
       std::move(callback).Run(SharingDeviceRegistrationResult::kFcmFatalError);
       break;
   }
@@ -116,8 +109,6 @@ void SharingDeviceRegistration::OnEncryptionInfoReceived(
   const syncer::DeviceInfo* local_device_info =
       local_device_info_provider_->GetLocalDeviceInfo();
   if (!local_device_info) {
-    LogSharingRegistrationResult(
-        SharingDeviceRegistrationResult::kSyncServiceError);
     std::move(callback).Run(SharingDeviceRegistrationResult::kSyncServiceError);
     return;
   }
@@ -127,30 +118,26 @@ void SharingDeviceRegistration::OnEncryptionInfoReceived(
       fcm_registration_token, std::move(p256dh), std::move(auth_secret),
       device_capabilities);
   sharing_sync_preference_->SetSyncDevice(local_device_info->guid(), device);
-  LogSharingRegistrationResult(SharingDeviceRegistrationResult::kSuccess);
   std::move(callback).Run(SharingDeviceRegistrationResult::kSuccess);
 }
 
 void SharingDeviceRegistration::UnregisterDevice(
     RegistrationCallback callback) {
-  sharing_sync_preference_->ClearFCMRegistration();
+  auto registration = sharing_sync_preference_->GetFCMRegistration();
+  if (!registration) {
+    std::move(callback).Run(
+        SharingDeviceRegistrationResult::kDeviceNotRegistered);
+    return;
+  }
 
   const syncer::DeviceInfo* local_device_info =
       local_device_info_provider_->GetLocalDeviceInfo();
   if (local_device_info)
     sharing_sync_preference_->RemoveDevice(local_device_info->guid());
 
-  base::Optional<std::string> authorized_entity = GetAuthorizationEntity();
-  if (!authorized_entity) {
-    LogSharingUnegistrationResult(
-        SharingDeviceRegistrationResult::kEncryptionError);
-    std::move(callback).Run(SharingDeviceRegistrationResult::kEncryptionError);
-    return;
-  }
-
   instance_id_driver_->GetInstanceID(kSharingFCMAppID)
       ->DeleteToken(
-          *authorized_entity, kFCMScope,
+          registration->authorized_entity, kFCMScope,
           base::BindOnce(&SharingDeviceRegistration::OnFCMTokenDeleted,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -163,21 +150,17 @@ void SharingDeviceRegistration::OnFCMTokenDeleted(
       // INVALID_PARAMETER is expected if InstanceID.GetToken hasn't been
       // invoked since restart.
     case instance_id::InstanceID::INVALID_PARAMETER:
-      LogSharingUnegistrationResult(SharingDeviceRegistrationResult::kSuccess);
+      sharing_sync_preference_->ClearFCMRegistration();
       std::move(callback).Run(SharingDeviceRegistrationResult::kSuccess);
       return;
     case instance_id::InstanceID::NETWORK_ERROR:
     case instance_id::InstanceID::SERVER_ERROR:
     case instance_id::InstanceID::ASYNC_OPERATION_PENDING:
-      LogSharingUnegistrationResult(
-          SharingDeviceRegistrationResult::kFcmTransientError);
       std::move(callback).Run(
           SharingDeviceRegistrationResult::kFcmTransientError);
       return;
     case instance_id::InstanceID::UNKNOWN_ERROR:
     case instance_id::InstanceID::DISABLED:
-      LogSharingUnegistrationResult(
-          SharingDeviceRegistrationResult::kFcmFatalError);
       std::move(callback).Run(SharingDeviceRegistrationResult::kFcmFatalError);
       return;
   }

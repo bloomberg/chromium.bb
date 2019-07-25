@@ -329,6 +329,10 @@ TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_Success) {
   ASSERT_EQ(devices_.end(), devices_.find(guid));
   EXPECT_FALSE(fcm_registration_);
 
+  // Further unregister does nothing and returns kDeviceNotRegistered.
+  UnregisterDeviceSync();
+  EXPECT_EQ(SharingDeviceRegistrationResult::kDeviceNotRegistered, result_);
+
   // Register the device again, Instance.GetToken will be attempted once more,
   // which will return a different FCM token.
   SetInstanceIDFCMToken(kFCMToken2);

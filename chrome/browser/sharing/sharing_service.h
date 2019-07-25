@@ -110,8 +110,12 @@ class SharingService : public KeyedService,
                      base::Optional<std::string> message_id);
   void InvokeSendMessageCallback(const std::string& message_guid, bool result);
 
-  // Returns true if sync is active and sync preference is enabled.
+  // Returns true if required sync feature is enabled.
   bool IsSyncEnabled() const;
+
+  // Returns true if required sync feature is disabled. Returns false if sync is
+  // in transitioning state.
+  bool IsSyncDisabled() const;
 
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
   std::unique_ptr<VapidKeyManager> vapid_key_manager_;

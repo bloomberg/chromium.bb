@@ -53400,6 +53400,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Failed with encryption related error"/>
   <int value="3" label="Failed with FCM transient error"/>
   <int value="4" label="Failed with FCM fatal error"/>
+  <int value="5" label="Device has not been registered"/>
 </enum>
 
 <enum name="SharingMessageType">

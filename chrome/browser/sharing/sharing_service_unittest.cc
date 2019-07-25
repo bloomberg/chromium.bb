@@ -547,12 +547,22 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
+  EXPECT_EQ(0, sharing_device_registration_->unregistration_attempts());
   EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 
   // Further state changes do nothing.
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(0);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
+  EXPECT_EQ(0, sharing_device_registration_->unregistration_attempts());
+  EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
+
+  // Change sync to configuring, which will be ignored.
+  test_sync_service_.SetTransportState(
+      syncer::SyncService::TransportState::CONFIGURING);
+  test_sync_service_.FireStateChanged();
+  EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
+  EXPECT_EQ(0, sharing_device_registration_->unregistration_attempts());
   EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 
   // Disable sync and un-registration should happen.
@@ -560,12 +570,14 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
       syncer::SyncService::TransportState::DISABLED);
   EXPECT_CALL(*fcm_handler_, StopListening()).Times(1);
   test_sync_service_.FireStateChanged();
+  EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
   EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
   EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
   // Further state changes do nothing.
   EXPECT_CALL(*fcm_handler_, StopListening()).Times(0);
   test_sync_service_.FireStateChanged();
+  EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
   EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
   EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
@@ -575,7 +587,16 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
+  EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
   EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
+
+  // Disable syncing of preference and un-registration should happen.
+  test_sync_service_.SetActiveDataTypes(syncer::ModelTypeSet());
+  EXPECT_CALL(*fcm_handler_, StopListening()).Times(1);
+  test_sync_service_.FireStateChanged();
+  EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
+  EXPECT_EQ(2, sharing_device_registration_->unregistration_attempts());
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 }
 
 TEST_F(SharingServiceTest, StartListeningToFCMAtConstructor) {
