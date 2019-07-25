@@ -20048,6 +20048,8 @@ Called by update_net_error_codes.py.-->
   <int value="1360" label="ACTION_SETBADGEBACKGROUNDCOLOR"/>
   <int value="1361" label="AUTOTESTPRIVATE_SETARCAPPWINDOWSTATE"/>
   <int value="1362" label="ACCESSIBILITY_PRIVATE_OPENSETTINGSSUBPAGE"/>
+  <int value="1363" label="ACTION_ENABLE"/>
+  <int value="1364" label="ACTION_DISABLE"/>
 </enum>
 
 <enum name="ExtensionIconState">
