@@ -930,6 +930,7 @@
   beaglebone_servo-pre-cq
   beaglebone_servo-release-tryjob
   beaglebone_servo-unittest-stress
+  benchmark-afdo-generate-tryjob
   betty-arc64-chrome-pfq-tryjob
   betty-arc64-chromium-pfq-tryjob
   betty-arc64-compile-only-pre-cq
@@ -3318,6 +3319,7 @@
   reks-tot-chromium-pfq-informational-tryjob
   reks-unittest-stress
   release-afdo-profile-generate-tryjob
+  release-afdo-verify-tryjob
   relm-chrome-pfq-tryjob
   relm-chromium-pfq-tryjob
   relm-compile-only-pre-cq

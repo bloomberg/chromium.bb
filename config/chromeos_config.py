@@ -1168,6 +1168,31 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       description='Verify the most recent orderfile is building correctly',
   )
 
+  # This build config is used to asynchronously generate benchmark
+  # AFDO profile. It inherites from afdo_toolchain template, i.e.
+  # it is essentially a release builder but doesn't run hwtests, etc.
+  # But it should run a special HWTest "AFDOGenerate" to collect
+  # profiling data on a device. So this template needs to build image.
+  site_config.AddTemplate(
+      'benchmark_afdo_generate',
+      site_config.templates.afdo_toolchain,
+      images=['test'],
+      hw_tests=[config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE,
+                                        file_bugs=True)],
+      hw_tests_override=[config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE,
+                                                 file_bugs=True)],
+      description='Generate AFDO profile based on benchmarks.'
+  )
+
+  # This build config is used to verify merged and redacted AFDO profile,
+  # aka. profiles for release, can build packages without any problems.
+  site_config.AddTemplate(
+      'release_afdo_verify',
+      site_config.templates.afdo_verify,
+      description='Verify the most recent AFDO profile for release can '
+                  'build Chrome images correctly.'
+  )
+
   ### Toolchain waterfall entries.
   ### Toolchain builder configs: 3 architectures {amd64,arm,arm64}
   ###                          x 1 toolchains {llvm-next}
@@ -1289,6 +1314,20 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.llvm_tot_toolchain,
       site_config.templates.no_vmtest_builder,
       boards=['arm64-generic'],
+  )
+
+  site_config.Add(
+      'benchmark-afdo-generate',
+      site_config.templates.benchmark_afdo_generate,
+      boards=['chell'],
+      # TODO: Add a schedule
+  )
+
+  site_config.Add(
+      'release-afdo-verify',
+      site_config.templates.release_afdo_verify,
+      boards=['eve'],
+      # TODO: Add a schedule
   )
 
   site_config.Add(
