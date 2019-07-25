@@ -328,6 +328,8 @@ class ScriptExecutor : public ActionDelegate,
       std::unique_ptr<PaymentInformation> result);
   void OnAdditionalActionTriggered(base::OnceCallback<void(int)> callback,
                                    int index);
+  void OnTermsAndConditionsLinkClicked(base::OnceCallback<void(int)> callback,
+                                       int link);
   void OnGetFullCard(GetFullCardCallback callback,
                      std::unique_ptr<autofill::CreditCard> card,
                      const base::string16& cvc);

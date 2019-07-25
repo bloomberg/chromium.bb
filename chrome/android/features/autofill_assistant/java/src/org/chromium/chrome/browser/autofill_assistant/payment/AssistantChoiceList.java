@@ -274,6 +274,16 @@ public class AssistantChoiceList extends GridLayout {
         }
     }
 
+    /** Returns whether {@code content} is checked or not. */
+    public boolean isChecked(View content) {
+        for (Item mItem : mItems) {
+            if (mItem.mContent == content) {
+                return mItem.mCompoundButton.isChecked();
+            }
+        }
+        return false;
+    }
+
     /**
      * Allows to change the label of the 'add' button.
      */

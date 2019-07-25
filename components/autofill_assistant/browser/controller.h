@@ -150,6 +150,7 @@ class Controller : public ScriptExecutorDelegate,
   void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) override;
   void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) override;
+  void OnTermsAndConditionsLinkClicked(int link) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
   void GetRestrictedArea(std::vector<RectF>* area) const override;
   void GetVisualViewport(RectF* visual_viewport) const override;

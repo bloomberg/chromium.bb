@@ -880,6 +880,15 @@ void Controller::OnPaymentRequestAdditionalActionTriggered(int index) {
   std::move(callback).Run(index);
 }
 
+void Controller::OnTermsAndConditionsLinkClicked(int link) {
+  if (!payment_request_info_)
+    return;
+
+  auto callback = std::move(payment_request_options_->terms_link_callback);
+  SetPaymentRequestOptions(nullptr);
+  std::move(callback).Run(link);
+}
+
 void Controller::SetShippingAddress(
     std::unique_ptr<autofill::AutofillProfile> address) {
   if (!payment_request_info_)
@@ -948,6 +957,7 @@ void Controller::UpdatePaymentRequestActions() {
   // should update the action buttons only if there are use cases of PR +
   // suggestions.
   if (!payment_request_options_ || !payment_request_info_) {
+    SetUserActions(nullptr);
     return;
   }
 
@@ -964,8 +974,9 @@ void Controller::UpdatePaymentRequestActions() {
   bool payment_method_ok = !payment_request_options_->request_payment_method ||
                            payment_request_info_->card;
 
-  bool terms_ok = payment_request_info_->terms_and_conditions != NOT_SELECTED ||
-                  !payment_request_options_->request_terms_and_conditions;
+  bool terms_ok =
+      payment_request_info_->terms_and_conditions != NOT_SELECTED ||
+      payment_request_options_->accept_terms_and_conditions_text.empty();
 
   bool confirm_button_enabled =
       contact_info_ok && shipping_address_ok && payment_method_ok && terms_ok;
@@ -1264,7 +1275,8 @@ void Controller::OnTouchableAreaChanged(
 void Controller::SetPaymentRequestOptions(
     std::unique_ptr<PaymentRequestOptions> options) {
   DCHECK(!options ||
-         (options->confirm_callback && options->additional_actions_callback));
+         (options->confirm_callback && options->additional_actions_callback &&
+          options->terms_link_callback));
 
   if (payment_request_options_ == nullptr && options == nullptr)
     return;
