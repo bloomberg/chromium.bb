@@ -4864,13 +4864,12 @@ static int get_interp_filter_selected(const AV1_COMMON *const cm,
   return buf->interp_filter_selected[ifilter];
 }
 
-static uint16_t setup_interp_filter_search_mask(AV1_COMP *cpi) {
+static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
   const AV1_COMMON *const cm = &cpi->common;
   int ref_total[REF_FRAMES] = { 0 };
-  uint16_t mask = ALLOW_ALL_INTERP_FILT_MASK;
 
   if (cpi->common.last_frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame)
-    return mask;
+    return 0;
 
   for (MV_REFERENCE_FRAME ref = LAST_FRAME; ref <= ALTREF_FRAME; ++ref) {
     for (InterpFilter ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP;
@@ -4882,6 +4881,7 @@ static uint16_t setup_interp_filter_search_mask(AV1_COMP *cpi) {
                          ref_total[GOLDEN_FRAME] + ref_total[BWDREF_FRAME] +
                          ref_total[ALTREF2_FRAME] + ref_total[ALTREF_FRAME]);
 
+  int mask = 0;
   for (InterpFilter ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP;
        ++ifilter) {
     int last_score = get_interp_filter_selected(cm, LAST_FRAME, ifilter) * 30;
@@ -4893,10 +4893,7 @@ static uint16_t setup_interp_filter_search_mask(AV1_COMP *cpi) {
           get_interp_filter_selected(cm, BWDREF_FRAME, ifilter) * 10 +
           get_interp_filter_selected(cm, ALTREF2_FRAME, ifilter) * 10 +
           get_interp_filter_selected(cm, ALTREF_FRAME, ifilter) * 10;
-      if (filter_score < ref_total_total) {
-        DUAL_FILTER_TYPE filt_type = ifilter + SWITCHABLE_FILTERS * ifilter;
-        reset_interp_filter_allowed_mask(&mask, filt_type);
-      }
+      if (filter_score < ref_total_total) mask |= 1 << ifilter;
     }
   }
   return mask;

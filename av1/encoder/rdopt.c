@@ -8434,7 +8434,7 @@ static INLINE void find_best_non_dual_interp_filter(
     RD_STATS *rd_stats, int *const switchable_rate,
     const BUFFER_SET *dst_bufs[2], const int switchable_ctx[2],
     const int skip_ver, const int skip_hor, int filter_set_size) {
-  int8_t i;
+  int16_t i;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
 
@@ -8456,8 +8456,7 @@ static INLINE void find_best_non_dual_interp_filter(
       assert(filter_sets[filter_idx].as_filters.x_filter ==
              filter_sets[filter_idx].as_filters.y_filter);
       if (cpi->sf.adaptive_interp_filter_search &&
-          !(get_interp_filter_allowed_mask(cpi->sf.interp_filter_search_mask,
-                                           filter_idx))) {
+          (cpi->sf.interp_filter_search_mask & (1 << (filter_idx >> 2)))) {
         return;
       }
       if (filter_idx) {
@@ -8505,8 +8504,7 @@ static INLINE void find_best_non_dual_interp_filter(
       assert(filter_sets[i].as_filters.x_filter ==
              filter_sets[i].as_filters.y_filter);
       if (cpi->sf.adaptive_interp_filter_search &&
-          !(get_interp_filter_allowed_mask(cpi->sf.interp_filter_search_mask,
-                                           i))) {
+          (cpi->sf.interp_filter_search_mask & (1 << (i >> 2)))) {
         continue;
       }
       interpolation_filter_rd(
