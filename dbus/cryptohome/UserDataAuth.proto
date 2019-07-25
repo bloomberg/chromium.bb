@@ -70,6 +70,9 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_SET_FAILED = 35;
   CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_FINALIZE_FAILED = 36;
   CRYPTOHOME_ERROR_UPDATE_USER_ACTIVITY_TIMESTAMP_FAILED = 37;
+  CRYPTOHOME_ERROR_FAILED_TO_READ_PCR = 38;
+  CRYPTOHOME_ERROR_PCR_ALREADY_EXTENDED = 39;
+  CRYPTOHOME_ERROR_FAILED_TO_EXTEND_PCR = 40;
 }
 
 // This is used by MountRequest to store details about the mount to create
@@ -717,6 +720,21 @@ message GetStatusStringReply {
   // Contains a JSON string that includes some tpm status, mount status and
   // install attributes status information.
   string status = 1;
+}
+
+// Input parameters to LockToSingleUserMountUntilReboot()
+// Lock the device to single user use.
+message LockToSingleUserMountUntilRebootRequest {
+  // This represents the "single user", whose mount we are going to lock to.
+  cryptohome.AccountIdentifier account_id = 1;
+}
+
+// Output parameters for LockToSingleUserMountUntilReboot()
+// Informs the caller whether the disabling succeeded, that is, whether we are
+// now locked to a single user mount.
+message LockToSingleUserMountUntilRebootReply {
+  // Indicates an error if |error| is not empty.
+  CryptohomeErrorCode error = 1;
 }
 
 // Input parameters to GetRsuDeviceId()
