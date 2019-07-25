@@ -5703,10 +5703,6 @@ String Document::cookie(ExceptionState& exception_state) const {
 
   CountUse(WebFeature::kCookieGet);
 
-  // FIXME: The HTML5 DOM spec states that this attribute can raise an
-  // InvalidStateError exception on getting if the Document has no
-  // browsing context.
-
   if (!GetSecurityOrigin()->CanAccessCookies()) {
     if (IsSandboxed(WebSandboxFlags::kOrigin))
       exception_state.ThrowSecurityError(
@@ -5732,10 +5728,6 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
     return;
 
   UseCounter::Count(*this, WebFeature::kCookieSet);
-
-  // FIXME: The HTML5 DOM spec states that this attribute can raise an
-  // InvalidStateError exception on setting if the Document has no
-  // browsing context.
 
   if (!GetSecurityOrigin()->CanAccessCookies()) {
     if (IsSandboxed(WebSandboxFlags::kOrigin))
