@@ -133,6 +133,8 @@ jumbo_split_static_library("browser") {
     "autofill/strike_database_factory.h",
     "autofill/validation_rules_storage_factory.cc",
     "autofill/validation_rules_storage_factory.h",
+    "availability/availability_prober.cc",
+    "availability/availability_prober.h",
     "background_fetch/background_fetch_delegate_factory.cc",
     "background_fetch/background_fetch_delegate_factory.h",
     "background_fetch/background_fetch_delegate_impl.cc",
@@ -1344,8 +1346,6 @@ jumbo_split_static_library("browser") {
     "previews/previews_lite_page_url_loader_interceptor.h",
     "previews/previews_offline_helper.cc",
     "previews/previews_offline_helper.h",
-    "previews/previews_prober.cc",
-    "previews/previews_prober.h",
     "previews/previews_service.cc",
     "previews/previews_service.h",
     "previews/previews_service_factory.cc",
@@ -1883,8 +1883,8 @@ jumbo_split_static_library("browser") {
   ]
   deps = [
     ":active_use_util",
+    ":availability_protos",
     ":ntp_background_proto",
-    ":previews_protos",
     ":resource_prefetch_predictor_proto",
     "//base:i18n",
     "//base/allocator:buildflags",
@@ -5182,9 +5182,9 @@ source_set("theme_properties") {
   ]
 }
 
-proto_library("previews_protos") {
+proto_library("availability_protos") {
   sources = [
-    "previews/proto/previews_prober_cache_entry.proto",
+    "availability/proto/availability_prober_cache_entry.proto",
   ]
 }
 
