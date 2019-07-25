@@ -381,15 +381,28 @@ void LockScreenMediaControlsView::MediaControllerImageChanged(
   if (hide_controls_timer_->IsRunning())
     return;
 
+  // Convert the bitmap to kN32_SkColorType if necessary.
+  SkBitmap converted_bitmap;
+  if (bitmap.colorType() == kN32_SkColorType) {
+    converted_bitmap = bitmap;
+  } else {
+    SkImageInfo info = bitmap.info().makeColorType(kN32_SkColorType);
+    if (converted_bitmap.tryAllocPixels(info)) {
+      bitmap.readPixels(info, converted_bitmap.getPixels(),
+                        converted_bitmap.rowBytes(), 0, 0);
+    }
+  }
+
   switch (type) {
     case media_session::mojom::MediaSessionImageType::kArtwork: {
       base::Optional<gfx::ImageSkia> session_artwork =
-          gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+          gfx::ImageSkia::CreateFrom1xBitmap(converted_bitmap);
       SetArtwork(session_artwork);
       break;
     }
     case media_session::mojom::MediaSessionImageType::kSourceIcon: {
-      gfx::ImageSkia session_icon = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+      gfx::ImageSkia session_icon =
+          gfx::ImageSkia::CreateFrom1xBitmap(converted_bitmap);
       if (session_icon.isNull()) {
         session_icon = gfx::CreateVectorIcon(message_center::kProductIcon,
                                              kIconSize, gfx::kChromeIconGrey);

@@ -72,8 +72,8 @@ const base::string16& MediaControlsHeaderView::app_name_for_testing() const {
   return app_name_view_->GetText();
 }
 
-const gfx::ImageSkia& MediaControlsHeaderView::app_icon_for_testing() const {
-  return app_icon_view_->GetImage();
+const views::ImageView* MediaControlsHeaderView::app_icon_for_testing() const {
+  return app_icon_view_;
 }
 
 }  // namespace ash
