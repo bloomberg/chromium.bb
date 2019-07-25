@@ -197,6 +197,10 @@ void TestMediaController::Resume() {
   ++resume_count_;
 }
 
+void TestMediaController::Stop() {
+  ++stop_count_;
+}
+
 void TestMediaController::ToggleSuspendResume() {
   ++toggle_suspend_resume_count_;
 }

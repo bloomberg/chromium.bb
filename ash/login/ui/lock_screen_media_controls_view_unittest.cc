@@ -167,6 +167,10 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     return media_controls_view_->session_artwork_;
   }
 
+  views::ImageButton* close_button() const {
+    return media_controls_view_->close_button_;
+  }
+
   const gfx::ImageSkia& GetAppIcon() const {
     return header_row()->app_icon_for_testing();
   }
@@ -266,11 +270,14 @@ TEST_F(LockScreenMediaControlsViewTest, ButtonsFocusCheck) {
   views::FocusManager* focus_manager = media_controls_view_->GetFocusManager();
 
   {
-    // Focus the first action button.
-    auto* button = GetButtonForAction(MediaSessionAction::kPreviousTrack);
-    focus_manager->SetFocusedView(button);
-    EXPECT_EQ(button, focus_manager->GetFocusedView());
+    // Focus the first action button - the close button.
+    focus_manager->SetFocusedView(close_button());
+    EXPECT_EQ(close_button(), focus_manager->GetFocusedView());
   }
+
+  SimulateTab();
+  EXPECT_EQ(GetButtonForAction(MediaSessionAction::kPreviousTrack),
+            focus_manager->GetFocusedView());
 
   SimulateTab();
   EXPECT_EQ(GetButtonForAction(MediaSessionAction::kSeekBackward),
@@ -306,6 +313,49 @@ TEST_F(LockScreenMediaControlsViewTest, PlayPauseButtonTooltipCheck) {
   base::string16 new_tooltip = button->GetTooltipText(gfx::Point());
   EXPECT_FALSE(new_tooltip.empty());
   EXPECT_NE(tooltip, new_tooltip);
+}
+
+TEST_F(LockScreenMediaControlsViewTest, CloseButtonVisibility) {
+  EXPECT_TRUE(media_controls_view_->IsDrawn());
+  EXPECT_FALSE(close_button()->IsDrawn());
+
+  // Move the mouse inside |media_controls_view_|.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(
+      media_controls_view_->GetBoundsInScreen().CenterPoint());
+
+  // Verify that the close button is shown.
+  EXPECT_TRUE(close_button()->IsDrawn());
+
+  // Move the mouse outside |media_controls_view_|.
+  generator->MoveMouseBy(500, 500);
+
+  // Verify that the close button is hidden.
+  EXPECT_TRUE(media_controls_view_->IsDrawn());
+  EXPECT_FALSE(close_button()->IsDrawn());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, CloseButtonClick) {
+  EXPECT_TRUE(media_controls_view_->IsDrawn());
+
+  // Move the mouse inside |media_controls_view_|.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(
+      media_controls_view_->GetBoundsInScreen().CenterPoint());
+
+  EXPECT_TRUE(close_button()->IsDrawn());
+  EXPECT_EQ(0, media_controller()->stop_count());
+
+  // Send event to click the close button.
+  generator->MoveMouseTo(close_button()->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
+
+  // Verify that the media was stopped.
+  media_controls_view_->FlushForTesting();
+  EXPECT_EQ(1, media_controller()->stop_count());
+
+  // Verify that the controls were hidden.
+  EXPECT_FALSE(media_controls_view_->IsDrawn());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, PreviousTrackButtonClick) {

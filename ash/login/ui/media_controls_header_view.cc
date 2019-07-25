@@ -16,6 +16,7 @@ namespace ash {
 
 namespace {
 
+constexpr gfx::Insets kMediaControlsHeaderInsets = gfx::Insets(0, 25, 25, 25);
 constexpr int kIconSize = 20;
 constexpr int kHeaderTextFontSize = 14;
 constexpr int kMediaControlsHeaderChildSpacing = 10;
@@ -26,7 +27,7 @@ constexpr int kIconCornerRadius = 2;
 
 MediaControlsHeaderView::MediaControlsHeaderView() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+      views::BoxLayout::Orientation::kHorizontal, kMediaControlsHeaderInsets,
       kMediaControlsHeaderChildSpacing));
 
   auto app_icon_view = std::make_unique<views::ImageView>();
