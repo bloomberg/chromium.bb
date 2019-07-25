@@ -132,6 +132,14 @@ void FakeKerberosClient::ClearAccounts(
       accounts_.clear();
       break;
 
+    case kerberos::CLEAR_ONLY_MANAGED_ACCOUNTS:
+      accounts_.erase(std::remove_if(accounts_.begin(), accounts_.end(),
+                                     [](const AccountData& account) {
+                                       return account.is_managed;
+                                     }),
+                      accounts_.end());
+      break;
+
     case kerberos::CLEAR_ONLY_UNMANAGED_ACCOUNTS:
       accounts_.erase(std::remove_if(accounts_.begin(), accounts_.end(),
                                      [](const AccountData& account) {
