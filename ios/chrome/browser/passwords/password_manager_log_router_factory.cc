@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/passwords/password_manager_internals_service_factory.h"
+#include "ios/chrome/browser/passwords/password_manager_log_router_factory.h"
 
 #include <memory>
 #include <utility>
@@ -17,29 +17,28 @@ namespace ios {
 using autofill::LogRouter;
 
 // static
-LogRouter* PasswordManagerInternalsServiceFactory::GetForBrowserState(
+LogRouter* PasswordManagerLogRouterFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
   return static_cast<LogRouter*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
 // static
-PasswordManagerInternalsServiceFactory*
-PasswordManagerInternalsServiceFactory::GetInstance() {
-  static base::NoDestructor<PasswordManagerInternalsServiceFactory> instance;
+PasswordManagerLogRouterFactory*
+PasswordManagerLogRouterFactory::GetInstance() {
+  static base::NoDestructor<PasswordManagerLogRouterFactory> instance;
   return instance.get();
 }
 
-PasswordManagerInternalsServiceFactory::PasswordManagerInternalsServiceFactory()
+PasswordManagerLogRouterFactory::PasswordManagerLogRouterFactory()
     : BrowserStateKeyedServiceFactory(
           "PasswordManagerInternalsService",
           BrowserStateDependencyManager::GetInstance()) {}
 
-PasswordManagerInternalsServiceFactory::
-    ~PasswordManagerInternalsServiceFactory() {}
+PasswordManagerLogRouterFactory::~PasswordManagerLogRouterFactory() {}
 
 std::unique_ptr<KeyedService>
-PasswordManagerInternalsServiceFactory::BuildServiceInstanceFor(
+PasswordManagerLogRouterFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   return std::make_unique<LogRouter>();
 }

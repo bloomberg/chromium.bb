@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/internal/passwords/web_view_password_manager_internals_service_factory.h"
+#import "ios/web_view/internal/passwords/web_view_password_manager_log_router_factory.h"
 
 #include <memory>
 #include <utility>
@@ -19,32 +19,29 @@
 namespace ios_web_view {
 
 // static
-autofill::LogRouter*
-WebViewPasswordManagerInternalsServiceFactory::GetForBrowserState(
+autofill::LogRouter* WebViewPasswordManagerLogRouterFactory::GetForBrowserState(
     WebViewBrowserState* browser_state) {
   return static_cast<autofill::LogRouter*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
 // static
-WebViewPasswordManagerInternalsServiceFactory*
-WebViewPasswordManagerInternalsServiceFactory::GetInstance() {
-  static base::NoDestructor<WebViewPasswordManagerInternalsServiceFactory>
-      instance;
+WebViewPasswordManagerLogRouterFactory*
+WebViewPasswordManagerLogRouterFactory::GetInstance() {
+  static base::NoDestructor<WebViewPasswordManagerLogRouterFactory> instance;
   return instance.get();
 }
 
-WebViewPasswordManagerInternalsServiceFactory::
-    WebViewPasswordManagerInternalsServiceFactory()
+WebViewPasswordManagerLogRouterFactory::WebViewPasswordManagerLogRouterFactory()
     : BrowserStateKeyedServiceFactory(
           "PasswordManagerInternalsService",
           BrowserStateDependencyManager::GetInstance()) {}
 
-WebViewPasswordManagerInternalsServiceFactory::
-    ~WebViewPasswordManagerInternalsServiceFactory() {}
+WebViewPasswordManagerLogRouterFactory::
+    ~WebViewPasswordManagerLogRouterFactory() {}
 
 std::unique_ptr<KeyedService>
-WebViewPasswordManagerInternalsServiceFactory::BuildServiceInstanceFor(
+WebViewPasswordManagerLogRouterFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   return std::make_unique<autofill::LogRouter>();
 }

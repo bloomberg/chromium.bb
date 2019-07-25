@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_INTERNAL_PASSWORDS_WEB_VIEW_PASSWORD_MANAGER_INTERNALS_SERVICE_FACTORY_H_
-#define IOS_WEB_VIEW_INTERNAL_PASSWORDS_WEB_VIEW_PASSWORD_MANAGER_INTERNALS_SERVICE_FACTORY_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_PASSWORDS_WEB_VIEW_PASSWORD_MANAGER_LOG_ROUTER_FACTORY_H_
+#define IOS_WEB_VIEW_INTERNAL_PASSWORDS_WEB_VIEW_PASSWORD_MANAGER_LOG_ROUTER_FACTORY_H_
 
 #include "base/macros.h"
 #include "base/no_destructor.h"
@@ -18,28 +18,27 @@ class WebViewBrowserState;
 
 // Singleton that owns all PasswordStores and associates them with
 // WebViewBrowserState.
-class WebViewPasswordManagerInternalsServiceFactory
+class WebViewPasswordManagerLogRouterFactory
     : public BrowserStateKeyedServiceFactory {
  public:
   static autofill::LogRouter* GetForBrowserState(
       WebViewBrowserState* browser_state);
 
-  static WebViewPasswordManagerInternalsServiceFactory* GetInstance();
+  static WebViewPasswordManagerLogRouterFactory* GetInstance();
 
  private:
-  friend class base::NoDestructor<
-      WebViewPasswordManagerInternalsServiceFactory>;
+  friend class base::NoDestructor<WebViewPasswordManagerLogRouterFactory>;
 
-  WebViewPasswordManagerInternalsServiceFactory();
-  ~WebViewPasswordManagerInternalsServiceFactory() override;
+  WebViewPasswordManagerLogRouterFactory();
+  ~WebViewPasswordManagerLogRouterFactory() override;
 
   // BrowserStateKeyedServiceFactory:
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(WebViewPasswordManagerInternalsServiceFactory);
+  DISALLOW_COPY_AND_ASSIGN(WebViewPasswordManagerLogRouterFactory);
 };
 
 }  // namespace ios_web_view
 
-#endif  // IOS_WEB_VIEW_INTERNAL_PASSWORDS_WEB_VIEW_PASSWORD_MANAGER_INTERNALS_SERVICE_FACTORY_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_PASSWORDS_WEB_VIEW_PASSWORD_MANAGER_LOG_ROUTER_FACTORY_H_

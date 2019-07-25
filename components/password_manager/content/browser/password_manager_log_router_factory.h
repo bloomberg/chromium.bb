@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_PASSWORD_MANAGER_INTERNALS_SERVICE_FACTORY_H_
-#define COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_PASSWORD_MANAGER_INTERNALS_SERVICE_FACTORY_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_PASSWORD_MANAGER_LOG_ROUTER_FACTORY_H_
+#define COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_PASSWORD_MANAGER_LOG_ROUTER_FACTORY_H_
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -23,28 +23,27 @@ namespace password_manager {
 // internals. It does not override
 // BrowserContextKeyedServiceFactory::GetBrowserContextToUse,
 // which means that no service is returned in Incognito.
-class PasswordManagerInternalsServiceFactory
+class PasswordManagerLogRouterFactory
     : public BrowserContextKeyedServiceFactory {
  public:
   static autofill::LogRouter* GetForBrowserContext(
       content::BrowserContext* context);
 
-  static PasswordManagerInternalsServiceFactory* GetInstance();
+  static PasswordManagerLogRouterFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<
-      PasswordManagerInternalsServiceFactory>;
+  friend struct base::DefaultSingletonTraits<PasswordManagerLogRouterFactory>;
 
-  PasswordManagerInternalsServiceFactory();
-  ~PasswordManagerInternalsServiceFactory() override;
+  PasswordManagerLogRouterFactory();
+  ~PasswordManagerLogRouterFactory() override;
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordManagerInternalsServiceFactory);
+  DISALLOW_COPY_AND_ASSIGN(PasswordManagerLogRouterFactory);
 };
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_PASSWORD_MANAGER_INTERNALS_SERVICE_FACTORY_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CONTENT_BROWSER_PASSWORD_MANAGER_LOG_ROUTER_FACTORY_H_

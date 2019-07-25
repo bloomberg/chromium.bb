@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOFILL_INTERNALS_SERVICE_FACTORY_H_
-#define COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOFILL_INTERNALS_SERVICE_FACTORY_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOFILL_LOG_ROUTER_FACTORY_H_
+#define COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOFILL_LOG_ROUTER_FACTORY_H_
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -20,26 +20,25 @@ class LogRouter;
 // BrowserContextKeyedServiceFactory for a LogRouter for autofill internals. It
 // does not override BrowserContextKeyedServiceFactory::GetBrowserContextToUse,
 // which means that no service is returned in Incognito.
-class AutofillInternalsServiceFactory
-    : public BrowserContextKeyedServiceFactory {
+class AutofillLogRouterFactory : public BrowserContextKeyedServiceFactory {
  public:
   static LogRouter* GetForBrowserContext(content::BrowserContext* context);
 
-  static AutofillInternalsServiceFactory* GetInstance();
+  static AutofillLogRouterFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<AutofillInternalsServiceFactory>;
+  friend struct base::DefaultSingletonTraits<AutofillLogRouterFactory>;
 
-  AutofillInternalsServiceFactory();
-  ~AutofillInternalsServiceFactory() override;
+  AutofillLogRouterFactory();
+  ~AutofillLogRouterFactory() override;
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(AutofillInternalsServiceFactory);
+  DISALLOW_COPY_AND_ASSIGN(AutofillLogRouterFactory);
 };
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOFILL_INTERNALS_SERVICE_FACTORY_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOFILL_LOG_ROUTER_FACTORY_H_

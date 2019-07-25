@@ -10,7 +10,7 @@
 #include "components/autofill/core/browser/logging/log_receiver.h"
 #include "components/autofill/core/browser/logging/log_router.h"
 #include "components/grit/components_resources.h"
-#include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
+#include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -18,7 +18,7 @@
 #include "net/base/escape.h"
 
 using autofill::LogRouter;
-using password_manager::PasswordManagerInternalsServiceFactory;
+using password_manager::PasswordManagerLogRouterFactory;
 
 namespace {
 
@@ -92,9 +92,8 @@ void PasswordManagerInternalsUIHandler::OnLoaded(const base::ListValue* args) {
 }
 
 void PasswordManagerInternalsUIHandler::StartSubscription() {
-  LogRouter* log_router =
-      PasswordManagerInternalsServiceFactory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()));
+  LogRouter* log_router = PasswordManagerLogRouterFactory::GetForBrowserContext(
+      Profile::FromWebUI(web_ui()));
   if (!log_router)
     return;
 
@@ -109,9 +108,8 @@ void PasswordManagerInternalsUIHandler::EndSubscription() {
   if (!registered_with_log_router_)
     return;
   registered_with_log_router_ = false;
-  LogRouter* log_router =
-      PasswordManagerInternalsServiceFactory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()));
+  LogRouter* log_router = PasswordManagerLogRouterFactory::GetForBrowserContext(
+      Profile::FromWebUI(web_ui()));
   if (log_router)
     log_router->UnregisterReceiver(this);
 }

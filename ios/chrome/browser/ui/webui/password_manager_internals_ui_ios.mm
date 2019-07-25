@@ -9,7 +9,7 @@
 #include "components/grit/components_resources.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/passwords/password_manager_internals_service_factory.h"
+#include "ios/chrome/browser/passwords/password_manager_log_router_factory.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web/public/webui/web_ui_ios_data_source.h"
@@ -51,8 +51,7 @@ PasswordManagerInternalsUIIOS::~PasswordManagerInternalsUIIOS() {
   if (registered_with_log_router_) {
     registered_with_log_router_ = false;
     autofill::LogRouter* log_router =
-        ios::PasswordManagerInternalsServiceFactory::GetForBrowserState(
-            browser_state);
+        ios::PasswordManagerLogRouterFactory::GetForBrowserState(browser_state);
     if (log_router)
       log_router->UnregisterReceiver(this);
   }
@@ -75,8 +74,7 @@ void PasswordManagerInternalsUIIOS::PageLoaded(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromWebUIIOS(web_ui());
   autofill::LogRouter* log_router =
-      ios::PasswordManagerInternalsServiceFactory::GetForBrowserState(
-          browser_state);
+      ios::PasswordManagerLogRouterFactory::GetForBrowserState(browser_state);
   // No service means the WebUI is displayed in Incognito.
   base::Value is_incognito(!log_router);
 

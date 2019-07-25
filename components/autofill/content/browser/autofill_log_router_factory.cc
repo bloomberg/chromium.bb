@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/content/browser/autofill_internals_service_factory.h"
+#include "components/autofill/content/browser/autofill_log_router_factory.h"
 
 #include "components/autofill/core/browser/logging/log_router.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -10,26 +10,25 @@
 namespace autofill {
 
 // static
-LogRouter* AutofillInternalsServiceFactory::GetForBrowserContext(
+LogRouter* AutofillLogRouterFactory::GetForBrowserContext(
     content::BrowserContext* context) {
   return static_cast<LogRouter*>(
       GetInstance()->GetServiceForBrowserContext(context, /* create = */ true));
 }
 
 // static
-AutofillInternalsServiceFactory*
-AutofillInternalsServiceFactory::GetInstance() {
-  return base::Singleton<AutofillInternalsServiceFactory>::get();
+AutofillLogRouterFactory* AutofillLogRouterFactory::GetInstance() {
+  return base::Singleton<AutofillLogRouterFactory>::get();
 }
 
-AutofillInternalsServiceFactory::AutofillInternalsServiceFactory()
+AutofillLogRouterFactory::AutofillLogRouterFactory()
     : BrowserContextKeyedServiceFactory(
           "AutofillInternalsService",
           BrowserContextDependencyManager::GetInstance()) {}
 
-AutofillInternalsServiceFactory::~AutofillInternalsServiceFactory() {}
+AutofillLogRouterFactory::~AutofillLogRouterFactory() = default;
 
-KeyedService* AutofillInternalsServiceFactory::BuildServiceInstanceFor(
+KeyedService* AutofillLogRouterFactory::BuildServiceInstanceFor(
     content::BrowserContext* /* context */) const {
   return new LogRouter();
 }

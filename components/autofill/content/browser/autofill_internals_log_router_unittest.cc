@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/content/browser/autofill_internals_service_factory.h"
+#include "components/autofill/content/browser/autofill_log_router_factory.h"
 
 #include "components/autofill/core/browser/logging/log_receiver.h"
 #include "components/autofill/core/browser/logging/log_router.h"
@@ -12,7 +12,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using autofill::AutofillInternalsServiceFactory;
+using autofill::AutofillLogRouterFactory;
 using autofill::LogRouter;
 
 namespace {
@@ -28,7 +28,7 @@ class MockLogReceiver : public autofill::LogReceiver {
 
 }  // namespace
 
-class AutofillInternalsServiceFactoryTest : public testing::Test {
+class AutofillLogRouterFactoryTest : public testing::Test {
  public:
   content::TestBrowserThreadBundle thread_bundle_;
   content::TestBrowserContext browser_context_;
@@ -46,10 +46,10 @@ class AutofillInternalsServiceFactoryTest : public testing::Test {
 
 // When the profile is not incognito, it should be possible to activate the
 // service.
-TEST_F(AutofillInternalsServiceFactoryTest, ServiceActiveNonIncognito) {
+TEST_F(AutofillLogRouterFactoryTest, ServiceActiveNonIncognito) {
   browser_context_.set_is_off_the_record(false);
   LogRouter* log_router =
-      AutofillInternalsServiceFactory::GetForBrowserContext(&browser_context_);
+      AutofillLogRouterFactory::GetForBrowserContext(&browser_context_);
   testing::StrictMock<MockLogReceiver> receiver;
 
   ASSERT_TRUE(log_router);
@@ -66,10 +66,10 @@ TEST_F(AutofillInternalsServiceFactoryTest, ServiceActiveNonIncognito) {
 
 // When the browser profile is incognito, it should not be possible to activate
 // the service.
-TEST_F(AutofillInternalsServiceFactoryTest, ServiceNotActiveIncognito) {
+TEST_F(AutofillLogRouterFactoryTest, ServiceNotActiveIncognito) {
   browser_context_.set_is_off_the_record(true);
   LogRouter* log_router =
-      AutofillInternalsServiceFactory::GetForBrowserContext(&browser_context_);
+      AutofillLogRouterFactory::GetForBrowserContext(&browser_context_);
   // BrowserContextKeyedServiceFactory::GetBrowserContextToUse should return
   // nullptr for |browser_context|, because |browser_context| is incognito.
   // Therefore the returned |service| should also be nullptr.

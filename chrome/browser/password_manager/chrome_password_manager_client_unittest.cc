@@ -33,7 +33,7 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
-#include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
+#include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -287,8 +287,9 @@ TEST_F(ChromePasswordManagerClientTest, LogEntryNotifyRenderer) {
       << "logging_active=" << logging_active;
 
   DummyLogReceiver log_receiver;
-  autofill::LogRouter* log_router = password_manager::
-      PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile());
+  autofill::LogRouter* log_router =
+      password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
+          profile());
   EXPECT_EQ(std::vector<base::Value>(),
             log_router->RegisterReceiver(&log_receiver));
   EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_active));
@@ -519,8 +520,9 @@ TEST_F(ChromePasswordManagerClientTest, GetLastCommittedEntryURL) {
 
 TEST_F(ChromePasswordManagerClientTest, WebUINoLogging) {
   // Make sure that logging is active.
-  autofill::LogRouter* log_router = password_manager::
-      PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile());
+  autofill::LogRouter* log_router =
+      password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
+          profile());
   DummyLogReceiver log_receiver;
   EXPECT_EQ(std::vector<base::Value>(),
             log_router->RegisterReceiver(&log_receiver));

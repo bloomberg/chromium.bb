@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
-#include "components/autofill/content/browser/autofill_internals_service_factory.h"
+#include "components/autofill/content/browser/autofill_log_router_factory.h"
 #include "components/autofill/core/browser/logging/log_receiver.h"
 #include "components/autofill/core/browser/logging/log_router.h"
 #include "components/grit/components_resources.h"
@@ -18,7 +18,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-using autofill::AutofillInternalsServiceFactory;
+using autofill::AutofillLogRouterFactory;
 using autofill::LogRouter;
 
 namespace {
@@ -98,7 +98,7 @@ void AutofillInternalsUIHandler::LogEntry(const base::Value& entry) {
 }
 
 void AutofillInternalsUIHandler::StartSubscription() {
-  LogRouter* log_router = AutofillInternalsServiceFactory::GetForBrowserContext(
+  LogRouter* log_router = AutofillLogRouterFactory::GetForBrowserContext(
       Profile::FromWebUI(web_ui()));
 
   if (!log_router)
@@ -115,7 +115,7 @@ void AutofillInternalsUIHandler::EndSubscription() {
   if (!registered_with_log_router_)
     return;
   registered_with_log_router_ = false;
-  LogRouter* log_router = AutofillInternalsServiceFactory::GetForBrowserContext(
+  LogRouter* log_router = AutofillLogRouterFactory::GetForBrowserContext(
       Profile::FromWebUI(web_ui()));
   if (log_router)
     log_router->UnregisterReceiver(this);
