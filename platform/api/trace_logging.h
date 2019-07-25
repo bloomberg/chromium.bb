@@ -28,24 +28,23 @@ namespace openscreen {
 
 #define TRACE_SET_RESULT(result)                                        \
   do {                                                                  \
-    if (openscreen::platform::IsTraceLoggingEnabled(                    \
-            TraceCategory::Value::Any)) {                               \
+    if (TRACE_IS_ENABLED(TraceCategory::Value::Any)) {                  \
       openscreen::platform::internal::ScopedTraceOperation::set_result( \
           result);                                                      \
     }                                                                   \
   } while (false)
 #define TRACE_SET_HIERARCHY(ids) TRACE_SET_HIERARCHY_INTERNAL(__LINE__, ids)
 #define TRACE_HIERARCHY                                                    \
-  (openscreen::platform::IsTraceLoggingEnabled(TraceCategory::Value::Any)  \
+  (TRACE_IS_ENABLED(TraceCategory::Value::Any)                             \
        ? openscreen::platform::internal::ScopedTraceOperation::hierarchy() \
        : TraceIdHierarchy::Empty())
 #define TRACE_CURRENT_ID                                                    \
-  (openscreen::platform::IsTraceLoggingEnabled(TraceCategory::Value::Any)   \
+  (TRACE_IS_ENABLED(TraceCategory::Value::Any)                              \
        ? openscreen::platform::internal::ScopedTraceOperation::current_id() \
        : kEmptyTraceId)
-#define TRACE_ROOT_ID                                                     \
-  (openscreen::platform::IsTraceLoggingEnabled(TraceCategory::Value::Any) \
-       ? openscreen::platform::internal::ScopedTraceOperation::root_id()  \
+#define TRACE_ROOT_ID                                                    \
+  (TRACE_IS_ENABLED(TraceCategory::Value::Any)                           \
+       ? openscreen::platform::internal::ScopedTraceOperation::root_id() \
        : kEmptyTraceId)
 
 // Synchronous Trace Macro.
@@ -56,11 +55,11 @@ namespace openscreen {
 #define TRACE_ASYNC_START(category, name, ...) \
   TRACE_ASYNC_START_INTERNAL(__LINE__, category, name, ##__VA_ARGS__)
 
-#define TRACE_ASYNC_END(category, id, result)                     \
-  openscreen::platform::IsTraceLoggingEnabled(category)           \
-      ? openscreen::platform::internal::TraceBase::TraceAsyncEnd( \
-            __LINE__, __FILE__, id, result)                       \
-      : false
+#define TRACE_ASYNC_END(category, id, result)                 \
+  TRACE_IS_ENABLED(category)                                  \
+  ? openscreen::platform::internal::TraceBase::TraceAsyncEnd( \
+        __LINE__, __FILE__, id, result)                       \
+  : false
 
 }  // namespace openscreen
 

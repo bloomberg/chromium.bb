@@ -30,6 +30,15 @@ namespace openscreen {
 #define TRACE_INTERNAL_IGNORE_UNUSED_VAR [[maybe_unused]]
 #endif  // defined(__clang__)
 
+// Define a macro to check if tracing is enabled so that unit tests don't break
+// when it is not.
+#ifndef TRACE_FORCE_ENABLE
+#define TRACE_IS_ENABLED(category) \
+  openscreen::platform::IsTraceLoggingEnabled(TraceCategory::Value::Any)
+#else
+#define TRACE_IS_ENABLED(category) true
+#endif
+
 // Using statements to simplify the below macros.
 using openscreen::platform::internal::AsynchronousTraceLogger;
 using openscreen::platform::internal::SynchronousTraceLogger;
@@ -37,15 +46,15 @@ using openscreen::platform::internal::TraceIdSetter;
 using openscreen::platform::internal::TraceInstanceHelper;
 
 // Internal logging macros.
-#define TRACE_SET_HIERARCHY_INTERNAL(line, ids)                              \
-  alignas(32) uint8_t TRACE_INTERNAL_CONCAT_CONST(                           \
-      tracing_storage,                                                       \
-      line)[sizeof(openscreen::platform::internal::TraceIdSetter)];          \
-  TRACE_INTERNAL_IGNORE_UNUSED_VAR                                           \
-  const auto TRACE_INTERNAL_UNIQUE_VAR_NAME(trace_ref_) =                    \
-      openscreen::platform::IsTraceLoggingEnabled(TraceCategory::Value::Any) \
-          ? TraceInstanceHelper<TraceIdSetter>::Create(                      \
-                TRACE_INTERNAL_CONCAT_CONST(tracing_storage, line), ids)     \
+#define TRACE_SET_HIERARCHY_INTERNAL(line, ids)                          \
+  alignas(32) uint8_t TRACE_INTERNAL_CONCAT_CONST(                       \
+      tracing_storage,                                                   \
+      line)[sizeof(openscreen::platform::internal::TraceIdSetter)];      \
+  TRACE_INTERNAL_IGNORE_UNUSED_VAR                                       \
+  const auto TRACE_INTERNAL_UNIQUE_VAR_NAME(trace_ref_) =                \
+      TRACE_IS_ENABLED(TraceCategory::Value::Any)                        \
+          ? TraceInstanceHelper<TraceIdSetter>::Create(                  \
+                TRACE_INTERNAL_CONCAT_CONST(tracing_storage, line), ids) \
           : TraceInstanceHelper<TraceIdSetter>::Empty()
 
 #define TRACE_SCOPED_INTERNAL(line, category, name, ...)                      \
@@ -54,7 +63,7 @@ using openscreen::platform::internal::TraceInstanceHelper;
       line)[sizeof(openscreen::platform::internal::SynchronousTraceLogger)];  \
   TRACE_INTERNAL_IGNORE_UNUSED_VAR                                            \
   const auto TRACE_INTERNAL_UNIQUE_VAR_NAME(trace_ref_) =                     \
-      openscreen::platform::IsTraceLoggingEnabled(TraceCategory::Value::Any)  \
+      TRACE_IS_ENABLED(category)                                              \
           ? TraceInstanceHelper<SynchronousTraceLogger>::Create(              \
                 TRACE_INTERNAL_CONCAT_CONST(tracing_storage, line), category, \
                 name, __FILE__, __LINE__, ##__VA_ARGS__)                      \
@@ -66,7 +75,7 @@ using openscreen::platform::internal::TraceInstanceHelper;
       line)[sizeof(openscreen::platform::internal::AsynchronousTraceLogger)]; \
   TRACE_INTERNAL_IGNORE_UNUSED_VAR                                            \
   const auto TRACE_INTERNAL_UNIQUE_VAR_NAME(trace_ref_) =                     \
-      openscreen::platform::IsTraceLoggingEnabled(TraceCategory::Value::Any)  \
+      TRACE_IS_ENABLED(category)                                              \
           ? TraceInstanceHelper<AsynchronousTraceLogger>::Create(             \
                 TRACE_INTERNAL_CONCAT_CONST(temp_storage, line), category,    \
                 name, __FILE__, __LINE__, ##__VA_ARGS__)                      \

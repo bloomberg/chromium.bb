@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/api/trace_logging.h"
-
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -11,6 +9,10 @@
 #include "absl/types/optional.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+
+#define TRACE_FORCE_ENABLE true
+
+#include "platform/api/trace_logging.h"
 
 // TODO(issue/52): Remove duplicate code from trace logging+internal unit tests
 namespace openscreen {
@@ -325,3 +327,5 @@ TEST(TraceLoggingTest, CheckTraceAsyncEndLogsCorrectly) {
 
 }  // namespace platform
 }  // namespace openscreen
+
+#undef TRACE_FORCE_ENABLE
