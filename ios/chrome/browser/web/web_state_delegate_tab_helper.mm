@@ -23,6 +23,11 @@ WebStateDelegateTabHelper::WebStateDelegateTabHelper(web::WebState* web_state)
 
 WebStateDelegateTabHelper::~WebStateDelegateTabHelper() = default;
 
+web::JavaScriptDialogPresenter*
+WebStateDelegateTabHelper::GetJavaScriptDialogPresenter(web::WebState* source) {
+  return &java_script_dialog_presenter_;
+}
+
 void WebStateDelegateTabHelper::OnAuthRequired(
     web::WebState* source,
     NSURLProtectionSpace* protection_space,

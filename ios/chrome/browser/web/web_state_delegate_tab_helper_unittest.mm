@@ -7,6 +7,9 @@
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
+#include "ios/web/public/java_script_dialog_presenter.h"
+#include "ios/web/public/java_script_dialog_type.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -59,4 +62,31 @@ TEST_F(WebStateDelegateTabHelperTest, OnAuthRequired) {
   OverlayRequest* request = queue->front_request();
   EXPECT_TRUE(request);
   EXPECT_TRUE(request->GetConfig<HTTPAuthOverlayRequestConfig>());
+}
+
+// Tests that GetJavaScriptDialogPresenter() returns an overlay-based JavaScript
+// dialog presenter.
+TEST_F(WebStateDelegateTabHelperTest, GetJavaScriptDialogPresenter) {
+  // Verify that the delegate returns a non-null presenter.
+  web::JavaScriptDialogPresenter* presenter =
+      delegate()->GetJavaScriptDialogPresenter(web_state());
+  EXPECT_TRUE(presenter);
+
+  // Present a JavaScript alert.
+  GURL kOriginUrl("http://chromium.test");
+  web::DialogClosedCallback callback =
+      base::BindOnce(^(bool success, NSString* user_input){
+      });
+  presenter->RunJavaScriptDialog(web_state(), kOriginUrl,
+                                 web::JAVASCRIPT_DIALOG_TYPE_ALERT, @"", @"",
+                                 std::move(callback));
+
+  // Verify that JavaScript alert OverlayRequest has been added to the
+  // WebState's queue.
+  OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
+      web_state(), OverlayModality::kWebContentArea);
+  ASSERT_TRUE(queue);
+  OverlayRequest* request = queue->front_request();
+  EXPECT_TRUE(request);
+  EXPECT_TRUE(request->GetConfig<JavaScriptAlertOverlayRequestConfig>());
 }

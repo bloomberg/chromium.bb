@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_WEB_WEB_STATE_DELEGATE_TAB_HELPER_H_
 
 #include "base/memory/weak_ptr.h"
+#import "ios/chrome/browser/ui/dialogs/overlay_java_script_dialog_presenter.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_user_data.h"
 
@@ -22,6 +23,8 @@ class WebStateDelegateTabHelper
   // into this tab helper.
 
   // web::WebStateDelegate:
+  web::JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(
+      web::WebState* source) override;
   void OnAuthRequired(
       web::WebState* source,
       NSURLProtectionSpace* protection_space,
@@ -37,6 +40,7 @@ class WebStateDelegateTabHelper
   void OnHTTPAuthOverlayFinished(web::WebStateDelegate::AuthCallback callback,
                                  OverlayResponse* response);
 
+  OverlayJavaScriptDialogPresenter java_script_dialog_presenter_;
   base::WeakPtrFactory<WebStateDelegateTabHelper> weak_factory_;
 };
 

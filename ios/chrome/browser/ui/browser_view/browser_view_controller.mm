@@ -808,10 +808,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _downloadManagerCoordinator.presenter =
         [[VerticalAnimationContainer alloc] init];
 
-    if (base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
-      _javaScriptDialogPresenter =
-          std::make_unique<OverlayJavaScriptDialogPresenter>();
-    } else {
+    if (!base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
       _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
                                           presentingViewController:self];
       _javaScriptDialogPresenter =
@@ -3393,6 +3390,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
     (web::WebState*)webState {
+  if (base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
+    return WebStateDelegateTabHelper::FromWebState(webState)
+        ->GetJavaScriptDialogPresenter(webState);
+  }
+  DCHECK(_javaScriptDialogPresenter.get());
   return _javaScriptDialogPresenter.get();
 }
 
