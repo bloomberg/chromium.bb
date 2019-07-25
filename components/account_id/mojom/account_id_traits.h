@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ACCOUNT_ID_INTERFACES_ACCOUNT_ID_TRAITS_H_
-#define COMPONENTS_ACCOUNT_ID_INTERFACES_ACCOUNT_ID_TRAITS_H_
+#ifndef COMPONENTS_ACCOUNT_ID_MOJOM_ACCOUNT_ID_TRAITS_H_
+#define COMPONENTS_ACCOUNT_ID_MOJOM_ACCOUNT_ID_TRAITS_H_
 
 #include <string>
 
 #include "components/account_id/account_id.h"
-#include "components/account_id/interfaces/account_id.mojom.h"
+#include "components/account_id/mojom/account_id.mojom.h"
 
 namespace mojo {
 
@@ -103,4 +103,4 @@ struct StructTraits<signin::mojom::AccountIdDataView, AccountId> {
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_ACCOUNT_ID_INTERFACES_ACCOUNT_ID_TRAITS_H_
+#endif  // COMPONENTS_ACCOUNT_ID_MOJOM_ACCOUNT_ID_TRAITS_H_

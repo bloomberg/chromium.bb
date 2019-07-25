@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//components/account_id/interfaces/account_id.mojom"
+mojom = "//components/account_id/mojom/account_id.mojom"
 public_headers = [ "//components/account_id/account_id.h" ]
-traits_headers = [ "//components/account_id/interfaces/account_id_traits.h" ]
+traits_headers = [ "//components/account_id/mojom/account_id_traits.h" ]
 public_deps = [
   "//components/account_id",
 ]
