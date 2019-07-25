@@ -39,6 +39,8 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     @Location
     private int mLocation;
 
+    private static final String TAG = "BookmarkRow";
+
     @IntDef({Location.TOP, Location.MIDDLE, Location.BOTTOM})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Location {
@@ -87,6 +89,14 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
 
     private void updateVisualState() {
         BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
+        // This check is needed because updateVisualState is called when the item has been deleted
+        // in the model but not in the adapter. If we hit this if-block, the
+        // item is about to be deleted, and we don't need to do anything.
+        if (bookmarkItem == null) {
+            return;
+        }
+        // TODO(jhimawan): Look into using cleanup(). Perhaps unhook the selection state observer?
+
         // If the visibility of the drag handle or more icon is not set later, it will be gone.
         mDragHandle.setVisibility(GONE);
         mMoreIcon.setVisibility(GONE);
@@ -97,11 +107,12 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
                 mDragHandle.setEnabled(isItemSelected());
             } else {
                 mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
-                mMoreIcon.setEnabled(isSelectionModeActive());
+                mMoreIcon.setEnabled(!isSelectionModeActive());
             }
         } else {
             // Bookmark reordering is off
             mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
+            mMoreIcon.setEnabled(!mDelegate.getSelectionDelegate().isSelectionEnabled());
         }
     }
 
@@ -117,16 +128,11 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
 
     private void initialize() {
         mDelegate.addUIObserver(this);
-        updateSelectionState();
     }
 
     private void cleanup() {
         mMoreIcon.dismiss();
         if (mDelegate != null) mDelegate.removeUIObserver(this);
-    }
-
-    private void updateSelectionState() {
-        mMoreIcon.setEnabled(!mDelegate.getSelectionDelegate().isSelectionEnabled());
     }
 
     // PopupMenuItem.Delegate implementation.
@@ -226,7 +232,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
         super.onSelectionStateChange(selectedBookmarks);
-        updateSelectionState();
+        updateVisualState();
     }
 
     // BookmarkUIObserver implementation.
