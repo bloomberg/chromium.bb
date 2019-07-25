@@ -53383,6 +53383,13 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="SharingClickToCallDialogType">
+  <int value="0" label="Dialog with devices and maybe apps"/>
+  <int value="1" label="Dialog without devices but with an app"/>
+  <int value="2" label="Educational dialog without devices or apps"/>
+  <int value="3" label="Error dialog"/>
+</enum>
+
 <enum name="SharingDeviceRegistrationResult">
   <int value="0" label="Operation is successful"/>
   <int value="1" label="Failed with Sync not ready"/>

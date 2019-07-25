@@ -102,3 +102,7 @@ void LogClickToCallSelectedAppIndex(const char* histogram_suffix, int index) {
 void LogSharingMessageAckTime(base::TimeDelta time) {
   base::UmaHistogramMediumTimes("Sharing.MessageAckTime", time);
 }
+
+void LogClickToCallDialogShown(SharingClickToCallDialogType type) {
+  base::UmaHistogramEnumeration("Sharing.ClickToCallDialogShown", type);
+}

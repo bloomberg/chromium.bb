@@ -163,6 +163,11 @@ void ClickToCallDialogView::ButtonPressed(views::Button* sender,
 }
 
 void ClickToCallDialogView::InitListView() {
+  LogClickToCallDialogShown(
+      devices_.empty()
+          ? SharingClickToCallDialogType::kDialogWithoutDevicesWithApp
+          : SharingClickToCallDialogType::kDialogWithDevicesMaybeApps);
+
   int tag = 0;
   // Devices:
   LogClickToCallDevicesToShow(kSharingClickToCallUiDialog, devices_.size());
@@ -188,6 +193,8 @@ void ClickToCallDialogView::InitListView() {
 }
 
 void ClickToCallDialogView::InitEmptyView() {
+  LogClickToCallDialogShown(SharingClickToCallDialogType::kEducationalDialog);
+
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(
           IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES),
@@ -218,6 +225,8 @@ void ClickToCallDialogView::InitEmptyView() {
 }
 
 void ClickToCallDialogView::InitErrorView() {
+  LogClickToCallDialogShown(SharingClickToCallDialogType::kErrorDialog);
+
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(
           IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE),

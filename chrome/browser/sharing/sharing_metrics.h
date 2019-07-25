@@ -22,6 +22,18 @@ enum class SharingVapidKeyCreationResult {
   kMaxValue = kExportPrivateKeyFailed,
 };
 
+// The types of dialogs that can be shown for Click to Call.
+// These values are logged to UMA. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with
+// "SharingClickToCallDialogType" in src/tools/metrics/histograms/enums.xml.
+enum class SharingClickToCallDialogType {
+  kDialogWithDevicesMaybeApps = 0,
+  kDialogWithoutDevicesWithApp = 1,
+  kEducationalDialog = 2,
+  kErrorDialog = 3,
+  kMaxValue = kErrorDialog,
+};
+
 // These histogram suffixes must match the ones in SharingClickToCallUi defined
 // in histograms.xml.
 const char kSharingClickToCallUiContextMenu[] = "ContextMenu";
@@ -71,5 +83,8 @@ void LogClickToCallSelectedAppIndex(const char* histogram_suffix, int index);
 // Logs to UMA the time from sending a FCM message from the Sharing service
 // until an ack message is received for it.
 void LogSharingMessageAckTime(base::TimeDelta time);
+
+// Logs to UMA the |type| of dialog shown for Click to Call.
+void LogClickToCallDialogShown(SharingClickToCallDialogType type);
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_METRICS_H_
