@@ -451,6 +451,8 @@ public class BookmarkReorderTest extends BookmarkTest {
         openBookmarkManager();
 
         View google = mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_PAGE_TITLE_GOOGLE,
+                ((BookmarkItemRow) google).getTitle());
         View more = google.findViewById(R.id.more);
         TestThreadUtils.runOnUiThreadBlocking(more::callOnClick);
         onView(withText("Move up")).perform(click());
@@ -474,6 +476,8 @@ public class BookmarkReorderTest extends BookmarkTest {
         openBookmarkManager();
 
         View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
+                ((BookmarkFolderRow) testFolder).getTitle());
         ListMenuButton more = testFolder.findViewById(R.id.more);
         TestThreadUtils.runOnUiThreadBlocking(more::callOnClick);
         onView(withText("Move down")).perform(click());
@@ -497,6 +501,8 @@ public class BookmarkReorderTest extends BookmarkTest {
         openBookmarkManager();
 
         View google = mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_PAGE_TITLE_GOOGLE,
+                ((BookmarkItemRow) google).getTitle());
         View more = google.findViewById(R.id.more);
         TestThreadUtils.runOnUiThreadBlocking(more::callOnClick);
         onView(withText("Move down")).check(doesNotExist());
@@ -510,6 +516,8 @@ public class BookmarkReorderTest extends BookmarkTest {
         openBookmarkManager();
 
         View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
+                ((BookmarkFolderRow) testFolder).getTitle());
         ListMenuButton more = testFolder.findViewById(R.id.more);
         TestThreadUtils.runOnUiThreadBlocking(more::callOnClick);
         onView(withText("Move up")).check(doesNotExist());
@@ -532,6 +540,8 @@ public class BookmarkReorderTest extends BookmarkTest {
                 "Expected to enter search mode");
 
         View testFolder = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
+                ((BookmarkFolderRow) testFolder).getTitle());
         View more = testFolder.findViewById(R.id.more);
         TestThreadUtils.runOnUiThreadBlocking(more::callOnClick);
 
@@ -542,8 +552,10 @@ public class BookmarkReorderTest extends BookmarkTest {
     @Override
     protected void openBookmarkManager() throws InterruptedException {
         super.openBookmarkManager();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mManager.getDragStateDelegate().setA11yStateForTesting(false));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mManager.getDragStateDelegate().setA11yStateForTesting(false);
+            BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        });
     }
 
     /**
