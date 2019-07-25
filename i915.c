@@ -359,6 +359,7 @@ static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t h
 		bo->tiling = I915_TILING_X;
 		break;
 	case I915_FORMAT_MOD_Y_TILED:
+	case I915_FORMAT_MOD_Y_TILED_CCS:
 		bo->tiling = I915_TILING_Y;
 		break;
 	}
@@ -376,6 +377,47 @@ static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t h
 		 */
 		uint32_t stride = ALIGN(width, 32);
 		drv_bo_from_format(bo, stride, height, format);
+	} else if (modifier == I915_FORMAT_MOD_Y_TILED_CCS) {
+		/*
+		 * For compressed surfaces, we need a color control surface
+		 * (CCS). Color compression is only supported for Y tiled
+		 * surfaces, and for each 32x16 tiles in the main surface we
+		 * need a tile in the control surface.  Y tiles are 128 bytes
+		 * wide and 32 lines tall and we use that to first compute the
+		 * width and height in tiles of the main surface. stride and
+		 * height are already multiples of 128 and 32, respectively:
+		 */
+		uint32_t stride = drv_stride_from_format(format, width, 0);
+		uint32_t width_in_tiles = DIV_ROUND_UP(stride, 128);
+		uint32_t height_in_tiles = DIV_ROUND_UP(height, 32);
+		uint32_t size = width_in_tiles * height_in_tiles * 4096;
+		uint32_t offset = 0;
+
+		bo->strides[0] = width_in_tiles * 128;
+		bo->sizes[0] = size;
+		bo->offsets[0] = offset;
+		offset += size;
+
+		/*
+		 * Now, compute the width and height in tiles of the control
+		 * surface by dividing and rounding up.
+		 */
+		uint32_t ccs_width_in_tiles = DIV_ROUND_UP(width_in_tiles, 32);
+		uint32_t ccs_height_in_tiles = DIV_ROUND_UP(height_in_tiles, 16);
+		uint32_t ccs_size = ccs_width_in_tiles * ccs_height_in_tiles * 4096;
+
+		/*
+		 * With stride and height aligned to y tiles, offset is
+		 * already a multiple of 4096, which is the required alignment
+		 * of the CCS.
+		 */
+		bo->strides[1] = ccs_width_in_tiles * 128;
+		bo->sizes[1] = ccs_size;
+		bo->offsets[1] = offset;
+		offset += ccs_size;
+
+		bo->num_planes = 2;
+		bo->total_size = offset;
 	} else {
 		i915_bo_from_format(bo, width, height, format);
 	}
@@ -427,6 +469,7 @@ static int i915_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t
 					 uint32_t format, const uint64_t *modifiers, uint32_t count)
 {
 	static const uint64_t modifier_order[] = {
+		I915_FORMAT_MOD_Y_TILED_CCS,
 		I915_FORMAT_MOD_Y_TILED,
 		I915_FORMAT_MOD_X_TILED,
 		DRM_FORMAT_MOD_LINEAR,
@@ -472,6 +515,9 @@ static void *i915_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t 
 {
 	int ret;
 	void *addr;
+
+	if (bo->format_modifiers[0] == I915_FORMAT_MOD_Y_TILED_CCS)
+		return MAP_FAILED;
 
 	if (bo->tiling == I915_TILING_NONE) {
 		struct drm_i915_gem_mmap gem_map;
