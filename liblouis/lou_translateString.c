@@ -2209,10 +2209,6 @@ undefinedCharacter(widechar c, const TranslationTableHeader *table, int pos,
 		const InString *input, OutString *output, int *posMapping, int *cursorPosition,
 		int *cursorStatus, int mode) {
 	/* Display an undefined character in the output buffer */
-	int k;
-	char *display;
-	widechar displayDots[20];
-
 	if (table->undefined) {
 		TranslationTableRule *rule =
 				(TranslationTableRule *)&table->ruleArea[table->undefined];
@@ -2223,12 +2219,14 @@ undefinedCharacter(widechar c, const TranslationTableHeader *table, int pos,
 	}
 
 	if (!(mode & noUndefined)) {
-		display = _lou_showString(&c, 1);
+		widechar dots[20];
+		const char *text = _lou_showString(&c, 1);
+		size_t length = strlen(text);
 
-		for (k = 0; k < (int)strlen(display); k++)
-			displayDots[k] = _lou_getDotsForChar(display[k]);
+		for (unsigned int k=0; k<length; k+=1)
+			dots[k] = _lou_getDotsForChar(text[k]);
 
-		return for_updatePositions(displayDots, 1, (int)strlen(display), 0, pos, input, output,
+		return for_updatePositions(dots, 1, length, 0, pos, input, output,
 					   posMapping, cursorPosition, cursorStatus);
 	}
 
