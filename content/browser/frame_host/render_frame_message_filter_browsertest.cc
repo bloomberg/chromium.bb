@@ -296,6 +296,7 @@ class CookieStoreContentBrowserClient : public ContentBrowserClient {
   ~CookieStoreContentBrowserClient() override {}
 
   bool WillCreateRestrictedCookieManager(
+      network::mojom::RestrictedCookieManagerRole role,
       content::BrowserContext* browser_context,
       const url::Origin& origin,
       bool is_service_worker,
