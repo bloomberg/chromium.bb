@@ -8,15 +8,15 @@
 
 namespace {
 
-class ConfigSingleton {
+class SafetyTipsConfigSingleton {
  public:
   void SetProto(
       std::unique_ptr<chrome_browser_safety_tips::SafetyTipsConfig> proto) {
     proto_ = std::move(proto);
   }
 
-  static ConfigSingleton& GetInstance() {
-    static base::NoDestructor<ConfigSingleton> instance;
+  static SafetyTipsConfigSingleton& GetInstance() {
+    static base::NoDestructor<SafetyTipsConfigSingleton> instance;
     return *instance;
   }
 
@@ -31,7 +31,7 @@ namespace safety_tips {
 // static
 void SetProto(
     std::unique_ptr<chrome_browser_safety_tips::SafetyTipsConfig> proto) {
-  ConfigSingleton::GetInstance().SetProto(std::move(proto));
+  SafetyTipsConfigSingleton::GetInstance().SetProto(std::move(proto));
 }
 
 }  // namespace safety_tips
