@@ -336,6 +336,7 @@ static void set_good_speed_features_framesize_independent(
   }
 
   if (speed >= 4) {
+    sf->selective_ref_frame = 4;
     sf->use_intra_txb_hash = 0;
     sf->tx_type_search.fast_intra_tx_type_search = 1;
     sf->disable_loop_restoration_chroma =
