@@ -38,6 +38,11 @@ Element* LargestContentfulPaint::element() const {
   if (!element_ || !element_->isConnected() || element_->IsInShadowTree())
     return nullptr;
 
+  // Do not expose |element_| when the document is not 'fully active'.
+  const Document& document = element_->GetDocument();
+  if (!document.IsActive() || !document.GetFrame())
+    return nullptr;
+
   return element_;
 }
 
@@ -48,7 +53,7 @@ void LargestContentfulPaint::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.Add("loadTime", load_time_);
   builder.Add("id", id_);
   builder.Add("url", url_);
-  builder.Add("element", element_);
+  builder.Add("element", element());
 }
 
 void LargestContentfulPaint::Trace(blink::Visitor* visitor) {

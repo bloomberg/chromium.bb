@@ -67,6 +67,11 @@ Element* PerformanceElementTiming::element() const {
   if (!element_ || !element_->isConnected() || element_->IsInShadowTree())
     return nullptr;
 
+  // Do not expose |element_| when the document is not 'fully active'.
+  const Document& document = element_->GetDocument();
+  if (!document.IsActive() || !document.GetFrame())
+    return nullptr;
+
   return element_;
 }
 
