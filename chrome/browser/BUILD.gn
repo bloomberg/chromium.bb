@@ -3692,8 +3692,11 @@ jumbo_split_static_library("browser") {
       "performance_monitor/wmi_refresher.h",
       "taskbar/taskbar_decorator_win.cc",
       "taskbar/taskbar_decorator_win.h",
+      "win/util_win_service.cc",
+      "win/util_win_service.h",
     ]
     public_deps += [
+      "//chrome/services/util_win/public/mojom",
       "//ui/views",
       "//ui/views/controls/webview",
     ]
