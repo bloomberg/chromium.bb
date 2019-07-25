@@ -4491,9 +4491,10 @@ static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
     const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref);
     if (buf == NULL) continue;
 
-    const int ref_order_hint = buf->order_hint;
-    if (get_relative_dist(&cm->seq_params.order_hint_info, ref_order_hint,
-                          (int)cm->current_frame.order_hint) > 0) {
+    const int ref_display_order_hint = buf->display_order_hint;
+    if (av1_encoder_get_relative_dist(
+            &cm->seq_params.order_hint_info, ref_display_order_hint,
+            (int)cm->current_frame.display_order_hint) > 0) {
       one_sided_refs = 0;  // bwd reference
       break;
     }
