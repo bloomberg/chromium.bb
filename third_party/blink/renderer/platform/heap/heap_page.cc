@@ -1468,9 +1468,7 @@ bool NormalPage::Sweep(FinalizeType finalize_type) {
                     found_finalizer);
       found_finalizer = false;
 #if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-      // Discarding pages increases page faults and may regress performance.
-      // So we enable this only on low-RAM devices.
-      if (MemoryPressureListenerRegistry::IsLowEndDevice())
+      if (Arena()->GetThreadState()->IsMemoryReducingGC())
         DiscardPages(start_of_gap + sizeof(FreeListEntry), header_address);
 #endif
     }
@@ -1486,7 +1484,7 @@ bool NormalPage::Sweep(FinalizeType finalize_type) {
     AddToFreeList(start_of_gap, PayloadEnd() - start_of_gap, finalize_type,
                   found_finalizer);
 #if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-    if (MemoryPressureListenerRegistry::IsLowEndDevice())
+    if (Arena()->GetThreadState()->IsMemoryReducingGC())
       DiscardPages(start_of_gap + sizeof(FreeListEntry), PayloadEnd());
 #endif
   }
