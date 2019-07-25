@@ -2501,6 +2501,16 @@ const char kPasswordManagerOnboardingAndroidName[] =
 const char kPasswordManagerOnboardingAndroidDescription[] =
     "This flag enables showing the password manager onboarding experience.";
 
+extern const char kProcessSharingWithDefaultSiteInstancesName[] =
+    "Process sharing with default site instances";
+extern const char kProcessSharingWithDefaultSiteInstancesDescription[] =
+    "When site isolation is disabled, this mode changes how sites are lumped "
+    "in to shared processes. For sites that do not require isolation, this "
+    "feature groups them into a single 'default' site instance (per browsing "
+    "instance) instead of creating unique site instances for each one. This "
+    "enables resource savings by creating fewer processes for sites that do "
+    "not need isolation.";
+
 extern const char kProcessSharingWithStrictSiteInstancesName[] =
     "Process sharing with strict site instances";
 extern const char kProcessSharingWithStrictSiteInstancesDescription[] =

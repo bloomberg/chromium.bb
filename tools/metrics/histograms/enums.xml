@@ -34485,6 +34485,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1201183153" label="enable-centered-app-list"/>
   <int value="-1199159971"
       label="ContextualSuggestionsIPHReverseScroll:enabled"/>
+  <int value="-1198304634"
+      label="ProcessSharingWithDefaultSiteInstances:disabled"/>
   <int value="-1197245070" label="CookieDeprecationMessages:disabled"/>
   <int value="-1197035323" label="ZeroSuggestRedirectToChrome:disabled"/>
   <int value="-1195194959" label="XGEOVisibleNetworks:disabled"/>
@@ -34674,6 +34676,8 @@ from previous Chrome versions.
   <int value="-932474660" label="VirtualDesks:enabled"/>
   <int value="-932261921"
       label="enable-defer-all-script-without-optimization-hints"/>
+  <int value="-932164609"
+      label="ProcessSharingWithDefaultSiteInstances:enabled"/>
   <int value="-929944930"
       label="AutofillRationalizeRepeatedServerPredictions:disabled"/>
   <int value="-928138978" label="IPH_DemoMode:disabled"/>

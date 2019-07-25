@@ -1480,6 +1480,9 @@ extern const char kOffliningRecentPagesDescription[];
 extern const char kPasswordManagerOnboardingAndroidName[];
 extern const char kPasswordManagerOnboardingAndroidDescription[];
 
+extern const char kProcessSharingWithDefaultSiteInstancesName[];
+extern const char kProcessSharingWithDefaultSiteInstancesDescription[];
+
 extern const char kProcessSharingWithStrictSiteInstancesName[];
 extern const char kProcessSharingWithStrictSiteInstancesDescription[];
 
