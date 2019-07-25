@@ -26,6 +26,10 @@
 #include "chrome/browser/sharing/click_to_call/click_to_call_message_handler_android.h"
 #endif  // defined(OS_ANDROID)
 
+namespace gcm {
+class GCMDriver;
+}  // namespace gcm
+
 namespace syncer {
 class DeviceInfoTracker;
 class LocalDeviceInfoProvider;
@@ -65,6 +69,7 @@ class SharingService : public KeyedService,
       std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
       std::unique_ptr<SharingFCMSender> fcm_sender,
       std::unique_ptr<SharingFCMHandler> fcm_handler,
+      gcm::GCMDriver* gcm_driver,
       syncer::DeviceInfoTracker* device_info_tracker,
       syncer::LocalDeviceInfoProvider* local_device_info_provider,
       syncer::SyncService* sync_service);

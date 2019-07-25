@@ -18,7 +18,6 @@
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
-#include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/local_device_info_provider.h"
@@ -32,12 +31,10 @@ SharingDeviceRegistration::SharingDeviceRegistration(
     SharingSyncPreference* sharing_sync_preference,
     instance_id::InstanceIDDriver* instance_id_driver,
     VapidKeyManager* vapid_key_manager,
-    gcm::GCMDriver* gcm_driver,
     syncer::LocalDeviceInfoProvider* local_device_info_provider)
     : sharing_sync_preference_(sharing_sync_preference),
       instance_id_driver_(instance_id_driver),
       vapid_key_manager_(vapid_key_manager),
-      gcm_driver_(gcm_driver),
       local_device_info_provider_(local_device_info_provider) {}
 
 SharingDeviceRegistration::~SharingDeviceRegistration() = default;
@@ -53,7 +50,8 @@ void SharingDeviceRegistration::RegisterDevice(RegistrationCallback callback) {
   if (registration && registration->authorized_entity == authorized_entity &&
       (base::Time::Now() - registration->timestamp < kRegistrationExpiration)) {
     // Authorized entity hasn't changed nor has expired, skip to next step.
-    RetrieveEncrpytionInfo(std::move(callback), registration->fcm_token);
+    RetrieveEncryptionInfo(std::move(callback), registration->authorized_entity,
+                           registration->fcm_token);
     return;
   }
 
@@ -75,7 +73,8 @@ void SharingDeviceRegistration::OnFCMTokenReceived(
     case instance_id::InstanceID::SUCCESS:
       sharing_sync_preference_->SetFCMRegistration(
           {authorized_entity, fcm_registration_token, base::Time::Now()});
-      RetrieveEncrpytionInfo(std::move(callback), fcm_registration_token);
+      RetrieveEncryptionInfo(std::move(callback), authorized_entity,
+                             fcm_registration_token);
       break;
     case instance_id::InstanceID::NETWORK_ERROR:
     case instance_id::InstanceID::SERVER_ERROR:
@@ -91,14 +90,16 @@ void SharingDeviceRegistration::OnFCMTokenReceived(
   }
 }
 
-void SharingDeviceRegistration::RetrieveEncrpytionInfo(
+void SharingDeviceRegistration::RetrieveEncryptionInfo(
     RegistrationCallback callback,
+    const std::string& authorized_entity,
     const std::string& fcm_registration_token) {
-  gcm_driver_->GetEncryptionInfo(
-      kSharingFCMAppID,
-      base::BindOnce(&SharingDeviceRegistration::OnEncryptionInfoReceived,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     fcm_registration_token));
+  instance_id_driver_->GetInstanceID(kSharingFCMAppID)
+      ->GetEncryptionInfo(
+          authorized_entity,
+          base::BindOnce(&SharingDeviceRegistration::OnEncryptionInfoReceived,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                         fcm_registration_token));
 }
 
 void SharingDeviceRegistration::OnEncryptionInfoReceived(
