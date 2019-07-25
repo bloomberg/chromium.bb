@@ -2486,6 +2486,7 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"osSearchPageTitle", is_assistant_allowed
                               ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
                               : IDS_SETTINGS_SEARCH},
+    {"osSearchEngineLabel", IDS_OS_SETTINGS_SEARCH_ENGINE_LABEL},
     {"searchGoogleAssistant", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT},
     {"searchGoogleAssistantEnabled",
      IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ENABLED},
@@ -2500,6 +2501,9 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
       base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL));
   html_source->AddString("searchExplanation", search_explanation_text);
 #if defined(OS_CHROMEOS)
+  html_source->AddString(
+      "osSearchEngineTooltip",
+      ui::SubstituteChromeOSDeviceType(IDS_OS_SETTINGS_SEARCH_ENGINE_TOOLTIP));
   html_source->AddBoolean("isAssistantAllowed", is_assistant_allowed);
 #endif
 }
