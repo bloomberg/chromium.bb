@@ -547,23 +547,6 @@ crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminanc
 # expectation at the top of this file to just not declare any OS.
 crbug.com/986808 [ android opengles ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 
-# Related to SharedImages
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/misc/texture-upload-size.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/misc/texture-npot-video.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/video/tex-2d-alpha-alpha-unsigned_byte.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
-crbug.com/987228 [ android opengles passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
-
 # Misc failures
 crbug.com/angleproject/2988 [ android opengles ] conformance/context/context-size-change.html [ Failure ]
 
