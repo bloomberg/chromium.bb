@@ -249,5 +249,5 @@ base::string16 ClickToCallDialogView::GetWindowTitle() const {
 }
 
 void ClickToCallDialogView::WindowClosing() {
-  controller_->OnDialogClosed();
+  controller_->OnDialogClosed(this);
 }
