@@ -615,7 +615,7 @@ void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "androidAppsSubtext",
       l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_ANDROID_APPS_SUBTEXT,
+          IDS_SETTINGS_ANDROID_APPS_SUBTEXT, ui::GetChromeOSDeviceName(),
           GetHelpUrlWithBoard(chrome::kAndroidAppsLearnMoreURL)));
 }
 
@@ -3066,16 +3066,20 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
       {"multideviceAndroidMessagesItemTitle",
        IDS_SETTINGS_MULTIDEVICE_ANDROID_MESSAGES},
       {"multideviceForgetDevice", IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE},
-      {"multideviceForgetDeviceSummary",
-       IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE_EXPLANATION},
-      {"multideviceForgetDeviceDialogMessage",
-       IDS_SETTINGS_MULTIDEVICE_FORGET_DEVICE_DIALOG_MESSAGE},
       {"multideviceSmartLockOptions",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_OPTIONS_LOCK},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
 
+  html_source->AddString(
+      "multideviceForgetDeviceSummary",
+      ui::SubstituteChromeOSDeviceType(
+          IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE_EXPLANATION));
+  html_source->AddString(
+      "multideviceForgetDeviceDialogMessage",
+      ui::SubstituteChromeOSDeviceType(
+          IDS_SETTINGS_MULTIDEVICE_FORGET_DEVICE_DIALOG_MESSAGE));
   html_source->AddString(
       "multideviceVerificationText",
       l10n_util::GetStringFUTF16(
@@ -3087,7 +3091,7 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "multideviceSetupSummary",
       l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_MULTIDEVICE_SETUP_SUMMARY,
+          IDS_SETTINGS_MULTIDEVICE_SETUP_SUMMARY, ui::GetChromeOSDeviceName(),
           base::UTF8ToUTF16(
               chromeos::multidevice_setup::
                   GetBoardSpecificBetterTogetherSuiteLearnMoreUrl()
@@ -3104,6 +3108,7 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
       "multideviceAndroidMessagesItemSummary",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MULTIDEVICE_ANDROID_MESSAGES_SUMMARY,
+          ui::GetChromeOSDeviceName(),
           base::UTF8ToUTF16(chromeos::multidevice_setup::
                                 GetBoardSpecificMessagesLearnMoreUrl()
                                     .spec())));
@@ -3111,6 +3116,7 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
       "multideviceSmartLockItemSummary",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_MULTIDEVICE_SMART_LOCK_SUMMARY,
+          ui::GetChromeOSDeviceName(),
           GetHelpUrlWithBoard(chrome::kEasyUnlockLearnMoreUrl)));
 }
 #endif
