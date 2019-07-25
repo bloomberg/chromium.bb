@@ -143,6 +143,7 @@
 #include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/blink/blink_features.h"
+#include "ui/events/blink/prediction/filter_factory.h"
 #include "ui/events/blink/prediction/predictor_factory.h"
 #include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
@@ -1061,6 +1062,14 @@ const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
      {ui::input_prediction::kScrollPredictorNameLinearSecond,
       kResamplingInputEventsLinearSecondEnabled,
       base::size(kResamplingInputEventsLinearSecondEnabled), nullptr}};
+
+const FeatureEntry::FeatureParam kFilteringPredictionEmptyFilterEnabled[] = {
+    {"filter", ui::input_prediction::kFilterNameEmpty}};
+
+const FeatureEntry::FeatureVariation kFilteringPredictionFeatureVariations[] = {
+    {ui::input_prediction::kFilterNameEmpty,
+     kFilteringPredictionEmptyFilterEnabled,
+     base::size(kFilteringPredictionEmptyFilterEnabled), nullptr}};
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kBottomOfflineIndicatorEnabled[] = {
@@ -3413,6 +3422,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kResamplingScrollEvents,
                                     kResamplingInputEventsFeatureVariations,
                                     "ResamplingScrollEvents")},
+
+    {"enable-filtering-scroll-events",
+     flag_descriptions::kFilteringScrollPredictionName,
+     flag_descriptions::kFilteringScrollPredictionDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kFilteringScrollPrediction,
+                                    kFilteringPredictionFeatureVariations,
+                                    "FilteringScrollPrediction")},
 
     {"compositor-threaded-scrollbar-scrolling",
      flag_descriptions::kCompositorThreadedScrollbarScrollingName,

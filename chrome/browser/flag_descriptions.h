@@ -614,6 +614,9 @@ extern const char kExtensionsOnChromeUrlsDescription[];
 extern const char kFeaturePolicyName[];
 extern const char kFeaturePolicyDescription[];
 
+extern const char kFilteringScrollPredictionName[];
+extern const char kFilteringScrollPredictionDescription[];
+
 extern const char kForceEffectiveConnectionTypeName[];
 extern const char kForceEffectiveConnectionTypeDescription[];
 extern const char kEffectiveConnectionTypeUnknownDescription[];

@@ -1569,6 +1569,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-filtering-scroll-events",
+    "owners": [ "axantoine", "eirage", "nzolghadr", "input-dev" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-resource-load-scheduler",
     "owners": [ "toyoshim" ],
     "expiry_milestone": 78
