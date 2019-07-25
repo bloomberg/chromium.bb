@@ -14,8 +14,11 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
+
+namespace service_manager {
+class Connector;
+}
 
 // AntiVirusMetricsProvider is responsible for adding antivirus information to
 // the UMA system profile proto.
@@ -24,18 +27,14 @@ class AntiVirusMetricsProvider : public metrics::MetricsProvider {
   static constexpr base::Feature kReportNamesFeature = {
       "ReportFullAVProductDetails", base::FEATURE_DISABLED_BY_DEFAULT};
 
-  AntiVirusMetricsProvider();
+  explicit AntiVirusMetricsProvider(service_manager::Connector* connector);
+
   ~AntiVirusMetricsProvider() override;
 
   // metrics::MetricsDataProvider:
   void AsyncInit(const base::Closure& done_callback) override;
   void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
-
-  void SetRemoteUtilWinForTesting(
-      mojo::PendingRemote<chrome::mojom::UtilWin> remote) {
-    remote_util_win_.Bind(std::move(remote));
-  }
 
  private:
   // Called when metrics are done being gathered from the FILE thread.
@@ -45,7 +44,9 @@ class AntiVirusMetricsProvider : public metrics::MetricsProvider {
       const base::Closure& done_callback,
       const std::vector<metrics::SystemProfileProto::AntiVirusProduct>& result);
 
-  mojo::Remote<chrome::mojom::UtilWin> remote_util_win_;
+  service_manager::Connector* connector_;
+
+  chrome::mojom::UtilWinPtr util_win_ptr_;
 
   // Information on installed AntiVirus gathered.
   std::vector<metrics::SystemProfileProto::AntiVirusProduct> av_products_;

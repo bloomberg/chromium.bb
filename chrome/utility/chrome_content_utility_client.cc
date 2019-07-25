@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
-#include "base/no_destructor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/common/buildflags.h"
@@ -44,8 +43,8 @@
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-#include "chrome/services/util_win/public/mojom/util_win.mojom.h"
-#include "chrome/services/util_win/util_win_impl.h"
+#include "chrome/services/util_win/public/mojom/constants.mojom.h"
+#include "chrome/services/util_win/util_win_service.h"
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"  // nogncheck
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
 #include "components/services/quarantine/quarantine_service.h"  // nogncheck
@@ -251,6 +250,11 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
   }
 #endif
 
+#if defined(OS_WIN)
+  if (service_name == chrome::mojom::kUtilWinServiceName)
+    return std::make_unique<UtilWinService>(std::move(request));
+#endif
+
 #if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
   if (service_name == chrome::mojom::kFileUtilServiceName)
     return std::make_unique<FileUtilService>(std::move(request));
@@ -316,15 +320,6 @@ void ChromeContentUtilityClient::RegisterNetworkBinders(
     service_manager::BinderRegistry* registry) {
   if (g_network_binder_creation_callback.Get())
     g_network_binder_creation_callback.Get().Run(registry);
-}
-
-void ChromeContentUtilityClient::RunMainThreadService(
-    mojo::GenericPendingReceiver receiver) {
-#if defined(OS_WIN)
-  if (auto util_receiver = receiver.As<chrome::mojom::UtilWin>()) {
-    static base::NoDestructor<UtilWinImpl> service(std::move(util_receiver));
-  }
-#endif
 }
 
 void ChromeContentUtilityClient::RunIOThreadService(

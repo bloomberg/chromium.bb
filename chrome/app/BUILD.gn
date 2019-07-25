@@ -609,7 +609,10 @@ source_set("builtin_service_manifests") {
   }
 
   if (is_win) {
-    deps += [ "//chrome/services/wifi_util_win/public/cpp:manifest" ]
+    deps += [
+      "//chrome/services/util_win/public/cpp:manifest",
+      "//chrome/services/wifi_util_win/public/cpp:manifest",
+    ]
   }
 
   if (is_chromeos) {

@@ -17,6 +17,7 @@
 #include "chrome/browser/win/conflicts/module_inspector.h"
 #include "chrome/browser/win/conflicts/third_party_metrics_recorder.h"
 #include "content/public/common/process_type.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 class ModuleDatabaseObserver;
 
@@ -58,7 +59,8 @@ class ModuleDatabase : public ModuleDatabaseEventSource {
 
   // Creates the ModuleDatabase. Must be created and set on the sequence
   // returned by GetTaskRunner().
-  explicit ModuleDatabase(bool third_party_blocking_policy_enabled);
+  explicit ModuleDatabase(std::unique_ptr<service_manager::Connector> connector,
+                          bool third_party_blocking_policy_enabled);
   ~ModuleDatabase() override;
 
   // Returns the SequencedTaskRunner on which the ModuleDatabase lives. Can be

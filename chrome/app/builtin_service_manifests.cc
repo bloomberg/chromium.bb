@@ -35,6 +35,7 @@
 
 #if defined(OS_WIN)
 #include "base/feature_list.h"
+#include "chrome/services/util_win/public/cpp/manifest.h"
 #include "chrome/services/wifi_util_win/public/cpp/manifest.h"
 #endif
 
@@ -129,6 +130,7 @@ GetChromeBuiltinServiceManifests() {
       simple_browser::GetManifest(),
 #endif
 #if defined(OS_WIN)
+      GetUtilWinManifest(),
       GetWifiUtilWinManifest(),
 #endif
 #if !defined(OS_ANDROID)

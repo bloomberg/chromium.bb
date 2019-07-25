@@ -14,9 +14,10 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/win/conflicts/module_info_util.h"
-#include "chrome/browser/win/util_win_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -80,9 +81,11 @@ constexpr base::Feature ModuleInspector::kWinOOPInspectModuleFeature;
 constexpr base::TimeDelta ModuleInspector::kFlushInspectionResultsTimerTimeout;
 
 ModuleInspector::ModuleInspector(
-    const OnModuleInspectedCallback& on_module_inspected_callback)
+    const OnModuleInspectedCallback& on_module_inspected_callback,
+    std::unique_ptr<service_manager::Connector> connector)
     : on_module_inspected_callback_(on_module_inspected_callback),
       is_after_startup_(false),
+      connector_(std::move(connector)),
       inspection_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
@@ -101,6 +104,7 @@ ModuleInspector::ModuleInspector(
       connection_error_retry_count_(kConnectionErrorRetryCount),
       background_inspection_disabled_(
           base::FeatureList::IsEnabled(kDisableBackgroundModuleInspection)),
+      test_connector_(nullptr),
       weak_ptr_factory_(this) {
   // Use BEST_EFFORT as those will only run after startup is finished.
   content::BrowserThread::PostBestEffortTask(
@@ -171,12 +175,12 @@ void ModuleInspector::SetModuleInspectionResultForTesting(
 void ModuleInspector::EnsureUtilWinServiceBound() {
   DCHECK(base::FeatureList::IsEnabled(kWinOOPInspectModuleFeature));
 
-  if (remote_util_win_)
-    return;
+  // Use the |test_connector_| if set.
+  service_manager::Connector* connector =
+      test_connector_ ? test_connector_ : connector_.get();
 
-  remote_util_win_ = LaunchUtilWinServiceInstance();
-  remote_util_win_.reset_on_idle_timeout(base::TimeDelta::FromSeconds(5));
-  remote_util_win_.set_disconnect_handler(
+  connector->BindInterface(chrome::mojom::kUtilWinServiceName, &util_win_ptr_);
+  util_win_ptr_.set_connection_error_handler(
       base::BindOnce(&ModuleInspector::OnUtilWinServiceConnectionError,
                      base::Unretained(this)));
 
@@ -221,8 +225,8 @@ void ModuleInspector::OnUtilWinServiceConnectionError() {
 
   ReportConnectionError(true);
 
-  // Disconnect from the service.
-  remote_util_win_.reset();
+  // Reset the pointer to the service.
+  util_win_ptr_ = nullptr;
 
   // Restart inspection for the current module, only if the retry limit wasn't
   // reached.
@@ -253,7 +257,14 @@ void ModuleInspector::StartInspectingModule() {
 
   if (base::FeatureList::IsEnabled(kWinOOPInspectModuleFeature)) {
     EnsureUtilWinServiceBound();
-    remote_util_win_->InspectModule(
+
+    // An unbound InterfacePtr at this point means the service is not available.
+    // This is only possible during shutdown. In this case, just dropping the
+    // request and stop processing new modules is fine.
+    if (!util_win_ptr_)
+      return;
+
+    util_win_ptr_->InspectModule(
         module_key.module_path,
         base::BindOnce(&ModuleInspector::OnModuleNewlyInspected,
                        weak_ptr_factory_.GetWeakPtr(), module_key));
@@ -307,12 +318,12 @@ void ModuleInspector::OnInspectionFinished(
 
   on_module_inspected_callback_.Run(module_key, std::move(inspection_result));
 
-  // Disconnect from the UtilWin service to clean up the service process. While
-  // this code is only ever needed in the case the WinOOPInspectModule feature
-  // is enabled, it's faster to check the Remote's bound state than to check the
-  // feature status.
-  if (queue_.empty() && remote_util_win_)
-    remote_util_win_.reset();
+  // Free the pointer to the UtilWin service to clean up the utility process
+  // when it is no longer needed. While this code is only ever needed in the
+  // case the WinOOPInspectModule feature is enabled, it's faster to check the
+  // value of the pointer than to check the feature status.
+  if (queue_.empty() && util_win_ptr_)
+    util_win_ptr_ = nullptr;
 
   // Continue the work.
   if (!queue_.empty())

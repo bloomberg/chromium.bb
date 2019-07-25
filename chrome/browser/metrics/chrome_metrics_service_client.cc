@@ -715,7 +715,8 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
           base::Bind(&GetExecutableVersionDetails)));
 
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<AntiVirusMetricsProvider>());
+      std::make_unique<AntiVirusMetricsProvider>(
+          content::GetSystemConnector()));
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
