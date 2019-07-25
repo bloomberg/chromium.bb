@@ -245,7 +245,7 @@ def confirm_or_exit(prefix='', action='confirm'):
 
 
 def ask_for_explicit_yes(prompt):
-  """Returns whether user typed 'y' or 'yes' to confirm the given prompt"""
+  """Returns whether user typed 'y' or 'yes' to confirm the given prompt."""
   result = ask_for_data(prompt + ' [Yes/No]: ').lower()
   while True:
     if 'yes'.startswith(result):
@@ -292,10 +292,10 @@ def _git_get_branch_config_value(key, default=None, value_type=str,
 
 
 def _git_set_branch_config_value(key, value, branch=None, **kwargs):
-  """Sets the value or unsets if it's None of a git branch config.
+  """Sets or unsets the git branch config value.
 
-  Valid, though not necessarily existing, branch must be provided,
-  otherwise currently checked out branch is used.
+  If value is None, the key will be unset, otherwise it will be set.
+  If no branch is given, the currently checked out branch is used.
   """
   if not branch:
     branch = GetCurrentBranch()
@@ -5062,7 +5062,7 @@ def CMDtree(parser, args):
 
 @metrics.collector.collect_metrics('git cl try')
 def CMDtry(parser, args):
-  """Triggers try jobs using either BuildBucket or CQ dry run."""
+  """Triggers tryjobs using either BuildBucket or CQ dry run."""
   group = optparse.OptionGroup(parser, 'Try job options')
   group.add_option(
       '-b', '--bot', action='append',
@@ -5166,7 +5166,7 @@ def CMDtry(parser, args):
 
 @metrics.collector.collect_metrics('git cl try-results')
 def CMDtry_results(parser, args):
-  """Prints info about try jobs associated with current CL."""
+  """Prints info about results for tryjobs associated with the current CL."""
   group = optparse.OptionGroup(parser, 'Try job results options')
   group.add_option(
       '-p', '--patchset', type=int, help='patchset number if not current.')
@@ -5453,7 +5453,7 @@ def BuildGitDiffCmd(diff_type, upstream_commit, args, allow_prefix=False):
 
 
 def MatchingFileType(file_name, extensions):
-  """Returns true if the file name ends with one of the given extensions."""
+  """Returns True if the file name ends with one of the given extensions."""
   return bool([ext for ext in extensions if file_name.lower().endswith(ext)])
 
 
