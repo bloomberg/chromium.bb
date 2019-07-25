@@ -5108,6 +5108,7 @@ interface RTCPeerConnection : EventTarget
     method getTransceivers
     method removeStream
     method removeTrack
+    method restartIce
     method setConfiguration
     method setLocalDescription
     method setRemoteDescription
@@ -8723,6 +8724,7 @@ interface webkitRTCPeerConnection : EventTarget
     method getTransceivers
     method removeStream
     method removeTrack
+    method restartIce
     method setConfiguration
     method setLocalDescription
     method setRemoteDescription

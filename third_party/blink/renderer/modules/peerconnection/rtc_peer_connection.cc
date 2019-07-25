@@ -1876,6 +1876,12 @@ String RTCPeerConnection::connectionState() const {
   return String();
 }
 
+void RTCPeerConnection::restartIce() {
+  if (closed_)
+    return;
+  peer_handler_->RestartIce();
+}
+
 void RTCPeerConnection::addStream(ScriptState* script_state,
                                   MediaStream* stream,
                                   const Dictionary& media_constraints,

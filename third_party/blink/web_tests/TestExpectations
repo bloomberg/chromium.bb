@@ -6316,6 +6316,9 @@ crbug.com/982149 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/unsafe
 crbug.com/982149 [ Win7 ] virtual/not-omt-sw-fetch/external/wpt/referrer-policy/unsafe-url/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Pass Timeout ]
 crbug.com/982149 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/unsafe-url/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Pass Timeout ]
 
+# WebRTC "onnegotiationneeded" firing too early causing us to miss the event.
+crbug.com/985797 external/wpt/webrtc/RTCPeerConnection-restartIce-onnegotiationneeded.https.html [ Timeout ]
+
 # Sheriff 2019-07-18
 crbug.com/985232 [ Win7 ] external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/dynamic-imports-credentials.sub.html [ Pass Failure ]
 crbug.com/985232 [ Win7 ] virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/dynamic-imports-credentials.sub.html [ Pass Failure ]
