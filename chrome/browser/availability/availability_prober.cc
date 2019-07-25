@@ -437,7 +437,7 @@ void AvailabilityProber::OnURLLoadComplete(
 
   bool was_successful = delegate_->IsResponseSuccess(
       static_cast<net::Error>(url_loader_->NetError()),
-      *url_loader_->ResponseInfo(), std::move(response_body));
+      url_loader_->ResponseInfo(), std::move(response_body));
 
   timeout_timer_.reset();
   url_loader_.reset();

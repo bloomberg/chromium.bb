@@ -44,18 +44,22 @@ class TestDelegate : public AvailabilityProber::Delegate {
   bool ShouldSendNextProbe() override { return should_send_next_probe_; }
 
   bool IsResponseSuccess(net::Error net_error,
-                         const network::ResourceResponseHead& head,
+                         const network::ResourceResponseHead* head,
                          std::unique_ptr<std::string> body) override {
-    return net_error == net::OK &&
-           head.headers->response_code() == net::HTTP_OK;
+    got_head_ = head;
+    return net_error == net::OK && head &&
+           head->headers->response_code() == net::HTTP_OK;
   }
 
   void set_should_send_next_probe(bool should_send_next_probe) {
     should_send_next_probe_ = should_send_next_probe;
   }
 
+  bool got_head() const { return got_head_; }
+
  private:
   bool should_send_next_probe_ = true;
+  bool got_head_ = false;
 };
 
 class AvailabilityProberBrowserTest : public InProcessBrowserTest {
@@ -72,7 +76,7 @@ class AvailabilityProberBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
-    cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+    cmd->AppendSwitchASCII("host-rules", "MAP test.com 127.0.0.1");
   }
 
   void TearDownOnMainThread() override {
@@ -177,4 +181,25 @@ IN_PROC_BROWSER_TEST_F(AvailabilityProberBrowserTest, NetworkChange) {
   WaitForCompletedProbe(&prober);
 
   EXPECT_TRUE(prober.LastProbeWasSuccessful().value());
+}
+
+IN_PROC_BROWSER_TEST_F(AvailabilityProberBrowserTest, BadServer) {
+  GURL url("https://invalid.com");
+  TestDelegate delegate;
+  net::HttpRequestHeaders headers;
+  AvailabilityProber::RetryPolicy retry_policy;
+  AvailabilityProber::TimeoutPolicy timeout_policy;
+
+  AvailabilityProber prober(
+      &delegate, browser()->profile()->GetURLLoaderFactory(),
+      browser()->profile()->GetPrefs(),
+      AvailabilityProber::ClientName::kLitepages, url,
+      AvailabilityProber::HttpMethod::kGet, headers, retry_policy,
+      timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
+      base::TimeDelta::FromDays(1));
+  prober.SendNowIfInactive(false);
+  WaitForCompletedProbe(&prober);
+
+  EXPECT_FALSE(delegate.got_head());
+  EXPECT_FALSE(prober.LastProbeWasSuccessful().value());
 }

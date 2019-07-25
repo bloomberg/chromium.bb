@@ -64,7 +64,7 @@ class AvailabilityProber
     // delegate returns true, no more probes would be attempted until there is a
     // change in the network or |SendNowIfInactive| is called.
     virtual bool IsResponseSuccess(net::Error net_error,
-                                   const network::ResourceResponseHead& head,
+                                   const network::ResourceResponseHead* head,
                                    std::unique_ptr<std::string> body) = 0;
   };
 
