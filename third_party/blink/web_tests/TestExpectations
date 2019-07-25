@@ -142,6 +142,7 @@ Bug(none) virtual/composite-after-paint/paint/frames [ Pass ]
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
+crbug.com/986110 external/wpt/css/css-transforms/perspective-transforms-equivalence.html [ Failure ]
 
 crbug.com/807395 fast/multicol/mixed-opacity-test.html [ Failure ]
 
