@@ -3,16 +3,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This script is used to update our local AFDO profiles.
+"""This script is used to update our local profiles (AFDO or orderfiles)
 
-This uses profiles of Chrome provided by our friends from Chrome OS. Though the
-profiles are available externally, the bucket they sit in is otherwise
-unreadable by non-Googlers. Gsutil usage with this bucket is therefore quite
-awkward: you can't do anything but `cp` certain files with an external account,
-and you can't even do that if you're not yet authenticated.
+This uses profiles of Chrome, or orderfiles for linking, provided by our
+friends from Chrome OS. Though the profiles are available externally,
+the bucket they sit in is otherwise unreadable by non-Googlers. Gsutil
+usage with this bucket is therefore quite awkward: you can't do anything
+but `cp` certain files with an external account, and you can't even do
+that if you're not yet authenticated.
 
 No authentication is necessary if you pull these profiles directly over
-https."""
+https.
+"""
 
 import argparse
 import contextlib
@@ -22,25 +24,16 @@ import sys
 import urllib2
 
 GS_HTTP_URL = 'https://storage.googleapis.com'
-GS_BASE_URL = GS_HTTP_URL + '/chromeos-prebuilt/afdo-job/llvm'
-PROFILE_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
-LOCAL_PROFILE_PATH = os.path.join(PROFILE_DIRECTORY, 'afdo.prof')
-
-# We use these to track the local profile; newest.txt is owned by git and tracks
-# the name of the newest profile we should pull, and local.txt is the most
-# recent profile we've successfully pulled.
-NEWEST_PROFILE_NAME_PATH = os.path.join(PROFILE_DIRECTORY, 'newest.txt')
-LOCAL_PROFILE_NAME_PATH = os.path.join(PROFILE_DIRECTORY, 'local.txt')
 
 
-def ReadUpToDateProfileName():
-  with open(NEWEST_PROFILE_NAME_PATH) as f:
+def ReadUpToDateProfileName(newest_profile_name_path):
+  with open(newest_profile_name_path) as f:
     return f.read().strip()
 
 
-def ReadLocalProfileName():
+def ReadLocalProfileName(local_profile_name_path):
   try:
-    with open(LOCAL_PROFILE_NAME_PATH) as f:
+    with open(local_profile_name_path) as f:
       return f.read().strip()
   except IOError:
     # Assume it either didn't exist, or we couldn't read it. In either case, we
@@ -49,8 +42,8 @@ def ReadLocalProfileName():
     return None
 
 
-def WriteLocalProfileName(name):
-  with open(LOCAL_PROFILE_NAME_PATH, 'w') as f:
+def WriteLocalProfileName(name, local_profile_name_path):
+  with open(local_profile_name_path, 'w') as f:
     f.write(name)
 
 
@@ -71,16 +64,16 @@ def CheckCallOrExit(cmd):
   sys.exit(1)
 
 
-def RetrieveProfile(desired_profile_name, out_path):
+def RetrieveProfile(desired_profile_name, out_path, gs_url_base):
   # vpython is > python 2.7.9, so we can expect urllib to validate HTTPS certs
   # properly.
   ext = os.path.splitext(desired_profile_name)[1]
   compressed_path = out_path + ext
   gs_prefix = 'gs://'
   if not desired_profile_name.startswith(gs_prefix):
-    gs_url = GS_BASE_URL + '/' + desired_profile_name
+    gs_url = os.path.join(GS_HTTP_URL, gs_url_base, desired_profile_name)
   else:
-    gs_url = GS_HTTP_URL + '/' + desired_profile_name[len(gs_prefix):]
+    gs_url = os.path.join(GS_HTTP_URL, desired_profile_name[len(gs_prefix):])
 
   with contextlib.closing(urllib2.urlopen(gs_url)) as u:
     with open(compressed_path, 'wb') as f:
@@ -107,36 +100,55 @@ def RetrieveProfile(desired_profile_name, out_path):
         'Only bz2 and xz extensions are supported; "%s" is not' % ext)
 
 
-def CleanProfilesDirectory():
-  # Start with a clean slate, removing old profiles/downloads/etc.
-  old_artifacts = (p for p in os.listdir(PROFILE_DIRECTORY) if
-                   p.startswith('chromeos-chrome-'))
-  for artifact in old_artifacts:
-    os.remove(os.path.join(PROFILE_DIRECTORY, artifact))
-
-
 def main():
-  parser = argparse.ArgumentParser('Downloads profiles provided by Chrome OS')
-  parser.add_argument('-f', '--force', action='store_true',
-                      help='Fetch a profile even if the local one is current')
+  parser = argparse.ArgumentParser(
+      'Downloads profile/orderfile provided by Chrome OS')
+
+  parser.add_argument(
+      '--newest_state',
+      required=True,
+      help='Path to the file with name of the newest profile. '
+           'We use this file to track the name of the newest profile '
+           'we should pull'
+  )
+  parser.add_argument(
+      '--local_state',
+      required=True,
+      help='Path of the file storing name of the local profile. '
+           'We use this file to track the most recent profile we\'ve '
+           'successfully pulled.'
+  )
+  parser.add_argument(
+      '--gs_url_base',
+      required=True,
+      help='The base GS URL to search for the profile.'
+  )
+  parser.add_argument(
+      '--output_name',
+      required=True,
+      help='Output name of the downloaded and uncompressed profile.'
+  )
+  parser.add_argument(
+      '-f', '--force',
+      action='store_true',
+      help='Fetch a profile even if the local one is current'
+  )
   args = parser.parse_args()
 
-  up_to_date_profile = ReadUpToDateProfileName()
+  up_to_date_profile = ReadUpToDateProfileName(args.newest_state)
   if not args.force:
-    local_profile_name = ReadLocalProfileName()
+    local_profile_name = ReadLocalProfileName(args.local_state)
     # In a perfect world, the local profile should always exist if we
     # successfully read local_profile_name. If it's gone, though, the user
     # probably removed it as a way to get us to download it again.
     if local_profile_name == up_to_date_profile \
-        and os.path.exists(LOCAL_PROFILE_PATH):
+        and os.path.exists(args.output_name):
       return 0
 
-  CleanProfilesDirectory()
-
-  new_tmpfile = LOCAL_PROFILE_PATH + '.new'
-  RetrieveProfile(up_to_date_profile, new_tmpfile)
-  os.rename(new_tmpfile, LOCAL_PROFILE_PATH)
-  WriteLocalProfileName(up_to_date_profile)
+  new_tmpfile = args.output_name + '.new'
+  RetrieveProfile(up_to_date_profile, new_tmpfile, args.gs_url_base)
+  os.rename(new_tmpfile, args.output_name)
+  WriteLocalProfileName(up_to_date_profile, args.local_state)
 
 
 if __name__ == '__main__':
