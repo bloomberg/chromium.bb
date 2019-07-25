@@ -2381,6 +2381,9 @@ void RenderWidgetHostViewAndroid::ComputeEventLatencyOSTouchHistograms(
 }
 
 void RenderWidgetHostViewAndroid::CreateOverscrollControllerIfPossible() {
+#if defined(DISABLE_OVERSCROLL)
+  return;
+#else
   // an OverscrollController is already set
   if (overscroll_controller_)
     return;
@@ -2416,6 +2419,7 @@ void RenderWidgetHostViewAndroid::CreateOverscrollControllerIfPossible() {
 
   overscroll_controller_ = std::make_unique<OverscrollControllerAndroid>(
       overscroll_refresh_handler, compositor, view_.GetDipScale());
+#endif
 }
 
 void RenderWidgetHostViewAndroid::SetOverscrollControllerForTesting(
