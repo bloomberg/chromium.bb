@@ -18,6 +18,6 @@ if [ "${kernel_name:0:5}" = "MINGW" ]; then
   cmd "/C ${dir}\\python.bat ${dir}\\gclient.py runhooks --spec=$gclient_spec"
 else
   dir="$(dirname $0)"
-  PYTHONDONTWRITEBYTECODE=1 exec vpython "$dir/gclient.py" runhooks --spec="$gclient_spec"
+  PYTHONDONTWRITEBYTECODE=1 exec python "$dir/gclient.py" runhooks --spec="$gclient_spec"
 fi
 exit $?
