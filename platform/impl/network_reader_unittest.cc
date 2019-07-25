@@ -120,16 +120,16 @@ TEST(NetworkReaderTest, UnwatchReadableSucceeds) {
   MockCallbacks callbacks;
 
   auto callback = callbacks.GetReadCallback();
-  EXPECT_FALSE(network_waiter.CancelRead(socket.get()));
+  EXPECT_EQ(network_waiter.CancelRead(socket.get()), Error::Code::kNotRunning);
   EXPECT_FALSE(network_waiter.IsMappedRead(socket.get()));
 
   EXPECT_EQ(network_waiter.ReadRepeatedly(socket.get(), callback).code(),
             Error::Code::kNone);
 
-  EXPECT_TRUE(network_waiter.CancelRead(socket.get()));
+  EXPECT_EQ(network_waiter.CancelRead(socket.get()), Error::Code::kNone);
   EXPECT_FALSE(network_waiter.IsMappedRead(socket.get()));
 
-  EXPECT_FALSE(network_waiter.CancelRead(socket.get()));
+  EXPECT_EQ(network_waiter.CancelRead(socket.get()), Error::Code::kNotRunning);
 
   // Set deletion callback because otherwise the destructor tries to call a
   // callback on the deleted object when it goes out of scope.

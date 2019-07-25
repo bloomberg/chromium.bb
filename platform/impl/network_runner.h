@@ -33,7 +33,7 @@ class NetworkRunnerImpl final : public NetworkRunner {
 
   Error ReadRepeatedly(UdpSocket* socket, UdpReadCallback* callback);
 
-  bool CancelRead(UdpSocket* socket);
+  Error CancelRead(UdpSocket* socket);
 
   void PostPackagedTask(Task task);
 

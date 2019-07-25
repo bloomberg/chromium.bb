@@ -34,9 +34,10 @@ Error NetworkReader::ReadRepeatedly(UdpSocket* socket, Callback callback) {
              : Error::None();
 }
 
-bool NetworkReader::CancelRead(UdpSocket* socket) {
+Error NetworkReader::CancelRead(UdpSocket* socket) {
   std::lock_guard<std::mutex> lock(mutex_);
-  return read_callbacks_.erase(socket) != 0;
+  return read_callbacks_.erase(socket) != 0 ? Error::Code::kNone
+                                            : Error::Code::kNotRunning;
 }
 
 Error NetworkReader::WaitAndRead(Clock::duration timeout) {

@@ -30,7 +30,7 @@ Error NetworkRunnerImpl::ReadRepeatedly(UdpSocket* socket,
   return network_loop_->ReadRepeatedly(socket, func);
 }
 
-bool NetworkRunnerImpl::CancelRead(UdpSocket* socket) {
+Error NetworkRunnerImpl::CancelRead(UdpSocket* socket) {
   return network_loop_->CancelRead(socket);
 }
 

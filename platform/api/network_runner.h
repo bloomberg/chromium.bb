@@ -47,12 +47,10 @@ class NetworkRunner : public TaskRunner {
   virtual Error ReadRepeatedly(UdpSocket* socket,
                                UdpReadCallback* callback) = 0;
 
-  // Cancels any pending wait on reading |socket|. Returns false only if the
-  // socket was not yet being watched, and true if the operation is successful
-  // and the socket is no longer watched.
-  // TODO(rwkeane): Make this return void and either include a DCHECK inside of
-  // the implementation or allow failure with no return code.
-  virtual bool CancelRead(UdpSocket* socket) = 0;
+  // Cancels any pending wait on reading |socket|. Returns Error::Code::kNone if
+  // the operation is successful and the socket is no longer watched, returns an
+  // error otherwise.
+  virtual Error CancelRead(UdpSocket* socket) = 0;
 };
 
 }  // namespace platform
