@@ -1622,11 +1622,10 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   if (!pause_after_download())
     InitializeGlobalScope();
 
-  if (!controller_request_.is_pending()) {
-    DCHECK(!controller_ptr_.is_bound());
-    controller_request_ = mojo::MakeRequest(&controller_ptr_);
+  if (!controller_receiver_.is_valid()) {
+    controller_receiver_ = remote_controller_.BindNewPipeAndPassReceiver();
   }
-  params->controller_request = std::move(controller_request_);
+  params->controller_receiver = std::move(controller_receiver_);
 
   params->provider_info = std::move(provider_info);
 
@@ -1984,8 +1983,8 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   request_timeouts_.clear();
   external_request_uuid_to_request_id_.clear();
   service_worker_ptr_.reset();
-  controller_ptr_.reset();
-  DCHECK(!controller_request_.is_pending());
+  remote_controller_.reset();
+  DCHECK(!controller_receiver_.is_valid());
   installed_scripts_sender_.reset();
   binding_.Close();
   pending_external_requests_.clear();
