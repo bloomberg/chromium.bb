@@ -1121,7 +1121,8 @@ void DownloadManagerImpl::PostInitialization(
 
   // Download manager is only initialized if both history db and in progress
   // cache are initialized.
-  if (!history_db_initialized_ || !in_progress_cache_initialized_)
+  bool history_loaded = history_db_initialized_ || IsOffTheRecord();
+  if (!history_loaded || !in_progress_cache_initialized_)
     return;
 
 #if defined(OS_ANDROID)
