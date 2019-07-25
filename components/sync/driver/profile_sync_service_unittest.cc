@@ -1063,43 +1063,6 @@ TEST_F(ProfileSyncServiceTest, NoDisableSyncFlag) {
   EXPECT_TRUE(switches::IsSyncAllowedByFlag());
 }
 
-// Test Sync will stop after receive memory pressure
-TEST_F(ProfileSyncServiceTest, MemoryPressureRecording) {
-  CreateService(ProfileSyncService::AUTO_START);
-  SignIn();
-  InitializeForNthSync();
-
-  ASSERT_TRUE(prefs()->GetBoolean(prefs::kSyncRequested));
-  ASSERT_EQ(SyncService::TransportState::ACTIVE,
-            service()->GetTransportState());
-
-  testing::Mock::VerifyAndClearExpectations(component_factory());
-
-  SyncPrefs sync_prefs(prefs());
-
-  ASSERT_EQ(prefs()->GetInteger(prefs::kSyncMemoryPressureWarningCount), 0);
-  ASSERT_FALSE(sync_prefs.DidSyncShutdownCleanly());
-
-  // Simulate memory pressure notification.
-  base::MemoryPressureListener::NotifyMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-  base::RunLoop().RunUntilIdle();
-
-  // Verify memory pressure recorded.
-  EXPECT_EQ(prefs()->GetInteger(prefs::kSyncMemoryPressureWarningCount), 1);
-  EXPECT_FALSE(sync_prefs.DidSyncShutdownCleanly());
-
-  // Simulate memory pressure notification.
-  base::MemoryPressureListener::NotifyMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-  base::RunLoop().RunUntilIdle();
-  ShutdownAndDeleteService();
-
-  // Verify memory pressure and shutdown recorded.
-  EXPECT_EQ(prefs()->GetInteger(prefs::kSyncMemoryPressureWarningCount), 2);
-  EXPECT_TRUE(sync_prefs.DidSyncShutdownCleanly());
-}
-
 // Test that the passphrase prompt due to version change logic gets triggered
 // on a datatype type requesting startup, but only happens once.
 TEST_F(ProfileSyncServiceTest, PassphrasePromptDueToVersion) {

@@ -101,12 +101,6 @@ const char kSyncBagOfChips[] = "sync.bag_of_chips";
 // that we only want to use once.
 const char kSyncPassphrasePrompted[] = "sync.passphrase_prompted";
 
-// Stores how many times received MEMORY_PRESSURE_LEVEL_CRITICAL.
-const char kSyncMemoryPressureWarningCount[] = "sync.memory_warning_count";
-
-// Stores if sync shutdown cleanly.
-const char kSyncShutdownCleanly[] = "sync.shutdown_cleanly";
-
 // Dictionary of last seen invalidation versions for each model type.
 const char kSyncInvalidationVersions[] = "sync.invalidation_versions";
 

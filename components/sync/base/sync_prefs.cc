@@ -48,6 +48,13 @@ const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
 // kSyncRequested.
 const char kSyncSuppressStart[] = "sync.suppress_start";
 
+// Obsolete pref that stored how many times sync received memory pressure
+// warnings.
+const char kSyncMemoryPressureWarningCount[] = "sync.memory_warning_count";
+
+// Obsolete pref that stored if sync shutdown cleanly.
+const char kSyncShutdownCleanly[] = "sync.shutdown_cleanly";
+
 std::vector<std::string> GetObsoleteUserTypePrefs() {
   return {prefs::kSyncAutofillProfile,
           prefs::kSyncAutofillWallet,
@@ -256,8 +263,6 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kSyncKeystoreEncryptionBootstrapToken,
                                std::string());
   registry->RegisterBooleanPref(prefs::kSyncPassphrasePrompted, false);
-  registry->RegisterIntegerPref(prefs::kSyncMemoryPressureWarningCount, -1);
-  registry->RegisterBooleanPref(prefs::kSyncShutdownCleanly, false);
   registry->RegisterDictionaryPref(prefs::kSyncInvalidationVersions);
   registry->RegisterStringPref(prefs::kSyncLastRunVersion, std::string());
   registry->RegisterBooleanPref(prefs::kEnableLocalSyncBackend, false);
@@ -287,6 +292,8 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterStringPref(kSyncSpareBootstrapToken, "");
 #endif
   registry->RegisterBooleanPref(kSyncSuppressStart, false);
+  registry->RegisterIntegerPref(kSyncMemoryPressureWarningCount, -1);
+  registry->RegisterBooleanPref(kSyncShutdownCleanly, false);
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -315,8 +322,6 @@ void SyncPrefs::ClearPreferences() {
   pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncKeystoreEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncPassphrasePrompted);
-  pref_service_->ClearPref(prefs::kSyncMemoryPressureWarningCount);
-  pref_service_->ClearPref(prefs::kSyncShutdownCleanly);
   pref_service_->ClearPref(prefs::kSyncInvalidationVersions);
   pref_service_->ClearPref(prefs::kSyncLastRunVersion);
   // No need to clear kManaged, kEnableLocalSyncBackend or kLocalSyncBackendDir,
@@ -544,22 +549,6 @@ void SyncPrefs::SetPassphrasePrompted(bool value) {
   pref_service_->SetBoolean(prefs::kSyncPassphrasePrompted, value);
 }
 
-int SyncPrefs::GetMemoryPressureWarningCount() const {
-  return pref_service_->GetInteger(prefs::kSyncMemoryPressureWarningCount);
-}
-
-void SyncPrefs::SetMemoryPressureWarningCount(int value) {
-  pref_service_->SetInteger(prefs::kSyncMemoryPressureWarningCount, value);
-}
-
-bool SyncPrefs::DidSyncShutdownCleanly() const {
-  return pref_service_->GetBoolean(prefs::kSyncShutdownCleanly);
-}
-
-void SyncPrefs::SetCleanShutdown(bool value) {
-  pref_service_->SetBoolean(prefs::kSyncShutdownCleanly, value);
-}
-
 void SyncPrefs::GetInvalidationVersions(
     std::map<ModelType, int64_t>* invalidation_versions) const {
   const base::DictionaryValue* invalidation_dictionary =
@@ -699,6 +688,11 @@ void MigrateSyncSuppressedPref(PrefService* pref_service) {
   }
   // Otherwise, nothing to be done: Sync was likely never enabled in this
   // profile.
+}
+
+void ClearObsoleteMemoryPressurePrefs(PrefService* pref_service) {
+  pref_service->ClearPref(kSyncMemoryPressureWarningCount);
+  pref_service->ClearPref(kSyncShutdownCleanly);
 }
 
 }  // namespace syncer

@@ -70,9 +70,6 @@ extern const char kSyncBagOfChips[];
 
 extern const char kSyncPassphrasePrompted[];
 
-extern const char kSyncMemoryPressureWarningCount[];
-extern const char kSyncShutdownCleanly[];
-
 extern const char kSyncInvalidationVersions[];
 
 extern const char kSyncLastRunVersion[];

@@ -1099,4 +1099,5 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 7/2019.
   syncer::MigrateSyncSuppressedPref(profile_prefs);
   profile_prefs->ClearPref(kSignedInTime);
+  syncer::ClearObsoleteMemoryPressurePrefs(profile_prefs);
 }

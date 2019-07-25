@@ -198,4 +198,5 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
 
   // Added 07/2019.
   syncer::MigrateSyncSuppressedPref(prefs);
+  syncer::ClearObsoleteMemoryPressurePrefs(prefs);
 }
