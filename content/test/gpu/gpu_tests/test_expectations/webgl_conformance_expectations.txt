@@ -89,6 +89,15 @@ crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
 # And restore ['linux', 'intel'], bug=928530 as Fail
 crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failure ]
 
+# TODO(crbug.com/979444): once this is passing on the passthrough
+# command decoder on Android, simplify this expectation to just not
+# declare any OS.
+crbug.com/979444 [ chromeos ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ mac ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ android no-angle ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+
 # Win / AMD / Passthrough command decoder / D3D11
 crbug.com/685232 [ win amd d3d11 passthrough ] conformance/textures/misc/copytexsubimage2d-subrects.html [ RetryOnFailure ]
 crbug.com/772037 [ win7 debug amd d3d11 passthrough ] conformance/textures/misc/texture-sub-image-cube-maps.html [ RetryOnFailure ]
@@ -532,6 +541,9 @@ crbug.com/845438 [ android ] conformance/glsl/bugs/sketchfab-lighting-shader-cra
 crbug.com/981579 [ android android-chromium opengles ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+# TODO(crbug.com/979444, crbug.com/986808): once this is passing on
+# the passthrough command decoder, simplify the RetryOnFailure
+# expectation at the top of this file to just not declare any OS.
 crbug.com/986808 [ android opengles ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 
 # Related to SharedImages
