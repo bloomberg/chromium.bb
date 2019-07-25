@@ -333,8 +333,6 @@ jumbo_split_static_library("browser") {
     "component_updater/sth_set_component_remover.h",
     "component_updater/subresource_filter_component_installer.cc",
     "component_updater/subresource_filter_component_installer.h",
-    "component_updater/supervised_user_whitelist_installer.cc",
-    "component_updater/supervised_user_whitelist_installer.h",
     "component_updater/sw_reporter_installer_win.cc",
     "component_updater/sw_reporter_installer_win.h",
     "consent_auditor/consent_auditor_factory.cc",
@@ -4958,6 +4956,8 @@ jumbo_split_static_library("browser") {
 
   if (enable_supervised_users) {
     sources += [
+      "component_updater/supervised_user_whitelist_installer.cc",
+      "component_updater/supervised_user_whitelist_installer.h",
       "content_settings/content_settings_supervised_provider.cc",
       "content_settings/content_settings_supervised_provider.h",
       "supervised_user/child_accounts/child_account_service.cc",

@@ -305,10 +305,6 @@ jumbo_split_static_library("ui") {
     "webui/quota_internals/quota_internals_ui.h",
     "webui/signin_internals_ui.cc",
     "webui/signin_internals_ui.h",
-    "webui/supervised_user_internals_message_handler.cc",
-    "webui/supervised_user_internals_message_handler.h",
-    "webui/supervised_user_internals_ui.cc",
-    "webui/supervised_user_internals_ui.h",
     "webui/sync_internals_message_handler.cc",
     "webui/sync_internals_message_handler.h",
     "webui/sync_internals_ui.cc",
@@ -1392,10 +1388,20 @@ jumbo_split_static_library("ui") {
     }
   }
 
+  # TODO(crbug.com/980869): Remove the section below.
   if (enable_supervised_users && !is_android && !is_chromeos) {
     sources += [
       "startup/supervised_users_deprecated_infobar_delegate.cc",
       "startup/supervised_users_deprecated_infobar_delegate.h",
+    ]
+  }
+
+  if (enable_supervised_users) {
+    sources += [
+      "webui/supervised_user_internals_message_handler.cc",
+      "webui/supervised_user_internals_message_handler.h",
+      "webui/supervised_user_internals_ui.cc",
+      "webui/supervised_user_internals_ui.h",
     ]
   }
 
