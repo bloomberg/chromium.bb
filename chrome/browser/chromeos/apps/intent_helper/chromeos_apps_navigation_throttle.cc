@@ -76,6 +76,8 @@ void ChromeOsAppsNavigationThrottle::OnIntentPickerClosed(
       } else {
         close_reason = apps::IntentPickerCloseReason::ERROR_AFTER_PICKER;
       }
+      RecordUma(launch_name, app_type, close_reason, apps::Source::kHttpOrHttps,
+                should_persist);
       return;
     case apps::mojom::AppType::kUnknown:
       // TODO(crbug.com/826982): This workaround can be removed when preferences
