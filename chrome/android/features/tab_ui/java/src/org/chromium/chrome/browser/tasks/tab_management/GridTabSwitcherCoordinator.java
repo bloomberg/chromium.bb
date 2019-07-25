@@ -74,7 +74,6 @@ public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
         mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
                 context, compositorViewHolder, tabModelSelector, tabContentManager);
 
-        TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider;
         mMediator = new GridTabSwitcherMediator(this, containerViewModel, tabModelSelector,
                 fullscreenManager, compositorViewHolder,
                 mTabSelectionEditorCoordinator.getController());

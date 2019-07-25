@@ -19,6 +19,8 @@ import org.chromium.ui.widget.ButtonCompat;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+// TODO(mattsimmons): Rename this to be less `grid` specific since it's used by both GRID and
+//  CAROUSEL modes. Do the same for the grid layouts inflated in `create`.
 /**
  * {@link RecyclerView.ViewHolder} for tab grid. Owns the tab info card
  * and the associated view hierarchy.
