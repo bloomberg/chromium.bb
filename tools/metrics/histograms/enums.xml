@@ -39639,6 +39639,7 @@ Called by update_use_counter_css.py.-->
   <int value="13" label="Chrome Search Extension"/>
   <int value="14" label="Chrome Content Extension"/>
   <int value="15" label="Chrome Share Extension"/>
+  <int value="16" label="Chrome"/>
 </enum>
 
 <enum name="MobileSessionShutdownType">
