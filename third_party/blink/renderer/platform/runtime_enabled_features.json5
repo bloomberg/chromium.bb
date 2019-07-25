@@ -810,7 +810,7 @@
       // http://bit.ly/lsm-explainer.
       name: "LayoutInstabilityAPI",
       origin_trial_feature_name: "LayoutJankAPI",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "LayoutNG",

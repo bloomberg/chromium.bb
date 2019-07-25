@@ -3787,6 +3787,13 @@ interface KeyframeEffect : AnimationEffect
     getter target
     method constructor
     setter target
+interface LayoutShift : PerformanceEntry
+    attribute @@toStringTag
+    getter hadRecentInput
+    getter lastInputTime
+    getter value
+    method constructor
+    method toJSON
 interface LinearAccelerationSensor : Accelerometer
     attribute @@toStringTag
     method constructor
