@@ -69,11 +69,13 @@ table: |
   sign ' 3
 flags: {testmode: forward}
 tests:
-  - - \x2026
-    - ⠄⠡⠭⠆⠴⠆⠖⠄
-  - - \x2026
-    - ""
-    - mode: [noUndefined]
+  - - "xyz\u2026jkl"
+    - ⠭⠽⠵⠄⠡⠭⠆⠴⠆⠖⠄⠚⠅⠇
+    - outputPos: [0, 1, 2, 3, 11, 12, 13]
+  - - "xyz\u2026jkl"
+    - "⠭⠽⠵⠚⠅⠇"
+    - outputPos: [0, 1, 2, 2, 3, 4, 5]
+      mode: [noUndefined]
 
 table: |
   include tables/unicode-without-blank.dis
