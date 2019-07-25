@@ -362,6 +362,12 @@ class PixelIntegrationTest(
       if self.GetParsedCommandLineOptions().local_run:
         logging.error(
             'Image produced by %s: file://%s', image_name, png_temp_file)
+        gold_images = ('https://%s-gold.skia.org/search?'
+                      'match=name&metric=combined&pos=true&'
+                      'query=name%%3D%s&unt=false' % (
+                          SKIA_GOLD_INSTANCE, image_name))
+        logging.error(
+            'Approved images for %s in Gold: %s', image_name, gold_images)
       if not self.GetParsedCommandLineOptions().no_skia_gold_failure:
         raise Exception('goldctl command failed')
 
