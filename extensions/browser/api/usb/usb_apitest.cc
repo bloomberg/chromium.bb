@@ -290,6 +290,21 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, InvalidTimeout) {
   ASSERT_TRUE(RunAppTest("api_test/usb/invalid_timeout"));
 }
 
+IN_PROC_BROWSER_TEST_F(UsbApiTest, CallsAfterDisconnect) {
+  ExtensionTestMessageListener ready_listener("ready", false);
+  ExtensionTestMessageListener result_listener("success", false);
+  result_listener.set_failure_message("failure");
+
+  EXPECT_CALL(mock_device_, OpenInternal(_))
+      .WillOnce(InvokeCallback<0>(UsbOpenDeviceError::OK));
+
+  ASSERT_TRUE(LoadApp("api_test/usb/calls_after_disconnect"));
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+
+  fake_usb_manager_.RemoveDevice(fake_device_);
+  ASSERT_TRUE(result_listener.WaitUntilSatisfied());
+}
+
 IN_PROC_BROWSER_TEST_F(UsbApiTest, OnDeviceAdded) {
   ExtensionTestMessageListener load_listener("loaded", false);
   ExtensionTestMessageListener result_listener("success", false);
