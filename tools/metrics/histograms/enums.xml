@@ -23706,7 +23706,7 @@ Called by update_net_error_codes.py.-->
   <int value="2649" label="OpenerNavigationDownloadCrossOrigin"/>
   <int value="2650" label="V8RegExpMatchIsTrueishOnNonJSRegExp"/>
   <int value="2651" label="V8RegExpMatchIsFalseishOnJSRegExp"/>
-  <int value="2652" label="DownloadInAdFrameWithUserGesture"/>
+  <int value="2652" label="OBSOLETE_DownloadInAdFrameWithUserGesture"/>
   <int value="2653" label="DownloadInAdFrameWithoutUserGesture"/>
   <int value="2654" label="NavigatorAppVersion"/>
   <int value="2655" label="NavigatorDoNotTrack"/>
@@ -24053,6 +24053,9 @@ Called by update_net_error_codes.py.-->
   <int value="2971" label="V8PointerEvent_GetPredictedEvents_Method"/>
   <int value="2972" label="ScrollSnapOnViewportBreaks"/>
   <int value="2973" label="ScrollPaddingOnViewportBreaks"/>
+  <int value="2974" label="DownloadInAdFrame"/>
+  <int value="2975" label="DownloadInSandbox"/>
+  <int value="2976" label="DownloadWithoutUserGesture"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40244,7 +40247,9 @@ Called by update_use_counter_css.py.-->
   <int value="5" label="Opener x-origin"/>
   <int value="7" label="Sandbox no gesture"/>
   <int value="8" label="Ad frame no gesture"/>
-  <int value="9" label="Ad frame gesture"/>
+  <int value="10" label="Ad frame"/>
+  <int value="11" label="Sandbox"/>
+  <int value="12" label="No gesture"/>
 </enum>
 
 <enum name="NavigationInterceptResult">

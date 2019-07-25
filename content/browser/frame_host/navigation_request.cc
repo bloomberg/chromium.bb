@@ -2418,6 +2418,18 @@ void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
         rfh, blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOrigin);
   }
 
+  // Log UseCounters for download in sandbox.
+  if (download_policy.IsType(NavigationDownloadType::kSandbox)) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kDownloadInSandbox);
+  }
+
+  // Log UseCounters for download without user activation.
+  if (download_policy.IsType(NavigationDownloadType::kNoGesture)) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kDownloadWithoutUserGesture);
+  }
+
   // Log UseCounters for download in sandbox without user activation.
   if (download_policy.IsType(NavigationDownloadType::kSandboxNoGesture)) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
@@ -2430,10 +2442,10 @@ void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
         rfh, blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture);
   }
 
-  // Log UseCounters for download in ad frame with user activation.
-  if (download_policy.IsType(NavigationDownloadType::kAdFrameGesture)) {
+  // Log UseCounters for download in ad frame.
+  if (download_policy.IsType(NavigationDownloadType::kAdFrame)) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        rfh, blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture);
+        rfh, blink::mojom::WebFeature::kDownloadInAdFrame);
   }
 }
 
