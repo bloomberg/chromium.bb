@@ -276,6 +276,7 @@ crbug.com/angleproject/2904 [ win vulkan passthrough ] WebglExtension_WEBGL_comp
 crbug.com/angleproject/2905 [ win vulkan passthrough ] WebglExtension_WEBGL_depth_texture [ Failure ]
 crbug.com/angleproject/2394 [ win vulkan passthrough ] WebglExtension_WEBGL_draw_buffers [ Failure ]
 crbug.com/angleproject/3111 [ win vulkan passthrough ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
+crbug.com/angleproject/3741 [ win vulkan passthrough ] conformance/textures/misc/mipmap-fbo.html [ RetryOnFailure ]
 
 # Vulkan / Win / NVIDIA / Passthrough command decoder
 crbug.com/angleproject/2918 [ win nvidia vulkan passthrough ] conformance/canvas/to-data-url-test.html [ Failure ]
