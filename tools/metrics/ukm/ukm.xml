@@ -4555,9 +4555,26 @@ be describing additional metrics about the same event.
 <event name="Net.LegacyTLSVersion">
   <owner>davidben@chromium.org</owner>
   <summary>
-    Recorded when a page is loaded whose main frame load used TLS 1.0 or TLS
-    1.1.
+    Recorded when a resource is loaded using TLS 1.0 or TLS 1.1.
   </summary>
+  <metric name="IsAdResource">
+    <summary>
+      Boolean value representing whether the request is for an ad resource. Only
+      set if IsSubresource is true.
+    </summary>
+  </metric>
+  <metric name="IsMainFrame">
+    <summary>
+      Boolean value representing whether the request is in the main frame or not
+      (if false, the request is from a subframe).
+    </summary>
+  </metric>
+  <metric name="IsSubresource">
+    <summary>
+      Boolean value representing whether the request is for a subresource. If
+      false, then the request was a main frame page load.
+    </summary>
+  </metric>
 </event>
 
 <event name="NoStatePrefetch" singular="True">

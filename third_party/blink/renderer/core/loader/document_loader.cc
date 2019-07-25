@@ -1453,7 +1453,19 @@ void DocumentLoader::DidCommitNavigation(
     GetLocalFrameClient().ReportLegacyTLSVersion(response_.CurrentRequestUrl());
     if (!frame_->Tree().Parent()) {
       ukm::builders::Net_LegacyTLSVersion(document->UkmSourceID())
+          .SetIsMainFrame(true)
+          .SetIsSubresource(false)
+          .SetIsAdResource(frame_->IsAdSubframe() || frame_->IsAdRoot())
           .Record(document->UkmRecorder());
+    } else {
+      // For non-main-frame loads, we have to use the main frame's document for
+      // the UKM recorder and source ID.
+      auto& root = frame_->LocalFrameRoot();
+      ukm::builders::Net_LegacyTLSVersion(root.GetDocument()->UkmSourceID())
+          .SetIsMainFrame(false)
+          .SetIsSubresource(false)
+          .SetIsAdResource(frame_->IsAdSubframe())
+          .Record(root.GetDocument()->UkmRecorder());
     }
   }
 }
