@@ -1967,7 +1967,6 @@ jumbo_split_static_library("browser") {
     "//components/history/content/browser",
     "//components/history/core/browser",
     "//components/history/core/common",
-    "//components/image_fetcher/core",
     "//components/infobars/core",
     "//components/invalidation/impl",
     "//components/keyed_service/content",
@@ -1994,7 +1993,6 @@ jumbo_split_static_library("browser") {
     "//components/network_hints/common",
     "//components/network_session_configurator/browser",
     "//components/network_time",
-    "//components/ntp_snippets",
     "//components/ntp_tiles",
     "//components/offline_items_collection/core",
     "//components/offline_pages/buildflags",
@@ -2829,6 +2827,10 @@ jumbo_split_static_library("browser") {
       "sync/profile_sync_service_android.h",
       "translate/android/translate_bridge.cc",
     ]
+    public_deps += [
+      "//components/image_fetcher/core",
+      "//components/ntp_snippets",
+    ]
     deps += [
       ":client_discourse_context_proto",
       ":delta_file_proto",
@@ -3493,7 +3495,9 @@ jumbo_split_static_library("browser") {
       "//chrome/services/app_service/public/cpp:app_update",
       "//chrome/services/app_service/public/cpp:icon_loader",
       "//components/feedback",
+      "//components/image_fetcher/core",
       "//components/keep_alive_registry",
+      "//components/ntp_snippets",
       "//components/vector_icons",
       "//components/web_modal",
       "//components/zoom",
@@ -4685,14 +4689,18 @@ jumbo_split_static_library("browser") {
         "offline_pages/android/request_coordinator_factory.cc",
       ]
     }
+
+    public_deps += [
+      "//components/offline_pages/core",
+      "//components/offline_pages/core/background:background_offliner",
+      "//components/offline_pages/core/prefetch",
+    ]
+
     deps += [
       "//chrome/common:offline_page_auto_fetcher_mojom",
       "//components/offline_pages/content/background_loader",
       "//components/offline_pages/content/renovations",
-      "//components/offline_pages/core",
-      "//components/offline_pages/core/background:background_offliner",
       "//components/offline_pages/core/downloads:offline_pages_ui_adapter",
-      "//components/offline_pages/core/prefetch",
       "//components/offline_pages/core/renovations",
       "//components/offline_pages/core/request_header:request_header",
     ]
@@ -5033,7 +5041,7 @@ jumbo_split_static_library("browser") {
 
   if (enable_vr) {
     if (enable_gvr_services) {
-      deps += [ "android/vr:vr_android" ]
+      public_deps += [ "android/vr:vr_android" ]
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
       allow_circular_includes_from += [ "android/vr:vr_android" ]
     }

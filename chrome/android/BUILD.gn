@@ -1549,6 +1549,7 @@ static_library("browser_test_support") {
     ":test_support_jni_headers",
     "//chrome/browser",
     "//components/offline_pages/core/background:test_support",
+    "//content/test:test_support",
   ]
 }
 
