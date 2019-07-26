@@ -17,8 +17,7 @@ class CORE_EXPORT LargestContentfulPaint final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  LargestContentfulPaint(double start_time,
-                         double render_time,
+  LargestContentfulPaint(double render_time,
                          uint64_t size,
                          double load_time,
                          const AtomicString& id,
