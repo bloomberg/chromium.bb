@@ -4,6 +4,5 @@ include_rules = [
     "+base/timer/timer.h",
     "+media/base",
     "+media/capture",
-    "+media/webrtc/audio_processor_controls.h",
     "+media/webrtc/audio_delay_stats_reporter.h",
 ]

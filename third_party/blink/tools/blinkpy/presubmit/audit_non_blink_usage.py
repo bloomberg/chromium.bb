@@ -673,6 +673,7 @@ _CONFIG = [
             'libyuv::.+',
             "rtc::RefCountedObject",
             'viz::.+',
+            "webrtc::AudioProcessorInterface",
             'webrtc::AudioTrackInterface',
             'webrtc::VideoTrackInterface',
             'webrtc::MediaStreamTrackInterface',

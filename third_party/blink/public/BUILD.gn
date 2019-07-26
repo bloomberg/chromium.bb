@@ -141,7 +141,6 @@ source_set("blink_headers") {
     "platform/modules/media_capabilities/web_media_decoding_configuration.h",
     "platform/modules/media_capabilities/web_video_configuration.h",
     "platform/modules/mediastream/aec_dump_agent_impl_delegate.h",
-    "platform/modules/mediastream/audio_service_audio_processor_proxy.h",
     "platform/modules/mediastream/media_stream_audio_deliverer.h",
     "platform/modules/mediastream/media_stream_audio_level_calculator.h",
     "platform/modules/mediastream/media_stream_audio_processor.h",

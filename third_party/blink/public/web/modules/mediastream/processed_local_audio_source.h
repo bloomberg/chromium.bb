@@ -12,12 +12,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "media/base/audio_capturer_source.h"
-#include "third_party/blink/public/platform/modules/mediastream/audio_service_audio_processor_proxy.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_level_calculator.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace media {
 class AudioBus;
@@ -31,6 +31,8 @@ namespace blink {
 
 BLINK_MODULES_EXPORT bool IsApmInAudioServiceEnabled();
 
+class AudioServiceAudioProcessorProxy;
+class MediaStreamAudioProcessor;
 class MediaStreamInternalFrameWrapper;
 class WebLocalFrame;
 
@@ -74,19 +76,9 @@ class BLINK_MODULES_EXPORT ProcessedLocalAudioSource final
 
   // The following accessors are valid after the source is started (when the
   // first track is connected).
-  scoped_refptr<AudioProcessorInterface> audio_processor() const {
-    DCHECK(audio_processor_ || audio_processor_proxy_);
-    return audio_processor_
-               ? static_cast<scoped_refptr<AudioProcessorInterface>>(
-                     audio_processor_)
-               : static_cast<scoped_refptr<AudioProcessorInterface>>(
-                     audio_processor_proxy_);
-  }
+  scoped_refptr<webrtc::AudioProcessorInterface> GetAudioProcessor() const;
 
-  bool has_audio_processing() const {
-    return audio_processor_proxy_ ||
-           (audio_processor_ && audio_processor_->has_audio_processing());
-  }
+  bool HasAudioProcessing() const;
 
   const scoped_refptr<blink::MediaStreamAudioLevelCalculator::Level>&
   audio_level() const {

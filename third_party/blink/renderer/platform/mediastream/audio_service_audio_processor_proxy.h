@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_AUDIO_SERVICE_AUDIO_PROCESSOR_PROXY_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_AUDIO_SERVICE_AUDIO_PROCESSOR_PROXY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_AUDIO_SERVICE_AUDIO_PROCESSOR_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_AUDIO_SERVICE_AUDIO_PROCESSOR_PROXY_H_
 
 #include <memory>
 
@@ -32,9 +32,6 @@ class AecDumpAgentImpl;
 // of 10 ms data chunk.
 // TODO(https://crbug.com/879296): Add tests. Possibly the timer update rate
 // calculation code should be encapsulated in a class.
-//
-// TODO(crbug.com/704136): Move this class out of the Blink exposed API
-// when all users of it have been Onion souped.
 class BLINK_PLATFORM_EXPORT AudioServiceAudioProcessorProxy
     : public webrtc::AudioProcessorInterface,
       public AecDumpAgentImplDelegate {
@@ -92,4 +89,4 @@ class BLINK_PLATFORM_EXPORT AudioServiceAudioProcessorProxy
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_AUDIO_SERVICE_AUDIO_PROCESSOR_PROXY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_AUDIO_SERVICE_AUDIO_PROCESSOR_PROXY_H_

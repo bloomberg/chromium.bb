@@ -174,9 +174,9 @@ void WebRtcMediaStreamTrackAdapter::InitializeLocalAudioTrack(
     // The sink only grabs stats from the audio processor. Stats are only
     // available if audio processing is turned on. Therefore, only provide the
     // sink a reference to the processor if audio processing is turned on.
-    if (media_stream_source->has_audio_processing()) {
+    if (media_stream_source->HasAudioProcessing()) {
       local_track_audio_sink_->SetAudioProcessor(
-          media_stream_source->audio_processor());
+          media_stream_source->GetAudioProcessor());
     }
   }
   native_track->AddSink(local_track_audio_sink_.get());

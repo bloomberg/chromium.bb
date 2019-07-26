@@ -18,12 +18,13 @@
 #include "media/webrtc/audio_processor_controls.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_local_frame_wrapper.h"
+#include "third_party/blink/renderer/platform/mediastream/audio_service_audio_processor_proxy.h"
 #include "third_party/webrtc/media/base/media_channel.h"
 
 namespace blink {
@@ -334,6 +335,21 @@ void ProcessedLocalAudioSource::EnsureSourceIsStopped() {
     audio_processor_proxy_->Stop();
 
   DVLOG(1) << "Stopped WebRTC audio pipeline for consumption.";
+}
+
+scoped_refptr<webrtc::AudioProcessorInterface>
+ProcessedLocalAudioSource::GetAudioProcessor() const {
+  DCHECK(audio_processor_ || audio_processor_proxy_);
+  return audio_processor_
+             ? static_cast<scoped_refptr<webrtc::AudioProcessorInterface>>(
+                   audio_processor_)
+             : static_cast<scoped_refptr<webrtc::AudioProcessorInterface>>(
+                   audio_processor_proxy_);
+}
+
+bool ProcessedLocalAudioSource::HasAudioProcessing() const {
+  return audio_processor_proxy_ ||
+         (audio_processor_ && audio_processor_->has_audio_processing());
 }
 
 void ProcessedLocalAudioSource::SetVolume(int volume) {
