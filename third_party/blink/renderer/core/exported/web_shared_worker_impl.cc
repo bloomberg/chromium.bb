@@ -118,9 +118,6 @@ void WebSharedWorkerImpl::OnShadowPageInitialized() {
   // FetchClientSettingsObject.
   shadow_page_->GetDocument()->SetAddressSpace(creation_address_space_);
 
-  shadow_page_->DocumentLoader()->SetServiceWorkerNetworkProvider(
-      client_->CreateServiceWorkerNetworkProvider());
-
   ContinueStartWorkerContext();
 }
 
@@ -272,8 +269,7 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
           document->Fetcher()->GetProperties().GetFetchClientSettingsObject());
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
-      client_->CreateWorkerFetchContext(
-          shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider());
+      client_->CreateWorkerFetchContext();
   DCHECK(web_worker_fetch_context);
   web_worker_fetch_context->SetApplicationCacheHostID(
       document->Loader()->GetApplicationCacheHost()->GetHostID());

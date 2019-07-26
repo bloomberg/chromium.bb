@@ -399,8 +399,6 @@ target(link_target_type, "renderer") {
     "worker/dedicated_worker_host_factory_client.h",
     "worker/embedded_shared_worker_stub.cc",
     "worker/embedded_shared_worker_stub.h",
-    "worker/service_worker_network_provider_for_shared_worker.cc",
-    "worker/service_worker_network_provider_for_shared_worker.h",
     "worker/shared_worker_factory_impl.cc",
     "worker/shared_worker_factory_impl.h",
     "worker/worker_thread_registry.cc",
