@@ -204,6 +204,7 @@ jumbo_static_library("browser") {
 
   public_deps = [
     "//base",
+    "//components/safe_browsing:buildflags",
     "//components/sync",
   ]
   deps = [
@@ -394,6 +395,7 @@ jumbo_static_library("test_support") {
     ":browser",
     ":hash_password_manager",
     "//components/autofill/core/browser:test_support",
+    "//components/safe_browsing:buildflags",
     "//components/ukm",
     "//services/network/public/cpp",
     "//testing/gmock",

@@ -253,6 +253,7 @@ static_library("common") {
     "//components/policy:generated",
     "//components/policy/core/common",
     "//components/prefs",
+    "//components/safe_browsing:buildflags",
     "//components/safe_browsing/web_ui:constants",
     "//components/services/heap_profiling/public/cpp",
     "//components/strings",
