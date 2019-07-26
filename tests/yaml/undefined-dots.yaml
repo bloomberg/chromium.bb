@@ -1,39 +1,15 @@
 table: |
   include tables/unicode.dis
+  include tables/spaces.uti
 flags: {testmode: backward}
 tests:
-  # verify that each dot is rendered as its correct number
-  - - ⠁
-    - \\1/
-  - - ⠂
-    - \\2/
-  - - ⠄
-    - \\3/
-  - - ⠈
-    - \\4/
-  - - ⠐
-    - \\5/
-  - - ⠠
-    - \\6/
-  - - ⡀
-    - \\7/
-  - - ⢀
-    - \\8/
+  # verify that each undefined dot is rendered as its correct number
+  - - "⠁ ⠂ ⠄ ⠈ ⠐ ⠠ ⡀ ⢀"
+    - "\\\\1/ \\\\2/ \\\\3/ \\\\4/ \\\\5/ \\\\6/ \\\\7/ \\\\8/"
+
   # verify that the dot numbers are rendered in ascending order
-  - - ⠃
-    - \\12/
-  - - ⠆
-    - \\23/
-  - - ⠌
-    - \\34/
-  - - ⠘
-    - \\45/
-  - - ⠰
-    - \\56/
-  - - ⡠
-    - \\67/
-  - - ⣀
-    - \\78/
+  - - "⠃ ⠆ ⠌ ⠘ ⠰ ⡠ ⣀"
+    - "\\\\12/ \\\\23/ \\\\34/ \\\\45/ \\\\56/ \\\\67/ \\\\78/"
 
 table: |
   include tables/unicode.dis
@@ -46,19 +22,32 @@ tests:
     - mode: [noUndefined]
 
 table: |
+  include tables/unicode.dis
   include tables/spaces.uti
   include tables/latinLetterDef6Dots.uti
-  display + 346
   display + 346
   display % 146
   display ( 12356
   display ) 23456
 flags: {testmode: backward}
 tests:
+
+  - - ⠌
+    - \\34/
+    - outputPos: [0]
+      inputPos: [0, 0, 0, 0]
+
+  - - ⠌
+    - ""
+    - outputPos: [-1]
+      inputPos: []
+      mode: [noUndefined]
+
   - - "( +% )"
     - "\\\\12356/ \\\\346/\\\\146/ \\\\23456/"
     - outputPos: [0, 7, 8, 13, 18, 19]
       inputPos: [0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 5, 5, 5, 5, 5, 5, 5]
+
   - - "( +% )"
     - "  "
     - outputPos: [0, 0, 1, 1, 1, 1]
@@ -74,10 +63,12 @@ table: |
   sign ' 3
 flags: {testmode: forward}
 tests:
+
   - - "\u2018xyz\u2026\u22EEjkl\u2019"
     - ⠄⠡⠭⠆⠴⠂⠦⠄⠭⠽⠵⠄⠡⠭⠆⠴⠆⠖⠄⠄⠡⠭⠆⠆⠑⠑⠄⠚⠅⠇⠄⠡⠭⠆⠴⠂⠔⠄
     - outputPos: [0, 8, 9, 10, 11, 19, 27, 28, 29, 30]
       inputPos: [0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 7, 8, 9, 9, 9, 9, 9, 9, 9, 9]
+
   - - "\u2018xyz\u2026\u22EEjkl\u2019"
     - "⠭⠽⠵⠚⠅⠇"
     - outputPos: [0, 0, 1, 2, 2, 2, 3, 4, 5, 5]
@@ -94,8 +85,10 @@ table: |
   undefined 1368
 flags: {testmode: forward}
 tests:
+
   - - \x2026
     - ⢥
+
   - - \x2026
     - ⢥
     - mode: [noUndefined]
