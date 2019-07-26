@@ -76,7 +76,7 @@ class ChrootHandlerTest(cros_test_lib.TestCase):
     self.assertEqual(empty_chroot, chroot)
 
 
-class PathHandlerTest(cros_test_lib.TempDirTestCase):
+class CopyPathInTest(cros_test_lib.TempDirTestCase):
   """PathHandler tests."""
 
   def setUp(self):
@@ -112,13 +112,15 @@ class PathHandlerTest(cros_test_lib.TempDirTestCase):
     message.path.path = self.source_file1
     message.path.location = common_pb2.Path.OUTSIDE
 
-    with field_handler.handle_paths(message, self.dest_dir, delete=True):
+    with field_handler.copy_paths_in(message, self.dest_dir, delete=True):
       new_path = message.path.path
       self._path_checks(self.source_file1, new_path, self.file1_contents)
 
     # The file should have been deleted on exit with delete=True.
     self.assertNotExists(new_path)
-    # Make sure it gets reset.
+    # The original should still exist.
+    self.assertExists(self.source_file1)
+    # The path should get reset.
     self.assertEqual(message.path.path, self.source_file1)
 
   def test_handle_files(self):
@@ -129,7 +131,7 @@ class PathHandlerTest(cros_test_lib.TempDirTestCase):
     message.another_path.path = self.source_file2
     message.another_path.location = common_pb2.Path.OUTSIDE
 
-    with field_handler.handle_paths(message, self.dest_dir, delete=False):
+    with field_handler.copy_paths_in(message, self.dest_dir, delete=False):
       new_path1 = message.path.path
       new_path2 = message.another_path.path
 
@@ -146,7 +148,7 @@ class PathHandlerTest(cros_test_lib.TempDirTestCase):
     message.nested_path.path.path = self.source_file1
     message.nested_path.path.location = common_pb2.Path.OUTSIDE
 
-    with field_handler.handle_paths(message, self.dest_dir):
+    with field_handler.copy_paths_in(message, self.dest_dir):
       new_path = message.nested_path.path.path
       self._path_checks(self.source_file1, new_path, self.file1_contents)
 
@@ -156,7 +158,7 @@ class PathHandlerTest(cros_test_lib.TempDirTestCase):
     message.path.path = self.source_dir
     message.path.location = common_pb2.Path.OUTSIDE
 
-    with field_handler.handle_paths(message, self.dest_dir):
+    with field_handler.copy_paths_in(message, self.dest_dir):
       new_path = message.path.path
 
       self._path_checks(self.source_dir, self.dest_dir)
@@ -169,9 +171,7 @@ class PathHandlerTest(cros_test_lib.TempDirTestCase):
     message.path.path = self.source_file1
     message.path.location = common_pb2.Path.INSIDE
 
-    direction = field_handler.PathHandler.INSIDE
-    with field_handler.handle_paths(message, self.dest_dir, delete=True,
-                                    direction=direction):
+    with field_handler.copy_paths_in(message, self.dest_dir, delete=True):
       self.assertEqual(self.source_file1, message.path.path)
 
     # It should not be deleting the file when it doesn't need to copy it even
@@ -184,30 +184,15 @@ class PathHandlerTest(cros_test_lib.TempDirTestCase):
     message.path.path = self.source_dir
     message.path.location = common_pb2.Path.OUTSIDE
 
-    with field_handler.handle_paths(message, self.dest_dir,
-                                    direction=field_handler.PathHandler.INSIDE,
-                                    prefix=self.tempdir):
+    with field_handler.copy_paths_in(message, self.dest_dir,
+                                     prefix=self.tempdir):
       new_path = message.path.path
       # The prefix should be removed.
       self.assertFalse(new_path.startswith(self.tempdir))
 
-  def test_prefix_outside(self):
-    """Test the transfer outside prefix handling."""
-    message = build_api_test_pb2.TestRequestMessage()
-    message.path.path = self.source_dir.replace(self.tempdir, '')
-    message.path.location = common_pb2.Path.INSIDE
 
-    with field_handler.handle_paths(message, self.dest_dir,
-                                    direction=field_handler.PathHandler.OUTSIDE,
-                                    prefix=self.tempdir):
-      new_path = message.path.path
-      # The source directory should have been properly reconstructed and
-      # everything copied over to the destination.
-      self.assertItemsEqual(os.listdir(self.source_dir), os.listdir(new_path))
-
-
-class HandleResultPathsTest(cros_test_lib.TempDirTestCase):
-  """Tests for handle_result_paths."""
+class ExtractResultsTest(cros_test_lib.TempDirTestCase):
+  """Tests for extract_results."""
 
   def setUp(self):
     # Setup the directories.
@@ -258,7 +243,7 @@ class HandleResultPathsTest(cros_test_lib.TempDirTestCase):
     self.response.artifact.path = self.source_file1_inside
     self.response.artifact.location = common_pb2.Path.INSIDE
 
-    field_handler.handle_result_paths(self.request, self.response, self.chroot)
+    field_handler.extract_results(self.request, self.response, self.chroot)
 
     self._path_checks(self.response.artifact.path, self.dest_dir,
                       contents=self.file1_contents)
@@ -268,7 +253,7 @@ class HandleResultPathsTest(cros_test_lib.TempDirTestCase):
     self.response.artifact.path = self.source_dir
     self.response.artifact.location = common_pb2.Path.INSIDE
 
-    field_handler.handle_result_paths(self.request, self.response, self.chroot)
+    field_handler.extract_results(self.request, self.response, self.chroot)
 
     self._path_checks(self.response.artifact.path, self.dest_dir)
     self.assertItemsEqual(os.listdir(self.chroot_source),
@@ -285,7 +270,7 @@ class HandleResultPathsTest(cros_test_lib.TempDirTestCase):
     artifact3.path = self.source_file3_inside
     artifact3.location = common_pb2.Path.INSIDE
 
-    field_handler.handle_result_paths(self.request, self.response, self.chroot)
+    field_handler.extract_results(self.request, self.response, self.chroot)
 
     self._path_checks(self.response.artifact.path, self.dest_dir,
                       contents=self.file1_contents)
@@ -304,7 +289,7 @@ class HandleResultPathsTest(cros_test_lib.TempDirTestCase):
     self.response.nested_artifact.path.path = self.source_dir2
     self.response.nested_artifact.path.location = common_pb2.Path.INSIDE
 
-    field_handler.handle_result_paths(self.request, self.response, self.chroot)
+    field_handler.extract_results(self.request, self.response, self.chroot)
 
     self._path_checks(self.response.artifact.path, self.dest_dir)
     self._path_checks(self.response.nested_artifact.path.path, self.dest_dir)

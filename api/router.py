@@ -243,9 +243,8 @@ class Router(object):
     # Parse the chroot and clear the chroot field in the input message.
     chroot = field_handler.handle_chroot(input_msg)
 
-    base_dir = os.path.join(chroot.path, 'tmp')
-    with field_handler.handle_paths(input_msg, base_dir, prefix=chroot.path):
-      with osutils.TempDir(base_dir=base_dir) as tempdir:
+    with field_handler.copy_paths_in(input_msg, chroot.tmp, prefix=chroot.path):
+      with chroot.tempdir() as tempdir:
         new_input = os.path.join(tempdir, self.REEXEC_INPUT_FILE)
         chroot_input = '/%s' % os.path.relpath(new_input, chroot.path)
         new_output = os.path.join(tempdir, self.REEXEC_OUTPUT_FILE)
@@ -277,7 +276,7 @@ class Router(object):
         output_content = osutils.ReadFile(new_output)
         if output_content:
           json_format.Parse(output_content, output_msg)
-          field_handler.handle_result_paths(input_msg, output_msg, chroot)
+          field_handler.extract_results(input_msg, output_msg, chroot)
 
         osutils.WriteFile(output_path, json_format.MessageToJson(output_msg))
 
