@@ -38,6 +38,7 @@ bool Statics::hasDevTools = false;
 bool Statics::isInProcessRendererEnabled = true;
 bool Statics::inProcessResizeOptimizationDisabled = false;
 WebViewHostObserver* Statics::webViewHostObserver = 0;
+ToolkitDelegate *Statics::toolkitDelegate = nullptr;
 
 static int lastRoutingId = 0;
 

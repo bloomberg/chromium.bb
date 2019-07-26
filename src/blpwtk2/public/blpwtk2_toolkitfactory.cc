@@ -98,6 +98,7 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
     Statics::isInProcessRendererEnabled = params.isInProcessRendererEnabled();
     Statics::channelErrorHandler = params.channelErrorHandler();
     Statics::inProcessResizeOptimizationDisabled = params.isInProcessResizeOptimizationDisabled();
+    Statics::toolkitDelegate = params.delegate();
 
     // If this process is the host, then set the environment variable that
     // subprocesses will use to determine which SubProcessMain module should
