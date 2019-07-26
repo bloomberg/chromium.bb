@@ -7,10 +7,10 @@ import { TestSuiteListing, TestSuiteListingEntry } from '../../framework/listing
 import { TestFileLoader, TestLoader, TestSpecOrReadme } from '../../framework/loader.js';
 import { Logger } from '../../framework/logger.js';
 import { TestFilterResult } from '../../framework/test_filter/index.js';
+import { makeQueryString } from '../../framework/url_query.js';
 import { objectEquals } from '../../framework/util/index.js';
 
 import { UnitTest } from './unit_test.js';
-import { makeQueryString } from '../../framework/url_query.js';
 
 const listingData: { [k: string]: TestSuiteListingEntry[] } = {
   suite1: [
