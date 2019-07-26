@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_JAVA_SCRIPT_DIALOG_PRESENTER_H_
-#define IOS_WEB_PUBLIC_JAVA_SCRIPT_DIALOG_PRESENTER_H_
+#ifndef IOS_WEB_PUBLIC_UI_JAVA_SCRIPT_DIALOG_PRESENTER_H_
+#define IOS_WEB_PUBLIC_UI_JAVA_SCRIPT_DIALOG_PRESENTER_H_
 
-#import "ios/web/public/java_script_dialog_callback.h"
-#include "ios/web/public/java_script_dialog_type.h"
+#import "ios/web/public/ui/java_script_dialog_callback.h"
+#include "ios/web/public/ui/java_script_dialog_type.h"
 #include "url/gurl.h"
 
 @class NSString;
@@ -34,4 +34,4 @@ class JavaScriptDialogPresenter {
 
 }  // namespace web
 
-#endif  // IOS_WEB_PUBLIC_JAVA_SCRIPT_DIALOG_PRESENTER_H_
+#endif  // IOS_WEB_PUBLIC_UI_JAVA_SCRIPT_DIALOG_PRESENTER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_VIEW_PROXY_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_VIEW_PROXY_H_
+#ifndef IOS_WEB_PUBLIC_UI_CRW_WEB_VIEW_PROXY_H_
+#define IOS_WEB_PUBLIC_UI_CRW_WEB_VIEW_PROXY_H_
 
 #import <UIKit/UIKit.h>
 
@@ -12,7 +12,7 @@
 // Provides an interface for embedders to access the WebState's web view in a
 // limited and controlled manner.
 // TODO(crbug.com/546152): rename protocol to CRWContentViewProxy.
-@protocol CRWWebViewProxy<NSObject>
+@protocol CRWWebViewProxy <NSObject>
 
 // The web view's bounding rectangle (relative to its parent).
 @property(readonly, assign) CGRect bounds;
@@ -75,4 +75,4 @@
 
 @end
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_VIEW_PROXY_H_
+#endif  // IOS_WEB_PUBLIC_UI_CRW_WEB_VIEW_PROXY_H_

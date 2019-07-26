@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_VIEW_SCROLL_VIEW_PROXY_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_VIEW_SCROLL_VIEW_PROXY_H_
+#ifndef IOS_WEB_PUBLIC_UI_CRW_WEB_VIEW_SCROLL_VIEW_PROXY_H_
+#define IOS_WEB_PUBLIC_UI_CRW_WEB_VIEW_SCROLL_VIEW_PROXY_H_
 
 #import <UIKit/UIKit.h>
 
@@ -21,7 +21,7 @@
 // The class forwards some of the methods onto the UIScrollView. For more
 // information look at the UIScrollView documentation.
 // TODO(crbug.com/546152): rename class to CRWContentViewScrollViewProxy.
-@interface CRWWebViewScrollViewProxy : NSObject<UIScrollViewDelegate>
+@interface CRWWebViewScrollViewProxy : NSObject <UIScrollViewDelegate>
 @property(nonatomic, assign) CGPoint contentOffset;
 @property(nonatomic, assign) UIEdgeInsets contentInset;
 @property(nonatomic, readonly, getter=isDecelerating) BOOL decelerating;
@@ -66,7 +66,7 @@
 // UIScrollView.
 // This is an exact mirror of the UIScrollViewDelegate callbacks. For more
 // information look at the UIScrollViewDelegate documentation.
-@protocol CRWWebViewScrollViewObserver<NSObject>
+@protocol CRWWebViewScrollViewObserver <NSObject>
 @optional
 - (void)webViewScrollViewFrameDidChange:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
@@ -109,11 +109,11 @@
 // CRWWebViewScrollViewProxyObserver.
 // It inherit from CRWWebViewScrollViewScrollViewObserver which only implements
 // methods for listening to scrollview changes.
-@protocol CRWWebViewScrollViewProxyObserver<CRWWebViewScrollViewObserver>
+@protocol CRWWebViewScrollViewProxyObserver <CRWWebViewScrollViewObserver>
 @optional
 // Called when the underlying scrollview of the proxy is set.
 - (void)webViewScrollViewProxyDidSetScrollView:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 @end
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_VIEW_SCROLL_VIEW_PROXY_H_
+#endif  // IOS_WEB_PUBLIC_UI_CRW_WEB_VIEW_SCROLL_VIEW_PROXY_H_

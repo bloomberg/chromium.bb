@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/web_state/page_display_state.h"
+#import "ios/web/public/ui/page_display_state.h"
 
 #include <cmath>
 
@@ -118,8 +118,7 @@ bool PageScrollState::operator!=(const PageScrollState& other) const {
 }
 
 PageZoomState::PageZoomState()
-    : minimum_zoom_scale_(NAN), maximum_zoom_scale_(NAN), zoom_scale_(NAN) {
-}
+    : minimum_zoom_scale_(NAN), maximum_zoom_scale_(NAN), zoom_scale_(NAN) {}
 
 PageZoomState::PageZoomState(CGFloat minimum_zoom_scale,
                              CGFloat maximum_zoom_scale,
@@ -128,8 +127,7 @@ PageZoomState::PageZoomState(CGFloat minimum_zoom_scale,
       maximum_zoom_scale_(maximum_zoom_scale),
       zoom_scale_(zoom_scale) {}
 
-PageZoomState::~PageZoomState() {
-}
+PageZoomState::~PageZoomState() {}
 
 bool PageZoomState::IsValid() const {
   return (!std::isnan(minimum_zoom_scale_) &&
@@ -148,13 +146,11 @@ bool PageZoomState::operator!=(const PageZoomState& other) const {
   return !(*this == other);
 }
 
-PageDisplayState::PageDisplayState() {
-}
+PageDisplayState::PageDisplayState() {}
 
 PageDisplayState::PageDisplayState(const PageScrollState& scroll_state,
                                    const PageZoomState& zoom_state)
-    : scroll_state_(scroll_state), zoom_state_(zoom_state) {
-}
+    : scroll_state_(scroll_state), zoom_state_(zoom_state) {}
 
 PageDisplayState::PageDisplayState(const CGPoint& content_offset,
                                    const UIEdgeInsets& content_inset,
@@ -171,8 +167,7 @@ PageDisplayState::PageDisplayState(NSDictionary* serialization)
                        GetFloatValue(kMaxZoomKey, serialization),
                        GetFloatValue(kZoomKey, serialization)) {}
 
-PageDisplayState::~PageDisplayState() {
-}
+PageDisplayState::~PageDisplayState() {}
 
 bool PageDisplayState::IsValid() const {
   return scroll_state_.IsValid() && zoom_state_.IsValid();

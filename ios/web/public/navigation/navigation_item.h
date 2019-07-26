@@ -11,7 +11,7 @@
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #import "ios/web/common/user_agent.h"
-#import "ios/web/public/web_state/page_display_state.h"
+#import "ios/web/public/ui/page_display_state.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
