@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/user_agent.h"
+#import "ios/web/common/user_agent.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

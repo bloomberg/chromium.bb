@@ -7,7 +7,6 @@ import("//ios/build/config.gni")
 source_set("public") {
   public_deps = [
     ":ui",
-    ":user_agent",
     ":web_state_types",
     "//ios/web/public/favicon",
     "//ios/web/public/navigation",
@@ -20,6 +19,7 @@ source_set("public") {
 
   deps = [
     "//ios/web/common",
+    "//ios/web/common:user_agent",
     "//ios/web/public/deprecated",
     "//services/service_manager/public/cpp",
     "//ui/base",
@@ -58,20 +58,6 @@ source_set("web_state_types") {
   sources = [
     "web_state/context_menu_params.h",
     "web_state/web_state_observer.h",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-# This is a separate target as it is used by Cronet.
-source_set("user_agent") {
-  deps = [
-    "//base",
-  ]
-
-  sources = [
-    "user_agent.h",
-    "user_agent.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

@@ -389,7 +389,6 @@ source_set("ios_web_public_unittests") {
   ]
 
   sources = [
-    "public/user_agent_unittest.mm",
     "public/web_state/page_viewport_state_unittest.mm",
   ]
 }

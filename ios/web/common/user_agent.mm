@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/user_agent.h"
+#include "ios/web/common/user_agent.h"
 
 #import <UIKit/UIKit.h>
 
@@ -44,19 +44,16 @@ const UAVersions& GetUAVersionsForCurrentOS() {
   // Safari version can't be, so a lookup table is used instead (for both, since
   // the reported versions should stay in sync).
   static const OSVersionMap version_map[] = {
-      {12, 0, {"605.1", "605.1.15"}},
-      {11, 0, {"604.1", "604.1.34"}},
-      {10, 3, {"602.1", "603.1.30"}},
-      {10, 0, {"602.1", "602.1.50"}},
+      {12, 0, {"605.1", "605.1.15"}}, {11, 0, {"604.1", "604.1.34"}},
+      {10, 3, {"602.1", "603.1.30"}}, {10, 0, {"602.1", "602.1.50"}},
       {9, 0, {"601.1.46", "601.1"}},
   };
 
   int32_t os_major_version = 0;
   int32_t os_minor_version = 0;
   int32_t os_bugfix_version = 0;
-  base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                               &os_minor_version,
-                                               &os_bugfix_version);
+  base::SysInfo::OperatingSystemVersionNumbers(
+      &os_major_version, &os_minor_version, &os_bugfix_version);
 
   // Return the versions corresponding to the first (and thus highest) OS
   // version less than or equal to the given OS version.
@@ -106,9 +103,8 @@ std::string BuildOSCpuInfo() {
   int32_t os_major_version = 0;
   int32_t os_minor_version = 0;
   int32_t os_bugfix_version = 0;
-  base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
-                                               &os_minor_version,
-                                               &os_bugfix_version);
+  base::SysInfo::OperatingSystemVersionNumbers(
+      &os_major_version, &os_minor_version, &os_bugfix_version);
 
   // Drop bugfix version for iOS 11.3 and later (as Safari does).
   if (@available(iOS 11.3, *))
@@ -116,33 +112,25 @@ std::string BuildOSCpuInfo() {
 
   std::string os_version;
   if (os_bugfix_version == 0) {
-    base::StringAppendF(&os_version,
-                        "%d_%d",
-                        os_major_version,
+    base::StringAppendF(&os_version, "%d_%d", os_major_version,
                         os_minor_version);
   } else {
-    base::StringAppendF(&os_version,
-                        "%d_%d_%d",
-                        os_major_version,
-                        os_minor_version,
-                        os_bugfix_version);
+    base::StringAppendF(&os_version, "%d_%d_%d", os_major_version,
+                        os_minor_version, os_bugfix_version);
   }
 
   // Remove the end of the platform name. For example "iPod touch" becomes
   // "iPod".
-  std::string platform = base::SysNSStringToUTF8(
-      [[UIDevice currentDevice] model]);
+  std::string platform =
+      base::SysNSStringToUTF8([[UIDevice currentDevice] model]);
   size_t position = platform.find_first_of(" ");
   if (position != std::string::npos)
     platform = platform.substr(0, position);
 
   std::string os_cpu;
-  base::StringAppendF(
-      &os_cpu,
-      "%s; CPU %s %s like Mac OS X",
-      platform.c_str(),
-      (platform == "iPad") ? "OS" : "iPhone OS",
-      os_version.c_str());
+  base::StringAppendF(&os_cpu, "%s; CPU %s %s like Mac OS X", platform.c_str(),
+                      (platform == "iPad") ? "OS" : "iPhone OS",
+                      os_version.c_str());
 
   return os_cpu;
 }

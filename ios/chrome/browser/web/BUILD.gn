@@ -254,6 +254,7 @@ source_set("web_internal") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/voice",
     "//ios/web",
+    "//ios/web/common:user_agent",
     "//ios/web/public",
     "//ios/web/public/js_messaging",
     "//net",
