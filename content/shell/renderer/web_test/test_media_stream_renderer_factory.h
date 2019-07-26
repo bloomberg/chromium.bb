@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_renderer_factory.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_renderer_factory.h"
 
 namespace content {
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_RENDERER_FACTORY_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_RENDERER_FACTORY_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_RENDERER_FACTORY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_RENDERER_FACTORY_H_
 
 #include <string>
 
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_video_renderer.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -25,7 +25,7 @@ class WebLocalFrame;
 // video feeds from a MediaStream provided an URL.
 // The factory methods are virtual in order for Blink web tests to be able to
 // override them.
-class WebMediaStreamRendererFactory {
+class BLINK_MODULES_EXPORT WebMediaStreamRendererFactory {
  public:
   virtual ~WebMediaStreamRendererFactory() {}
 
@@ -39,10 +39,13 @@ class WebMediaStreamRendererFactory {
 
   virtual scoped_refptr<WebMediaStreamAudioRenderer> GetAudioRenderer(
       const WebMediaStream& web_stream,
-      blink::WebLocalFrame* web_frame,
+      WebLocalFrame* web_frame,
       const std::string& device_id) = 0;
 };
 
+BLINK_MODULES_EXPORT std::unique_ptr<WebMediaStreamRendererFactory>
+CreateWebMediaStreamRendererFactory();
+
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_RENDERER_FACTORY_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_RENDERER_FACTORY_H_
