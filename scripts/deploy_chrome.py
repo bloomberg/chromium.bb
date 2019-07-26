@@ -276,6 +276,9 @@ class DeployChrome(object):
                              compress=self._ShouldUseCompression(),
                              debug_level=logging.INFO,
                              verbose=self.options.verbose)
+    # Set the security context.
+    if self.options.target_dir == _CHROME_DIR:
+      self.device.RunCommand(['restorecon', '-R', _CHROME_DIR])
 
     for p in self.copy_paths:
       if p.mode:
