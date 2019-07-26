@@ -29,10 +29,16 @@ class TestCreditCardFIDOAuthenticator : public CreditCardFIDOAuthenticator {
   // CreditCardFIDOAuthenticator:
   void GetAssertion(
       PublicKeyCredentialRequestOptionsPtr request_options) override;
+  void MakeCredential(
+      PublicKeyCredentialCreationOptionsPtr creation_options) override;
 
   // Invokes fido_authenticator->OnDidGetAssertion().
   static void GetAssertion(CreditCardFIDOAuthenticator* fido_authenticator,
                            bool did_succeed);
+
+  // Invokes fido_authenticator->OnDidMakeCredential().
+  static void MakeCredential(CreditCardFIDOAuthenticator* fido_authenticator,
+                             bool did_succeed);
 
   // Getter methods to query Request Options.
   std::vector<uint8_t> GetCredentialId();
@@ -56,6 +62,7 @@ class TestCreditCardFIDOAuthenticator : public CreditCardFIDOAuthenticator {
   friend class CreditCardAccessManagerTest;
 
   PublicKeyCredentialRequestOptionsPtr request_options_;
+  PublicKeyCredentialCreationOptionsPtr creation_options_;
   bool is_user_verifiable_ = false;
   bool is_user_opted_in_ = false;
 

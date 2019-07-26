@@ -22,6 +22,10 @@ using blink::mojom::AuthenticatorStatus;
 using blink::mojom::GetAssertionAuthenticatorResponse;
 using blink::mojom::GetAssertionAuthenticatorResponsePtr;
 using blink::mojom::InternalAuthenticatorPtr;
+using blink::mojom::MakeCredentialAuthenticatorResponse;
+using blink::mojom::MakeCredentialAuthenticatorResponsePtr;
+using blink::mojom::PublicKeyCredentialCreationOptions;
+using blink::mojom::PublicKeyCredentialCreationOptionsPtr;
 using blink::mojom::PublicKeyCredentialRequestOptions;
 using blink::mojom::PublicKeyCredentialRequestOptionsPtr;
 using device::CredentialType;
@@ -54,6 +58,9 @@ class CreditCardFIDOAuthenticator
                     base::TimeTicks form_parsed_timestamp,
                     base::Value request_options);
 
+  // Registration
+  void Register(base::Value creation_options = base::Value());
+
   // Invokes callback with true if user has a verifying platform authenticator.
   // e.g. Touch/Face ID, Windows Hello, Android fingerprint, etc., is available
   // and enabled. Otherwise invokes callback with false.
@@ -74,11 +81,23 @@ class CreditCardFIDOAuthenticator
                            ParseRequestOptions);
   FRIEND_TEST_ALL_PREFIXES(CreditCardFIDOAuthenticatorTest,
                            ParseAssertionResponse);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardFIDOAuthenticatorTest,
+                           ParseCreationOptions);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardFIDOAuthenticatorTest,
+                           ParseAttestationResponse);
 
   // Invokes the WebAuthn prompt to request user verification to sign the
   // challenge in |request_options|.
   virtual void GetAssertion(
       PublicKeyCredentialRequestOptionsPtr request_options);
+
+  // Invokes the WebAuthn prompt to request user verification to sign the
+  // challenge in |creation_options| and create a key-pair.
+  virtual void MakeCredential(
+      PublicKeyCredentialCreationOptionsPtr creation_options);
+
+  // Makes a request to payments to either opt-in or opt-out the user.
+  void OptChange(bool opt_in, base::Value attestation_response = base::Value());
 
   // The callback invoked from the WebAuthn prompt including the
   // |assertion_response|, which will be sent to Google Payments to retrieve
@@ -86,6 +105,18 @@ class CreditCardFIDOAuthenticator
   void OnDidGetAssertion(
       AuthenticatorStatus status,
       GetAssertionAuthenticatorResponsePtr assertion_response);
+
+  // The callback invoked from the WebAuthn prompt including the
+  // |attestation_response|, which will be sent to Google Payments to enroll the
+  // credential for this user.
+  void OnDidMakeCredential(
+      AuthenticatorStatus status,
+      MakeCredentialAuthenticatorResponsePtr attestation_response);
+
+  // Sets prefstore to enable credit card authentication if rpc was successful.
+  void OnDidGetOptChangeResult(AutofillClient::PaymentsRpcResult result,
+                               bool user_is_opted_in,
+                               base::Value creation_options = base::Value());
 
   // payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(
@@ -98,8 +129,12 @@ class CreditCardFIDOAuthenticator
   PublicKeyCredentialRequestOptionsPtr ParseRequestOptions(
       const base::Value& request_options);
 
+  // Converts |creation_options| from JSON to mojom pointer.
+  PublicKeyCredentialCreationOptionsPtr ParseCreationOptions(
+      const base::Value& creation_options);
+
   // Helper function to parse |key_info| sub-dictionary found in
-  // |request_options|.
+  // |request_options| and |creation_options|.
   PublicKeyCredentialDescriptor ParseCredentialDescriptor(
       const base::Value& key_info);
 
@@ -107,9 +142,16 @@ class CreditCardFIDOAuthenticator
   base::Value ParseAssertionResponse(
       GetAssertionAuthenticatorResponsePtr assertion_response);
 
+  // Converts |attestation_response| from mojom pointer to JSON.
+  base::Value ParseAttestationResponse(
+      MakeCredentialAuthenticatorResponsePtr attestation_response);
+
   // Returns true if |request_options| contains a challenge and has a non-empty
   // list of keys that each have a Credential ID.
   bool IsValidRequestOptions(const base::Value& request_options);
+
+  // Returns true if |request_options| contains a challenge.
+  bool IsValidCreationOptions(const base::Value& creation_options);
 
   // Card being unmasked.
   const CreditCard* card_;

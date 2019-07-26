@@ -25,6 +25,11 @@ void TestCreditCardFIDOAuthenticator::GetAssertion(
   request_options_ = std::move(request_options);
 }
 
+void TestCreditCardFIDOAuthenticator::MakeCredential(
+    PublicKeyCredentialCreationOptionsPtr creation_options) {
+  creation_options_ = std::move(creation_options);
+}
+
 // static
 void TestCreditCardFIDOAuthenticator::GetAssertion(
     CreditCardFIDOAuthenticator* fido_authenticator,
@@ -41,17 +46,43 @@ void TestCreditCardFIDOAuthenticator::GetAssertion(
   }
 }
 
+// static
+void TestCreditCardFIDOAuthenticator::MakeCredential(
+    CreditCardFIDOAuthenticator* fido_authenticator,
+    bool did_succeed) {
+  if (did_succeed) {
+    MakeCredentialAuthenticatorResponsePtr response =
+        MakeCredentialAuthenticatorResponse::New();
+    response->info = blink::mojom::CommonCredentialInfo::New();
+    fido_authenticator->OnDidMakeCredential(AuthenticatorStatus::SUCCESS,
+                                            std::move(response));
+  } else {
+    fido_authenticator->OnDidMakeCredential(
+        AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+  }
+}
+
 std::vector<uint8_t> TestCreditCardFIDOAuthenticator::GetCredentialId() {
   DCHECK(!request_options_->allow_credentials.empty());
   return request_options_->allow_credentials.front().id();
 }
 
 std::vector<uint8_t> TestCreditCardFIDOAuthenticator::GetChallenge() {
-  return request_options_->challenge;
+  if (request_options_) {
+    return request_options_->challenge;
+  } else {
+    DCHECK(creation_options_);
+    return creation_options_->challenge;
+  }
 }
 
 std::string TestCreditCardFIDOAuthenticator::GetRelyingPartyId() {
-  return request_options_->relying_party_id;
+  if (request_options_) {
+    return request_options_->relying_party_id;
+  } else {
+    DCHECK(creation_options_);
+    return creation_options_->relying_party.id;
+  }
 }
 
 void TestCreditCardFIDOAuthenticator::IsUserVerifiable(
