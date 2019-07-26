@@ -1820,6 +1820,8 @@ jumbo_source_set("browser") {
     "service_worker/service_worker_version.h",
     "site_instance_impl.cc",
     "site_instance_impl.h",
+    "sms/sms_metrics.cc",
+    "sms/sms_metrics.h",
     "sms/sms_parser.cc",
     "sms/sms_parser.h",
     "sms/sms_provider.cc",
