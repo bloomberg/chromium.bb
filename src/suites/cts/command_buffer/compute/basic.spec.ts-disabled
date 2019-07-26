@@ -3,9 +3,9 @@ Basic command buffer compute tests.
 `;
 
 import { TestGroup } from '../../../../framework/index.js';
-import { GPUTest } from '../../gpu_test.js';
+import { GPUShaderTest } from '../../gpu_shader_test.js';
 
-export const g = new TestGroup(GPUTest);
+export const g = new TestGroup(GPUShaderTest);
 
 g.test('memcpy', async t => {
   const data = new Uint32Array([0x01020304]);

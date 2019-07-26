@@ -1,15 +1,10 @@
-import * as Shaderc from '@webgpu/shaderc';
-
 import { getGPU } from '../../framework/gpu/implementation.js';
 import { Fixture } from '../../framework/index.js';
-
-let shaderc: Promise<Shaderc.Shaderc> | undefined;
 
 // TODO: Should this gain some functionality currently only in UnitTest?
 export class GPUTest extends Fixture {
   device: GPUDevice = undefined!;
   queue: GPUQueue = undefined!;
-  shaderc: Shaderc.Shaderc = undefined!;
 
   async init(): Promise<void> {
     super.init();
@@ -17,13 +12,6 @@ export class GPUTest extends Fixture {
     const adapter = await gpu.requestAdapter();
     this.device = await adapter.requestDevice({});
     this.queue = this.device.getQueue();
-
-    shaderc = shaderc || Shaderc.instantiate();
-    this.shaderc = await shaderc;
-  }
-
-  makeShaderModule(type: 'f' | 'v' | 'c', source: string): GPUShaderModule {
-    return this.device.createShaderModule({ code: this.compile(type, source) });
   }
 
   expect(success: boolean, message: string): void {
@@ -70,22 +58,5 @@ export class GPUTest extends Fixture {
       this.rec.log('EXP: ' + expHex);
       this.rec.log('ACT: ' + actHex);
     }
-  }
-
-  private compile(type: 'f' | 'v' | 'c', source: string): Uint32Array {
-    const compiler = new this.shaderc.Compiler();
-    const opts = new this.shaderc.CompileOptions();
-    const kinds = {
-      f: this.shaderc.shader_kind.fragment,
-      v: this.shaderc.shader_kind.vertex,
-      c: this.shaderc.shader_kind.compute,
-    };
-    const result = compiler.CompileGlslToSpv(source, kinds[type], 'a.glsl', 'main', opts);
-    const error = result.GetErrorMessage();
-    if (error) {
-      // tslint:disable-next-line: no-console
-      console.warn(error);
-    }
-    return result.GetBinary();
   }
 }

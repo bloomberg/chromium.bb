@@ -1,0 +1,36 @@
+import * as shadercModule from '@webgpu/shaderc';
+
+import { GPUTest } from './gpu_test.js';
+
+let shadercInstance: Promise<shadercModule.Shaderc> | undefined;
+
+export class GPUShaderTest extends GPUTest {
+  shaderc: shadercModule.Shaderc = undefined!;
+
+  async init(): Promise<void> {
+    super.init();
+    shadercInstance = shadercInstance || shadercModule.instantiate();
+    this.shaderc = await shadercInstance;
+  }
+
+  makeShaderModule(type: 'f' | 'v' | 'c', source: string): GPUShaderModule {
+    return this.device.createShaderModule({ code: this.compile(type, source) });
+  }
+
+  private compile(type: 'f' | 'v' | 'c', source: string): Uint32Array {
+    const compiler = new this.shaderc.Compiler();
+    const opts = new this.shaderc.CompileOptions();
+    const kinds = {
+      f: this.shaderc.shader_kind.fragment,
+      v: this.shaderc.shader_kind.vertex,
+      c: this.shaderc.shader_kind.compute,
+    };
+    const result = compiler.CompileGlslToSpv(source, kinds[type], 'a.glsl', 'main', opts);
+    const error = result.GetErrorMessage();
+    if (error) {
+      // tslint:disable-next-line: no-console
+      console.warn(error);
+    }
+    return result.GetBinary();
+  }
+}
