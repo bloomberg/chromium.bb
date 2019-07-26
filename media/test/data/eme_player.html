@@ -138,6 +138,7 @@
       video.addEventListener('canplaythrough', onLogEvent);
       video.addEventListener('stalled', onLogEvent);
       video.addEventListener('waiting', onLogEvent);
+      video.addEventListener('waitingforkey', onLogEvent);
       document.addEventListener('visibilitychange', onVisibilityChange);
       Utils.resetTitleChange();
       if (playTwice) {
