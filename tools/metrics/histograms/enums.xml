@@ -24111,9 +24111,7 @@ Called by update_net_error_codes.py.-->
   <int value="2946" label="WebkitMarginAfterCollapseSeparate"/>
   <int value="2947"
       label="WebkitMarginAfterCollapseSeparateMaybeDoesSomething"/>
-  <int value="2948" label="CredentialManagerCreateWithUVM"/>
   <int value="2949" label="CredentialManagerGetWithUVM"/>
-  <int value="2950" label="CredentialManagerCreateSuccessWithUVM"/>
   <int value="2951" label="CredentialManagerGetSuccessWithUVM"/>
   <int value="2952" label="DiscardInputEventToMovingIframe"/>
   <int value="2953" label="SignedExchangeSubresourcePrefetch"/>
