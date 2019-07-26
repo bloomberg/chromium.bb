@@ -953,11 +953,11 @@ class ChromeLauncherControllerWithArcTest
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerWithArcTest);
 };
 
-class ChromeLauncherControllerExtendedSheflTest
+class ChromeLauncherControllerExtendedShelfTest
     : public ChromeLauncherControllerWithArcTest {
  protected:
-  ChromeLauncherControllerExtendedSheflTest() = default;
-  ~ChromeLauncherControllerExtendedSheflTest() override = default;
+  ChromeLauncherControllerExtendedShelfTest() = default;
+  ~ChromeLauncherControllerExtendedShelfTest() override = default;
 
   void SetUp() override {
     ChromeLauncherControllerWithArcTest::SetUp();
@@ -999,7 +999,7 @@ class ChromeLauncherControllerExtendedSheflTest
  private:
   std::vector<scoped_refptr<Extension>> extra_extensions_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerExtendedSheflTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerExtendedShelfTest);
 };
 
 // Watches WebContents and blocks until it is destroyed. This is needed for
@@ -1272,7 +1272,7 @@ TEST_F(ChromeLauncherControllerTest, DefaultApps) {
             GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShefDefault) {
+TEST_F(ChromeLauncherControllerExtendedShelfTest, ExtendedShefDefault) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       kEnableExtendedShelfLayout,
@@ -1282,7 +1282,7 @@ TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShefDefault) {
   EXPECT_EQ("Chrome, Gmail, Doc, Youtube, Play Store", GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShef7Apps) {
+TEST_F(ChromeLauncherControllerExtendedShelfTest, ExtendedShef7Apps) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       kEnableExtendedShelfLayout,
@@ -1293,7 +1293,7 @@ TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShef7Apps) {
             GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShef10Apps) {
+TEST_F(ChromeLauncherControllerExtendedShelfTest, ExtendedShef10Apps) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       kEnableExtendedShelfLayout,
@@ -1306,7 +1306,7 @@ TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShef10Apps) {
       GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerExtendedSheflTest, UpgradeFromDefault) {
+TEST_F(ChromeLauncherControllerExtendedShelfTest, UpgradeFromDefault) {
   InitLauncherController();
   EXPECT_EQ("Chrome, Gmail, Doc, Youtube, Play Store", GetPinnedAppStatus());
 
@@ -1325,7 +1325,34 @@ TEST_F(ChromeLauncherControllerExtendedSheflTest, UpgradeFromDefault) {
       GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerExtendedSheflTest, NoUpgradeFromNonDefault) {
+TEST_F(ChromeLauncherControllerExtendedShelfTest, NoDefaultAfterExperemental) {
+  const std::string expectations =
+      "Chrome, Gmail, Calendar, Doc, Sheets, "
+      "Slides, Files, Camera, Photos, Play Store";
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeatureWithParameters(
+        kEnableExtendedShelfLayout,
+        {std::pair<std::string, std::string>("app_count", "10")});
+
+    InitLauncherController();
+    EXPECT_EQ(expectations, GetPinnedAppStatus());
+
+    // Trigger layout update, app_id does not matter. Experiment is still
+    // forced.
+    extension_service_->AddExtension(extension1_.get());
+
+    // Youtube is included into default but not to expermenetal. Refreshing
+    // should not affect layout.
+    EXPECT_EQ(expectations, GetPinnedAppStatus());
+  }
+
+  // Re-update but experiment is off now. No change to layout.
+  extension_service_->AddExtension(extension2_.get());
+  EXPECT_EQ(expectations, GetPinnedAppStatus());
+}
+
+TEST_F(ChromeLauncherControllerExtendedShelfTest, NoUpgradeFromNonDefault) {
   InitLauncherController();
   launcher_controller_->UnpinAppWithID(extension_misc::kYoutubeAppId);
   EXPECT_EQ("Chrome, Gmail, Doc, Play Store", GetPinnedAppStatus());
