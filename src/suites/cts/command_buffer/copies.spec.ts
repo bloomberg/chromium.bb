@@ -9,9 +9,12 @@ export const g = new TestGroup(GPUTest);
 
 g.test('b2b', async t => {
   const data = new Uint32Array([0x01020304]);
-  const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
+
+  const [src, map] = t.device.createBufferMapped({ size: 4, usage: 4 | 8 });
+  new Uint32Array(map).set(data);
+  src.unmap();
+
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
-  src.setSubData(0, data);
 
   const encoder = t.device.createCommandEncoder({});
   encoder.copyBufferToBuffer(src, 0, dst, 0, 4);
@@ -22,9 +25,12 @@ g.test('b2b', async t => {
 
 g.test('b2t2b', async t => {
   const data = new Uint32Array([0x01020304]);
-  const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
+
+  const [src, map] = t.device.createBufferMapped({ size: 4, usage: 4 | 8 });
+  new Uint32Array(map).set(data);
+  src.unmap();
+
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
-  src.setSubData(0, data);
 
   const mid = t.device.createTexture({
     size: { width: 1, height: 1, depth: 1 },
@@ -50,9 +56,12 @@ g.test('b2t2b', async t => {
 
 g.test('b2t2t2b', async t => {
   const data = new Uint32Array([0x01020304]);
-  const src = t.device.createBuffer({ size: 4, usage: 4 | 8 });
+
+  const [src, map] = t.device.createBufferMapped({ size: 4, usage: 4 | 8 });
+  new Uint32Array(map).set(data);
+  src.unmap();
+
   const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
-  src.setSubData(0, data);
 
   const midDesc: GPUTextureDescriptor = {
     size: { width: 1, height: 1, depth: 1 },
