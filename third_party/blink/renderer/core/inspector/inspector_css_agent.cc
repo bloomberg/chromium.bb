@@ -1163,11 +1163,8 @@ void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
       return;
 
     // Skip recursing inside a display-locked tree.
-    if (layout_object->GetNode() &&
-        DisplayLockUtilities::NearestLockedInclusiveAncestor(
-            *layout_object->GetNode())) {
+    if (DisplayLockUtilities::NearestLockedInclusiveAncestor(*layout_object))
       return;
-    }
 
     if (!layout_object->IsAnonymous())
       --descendants_depth;
@@ -1179,11 +1176,8 @@ void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
   }
 
   // Don't gather text on a display-locked tree.
-  if (layout_object->GetNode() &&
-      DisplayLockUtilities::NearestLockedExclusiveAncestor(
-          *layout_object->GetNode())) {
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object))
     return;
-  }
 
   FontCachePurgePreventer preventer;
   LayoutText* layout_text = ToLayoutText(layout_object);
