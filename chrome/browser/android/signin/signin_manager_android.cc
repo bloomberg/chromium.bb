@@ -77,8 +77,9 @@ void SigninManagerAndroid::OnSignInCompleted(
     const JavaParamRef<jstring>& username) {
   DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted";
 
-  // TODO(crbug.com/889902): Migrate to IdentityManager once there's an
-  // API mapping for SigninManager::SignIn().
+  // TODO(crbug.com/987965): Migrate away from this direct usage of
+  // PrimaryAccountManager and eliminate this class needing to know about
+  // PrimaryAccountManager.
   identity_manager_->GetPrimaryAccountManager()->SignIn(
       base::android::ConvertJavaStringToUTF8(env, username));
 }
