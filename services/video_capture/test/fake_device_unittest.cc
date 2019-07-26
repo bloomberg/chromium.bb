@@ -151,8 +151,8 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetRetiredWhenDeviceIsStopped) {
   ASSERT_TRUE(known_buffer_ids.empty());
 }
 
-// This requires platforms where base::SharedMemoryHandle is backed by a
-// file descriptor.
+// This requires the linux platform, where shared regions are backed by a file
+// descriptor.
 #if defined(OS_LINUX)
 TEST_F(FakeVideoCaptureDeviceTest,
        ReceiveFramesViaFileDescriptorHandlesForSharedMemory) {
