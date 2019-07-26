@@ -64,6 +64,17 @@ table: |
 flags: {testmode: forward}
 tests:
 
+  - - "\u2026"
+    - ⠄⠡⠭⠆⠴⠆⠖⠄
+    - outputPos: [0]
+      inputPos: [0, 0, 0, 0, 0, 0, 0, 0]
+
+  - - "\u2026"
+    - ""
+    - outputPos: [-1]
+      inputPos: []
+      mode: [noUndefined]
+
   - - "\u2018xyz\u2026\u22EEjkl\u2019"
     - ⠄⠡⠭⠆⠴⠂⠦⠄⠭⠽⠵⠄⠡⠭⠆⠴⠆⠖⠄⠄⠡⠭⠆⠆⠑⠑⠄⠚⠅⠇⠄⠡⠭⠆⠴⠂⠔⠄
     - outputPos: [0, 8, 9, 10, 11, 19, 27, 28, 29, 30]
