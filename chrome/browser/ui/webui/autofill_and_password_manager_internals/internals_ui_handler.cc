@@ -5,9 +5,14 @@
 #include "chrome/browser/ui/webui/autofill_and_password_manager_internals/internals_ui_handler.h"
 
 #include "base/values.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/channel_info.h"
 #include "components/autofill/core/browser/logging/log_router.h"
 #include "components/grit/components_resources.h"
+#include "components/version_info/version_info.h"
+#include "components/version_ui/version_handler_helper.h"
+#include "components/version_ui/version_ui_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
@@ -24,6 +29,14 @@ content::WebUIDataSource* CreateInternalsHTMLSource(
   source->AddResourcePath("autofill_and_password_manager_internals.css",
                           IDR_AUTOFILL_AND_PASSWORD_MANAGER_INTERNALS_CSS);
   source->SetDefaultResource(IDR_AUTOFILL_AND_PASSWORD_MANAGER_INTERNALS_HTML);
+  // Data strings:
+  source->AddString(version_ui::kVersion, version_info::GetVersionNumber());
+  source->AddString(version_ui::kOfficial, version_info::IsOfficialBuild()
+                                               ? "official"
+                                               : "Developer build");
+  source->AddString(version_ui::kVersionModifier, chrome::GetChannelName());
+  source->AddString(version_ui::kCL, version_info::GetLastChange());
+  source->AddString(version_ui::kUserAgent, GetUserAgent());
   return source;
 }
 
@@ -57,6 +70,8 @@ void InternalsUIHandler::OnLoaded(const base::ListValue* args) {
   CallJavascriptFunction(
       "notifyAboutIncognito",
       base::Value(Profile::FromWebUI(web_ui())->IsIncognitoProfile()));
+  CallJavascriptFunction("notifyAboutVariations",
+                         *version_ui::GetVariationsList());
 }
 
 void InternalsUIHandler::StartSubscription() {
