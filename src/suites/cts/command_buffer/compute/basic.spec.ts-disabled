@@ -9,8 +9,14 @@ export const g = new TestGroup(GPUShaderTest);
 
 g.test('memcpy', async t => {
   const data = new Uint32Array([0x01020304]);
-  const src = t.device.createBuffer({ size: 4, usage: 8 | 128 });
-  const dst = t.device.createBuffer({ size: 4, usage: 4 | 128 });
+  const src = t.device.createBuffer({
+    size: 4,
+    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
+  });
+  const dst = t.device.createBuffer({
+    size: 4,
+    usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
+  });
   src.setSubData(0, data);
 
   const bgl = t.device.createBindGroupLayout({

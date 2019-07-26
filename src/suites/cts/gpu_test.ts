@@ -28,7 +28,7 @@ export class GPUTest extends Fixture {
     const size = expected.buffer.byteLength;
     const dst = this.device.createBuffer({
       size: expected.buffer.byteLength,
-      usage: 1 | 8,
+      usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
     });
 
     const c = this.device.createCommandEncoder({});

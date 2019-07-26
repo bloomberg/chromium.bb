@@ -10,7 +10,10 @@ export const g = new TestGroup(GPUTest);
 g.test('basic', async t => {
   const value = t.params.value;
 
-  const buf = t.device.createBuffer({ size: 12, usage: 2 | 4 });
+  const buf = t.device.createBuffer({
+    size: 12,
+    usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC,
+  });
   const mappedBuffer = new Uint32Array(await buf.mapWriteAsync());
   mappedBuffer[1] = value;
   buf.unmap();
@@ -18,7 +21,10 @@ g.test('basic', async t => {
 }).params(poptions('value', [0x00000001, 0x01020304]));
 
 g.test('unmap', async t => {
-  const buf = t.device.createBuffer({ size: 12, usage: 2 | 4 });
+  const buf = t.device.createBuffer({
+    size: 12,
+    usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC,
+  });
   const mappedBuffer = await buf.mapWriteAsync();
   buf.unmap();
   t.expect(mappedBuffer.byteLength === 0, 'Mapped buffer should be detached.');

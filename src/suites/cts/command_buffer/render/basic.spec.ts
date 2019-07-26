@@ -8,12 +8,15 @@ import { GPUTest } from '../../gpu_test.js';
 export const g = new TestGroup(GPUTest);
 
 g.test('clear', async t => {
-  const dst = t.device.createBuffer({ size: 4, usage: 4 | 8 });
+  const dst = t.device.createBuffer({
+    size: 4,
+    usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
+  });
 
   const colorAttachment = t.device.createTexture({
     format: 'rgba8unorm',
     size: { width: 1, height: 1, depth: 1 },
-    usage: 1 | 16,
+    usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
   });
   const colorAttachmentView = colorAttachment.createDefaultView();
 
