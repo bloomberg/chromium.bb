@@ -254,10 +254,10 @@
   resolved "https://registry.yarnpkg.com/@types/sizzle/-/sizzle-2.3.2.tgz#a811b8c18e2babab7d542b3365887ae2e4d9de47"
   integrity sha512-7EJYyKTL7tFR8+gDbB6Wwz/arpGa0Mywk1TJbNzKzHtzbwVmY4HR9WqS5VV7dsBUKQmPNr192jHr/VpBluj/hg==
 
-"@webgpu/shaderc@0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@webgpu/shaderc/-/shaderc-0.0.4.tgz#613c6ddc368785d950d911c09910dc71bd875b5e"
-  integrity sha512-Fou7QBnazByzCaiPLfwVQc8f6QA6RRM7258Z9oP3i6sBVNbnX270i2iI7lMXwSG0yggtl4B+a2nwfuME0pu3Og==
+"@webgpu/shaderc@0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@webgpu/shaderc/-/shaderc-0.0.7.tgz#7a29eca2d6235651eded338b6b4119c5592ef4d4"
+  integrity sha512-lqOwotx4kVj6faUTEXQ19XsolKczNjKXMNNAZnzYhu5MdDGwqvE8Fj2JqM3X+zDiBMzmlwHx3OnDfvj0WYb2uQ==
 
 "@webgpu/types@0.0.6":
   version "0.0.6"
