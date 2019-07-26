@@ -805,11 +805,16 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
 
     all_use_flags = portage_util.GetInstalledPackageUseFlags(
         package, self._current_board, buildroot=self._build_root)
-    for use_flags in all_use_flags.value():
+    for use_flags in all_use_flags.values():
       for use_flag in use_flags:
         if 'cheets_userdebug' in use_flag or 'cheets_sdk_userdebug' in use_flag:
           return 'userdebug'
         elif 'cheets_user' in use_flag or 'cheets_sdk_user' in use_flag:
+          # TODO(b/120999609): bertha builds always download userdebug builds
+          # at the moment because user builds are broken. Remove this clause
+          # when resolved.
+          if self.DetermineAndroidTarget(package) == 'bertha':
+            return 'userdebug'
           return 'user'
 
     # We iterated through all the flags and could not find user or userdebug.
