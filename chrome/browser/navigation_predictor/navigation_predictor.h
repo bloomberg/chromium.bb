@@ -17,6 +17,7 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "ui/gfx/geometry/size.h"
@@ -203,9 +204,13 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // metrics, excluding |median_link_location_|.
   int GetBucketMinForPageMetrics(int value) const;
 
-  // Returns the minimum of the bucket that |value| belongs in, for
-  // |median_link_location_|.
-  int GetBucketMinForMedianLinkLocation(int value) const;
+  // Returns the minimum of the bucket that |value| belongs in, used for
+  // |median_link_location_| and the |ratio_distance_root_top|.
+  int GetLinearBucketForLinkLocation(int value) const;
+
+  // Returns the minimum of the bucket that |value| belongs in, used for
+  // |ratio_area|.
+  int GetLinearBucketForRatioArea(int value) const;
 
   // Used to get keyed services.
   content::BrowserContext* const browser_context_;
@@ -213,6 +218,11 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // Maps from target url (href) to navigation score.
   std::unordered_map<std::string, std::unique_ptr<NavigationScore>>
       navigation_scores_map_;
+
+  // The urls of the top anchor elements in the page, sorted by navigation
+  // score in descending order. If there are 10 or more urls on the page,
+  // |top_urls_| contains 10 urls. Otherwise, it contains all the urls.
+  std::vector<std::string> top_urls_;
 
   // Total number of anchors that: href has the same host as the document,
   // contains image, inside an iframe, href incremented by 1 from document url.
@@ -238,6 +248,7 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   const int source_engagement_score_scale_;
   const int target_engagement_score_scale_;
   const int area_rank_scale_;
+  const int ratio_distance_root_top_scale_;
 
   // Page-wide scaling factors used to compute navigation scores.
   const int link_total_scale_;
@@ -305,6 +316,12 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
   // UKM ID for navigation
   ukm::SourceId ukm_source_id_;
+
+  // UKM recorder
+  ukm::UkmRecorder* ukm_recorder_ = nullptr;
+
+  // The origin of the current page.
+  url::Origin document_origin_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

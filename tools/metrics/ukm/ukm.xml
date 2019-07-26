@@ -4793,6 +4793,57 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="NavigationPredictorAnchorElementMetrics">
+  <owner>ryansturm@chromium.com</owner>
+  <summary>
+    Metrics that describe an anchor element's data. This event is emitted at
+    most 10 times per page load, once for each of the top n URLs on a page, and
+    the order of the events is randomized. If there is no nth anchor element, no
+    value is returned.
+  </summary>
+  <metric name="AnchorIndex">
+    <summary>
+      The index of the clicked-on anchor element in NavigationPredictor's
+      |top_urls_|.
+    </summary>
+  </metric>
+  <metric name="ContainsImage">
+    <summary>
+      1 if the anchor element contains an image.
+    </summary>
+  </metric>
+  <metric name="IsInIframe">
+    <summary>
+      1 if the anchor element is in an iframe.
+    </summary>
+  </metric>
+  <metric name="IsURLIncrementedByOne">
+    <summary>
+      1 if the anchor element's target URL and the document's source URL only
+      differ by one number, and the target URL increments that number in the
+      source URL by 1.
+    </summary>
+  </metric>
+  <metric name="PercentClickableArea">
+    <summary>
+      The percent of the total document area that this anchor element's
+      clickable area occupies.
+    </summary>
+  </metric>
+  <metric name="PercentVerticalDistance">
+    <summary>
+      How far down the document the top of the anchor element is, expressed as a
+      ratio with the total document height.
+    </summary>
+  </metric>
+  <metric name="SameOrigin">
+    <summary>
+      1 if the anchor element's target URL and the document's source URL are the
+      same origin.
+    </summary>
+  </metric>
+</event>
+
 <event name="NavigationPredictorPageLinkMetrics" singular="True">
   <owner>ryansturm@chromium.com</owner>
   <summary>
