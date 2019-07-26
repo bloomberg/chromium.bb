@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Same-origin image after a JS initiated scroll event is observable. assert_equals: expected 0 but got 32.75499999972453
-Harness: the test ran to completion.
-
