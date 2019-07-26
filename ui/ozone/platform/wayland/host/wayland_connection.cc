@@ -45,8 +45,7 @@ constexpr uint32_t kMaxTextInputManagerVersion = 1;
 constexpr uint32_t kMinWlOutputVersion = 2;
 }  // namespace
 
-WaylandConnection::WaylandConnection()
-    : wayland_window_manager_(this), controller_(FROM_HERE) {}
+WaylandConnection::WaylandConnection() : controller_(FROM_HERE) {}
 
 WaylandConnection::~WaylandConnection() = default;
 
@@ -121,19 +120,6 @@ void WaylandConnection::ScheduleFlush() {
       FROM_HERE,
       base::BindOnce(&WaylandConnection::Flush, base::Unretained(this)));
   scheduled_flush_ = true;
-}
-
-void WaylandConnection::OnWindowAdded(WaylandWindow* window) {
-  DCHECK(buffer_manager_host_);
-  buffer_manager_host_->OnWindowAdded(window);
-}
-
-void WaylandConnection::OnWindowRemoved(WaylandWindow* window) {
-  if (touch_)
-    touch_->RemoveTouchPoints(window);
-
-  DCHECK(buffer_manager_host_);
-  buffer_manager_host_->OnWindowRemoved(window);
 }
 
 void WaylandConnection::SetCursorBitmap(const std::vector<SkBitmap>& bitmaps,
@@ -413,7 +399,7 @@ void WaylandConnection::Capabilities(void* data,
       connection->touch_ = std::make_unique<WaylandTouch>(
           touch, base::BindRepeating(&WaylandConnection::DispatchUiEvent,
                                      base::Unretained(connection)));
-      connection->touch_->set_connection(connection);
+      connection->touch_->SetConnection(connection);
     }
   } else if (connection->touch_) {
     connection->touch_.reset();

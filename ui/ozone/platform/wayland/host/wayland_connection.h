@@ -47,9 +47,6 @@ class WaylandConnection : public PlatformEventSource,
   // Schedules a flush of the Wayland connection.
   void ScheduleFlush();
 
-  void OnWindowAdded(WaylandWindow* window);
-  void OnWindowRemoved(WaylandWindow* window);
-
   wl_display* display() const { return display_.get(); }
   wl_compositor* compositor() const { return compositor_.get(); }
   wl_subcompositor* subcompositor() const { return subcompositor_.get(); }

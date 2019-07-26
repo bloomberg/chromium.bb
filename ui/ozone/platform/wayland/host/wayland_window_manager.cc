@@ -4,15 +4,21 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
-#include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 namespace ui {
 
-WaylandWindowManager::WaylandWindowManager(WaylandConnection* connection)
-    : connection_(connection) {}
+WaylandWindowManager::WaylandWindowManager() = default;
 
 WaylandWindowManager::~WaylandWindowManager() = default;
+
+void WaylandWindowManager::AddObserver(WaylandWindowObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WaylandWindowManager::RemoveObserver(WaylandWindowObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
 
 WaylandWindow* WaylandWindowManager::GetWindow(
     gfx::AcceleratedWidget widget) const {
@@ -66,8 +72,8 @@ void WaylandWindowManager::AddWindow(gfx::AcceleratedWidget widget,
                                      WaylandWindow* window) {
   window_map_[widget] = window;
 
-  // TODO(msisov): use observers instead.
-  connection_->OnWindowAdded(window);
+  for (WaylandWindowObserver& observer : observers_)
+    observer.OnWindowAdded(window);
 }
 
 void WaylandWindowManager::RemoveWindow(gfx::AcceleratedWidget widget) {
@@ -76,8 +82,8 @@ void WaylandWindowManager::RemoveWindow(gfx::AcceleratedWidget widget) {
 
   window_map_.erase(widget);
 
-  // TODO(msisov): use observers instead.
-  connection_->OnWindowRemoved(window);
+  for (WaylandWindowObserver& observer : observers_)
+    observer.OnWindowRemoved(window);
 }
 
 std::vector<WaylandWindow*> WaylandWindowManager::GetAllWindows() const {

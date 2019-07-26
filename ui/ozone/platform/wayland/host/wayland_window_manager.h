@@ -9,21 +9,23 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/wayland/host/wayland_window_observer.h"
 
 namespace ui {
 
-class WaylandConnection;
 class WaylandWindow;
 
 // Stores and returns WaylandWindows. Clients that are interested in knowing
 // when a new window is added or removed, but set self as an observer.
 class WaylandWindowManager {
  public:
-  // TODO(msisov): Do not pass WaylandConnection here. Instead, add support for
-  // observers.
-  explicit WaylandWindowManager(WaylandConnection* connection);
+  WaylandWindowManager();
   ~WaylandWindowManager();
+
+  void AddObserver(WaylandWindowObserver* observer);
+  void RemoveObserver(WaylandWindowObserver* observer);
 
   // Returns a window found by |widget|.
   WaylandWindow* GetWindow(gfx::AcceleratedWidget widget) const;
@@ -48,7 +50,7 @@ class WaylandWindowManager {
   void RemoveWindow(gfx::AcceleratedWidget widget);
 
  private:
-  WaylandConnection* const connection_;
+  base::ObserverList<WaylandWindowObserver> observers_;
 
   base::flat_map<gfx::AcceleratedWidget, WaylandWindow*> window_map_;
 
