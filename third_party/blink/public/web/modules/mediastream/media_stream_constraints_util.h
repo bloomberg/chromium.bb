@@ -297,10 +297,6 @@ const char* IsOutsideConstraintRange(NumericConstraintType constraint,
              : nullptr;
 }
 
-BLINK_MODULES_EXPORT std::string GetMediaStreamSource(
-    const blink::WebMediaConstraints& constraints);
-bool IsDeviceCapture(const blink::WebMediaConstraints& constraints);
-
 // This function selects track settings from a set of candidate resolutions and
 // frame rates, given the source video-capture format and ideal values.
 // The output are settings for a VideoTrackAdapter, which can adjust the

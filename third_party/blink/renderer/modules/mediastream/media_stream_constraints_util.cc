@@ -234,24 +234,6 @@ bool GetConstraintValueAsString(
   return false;
 }
 
-std::string GetMediaStreamSource(const WebMediaConstraints& constraints) {
-  std::string source;
-  if (constraints.Basic().media_stream_source.HasIdeal() &&
-      constraints.Basic().media_stream_source.Ideal().size() > 0) {
-    source = constraints.Basic().media_stream_source.Ideal()[0].Utf8();
-  }
-  if (constraints.Basic().media_stream_source.HasExact() &&
-      constraints.Basic().media_stream_source.Exact().size() > 0) {
-    source = constraints.Basic().media_stream_source.Exact()[0].Utf8();
-  }
-
-  return source;
-}
-
-bool IsDeviceCapture(const WebMediaConstraints& constraints) {
-  return GetMediaStreamSource(constraints).empty();
-}
-
 VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
     const WebMediaTrackConstraintSet& basic_constraint_set,
     const media_constraints::ResolutionSet& resolution_set,

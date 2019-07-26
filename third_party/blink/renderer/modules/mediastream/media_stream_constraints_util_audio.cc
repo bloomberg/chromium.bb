@@ -20,7 +20,6 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
@@ -1291,6 +1290,20 @@ class CandidatesContainer {
   std::string default_device_id_;
   std::vector<DeviceContainer> devices_;
 };
+
+std::string GetMediaStreamSource(const WebMediaConstraints& constraints) {
+  std::string source;
+  if (constraints.Basic().media_stream_source.HasIdeal() &&
+      constraints.Basic().media_stream_source.Ideal().size() > 0) {
+    source = constraints.Basic().media_stream_source.Ideal()[0].Utf8();
+  }
+  if (constraints.Basic().media_stream_source.HasExact() &&
+      constraints.Basic().media_stream_source.Exact().size() > 0) {
+    source = constraints.Basic().media_stream_source.Exact()[0].Utf8();
+  }
+
+  return source;
+}
 
 }  // namespace
 
