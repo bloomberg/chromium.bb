@@ -410,7 +410,7 @@ typedef struct SPEED_FEATURES {
   // go down at least to the specified level.
   BLOCK_SIZE rd_auto_partition_min_limit;
 
-  // Min and max partition size we enable (block_size) as per auto
+  // Min and max square partition size we enable (block_size) as per auto
   // min max, but also used by adjust partitioning, and pick_partitioning.
   BLOCK_SIZE default_min_partition_size;
   BLOCK_SIZE default_max_partition_size;

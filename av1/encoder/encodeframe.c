@@ -4107,28 +4107,8 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
 #if CONFIG_COLLECT_COMPONENT_TIMING
         start_timing(cpi, rd_pick_partition_time);
 #endif
-        BLOCK_SIZE max_sq_size = BLOCK_128X128;
-        switch (cpi->oxcf.max_partition_size) {
-          case 4: max_sq_size = BLOCK_4X4; break;
-          case 8: max_sq_size = BLOCK_8X8; break;
-          case 16: max_sq_size = BLOCK_16X16; break;
-          case 32: max_sq_size = BLOCK_32X32; break;
-          case 64: max_sq_size = BLOCK_64X64; break;
-          case 128: max_sq_size = BLOCK_128X128; break;
-          default: assert(0); break;
-        }
-        max_sq_size = AOMMIN(max_sq_size, sb_size);
-
-        BLOCK_SIZE min_sq_size = BLOCK_4X4;
-        switch (cpi->oxcf.min_partition_size) {
-          case 4: min_sq_size = BLOCK_4X4; break;
-          case 8: min_sq_size = BLOCK_8X8; break;
-          case 16: min_sq_size = BLOCK_16X16; break;
-          case 32: min_sq_size = BLOCK_32X32; break;
-          case 64: min_sq_size = BLOCK_64X64; break;
-          case 128: min_sq_size = BLOCK_128X128; break;
-          default: assert(0); break;
-        }
+        BLOCK_SIZE max_sq_size = x->max_partition_size;
+        BLOCK_SIZE min_sq_size = x->min_partition_size;
 
         if (use_auto_max_partition(cpi, sb_size, mi_row, mi_col)) {
           float features[FEATURE_SIZE_MAX_MIN_PART_PRED] = { 0.0f };
@@ -4585,8 +4565,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   RD_COUNTS *const rdc = &cpi->td.rd_counts;
   int i;
 
-  x->min_partition_size = AOMMIN(x->min_partition_size, cm->seq_params.sb_size);
-  x->max_partition_size = AOMMIN(x->max_partition_size, cm->seq_params.sb_size);
 #if CONFIG_DIST_8X8
   x->using_dist_8x8 = cpi->oxcf.using_dist_8x8;
   x->tune_metric = cpi->oxcf.tuning;
