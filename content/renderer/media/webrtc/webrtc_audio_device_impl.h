@@ -116,7 +116,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // (either local or remote), so that audio will be rendered to a matching
   // output device. Note that if there are more than one open capture device the
   // function will not be able to pick an appropriate device and return 0.
-  int GetAuthorizedDeviceSessionIdForAudioRenderer();
+  base::UnguessableToken GetAuthorizedDeviceSessionIdForAudioRenderer();
 
   const scoped_refptr<blink::WebRtcAudioRenderer>& renderer() const {
     return renderer_;

@@ -147,11 +147,11 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
 
   std::string str = base::StringPrintf(
       "ProcessedLocalAudioSource::EnsureSourceIsStarted. render_frame_id=%d"
-      ", channel_layout=%d, sample_rate=%d, buffer_size=%d"
-      ", session_id=%d, effects=%d. ",
+      ", channel_layout=%d, sample_rate=%d, buffer_size=%d, session_id=%s"
+      ", effects=%d. ",
       consumer_render_frame_id_, device().input.channel_layout(),
       device().input.sample_rate(), device().input.frames_per_buffer(),
-      device().session_id, device().input.effects());
+      device().session_id().ToString().c_str(), device().input.effects());
   blink::WebRtcLogMessage(str);
   DVLOG(1) << str;
 
@@ -260,7 +260,7 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
   }
   DVLOG(1) << params.AsHumanReadableString();
   DCHECK(params.IsValid());
-  media::AudioSourceParameters source_params(device().session_id);
+  media::AudioSourceParameters source_params(device().session_id());
   const bool use_remote_apm =
       IsApmInAudioServiceEnabled() &&
       MediaStreamAudioProcessor::WouldModifyAudio(audio_processing_properties_);

@@ -137,7 +137,7 @@ void InitializeVideoTrackControls(const blink::WebUserMediaRequest& web_request,
 bool IsSameDevice(const MediaStreamDevice& device,
                   const MediaStreamDevice& other_device) {
   return device.id == other_device.id && device.type == other_device.type &&
-         device.session_id == other_device.session_id;
+         device.session_id() == other_device.session_id();
 }
 
 bool IsSameSource(const blink::WebMediaStreamSource& source,
@@ -812,13 +812,15 @@ void UserMediaProcessor::OnStreamGeneratedForCancelledRequest(
   // Only stop the device if the device is not used in another MediaStream.
   for (auto it = audio_devices.begin(); it != audio_devices.end(); ++it) {
     if (!FindLocalSource(*it)) {
-      GetMediaStreamDispatcherHost()->StopStreamDevice(it->id, it->session_id);
+      GetMediaStreamDispatcherHost()->StopStreamDevice(
+          it->id, it->serializable_session_id());
     }
   }
 
   for (auto it = video_devices.begin(); it != video_devices.end(); ++it) {
     if (!FindLocalSource(*it)) {
-      GetMediaStreamDispatcherHost()->StopStreamDevice(it->id, it->session_id);
+      GetMediaStreamDispatcherHost()->StopStreamDevice(
+          it->id, it->serializable_session_id());
     }
   }
 }
@@ -904,10 +906,10 @@ void UserMediaProcessor::OnDeviceChanged(const MediaStreamDevice& old_device,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "UserMediaClientImpl::OnDeviceChange("
            << "{old_device_id = " << old_device.id
-           << ", session id = " << old_device.session_id
+           << ", session id = " << old_device.session_id()
            << ", type = " << old_device.type << "}"
            << "{new_device_id = " << new_device.id
-           << ", session id = " << new_device.session_id
+           << ", session id = " << new_device.session_id()
            << ", type = " << new_device.type << "})";
 
   const blink::WebMediaStreamSource* source_ptr = FindLocalSource(old_device);
@@ -1460,7 +1462,8 @@ void UserMediaProcessor::OnLocalSourceStopped(
   blink::WebPlatformMediaStreamSource* source_impl = source.GetPlatformSource();
   media_stream_device_observer_->RemoveStreamDevice(source_impl->device());
   GetMediaStreamDispatcherHost()->StopStreamDevice(
-      source_impl->device().id, source_impl->device().session_id);
+      source_impl->device().id,
+      source_impl->device().serializable_session_id());
 }
 
 void UserMediaProcessor::StopLocalSource(
@@ -1473,7 +1476,8 @@ void UserMediaProcessor::StopLocalSource(
   if (notify_dispatcher) {
     media_stream_device_observer_->RemoveStreamDevice(source_impl->device());
     GetMediaStreamDispatcherHost()->StopStreamDevice(
-        source_impl->device().id, source_impl->device().session_id);
+        source_impl->device().id,
+        source_impl->device().serializable_session_id());
   }
 
   source_impl->ResetSourceStoppedCallback();

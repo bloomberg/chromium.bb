@@ -413,19 +413,21 @@ void WebRtcAudioDeviceImpl::RemovePlayoutSink(
   playout_sinks_.remove(sink);
 }
 
-int WebRtcAudioDeviceImpl::GetAuthorizedDeviceSessionIdForAudioRenderer() {
+base::UnguessableToken
+WebRtcAudioDeviceImpl::GetAuthorizedDeviceSessionIdForAudioRenderer() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   base::AutoLock lock(lock_);
   // If there is no capturer or there are more than one open capture devices,
   // return false.
   if (capturers_.size() != 1)
-    return 0;
+    return base::UnguessableToken();
 
   const blink::MediaStreamDevice& device = capturers_.back()->device();
-  if (device.session_id <= 0 || !device.matched_output_device_id)
-    return 0;
+  // if (device.session_id <= 0 || !device.matched_output_device_id)
+  if (device.session_id().is_empty() || !device.matched_output_device_id)
+    return base::UnguessableToken();
 
-  return device.session_id;
+  return device.session_id();
 }
 
 }  // namespace content

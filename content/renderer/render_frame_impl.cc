@@ -7392,7 +7392,8 @@ void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
   std::move(
       blink::ConvertToOutputDeviceStatusCB(std::move(completion_callback)))
       .Run(AudioDeviceFactory::GetOutputDeviceInfo(
-               GetRoutingID(), media::AudioSinkParameters(0, sink_id.Utf8()))
+               GetRoutingID(), media::AudioSinkParameters(
+                                   base::UnguessableToken(), sink_id.Utf8()))
                .device_status());
 }
 

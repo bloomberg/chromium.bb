@@ -507,14 +507,9 @@ std::unique_ptr<WebAudioDevice> RendererBlinkPlatformImpl::CreateAudioDevice(
   if (layout == media::CHANNEL_LAYOUT_UNSUPPORTED)
     layout = media::CHANNEL_LAYOUT_DISCRETE;
 
-  int session_id = 0;
-  if (input_device_id.IsNull() ||
-      !base::StringToInt(input_device_id.Utf8(), &session_id)) {
-    session_id = 0;
-  }
-
-  return RendererWebAudioDeviceImpl::Create(layout, channels, latency_hint,
-                                            callback, session_id);
+  return RendererWebAudioDeviceImpl::Create(
+      layout, channels, latency_hint, callback,
+      /*session_id=*/base::UnguessableToken());
 }
 
 bool RendererBlinkPlatformImpl::DecodeAudioFileData(
