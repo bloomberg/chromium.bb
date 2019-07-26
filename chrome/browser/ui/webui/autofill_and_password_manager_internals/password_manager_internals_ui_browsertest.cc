@@ -5,7 +5,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/password_manager_internals/password_manager_internals_ui.h"
+#include "chrome/browser/ui/webui/autofill_and_password_manager_internals/password_manager_internals_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/web_ui_browser_test.h"
@@ -31,15 +31,14 @@ class PasswordManagerInternalsWebUIBrowserTest : public WebUIBrowserTest {
                                     WindowOpenDisposition disposition);
 
  private:
-  PasswordManagerInternalsUI* controller_;
+  PasswordManagerInternalsUI* controller_ = nullptr;
 };
 
 PasswordManagerInternalsWebUIBrowserTest::
-    PasswordManagerInternalsWebUIBrowserTest()
-    : controller_(NULL) {}
+    PasswordManagerInternalsWebUIBrowserTest() = default;
 
 PasswordManagerInternalsWebUIBrowserTest::
-    ~PasswordManagerInternalsWebUIBrowserTest() {}
+    ~PasswordManagerInternalsWebUIBrowserTest() = default;
 
 void PasswordManagerInternalsWebUIBrowserTest::SetUpOnMainThread() {
   WebUIBrowserTest::SetUpOnMainThread();
@@ -64,9 +63,7 @@ void PasswordManagerInternalsWebUIBrowserTest::OpenInternalsPageWithBrowser(
   std::string url_string("chrome://");
   url_string += chrome::kChromeUIPasswordManagerInternalsHost;
   ui_test_utils::NavigateToURLWithDisposition(
-      browser,
-      GURL(url_string),
-      disposition,
+      browser, GURL(url_string), disposition,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   controller_ = static_cast<PasswordManagerInternalsUI*>(
       GetWebContents()->GetWebUI()->GetController());
