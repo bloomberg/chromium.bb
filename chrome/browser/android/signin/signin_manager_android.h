@@ -45,29 +45,20 @@ class SigninManagerAndroid : public KeyedService,
   // Indicates that the user has made the choice to sign-in. |username|
   // contains the email address of the account to use as primary.
   void OnSignInCompleted(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj,
                          const base::android::JavaParamRef<jstring>& username);
 
   void SignOut(JNIEnv* env,
-               const base::android::JavaParamRef<jobject>& obj,
                jint signoutReason);
 
-  void LogInSignedInUser(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj);
+  void LogInSignedInUser(JNIEnv* env);
 
-  void ClearLastSignedInUser(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj);
+  void ClearLastSignedInUser(JNIEnv* env);
 
-  jboolean IsSigninAllowedByPolicy(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj) const;
+  jboolean IsSigninAllowedByPolicy(JNIEnv* env) const;
 
-  jboolean IsForceSigninEnabled(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsForceSigninEnabled(JNIEnv* env);
 
-  jboolean IsSignedInOnNative(JNIEnv* env,
-                              const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsSignedInOnNative(JNIEnv* env);
 
   // signin::IdentityManager::Observer implementation.
   void OnPrimaryAccountCleared(
@@ -77,31 +68,24 @@ class SigninManagerAndroid : public KeyedService,
   // the policy if necessary.
   void FetchAndApplyCloudPolicy(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& username,
       const base::android::JavaParamRef<jobject>& j_callback);
 
-  void StopApplyingCloudPolicy(JNIEnv* env,
-                               const base::android::JavaParamRef<jobject>& obj);
+  void StopApplyingCloudPolicy(JNIEnv* env);
 
   void IsAccountManaged(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj,
                         const base::android::JavaParamRef<jstring>& j_username,
                         const base::android::JavaParamRef<jobject>& j_callback);
 
-  base::android::ScopedJavaLocalRef<jstring> GetManagementDomain(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+  base::android::ScopedJavaLocalRef<jstring> GetManagementDomain(JNIEnv* env);
 
   // Delete all data for this profile.
   void WipeProfileData(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj,
                        const base::android::JavaParamRef<jobject>& j_callback);
 
   // Delete service worker caches for google.<eTLD>.
   void WipeGoogleServiceWorkerCaches(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_callback);
 
  private:

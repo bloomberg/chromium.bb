@@ -164,7 +164,6 @@ void SigninManagerAndroid::Shutdown() {
 
 void SigninManagerAndroid::OnSignInCompleted(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& username) {
   DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted";
 
@@ -176,7 +175,6 @@ void SigninManagerAndroid::OnSignInCompleted(
 }
 
 void SigninManagerAndroid::SignOut(JNIEnv* env,
-                                   const JavaParamRef<jobject>& obj,
                                    jint signoutReason) {
   auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
 
@@ -191,14 +189,11 @@ void SigninManagerAndroid::SignOut(JNIEnv* env,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
 
-void SigninManagerAndroid::ClearLastSignedInUser(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+void SigninManagerAndroid::ClearLastSignedInUser(JNIEnv* env) {
   ClearLastSignedInUserForProfile(profile_);
 }
 
-void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env,
-                                             const JavaParamRef<jobject>& obj) {
+void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env) {
   // With the account consistency enabled let the account Reconcilor handles
   // everything.
   // TODO(https://crbug.com/930094): Determine the right long-term flow here.
@@ -209,21 +204,15 @@ bool SigninManagerAndroid::IsSigninAllowed() const {
   return signin_allowed_.GetValue();
 }
 
-jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) const {
+jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(JNIEnv* env) const {
   return IsSigninAllowed();
 }
 
-jboolean SigninManagerAndroid::IsForceSigninEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+jboolean SigninManagerAndroid::IsForceSigninEnabled(JNIEnv* env) {
   return force_browser_signin_.GetValue();
 }
 
-jboolean SigninManagerAndroid::IsSignedInOnNative(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+jboolean SigninManagerAndroid::IsSignedInOnNative(JNIEnv* env) {
   return identity_manager_->HasPrimaryAccount();
 }
 
@@ -240,9 +229,7 @@ void SigninManagerAndroid::OnSigninAllowedPrefChanged() const {
       IsSigninAllowed());
 }
 
-void SigninManagerAndroid::StopApplyingCloudPolicy(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+void SigninManagerAndroid::StopApplyingCloudPolicy(JNIEnv* env) {
   user_policy_signin_service_->ShutdownUserCloudPolicyManager();
 }
 
@@ -270,7 +257,6 @@ void SigninManagerAndroid::RegisterPolicyWithAccount(
 
 void SigninManagerAndroid::FetchAndApplyCloudPolicy(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_username,
     const base::android::JavaParamRef<jobject>& j_callback) {
   std::string username =
@@ -326,7 +312,6 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(
 
 void SigninManagerAndroid::IsAccountManaged(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_username,
     const JavaParamRef<jobject>& j_callback) {
   base::android::ScopedJavaGlobalRef<jobject> callback(env, j_callback);
@@ -349,8 +334,7 @@ void SigninManagerAndroid::IsAccountManaged(
 }
 
 base::android::ScopedJavaLocalRef<jstring>
-SigninManagerAndroid::GetManagementDomain(JNIEnv* env,
-                                          const JavaParamRef<jobject>& obj) {
+SigninManagerAndroid::GetManagementDomain(JNIEnv* env) {
   base::android::ScopedJavaLocalRef<jstring> domain;
 
   policy::CloudPolicyStore* store = user_cloud_policy_manager_->core()->store();
@@ -365,7 +349,6 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env,
 
 void SigninManagerAndroid::WipeProfileData(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_callback) {
   WipeData(
       profile_, true /* all data */,
@@ -375,7 +358,6 @@ void SigninManagerAndroid::WipeProfileData(
 
 void SigninManagerAndroid::WipeGoogleServiceWorkerCaches(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_callback) {
   WipeData(
       profile_, false /* only Google service worker caches */,

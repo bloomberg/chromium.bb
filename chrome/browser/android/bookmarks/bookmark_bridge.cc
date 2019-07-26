@@ -144,9 +144,7 @@ static jlong JNI_BookmarkBridge_Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(delegate);
 }
 
-jboolean BookmarkBridge::IsEditBookmarksEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+jboolean BookmarkBridge::IsEditBookmarksEnabled(JNIEnv* env) {
   return IsEditBookmarksEnabled();
 }
 

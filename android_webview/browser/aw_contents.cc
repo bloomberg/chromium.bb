@@ -403,7 +403,7 @@ ScopedJavaLocalRef<jobject> AwContents::GetRenderProcess(
   return render_process->GetJavaObject();
 }
 
-void AwContents::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void AwContents::Destroy(JNIEnv* env) {
   java_ref_.reset();
   delete this;
 }
