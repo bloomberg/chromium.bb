@@ -2358,6 +2358,7 @@ enum WebFeature {
   kDownloadInAdFrame = 2974,
   kDownloadInSandbox = 2975,
   kDownloadWithoutUserGesture = 2976,
+  kAutoplayDynamicDelegation = 2977,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
