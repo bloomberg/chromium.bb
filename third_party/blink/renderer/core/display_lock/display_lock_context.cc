@@ -508,6 +508,11 @@ bool DisplayLockContext::IsActivatable() const {
 }
 
 void DisplayLockContext::CommitForActivation() {
+  // The beforeactivate signal may have committed this lock already, in which
+  // case we have nothing to do.
+  if (!IsLocked())
+    return;
+
   DCHECK(element_);
   DCHECK(ConnectedToView());
   DCHECK(ShouldCommitForActivation());
@@ -515,7 +520,7 @@ void DisplayLockContext::CommitForActivation() {
 }
 
 bool DisplayLockContext::ShouldCommitForActivation() const {
-  return IsActivatable() && state_ != kUnlocked && state_ != kCommitting;
+  return IsActivatable() && IsLocked();
 }
 
 void DisplayLockContext::DidAttachLayoutTree() {
