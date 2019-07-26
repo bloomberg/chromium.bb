@@ -55,7 +55,7 @@ Error SetUpMulticastSocket(platform::UdpSocket* socket,
     return result;
   }
 
-  result = socket->Bind({{}, kMulticastListeningPort});
+  result = socket->Bind();
   if (!result.ok()) {
     OSP_LOG_ERROR << "bind failed for interface " << ifindex << ": "
                   << result.message();
@@ -153,7 +153,7 @@ InternalServices::InternalPlatformLinkage::RegisterInterfaces(
     const platform::IPSubnet& primary_subnet = addr.addresses.front();
 
     auto create_result =
-        platform::UdpSocket::Create(primary_subnet.address.version());
+        platform::UdpSocket::Create(IPEndpoint{{}, kMulticastListeningPort});
     if (!create_result) {
       OSP_LOG_ERROR << "failed to create socket for interface " << index << ": "
                     << create_result.error().message();

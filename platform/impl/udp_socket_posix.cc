@@ -50,17 +50,20 @@ ErrorOr<int> CreateNonBlockingUdpSocket(int domain) {
 
 }  // namespace
 
-UdpSocketPosix::UdpSocketPosix(int fd, UdpSocket::Version version)
-    : fd_(fd), version_(version) {}
+UdpSocketPosix::UdpSocketPosix(int fd, const IPEndpoint& local_endpoint)
+    : fd_(fd), local_endpoint_(local_endpoint) {
+  OSP_DCHECK_NE(IPEndpoint{}, local_endpoint_);
+  OSP_DCHECK(local_endpoint_.address.IsV4() || local_endpoint_.address.IsV6());
+}
 
 UdpSocketPosix::~UdpSocketPosix() {
   close(fd_);
 }
 
 // static
-ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(UdpSocket::Version version) {
+ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(const IPEndpoint& endpoint) {
   int domain;
-  switch (version) {
+  switch (endpoint.address.version()) {
     case Version::kV4:
       domain = AF_INET;
       break;
@@ -73,18 +76,18 @@ ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(UdpSocket::Version version) {
     return fd.error();
   }
   return UdpSocketUniquePtr(
-      static_cast<UdpSocket*>(new UdpSocketPosix(fd.value(), version)));
+      static_cast<UdpSocket*>(new UdpSocketPosix(fd.value(), endpoint)));
 }
 
 bool UdpSocketPosix::IsIPv4() const {
-  return version_ == UdpSocket::Version::kV4;
+  return local_endpoint_.address.IsV4();
 }
 
 bool UdpSocketPosix::IsIPv6() const {
-  return version_ == UdpSocket::Version::kV6;
+  return local_endpoint_.address.IsV6();
 }
 
-Error UdpSocketPosix::Bind(const IPEndpoint& endpoint) {
+Error UdpSocketPosix::Bind() {
   // This is effectively a boolean passed to setsockopt() to allow a future
   // bind() on the same socket to succeed, even if the address is already in
   // use. This is pretty much universally the desired behavior.
@@ -94,12 +97,12 @@ Error UdpSocketPosix::Bind(const IPEndpoint& endpoint) {
     return Error(Error::Code::kSocketOptionSettingFailure, strerror(errno));
   }
 
-  switch (version_) {
+  switch (local_endpoint_.address.version()) {
     case UdpSocket::Version::kV4: {
       struct sockaddr_in address;
       address.sin_family = AF_INET;
-      address.sin_port = htons(endpoint.port);
-      endpoint.address.CopyToV4(
+      address.sin_port = htons(local_endpoint_.port);
+      local_endpoint_.address.CopyToV4(
           reinterpret_cast<uint8_t*>(&address.sin_addr.s_addr));
       if (bind(fd_, reinterpret_cast<struct sockaddr*>(&address),
                sizeof(address)) == -1) {
@@ -112,8 +115,9 @@ Error UdpSocketPosix::Bind(const IPEndpoint& endpoint) {
       struct sockaddr_in6 address;
       address.sin6_family = AF_INET6;
       address.sin6_flowinfo = 0;
-      address.sin6_port = htons(endpoint.port);
-      endpoint.address.CopyToV6(reinterpret_cast<uint8_t*>(&address.sin6_addr));
+      address.sin6_port = htons(local_endpoint_.port);
+      local_endpoint_.address.CopyToV6(
+          reinterpret_cast<uint8_t*>(&address.sin6_addr));
       address.sin6_scope_id = 0;
       if (bind(fd_, reinterpret_cast<struct sockaddr*>(&address),
                sizeof(address)) == -1) {
@@ -129,7 +133,7 @@ Error UdpSocketPosix::Bind(const IPEndpoint& endpoint) {
 
 Error UdpSocketPosix::SetMulticastOutboundInterface(
     NetworkInterfaceIndex ifindex) {
-  switch (version_) {
+  switch (local_endpoint_.address.version()) {
     case UdpSocket::Version::kV4: {
       struct ip_mreqn multicast_properties;
       // Appropriate address is set based on |imr_ifindex| when set.
@@ -160,7 +164,7 @@ Error UdpSocketPosix::SetMulticastOutboundInterface(
 
 Error UdpSocketPosix::JoinMulticastGroup(const IPAddress& address,
                                          NetworkInterfaceIndex ifindex) {
-  switch (version_) {
+  switch (local_endpoint_.address.version()) {
     case UdpSocket::Version::kV4: {
       // Passed as data to setsockopt().  1 means return IP_PKTINFO control data
       // in recvmsg() calls.
@@ -328,7 +332,7 @@ ErrorOr<UdpPacket> UdpSocketPosix::ReceiveMessage() {
   UdpPacket packet(bytes_available);
   packet.set_socket(this);
   Error result = Error::Code::kGenericPlatformError;
-  switch (version_) {
+  switch (local_endpoint_.address.version()) {
     case UdpSocket::Version::kV4: {
       result = ReceiveMessageInternal<sockaddr_in, in_pktinfo>(fd_, &packet);
       break;
@@ -359,7 +363,7 @@ Error UdpSocketPosix::SendMessage(const void* data,
   msg.msg_flags = 0;
 
   ssize_t num_bytes_sent = -2;
-  switch (version_) {
+  switch (local_endpoint_.address.version()) {
     case UdpSocket::Version::kV4: {
       struct sockaddr_in sa = {
           .sin_family = AF_INET,

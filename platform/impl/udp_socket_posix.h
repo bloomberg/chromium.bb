@@ -12,13 +12,13 @@ namespace platform {
 
 struct UdpSocketPosix : public UdpSocket {
  public:
-  UdpSocketPosix(int fd, Version version);
+  UdpSocketPosix(int fd, const IPEndpoint& local_endpoint);
   ~UdpSocketPosix() final;
 
   // Implementations of UdpSocket methods.
   bool IsIPv4() const final;
   bool IsIPv6() const final;
-  Error Bind(const IPEndpoint& local_endpoint) final;
+  Error Bind() final;
   Error SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) final;
   Error JoinMulticastGroup(const IPAddress& address,
                            NetworkInterfaceIndex ifindex) final;
@@ -32,7 +32,7 @@ struct UdpSocketPosix : public UdpSocket {
 
  private:
   const int fd_;
-  const UdpSocket::Version version_;
+  const IPEndpoint local_endpoint_;
 };
 
 }  // namespace platform

@@ -58,14 +58,14 @@ class UdpSocket {
 
   // Creates a new, scoped UdpSocket within the IPv4 or IPv6 family. This method
   // must be defined in the platform-level implementation.
-  static ErrorOr<UdpSocketUniquePtr> Create(Version version);
+  static ErrorOr<UdpSocketUniquePtr> Create(const IPEndpoint& endpoint);
 
   // Returns true if |socket| belongs to the IPv4/IPv6 address family.
   virtual bool IsIPv4() const = 0;
   virtual bool IsIPv6() const = 0;
 
-  // Sets the socket for address reuse, binds to the address/port.
-  virtual Error Bind(const IPEndpoint& local_endpoint) = 0;
+  // Binds to the address specified in the constructor.
+  virtual Error Bind() = 0;
 
   // Sets the device to use for outgoing multicast packets on the socket.
   virtual Error SetMulticastOutboundInterface(
