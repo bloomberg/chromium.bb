@@ -333,10 +333,11 @@ static bool IsVP9(VideoCodecProfile profile) {
 
 #if defined(OS_CHROMEOS)
 // Determine the test is known-to-fail and should be skipped.
-bool ShouldSkipTest() {
+bool ShouldSkipTest(VideoPixelFormat format) {
   struct Pattern {
     const char* board_pattern;
     const char* suite_name_prefix;
+    VideoPixelFormat format;  // Set PIXEL_FORMAT_UNKNOWN for any format.
   };
 
   // Warning: The list should be only used as a last resort for known vendor
@@ -344,10 +345,15 @@ bool ShouldSkipTest() {
   constexpr Pattern kSkipTestPatterns[] = {
       // crbug.com/769722: MTK driver doesn't compute bitrate correctly.
       // Disable mid_stream_bitrate_switch test cases for elm/hana.
-      {"elm", "MidStreamParamSwitchBitrate"},
-      {"elm", "MultipleEncoders"},
-      {"hana", "MidStreamParamSwitchBitrate"},
-      {"hana", "MultipleEncoders"},
+      {"elm", "MidStreamParamSwitchBitrate", PIXEL_FORMAT_UNKNOWN},
+      {"elm", "MultipleEncoders", PIXEL_FORMAT_UNKNOWN},
+      {"hana", "MidStreamParamSwitchBitrate", PIXEL_FORMAT_UNKNOWN},
+      {"hana", "MultipleEncoders", PIXEL_FORMAT_UNKNOWN},
+
+      // crbug.com/965348#c6: Tegra driver calculates the wrong plane size of
+      // NV12. Disable all tests on nyan family for NV12 test.
+      // TODO(akahuang): Remove this after nyan family are EOL.
+      {"nyan_*", "", PIXEL_FORMAT_NV12},
   };
 
   const std::string board = base::SysInfo::GetLsbReleaseBoard();
@@ -361,10 +367,12 @@ bool ShouldSkipTest() {
                                      ->test_suite_name();
   for (const auto& pattern : kSkipTestPatterns) {
     if (suite_name.find(pattern.suite_name_prefix) == 0 &&
-        base::MatchPattern(board, pattern.board_pattern)) {
+        base::MatchPattern(board, pattern.board_pattern) &&
+        (pattern.format == PIXEL_FORMAT_UNKNOWN || pattern.format == format)) {
       return true;
     }
   }
+
   return false;
 }
 #endif  // defined(OS_CHROMEOS)
@@ -2699,7 +2707,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   const bool force_level = std::get<8>(GetParam());
 
 #if defined(OS_CHROMEOS)
-  if (ShouldSkipTest())
+  if (ShouldSkipTest(g_env->test_streams_[0]->pixel_format))
     GTEST_SKIP();
 #endif  // defined(OS_CHROMEOS)
 
@@ -2830,7 +2838,7 @@ TEST_P(VideoEncodeAcceleratorSimpleTest, TestSimpleEncode) {
   ASSERT_LT(test_type, 2) << "Invalid test type=" << test_type;
 
 #if defined(OS_CHROMEOS)
-  if (ShouldSkipTest())
+  if (ShouldSkipTest(g_env->test_streams_[0]->pixel_format))
     GTEST_SKIP();
 #endif  // defined(OS_CHROMEOS)
 
