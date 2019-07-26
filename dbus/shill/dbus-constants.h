@@ -215,7 +215,7 @@ const char kStateRedirectFound[] = "redirect-found";
 const char kStatePortalSuspected[] = "portal-suspected";
 const char kStateOffline[] = "offline";
 const char kStateOnline[] = "online";
-const char kStateDisconnect[] = "disconnect";
+const char kStateDisconnect[] = "disconnecting";
 const char kStateFailure[] = "failure";
 const char kStateActivationFailure[] = "activation-failure";
 
