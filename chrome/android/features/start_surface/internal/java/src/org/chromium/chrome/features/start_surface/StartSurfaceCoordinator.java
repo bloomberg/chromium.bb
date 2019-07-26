@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.start_surface.R;
-import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Root coordinator that is responsible for showing start surfaces, like a grid of Tabs, explore
@@ -22,7 +21,6 @@ public class StartSurfaceCoordinator implements StartSurface {
     private final StartSurfaceMediator mStartSurfaceMediator;
     private BottomBarCoordinator mBottomBarCoordinator;
     private ExploreSurfaceCoordinator mExploreSurfaceCoordinator;
-    private PropertyModel mPropertyModel;
 
     public StartSurfaceCoordinator(ChromeActivity activity) {
         mGridTabSwitcher =
@@ -33,24 +31,20 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.TWO_PANES_START_SURFACE_ANDROID)
                 && !FeatureUtilities.isBottomToolbarEnabled()) {
             // Margin the bottom of the Tab grid to save space for the bottom bar.
-            int bottomBarHeight =
+            mGridTabSwitcher.getTabGridDelegate().setBottomControlsHeight(
                     ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
-                            R.dimen.ss_bottom_bar_height);
-            mGridTabSwitcher.getTabGridDelegate().setBottomControlsHeight(bottomBarHeight);
-
-            mPropertyModel = new PropertyModel(StartSurfaceProperties.ALL_KEYS);
+                            R.dimen.ss_bottom_bar_height));
 
             // Create the bottom bar.
             mBottomBarCoordinator = new BottomBarCoordinator(
-                    activity, activity.getCompositorViewHolder(), mPropertyModel);
+                    activity, activity.getCompositorViewHolder(), activity.getTabModelSelector());
 
             // Create the explore surface.
-            mExploreSurfaceCoordinator = new ExploreSurfaceCoordinator(
-                    activity, activity.getCompositorViewHolder(), bottomBarHeight, mPropertyModel);
+            mExploreSurfaceCoordinator = new ExploreSurfaceCoordinator();
         }
 
         mStartSurfaceMediator = new StartSurfaceMediator(mGridTabSwitcher.getGridController(),
-                mPropertyModel, activity.getTabModelSelector());
+                mBottomBarCoordinator, mExploreSurfaceCoordinator);
     }
 
     // Implements StartSurface.

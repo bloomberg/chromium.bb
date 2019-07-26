@@ -1,5 +1,4 @@
 include_rules = [
   "-components/feed",
-  "-third_party/feed",
-  "+chrome/lib/lifecycle/public"
+  "-third_party/feed"
 ]

@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.RecentTabsManager;
 import org.chromium.chrome.browser.ntp.RecentTabsPage;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -58,7 +59,8 @@ public class NativePageFactory {
 
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
                 return new FeedNewTabPage(activity, new TabShim(tab), tabModelSelector,
-                        activityTabProvider, activityLifecycleDispatcher);
+                        IdentityServicesProvider.getSigninManager(), activityTabProvider,
+                        activityLifecycleDispatcher);
             }
 
             return new NewTabPage(activity, new TabShim(tab), tabModelSelector, activityTabProvider,

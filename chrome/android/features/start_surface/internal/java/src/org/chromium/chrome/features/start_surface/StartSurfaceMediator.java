@@ -4,19 +4,10 @@
 
 package org.chromium.chrome.features.start_surface;
 
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BottomBarClickListener;
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_EXPLORE_SURFACE_VISIBLE;
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_INCOGNITO;
-import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
-
 import android.support.annotation.Nullable;
 
 import org.chromium.base.ObserverList;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
-import org.chromium.ui.modelutil.PropertyModel;
 
 /** The mediator implements the logic to interact with the surfaces and caller. */
 class StartSurfaceMediator
@@ -24,42 +15,30 @@ class StartSurfaceMediator
     private final ObserverList<StartSurface.OverviewModeObserver> mObservers = new ObserverList<>();
     private final GridTabSwitcher.GridController mGridController;
     @Nullable
-    private final PropertyModel mPropertyModel;
+    private final BottomBarCoordinator mBottomBarCoordinator;
+    @Nullable
+    private final ExploreSurfaceCoordinator mExploreSurfaceCoordinator;
 
     StartSurfaceMediator(GridTabSwitcher.GridController gridController,
-            @Nullable PropertyModel propertyModel, TabModelSelector tabModelSelector) {
+            @Nullable BottomBarCoordinator bottomBarCoordinator,
+            @Nullable ExploreSurfaceCoordinator exploreSurfaceCoordinator) {
         mGridController = gridController;
-        mPropertyModel = propertyModel;
+        mBottomBarCoordinator = bottomBarCoordinator;
+        mExploreSurfaceCoordinator = exploreSurfaceCoordinator;
 
-        if (mPropertyModel != null) {
-            mPropertyModel.set(
-                    BottomBarClickListener, new StartSurfaceProperties.BottomBarClickListener() {
-                        // TODO(crbug.com/982018): Animate switching between explore and home
-                        // surface.
-                        @Override
-                        public void onHomeButtonClicked() {
-                            mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, false);
-                        }
-
-                        @Override
-                        public void onExploreButtonClicked() {
-                            // TODO(crbug.com/982018): Hide the Tab switcher toolbar when showing
-                            // explore surface.
-                            mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, true);
-                        }
-                    });
-
-            tabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
+        if (mBottomBarCoordinator != null) {
+            mBottomBarCoordinator.setOnClickListener(new BottomBarProperties.OnClickListener() {
                 @Override
-                public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
-                    mPropertyModel.set(IS_INCOGNITO, newModel.isIncognito());
+                public void onHomeButtonClicked() {
+                    // TODO(crbug.com/982018): Show home surface and hide explore surface.
+                }
+
+                @Override
+                public void onExploreButtonClicked() {
+                    // TODO(crbug.com/982018): Show explore surface and hide home surface.
                 }
             });
-
-            // Set the initial state.
-            mPropertyModel.set(IS_INCOGNITO, tabModelSelector.isIncognitoSelected());
         }
-
         mGridController.addOverviewModeObserver(this);
     }
 
@@ -89,7 +68,7 @@ class StartSurfaceMediator
         mGridController.showOverview(animate);
 
         // TODO(crbug.com/982018): Animate the bottom bar together with the Tab Grid view.
-        if (mPropertyModel != null) mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
+        if (mBottomBarCoordinator != null) mBottomBarCoordinator.setVisibility(true);
     }
 
     @Override
@@ -116,7 +95,7 @@ class StartSurfaceMediator
 
     @Override
     public void startedHiding() {
-        if (mPropertyModel != null) mPropertyModel.set(IS_SHOWING_OVERVIEW, false);
+        if (mBottomBarCoordinator != null) mBottomBarCoordinator.setVisibility(false);
         for (StartSurface.OverviewModeObserver observer : mObservers) {
             observer.startedHiding();
         }
