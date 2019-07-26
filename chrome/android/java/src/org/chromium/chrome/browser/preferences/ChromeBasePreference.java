@@ -27,9 +27,9 @@ import org.chromium.chrome.R;
  * 3. This preference can set an icon color in XML through app:iconTint. Note that if a
  *    ColorStateList is set, only the default color will be used.
  */
-public class ChromeBasePreferenceCompat extends Preference {
+public class ChromeBasePreference extends Preference {
     private ColorStateList mIconTint;
-    private ManagedPreferenceDelegateCompat mManagedPrefDelegate;
+    private ManagedPreferenceDelegate mManagedPrefDelegate;
 
     /**
      * When null, the default Preferences Support Library logic will be used to determine dividers.
@@ -42,14 +42,14 @@ public class ChromeBasePreferenceCompat extends Preference {
     /**
      * Constructor for use in Java.
      */
-    public ChromeBasePreferenceCompat(Context context) {
+    public ChromeBasePreference(Context context) {
         this(context, null);
     }
 
     /**
      * Constructor for inflating from XML.
      */
-    public ChromeBasePreferenceCompat(Context context, AttributeSet attrs) {
+    public ChromeBasePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         setLayoutResource(R.layout.preference_compat);
@@ -63,7 +63,7 @@ public class ChromeBasePreferenceCompat extends Preference {
     /**
      * Sets the ManagedPreferenceDelegate which will determine whether this preference is managed.
      */
-    public void setManagedPreferenceDelegate(ManagedPreferenceDelegateCompat delegate) {
+    public void setManagedPreferenceDelegate(ManagedPreferenceDelegate delegate) {
         mManagedPrefDelegate = delegate;
         ManagedPreferencesUtils.initPreference(mManagedPrefDelegate, this);
     }

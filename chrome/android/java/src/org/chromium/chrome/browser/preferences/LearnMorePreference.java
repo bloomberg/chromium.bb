@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 /**
  * A preference that opens a HelpAndFeedback activity to learn more about the specified context.
  */
-public class LearnMorePreferenceCompat extends Preference {
+public class LearnMorePreference extends Preference {
     /**
      * Resource id for the help page to link to by context name. Corresponds to go/mobilehelprecs.
      */
@@ -32,7 +32,7 @@ public class LearnMorePreferenceCompat extends Preference {
      */
     private final int mColor;
 
-    public LearnMorePreferenceCompat(Context context, AttributeSet attrs) {
+    public LearnMorePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         TypedArray styledAttributes =
@@ -61,6 +61,6 @@ public class LearnMorePreferenceCompat extends Preference {
         TextView titleView = (TextView) holder.findViewById(android.R.id.title);
         titleView.setClickable(true);
         titleView.setTextColor(mColor);
-        titleView.setOnClickListener(v -> LearnMorePreferenceCompat.this.onClick());
+        titleView.setOnClickListener(v -> LearnMorePreference.this.onClick());
     }
 }

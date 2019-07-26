@@ -5,28 +5,27 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
-import android.support.v7.preference.CheckBoxPreference;
 import android.support.v7.preference.PreferenceViewHolder;
+import android.support.v7.preference.SwitchPreferenceCompat;
+import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.TextView;
 
 /**
- * Contains the basic functionality that should be shared by all CheckBoxPreference in Chrome.
+ * A Chrome switch preference that supports managed preferences.
  */
-public class ChromeBaseCheckBoxPreferenceCompat extends CheckBoxPreference {
-    private ManagedPreferenceDelegateCompat mManagedPrefDelegate;
+public class ChromeSwitchPreference extends SwitchPreferenceCompat {
+    private ManagedPreferenceDelegate mManagedPrefDelegate;
 
-    /**
-     * Constructor for inflating from XML.
-     */
-    public ChromeBaseCheckBoxPreferenceCompat(Context context, AttributeSet attrs) {
+    public ChromeSwitchPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     /**
      * Sets the ManagedPreferenceDelegate which will determine whether this preference is managed.
      */
-    public void setManagedPreferenceDelegate(ManagedPreferenceDelegateCompat delegate) {
+    public void setManagedPreferenceDelegate(ManagedPreferenceDelegate delegate) {
         mManagedPrefDelegate = delegate;
         ManagedPreferencesUtils.initPreference(mManagedPrefDelegate, this);
     }
@@ -34,7 +33,18 @@ public class ChromeBaseCheckBoxPreferenceCompat extends CheckBoxPreference {
     @Override
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
-        ((TextView) holder.findViewById(android.R.id.title)).setSingleLine(false);
+
+        TextView title = (TextView) holder.findViewById(android.R.id.title);
+        title.setSingleLine(false);
+
+        // Use summary as title if title is empty.
+        if (TextUtils.isEmpty(getTitle())) {
+            TextView summary = (TextView) holder.findViewById(android.R.id.summary);
+            title.setText(summary.getText());
+            title.setVisibility(View.VISIBLE);
+            summary.setVisibility(View.GONE);
+        }
+
         ManagedPreferencesUtils.onBindViewToPreference(mManagedPrefDelegate, this, holder.itemView);
     }
 

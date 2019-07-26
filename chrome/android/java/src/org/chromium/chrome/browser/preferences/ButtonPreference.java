@@ -18,11 +18,11 @@ import org.chromium.chrome.R;
  * Preference.getOnPreferenceClickListener().onPreferenceClick() is called when the button is
  * clicked.
  */
-public class ButtonPreferenceCompat extends Preference {
+public class ButtonPreference extends Preference {
     /**
      * Constructor for inflating from XML
      */
-    public ButtonPreferenceCompat(Context context, AttributeSet attrs) {
+    public ButtonPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         setLayoutResource(R.layout.button_preference_layout);
         setWidgetLayoutResource(R.layout.button_preference_button);
@@ -36,7 +36,7 @@ public class ButtonPreferenceCompat extends Preference {
         button.setText(getTitle());
         button.setOnClickListener(v -> {
             if (getOnPreferenceClickListener() != null) {
-                getOnPreferenceClickListener().onPreferenceClick(ButtonPreferenceCompat.this);
+                getOnPreferenceClickListener().onPreferenceClick(ButtonPreference.this);
             }
         });
 

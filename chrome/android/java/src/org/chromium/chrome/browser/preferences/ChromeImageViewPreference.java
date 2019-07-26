@@ -31,9 +31,9 @@ import org.chromium.chrome.R;
  * customizations, however a custom widget may also be included as long as there is an ImageView
  * with the image_view_widget ID.
  */
-public class ChromeImageViewPreferenceCompat extends Preference {
+public class ChromeImageViewPreference extends Preference {
     @Nullable
-    private ManagedPreferenceDelegateCompat mManagedPrefDelegate;
+    private ManagedPreferenceDelegate mManagedPrefDelegate;
 
     // The onClick listener to handle click events for the ImageView widget.
     @Nullable
@@ -50,14 +50,14 @@ public class ChromeImageViewPreferenceCompat extends Preference {
     /**
      * Constructor for use in Java.
      */
-    public ChromeImageViewPreferenceCompat(Context context) {
+    public ChromeImageViewPreference(Context context) {
         this(context, null);
     }
 
     /**
      * Constructor for inflating from XML.
      */
-    public ChromeImageViewPreferenceCompat(Context context, AttributeSet attrs) {
+    public ChromeImageViewPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         setWidgetLayoutResource(R.layout.preference_chrome_image_view);
@@ -67,7 +67,7 @@ public class ChromeImageViewPreferenceCompat extends Preference {
     /**
      * Sets the ManagedPreferenceDelegate which will determine whether this preference is managed.
      */
-    public void setManagedPreferenceDelegate(@Nullable ManagedPreferenceDelegateCompat delegate) {
+    public void setManagedPreferenceDelegate(@Nullable ManagedPreferenceDelegate delegate) {
         mManagedPrefDelegate = delegate;
         ManagedPreferencesUtils.initPreference(mManagedPrefDelegate, this);
     }

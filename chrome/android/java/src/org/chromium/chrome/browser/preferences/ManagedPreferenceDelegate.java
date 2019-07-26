@@ -27,7 +27,7 @@ import android.support.v7.preference.Preference;
  *   ChromeSwitchPreference enableRocketsPref = ...;
  *   enableRocketsPref.setManagedPreferenceDelegate(new RocketManagedPreferenceDelegate());
  */
-public interface ManagedPreferenceDelegateCompat {
+public interface ManagedPreferenceDelegate {
     /**
      * Returns whether the given Preference is controlled by an enterprise policy.
      * @param preference the {@link Preference} under consideration.

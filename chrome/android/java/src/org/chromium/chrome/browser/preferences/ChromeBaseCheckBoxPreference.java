@@ -5,27 +5,28 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
-import android.support.v7.preference.ListPreference;
+import android.support.v7.preference.CheckBoxPreference;
 import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
+import android.widget.TextView;
 
 /**
- * Contains the basic functionality that should be shared by all ListPreference in Chrome.
+ * Contains the basic functionality that should be shared by all CheckBoxPreference in Chrome.
  */
-public class ChromeBaseListPreferenceCompat extends ListPreference {
-    private ManagedPreferenceDelegateCompat mManagedPrefDelegate;
+public class ChromeBaseCheckBoxPreference extends CheckBoxPreference {
+    private ManagedPreferenceDelegate mManagedPrefDelegate;
 
     /**
      * Constructor for inflating from XML.
      */
-    public ChromeBaseListPreferenceCompat(Context context, AttributeSet attrs) {
+    public ChromeBaseCheckBoxPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     /**
      * Sets the ManagedPreferenceDelegate which will determine whether this preference is managed.
      */
-    public void setManagedPreferenceDelegate(ManagedPreferenceDelegateCompat delegate) {
+    public void setManagedPreferenceDelegate(ManagedPreferenceDelegate delegate) {
         mManagedPrefDelegate = delegate;
         ManagedPreferencesUtils.initPreference(mManagedPrefDelegate, this);
     }
@@ -33,7 +34,7 @@ public class ChromeBaseListPreferenceCompat extends ListPreference {
     @Override
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
-        setSingleLineTitle(false);
+        ((TextView) holder.findViewById(android.R.id.title)).setSingleLine(false);
         ManagedPreferencesUtils.onBindViewToPreference(mManagedPrefDelegate, this, holder.itemView);
     }
 

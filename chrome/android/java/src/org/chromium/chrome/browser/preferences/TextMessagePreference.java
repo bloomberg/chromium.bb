@@ -15,11 +15,11 @@ import android.widget.TextView;
 /**
  * A preference that displays informational text.
  */
-public class TextMessagePreferenceCompat extends ChromeBasePreferenceCompat {
+public class TextMessagePreference extends ChromeBasePreference {
     /**
      * Constructor for inflating from XML.
      */
-    public TextMessagePreferenceCompat(Context context, AttributeSet attrs) {
+    public TextMessagePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         setSelectable(false);
     }

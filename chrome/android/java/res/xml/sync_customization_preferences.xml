@@ -12,7 +12,7 @@
         app:iconTint="@color/default_red"
         android:title="@string/sync_error_card_title"/>
 
-    <org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat
+    <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
         android:key="sync_switch"
         android:title="@string/sign_in_sync"
         android:summary="@string/sync_description" />
@@ -23,35 +23,35 @@
     <PreferenceCategory
         android:key="sync_data_types"
         android:title="@string/sync_data_types">
-        <org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat
+        <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
             android:persistent="false"
             android:key="sync_everything"
             android:title="@string/sync_everything_pref"/>
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
             android:persistent="false"
             android:key="sync_autofill"
             android:title="@string/sync_autofill"/>
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
             android:persistent="false"
             android:key="sync_bookmarks"
             android:title="@string/sync_bookmarks"/>
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
             android:persistent="false"
             android:key="sync_omnibox"
             android:title="@string/sync_history"/>
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
             android:persistent="false"
             android:key="sync_passwords"
             android:title="@string/sync_passwords"/>
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
             android:persistent="false"
             android:key="sync_recent_tabs"
             android:title="@string/sync_recent_tabs"/>
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
             android:persistent="false"
             android:key="sync_settings"
             android:title="@string/sync_settings"/>
-        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat
+        <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
             android:persistent="false"
             android:key="payments_integration"
             android:title="@string/payments_integration_legacy"/>

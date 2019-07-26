@@ -19,7 +19,7 @@ import android.view.View;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.AndroidPaymentAppFactory;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
-import org.chromium.chrome.browser.preferences.TextMessagePreferenceCompat;
+import org.chromium.chrome.browser.preferences.TextMessagePreference;
 
 import java.util.Map;
 
@@ -85,8 +85,7 @@ public class AndroidPaymentAppsFragment extends PreferenceFragmentCompat {
             getPreferenceScreen().addPreference(pref);
         }
 
-        TextMessagePreferenceCompat textPreference =
-                new TextMessagePreferenceCompat(getStyledContext(), null);
+        TextMessagePreference textPreference = new TextMessagePreference(getStyledContext(), null);
         textPreference.setTitle(R.string.payment_apps_usage_message);
         textPreference.setDividerAllowedBelow(false);
         getPreferenceScreen().addPreference(textPreference);
