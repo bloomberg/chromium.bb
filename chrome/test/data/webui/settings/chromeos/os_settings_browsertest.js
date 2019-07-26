@@ -821,8 +821,8 @@ var OSSettingsResetPageTest = class extends OSSettingsBrowserTest {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       BROWSER_SETTINGS_PATH + 'test_lifetime_browser_proxy.js',
-      BROWSER_SETTINGS_PATH + 'test_reset_browser_proxy.js',
       BROWSER_SETTINGS_PATH + 'test_util.js',
+      'test_os_reset_browser_proxy.js',
       'os_reset_page_test.js',
     ]);
   }

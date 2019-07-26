@@ -4,22 +4,22 @@
 
 cr.define('settings', function() {
   /** @interface */
-  class ResetOsProxy {
+  class OsResetBrowserProxy {
     /**
      * A method to be called when the reset powerwash dialog is shown.
      */
     onPowerwashDialogShow() {}
 
     /**
-     * Initiates a factory reset and restarts ChromeOS.
+     * Initiates a factory reset and restarts.
      */
     requestFactoryResetRestart() {}
   }
 
   /**
-   * @implements {settings.ResetOsProxy}
+   * @implements {settings.OsResetBrowserProxy}
    */
-  class ResetOsProxyImpl {
+  class OsResetBrowserProxyImpl {
     /** @override */
     onPowerwashDialogShow() {
       chrome.send('onPowerwashDialogShow');
@@ -31,10 +31,10 @@ cr.define('settings', function() {
     }
   }
 
-  cr.addSingletonGetter(ResetOsProxyImpl);
+  cr.addSingletonGetter(OsResetBrowserProxyImpl);
 
   return {
-    ResetOsProxy: ResetOsProxy,
-    ResetOsProxyImpl: ResetOsProxyImpl,
+    OsResetBrowserProxy: OsResetBrowserProxy,
+    OsResetBrowserProxyImpl: OsResetBrowserProxyImpl,
   };
 });
