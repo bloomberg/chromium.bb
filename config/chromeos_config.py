@@ -2304,10 +2304,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # The definition of what paladins run HW tests are in the
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
+      "betty-kernelnext",
       'drallion',
       'jacuzzi',
-      'kumo',
       'kefka-kernelnext',
+      'kumo',
+      "veyron_jerry-kernelnext",
+      "veyron_minnie-kernelnext",
       'zork',
   ])
 

@@ -120,8 +120,10 @@
     terra-paladin
     tidus-paladin
     veyron_jaq-paladin
+    veyron_jerry-kernelnext-paladin
     veyron_jerry-paladin
     veyron_mighty-paladin
+    veyron_minnie-kernelnext-paladin
     veyron_minnie-paladin
     veyron_rialto-paladin
     veyron_speedy-paladin
@@ -2644,8 +2646,10 @@
     terra-paladin-tryjob
     tidus-paladin-tryjob
     veyron_jaq-paladin-tryjob
+    veyron_jerry-kernelnext-paladin-tryjob
     veyron_jerry-paladin-tryjob
     veyron_mighty-paladin-tryjob
+    veyron_minnie-kernelnext-paladin-tryjob
     veyron_minnie-paladin-tryjob
     veyron_rialto-paladin-tryjob
     veyron_speedy-paladin-tryjob
