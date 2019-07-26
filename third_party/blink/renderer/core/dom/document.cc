@@ -7908,6 +7908,14 @@ mojom::blink::DocumentInterfaceBroker* Document::GetDocumentInterfaceBroker() {
   return &GetFrame()->GetDocumentInterfaceBroker();
 }
 
+const BrowserInterfaceBrokerProxy* Document::GetBrowserInterfaceBrokerProxy()
+    const {
+  if (!GetFrame())
+    return nullptr;
+
+  return GetFrame()->GetBrowserInterfaceBrokerProxy();
+}
+
 DocumentResourceCoordinator* Document::GetResourceCoordinator() {
   if (!resource_coordinator_) {
     auto* interface_provider = GetInterfaceProvider();

@@ -1652,6 +1652,7 @@ void RenderFrameHostImpl::RenderProcessExited(
   document_scoped_interface_provider_binding_.Close();
   document_interface_broker_content_binding_.Close();
   document_interface_broker_blink_binding_.Close();
+  broker_receiver_.reset();
   SetLastCommittedUrl(GURL());
   bundled_exchanges_factory_.reset();
 
@@ -1817,11 +1818,17 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
       mojo::MakeRequest(&document_interface_broker_content_info),
       mojo::MakeRequest(&document_interface_broker_blink_info));
 
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker;
+  BindBrowserInterfaceBrokerReceiver(
+      browser_interface_broker.InitWithNewPipeAndPassReceiver());
+
   mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
   params->interface_bundle = mojom::DocumentScopedInterfaceBundle::New(
       interface_provider.PassInterface(),
       std::move(document_interface_broker_content_info),
-      std::move(document_interface_broker_blink_info));
+      std::move(document_interface_broker_blink_info),
+      std::move(browser_interface_broker));
 
   params->routing_id = routing_id_;
   params->previous_routing_id = previous_routing_id;
@@ -2024,6 +2031,8 @@ void RenderFrameHostImpl::OnCreateChildFrame(
         document_interface_broker_content_request,
     blink::mojom::DocumentInterfaceBrokerRequest
         document_interface_broker_blink_request,
+    mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+        browser_interface_broker_receiver,
     blink::WebTreeScopeType scope,
     const std::string& frame_name,
     const std::string& frame_unique_name,
@@ -2037,6 +2046,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   DCHECK(new_interface_provider_provider_request.is_pending());
   DCHECK(document_interface_broker_content_request.is_pending());
   DCHECK(document_interface_broker_blink_request.is_pending());
+  DCHECK(browser_interface_broker_receiver.is_valid());
   if (owner_type == blink::FrameOwnerElementType::kNone) {
     // Any child frame must have a HTMLFrameOwnerElement in its parent document
     // and therefore the corresponding type of kNone (specific to main frames)
@@ -2053,17 +2063,19 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     return;
 
   // |new_routing_id|, |new_interface_provider_provider_request|,
-  // |document_interface_broker_content_handle|,
-  // |document_interface_broker_blink_handle| and |devtools_frame_token| were
+  // |document_interface_broker_content_request|,
+  // |document_interface_broker_blink_request|,
+  // |browser_interface_broker_receiver| and |devtools_frame_token| were
   // generated on the browser's IO thread and not taken from the renderer
   // process.
-  frame_tree_->AddFrame(
-      frame_tree_node_, GetProcess()->GetID(), new_routing_id,
-      std::move(new_interface_provider_provider_request),
-      std::move(document_interface_broker_content_request),
-      std::move(document_interface_broker_blink_request), scope, frame_name,
-      frame_unique_name, is_created_by_script, devtools_frame_token,
-      frame_policy, frame_owner_properties, was_discarded_, owner_type);
+  frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
+                        std::move(new_interface_provider_provider_request),
+                        std::move(document_interface_broker_content_request),
+                        std::move(document_interface_broker_blink_request),
+                        std::move(browser_interface_broker_receiver), scope,
+                        frame_name, frame_unique_name, is_created_by_script,
+                        devtools_frame_token, frame_policy,
+                        frame_owner_properties, was_discarded_, owner_type);
 }
 
 void RenderFrameHostImpl::DidNavigate(
@@ -3769,6 +3781,12 @@ void RenderFrameHostImpl::BindDocumentInterfaceBrokerRequest(
   document_interface_broker_blink_binding_.Bind(std::move(blink_request));
 }
 
+void RenderFrameHostImpl::BindBrowserInterfaceBrokerReceiver(
+    mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver) {
+  DCHECK(receiver.is_valid());
+  broker_receiver_.Bind(std::move(receiver));
+}
+
 void RenderFrameHostImpl::SetKeepAliveTimeoutForTesting(
     base::TimeDelta timeout) {
   keep_alive_timeout_ = timeout;
@@ -3972,12 +3990,18 @@ void RenderFrameHostImpl::CreateNewWindow(
       mojo::MakeRequest(&document_interface_broker_content_info),
       mojo::MakeRequest(&document_interface_broker_blink_info));
 
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker;
+  rfh->BindBrowserInterfaceBrokerReceiver(
+      browser_interface_broker.InitWithNewPipeAndPassReceiver());
+
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
       render_view_route_id, main_frame_route_id, main_frame_widget_route_id,
       mojom::DocumentScopedInterfaceBundle::New(
           std::move(main_frame_interface_provider_info),
           std::move(document_interface_broker_content_info),
-          std::move(document_interface_broker_blink_info)),
+          std::move(document_interface_broker_blink_info),
+          std::move(browser_interface_broker)),
       cloned_namespace->id(), rfh->GetDevToolsFrameToken());
   std::move(callback).Run(mojom::CreateNewWindowStatus::kSuccess,
                           std::move(reply));
@@ -7161,10 +7185,12 @@ void RenderFrameHostImpl::DidCommitNavigation(
 
     document_interface_broker_content_binding_.Close();
     document_interface_broker_blink_binding_.Close();
+    broker_receiver_.reset();
     BindDocumentInterfaceBrokerRequest(
         std::move(interface_params->document_interface_broker_content_request),
         std::move(interface_params->document_interface_broker_blink_request));
-
+    BindBrowserInterfaceBrokerReceiver(
+        std::move(interface_params->browser_interface_broker_receiver));
   } else {
     // If there had already been a real load committed in the frame, and this is
     // not a same-document navigation, then both the active document as well as
@@ -7177,6 +7203,7 @@ void RenderFrameHostImpl::DidCommitNavigation(
       document_scoped_interface_provider_binding_.Close();
       document_interface_broker_content_binding_.Close();
       document_interface_broker_blink_binding_.Close();
+      broker_receiver_.reset();
       bad_message::ReceivedBadMessage(
           process, bad_message::RFH_INTERFACE_PROVIDER_MISSING);
       return;

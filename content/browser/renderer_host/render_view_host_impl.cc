@@ -362,6 +362,9 @@ bool RenderViewHostImpl::CreateRenderView(
                                ->document_interface_broker_content),
         mojo::MakeRequest(&params->main_frame_interface_bundle
                                ->document_interface_broker_blink));
+    main_rfh->BindBrowserInterfaceBrokerReceiver(
+        params->main_frame_interface_bundle->browser_interface_broker
+            .InitWithNewPipeAndPassReceiver());
     RenderWidgetHostImpl* main_rwh = main_rfh->GetRenderWidgetHost();
     params->main_frame_widget_routing_id = main_rwh->GetRoutingID();
   }
