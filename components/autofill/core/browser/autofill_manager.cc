@@ -1005,6 +1005,12 @@ void AutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
                                  form_structure->form_parsed_timestamp(),
                                  sync_state_, driver()->IsIncognito());
   }
+
+  if (autofill_field->Type().group() == CREDIT_CARD &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillCreditCardAuthentication)) {
+    credit_card_access_manager_->PrepareToFetchCreditCard();
+  }
 }
 
 void AutofillManager::OnHidePopup() {

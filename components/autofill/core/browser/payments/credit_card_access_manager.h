@@ -107,6 +107,9 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   }
 #endif
 
+  // Returns false if all suggested cards are local cards, otherwise true.
+  bool ServerCardsAvailable();
+
   // Invoked from CreditCardFIDOAuthenticator::IsUserVerifiable().
   // |is_user_verifiable| is set to true only if user has a verifying platform
   // authenticator. e.g. Touch/Face ID, Windows Hello, Android fingerprint,
@@ -195,6 +198,10 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // e.g. Touch/Face ID, Windows Hello, Android fingerprint, etc., is available
   // and enabled.
   base::Optional<bool> is_user_verifiable_;
+
+  // True only if currently waiting on unmask details. This avoids making
+  // unnecessary calls to payments.
+  bool unmask_details_request_in_progress_ = false;
 
   // The object attempting to access a card.
   base::WeakPtr<Accessor> accessor_;
