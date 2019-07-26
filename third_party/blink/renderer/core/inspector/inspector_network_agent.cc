@@ -1362,6 +1362,8 @@ void InspectorNetworkAgent::Enable() {
 
 Response InspectorNetworkAgent::disable() {
   DCHECK(!pending_request_type_);
+  if (IsMainThread())
+    GetNetworkStateNotifier().ClearOverride();
   instrumenting_agents_->RemoveInspectorNetworkAgent(this);
   agent_state_.ClearAllFields();
   resources_data_->Clear();
