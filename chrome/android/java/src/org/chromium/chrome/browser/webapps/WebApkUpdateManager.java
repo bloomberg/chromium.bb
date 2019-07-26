@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.webapps;
 
 import static org.chromium.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
 
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -232,21 +230,6 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     }
 
     /**
-     * Reads the WebAPK's version code. Returns 0 on failure.
-     */
-    private int readVersionCodeFromAndroidManifest(String webApkPackage) {
-        try {
-            PackageManager packageManager =
-                    ContextUtils.getApplicationContext().getPackageManager();
-            PackageInfo packageInfo = packageManager.getPackageInfo(webApkPackage, 0);
-            return packageInfo.versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    /**
      * Whether there is a new version of the //chrome/android/webapk/shell_apk code.
      */
     private static boolean isShellApkVersionOutOfDate(WebApkInfo info) {
@@ -377,7 +360,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebApkInfo info,
             String primaryIconUrl, String badgeIconUrl, boolean isManifestStale,
             @WebApkUpdateReason int updateReason, Callback<Boolean> callback) {
-        int versionCode = readVersionCodeFromAndroidManifest(info.webApkPackageName());
+        int versionCode = info.webApkVersionCode();
         int size = info.iconUrlToMurmur2HashMap().size();
         String[] iconUrls = new String[size];
         String[] iconHashes = new String[size];

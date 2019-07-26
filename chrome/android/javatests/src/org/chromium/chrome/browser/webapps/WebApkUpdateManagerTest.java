@@ -159,7 +159,7 @@ public class WebApkUpdateManagerTest {
                     creationData.startUrl, WebApkInfo.WebApkDistributor.BROWSER,
                     creationData.iconUrlToMurmur2HashMap, null, null /*shareTargetActivityName*/,
                     false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
-                    null /* shareData */
+                    null /* shareData */, 1 /* webApkVersionCode */
 
             );
             updateManager.updateIfNeeded(mTab, info);

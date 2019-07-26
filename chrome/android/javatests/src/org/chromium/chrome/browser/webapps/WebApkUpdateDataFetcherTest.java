@@ -106,7 +106,8 @@ public class WebApkUpdateDataFetcherTest {
                     -1, -1, -1, -1, -1, -1, false, "random.package", -1, manifestUrl, "",
                     WebApkInfo.WebApkDistributor.BROWSER, new HashMap<String, String>(), null,
                     null /*shareTargetActivityName*/, false /* forceNavigation */,
-                    false /* isSplashProvidedByWebApk */, null /* shareData */);
+                    false /* isSplashProvidedByWebApk */, null /* shareData */,
+                    1 /* webApkVersionCode */);
             fetcher.start(mTab, oldInfo, observer);
         });
     }

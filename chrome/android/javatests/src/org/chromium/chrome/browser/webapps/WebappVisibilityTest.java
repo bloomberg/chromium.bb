@@ -136,7 +136,8 @@ public class WebappVisibilityTest {
                         "", "", webappStartUrlOrScopeUrl, null, null, null, null, null, displayMode,
                         0, 0, 0, 0, 0, false, "", 0, null, "", WebApkInfo.WebApkDistributor.BROWSER,
                         null, null, null /*shareTargetActivityName*/, false /* forceNavigation */,
-                        false /* isSplashProvidedByWebApk */, null /* shareData */
+                        false /* isSplashProvidedByWebApk */, null /* shareData */,
+                        1 /* webApkVersionCode */
 
                 );
     }
