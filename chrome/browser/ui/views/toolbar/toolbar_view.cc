@@ -412,7 +412,7 @@ void ToolbarView::ShowIntentPickerBubble(
     if (!intent_picker_view->GetVisible())
       IntentPickerTabHelper::SetShouldShowIcon(GetWebContents(), true);
     IntentPickerBubbleView::ShowBubble(
-        intent_picker_view, GetWebContents(), std::move(app_info),
+        location_bar(), GetWebContents(), std::move(app_info),
         show_stay_in_chrome, show_remember_selection, std::move(callback));
   }
 }
