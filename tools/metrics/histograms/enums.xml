@@ -2168,6 +2168,91 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="kLaunchTypeUnspecified"/>
 </enum>
 
+<enum name="AppListNonAppImpressionCategory">
+  <int value="0" label="APPS"/>
+  <int value="1" label="SEARCH_RESULTS"/>
+  <int value="2" label="START"/>
+  <int value="3" label="CUSTOM_LAUNCHER_PAGE_DEPRECATED"/>
+</enum>
+
+<enum name="AppListNonAppImpressionDeviceMode">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="FILE"/>
+  <int value="2" label="HISTORY"/>
+  <int value="3" label="NAV_SUGGEST"/>
+  <int value="4" label="SEARCH"/>
+  <int value="5" label="BOOKMARK"/>
+  <int value="6" label="DOCUMENT"/>
+  <int value="7" label="OMNIBOX_DEPRECATED"/>
+  <int value="8" label="OMNIBOX_GENERIC"/>
+</enum>
+
+<enum name="AppListNonAppImpressionFileExtension">
+  <int value="0" label=".3ga"/>
+  <int value="1" label=".3gp"/>
+  <int value="2" label=".aac"/>
+  <int value="3" label=".alac"/>
+  <int value="4" label=".asf"/>
+  <int value="5" label=".avi"/>
+  <int value="6" label=".bmp"/>
+  <int value="7" label=".csv"/>
+  <int value="8" label=".doc"/>
+  <int value="9" label=".docx"/>
+  <int value="10" label=".flac"/>
+  <int value="11" label=".gif"/>
+  <int value="12" label=".jpeg"/>
+  <int value="13" label=".jpg"/>
+  <int value="14" label=".log"/>
+  <int value="15" label=".m3u"/>
+  <int value="16" label=".m3u8"/>
+  <int value="17" label=".m4a"/>
+  <int value="18" label=".m4v"/>
+  <int value="19" label=".mid"/>
+  <int value="20" label=".mkv"/>
+  <int value="21" label=".mov"/>
+  <int value="22" label=".mp3"/>
+  <int value="23" label=".mp4"/>
+  <int value="24" label=".mpg"/>
+  <int value="25" label=".odf"/>
+  <int value="26" label=".odp"/>
+  <int value="27" label=".ods"/>
+  <int value="28" label=".odt"/>
+  <int value="29" label=".oga"/>
+  <int value="30" label=".ogg"/>
+  <int value="31" label=".ogv"/>
+  <int value="32" label=".pdf"/>
+  <int value="33" label=".png"/>
+  <int value="34" label=".ppt"/>
+  <int value="35" label=".pptx"/>
+  <int value="36" label=".ra"/>
+  <int value="37" label=".ram"/>
+  <int value="38" label=".rar"/>
+  <int value="39" label=".rm"/>
+  <int value="40" label=".rtf"/>
+  <int value="41" label=".wav"/>
+  <int value="42" label=".webm"/>
+  <int value="43" label=".webp"/>
+  <int value="44" label=".wma"/>
+  <int value="45" label=".wmv"/>
+  <int value="46" label=".xls"/>
+  <int value="47" label=".xlsx"/>
+  <int value="48" label=".crdownload"/>
+  <int value="49" label=".crx"/>
+  <int value="50" label=".dmg"/>
+  <int value="51" label=".exe"/>
+  <int value="52" label=".html"/>
+  <int value="53" label=".htm"/>
+  <int value="54" label=".jar"/>
+  <int value="55" label=".ps"/>
+  <int value="56" label=".torrent"/>
+  <int value="57" label=".txt"/>
+  <int value="58" label=".zip"/>
+  <int value="59" label=".mhtml"/>
+  <int value="60" label=".gdoc"/>
+  <int value="61" label=".gsheet"/>
+  <int value="62" label=".gslides"/>
+</enum>
+
 <enum name="AppListOmniboxResult">
   <int value="0" label="QUERY_SUGGESTION"/>
   <int value="1" label="ZERO_STATE_SUGEESTION"/>
