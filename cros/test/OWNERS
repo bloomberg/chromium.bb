@@ -1,0 +1,2 @@
+# Only allow the security team to approve changes to the user/group baseline.
+per-file usergroup_baseline.py = file:chromiumos/overlays/eclass-overlay:profiles/base/accounts/OWNERS
