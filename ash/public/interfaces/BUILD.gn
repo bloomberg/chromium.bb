@@ -28,7 +28,7 @@ mojom("interfaces") {
     "//services/content/public/mojom",
     "//services/preferences/public/mojom",
     "//skia/public/interfaces",
-    "//ui/base/ime/chromeos/public/interfaces",
+    "//ui/base/ime/chromeos/public/mojom",
     "//ui/base/mojom",
     "//ui/display/mojom:mojom",
     "//ui/gfx/geometry/mojo",
