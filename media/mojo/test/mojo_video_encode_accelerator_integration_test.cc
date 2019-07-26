@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -180,15 +181,16 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
 
   const uint64_t kInvalidShMemSize =
       fake_vea()->minimum_output_buffer_size() / 2;
-  base::SharedMemory shmem;
-  shmem.CreateAnonymous(kInvalidShMemSize);
+
+  base::UnsafeSharedMemoryRegion region =
+      base::UnsafeSharedMemoryRegion::Create(kInvalidShMemSize);
 
   EXPECT_CALL(*mock_vea_client,
               NotifyError(VideoEncodeAccelerator::kInvalidArgumentError));
 
   mojo_vea()->UseOutputBitstreamBuffer(
-      BitstreamBuffer(17 /* id */, shmem.handle(), false /* read_only */,
-                      kInvalidShMemSize, 0 /* offset */, base::TimeDelta()));
+      BitstreamBuffer(17 /* id */, std::move(region), kInvalidShMemSize,
+                      0 /* offset */, base::TimeDelta()));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -202,14 +204,14 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
   const int32_t kInvalidBistreamBufferId = -18;
 
   const uint64_t kShMemSize = fake_vea()->minimum_output_buffer_size();
-  base::SharedMemory shmem;
-  shmem.CreateAnonymous(kShMemSize);
+  base::UnsafeSharedMemoryRegion region =
+      base::UnsafeSharedMemoryRegion::Create(kShMemSize);
   EXPECT_CALL(*mock_vea_client,
               NotifyError(VideoEncodeAccelerator::kInvalidArgumentError));
 
-  mojo_vea()->UseOutputBitstreamBuffer(BitstreamBuffer(
-      kInvalidBistreamBufferId, shmem.handle(), false /* read_only */,
-      kShMemSize, 0 /* offset */, base::TimeDelta()));
+  mojo_vea()->UseOutputBitstreamBuffer(
+      BitstreamBuffer(kInvalidBistreamBufferId, std::move(region), kShMemSize,
+                      0 /* offset */, base::TimeDelta()));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -222,11 +224,11 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest, EncodeOneFrame) {
   const int32_t kBistreamBufferId = 17;
   {
     const uint64_t kShMemSize = fake_vea()->minimum_output_buffer_size();
-    base::SharedMemory shmem;
-    shmem.CreateAnonymous(kShMemSize);
-    mojo_vea()->UseOutputBitstreamBuffer(BitstreamBuffer(
-        kBistreamBufferId, shmem.handle(), false /* read_only */, kShMemSize,
-        0 /* offset */, base::TimeDelta()));
+    base::UnsafeSharedMemoryRegion region =
+        base::UnsafeSharedMemoryRegion::Create(kShMemSize);
+    mojo_vea()->UseOutputBitstreamBuffer(
+        BitstreamBuffer(kBistreamBufferId, std::move(region), kShMemSize,
+                        0 /* offset */, base::TimeDelta()));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -265,11 +267,11 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
 
   {
     const uint64_t kShMemSize = fake_vea()->minimum_output_buffer_size();
-    base::SharedMemory shmem;
-    shmem.CreateAnonymous(kShMemSize);
+    base::UnsafeSharedMemoryRegion region =
+        base::UnsafeSharedMemoryRegion::Create(kShMemSize);
     mojo_vea()->UseOutputBitstreamBuffer(
-        BitstreamBuffer(17 /* id */, shmem.handle(), false /* read_only */,
-                        kShMemSize, 0 /* offset */, base::TimeDelta()));
+        BitstreamBuffer(17 /* id */, std::move(region), kShMemSize,
+                        0 /* offset */, base::TimeDelta()));
     base::RunLoop().RunUntilIdle();
   }
 
