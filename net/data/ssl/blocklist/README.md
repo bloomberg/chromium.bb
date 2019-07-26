@@ -1,7 +1,7 @@
-# Certificate Blacklist
+# Certificate Blocklist
 
 This directory contains a number of certificates and public keys which are
-considered blacklisted within Chromium-based products. 
+considered blocked within Chromium-based products. 
 
 When applicable, additional information and the full certificate or key
 are included.
@@ -19,7 +19,7 @@ google.com.bd certificates from Comodo.
 For details, see <https://security.googleblog.com/2015/03/maintaining-digital-certificate-security.html>
 
 As a result of misissuance of a sub-CA certificate, CNNIC end-entity
-certificates were temporarily whitelisted, and then trust in the root fully
+certificates were temporarily allowlisted, and then trust in the root fully
 removed.
 
   * [1c01c6f4dbb2fefc22558b2bca32563f49844acfc32b7be4b0ff599f9e8c7af7.pem](1c01c6f4dbb2fefc22558b2bca32563f49844acfc32b7be4b0ff599f9e8c7af7.pem)
@@ -139,7 +139,7 @@ For details, see <https://blog.torproject.org/blog/security-vulnerability-found-
 
 Device manufacturer Cyberoam used the same private key for all devices by
 default, which subsequently leaked and is included below. The associated
-public key is blacklisted.
+public key is blocked.
 
   * [1af56c98ff043ef92bebff54cebb4dd67a25ba956c817f3e6dd3c1e52eb584c1.key](1af56c98ff043ef92bebff54cebb4dd67a25ba956c817f3e6dd3c1e52eb584c1.key)
 
@@ -150,7 +150,7 @@ and <http://en.community.dell.com/dell-blogs/direct2dell/b/direct2dell/archive/2
 
 The private keys for both the eDellRoot and DSDTestProvider certificates were
 trivially extracted, and thus their associated public keys are
-blacklisted.
+blocked.
 
   * [0f912fd7be760be25afbc56bdc09cd9e5dcc9c6f6a55a778aefcb6aa30e31554.pem](0f912fd7be760be25afbc56bdc09cd9e5dcc9c6f6a55a778aefcb6aa30e31554.pem)
   * [ec30c9c3065a06bb07dc5b1c6b497f370c1ca65c0f30c08e042ba6bcecc78f2c.pem](ec30c9c3065a06bb07dc5b1c6b497f370c1ca65c0f30c08e042ba6bcecc78f2c.pem)
@@ -182,7 +182,7 @@ then subsequently published the private key, as a means for developers
 to avoid having to acquire certificates.
 
 As the private key could be used to intercept all communications to this
-domain, the associated public key was blacklisted.
+domain, the associated public key was blocked.
 
   * [f3bae5e9c0adbfbfb6dbf7e04e74be6ead3ca98a5604ffe591cea86c241848ec.pem](f3bae5e9c0adbfbfb6dbf7e04e74be6ead3ca98a5604ffe591cea86c241848ec.pem)
 
@@ -203,7 +203,7 @@ For details, see <https://www.eff.org/deeplinks/2015/02/how-remove-superfish-adw
 Superfish software with an associated root certificate came preinstalled on
 Lenovo computers. The software used a single root certificate across all
 computers, and the private key was trivially extracted; thus the associated
-public key was blacklisted.
+public key was blocked.
 
   * [b6fe9151402bad1c06d7e66db67a26aa7356f2e6c644dbcf9f98968ff632e1b7.pem](b6fe9151402bad1c06d7e66db67a26aa7356f2e6c644dbcf9f98968ff632e1b7.pem)
 
@@ -214,7 +214,7 @@ public key was blacklisted.
 For details, see <https://bugzilla.mozilla.org/show_bug.cgi?id=1242758> and
 <https://bugzilla.mozilla.org/show_bug.cgi?id=1224104>
 
-These two intermediates were retired by DigiCert, and blacklisted for
+These two intermediates were retired by DigiCert, and blocked for
 robustness at their request.
 
   * [159ca03a88897c8f13817a212629df84ce824709492b8c9adb8e5437d2fc72be.pem](159ca03a88897c8f13817a212629df84ce824709492b8c9adb8e5437d2fc72be.pem)
@@ -229,7 +229,7 @@ X.509v1 CA cert issued by E-GUVEN.  Removed from some but not all root stores.
 ### Hacking Team
 
 The following keys were reported as used by Hacking Team to compromise users,
-and are blacklisted for robustness.
+and are blocked for robustness.
 
   * [c4387d45364a313fbfe79812b35b815d42852ab03b06f11589638021c8f2cb44.key](c4387d45364a313fbfe79812b35b815d42852ab03b06f11589638021c8f2cb44.key)
   * [ea08c8d45d52ca593de524f0513ca6418da9859f7b08ef13ff9dd7bf612d6a37.key](ea08c8d45d52ca593de524f0513ca6418da9859f7b08ef13ff9dd7bf612d6a37.key)
@@ -249,7 +249,7 @@ For details, see <https://technet.microsoft.com/en-us/library/security/3046310.a
 A user of live.fi was able to register a reserved email address that can be
 used to cause certificate issuance, as described in the CA/Browser Forum's
 Baseline Requirements. This was not intended by Microsoft, the operators of
-live.fi, but conformed to the Baseline Requirements. It was blacklisted for
+live.fi, but conformed to the Baseline Requirements. It was blocked for
 robustness.
 
   * [c67d722c1495be02cbf9ef1159f5ca4aa782dc832dc6aa60c9aa076a0ad1e69d.pem](c67d722c1495be02cbf9ef1159f5ca4aa782dc832dc6aa60c9aa076a0ad1e69d.pem)
@@ -273,7 +273,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1423400
 
 For details, see <https://bugzilla.mozilla.org/show_bug.cgi?id=1188582>
 
-This intermediate certificate was retired by SECOM, and blacklisted for
+This intermediate certificate was retired by SECOM, and blocked for
 robustness at their request.
 
   * [817d4e05063d5942869c47d8504dc56a5208f7569c3d6d67f3457cfe921b3e29.pem](817d4e05063d5942869c47d8504dc56a5208f7569c3d6d67f3457cfe921b3e29.pem)
@@ -283,7 +283,7 @@ robustness at their request.
 For details, see <https://bugzilla.mozilla.org/show_bug.cgi?id=966060> 
 
 These three intermediate certificates were retired by Symantec, and
-blacklisted for robustness at their request.
+blocked for robustness at their request.
 
   * [1f17f2cbb109f01c885c94d9e74a48625ae9659665d6d7e7bc5a10332976370f.pem](1f17f2cbb109f01c885c94d9e74a48625ae9659665d6d7e7bc5a10332976370f.pem)
   * [3e26492e20b52de79e15766e6cb4251a1d566b0dbfb225aa7d08dda1dcebbf0a.pem](3e26492e20b52de79e15766e6cb4251a1d566b0dbfb225aa7d08dda1dcebbf0a.pem)
@@ -293,7 +293,7 @@ blacklisted for robustness at their request.
 
 For details, see <https://bugzilla.mozilla.org/show_bug.cgi?id=1076940>
 
-This intermediate certificate was retired by T-Systems, and blacklisted
+This intermediate certificate was retired by T-Systems, and blocked
 for robustness at their request.
 
   * [f4a5984324de98bd979ef181a100cf940f2166173319a86a0d9d7c8fac3b0a8f.pem](f4a5984324de98bd979ef181a100cf940f2166173319a86a0d9d7c8fac3b0a8f.pem)

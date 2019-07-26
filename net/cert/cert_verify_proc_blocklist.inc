@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 // The certificate(s) that were misissued, and which represent these SPKIs,
-// are stored within net/data/ssl/blacklist. Further details about the
-// rationale is documented in net/data/ssl/blacklist/README.md
+// are stored within net/data/ssl/blocklist. Further details about the
+// rationale is documented in net/data/ssl/blocklist/README.md
 static constexpr uint8_t
-    kBlacklistedSPKIs[][crypto::kSHA256Length] = {
+    kSPKIBlockList[][crypto::kSHA256Length] = {
         // 2740d956b1127b791aa1b3cc644a4dbedba76186a23638b95102351a834ea861.pem
         {0x04, 0xdd, 0xe9, 0xaa, 0x9a, 0x79, 0xf6, 0x14, 0x98, 0x68, 0x23,
          0x25, 0xfa, 0x08, 0x70, 0x27, 0x67, 0x07, 0xfb, 0x9c, 0xa9, 0x53,
