@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/external_web_apps.h"
+#include "chrome/browser/web_applications/external_web_app_manager.h"
 
 #include <algorithm>
 #include <memory>
@@ -32,6 +32,8 @@
 #include "components/user_manager/scoped_user_manager.h"
 #endif
 
+namespace web_app {
+
 namespace {
 
 constexpr char kGoodJsonTestDir[] = "good_json";
@@ -59,7 +61,7 @@ static base::FilePath test_dir(const std::string& sub_dir) {
   return dir.AppendASCII(kWebAppDefaultApps).AppendASCII(sub_dir);
 }
 
-using InstallOptionsList = std::vector<web_app::ExternalInstallOptions>;
+using InstallOptionsList = std::vector<ExternalInstallOptions>;
 
 }  // namespace
 
@@ -85,32 +87,35 @@ class ScanDirForExternalWebAppsTest : public testing::Test {
   }
 
  protected:
-  // Helper that makes blocking call to |web_app::ScanForExternalWebApps| and
-  // returns read app infos.
+  // Helper that makes blocking call to
+  // |ExternalWebAppManager::ScanForExternalWebApps| and returns read app
+  // infos.
   static InstallOptionsList ScanApps(Profile* profile,
                                      const base::FilePath& test_dir) {
 #if defined(OS_CHROMEOS)
     base::ScopedPathOverride path_override(
         chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS, test_dir);
 #endif
+    auto external_web_app_manager =
+        std::make_unique<ExternalWebAppManager>(profile);
+
     InstallOptionsList result;
     base::RunLoop run_loop;
-    web_app::ScanForExternalWebApps(
-        profile, base::BindOnce(
-                     [](base::RunLoop* run_loop, InstallOptionsList* result,
-                        InstallOptionsList install_options_list) {
-                       *result = install_options_list;
-                       run_loop->Quit();
-                     },
-                     &run_loop, &result));
+    external_web_app_manager->ScanForExternalWebApps(base::BindOnce(
+        [](base::RunLoop* run_loop, InstallOptionsList* result,
+           InstallOptionsList install_options_list) {
+          *result = install_options_list;
+          run_loop->Quit();
+        },
+        &run_loop, &result));
     run_loop.Run();
     return result;
   }
 
-  std::vector<web_app::ExternalInstallOptions> ScanTestDirForExternalWebApps(
+  std::vector<ExternalInstallOptions> ScanTestDirForExternalWebApps(
       const std::string& dir) {
-    return web_app::ScanDirForExternalWebAppsForTesting(test_dir(dir),
-                                                        CreateProfile().get());
+    return ExternalWebAppManager::ScanDirForExternalWebAppsForTesting(
+        test_dir(dir), CreateProfile().get());
   }
 
   // Helper that creates simple test profile.
@@ -181,12 +186,11 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
   // chrome_platform_status.json and google_io_2016.json.
   // google_io_2016.json is missing a "create_shortcuts" field, so the default
   // value of false should be used.
-  std::vector<web_app::ExternalInstallOptions> test_install_options_list;
+  std::vector<ExternalInstallOptions> test_install_options_list;
   {
-    web_app::ExternalInstallOptions install_options(
-        GURL("https://www.chromestatus.com/features"),
-        web_app::LaunchContainer::kTab,
-        web_app::ExternalInstallSource::kExternalDefault);
+    ExternalInstallOptions install_options(
+        GURL("https://www.chromestatus.com/features"), LaunchContainer::kTab,
+        ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = true;
     install_options.add_to_desktop = true;
     install_options.add_to_quick_launch_bar = true;
@@ -194,10 +198,9 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
     test_install_options_list.push_back(std::move(install_options));
   }
   {
-    web_app::ExternalInstallOptions install_options(
+    ExternalInstallOptions install_options(
         GURL("https://events.google.com/io2016/?utm_source=web_app_manifest"),
-        web_app::LaunchContainer::kWindow,
-        web_app::ExternalInstallSource::kExternalDefault);
+        LaunchContainer::kWindow, ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = false;
     install_options.add_to_desktop = false;
     install_options.add_to_quick_launch_bar = false;
@@ -351,3 +354,5 @@ TEST_F(ScanDirForExternalWebAppsTest, NoApp) {
       ScanApps(CreateProfile().get(), test_dir(kUserTypesTestDir)).empty());
 }
 #endif
+
+}  // namespace web_app

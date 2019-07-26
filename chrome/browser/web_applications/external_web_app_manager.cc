@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/external_web_apps.h"
+#include "chrome/browser/web_applications/external_web_app_manager.h"
 
 #include <map>
 #include <memory>
@@ -22,7 +22,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/user_type_filter.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -30,6 +32,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif
+
+namespace web_app {
 
 namespace {
 
@@ -86,9 +90,8 @@ bool IsFeatureEnabled(const std::string& feature_name) {
   return base::FeatureList::IsEnabled(*it->second);
 }
 
-std::vector<web_app::ExternalInstallOptions> ScanDir(
-    const base::FilePath& dir,
-    const std::string& user_type) {
+std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
+                                            const std::string& user_type) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   base::FilePath::StringType extension(FILE_PATH_LITERAL(".json"));
@@ -96,7 +99,7 @@ std::vector<web_app::ExternalInstallOptions> ScanDir(
                                   false,  // Recursive.
                                   base::FileEnumerator::FILES);
 
-  std::vector<web_app::ExternalInstallOptions> install_options_list;
+  std::vector<ExternalInstallOptions> install_options_list;
 
   for (base::FilePath file = json_files.Next(); !file.empty();
        file = json_files.Next()) {
@@ -162,19 +165,19 @@ std::vector<web_app::ExternalInstallOptions> ScanDir(
       continue;
     }
     std::string launch_container_str = value->GetString();
-    auto launch_container = web_app::LaunchContainer::kTab;
+    auto launch_container = LaunchContainer::kTab;
     if (launch_container_str == kLaunchContainerTab) {
-      launch_container = web_app::LaunchContainer::kTab;
+      launch_container = LaunchContainer::kTab;
     } else if (launch_container_str == kLaunchContainerWindow) {
-      launch_container = web_app::LaunchContainer::kWindow;
+      launch_container = LaunchContainer::kWindow;
     } else {
       LOG(ERROR) << file.value() << " had an invalid " << kLaunchContainer;
       continue;
     }
 
-    web_app::ExternalInstallOptions install_options(
+    ExternalInstallOptions install_options(
         std::move(app_url), launch_container,
-        web_app::ExternalInstallSource::kExternalDefault);
+        ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = create_shortcuts;
     install_options.add_to_desktop = create_shortcuts;
     install_options.add_to_quick_launch_bar = create_shortcuts;
@@ -210,22 +213,44 @@ base::FilePath DetermineScanDir(const Profile* profile) {
   return dir;
 }
 
+void OnExternalWebAppsSynchronized(
+    std::map<GURL, InstallResultCode> install_results,
+    std::map<GURL, bool> uninstall_results) {
+  RecordExternalAppInstallResultCode("Webapp.InstallResult.Default",
+                                     install_results);
+}
+
 }  // namespace
 
-namespace web_app {
+ExternalWebAppManager::ExternalWebAppManager(Profile* profile)
+    : profile_(profile) {}
 
-std::vector<web_app::ExternalInstallOptions>
-ScanDirForExternalWebAppsForTesting(const base::FilePath& dir,
-                                    Profile* profile) {
+ExternalWebAppManager::~ExternalWebAppManager() = default;
+
+void ExternalWebAppManager::SetSubsystems(
+    PendingAppManager* pending_app_manager) {
+  pending_app_manager_ = pending_app_manager;
+}
+
+void ExternalWebAppManager::Start() {
+  ScanForExternalWebApps(
+      base::BindOnce(&ExternalWebAppManager::OnScanForExternalWebApps,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+// static
+std::vector<ExternalInstallOptions>
+ExternalWebAppManager::ScanDirForExternalWebAppsForTesting(
+    const base::FilePath& dir,
+    Profile* profile) {
   return ScanDir(dir, apps::DetermineUserType(profile));
 }
 
-void ScanForExternalWebApps(Profile* profile,
-                            ScanForExternalWebAppsCallback callback) {
+void ExternalWebAppManager::ScanForExternalWebApps(ScanCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const base::FilePath dir = DetermineScanDir(profile);
+  const base::FilePath dir = DetermineScanDir(profile_);
   if (dir.empty()) {
-    std::move(callback).Run(std::vector<web_app::ExternalInstallOptions>());
+    std::move(callback).Run(std::vector<ExternalInstallOptions>());
     return;
   }
   // Do a two-part callback dance, across different TaskRunners.
@@ -241,8 +266,17 @@ void ScanForExternalWebApps(Profile* profile,
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&ScanDir, dir, apps::DetermineUserType(profile)),
+      base::BindOnce(&ScanDir, dir, apps::DetermineUserType(profile_)),
       std::move(callback));
+}
+
+void ExternalWebAppManager::OnScanForExternalWebApps(
+    std::vector<ExternalInstallOptions> desired_apps_install_options) {
+  DCHECK(pending_app_manager_);
+  pending_app_manager_->SynchronizeInstalledApps(
+      std::move(desired_apps_install_options),
+      ExternalInstallSource::kExternalDefault,
+      base::BindOnce(&OnExternalWebAppsSynchronized));
 }
 
 }  //  namespace web_app
