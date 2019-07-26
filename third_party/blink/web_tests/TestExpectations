@@ -6441,3 +6441,7 @@ crbug.com/987138 [ Linux Win ] media/controls/doubletap-to-jump-forwards.html [ 
 # Sheriff 2019-07-26
 crbug.com/835943 [ Debug ] http/tests/appcache/non-html.xhtml [ Crash Pass ]
 crbug.com/874866 [ Linux Debug ] media/controls/doubletap-to-jump-backwards.html [ Failure ]
+crbug.com/987915 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/observe-after-untrusted-scroll.html [ Pass Failure ]
+crbug.com/987915 virtual/scalefactor200/external/wpt/largest-contentful-paint/observe-after-untrusted-scroll.html [ Pass Failure ]
+crbug.com/987915 external/wpt/largest-contentful-paint/observe-after-untrusted-scroll.html [ Pass Failure ]
+
