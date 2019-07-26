@@ -31,11 +31,8 @@ std::string DomainName::ToString() const {
 }
 
 bool DomainName::operator==(const DomainName& rhs) const {
-  auto predicate = [](const std::string& left, const std::string& right) {
-    return absl::EqualsIgnoreCase(left, right);
-  };
   return std::equal(labels_.begin(), labels_.end(), rhs.labels_.begin(),
-                    rhs.labels_.end(), predicate);
+                    rhs.labels_.end(), absl::EqualsIgnoreCase);
 }
 
 bool DomainName::operator!=(const DomainName& rhs) const {
@@ -232,17 +229,17 @@ size_t MdnsQuestion::MaxWireSize() const {
   return name_.MaxWireSize() + sizeof(type_) + sizeof(record_class_);
 }
 
-MdnsMessage::MdnsMessage(uint16_t id, uint16_t flags)
-    : id_(id), flags_(flags) {}
+MdnsMessage::MdnsMessage(uint16_t id, MessageType type)
+    : id_(id), type_(type) {}
 
 MdnsMessage::MdnsMessage(uint16_t id,
-                         uint16_t flags,
+                         MessageType type,
                          std::vector<MdnsQuestion> questions,
                          std::vector<MdnsRecord> answers,
                          std::vector<MdnsRecord> authority_records,
                          std::vector<MdnsRecord> additional_records)
     : id_(id),
-      flags_(flags),
+      type_(type),
       questions_(std::move(questions)),
       answers_(std::move(answers)),
       authority_records_(std::move(authority_records)),
@@ -267,8 +264,8 @@ MdnsMessage::MdnsMessage(uint16_t id,
 }
 
 bool MdnsMessage::operator==(const MdnsMessage& rhs) const {
-  return id_ == rhs.id_ && flags_ == rhs.flags_ &&
-         questions_ == rhs.questions_ && answers_ == rhs.answers_ &&
+  return id_ == rhs.id_ && type_ == rhs.type_ && questions_ == rhs.questions_ &&
+         answers_ == rhs.answers_ &&
          authority_records_ == rhs.authority_records_ &&
          additional_records_ == rhs.additional_records_;
 }

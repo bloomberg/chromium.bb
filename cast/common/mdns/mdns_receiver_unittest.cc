@@ -38,7 +38,7 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
   // clang-format off
   const std::vector<uint8_t> kQueryBytes = {
       0x00, 0x01,  // ID = 1
-      0x04, 0x00,  // FLAGS = AA
+      0x00, 0x00,  // FLAGS = None
       0x00, 0x01,  // Question count
       0x00, 0x00,  // Answer count
       0x00, 0x00,  // Authority count
@@ -63,7 +63,7 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
 
   MdnsQuestion question(DomainName{"testing", "local"}, DnsType::kA,
                         DnsClass::kIN, false);
-  MdnsMessage message(1, 0x0400);
+  MdnsMessage message(1, MessageType::Query);
   message.AddQuestion(question);
 
   UdpPacket packet(kQueryBytes.size());
@@ -119,7 +119,7 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
 
   MdnsRecord record(DomainName{"testing", "local"}, DnsType::kA, DnsClass::kIN,
                     false, 120, ARecordRdata(IPAddress{172, 0, 0, 1}));
-  MdnsMessage message(1, 0x8400);
+  MdnsMessage message(1, MessageType::Response);
   message.AddAnswer(record);
 
   UdpPacket packet(kResponseBytes.size());

@@ -131,41 +131,33 @@ struct Header {
   uint16_t additional_record_count;
 };
 
-// TODO(mayaki): Here and below consider converting constants to members of
-// enum classes.
+static_assert(sizeof(Header) == 12, "Size of mDNS header must be 12 bytes.");
 
-// DNS Header flags. All flags are formatted to mask directly onto FLAG header
-// field in network-byte order.
+enum class MessageType {
+  Query = 0,
+  Response = 1,
+};
+
 constexpr uint16_t kFlagResponse = 0x8000;
 constexpr uint16_t kFlagAA = 0x0400;
 constexpr uint16_t kFlagTC = 0x0200;
-constexpr uint16_t kFlagRD = 0x0100;
-constexpr uint16_t kFlagRA = 0x0080;
-constexpr uint16_t kFlagZ = 0x0040;  // Unused field
-constexpr uint16_t kFlagAD = 0x0020;
-constexpr uint16_t kFlagCD = 0x0010;
-
-// DNS Header OPCODE mask and values. The mask is formatted to mask directly
-// onto FLAG header field in network-byte order. The values are formatted after
-// shifting into correct position.
 constexpr uint16_t kOpcodeMask = 0x7800;
-constexpr uint8_t kOpcodeQUERY = 0;
-constexpr uint8_t kOpcodeIQUERY = 1;
-constexpr uint8_t kOpcodeSTATUS = 2;
-constexpr uint8_t kOpcodeUNASSIGNED = 3;  // Unused for now
-constexpr uint8_t kOpcodeNOTIFY = 4;
-constexpr uint8_t kOpcodeUPDATE = 5;
-
-// DNS Header RCODE mask and values. The mask is formatted to mask directly onto
-// FLAG header field in network-byte order. The values are formatted after
-// shifting into correct position.
 constexpr uint16_t kRcodeMask = 0x000F;
-constexpr uint8_t kRcodeNOERROR = 0;
-constexpr uint8_t kRcodeFORMERR = 1;
-constexpr uint8_t kRcodeSERVFAIL = 2;
-constexpr uint8_t kRcodeNXDOMAIN = 3;
-constexpr uint8_t kRcodeNOTIMP = 4;
-constexpr uint8_t kRcodeREFUSED = 5;
+
+constexpr MessageType GetMessageType(uint16_t flags) {
+  // RFC 6762 Section 18.2
+  return (flags & kFlagResponse) ? MessageType::Response : MessageType::Query;
+}
+
+constexpr uint16_t MakeFlags(MessageType type) {
+  // RFC 6762 Section 18.2 and Section 18.4
+  return (type == MessageType::Response) ? (kFlagResponse | kFlagAA) : 0;
+}
+
+constexpr bool IsValidFlagsSection(uint16_t flags) {
+  // RFC 6762 Section 18.3 and Section 18.11
+  return (flags & (kOpcodeMask | kRcodeMask)) == 0;
+}
 
 // ============================================================================
 // Domain Name

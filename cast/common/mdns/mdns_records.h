@@ -351,9 +351,9 @@ class MdnsMessage {
   MdnsMessage() = default;
   // Constructs a message with ID, flags and empty question, answer, authority
   // and additional record collections.
-  MdnsMessage(uint16_t id, uint16_t flags);
+  MdnsMessage(uint16_t id, MessageType type);
   MdnsMessage(uint16_t id,
-              uint16_t flags,
+              MessageType type,
               std::vector<MdnsQuestion> questions,
               std::vector<MdnsRecord> answers,
               std::vector<MdnsRecord> authority_records,
@@ -375,7 +375,7 @@ class MdnsMessage {
 
   size_t MaxWireSize() const;
   uint16_t id() const { return id_; }
-  uint16_t flags() const { return flags_; }
+  MessageType type() const { return type_; }
   const std::vector<MdnsQuestion>& questions() const { return questions_; }
   const std::vector<MdnsRecord>& answers() const { return answers_; }
   const std::vector<MdnsRecord>& authority_records() const {
@@ -389,7 +389,7 @@ class MdnsMessage {
   // The mDNS header is 12 bytes long
   size_t max_wire_size_ = sizeof(Header);
   uint16_t id_ = 0;
-  uint16_t flags_ = 0;
+  MessageType type_ = MessageType::Query;
   std::vector<MdnsQuestion> questions_;
   std::vector<MdnsRecord> answers_;
   std::vector<MdnsRecord> authority_records_;

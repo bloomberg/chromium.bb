@@ -46,8 +46,8 @@ class MdnsSenderTest : public ::testing::Test {
                   false,
                   120,
                   ARecordRdata(IPAddress{172, 0, 0, 1})),
-        query_message_(1, 0x0400),
-        response_message_(1, 0x8400),
+        query_message_(1, MessageType::Query),
+        response_message_(1, MessageType::Response),
         ipv4_multicast_endpoint_{
             .address = IPAddress(kDefaultMulticastGroupIPv4),
             .port = kDefaultMulticastPort},
@@ -62,7 +62,7 @@ class MdnsSenderTest : public ::testing::Test {
   // clang-format off
   const std::vector<uint8_t> kQueryBytes = {
       0x00, 0x01,  // ID = 1
-      0x04, 0x00,  // FLAGS = AA
+      0x00, 0x00,  // FLAGS = None
       0x00, 0x01,  // Question count
       0x00, 0x00,  // Answer count
       0x00, 0x00,  // Authority count
@@ -149,7 +149,7 @@ TEST_F(MdnsSenderTest, SendUnicastIPv6) {
 }
 
 TEST_F(MdnsSenderTest, MessageTooBig) {
-  MdnsMessage big_message_(1, 0x0400);
+  MdnsMessage big_message_(1, MessageType::Query);
   for (size_t i = 0; i < 100; ++i) {
     big_message_.AddQuestion(a_question_);
     big_message_.AddAnswer(a_record_);

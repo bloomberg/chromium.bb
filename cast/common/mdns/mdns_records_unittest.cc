@@ -387,7 +387,7 @@ TEST(MdnsMessageTest, Construct) {
   MdnsMessage message1;
   EXPECT_EQ(message1.MaxWireSize(), UINT64_C(12));
   EXPECT_EQ(message1.id(), UINT16_C(0));
-  EXPECT_EQ(message1.flags(), UINT16_C(0));
+  EXPECT_EQ(message1.type(), MessageType::Query);
   EXPECT_EQ(message1.questions().size(), UINT64_C(0));
   EXPECT_EQ(message1.answers().size(), UINT64_C(0));
   EXPECT_EQ(message1.authority_records().size(), UINT64_C(0));
@@ -402,10 +402,10 @@ TEST(MdnsMessageTest, Construct) {
   MdnsRecord record3(DomainName{"record3"}, DnsType::kPTR, DnsClass::kIN, false,
                      120, PtrRecordRdata(DomainName{"device", "local"}));
 
-  MdnsMessage message2(123, 0x8400);
+  MdnsMessage message2(123, MessageType::Response);
   EXPECT_EQ(message2.MaxWireSize(), UINT64_C(12));
   EXPECT_EQ(message2.id(), UINT16_C(123));
-  EXPECT_EQ(message2.flags(), UINT16_C(0x8400));
+  EXPECT_EQ(message2.type(), MessageType::Response);
   EXPECT_EQ(message2.questions().size(), UINT64_C(0));
   EXPECT_EQ(message2.answers().size(), UINT64_C(0));
   EXPECT_EQ(message2.authority_records().size(), UINT64_C(0));
@@ -427,10 +427,10 @@ TEST(MdnsMessageTest, Construct) {
   EXPECT_EQ(message2.authority_records()[0], record2);
   EXPECT_EQ(message2.additional_records()[0], record3);
 
-  MdnsMessage message3(123, 0x8400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{record3});
+  MdnsMessage message3(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
 
   EXPECT_EQ(message3.MaxWireSize(), UINT64_C(118));
   ASSERT_EQ(message3.questions().size(), UINT64_C(1));
@@ -454,38 +454,38 @@ TEST(MdnsMessageTest, Compare) {
   MdnsRecord record3(DomainName{"record3"}, DnsType::kPTR, DnsClass::kIN, false,
                      120, PtrRecordRdata(DomainName{"device", "local"}));
 
-  MdnsMessage message1(123, 0x8400, std::vector<MdnsQuestion>{question},
+  MdnsMessage message1(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
+  MdnsMessage message2(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
+  MdnsMessage message3(
+      456, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
+  MdnsMessage message4(
+      123, MessageType::Query, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
+  MdnsMessage message5(123, MessageType::Response, std::vector<MdnsQuestion>{},
                        std::vector<MdnsRecord>{record1},
                        std::vector<MdnsRecord>{record2},
                        std::vector<MdnsRecord>{record3});
-  MdnsMessage message2(123, 0x8400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{record3});
-  MdnsMessage message3(456, 0x8400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{record3});
-  MdnsMessage message4(123, 0x400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{record3});
-  MdnsMessage message5(123, 0x8400, std::vector<MdnsQuestion>{},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{record3});
-  MdnsMessage message6(123, 0x8400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{record3});
-  MdnsMessage message7(123, 0x8400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{},
-                       std::vector<MdnsRecord>{record3});
-  MdnsMessage message8(123, 0x8400, std::vector<MdnsQuestion>{question},
-                       std::vector<MdnsRecord>{record1},
-                       std::vector<MdnsRecord>{record2},
-                       std::vector<MdnsRecord>{});
+  MdnsMessage message6(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
+  MdnsMessage message7(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{},
+      std::vector<MdnsRecord>{record3});
+  MdnsMessage message8(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{});
 
   EXPECT_EQ(message1, message2);
   EXPECT_NE(message1, message3);
@@ -505,10 +505,10 @@ TEST(MdnsMessageTest, CopyAndMove) {
                      120, TxtRecordRdata{"foo=1", "bar=2"});
   MdnsRecord record3(DomainName{"record3"}, DnsType::kPTR, DnsClass::kIN, false,
                      120, PtrRecordRdata(DomainName{"device", "local"}));
-  MdnsMessage message(123, 0x8400, std::vector<MdnsQuestion>{question},
-                      std::vector<MdnsRecord>{record1},
-                      std::vector<MdnsRecord>{record2},
-                      std::vector<MdnsRecord>{record3});
+  MdnsMessage message(
+      123, MessageType::Response, std::vector<MdnsQuestion>{question},
+      std::vector<MdnsRecord>{record1}, std::vector<MdnsRecord>{record2},
+      std::vector<MdnsRecord>{record3});
   TestCopyAndMove(message);
 }
 

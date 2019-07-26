@@ -52,8 +52,7 @@ void MdnsReceiver::OnRead(UdpPacket packet, NetworkRunner* network_runner) {
   if (!reader.Read(&message)) {
     return;
   }
-  // TODO(yakimakha): make flags a proper type and hide bit manipulation
-  if ((message.flags() & kFlagResponse) != 0) {
+  if (message.type() == MessageType::Response) {
     delegate_->OnResponseReceived(message, packet.source());
   } else {
     delegate_->OnQueryReceived(message, packet.source());

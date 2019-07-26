@@ -365,7 +365,7 @@ TEST(MdnsWriterTest, WriteMdnsMessage) {
   // clang-format off
   constexpr uint8_t kExpectedMessage[] = {
       0x00, 0x01,  // ID = 1
-      0x04, 0x00,  // FLAGS = AA
+      0x00, 0x00,  // FLAGS = None
       0x00, 0x01,  // Question count
       0x00, 0x00,  // Answer count
       0x00, 0x01,  // Authority count
@@ -392,7 +392,7 @@ TEST(MdnsWriterTest, WriteMdnsMessage) {
   MdnsRecord auth_record(DomainName{"auth"}, DnsType::kTXT, DnsClass::kIN,
                          false, 120, TxtRecordRdata{"foo=1", "bar=2"});
 
-  MdnsMessage message(1, 0x0400);
+  MdnsMessage message(1, MessageType::Query);
   message.AddQuestion(question);
   message.AddAuthorityRecord(auth_record);
 
@@ -410,7 +410,7 @@ TEST(MdnsWriterTest, WriteMdnsMessage_InsufficientBuffer) {
   MdnsRecord auth_record(DomainName{"auth"}, DnsType::kTXT, DnsClass::kIN, 120,
                          false, TxtRecordRdata{"foo=1", "bar=2"});
 
-  MdnsMessage message(1, 0x0400);
+  MdnsMessage message(1, MessageType::Query);
   message.AddQuestion(question);
   message.AddAuthorityRecord(auth_record);
   TestWriteEntryInsufficientBuffer(message);

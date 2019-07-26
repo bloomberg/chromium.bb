@@ -563,9 +563,10 @@ TEST(MdnsReaderTest, ReadMdnsMessage) {
                      120, PtrRecordRdata(DomainName{"testing", "local"}));
   MdnsRecord record2(DomainName{"record2"}, DnsType::kA, DnsClass::kIN, false,
                      120, ARecordRdata(IPAddress{172, 0, 0, 1}));
-  MdnsMessage message(
-      1, 0x8400, std::vector<MdnsQuestion>{}, std::vector<MdnsRecord>{record1},
-      std::vector<MdnsRecord>{}, std::vector<MdnsRecord>{record2});
+  MdnsMessage message(1, MessageType::Response, std::vector<MdnsQuestion>{},
+                      std::vector<MdnsRecord>{record1},
+                      std::vector<MdnsRecord>{},
+                      std::vector<MdnsRecord>{record2});
   TestReadEntrySucceeds(kTestMessage, sizeof(kTestMessage), message);
 }
 
