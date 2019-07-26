@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<android.support.v7.preference.PreferenceScreen
+<PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:title="@string/all_sites">
@@ -45,4 +45,4 @@
         android:key="blocked_group" />
     <org.chromium.chrome.browser.preferences.ExpandablePreferenceGroup
         android:key="allowed_group" />
-</android.support.v7.preference.PreferenceScreen>
+</PreferenceScreen>

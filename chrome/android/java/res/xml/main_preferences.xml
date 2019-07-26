@@ -3,10 +3,10 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:orderingFromXml="false">
 
-    <android.support.v7.preference.PreferenceCategory
+    <PreferenceCategory
         android:key="account_section"
         android:order="0"
         android:title="@string/prefs_section_account"/>
@@ -21,7 +21,7 @@
         android:title="@string/prefs_sync_and_services"
         android:fragment="org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences"/>
 
-    <android.support.v7.preference.PreferenceCategory
+    <PreferenceCategory
         android:key="basics_section"
         android:order="3"
         android:title="@string/prefs_section_basics"/>
@@ -50,42 +50,42 @@
         android:key="autofill_assistant"
         android:order="8"
         android:title="@string/prefs_autofill_assistant_title"/>
-    <android.support.v7.preference.Preference
+    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.NotificationsPreferences"
         android:key="notifications"
         android:order="9"
         android:title="@string/prefs_notifications"/>
-    <android.support.v7.preference.Preference
+    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.HomepagePreferences"
         android:key="homepage"
         android:order="10"
         android:title="@string/options_homepage_title"/>
-    <android.support.v7.preference.Preference
+    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.themes.ThemePreferences"
         android:key="ui_theme"
         android:order="11"
         android:title="@string/prefs_themes" />
 
-    <android.support.v7.preference.PreferenceCategory
+    <PreferenceCategory
         android:key="advanced_section"
         android:order="12"
         android:title="@string/prefs_section_advanced"/>
-    <android.support.v7.preference.Preference
+    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.privacy.PrivacyPreferences"
         android:key="privacy"
         android:order="13"
         android:title="@string/prefs_privacy"/>
-    <android.support.v7.preference.Preference
+    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.AccessibilityPreferences"
         android:key="accessibility"
         android:order="14"
         android:title="@string/prefs_accessibility"/>
-    <android.support.v7.preference.Preference
+    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.website.SiteSettingsPreferences"
         android:key="content_settings"
         android:order="15"
         android:title="@string/prefs_site_settings"/>
-    <android.support.v7.preference.Preference
+    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.languages.LanguagesPreferences"
         android:key="languages"
         android:order="16"
@@ -100,15 +100,15 @@
         android:key="downloads"
         android:order="18"
         android:title="@string/menu_downloads"/>
-    <android.support.v7.preference.Preference
+    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.developer.DeveloperPreferences"
         android:key="developer"
         android:order="19"
         android:title="Developer options"/>
-    <android.support.v7.preference.Preference
+    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.AboutChromePreferences"
         android:key="about_chrome"
         android:order="20"
         android:title="@string/prefs_about_chrome"/>
 
-</android.support.v7.preference.PreferenceScreen>
+</PreferenceScreen>

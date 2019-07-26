@@ -7,8 +7,8 @@
      |GetSyncedServicePrefNames| in
      chrome/browser/unified_consent/unified_consent_service_factory.cc has to be
      updated accordingly. -->
-<android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <android.support.v7.preference.PreferenceCategory
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
         android:key="user_category"
         android:title="@string/user"/>
     <org.chromium.chrome.browser.preferences.sync.SignInPreference
@@ -19,15 +19,15 @@
         android:key="manage_your_google_account"
         android:title="@string/manage_your_google_account"/>
 
-    <android.support.v7.preference.PreferenceCategory
+    <PreferenceCategory
         android:key="sync_category"
         android:title="@string/sync_category_title">
 
-        <android.support.v7.preference.Preference
+        <Preference
             android:key="sync_error_card"
             android:layout="@layout/account_management_account_row"
             android:title="@string/sync_error_card_title"/>
-        <android.support.v7.preference.Preference
+        <Preference
             android:key="sync_disabled_by_administrator"
             android:layout="@layout/account_management_account_row"
             android:title="@string/sync_is_disabled_by_administrator"/>
@@ -40,9 +40,9 @@
             android:key="manage_sync"
             android:title="@string/manage_sync_title"
             android:fragment="org.chromium.chrome.browser.preferences.sync.ManageSyncPreferences"/>
-    </android.support.v7.preference.PreferenceCategory>
+    </PreferenceCategory>
 
-    <android.support.v7.preference.PreferenceCategory
+    <PreferenceCategory
         android:key="services_category"
         android:title="@string/services_category_title">
 
@@ -80,5 +80,5 @@
             android:key="contextual_search"
             android:title="@string/contextual_search_title"
             android:fragment="org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment"/>
-    </android.support.v7.preference.PreferenceCategory>
-</android.support.v7.preference.PreferenceScreen>
+    </PreferenceCategory>
+</PreferenceScreen>

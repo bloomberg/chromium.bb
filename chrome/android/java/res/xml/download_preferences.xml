@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <org.chromium.chrome.browser.preferences.download.DownloadLocationPreference
         android:key="location_change"
         android:title="@string/downloads_location_selector_title"
@@ -19,4 +19,4 @@
     <org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat
         android:key="prefetching_enabled"
         android:title="@string/download_settings_enable_prefetch_title" />
-</android.support.v7.preference.PreferenceScreen>
+</PreferenceScreen>

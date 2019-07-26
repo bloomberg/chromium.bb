@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat
@@ -19,11 +19,11 @@
         android:key="usage_stats_reporting"
         android:title="@string/usage_stats_setting_title"
         android:persistent="false" />
-    <android.support.v7.preference.Preference
+    <Preference
         android:fragment="org.chromium.chrome.browser.preferences.privacy.DoNotTrackPreference"
         android:key="do_not_track"
         android:title="@string/do_not_track_title" />
-    <android.support.v7.preference.Preference
+    <Preference
         android:key="clear_browsing_data"
         android:title="@string/clear_browsing_data_title"
         android:summary="@string/clear_browsing_data_summary"
@@ -32,4 +32,4 @@
         android:key="sync_and_services_link"
         android:summary="@string/privacy_sync_and_services_link"
         app:allowDividerBelow="false" />
-</android.support.v7.preference.PreferenceScreen>
+</PreferenceScreen>
