@@ -818,7 +818,7 @@ def _IsSELinuxEnforced(device):
   return device.CatFile('/sys/fs/selinux/enforce', max_size=None).strip() == '1'
 
 
-def _RestoreSELinuxContext(device, pkgpath):
+def _RestoreSELinuxContext(device, pkgpath, root):
   """Restore SELinux context for files in a given pacakge.
 
   This reads the tarball from pkgpath, and calls restorecon on device to
@@ -828,6 +828,7 @@ def _RestoreSELinuxContext(device, pkgpath):
   Args:
     device: a ChromiumOSDevice object
     pkgpath: path to tarball
+    root: Package installation root path.
   """
   enforced = _IsSELinuxEnforced(device)
   if enforced:
@@ -837,8 +838,9 @@ def _RestoreSELinuxContext(device, pkgpath):
   pkgpath_device = os.path.join(pkgroot, pkg_dirname, os.path.basename(pkgpath))
   # Testing shows restorecon splits on newlines instead of spaces.
   device.RunCommand(
-      ['cd', '/', '&&',
-       'tar', 'tf', pkgpath_device, '|', 'restorecon', '-i', '-f', '-'],
+      ['cd', root, '&&',
+       'tar', 'tf', pkgpath_device, '|',
+       'restorecon', '-i', '-f', '-'],
       remote_sudo=True)
   if enforced:
     device.RunCommand(['setenforce', '1'])
@@ -940,7 +942,7 @@ def _EmergePackages(pkgs, device, strip, sysroot, root, emerge_args):
   for pkg_path in _GetPackagesPaths(pkgs, strip, sysroot):
     _Emerge(device, pkg_path, root, extra_args=emerge_args)
     if _HasSELinux(device):
-      _RestoreSELinuxContext(device, pkg_path)
+      _RestoreSELinuxContext(device, pkg_path, root)
 
 
 def _UnmergePackages(pkgs, device, root):
