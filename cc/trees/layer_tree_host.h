@@ -586,6 +586,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     client_->DidReceiveCompositorFrameAck();
   }
   bool UpdateLayers();
+  void UpdatePropertyTrees();
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,

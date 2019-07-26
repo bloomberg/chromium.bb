@@ -716,6 +716,10 @@ bool LayerTreeHost::UpdateLayers() {
   return result;
 }
 
+void LayerTreeHost::UpdatePropertyTrees() {
+  draw_property_utils::UpdatePropertyTrees(this, &property_trees_);
+}
+
 void LayerTreeHost::DidPresentCompositorFrame(
     uint32_t frame_token,
     std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
@@ -847,7 +851,7 @@ bool LayerTreeHost::DoUpdateLayers() {
   CHECK(property_trees_.effect_tree.Node(root_layer_->effect_tree_index()));
 #endif
 
-  draw_property_utils::UpdatePropertyTrees(this, &property_trees_);
+  UpdatePropertyTrees();
 
   LayerList update_layer_list;
   draw_property_utils::FindLayersThatNeedUpdates(this, &property_trees_,
