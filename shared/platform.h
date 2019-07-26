@@ -138,7 +138,7 @@ weston_platform_destroy_egl_surface(EGLDisplay display,
 #else /* ENABLE_EGL */
 
 static inline void *
-weston_platform_get_egl_display(void *platform, void *native_display,
+weston_platform_get_egl_display(int platform, void *native_display,
 				const int *attrib_list)
 {
 	return NULL;
