@@ -209,7 +209,7 @@ TEST_F(AnimationAnimationTestNoCompositing, InitialState) {
 
   StartTimeline();
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
-  EXPECT_EQ(0, timeline->CurrentTimeInternal());
+  EXPECT_EQ(0, timeline->CurrentTimeInternal()->InSecondsF());
   EXPECT_EQ(0, animation->CurrentTimeInternal());
   EXPECT_FALSE(animation->Paused());
   EXPECT_EQ(1, animation->playbackRate());
