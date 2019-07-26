@@ -36,6 +36,23 @@ class StringRef;
 class WebViewHostObserver;
 struct ToolkitCreateParamsImpl;
 
+                        // =====================
+                        // class ToolkitDelegate
+                        // =====================
+
+// This can be implemented by the embedder to provide embedder-side
+// functionality at the toolkit level.
+class BLPWTK2_EXPORT ToolkitDelegate {
+  public:
+
+
+
+    // patch section: devtools integration
+
+
+
+};
+
                         // =========================
                         // class ToolkitCreateParams
                         // =========================
@@ -131,6 +148,10 @@ class ToolkitCreateParams
         // version of blpwtk2 (i.e. 'isValidHostChannelVersion' must return
         // true).
 
+    BLPWTK2_EXPORT void setDelegate(ToolkitDelegate* delegate);
+        // Set a new toolkit delegate. From this point on, all callbacks will
+        // be sent to the new delegate.
+
     BLPWTK2_EXPORT static bool isValidHostChannelVersion(
         const StringRef& channelInfoString);
         // Return true if the specified 'channelInfoString' was obtained from a
@@ -209,6 +230,7 @@ class ToolkitCreateParams
     _invalid_parameter_handler invalidParameterHandler() const;
     _purecall_handler purecallHandler() const;
     StringRef hostChannel() const;
+    ToolkitDelegate* delegate() const;
     NativeFont tooltipFont() const;
     NativeColor activeTextSearchHighlightColor() const;
     NativeColor inactiveTextSearchHighlightColor() const;
