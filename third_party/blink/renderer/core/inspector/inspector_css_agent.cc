@@ -96,7 +96,6 @@
 #include "third_party/blink/renderer/platform/text/text_run.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
