@@ -520,15 +520,13 @@ scoped_refptr<media::VideoFrame> PepperVideoEncoderHost::CreateVideoFrame(
 
   ppapi::MediaStreamBuffer* buffer = buffer_manager_.GetBufferPointer(frame_id);
   DCHECK(buffer);
-  uint32_t shm_offset = static_cast<uint8_t*>(buffer->video.data) -
-                        static_cast<uint8_t*>(buffer_manager_.shm()->memory());
-
-  scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalSharedMemory(
-          media_input_format_, input_coded_size_, gfx::Rect(input_coded_size_),
-          input_coded_size_, static_cast<uint8_t*>(buffer->video.data),
-          buffer->video.data_size, buffer_manager_.shm()->handle(), shm_offset,
-          base::TimeDelta());
+  // The shared memory handle does not need to be given to the video frame as
+  // cross-process calls coordinate shared memory via a buffer index. See
+  // ppapi/shared_impl/media_stream_buffer_manager.h for details.
+  scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapExternalData(
+      media_input_format_, input_coded_size_, gfx::Rect(input_coded_size_),
+      input_coded_size_, static_cast<uint8_t*>(buffer->video.data),
+      buffer->video.data_size, base::TimeDelta());
   if (!frame) {
     NotifyPepperError(PP_ERROR_FAILED);
     return frame;

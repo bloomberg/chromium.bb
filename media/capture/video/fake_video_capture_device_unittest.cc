@@ -58,16 +58,14 @@ class StubBufferHandleProvider
 
   ~StubBufferHandleProvider() override = default;
 
-  mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
-      bool read_only) override {
+  base::UnsafeSharedMemoryRegion DuplicateAsUnsafeRegion() override {
     NOTREACHED();
-    return mojo::ScopedSharedBufferHandle();
+    return {};
   }
 
-  base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC()
-      override {
+  mojo::ScopedSharedBufferHandle DuplicateAsMojoBuffer() override {
     NOTREACHED();
-    return base::SharedMemoryHandle();
+    return mojo::ScopedSharedBufferHandle();
   }
 
   std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess()
