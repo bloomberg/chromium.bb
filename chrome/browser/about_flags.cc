@@ -3548,15 +3548,17 @@ const FeatureEntry kFeatureEntries[] = {
          chromeos::assistant::features::kEnableMediaSessionIntegration)},
 #endif  // defined(OS_CHROMEOS)
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
     {"click-to-call-receiver", flag_descriptions::kClickToCallReceiverName,
-     flag_descriptions::kClickToCallReceiverDescription, kOsAll,
+     flag_descriptions::kClickToCallReceiverDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(kClickToCallReceiver)},
+#endif  // defined(OS_ANDROID)
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
     {"click-to-call-ui", flag_descriptions::kClickToCallUIName,
-     flag_descriptions::kClickToCallUIDescription, kOsAll,
+     flag_descriptions::kClickToCallUIDescription, kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(kClickToCallUI)},
-#endif  // !defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
     {"enable-ambient-authentication-in-incognito",
      flag_descriptions::kEnableAmbientAuthenticationInIncognitoName,
