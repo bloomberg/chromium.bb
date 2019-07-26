@@ -73,7 +73,7 @@ g.test('stack', async t0 => {
     }
     t0.expect(search.test(logs[0]));
     const st = logs[0].split('\n');
-    t0.expect(st.every(l => search.test(l)));
+    t0.expect(search.test(st[st.length - 1]));
   }
 });
 

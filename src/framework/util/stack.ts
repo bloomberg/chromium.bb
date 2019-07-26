@@ -13,14 +13,13 @@ export function getStackTrace(e: Error): string {
   for (let i = 0; i < parts.length; ++i) {
     const part = parts[i].trim();
     const isSuites = part.indexOf('/suites/') !== -1;
-    if (!isSuites) {
-      if (found) {
-        break;
-      }
-      continue;
+    if (found && !isSuites) {
+      break;
+    }
+    if (isSuites) {
+      found = true;
     }
 
-    found = true;
     stack.push(part);
   }
   return stack.join('\n');
