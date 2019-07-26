@@ -437,7 +437,6 @@
     lasilla-ground-postsubmit
     littlejoe-postsubmit
     lulu-postsubmit
-    mistral-postsubmit
     monroe-postsubmit
     nami-postsubmit
     nautilus-postsubmit
@@ -2734,7 +2733,6 @@
     lasilla-ground-postsubmit-tryjob
     littlejoe-postsubmit-tryjob
     lulu-postsubmit-tryjob
-    mistral-postsubmit-tryjob
     monroe-postsubmit-tryjob
     nami-postsubmit-tryjob
     nautilus-postsubmit-tryjob
