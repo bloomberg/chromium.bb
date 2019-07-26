@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_animator.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout_helper.h"
@@ -1243,7 +1242,6 @@ void TabStrip::ChangeTabGroup(int model_index,
   if (old_group.has_value() &&
       controller_->ListTabsInGroup(old_group.value()).size() == 0) {
     layout_helper_->RemoveGroupHeader(old_group.value());
-    group_headers_.erase(old_group.value());
   }
   UpdateIdealBounds();
   AnimateToIdealBounds();
