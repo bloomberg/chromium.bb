@@ -28,9 +28,6 @@
 #include <base/message_loop/message_pump_win.h>
 #include <base/message_loop/message_loop.h>
 
-#include <gin/public/debug.h>
-
-
 namespace base {
 class RunLoop;
 }  // close namespace base
@@ -43,8 +40,7 @@ namespace blpwtk2 {
 
 // This message pump extends MessagePumpForUI and contains methods to
 // facilitate integration with an application's main message loop.
-class MainMessagePump final : public base::MessagePumpForUI,
-                              public gin::Debug::DebugSignalHandler {
+class MainMessagePump final : public base::MessagePumpForUI {
     // DATA
     NativeView d_window;
     std::unique_ptr<base::RunLoop> d_runLoop;
@@ -94,6 +90,15 @@ class MainMessagePump final : public base::MessagePumpForUI,
     // STATIC CREATORS
     static MainMessagePump* current();
 
+    // CLASS METHODS
+    static void OnDebugBreak();
+        // Notify this pump that we're entering a "modal" loop due to being
+        // paused at a JavaScript breakpoint.
+
+    static void OnDebugResume();
+        // Notify this pump that we're exiting a "modal" loop due to resuming
+        // from being paused at a JavaScript breakpoint.
+
     // CREATORS
     MainMessagePump();
     ~MainMessagePump() override;
@@ -110,14 +115,6 @@ class MainMessagePump final : public base::MessagePumpForUI,
 
     // base::MessagePumpForUI
     void ScheduleWork() override;
-
-    void onDebugBreak() override;
-        // Notify this pump that we're entering a "modal" loop due to being
-        // paused at a JavaScript breakpoint.
-
-    void onDebugResume() override;
-        // Notify this pump that we're exiting a "modal" loop due to resuming
-        // from being paused at a JavaScript breakpoint.
 };
 
 inline
