@@ -890,6 +890,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
     "java/src/org/chromium/android_webview/ui/util/UploadedCrashesInfoLoader.java",
+    "java/src/org/chromium/android_webview/ui/util/WebViewCrashLogParser.java",
   ]
   deps = [
     ":android_webview_commandline_java",
