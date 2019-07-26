@@ -12,9 +12,11 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
@@ -125,7 +127,8 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
 
   void SetupFieldTrial(base::Optional<int> preconnect_origin_score_threshold,
                        base::Optional<int> prefetch_url_score_threshold,
-                       base::Optional<bool> prefetch_after_preconnect) {
+                       base::Optional<bool> prefetch_after_preconnect,
+                       base::Optional<bool> send_ukm_metrics) {
     if (field_trial_initiated_)
       return;
 
@@ -145,6 +148,9 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
     if (prefetch_after_preconnect.has_value()) {
       params["prefetch_after_preconnect"] =
           prefetch_after_preconnect.value() ? "true" : "false";
+    }
+    if (send_ukm_metrics.has_value()) {
+      params["send_ukm_metrics"] = send_ukm_metrics.value() ? "true" : "false";
     }
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         blink::features::kNavigationPredictor, params);
@@ -510,11 +516,80 @@ TEST_F(NavigationPredictorTest,
   EXPECT_FALSE(prefetch_url().has_value());
 }
 
+class NavigationPredictorSendUkmMetricsEnabledTest
+    : public NavigationPredictorTest {
+ public:
+  NavigationPredictorSendUkmMetricsEnabledTest() {
+    SetupFieldTrial(base::nullopt, base::nullopt, base::nullopt, true);
+  }
+
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
+        mojo::MakeRequest(&predictor_service_), main_rfh(), false);
+  }
+};
+
+// Checks that per-page link aggregate information is sent to the UKM on page
+// load.
+TEST_F(NavigationPredictorSendUkmMetricsEnabledTest, SendUkmMetrics) {
+  using UkmEntry = ukm::builders::NavigationPredictorPageLinkMetrics;
+
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  const std::string source = "https://example.com";
+  const std::string same_origin_href_large = "https://example.com/large";
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_large, 1));
+
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics),
+                                                        GetDefaultViewport());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1ul, test_ukm_recorder.entries_count());
+
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kNumberOfAnchors_TotalName, 1);
+
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kNumberOfAnchors_SameHostName, 0);
+
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kNumberOfAnchors_ContainsImageName, 0);
+
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kNumberOfAnchors_InIframeName, 0);
+
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kNumberOfAnchors_URLIncrementedName, 0);
+
+  ukm::TestUkmRecorder::EntryHasMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kTotalClickableSpaceName);
+
+  ukm::TestUkmRecorder::EntryHasMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kMedianLinkLocationName);
+
+  ukm::TestUkmRecorder::EntryHasMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kViewport_HeightName);
+
+  ukm::TestUkmRecorder::EntryHasMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kViewport_WidthName);
+}
+
 class NavigationPredictorPrefetchAfterPreconnectEnabledTest
     : public NavigationPredictorTest {
  public:
   NavigationPredictorPrefetchAfterPreconnectEnabledTest() {
-    SetupFieldTrial(base::nullopt, base::nullopt, true);
+    SetupFieldTrial(base::nullopt, base::nullopt, true, base::nullopt);
   }
 
   void SetUp() override {
@@ -561,7 +636,8 @@ class NavigationPredictorPrefetchDisabledTest : public NavigationPredictorTest {
  public:
   NavigationPredictorPrefetchDisabledTest() {
     SetupFieldTrial(0 /* preconnect_origin_score_threshold */,
-                    101 /* prefetch_url_score_threshold */, base::nullopt);
+                    101 /* prefetch_url_score_threshold */, base::nullopt,
+                    base::nullopt);
   }
 
   void SetUp() override {
@@ -659,7 +735,8 @@ class NavigationPredictorPreconnectPrefetchDisabledTest
  public:
   NavigationPredictorPreconnectPrefetchDisabledTest() {
     SetupFieldTrial(101 /* preconnect_origin_score_threshold */,
-                    101 /* prefetch_url_score_threshold */, base::nullopt);
+                    101 /* prefetch_url_score_threshold */, base::nullopt,
+                    base::nullopt);
   }
 
   void SetUp() override {

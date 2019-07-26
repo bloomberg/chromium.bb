@@ -28,6 +28,9 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/features.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
@@ -189,7 +192,11 @@ NavigationPredictor::NavigationPredictor(
       normalize_navigation_scores_(base::GetFieldTrialParamByFeatureAsBool(
           blink::features::kNavigationPredictor,
           "normalize_scores",
-          true)){
+          true)),
+      send_ukm_metrics_(base::GetFieldTrialParamByFeatureAsBool(
+          blink::features::kNavigationPredictor,
+          "send_ukm_metrics",
+          false)) {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK_LE(0, preconnect_origin_score_threshold_);
@@ -401,6 +408,47 @@ void NavigationPredictor::MaybePreconnectNow(Action log_action) {
           base::TimeDelta::FromMilliseconds(retry_delay_ms),
       base::BindOnce(&NavigationPredictor::MaybePreconnectNow,
                      base::Unretained(this), Action::kPreconnectAfterTimeout));
+}
+
+void NavigationPredictor::MaybeSendMetricsToUkm() const {
+  if (!send_ukm_metrics_) {
+    return;
+  }
+
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+  if (!ukm_recorder) {
+    return;
+  }
+
+  ukm::builders::NavigationPredictorPageLinkMetrics builder(ukm_source_id_);
+
+  builder.SetNumberOfAnchors_Total(
+      GetBucketMinForPageMetrics(number_of_anchors_));
+  builder.SetNumberOfAnchors_SameHost(
+      GetBucketMinForPageMetrics(number_of_anchors_same_host_));
+  builder.SetNumberOfAnchors_ContainsImage(
+      GetBucketMinForPageMetrics(number_of_anchors_contains_image_));
+  builder.SetNumberOfAnchors_InIframe(
+      GetBucketMinForPageMetrics(number_of_anchors_in_iframe_));
+  builder.SetNumberOfAnchors_URLIncremented(
+      GetBucketMinForPageMetrics(number_of_anchors_url_incremented_));
+  builder.SetTotalClickableSpace(
+      GetBucketMinForPageMetrics(total_clickable_space_));
+  builder.SetMedianLinkLocation(
+      GetBucketMinForMedianLinkLocation(median_link_location_));
+  builder.SetViewport_Height(
+      GetBucketMinForPageMetrics(viewport_size_.height()));
+  builder.SetViewport_Width(GetBucketMinForPageMetrics(viewport_size_.width()));
+
+  builder.Record(ukm_recorder);
+}
+
+int NavigationPredictor::GetBucketMinForPageMetrics(int value) const {
+  return ukm::GetExponentialBucketMin(value, 1.3);
+}
+
+int NavigationPredictor::GetBucketMinForMedianLinkLocation(int value) const {
+  return ukm::GetLinearBucketMin(static_cast<int64_t>(value), 10);
 }
 
 SiteEngagementService* NavigationPredictor::GetEngagementService() const {
@@ -684,6 +732,8 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
   sort(link_locations.begin(), link_locations.end());
   median_link_location_ = link_locations[link_locations.size() / 2];
   double page_metrics_score = GetPageMetricsScore();
+
+  MaybeSendMetricsToUkm();
 
   // Retrieve site engagement score of the document. |metrics| is guaranteed to
   // be non-empty. All |metrics| have the same source_url.

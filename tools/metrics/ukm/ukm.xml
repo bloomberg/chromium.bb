@@ -4793,6 +4793,69 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="NavigationPredictorPageLinkMetrics" singular="True">
+  <owner>ryansturm@chromium.com</owner>
+  <summary>
+    Metrics that describe aggregate information about the links within a page.
+    Some anchor elements present on a page may not be represented in these
+    metrics, if they are outside the viewport or if their placement in the page
+    is after the 40th anchor element. This event is emitted at most once per
+    page load. Unless otherwise specified, each of the aggregate metrics is
+    bucketted with exponential buckets of size 1.3.
+  </summary>
+  <metric name="MedianLinkLocation">
+    <summary>
+      The median vertical link location in the viewport, as a ratio of the
+      distance from the top of the link to the visible top of the page.
+      Bucketted with a linear bucket size of 10.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.ContainsImage">
+    <summary>
+      The total number of links in the page that are images.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.InIframe">
+    <summary>
+      The total number of links in the page in any iframe.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.SameHost">
+    <summary>
+      The total number of links in the page that point to the same origin as the
+      current page's origin.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.Total">
+    <summary>
+      The total number of links within a page.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.URLIncremented">
+    <summary>
+      The total number of links on the page, where each link only differs from
+      the current page's URL by a number, and that number is incremented by 1 in
+      the link.
+    </summary>
+  </metric>
+  <metric name="TotalClickableSpace">
+    <summary>
+      The total clickable space in the entire page, expressed as a ratio of the
+      visible clickable region to the entire viewport region.
+    </summary>
+  </metric>
+  <metric name="Viewport.Height">
+    <summary>
+      The height of the viewport, in pixels.
+    </summary>
+  </metric>
+  <metric name="Viewport.Width">
+    <summary>
+      The width of the viewport, in pixels.
+    </summary>
+  </metric>
+</event>
+
 <event name="Net.LegacyTLSVersion">
   <owner>davidben@chromium.org</owner>
   <summary>

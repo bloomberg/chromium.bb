@@ -195,6 +195,18 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // MaybePreconnectNow preconnects to an origin server if it's allowed.
   void MaybePreconnectNow(Action log_action);
 
+  // Sends metrics to the UKM id at |ukm_source_id_| if |send_ukm_metrics_|
+  // is true.
+  void MaybeSendMetricsToUkm() const;
+
+  // Returns the minimum of the bucket that |value| belongs in, for page-wide
+  // metrics, excluding |median_link_location_|.
+  int GetBucketMinForPageMetrics(int value) const;
+
+  // Returns the minimum of the bucket that |value| belongs in, for
+  // |median_link_location_|.
+  int GetBucketMinForMedianLinkLocation(int value) const;
+
   // Used to get keyed services.
   content::BrowserContext* const browser_context_;
 
@@ -270,6 +282,10 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // all navigation scores for a page.
   const bool normalize_navigation_scores_;
 
+  // True if |this| should send metrics about aggregate link information
+  // to the UKM at id |ukm_source_id_|.
+  const bool send_ukm_metrics_;
+
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;
   base::TimeTicks last_click_timing_;
@@ -288,8 +304,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   std::unique_ptr<prerender::PrerenderHandle> prerender_handle_;
 
   // UKM ID for navigation
-  // TODO(sofiyase): implement that function that uses this id to send aggregate
-  // link information to the UKM.
   ukm::SourceId ukm_source_id_;
 
   SEQUENCE_CHECKER(sequence_checker_);
