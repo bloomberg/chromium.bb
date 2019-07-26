@@ -331,25 +331,36 @@ bool Textfield::GetReadOnly() const {
 }
 
 void Textfield::SetReadOnly(bool read_only) {
+  if (read_only_ == read_only)
+    return;
+
   // Update read-only without changing the focusable state (or active, etc.).
   read_only_ = read_only;
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
   SetColor(GetTextColor());
   UpdateBackgroundColor();
+  OnPropertyChanged(&read_only_, kPropertyEffectsPaint);
 }
 
 void Textfield::SetTextInputType(ui::TextInputType type) {
+  if (text_input_type_ == type)
+    return;
+
   GetRenderText()->SetObscured(type == ui::TEXT_INPUT_TYPE_PASSWORD);
   text_input_type_ = type;
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
   OnCaretBoundsChanged();
-  SchedulePaint();
+  OnPropertyChanged(&text_input_type_, kPropertyEffectsPaint);
 }
 
 void Textfield::SetTextInputFlags(int flags) {
+  if (text_input_flags_ == flags)
+    return;
+
   text_input_flags_ = flags;
+  OnPropertyChanged(&text_input_flags_, kPropertyEffectsNone);
 }
 
 const base::string16& Textfield::GetText() const {
@@ -2403,6 +2414,10 @@ void Textfield::OnEnabledChanged() {
 
 BEGIN_METADATA(Textfield)
 METADATA_PARENT_CLASS(View)
+ADD_PROPERTY_METADATA(Textfield, bool, ReadOnly)
+ADD_PROPERTY_METADATA(Textfield, base::string16, Text)
+ADD_PROPERTY_METADATA(Textfield, ui::TextInputType, TextInputType)
+ADD_PROPERTY_METADATA(Textfield, int, TextInputFlags)
 END_METADATA()
 
 }  // namespace views
