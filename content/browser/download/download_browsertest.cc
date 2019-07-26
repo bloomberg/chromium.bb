@@ -788,7 +788,6 @@ class DownloadContentTest : public ContentBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
     IsolateAllSitesForTesting(command_line);
   }
 

@@ -2924,7 +2924,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     service_manager::switches::kEnableSandboxLogging,
 #endif
     switches::kAgcStartupMinVolume,
-    switches::kAllowPreCommitInput,
     switches::kAllowLoopbackInPeerConnection,
     switches::kAndroidFontsPath,
     switches::kAudioBufferSize,

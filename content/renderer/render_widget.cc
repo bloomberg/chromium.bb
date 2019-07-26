@@ -562,9 +562,6 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
       weak_ptr_factory_.GetWeakPtr(), std::move(compositor_input_task_runner),
       main_thread_scheduler, uses_input_handler);
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAllowPreCommitInput))
-    widget_input_handler_manager_->AllowEarlyInputForTesting();
 
   show_callback_ = std::move(show_callback);
 
@@ -1196,7 +1193,6 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::DidCommitAndDrawCompositorFrame");
 
   // The input handler wants to know about the commit for metric purposes
-  // and to resume input if suspended pending a frame
   DCHECK(widget_input_handler_manager_);
   widget_input_handler_manager_->MarkCompositorCommit();
 
@@ -3688,13 +3684,6 @@ void RenderWidget::DidNavigate() {
   // this method. But since we are closing we can skip it.
   if (closing_)
     return;
-
-  // The input handler wants to know about navigation so that it can
-  // suppress input until the newly navigated page has a committed frame.
-  // Also resets the state for UMA reporting of input arrival wrt document
-  // lifecycle.
-  DCHECK(widget_input_handler_manager_);
-  widget_input_handler_manager_->MarkDidNavigate();
 
   layer_tree_view_->ClearCachesOnNextCommit();
 }

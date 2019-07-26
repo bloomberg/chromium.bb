@@ -15,7 +15,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -184,10 +183,6 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
         ui::test::MockMotionEvent(ui::MotionEvent::Action::DOWN));
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
-  }
-
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
     if (!ui::TouchSelectionMenuRunner::GetInstance())
@@ -303,7 +298,6 @@ class TouchSelectionControllerClientAuraSiteIsolationTest
       public testing::WithParamInterface<bool> {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
     IsolateAllSitesForTesting(command_line);
   }
 
@@ -878,7 +872,6 @@ class TouchSelectionControllerClientAuraScaleFactorTest
     : public TouchSelectionControllerClientAuraTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kAllowPreCommitInput);
     command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "2");
   }
 };

@@ -315,14 +315,6 @@ void WidgetInputHandlerManager::ObserveGestureEventOnMainThread(
                                     std::move(observe_gesture_event_closure));
 }
 
-void WidgetInputHandlerManager::LogInputTimingUMA() {
-  if (!have_emitted_uma_) {
-    UMA_HISTOGRAM_ENUMERATION("PaintHolding.InputTiming",
-                              current_lifecycle_state_);
-    have_emitted_uma_ = true;
-  }
-}
-
 void WidgetInputHandlerManager::DispatchEvent(
     std::unique_ptr<content::InputEvent> event,
     mojom::WidgetInputHandler::DispatchEventCallback callback) {
@@ -337,17 +329,12 @@ void WidgetInputHandlerManager::DispatchEvent(
     return;
   }
 
-  LogInputTimingUMA();
-  if (current_lifecycle_state_ < InitialInputTiming::kAfterCommit &&
-      !allow_early_input_for_testing_ &&
-      !(event->web_event->GetType() == WebInputEvent::Type::kMouseMove ||
+  if (!(have_emitted_uma_ ||
+        event->web_event->GetType() == WebInputEvent::Type::kMouseMove ||
         event->web_event->GetType() == WebInputEvent::Type::kPointerMove)) {
-    if (callback) {
-      std::move(callback).Run(
-          InputEventAckSource::MAIN_THREAD, ui::LatencyInfo(),
-          INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt, base::nullopt);
-    }
-    return;
+    UMA_HISTOGRAM_ENUMERATION("PaintHolding.InputTiming",
+                              current_lifecycle_state_);
+    have_emitted_uma_ = true;
   }
 
   // If TimeTicks is not consistent across processes we cannot use the event's
@@ -466,20 +453,14 @@ void WidgetInputHandlerManager::FallbackCursorModeSetCursorVisibility(
 #endif
 }
 
-void WidgetInputHandlerManager::MarkDidNavigate() {
-  current_lifecycle_state_ = InitialInputTiming::kBeforeLifecycle;
-  have_emitted_uma_ = false;
-}
-
 void WidgetInputHandlerManager::MarkBeginMainFrame() {
   if (current_lifecycle_state_ == InitialInputTiming::kBeforeLifecycle)
     current_lifecycle_state_ = InitialInputTiming::kBeforeCommit;
 }
 
 void WidgetInputHandlerManager::MarkCompositorCommit() {
-  if (current_lifecycle_state_ == InitialInputTiming::kBeforeCommit) {
+  if (current_lifecycle_state_ == InitialInputTiming::kBeforeCommit)
     current_lifecycle_state_ = InitialInputTiming::kAfterCommit;
-  }
 }
 
 void WidgetInputHandlerManager::InitOnInputHandlingThread(

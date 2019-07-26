@@ -690,7 +690,6 @@ void SitePerProcessBrowserTest::SetUpCommandLine(
   IsolateAllSitesForTesting(command_line);
 
   command_line->AppendSwitch(switches::kValidateInputEventStream);
-  command_line->AppendSwitch(switches::kAllowPreCommitInput);
 
 #if !defined(OS_ANDROID)
   // TODO(bokan): Needed for scrollability check in
