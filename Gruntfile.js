@@ -3,7 +3,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
-    clean: ['out/'],
+    clean: ['out/', 'out-wpt/'],
 
     mkdir: {
       out: {
@@ -44,8 +44,13 @@ module.exports = function(grunt) {
     },
 
     copy: {
-      wpt: {
-        files: [{ expand: true, cwd: 'wpt', src: 'cts.html', dest: 'out/' }],
+      'out-wpt': {
+        files: [
+          { expand: true, cwd: 'wpt', src: 'cts.html', dest: 'out-wpt/' },
+          { expand: true, cwd: 'out', src: 'framework/**/*.js', dest: 'out-wpt/' },
+          { expand: true, cwd: 'out', src: 'suites/cts/**/*.js', dest: 'out-wpt/' },
+          { expand: true, cwd: 'out', src: 'runtime/wpt.js', dest: 'out-wpt/' },
+        ],
       },
     },
 
@@ -90,9 +95,9 @@ module.exports = function(grunt) {
     'mkdir:out',
     'run:build-shaderc',
     'run:build-out',
-    'copy:wpt',
     'run:generate-version',
     'run:generate-listings',
+    'copy:out-wpt',
   ]);
   registerTaskAndAddToHelp('test', 'Run unittests', ['build', 'run:test']);
   registerTaskAndAddToHelp('serve', 'Serve out/ on 127.0.0.1:8080', ['http-server:.']);
