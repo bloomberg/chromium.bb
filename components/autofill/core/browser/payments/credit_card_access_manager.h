@@ -83,9 +83,10 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   void PrepareToFetchCreditCard();
 
   // Calls |accessor->OnCreditCardFetched()| once credit card is fetched.
-  void FetchCreditCard(const CreditCard* card,
-                       base::WeakPtr<Accessor> accessor,
-                       const base::TimeTicks& timestamp = base::TimeTicks());
+  virtual void FetchCreditCard(
+      const CreditCard* card,
+      base::WeakPtr<Accessor> accessor,
+      const base::TimeTicks& timestamp = base::TimeTicks());
 
   CreditCardCVCAuthenticator* GetOrCreateCVCAuthenticator();
 
