@@ -250,7 +250,7 @@ int SearchResultTileItemListView::DoUpdate() {
 }
 
 std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
-  base::string16 raw_query = search_box_->text();
+  base::string16 raw_query = search_box_->GetText();
   base::string16 query;
   base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
 
@@ -298,7 +298,7 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
 }
 
 base::string16 SearchResultTileItemListView::GetUserTypedQuery() {
-  base::string16 search_box_text = search_box_->text();
+  base::string16 search_box_text = search_box_->GetText();
   gfx::Range range = search_box_->GetSelectedRange();
   base::string16 raw_query = range.is_empty()
                                  ? search_box_text

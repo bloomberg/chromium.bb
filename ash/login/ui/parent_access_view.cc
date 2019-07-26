@@ -160,8 +160,9 @@ class AccessibleInputField : public views::Textfield {
     // {number of fields}"
     node_data->RemoveState(ax::mojom::State::kEditable);
     node_data->role = ax::mojom::Role::kListItem;
-    base::string16 description =
-        text().empty() ? accessible_description_ : text();
+    base::string16 description = views::Textfield::GetText().empty()
+                                     ? accessible_description_
+                                     : GetText();
     node_data->AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
                                   base::UTF16ToUTF8(description));
   }
@@ -265,12 +266,12 @@ class ParentAccessView::AccessCodeInput : public views::View,
     std::string result;
     size_t length;
     for (auto* field : input_fields_) {
-      length = field->text().length();
+      length = field->GetText().length();
       if (!length)
         return base::nullopt;
 
       DCHECK_EQ(1u, length);
-      base::StrAppend(&result, {base::UTF16ToUTF8(field->text())});
+      base::StrAppend(&result, {base::UTF16ToUTF8(field->GetText())});
     }
     return result;
   }
@@ -390,7 +391,7 @@ class ParentAccessView::AccessCodeInput : public views::View,
   }
 
   // Returns text in the active input field.
-  const base::string16& ActiveInput() const { return ActiveField()->text(); }
+  const base::string16& ActiveInput() const { return ActiveField()->GetText(); }
 
   // To be called when access input code changes (digit is inserted, deleted or
   // updated). Passes true when code is complete (all digits have input value)

@@ -326,6 +326,10 @@ void Textfield::SetAssociatedLabel(View* labelling_view) {
       node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
 }
 
+bool Textfield::GetReadOnly() const {
+  return read_only_;
+}
+
 void Textfield::SetReadOnly(bool read_only) {
   // Update read-only without changing the focusable state (or active, etc.).
   read_only_ = read_only;
@@ -346,6 +350,10 @@ void Textfield::SetTextInputType(ui::TextInputType type) {
 
 void Textfield::SetTextInputFlags(int flags) {
   text_input_flags_ = flags;
+}
+
+const base::string16& Textfield::GetText() const {
+  return model_->text();
 }
 
 void Textfield::SetText(const base::string16& new_text) {
@@ -422,7 +430,7 @@ SkColor Textfield::GetBackgroundColor() const {
     return background_color_;
 
   return GetNativeTheme()->GetSystemColor(
-      read_only() || !GetEnabled()
+      GetReadOnly() || !GetEnabled()
           ? ui::NativeTheme::kColorId_TextfieldReadOnlyBackground
           : ui::NativeTheme::kColorId_TextfieldDefaultBackground);
 }
@@ -528,7 +536,7 @@ void Textfield::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
 
 void Textfield::ShowVirtualKeyboardIfEnabled() {
   // GetInputMethod() may return nullptr in tests.
-  if (GetEnabled() && !read_only() && GetInputMethod())
+  if (GetEnabled() && !GetReadOnly() && GetInputMethod())
     GetInputMethod()->ShowVirtualKeyboardIfEnabled();
 }
 
@@ -899,13 +907,13 @@ bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   // Skip backspace accelerator handling; editable textfields handle this key.
   // Also skip processing Windows [Alt]+<num-pad digit> Unicode alt-codes.
   const bool is_backspace = event.key_code() == ui::VKEY_BACK;
-  return (is_backspace && !read_only()) || event.IsUnicodeKeyCode();
+  return (is_backspace && !GetReadOnly()) || event.IsUnicodeKeyCode();
 }
 
 bool Textfield::GetDropFormats(
     int* formats,
     std::set<ui::ClipboardFormatType>* format_types) {
-  if (!GetEnabled() || read_only())
+  if (!GetEnabled() || GetReadOnly())
     return false;
   // TODO(msw): Can we support URL, FILENAME, etc.?
   *formats = ui::OSExchangeData::STRING;
@@ -918,7 +926,7 @@ bool Textfield::CanDrop(const OSExchangeData& data) {
   int formats;
   std::set<ui::ClipboardFormatType> format_types;
   GetDropFormats(&formats, &format_types);
-  return GetEnabled() && !read_only() &&
+  return GetEnabled() && !GetReadOnly() &&
          data.HasAnyFormat(formats, format_types);
 }
 
@@ -1012,15 +1020,15 @@ void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (GetEnabled()) {
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kActivate);
     // Only readonly if enabled. Don't overwrite the disabled restriction.
-    if (read_only())
+    if (GetReadOnly())
       node_data->SetRestriction(ax::mojom::Restriction::kReadOnly);
   }
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD) {
     node_data->AddState(ax::mojom::State::kProtected);
     node_data->SetValue(base::string16(
-        text().size(), gfx::RenderText::kPasswordReplacementChar));
+        GetText().size(), gfx::RenderText::kPasswordReplacementChar));
   } else {
-    node_data->SetValue(text());
+    node_data->SetValue(GetText());
   }
   node_data->AddStringAttribute(ax::mojom::StringAttribute::kPlaceholder,
                                 base::UTF16ToUTF8(GetPlaceholderText()));
@@ -1041,7 +1049,7 @@ bool Textfield::HandleAccessibleAction(const ui::AXActionData& action_data) {
   }
 
   // Remaining actions cannot be performed on readonly fields.
-  if (read_only())
+  if (GetReadOnly())
     return View::HandleAccessibleAction(action_data);
 
   if (action_data.action == ax::mojom::Action::kSetValue) {
@@ -1227,7 +1235,7 @@ int Textfield::GetDragOperationsForView(View* sender, const gfx::Point& p) {
   if (!GetEnabled() || text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD ||
       !GetRenderText()->IsPointInSelection(p)) {
     drag_operations = ui::DragDropTypes::DRAG_NONE;
-  } else if (sender == this && !read_only()) {
+  } else if (sender == this && !GetReadOnly()) {
     drag_operations =
         ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY;
   }
@@ -1464,7 +1472,7 @@ void Textfield::InsertText(const base::string16& new_text) {
 }
 
 void Textfield::InsertChar(const ui::KeyEvent& event) {
-  if (read_only()) {
+  if (GetReadOnly()) {
     OnEditFailed();
     return;
   }
@@ -1495,7 +1503,7 @@ void Textfield::InsertChar(const ui::KeyEvent& event) {
 }
 
 ui::TextInputType Textfield::GetTextInputType() const {
-  if (read_only() || !GetEnabled())
+  if (GetReadOnly() || !GetEnabled())
     return ui::TEXT_INPUT_TYPE_NONE;
   return text_input_type_;
 }
@@ -1653,7 +1661,7 @@ void Textfield::EnsureCaretNotInRect(const gfx::Rect& rect_in_screen) {
 
 bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
   base::string16 result;
-  bool editable = !read_only();
+  bool editable = !GetReadOnly();
   bool readable = text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD;
   switch (command) {
     case ui::TextEditCommand::DELETE_BACKWARD:
@@ -1711,7 +1719,8 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
           ui::ClipboardType::kCopyPaste, &result);
       return editable && !result.empty();
     case ui::TextEditCommand::SELECT_ALL:
-      return !text().empty() && GetSelectedRange().length() != text().length();
+      return !GetText().empty() &&
+             GetSelectedRange().length() != GetText().length();
     case ui::TextEditCommand::TRANSPOSE:
       return editable && !model_->HasSelection() &&
              !model_->HasCompositionText();
@@ -2032,7 +2041,7 @@ bool Textfield::IsDropCursorForInsertion() const {
 }
 
 bool Textfield::ShouldShowPlaceholderText() const {
-  return text().empty() && !GetPlaceholderText().empty();
+  return GetText().empty() && !GetPlaceholderText().empty();
 }
 
 views::PropertyChangedSubscription Textfield::AddTextChangedCallback(
@@ -2052,7 +2061,7 @@ gfx::RenderText* Textfield::GetRenderTextForSelectionController() {
 }
 
 bool Textfield::IsReadOnly() const {
-  return read_only();
+  return GetReadOnly();
 }
 
 bool Textfield::SupportsDrag() const {
@@ -2101,7 +2110,7 @@ void Textfield::OnAfterPointerAction(bool text_changed,
 
 bool Textfield::PasteSelectionClipboard() {
   DCHECK(performing_user_action_);
-  DCHECK(!read_only());
+  DCHECK(!GetReadOnly());
   const base::string16 selection_clipboard_text = GetSelectionClipboardText();
   if (selection_clipboard_text.empty())
     return false;
@@ -2154,7 +2163,7 @@ void Textfield::UpdateBorder() {
 void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
   if (text_changed) {
     if (controller_)
-      controller_->ContentsChanged(this, text());
+      controller_->ContentsChanged(this, GetText());
     NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
   }
   if (cursor_changed) {
@@ -2185,8 +2194,8 @@ void Textfield::UpdateCursorViewPosition() {
 }
 
 int Textfield::GetTextStyle() const {
-  return (read_only() || !GetEnabled()) ? style::STYLE_DISABLED
-                                        : style::STYLE_PRIMARY;
+  return (GetReadOnly() || !GetEnabled()) ? style::STYLE_DISABLED
+                                          : style::STYLE_PRIMARY;
 }
 
 void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
@@ -2269,7 +2278,7 @@ void Textfield::OnAfterUserAction() {
 }
 
 bool Textfield::Cut() {
-  if (!read_only() && text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD &&
+  if (!GetReadOnly() && text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD &&
       model_->Cut()) {
     if (controller_)
       controller_->OnAfterCutOrCopy(ui::ClipboardType::kCopyPaste);
@@ -2288,7 +2297,7 @@ bool Textfield::Copy() {
 }
 
 bool Textfield::Paste() {
-  if (!read_only() && model_->Paste()) {
+  if (!GetReadOnly() && model_->Paste()) {
     if (controller_)
       controller_->OnAfterPaste();
     return true;
@@ -2363,7 +2372,7 @@ void Textfield::OnEditFailed() {
 }
 
 bool Textfield::ShouldShowCursor() const {
-  return HasFocus() && !HasSelection() && GetEnabled() && !read_only() &&
+  return HasFocus() && !HasSelection() && GetEnabled() && !GetReadOnly() &&
          !drop_cursor_visible_ && GetRenderText()->cursor_enabled();
 }
 
