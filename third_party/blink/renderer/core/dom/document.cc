@@ -5748,6 +5748,10 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
 }
 
 bool Document::CookiesEnabled() const {
+  // Compatible behavior in contexts that don't have cookie access.
+  if (!GetSecurityOrigin()->CanAccessCookies())
+    return true;
+
   if (!cookie_jar_)
     return false;
 
