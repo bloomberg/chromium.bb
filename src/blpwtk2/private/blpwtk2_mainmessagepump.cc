@@ -363,11 +363,21 @@ MainMessagePump* MainMessagePump::current()
 void MainMessagePump::OnDebugBreak()
 {
     current()->modalLoop(true);
+
+    auto *delegate = Statics::toolkitDelegate;
+    if (delegate) {
+        delegate->onDebugBreak();
+    }
 }
 
 void MainMessagePump::OnDebugResume()
 {
     current()->modalLoop(false);
+
+    auto *delegate = Statics::toolkitDelegate;
+    if (delegate) {
+        delegate->onDebugResume();
+    }
 }
 
 // CREATORS
