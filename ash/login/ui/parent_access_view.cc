@@ -458,7 +458,7 @@ ParentAccessView::Callbacks::~Callbacks() = default;
 ParentAccessView::ParentAccessView(const AccountId& account_id,
                                    const Callbacks& callbacks,
                                    ParentAccessRequestReason reason)
-    : callbacks_(callbacks), account_id_(account_id) {
+    : callbacks_(callbacks), account_id_(account_id), request_reason_(reason) {
   DCHECK(callbacks.on_finished);
 
   // Main view contains all other views aligned vertically and centered.
@@ -526,8 +526,9 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   };
 
   // Main view title.
-  title_label_ = new views::Label(GetTitle(reason), views::style::CONTEXT_LABEL,
-                                  views::style::STYLE_PRIMARY);
+  title_label_ =
+      new views::Label(GetTitle(request_reason_), views::style::CONTEXT_LABEL,
+                       views::style::STYLE_PRIMARY);
   title_label_->SetFontList(gfx::FontList().Derive(
       kTitleFontSizeDeltaDp, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   decorate_label(title_label_);
@@ -537,9 +538,9 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
 
   // Main view description.
   // TODO(crbug.com/970223): Add learn more link after description.
-  description_label_ =
-      new views::Label(GetDescription(reason), views::style::CONTEXT_LABEL,
-                       views::style::STYLE_PRIMARY);
+  description_label_ = new views::Label(GetDescription(request_reason_),
+                                        views::style::CONTEXT_LABEL,
+                                        views::style::STYLE_PRIMARY);
   description_label_->SetMultiLine(true);
   description_label_->SetLineHeight(kDescriptionTextLineHeightDp);
   description_label_->SetFontList(
@@ -733,8 +734,7 @@ void ParentAccessView::UpdateState(State state) {
     case State::kNormal: {
       access_code_view_->SetInputColor(kTextColor);
       title_label_->SetEnabledColor(kTextColor);
-      title_label_->SetText(
-          l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE));
+      title_label_->SetText(GetTitle(request_reason_));
       return;
     }
     case State::kError: {
