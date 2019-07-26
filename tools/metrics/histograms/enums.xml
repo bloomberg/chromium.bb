@@ -32324,6 +32324,52 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="Del Fail -MaxPathCheck Fail - MoveFileEx Fail - CopyDelDir Fail"/>
 </enum>
 
+<enum name="KerberosConfigErrorCode">
+  <int value="0" label="Valid"/>
+  <int value="1" label="Section nested in group"/>
+  <int value="2" label="Section syntax"/>
+  <int value="3" label="Expected opening curly brace"/>
+  <int value="4" label="Extra curly brace"/>
+  <int value="5" label="Relation syntax"/>
+  <int value="6" label="Key not supported"/>
+  <int value="7" label="Section not supported"/>
+  <int value="8" label="Krb5 failed to parse"/>
+</enum>
+
+<enum name="KerberosErrorType">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unspecified error"/>
+  <int value="2" label="Unspecified D-Bus error"/>
+  <int value="3" label="General network problem"/>
+  <int value="4" label="Unspecified KRB5 error."/>
+  <int value="5" label="Bad principal"/>
+  <int value="6" label="Bad password"/>
+  <int value="7" label="Password expired"/>
+  <int value="8" label="Password rejected while trying to change it"/>
+  <int value="9" label="Kerberos credentials cache not found"/>
+  <int value="10" label="Kerberos ticket expired while renewing credentials"/>
+  <int value="11"
+      label="Key Distribution Center does not support enforced encryption
+             types"/>
+  <int value="12" label="Failed to contact Key Distribution Center"/>
+  <int value="13" label="Parsing D-Bus request message failed"/>
+  <int value="14" label="Local IO operation failed"/>
+  <int value="15" label="Account with given principal name does not exist"/>
+  <int value="16"
+      label="Adding account failed; account with given principal name already
+             exists"/>
+  <int value="17" label="Asynchronous operation in progress"/>
+  <int value="18" label="Badly formatted principal name"/>
+  <int value="19" label="Badly formatted Kerberos configuration"/>
+  <int value="20" label="Failed to run untrusted code in container"/>
+  <int value="21" label="Kerberos feature disabled"/>
+</enum>
+
+<enum name="KerberosUserType">
+  <int value="0" label="Managed"/>
+  <int value="1" label="Unmanaged"/>
+</enum>
+
 <enum name="KeyboardControlEvent">
   <int value="0" label="Keyboard was shown."/>
   <int value="1" label="Keyboard was automatically hidden."/>
