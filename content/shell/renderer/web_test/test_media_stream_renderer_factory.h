@@ -31,7 +31,7 @@ class TestMediaStreamRendererFactory
   scoped_refptr<blink::WebMediaStreamAudioRenderer> GetAudioRenderer(
       const blink::WebMediaStream& web_stream,
       blink::WebLocalFrame* web_frame,
-      const std::string& device_id) override;
+      const blink::WebString& device_id) override;
 };
 
 }  // namespace content

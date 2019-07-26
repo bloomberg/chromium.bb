@@ -373,7 +373,7 @@ WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 
   audio_renderer_ = renderer_factory_->GetAudioRenderer(
       web_stream_, internal_frame_->web_frame(),
-      initial_audio_output_device_id_.Utf8());
+      initial_audio_output_device_id_);
 
   if (!audio_renderer_)
     WebRtcLogMessage("Warning: Failed to instantiate audio renderer.");
@@ -570,7 +570,7 @@ void WebMediaPlayerMS::ReloadAudio() {
       SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
       audio_renderer_ = renderer_factory_->GetAudioRenderer(
           web_stream_, internal_frame_->web_frame(),
-          initial_audio_output_device_id_.Utf8());
+          initial_audio_output_device_id_);
 
       // |audio_renderer_| can be null in tests.
       if (!audio_renderer_)

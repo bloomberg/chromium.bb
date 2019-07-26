@@ -5,12 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_RENDERER_FACTORY_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEB_MEDIA_STREAM_RENDERER_FACTORY_H_
 
-#include <string>
-
 #include "base/memory/ref_counted.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_video_renderer.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -40,7 +39,7 @@ class BLINK_MODULES_EXPORT WebMediaStreamRendererFactory {
   virtual scoped_refptr<WebMediaStreamAudioRenderer> GetAudioRenderer(
       const WebMediaStream& web_stream,
       WebLocalFrame* web_frame,
-      const std::string& device_id) = 0;
+      const WebString& device_id) = 0;
 };
 
 BLINK_MODULES_EXPORT std::unique_ptr<WebMediaStreamRendererFactory>

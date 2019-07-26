@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_RENDERER_FACTORY_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_RENDERER_FACTORY_IMPL_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_renderer_factory.h"
 
@@ -27,7 +25,7 @@ class MediaStreamRendererFactoryImpl : public WebMediaStreamRendererFactory {
   scoped_refptr<WebMediaStreamAudioRenderer> GetAudioRenderer(
       const WebMediaStream& web_stream,
       WebLocalFrame* web_frame,
-      const std::string& device_id) override;
+      const WebString& device_id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaStreamRendererFactoryImpl);

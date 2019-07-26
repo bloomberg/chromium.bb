@@ -450,7 +450,7 @@ class MockRenderFactory : public WebMediaStreamRendererFactory {
   scoped_refptr<WebMediaStreamAudioRenderer> GetAudioRenderer(
       const WebMediaStream& web_stream,
       WebLocalFrame* web_frame,
-      const std::string& device_id) override {
+      const WebString& device_id) override {
     return audio_renderer_;
   }
 
