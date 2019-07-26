@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//ui/events/mojo/event.mojom"
+mojom = "//ui/events/mojom/event.mojom"
 public_headers = [ "//ui/events/event.h" ]
-traits_headers = [ "//ui/events/mojo/event_struct_traits.h" ]
+traits_headers = [ "//ui/events/mojom/event_mojom_traits.h" ]
 public_deps = [
   "//ui/events",
   "//ui/events:dom_keycode_converter",
@@ -15,8 +15,8 @@ deps = [
   "//ipc:param_traits",
 ]
 sources = [
-  "//ui/events/mojo/event_struct_traits.cc",
-  "//ui/events/mojo/event_struct_traits.h",
+  "//ui/events/mojom/event_mojom_traits.cc",
+  "//ui/events/mojom/event_mojom_traits.h",
 ]
 
 # TODO(moshayedi): crbug.com/617167. Map mojom.Event directly to ui::Event.

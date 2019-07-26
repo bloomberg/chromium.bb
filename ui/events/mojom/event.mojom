@@ -5,8 +5,8 @@
 module ui.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
-import "ui/events/mojo/event_constants.mojom";
-import "ui/events/mojo/keyboard_codes.mojom";
+import "ui/events/mojom/event_constants.mojom";
+import "ui/events/mojom/keyboard_codes.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/latency/mojo/latency_info.mojom";
 

@@ -10,8 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/events/mojo/event.mojom.h"
-#include "ui/events/mojo/event_struct_traits.h"
+#include "ui/events/mojom/event.mojom.h"
+#include "ui/events/mojom/event_mojom_traits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/latency/mojo/latency_info_struct_traits.h"
 

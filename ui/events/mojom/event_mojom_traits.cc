@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/mojo/event_struct_traits.h"
+#include "ui/events/mojom/event_mojom_traits.h"
 
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "ui/events/event.h"
@@ -10,7 +10,7 @@
 #include "ui/events/gesture_event_details.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/events/mojo/event_constants.mojom.h"
+#include "ui/events/mojom/event_constants.mojom.h"
 #include "ui/latency/mojo/latency_info_struct_traits.h"
 
 namespace mojo {

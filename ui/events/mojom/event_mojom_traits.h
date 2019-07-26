@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_MOJO_EVENT_STRUCT_TRAITS_H_
-#define UI_EVENTS_MOJO_EVENT_STRUCT_TRAITS_H_
+#ifndef UI_EVENTS_MOJOM_EVENT_MOJOM_TRAITS_H_
+#define UI_EVENTS_MOJOM_EVENT_MOJOM_TRAITS_H_
 
 #include <stdint.h>
 
@@ -12,8 +12,8 @@
 #include "base/containers/flat_map.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/mojo/event.mojom.h"
-#include "ui/events/mojo/event_constants.mojom.h"
+#include "ui/events/mojom/event.mojom.h"
+#include "ui/events/mojom/event_constants.mojom.h"
 
 namespace ui {
 class Event;
@@ -232,4 +232,4 @@ struct EnumTraits<ui::mojom::GestureDeviceType, ui::GestureDeviceType> {
 
 }  // namespace mojo
 
-#endif  // UI_EVENTS_MOJO_EVENT_STRUCT_TRAITS_H_
+#endif  // UI_EVENTS_MOJOM_EVENT_MOJOM_TRAITS_H_
