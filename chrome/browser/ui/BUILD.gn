@@ -2893,6 +2893,8 @@ jumbo_split_static_library("ui") {
       "views/page_info/permission_selector_row.cc",
       "views/page_info/permission_selector_row.h",
       "views/page_info/permission_selector_row_observer.h",
+      "views/page_info/safety_tip_page_info_bubble_view.cc",
+      "views/page_info/safety_tip_page_info_bubble_view.h",
       "views/passwords/account_chooser_dialog_view.cc",
       "views/passwords/account_chooser_dialog_view.h",
       "views/passwords/auto_signin_first_run_dialog_view.cc",
