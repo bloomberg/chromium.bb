@@ -45,6 +45,7 @@ class ProcessHostManager;
 class Profile;
 class ResourceLoader;
 class WebViewHostObserver;
+class ToolkitDelegate;
 
 // Hold any static variables.  This will be used to store global state that
 // may be setup before ToolkitImpl is instantiated, or any other global
@@ -84,6 +85,8 @@ struct Statics {
     // Whether or not an optimization used when resizing a WebView from an
     // in-process renderer should be enabled.
     static bool inProcessResizeOptimizationDisabled;
+
+    static ToolkitDelegate *toolkitDelegate;
 
     // ====== some utility functions =============
 
