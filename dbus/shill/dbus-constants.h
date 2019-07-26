@@ -619,6 +619,7 @@ const char kL2tpIpsecXauthPasswordProperty[] = "L2TPIPsec.XauthPassword";
 const char kL2tpIpsecXauthUserProperty[] = "L2TPIPsec.XauthUser";
 const char kL2tpIpsecLcpEchoDisabledProperty[] = "L2TPIPsec.LCPEchoDisabled";
 const char kManagedCredentialsProperty[] = "ManagedCredentials";
+const char kMeteredProperty[] = "Metered";
 const char kOpenVPNCaCertPemProperty[] = "OpenVPN.CACertPEM";
 const char kOpenVPNCertProperty[] = "OpenVPN.Cert";
 const char kOpenVPNExtraCertPemProperty[] = "OpenVPN.ExtraCertPEM";
