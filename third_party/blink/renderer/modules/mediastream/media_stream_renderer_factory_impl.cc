@@ -13,10 +13,11 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_renderer_sink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
-#include "third_party/blink/public/web/modules/mediastream/track_audio_renderer.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_renderer.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/modules/mediastream/track_audio_renderer.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace blink {
@@ -111,7 +112,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
              << " track.";
     return new TrackAudioRenderer(audio_tracks[0], web_frame,
                                   /*session_id=*/base::UnguessableToken(),
-                                  device_id.Utf8());
+                                  String(device_id));
   }
 
   // This is a remote WebRTC media stream.

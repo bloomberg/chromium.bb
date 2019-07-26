@@ -2,25 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_TRACK_AUDIO_RENDERER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_TRACK_AUDIO_RENDERER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_TRACK_AUDIO_RENDERER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_TRACK_AUDIO_RENDERER_H_
 
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/unguessable_token.h"
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace media {
 class AudioBus;
@@ -52,10 +51,9 @@ class MediaStreamInternalFrameWrapper;
 // it is being rendered-out.  media::AudioShifter is used to buffer, stretch
 // and skip audio to maintain time synchronization between the producer and
 // consumer.
-class BLINK_MODULES_EXPORT TrackAudioRenderer
-    : public WebMediaStreamAudioRenderer,
-      public WebMediaStreamAudioSink,
-      public media::AudioRendererSink::RenderCallback {
+class TrackAudioRenderer : public WebMediaStreamAudioRenderer,
+                           public WebMediaStreamAudioSink,
+                           public media::AudioRendererSink::RenderCallback {
  public:
   // Creates a renderer for the given |audio_track|.  |playout_render_frame_id|
   // refers to the RenderFrame that owns this instance (e.g., it contains the
@@ -67,7 +65,7 @@ class BLINK_MODULES_EXPORT TrackAudioRenderer
   TrackAudioRenderer(const WebMediaStreamTrack& audio_track,
                      WebLocalFrame* playout_web_frame,
                      const base::UnguessableToken& session_id,
-                     const std::string& device_id);
+                     const String& device_id);
 
   // WebMediaStreamAudioRenderer implementation.
   // Called on the main thread.
@@ -162,7 +160,7 @@ class BLINK_MODULES_EXPORT TrackAudioRenderer
 
   // The preferred device id of the output device or empty for the default
   // output device.
-  std::string output_device_id_;
+  String output_device_id_;
 
   // Cache value for the volume.  Whenever |sink_| is re-created, its volume
   // should be set to this.
@@ -176,4 +174,4 @@ class BLINK_MODULES_EXPORT TrackAudioRenderer
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_TRACK_AUDIO_RENDERER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_TRACK_AUDIO_RENDERER_H_
