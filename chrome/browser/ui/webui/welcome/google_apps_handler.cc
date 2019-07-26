@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/welcome/nux/google_apps_handler.h"
+#include "chrome/browser/ui/webui/welcome/google_apps_handler.h"
 
 #include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
@@ -10,7 +10,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/welcome/nux/bookmark_item.h"
+#include "chrome/browser/ui/webui/welcome/bookmark_item.h"
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -109,7 +109,7 @@ void GoogleAppsHandler::HandleCacheGoogleAppIcon(const base::ListValue* args) {
   int appId;
   args->GetInteger(0, &appId);
 
-  const BookmarkItem* selectedApp = NULL;
+  const BookmarkItem* selectedApp = nullptr;
   for (const auto& google_app : google_apps_) {
     if (google_app.id == appId) {
       selectedApp = &google_app;

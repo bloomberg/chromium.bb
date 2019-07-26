@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_GOOGLE_APPS_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_GOOGLE_APPS_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_GOOGLE_APPS_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_WELCOME_GOOGLE_APPS_HANDLER_H_
 
 #include <vector>
 
 #include "base/macros.h"
 #include "base/values.h"
-#include "chrome/browser/ui/webui/welcome/nux/bookmark_item.h"
+#include "chrome/browser/ui/webui/welcome/bookmark_item.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace nux {
@@ -45,4 +45,4 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
 
 }  // namespace nux
 
-#endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_GOOGLE_APPS_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_GOOGLE_APPS_HANDLER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/welcome/nux/bookmark_item.h"
+#include "chrome/browser/ui/webui/welcome/bookmark_item.h"
 
 #include "base/strings/string16.h"
 #include "base/values.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/welcome/nux/ntp_background_fetcher.h"
+#include "chrome/browser/ui/webui/welcome/ntp_background_fetcher.h"
 
 #include <utility>
 

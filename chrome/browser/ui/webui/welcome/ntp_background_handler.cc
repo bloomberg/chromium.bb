@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/welcome/nux/ntp_background_handler.h"
+#include "chrome/browser/ui/webui/welcome/ntp_background_handler.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/onboarding_ntp_backgrounds.h"
@@ -73,7 +74,7 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
   element->SetString("title",
                      l10n_util::GetStringUTF8(
                          IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_EARTH_TITLE));
-  element->SetString("imageUrl", kUrlPrefix + std::to_string(id));
+  element->SetString("imageUrl", kUrlPrefix + base::NumberToString(id));
   element->SetString("thumbnailClass", "earth");
   list_value.Append(std::move(element));
 
@@ -83,7 +84,7 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
   element->SetString(
       "title", l10n_util::GetStringUTF8(
                    IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_CITYSCAPE_TITLE));
-  element->SetString("imageUrl", kUrlPrefix + std::to_string(id));
+  element->SetString("imageUrl", kUrlPrefix + base::NumberToString(id));
   element->SetString("thumbnailClass", "cityscape");
   list_value.Append(std::move(element));
 
@@ -93,7 +94,7 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
   element->SetString(
       "title", l10n_util::GetStringUTF8(
                    IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_LANDSCAPE_TITLE));
-  element->SetString("imageUrl", kUrlPrefix + std::to_string(id));
+  element->SetString("imageUrl", kUrlPrefix + base::NumberToString(id));
   element->SetString("thumbnailClass", "landscape");
   list_value.Append(std::move(element));
 
@@ -103,7 +104,7 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
   element->SetString("title",
                      l10n_util::GetStringUTF8(
                          IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_ART_TITLE));
-  element->SetString("imageUrl", kUrlPrefix + std::to_string(id));
+  element->SetString("imageUrl", kUrlPrefix + base::NumberToString(id));
   element->SetString("thumbnailClass", "art");
   list_value.Append(std::move(element));
 
@@ -114,7 +115,7 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
       "title",
       l10n_util::GetStringUTF8(
           IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_GEOMETRIC_SHAPES_TITLE));
-  element->SetString("imageUrl", kUrlPrefix + std::to_string(id));
+  element->SetString("imageUrl", kUrlPrefix + base::NumberToString(id));
   element->SetString("thumbnailClass", "geometric-shapes");
   list_value.Append(std::move(element));
 
