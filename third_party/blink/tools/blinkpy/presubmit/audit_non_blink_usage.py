@@ -218,6 +218,7 @@ _CONFIG = [
             # cc painting types.
             'cc::PaintCanvas',
             'cc::PaintFlags',
+            'cc::PaintWorkletInput',
             'cc::NodeId',
 
             # Chromium geometry types.
