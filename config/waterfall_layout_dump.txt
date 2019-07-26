@@ -599,8 +599,6 @@
     nocturne-release
     novato-arc64-release
     novato-release
-    nyan_big-release
-    nyan_blaze-release
     nyan_kitty-release
     octavius-release
     octopus-release
@@ -2889,8 +2887,6 @@
     nocturne-release-tryjob
     novato-arc64-release-tryjob
     novato-release-tryjob
-    nyan_big-release-tryjob
-    nyan_blaze-release-tryjob
     nyan_kitty-release-tryjob
     octavius-release-tryjob
     octopus-release-tryjob

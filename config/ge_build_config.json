@@ -974,30 +974,6 @@
       ]
     },
     {
-      "name": "nyan_big",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "nyan",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "nyan_blaze",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "nyan",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "nyan_kitty",
       "configs": [
         {
