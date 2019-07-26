@@ -26,9 +26,9 @@
 #include "av1/encoder/gop_structure.h"
 
 // Set parameters for frames between 'start' and 'end' (excluding both).
-static void set_multi_layer_params(GF_GROUP *const gf_group, int start, int end,
-                                   int *frame_ind, int arf_ind, int level,
-                                   int layer_depth) {
+static void set_multi_layer_params(AV1_COMP *cpi, GF_GROUP *const gf_group,
+                                   int start, int end, int *frame_ind,
+                                   int arf_ind, int level, int layer_depth) {
   assert(level >= MIN_PYRAMID_LVL);
   const int num_frames_to_process = end - start - 1;
   assert(num_frames_to_process >= 0);
@@ -46,6 +46,7 @@ static void set_multi_layer_params(GF_GROUP *const gf_group, int start, int end,
       gf_group->frame_disp_idx[*frame_ind] = start;
       gf_group->pyramid_level[*frame_ind] = MIN_PYRAMID_LVL;
       gf_group->layer_depth[*frame_ind] = MAX_ARF_LAYERS;
+      gf_group->arf_boost[*frame_ind] = NORMAL_BOOST;
       ++gf_group->pyramid_lvl_nodes[MIN_PYRAMID_LVL];
       ++(*frame_ind);
     }
@@ -61,11 +62,13 @@ static void set_multi_layer_params(GF_GROUP *const gf_group, int start, int end,
     gf_group->frame_disp_idx[*frame_ind] = m;
     gf_group->pyramid_level[*frame_ind] = level;
     gf_group->layer_depth[*frame_ind] = layer_depth;
+    gf_group->arf_boost[*frame_ind] =
+        av1_calc_arf_boost(cpi, m, end - m, m - start);
     ++gf_group->pyramid_lvl_nodes[level];
     ++(*frame_ind);
 
     // Frames displayed before this internal ARF.
-    set_multi_layer_params(gf_group, start, m, frame_ind, 1, level - 1,
+    set_multi_layer_params(cpi, gf_group, start, m, frame_ind, 1, level - 1,
                            layer_depth + 1);
 
     // Overlay for internal ARF.
@@ -75,17 +78,18 @@ static void set_multi_layer_params(GF_GROUP *const gf_group, int start, int end,
     gf_group->arf_update_idx[*frame_ind] = 1;
     gf_group->frame_disp_idx[*frame_ind] = m;
     gf_group->pyramid_level[*frame_ind] = MIN_PYRAMID_LVL;
+    gf_group->arf_boost[*frame_ind] = 0;
     gf_group->layer_depth[*frame_ind] = layer_depth;
     ++(*frame_ind);
 
     // Frames displayed after this internal ARF.
-    set_multi_layer_params(gf_group, m, end, frame_ind, arf_ind, level - 1,
+    set_multi_layer_params(cpi, gf_group, m, end, frame_ind, arf_ind, level - 1,
                            layer_depth + 1);
   }
 }
 
 static int construct_multi_layer_gf_structure(
-    GF_GROUP *const gf_group, int gf_interval, int pyr_height,
+    AV1_COMP *cpi, GF_GROUP *const gf_group, int gf_interval, int pyr_height,
     FRAME_UPDATE_TYPE first_frame_update_type) {
   gf_group->pyramid_height = pyr_height;
   av1_zero_array(gf_group->pyramid_lvl_nodes, MAX_PYRAMID_LVL);
@@ -116,6 +120,7 @@ static int construct_multi_layer_gf_structure(
     gf_group->frame_disp_idx[frame_index] = gf_interval;
     gf_group->pyramid_level[frame_index] = gf_group->pyramid_height;
     gf_group->layer_depth[frame_index] = 1;
+    gf_group->arf_boost[frame_index] = cpi->rc.gfu_boost;
     ++frame_index;
   }
 
@@ -123,8 +128,8 @@ static int construct_multi_layer_gf_structure(
   const int next_height =
       use_altref ? gf_group->pyramid_height - 1 : gf_group->pyramid_height;
   assert(next_height >= MIN_PYRAMID_LVL);
-  set_multi_layer_params(gf_group, 0, gf_interval, &frame_index, 0, next_height,
-                         use_altref + 1);
+  set_multi_layer_params(cpi, gf_group, 0, gf_interval, &frame_index, 0,
+                         next_height, use_altref + 1);
   return frame_index;
 }
 
@@ -318,7 +323,7 @@ void av1_gop_setup_structure(AV1_COMP *cpi,
       key_frame ? KF_UPDATE
                 : rc->source_alt_ref_active ? OVERLAY_UPDATE : GF_UPDATE;
   gf_group->size = construct_multi_layer_gf_structure(
-      gf_group, rc->baseline_gf_interval, get_pyramid_height(cpi),
+      cpi, gf_group, rc->baseline_gf_interval, get_pyramid_height(cpi),
       first_frame_update_type);
 
   set_gop_ref_frame_map(gf_group);

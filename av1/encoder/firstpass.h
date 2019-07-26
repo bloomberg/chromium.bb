@@ -124,6 +124,7 @@ typedef struct {
   // TODO(jingning): Unify the data structure used here after the new control
   // mechanism is in place.
   int layer_depth[MAX_STATIC_GF_GROUP_LENGTH];
+  int arf_boost[MAX_STATIC_GF_GROUP_LENGTH];
   // This is currently only populated for AOM_Q mode
   unsigned char q_val[MAX_STATIC_GF_GROUP_LENGTH];
   int bit_allocation[MAX_STATIC_GF_GROUP_LENGTH];

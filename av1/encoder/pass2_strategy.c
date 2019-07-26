@@ -418,11 +418,9 @@ static double calc_frame_boost(AV1_COMP *cpi, const FIRSTPASS_STATS *this_frame,
 }
 
 #define GF_MAX_BOOST 90.0
-#define MIN_ARF_GF_BOOST 240
 #define MIN_DECAY_FACTOR 0.01
 
-static int calc_arf_boost(AV1_COMP *cpi, int offset, int f_frames,
-                          int b_frames) {
+int av1_calc_arf_boost(AV1_COMP *cpi, int offset, int f_frames, int b_frames) {
   TWO_PASS *const twopass = &cpi->twopass;
   int i;
   double boost_score = 0.0;
@@ -1092,12 +1090,13 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
                                    : AOMMAX(0, rc->frames_to_key - i);
 
     // Calculate the boost for alt ref.
-    rc->gfu_boost = calc_arf_boost(cpi, alt_offset, forward_frames, (i - 1));
+    rc->gfu_boost =
+        av1_calc_arf_boost(cpi, alt_offset, forward_frames, (i - 1));
     rc->source_alt_ref_pending = 1;
   } else {
     reset_fpf_position(twopass, start_pos);
     rc->gfu_boost =
-        AOMMIN(MAX_GF_BOOST, calc_arf_boost(cpi, alt_offset, (i - 1), 0));
+        AOMMIN(MAX_GF_BOOST, av1_calc_arf_boost(cpi, alt_offset, (i - 1), 0));
     rc->source_alt_ref_pending = 0;
   }
 
