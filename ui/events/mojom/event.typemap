@@ -8,7 +8,7 @@ traits_headers = [ "//ui/events/mojom/event_mojom_traits.h" ]
 public_deps = [
   "//ui/events",
   "//ui/events:dom_keycode_converter",
-  "//ui/gfx/geometry/mojo",
+  "//ui/gfx/geometry/mojom",
   "//ui/latency/mojo:interfaces",
 ]
 deps = [

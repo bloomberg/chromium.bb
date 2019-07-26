@@ -1305,7 +1305,7 @@ component("ash") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//ui/resources",
     "//ui/strings",
     "//ui/views",

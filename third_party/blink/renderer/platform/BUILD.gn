@@ -1824,7 +1824,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "//third_party/blink/renderer/platform/wtf",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gfx/geometry/mojo:test_interfaces_blink",
+    "//ui/gfx/geometry/mojom:test_interfaces_blink",
     "//url",
     "//url/mojom:test_url_mojom_gurl_blink",
   ]

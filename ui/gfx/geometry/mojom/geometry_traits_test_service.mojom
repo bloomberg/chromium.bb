@@ -4,7 +4,7 @@
 
 module gfx.mojom;
 
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // All functions on this interface echo their arguments to test StructTraits
 // serialization and deserialization.

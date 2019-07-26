@@ -7,7 +7,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/geometry/mojo/geometry_traits_test_service.mojom.h"
+#include "ui/gfx/geometry/mojom/geometry_traits_test_service.mojom.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/quaternion.h"
 

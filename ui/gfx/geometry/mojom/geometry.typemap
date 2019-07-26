@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//ui/gfx/geometry/mojo/geometry.mojom"
+mojom = "//ui/gfx/geometry/mojom/geometry.mojom"
 public_headers = [
   "//ui/gfx/geometry/point.h",
   "//ui/gfx/geometry/point_f.h",
@@ -18,9 +18,9 @@ public_headers = [
   "//ui/gfx/geometry/vector2d_f.h",
   "//ui/gfx/geometry/vector3d_f.h",
 ]
-traits_headers = [ "//ui/gfx/geometry/mojo/geometry_struct_traits.h" ]
+traits_headers = [ "//ui/gfx/geometry/mojom/geometry_mojom_traits.h" ]
 public_deps = [
-  "//ui/gfx/geometry/mojo:struct_traits",
+  "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 type_mappings = [
   "gfx.mojom.Point=gfx::Point",

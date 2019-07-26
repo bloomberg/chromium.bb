@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_GEOMETRY_MOJO_GEOMETRY_STRUCT_TRAITS_H_
-#define UI_GFX_GEOMETRY_MOJO_GEOMETRY_STRUCT_TRAITS_H_
+#ifndef UI_GFX_GEOMETRY_MOJOM_GEOMETRY_MOJOM_TRAITS_H_
+#define UI_GFX_GEOMETRY_MOJOM_GEOMETRY_MOJOM_TRAITS_H_
 
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/insets_f.h"
-#include "ui/gfx/geometry/mojo/geometry.mojom-shared.h"
+#include "ui/gfx/geometry/mojom/geometry.mojom-shared.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -198,4 +198,4 @@ struct StructTraits<gfx::mojom::QuaternionDataView, gfx::Quaternion> {
 
 }  // namespace mojo
 
-#endif  // UI_GFX_GEOMETRY_MOJO_GEOMETRY_STRUCT_TRAITS_H_
+#endif  // UI_GFX_GEOMETRY_MOJOM_GEOMETRY_MOJOM_TRAITS_H_

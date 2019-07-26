@@ -6,7 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 # This target does NOT depend on skia. One can depend on this target to avoid
 # picking up a dependency on skia.
-mojom("mojo") {
+mojom("mojom") {
   sources = [
     "geometry.mojom",
   ]
@@ -20,7 +20,7 @@ mojom("test_interfaces") {
   ]
 
   public_deps = [
-    ":mojo",
+    ":mojom",
   ]
 }
 
@@ -28,7 +28,7 @@ source_set("unit_test") {
   testonly = true
 
   sources = [
-    "geometry_struct_traits_unittest.cc",
+    "geometry_mojom_traits_unittest.cc",
   ]
 
   deps = [
@@ -41,12 +41,12 @@ source_set("unit_test") {
   ]
 }
 
-source_set("struct_traits") {
+source_set("mojom_traits") {
   sources = [
-    "geometry_struct_traits.h",
+    "geometry_mojom_traits.h",
   ]
   public_deps = [
-    ":mojo_shared_cpp_sources",
+    ":mojom_shared_cpp_sources",
     "//ui/gfx/geometry",
   ]
 }

@@ -23,7 +23,7 @@ mojom("mojo") {
     "//ui/base/mojom",
     "//ui/display/mojom",
     "//ui/events/mojom",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojo",
     "//ui/gfx/range/mojo",
   ]

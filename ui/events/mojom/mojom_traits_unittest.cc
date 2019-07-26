@@ -12,7 +12,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/mojom/event.mojom.h"
 #include "ui/events/mojom/event_mojom_traits.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/latency/mojo/latency_info_struct_traits.h"
 
 #if defined(USE_OZONE)

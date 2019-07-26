@@ -572,7 +572,7 @@ if (!is_ios) {
       "//ui/events/gestures/blink",
       "//ui/events/mojom",
       "//ui/events/platform",
-      "//ui/gfx/geometry/mojo:struct_traits",
+      "//ui/gfx/geometry/mojom:mojom_traits",
       "//ui/gfx/ipc/geometry",
     ]
 
