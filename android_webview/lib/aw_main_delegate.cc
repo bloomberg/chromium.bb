@@ -160,6 +160,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     cl->AppendSwitch(switches::kInProcessGPU);
   }
 
+  // WebView would like to suppress input before commit, but tests fail.
+  // TODO(schenney): Figure out a solution to enable this: crbug.com/987626
+  cl->AppendSwitch(switches::kAllowPreCommitInput);
+
   {
     ScopedAddFeatureFlags features(cl);
 

@@ -110,11 +110,22 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void FallbackCursorModeLockCursor(bool left, bool right, bool up, bool down);
   void FallbackCursorModeSetCursorVisibility(bool visible);
 
+  // Called when the RenderWidget is notified of a navigation. Resets
+  // the input handler to suppress input until a frame is presented, and
+  // resets the UMA recorder for time of first input.
+  void MarkDidNavigate();
+
   // Called to inform us of a lifecycle update
   void MarkBeginMainFrame();
 
   // Called to inform us of a lifecycle update
   void MarkCompositorCommit();
+
+  // Allow web tests to have input events processed before a frame is
+  // committed.
+  // TODO(schenney): Fix this somehow, forcing web_tests to wait for
+  // hit test regions like other test infrastructure.
+  void AllowEarlyInputForTesting() { allow_early_input_for_testing_ = true; }
 
  protected:
   friend class base::RefCountedThreadSafe<WidgetInputHandlerManager>;
@@ -153,6 +164,12 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
 
+  // Logs UMA for the first real input event, to gather data on
+  // how often input occurs before a page is presented to the
+  // screen. It is a separate function to allow multiple sites to
+  // log to the same histogram.
+  void LogInputTimingUMA();
+
   // Returns the task runner for the thread that receives input. i.e. the
   // "Mojo-bound" thread.
   const scoped_refptr<base::SingleThreadTaskRunner>& InputThreadTaskRunner()
@@ -190,9 +207,16 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // WebWidget (Popups, Plugins).
   bool uses_input_handler_ = false;
 
-  // State tracking which lifecycle and commit events we have seen
+  // State tracking which lifecycle and commit events we have seen/
+  // We suppress all events until the user can see the
+  // content based on this lifetime. Events are suppressed when the state is
+  // not KAfterCommit. Move events are still processed to allow tracking of
+  // mouse position.
   InitialInputTiming current_lifecycle_state_ =
       InitialInputTiming::kBeforeLifecycle;
+
+  // Allow input suspension to be disabled for web tests
+  bool allow_early_input_for_testing_ = false;
 
   // Control of UMA. We emit one UMA metric per instantiation telling us
   // whether any non-move input arrived before we starting updating the page or

@@ -63,6 +63,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -196,6 +197,10 @@ void InProcessBrowserTest::SetUp() {
   // reloaded out from under them. Tests that expect or desire this behavior can
   // append switches::kEnableAutoReload, which will override the disable here.
   command_line->AppendSwitch(switches::kDisableAutoReload);
+
+  // Allow input before the compositor has committed a frame, to dodge
+  // flakiness.
+  command_line->AppendSwitch(switches::kAllowPreCommitInput);
 
   // Allow subclasses to change the command line before running any tests.
   SetUpCommandLine(command_line);
