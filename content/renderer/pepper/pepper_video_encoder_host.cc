@@ -20,6 +20,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_graphics_3d.h"
@@ -160,16 +161,19 @@ PP_VideoProfileDescription PP_FromVideoEncodeAcceleratorSupportedProfile(
 
 PepperVideoEncoderHost::ShmBuffer::ShmBuffer(
     uint32_t id,
-    std::unique_ptr<base::SharedMemory> shm)
-    : id(id), shm(std::move(shm)), in_use(true) {
-  DCHECK(this->shm);
+    base::UnsafeSharedMemoryRegion shm_region)
+    : id(id), region(std::move(shm_region)), in_use(true) {
+  DCHECK(region.IsValid());
+  mapping = region.Map();
+  DCHECK(mapping.IsValid());
 }
 
 PepperVideoEncoderHost::ShmBuffer::~ShmBuffer() {}
 
 media::BitstreamBuffer PepperVideoEncoderHost::ShmBuffer::ToBitstreamBuffer() {
-  return media::BitstreamBuffer(id, shm->handle(), false /* read_only */,
-                                shm->mapped_size());
+  DCHECK(region.IsValid());
+  DCHECK(mapping.IsValid());
+  return media::BitstreamBuffer(id, region.Duplicate(), mapping.size());
 }
 
 PepperVideoEncoderHost::PepperVideoEncoderHost(RendererPpapiHost* host,
@@ -357,16 +361,14 @@ void PepperVideoEncoderHost::RequireBitstreamBuffers(
   frame_count_ = frame_count;
 
   for (uint32_t i = 0; i < kDefaultNumberOfBitstreamBuffers; ++i) {
-    std::unique_ptr<base::SharedMemory> shm(
-        RenderThread::Get()->HostAllocateSharedMemoryBuffer(
-            output_buffer_size));
-
-    if (!shm || !shm->Map(output_buffer_size)) {
+    base::UnsafeSharedMemoryRegion region =
+        mojo::CreateUnsafeSharedMemoryRegion(output_buffer_size);
+    if (!region.IsValid()) {
       shm_buffers_.clear();
       break;
     }
 
-    shm_buffers_.push_back(std::make_unique<ShmBuffer>(i, std::move(shm)));
+    shm_buffers_.push_back(std::make_unique<ShmBuffer>(i, std::move(region)));
   }
 
   // Feed buffers to the encoder.
@@ -374,9 +376,8 @@ void PepperVideoEncoderHost::RequireBitstreamBuffers(
   for (const auto& buffer : shm_buffers_) {
     encoder_->UseOutputBitstreamBuffer(buffer->ToBitstreamBuffer());
     handles.push_back(SerializedHandle(
-        renderer_ppapi_host_->ShareSharedMemoryHandleWithRemote(
-            buffer->shm->handle()),
-        output_buffer_size));
+        renderer_ppapi_host_->ShareUnsafeSharedMemoryRegionWithRemote(
+            buffer->region)));
   }
 
   host()->SendUnsolicitedReplyWithHandles(
@@ -469,11 +470,11 @@ void PepperVideoEncoderHost::AllocateVideoFrames() {
   size *= frame_count_;
   uint32_t total_size = size.ValueOrDie();
 
-  std::unique_ptr<base::SharedMemory> shm(
-      RenderThreadImpl::current()->HostAllocateSharedMemoryBuffer(total_size));
-  if (!shm ||
+  base::UnsafeSharedMemoryRegion region =
+      mojo::CreateUnsafeSharedMemoryRegion(total_size);
+  if (!region.IsValid() ||
       !buffer_manager_.SetBuffers(frame_count_, buffer_size_aligned,
-                                  std::move(shm), true)) {
+                                  std::move(region), true)) {
     SendGetFramesErrorReply(PP_ERROR_NOMEMORY);
     return;
   }
@@ -493,10 +494,9 @@ void PepperVideoEncoderHost::AllocateVideoFrames() {
   }
 
   DCHECK(get_video_frames_reply_context_.is_valid());
-  get_video_frames_reply_context_.params.AppendHandle(
-      SerializedHandle(renderer_ppapi_host_->ShareSharedMemoryHandleWithRemote(
-                           buffer_manager_.shm()->handle()),
-                       total_size));
+  get_video_frames_reply_context_.params.AppendHandle(SerializedHandle(
+      renderer_ppapi_host_->ShareUnsafeSharedMemoryRegionWithRemote(
+          buffer_manager_.region())));
 
   host()->SendReply(get_video_frames_reply_context_,
                     PpapiPluginMsg_VideoEncoder_GetVideoFramesReply(
@@ -561,7 +561,7 @@ uint8_t* PepperVideoEncoderHost::ShmHandleToAddress(int32_t buffer_id) {
   DCHECK(RenderThreadImpl::current());
   DCHECK_GE(buffer_id, 0);
   DCHECK_LT(buffer_id, static_cast<int32_t>(shm_buffers_.size()));
-  return static_cast<uint8_t*>(shm_buffers_[buffer_id]->shm->memory());
+  return shm_buffers_[buffer_id]->mapping.GetMemoryAsSpan<uint8_t>().data();
 }
 
 }  // namespace content
