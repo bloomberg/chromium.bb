@@ -82,6 +82,10 @@ void CreditCardFIDOAuthenticator::Register(base::Value creation_options) {
   }
 }
 
+void CreditCardFIDOAuthenticator::OptOut() {
+  OptChange(/*opt_in=*/false);
+}
+
 void CreditCardFIDOAuthenticator::IsUserVerifiable(
     base::OnceCallback<void(bool)> callback) {
   if (base::FeatureList::IsEnabled(

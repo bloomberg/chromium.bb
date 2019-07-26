@@ -88,6 +88,12 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
       base::WeakPtr<Accessor> accessor,
       const base::TimeTicks& timestamp = base::TimeTicks());
 
+  // If |opt_in| = true, opts the user into using FIDO authentication for card
+  // unmasking. Otherwise, opts the user out. If |creation_options| is set,
+  // WebAuthn registration prompt will be invoked to create a new credential.
+  void FIDOAuthOptChange(bool opt_in,
+                         base::Value creation_options = base::Value());
+
   CreditCardCVCAuthenticator* GetOrCreateCVCAuthenticator();
 
 #if !defined(OS_IOS)

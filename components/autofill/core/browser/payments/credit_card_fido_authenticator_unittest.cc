@@ -492,4 +492,20 @@ TEST_F(CreditCardFIDOAuthenticatorTest,
   EXPECT_TRUE(fido_authenticator_->IsUserOptedIn());
 }
 
+TEST_F(CreditCardFIDOAuthenticatorTest, OptOut_Success) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillCreditCardAuthentication);
+  ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(),
+                                                  true);
+
+  EXPECT_TRUE(fido_authenticator_->IsUserOptedIn());
+
+  fido_authenticator_->OptOut();
+
+  // Mock payments response.
+  OptChange(AutofillClient::PaymentsRpcResult::SUCCESS,
+            /*user_is_opted_in=*/false);
+  EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
+}
+
 }  // namespace autofill

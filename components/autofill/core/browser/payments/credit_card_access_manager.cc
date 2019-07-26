@@ -233,6 +233,19 @@ void CreditCardAccessManager::FetchCreditCard(
   }
 }
 
+void CreditCardAccessManager::FIDOAuthOptChange(bool opt_in,
+                                                base::Value creation_options) {
+#if defined(OS_IOS)
+  return;
+#else
+  if (opt_in) {
+    GetOrCreateFIDOAuthenticator()->Register(std::move(creation_options));
+  } else {
+    GetOrCreateFIDOAuthenticator()->OptOut();
+  }
+#endif
+}
+
 void CreditCardAccessManager::Authenticate(bool did_get_unmask_details) {
   // Reset now that we have started authentication.
   ready_to_start_authentication_.Reset();

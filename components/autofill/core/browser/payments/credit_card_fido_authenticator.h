@@ -61,6 +61,9 @@ class CreditCardFIDOAuthenticator
   // Registration
   void Register(base::Value creation_options = base::Value());
 
+  // Opts the user out.
+  void OptOut();
+
   // Invokes callback with true if user has a verifying platform authenticator.
   // e.g. Touch/Face ID, Windows Hello, Android fingerprint, etc., is available
   // and enabled. Otherwise invokes callback with false.
