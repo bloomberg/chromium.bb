@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
+#include <limits>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -12,6 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -193,6 +195,21 @@ class TracingSampleProfilerTest : public testing::Test {
     }
   }
 
+  uint32_t FindProfilerSequenceId() {
+    uint32_t profile_sequence_id = std::numeric_limits<uint32_t>::max();
+    auto& packets = producer_->finalized_packets();
+    for (auto& packet : packets) {
+      if (packet->has_streaming_profile_packet()) {
+        profile_sequence_id = packet->trusted_packet_sequence_id();
+        break;
+      }
+    }
+    EXPECT_NE(profile_sequence_id, std::numeric_limits<uint32_t>::max());
+    return profile_sequence_id;
+  }
+
+  const MockPerfettoProducer* producer() const { return producer_.get(); }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
@@ -248,6 +265,76 @@ TEST_F(TracingSampleProfilerTest, JoinRunningTracing) {
   EndTracing();
   base::RunLoop().RunUntilIdle();
   ValidateReceivedEvents();
+  TracingSamplerProfiler::DeleteForCurrentThreadForTesting();
+}
+
+TEST_F(TracingSampleProfilerTest, TestStartupTracing) {
+  TracingSamplerProfiler::CreateForCurrentThread();
+  TracingSamplerProfiler::SetupStartupTracing();
+  base::RunLoop().RunUntilIdle();
+  WaitForEvents();
+  auto start_tracing_ts = TRACE_TIME_TICKS_NOW();
+  BeginTrace();
+  base::RunLoop().RunUntilIdle();
+  WaitForEvents();
+  EndTracing();
+  base::RunLoop().RunUntilIdle();
+  if (IsStackUnwindingSupported()) {
+    uint32_t seq_id = FindProfilerSequenceId();
+    auto& packets = producer()->finalized_packets();
+    int64_t reference_ts = 0;
+    int64_t first_profile_ts = 0;
+    for (auto& packet : packets) {
+      if (packet->trusted_packet_sequence_id() == seq_id) {
+        if (packet->has_thread_descriptor()) {
+          reference_ts = packet->thread_descriptor().reference_timestamp_us();
+        } else if (packet->has_streaming_profile_packet()) {
+          first_profile_ts =
+              reference_ts +
+              packet->streaming_profile_packet().timestamp_delta_us(0);
+          break;
+        }
+      }
+    }
+    // Expect first sample before tracing started.
+    EXPECT_LT(first_profile_ts,
+              start_tracing_ts.since_origin().InMicroseconds());
+  }
+  TracingSamplerProfiler::DeleteForCurrentThreadForTesting();
+}
+
+TEST_F(TracingSampleProfilerTest, JoinStartupTracing) {
+  TracingSamplerProfiler::SetupStartupTracing();
+  base::RunLoop().RunUntilIdle();
+  TracingSamplerProfiler::CreateForCurrentThread();
+  WaitForEvents();
+  auto start_tracing_ts = TRACE_TIME_TICKS_NOW();
+  BeginTrace();
+  base::RunLoop().RunUntilIdle();
+  WaitForEvents();
+  EndTracing();
+  base::RunLoop().RunUntilIdle();
+  if (IsStackUnwindingSupported()) {
+    uint32_t seq_id = FindProfilerSequenceId();
+    auto& packets = producer()->finalized_packets();
+    int64_t reference_ts = 0;
+    int64_t first_profile_ts = 0;
+    for (auto& packet : packets) {
+      if (packet->trusted_packet_sequence_id() == seq_id) {
+        if (packet->has_thread_descriptor()) {
+          reference_ts = packet->thread_descriptor().reference_timestamp_us();
+        } else if (packet->has_streaming_profile_packet()) {
+          first_profile_ts =
+              reference_ts +
+              packet->streaming_profile_packet().timestamp_delta_us(0);
+          break;
+        }
+      }
+    }
+    // Expect first sample before tracing started.
+    EXPECT_LT(first_profile_ts,
+              start_tracing_ts.since_origin().InMicroseconds());
+  }
   TracingSamplerProfiler::DeleteForCurrentThreadForTesting();
 }
 
