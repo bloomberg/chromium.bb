@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"
 
@@ -205,8 +206,30 @@ void CreditCardFIDOAuthenticator::IsUserVerifiable(
 }
 
 bool CreditCardFIDOAuthenticator::IsUserOptedIn() {
-  // TODO(crbug/949269): Check pref-store for user opt-in.
-  return false;
+  return base::FeatureList::IsEnabled(
+             features::kAutofillCreditCardAuthentication) &&
+         ::autofill::prefs::IsCreditCardFIDOAuthEnabled(
+             autofill_client_->GetPrefs());
+}
+
+void CreditCardFIDOAuthenticator::SyncUserOptIn(
+    AutofillClient::UnmaskDetails& unmask_details) {
+  bool is_user_opted_in = IsUserOptedIn();
+
+  // If payments is offering to opt-in, then that means user is not opted in.
+  if (unmask_details.offer_fido_opt_in) {
+    is_user_opted_in = false;
+  }
+
+  // If payments is requesting a FIDO auth, then that means user is opted in.
+  if (unmask_details.unmask_auth_method ==
+      AutofillClient::UnmaskAuthMethod::FIDO) {
+    is_user_opted_in = true;
+  }
+
+  // Update pref setting if needed.
+  ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_->GetPrefs(),
+                                                  is_user_opted_in);
 }
 
 }  // namespace autofill

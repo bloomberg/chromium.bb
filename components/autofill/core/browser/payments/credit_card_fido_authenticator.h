@@ -62,6 +62,9 @@ class CreditCardFIDOAuthenticator
   // Returns true only if the user has opted-in to use WebAuthn for autofill.
   virtual bool IsUserOptedIn();
 
+  // Ensures that local user opt-in pref is in-sync with payments server.
+  void SyncUserOptIn(AutofillClient::UnmaskDetails& unmask_details);
+
  private:
   friend class AutofillManagerTest;
   friend class CreditCardAccessManagerTest;

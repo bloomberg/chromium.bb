@@ -195,6 +195,9 @@ void CreditCardAccessManager::OnDidGetUnmaskDetails(
   unmask_details_.fido_eligible_card_ids =
       unmask_details.fido_eligible_card_ids;
 
+#if !defined(OS_IOS)
+  GetOrCreateFIDOAuthenticator()->SyncUserOptIn(unmask_details);
+#endif
   ready_to_start_authentication_.Signal();
 }
 

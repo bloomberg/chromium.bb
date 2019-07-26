@@ -216,8 +216,54 @@ class CreditCardFIDOAuthenticatorTest : public testing::Test {
   std::unique_ptr<CreditCardFIDOAuthenticator> fido_authenticator_;
 };
 
-TEST_F(CreditCardFIDOAuthenticatorTest, IsUserOptedInFalse) {
+TEST_F(CreditCardFIDOAuthenticatorTest, IsUserOptedInFlagDisabled) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillCreditCardAuthentication);
   EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
+}
+
+TEST_F(CreditCardFIDOAuthenticatorTest, IsUserOptedInFalse) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillCreditCardAuthentication);
+  ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(),
+                                                  false);
+  EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
+}
+
+TEST_F(CreditCardFIDOAuthenticatorTest, IsUserOptedInTrue) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillCreditCardAuthentication);
+  ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(),
+                                                  true);
+  EXPECT_TRUE(fido_authenticator_->IsUserOptedIn());
+}
+
+TEST_F(CreditCardFIDOAuthenticatorTest, SyncUserOptInOnOfferedOptIn) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillCreditCardAuthentication);
+  ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(),
+                                                  true);
+  EXPECT_TRUE(fido_authenticator_->IsUserOptedIn());
+
+  // If payments is offering to opt-in, then that means user is not opted in.
+  AutofillClient::UnmaskDetails unmask_details;
+  unmask_details.offer_fido_opt_in = true;
+  fido_authenticator_->SyncUserOptIn(unmask_details);
+  EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
+}
+
+TEST_F(CreditCardFIDOAuthenticatorTest, SyncUserOptInOnFIDOAuthRequest) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillCreditCardAuthentication);
+  ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(),
+                                                  false);
+  EXPECT_FALSE(fido_authenticator_->IsUserOptedIn());
+
+  // If payments is requesting a FIDO auth, then that means user is opted in.
+  AutofillClient::UnmaskDetails unmask_details;
+  unmask_details.unmask_auth_method = AutofillClient::UnmaskAuthMethod::FIDO;
+  fido_authenticator_->SyncUserOptIn(unmask_details);
+  EXPECT_TRUE(fido_authenticator_->IsUserOptedIn());
 }
 
 TEST_F(CreditCardFIDOAuthenticatorTest, IsUserVerifiableFalse) {
