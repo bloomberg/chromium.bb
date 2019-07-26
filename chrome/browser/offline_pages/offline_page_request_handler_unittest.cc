@@ -100,7 +100,7 @@ const int64_t kDownloadId = 42LL;
 
 // Returns the thread the navigation URL loader will run on. This determines
 // where the OfflinePageURLLoader should be created.
-content::BrowserThread::ID GetNavigationLoaderThread() {
+content::BrowserThread::ID GetNavigationLoaderThreadID() {
   return base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI)
              ? content::BrowserThread::UI
              : content::BrowserThread::IO;
@@ -981,7 +981,7 @@ void OfflinePageURLLoaderBuilder::InterceptRequestOnLoaderThread(
     const std::string& method,
     const net::HttpRequestHeaders& extra_headers,
     bool is_main_frame) {
-  DCHECK_CURRENTLY_ON(GetNavigationLoaderThread());
+  DCHECK_CURRENTLY_ON(GetNavigationLoaderThreadID());
 
   client_ = std::make_unique<TestURLLoaderClient>(this);
 
@@ -1011,7 +1011,7 @@ void OfflinePageURLLoaderBuilder::InterceptRequest(
     bool is_main_frame) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI)) {
+  if (GetNavigationLoaderThreadID() == content::BrowserThread::UI) {
     InterceptRequestOnLoaderThread(url, method, extra_headers, is_main_frame);
   } else {
     base::PostTaskWithTraits(
@@ -1026,7 +1026,7 @@ void OfflinePageURLLoaderBuilder::InterceptRequest(
 void OfflinePageURLLoaderBuilder::MaybeStartLoader(
     const network::ResourceRequest& request,
     content::URLLoaderRequestInterceptor::RequestHandler request_handler) {
-  DCHECK_CURRENTLY_ON(GetNavigationLoaderThread());
+  DCHECK_CURRENTLY_ON(GetNavigationLoaderThreadID());
 
   if (!request_handler) {
     ReadCompletedOnLoaderThread(ResponseInfo(net::ERR_FAILED));
@@ -1087,7 +1087,7 @@ void OfflinePageURLLoaderBuilder::OnHandleReady(
 
 void OfflinePageURLLoaderBuilder::ReadCompletedOnLoaderThread(
     const ResponseInfo& response) {
-  DCHECK_CURRENTLY_ON(GetNavigationLoaderThread());
+  DCHECK_CURRENTLY_ON(GetNavigationLoaderThreadID());
 
   handle_watcher_.reset();
   client_.reset();
@@ -1100,7 +1100,7 @@ void OfflinePageURLLoaderBuilder::ReadCompletedOnLoaderThread(
   if (offline_page_data && offline_page_data->is_offline_page())
     is_offline_page_set_in_navigation_data = true;
 
-  if (base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI)) {
+  if (GetNavigationLoaderThreadID() == content::BrowserThread::UI) {
     test()->ReadCompleted(response, is_offline_page_set_in_navigation_data);
   } else {
     base::PostTaskWithTraits(
