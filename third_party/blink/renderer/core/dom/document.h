@@ -1583,6 +1583,13 @@ class CORE_EXPORT Document : public ContainerNode,
   // applied to this document.
   void BindContentSecurityPolicy();
 
+  // Capture the toggle event during parsing either by HTML parser or XML
+  // parser.
+  void SetToggleDuringParsing(bool toggle_during_parsing) {
+    toggle_during_parsing_ = toggle_during_parsing;
+  }
+  bool ToggleDuringParsing() { return toggle_during_parsing_; }
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
@@ -2095,6 +2102,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // TODO(altimin): We should be able to remove it after we complete
   // frame:document lifetime refactoring.
   std::unique_ptr<FrameOrWorkerScheduler> detached_scheduler_;
+
+  bool toggle_during_parsing_ = false;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;
