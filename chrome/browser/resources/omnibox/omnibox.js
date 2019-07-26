@@ -81,8 +81,13 @@ class BrowserProxy {
    * @param {boolean} isPageController
    */
   handleNewAutocompleteResponse(response, isPageController) {
+    // Note: Using inputText is a sufficient fix for the way this is used today,
+    // but in principle it would be better to associate requests with responses
+    // using a unique session identifier, for example by rolling an integer each
+    // time a request is made. Doing so would require extra bookkeeping on the
+    // host side, so for now we keep it simple.
     const isForLastPageRequest = isPageController && this.lastRequest &&
-        this.lastRequest.inputText === response.host;
+        this.lastRequest.inputText === response.inputText;
 
     // When unfocusing the browser omnibox, the autocomplete controller
     // sends a response with no combined results. This response is ignored
@@ -95,6 +100,9 @@ class BrowserProxy {
       omniboxOutput.addAutocompleteResponse(response);
     }
 
+    // TODO(orinj|manukh): If |response.done| but not |isForLastPageRequest|
+    // then callback is being dropped. We should guarantee that callback is
+    // always called because some callers await promises.
     if (isForLastPageRequest && response.done) {
       this.lastRequest.callback(response);
       this.lastRequest = null;
