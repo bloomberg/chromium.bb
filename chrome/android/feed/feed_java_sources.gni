@@ -50,6 +50,7 @@ if (enable_feed_in_chrome) {
   ]
 
   feed_test_java_sources = [
+    "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/tooltip/FeedTooltipTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/ConsumerSyncWrapper.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedAppLifecycleTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedConfigurationTest.java",

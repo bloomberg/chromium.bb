@@ -513,6 +513,11 @@ public class FeedNewTabPage extends NewTabPage {
         return mMediator;
     }
 
+    @VisibleForTesting
+    public Stream getStreamForTesting() {
+        return mStream;
+    }
+
     @Override
     public View getSignInPromoViewForTesting() {
         return getSigninPromoView();
