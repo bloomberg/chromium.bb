@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_audio_device_not_impl.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_not_impl.h"
 
 #include "build/build_config.h"
 
-namespace content {
+namespace blink {
 
 WebRtcAudioDeviceNotImpl::WebRtcAudioDeviceNotImpl() = default;
 
@@ -24,13 +24,15 @@ int16_t WebRtcAudioDeviceNotImpl::RecordingDevices() {
 }
 
 int32_t WebRtcAudioDeviceNotImpl::PlayoutDeviceName(
-    uint16_t index, char name[webrtc::kAdmMaxDeviceNameSize],
+    uint16_t index,
+    char name[webrtc::kAdmMaxDeviceNameSize],
     char guid[webrtc::kAdmMaxGuidSize]) {
   return 0;
 }
 
 int32_t WebRtcAudioDeviceNotImpl::RecordingDeviceName(
-    uint16_t index, char name[webrtc::kAdmMaxDeviceNameSize],
+    uint16_t index,
+    char name[webrtc::kAdmMaxDeviceNameSize],
     char guid[webrtc::kAdmMaxGuidSize]) {
   return 0;
 }
@@ -187,4 +189,4 @@ int WebRtcAudioDeviceNotImpl::GetRecordAudioParameters(
 }
 #endif  // OS_IOS
 
-}  // namespace content
+}  // namespace blink

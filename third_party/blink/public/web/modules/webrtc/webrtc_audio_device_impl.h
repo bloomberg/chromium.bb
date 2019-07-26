@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_AUDIO_DEVICE_IMPL_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_AUDIO_DEVICE_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_IMPL_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_IMPL_H_
 
 #include <stdint.h>
 
@@ -16,9 +16,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/unguessable_token.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/webrtc/webrtc_audio_device_not_impl.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_source.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_not_impl.h"
 
 // A WebRtcAudioDeviceImpl instance implements the abstract interface
 // webrtc::AudioDeviceModule which makes it possible for a user (e.g. webrtc::
@@ -42,14 +42,17 @@ namespace media {
 class AudioBus;
 }
 
-namespace content {
+namespace blink {
 
 class ProcessedLocalAudioSource;
 
 // Note that this class inherits from webrtc::AudioDeviceModule but due to
 // the high number of non-implemented methods, we move the cruft over to the
 // WebRtcAudioDeviceNotImpl.
-class CONTENT_EXPORT WebRtcAudioDeviceImpl
+//
+// TODO(crbug.com/704136): Move this class out of the Blink exposed API
+// when all users of it have been Onion souped.
+class BLINK_MODULES_EXPORT WebRtcAudioDeviceImpl
     : public WebRtcAudioDeviceNotImpl,
       public blink::WebRtcAudioRendererSource,
       public blink::WebRtcPlayoutDataSource {
@@ -187,14 +190,18 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
 
   // Buffer used for temporary storage during render callback.
   // It is only accessed by the audio render thread.
+  //
+  // TODO(crbug.com/923394): Replace std::vector by WTF::Vector.
   std::vector<int16_t> render_buffer_;
 
   // The output device used for echo cancellation
+  //
+  // TODO(crbug.com/923394): Replace std::string by WTF::String.
   std::string output_device_id_for_aec_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioDeviceImpl);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_AUDIO_DEVICE_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_IMPL_H_

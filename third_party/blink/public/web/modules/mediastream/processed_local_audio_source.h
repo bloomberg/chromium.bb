@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_PROCESSED_LOCAL_AUDIO_SOURCE_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_PROCESSED_LOCAL_AUDIO_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_PROCESSED_LOCAL_AUDIO_SOURCE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_PROCESSED_LOCAL_AUDIO_SOURCE_H_
 
 #include <string>
 
@@ -11,43 +11,48 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "content/renderer/media/stream/audio_service_audio_processor_proxy.h"
-#include "content/renderer/media/stream/media_stream_audio_processor.h"
 #include "media/base/audio_capturer_source.h"
+#include "third_party/blink/public/platform/modules/mediastream/audio_service_audio_processor_proxy.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_level_calculator.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 
 namespace media {
 class AudioBus;
 class AudioProcessorControls;
-}
+}  // namespace media
 
-namespace content {
+namespace blink {
 
-CONTENT_EXPORT bool IsApmInAudioServiceEnabled();
+// TODO(crbug.com/704136): Move this class and method out of the Blink exposed
+// API when all users of it have been Onion souped.
 
-class PeerConnectionDependencyFactory;
+BLINK_MODULES_EXPORT bool IsApmInAudioServiceEnabled();
+
+class MediaStreamInternalFrameWrapper;
+class WebLocalFrame;
 
 // Represents a local source of audio data that is routed through the WebRTC
 // audio pipeline for post-processing (e.g., for echo cancellation during a
 // video conferencing call). Owns a media::AudioCapturerSource and the
 // MediaStreamProcessor that modifies its audio. Modified audio is delivered to
 // one or more MediaStreamAudioTracks.
-class CONTENT_EXPORT ProcessedLocalAudioSource final
+class BLINK_MODULES_EXPORT ProcessedLocalAudioSource final
     : public blink::MediaStreamAudioSource,
       public media::AudioCapturerSource::CaptureCallback {
  public:
-  // |consumer_render_frame_id| references the RenderFrame that will consume the
-  // audio data. Audio parameters and (optionally) a pre-existing audio session
-  // ID are derived from |device_info|. |factory| must outlive this instance.
+  // |internal_consumer_frame_| references the blink::LocalFrame that will
+  // consume the audio data. Audio parameters and (optionally) a pre-existing
+  // audio session ID are derived from |device_info|. |factory| must outlive
+  // this instance.
   ProcessedLocalAudioSource(
-      int consumer_render_frame_id,
+      WebLocalFrame* web_frame,
       const blink::MediaStreamDevice& device,
       bool disable_local_echo,
       const blink::AudioProcessingProperties& audio_processing_properties,
       ConstraintsOnceCallback started_callback,
-      PeerConnectionDependencyFactory* factory,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~ProcessedLocalAudioSource() final;
@@ -124,11 +129,9 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   // processing will take place.
   int GetBufferSize(int sample_rate) const;
 
-  // The RenderFrame that will consume the audio data. Used when creating
+  // The LocalFrame that will consume the audio data. Used when creating
   // AudioCapturerSources.
-  const int consumer_render_frame_id_;
-
-  PeerConnectionDependencyFactory* const pc_factory_;
+  std::unique_ptr<MediaStreamInternalFrameWrapper> internal_consumer_frame_;
 
   blink::AudioProcessingProperties audio_processing_properties_;
 
@@ -162,6 +165,6 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   DISALLOW_COPY_AND_ASSIGN(ProcessedLocalAudioSource);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_PROCESSED_LOCAL_AUDIO_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_PROCESSED_LOCAL_AUDIO_SOURCE_H_

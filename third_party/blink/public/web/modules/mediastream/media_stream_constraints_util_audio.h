@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_
 
 #include <string>
 #include <vector>
 
-#include "content/common/content_export.h"
-#include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 
 namespace blink {
 class MediaStreamAudioSource;
 class WebMediaConstraints;
-}
+}  // namespace blink
 
-namespace content {
+namespace blink {
 
 // This class represents the capability of an audio-capture device.
 // It may represent three different things:
@@ -31,7 +30,7 @@ namespace content {
 // acceptable values for the deviceId constraint, while in case (3) no such
 // restriction is imposed and any requested deviceID value will be acceptable
 // while processing constraints.
-class CONTENT_EXPORT AudioDeviceCaptureCapability {
+class BLINK_MODULES_EXPORT AudioDeviceCaptureCapability {
  public:
   // This creates an AudioDeviceCaptureCapability that admits all possible
   // device names and settings. This is intended to be used as the single
@@ -144,7 +143,7 @@ using AudioDeviceCaptureCapabilities =
 //    Moreover, the echo_cancellation constraint influences most other
 //    audio-processing properties for which no explicit value is provided in
 //    their corresponding constraints.
-CONTENT_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
+BLINK_MODULES_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
     const AudioDeviceCaptureCapabilities& capabilities,
     const blink::WebMediaConstraints& constraints,
     bool should_disable_hardware_noise_suppression);
@@ -156,18 +155,19 @@ CONTENT_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
 // different from those of |source| because it is currently not possible to
 // reconfigure audio tracks or sources.
 // TODO(guidou): Allow reconfiguring audio tracks. https://crbug.com/796964
-CONTENT_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
+BLINK_MODULES_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
     blink::MediaStreamAudioSource* source,
     const blink::WebMediaConstraints& constraints);
 
 // Return a tuple with <min,max> representing the min and max buffer sizes or
 // latencies that can be provided by the given AudioParameters. The min and max
 // are guaranteed to be > 0 and with max >= min.
-CONTENT_EXPORT std::tuple<int, int> GetMinMaxBufferSizesForAudioParameters(
+BLINK_MODULES_EXPORT std::tuple<int, int>
+GetMinMaxBufferSizesForAudioParameters(
     const media::AudioParameters& parameters);
-CONTENT_EXPORT std::tuple<double, double> GetMinMaxLatenciesForAudioParameters(
-    const media::AudioParameters& parameters);
+BLINK_MODULES_EXPORT std::tuple<double, double>
+GetMinMaxLatenciesForAudioParameters(const media::AudioParameters& parameters);
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_

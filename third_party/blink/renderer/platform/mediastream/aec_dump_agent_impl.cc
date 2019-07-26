@@ -2,23 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/aec_dump_agent_impl.h"
+#include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
 
-#include "content/public/child/child_thread.h"
-#include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/platform/modules/mediastream/aec_dump_agent_impl_delegate.h"
+#include "third_party/blink/public/platform/platform.h"
 
-namespace content {
+namespace blink {
 
 // static
-std::unique_ptr<AecDumpAgentImpl> AecDumpAgentImpl::Create(Delegate* delegate) {
-  if (!ChildThread::Get())  // Can be true in unit tests.
+std::unique_ptr<AecDumpAgentImpl> AecDumpAgentImpl::Create(
+    AecDumpAgentImplDelegate* delegate) {
+  // TODO(crbug.com/704136): Use GetInterfaceProvider() here.
+  if (!Platform::Current()->GetConnector())  // Can be true in unit tests.
     return nullptr;
 
-  mojo::Remote<blink::mojom::AecDumpManager> manager;
-  ChildThread::Get()->GetConnector()->Connect(
-      mojom::kBrowserServiceName, manager.BindNewPipeAndPassReceiver());
+  mojo::Remote<mojom::blink::AecDumpManager> manager;
+  Platform::Current()->GetConnector()->Connect(
+      Platform::Current()->GetBrowserServiceName(),
+      manager.BindNewPipeAndPassReceiver());
 
   mojo::PendingRemote<AecDumpAgent> remote;
   auto receiver = remote.InitWithNewPipeAndPassReceiver();
@@ -29,8 +32,8 @@ std::unique_ptr<AecDumpAgentImpl> AecDumpAgentImpl::Create(Delegate* delegate) {
 }
 
 AecDumpAgentImpl::AecDumpAgentImpl(
-    Delegate* delegate,
-    mojo::PendingReceiver<blink::mojom::AecDumpAgent> receiver)
+    AecDumpAgentImplDelegate* delegate,
+    mojo::PendingReceiver<mojom::blink::AecDumpAgent> receiver)
     : delegate_(delegate), receiver_(this, std::move(receiver)) {}
 
 AecDumpAgentImpl::~AecDumpAgentImpl() = default;
@@ -43,4 +46,4 @@ void AecDumpAgentImpl::Stop() {
   delegate_->OnStopDump();
 }
 
-}  // namespace content
+}  // namespace blink

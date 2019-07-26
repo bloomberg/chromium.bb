@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/audio_service_audio_processor_proxy.h"
+#include "third_party/blink/public/platform/modules/mediastream/audio_service_audio_processor_proxy.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -17,8 +17,9 @@
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 constexpr base::TimeDelta kMaxStatsInterval = base::TimeDelta::FromSeconds(5);
@@ -143,4 +144,4 @@ void AudioServiceAudioProcessorProxy::UpdateStats(
   }
 }
 
-}  // namespace content
+}  // namespace blink

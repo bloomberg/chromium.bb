@@ -5,10 +5,10 @@
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter.h"
 
 #include "base/bind.h"
-#include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc/media_stream_video_webrtc_sink.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
 
 namespace content {
 
@@ -168,7 +168,7 @@ void WebRtcMediaStreamTrackAdapter::InitializeLocalAudioTrack(
       new WebRtcAudioSink(web_track_.Id().Utf8(), source_interface,
                           factory_->GetWebRtcSignalingThread(), main_thread_));
 
-  if (auto* media_stream_source = ProcessedLocalAudioSource::From(
+  if (auto* media_stream_source = blink::ProcessedLocalAudioSource::From(
           blink::MediaStreamAudioSource::From(web_track_.Source()))) {
     local_track_audio_sink_->SetLevel(media_stream_source->audio_level());
     // The sink only grabs stats from the audio processor. Stats are only

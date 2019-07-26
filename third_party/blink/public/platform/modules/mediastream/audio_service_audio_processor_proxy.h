@@ -2,26 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_AUDIO_SERVICE_AUDIO_PROCESSOR_PROXY_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_AUDIO_SERVICE_AUDIO_PROCESSOR_PROXY_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_AUDIO_SERVICE_AUDIO_PROCESSOR_PROXY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_AUDIO_SERVICE_AUDIO_PROCESSOR_PROXY_H_
 
 #include <memory>
 
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/stream/aec_dump_agent_impl.h"
 #include "media/base/audio_processing.h"
 #include "media/webrtc/audio_processor_controls.h"
+#include "third_party/blink/public/platform/modules/mediastream/aec_dump_agent_impl_delegate.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/rtc_base/task_queue.h"
 
-namespace content {
+namespace blink {
+
+class AecDumpAgentImpl;
 
 // This class owns an object of webrtc::AudioProcessing which contains signal
 // processing components like AGC, AEC and NS. It enables the components based
@@ -29,9 +32,12 @@ namespace content {
 // of 10 ms data chunk.
 // TODO(https://crbug.com/879296): Add tests. Possibly the timer update rate
 // calculation code should be encapsulated in a class.
-class CONTENT_EXPORT AudioServiceAudioProcessorProxy
+//
+// TODO(crbug.com/704136): Move this class out of the Blink exposed API
+// when all users of it have been Onion souped.
+class BLINK_PLATFORM_EXPORT AudioServiceAudioProcessorProxy
     : public webrtc::AudioProcessorInterface,
-      public AecDumpAgentImpl::Delegate {
+      public AecDumpAgentImplDelegate {
  public:
   // All methods (including constructor and destructor) must be called on the
   // main thread except for GetStats.
@@ -45,7 +51,7 @@ class CONTENT_EXPORT AudioServiceAudioProcessorProxy
   // This method is called on the libjingle thread.
   AudioProcessorStatistics GetStats(bool has_remote_tracks) override;
 
-  // AecDumpAgentImpl::Delegate implementation.
+  // AecDumpAgentImplDelegate implementation.
   // Called on the main render thread.
   void OnStartDump(base::File file) override;
   void OnStopDump() override;
@@ -84,6 +90,6 @@ class CONTENT_EXPORT AudioServiceAudioProcessorProxy
   DISALLOW_COPY_AND_ASSIGN(AudioServiceAudioProcessorProxy);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_AUDIO_SERVICE_AUDIO_PROCESSOR_PROXY_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_AUDIO_SERVICE_AUDIO_PROCESSOR_PROXY_H_

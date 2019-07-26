@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_PROCESSOR_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_PROCESSOR_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_H_
 
 #include <memory>
 
@@ -16,13 +16,13 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/stream/aec_dump_agent_impl.h"
-#include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "media/webrtc/audio_delay_stats_reporter.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/platform/modules/mediastream/aec_dump_agent_impl_delegate.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_source.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/rtc_base/task_queue.h"
@@ -36,8 +36,9 @@ namespace webrtc {
 class TypingDetection;
 }
 
-namespace content {
+namespace blink {
 
+class AecDumpAgentImpl;
 class MediaStreamAudioBus;
 class MediaStreamAudioFifo;
 
@@ -47,10 +48,13 @@ using webrtc::AudioProcessorInterface;
 // processing components like AGC, AEC and NS. It enables the components based
 // on the getUserMedia constraints, processes the data and outputs it in a unit
 // of 10 ms data chunk.
-class CONTENT_EXPORT MediaStreamAudioProcessor
+//
+// TODO(crbug.com/704136): Move this class out of the Blink exposed API
+// when all users of it have been Onion souped.
+class BLINK_PLATFORM_EXPORT MediaStreamAudioProcessor
     : public blink::WebRtcPlayoutDataSource::Sink,
       public AudioProcessorInterface,
-      public AecDumpAgentImpl::Delegate {
+      public AecDumpAgentImplDelegate {
  public:
   // |playout_data_source| is used to register this class as a sink to the
   // WebRtc playout data for processing AEC. If clients do not enable AEC,
@@ -86,12 +90,11 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   // The new microphone volume range is [0, 255], and the value will be 0 if
   // the microphone volume should not be adjusted.
   // Called on the capture audio thread.
-  bool ProcessAndConsumeData(
-      int volume,
-      bool key_pressed,
-      media::AudioBus** processed_data,
-      base::TimeDelta* capture_delay,
-      int* new_volume);
+  bool ProcessAndConsumeData(int volume,
+                             bool key_pressed,
+                             media::AudioBus** processed_data,
+                             base::TimeDelta* capture_delay,
+                             int* new_volume);
 
   // Stops the audio processor, no more AEC dump or render data after calling
   // this method.
@@ -103,9 +106,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   const media::AudioParameters& OutputFormat() const;
 
   // Accessor to check if the audio processing is enabled or not.
-  bool has_audio_processing() const { return audio_processing_ != NULL; }
+  bool has_audio_processing() const { return !!audio_processing_; }
 
-  // AecDumpAgentImpl::Delegate implementation.
+  // AecDumpAgentImplDelegate implementation.
   // Called on the main render thread.
   void OnStartDump(base::File dump_file) override;
   void OnStopDump() override;
@@ -184,6 +187,8 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
 
   // Raw pointer to the blink::WebRtcPlayoutDataSource, which is valid for the
   // lifetime of RenderThread.
+  //
+  // TODO(crbug.com/704136): Replace with Member at some point.
   blink::WebRtcPlayoutDataSource* playout_data_source_;
 
   // Task runner for the main render thread.
@@ -217,6 +222,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioProcessor);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_PROCESSOR_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_H_

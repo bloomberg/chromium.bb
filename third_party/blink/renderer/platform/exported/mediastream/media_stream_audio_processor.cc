@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_audio_processor.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
@@ -25,15 +24,14 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
-#include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/webrtc/webrtc_switches.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
+#include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_config.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_config_json.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
@@ -41,7 +39,7 @@
 #include "third_party/webrtc/modules/audio_processing/typing_detection.h"
 #include "third_party/webrtc_overrides/task_queue_factory.h"
 
-namespace content {
+namespace blink {
 
 using EchoCancellationType =
     blink::AudioProcessingProperties::EchoCancellationType;
@@ -78,20 +76,6 @@ AudioProcessing::ChannelLayout ChannelsToLayout(int num_channels) {
       NOTREACHED() << "Channels not supported: " << num_channels;
       return AudioProcessing::kMono;
   }
-}
-
-// Checks if the default minimum starting volume value for the AGC is overridden
-// on the command line.
-base::Optional<int> GetStartupMinVolumeForAgc() {
-  std::string min_volume_str(
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kAgcStartupMinVolume));
-  int startup_min_volume;
-  if (min_volume_str.empty() ||
-      !base::StringToInt(min_volume_str, &startup_min_volume)) {
-    return base::Optional<int>();
-  }
-  return base::Optional<int>(startup_min_volume);
 }
 
 }  // namespace
@@ -133,7 +117,7 @@ class MediaStreamAudioBus {
  private:
   THREAD_CHECKER(thread_checker_);
   std::unique_ptr<media::AudioBus> bus_;
-  std::unique_ptr<float* []> channel_ptrs_;
+  std::unique_ptr<float*[]> channel_ptrs_;
 };
 
 // Wraps AudioFifo to provide a cleaner interface to MediaStreamAudioProcessor.
@@ -148,12 +132,12 @@ class MediaStreamAudioFifo {
                        int source_frames,
                        int destination_frames,
                        int sample_rate)
-     : source_channels_(source_channels),
-       source_frames_(source_frames),
-       sample_rate_(sample_rate),
-       destination_(
-           new MediaStreamAudioBus(destination_channels, destination_frames)),
-       data_available_(false) {
+      : source_channels_(source_channels),
+        source_frames_(source_frames),
+        sample_rate_(sample_rate),
+        destination_(
+            new MediaStreamAudioBus(destination_channels, destination_frames)),
+        data_available_(false) {
     DCHECK_GE(source_channels, destination_channels);
 
     if (source_channels > destination_channels) {
@@ -189,8 +173,7 @@ class MediaStreamAudioFifo {
     if (audio_source_intermediate_) {
       for (int i = 0; i < destination_->bus()->channels(); ++i) {
         audio_source_intermediate_->SetChannelData(
-            i,
-            const_cast<float*>(source.channel(i)));
+            i, const_cast<float*>(source.channel(i)));
       }
       audio_source_intermediate_->set_frames(source.frames());
       source_to_push = audio_source_intermediate_.get();
@@ -198,8 +181,9 @@ class MediaStreamAudioFifo {
 
     if (fifo_) {
       CHECK_LT(fifo_->frames(), destination_->bus()->frames());
-      next_audio_delay_ = audio_delay +
-          fifo_->frames() * base::TimeDelta::FromSeconds(1) / sample_rate_;
+      next_audio_delay_ = audio_delay + fifo_->frames() *
+                                            base::TimeDelta::FromSeconds(1) /
+                                            sample_rate_;
       fifo_->Push(source_to_push);
     } else {
       CHECK(!data_available_);
@@ -221,9 +205,8 @@ class MediaStreamAudioFifo {
 
       fifo_->Consume(destination_->bus(), 0, destination_->bus()->frames());
       *audio_delay = next_audio_delay_;
-      next_audio_delay_ -=
-          destination_->bus()->frames() * base::TimeDelta::FromSeconds(1) /
-              sample_rate_;
+      next_audio_delay_ -= destination_->bus()->frames() *
+                           base::TimeDelta::FromSeconds(1) / sample_rate_;
     } else {
       if (!data_available_)
         return false;
@@ -239,7 +222,7 @@ class MediaStreamAudioFifo {
  private:
   THREAD_CHECKER(thread_checker_);
   const int source_channels_;  // For a DCHECK.
-  const int source_frames_;  // For a DCHECK.
+  const int source_frames_;    // For a DCHECK.
   const int sample_rate_;
   std::unique_ptr<media::AudioBus> audio_source_intermediate_;
   std::unique_ptr<MediaStreamAudioBus> destination_;
@@ -544,7 +527,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   // If the experimental AGC is enabled, check for overridden config params.
   if (properties.goog_experimental_auto_gain_control) {
-    auto startup_min_volume = GetStartupMinVolumeForAgc();
+    auto startup_min_volume = Platform::Current()->GetAgcStartupMinimumVolume();
     auto* experimental_agc =
         new webrtc::ExperimentalAgc(true, startup_min_volume.value_or(0));
     experimental_agc->digital_adaptive_disabled =
@@ -558,13 +541,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   // Create and configure the webrtc::AudioProcessing.
-  base::Optional<std::string> audio_processing_platform_config_json;
-  if (GetContentClient() && GetContentClient()->renderer()) {
-    audio_processing_platform_config_json =
-        GetContentClient()
-            ->renderer()
-            ->WebRTCPlatformSpecificAudioProcessingConfiguration();
-  }
+  base::Optional<std::string> audio_processing_platform_config_json =
+      Platform::Current()->GetWebRTCAudioProcessingConfiguration();
   webrtc::AudioProcessingBuilder ap_builder;
   if (properties.EchoCancellationIsWebRtcProvided()) {
     webrtc::EchoCanceller3Config aec3_config;
@@ -645,9 +623,10 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
                                      blink::kAudioProcessingSampleRate
 #endif  // defined(IS_CHROMECAST)
                                      : input_format.sample_rate();
-  media::ChannelLayout output_channel_layout = audio_processing_ ?
-      media::GuessChannelLayout(kAudioProcessingNumberOfChannels) :
-      input_format.channel_layout();
+  media::ChannelLayout output_channel_layout =
+      audio_processing_
+          ? media::GuessChannelLayout(kAudioProcessingNumberOfChannels)
+          : input_format.channel_layout();
 
   // The output channels from the fifo is normally the same as input.
   int fifo_output_channels = input_format.channels();
@@ -681,21 +660,17 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
   }
 
   output_format_ = media::AudioParameters(
-      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      output_channel_layout,
-      output_sample_rate,
-      output_frames);
+      media::AudioParameters::AUDIO_PCM_LOW_LATENCY, output_channel_layout,
+      output_sample_rate, output_frames);
 
   capture_fifo_.reset(
-      new MediaStreamAudioFifo(input_format.channels(),
-                               fifo_output_channels,
+      new MediaStreamAudioFifo(input_format.channels(), fifo_output_channels,
                                input_format.frames_per_buffer(),
-                               processing_frames,
-                               input_format.sample_rate()));
+                               processing_frames, input_format.sample_rate()));
 
   if (audio_processing_) {
-    output_bus_.reset(new MediaStreamAudioBus(output_format_.channels(),
-                                              output_frames));
+    output_bus_.reset(
+        new MediaStreamAudioBus(output_format_.channels(), output_frames));
   }
 }
 
@@ -766,4 +741,4 @@ void MediaStreamAudioProcessor::UpdateAecStats() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
 }
 
-}  // namespace content
+}  // namespace blink

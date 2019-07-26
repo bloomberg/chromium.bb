@@ -660,15 +660,18 @@ _CONFIG = [
             'base::AutoLock',
             'base::Hash',
             'base::Lock',
+            'base::StringPrintf',
             'base::TaskRunner',
             # TODO(crbug.com/704136): Switch to using frame-based task runners.
             'base::ThreadTaskRunnerHandle',
+            'base::subtle::NoBarrier_.+',
             'cc::SkiaPaintCanvas',
             'cc::UpdateSubmissionStateCB',
             'cc::VideoFrameProvider',
             'cc::VideoLayer',
             'gpu::gles2::GLES2Interface',
             'libyuv::.+',
+            "rtc::RefCountedObject",
             'viz::.+',
             'webrtc::AudioTrackInterface',
             'webrtc::VideoTrackInterface',
@@ -704,6 +707,9 @@ _CONFIG = [
             'media::.+',
             'rtc::scoped_refptr',
             'webrtc::AudioSourceInterface',
+            'webrtc::AudioTransport',
+            'webrtc::kAdmMaxDeviceNameSize',
+            'webrtc::kAdmMaxGuidSize',
         ]
     },
     {

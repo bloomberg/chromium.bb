@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_constraints_util_audio.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_audio.h"
 
 #include <algorithm>
 #include <cmath>
@@ -12,7 +12,6 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
-#include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
@@ -24,8 +23,11 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
+#include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
 
-namespace content {
+// TODO(crbug.com/704136): Replace the use of std::vector by WTF::Vector.
+
+namespace blink {
 
 using blink::AudioCaptureSettings;
 using blink::AudioProcessingProperties;
@@ -420,8 +422,8 @@ class EchoCancellationContainer {
       types.push_back(EchoCancellationType::kEchoCancellationDisabled);
 
     if (ec_set.Contains(true)) {
-        types.push_back(EchoCancellationType::kEchoCancellationAec3);
-        types.push_back(EchoCancellationType::kEchoCancellationSystem);
+      types.push_back(EchoCancellationType::kEchoCancellationAec3);
+      types.push_back(EchoCancellationType::kEchoCancellationSystem);
     }
 
     return EchoCancellationTypeSet(types);
@@ -1175,8 +1177,7 @@ class DeviceContainer {
                                    int effects) {
     SourceType source_type;
     AudioProcessingProperties properties;
-    ProcessedLocalAudioSource* processed_source =
-        ProcessedLocalAudioSource::From(source);
+    auto* processed_source = ProcessedLocalAudioSource::From(source);
     base::Optional<int> channels;
     base::Optional<int> sample_rate;
     base::Optional<double> latency;
@@ -1463,4 +1464,4 @@ std::tuple<double, double> GetMinMaxLatenciesForAudioParameters(
           .InSecondsF());
 }
 
-}  // namespace content
+}  // namespace blink

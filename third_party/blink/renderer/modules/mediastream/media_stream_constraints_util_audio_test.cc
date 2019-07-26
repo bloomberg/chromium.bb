@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_constraints_util_audio.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_audio.h"
 
 #include <algorithm>
 #include <cmath>
@@ -12,10 +12,7 @@
 
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
-#include "content/renderer/media/stream/processed_local_audio_source.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "media/base/audio_parameters.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,12 +23,32 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/local_media_stream_audio_source.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_constraint_factory.h"
+#include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
+#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
-namespace content {
+namespace blink {
 
 using blink::AudioCaptureSettings;
 using blink::AudioProcessingProperties;
 using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
+
+// Test blink::Platform imlementation that overrides the known methods needed
+// by the tests, including creation of WebRtcAudioDevice instances.
+class WebRtcAudioDeviceTestingPlatformSupport
+    : public IOTaskRunnerTestingPlatformSupport {
+ public:
+  WebRtcAudioDeviceTestingPlatformSupport()
+      : webrtc_audio_device_(
+            new rtc::RefCountedObject<WebRtcAudioDeviceImpl>()) {}
+  blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() override {
+    return webrtc_audio_device_.get();
+  }
+
+ private:
+  scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device_;
+};
 
 namespace {
 
@@ -42,7 +59,8 @@ using MockFactoryAccessor =
     blink::WebMediaTrackConstraintSet& (blink::MockConstraintFactory::*)();
 
 const BoolSetFunction kBoolSetFunctions[] = {
-    &blink::BooleanConstraint::SetExact, &blink::BooleanConstraint::SetIdeal,
+    &blink::BooleanConstraint::SetExact,
+    &blink::BooleanConstraint::SetIdeal,
 };
 
 const MockFactoryAccessor kFactoryAccessors[] = {
@@ -113,8 +131,9 @@ class MediaStreamConstraintsUtilAudioTestBase {
     device.input.set_effects(effects);
 
     return std::make_unique<ProcessedLocalAudioSource>(
-        -1, device, disable_local_echo, properties, base::NullCallback(),
-        &pc_factory_, blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+        nullptr /*web_frame*/, device, disable_local_echo, properties,
+        base::NullCallback(),
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
   std::unique_ptr<ProcessedLocalAudioSource> GetProcessedLocalAudioSource(
@@ -420,9 +439,8 @@ class MediaStreamConstraintsUtilAudioTestBase {
       blink::WebString::FromASCII("system")};
 
  private:
-  // Required for tests involving a MediaStreamAudioSource.
-  base::test::ScopedTaskEnvironment task_environment_;
-  MockPeerConnectionDependencyFactory pc_factory_;
+  ScopedTestingPlatformSupport<WebRtcAudioDeviceTestingPlatformSupport>
+      platform_;
 };
 
 class MediaStreamConstraintsUtilAudioTest
@@ -1933,4 +1951,4 @@ INSTANTIATE_TEST_SUITE_P(,
                          MediaStreamConstraintsRemoteAPMTest,
                          testing::Bool());
 
-}  // namespace content
+}  // namespace blink

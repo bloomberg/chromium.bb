@@ -18,16 +18,17 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/renderer/media/stream/media_stream_audio_processor.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_constraint_factory.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
@@ -38,7 +39,7 @@ using ::testing::Return;
 
 using media::AudioParameters;
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -75,14 +76,14 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
 
  protected:
   // Helper method to save duplicated code.
-  void ProcessDataAndVerifyFormat(MediaStreamAudioProcessor* audio_processor,
-                                  int expected_output_sample_rate,
-                                  int expected_output_channels,
-                                  int expected_output_buffer_size) {
+  void ProcessDataAndVerifyFormat(
+      blink::MediaStreamAudioProcessor* audio_processor,
+      int expected_output_sample_rate,
+      int expected_output_channels,
+      int expected_output_buffer_size) {
     // Read the audio data from a file.
     const media::AudioParameters& params = audio_processor->InputFormat();
-    const int packet_size =
-        params.frames_per_buffer() * 2 * params.channels();
+    const int packet_size = params.frames_per_buffer() * 2 * params.channels();
     const size_t length = packet_size * kNumberOfPacketsForTest;
     std::unique_ptr<char[]> capture_data(new char[length]);
     ReadDataFromSpeechFile(capture_data.get(), length);
@@ -107,7 +108,7 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
         base::TimeDelta::FromMilliseconds(20);
     const base::TimeDelta output_buffer_duration =
         expected_output_buffer_size * base::TimeDelta::FromSeconds(1) /
-            expected_output_sample_rate;
+        expected_output_sample_rate;
     for (int i = 0; i < kNumberOfPacketsForTest; ++i) {
       data_bus->FromInterleaved<media::SignedInt16SampleTypeTraits>(
           data_ptr, data_bus->frames());
@@ -132,7 +133,7 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
       base::TimeDelta capture_delay;
       int new_volume = 0;
       while (audio_processor->ProcessAndConsumeData(
-                 255, false, &processed_data, &capture_delay, &new_volume)) {
+          255, false, &processed_data, &capture_delay, &new_volume)) {
         EXPECT_TRUE(processed_data);
         EXPECT_NEAR(input_capture_delay.InMillisecondsF(),
                     capture_delay.InMillisecondsF(),
@@ -213,10 +214,8 @@ TEST_F(MediaStreamAudioProcessorTest, TurnOffDefaultConstraints) {
   EXPECT_FALSE(audio_processor->has_audio_processing());
   audio_processor->OnCaptureFormatChanged(params_);
 
-  ProcessDataAndVerifyFormat(audio_processor.get(),
-                             params_.sample_rate(),
-                             params_.channels(),
-                             params_.sample_rate() / 100);
+  ProcessDataAndVerifyFormat(audio_processor.get(), params_.sample_rate(),
+                             params_.channels(), params_.sample_rate() / 100);
 
   // Stop |audio_processor| so that it removes itself from
   // |webrtc_audio_device| and clears its pointer to it.
@@ -395,4 +394,4 @@ TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestWithKeyboardMicChannel) {
   audio_processor->Stop();
 }
 
-}  // namespace content
+}  // namespace blink

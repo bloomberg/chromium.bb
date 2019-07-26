@@ -471,7 +471,9 @@ jumbo_component("platform") {
     "data_resource_helper.h",
     "exported/file_path_conversion.cc",
     "exported/interface_registry.cc",
+    "exported/mediastream/audio_service_audio_processor_proxy.cc",
     "exported/mediastream/media_stream_audio_level_calculator.cc",
+    "exported/mediastream/media_stream_audio_processor.cc",
     "exported/mediastream/media_stream_audio_processor_options.cc",
     "exported/mediastream/media_stream_audio_source.cc",
     "exported/mediastream/media_stream_audio_track.cc",
@@ -1183,6 +1185,8 @@ jumbo_component("platform") {
     "mac/web_core_ns_cell_extras.h",
     "mac/web_core_ns_cell_extras.mm",
     "media/webaudiosourceprovider_impl.cc",
+    "mediastream/aec_dump_agent_impl.cc",
+    "mediastream/aec_dump_agent_impl.h",
     "mediastream/media_stream_center.cc",
     "mediastream/media_stream_center.h",
     "mediastream/media_stream_component.cc",
@@ -1426,8 +1430,10 @@ jumbo_component("platform") {
     "//third_party/ced",
     "//third_party/emoji-segmenter",
     "//third_party/icu",
+    "//third_party/webrtc/api/audio:aec3_config_json",
     "//third_party/webrtc/p2p:rtc_p2p",
     "//third_party/webrtc_overrides:init_webrtc",
+    "//third_party/webrtc_overrides:task_queue_factory",
     "//third_party/zlib/google:compression_utils",
     "//ui/base:base",
     "//ui/gfx",
@@ -1627,6 +1633,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "bindings/runtime_call_stats_test.cc",
     "exported/file_path_conversion_test.cc",
     "exported/mediastream/media_stream_audio_processor_options_test.cc",
+    "exported/mediastream/media_stream_audio_processor_test.cc",
     "exported/mediastream/media_stream_audio_test.cc",
     "exported/mediastream/webrtc_uma_histograms_test.cc",
     "exported/web_canonical_cookie_test.cc",
@@ -1898,6 +1905,9 @@ group("blink_platform_unittests_data") {
     # Required by some image decoder tests.
     "image-decoders/testing/",
     "//third_party/blink/web_tests/images/resources/",
+
+    # Required by some mediastream tests.
+    "//media/test/data/",
   ]
 }
 

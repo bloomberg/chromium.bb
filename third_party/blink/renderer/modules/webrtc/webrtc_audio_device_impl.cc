@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
-#include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/sample_rates.h"
+#include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_renderer.h"
 
 using media::AudioParameters;
 using media::ChannelLayout;
 
-namespace content {
+namespace blink {
 
 WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
     : audio_processing_id_(base::UnguessableToken::Create()),
@@ -142,7 +142,7 @@ int32_t WebRtcAudioDeviceImpl::RegisterAudioCallback(
   DVLOG(1) << "WebRtcAudioDeviceImpl::RegisterAudioCallback()";
   DCHECK_CALLED_ON_VALID_THREAD(signaling_thread_checker_);
   base::AutoLock lock(lock_);
-  DCHECK_EQ(audio_transport_callback_ == nullptr, audio_callback != nullptr);
+  DCHECK_EQ(!audio_transport_callback_, !!audio_callback);
   audio_transport_callback_ = audio_callback;
   return 0;
 }
@@ -430,4 +430,4 @@ WebRtcAudioDeviceImpl::GetAuthorizedDeviceSessionIdForAudioRenderer() {
   return device.session_id();
 }
 
-}  // namespace content
+}  // namespace blink

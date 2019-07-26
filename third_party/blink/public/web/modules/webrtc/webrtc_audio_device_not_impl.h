@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_AUDIO_DEVICE_NOT_IMPL_H_
-#define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_AUDIO_DEVICE_NOT_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_NOT_IMPL_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_NOT_IMPL_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/modules/audio_device/include/audio_device.h"
 
-namespace content {
+namespace blink {
 
 // WebRtcAudioDeviceNotImpl contains default implementations of all methods
 // in the webrtc::AudioDeviceModule which are currently not supported in Chrome.
@@ -20,7 +20,10 @@ namespace content {
 // this class. The main purpose of breaking out non-implemented methods into
 // a separate unit is to make WebRtcAudioDeviceImpl more readable and easier
 // to maintain.
-class CONTENT_EXPORT WebRtcAudioDeviceNotImpl
+//
+// TODO(crbug.com/704136): Move this class out of the Blink exposed API
+// when all users of it have been Onion souped.
+class BLINK_MODULES_EXPORT WebRtcAudioDeviceNotImpl
     : public webrtc::AudioDeviceModule {
  public:
   WebRtcAudioDeviceNotImpl();
@@ -84,6 +87,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceNotImpl
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioDeviceNotImpl);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_AUDIO_DEVICE_NOT_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_NOT_IMPL_H_
