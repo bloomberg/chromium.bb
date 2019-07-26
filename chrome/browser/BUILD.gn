@@ -2032,6 +2032,7 @@ jumbo_split_static_library("browser") {
     "//components/services/patch/public/mojom",
     "//components/services/quarantine",
     "//components/services/quarantine/public/mojom",
+    "//components/services/unzip/content",
     "//components/services/unzip/public/mojom",
     "//components/sessions",
     "//components/signin/core/browser",
@@ -5425,6 +5426,7 @@ static_library("test_support") {
     "//components/prefs:test_support",
     "//components/safe_browsing:csd_proto",
     "//components/search_engines:test_support",
+    "//components/services/unzip/content",
     "//components/sessions:test_support",
     "//components/signin/public/identity_manager:test_support",
     "//components/subresource_filter/core/browser:test_support",
@@ -5586,6 +5588,7 @@ static_library("test_support") {
     ]
     deps += [
       "//components/drive:test_support",
+      "//components/services/unzip:in_process",
       "//components/storage_monitor:test_support",
       "//extensions:test_support",
       "//google_apis:test_support",

@@ -23,8 +23,8 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/services/patch/patch_service.h"
 #include "components/services/patch/public/mojom/constants.mojom.h"
-#include "components/services/unzip/public/mojom/constants.mojom.h"
-#include "components/services/unzip/unzip_service.h"
+#include "components/services/unzip/public/mojom/unzipper.mojom.h"
+#include "components/services/unzip/unzipper_impl.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -211,9 +211,6 @@ std::unique_ptr<service_manager::Service>
 ChromeContentUtilityClient::MaybeCreateMainThreadService(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
-  if (service_name == unzip::mojom::kServiceName)
-    return std::make_unique<unzip::UnzipService>(std::move(request));
-
   if (service_name == patch::mojom::kServiceName)
     return std::make_unique<patch::PatchService>(std::move(request));
 
@@ -324,8 +321,13 @@ void ChromeContentUtilityClient::RunMainThreadService(
 #if defined(OS_WIN)
   if (auto util_receiver = receiver.As<chrome::mojom::UtilWin>()) {
     static base::NoDestructor<UtilWinImpl> service(std::move(util_receiver));
+    return;
   }
 #endif
+  if (auto unzipper_receiver = receiver.As<unzip::mojom::Unzipper>()) {
+    static base::NoDestructor<unzip::UnzipperImpl> service(
+        std::move(unzipper_receiver));
+  }
 }
 
 void ChromeContentUtilityClient::RunIOThreadService(
@@ -335,7 +337,6 @@ void ChromeContentUtilityClient::RunIOThreadService(
           receiver->As<proxy_resolver::mojom::ProxyResolverFactory>()) {
     static base::NoDestructor<proxy_resolver::ProxyResolverFactoryImpl> factory(
         std::move(factory_receiver));
-    return;
   }
 #endif  // !defined(OS_ANDROID)
 }

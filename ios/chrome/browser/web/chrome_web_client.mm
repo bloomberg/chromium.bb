@@ -12,8 +12,6 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/services/patch/patch_service.h"
 #include "components/services/patch/public/mojom/constants.mojom.h"
-#include "components/services/unzip/public/mojom/constants.mojom.h"
-#include "components/services/unzip/unzip_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
@@ -242,10 +240,6 @@ void ChromeWebClient::PrepareErrorPage(web::WebState* web_state,
 std::unique_ptr<service_manager::Service> ChromeWebClient::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
-  if (service_name == unzip::mojom::kServiceName) {
-    // The Unzip service is used by the component updater.
-    return std::make_unique<unzip::UnzipService>(std::move(request));
-  }
   if (service_name == patch::mojom::kServiceName) {
     // The Patch service is used by the component updater.
     return std::make_unique<patch::PatchService>(std::move(request));
