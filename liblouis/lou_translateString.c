@@ -1979,6 +1979,7 @@ for_selectRule(const TranslationTableHeader *table, int pos, OutString output, i
 					case CTO_Literal:
 						return;
 					case CTO_Repeated:
+						if (dontContract || (mode & noContractions)) break;
 						if ((mode & (compbrlAtCursor | compbrlLeftCursor)) &&
 								pos >= compbrlStart && pos <= compbrlEnd)
 							break;
