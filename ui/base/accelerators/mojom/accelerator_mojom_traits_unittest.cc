@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/accelerators/mojo/accelerator_struct_traits.h"
+#include "ui/base/accelerators/mojom/accelerator_mojom_traits.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/accelerators/mojo/accelerator.mojom.h"
+#include "ui/base/accelerators/mojom/accelerator.mojom.h"
 #include "ui/events/event_constants.h"
 
 namespace ui {

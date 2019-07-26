@@ -19,7 +19,7 @@ mojom("mojo") {
 
   public_deps = [
     "//mojo/public/mojom/base",
-    "//ui/base/accelerators/mojo:interfaces",
+    "//ui/base/accelerators/mojom",
     "//ui/base/mojom",
     "//ui/display/mojom",
     "//ui/events/mojo:interfaces",

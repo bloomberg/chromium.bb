@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//ui/base/accelerators/mojo/accelerator.mojom"
+mojom = "//ui/base/accelerators/mojom/accelerator.mojom"
 public_headers = [ "//ui/base/accelerators/accelerator.h" ]
-traits_headers = [ "//ui/base/accelerators/mojo/accelerator_struct_traits.h" ]
+traits_headers = [ "//ui/base/accelerators/mojom/accelerator_mojom_traits.h" ]
 deps = [
-  "//ui/base/accelerators/mojo:struct_traits",
+  "//ui/base/accelerators/mojom:mojom_traits",
 ]
 type_mappings = [
   "ui.mojom.Accelerator=ui::Accelerator",

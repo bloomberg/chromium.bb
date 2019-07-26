@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_ACCELERATORS_MOJO_ACCELERATOR_STRUCT_TRAITS_H_
-#define UI_BASE_ACCELERATORS_MOJO_ACCELERATOR_STRUCT_TRAITS_H_
+#ifndef UI_BASE_ACCELERATORS_MOJOM_ACCELERATOR_MOJOM_TRAITS_H_
+#define UI_BASE_ACCELERATORS_MOJOM_ACCELERATOR_MOJOM_TRAITS_H_
 
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/accelerators/mojo/accelerator.mojom-shared.h"
+#include "ui/base/accelerators/mojom/accelerator.mojom-shared.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace mojo {
@@ -68,4 +68,4 @@ struct StructTraits<ui::mojom::AcceleratorDataView, ui::Accelerator> {
 
 }  // namespace mojo
 
-#endif  // UI_BASE_ACCELERATORS_MOJO_ACCELERATOR_STRUCT_TRAITS_H_
+#endif  // UI_BASE_ACCELERATORS_MOJOM_ACCELERATOR_MOJOM_TRAITS_H_

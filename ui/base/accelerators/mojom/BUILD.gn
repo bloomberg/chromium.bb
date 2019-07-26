@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("mojom") {
   sources = [
     "accelerator.mojom",
   ]
@@ -14,12 +14,12 @@ mojom("interfaces") {
   ]
 }
 
-source_set("struct_traits") {
+source_set("mojom_traits") {
   sources = [
-    "accelerator_struct_traits.h",
+    "accelerator_mojom_traits.h",
   ]
   public_deps = [
-    ":interfaces_shared_cpp_sources",
+    ":mojom_shared_cpp_sources",
     "//mojo/public/mojom/base",
     "//ui/base",
     "//ui/events",
@@ -29,11 +29,11 @@ source_set("struct_traits") {
 source_set("unittests") {
   testonly = true
   sources = [
-    "accelerator_struct_traits_unittest.cc",
+    "accelerator_mojom_traits_unittest.cc",
   ]
   deps = [
-    ":interfaces",
-    ":struct_traits",
+    ":mojom",
+    ":mojom_traits",
     "//testing/gtest",
     "//ui/base",
     "//ui/events",

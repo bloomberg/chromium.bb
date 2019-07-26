@@ -49,7 +49,7 @@ _typemap_imports = [
   "//third_party/blink/common/typemaps.gni",
   "//third_party/blink/public/public_typemaps.gni",
   "//ui/accessibility/mojom/typemaps.gni",
-  "//ui/base/accelerators/mojo/typemaps.gni",
+  "//ui/base/accelerators/mojom/typemaps.gni",
   "//ui/base/ime/mojo/typemaps.gni",
   "//ui/base/mojom/typemaps.gni",
   "//ui/display/mojom/typemaps.gni",
