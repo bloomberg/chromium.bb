@@ -167,23 +167,13 @@ void EmbeddedSharedWorkerStub::WorkerContextDestroyed() {
 
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
-  if (blink::features::IsOffMainThreadSharedWorkerScriptFetchEnabled()) {
-    // Off-the-main-thread shared worker script fetch:
-    // |response_override_| will be passed to WebWorkerFetchContextImpl in
-    // CreateWorkerFetchContext() and consumed during off-the-main-thread
-    // shared worker script fetch.
-    return ServiceWorkerNetworkProviderForSharedWorker::Create(
-        std::move(service_worker_provider_info_), std::move(controller_info_),
-        subresource_loader_factory_bundle_, IsOriginSecure(url_),
-        nullptr /* response_override */);
-  }
-
-  // |response_override_| is passed to DocumentLoader and consumed during
-  // on-the-main-thread shared worker script fetch.
+  // |response_override_| will be passed to WebWorkerFetchContextImpl in
+  // CreateWorkerFetchContext() and consumed during shared worker script fetch
+  // on the worker thread.
   return ServiceWorkerNetworkProviderForSharedWorker::Create(
       std::move(service_worker_provider_info_), std::move(controller_info_),
       subresource_loader_factory_bundle_, IsOriginSecure(url_),
-      std::move(response_override_));
+      nullptr /* response_override */);
 }
 
 scoped_refptr<blink::WebWorkerFetchContext>
@@ -219,11 +209,9 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   worker_fetch_context->set_is_secure_context(IsOriginSecure(url_));
   worker_fetch_context->set_origin_url(url_.GetOrigin());
 
-  if (response_override_) {
-    DCHECK(blink::features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
-    worker_fetch_context->SetResponseOverrideForMainScript(
-        std::move(response_override_));
-  }
+  DCHECK(response_override_);
+  worker_fetch_context->SetResponseOverrideForMainScript(
+      std::move(response_override_));
 
   return worker_fetch_context;
 }
