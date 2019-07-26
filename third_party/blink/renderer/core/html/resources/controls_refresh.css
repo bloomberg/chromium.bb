@@ -47,6 +47,30 @@ button:disabled {
   border-color: #c5c5c5;
 }
 
+input[type="password" i]::-internal-reveal {
+  width: 1.3em;
+  height: 1.3em;
+  cursor: default;
+  flex: none;
+  background-image: -webkit-image-set(url(images/password_reveal_on.svg) 1x);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  margin-left: 3px;
+  margin-right: 3px;
+}
+
+input[type="password" i]::-internal-reveal.reveal {
+  background-image: -webkit-image-set(url(images/password_reveal_off.svg) 1x);
+}
+
+input[type="password" i]::-internal-reveal:hover,
+input[type="password" i]::-internal-reveal:focus {
+  background-color: #F7F7F7;
+  border-radius: 1px;
+  cursor: pointer;
+}
+
 input[type="range" i] {
   color: #101010;
 }
