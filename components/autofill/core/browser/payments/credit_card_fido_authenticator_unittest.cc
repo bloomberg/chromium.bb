@@ -70,6 +70,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
+#include "components/autofill/core/browser/payments/payments_service_url.h"
+
 using base::ASCIIToUTF16;
 
 namespace autofill {
@@ -77,6 +79,13 @@ namespace {
 
 const char kTestGUID[] = "00000000-0000-0000-0000-000000000001";
 const char kTestNumber[] = "4234567890123456";  // Visa
+const char kTestRelyingPartyId[] = "google.com";
+// Base64 encoding of "This is a test challenge".
+constexpr char kTestChallenge[] = "VGhpcyBpcyBhIHRlc3QgY2hhbGxlbmdl";
+// Base64 encoding of "This is a test Credential ID".
+const char kTestCredentialId[] = "VGhpcyBpcyBhIHRlc3QgQ3JlZGVudGlhbCBJRC4=";
+// Base64 encoding of "This is a test signature".
+const char kTestSignature[] = "VGhpcyBpcyBhIHRlc3Qgc2lnbmF0dXJl";
 
 std::string NextMonth() {
   base::Time::Exploded now;
@@ -84,6 +93,20 @@ std::string NextMonth() {
   return base::NumberToString(now.month % 12 + 1);
 }
 
+std::vector<uint8_t> Base64ToBytes(std::string base64) {
+  std::string bytes;
+  bool did_succeed = base::Base64Decode(base::StringPiece(base64), &bytes);
+  if (did_succeed) {
+    return std::vector<uint8_t>(bytes.begin(), bytes.end());
+  }
+  return std::vector<uint8_t>{};
+}
+
+std::string BytesToBase64(const std::vector<uint8_t> bytes) {
+  std::string base64;
+  base::Base64Encode(std::string(bytes.begin(), bytes.end()), &base64);
+  return base64;
+}
 }  // namespace
 
 class CreditCardFIDOAuthenticatorTest : public testing::Test {
@@ -140,6 +163,47 @@ class CreditCardFIDOAuthenticatorTest : public testing::Test {
     return masked_server_card;
   }
 
+  base::Value GetTestRequestOptions(std::string challenge,
+                                    std::string credential_id,
+                                    std::string relying_party_id) {
+    base::Value request_options = base::Value(base::Value::Type::DICTIONARY);
+
+    // Building the following JSON structure--
+    // request_options = {
+    //   "challenge": challenge,
+    //   "timeout_millis": kTestTimeoutSeconds,
+    //   "relying_party_id": relying_party_id,
+    //   "key_info": [{
+    //       "credential_id": credential_id,
+    //       "authenticator_transport_support": ["INTERNAL"]
+    // }]}
+    request_options.SetKey("relying_party_id", base::Value(relying_party_id));
+    request_options.SetKey("challenge", base::Value(challenge));
+
+    base::Value key_info(base::Value::Type::DICTIONARY);
+    key_info.SetKey("credential_id", base::Value(credential_id));
+    key_info.SetKey("authenticator_transport_support",
+                    base::Value(base::Value::Type::LIST));
+    key_info
+        .FindKeyOfType("authenticator_transport_support",
+                       base::Value::Type::LIST)
+        ->GetList()
+        .push_back(base::Value("INTERNAL"));
+
+    request_options.SetKey("key_info", base::Value(base::Value::Type::LIST));
+    request_options.FindKeyOfType("key_info", base::Value::Type::LIST)
+        ->GetList()
+        .push_back(std::move(key_info));
+    return request_options;
+  }
+
+  // Invokes GetRealPan callback.
+  void GetRealPan(AutofillClient::PaymentsRpcResult result,
+                  const std::string& real_pan) {
+    DCHECK(fido_authenticator_->full_card_request_);
+    fido_authenticator_->full_card_request_->OnDidGetRealPan(result, real_pan);
+  }
+
  protected:
   std::unique_ptr<TestAuthenticationRequester> requester_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -163,12 +227,85 @@ TEST_F(CreditCardFIDOAuthenticatorTest, IsUserVerifiableFalse) {
   EXPECT_FALSE(requester_->is_user_verifiable().value());
 }
 
-TEST_F(CreditCardFIDOAuthenticatorTest, AuthenticateCardFailure) {
+TEST_F(CreditCardFIDOAuthenticatorTest, ParseRequestOptions) {
+  base::Value request_options_json = GetTestRequestOptions(
+      kTestChallenge, kTestCredentialId, kTestRelyingPartyId);
+
+  PublicKeyCredentialRequestOptionsPtr request_options_ptr =
+      fido_authenticator_->ParseRequestOptions(std::move(request_options_json));
+  EXPECT_EQ(kTestChallenge, BytesToBase64(request_options_ptr->challenge));
+  EXPECT_EQ(kTestRelyingPartyId, request_options_ptr->relying_party_id);
+  EXPECT_EQ(kTestCredentialId,
+            BytesToBase64(request_options_ptr->allow_credentials.front().id()));
+}
+
+TEST_F(CreditCardFIDOAuthenticatorTest, ParseAssertionResponse) {
+  GetAssertionAuthenticatorResponsePtr assertion_response_ptr =
+      GetAssertionAuthenticatorResponse::New();
+  assertion_response_ptr->info = blink::mojom::CommonCredentialInfo::New();
+  assertion_response_ptr->info->id = kTestCredentialId;
+  assertion_response_ptr->signature = Base64ToBytes(kTestSignature);
+
+  base::Value assertion_response_json =
+      fido_authenticator_->ParseAssertionResponse(
+          std::move(assertion_response_ptr));
+  EXPECT_EQ(kTestCredentialId,
+            *assertion_response_json.FindStringKey("credential_id"));
+  EXPECT_EQ(kTestSignature,
+            *assertion_response_json.FindStringKey("signature"));
+}
+
+TEST_F(CreditCardFIDOAuthenticatorTest, AuthenticateCardBadRequestOptions) {
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
 
   fido_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
-                                    base::TimeTicks::Now(), base::Value());
+                                    base::TimeTicks::Now(),
+                                    base::Value(base::Value::Type::DICTIONARY));
   EXPECT_FALSE(requester_->did_succeed());
+}
+
+TEST_F(CreditCardFIDOAuthenticatorTest,
+       AuthenticateCardUserVerificationFailed) {
+  CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
+
+  fido_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
+                                    base::TimeTicks::Now(),
+                                    base::Value(base::Value::Type::DICTIONARY));
+
+  TestCreditCardFIDOAuthenticator::GetAssertion(fido_authenticator_.get(),
+                                                /*did_succeed=*/false);
+  EXPECT_FALSE(requester_->did_succeed());
+}
+
+TEST_F(CreditCardFIDOAuthenticatorTest, AuthenticateCardPaymentsResponseError) {
+  CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
+
+  fido_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
+                                    base::TimeTicks::Now(),
+                                    base::Value(base::Value::Type::DICTIONARY));
+
+  TestCreditCardFIDOAuthenticator::GetAssertion(fido_authenticator_.get(),
+                                                /*did_succeed=*/true);
+  GetRealPan(AutofillClient::PaymentsRpcResult::NETWORK_ERROR, "");
+
+  EXPECT_FALSE(requester_->did_succeed());
+}
+
+TEST_F(CreditCardFIDOAuthenticatorTest, AuthenticateCardSuccess) {
+  CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
+
+  fido_authenticator_->Authenticate(
+      &card, requester_->GetWeakPtr(), base::TimeTicks::Now(),
+      GetTestRequestOptions(kTestChallenge, kTestCredentialId,
+                            kTestRelyingPartyId));
+
+  // Mock user verification and payments response.
+  TestCreditCardFIDOAuthenticator::GetAssertion(fido_authenticator_.get(),
+                                                /*did_succeed=*/true);
+  GetRealPan(AutofillClient::PaymentsRpcResult::SUCCESS, kTestNumber);
+
+  EXPECT_TRUE(requester_->did_succeed());
+  EXPECT_EQ(ASCIIToUTF16(kTestNumber), requester_->number());
 }
 
 }  // namespace autofill

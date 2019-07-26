@@ -13,11 +13,21 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "device/fido/fido_constants.h"
 #include "third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"
 
 namespace autofill {
 
+using blink::mojom::AuthenticatorStatus;
+using blink::mojom::GetAssertionAuthenticatorResponse;
+using blink::mojom::GetAssertionAuthenticatorResponsePtr;
 using blink::mojom::InternalAuthenticatorPtr;
+using blink::mojom::PublicKeyCredentialRequestOptions;
+using blink::mojom::PublicKeyCredentialRequestOptionsPtr;
+using device::CredentialType;
+using device::FidoTransportProtocol;
+using device::PublicKeyCredentialDescriptor;
+using device::UserVerificationRequirement;
 
 // Authenticates credit card unmasking through FIDO authentication, using the
 // WebAuthn specification, standardized by the FIDO alliance. The Webauthn
@@ -25,7 +35,8 @@ using blink::mojom::InternalAuthenticatorPtr;
 // and verify that binding. More information can be found here:
 // - https://www.w3.org/TR/webauthn-1/
 // - https://fidoalliance.org/fido2/
-class CreditCardFIDOAuthenticator {
+class CreditCardFIDOAuthenticator
+    : public payments::FullCardRequest::ResultDelegate {
  public:
   class Requester {
    public:
@@ -35,7 +46,7 @@ class CreditCardFIDOAuthenticator {
         const CreditCard* card = nullptr) = 0;
   };
   CreditCardFIDOAuthenticator(AutofillDriver* driver, AutofillClient* client);
-  virtual ~CreditCardFIDOAuthenticator();
+  ~CreditCardFIDOAuthenticator() override;
 
   // Authentication
   void Authenticate(const CreditCard* card,
@@ -55,6 +66,47 @@ class CreditCardFIDOAuthenticator {
   friend class AutofillManagerTest;
   friend class CreditCardAccessManagerTest;
   friend class CreditCardFIDOAuthenticatorTest;
+  friend class TestCreditCardFIDOAuthenticator;
+  FRIEND_TEST_ALL_PREFIXES(CreditCardFIDOAuthenticatorTest,
+                           ParseRequestOptions);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardFIDOAuthenticatorTest,
+                           ParseAssertionResponse);
+
+  // Invokes the WebAuthn prompt to request user verification to sign the
+  // challenge in |request_options|.
+  virtual void GetAssertion(
+      PublicKeyCredentialRequestOptionsPtr request_options);
+
+  // The callback invoked from the WebAuthn prompt including the
+  // |assertion_response|, which will be sent to Google Payments to retrieve
+  // card details.
+  void OnDidGetAssertion(
+      AuthenticatorStatus status,
+      GetAssertionAuthenticatorResponsePtr assertion_response);
+
+  // payments::FullCardRequest::ResultDelegate:
+  void OnFullCardRequestSucceeded(
+      const payments::FullCardRequest& full_card_request,
+      const CreditCard& card,
+      const base::string16& cvc) override;
+  void OnFullCardRequestFailed() override;
+
+  // Converts |request_options| from JSON to mojom pointer.
+  PublicKeyCredentialRequestOptionsPtr ParseRequestOptions(
+      const base::Value& request_options);
+
+  // Helper function to parse |key_info| sub-dictionary found in
+  // |request_options|.
+  PublicKeyCredentialDescriptor ParseCredentialDescriptor(
+      const base::Value& key_info);
+
+  // Converts |assertion_response| from mojom pointer to JSON.
+  base::Value ParseAssertionResponse(
+      GetAssertionAuthenticatorResponsePtr assertion_response);
+
+  // Returns true if |request_options| contains a challenge and has a non-empty
+  // list of keys that each have a Credential ID.
+  bool IsValidRequestOptions(const base::Value& request_options);
 
   // Card being unmasked.
   const CreditCard* card_;

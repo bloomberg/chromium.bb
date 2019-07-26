@@ -26,6 +26,19 @@ class TestCreditCardFIDOAuthenticator : public CreditCardFIDOAuthenticator {
                                            AutofillClient* client);
   ~TestCreditCardFIDOAuthenticator() override;
 
+  // CreditCardFIDOAuthenticator:
+  void GetAssertion(
+      PublicKeyCredentialRequestOptionsPtr request_options) override;
+
+  // Invokes fido_authenticator->OnDidGetAssertion().
+  static void GetAssertion(CreditCardFIDOAuthenticator* fido_authenticator,
+                           bool did_succeed);
+
+  // Getter methods to query Request Options.
+  std::vector<uint8_t> GetCredentialId();
+  std::vector<uint8_t> GetChallenge();
+  std::string GetRelyingPartyId();
+
   void SetUserVerifiable(bool is_user_verifiable) {
     is_user_verifiable_ = is_user_verifiable;
   }
@@ -42,6 +55,7 @@ class TestCreditCardFIDOAuthenticator : public CreditCardFIDOAuthenticator {
   friend class AutofillManagerTest;
   friend class CreditCardAccessManagerTest;
 
+  PublicKeyCredentialRequestOptionsPtr request_options_;
   bool is_user_verifiable_ = false;
   bool is_user_opted_in_ = false;
 

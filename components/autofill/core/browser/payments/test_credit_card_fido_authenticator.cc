@@ -20,6 +20,40 @@ TestCreditCardFIDOAuthenticator::TestCreditCardFIDOAuthenticator(
 
 TestCreditCardFIDOAuthenticator::~TestCreditCardFIDOAuthenticator() {}
 
+void TestCreditCardFIDOAuthenticator::GetAssertion(
+    PublicKeyCredentialRequestOptionsPtr request_options) {
+  request_options_ = std::move(request_options);
+}
+
+// static
+void TestCreditCardFIDOAuthenticator::GetAssertion(
+    CreditCardFIDOAuthenticator* fido_authenticator,
+    bool did_succeed) {
+  if (did_succeed) {
+    GetAssertionAuthenticatorResponsePtr response =
+        GetAssertionAuthenticatorResponse::New();
+    response->info = blink::mojom::CommonCredentialInfo::New();
+    fido_authenticator->OnDidGetAssertion(AuthenticatorStatus::SUCCESS,
+                                          std::move(response));
+  } else {
+    fido_authenticator->OnDidGetAssertion(
+        AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+  }
+}
+
+std::vector<uint8_t> TestCreditCardFIDOAuthenticator::GetCredentialId() {
+  DCHECK(!request_options_->allow_credentials.empty());
+  return request_options_->allow_credentials.front().id();
+}
+
+std::vector<uint8_t> TestCreditCardFIDOAuthenticator::GetChallenge() {
+  return request_options_->challenge;
+}
+
+std::string TestCreditCardFIDOAuthenticator::GetRelyingPartyId() {
+  return request_options_->relying_party_id;
+}
+
 void TestCreditCardFIDOAuthenticator::IsUserVerifiable(
     base::OnceCallback<void(bool)> callback) {
   return std::move(callback).Run(is_user_verifiable_);
