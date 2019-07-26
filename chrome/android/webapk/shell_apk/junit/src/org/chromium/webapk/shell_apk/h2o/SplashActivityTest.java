@@ -201,6 +201,25 @@ public final class SplashActivityTest {
         setAppTaskTopActivity(splashActivityController.get().getTaskId(), new Activity());
 
         splashActivityController.create(new Bundle()).visible();
+        splashActivityController.newIntent(new Intent());
+        splashActivityController.get().onActivityResult(0, 0, null);
+        splashActivityController.resume();
+
+        assertNotNull(mShadowApplication.getNextStartedActivity());
+        assertFalse(splashActivityController.get().isFinishing());
+    }
+
+    /**
+     * Test that SplashActivity does not finish itself when it receives onActivityResult()
+     * prior to onNewIntent().
+     */
+    @Test
+    public void testActivityResultBeforeNewIntent() {
+        ActivityController<SplashActivity> splashActivityController =
+                Robolectric.buildActivity(SplashActivity.class, new Intent());
+        setAppTaskTopActivity(splashActivityController.get().getTaskId(), new Activity());
+
+        splashActivityController.create(new Bundle()).visible();
         splashActivityController.get().onActivityResult(0, 0, null);
         splashActivityController.newIntent(new Intent());
         splashActivityController.resume();

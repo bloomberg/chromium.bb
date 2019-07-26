@@ -14,6 +14,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
@@ -26,6 +27,8 @@ import org.chromium.webapk.shell_apk.WebApkUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /** Displays splash screen. */
 public class SplashActivity extends Activity {
@@ -36,9 +39,17 @@ public class SplashActivity extends Activity {
     @SuppressWarnings("NoAndroidAsyncTaskCheck")
     private android.os.AsyncTask mScreenshotSplashTask;
 
+    @IntDef({ActivityResult.NONE, ActivityResult.CANCELED, ActivityResult.IGNORE})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface ActivityResult {
+        int NONE = 0;
+        int CANCELED = 1;
+        int IGNORE = 2;
+    }
+
     private View mSplashView;
     private HostBrowserLauncherParams mParams;
-    private boolean mGotCanceledResult;
+    private @ActivityResult int mResult;
     private boolean mResumed;
     private boolean mPendingLaunch;
 
@@ -67,7 +78,9 @@ public class SplashActivity extends Activity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        mGotCanceledResult = (resultCode == Activity.RESULT_CANCELED);
+        if (mResult != ActivityResult.IGNORE && resultCode == Activity.RESULT_CANCELED) {
+            mResult = ActivityResult.CANCELED;
+        }
     }
 
     @Override
@@ -79,7 +92,7 @@ public class SplashActivity extends Activity {
         // The host browser activity is killed - triggering SplashActivity#onActivityResult()
         // - when SplashActivity gets a new intent because SplashActivity has launchMode
         // "singleTask".
-        mGotCanceledResult = false;
+        mResult = ActivityResult.IGNORE;
 
         mPendingLaunch = true;
 
@@ -90,11 +103,12 @@ public class SplashActivity extends Activity {
     public void onResume() {
         super.onResume();
         mResumed = true;
-        if (mGotCanceledResult) {
+        if (mResult == ActivityResult.CANCELED) {
             WebApkUtils.finishAndRemoveTask(this);
             return;
         }
 
+        mResult = ActivityResult.NONE;
         maybeScreenshotSplashAndLaunch();
     }
 
