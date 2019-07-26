@@ -12,7 +12,6 @@
 #include "components/exo/seat_observer.h"
 #include "components/exo/surface.h"
 #include "components/exo/surface_observer.h"
-#include "components/exo/wm_helper.h"
 #include "ui/base/clipboard/clipboard_observer.h"
 
 namespace ui {
@@ -23,14 +22,13 @@ namespace exo {
 
 class DataDeviceDelegate;
 class DataOffer;
+class ScopedDataOffer;
 class DataSource;
 class FileHelper;
 class Seat;
+class ScopedSurface;
 
 enum class DndAction { kNone, kCopy, kMove, kAsk };
-
-class ScopedDataOffer;
-class ScopedSurface;
 
 // DataDevice to start drag and drop and copy and paste oprations.
 class DataDevice : public WMHelper::DragDropObserver,
@@ -51,7 +49,7 @@ class DataDevice : public WMHelper::DragDropObserver,
   // nullable image which is rendered at the next to cursor while drag
   // operation. |serial| is the unique number comes from input events which
   // triggers the drag and drop operation.
-  void StartDrag(const DataSource* source,
+  void StartDrag(DataSource* source,
                  Surface* origin,
                  Surface* icon,
                  uint32_t serial);

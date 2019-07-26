@@ -4,7 +4,6 @@
 
 #include "components/exo/data_device.h"
 
-#include "base/logging.h"
 #include "components/exo/data_device_delegate.h"
 #include "components/exo/data_offer.h"
 #include "components/exo/seat.h"
@@ -15,38 +14,6 @@
 #include "ui/base/dragdrop/drop_target_event.h"
 
 namespace exo {
-
-class ScopedDataOffer {
- public:
-  ScopedDataOffer(DataOffer* data_offer, DataOfferObserver* observer)
-      : data_offer_(data_offer), observer_(observer) {
-    data_offer_->AddObserver(observer_);
-  }
-  ~ScopedDataOffer() { data_offer_->RemoveObserver(observer_); }
-  DataOffer* get() { return data_offer_; }
-
- private:
-  DataOffer* const data_offer_;
-  DataOfferObserver* const observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedDataOffer);
-};
-
-class ScopedSurface {
- public:
-  ScopedSurface(Surface* surface, SurfaceObserver* observer)
-      : surface_(surface), observer_(observer) {
-    surface_->AddSurfaceObserver(observer_);
-  }
-  ~ScopedSurface() { surface_->RemoveSurfaceObserver(observer_); }
-  Surface* get() { return surface_; }
-
- private:
-  Surface* const surface_;
-  SurfaceObserver* const observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedSurface);
-};
 
 DataDevice::DataDevice(DataDeviceDelegate* delegate,
                        Seat* seat,
@@ -69,12 +36,12 @@ DataDevice::~DataDevice() {
   seat_->RemoveObserver(this);
 }
 
-void DataDevice::StartDrag(const DataSource* source_resource,
-                           Surface* origin_resource,
-                           Surface* icon_resource,
+void DataDevice::StartDrag(DataSource* source,
+                           Surface* origin,
+                           Surface* icon,
                            uint32_t serial) {
   // TODO(hirono): Check if serial is valid. crbug.com/746111
-  NOTIMPLEMENTED();
+  seat_->StartDrag(source, origin, icon);
 }
 
 void DataDevice::SetSelection(DataSource* source, uint32_t serial) {
