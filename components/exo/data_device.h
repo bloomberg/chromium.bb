@@ -13,6 +13,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/surface_observer.h"
 #include "ui/base/clipboard/clipboard_observer.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 
 namespace ui {
 class DropTargetEvent;
@@ -52,7 +53,7 @@ class DataDevice : public WMHelper::DragDropObserver,
   void StartDrag(DataSource* source,
                  Surface* origin,
                  Surface* icon,
-                 uint32_t serial);
+                 ui::DragDropTypes::DragEventSource event_source);
 
   // Sets selection data to the clipboard.
   // |source| represents data comes from the client. |serial| is the unique
@@ -77,6 +78,8 @@ class DataDevice : public WMHelper::DragDropObserver,
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
+
+  DataDeviceDelegate* get_delegate() { return delegate_; }
 
  private:
   Surface* GetEffectiveTargetForEvent(const ui::DropTargetEvent& event) const;

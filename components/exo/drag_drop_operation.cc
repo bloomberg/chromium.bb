@@ -14,7 +14,6 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "ui/aura/client/drag_drop_client.h"
-#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -60,21 +59,26 @@ DndAction DragOperationToDndAction(int op) {
 
 }  // namespace
 
-base::WeakPtr<DragDropOperation> DragDropOperation::Create(DataSource* source,
-                                                           Surface* origin,
-                                                           Surface* icon) {
-  auto* dnd_op = new DragDropOperation(source, origin, icon);
+base::WeakPtr<DragDropOperation> DragDropOperation::Create(
+    DataSource* source,
+    Surface* origin,
+    Surface* icon,
+    ui::DragDropTypes::DragEventSource event_source) {
+  auto* dnd_op = new DragDropOperation(source, origin, icon, event_source);
   return dnd_op->weak_ptr_factory_.GetWeakPtr();
 }
 
-DragDropOperation::DragDropOperation(DataSource* source,
-                                     Surface* origin,
-                                     Surface* icon)
+DragDropOperation::DragDropOperation(
+    DataSource* source,
+    Surface* origin,
+    Surface* icon,
+    ui::DragDropTypes::DragEventSource event_source)
     : SurfaceTreeHost("ExoDragDropOperation"),
       source_(std::make_unique<ScopedDataSource>(source, this)),
       origin_(std::make_unique<ScopedSurface>(origin, this)),
       drag_start_point_(display::Screen::GetScreen()->GetCursorScreenPoint()),
       os_exchange_data_(std::make_unique<ui::OSExchangeData>()),
+      event_source_(event_source),
       weak_ptr_factory_(this) {
   aura::Window* root_window = origin_->get()->window()->GetRootWindow();
   DCHECK(root_window);
@@ -86,9 +90,8 @@ DragDropOperation::DragDropOperation(DataSource* source,
 #endif
   DCHECK(drag_drop_controller_);
 
-  if (drag_drop_controller_->IsDragDropInProgress()) {
+  if (drag_drop_controller_->IsDragDropInProgress())
     drag_drop_controller_->DragCancel();
-  }
 
   drag_drop_controller_->AddObserver(this);
 
@@ -99,7 +102,9 @@ DragDropOperation::DragDropOperation(DataSource* source,
       base::BindOnce(&DragDropOperation::ScheduleStartDragDropOperation,
                      weak_ptr_factory_.GetWeakPtr());
 
-  counter_ = base::BarrierClosure(kMaxClipboardDataTypes,
+  // Make the count kMaxClipboardDataTypes + 1 so we can wait for the icon to be
+  // captured as well.
+  counter_ = base::BarrierClosure(kMaxClipboardDataTypes + 1,
                                   std::move(start_op_callback));
 
   source->GetDataForPreferredMimeTypes(
@@ -175,6 +180,11 @@ void DragDropOperation::OnDragIconCaptured(
                                         -icon_->get()->GetBufferOffset());
 #endif
   }
+
+  if (!captured_icon_) {
+    captured_icon_ = true;
+    counter_.Run();
+  }
 }
 
 void DragDropOperation::ScheduleStartDragDropOperation() {
@@ -198,9 +208,7 @@ void DragDropOperation::StartDragDropOperation() {
   int op = drag_drop_controller_->StartDragAndDrop(
       std::move(os_exchange_data_), origin_->get()->window()->GetRootWindow(),
       origin_->get()->window(), drag_start_point_, dnd_operations,
-
-      // We currently only support dragging with the mouse
-      ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_MOUSE);
+      event_source_);
 
   if (op) {
     // Success

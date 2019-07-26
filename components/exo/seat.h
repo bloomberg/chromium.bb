@@ -13,6 +13,7 @@
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/base/clipboard/clipboard_observer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/keycodes/dom/dom_codes.h"
 #include "ui/events/platform/platform_event_observer.h"
@@ -65,7 +66,10 @@ class Seat : public aura::client::FocusChangeObserver,
   // Sets clipboard data from |source|.
   void SetSelection(DataSource* source);
 
-  void StartDrag(DataSource* source, Surface* origin, Surface* icon);
+  void StartDrag(DataSource* source,
+                 Surface* origin,
+                 Surface* icon,
+                 ui::DragDropTypes::DragEventSource event_source);
 
   // Overridden from aura::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,

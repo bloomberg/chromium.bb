@@ -84,9 +84,12 @@ Surface* Seat::GetFocusedSurface() {
   return GetEffectiveFocus(WMHelper::GetInstance()->GetFocusedWindow());
 }
 
-void Seat::StartDrag(DataSource* source, Surface* origin, Surface* icon) {
+void Seat::StartDrag(DataSource* source,
+                     Surface* origin,
+                     Surface* icon,
+                     ui::DragDropTypes::DragEventSource event_source) {
   // DragDropOperation manages its own lifetime.
-  DragDropOperation::Create(source, origin, icon);
+  DragDropOperation::Create(source, origin, icon, event_source);
 }
 
 void Seat::SetSelection(DataSource* source) {

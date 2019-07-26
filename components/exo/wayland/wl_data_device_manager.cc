@@ -288,6 +288,26 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
     wl_client_flush(client_);
   }
 
+  void StartDrag(DataDevice* data_device,
+                 DataSource* source,
+                 Surface* origin,
+                 Surface* icon,
+                 uint32_t serial) {
+    base::Optional<wayland::SerialTracker::EventType> event_type =
+        serial_tracker_->GetEventType(serial);
+    if (event_type == wayland::SerialTracker::EventType::POINTER_BUTTON) {
+      data_device->StartDrag(
+          source, origin, icon,
+          ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_MOUSE);
+    } else if (event_type == wayland::SerialTracker::EventType::TOUCH_DOWN) {
+      data_device->StartDrag(
+          source, origin, icon,
+          ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_TOUCH);
+    } else {
+      source->Cancelled();
+    }
+  }
+
  private:
   wl_client* const client_;
   wl_resource* const data_device_resource_;
@@ -304,10 +324,15 @@ void data_device_start_drag(wl_client* client,
                             wl_resource* origin_resource,
                             wl_resource* icon_resource,
                             uint32_t serial) {
-  GetUserDataAs<DataDevice>(resource)->StartDrag(
-      source_resource ? GetUserDataAs<DataSource>(source_resource) : nullptr,
-      GetUserDataAs<Surface>(origin_resource),
-      icon_resource ? GetUserDataAs<Surface>(icon_resource) : nullptr, serial);
+  DataDevice* data_device = GetUserDataAs<DataDevice>(resource);
+  static_cast<WaylandDataDeviceDelegate*>(data_device->get_delegate())
+      ->StartDrag(
+          data_device,
+          source_resource ? GetUserDataAs<DataSource>(source_resource)
+                          : nullptr,
+          GetUserDataAs<Surface>(origin_resource),
+          icon_resource ? GetUserDataAs<Surface>(icon_resource) : nullptr,
+          serial);
 }
 
 void data_device_set_selection(wl_client* client,

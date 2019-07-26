@@ -11,6 +11,7 @@
 #include "components/exo/surface_tree_host.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/drag_drop_client_observer.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 
 namespace ash {
 class DragDropController;
@@ -45,9 +46,11 @@ class DragDropOperation : public DataSourceObserver,
                           public aura::client::DragDropClientObserver {
  public:
   // Create an operation for a drag-drop originating from a wayland app.
-  static base::WeakPtr<DragDropOperation> Create(DataSource* source,
-                                                 Surface* origin,
-                                                 Surface* icon);
+  static base::WeakPtr<DragDropOperation> Create(
+      DataSource* source,
+      Surface* origin,
+      Surface* icon,
+      ui::DragDropTypes::DragEventSource event_source);
 
   // DataSourceObserver:
   void OnDataSourceDestroying(DataSource* source) override;
@@ -65,7 +68,10 @@ class DragDropOperation : public DataSourceObserver,
  private:
   // A private constructor and destructor are used to prevent anyone else from
   // attempting to manage the lifetime of a DragDropOperation.
-  DragDropOperation(DataSource* source, Surface* origin, Surface* icon);
+  DragDropOperation(DataSource* source,
+                    Surface* origin,
+                    Surface* icon,
+                    ui::DragDropTypes::DragEventSource event_source);
   ~DragDropOperation() override;
 
   void CaptureDragIcon();
@@ -96,7 +102,11 @@ class DragDropOperation : public DataSourceObserver,
   // want to ignore the OnDragStarted event.
   bool started_by_this_object_ = false;
 
+  bool captured_icon_ = false;
+
   std::string mime_type_;
+
+  ui::DragDropTypes::DragEventSource event_source_;
 
   base::WeakPtrFactory<DragDropOperation> weak_ptr_factory_;
 

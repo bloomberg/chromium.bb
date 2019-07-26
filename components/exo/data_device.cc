@@ -6,6 +6,7 @@
 
 #include "components/exo/data_device_delegate.h"
 #include "components/exo/data_offer.h"
+#include "components/exo/data_source.h"
 #include "components/exo/seat.h"
 #include "components/exo/surface.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -39,9 +40,8 @@ DataDevice::~DataDevice() {
 void DataDevice::StartDrag(DataSource* source,
                            Surface* origin,
                            Surface* icon,
-                           uint32_t serial) {
-  // TODO(hirono): Check if serial is valid. crbug.com/746111
-  seat_->StartDrag(source, origin, icon);
+                           ui::DragDropTypes::DragEventSource event_source) {
+  seat_->StartDrag(source, origin, icon, event_source);
 }
 
 void DataDevice::SetSelection(DataSource* source, uint32_t serial) {
