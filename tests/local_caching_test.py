@@ -909,6 +909,21 @@ class FnTest(TestCase):
     # Only the last 10 items are kept. The first 90 items were trimmed.
     self.assertEqual(range(1, 91), trimmed)
 
+  def test_get_recursive_size(self):
+    # Test that _get_recursive_size calculates file size recursively.
+    with open(os.path.join(self.tempdir, '1'), 'w') as f:
+      f.write('0')
+    self.assertEqual(local_caching._get_recursive_size(self.tempdir), 1)
+
+    with open(os.path.join(self.tempdir, '2'), 'w') as f:
+      f.write('01')
+    self.assertEqual(local_caching._get_recursive_size(self.tempdir), 3)
+
+    nested_dir = os.path.join(self.tempdir, 'dir1', 'dir2')
+    os.makedirs(nested_dir)
+    with open(os.path.join(nested_dir, '4'), 'w') as f:
+      f.write('0123')
+    self.assertEqual(local_caching._get_recursive_size(self.tempdir), 7)
 
 if __name__ == '__main__':
   test_env.main()
