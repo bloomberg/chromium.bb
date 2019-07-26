@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/sms_dialog_android.h"
+#include "chrome/browser/ui/android/sms/sms_dialog_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
