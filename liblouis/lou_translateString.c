@@ -2222,8 +2222,12 @@ undefinedCharacter(widechar c, const TranslationTableHeader *table, int pos,
 	size_t length = strlen(text);
 	widechar dots[length];
 
-	for (unsigned int k=0; k<length; k+=1)
-		dots[k] = _lou_getDotsForChar(text[k]);
+	for (unsigned int k=0; k<length; k+=1) {
+		widechar c = text[k];
+		widechar d = _lou_getDotsForChar(c);
+		if (d == LOU_DOTS) d = _lou_charToFallbackDots(c);
+		dots[k] = d;
+	}
 
 	return for_updatePositions(dots, 1, length, 0, pos, input, output,
 				   posMapping, cursorPosition, cursorStatus);
