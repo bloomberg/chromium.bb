@@ -50632,6 +50632,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="64" label="InternalFreezableIPC"/>
   <int value="65" label="InternalContinueScriptLoading"/>
   <int value="66" label="kWebLocks"/>
+  <int value="67" label="ExperimentalWebScheduling"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">
