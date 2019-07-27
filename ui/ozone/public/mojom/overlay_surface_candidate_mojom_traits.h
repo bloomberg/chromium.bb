@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PUBLIC_INTERFACES_OVERLAY_SURFACE_CANDIDATE_STRUCT_TRAITS_H_
-#define UI_OZONE_PUBLIC_INTERFACES_OVERLAY_SURFACE_CANDIDATE_STRUCT_TRAITS_H_
+#ifndef UI_OZONE_PUBLIC_MOJOM_OVERLAY_SURFACE_CANDIDATE_MOJOM_TRAITS_H_
+#define UI_OZONE_PUBLIC_MOJOM_OVERLAY_SURFACE_CANDIDATE_MOJOM_TRAITS_H_
 
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/mojo/buffer_types_struct_traits.h"
 #include "ui/gfx/mojo/overlay_transform_struct_traits.h"
-#include "ui/ozone/public/interfaces/overlay_surface_candidate.mojom.h"
+#include "ui/ozone/public/mojom/overlay_surface_candidate.mojom.h"
 #include "ui/ozone/public/overlay_surface_candidate.h"
 
 namespace mojo {
@@ -104,4 +104,4 @@ struct StructTraits<ui::ozone::mojom::OverlaySurfaceCandidateDataView,
 
 }  // namespace mojo
 
-#endif  // UI_OZONE_PUBLIC_INTERFACES_OVERLAY_SURFACE_CANDIDATE_STRUCT_TRAITS_H_
+#endif  // UI_OZONE_PUBLIC_MOJOM_OVERLAY_SURFACE_CANDIDATE_MOJOM_TRAITS_H_

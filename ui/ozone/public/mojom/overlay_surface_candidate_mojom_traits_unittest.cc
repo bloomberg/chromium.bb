@@ -6,8 +6,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/ozone/public/interfaces/overlay_surface_candidate.mojom.h"
-#include "ui/ozone/public/interfaces/overlay_surface_candidate_struct_traits.h"
+#include "ui/ozone/public/mojom/overlay_surface_candidate.mojom.h"
+#include "ui/ozone/public/mojom/overlay_surface_candidate_mojom_traits.h"
 #include "ui/ozone/public/overlay_surface_candidate.h"
 
 namespace ui {

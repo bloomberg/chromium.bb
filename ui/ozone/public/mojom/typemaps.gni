@@ -2,4 +2,4 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//ui/ozone/public/interfaces/overlay_surface_candidate.typemap" ]
+typemaps = [ "//ui/ozone/public/mojom/overlay_surface_candidate.typemap" ]

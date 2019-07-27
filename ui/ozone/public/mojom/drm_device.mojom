@@ -12,8 +12,8 @@ import "ui/display/mojom/display_snapshot.mojom";
 import "ui/display/mojom/gamma_ramp_rgb_entry.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojo/accelerated_widget.mojom";
-import "ui/ozone/public/interfaces/device_cursor.mojom";
-import "ui/ozone/public/interfaces/overlay_surface_candidate.mojom";
+import "ui/ozone/public/mojom/device_cursor.mojom";
+import "ui/ozone/public/mojom/overlay_surface_candidate.mojom";
 
 
 // The viz process on CrOS implements the DrmDevice

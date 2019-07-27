@@ -56,7 +56,7 @@ _typemap_imports = [
   "//ui/events/mojom/typemaps.gni",
   "//ui/gfx/typemaps.gni",
   "//ui/latency/mojo/typemaps.gni",
-  "//ui/ozone/public/interfaces/typemaps.gni",
+  "//ui/ozone/public/mojom/typemaps.gni",
   "//url/mojom/typemaps.gni",
 ]
 

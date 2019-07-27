@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("wayland_interfaces") {
+mojom("wayland_mojom") {
   sources = [
     "wayland_buffer_manager.mojom",
   ]
