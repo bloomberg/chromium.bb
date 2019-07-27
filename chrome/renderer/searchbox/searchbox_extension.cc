@@ -443,6 +443,9 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
 
   builder.Set("logoColor",
               SkColorToArray(isolate, internal::GetLogoColor(theme_info)));
+
+  builder.Set("colorId", theme_info.color_id);
+
   return builder.Build();
 }
 
