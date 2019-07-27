@@ -346,13 +346,13 @@ _lou_charToFallbackDots(widechar c) {
 	  ['_'] = LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6
 	};
 
-	if (c & 0X80) c = '?';
+	if (c >= 0X7F) c = '?';
 	widechar dots = LOU_DOTS;
 
 	if (c < 0X20) {
 		c |= 0X40;
 		dots |= LOU_DOT_7 | LOU_DOT_8;
-	} else if (c >= 0X60) {
+	} else if (c >= 0X5F) {
 		c &= ~0X20;
 	} else if (c >= 0X40) {
 		dots |= LOU_DOT_7;
