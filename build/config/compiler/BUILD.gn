@@ -75,7 +75,6 @@ declare_args() {
 
   # Enable fatal linker warnings. Building Chromium with certain versions
   # of binutils can cause linker warning.
-  # See: https://bugs.chromium.org/p/chromium/issues/detail?id=457359
   fatal_linker_warnings = true
 
   # Build with C++ RTTI enabled. Chromium builds without RTTI by default,
@@ -293,6 +292,9 @@ config("compiler") {
       # TODO(lizeb,pasko): Fix link errors when linking with order_profiling=1
       # crbug.com/485542
       ldflags += [ "-Wl,--fatal-warnings" ]
+    }
+    if (fatal_linker_warnings && (is_mac || is_ios)) {
+      ldflags += [ "-Wl,-fatal_warnings" ]
     }
   } else {
   }
