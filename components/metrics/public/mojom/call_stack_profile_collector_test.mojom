@@ -4,7 +4,7 @@
 
 module metrics.mojom;
 
-import "components/metrics/public/interfaces/call_stack_profile_collector.mojom";
+import "components/metrics/public/mojom/call_stack_profile_collector.mojom";
 
 interface CallStackProfileCollectorTest {
   [Sync]
