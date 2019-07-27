@@ -14,12 +14,6 @@ export class GPUTest extends Fixture {
     this.queue = this.device.getQueue();
   }
 
-  expect(success: boolean, message: string): void {
-    if (!success) {
-      this.rec.fail(message);
-    }
-  }
-
   // TODO: add an expectContents for textures, which logs data: uris on failure
 
   async expectContents(src: GPUBuffer, expected: ArrayBufferView): Promise<void> {
