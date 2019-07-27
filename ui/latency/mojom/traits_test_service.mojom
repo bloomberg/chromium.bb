@@ -4,7 +4,7 @@
 
 module ui.mojom;
 
-import "ui/latency/mojo/latency_info.mojom";
+import "ui/latency/mojom/latency_info.mojom";
 
 interface TraitsTestService {
   [Sync]

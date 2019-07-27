@@ -2,4 +2,4 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//ui/latency/mojo/latency_info.typemap" ]
+typemaps = [ "//ui/latency/mojom/latency_info.typemap" ]

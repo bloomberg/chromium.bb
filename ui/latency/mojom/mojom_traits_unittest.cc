@@ -7,8 +7,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/latency/mojo/latency_info_struct_traits.h"
-#include "ui/latency/mojo/traits_test_service.mojom.h"
+#include "ui/latency/mojom/latency_info_mojom_traits.h"
+#include "ui/latency/mojom/traits_test_service.mojom.h"
 
 namespace ui {
 

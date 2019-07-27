@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_LATENCY_MOJO_LATENCY_INFO_STRUCT_TRAITS_H_
-#define UI_LATENCY_MOJO_LATENCY_INFO_STRUCT_TRAITS_H_
+#ifndef UI_LATENCY_MOJOM_LATENCY_INFO_MOJOM_TRAITS_H_
+#define UI_LATENCY_MOJOM_LATENCY_INFO_MOJOM_TRAITS_H_
 
 #include "ui/latency/latency_info.h"
-#include "ui/latency/mojo/latency_info.mojom-shared.h"
+#include "ui/latency/mojom/latency_info.mojom-shared.h"
 
 namespace mojo {
 
@@ -68,4 +68,4 @@ struct EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType> {
 
 }  // namespace mojo
 
-#endif  // UI_LATENCY_MOJO_LATENCY_INFO_STRUCT_TRAITS_H_
+#endif  // UI_LATENCY_MOJOM_LATENCY_INFO_MOJOM_TRAITS_H_
