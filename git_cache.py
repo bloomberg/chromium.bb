@@ -537,6 +537,7 @@ class Mirror(object):
         [self.git_exe, 'config', '--get-all', 'remote.origin.fetch'],
         cwd=rundir).strip().splitlines()
     for spec in fetch_specs:
+      spec = spec.decode()
       try:
         self.print('Fetching %s' % spec)
         with self.print_duration_of('fetch %s' % spec):

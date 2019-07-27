@@ -597,6 +597,7 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
         if len(in_line):
           filter_fn(in_line)
       rv = kid.wait()
+      kid.stdout.close()
 
       # Don't put this in a 'finally,' since the child may still run if we get
       # an exception.
