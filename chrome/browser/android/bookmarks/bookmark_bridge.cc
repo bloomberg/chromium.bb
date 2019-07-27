@@ -437,6 +437,13 @@ jint BookmarkBridge::GetTotalBookmarkCount(
       else
         ++count;
     }
+    // If we are looking at the mobile bookmarks folder,
+    // and we have partner bookmarks
+    if (node == bookmark_model_->mobile_node() &&
+        partner_bookmarks_shim_->HasPartnerBookmarks() &&
+        IsReachable(partner_bookmarks_shim_->GetPartnerBookmarksRoot())) {
+      nodes.push(partner_bookmarks_shim_->GetPartnerBookmarksRoot());
+    }
   }
 
   return count;
