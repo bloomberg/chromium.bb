@@ -6381,3 +6381,4 @@ crbug.com/988232 virtual/controls-refresh/fast/forms/controls-new-ui/password/pa
 crbug.com/988232 virtual/controls-refresh/fast/forms/controls-new-ui/password/password-with-reveal-button.html [ Pass Failure ]
 crbug.com/988246 external/wpt/cookie-store/serviceworker_cookieStore_subscriptions_mismatch.tentative.https.html [ Pass Timeout ]
 crbug.com/988248 media/video-persistence.html [ Pass Failure ]
+crbug.com/988250 virtual/omt-worker-fetch/http/tests/workers/worker-invalid-context.html [ Crash Pass Failure Timeout ]
