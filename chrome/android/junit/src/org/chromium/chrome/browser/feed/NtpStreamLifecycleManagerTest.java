@@ -46,7 +46,7 @@ import org.chromium.chrome.browser.tab.Tab.TabHidingType;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class StreamLifecycleManagerTest {
+public class NtpStreamLifecycleManagerTest {
     @Mock
     private Activity mActivity;
     @Mock
@@ -56,7 +56,7 @@ public class StreamLifecycleManagerTest {
     @Mock
     private PrefServiceBridge mPrefServiceBridge;
 
-    private StreamLifecycleManager mStreamLifecycleManager;
+    private NtpStreamLifecycleManager mNtpStreamLifecycleManager;
 
     @Before
     public void setUp() throws Exception {
@@ -68,7 +68,7 @@ public class StreamLifecycleManagerTest {
         PrefServiceBridge.setInstanceForTesting(mPrefServiceBridge);
 
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.CREATED);
-        mStreamLifecycleManager = new StreamLifecycleManager(mStream, mActivity, mTab);
+        mNtpStreamLifecycleManager = new NtpStreamLifecycleManager(mStream, mActivity, mTab);
         verify(mStream, times(1)).onCreate(or(any(String.class), isNull()));
     }
 
@@ -83,7 +83,7 @@ public class StreamLifecycleManagerTest {
         // Verify that onShow is not called before activity started.
         when(mTab.isHidden()).thenReturn(false);
         when(mTab.isUserInteractable()).thenReturn(true);
-        mStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         verify(mStream, times(0)).onShow();
 
         // Verify that onShow is not called when Tab is hidden.
@@ -93,11 +93,11 @@ public class StreamLifecycleManagerTest {
 
         // Verify that onShow is called when Tab is shown and activity is started.
         when(mTab.isHidden()).thenReturn(false);
-        mStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         verify(mStream, times(1)).onShow();
 
         // When the Stream is shown, it won't call Stream#onShow() again.
-        mStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         verify(mStream, times(1)).onShow();
     }
 
@@ -109,22 +109,22 @@ public class StreamLifecycleManagerTest {
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
         when(mTab.isHidden()).thenReturn(false);
         when(mTab.isUserInteractable()).thenReturn(true);
-        mStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         verify(mStream, times(0)).onShow();
 
         // Verify that onShow is called when articles are set shown by the user.
         when(mPrefServiceBridge.getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)).thenReturn(true);
-        mStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         verify(mStream, times(1)).onShow();
 
         // Verify that onHide is called after tab is hidden.
-        mStreamLifecycleManager.getTabObserverForTesting().onHidden(mTab, CHANGED_TABS);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onHidden(mTab, CHANGED_TABS);
         verify(mStream, times(1)).onHide();
 
         // Verify that onShow is called when articles are set hidden by the user within the same
         // session.
         when(mPrefServiceBridge.getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)).thenReturn(false);
-        mStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         verify(mStream, times(2)).onShow();
     }
 
@@ -146,7 +146,7 @@ public class StreamLifecycleManagerTest {
 
         // Verify that stream is active when tab is user interactable and activity is resumed.
         when(mTab.isUserInteractable()).thenReturn(true);
-        mStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(true);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(true);
         verify(mStream, times(1)).onShow();
         verify(mStream, times(1)).onActive();
 
@@ -208,7 +208,7 @@ public class StreamLifecycleManagerTest {
         verify(mStream, times(1)).onInactive();
 
         // When the Stream is inactive, it won't call Stream#onInactive() again.
-        mStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(false);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(false);
         verify(mStream, times(1)).onInactive();
 
         // Verify that the Stream cannot be set shown from inactive.
@@ -220,7 +220,7 @@ public class StreamLifecycleManagerTest {
         verify(mStream, times(2)).onActive();
 
         // Verify that the Stream can be set inactive from active on tab interactability changed.
-        mStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(false);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(false);
         verify(mStream, times(2)).onInactive();
     }
 
@@ -260,7 +260,7 @@ public class StreamLifecycleManagerTest {
         verify(mStream, times(1)).onShow();
 
         // Verify that onActive and onInactive are skipped when Stream is set hidden from shown.
-        mStreamLifecycleManager.getTabObserverForTesting().onHidden(
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onHidden(
                 mTab, TabHidingType.CHANGED_TABS);
         verify(mStream, times(1)).onShow();
         verify(mStream, times(0)).onActive();
@@ -281,7 +281,7 @@ public class StreamLifecycleManagerTest {
     public void testDestroyAfterCreate() {
         // After the Stream is destroyed, lifecycle methods should never be called. Directly calling
         // destroy here to simulate destroy() being called on FeedNewTabPage destroyed.
-        mStreamLifecycleManager.destroy();
+        mNtpStreamLifecycleManager.destroy();
         verify(mStream, times(1)).onDestroy();
 
         // Verify that lifecycle methods are not called after destroy.
@@ -386,33 +386,33 @@ public class StreamLifecycleManagerTest {
 
         // On tab shown.
         when(mTab.isHidden()).thenReturn(false);
-        mStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         inOrder.verify(mStream).onShow();
         verify(mStream, times(1)).onShow();
 
         // On tab interactable.
         when(mTab.isUserInteractable()).thenReturn(true);
-        mStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(true);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(true);
         inOrder.verify(mStream).onActive();
         verify(mStream, times(1)).onActive();
 
         // On tab un-interactable (simulates user enter the tab switcher).
         when(mTab.isUserInteractable()).thenReturn(false);
-        mStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(false);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(false);
         inOrder.verify(mStream).onInactive();
         verify(mStream, times(1)).onInactive();
 
         // On tab interactable (simulates user exit the tab switcher).
         when(mTab.isUserInteractable()).thenReturn(true);
-        mStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(true);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(true);
         inOrder.verify(mStream).onActive();
         verify(mStream, times(2)).onActive();
 
         // On tab un-interactable and hidden (simulates user switch to another tab).
         when(mTab.isHidden()).thenReturn(true);
         when(mTab.isUserInteractable()).thenReturn(false);
-        mStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(false);
-        mStreamLifecycleManager.getTabObserverForTesting().onHidden(mTab, CHANGED_TABS);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onInteractabilityChanged(false);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onHidden(mTab, CHANGED_TABS);
         inOrder.verify(mStream).onInactive();
         inOrder.verify(mStream).onHide();
         verify(mStream, times(2)).onInactive();
@@ -420,12 +420,12 @@ public class StreamLifecycleManagerTest {
 
         // On tab shown (simulates user switch back to this tab).
         when(mTab.isHidden()).thenReturn(false);
-        mStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_USER);
+        mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_USER);
         inOrder.verify(mStream).onShow();
         verify(mStream, times(2)).onShow();
 
         // On tab destroy (simulates user close the tab or navigate to another URL).
-        mStreamLifecycleManager.destroy();
+        mNtpStreamLifecycleManager.destroy();
         inOrder.verify(mStream).onHide();
         inOrder.verify(mStream).onDestroy();
         verify(mStream, times(2)).onHide();

@@ -26,22 +26,23 @@ import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 
 /**
- * A mediator for the {@link FeedNewTabPage} responsible for interacting with the
+ * A mediator for the {@link FeedSurfaceCoordinator} responsible for interacting with the
  * native library and handling business logic.
  */
-class FeedNewTabPageMediator
+class FeedSurfaceMediator
         implements NewTabPageLayout.ScrollDelegate, ContextMenuManager.TouchEnabledDelegate {
-    private final FeedNewTabPage mCoordinator;
-    private final SnapScrollHelper mSnapScrollHelper;
+    private final FeedSurfaceCoordinator mCoordinator;
+    private final @Nullable SnapScrollHelper mSnapScrollHelper;
     private final PrefChangeRegistrar mPrefChangeRegistrar;
     private final SigninManager mSigninManager;
 
-    private ScrollListener mStreamScrollListener;
+    private @Nullable ScrollListener mStreamScrollListener;
     private ContentChangedListener mStreamContentChangedListener;
     private SectionHeader mSectionHeader;
     private MemoryPressureCallback mMemoryPressureCallback;
@@ -55,14 +56,14 @@ class FeedNewTabPageMediator
     private int mThumbnailScrollY;
 
     /**
-     * @param feedNewTabPage The {@link FeedNewTabPage} that interacts with this class.
+     * @param coordinator The {@link FeedSurfaceCoordinator} that interacts with this class.
      * @param snapScrollHelper The {@link SnapScrollHelper} that handles snap scrolling.
      */
-    FeedNewTabPageMediator(FeedNewTabPage feedNewTabPage, SnapScrollHelper snapScrollHelper,
-            SigninManager signinManager) {
-        mCoordinator = feedNewTabPage;
+    FeedSurfaceMediator(
+            FeedSurfaceCoordinator coordinator, @Nullable SnapScrollHelper snapScrollHelper) {
+        mCoordinator = coordinator;
         mSnapScrollHelper = snapScrollHelper;
-        mSigninManager = signinManager;
+        mSigninManager = IdentityServicesProvider.getSigninManager();
 
         mPrefChangeRegistrar = new PrefChangeRegistrar();
         mPrefChangeRegistrar.addObserver(Pref.NTP_ARTICLES_SECTION_ENABLED, this::updateContent);
@@ -78,6 +79,8 @@ class FeedNewTabPageMediator
     }
 
     private void initialize() {
+        if (mSnapScrollHelper == null) return;
+
         // Listen for layout changes on the NewTabPageView itself to catch changes in scroll
         // position that are due to layout changes after e.g. device rotation. This contrasts with
         // regular scrolling, which is observed through an OnScrollListener.
@@ -96,12 +99,14 @@ class FeedNewTabPageMediator
 
         if (mFeedEnabled) {
             mCoordinator.createStream();
-            mSnapScrollHelper.setView(mCoordinator.getStream().getView());
+            if (mSnapScrollHelper != null)
+                mSnapScrollHelper.setView(mCoordinator.getStream().getView());
             initializePropertiesForStream();
         } else {
             destroyPropertiesForStream();
             mCoordinator.createScrollViewForPolicy();
-            mSnapScrollHelper.setView(mCoordinator.getScrollViewForPolicy());
+            if (mSnapScrollHelper != null)
+                mSnapScrollHelper.setView(mCoordinator.getScrollViewForPolicy());
             initializePropertiesForPolicy();
         }
     }
@@ -112,20 +117,23 @@ class FeedNewTabPageMediator
      */
     private void initializePropertiesForStream() {
         Stream stream = mCoordinator.getStream();
-        mStreamScrollListener = new ScrollListener() {
-            @Override
-            public void onScrollStateChanged(int state) {}
 
-            @Override
-            public void onScrolled(int dx, int dy) {
-                mSnapScrollHelper.handleScroll();
-            }
-        };
-        stream.addScrollListener(mStreamScrollListener);
+        if (mSnapScrollHelper != null) {
+            mStreamScrollListener = new ScrollListener() {
+                @Override
+                public void onScrollStateChanged(int state) {}
+
+                @Override
+                public void onScrolled(int dx, int dy) {
+                    mSnapScrollHelper.handleScroll();
+                }
+            };
+            stream.addScrollListener(mStreamScrollListener);
+        }
 
         mStreamContentChangedListener = () -> {
             mStreamContentChanged = true;
-            mSnapScrollHelper.resetSearchBoxOnScroll(true);
+            if (mSnapScrollHelper != null) mSnapScrollHelper.resetSearchBoxOnScroll(true);
         };
         stream.addOnContentChangedListener(mStreamContentChangedListener);
 
@@ -155,8 +163,10 @@ class FeedNewTabPageMediator
         Stream stream = mCoordinator.getStream();
         if (stream == null) return;
 
-        stream.removeScrollListener(mStreamScrollListener);
-        mStreamScrollListener = null;
+        if (mStreamScrollListener != null) {
+            stream.removeScrollListener(mStreamScrollListener);
+            mStreamScrollListener = null;
+        }
 
         stream.removeOnContentChangedListener(mStreamContentChangedListener);
         mStreamContentChangedListener = null;
@@ -177,7 +187,9 @@ class FeedNewTabPageMediator
      */
     private void initializePropertiesForPolicy() {
         ScrollView view = mCoordinator.getScrollViewForPolicy();
-        view.getViewTreeObserver().addOnScrollChangedListener(mSnapScrollHelper::handleScroll);
+        if (mSnapScrollHelper != null) {
+            view.getViewTreeObserver().addOnScrollChangedListener(mSnapScrollHelper::handleScroll);
+        }
     }
 
     /** Update whether the section header should be expanded. */
@@ -289,6 +301,7 @@ class FeedNewTabPageMediator
 
     @Override
     public void snapScroll() {
+        if (mSnapScrollHelper == null) return;
         if (!isScrollViewInitialized()) return;
 
         int initialScroll = getVerticalScrollOffset();
