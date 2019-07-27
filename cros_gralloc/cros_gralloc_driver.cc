@@ -21,8 +21,10 @@ cros_gralloc_driver::~cros_gralloc_driver()
 	handles_.clear();
 
 	if (drv_) {
+		int fd = drv_get_fd(drv_);
 		drv_destroy(drv_);
 		drv_ = nullptr;
+		close(fd);
 	}
 }
 
@@ -56,10 +58,13 @@ int32_t cros_gralloc_driver::init()
 				continue;
 
 			version = drmGetVersion(fd);
-			if (!version)
+			if (!version) {
+				close(fd);
 				continue;
+			}
 
 			if (undesired[i] && !strcmp(version->name, undesired[i])) {
+				close(fd);
 				drmFreeVersion(version);
 				continue;
 			}
@@ -68,6 +73,8 @@ int32_t cros_gralloc_driver::init()
 			drv_ = drv_create(fd);
 			if (drv_)
 				return 0;
+
+			close(fd);
 		}
 	}
 
