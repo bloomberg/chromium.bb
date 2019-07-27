@@ -30,7 +30,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/tabs/tab_group_data.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -1832,8 +1832,9 @@ float TabStrip::GetHoverOpacityForRadialHighlight() const {
   return radial_highlight_opacity_;
 }
 
-const TabGroupData* TabStrip::GetDataForGroup(TabGroupId group) const {
-  return controller_->GetDataForGroup(group);
+const TabGroupVisualData* TabStrip::GetVisualDataForGroup(
+    TabGroupId group) const {
+  return controller_->GetVisualDataForGroup(group);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
