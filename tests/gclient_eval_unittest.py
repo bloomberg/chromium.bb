@@ -86,7 +86,7 @@ class GClientEvalTest(unittest.TestCase):
       input_data = ['{'] + ['"%s": "%s",' % (n, n) for n in test_case] + ['}']
       expected = [(str(n), str(n)) for n in test_case]
       result = gclient_eval._gclient_eval(''.join(input_data))
-      self.assertEqual(expected, result.items())
+      self.assertEqual(expected, list(result.items()))
 
 
 class ExecTest(unittest.TestCase):
