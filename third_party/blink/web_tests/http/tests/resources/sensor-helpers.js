@@ -123,9 +123,7 @@ function sensorMocks() {
 
     // Zeroes shared buffer.
     resetBuffer() {
-      for (let i = 0; i < this.buffer_.length; ++i) {
-        this.buffer_[i] = 0;
-      }
+      this.buffer_.fill(0);
     }
 
     // Sets fake data that is used to deliver sensor reading updates.
