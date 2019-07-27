@@ -6379,3 +6379,4 @@ crbug.com/988232 virtual/controls-refresh/fast/forms/controls-new-ui/password/pa
 crbug.com/988232 virtual/controls-refresh/fast/forms/controls-new-ui/password/password-eye-icon-zoom-4x.html [ Pass Failure ]
 crbug.com/988232 virtual/controls-refresh/fast/forms/controls-new-ui/password/password-mismatched_glyph.html [ Pass Failure ]
 crbug.com/988232 virtual/controls-refresh/fast/forms/controls-new-ui/password/password-with-reveal-button.html [ Pass Failure ]
+crbug.com/988246 external/wpt/cookie-store/serviceworker_cookieStore_subscriptions_mismatch.tentative.https.html [ Pass Timeout ]
