@@ -281,8 +281,7 @@ function sensorMocks() {
       // services/device/public/cpp/generic_sensor/sensor_traits.h)
       if (type == device.mojom.SensorType.AMBIENT_LIGHT ||
           type == device.mojom.SensorType.MAGNETOMETER) {
-        if (this.maxFrequency_ > 10)
-          this.maxFrequency_ = 10;
+        this.maxFrequency_ = Math.min(10, this.maxFrequency_);
       }
 
       let initParams = new device.mojom.SensorInitParams({
