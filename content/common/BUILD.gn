@@ -520,7 +520,7 @@ mojom("mojo_bindings") {
     "//skia/public/interfaces",
     "//third_party/blink/public/mojom:mojom_core",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings",
-    "//ui/base/ime/mojo",
+    "//ui/base/ime/mojom",
     "//ui/base/mojom",
     "//ui/events/mojom",
     "//ui/gfx/geometry/mojom",

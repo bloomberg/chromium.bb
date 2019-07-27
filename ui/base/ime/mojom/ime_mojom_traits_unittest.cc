@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/mojo/ime_types_struct_traits.h"
+#include "ui/base/ime/mojom/ime_types_mojom_traits.h"
 
 #include <utility>
 
@@ -10,7 +10,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ime/mojo/ime_struct_traits_test.mojom.h"
+#include "ui/base/ime/mojom/ime_mojom_traits_test.mojom.h"
 
 namespace ui {
 

@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("mojo") {
+mojom("mojom") {
   sources = [
     "ime_types.mojom",
   ]
@@ -16,10 +16,10 @@ mojom("mojo") {
 
 mojom("test_interfaces") {
   sources = [
-    "ime_struct_traits_test.mojom",
+    "ime_mojom_traits_test.mojom",
   ]
 
   public_deps = [
-    ":mojo",
+    ":mojom",
   ]
 }

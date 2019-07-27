@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_MOJO_IME_TYPES_STRUCT_TRAITS_H_
-#define UI_BASE_IME_MOJO_IME_TYPES_STRUCT_TRAITS_H_
+#ifndef UI_BASE_IME_MOJOM_IME_TYPES_MOJOM_TRAITS_H_
+#define UI_BASE_IME_MOJOM_IME_TYPES_MOJOM_TRAITS_H_
 
 #include <vector>
 
 #include "ui/base/ime/ime_text_span.h"
-#include "ui/base/ime/mojo/ime_types.mojom.h"
+#include "ui/base/ime/mojom/ime_types.mojom.h"
 #include "ui/base/ime/text_input_type.h"
 
 namespace mojo {
@@ -65,4 +65,4 @@ struct EnumTraits<ui::mojom::ImeTextSpanThickness, ui::ImeTextSpan::Thickness> {
 
 }  // namespace mojo
 
-#endif  // UI_BASE_IME_MOJO_IME_TYPES_STRUCT_TRAITS_H_
+#endif  // UI_BASE_IME_MOJOM_IME_TYPES_MOJOM_TRAITS_H_

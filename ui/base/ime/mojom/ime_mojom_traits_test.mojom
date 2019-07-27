@@ -4,7 +4,7 @@
 
 module ui.mojom;
 
-import "ui/base/ime/mojo/ime_types.mojom";
+import "ui/base/ime/mojom/ime_types.mojom";
 
 interface IMEStructTraitsTest {
   [Sync]

@@ -2,14 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//ui/base/ime/mojo/ime_types.mojom"
+mojom = "//ui/base/ime/mojom/ime_types.mojom"
 public_headers = [
   "//ui/base/ime/ime_text_span.h",
   "//ui/base/ime/text_input_type.h",
 ]
-traits_headers = [ "//ui/base/ime/mojo/ime_types_struct_traits.h" ]
+traits_headers = [ "//ui/base/ime/mojom/ime_types_mojom_traits.h" ]
 sources = [
-  "//ui/base/ime/mojo/ime_types_struct_traits.cc",
+  "//ui/base/ime/mojom/ime_types_mojom_traits.cc",
 ]
 public_deps = [
   "//ui/base/ime:ime_types",
