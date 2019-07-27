@@ -800,10 +800,22 @@ void ServiceWorkerVersion::Doom() {
   SetStatus(REDUNDANT);
   if (running_status() == EmbeddedWorkerStatus::STARTING ||
       running_status() == EmbeddedWorkerStatus::RUNNING) {
-    if (embedded_worker()->devtools_attached())
-      stop_when_devtools_detached_ = true;
-    else
+    // |start_worker_status_| == kErrorExists means that this version was
+    // created for update but the script was identical to the incumbent version.
+    // In this case we should stop the worker immediately even when DevTools is
+    // attached. Otherwise the redundant worker stays as a selectable context
+    // in DevTools' console.
+    // TODO(bashi): Remove this workaround when byte-for-byte update check is
+    // shipped.
+    bool stop_immediately =
+        base::FeatureList::IsEnabled(
+            blink::features::kOffMainThreadServiceWorkerScriptFetch) &&
+        start_worker_status_ == blink::ServiceWorkerStatusCode::kErrorExists;
+    if (stop_immediately || !embedded_worker()->devtools_attached()) {
       embedded_worker_->Stop();
+    } else {
+      stop_when_devtools_detached_ = true;
+    }
   }
 }
 
