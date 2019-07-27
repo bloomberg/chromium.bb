@@ -276,3 +276,88 @@ _lou_isValidMode(int mode) {
 		mode &= ~validTranslationModes[i];
 	return !mode;
 }
+
+widechar EXPORT_CALL
+_lou_charToFallbackDots(widechar c) {
+	static const unsigned char charToDots[] = {
+	  [' '] = 0,
+	  ['!'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_6,
+	  ['"'] = LOU_DOT_5,
+	  ['#'] = LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+	  ['$'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_6,
+	  ['%'] = LOU_DOT_1 | LOU_DOT_4 | LOU_DOT_6,
+	  ['&'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_6,
+	 ['\''] = LOU_DOT_3,
+	  ['('] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
+	  [')'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+	  ['*'] = LOU_DOT_1 | LOU_DOT_6,
+	  ['+'] = LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_6,
+	  [','] = LOU_DOT_6,
+	  ['-'] = LOU_DOT_3 | LOU_DOT_6,
+	  ['.'] = LOU_DOT_4 | LOU_DOT_6,
+	  ['/'] = LOU_DOT_3 | LOU_DOT_4,
+	  ['0'] = LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
+	  ['1'] = LOU_DOT_2,
+	  ['2'] = LOU_DOT_2 | LOU_DOT_3,
+	  ['3'] = LOU_DOT_2 | LOU_DOT_5,
+	  ['4'] = LOU_DOT_2 | LOU_DOT_5 | LOU_DOT_6,
+	  ['5'] = LOU_DOT_2 | LOU_DOT_6,
+	  ['6'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_5,
+	  ['7'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
+	  ['8'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_6,
+	  ['9'] = LOU_DOT_3 | LOU_DOT_5,
+	  [':'] = LOU_DOT_1 | LOU_DOT_5 | LOU_DOT_6,
+	  [';'] = LOU_DOT_5 | LOU_DOT_6,
+	  ['<'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_6,
+	  ['='] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+	  ['>'] = LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5,
+	  ['?'] = LOU_DOT_1 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+	  ['~'] = LOU_DOT_4,
+	  ['A'] = LOU_DOT_1,
+	  ['B'] = LOU_DOT_1 | LOU_DOT_2,
+	  ['C'] = LOU_DOT_1 | LOU_DOT_4,
+	  ['D'] = LOU_DOT_1 | LOU_DOT_4 | LOU_DOT_5,
+	  ['E'] = LOU_DOT_1 | LOU_DOT_5,
+	  ['F'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4,
+	  ['G'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_5,
+	  ['H'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_5,
+	  ['I'] = LOU_DOT_2 | LOU_DOT_4,
+	  ['J'] = LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_5,
+	  ['K'] = LOU_DOT_1 | LOU_DOT_3,
+	  ['L'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3,
+	  ['M'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_4,
+	  ['N'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5,
+	  ['O'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_5,
+	  ['P'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4,
+	  ['Q'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5,
+	  ['R'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_5,
+	  ['S'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4,
+	  ['T'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5,
+	  ['U'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_6,
+	  ['V'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_6,
+	  ['W'] = LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+	  ['X'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_6,
+	  ['Y'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+	  ['Z'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
+	  ['['] = LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_6,
+	 ['\\'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_5 | LOU_DOT_6,
+	  [']'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+	  ['^'] = LOU_DOT_4 | LOU_DOT_5,
+	  ['_'] = LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6
+	};
+
+	if (c & 0X80) c = '?';
+	widechar dots = LOU_DOTS;
+
+	if (c < 0X20) {
+		c |= 0X40;
+		dots |= LOU_DOT_7 | LOU_DOT_8;
+	} else if (c >= 0X60) {
+		c &= ~0X20;
+	} else if (c >= 0X40) {
+		dots |= LOU_DOT_7;
+	}
+
+	dots |= charToDots[c];
+	return dots;
+}

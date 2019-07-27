@@ -808,6 +808,12 @@ extern int translation_direction;
 int EXPORT_CALL
 _lou_isValidMode(int mode);
 
+/**
+ * Return the default braille representation for a character.
+ */
+widechar EXPORT_CALL
+_lou_charToFallbackDots(widechar c);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
