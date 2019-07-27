@@ -1141,8 +1141,6 @@ jumbo_source_set("browser") {
     "loader/layered_resource_handler.cc",
     "loader/layered_resource_handler.h",
     "loader/loader_delegate.h",
-    "loader/loader_io_thread_notifier.cc",
-    "loader/loader_io_thread_notifier.h",
     "loader/merkle_integrity_source_stream.cc",
     "loader/merkle_integrity_source_stream.h",
     "loader/mime_sniffing_resource_handler.cc",

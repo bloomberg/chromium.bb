@@ -70,7 +70,6 @@
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/log_console_message.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_interface_proxy.h"
@@ -349,47 +348,6 @@ class RemoterFactoryImpl final : public media::mojom::RemoterFactory {
   DISALLOW_COPY_AND_ASSIGN(RemoterFactoryImpl);
 };
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
-
-using FrameNotifyCallback =
-    base::RepeatingCallback<void(ResourceDispatcherHostImpl*,
-                                 const GlobalFrameRoutingId&)>;
-
-// The following functions simplify code paths where the UI thread notifies the
-// ResourceDispatcherHostImpl of information pertaining to loading behavior of
-// frame hosts.
-void NotifyRouteChangesOnIO(
-    const FrameNotifyCallback& frame_callback,
-    std::unique_ptr<std::set<GlobalFrameRoutingId>> routing_ids) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-  if (!rdh)
-    return;
-  for (const auto& routing_id : *routing_ids)
-    frame_callback.Run(rdh, routing_id);
-}
-
-void NotifyForEachFrameFromUI(RenderFrameHostImpl* root_frame_host,
-                              const FrameNotifyCallback& frame_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  FrameTree* frame_tree = root_frame_host->frame_tree_node()->frame_tree();
-  DCHECK_EQ(root_frame_host, frame_tree->GetMainFrame());
-
-  auto routing_ids = std::make_unique<std::set<GlobalFrameRoutingId>>();
-  for (FrameTreeNode* node : frame_tree->Nodes()) {
-    RenderFrameHostImpl* frame_host = node->current_frame_host();
-    RenderFrameHostImpl* pending_frame_host =
-        node->render_manager()->speculative_frame_host();
-    if (frame_host)
-      routing_ids->insert(frame_host->GetGlobalFrameRoutingId());
-    if (pending_frame_host)
-      routing_ids->insert(pending_frame_host->GetGlobalFrameRoutingId());
-  }
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&NotifyRouteChangesOnIO, frame_callback,
-                     std::move(routing_ids)));
-}
 
 using FrameCallback = base::RepeatingCallback<void(RenderFrameHostImpl*)>;
 void ForEachFrame(RenderFrameHostImpl* root_frame_host,
@@ -3903,23 +3861,6 @@ void RenderFrameHostImpl::CreateNewWindow(
     render_view_route_id = GetProcess()->GetNextRoutingID();
     main_frame_route_id = GetProcess()->GetNextRoutingID();
     main_frame_widget_route_id = GetProcess()->GetNextRoutingID();
-    // Block resource requests until the frame is created, since the HWND might
-    // be needed if a response ends up creating a plugin. We'll only have a
-    // single frame at this point. These requests will be resumed either in
-    // WebContentsImpl::CreateNewWindow or RenderFrameHost::Init.
-    // TODO(crbug.com/581037): Even though NPAPI is deleted, other features
-    // depend on this behavior. See the bug for more information.
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      auto block_requests_for_route = base::Bind(
-          [](const GlobalFrameRoutingId& id) {
-            auto* rdh = ResourceDispatcherHostImpl::Get();
-            if (rdh)
-              rdh->BlockRequestsForRoute(id);
-          },
-          GlobalFrameRoutingId(render_process_id, main_frame_route_id));
-      base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                               std::move(block_requests_for_route));
-    }
   }
 
   DCHECK(IsRenderFrameLive());
@@ -5581,46 +5522,28 @@ bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
 void RenderFrameHostImpl::BlockRequestsForFrame() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    ForEachFrame(
-        this, base::BindRepeating([](RenderFrameHostImpl* render_frame_host) {
-          if (render_frame_host->frame_)
-            render_frame_host->frame_->BlockRequests();
-        }));
-  } else {
-    NotifyForEachFrameFromUI(
-        this, base::BindRepeating(
-                  &ResourceDispatcherHostImpl::BlockRequestsForRoute));
-  }
+  ForEachFrame(this,
+               base::BindRepeating([](RenderFrameHostImpl* render_frame_host) {
+                 if (render_frame_host->frame_)
+                   render_frame_host->frame_->BlockRequests();
+               }));
 }
 
 void RenderFrameHostImpl::ResumeBlockedRequestsForFrame() {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    ForEachFrame(
-        this, base::BindRepeating([](RenderFrameHostImpl* render_frame_host) {
-          if (render_frame_host->frame_)
-            render_frame_host->frame_->ResumeBlockedRequests();
-        }));
-  } else {
-    NotifyForEachFrameFromUI(
-        this, base::BindRepeating(
-                  &ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute));
-  }
+  ForEachFrame(this,
+               base::BindRepeating([](RenderFrameHostImpl* render_frame_host) {
+                 if (render_frame_host->frame_)
+                   render_frame_host->frame_->ResumeBlockedRequests();
+               }));
 }
 
 void RenderFrameHostImpl::CancelBlockedRequestsForFrame() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    ForEachFrame(
-        this, base::BindRepeating([](RenderFrameHostImpl* render_frame_host) {
-          if (render_frame_host->frame_)
-            render_frame_host->frame_->CancelBlockedRequests();
-        }));
-  } else {
-    NotifyForEachFrameFromUI(
-        this, base::BindRepeating(
-                  &ResourceDispatcherHostImpl::CancelBlockedRequestsForRoute));
-  }
+  ForEachFrame(this,
+               base::BindRepeating([](RenderFrameHostImpl* render_frame_host) {
+                 if (render_frame_host->frame_)
+                   render_frame_host->frame_->CancelBlockedRequests();
+               }));
 }
 
 void RenderFrameHostImpl::BindDevToolsAgent(

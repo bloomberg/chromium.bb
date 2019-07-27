@@ -1289,6 +1289,9 @@ void ChromeContentBrowserClient::PostAfterStartupTask(
     const scoped_refptr<base::TaskRunner>& task_runner,
     base::OnceClosure task) {
   AfterStartupTaskUtils::PostTask(from_here, task_runner, std::move(task));
+
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  safe_browsing_service_ = g_browser_process->safe_browsing_service();
 }
 
 bool ChromeContentBrowserClient::IsBrowserStartupComplete() {
@@ -3006,13 +3009,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 #endif
 
   return true;
-}
-
-void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // TODO(jam): move this creation elsewhere so we can remove this method.
-  safe_browsing_service_ = g_browser_process->safe_browsing_service();
 }
 
 content::SpeechRecognitionManagerDelegate*
