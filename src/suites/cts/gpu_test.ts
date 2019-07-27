@@ -32,27 +32,36 @@ export class GPUTest extends Fixture {
       this.queue.submit([c.finish()]);
 
       const actual = new Uint8Array(await dst.mapReadAsync());
-      let failedPixels = 0;
-      for (let i = 0; i < size; ++i) {
-        if (actual[i] !== exp[i]) {
-          if (failedPixels > 4) {
-            this.rec.fail('... and more');
-            break;
-          }
-          failedPixels++;
-          this.rec.fail(`at [${i}], expected ${exp[i]}, got ${actual[i]}`);
-        }
-      }
-      if (size <= 256 && failedPixels > 0) {
-        const expHex = Array.from(exp)
-          .map(x => x.toString(16).padStart(2, '0'))
-          .join('');
-        const actHex = Array.from(actual)
-          .map(x => x.toString(16).padStart(2, '0'))
-          .join('');
-        this.rec.log('EXPECT: ' + expHex);
-        this.rec.log('ACTUAL: ' + actHex);
-      }
+      this.expectBuffer(actual, exp);
     });
+  }
+
+  expectBuffer(actual: Uint8Array, exp: Uint8Array): void {
+    const size = exp.byteLength;
+    if (actual.byteLength !== size) {
+      this.rec.fail('size mismatch');
+      return;
+    }
+    let failedPixels = 0;
+    for (let i = 0; i < size; ++i) {
+      if (actual[i] !== exp[i]) {
+        if (failedPixels > 4) {
+          this.rec.fail('... and more');
+          break;
+        }
+        failedPixels++;
+        this.rec.fail(`at [${i}], expected ${exp[i]}, got ${actual[i]}`);
+      }
+    }
+    if (size <= 256 && failedPixels > 0) {
+      const expHex = Array.from(exp)
+        .map(x => x.toString(16).padStart(2, '0'))
+        .join('');
+      const actHex = Array.from(actual)
+        .map(x => x.toString(16).padStart(2, '0'))
+        .join('');
+      this.rec.log('EXPECT: ' + expHex);
+      this.rec.log('ACTUAL: ' + actHex);
+    }
   }
 }

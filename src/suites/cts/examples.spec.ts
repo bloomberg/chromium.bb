@@ -12,7 +12,7 @@ import { GPUTest } from './gpu_test.js';
 // - http://web-platform.test:8000/webgpu/cts.html?q=cts:examples:
 //
 // Tests here can be run individually or in groups:
-// - http://localhost:8080/?runnow=1&q=cts:examples:basic/async:
+// - http://localhost:8080/?runnow=1&q=cts:examples:basic/async=
 // - http://localhost:8080/?runnow=1&q=cts:examples:basic/
 // - http://localhost:8080/?runnow=1&q=cts:examples:
 
