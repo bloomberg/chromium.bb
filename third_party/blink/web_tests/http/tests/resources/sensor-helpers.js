@@ -23,7 +23,7 @@ class CallbackWrapper {
 function sensorMocks() {
   // Class that mocks Sensor interface defined in sensor.mojom
   class MockSensor {
-    constructor(sensorRequest, handle, offset, size, reportingMode) {
+    constructor(sensorRequest, sharedBufferHandle, offset, size, reportingMode) {
       this.client_ = null;
       this.startShouldFail_ = false;
       this.notifyOnReadingChange_ = true;
@@ -35,7 +35,7 @@ function sensorMocks() {
       this.addConfigurationCalled_ = null;
       this.removeConfigurationCalled_ = null;
       this.requestedFrequencies_ = [];
-      const rv = handle.mapBuffer(offset, size);
+      const rv = sharedBufferHandle.mapBuffer(offset, size);
       assert_equals(rv.result, Mojo.RESULT_OK, "Failed to map shared buffer");
       this.bufferArray_ = rv.buffer;
       this.buffer_ = new Float64Array(this.bufferArray_);
