@@ -282,82 +282,106 @@ _lou_isValidMode(int mode) {
 widechar EXPORT_CALL
 _lou_charToFallbackDots(widechar c) {
 	static const unsigned char charToDots[] = {
-	  [' '] = 0,
-	  ['!'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_6,
-	  ['"'] = LOU_DOT_5,
-	  ['#'] = LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
-	  ['$'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_6,
-	  ['%'] = LOU_DOT_1 | LOU_DOT_4 | LOU_DOT_6,
-	  ['&'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_6,
-	 ['\''] = LOU_DOT_3,
-	  ['('] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
-	  [')'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
-	  ['*'] = LOU_DOT_1 | LOU_DOT_6,
-	  ['+'] = LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_6,
-	  [','] = LOU_DOT_6,
-	  ['-'] = LOU_DOT_3 | LOU_DOT_6,
-	  ['.'] = LOU_DOT_4 | LOU_DOT_6,
-	  ['/'] = LOU_DOT_3 | LOU_DOT_4,
-	  ['0'] = LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
-	  ['1'] = LOU_DOT_2,
-	  ['2'] = LOU_DOT_2 | LOU_DOT_3,
-	  ['3'] = LOU_DOT_2 | LOU_DOT_5,
-	  ['4'] = LOU_DOT_2 | LOU_DOT_5 | LOU_DOT_6,
-	  ['5'] = LOU_DOT_2 | LOU_DOT_6,
-	  ['6'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_5,
-	  ['7'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
-	  ['8'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_6,
-	  ['9'] = LOU_DOT_3 | LOU_DOT_5,
-	  [':'] = LOU_DOT_1 | LOU_DOT_5 | LOU_DOT_6,
-	  [';'] = LOU_DOT_5 | LOU_DOT_6,
-	  ['<'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_6,
-	  ['='] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
-	  ['>'] = LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5,
-	  ['?'] = LOU_DOT_1 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
-	  ['~'] = LOU_DOT_4,
-	  ['A'] = LOU_DOT_1,
-	  ['B'] = LOU_DOT_1 | LOU_DOT_2,
-	  ['C'] = LOU_DOT_1 | LOU_DOT_4,
-	  ['D'] = LOU_DOT_1 | LOU_DOT_4 | LOU_DOT_5,
-	  ['E'] = LOU_DOT_1 | LOU_DOT_5,
-	  ['F'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4,
-	  ['G'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_5,
-	  ['H'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_5,
-	  ['I'] = LOU_DOT_2 | LOU_DOT_4,
-	  ['J'] = LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_5,
-	  ['K'] = LOU_DOT_1 | LOU_DOT_3,
-	  ['L'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3,
-	  ['M'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_4,
-	  ['N'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5,
-	  ['O'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_5,
-	  ['P'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4,
-	  ['Q'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5,
-	  ['R'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_5,
-	  ['S'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4,
-	  ['T'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5,
-	  ['U'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_6,
-	  ['V'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_6,
-	  ['W'] = LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
-	  ['X'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_6,
-	  ['Y'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
-	  ['Z'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
-	  ['['] = LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_6,
-	 ['\\'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_5 | LOU_DOT_6,
-	  [']'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
-	  ['^'] = LOU_DOT_4 | LOU_DOT_5,
-	  ['_'] = LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6
+		/* ASCII characters 0X00-0X1F - control characters.
+		 * These won't be referenced so we have room for data.
+		 * These groups must be in descending order.
+		 * Each group contains the following four bytes:
+		 * 1) The first character to which this block applies.
+		 * 2) The bits to remove from the character.
+		 * 3) The bits to add to the character.
+		 * 4) The dots to add to the braille pattern.
+		 */
+		0X7F, 0X20, 0X00, LOU_DOT_7,
+		0X5F, 0X20, 0X00, 0,
+		0X40, 0X00, 0X00, LOU_DOT_7,
+		0X20, 0X00, 0X00, 0,
+		0X00, 0X00, 0X40, LOU_DOT_7 | LOU_DOT_8,
+
+		// ASCII characters 0X20-0X3F - digits and common symbols.
+		[' '] = 0,
+		['!'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_6,
+		['"'] = LOU_DOT_5,
+		['#'] = LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+		['$'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_6,
+		['%'] = LOU_DOT_1 | LOU_DOT_4 | LOU_DOT_6,
+		['&'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_6,
+	       ['\''] = LOU_DOT_3,
+		['('] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
+		[')'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+		['*'] = LOU_DOT_1 | LOU_DOT_6,
+		['+'] = LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_6,
+		[','] = LOU_DOT_6,
+		['-'] = LOU_DOT_3 | LOU_DOT_6,
+		['.'] = LOU_DOT_4 | LOU_DOT_6,
+		['/'] = LOU_DOT_3 | LOU_DOT_4,
+		['0'] = LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
+		['1'] = LOU_DOT_2,
+		['2'] = LOU_DOT_2 | LOU_DOT_3,
+		['3'] = LOU_DOT_2 | LOU_DOT_5,
+		['4'] = LOU_DOT_2 | LOU_DOT_5 | LOU_DOT_6,
+		['5'] = LOU_DOT_2 | LOU_DOT_6,
+		['6'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_5,
+		['7'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
+		['8'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_6,
+		['9'] = LOU_DOT_3 | LOU_DOT_5,
+		[':'] = LOU_DOT_1 | LOU_DOT_5 | LOU_DOT_6,
+		[';'] = LOU_DOT_5 | LOU_DOT_6,
+		['<'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_6,
+		['='] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+		['>'] = LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5,
+		['?'] = LOU_DOT_1 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+
+		// ASCII characters 0X40-0X5F - letters and other symbols.
+		['@'] = LOU_DOT_4,
+		['A'] = LOU_DOT_1,
+		['B'] = LOU_DOT_1 | LOU_DOT_2,
+		['C'] = LOU_DOT_1 | LOU_DOT_4,
+		['D'] = LOU_DOT_1 | LOU_DOT_4 | LOU_DOT_5,
+		['E'] = LOU_DOT_1 | LOU_DOT_5,
+		['F'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4,
+		['G'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_5,
+		['H'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_5,
+		['I'] = LOU_DOT_2 | LOU_DOT_4,
+		['J'] = LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_5,
+		['K'] = LOU_DOT_1 | LOU_DOT_3,
+		['L'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3,
+		['M'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_4,
+		['N'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5,
+		['O'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_5,
+		['P'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4,
+		['Q'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5,
+		['R'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_5,
+		['S'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4,
+		['T'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5,
+		['U'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_6,
+		['V'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_6,
+		['W'] = LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+		['X'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_6,
+		['Y'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+		['Z'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
+		['['] = LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_6,
+	       ['\\'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_5 | LOU_DOT_6,
+		[']'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
+		['^'] = LOU_DOT_4 | LOU_DOT_5,
+		['_'] = LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6
 	};
 
-	if (c >= 0X7F) c = '?';
+	if (c & 0X80) c = '?';
 	widechar dots = LOU_DOTS;
 
-	if (c < 0X20) {
-		c |= 0X40;
-		dots |= LOU_DOT_7 | LOU_DOT_8;
-	} else if (c >= 0X5F) {
-		c &= ~0X20;
-	} else if (c >= 0X40) {
-		dots |= LOU_DOT_7;
+	{
+		const unsigned char *p = charToDots;
+
+		while (1) {
+			if (*p <= c) {
+				c &= ~*++p;
+				c |= *++p;
+				dots |= *++p;
+				break;
+			}
+
+			p += 4;
+		}
 	}
 
 	dots |= charToDots[c];
