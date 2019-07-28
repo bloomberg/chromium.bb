@@ -220,7 +220,6 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_builder.h"
-#include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -526,8 +525,8 @@ ProfileImpl::ProfileImpl(
             ->GetSharedURLLoaderFactory(),
         base::BindRepeating(&chromeos::DelayNetworkCall,
                             base::TimeDelta::FromMilliseconds(
-                                chromeos::kDefaultNetworkRetryDelayMS)),
-        GetPrefs());
+                                chromeos::kDefaultNetworkRetryDelayMS)));
+    account_manager->SetPrefService(GetPrefs());
   }
 #endif
 
