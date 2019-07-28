@@ -170,17 +170,28 @@ void AccountManager::Initialize(
     const base::FilePath& home_dir,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     DelayNetworkCallRunner delay_network_call_runner) {
-  Initialize(
-      home_dir, url_loader_factory, std::move(delay_network_call_runner),
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()}));
+  Initialize(home_dir, url_loader_factory, delay_network_call_runner,
+             base::DoNothing());
 }
 
 void AccountManager::Initialize(
     const base::FilePath& home_dir,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     DelayNetworkCallRunner delay_network_call_runner,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    base::OnceClosure initialization_callback) {
+  Initialize(
+      home_dir, url_loader_factory, std::move(delay_network_call_runner),
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()}),
+      std::move(initialization_callback));
+}
+
+void AccountManager::Initialize(
+    const base::FilePath& home_dir,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    DelayNetworkCallRunner delay_network_call_runner,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::OnceClosure initialization_callback) {
   VLOG(1) << "AccountManager::Initialize";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::TimeTicks initialization_start_time = base::TimeTicks::Now();
@@ -200,6 +211,7 @@ void AccountManager::Initialize(
   task_runner_ = task_runner;
   writer_ = std::make_unique<base::ImportantFileWriter>(
       home_dir.Append(kTokensFileName), task_runner_);
+  initialization_callbacks_.emplace_back(std::move(initialization_callback));
 
   PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,

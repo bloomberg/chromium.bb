@@ -137,6 +137,17 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       DelayNetworkCallRunner delay_network_call_runner);
 
+  // Same as above except that it accepts an |initialization_callback|, which
+  // will be called after Account Manager has been fully initialized.
+  // Note: During initialization, there is no ordering guarantee between
+  // |initialization_callback| and Account Manager's observers getting their
+  // callbacks.
+  void Initialize(
+      const base::FilePath& home_dir,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      DelayNetworkCallRunner delay_network_call_runner,
+      base::OnceClosure initialization_callback);
+
   // Gets (async) a list of account keys known to |AccountManager|. Note that
   // |callback| will be immediately called in the same thread if
   // |AccountManager| has been fully initialized and hence it may not be safe to
@@ -261,7 +272,8 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
       const base::FilePath& home_dir,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       DelayNetworkCallRunner delay_network_call_runner,
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      base::OnceClosure initialization_callback);
 
   // Loads accounts from disk and returns the result.
   static AccountMap LoadAccountsFromDisk(
