@@ -412,7 +412,7 @@ hyphen - 36
 always < 246
 joinword = 56-2356
 joinnum = 56-2356
-always > 135
+noback always > 135
 midnum + 0-56-235-3456
 begnum + 56-235
 joinnum + 56-235

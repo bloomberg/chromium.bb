@@ -463,7 +463,7 @@ word nowhere 1345-135-5-156
 
 # the letter o
 word O 135
-always O 135
+noback always O 135
 #midword oed = Schroeder
 #always oen = Phoenix
 midendword oence 135-26-14-15 electroencephalogram

@@ -125,7 +125,7 @@ postpunc > 46-2
 
 #Other exceptions With need marking different dot combination
 always Q 12346
-always Z 126
+noback always Z 126
 always # 123456
 always $ 5-145
 always % 3456-245-356
@@ -133,15 +133,15 @@ always ~ 5-2345
 always < 5-13
 always > 46-2
 always / 5-2
-always | 45
+noback always | 45
 always { 5-2346
 always } 5-1356
 always [ 46-2346
 always ] 46-1356
-always \\ 16
+noback always \\ 16
 always ^ 2346
-always ` 4
-always Æ 1
+noback always ` 4
+noback always Æ 1
 always lyú 456-346
 always lysz 456-156
 space \x000c 0
