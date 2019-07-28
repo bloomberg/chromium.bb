@@ -6381,3 +6381,4 @@ crbug.com/988250 virtual/omt-worker-fetch/http/tests/workers/worker-invalid-cont
 crbug.com/988252 [ Linux Debug ] virtual/threaded/transitions/composited-with-hit-testing.html [ Pass Failure ]
 crbug.com/959129 virtual/threaded/http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
+crbug.com/988298 [ Linux ] http/tests/devtools/extensions/extensions-panel.js [ Pass Timeout ]
