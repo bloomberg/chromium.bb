@@ -1094,7 +1094,7 @@ getOpcode(FileInfo *nested, const CharsString *token, short opcodeLengths[]) {
 		if (opcode >= CTO_None) opcode = 0;
 	} while (opcode != lastOpcode);
 	compileError(nested, "opcode %s not defined.",
-			_lou_showString(&token->chars[0], token->length));
+			_lou_showString(&token->chars[0], token->length, 0));
 	return CTO_None;
 }
 
@@ -1381,7 +1381,7 @@ parseDots(FileInfo *nested, CharsString *cells, const CharsString *token) {
 		default:
 		invalid:
 			compileError(
-					nested, "invalid dot number %s.", _lou_showString(&character, 1));
+					nested, "invalid dot number %s.", _lou_showString(&character, 1, 0));
 			return 0;
 		}
 	}
@@ -1939,7 +1939,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 				break;
 			} else {
 				compileError(passNested, "%s is not a grouping name",
-						_lou_showString(&passHoldString.chars[0], passHoldString.length));
+						_lou_showString(&passHoldString.chars[0], passHoldString.length, 0));
 				return 0;
 			}
 			break;
@@ -1962,7 +1962,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 				goto getRange;
 			}
 			compileError(passNested, "%s is neither a class name nor a swap name.",
-					_lou_showString(&passHoldString.chars[0], passHoldString.length));
+					_lou_showString(&passHoldString.chars[0], passHoldString.length, 0));
 			return 0;
 		case pass_endTest:
 			passInstructions[passIC++] = pass_endTest;
@@ -2062,7 +2062,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 				break;
 			}
 			compileError(passNested, "%s is not a grouping name",
-					_lou_showString(&passHoldString.chars[0], passHoldString.length));
+					_lou_showString(&passHoldString.chars[0], passHoldString.length, 0));
 			return 0;
 		case pass_swap:
 			passLinepos++;
@@ -2079,7 +2079,7 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 				break;
 			}
 			compileError(passNested, "%s is not a swap name.",
-					_lou_showString(&passHoldString.chars[0], passHoldString.length));
+					_lou_showString(&passHoldString.chars[0], passHoldString.length, 0));
 			return 0;
 			break;
 		default:
@@ -3478,7 +3478,7 @@ doOpcode:
 							c = compile_findCharOrDots(ruleChars.chars[k], 0, *table);
 							if (!c || !c->definitionRule) {
 								compileError(nested, "Character %s is not defined",
-										_lou_showString(&ruleChars.chars[k], 1));
+										_lou_showString(&ruleChars.chars[k], 1, 0));
 								return 0;
 							}
 						}
@@ -3581,7 +3581,7 @@ doOpcode:
 					c = compile_findCharOrDots(ruleChars.chars[k], 0, *table);
 					if (!c || !c->definitionRule) {
 						compileError(nested, "Character %s is not defined",
-								_lou_showString(&ruleChars.chars[k], 1));
+								_lou_showString(&ruleChars.chars[k], 1, 0));
 						return 0;
 					}
 				}

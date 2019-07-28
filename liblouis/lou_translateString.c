@@ -2218,7 +2218,7 @@ undefinedCharacter(widechar c, const TranslationTableHeader *table, int pos,
 					    cursorStatus);
 	}
 
-	const char *text = (mode & noUndefined)? "": _lou_showString(&c, 1);
+	const char *text = (mode & noUndefined)? "": _lou_showString(&c, 1, 1);
 	size_t length = strlen(text);
 	widechar dots[length];
 

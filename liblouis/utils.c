@@ -137,24 +137,26 @@ _lou_charHash(widechar c) {
 }
 
 char *EXPORT_CALL
-_lou_showString(widechar const *chars, int length) {
+_lou_showString(widechar const *chars, int length, int forceHex) {
 	/* Translate a string of characters to the encoding used in character
 	 * operands */
-	int charPos;
-	int bufPos = 0;
 	static char scratchBuf[MAXSTRING];
+	int bufPos = 0;
 	scratchBuf[bufPos++] = '\'';
-	for (charPos = 0; charPos < length && bufPos < (MAXSTRING - 2); charPos++) {
-		if (chars[charPos] >= 32 && chars[charPos] < 127)
-			scratchBuf[bufPos++] = (char)chars[charPos];
-		else {
+
+	for (int charPos=0; (charPos < length) && (bufPos < (MAXSTRING - 2)); charPos+=1) {
+		widechar c = chars[charPos];
+
+		if (!forceHex && (c >= 0X20) && (c < 0X7F)) {
+			scratchBuf[bufPos++] = (char)c;
+		} else {
 			char hexbuf[20];
 			int hexLength;
 			char escapeLetter;
 
 			int leadingZeros;
 			int hexPos;
-			hexLength = sprintf(hexbuf, "%x", chars[charPos]);
+			hexLength = sprintf(hexbuf, "%x", c);
 			switch (hexLength) {
 			case 1:
 			case 2:
