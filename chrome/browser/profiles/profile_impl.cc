@@ -177,13 +177,10 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_builder_chromeos.h"
 #include "chrome/browser/chromeos/preferences.h"
-#include "chrome/browser/chromeos/printing/cups_proxy_service_delegate_impl.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
-#include "chrome/services/cups_proxy/cups_proxy_service.h"
-#include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
@@ -1327,12 +1324,6 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
             ? android_sms_service->android_sms_pairing_state_tracker()
             : nullptr,
         chromeos::GcmDeviceInfoProviderImpl::GetInstance());
-  }
-
-  if (service_name == chromeos::printing::mojom::kCupsProxyServiceName) {
-    return std::make_unique<chromeos::printing::CupsProxyService>(
-        std::move(request),
-        std::make_unique<chromeos::CupsProxyServiceDelegateImpl>());
   }
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
