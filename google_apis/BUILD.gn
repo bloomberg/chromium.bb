@@ -135,6 +135,7 @@ template("google_apis_tmpl") {
     deps = [
       "//base",
       "//base/third_party/dynamic_annotations",
+      "//build:branding_buildflags",
       "//crypto",
       "//mojo/public/cpp/bindings:struct_traits",
       "//services/network/public/cpp",
@@ -231,6 +232,7 @@ test("google_apis_unittests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//build:branding_buildflags",
     "//testing/gmock",
     "//testing/gtest",
   ]
