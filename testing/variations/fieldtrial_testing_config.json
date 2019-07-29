@@ -5200,6 +5200,7 @@
                 "android",
                 "chromeos",
                 "ios",
+                "linux",
                 "mac",
                 "windows"
             ],
