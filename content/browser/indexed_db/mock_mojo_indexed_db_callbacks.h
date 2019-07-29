@@ -64,7 +64,6 @@ class MockMojoIndexedDBCallbacks : public blink::mojom::IDBCallbacks {
     MockedSuccessDatabase(&database_info, metadata);
   }
 
-  MOCK_METHOD1(SuccessKey, void(const blink::IndexedDBKey& key));
   MOCK_METHOD1(SuccessInteger, void(int64_t value));
   MOCK_METHOD0(Success, void());
 

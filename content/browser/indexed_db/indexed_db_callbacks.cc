@@ -366,22 +366,6 @@ void IndexedDBCallbacks::OnSuccess(
   complete_ = true;
 }
 
-void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!complete_);
-
-  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
-
-  if (!callbacks_)
-    return;
-  if (!dispatcher_host_) {
-    OnConnectionError();
-    return;
-  }
-  callbacks_->SuccessKey(value);
-  complete_ = true;
-}
-
 void IndexedDBCallbacks::OnSuccess(int64_t value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);

@@ -227,9 +227,6 @@ interface IDBCallbacks {
   SuccessDatabase(associated IDBDatabase? database,
                   IDBDatabaseMetadata metadata);
 
-  // Database::Put / Cursor::Update
-  SuccessKey(IDBKey key);
-
   // Database::Count / DeleteRange
   // Factory::DeleteDatabase
   SuccessInteger(int64 value);

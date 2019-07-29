@@ -108,9 +108,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
   virtual void OnSuccess(std::unique_ptr<IndexedDBConnection> connection,
                          const blink::IndexedDBDatabaseMetadata& metadata);
 
-  // IndexedDBDatabase::Put / IndexedDBCursor::Update
-  virtual void OnSuccess(const blink::IndexedDBKey& key);
-
   // IndexedDBDatabase::Count
   // IndexedDBFactory::DeleteDatabase
   // IndexedDBDatabase::DeleteRange
