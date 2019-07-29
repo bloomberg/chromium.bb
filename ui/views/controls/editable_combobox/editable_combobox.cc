@@ -67,7 +67,7 @@ class Arrow : public Button {
       : Button(listener), color_(color) {
     // Similar to Combobox's TransparentButton.
     SetFocusBehavior(FocusBehavior::NEVER);
-    set_notify_action(PlatformStyle::kMenuNotifyActivationAction);
+    set_notify_action(Button::NOTIFY_ON_PRESS);
 
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
