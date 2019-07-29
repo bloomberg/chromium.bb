@@ -86,7 +86,7 @@ class IndexedDBDatabaseTest : public ::testing::Test {
   std::unique_ptr<IndexedDBFakeBackingStore> backing_store_;
   std::unique_ptr<MockIndexedDBFactory> factory_;
   std::unique_ptr<IndexedDBDatabase> db_;
-  FakeIndexedDBMetadataCoding* metadata_coding_;
+  FakeIndexedDBMetadataCoding* metadata_coding_ = nullptr;
   bool error_called_ = false;
 
  private:

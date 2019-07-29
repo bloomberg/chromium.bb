@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -37,6 +38,10 @@
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
+#include "content/browser/indexed_db/scopes/leveldb_scope.h"
+#include "content/browser/indexed_db/scopes/leveldb_scopes.h"
 #include "content/browser/indexed_db/scopes/scope_lock.h"
 #include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
 #include "content/browser/indexed_db/transaction_impl.h"
@@ -389,7 +394,13 @@ class IndexedDBDatabase::DeleteRequest
   void Perform() override {
     if (db_->HasNoConnections()) {
       // No connections, so delete immediately.
-      DoDelete();
+      std::vector<ScopesLockManager::ScopeLockRequest> lock_requests = {
+          {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata_.id),
+           ScopesLockManager::LockType::kExclusive}};
+      db_->lock_manager_->AcquireLocks(
+          std::move(lock_requests), lock_receiver_.AsWeakPtr(),
+          base::BindOnce(&IndexedDBDatabase::DeleteRequest::DoDelete,
+                         weak_factory_.GetWeakPtr()));
       return;
     }
 
@@ -408,13 +419,28 @@ class IndexedDBDatabase::DeleteRequest
     if (!db_->HasNoConnections())
       return;
 
-    DoDelete();
+    std::vector<ScopesLockManager::ScopeLockRequest> lock_requests = {
+        {kDatabaseRangeLockLevel, GetDatabaseLockRange(db_->metadata_.id),
+         ScopesLockManager::LockType::kExclusive}};
+    db_->lock_manager_->AcquireLocks(
+        std::move(lock_requests), lock_receiver_.AsWeakPtr(),
+        base::BindOnce(&IndexedDBDatabase::DeleteRequest::DoDelete,
+                       weak_factory_.GetWeakPtr()));
   }
 
   void DoDelete() {
     Status s;
-    if (db_->backing_store_)
-      s = db_->backing_store_->DeleteDatabase(db_->metadata_.name);
+    if (db_->backing_store_) {
+      scoped_refptr<TransactionalLevelDBTransaction> txn;
+      TransactionalLevelDBDatabase* db = db_->backing_store_->db();
+      if (db) {
+        txn = db->leveldb_class_factory()->CreateLevelDBTransaction(
+            db, db->scopes()->CreateScope(std::move(lock_receiver_.locks), {}));
+        txn->set_commit_cleanup_complete_callback(
+            std::move(on_database_deleted_));
+      }
+      s = db_->backing_store_->DeleteDatabase(db_->metadata_.name, txn.get());
+    }
     if (!s.ok()) {
       // TODO(jsbell): Consider including sanitized leveldb status message.
       IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
@@ -433,8 +459,11 @@ class IndexedDBDatabase::DeleteRequest
     db_->metadata_.version = IndexedDBDatabaseMetadata::NO_VERSION;
     db_->metadata_.max_object_store_id = kInvalidId;
     db_->metadata_.object_stores.clear();
+    // Unittests (specifically the IndexedDBDatabase unittests) can have the
+    // backing store be a nullptr, so report deleted here.
+    if (on_database_deleted_)
+      std::move(on_database_deleted_).Run();
     callbacks_->OnSuccess(old_version);
-    std::move(on_database_deleted_).Run();
 
     db_->RequestComplete(this);
   }
@@ -449,6 +478,7 @@ class IndexedDBDatabase::DeleteRequest
   bool OnForceClose() override { return true; }
 
  private:
+  ScopesLocksHolder lock_receiver_;
   scoped_refptr<IndexedDBCallbacks> callbacks_;
   base::OnceClosure on_database_deleted_;
 
@@ -482,12 +512,7 @@ IndexedDBDatabase::IndexedDBDatabase(
   DCHECK(factory != nullptr);
 }
 
-IndexedDBDatabase::~IndexedDBDatabase() {
-  DCHECK(!active_request_);
-  DCHECK(pending_requests_.empty());
-  DCHECK(connections_.empty())
-      << "Cannot destroy a database that has connections";
-}
+IndexedDBDatabase::~IndexedDBDatabase() = default;
 
 void IndexedDBDatabase::AddObjectStore(
     IndexedDBObjectStoreMetadata object_store,
@@ -2096,9 +2121,11 @@ Status IndexedDBDatabase::VersionChangeOperation(
   int64_t old_version = metadata_.version;
   DCHECK_GT(version, old_version);
 
-  metadata_coding_->SetDatabaseVersion(
+  leveldb::Status s = metadata_coding_->SetDatabaseVersion(
       transaction->BackingStoreTransaction()->transaction(), id(), version,
       &metadata_);
+  if (!s.ok())
+    return s;
 
   transaction->ScheduleAbortTask(
       base::BindOnce(&IndexedDBDatabase::VersionChangeAbortOperation,
