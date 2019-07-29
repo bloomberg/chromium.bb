@@ -332,6 +332,39 @@ void TranslateBubbleView::ButtonPressed(views::Button* sender,
   }
 }
 
+std::unique_ptr<views::View> TranslateBubbleView::CreateFootnoteView() {
+  // TODO(crbug.com/987962): Implement accordingly once Google Translate branding design
+  // for the advanced view is available.
+  if (bubble_ui_model_ != language::TranslateUIBubbleModel::TAB) {
+    return nullptr;
+  }
+  auto view = std::make_unique<views::View>();
+  views::GridLayout* layout =
+      view->SetLayoutManager(std::make_unique<views::GridLayout>());
+
+  // Translate icon
+  #if defined(GOOGLE_CHROME_BUILD) // GOOGLE_CHROME_BUILD
+    const int translate_icon_id = IDR_TRANSLATE_TAB_WORDMARK;
+  #else // GOOGLE_CHROMIUM_BUILD
+    const int translate_icon_id = IDR_TRANSLATE_BUBBLE_ICON;
+  #endif  
+  std::unique_ptr<views::ImageView> translate_icon =
+      std::make_unique<views::ImageView>();
+  gfx::ImageSkia* translate_icon_image =
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          translate_icon_id);
+  translate_icon->SetImage(*translate_icon_image);
+
+  views::ColumnSet* cs = layout->AddColumnSet(0);
+  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
+                0);
+  layout->StartRow(1, 0);
+  layout->AddView(std::move(translate_icon));
+
+  return view;
+}
+
 views::View* TranslateBubbleView::GetInitiallyFocusedView() {
   return GetCurrentView()->GetNextFocusableView();
 }
@@ -610,6 +643,17 @@ TranslateBubbleView::TranslateBubbleView(
       bubble_ui_model_(language::GetTranslateUiBubbleModel()) {
   DCHECK(anchor_view);
   translate_bubble_view_ = this;
+
+  // TAB UI does not have gap in between ClientFrameView and NonClientFrameView.
+  if (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB) {
+    // Paddings of the ClientFrameView from mock.
+    // Up: 16px.
+    // Left: 16px = 320px - 180px - 124px.
+    // Bottom: 0px from the NonClientFrameView.
+    // Right: 16px = equals left.
+    constexpr gfx::Insets kTranslateBubbleMargin = gfx::Insets(16, 16, 0, 16);
+    translate_bubble_view_->set_margins(kTranslateBubbleMargin);
+  }
   if (web_contents)  // web_contents can be null in unit_tests.
     mouse_handler_.reset(new WebContentMouseHandler(this, web_contents));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::TRANSLATE);
@@ -873,15 +917,6 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
   views::GridLayout* layout =
       view->SetLayoutManager(std::make_unique<views::GridLayout>());
 
-  // Language icon
-  const int language_icon_id = IDR_TRANSLATE_BUBBLE_ICON;
-  std::unique_ptr<views::ImageView> language_icon =
-      std::make_unique<views::ImageView>();
-  gfx::ImageSkia* language_icon_image =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          language_icon_id);
-  language_icon->SetImage(*language_icon_image);
-
   // Tabbed pane for language selection. Can't use unique_ptr because
   // tabs have to be added after the tabbed_pane is added to the parent,
   // when we release ownership of the unique_ptr.
@@ -903,7 +938,6 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
   tab_translate_options_button->SetInkDropMode(views::Button::InkDropMode::ON);
   tab_translate_options_button->SetID(BUTTON_ID_OPTIONS_MENU_TAB);
   tab_translate_options_button->SetFocusForPlatform();
-  tab_translate_options_button->set_request_focus_on_press(true);
 
   // Close button
   const SkColor close_icon_color = gfx::kChromeIconGrey;
@@ -924,12 +958,6 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
 
   constexpr int kColumnSetId = 0;
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
-  cs->AddPaddingColumn(
-      views::GridLayout::kFixedSize,
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0f,
                 views::GridLayout::FIXED, 8, 0);
   cs->AddPaddingColumn(
@@ -946,7 +974,6 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
                 0);
 
   layout->StartRow(1, kColumnSetId);
-  layout->AddView(std::move(language_icon));
   tabbed_pane_ = layout->AddView(std::move(tabbed_pane));
   layout->AddView(std::move(tab_translate_options_button));
   layout->AddView(std::move(close_button));
@@ -970,16 +997,20 @@ std::unique_ptr<views::View> TranslateBubbleView::GM2CreateView(
       view->SetLayoutManager(std::make_unique<views::GridLayout>());
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
-  enum { COLUMN_SET_ID_TITLE, COLUMN_SET_ID_BUTTONS };
+  enum { COLUMN_SET_ID_ICON, COLUMN_SET_ID_TITLE, COLUMN_SET_ID_BUTTONS };
 
-  // Language icon
-  const int language_icon_id = IDR_TRANSLATE_BUBBLE_ICON;
-  std::unique_ptr<views::ImageView> language_icon =
+  // Translate icon
+  #if defined(GOOGLE_CHROME_BUILD) // GOOGLE_CHROME_BUILD
+    const int translate_icon_id = IDR_TRANSLATE_TAB_WORDMARK;
+  #else // GOOGLE_CHROMIUM_BUILD
+    const int translate_icon_id = IDR_TRANSLATE_BUBBLE_ICON;
+  #endif  
+  std::unique_ptr<views::ImageView> translate_icon =
       std::make_unique<views::ImageView>();
-  gfx::ImageSkia* language_icon_image =
+  gfx::ImageSkia* translate_icon_image =
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          language_icon_id);
-  language_icon->SetImage(*language_icon_image);
+          translate_icon_id);
+  translate_icon->SetImage(*translate_icon_image);
 
   // Close button
   const SkColor close_icon_color = gfx::kChromeIconGrey;
@@ -998,13 +1029,13 @@ std::unique_ptr<views::View> TranslateBubbleView::GM2CreateView(
   close_button->SetID(BUTTON_ID_CLOSE);
 
   // Initialize a columnset
-  views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_TITLE);
+  views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_ICON);
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                 views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
                 0);
-  cs->AddPaddingColumn(views::GridLayout::kFixedSize,
-                       2 * provider->GetDistanceMetric(
-                               views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
+
+  cs = layout->AddColumnSet(COLUMN_SET_ID_TITLE);
+
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                 views::GridLayout::kFixedSize, views::GridLayout::FIXED, 100,
                 0);
@@ -1039,12 +1070,14 @@ std::unique_ptr<views::View> TranslateBubbleView::GM2CreateView(
                 views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
                 0);
 
+  layout->StartRow(1, COLUMN_SET_ID_ICON);
+  layout->AddView(std::move(translate_icon));
+
   layout->StartRowWithPadding(
       views::GridLayout::kFixedSize, COLUMN_SET_ID_TITLE,
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL) /
           2);
-  layout->AddView(std::move(language_icon));
   gm2_source_language_label_ =
       layout->AddView(std::move(source_language_label));
   layout->AddView(std::move(status_indicator));
