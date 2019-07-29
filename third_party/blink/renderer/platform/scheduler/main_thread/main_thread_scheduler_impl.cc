@@ -303,6 +303,9 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
     EnableVirtualTime(BaseTimeOverridePolicy::OVERRIDE);
     SetVirtualTimePolicy(VirtualTimePolicy::kPause);
   }
+
+  main_thread_only()
+      .compositor_priority_experiments.OnMainThreadSchedulerInitialized();
 }
 
 MainThreadSchedulerImpl::~MainThreadSchedulerImpl() {
