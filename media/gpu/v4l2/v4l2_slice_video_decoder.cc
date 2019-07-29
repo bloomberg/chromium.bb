@@ -795,8 +795,7 @@ scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecoder::CreateSurface() {
   }
 
   return scoped_refptr<V4L2DecodeSurface>(new V4L2ConfigStoreDecodeSurface(
-      std::move(input_buf), std::move(output_buf), std::move(frame),
-      base::DoNothing()));
+      std::move(input_buf), std::move(output_buf), std::move(frame)));
 }
 
 void V4L2SliceVideoDecoder::ReuseOutputBuffer(V4L2ReadableBufferRef buffer) {

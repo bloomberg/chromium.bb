@@ -1933,16 +1933,15 @@ V4L2SliceVideoDecodeAccelerator::CreateSurface() {
   if (supports_requests_) {
     auto ret = V4L2RequestDecodeSurface::Create(
         std::move(input_buffer), std::move(output_buffer), nullptr,
-        input_record.request_fd.get(), base::DoNothing());
+        input_record.request_fd.get());
 
     if (!ret)
       return nullptr;
 
     dec_surface = std::move(ret).value();
   } else {
-    dec_surface = new V4L2ConfigStoreDecodeSurface(std::move(input_buffer),
-                                                   std::move(output_buffer),
-                                                   nullptr, base::DoNothing());
+    dec_surface = new V4L2ConfigStoreDecodeSurface(
+        std::move(input_buffer), std::move(output_buffer), nullptr);
   }
 
   DVLOGF(4) << "Created surface " << input << " -> " << output;
