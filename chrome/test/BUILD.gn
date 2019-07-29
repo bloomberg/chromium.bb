@@ -3754,6 +3754,7 @@ test("unit_tests") {
       "../browser/ui/webui/downloads/downloads_list_tracker_unittest.cc",
       "../browser/ui/webui/downloads/mock_downloads_page.cc",
       "../browser/ui/webui/downloads/mock_downloads_page.h",
+      "../browser/ui/webui/flags_ui_unittest.cc",
       "../browser/ui/webui/help/version_updater_chromeos_unittest.cc",
       "../browser/ui/webui/managed_ui_handler_unittest.cc",
       "../browser/ui/webui/management_ui_handler_unittest.cc",
