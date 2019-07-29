@@ -5,6 +5,7 @@
 #include "services/proxy_resolver/public/cpp/manifest.h"
 
 #include "base/no_destructor.h"
+#include "build/build_config.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/strings/grit/services_strings.h"
@@ -18,8 +19,13 @@ const service_manager::Manifest& GetManifest() {
           .WithDisplayName(IDS_PROXY_RESOLVER_DISPLAY_NAME)
           .WithOptions(
               service_manager::ManifestOptionsBuilder()
+#if defined(OS_ANDROID)
+                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
+                                         kInProcessBuiltin)
+#else
                   .WithExecutionMode(service_manager::Manifest::ExecutionMode::
                                          kOutOfProcessBuiltin)
+#endif
                   .WithInstanceSharingPolicy(
                       service_manager::Manifest::InstanceSharingPolicy::
                           kSharedAcrossGroups)
