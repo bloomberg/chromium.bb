@@ -22,6 +22,7 @@
 
 #include <blpwtk2_toolkitfactory.h>
 
+#include <blpwtk2_logmessagethrottler.h>
 #include <blpwtk2_products.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_stringref.h>
@@ -47,10 +48,11 @@
 #include <ui/views/corewm/tooltip_win.h>
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 
+#include <memory>
+
 namespace blpwtk2 {
 static bool g_created = false;
-static ToolkitCreateParams::LogMessageHandler g_logMessageHandler = nullptr;
-static ToolkitCreateParams::ConsoleLogMessageHandler g_consoleLogMessageHandler = nullptr;
+static std::weak_ptr<LogMessageThrottler> g_logger;
 
 static void setMaxSocketsPerProxy(int count)
 {
@@ -89,30 +91,16 @@ static void setMaxSocketsPerProxy(int count)
 						// ---------------------
 						// struct ToolkitFactory
 						// ---------------------
-static ToolkitCreateParams::LogMessageSeverity decodeLogSeverity(int severity)
-{
-    switch (severity) {
-    case logging::LOG_INFO:
-        return ToolkitCreateParams::kSeverityInfo;
-    case logging::LOG_WARNING:
-        return ToolkitCreateParams::kSeverityWarning;
-    case logging::LOG_ERROR:
-        return ToolkitCreateParams::kSeverityError;
-    case logging::LOG_FATAL:
-        return ToolkitCreateParams::kSeverityFatal;
-    default:
-        return ToolkitCreateParams::kSeverityVerbose;
-    }
-}
-
 static bool wtk2LogMessageHandlerFunction(int severity,
                                           const char* file,
                                           int line,
                                           size_t message_start,
                                           const std::string& str)
 {
-    g_logMessageHandler(decodeLogSeverity(severity), file, line, str.c_str() + message_start);
-    return true;
+    if(auto logger = g_logger.lock()) {
+        return logger->writeLog(severity, file, line, message_start, str);
+    }
+    return false;
 }
 
 static void wtk2ConsoleLogMessageHandlerFunction(int severity,
@@ -122,12 +110,9 @@ static void wtk2ConsoleLogMessageHandlerFunction(int severity,
                                                  const std::string& message,
                                                  const std::string& stack_trace)
 {
-    g_consoleLogMessageHandler(decodeLogSeverity(severity),
-                               StringRef(file.data(), file.length()),
-                               line,
-                               column,
-                               StringRef(message.data(), message.length()),
-                               StringRef(stack_trace.data(), stack_trace.length()));
+    if(auto logger = g_logger.lock()) {
+        logger->writeConsole(severity, file, line, column, message, stack_trace);
+    }
 }
 
 // static
@@ -165,15 +150,13 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
         env->SetVar(subProcessModuleEnvVar, subProcessModule);
 	}
 
-    g_logMessageHandler = params.logMessageHandler();
-    if (g_logMessageHandler) {
-        logging::SetWtk2LogMessageHandler(wtk2LogMessageHandlerFunction);
-    }
 
-    g_consoleLogMessageHandler = params.consoleLogMessageHandler();
-    if (g_consoleLogMessageHandler) {
-        content::RenderFrameImpl::SetConsoleLogMessageHandler(wtk2ConsoleLogMessageHandlerFunction);
-    }
+    logging::SetWtk2LogMessageHandler(wtk2LogMessageHandlerFunction);
+    content::RenderFrameImpl::SetConsoleLogMessageHandler(wtk2ConsoleLogMessageHandlerFunction);
+    auto logger = std::make_shared<LogMessageThrottler>(
+        params.logThrottleType(), params.logMessageHandler(),
+        params.consoleLogMessageHandler());
+    g_logger = logger;
 
     base::win::SetWinProcExceptionFilter(params.winProcExceptionFilter());
 
@@ -229,7 +212,8 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
                                            commandLineSwitches,
                                            params.isIsolatedProfile(),
                                            params.browserV8Enabled(),
-                                           profileDirectory);
+                                           profileDirectory,
+                                           std::move(logger));
 
     std::vector<std::wstring> font_files;
 

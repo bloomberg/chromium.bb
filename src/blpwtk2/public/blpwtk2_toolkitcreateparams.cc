@@ -76,6 +76,8 @@ struct ToolkitCreateParamsImpl final
     // patch section: renderer ui
     bool d_rendererUIEnabled;
 
+    ToolkitCreateParams::LogThrottleType d_logThrottleType {ToolkitCreateParams::LogThrottleType::kWarningThrottle};
+
     ToolkitCreateParamsImpl();
 };
 
@@ -311,6 +313,11 @@ void ToolkitCreateParams::setRendererUIEnabled(bool rendererUIEnabled)
     d_impl->d_rendererUIEnabled = rendererUIEnabled;
 }
 
+void ToolkitCreateParams::setLogThrottleType(LogThrottleType throttleType)
+{
+    d_impl->d_logThrottleType = throttleType;
+}
+
 ThreadMode ToolkitCreateParams::threadMode() const
 {
     return d_impl->d_threadMode;
@@ -472,6 +479,11 @@ bool ToolkitCreateParams::browserV8Enabled() const
 bool ToolkitCreateParams::rendererUIEnabled() const
 {
     return d_impl->d_rendererUIEnabled;
+}
+
+ToolkitCreateParams::LogThrottleType ToolkitCreateParams::logThrottleType() const
+{
+    return d_impl->d_logThrottleType;
 }
 
 }  // close namespace blpwtk2

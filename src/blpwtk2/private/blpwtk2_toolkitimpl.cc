@@ -515,8 +515,10 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
                          const std::vector<std::string>& cmdLineSwitches,
                          bool                            isolated,
                          bool                            browserV8Enabled,
-                         const std::string&              profileDir)
+                         const std::string&              profileDir,
+                         std::shared_ptr<LogMessageThrottler> logMessageThrottler)
     : d_mainDelegate(false)
+    , d_logMessageThrottler(std::move(logMessageThrottler))
 {
     ChannelInfo channelInfo;
     std::string currentHostChannel = hostChannel;

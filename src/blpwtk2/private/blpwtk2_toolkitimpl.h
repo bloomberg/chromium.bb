@@ -72,7 +72,7 @@ class ProcessHostImpl;
 class Profile;
 class StringRef;
 class GpuDataLogger;
-
+class LogMessageThrottler;
 
                         // =================
                         // class ToolkitImpl
@@ -121,7 +121,7 @@ class ToolkitImpl : public Toolkit {
     std::unordered_map<int, std::unique_ptr<EmbedderHeapTracerShim>> d_heapTracers;
         // Registered heap tracers.
 
-
+    std::shared_ptr<LogMessageThrottler> d_logMessageThrottler;
 
     ~ToolkitImpl() override;
         // Shutdown all threads and delete the toolkit.  To ensure the same
@@ -166,7 +166,8 @@ class ToolkitImpl : public Toolkit {
                          const std::vector<std::string>& cmdLineSwitches,
                          bool                            isolated,
                          bool                            browserV8Enabled,
-                         const std::string&              profileDir);
+                         const std::string&              profileDir,
+                         std::shared_ptr<LogMessageThrottler> logMessageThrottler);
 
     // blpwtk2::Toolkit overrides
     bool hasDevTools() override;
