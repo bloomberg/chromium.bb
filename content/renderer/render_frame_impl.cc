@@ -2956,8 +2956,8 @@ void RenderFrameImpl::PostMessageEvent(int32_t source_routing_id,
                                WebString::FromUTF16(source_origin),
                                source_frame, frame_->GetDocument());
 
-  frame_->DispatchMessageEventWithOriginCheck(target_security_origin, msg_event,
-                                              message.has_user_gesture);
+  frame_->DispatchMessageEventWithOriginCheck(target_security_origin,
+                                              msg_event);
 }
 
 void RenderFrameImpl::OnReload(bool bypass_cache) {
