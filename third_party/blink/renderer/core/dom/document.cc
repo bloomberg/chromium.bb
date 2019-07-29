@@ -3945,8 +3945,10 @@ void Document::Abort() {
 }
 
 void Document::CheckCompleted() {
-  if (CheckCompletedInternal())
-    frame_->Loader().DidFinishNavigation();
+  if (CheckCompletedInternal()) {
+    frame_->Loader().DidFinishNavigation(
+        FrameLoader::NavigationFinishState::kSuccess);
+  }
 }
 
 bool Document::CheckCompletedInternal() {

@@ -614,7 +614,8 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
     frame_->GetDocument()->Parser()->StopParsing();
   state_ = kSentDidFinishLoad;
   GetLocalFrameClient().DispatchDidFailLoad(error, history_commit_type);
-  GetFrameLoader().DidFinishNavigation();
+  GetFrameLoader().DidFinishNavigation(
+      FrameLoader::NavigationFinishState::kFailure);
   DCHECK_EQ(kSentDidFinishLoad, state_);
   params_ = nullptr;
 }
@@ -966,7 +967,8 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
   // scroll should cancel it.
   GetFrameLoader().DetachProvisionalDocumentLoader();
   GetFrameLoader().CancelClientNavigation();
-  GetFrameLoader().DidFinishNavigation();
+  GetFrameLoader().DidFinishNavigation(
+      FrameLoader::NavigationFinishState::kSuccess);
 
   if (!frame_->GetPage())
     return;
