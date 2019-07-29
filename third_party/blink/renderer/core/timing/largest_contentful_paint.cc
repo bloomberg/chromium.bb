@@ -10,13 +10,14 @@
 
 namespace blink {
 
-LargestContentfulPaint::LargestContentfulPaint(double render_time,
+LargestContentfulPaint::LargestContentfulPaint(double start_time,
+                                               double render_time,
                                                uint64_t size,
                                                double load_time,
                                                const AtomicString& id,
                                                const String& url,
                                                Element* element)
-    : PerformanceEntry(g_empty_atom, 0, 0),
+    : PerformanceEntry(g_empty_atom, start_time, start_time),
       size_(size),
       render_time_(render_time),
       load_time_(load_time),
