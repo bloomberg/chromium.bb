@@ -120,7 +120,7 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
       static_cast<int>(ResourceType::kSubResource);
   // Cert requests should not send credential informartion, because the default
   // credentials mode of Fetch is "omit".
-  resource_request_->allow_credentials = false;
+  resource_request_->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request_->headers.SetHeader(network::kAcceptHeader,
                                        kCertChainMimeType);
   if (force_fetch) {
