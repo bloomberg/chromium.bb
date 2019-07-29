@@ -272,7 +272,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spirv_cross_revision': 'f07a4e16a60e1d0231dda5d3883550761bd70a47',
+  'spirv_cross_revision': 'ffca8735ff42a9e7a3d1dbb984cf3bf2ca724ebc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
