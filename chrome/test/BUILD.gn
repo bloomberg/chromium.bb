@@ -2446,10 +2446,7 @@ if (!is_android) {
       sources += [ "../browser/extensions/api/mdns/mdns_apitest.cc" ]
     }
 
-    # TODO(crbug.com/980869): Remove is_chromeos once
-    # enable_supervised_users is only enabled on chromeos
-    # (and android, which is excluded from browser_tests).
-    if (enable_supervised_users && is_chromeos) {
+    if (enable_supervised_users) {
       sources += [
         "../browser/supervised_user/supervised_user_navigation_throttle_browsertest.cc",
         "../browser/supervised_user/supervised_user_service_browsertest.cc",
