@@ -80,11 +80,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Record for input buffers.
   struct InputRecord {
     InputRecord();
-    int32_t input_id;
-    void* address;
-    size_t length;
-    size_t bytes_used;
-    bool at_device;
+    V4L2WritableBufferRef buffer;
     // Request fd used for this input buffer if request API is used.
     base::ScopedFD request_fd;
   };
@@ -156,9 +152,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   //
   // Internal methods of this class.
   //
-  // Recycle a V4L2 input buffer with |index| after dequeuing from device.
-  void ReuseInputBuffer(int index);
-
   // Recycle V4L2 output buffer with |index|. Used as surface release callback.
   void ReuseOutputBuffer(int index);
 
@@ -383,12 +376,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Thread used to poll the device for events.
   base::Thread device_poll_thread_;
 
-  // Input queue state.
-  bool input_streamon_;
-  // Number of input buffers enqueued to the device.
-  int input_buffer_queued_count_;
-  // Input buffers ready to use; LIFO since we don't care about ordering.
-  std::list<int> free_input_buffers_;
+  scoped_refptr<V4L2Queue> input_queue_;
   // Mapping of int index to an input buffer record.
   std::vector<InputRecord> input_buffer_map_;
   // Set to true by CreateInputBuffers() if the codec driver supports requests
