@@ -576,7 +576,9 @@ leveldb::Status IndexedDBBackingStore::Initialize(bool clean_live_journal) {
 
   std::unique_ptr<LevelDBWriteBatch> write_batch = LevelDBWriteBatch::Create();
 
-  int64_t db_schema_version;
+  // This must have a default value to handle this case where
+  // ReportSchemaVersion reports a not-found entry.
+  int64_t db_schema_version = 0;
   IndexedDBDataFormatVersion db_data_version;
   bool found = false;
   Status s = GetInt(db_.get(), schema_version_key, &db_schema_version, &found);
