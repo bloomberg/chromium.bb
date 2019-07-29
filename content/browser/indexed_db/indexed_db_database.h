@@ -178,7 +178,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
            IndexedDBValue* value,
            std::unique_ptr<blink::IndexedDBKey> key,
            blink::mojom::IDBPutMode mode,
-           scoped_refptr<IndexedDBCallbacks> callbacks,
+           blink::mojom::IDBTransaction::PutCallback callback,
            const std::vector<blink::IndexedDBIndexKeys>& index_keys);
   void SetIndexKeys(IndexedDBTransaction* transaction,
                     int64_t object_store_id,

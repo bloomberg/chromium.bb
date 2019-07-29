@@ -280,6 +280,11 @@ interface IDBCursor {
   PrefetchReset(int32 used_prefetches, int32 unused_prefetches);
 };
 
+union IDBTransactionPutResult {
+  IDBError error_result;  // |error| is reserved, so call this |error_result|.
+  IDBKey key;
+};
+
 interface IDBTransaction {
   CreateObjectStore(int64 object_store_id,
                     mojo_base.mojom.String16 name,
@@ -290,8 +295,8 @@ interface IDBTransaction {
       IDBValue value,
       IDBKey key,
       IDBPutMode mode,
-      array<IDBIndexKeys> index_keys,
-      associated IDBCallbacks callbacks);
+      array<IDBIndexKeys> index_keys)
+    => (IDBTransactionPutResult result);
   Commit(int64 num_errors_handled);
 };
 

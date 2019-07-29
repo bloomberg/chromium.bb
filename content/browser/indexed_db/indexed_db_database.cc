@@ -1539,7 +1539,7 @@ struct IndexedDBDatabase::PutOperationParams {
   IndexedDBValue value;
   std::unique_ptr<IndexedDBKey> key;
   blink::mojom::IDBPutMode put_mode;
-  scoped_refptr<IndexedDBCallbacks> callbacks;
+  blink::mojom::IDBTransaction::PutCallback callback;
   std::vector<IndexedDBIndexKeys> index_keys;
 
  private:
@@ -1551,11 +1551,16 @@ void IndexedDBDatabase::Put(IndexedDBTransaction* transaction,
                             IndexedDBValue* value,
                             std::unique_ptr<IndexedDBKey> key,
                             blink::mojom::IDBPutMode put_mode,
-                            scoped_refptr<IndexedDBCallbacks> callbacks,
+                            blink::mojom::IDBTransaction::PutCallback callback,
                             const std::vector<IndexedDBIndexKeys>& index_keys) {
   DCHECK(transaction);
   IDB_TRACE1("IndexedDBDatabase::Put", "txn.id", transaction->id());
   DCHECK_NE(transaction->mode(), blink::mojom::IDBTransactionMode::ReadOnly);
+
+  blink::mojom::IDBTransaction::PutCallback aborting_callback =
+      CreateCallbackAbortOnDestruct<blink::mojom::IDBTransaction::PutCallback,
+                                    blink::mojom::IDBTransactionPutResultPtr>(
+          std::move(callback), transaction->AsWeakPtr());
 
   if (!ValidateObjectStoreId(object_store_id))
     return;
@@ -1568,7 +1573,7 @@ void IndexedDBDatabase::Put(IndexedDBTransaction* transaction,
   params->value.swap(*value);
   params->key = std::move(key);
   params->put_mode = put_mode;
-  params->callbacks = callbacks;
+  params->callback = std::move(aborting_callback);
   params->index_keys = index_keys;
   transaction->ScheduleTask(BindWeakOperation(&IndexedDBDatabase::PutOperation,
                                               AsWeakPtr(), std::move(params)));
@@ -1596,9 +1601,12 @@ Status IndexedDBDatabase::PutOperation(
         GenerateKey(backing_store_, transaction, id(), params->object_store_id);
     key_was_generated = true;
     if (!auto_inc_key->IsValid()) {
-      params->callbacks->OnError(
+      IndexedDBDatabaseError error =
           CreateError(blink::kWebIDBDatabaseExceptionConstraintError,
-                      "Maximum key generator value reached.", transaction));
+                      "Maximum key generator value reached.", transaction);
+      std::move(params->callback)
+          .Run(blink::mojom::IDBTransactionPutResult::NewErrorResult(
+              blink::mojom::IDBError::New(error.code(), error.message())));
       return s;
     }
     key = std::move(auto_inc_key);
@@ -1617,9 +1625,12 @@ Status IndexedDBDatabase::PutOperation(
     if (!found_status.ok())
       return found_status;
     if (found) {
-      params->callbacks->OnError(
+      IndexedDBDatabaseError error =
           CreateError(blink::kWebIDBDatabaseExceptionConstraintError,
-                      "Key already exists in the object store.", transaction));
+                      "Key already exists in the object store.", transaction);
+      std::move(params->callback)
+          .Run(blink::mojom::IDBTransactionPutResult::NewErrorResult(
+              blink::mojom::IDBError::New(error.code(), error.message())));
       return found_status;
     }
   }
@@ -1631,16 +1642,22 @@ Status IndexedDBDatabase::PutOperation(
       transaction, backing_store_, id(), object_store, *key, key_was_generated,
       params->index_keys, &index_writers, &error_message, &obeys_constraints);
   if (!backing_store_success) {
-    params->callbacks->OnError(
+    IndexedDBDatabaseError error =
         CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
                     "Internal error: backing store error updating index keys.",
-                    transaction));
+                    transaction);
+    std::move(params->callback)
+        .Run(blink::mojom::IDBTransactionPutResult::NewErrorResult(
+            blink::mojom::IDBError::New(error.code(), error.message())));
     return s;
   }
   if (!obeys_constraints) {
-    params->callbacks->OnError(
+    IndexedDBDatabaseError error =
         CreateError(blink::kWebIDBDatabaseExceptionConstraintError,
-                    error_message, transaction));
+                    error_message, transaction);
+    std::move(params->callback)
+        .Run(blink::mojom::IDBTransactionPutResult::NewErrorResult(
+            blink::mojom::IDBError::New(error.code(), error.message())));
     return s;
   }
 
@@ -1675,7 +1692,8 @@ Status IndexedDBDatabase::PutOperation(
   {
     IDB_TRACE1("IndexedDBDatabase::PutOperation.Callbacks", "txn.id",
                transaction->id());
-    params->callbacks->OnSuccess(*key);
+    std::move(params->callback)
+        .Run(blink::mojom::IDBTransactionPutResult::NewKey(*key));
   }
   FilterObservation(transaction, params->object_store_id,
                     params->put_mode == blink::mojom::IDBPutMode::AddOnly
