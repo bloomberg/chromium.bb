@@ -204,6 +204,16 @@ bool IsEditDistanceAtMostOne(const base::string16& str1,
   return edit_count <= 1;
 }
 
+bool IsSafeRedirect(const std::string& matching_domain,
+                    const std::vector<GURL>& redirect_chain) {
+  if (redirect_chain.size() != 2) {
+    return false;
+  }
+  const GURL redirect_target = redirect_chain[redirect_chain.size() - 1];
+  return matching_domain == GetETLDPlusOne(redirect_target.host()) &&
+         redirect_target == redirect_target.GetWithEmptyPath();
+}
+
 LookalikeUrlNavigationThrottle::LookalikeUrlNavigationThrottle(
     content::NavigationHandle* navigation_handle)
     : content::NavigationThrottle(navigation_handle),
@@ -215,7 +225,8 @@ LookalikeUrlNavigationThrottle::LookalikeUrlNavigationThrottle(
 LookalikeUrlNavigationThrottle::~LookalikeUrlNavigationThrottle() {}
 
 ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
-    const GURL& url) {
+    const GURL& url,
+    bool check_safe_redirect) {
   // Ignore if running unit tests. Some tests use
   // TestMockTimeTaskRunner::ScopedContext and call CreateTestWebContents()
   // which navigates and waits for throttles to complete using a RunLoop.
@@ -253,7 +264,8 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
   if (service->EngagedSitesNeedUpdating()) {
     service->ForceUpdateEngagedSites(
         base::BindOnce(&LookalikeUrlNavigationThrottle::PerformChecksDeferred,
-                       weak_factory_.GetWeakPtr(), url, navigated_domain));
+                       weak_factory_.GetWeakPtr(), url, navigated_domain,
+                       check_safe_redirect));
     // If we're not going to show an interstitial, there's no reason to delay
     // the navigation any further.
     if (!interstitials_enabled_) {
@@ -262,14 +274,17 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
     return content::NavigationThrottle::DEFER;
   }
 
-  return PerformChecks(url, navigated_domain, service->GetLatestEngagedSites());
+  return PerformChecks(url, navigated_domain, check_safe_redirect,
+                       service->GetLatestEngagedSites());
 }
 
 ThrottleCheckResult LookalikeUrlNavigationThrottle::WillProcessResponse() {
   if (navigation_handle()->GetNetErrorCode() != net::OK) {
     return content::NavigationThrottle::PROCEED;
   }
-  return HandleThrottleRequest(navigation_handle()->GetURL());
+  // Do not check for if the redirect was safe. That should only be done when
+  // the navigation is still being redirected.
+  return HandleThrottleRequest(navigation_handle()->GetURL(), false);
 }
 
 ThrottleCheckResult LookalikeUrlNavigationThrottle::WillRedirectRequest() {
@@ -283,7 +298,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::WillRedirectRequest() {
   if (chain.size() < 2) {
     return content::NavigationThrottle::PROCEED;
   }
-  return HandleThrottleRequest(chain[chain.size() - 2]);
+  return HandleThrottleRequest(chain[chain.size() - 2], true);
 }
 
 const char* LookalikeUrlNavigationThrottle::GetNameForLogging() {
@@ -331,9 +346,10 @@ LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(
 void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
     const GURL& url,
     const DomainInfo& navigated_domain,
+    bool check_safe_redirect,
     const std::vector<DomainInfo>& engaged_sites) {
   ThrottleCheckResult result =
-      PerformChecks(url, navigated_domain, engaged_sites);
+      PerformChecks(url, navigated_domain, check_safe_redirect, engaged_sites);
 
   if (!interstitials_enabled_) {
     return;
@@ -350,6 +366,7 @@ void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
 ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
     const GURL& url,
     const DomainInfo& navigated_domain,
+    bool check_safe_redirect,
     const std::vector<DomainInfo>& engaged_sites) {
   std::string matched_domain;
   MatchType match_type;
@@ -375,6 +392,11 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
     return content::NavigationThrottle::PROCEED;
   }
   DCHECK(!matched_domain.empty());
+
+  if (check_safe_redirect &&
+      IsSafeRedirect(matched_domain, navigation_handle()->GetRedirectChain())) {
+    return content::NavigationThrottle::PROCEED;
+  }
 
   ukm::SourceId source_id = ukm::ConvertToSourceId(
       navigation_handle()->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);

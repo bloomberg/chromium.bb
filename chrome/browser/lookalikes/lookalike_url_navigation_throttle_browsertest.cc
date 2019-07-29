@@ -678,6 +678,37 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   }
 }
 
+// The site redirects to the matched site, this should not show
+// an interstitial.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       Idn_SiteEngagement_SafeRedirect) {
+  const GURL kExpectedSuggestedUrl = GetURLWithoutPath("site1.com");
+  const GURL kNavigatedUrl = embedded_test_server()->GetURL(
+      "sité1.com", "/server-redirect?" + kExpectedSuggestedUrl.spec());
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  SetEngagementScore(browser(), kExpectedSuggestedUrl, kHighEngagement);
+
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+}
+
+// The site redirects to the matched site, but the redirect chain has more than
+// two redirects.
+// TODO(meacer): Consider allowing this case.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       Idn_SiteEngagement_UnsafeRedirect) {
+  const GURL kExpectedSuggestedUrl = GetURLWithoutPath("site1.com");
+  const GURL kMidUrl = embedded_test_server()->GetURL(
+      "sité1.com", "/server-redirect?" + kExpectedSuggestedUrl.spec());
+  const GURL kNavigatedUrl = embedded_test_server()->GetURL(
+      "other-site.test", "/server-redirect?" + kMidUrl.spec());
+
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  SetEngagementScore(browser(), kExpectedSuggestedUrl, kHighEngagement);
+  TestMetricsRecordedAndMaybeInterstitialShown(
+      browser(), kNavigatedUrl, kExpectedSuggestedUrl,
+      NavigationSuggestionEvent::kMatchSiteEngagement);
+}
+
 // Tests negative examples for all heuristics.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        NonUniqueDomains_NoMatch) {
