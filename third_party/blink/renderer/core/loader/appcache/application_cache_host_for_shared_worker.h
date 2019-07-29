@@ -19,6 +19,7 @@ class ApplicationCacheHostForSharedWorker final : public ApplicationCacheHost {
   // ApplicationCacheHost:
   bool Update() override;
   bool SwapCache() override;
+  void SetApplicationCache(ApplicationCache*) override;
   void LogMessage(mojom::blink::ConsoleMessageLevel log_level,
                   const String& message) override;
   void SetSubresourceFactory(

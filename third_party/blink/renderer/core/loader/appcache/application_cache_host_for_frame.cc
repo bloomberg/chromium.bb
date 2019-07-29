@@ -7,8 +7,11 @@
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/events/application_cache_error_event.h"
+#include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -45,6 +48,11 @@ ApplicationCacheHostForFrame::ApplicationCacheHostForFrame(
                            std::move(task_runner)),
       local_frame_(document_loader->GetFrame()) {}
 
+void ApplicationCacheHostForFrame::DetachFromDocumentLoader() {
+  ApplicationCacheHost::DetachFromDocumentLoader();
+  SetApplicationCache(nullptr);
+}
+
 bool ApplicationCacheHostForFrame::Update() {
   if (!backend_host_.is_bound())
     return false;
@@ -74,6 +82,24 @@ bool ApplicationCacheHostForFrame::SwapCache() {
   backend_host_->GetStatus(&status_);
   probe::UpdateApplicationCacheStatus(GetDocumentLoader()->GetFrame());
   return true;
+}
+
+void ApplicationCacheHostForFrame::SetApplicationCache(
+    ApplicationCache* dom_application_cache) {
+  DCHECK(!dom_application_cache_ || !dom_application_cache);
+  dom_application_cache_ = dom_application_cache;
+}
+
+void ApplicationCacheHostForFrame::StopDeferringEvents() {
+  for (unsigned i = 0; i < deferred_events_.size(); ++i) {
+    const DeferredEvent& deferred = deferred_events_[i];
+    DispatchDOMEvent(deferred.event_id, deferred.progress_total,
+                     deferred.progress_done, deferred.error_reason,
+                     deferred.error_url, deferred.error_status,
+                     deferred.error_message);
+  }
+  deferred_events_.clear();
+  defers_events_ = false;
 }
 
 void ApplicationCacheHostForFrame::LogMessage(
@@ -247,8 +273,60 @@ void ApplicationCacheHostForFrame::DidReceiveResponseForMainResource(
 }
 
 void ApplicationCacheHostForFrame::Trace(blink::Visitor* visitor) {
+  visitor->Trace(dom_application_cache_);
   visitor->Trace(local_frame_);
   ApplicationCacheHost::Trace(visitor);
+}
+
+void ApplicationCacheHostForFrame::NotifyApplicationCache(
+    mojom::AppCacheEventID id,
+    int progress_total,
+    int progress_done,
+    mojom::AppCacheErrorReason error_reason,
+    const String& error_url,
+    int error_status,
+    const String& error_message) {
+  if (id != mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT) {
+    probe::UpdateApplicationCacheStatus(GetDocumentLoader()->GetFrame());
+  }
+
+  if (defers_events_) {
+    // Event dispatching is deferred until document.onload has fired.
+    deferred_events_.push_back(DeferredEvent(id, progress_total, progress_done,
+                                             error_reason, error_url,
+                                             error_status, error_message));
+    return;
+  }
+  DispatchDOMEvent(id, progress_total, progress_done, error_reason, error_url,
+                   error_status, error_message);
+}
+
+void ApplicationCacheHostForFrame::DispatchDOMEvent(
+    mojom::AppCacheEventID id,
+    int progress_total,
+    int progress_done,
+    mojom::AppCacheErrorReason error_reason,
+    const String& error_url,
+    int error_status,
+    const String& error_message) {
+  // Don't dispatch an event if the window is detached.
+  if (!dom_application_cache_ || !dom_application_cache_->DomWindow())
+    return;
+
+  const AtomicString& event_type = ApplicationCache::ToEventType(id);
+  if (event_type.IsEmpty())
+    return;
+  Event* event = nullptr;
+  if (id == mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT) {
+    event =
+        ProgressEvent::Create(event_type, true, progress_done, progress_total);
+  } else if (id == mojom::AppCacheEventID::APPCACHE_ERROR_EVENT) {
+    event = MakeGarbageCollected<ApplicationCacheErrorEvent>(
+        error_reason, error_url, error_status, error_message);
+  } else {
+    event = Event::Create(event_type);
+  }
+  dom_application_cache_->DispatchEvent(*event);
 }
 
 }  // namespace blink

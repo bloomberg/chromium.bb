@@ -37,8 +37,6 @@
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/core/events/application_cache_error_event.h"
-#include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -52,7 +50,6 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
-#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -131,41 +128,11 @@ void ApplicationCacheHost::WillStartLoadingMainResource(DocumentLoader* loader,
   BindBackend();
 }
 
-void ApplicationCacheHost::SetApplicationCache(
-    ApplicationCache* dom_application_cache) {
-  DCHECK(!dom_application_cache_ || !dom_application_cache);
-  dom_application_cache_ = dom_application_cache;
-}
-
 void ApplicationCacheHost::DetachFromDocumentLoader() {
   // Detach from the owning DocumentLoader and close mojo pipes.
-  SetApplicationCache(nullptr);
   receiver_.reset();
   backend_host_.reset();
   document_loader_ = nullptr;
-}
-
-void ApplicationCacheHost::NotifyApplicationCache(
-    mojom::AppCacheEventID id,
-    int progress_total,
-    int progress_done,
-    mojom::AppCacheErrorReason error_reason,
-    const String& error_url,
-    int error_status,
-    const String& error_message) {
-  if (id != mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT) {
-    probe::UpdateApplicationCacheStatus(document_loader_->GetFrame());
-  }
-
-  if (defers_events_) {
-    // Event dispatching is deferred until document.onload has fired.
-    deferred_events_.push_back(DeferredEvent(id, progress_total, progress_done,
-                                             error_reason, error_url,
-                                             error_status, error_message));
-    return;
-  }
-  DispatchDOMEvent(id, progress_total, progress_done, error_reason, error_url,
-                   error_status, error_message);
 }
 
 ApplicationCacheHost::CacheInfo ApplicationCacheHost::ApplicationCacheInfo() {
@@ -206,46 +173,6 @@ void ApplicationCacheHost::FillResourceList(
   backend_host_->GetResourceList(&boxed_infos);
   for (auto& b : boxed_infos)
     resources->emplace_back(std::move(*b));
-}
-
-void ApplicationCacheHost::StopDeferringEvents() {
-  for (unsigned i = 0; i < deferred_events_.size(); ++i) {
-    const DeferredEvent& deferred = deferred_events_[i];
-    DispatchDOMEvent(deferred.event_id, deferred.progress_total,
-                     deferred.progress_done, deferred.error_reason,
-                     deferred.error_url, deferred.error_status,
-                     deferred.error_message);
-  }
-  deferred_events_.clear();
-  defers_events_ = false;
-}
-
-void ApplicationCacheHost::DispatchDOMEvent(
-    mojom::AppCacheEventID id,
-    int progress_total,
-    int progress_done,
-    mojom::AppCacheErrorReason error_reason,
-    const String& error_url,
-    int error_status,
-    const String& error_message) {
-  // Don't dispatch an event if the window is detached.
-  if (!dom_application_cache_ || !dom_application_cache_->DomWindow())
-    return;
-
-  const AtomicString& event_type = ApplicationCache::ToEventType(id);
-  if (event_type.IsEmpty())
-    return;
-  Event* event = nullptr;
-  if (id == mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT) {
-    event =
-        ProgressEvent::Create(event_type, true, progress_done, progress_total);
-  } else if (id == mojom::AppCacheEventID::APPCACHE_ERROR_EVENT) {
-    event = MakeGarbageCollected<ApplicationCacheErrorEvent>(
-        error_reason, error_url, error_status, error_message);
-  } else {
-    event = Event::Create(event_type);
-  }
-  dom_application_cache_->DispatchEvent(*event);
 }
 
 mojom::AppCacheStatus ApplicationCacheHost::GetStatus() const {
@@ -423,7 +350,6 @@ bool ApplicationCacheHost::BindBackend() {
 }
 
 void ApplicationCacheHost::Trace(blink::Visitor* visitor) {
-  visitor->Trace(dom_application_cache_);
   visitor->Trace(document_loader_);
 }
 

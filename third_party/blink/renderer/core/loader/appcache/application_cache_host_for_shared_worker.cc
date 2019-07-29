@@ -32,6 +32,11 @@ bool ApplicationCacheHostForSharedWorker::SwapCache() {
   return false;
 }
 
+void ApplicationCacheHostForSharedWorker::SetApplicationCache(
+    ApplicationCache* dom_application_cache) {
+  NOTREACHED();
+}
+
 void ApplicationCacheHostForSharedWorker::LogMessage(
     mojom::blink::ConsoleMessageLevel log_level,
     const String& message) {}
