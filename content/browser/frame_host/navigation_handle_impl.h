@@ -38,8 +38,6 @@ namespace content {
 
 class NavigationUIData;
 class NavigatorDelegate;
-class ServiceWorkerContextWrapper;
-class ServiceWorkerNavigationHandle;
 class SiteInstanceImpl;
 
 // This class keeps track of a single navigation. It is created after the
@@ -158,12 +156,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // will not have a NavigationEntry associated with it, and this will return 0.
   int pending_nav_entry_id() const { return pending_nav_entry_id_; }
 
-  void InitServiceWorkerHandle(
-      ServiceWorkerContextWrapper* service_worker_context);
-  ServiceWorkerNavigationHandle* service_worker_handle() const {
-    return service_worker_handle_.get();
-  }
-
   typedef base::OnceCallback<void(NavigationThrottle::ThrottleCheckResult)>
       ThrottleChecksFinishedCallback;
 
@@ -263,10 +255,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The unique id of the corresponding NavigationEntry.
   int pending_nav_entry_id_;
-
-  // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
-  // corresponding provider is created in the renderer.
-  std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
   // Stores the reload type, or NONE if it's not a reload.
   ReloadType reload_type_;

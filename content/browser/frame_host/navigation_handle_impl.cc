@@ -395,12 +395,6 @@ const net::ProxyServer& NavigationHandleImpl::GetProxyServer() {
   return navigation_request_->proxy_server();
 }
 
-void NavigationHandleImpl::InitServiceWorkerHandle(
-    ServiceWorkerContextWrapper* service_worker_context) {
-  service_worker_handle_.reset(
-      new ServiceWorkerNavigationHandle(service_worker_context));
-}
-
 void NavigationHandleImpl::RenderProcessBlockedStateChanged(bool blocked) {
   if (blocked)
     StopCommitTimeout();

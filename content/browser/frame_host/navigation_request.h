@@ -54,6 +54,7 @@ class NavigationURLLoader;
 class NavigationUIData;
 class NavigatorDelegate;
 class PrefetchedSignedExchangeCache;
+class ServiceWorkerNavigationHandle;
 class SiteInstanceImpl;
 struct SubresourceLoaderParams;
 
@@ -956,6 +957,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   // The unique id to identify the NavigationHandle with.
   int64_t navigation_handle_id_ = 0;
+
+  // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
+  // corresponding provider is created in the renderer.
+  std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

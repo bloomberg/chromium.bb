@@ -1690,7 +1690,8 @@ void NavigationRequest::OnStartChecksComplete(
     ServiceWorkerContextWrapper* service_worker_context =
         static_cast<ServiceWorkerContextWrapper*>(
             partition->GetServiceWorkerContext());
-    navigation_handle_->InitServiceWorkerHandle(service_worker_context);
+    service_worker_handle_ =
+        std::make_unique<ServiceWorkerNavigationHandle>(service_worker_context);
   }
 
   if (IsSchemeSupportedForAppCache(common_params_.url)) {
@@ -1766,10 +1767,9 @@ void NavigationRequest::OnStartChecksComplete(
                                    : nullptr,
           devtools_navigation_token(),
           frame_tree_node_->devtools_frame_token()),
-      std::move(navigation_ui_data),
-      navigation_handle_->service_worker_handle(), appcache_handle_.get(),
-      std::move(prefetched_signed_exchange_cache_), this,
-      std::move(interceptor));
+      std::move(navigation_ui_data), service_worker_handle_.get(),
+      appcache_handle_.get(), std::move(prefetched_signed_exchange_cache_),
+      this, std::move(interceptor));
   DCHECK(!render_frame_host_);
 }
 
@@ -2040,10 +2040,10 @@ void NavigationRequest::CommitNavigation() {
 
   blink::mojom::ServiceWorkerProviderInfoForClientPtr
       service_worker_provider_info;
-  if (navigation_handle_->service_worker_handle()) {
+  if (service_worker_handle_) {
     // Notify the service worker navigation handle that navigation commit is
     // about to go.
-    navigation_handle_->service_worker_handle()->OnBeginNavigationCommit(
+    service_worker_handle_->OnBeginNavigationCommit(
         render_frame_host_->GetProcess()->GetID(),
         render_frame_host_->GetRoutingID(), &service_worker_provider_info);
   }
