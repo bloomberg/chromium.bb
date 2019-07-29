@@ -26,8 +26,8 @@
 #include "chrome/common/chrome_features.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/ukm/content/source_url_recorder.h"
-#include "components/url_formatter/top_domains/top500_domains.h"
-#include "components/url_formatter/top_domains/top_domain_util.h"
+#include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
+#include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
 #include "content/public/browser/navigation_handle.h"
 
 namespace {

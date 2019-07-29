@@ -19,7 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/url_formatter/top_domains/top_domain_util.h"
+#include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/i18n/unicode/uspoof.h"
@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
 
   size_t count = 0;
   std::string output =
-      R"(#include "components/url_formatter/top_domains/top500_domains.h"
+      R"(#include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
 namespace top500_domains {
 const char* const kTop500[500] = {
 )";

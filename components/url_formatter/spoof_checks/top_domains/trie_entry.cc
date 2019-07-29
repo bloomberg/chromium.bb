@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/url_formatter/top_domains/trie_entry.h"
+#include "components/url_formatter/spoof_checks/top_domains/trie_entry.h"
 #include "base/strings/string_util.h"
 #include "net/tools/huffman_trie/trie/trie_bit_buffer.h"
 #include "net/tools/huffman_trie/trie/trie_writer.h"

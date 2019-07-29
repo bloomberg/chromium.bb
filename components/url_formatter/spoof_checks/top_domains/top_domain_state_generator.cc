@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/url_formatter/top_domains/top_domain_state_generator.h"
+#include "components/url_formatter/spoof_checks/top_domains/top_domain_state_generator.h"
 
 #include <cstdint>
 #include <memory>
@@ -15,8 +15,8 @@
 #include "net/tools/huffman_trie/trie/trie_bit_buffer.h"
 #include "net/tools/huffman_trie/trie/trie_writer.h"
 
-using net::huffman_trie::HuffmanRepresentationTable;
 using net::huffman_trie::HuffmanBuilder;
+using net::huffman_trie::HuffmanRepresentationTable;
 using net::huffman_trie::TrieWriter;
 
 namespace url_formatter {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_URL_FORMATTER_TOP_DOMAINS_TRIE_ENTRY_H_
-#define COMPONENTS_URL_FORMATTER_TOP_DOMAINS_TRIE_ENTRY_H_
+#ifndef COMPONENTS_URL_FORMATTER_SPOOF_CHECKS_TOP_DOMAINS_TRIE_ENTRY_H_
+#define COMPONENTS_URL_FORMATTER_SPOOF_CHECKS_TOP_DOMAINS_TRIE_ENTRY_H_
 
 #include <string>
 #include <vector>
@@ -44,4 +44,4 @@ using TopDomainEntries = std::vector<std::unique_ptr<TopDomainEntry>>;
 
 }  // namespace url_formatter
 
-#endif  // COMPONENTS_URL_FORMATTER_TOP_DOMAINS_TRIE_ENTRY_H_
+#endif  // COMPONENTS_URL_FORMATTER_SPOOF_CHECKS_TOP_DOMAINS_TRIE_ENTRY_H_

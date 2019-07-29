@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_URL_FORMATTER_TOP_DOMAINS_TOP_DOMAIN_STATE_GENERATOR_H_
-#define COMPONENTS_URL_FORMATTER_TOP_DOMAINS_TOP_DOMAIN_STATE_GENERATOR_H_
+#ifndef COMPONENTS_URL_FORMATTER_SPOOF_CHECKS_TOP_DOMAINS_TOP_DOMAIN_STATE_GENERATOR_H_
+#define COMPONENTS_URL_FORMATTER_SPOOF_CHECKS_TOP_DOMAINS_TOP_DOMAIN_STATE_GENERATOR_H_
 
 #include <string>
 
-#include "components/url_formatter/top_domains/trie_entry.h"
+#include "components/url_formatter/spoof_checks/top_domains/trie_entry.h"
 
 namespace url_formatter {
 
@@ -34,4 +34,4 @@ class TopDomainStateGenerator {
 
 }  // namespace url_formatter
 
-#endif  // COMPONENTS_URL_FORMATTER_TOP_DOMAINS_TOP_DOMAIN_STATE_GENERATOR_H_
+#endif  // COMPONENTS_URL_FORMATTER_SPOOF_CHECKS_TOP_DOMAINS_TOP_DOMAIN_STATE_GENERATOR_H_

@@ -23,11 +23,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/url_formatter/top_domains/top_domain_state_generator.h"
-#include "components/url_formatter/top_domains/trie_entry.h"
+#include "components/url_formatter/spoof_checks/top_domains/top_domain_state_generator.h"
+#include "components/url_formatter/spoof_checks/top_domains/trie_entry.h"
 
-using url_formatter::top_domains::TopDomainEntry;
 using url_formatter::top_domains::TopDomainEntries;
+using url_formatter::top_domains::TopDomainEntry;
 using url_formatter::top_domains::TopDomainStateGenerator;
 
 namespace {
