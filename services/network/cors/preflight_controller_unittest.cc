@@ -89,6 +89,7 @@ TEST(PreflightControllerCreatePreflightRequestTest, Credentials) {
       PreflightController::CreatePreflightRequestForTesting(request);
 
   EXPECT_EQ(mojom::CredentialsMode::kOmit, preflight->credentials_mode);
+  EXPECT_FALSE(preflight->allow_credentials);
 }
 
 TEST(PreflightControllerCreatePreflightRequestTest,

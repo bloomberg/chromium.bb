@@ -461,9 +461,8 @@ URLLoader::URLLoader(
   url_request_->SetLoadFlags(request.load_flags);
 
   // net::LOAD_DO_NOT_* are in the process of being converted to
-  // credentials_mode. See https://crbug.com/799935.
-  // TODO(crbug.com/943939): Make this work with CredentialsMode::kSameOrigin.
-  if (request.credentials_mode == mojom::CredentialsMode::kOmit) {
+  // allow_credentials. See https://crbug.com/799935.
+  if (!request.allow_credentials) {
     const auto creds_mask = net::LOAD_DO_NOT_SAVE_COOKIES |
                             net::LOAD_DO_NOT_SEND_COOKIES |
                             net::LOAD_DO_NOT_SEND_AUTH_DATA;

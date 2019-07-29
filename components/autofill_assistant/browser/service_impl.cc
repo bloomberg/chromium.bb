@@ -171,7 +171,7 @@ void ServiceImpl::StartLoader(Loader* loader) {
   auto resource_request = std::make_unique<::network::ResourceRequest>();
   resource_request->method = "POST";
   resource_request->redirect_mode = ::network::mojom::RedirectMode::kError;
-  resource_request->credentials_mode = ::network::mojom::CredentialsMode::kOmit;
+  resource_request->allow_credentials = false;
   if (access_token_.empty()) {
     std::string query_str = base::StrCat({"key=", api_key_});
     // query_str must remain valid until ReplaceComponents() has returned.

@@ -81,7 +81,7 @@ void CaptivePortalDetector::StartProbe(
   // Can't safely use net::LOAD_DISABLE_CERT_NETWORK_FETCHES here,
   // since then the connection may be reused without checking the cert.
   resource_request->load_flags = net::LOAD_BYPASS_CACHE;
-  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  resource_request->allow_credentials = false;
 
   simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                     traffic_annotation);

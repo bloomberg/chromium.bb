@@ -346,7 +346,7 @@ GaiaCookieManagerService::ExternalCcResultFetcher::CreateAndStartLoader(
 
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
-  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  request->allow_credentials = false;
 
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);

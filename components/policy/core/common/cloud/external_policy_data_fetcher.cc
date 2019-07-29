@@ -92,7 +92,7 @@ void ExternalPolicyDataFetcher::Job::Start(
   resource_request->url = url;
   resource_request->load_flags =
       net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
-  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  resource_request->allow_credentials = false;
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("external_policy_fetcher", R"(

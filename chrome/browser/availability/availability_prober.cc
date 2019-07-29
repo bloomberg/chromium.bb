@@ -396,7 +396,7 @@ void AvailabilityProber::CreateAndStartURLLoader() {
   request->method = HttpMethodToString(http_method_);
   request->headers = headers_;
   request->load_flags = net::LOAD_DISABLE_CACHE;
-  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  request->allow_credentials = false;
 
   url_loader_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation_);

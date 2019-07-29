@@ -91,7 +91,7 @@ void SignedExchangeValidityPinger::Start(
       static_cast<int>(ResourceType::kSubResource);
   // Set empty origin as the initiator and attach no cookies.
   resource_request->request_initiator = url::Origin();
-  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  resource_request->allow_credentials = false;
   // Always hit the network as it's meant to be a liveliness check.
   // (While we don't check the result yet)
   resource_request->load_flags |=

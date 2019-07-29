@@ -155,7 +155,7 @@ void PrivetURLLoader::Try() {
   request->method = request_type_;
   // Privet requests are relevant to hosts on local network only.
   request->load_flags = net::LOAD_BYPASS_PROXY | net::LOAD_DISABLE_CACHE;
-  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  request->allow_credentials = false;
 
   std::string token = GetPrivetAccessToken();
   if (token.empty())

@@ -81,7 +81,7 @@ void CommonNameMismatchHandler::CheckSuggestedUrl(
   // since then the connection may be reused without checking the cert.
   resource_request->url = check_url_;
   resource_request->method = "HEAD";
-  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  resource_request->allow_credentials = false;
 
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
