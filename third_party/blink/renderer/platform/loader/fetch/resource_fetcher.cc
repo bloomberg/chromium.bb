@@ -1874,11 +1874,12 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
   resource->FinishAsError(error, task_runner_.get());
   if (resource_load_observer_) {
     DCHECK(!IsDetached());
-    const bool is_internal_request = resource->Options().initiator_info.name ==
-                                     fetch_initiator_type_names::kInternal;
     resource_load_observer_->DidFailLoading(
         resource->LastResourceRequest().Url(), resource->InspectorId(), error,
-        resource->GetResponse().EncodedDataLength(), is_internal_request);
+        resource->GetResponse().EncodedDataLength(),
+        ResourceLoadObserver::IsInternalRequest(
+            resource->Options().initiator_info.name ==
+            fetch_initiator_type_names::kInternal));
   }
   resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
 }
