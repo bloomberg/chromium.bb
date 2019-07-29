@@ -11,6 +11,8 @@ You will need to commit and upload the proto changes separately from the chromit
   * Except chromite/api/build_api.proto, which contains service and method option definitions.
 * chromiumos/ generally contains more sharable proto.
   * chromiumos/common.proto contains well shared messages.
+* test_platform/ contains the APIs of components of the Test Platform recipe.
+  * test_platform/request.proto and test_platform/response.proto contain the API of the overall recipe.
 
 This repo was and will be pinned to a specific revision in the manifest files when we get closer to completing work on the Build API.
 For the speed we're moving at now, though, having that revision pinned and updating the manifest has caused far more problems than its solving.

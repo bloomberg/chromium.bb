@@ -71,7 +71,8 @@ def _GenerateFiles(source, output):
 
   # Only compile the subset we need for the API.
   subdirs = [os.path.join(source, 'chromite'),
-             os.path.join(source, 'chromiumos')]
+             os.path.join(source, 'chromiumos'),
+             os.path.join(source, 'test_platform')]
   for basedir in subdirs:
     for dirpath, _dirnames, filenames in os.walk(basedir):
       for filename in filenames:
