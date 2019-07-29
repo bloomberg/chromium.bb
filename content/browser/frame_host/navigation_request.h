@@ -206,6 +206,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   RestoreType restore_type() const { return restore_type_; }
 
+  ReloadType reload_type() const { return reload_type_; }
+
   bool is_view_source() const { return is_view_source_; }
 
   int bindings() const { return bindings_; }
@@ -791,7 +793,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // creation time.
   scoped_refptr<SiteInstanceImpl> source_site_instance_;
   scoped_refptr<SiteInstanceImpl> dest_site_instance_;
-  RestoreType restore_type_;
+  RestoreType restore_type_ = RestoreType::NONE;
+  ReloadType reload_type_ = ReloadType::NONE;
   bool is_view_source_;
   int bindings_;
   int nav_entry_id_ = 0;

@@ -154,7 +154,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Get the unique id from the NavigationEntry associated with this
   // NavigationHandle. Note that a synchronous, renderer-initiated navigation
   // will not have a NavigationEntry associated with it, and this will return 0.
-  int pending_nav_entry_id() const { return pending_nav_entry_id_; }
+  int pending_nav_entry_id() const {
+    return navigation_request_->nav_entry_id();
+  }
 
   typedef base::OnceCallback<void(NavigationThrottle::ThrottleCheckResult)>
       ThrottleChecksFinishedCallback;
@@ -214,7 +216,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // |navigation_start| comes from the CommonNavigationParams associated with
   // this navigation.
   NavigationHandleImpl(NavigationRequest* navigation_request,
-                       int pending_nav_entry_id,
                        net::HttpRequestHeaders request_headers);
 
   NavigationRequest::NavigationHandleState state() const {
@@ -252,15 +253,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // process's blocked state.
   std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
       render_process_blocked_state_changed_subscription_;
-
-  // The unique id of the corresponding NavigationEntry.
-  int pending_nav_entry_id_;
-
-  // Stores the reload type, or NONE if it's not a reload.
-  ReloadType reload_type_;
-
-  // Stores the restore type, or NONE it it's not a restore.
-  RestoreType restore_type_;
 
   // Allows to override response_headers_ in tests.
   // TODO(clamy): Clean this up once the architecture of unit tests is better.
