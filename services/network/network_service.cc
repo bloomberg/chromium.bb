@@ -441,9 +441,9 @@ void NetworkService::ConfigureStubHostResolver(
   DCHECK(stub_resolver_enabled || !dns_over_https_servers);
   DCHECK(!dns_over_https_servers || !dns_over_https_servers->empty());
 
-  // Enable or disable the stub resolver, as needed. "DnsClient" is class that
-  // implements the stub resolver.
-  host_resolver_manager_->SetDnsClientEnabled(stub_resolver_enabled);
+  // Enable or disable the insecure part of DnsClient. "DnsClient" is the class
+  // that implements the stub resolver.
+  host_resolver_manager_->SetInsecureDnsClientEnabled(stub_resolver_enabled);
 
   // Configure DNS over HTTPS.
   if (!dns_over_https_servers || dns_over_https_servers.value().empty()) {
@@ -457,7 +457,8 @@ void NetworkService::ConfigureStubHostResolver(
     overrides.dns_over_https_servers.value().emplace_back(
         doh_server->server_template, doh_server->use_post);
   }
-  // TODO(dalyk): Allow the secure dns mode to be set.
+  // TODO(crbug.com/985589): Allow the secure dns mode to be set independently
+  // of the insecure part of the stub resolver.
   overrides.secure_dns_mode = net::DnsConfig::SecureDnsMode::AUTOMATIC;
   host_resolver_manager_->SetDnsConfigOverrides(overrides);
 }
