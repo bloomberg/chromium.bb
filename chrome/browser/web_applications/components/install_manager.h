@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/observer_list.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
@@ -25,13 +24,12 @@ class Profile;
 namespace web_app {
 
 enum class InstallResultCode;
-class InstallManagerObserver;
 class InstallFinalizer;
 class AppRegistrar;
 struct ExternalInstallOptions;
 
-// TODO(loyso): Rework this interface once BookmarkAppHelper erased. Unify the
-// API and merge similar InstallWebAppZZZZ functions. crbug.com/915043.
+// TODO(loyso): Rework this interface. Unify the API and merge similar
+// InstallWebAppZZZZ functions.
 class InstallManager {
  public:
   using OnceInstallCallback =
@@ -121,9 +119,6 @@ class InstallManager {
   void LoadWebAppAndCheckInstallability(const GURL& web_app_url,
                                         WebAppInstallabilityCheckCallback);
 
-  void AddObserver(InstallManagerObserver* observer);
-  void RemoveObserver(InstallManagerObserver* observer);
-
  protected:
   Profile* profile() { return profile_; }
   AppRegistrar* registrar() { return registrar_; }
@@ -135,8 +130,6 @@ class InstallManager {
 
   AppRegistrar* registrar_ = nullptr;
   InstallFinalizer* finalizer_ = nullptr;
-
-  base::ObserverList<InstallManagerObserver, true /*check_empty*/> observers_;
 };
 
 }  // namespace web_app

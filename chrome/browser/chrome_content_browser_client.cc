@@ -3229,8 +3229,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
         // PWAs should be hosted apps.
         DCHECK(browser->app_controller()->IsHostedApp());
         // HostedApps that are PWAs are always created through WebAppProvider
-        // or BookmarkAppHelper for profiles that support them, so we should
-        // always be able to retrieve a WebAppProvider from the Profile.
+        // for profiles that support them, so we should always be able to
+        // retrieve a WebAppProvider from the Profile.
         //
         // Similarly, if a Hosted Apps is a PWA, it will always have a scope
         // so there is no need to test for has_value().

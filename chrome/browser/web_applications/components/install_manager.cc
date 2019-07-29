@@ -7,7 +7,6 @@
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/web_applications/components/install_manager_observer.h"
 #include "content/public/browser/web_contents.h"
 
 namespace web_app {
@@ -52,10 +51,7 @@ void OnWebAppUrlLoaded(
 
 InstallManager::InstallManager(Profile* profile) : profile_(profile) {}
 
-InstallManager::~InstallManager() {
-  for (InstallManagerObserver& observer : observers_)
-    observer.OnInstallManagerDestroyed();
-}
+InstallManager::~InstallManager() = default;
 
 void InstallManager::SetSubsystems(AppRegistrar* registrar,
                                    InstallFinalizer* finalizer) {
@@ -78,14 +74,6 @@ void InstallManager::LoadWebAppAndCheckInstallability(
   url_loader_.LoadUrl(web_app_url, web_contents_ptr,
                       base::BindOnce(&OnWebAppUrlLoaded, std::move(callback),
                                      std::move(web_contents)));
-}
-
-void InstallManager::AddObserver(InstallManagerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void InstallManager::RemoveObserver(InstallManagerObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 }  // namespace web_app

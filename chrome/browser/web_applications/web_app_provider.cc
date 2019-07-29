@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/bookmark_apps/bookmark_app_install_manager.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
@@ -162,12 +161,7 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
   install_finalizer_ =
       std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile);
 
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsUnifiedInstall)) {
-    install_manager_ = std::make_unique<WebAppInstallManager>(profile);
-  } else {
-    install_manager_ =
-        std::make_unique<extensions::BookmarkAppInstallManager>(profile);
-  }
+  install_manager_ = std::make_unique<WebAppInstallManager>(profile);
 
   pending_app_manager_ =
       std::make_unique<extensions::PendingBookmarkAppManager>(profile);

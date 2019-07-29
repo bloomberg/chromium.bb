@@ -4480,7 +4480,6 @@ jumbo_split_static_library("browser") {
 
       # TODO(loyso): Erase these. crbug.com/877898.
       "//chrome/browser/web_applications:web_applications_on_extensions",
-      "//chrome/browser/web_applications/bookmark_apps",
       "//chrome/browser/web_applications/components",
       "//chrome/browser/web_applications/extensions",
     ]
@@ -4489,7 +4488,6 @@ jumbo_split_static_library("browser") {
       "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
       "//chrome/browser/web_applications",
       "//chrome/browser/web_applications:web_applications_on_extensions",
-      "//chrome/browser/web_applications/bookmark_apps",
       "//chrome/browser/web_applications/components",
       "//chrome/browser/web_applications/extensions",
       "//chrome/common/extensions/api",
