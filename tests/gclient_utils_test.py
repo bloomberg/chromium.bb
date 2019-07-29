@@ -5,18 +5,13 @@
 # found in the LICENSE file.
 
 import os
+import StringIO
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from testing_support.super_mox import SuperMoxTestBase
 from testing_support import trial_dir
-
-from third_party import six
-from third_party.six import StringIO
-if six.PY3:
-  # pylint: disable=redefined-builtin
-  basestring = str
 
 import gclient_utils
 import subprocess2
@@ -33,7 +28,7 @@ class GclientUtilBase(SuperMoxTestBase):
 class CheckCallAndFilterTestCase(GclientUtilBase):
   class ProcessIdMock(object):
     def __init__(self, test_string):
-      self.stdout = StringIO(test_string)
+      self.stdout = StringIO.StringIO(test_string)
       self.pid = 9284
     # pylint: disable=no-self-use
     def wait(self):
@@ -60,25 +55,25 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
     capture_list = []
     def FilterLines(line):
       line_list.append(line)
-      assert isinstance(line, basestring), type(line)
+      assert isinstance(line, str), type(line)
       match = compiled_pattern.search(line)
       if match:
         capture_list.append(match.group(1))
     gclient_utils.CheckCallAndFilterAndHeader(
         args, cwd=cwd, always=True, filter_fn=FilterLines)
-    self.assertEqual(line_list, ['ahah', 'accb', 'allo', 'addb', u'✔'])
-    self.assertEqual(capture_list, ['cc', 'dd'])
+    self.assertEquals(line_list, ['ahah', 'accb', 'allo', 'addb', '✔'])
+    self.assertEquals(capture_list, ['cc', 'dd'])
 
   def testCheckCallAndFilter(self):
     args = ['boo', 'foo', 'bar']
-    test_string = u'ahah\naccb\nallo\naddb\n✔\n'
+    test_string = 'ahah\naccb\nallo\naddb\n✔\n'
     self._inner(args, test_string)
     self.checkstdout(
-        u'________ running \'boo foo bar\' in \'bleh\'\n'
-        u'ahah\naccb\nallo\naddb\n✔\n'
-        u'________ running \'boo foo bar\' in \'bleh\'\n'
-        u'ahah\naccb\nallo\naddb\n✔'
-        u'\n')
+        '________ running \'boo foo bar\' in \'bleh\'\n'
+        'ahah\naccb\nallo\naddb\n✔\n'
+        '________ running \'boo foo bar\' in \'bleh\'\n'
+        'ahah\naccb\nallo\naddb\n✔'
+        '\n')
 
 
 class SplitUrlRevisionTestCase(GclientUtilBase):
@@ -86,60 +81,60 @@ class SplitUrlRevisionTestCase(GclientUtilBase):
     url = "ssh://test@example.com/test.git"
     rev = "ac345e52dc"
     out_url, out_rev = gclient_utils.SplitUrlRevision(url)
-    self.assertEqual(out_rev, None)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, None)
+    self.assertEquals(out_url, url)
     out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
-    self.assertEqual(out_rev, rev)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, rev)
+    self.assertEquals(out_url, url)
     url = "ssh://example.com/test.git"
     out_url, out_rev = gclient_utils.SplitUrlRevision(url)
-    self.assertEqual(out_rev, None)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, None)
+    self.assertEquals(out_url, url)
     out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
-    self.assertEqual(out_rev, rev)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, rev)
+    self.assertEquals(out_url, url)
     url = "ssh://example.com/git/test.git"
     out_url, out_rev = gclient_utils.SplitUrlRevision(url)
-    self.assertEqual(out_rev, None)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, None)
+    self.assertEquals(out_url, url)
     out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
-    self.assertEqual(out_rev, rev)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, rev)
+    self.assertEquals(out_url, url)
     rev = "test-stable"
     out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
-    self.assertEqual(out_rev, rev)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, rev)
+    self.assertEquals(out_url, url)
     url = "ssh://user-name@example.com/~/test.git"
     out_url, out_rev = gclient_utils.SplitUrlRevision(url)
-    self.assertEqual(out_rev, None)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, None)
+    self.assertEquals(out_url, url)
     out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
-    self.assertEqual(out_rev, rev)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, rev)
+    self.assertEquals(out_url, url)
     url = "ssh://user-name@example.com/~username/test.git"
     out_url, out_rev = gclient_utils.SplitUrlRevision(url)
-    self.assertEqual(out_rev, None)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, None)
+    self.assertEquals(out_url, url)
     out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
-    self.assertEqual(out_rev, rev)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, rev)
+    self.assertEquals(out_url, url)
     url = "git@github.com:dart-lang/spark.git"
     out_url, out_rev = gclient_utils.SplitUrlRevision(url)
-    self.assertEqual(out_rev, None)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, None)
+    self.assertEquals(out_url, url)
     out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
-    self.assertEqual(out_rev, rev)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, rev)
+    self.assertEquals(out_url, url)
 
   def testSVNUrl(self):
     url = "svn://example.com/test"
     rev = "ac345e52dc"
     out_url, out_rev = gclient_utils.SplitUrlRevision(url)
-    self.assertEqual(out_rev, None)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, None)
+    self.assertEquals(out_url, url)
     out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
-    self.assertEqual(out_rev, rev)
-    self.assertEqual(out_url, url)
+    self.assertEquals(out_rev, rev)
+    self.assertEquals(out_url, url)
 
 
 class GClientUtilsTest(trial_dir.TestCase):
@@ -176,7 +171,7 @@ class GClientUtilsTest(trial_dir.TestCase):
         ['foo:', 'https://foo:'],
     ]
     for content, expected in values:
-      self.assertEqual(
+      self.assertEquals(
           expected, gclient_utils.UpgradeToHttps(content))
 
   def testParseCodereviewSettingsContent(self):
@@ -196,7 +191,7 @@ class GClientUtilsTest(trial_dir.TestCase):
         ['VIEW_VC:http://r/s', {'VIEW_VC': 'https://r/s'}],
     ]
     for content, expected in values:
-      self.assertEqual(
+      self.assertEquals(
           expected, gclient_utils.ParseCodereviewSettingsContent(content))
 
 

@@ -579,18 +579,16 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
       if in_byte:
         if call_filter_on_first_line:
           filter_fn(None)
-        in_line = ''
+        in_line = b''
         while in_byte:
-          if isinstance(in_byte, bytes):
-            in_byte = in_byte.decode('utf-8')
-          output.write(in_byte.encode('utf-8'))
+          output.write(in_byte)
           if print_stdout:
             stdout.write(in_byte)
           if in_byte not in ['\r', '\n']:
             in_line += in_byte
           else:
             filter_fn(in_line)
-            in_line = ''
+            in_line = b''
           in_byte = kid.stdout.read(1)
         # Flush the rest of buffered output. This is only an issue with
         # stdout/stderr not ending with a \n.
