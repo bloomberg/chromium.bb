@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_VAAPI_VAAPI_JPEG_DECODE_ACCELERATOR_WORKER_H_
-#define MEDIA_GPU_VAAPI_VAAPI_JPEG_DECODE_ACCELERATOR_WORKER_H_
+#ifndef MEDIA_GPU_VAAPI_VAAPI_IMAGE_DECODE_ACCELERATOR_WORKER_H_
+#define MEDIA_GPU_VAAPI_VAAPI_IMAGE_DECODE_ACCELERATOR_WORKER_H_
 
 #include <stdint.h>
 
@@ -75,4 +75,4 @@ class VaapiImageDecodeAcceleratorWorker
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VAAPI_VAAPI_JPEG_DECODE_ACCELERATOR_WORKER_H_
+#endif  // MEDIA_GPU_VAAPI_VAAPI_IMAGE_DECODE_ACCELERATOR_WORKER_H_

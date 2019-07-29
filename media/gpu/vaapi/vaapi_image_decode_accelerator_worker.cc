@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator_worker.h"
+#include "media/gpu/vaapi/vaapi_image_decode_accelerator_worker.h"
 
 #include "string.h"
 
