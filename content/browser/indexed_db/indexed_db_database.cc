@@ -20,8 +20,10 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/indexed_db/cursor_impl.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_callback_helpers.h"
+#include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -1753,7 +1755,7 @@ struct IndexedDBDatabase::OpenCursorOperationParams {
   blink::mojom::IDBCursorDirection direction;
   indexed_db::CursorType cursor_type;
   blink::mojom::IDBTaskType task_type;
-  scoped_refptr<IndexedDBCallbacks> callbacks;
+  blink::mojom::IDBDatabase::OpenCursorCallback callback;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OpenCursorOperationParams);
@@ -1767,7 +1769,10 @@ void IndexedDBDatabase::OpenCursor(
     blink::mojom::IDBCursorDirection direction,
     bool key_only,
     blink::mojom::IDBTaskType task_type,
-    scoped_refptr<IndexedDBCallbacks> callbacks) {
+    blink::mojom::IDBDatabase::OpenCursorCallback callback,
+    const url::Origin& origin,
+    base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+    scoped_refptr<base::SequencedTaskRunner> idb_runner) {
   DCHECK(transaction);
   IDB_TRACE1("IndexedDBDatabase::OpenCursor", "txn.id", transaction->id());
 
@@ -1783,13 +1788,17 @@ void IndexedDBDatabase::OpenCursor(
   params->cursor_type =
       key_only ? indexed_db::CURSOR_KEY_ONLY : indexed_db::CURSOR_KEY_AND_VALUE;
   params->task_type = task_type;
-  params->callbacks = callbacks;
+  params->callback = std::move(callback);
   transaction->ScheduleTask(BindWeakOperation(
-      &IndexedDBDatabase::OpenCursorOperation, AsWeakPtr(), std::move(params)));
+      &IndexedDBDatabase::OpenCursorOperation, AsWeakPtr(), std::move(params),
+      origin, std::move(dispatcher_host), std::move(idb_runner)));
 }
 
 Status IndexedDBDatabase::OpenCursorOperation(
     std::unique_ptr<OpenCursorOperationParams> params,
+    const url::Origin& origin,
+    base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+    scoped_refptr<base::SequencedTaskRunner> idb_runner,
     IndexedDBTransaction* transaction) {
   IDB_TRACE1("IndexedDBDatabase::OpenCursorOperation", "txn.id",
              transaction->id());
@@ -1834,7 +1843,8 @@ Status IndexedDBDatabase::OpenCursorOperation(
 
   if (!backing_store_cursor) {
     // Occurs when we've reached the end of cursor's data.
-    params->callbacks->OnSuccess(nullptr);
+    std::move(params->callback)
+        .Run(blink::mojom::IDBDatabaseOpenCursorResult::NewEmpty(true));
     return s;
   }
 
@@ -1843,8 +1853,42 @@ Status IndexedDBDatabase::OpenCursorOperation(
       transaction->AsWeakPtr());
   IndexedDBCursor* cursor_ptr = cursor.get();
   transaction->RegisterOpenCursor(cursor_ptr);
-  params->callbacks->OnSuccess(std::move(cursor), cursor_ptr->key(),
-                               cursor_ptr->primary_key(), cursor_ptr->Value());
+
+  if (!dispatcher_host) {
+    IndexedDBDatabaseError error =
+        CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+                    "Dispatcher not connected.", transaction);
+    std::move(params->callback)
+        .Run(blink::mojom::IDBDatabaseOpenCursorResult::NewErrorResult(
+            blink::mojom::IDBError::New(error.code(), error.message())));
+    return s;
+  }
+
+  blink::mojom::IDBValuePtr mojo_value;
+  std::vector<IndexedDBBlobInfo> blob_info;
+  if (cursor_ptr->Value()) {
+    mojo_value = IndexedDBValue::ConvertAndEraseValue(cursor_ptr->Value());
+    blob_info.swap(cursor_ptr->Value()->blob_info);
+  }
+
+  auto cursor_impl = std::make_unique<CursorImpl>(
+      std::move(cursor), origin, dispatcher_host.get(), idb_runner);
+  if (mojo_value &&
+      !IndexedDBCallbacks::CreateAllBlobs(
+          dispatcher_host->blob_storage_context(),
+          IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
+              blob_info, &mojo_value->blob_or_file_info))) {
+    return s;
+  }
+
+  blink::mojom::IDBCursorAssociatedPtrInfo ptr_info;
+  auto request = mojo::MakeRequest(&ptr_info);
+  dispatcher_host->AddCursorBinding(std::move(cursor_impl), std::move(request));
+  std::move(params->callback)
+      .Run(blink::mojom::IDBDatabaseOpenCursorResult::NewValue(
+          blink::mojom::IDBDatabaseOpenCursorValue::New(
+              std::move(ptr_info), cursor_ptr->key(), cursor_ptr->primary_key(),
+              std::move(mojo_value))));
   return s;
 }
 
