@@ -3317,22 +3317,9 @@ def BuildEbuildLogsTarball(buildroot, board, archive_dir):
   Returns:
     The file name of the output tarball, None if no package found.
   """
-  tarball_paths = []
-  logs_path = os.path.join(buildroot, board, 'tmp/portage')
-
-  if not os.path.isdir(logs_path):
-    return None
-
-  if not os.path.exists(os.path.join(logs_path, 'logs')):
-    return None
-
-  tarball_paths.append('logs')
-  tarball_output = os.path.join(archive_dir, 'ebuild_logs.tar.xz')
-  chroot = os.path.join(buildroot, 'chroot')
-
-  cros_build_lib.CreateTarball(
-      tarball_output, cwd=logs_path, chroot=chroot, inputs=tarball_paths)
-  return os.path.basename(tarball_output)
+  sysroot = sysroot_lib.Sysroot(os.path.join('build', board))
+  chroot = chroot_lib.Chroot(path=os.path.join(buildroot, 'chroot'))
+  return artifacts_service.BundleEBuildLogsTarball(chroot, sysroot, archive_dir)
 
 
 def BuildGceTarball(archive_dir, image_dir, image):

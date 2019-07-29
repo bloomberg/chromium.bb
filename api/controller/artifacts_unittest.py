@@ -319,23 +319,56 @@ class BundleFirmwareTest(BundleTestCase):
 class BundleEbuildLogsTest(BundleTestCase):
   """Unittests for BundleEbuildLogs."""
 
+  def setUp(self):
+    # New style paths.
+    self.chroot_path = os.path.join(self.tempdir, 'cros', 'chroot')
+    self.sysroot_path = '/build/target'
+    self.output_dir = os.path.join(self.tempdir, 'artifacts')
+    # New style proto.
+    self.request = artifacts_pb2.BundleRequest()
+    self.request.output_dir = self.output_dir
+    self.request.chroot.path = self.chroot_path
+    self.request.sysroot.path = self.sysroot_path
+    self.response = artifacts_pb2.BundleResponse()
+
   def testBundleEbuildLogs(self):
     """BundleEbuildLogs calls cbuildbot/commands with correct args."""
-    build_ebuild_logs_tarball = self.PatchObject(
-        commands, 'BuildEbuildLogsTarball', return_value='ebuild-logs.tar.gz')
-    artifacts.BundleEbuildLogs(self.input_proto, self.output_proto)
+    bundle_ebuild_logs_tarball = self.PatchObject(
+        artifacts_svc, 'BundleEBuildLogsTarball',
+        return_value='ebuild-logs.tar.gz')
+    # Create the output_dir since otherwise validate.exists will fail.
+    os.mkdir(self.output_dir)
+    artifacts.BundleEbuildLogs(self.request, self.response)
     self.assertEqual(
-        [artifact.path for artifact in self.output_proto.artifacts],
-        ['/tmp/artifacts/ebuild-logs.tar.gz'])
+        [artifact.path for artifact in self.response.artifacts],
+        [os.path.join(self.request.output_dir, 'ebuild-logs.tar.gz')])
+    sysroot = sysroot_lib.Sysroot(self.sysroot_path)
     self.assertEqual(
-        build_ebuild_logs_tarball.call_args_list,
-        [mock.call('/cros/chroot/build', 'target', '/tmp/artifacts')])
+        bundle_ebuild_logs_tarball.call_args_list,
+        [mock.call(mock.ANY, sysroot, self.output_dir)])
+
+  def testBundleEBuildLogsOldProto(self):
+    bundle_ebuild_logs_tarball = self.PatchObject(
+        artifacts_svc, 'BundleEBuildLogsTarball',
+        return_value='ebuild-logs.tar.gz')
+    # Create old style proto
+    input_proto = artifacts_pb2.BundleRequest()
+    input_proto.build_target.name = 'target'
+    input_proto.output_dir = self.output_dir
+    # Create the output_dir since otherwise validate.exists will fail.
+    os.mkdir(self.output_dir)
+    output_proto = artifacts_pb2.BundleResponse()
+    artifacts.BundleEbuildLogs(input_proto, output_proto)
+    sysroot = sysroot_lib.Sysroot(self.sysroot_path)
+    self.assertEqual(
+        bundle_ebuild_logs_tarball.call_args_list,
+        [mock.call(mock.ANY, sysroot, self.output_dir)])
 
   def testBundleEbuildLogsNoLogs(self):
     """BundleEbuildLogs dies when no logs found."""
     self.PatchObject(commands, 'BuildEbuildLogsTarball', return_value=None)
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleEbuildLogs(self.input_proto, self.output_proto)
+      artifacts.BundleEbuildLogs(self.request, self.response)
 
 
 class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase):

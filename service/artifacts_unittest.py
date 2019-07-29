@@ -205,6 +205,50 @@ class CreateChromeRootTest(cros_test_lib.RunCommandTempDirTestCase):
       self.assertExists(f)
 
 
+class BundleEBuildLogsTarballTest(cros_test_lib.TempDirTestCase):
+  """BundleEBuildLogsTarball tests."""
+
+  def testBundleEBuildLogsTarball(self):
+    """Verifies that the correct EBuild tar files are bundled."""
+    board = 'samus'
+    # Create chroot object and sysroot object
+    chroot_path = os.path.join(self.tempdir, 'chroot')
+    chroot = chroot_lib.Chroot(path=chroot_path)
+    sysroot_path = os.path.join('build', board)
+    sysroot = sysroot_lib.Sysroot(sysroot_path)
+
+    # Create parent dir for logs
+    log_parent_dir = os.path.join(chroot.path, 'build')
+
+    # Names of log files typically found in a build directory.
+    log_files = (
+        '',
+        'x11-libs:libdrm-2.4.81-r24:20170816-175008.log',
+        'x11-libs:libpciaccess-0.12.902-r2:20170816-174849.log',
+        'x11-libs:libva-1.7.1-r2:20170816-175019.log',
+        'x11-libs:libva-intel-driver-1.7.1-r4:20170816-175029.log',
+        'x11-libs:libxkbcommon-0.4.3-r2:20170816-174908.log',
+        'x11-libs:pango-1.32.5-r1:20170816-174954.log',
+        'x11-libs:pixman-0.32.4:20170816-174832.log',
+        'x11-misc:xkeyboard-config-2.15-r3:20170816-174908.log',
+        'x11-proto:kbproto-1.0.5:20170816-174849.log',
+        'x11-proto:xproto-7.0.31:20170816-174849.log',
+    )
+    tarred_files = [os.path.join('logs', x) for x in log_files]
+    log_files_root = os.path.join(log_parent_dir,
+                                  '%s/tmp/portage/logs' % board)
+    # Generate a representative set of log files produced by a typical build.
+    cros_test_lib.CreateOnDiskHierarchy(log_files_root, log_files)
+
+    archive_dir = self.tempdir
+    tarball = artifacts.BundleEBuildLogsTarball(chroot, sysroot, archive_dir)
+    self.assertEqual('ebuild_logs.tar.xz', tarball)
+
+    # Verify the tarball contents.
+    tarball_fullpath = os.path.join(self.tempdir, tarball)
+    cros_test_lib.VerifyTarball(tarball_fullpath, tarred_files)
+
+
 class BundleVmFilesTest(cros_test_lib.TempDirTestCase):
   """BundleVmFiles tests."""
 

@@ -242,6 +242,7 @@ def BundleFirmware(input_proto, output_proto):
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 
+@validate.exists('output_dir')
 def BundleEbuildLogs(input_proto, output_proto):
   """Tar the ebuild logs for a build target.
 
@@ -249,20 +250,24 @@ def BundleEbuildLogs(input_proto, output_proto):
     input_proto (BundleRequest): The input proto.
     output_proto (BundleResponse): The output proto.
   """
-  target = input_proto.build_target.name
   output_dir = input_proto.output_dir
+  sysroot_path = input_proto.sysroot.path
+  chroot = controller_util.ParseChroot(input_proto.chroot)
 
-  # commands.BuildEbuildLogsTarball conflates "buildroot" with sysroot.
-  # Adjust accordingly...
-  build_root = os.path.join(constants.SOURCE_ROOT, 'chroot', 'build')
+  # TODO(mmortensen) Cleanup legacy handling after it has been switched over.
+  target = input_proto.build_target.name
+  if target:
+    # Legacy handling.
+    build_root = constants.SOURCE_ROOT
+    chroot.path = os.path.join(build_root, 'chroot')
+    sysroot_path = os.path.join('/build', target)
 
-  # TODO(crbug.com/954303): Replace with a chromite/service implementation.
-  archive = commands.BuildEbuildLogsTarball(build_root, target, output_dir)
-
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
+  archive = artifacts.BundleEBuildLogsTarball(chroot, sysroot, output_dir)
   if archive is None:
     cros_build_lib.Die(
-        'Could not create ebuild logs archive. No logs found for %s.', target)
-
+        'Could not create ebuild logs archive. No logs found for %s.',
+        sysroot.path)
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
 
 

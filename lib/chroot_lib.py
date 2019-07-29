@@ -52,9 +52,12 @@ class Chroot(object):
     """Get a TempDir in the chroot's tmp dir."""
     return osutils.TempDir(base_dir=self.tmp)
 
-  def full_path(self, chroot_rel_path):
+  def full_path(self, *args):
     """Turn a chroot-relative path into an absolute path."""
-    return os.path.join(self.path, chroot_rel_path.lstrip(os.sep))
+    fullpath = self.path
+    for arg in args:
+      fullpath = os.path.join(fullpath, arg.lstrip(os.sep))
+    return fullpath
 
   def has_path(self, chroot_rel_path):
     """Check if a chroot-relative path exists inside the chroot."""

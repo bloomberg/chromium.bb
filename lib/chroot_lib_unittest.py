@@ -71,6 +71,13 @@ class ChrootTest(cros_test_lib.TempDirTestCase):
     # Make sure it can handle absolute paths.
     self.assertEqual(chroot.full_path(path1), chroot.full_path(path2))
 
+  def testFullPathWithExtraArgs(self):
+    """Test full_path functionality with extra args passed."""
+    chroot = chroot_lib.Chroot(self.tempdir)
+    path1 = 'some/path'
+    self.assertEqual(os.path.join(self.tempdir, 'some/path/abc/def/g/h/i'),
+                     chroot.full_path(path1, '/abc', 'def', '/g/h/i'))
+
   def testHasPathSuccess(self):
     """Test has path for a valid path."""
     path = 'some/file.txt'

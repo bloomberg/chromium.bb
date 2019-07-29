@@ -1715,7 +1715,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     tarred_files = [os.path.join('logs', x) for x in log_files]
     board = 'samus'
     log_files_root = os.path.join(self.tempdir,
-                                  '%s/tmp/portage/logs' % board)
+                                  'chroot/build/%s/tmp/portage/logs' % board)
     # Generate a representative set of log files produced by a typical build.
     cros_test_lib.CreateOnDiskHierarchy(log_files_root, log_files)
     # Create an archive from the simulated logs directory

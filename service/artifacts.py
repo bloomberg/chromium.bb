@@ -118,6 +118,33 @@ def BundleAutotestFiles(sysroot, output_directory):
   }
 
 
+def BundleEBuildLogsTarball(chroot, sysroot, archive_dir):
+  """Builds a tarball containing ebuild logs.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot to be used.
+    sysroot (sysroot_lib.Sysroot): Sysroot whose images are being fetched.
+    archive_dir: The directory to drop the tarball in.
+
+  Returns:
+    The file name of the output tarball, None if no package found.
+  """
+  tarball_paths = []
+  logs_path = chroot.full_path(sysroot.path, 'tmp/portage')
+
+  if not os.path.isdir(logs_path):
+    return None
+
+  if not os.path.exists(os.path.join(logs_path, 'logs')):
+    return None
+
+  tarball_paths.append('logs')
+  tarball_output = os.path.join(archive_dir, 'ebuild_logs.tar.xz')
+  cros_build_lib.CreateTarball(
+      tarball_output, cwd=logs_path, chroot=chroot.path, inputs=tarball_paths)
+  return os.path.basename(tarball_output)
+
+
 def BundleSimpleChromeArtifacts(chroot, sysroot, build_target, output_dir):
   """Gather all of the simple chrome artifacts.
 
