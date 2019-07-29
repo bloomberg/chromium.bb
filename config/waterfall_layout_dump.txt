@@ -255,7 +255,6 @@
     whirlwind-factory-whirlwind-6812.41.B-factorybranch
 
 == firmware ==
-  firmware-atlas-11827.12.B-firmwarebranch
   firmware-atlas-11827.B-firmwarebranch
   firmware-auron-6301.B-firmwarebranch
   firmware-banjo-5216.334.B-firmwarebranch
@@ -1742,7 +1741,6 @@
   falco_li-tot-chrome-pfq-informational-tryjob
   falco_li-tot-chromium-pfq-informational-tryjob
   falco_li-unittest-stress
-  firmware-atlas-11827.12.B-firmwarebranch-tryjob
   firmware-atlas-11827.B-firmwarebranch-tryjob
   firmware-auron-6301.B-firmwarebranch-tryjob
   firmware-banjo-5216.334.B-firmwarebranch-tryjob
