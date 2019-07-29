@@ -23,7 +23,7 @@ class SharedWorkerInstanceTest : public testing::Test {
     return SharedWorkerInstance(
         script_url, name, constructor_origin, std::string(),
         blink::mojom::ContentSecurityPolicyType::kReport,
-        network::mojom::IPAddressSpace::kPublic,
+        blink::mojom::IPAddressSpace::kPublic,
         blink::mojom::SharedWorkerCreationContextType::kNonsecure);
   }
 
@@ -262,10 +262,10 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest_FileURLWorker) {
 }
 
 TEST_F(SharedWorkerInstanceTest, AddressSpace) {
-  const network::mojom::IPAddressSpace kAddressSpaces[] = {
-      network::mojom::IPAddressSpace::kLocal,
-      network::mojom::IPAddressSpace::kPrivate,
-      network::mojom::IPAddressSpace::kPublic};
+  const blink::mojom::IPAddressSpace kAddressSpaces[] = {
+      blink::mojom::IPAddressSpace::kLocal,
+      blink::mojom::IPAddressSpace::kPrivate,
+      blink::mojom::IPAddressSpace::kPublic};
   for (auto address_space : kAddressSpaces) {
     SharedWorkerInstance instance(
         GURL("http://example.com/w.js"), "name",

@@ -37,10 +37,10 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -93,7 +93,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
       const WebString& name,
       const WebString& content_security_policy,
       mojom::ContentSecurityPolicyType,
-      network::mojom::IPAddressSpace,
+      mojom::IPAddressSpace,
       const base::UnguessableToken& devtools_worker_token,
       PrivacyPreferences privacy_preferences,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
@@ -150,7 +150,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
 
   WebURL script_request_url_;
   WebString name_;
-  network::mojom::IPAddressSpace creation_address_space_;
+  mojom::IPAddressSpace creation_address_space_;
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       pending_interface_provider_;

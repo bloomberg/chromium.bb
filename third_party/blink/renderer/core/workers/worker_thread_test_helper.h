@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
@@ -63,7 +63,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
   // WorkerGlobalScope
   void Initialize(const KURL& response_url,
                   network::mojom::ReferrerPolicy response_referrer_policy,
-                  network::mojom::IPAddressSpace response_address_space,
+                  mojom::IPAddressSpace response_address_space,
                   const Vector<CSPHeaderAndType>& response_csp_headers,
                   const Vector<String>* response_origin_trial_tokens) override {
     InitializeURL(response_url);
@@ -130,7 +130,7 @@ class WorkerThreadForTest : public WorkerThread {
         network::mojom::ReferrerPolicy::kDefault, security_origin,
         false /* starter_secure_context */,
         CalculateHttpsState(security_origin), worker_clients,
-        network::mojom::IPAddressSpace::kLocal, nullptr,
+        mojom::IPAddressSpace::kLocal, nullptr,
         base::UnguessableToken::Create(),
         std::make_unique<WorkerSettings>(std::make_unique<Settings>().get()),
         kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);

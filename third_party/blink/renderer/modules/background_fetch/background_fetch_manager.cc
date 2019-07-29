@@ -102,18 +102,17 @@ bool ShouldBlockDanglingMarkup(const KURL& request_url) {
 bool ShouldBlockGateWayAttacks(ExecutionContext* execution_context,
                                const KURL& request_url) {
   if (RuntimeEnabledFeatures::CorsRFC1918Enabled()) {
-    network::mojom::IPAddressSpace requestor_space =
+    mojom::IPAddressSpace requestor_space =
         execution_context->GetSecurityContext().AddressSpace();
 
     // TODO(mkwst): This only checks explicit IP addresses. We'll have to move
     // all this up to //net and //content in order to have any real impact on
     // gateway attacks. That turns out to be a TON of work (crbug.com/378566).
-    network::mojom::IPAddressSpace target_space =
-        network::mojom::IPAddressSpace::kPublic;
+    mojom::IPAddressSpace target_space = mojom::IPAddressSpace::kPublic;
     if (network_utils::IsReservedIPAddress(request_url.Host()))
-      target_space = network::mojom::IPAddressSpace::kPrivate;
+      target_space = mojom::IPAddressSpace::kPrivate;
     if (SecurityOrigin::Create(request_url)->IsLocalhost())
-      target_space = network::mojom::IPAddressSpace::kLocal;
+      target_space = mojom::IPAddressSpace::kLocal;
 
     bool is_external_request = requestor_space > target_space;
     if (is_external_request)

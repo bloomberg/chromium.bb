@@ -95,7 +95,7 @@ void RegisterMockedURLLoad(const KURL& url) {
 }
 
 const FetchClientSettingsObjectSnapshot& CreateFetchClientSettingsObject(
-    network::mojom::IPAddressSpace address_space) {
+    mojom::IPAddressSpace address_space) {
   return *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
       KURL("https://example.com/foo.html"),
       KURL("https://example.com/foo.html"),
@@ -1111,9 +1111,9 @@ TEST_F(ResourceFetcherTest, MAYBE_SetIsExternalRequest) {
                {"http://127.0.0.1/", true, true, false},
                {"http://127.0.0.1:8000/", true, true, false}};
 
-  for (const auto address_space : {network::mojom::IPAddressSpace::kPublic,
-                                   network::mojom::IPAddressSpace::kPrivate,
-                                   network::mojom::IPAddressSpace::kLocal}) {
+  for (const auto address_space :
+       {mojom::IPAddressSpace::kPublic, mojom::IPAddressSpace::kPrivate,
+        mojom::IPAddressSpace::kLocal}) {
     auto* fetcher =
         CreateFetcher(*MakeGarbageCollected<TestResourceFetcherProperties>(
                           CreateFetchClientSettingsObject(address_space)),
@@ -1136,13 +1136,13 @@ TEST_F(ResourceFetcherTest, MAYBE_SetIsExternalRequest) {
         if (enabled) {
           bool expected;
           switch (address_space) {
-            case network::mojom::IPAddressSpace::kPublic:
+            case mojom::IPAddressSpace::kPublic:
               expected = test.is_external_expectation_public;
               break;
-            case network::mojom::IPAddressSpace::kPrivate:
+            case mojom::IPAddressSpace::kPrivate:
               expected = test.is_external_expectation_private;
               break;
-            case network::mojom::IPAddressSpace::kLocal:
+            case mojom::IPAddressSpace::kLocal:
               expected = test.is_external_expectation_local;
               break;
           }

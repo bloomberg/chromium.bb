@@ -41,13 +41,13 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom-blink.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/ukm/ukm.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -6851,16 +6851,16 @@ void Document::InitSecurityContext(
   // https://wicg.github.io/cors-rfc1918/#csp).
   if (initializer.IsHostedInReservedIPRange()) {
     SetAddressSpace(GetSecurityOrigin()->IsLocalhost()
-                        ? network::mojom::IPAddressSpace::kLocal
-                        : network::mojom::IPAddressSpace::kPrivate);
+                        ? mojom::IPAddressSpace::kLocal
+                        : mojom::IPAddressSpace::kPrivate);
   } else if (GetSecurityOrigin()->IsLocal()) {
     // "Local" security origins (like 'file://...') are treated as having
     // a local address space.
     //
     // TODO(mkwst): It's not entirely clear that this is a good idea.
-    SetAddressSpace(network::mojom::IPAddressSpace::kLocal);
+    SetAddressSpace(mojom::IPAddressSpace::kLocal);
   } else {
-    SetAddressSpace(network::mojom::IPAddressSpace::kPublic);
+    SetAddressSpace(mojom::IPAddressSpace::kPublic);
   }
 
   if (Settings* settings = initializer.GetSettings()) {

@@ -404,8 +404,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
           false /* starter_secure_context */,
           CalculateHttpsState(security_origin_.get()),
-          MakeGarbageCollected<WorkerClients>(),
-          network::mojom::IPAddressSpace::kLocal,
+          MakeGarbageCollected<WorkerClients>(), mojom::IPAddressSpace::kLocal,
           nullptr /* originTrialToken */, base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(std::make_unique<Settings>().get()),
           kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
