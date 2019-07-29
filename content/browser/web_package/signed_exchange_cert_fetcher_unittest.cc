@@ -268,7 +268,8 @@ TEST_F(SignedExchangeCertFetcherTest, Simple) {
   EXPECT_EQ(url_, mock_loader_factory_.url_request()->url);
   EXPECT_EQ(static_cast<int>(ResourceType::kSubResource),
             mock_loader_factory_.url_request()->resource_type);
-  EXPECT_FALSE(mock_loader_factory_.url_request()->allow_credentials);
+  EXPECT_EQ(mock_loader_factory_.url_request()->credentials_mode,
+            network::mojom::CredentialsMode::kOmit);
   EXPECT_TRUE(mock_loader_factory_.url_request()->request_initiator->opaque());
   std::string accept;
   EXPECT_TRUE(
@@ -326,7 +327,8 @@ TEST_F(SignedExchangeCertFetcherTest, ForceFetchAndFail) {
             mock_loader_factory_.url_request()->resource_type);
   EXPECT_EQ(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE,
             mock_loader_factory_.url_request()->load_flags);
-  EXPECT_FALSE(mock_loader_factory_.url_request()->allow_credentials);
+  EXPECT_EQ(mock_loader_factory_.url_request()->credentials_mode,
+            network::mojom::CredentialsMode::kOmit);
 
   mock_loader_factory_.client_ptr()->OnComplete(
       network::URLLoaderCompletionStatus(net::ERR_INVALID_SIGNED_EXCHANGE));
