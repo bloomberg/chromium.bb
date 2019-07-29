@@ -1113,6 +1113,15 @@ UIColor* BackgroundColor() {
   [self updateTabCount];
 }
 
+// Observer method, WebState replaced in |webStateList|.
+- (void)webStateList:(WebStateList*)webStateList
+    didReplaceWebState:(web::WebState*)oldWebState
+          withWebState:(web::WebState*)newWebState
+               atIndex:(int)atIndex {
+  TabView* view = [self tabViewForWebState:newWebState];
+  [[view titleLabel] setText:tab_util::GetTabTitle(newWebState)];
+}
+
 #pragma mark -
 #pragma mark WebStateFaviconDriverObserver
 
