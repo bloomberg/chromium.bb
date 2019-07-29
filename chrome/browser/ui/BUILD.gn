@@ -1392,14 +1392,6 @@ jumbo_split_static_library("ui") {
     }
   }
 
-  # TODO(crbug.com/980869): Remove the section below.
-  if (enable_supervised_users && !is_android && !is_chromeos) {
-    sources += [
-      "startup/supervised_users_deprecated_infobar_delegate.cc",
-      "startup/supervised_users_deprecated_infobar_delegate.h",
-    ]
-  }
-
   if (enable_supervised_users) {
     sources += [
       "webui/supervised_user_internals_message_handler.cc",
