@@ -120,6 +120,7 @@ class WebContentDecryptionModule;
 class WebElement;
 class WebLayerTreeView;
 class WebLocalFrame;
+class WebMediaStreamDeviceObserver;
 class WebSecurityOrigin;
 class WebString;
 class WebURL;
@@ -160,7 +161,6 @@ class DocumentState;
 class ExternalPopupMenu;
 class FrameRequestBlocker;
 class MediaPermissionDispatcher;
-class MediaStreamDeviceObserver;
 class NavigationClient;
 class PepperPluginInstanceImpl;
 class RenderAccessibilityImpl;
@@ -443,7 +443,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // May return NULL in some cases, especially if userMediaClient() returns
   // NULL.
-  MediaStreamDeviceObserver* GetMediaStreamDeviceObserver();
+  blink::WebMediaStreamDeviceObserver* GetMediaStreamDeviceObserver();
 
   void ScriptedPrint(bool user_initiated);
 

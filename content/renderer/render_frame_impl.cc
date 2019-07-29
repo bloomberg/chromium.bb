@@ -121,7 +121,6 @@
 #include "content/renderer/media/audio/audio_output_ipc_factory.h"
 #include "content/renderer/media/audio/audio_renderer_sink_cache.h"
 #include "content/renderer/media/media_permission_dispatcher.h"
-#include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/media/stream/user_media_client_impl.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/mhtml_handle_writer.h"
@@ -191,6 +190,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_context_features.h"
@@ -2211,7 +2211,8 @@ void RenderFrameImpl::OnImeFinishComposingText(bool keep_selection) {
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-MediaStreamDeviceObserver* RenderFrameImpl::GetMediaStreamDeviceObserver() {
+blink::WebMediaStreamDeviceObserver*
+RenderFrameImpl::GetMediaStreamDeviceObserver() {
   if (!web_user_media_client_)
     InitializeUserMediaClient();
   return web_user_media_client_
@@ -7122,7 +7123,7 @@ void RenderFrameImpl::InitializeUserMediaClient() {
   DCHECK(!web_user_media_client_);
   web_user_media_client_ = new UserMediaClientImpl(
       this, RenderThreadImpl::current()->GetPeerConnectionDependencyFactory(),
-      std::make_unique<MediaStreamDeviceObserver>(this),
+      std::make_unique<blink::WebMediaStreamDeviceObserver>(GetWebFrame()),
       GetTaskRunner(blink::TaskType::kInternalMedia));
 }
 

@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_device_observer.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_device_observer.h"
 
 #include <stddef.h>
-
 #include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
-#include "content/renderer/media/stream/mock_mojo_media_stream_dispatcher_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/renderer/modules/mediastream/mock_mojo_media_stream_dispatcher_host.h"
 
-namespace content {
+namespace blink {
 
 class MediaStreamDeviceObserverTest : public ::testing::Test {
  public:
@@ -26,7 +24,7 @@ class MediaStreamDeviceObserverTest : public ::testing::Test {
 
   void OnDeviceOpened(base::OnceClosure quit_closure,
                       bool success,
-                      const std::string& label,
+                      const String& label,
                       const blink::MediaStreamDevice& device) {
     if (success) {
       stream_label_ = label;
@@ -38,8 +36,7 @@ class MediaStreamDeviceObserverTest : public ::testing::Test {
   }
 
  protected:
-  std::string stream_label_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  String stream_label_;
   MockMojoMediaStreamDispatcherHost mock_dispatcher_host_;
   std::unique_ptr<MediaStreamDeviceObserver> observer_;
   blink::MediaStreamDevice current_device_;
@@ -59,7 +56,7 @@ TEST_F(MediaStreamDeviceObserverTest, GetNonScreenCaptureDevices) {
       base::BindOnce(&MediaStreamDeviceObserverTest::OnDeviceOpened,
                      base::Unretained(this), run_loop1.QuitClosure()));
   run_loop1.Run();
-  std::string stream_label1 = stream_label_;
+  String stream_label1 = stream_label_;
 
   // OpenDevice request 2
   base::RunLoop run_loop2;
@@ -69,7 +66,7 @@ TEST_F(MediaStreamDeviceObserverTest, GetNonScreenCaptureDevices) {
       base::BindOnce(&MediaStreamDeviceObserverTest::OnDeviceOpened,
                      base::Unretained(this), run_loop2.QuitClosure()));
   run_loop2.Run();
-  std::string stream_label2 = stream_label_;
+  String stream_label2 = stream_label_;
 
   EXPECT_EQ(observer_->label_stream_map_.size(), 2u);
 
@@ -83,13 +80,11 @@ TEST_F(MediaStreamDeviceObserverTest, GetNonScreenCaptureDevices) {
 
   // Close the device from request 2.
   observer_->RemoveStream(stream_label2);
-  EXPECT_EQ(observer_->video_session_id(stream_label2),
-            MediaStreamDeviceObserver::NoSessionId());
+  EXPECT_TRUE(observer_->GetVideoSessionId(stream_label2).is_empty());
 
   // Close the device from request 1.
   observer_->RemoveStream(stream_label1);
-  EXPECT_EQ(observer_->video_session_id(stream_label1),
-            MediaStreamDeviceObserver::NoSessionId());
+  EXPECT_TRUE(observer_->GetVideoSessionId(stream_label1).is_empty());
 
   // Verify that the request have been completed.
   EXPECT_EQ(observer_->label_stream_map_.size(), 0u);
@@ -120,8 +115,8 @@ TEST_F(MediaStreamDeviceObserverTest, OnDeviceStopped) {
 TEST_F(MediaStreamDeviceObserverTest, OnDeviceChanged) {
   const int kRequestId1 = 5;
   const base::UnguessableToken kSessionId = base::UnguessableToken::Create();
-  const std::string example_video_id1 = "fake_video_device1";
-  const std::string example_video_id2 = "fake_video_device2";
+  const String example_video_id1 = "fake_video_device1";
+  const String example_video_id2 = "fake_video_device2";
 
   EXPECT_EQ(observer_->label_stream_map_.size(), 0u);
 
@@ -138,12 +133,12 @@ TEST_F(MediaStreamDeviceObserverTest, OnDeviceChanged) {
   blink::MediaStreamDevices video_devices =
       observer_->GetNonScreenCaptureDevices();
   EXPECT_EQ(video_devices.size(), 1u);
-  EXPECT_EQ(video_devices[0].id, example_video_id1);
+  EXPECT_EQ(video_devices[0].id, example_video_id1.Utf8());
 
   // OnDeviceChange request.
   blink::MediaStreamDevice fake_video_device(
-      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, example_video_id2,
-      "Fake Video Device");
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
+      example_video_id2.Utf8(), "Fake Video Device");
   fake_video_device.set_session_id(kSessionId);
   observer_->OnDeviceChanged(stream_label_, current_device_, fake_video_device);
 
@@ -151,16 +146,15 @@ TEST_F(MediaStreamDeviceObserverTest, OnDeviceChanged) {
   EXPECT_EQ(observer_->label_stream_map_.size(), 1u);
   video_devices = observer_->GetNonScreenCaptureDevices();
   EXPECT_EQ(video_devices.size(), 1u);
-  EXPECT_EQ(video_devices[0].id, example_video_id2);
+  EXPECT_EQ(video_devices[0].id, example_video_id2.Utf8());
   EXPECT_EQ(video_devices[0].session_id(), kSessionId);
 
   // Close the device from request.
   observer_->RemoveStream(stream_label_);
-  EXPECT_EQ(observer_->video_session_id(stream_label_),
-            MediaStreamDeviceObserver::NoSessionId());
+  EXPECT_TRUE(observer_->GetVideoSessionId(stream_label_).is_empty());
 
   // Verify that the request have been completed.
   EXPECT_EQ(observer_->label_stream_map_.size(), 0u);
 }
 
-}  // namespace content
+}  // namespace blink
