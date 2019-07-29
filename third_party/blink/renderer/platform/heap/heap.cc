@@ -509,6 +509,8 @@ void ThreadHeap::PoisonAllHeaps() {
   // that would be fine.
   ProcessHeap::GetCrossThreadPersistentRegion()
       .UnpoisonCrossThreadPersistents();
+  ProcessHeap::GetCrossThreadWeakPersistentRegion()
+      .UnpoisonCrossThreadPersistents();
 }
 #endif
 
