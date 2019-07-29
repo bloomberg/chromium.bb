@@ -127,7 +127,7 @@ NavigationPredictor::NavigationPredictor(
       is_same_host_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
           "is_same_host_scale",
-          100)),
+          0)),
       contains_image_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
           "contains_image_scale",
@@ -211,7 +211,7 @@ NavigationPredictor::NavigationPredictor(
           base::GetFieldTrialParamByFeatureAsBool(
               blink::features::kNavigationPredictor,
               "same_origin_preconnecting_allowed",
-              false)),
+              true)),
       prefetch_after_preconnect_(base::GetFieldTrialParamByFeatureAsBool(
           blink::features::kNavigationPredictor,
           "prefetch_after_preconnect",
@@ -433,7 +433,7 @@ void NavigationPredictor::MaybePreconnectNow(Action log_action) {
       FROM_HERE,
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
           net::features::kNetUnusedIdleSocketTimeout,
-          "unused_idle_socket_timeout_seconds", 10)) +
+          "unused_idle_socket_timeout_seconds", 60)) +
           base::TimeDelta::FromMilliseconds(retry_delay_ms),
       base::BindOnce(&NavigationPredictor::MaybePreconnectNow,
                      base::Unretained(this), Action::kPreconnectAfterTimeout));
@@ -1095,7 +1095,7 @@ base::Optional<url::Origin> NavigationPredictor::GetOriginToPreconnect(
 
   if (base::GetFieldTrialParamByFeatureAsBool(
           blink::features::kNavigationPredictor, "preconnect_skip_link_scores",
-          false)) {
+          true)) {
     return document_origin;
   }
 
