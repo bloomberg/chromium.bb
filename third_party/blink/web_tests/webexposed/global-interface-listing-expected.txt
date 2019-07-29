@@ -10699,7 +10699,6 @@ interface XRInputSourceArray
     method values
 interface XRInputSourceEvent : Event
     attribute @@toStringTag
-    getter buttonIndex
     getter frame
     getter inputSource
     method constructor
