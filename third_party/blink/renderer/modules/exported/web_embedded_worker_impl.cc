@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
-#include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
@@ -535,11 +534,6 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     return;
   }
 
-  // Currently we don't plumb performance timing for toplevel service worker
-  // script fetch. https://crbug.com/954005
-  auto* resource_timing_notifier =
-      MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
-
   FetchClientSettingsObjectSnapshot* fetch_client_setting_object =
       CreateFetchClientSettingsObject(starter_origin.get(),
                                       starter_https_state);
@@ -557,7 +551,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     case mojom::ScriptType::kClassic:
       worker_thread_->FetchAndRunClassicScript(
           worker_start_data_.script_url, *fetch_client_setting_object,
-          *resource_timing_notifier, v8_inspector::V8StackTraceId());
+          nullptr /* outside_resource_timing_notifier */,
+          v8_inspector::V8StackTraceId());
       return;
     // > "module": Fetch a module worker script graph given job’s serialized
     // > script url, job’s client, "serviceworker", "omit", and the
@@ -565,7 +560,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     case mojom::ScriptType::kModule:
       worker_thread_->FetchAndRunModuleScript(
           worker_start_data_.script_url, *fetch_client_setting_object,
-          *resource_timing_notifier, network::mojom::CredentialsMode::kOmit);
+          nullptr /* outside_resource_timing_notifier */,
+          network::mojom::CredentialsMode::kOmit);
       return;
   }
   NOTREACHED();

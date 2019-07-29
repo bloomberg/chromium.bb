@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
-#include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
@@ -327,12 +326,9 @@ void WebSharedWorkerImpl::StartWorkerThread(
                            thread_startup_data, std::move(devtools_params),
                            parent_execution_context_task_runners_);
 
-  // Currently we don't plumb performance timing for toplevel shared worker
-  // script fetch. https://crbug.com/954005
-  auto* resource_timing_notifier =
-      MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
   GetWorkerThread()->FetchAndRunClassicScript(
-      script_request_url_, outside_settings_object, *resource_timing_notifier,
+      script_request_url_, outside_settings_object,
+      nullptr /* outside_resource_timing_notifier */,
       v8_inspector::V8StackTraceId());
 }
 
