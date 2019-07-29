@@ -3612,10 +3612,6 @@ def GenerateChromeOrderfileArtifacts(buildroot, board, output_path):
   with osutils.TempDir(base_dir=chroot_tmp) as tmpdir:
     input_proto_file = os.path.join(tmpdir, 'input.json')
     output_proto_file = os.path.join(tmpdir, 'output.json')
-    cpv = portage_util.PortageqBestVisible(
-        constants.CHROME_CP, cwd=buildroot)
-    chrome_version = '{0}-orderfile-{1}'.format(cpv.package,
-                                                cpv.version)
 
     with open(input_proto_file, 'w') as f:
       input_proto = {
@@ -3625,7 +3621,6 @@ def GenerateChromeOrderfileArtifacts(buildroot, board, output_path):
           'build_target': {
               'name': board,
           },
-          'chrome_version': chrome_version,
           'output_dir': output_path
       }
 

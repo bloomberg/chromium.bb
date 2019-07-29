@@ -72,6 +72,7 @@ class ChromiteImporter(object):
       sys.path.remove(path)
       self._loading = False
 
+
 sys.meta_path.insert(0, ChromiteImporter())
 
 from chromite.lib import commandline
@@ -140,15 +141,19 @@ def FindTarget(target):
     try:
       module = cros_import.ImportModule(target)
     except ImportError as e:
-      print('%s: could not import chromite module: %s: %s'
-            % (sys.argv[0], full_path, e), file=sys.stderr)
+      print(
+          '%s: could not import chromite module: %s: %s' % (sys.argv[0],
+                                                            full_path, e),
+          file=sys.stderr)
       raise
   else:
     try:
       module = imp.load_source('main', full_path)
     except IOError as e:
-      print('%s: could not import external module: %s: %s'
-            % (sys.argv[0], full_path, e), file=sys.stderr)
+      print(
+          '%s: could not import external module: %s: %s' % (sys.argv[0],
+                                                            full_path, e),
+          file=sys.stderr)
       raise
 
   # Run the module's main func if it has one.

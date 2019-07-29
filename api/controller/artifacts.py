@@ -335,12 +335,9 @@ def BundleOrderfileGenerationArtifacts(input_proto, output_proto):
   # Required args.
   build_target_name = input_proto.build_target.name
   output_dir = input_proto.output_dir
-  chrome_version = input_proto.chrome_version
 
   if not build_target_name:
     cros_build_lib.Die('build_target.name is required.')
-  if not chrome_version:
-    cros_build_lib.Die('chrome_version is required.')
   if not output_dir:
     cros_build_lib.Die('output_dir is required.')
   elif not os.path.isdir(output_dir):
@@ -350,7 +347,7 @@ def BundleOrderfileGenerationArtifacts(input_proto, output_proto):
 
   try:
     results = artifacts.BundleOrderfileGenerationArtifacts(
-        chroot, input_proto.build_target, chrome_version, output_dir)
+        chroot, input_proto.build_target, output_dir)
   except artifacts.Error as e:
     cros_build_lib.Die('Error %s raised in BundleSimpleChromeArtifacts: %s',
                        type(e), e)

@@ -568,7 +568,8 @@ class BundleVmFilesTest(cros_test_lib.MockTestCase):
     self.assertFalse(expected_files)
 
 
-class BundleOrderfileGenerationArtifactsTestCase(BundleTempDirTestCase):
+class BundleOrderfileGenerationArtifactsTestCase(
+    cros_test_lib.MockTempDirTestCase):
   """Unittests for BundleOrderfileGenerationArtifacts."""
 
   def setUp(self):
@@ -579,25 +580,22 @@ class BundleOrderfileGenerationArtifactsTestCase(BundleTempDirTestCase):
     self.output_dir = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_dir)
     self.build_target = 'board'
-    self.chrome_version = 'chromeos-chrome-1.0'
+    self.orderfile_name = 'chromeos-chrome-1.0'
 
     self.does_not_exist = os.path.join(self.tempdir, 'does_not_exist')
 
-  def _GetRequest(self, chroot=None, build_target=None,
-                  output_dir=None, chrome_version=None):
+  def _GetRequest(self, chroot=None, build_target=None, output_dir=None):
     """Helper to create a request message instance.
 
     Args:
       chroot (str): The chroot path.
       build_target (str): The build target name.
       output_dir (str): The output directory.
-      chrome_version (str): The chromeos-chrome version name.
     """
     return artifacts_pb2.BundleChromeOrderfileRequest(
         build_target={'name': build_target},
         chroot={'path': chroot},
-        output_dir=output_dir,
-        chrome_version=chrome_version
+        output_dir=output_dir
     )
 
   def _GetResponse(self):
@@ -606,17 +604,7 @@ class BundleOrderfileGenerationArtifactsTestCase(BundleTempDirTestCase):
   def testNoBuildTarget(self):
     """Test no build target fails."""
     request = self._GetRequest(chroot=self.chroot_dir,
-                               output_dir=self.output_dir,
-                               chrome_version=self.chrome_version)
-    response = self._GetResponse()
-    with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleOrderfileGenerationArtifacts(request, response)
-
-  def testNoChromeVersion(self):
-    """Test no Chrome version fails."""
-    request = self._GetRequest(chroot=self.chroot_dir,
-                               output_dir=self.output_dir,
-                               build_target=self.build_target)
+                               output_dir=self.output_dir)
     response = self._GetResponse()
     with self.assertRaises(cros_build_lib.DieSystemExit):
       artifacts.BundleOrderfileGenerationArtifacts(request, response)
@@ -624,7 +612,6 @@ class BundleOrderfileGenerationArtifactsTestCase(BundleTempDirTestCase):
   def testNoOutputDir(self):
     """Test no output dir fails."""
     request = self._GetRequest(chroot=self.chroot_dir,
-                               chrome_version=self.chrome_version,
                                build_target=self.build_target)
     response = self._GetResponse()
     with self.assertRaises(cros_build_lib.DieSystemExit):
@@ -633,7 +620,6 @@ class BundleOrderfileGenerationArtifactsTestCase(BundleTempDirTestCase):
   def testOutputDirDoesNotExist(self):
     """Test output directory not existing fails."""
     request = self._GetRequest(chroot=self.chroot_dir,
-                               chrome_version=self.chrome_version,
                                build_target=self.build_target,
                                output_dir=self.does_not_exist)
     response = self._GetResponse()
@@ -642,13 +628,12 @@ class BundleOrderfileGenerationArtifactsTestCase(BundleTempDirTestCase):
 
   def testOutputHandling(self):
     """Test response output."""
-    files = [self.chrome_version + '.orderfile.tar.xz',
-             self.chrome_version + '.nm.tar.xz']
+    files = [self.orderfile_name + '.orderfile.tar.xz',
+             self.orderfile_name + '.nm.tar.xz']
     expected_files = [os.path.join(self.output_dir, f) for f in files]
     self.PatchObject(artifacts_svc, 'BundleOrderfileGenerationArtifacts',
                      return_value=expected_files)
     request = self._GetRequest(chroot=self.chroot_dir,
-                               chrome_version=self.chrome_version,
                                build_target=self.build_target,
                                output_dir=self.output_dir)
 

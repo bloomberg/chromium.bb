@@ -16,8 +16,86 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import osutils
-from chromite.lib import portage_util
 from chromite.lib import toolchain_util
+
+
+class ProfilesNameHelperTest(cros_test_lib.MockTempDirTestCase):
+  """Test the helper functions related to naming."""
+
+  # pylint: disable=protected-access
+  def testParseBenchmarkProfileName(self):
+    """Test top-level function _ParseBenchmarkProfileName."""
+    # Test parse failure
+    profile_name_to_fail = 'this_is_an_invalid_name'
+    with self.assertRaises(toolchain_util.ProfilesNameHelperError) as context:
+      toolchain_util._ParseBenchmarkProfileName(profile_name_to_fail)
+    self.assertIn('Unparseable benchmark profile name:', str(context.exception))
+
+    # Test parse success
+    profile_name = 'chromeos-chrome-amd64-77.0.3849.0_rc-r1.afdo'
+    result = toolchain_util._ParseBenchmarkProfileName(profile_name)
+    self.assertEqual(
+        result,
+        toolchain_util.BenchmarkProfileVersion(
+            major=77, minor=0, build=3849, patch=0, revision=1,
+            is_merged=False))
+
+  def testParseCWPProfileName(self):
+    """Test top-level function _ParseCWPProfileName."""
+    # Test parse failure
+    profile_name_to_fail = 'this_is_an_invalid_name'
+    with self.assertRaises(toolchain_util.ProfilesNameHelperError) as context:
+      toolchain_util._ParseCWPProfileName(profile_name_to_fail)
+    self.assertIn('Unparseable CWP profile name:', str(context.exception))
+
+    # Test parse success
+    profile_name = 'R77-3809.38-1562580965.afdo.xz'
+    result = toolchain_util._ParseCWPProfileName(profile_name)
+    self.assertEqual(
+        result,
+        toolchain_util.CWPProfileVersion(
+            major=77, build=3809, patch=38, clock=1562580965))
+
+  def testFindChromeEbuild(self):
+    """Test top-level function _FindChromeEbuild."""
+    ebuild_path = '/mnt/host/source/src/path/to/chromeos-chrome-1.0.ebuild'
+    mock_result = cros_build_lib.CommandResult(output=ebuild_path)
+    self.PatchObject(cros_build_lib, 'RunCommand', return_value=mock_result)
+    # Test _FindChromeEbuild without inputs
+    ebuild_file = toolchain_util._FindChromeEbuild()
+    cmd = ['equery', 'w', 'chromeos-chrome']
+    cros_build_lib.RunCommand.assert_called_with(
+        cmd, enter_chroot=True, redirect_stdout=True)
+    self.assertEqual(ebuild_file, ebuild_path)
+    # Test _FindChromeEbuild with a board name
+    ebuild_file = toolchain_util._FindChromeEbuild(board='board')
+    cmd = ['equery-board', 'w', 'chromeos-chrome']
+    cros_build_lib.RunCommand.assert_called_with(
+        cmd, enter_chroot=True, redirect_stdout=True)
+    self.assertEqual(ebuild_file, ebuild_path)
+    # Test _FindChromeEbuild returns path outside chroot
+    ebuild_file = toolchain_util._FindChromeEbuild(
+        buildroot='/path/to/buildroot')
+    self.assertEqual(
+        ebuild_file,
+        '/path/to/buildroot/src/path/to/chromeos-chrome-1.0.ebuild')
+
+  def testGetOrderfileName(self):
+    """Test method _GetOrderfileName and related methods."""
+    ebuild_file = os.path.join(self.tempdir, 'chromeos-chrome-1.1.ebuild')
+    ebuild_file_content = '\n'.join([
+        'Some message before', 'AFDO_FILE["benchmark"]='
+        '"chromeos-chrome-amd64-77.0.3849.0_rc-r1.afdo"',
+        'AFDO_FILE["silvermont"]="R77-3809.38-1562580965.afdo"',
+        'Some message after'
+    ])
+    osutils.WriteFile(ebuild_file, ebuild_file_content)
+    self.PatchObject(
+        toolchain_util, '_FindChromeEbuild', return_value=ebuild_file)
+    result = toolchain_util._GetOrderfileName(buildroot=None)
+    self.assertEqual(
+        result,
+        'chromeos-chrome-orderfile-field-77-3809.38-benchmark-77.0.3849.0-r1')
 
 
 class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
@@ -25,7 +103,6 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
 
   # pylint: disable=protected-access
   def setUp(self):
-    self.chrome_version = 'chromeos-chrome-1.0'
     self.board = 'board'
     self.out_dir = os.path.join(self.tempdir, 'outdir')
     osutils.SafeMakedirs(self.out_dir)
@@ -34,10 +111,11 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
     osutils.SafeMakedirs(self.working_dir)
     self.working_dir_inchroot = '/tmp'
     self.chroot_args = []
-
+    self.orderfile_name = 'chromeos-chrome-orderfile-1.0'
+    self.PatchObject(
+        toolchain_util, '_GetOrderfileName', return_value=self.orderfile_name)
     self.test_obj = toolchain_util.GenerateChromeOrderfile(
-        self.board, self.out_dir, self.chrome_version, self.chroot_dir,
-        self.chroot_args)
+        self.board, self.out_dir, self.chroot_dir, self.chroot_args)
 
   def testCheckArgumentsFail(self):
     """Test arguments checking fails without files existing."""
@@ -52,7 +130,7 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
     chrome_binary = self.test_obj.CHROME_BINARY_PATH.replace(
         '${BOARD}', self.board)
     cmd = ['llvm-nm', '-n', chrome_binary]
-    output = os.path.join(self.working_dir, self.chrome_version + '.nm')
+    output = os.path.join(self.working_dir, self.orderfile_name + '.nm')
     self.test_obj.tempdir = self.tempdir
     self.PatchObject(cros_build_lib, 'RunCommand')
     self.test_obj._GenerateChromeNM()
@@ -65,11 +143,11 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
   def testPostProcessOrderfile(self):
     """Test post-processing orderfile is handled correctly."""
     chrome_nm = os.path.join(self.working_dir_inchroot,
-                             self.chrome_version + '.nm')
+                             self.orderfile_name + '.nm')
     input_orderfile = self.test_obj.INPUT_ORDERFILE_PATH.replace(
         '${BOARD}', self.board)
     output = os.path.join(self.working_dir_inchroot,
-                          self.chrome_version + '.orderfile')
+                          self.orderfile_name + '.orderfile')
     self.PatchObject(cros_build_lib, 'RunCommand')
     self.test_obj._PostProcessOrderfile(chrome_nm)
     cmd = [
@@ -81,9 +159,9 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
 
   def testCreateTarball(self):
     """Test creating tarball function is handled correctly."""
-    chrome_nm = os.path.join(self.working_dir, self.chrome_version + '.nm')
+    chrome_nm = os.path.join(self.working_dir, self.orderfile_name + '.nm')
     input_orderfile = os.path.join(self.working_dir,
-                                   self.chrome_version + '.orderfile')
+                                   self.orderfile_name + '.orderfile')
     inputs = [chrome_nm, input_orderfile]
     compressed_names = [os.path.basename(x) for x in inputs]
     outputs = [
@@ -100,7 +178,7 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
     """Test the main function is running successfully."""
     # Patch the two functions that generate artifacts from inputs that are
     # non-existent without actually building Chrome
-    chrome_nm = os.path.join(self.working_dir, self.chrome_version + '.nm')
+    chrome_nm = os.path.join(self.working_dir, self.orderfile_name + '.nm')
     with open(chrome_nm, 'w') as f:
       print('Write something in the nm file', file=f)
     self.PatchObject(
@@ -108,7 +186,7 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
         '_GenerateChromeNM',
         return_value=chrome_nm)
     chrome_orderfile = os.path.join(self.working_dir,
-                                    self.chrome_version + '.orderfile')
+                                    self.orderfile_name + '.orderfile')
     with open(chrome_orderfile, 'w') as f:
       print('Write something in the orderfile', file=f)
     self.PatchObject(
@@ -123,10 +201,10 @@ class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
     # Make sure the tarballs are inside the output directory
     output_files = os.listdir(self.out_dir)
     self.assertIn(
-        self.chrome_version + '.nm' +
+        self.orderfile_name + '.nm' +
         toolchain_util.ORDERFILE_COMPRESSION_SUFFIX, output_files)
     self.assertIn(
-        self.chrome_version + '.orderfile' +
+        self.orderfile_name + '.orderfile' +
         toolchain_util.ORDERFILE_COMPRESSION_SUFFIX, output_files)
 
 
@@ -142,16 +220,6 @@ class UpdateChromeEbuildWithOrderfileTest(cros_test_lib.MockTempDirTestCase):
         self.board, self.orderfile)
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
 
-  def testFindChromeEbuild(self):
-    ebuild_path = '/path/to/chromeos-chrome/chromeos-chrome-1.1.ebuild'
-    mock_result = cros_build_lib.CommandResult(output=ebuild_path)
-    self.PatchObject(cros_build_lib, 'RunCommand', return_value=mock_result)
-    ebuild_file = self.test_obj._FindChromeEbuild()
-    cmd = ['equery-%s' % self.board, 'w', 'chromeos-chrome']
-    cros_build_lib.RunCommand.assert_called_with(
-        cmd, enter_chroot=True, redirect_stdout=True)
-    self.assertEqual(ebuild_file, ebuild_path)
-
   def testPatchChromeEbuildFail(self):
     ebuild_file = os.path.join(self.tempdir, 'chromeos-chrome-1.1.ebuild')
     osutils.Touch(ebuild_file)
@@ -165,11 +233,12 @@ class UpdateChromeEbuildWithOrderfileTest(cros_test_lib.MockTempDirTestCase):
 
   def testPatchChromeEbuildPass(self):
     ebuild_file = os.path.join(self.tempdir, 'chromeos-chrome-1.1.ebuild')
-    with open(ebuild_file, 'w') as f:
-      f.write('Some message before\n')
-      f.write('UNVETTED_ORDERFILE="chromeos-chrome-1.0.orderfile"\n')
-      f.write('Some message after\n')
-
+    ebuild_file_content = '\n'.join([
+        'Some message before',
+        'UNVETTED_ORDERFILE="chromeos-chrome-1.0.orderfile"',
+        'Some message after'
+    ])
+    osutils.WriteFile(ebuild_file, ebuild_file_content)
     self.test_obj._PatchChromeEbuild(ebuild_file)
     # Make sure temporary file is removed
     self.assertNotIn('chromeos-chrome-1.1.ebuild.new', os.listdir(self.tempdir))
@@ -196,10 +265,6 @@ class UpdateChromeEbuildWithOrderfileTest(cros_test_lib.MockTempDirTestCase):
 class CheckOrderfileExistsTest(cros_test_lib.RunCommandTempDirTestCase):
   """Test CheckOrderfileExists command."""
 
-  def setUp(self):
-    # buildroot is not actually needed in this test
-    self.buildroot = self.tempdir
-
   def testCheckVerifyOrderfile(self):
     """Test check orderfile for verification work properly."""
     self.PatchObject(
@@ -209,34 +274,11 @@ class CheckOrderfileExistsTest(cros_test_lib.RunCommandTempDirTestCase):
     for exists in [False, True]:
       self.PatchObject(gs.GSContext, 'Exists', return_value=exists)
       ret = toolchain_util.CheckOrderfileExists(
-          self.buildroot, orderfile_verify=True)
+          buildroot='buildroot', orderfile_verify=True)
       self.assertEqual(exists, ret)
       gs.GSContext.Exists.assert_called_once_with(
           os.path.join(toolchain_util.ORDERFILE_GS_URL_VETTED,
                        'chromeos-chrome-orderfile-1.0.tar.xz'))
-
-  def testCheckGenerateOrderfile(self):
-    """Test check orderfile for generation work properly."""
-    unused = {
-        'pv': None,
-        'version_no_rev': None,
-        'rev': None,
-        'category': None,
-        'cpv': None,
-        'cp': None,
-        'cpf': None
-    }
-    cpv = portage_util.CPV(version='1.1', package='chromeos-chrome', **unused)
-    self.PatchObject(portage_util, 'PortageqBestVisible', return_value=cpv)
-    for exists in [False, True]:
-      self.PatchObject(gs.GSContext, 'Exists', return_value=exists)
-      ret = toolchain_util.CheckOrderfileExists(
-          self.buildroot, orderfile_verify=False)
-      self.assertEqual(exists, ret)
-      gs.GSContext.Exists.assert_called_once_with(
-          toolchain_util.ORDERFILE_GS_URL_UNVETTED +
-          '/chromeos-chrome-orderfile-1.1' +
-          toolchain_util.ORDERFILE_COMPRESSION_SUFFIX)
 
 
 class OrderfileUpdateChromeEbuildTest(cros_test_lib.RunCommandTempDirTestCase):

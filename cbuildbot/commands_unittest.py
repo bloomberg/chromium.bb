@@ -1800,21 +1800,7 @@ class GenerateChromeOrderfileArtifactsTests(
     self.output_path = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_path)
 
-    unused = {
-        'pv': None,
-        'version_no_rev': None,
-        'rev': None,
-        'category': None,
-        'cpv': None,
-        'cp': None,
-        'cpf': None
-    }
-    cpv = portage_util.CPV(
-        version='75.0.3761.0', package='chromeos-chrome', **unused)
-
-    self.PatchObject(portage_util, 'PortageqBestVisible',
-                     return_value=cpv)
-    self.chrome_version = 'chromeos-chrome-orderfile-75.0.3761.0'
+    self.orderfile_name = 'chromeos-chrome-orderfile-75.0.3761.0'
 
   def testRun(self):
     """Verifies GenerateChromeOrderfileArtifacts calls into build-api."""
@@ -1829,8 +1815,8 @@ class GenerateChromeOrderfileArtifactsTests(
     with open(output_proto_file, 'w') as f:
       output_proto = {
           'artifacts': [
-              {'path': self.chrome_version + '.orderfile.tar.xz'},
-              {'path': self.chrome_version + '.nm.tar.xz'}
+              {'path': self.orderfile_name + '.orderfile.tar.xz'},
+              {'path': self.orderfile_name + '.nm.tar.xz'}
           ]
       }
       json.dump(output_proto, f)
@@ -1855,7 +1841,5 @@ class GenerateChromeOrderfileArtifactsTests(
                      os.path.join(self.buildroot, 'chroot'))
     self.assertEqual(input_proto['build_target']['name'],
                      self.board)
-    self.assertEqual(input_proto['chrome_version'],
-                     self.chrome_version)
     self.assertEqual(input_proto['output_dir'],
                      self.output_path)

@@ -378,15 +378,12 @@ def GenerateQuickProvisionPayloads(target_image_path, archive_dir):
   return payloads
 
 
-def BundleOrderfileGenerationArtifacts(chroot, build_target,
-                                       chrome_version, output_dir):
+def BundleOrderfileGenerationArtifacts(chroot, build_target, output_dir):
   """Generate artifacts for Chrome orderfile.
 
   Args:
     chroot (chroot_lib.Chroot): The chroot in which the sysroot should be built.
     build_target (build_target_util.BuildTarget): The build target.
-    chrome_version (str): The chrome version used to generate the orderfile.
-      Example: chromeos-chrome-77.0.3823.0_rc-r1
     output_dir (str): The location outside the chroot where the files should be
       stored.
 
@@ -398,7 +395,6 @@ def BundleOrderfileGenerationArtifacts(chroot, build_target,
     generate_orderfile = toolchain_util.GenerateChromeOrderfile(
         build_target.name,
         tempdir,
-        chrome_version,
         chroot.path,
         chroot_args)
 

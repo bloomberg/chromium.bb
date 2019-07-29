@@ -7,21 +7,51 @@
 
 from __future__ import print_function
 
+import collections
 import os
 import re
 
-from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import path_util
-from chromite.lib import portage_util
 
 ORDERFILE_GS_URL_UNVETTED = \
     'gs://chromeos-prebuilt/afdo-job/orderfiles/unvetted'
 ORDERFILE_GS_URL_VETTED = \
     'gs://chromeos-prebuilt/afdo-job/orderfiles/vetted'
 ORDERFILE_COMPRESSION_SUFFIX = '.xz'
+
+AFDO_REGEX = r'^(?P<bef>AFDO_FILE\["%s"\]=")(?P<name>.*)(?P<aft>")'
+
+# NOTE: These regexp are copied from cbuildbot/afdo.py. Keep two copies
+# until deployed and then remove the one in cbuildbot/afdo.py.
+BENCHMARK_PROFILE_NAME_REGEX = r'''
+       ^chromeos-chrome-amd64-
+       (\d+)\.                    # Major
+       (\d+)\.                    # Minor
+       (\d+)\.                    # Build
+       (\d+)                      # Patch
+       (?:_rc)?-r(\d+)            # Revision
+       (-merged)?\.
+       afdo(?:\.bz2)?$            # We don't care about the presence of .bz2,
+                                  # so we use the ignore-group '?:' operator.
+'''
+
+BenchmarkProfileVersion = collections.namedtuple(
+    'BenchmarkProfileVersion',
+    ['major', 'minor', 'build', 'patch', 'revision', 'is_merged'])
+
+CWP_PROFILE_NAME_REGEX = r'''
+      ^R(\d+)-                    # Major
+       (\d+)\.                    # Build
+       (\d+)-                     # Patch
+       (\d+)                      # Clock; breaks ties sometimes.
+       \.afdo(?:\.xz)?$           # We don't care about the presence of xz
+    '''
+
+CWPProfileVersion = collections.namedtuple('ProfileVersion',
+                                           ['major', 'build', 'patch', 'clock'])
 
 
 class Error(Exception):
@@ -30,6 +60,144 @@ class Error(Exception):
 
 class GenerateChromeOrderfileError(Error):
   """Error for GenerateChromeOrderfile class."""
+
+
+class ProfilesNameHelperError(Error):
+  """Error for helper functions related to profile naming."""
+
+
+def _ParseBenchmarkProfileName(profile_name):
+  """Parse the name of a benchmark profile for Chrome.
+
+  Args:
+    profile_name: The name of a benchmark profile. A valid name is
+    chromeos-chrome-amd64-77.0.3849.0_rc-r1.afdo
+
+  Returns:
+    Named tuple of BenchmarkProfileVersion. With the input above, returns
+    BenchmarkProfileVersion(
+      major=77, minor=0, build=3849, patch=0, revision=1, is_merged=False)
+  """
+  pattern = re.compile(BENCHMARK_PROFILE_NAME_REGEX, re.VERBOSE)
+  match = pattern.match(profile_name)
+  if not match:
+    raise ProfilesNameHelperError(
+        'Unparseable benchmark profile name: %s' % profile_name)
+
+  groups = match.groups()
+  version_groups = groups[:-1]
+  is_merged = groups[-1]
+  return BenchmarkProfileVersion(
+      *[int(x) for x in version_groups], is_merged=bool(is_merged))
+
+
+def _ParseCWPProfileName(profile_name):
+  """Parse the name of a CWP profile for Chrome.
+
+  Args:
+    profile_name: The name of a CWP profile. A valid name is
+      R77-3809.38-1562580965.afdo
+
+  Returns:
+    Named tuple of CWPProfileVersion. With the input above, returns
+    CWPProfileVersion(major=77, build=3809, patch=38, clock=1562580965)
+  """
+  pattern = re.compile(CWP_PROFILE_NAME_REGEX, re.VERBOSE)
+  match = pattern.match(profile_name)
+  if not match:
+    raise ProfilesNameHelperError(
+        'Unparseable CWP profile name: %s' % profile_name)
+  return CWPProfileVersion(*[int(x) for x in match.groups()])
+
+
+def _FindChromeEbuild(buildroot=None, board=None):
+  """Find the Chrome ebuild in the build root.
+
+  Args:
+    buildroot: Optional. The path to build root, when used outside chroot.
+    When omitted, the return path is relative inside chroot.
+    board: Optional. A string of the name of the board.
+
+  Returns:
+    The full path to the versioned ebuild file. The path is either
+    relative inside chroot, or outside chroot, depending on the buildroot arg.
+  """
+  if board:
+    equery_prog = 'equery-%s' % board
+  else:
+    equery_prog = 'equery'
+  equery_cmd = [equery_prog, 'w', 'chromeos-chrome']
+  ebuild_file = cros_build_lib.RunCommand(
+      equery_cmd, enter_chroot=True, redirect_stdout=True).output.rstrip()
+  if not buildroot:
+    return ebuild_file
+
+  basepath = '/mnt/host/source'
+  if not ebuild_file.startswith(basepath):
+    raise ValueError('Unexpected Chrome ebuild path')
+  ebuild_path = os.path.relpath(ebuild_file, basepath)
+  return os.path.join(buildroot, ebuild_path)
+
+
+def _GetAFDOVersion(chrome_ebuild, is_benchmark):
+  """Get the AFDO version in the build root.
+
+  Args:
+    chrome_ebuild: The full path to the Chrome ebuild.
+    is_benchmark: True if want to get benchmark AFDO version. False if
+    want to get CWP AFDO version.
+
+  Returns:
+    The AFDO version name in the Chrome ebuild
+  """
+  if is_benchmark:
+    pattern = re.compile(AFDO_REGEX % "benchmark")
+  else:
+    pattern = re.compile(AFDO_REGEX % "silvermont")
+  name = ''
+  with open(chrome_ebuild) as f:
+    for line in f:
+      matched = pattern.match(line)
+      if matched:
+        name = matched.group('name')
+        break
+
+  if not name:
+    if is_benchmark:
+      raise ProfilesNameHelperError(
+          'Unable to find benchmark AFDO name in Chrome ebuild.')
+    else:
+      raise ProfilesNameHelperError(
+          'Unable to find CWP AFDO name in Chrome ebuild.')
+
+  if is_benchmark:
+    return _ParseBenchmarkProfileName(name)
+  else:
+    return _ParseCWPProfileName(name)
+
+
+def _GetOrderfileName(buildroot):
+  """Construct an orderfile name for the current Chrome OS checkout.
+
+  Args:
+    buildroot: The path to build root.
+
+  Returns:
+    An orderfile name using CWP + benchmark AFDO name.
+    e.g.
+    If benchmark AFDO is chromeos-chrome-amd64-77.0.3849.0_rc-r1.afdo,
+    and CWP AFDO is R77-3809.38-1562580965.afdo, the returned name is:
+    chromeos-chrome-orderfile-field-77-3809.38-benchmark-77.0.3849.0-r1
+  """
+  chrome_ebuild = _FindChromeEbuild(buildroot=buildroot)
+  benchmark_afdo_name = _GetAFDOVersion(chrome_ebuild, is_benchmark=True)
+  cwp_afdo_name = _GetAFDOVersion(chrome_ebuild, is_benchmark=False)
+  return \
+    'chromeos-chrome-orderfile-field-%d-%d.%d-benchmark-%d.%d.%d.%d-r%d' % (
+        cwp_afdo_name.major, cwp_afdo_name.build, cwp_afdo_name.patch,
+        benchmark_afdo_name.major, benchmark_afdo_name.minor,
+        benchmark_afdo_name.build, benchmark_afdo_name.patch,
+        benchmark_afdo_name.revision)
 
 
 class GenerateChromeOrderfile(object):
@@ -50,15 +218,14 @@ class GenerateChromeOrderfile(object):
   INPUT_ORDERFILE_PATH = ('/build/${BOARD}/opt/google/chrome/'
                           'chrome.orderfile.txt')
 
-  def __init__(self, board, output_dir, chrome_version, chroot_path,
-               chroot_args):
+  def __init__(self, board, output_dir, chroot_path, chroot_args):
     self.output_dir = output_dir
-    self.chrome_version = chrome_version
+    self.orderfile_name = _GetOrderfileName(os.path.join(chroot_path, '..'))
     self.chrome_binary = self.CHROME_BINARY_PATH.replace('${BOARD}', board)
     self.input_orderfile = self.INPUT_ORDERFILE_PATH.replace('${BOARD}', board)
-    self.working_dir = os.path.join(chroot_path, 'tmp')
-    self.working_dir_inchroot = '/tmp'
     self.chroot_path = chroot_path
+    self.working_dir = os.path.join(self.chroot_path, 'tmp')
+    self.working_dir_inchroot = '/tmp'
     self.chroot_args = chroot_args
 
   def _CheckArguments(self):
@@ -83,9 +250,9 @@ class GenerateChromeOrderfile(object):
     """This command runs inside chroot."""
     cmd = ['llvm-nm', '-n', self.chrome_binary]
     result_inchroot = os.path.join(self.working_dir_inchroot,
-                                   self.chrome_version + '.nm')
+                                   self.orderfile_name + '.nm')
     result_out_chroot = os.path.join(self.working_dir,
-                                     self.chrome_version + '.nm')
+                                     self.orderfile_name + '.nm')
 
     try:
       cros_build_lib.RunCommand(
@@ -103,7 +270,7 @@ class GenerateChromeOrderfile(object):
   def _PostProcessOrderfile(self, chrome_nm):
     """This command runs inside chroot."""
     result = os.path.join(self.working_dir_inchroot,
-                          self.chrome_version + '.orderfile')
+                          self.orderfile_name + '.orderfile')
     cmd = [
         self.PROCESS_SCRIPT, '--chrome', chrome_nm, '--input',
         self.input_orderfile, '--output', result
@@ -144,6 +311,7 @@ class GenerateChromeOrderfile(object):
 class UpdateChromeEbuildWithOrderfileError(Error):
   """Error for UpdateChromeEbuildWithOrderfile class."""
 
+
 class UpdateChromeEbuildWithOrderfile(object):
   """Class to update Chrome ebuild with unvetted orderfile."""
 
@@ -159,14 +327,6 @@ class UpdateChromeEbuildWithOrderfile(object):
       self.orderfile = orderfile.replace(ORDERFILE_COMPRESSION_SUFFIX, '')
     else:
       self.orderfile = orderfile
-
-  def _FindChromeEbuild(self):
-    """Find the Chrome ebuild in the build root."""
-    equery_prog = 'equery-%s' % self.board
-    equery_cmd = [equery_prog, 'w', 'chromeos-chrome']
-    ebuild_file = cros_build_lib.RunCommand(
-        equery_cmd, enter_chroot=True, redirect_stdout=True).output.rstrip()
-    return ebuild_file
 
   def _PatchChromeEbuild(self, ebuild_file):
     """Patch the Chrome ebuild to use the orderfile.
@@ -208,7 +368,7 @@ class UpdateChromeEbuildWithOrderfile(object):
 
   def Perform(self):
     """Main function to update Chrome ebuild with orderfile"""
-    ebuild = self._FindChromeEbuild()
+    ebuild = _FindChromeEbuild(board=self.board)
     self._PatchChromeEbuild(ebuild)
     # Patch the chrome 9999 ebuild too, as the manifest will use
     # 9999 ebuild.
@@ -241,7 +401,7 @@ def CheckOrderfileExists(buildroot, orderfile_verify):
   """Checks if the orderfile to be generated/verified already exists.
 
   Args:
-    buildroot: The path of build root
+    buildroot: The path of build root.
     orderfile_verify: Whether it's for orderfile_verify or orderfile_generate.
     For orderfile verify builder, it verifies the most recent orderfile from
     the unvetted bucket. So we checks if it's in the vetted bucket or not.
@@ -258,9 +418,8 @@ def CheckOrderfileExists(buildroot, orderfile_verify):
     # Check if the latest unvetted orderfile is already verified
     return gs_context.Exists(ORDERFILE_GS_URL_VETTED + '/' + orderfile_name)
 
-  # For orderfile_generate builder, get the chrome version
-  cpv = portage_util.PortageqBestVisible(constants.CHROME_CP, cwd=buildroot)
-  orderfile_name = '{0}-orderfile-{1}'.format(cpv.package, cpv.version)
+  # For orderfile_generate builder, get the orderfile name from chrome ebuild
+  orderfile_name = _GetOrderfileName(buildroot)
   return gs_context.Exists(ORDERFILE_GS_URL_UNVETTED + '/' + orderfile_name +
                            ORDERFILE_COMPRESSION_SUFFIX)
 

@@ -300,8 +300,8 @@ class BundleOrderfileGenerationArtifactsTest(cros_test_lib.MockTempDirTestCase):
     self.output_dir = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_dir)
 
-    # Create a dummy Chrome version
-    self.chrome_version = '%s-1.0.0-r1' % constants.CHROME_PN
+    # Create a dummy orderfile_name
+    self.orderfile_name = '%s-1.0.0-r1' % constants.CHROME_PN
 
   def testSuccess(self):
     """Test success case."""
@@ -312,8 +312,8 @@ class BundleOrderfileGenerationArtifactsTest(cros_test_lib.MockTempDirTestCase):
 
     # Set up files in the tempdir since the command isn't being called to
     # generate anything for it to handle.
-    files = [self.chrome_version+'.orderfile.tar.xz',
-             self.chrome_version+'.nm.tar.xz']
+    files = [self.orderfile_name+'.orderfile.tar.xz',
+             self.orderfile_name+'.nm.tar.xz']
     expected_files = [os.path.join(self.output_dir, f) for f in files]
 
     for f in files:
@@ -324,13 +324,12 @@ class BundleOrderfileGenerationArtifactsTest(cros_test_lib.MockTempDirTestCase):
         autospec=True)
 
     created = artifacts.BundleOrderfileGenerationArtifacts(
-        self.chroot, self.build_target, self.chrome_version, self.output_dir)
+        self.chroot, self.build_target, self.output_dir)
 
     # Test the class is called with right arguments
     mock_generate.assert_called_with(
         self.build_target.name,
         call_tempdir,
-        self.chrome_version,
         self.chroot.path,
         self.chroot.GetEnterArgs()
     )
