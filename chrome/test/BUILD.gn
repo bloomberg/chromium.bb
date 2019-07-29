@@ -357,6 +357,8 @@ static_library("test_support") {
       "../browser/extensions/extension_browsertest.h",
       "../browser/extensions/permissions_test_util.cc",
       "../browser/extensions/permissions_test_util.h",
+      "../browser/ui/web_applications/web_app_controller_browsertest.cc",
+      "../browser/ui/web_applications/web_app_controller_browsertest.h",
     ]
 
     public_deps += [
@@ -1230,6 +1232,7 @@ if (!is_android) {
       "../browser/ui/views/webauthn/authenticator_qr_code_test.cc",
       "../browser/ui/views/webview_accessibility_browsertest.cc",
       "../browser/ui/web_applications/bookmark_app_browsertest.cc",
+      "../browser/ui/web_applications/web_app_badging_browsertest.cc",
       "../browser/ui/web_applications/web_app_ui_manager_impl_browsertest.cc",
       "../browser/ui/webauthn/authenticator_dialog_browsertest.cc",
       "../browser/ui/webui/autofill_and_password_manager_internals/password_manager_internals_ui_browsertest.cc",
