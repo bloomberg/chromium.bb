@@ -133,8 +133,6 @@ class NavigationURLLoaderImplTest : public testing::Test {
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         network_change_notifier_(
             net::test::MockNetworkChangeNotifier::Create()) {
-    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-
     // Because the network service is enabled we need a system Connector or
     // BrowserContext::GetDefaultStoragePartition will segfault when
     // ContentBrowserClient::CreateNetworkContext tries to call
@@ -296,7 +294,6 @@ class NavigationURLLoaderImplTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedFeatureList feature_list_;
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier>
