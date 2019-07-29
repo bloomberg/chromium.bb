@@ -776,7 +776,8 @@ class ChromeSDKCommand(command.CliCommand):
         help='Use the exact SDK version; do not attempt to use previous '
              'versions.')
     parser.add_argument(
-        '--fallback-versions', default=SDKFetcher.VERSIONS_TO_CONSIDER,
+        '--fallback-versions', type=int,
+        default=SDKFetcher.VERSIONS_TO_CONSIDER,
         help='The number of recent LATEST files to consider in the case that '
              'the specified version is missing.')
     parser.add_argument(
