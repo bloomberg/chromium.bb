@@ -10174,14 +10174,15 @@ static int get_drl_refmv_count(const MACROBLOCK *const x,
 
 // Whether this reference motion vector can be skipped, based on initial
 // heuristics.
-static bool ref_mv_idx_early_breakout(MACROBLOCK *x,
-                                      const SPEED_FEATURES *const sf,
+static bool ref_mv_idx_early_breakout(const AV1_COMP *const cpi, MACROBLOCK *x,
                                       const HandleInterModeArgs *const args,
                                       int64_t ref_best_rd, int ref_mv_idx) {
+  const SPEED_FEATURES *const sf = &cpi->sf;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   const int8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+  const int is_comp_pred = has_second_ref(mbmi);
   if (sf->reduce_inter_modes && ref_mv_idx > 0) {
     if (mbmi->ref_frame[0] == LAST2_FRAME ||
         mbmi->ref_frame[0] == LAST3_FRAME ||
@@ -10193,8 +10194,19 @@ static bool ref_mv_idx_early_breakout(MACROBLOCK *x,
         return true;
       }
     }
+    // TODO(any): Experiment with reduce_inter_modes for compound prediction
+    if (sf->reduce_inter_modes >= 2 && !is_comp_pred &&
+        have_newmv_in_inter_mode(mbmi->mode)) {
+      if (mbmi->ref_frame[0] != cpi->nearest_past_ref &&
+          mbmi->ref_frame[0] != cpi->nearest_future_ref) {
+        const int has_nearmv = have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0;
+        if (mbmi_ext->weight[ref_frame_type][ref_mv_idx + has_nearmv] <
+            REF_CAT_LEVEL) {
+          return true;
+        }
+      }
+    }
   }
-  const int is_comp_pred = has_second_ref(mbmi);
   if (sf->prune_single_motion_modes_by_simple_trans && !is_comp_pred &&
       args->single_ref_first_pass == 0) {
     if (args->simple_rd_state[ref_mv_idx].early_skipped) {
@@ -10323,7 +10335,7 @@ static int ref_mv_idx_to_search(AV1_COMP *const cpi, MACROBLOCK *x,
   // Only search indices if they have some chance of being good.
   int good_indices = 0;
   for (int i = 0; i < ref_set; ++i) {
-    if (ref_mv_idx_early_breakout(x, &cpi->sf, args, ref_best_rd, i)) {
+    if (ref_mv_idx_early_breakout(cpi, x, args, ref_best_rd, i)) {
       continue;
     }
     mask_set_bit(&good_indices, i);

@@ -4407,17 +4407,30 @@ static int get_max_allowed_ref_frames(const AV1_COMP *cpi) {
 // Set the relative distance of a reference frame w.r.t. current frame
 static void set_rel_frame_dist(AV1_COMP *cpi) {
   const AV1_COMMON *const cm = &cpi->common;
-  const SPEED_FEATURES *const sf = &cpi->sf;
   const OrderHintInfo *const order_hint_info = &cm->seq_params.order_hint_info;
   MV_REFERENCE_FRAME ref_frame;
+  int dist;
+  int min_past_dist = INT32_MAX, min_future_dist = INT32_MAX;
+  cpi->nearest_past_ref = NONE_FRAME;
+  cpi->nearest_future_ref = NONE_FRAME;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     cpi->ref_relative_dist[ref_frame - LAST_FRAME] = 0;
-    if (sf->alt_ref_search_fp) {
-      int dist = av1_encoder_get_relative_dist(
+    if (cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frame]) {
+      dist = av1_encoder_get_relative_dist(
           order_hint_info,
           cm->cur_frame->ref_display_order_hint[ref_frame - LAST_FRAME],
           cm->current_frame.display_order_hint);
       cpi->ref_relative_dist[ref_frame - LAST_FRAME] = dist;
+      // Get the nearest ref_frame in the past
+      if (abs(dist) < min_past_dist && dist < 0) {
+        cpi->nearest_past_ref = ref_frame;
+        min_past_dist = abs(dist);
+      }
+      // Get the nearest ref_frame in the future
+      if (dist < min_future_dist && dist > 0) {
+        cpi->nearest_future_ref = ref_frame;
+        min_future_dist = dist;
+      }
     }
   }
 }
