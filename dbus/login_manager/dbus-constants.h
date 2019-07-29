@@ -59,6 +59,8 @@ const char kSessionManagerEmitArcBooted[] = "EmitArcBooted";
 const char kSessionManagerGetArcStartTimeTicks[] = "GetArcStartTimeTicks";
 const char kSessionManagerStartContainer[] = "StartContainer";
 const char kSessionManagerStopContainer[] = "StopContainer";
+const char kSessionManagerEnableAdbSideload[] = "EnableAdbSideload";
+const char kSessionManagerQueryAdbSideload[] = "QueryAdbSideload";
 // Signals
 const char kLoginPromptVisibleSignal[] = "LoginPromptVisible";
 const char kSessionStateChangedSignal[] = "SessionStateChanged";
