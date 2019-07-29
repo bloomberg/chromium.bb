@@ -115,8 +115,6 @@ class InstallManager {
 
   void SetSubsystems(AppRegistrar* registrar, InstallFinalizer* finalizer);
 
-  virtual void Shutdown();
-
   // Loads |web_app_url| in a new WebContents and determines if it is
   // installable. Returns the WebContents and whether the app is installable or
   // not.

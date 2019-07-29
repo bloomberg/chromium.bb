@@ -122,12 +122,10 @@ TEST_F(BookmarkAppInstallManagerTest, FromInfo_InstallManagerDestroyed) {
         run_loop.Quit();
       }));
 
-  // Destroy InstallManager: Call Shutdown as if Profile gets destroyed.
-  install_manager_->Shutdown();
+  // Destroy InstallManager as if Profile gets destroyed.
+  install_manager_.reset();
   run_loop.Run();
 
-  // Delete InstallManager object.
-  install_manager_.reset();
   EXPECT_TRUE(callback_called);
 }
 
@@ -245,12 +243,9 @@ TEST_F(BookmarkAppInstallManagerTest, WithOptions_InstallManagerDestroyed) {
       }));
   EXPECT_FALSE(callback_called);
 
-  // Destroy InstallManager: Call Shutdown as if Profile gets destroyed.
-  install_manager_->Shutdown();
-  run_loop.Run();
-
-  // Delete InstallManager object.
+  // Destroy InstallManager as if Profile gets destroyed.
   install_manager_.reset();
+  run_loop.Run();
 
   EXPECT_TRUE(callback_called);
 }
@@ -308,12 +303,10 @@ TEST_F(BookmarkAppInstallManagerTest,
   EXPECT_TRUE(data_retrieval_passed);
   EXPECT_FALSE(callback_called);
 
-  // Destroy InstallManager: Call Shutdown as if Profile gets destroyed.
-  install_manager_->Shutdown();
+  // Destroy InstallManager as if Profile gets destroyed.
+  install_manager_.reset();
   install_run_loop.Run();
 
-  // Delete InstallManager object.
-  install_manager_.reset();
   EXPECT_TRUE(callback_called);
 }
 

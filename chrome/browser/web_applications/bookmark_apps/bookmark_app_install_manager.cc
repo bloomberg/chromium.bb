@@ -81,7 +81,7 @@ class InstallTask : public content::WebContentsObserver,
   }
 
   // InstallManagerObserver:
-  void OnInstallManagerShutdown() override {
+  void OnInstallManagerDestroyed() override {
     DCHECK(callback_);
 
     CallInstallCallback(web_app::AppId(),
