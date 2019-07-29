@@ -82,13 +82,6 @@
 
 namespace blink {
 
-BaseAudioContext* BaseAudioContext::Create(
-    Document& document,
-    const AudioContextOptions* context_options,
-    ExceptionState& exception_state) {
-  return AudioContext::Create(document, context_options, exception_state);
-}
-
 // Constructor for rendering to the audio hardware.
 BaseAudioContext::BaseAudioContext(Document* document,
                                    enum ContextType context_type)
