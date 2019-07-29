@@ -73,18 +73,20 @@ class NavigationURLLoaderTest : public testing::Test {
             std::string() /* searchable_form_encoding */,
             GURL() /* client_side_redirect_url */,
             base::nullopt /* devtools_initiator_info */);
-    CommonNavigationParams common_params;
-    common_params.url = url;
-    common_params.initiator_origin = url::Origin::Create(url);
+    auto common_params = mojom::CommonNavigationParams::New();
+    common_params->referrer = blink::mojom::Referrer::New();
+    common_params->navigation_start = base::TimeTicks::Now();
+    common_params->url = url;
+    common_params->initiator_origin = url::Origin::Create(url);
 
     url::Origin origin = url::Origin::Create(url);
     std::unique_ptr<NavigationRequestInfo> request_info(
-        new NavigationRequestInfo(common_params, std::move(begin_params), url,
-                                  net::NetworkIsolationKey(origin, origin),
-                                  true, false, false, -1, false, false, false,
-                                  false, nullptr,
-                                  base::UnguessableToken::Create(),
-                                  base::UnguessableToken::Create()));
+        new NavigationRequestInfo(
+            std::move(common_params), std::move(begin_params), url,
+            net::NetworkIsolationKey(origin, origin), true, false, false, -1,
+            false, false, false, false, nullptr,
+            base::UnguessableToken::Create(),
+            base::UnguessableToken::Create()));
     return NavigationURLLoader::Create(
         browser_context_.get(), browser_context_->GetResourceContext(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
