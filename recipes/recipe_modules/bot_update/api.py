@@ -402,6 +402,16 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     return target_ref
 
+  def resolve_fixed_revision(self, bot_update_json, name):
+    """Set a fixed revision for a single dependency using project revision
+    properties.
+    """
+
+    rev_properties = self.get_project_revision_properties(name)
+    self.m.gclient.c.revisions = {
+      name: bot_update_json['properties'][rev_properties[0]]
+    }
+
   def _resolve_fixed_revisions(self, bot_update_json):
     """Set all fixed revisions from the first sync to their respective
     got_X_revision values.
