@@ -34,14 +34,16 @@ TransactionalLevelDBTransaction::~TransactionalLevelDBTransaction() = default;
 
 leveldb::Status TransactionalLevelDBTransaction::Put(const StringPiece& key,
                                                      std::string* value) {
+  leveldb::Status s = scope_->Put(leveldb_env::MakeSlice(key), *value);
   EvictLoadedIterators();
-  return scope_->Put(leveldb_env::MakeSlice(key), *value);
+  return s;
 }
 
 leveldb::Status TransactionalLevelDBTransaction::Remove(
     const StringPiece& key) {
+  leveldb::Status s = scope_->Delete(leveldb_env::MakeSlice(key));
   EvictLoadedIterators();
-  return scope_->Delete(leveldb_env::MakeSlice(key));
+  return s;
 }
 
 leveldb::Status TransactionalLevelDBTransaction::RemoveRange(
@@ -56,9 +58,11 @@ leveldb::Status TransactionalLevelDBTransaction::RemoveRange(
           LevelDBScopeDeletionMode::kImmediateWithRangeEndInclusive) {
     return Remove(begin);
   }
+  leveldb::Status s =
+      scope_->DeleteRange(leveldb_env::MakeSlice(begin),
+                          leveldb_env::MakeSlice(end), deletion_mode);
   EvictLoadedIterators();
-  return scope_->DeleteRange(leveldb_env::MakeSlice(begin),
-                             leveldb_env::MakeSlice(end), deletion_mode);
+  return s;
 }
 
 leveldb::Status TransactionalLevelDBTransaction::Get(const StringPiece& key,
