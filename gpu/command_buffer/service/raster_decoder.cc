@@ -881,6 +881,7 @@ gl::GLSurface* RasterDecoderImpl::GetGLSurface() {
 }
 
 Capabilities RasterDecoderImpl::GetCapabilities() {
+  // TODO(enne): reconcile this with gles2_cmd_decoder's capability settings.
   Capabilities caps;
   caps.gpu_rasterization = supports_gpu_raster_;
   caps.supports_oop_raster = supports_oop_raster_;
@@ -925,6 +926,9 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
                  feature_info()->workarounds().max_3d_array_texture_size);
   }
   caps.sync_query = feature_info()->feature_flags().chromium_sync_query;
+  caps.msaa_is_slow = feature_info()->workarounds().msaa_is_slow;
+  caps.avoid_stencil_buffers =
+      feature_info()->workarounds().avoid_stencil_buffers;
 
   if (gr_context()) {
     caps.context_supports_distance_field_text =
