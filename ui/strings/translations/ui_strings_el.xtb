@@ -18,6 +18,7 @@
 <translation id="1409544243779336081">Πρόταση εφαρμογής</translation>
 <translation id="1498028757988366001">Αναζητήσατε αυτόν τον όρο στο παρελθόν. Η διαγραφή του όρου "<ph name="QUERY" />" από το ιστορικό σας θα τον καταργήσει οριστικά από τον λογαριασμό σας σε όλες τις συσκευές σας.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 λεπτό και }other{# λεπτά και }}</translation>
+<translation id="1607452907377890914">Μάθετε πώς μπορείτε να απενεργοποιήσετε τον συγχρονισμό</translation>
 <translation id="1643823602425662293">Ειδοποίηση</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">τώρα</translation>
@@ -46,8 +47,10 @@
 <translation id="2289052229480071835">Πατήστε τους στόχους αφής στην οθόνη σας.</translation>
 <translation id="2295140143284145483">Έρευνα</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">Θέλετε να καλέσετε αυτόν τον αριθμό στο τηλέφωνό σας;</translation>
 <translation id="24452542372838207">Ανάπτυξη ειδοποίησης</translation>
 <translation id="2445449901874883781">Χρήση υψηλής πυκνότητας</translation>
+<translation id="2451871130406122810">Στάλθηκε στη συσκευή</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
 <translation id="2497284189126895209">Όλα τα αρχεία</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -178,6 +181,7 @@
 <translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="7781829728241885113">Χθες</translation>
 <translation id="7814458197256864873">&amp;Αντιγραφή</translation>
+<translation id="786857616234078769">Για να πραγματοποιήσετε μια κλήση από το τηλέφωνό σας, ενεργοποιήστε τον συγχρονισμό.</translation>
 <translation id="7879499977785298635">Να μην γίνει αποκλεισμός</translation>
 <translation id="7907591526440419938">Άνοιγμα αρχείου</translation>
 <translation id="7969046989155602842">Πλήκτρο Command</translation>

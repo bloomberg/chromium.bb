@@ -18,6 +18,7 @@
 <translation id="1409544243779336081">Doporučení aplikace</translation>
 <translation id="1498028757988366001">Toto jste v minulosti vyhledávali. Když dotaz „<ph name="QUERY" />“ vymažete z historie, bude trvale odstraněn z vašeho účtu na všech zařízeních.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta a  }few{# minuty a  }many{# minuty a  }other{# minut a  }}</translation>
+<translation id="1607452907377890914">Přečtěte si, jak zapnout synchronizaci</translation>
 <translation id="1643823602425662293">Oznámení</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">teď</translation>
@@ -46,8 +47,10 @@
 <translation id="2289052229480071835">Klepněte na cíle klepnutí na obrazovce.</translation>
 <translation id="2295140143284145483">Průzkum</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">Zavolat toto číslo z vašeho telefonu?</translation>
 <translation id="24452542372838207">Rozbalit oznámení</translation>
 <translation id="2445449901874883781">Použít vysokou hustotu</translation>
+<translation id="2451871130406122810">Odesláno do zařízení</translation>
 <translation id="2482878487686419369">Oznámení</translation>
 <translation id="2497284189126895209">Všechny soubory</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -178,6 +181,7 @@
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7781829728241885113">Včera</translation>
 <translation id="7814458197256864873">&amp;Kopírovat</translation>
+<translation id="786857616234078769">Chcete-li zavolat ze svého telefonu, zapněte synchronizaci.</translation>
 <translation id="7879499977785298635">Neblokovat</translation>
 <translation id="7907591526440419938">Otevřít soubor</translation>
 <translation id="7969046989155602842">Command</translation>

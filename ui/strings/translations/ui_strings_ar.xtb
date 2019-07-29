@@ -18,6 +18,7 @@
 <translation id="1409544243779336081">اقتراح التطبيقات</translation>
 <translation id="1498028757988366001">لقد بحثت عن هذا الموضوع من قبل. سيؤدي حذف "<ph name="QUERY" />" من السجل إلى إزالته نهائيًا من حسابك على جميع أجهزتك.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{دقيقة واحدة و }zero{# من الدقائق و }two{دقيقتان (#) و }few{# دقائق و }many{# دقيقة و }other{# من الدقائق و }}</translation>
+<translation id="1607452907377890914">التعرُّف على كيفية تفعيل المزامنة</translation>
 <translation id="1643823602425662293">الإشعار</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">الآن</translation>
@@ -46,8 +47,10 @@
 <translation id="2289052229480071835">انقر على أهداف اللمس على شاشتك.</translation>
 <translation id="2295140143284145483">الاستطلاع</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> تيرابايت/ثانية</translation>
+<translation id="2388990488038464401">هل تريد الاتصال بهذا الرقم من هاتفك؟</translation>
 <translation id="24452542372838207">توسيع الإشعار</translation>
 <translation id="2445449901874883781">استخدام كثافة عالية</translation>
+<translation id="2451871130406122810">تم الإرسال إلى الجهاز</translation>
 <translation id="2482878487686419369">الإشعارات</translation>
 <translation id="2497284189126895209">الملفّات كلّها</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -178,6 +181,7 @@
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7781829728241885113">أمس</translation>
 <translation id="7814458197256864873">&amp;نسخ</translation>
+<translation id="786857616234078769">لإجراء مكالمة من هاتفك، فعِّل المزامنة.</translation>
 <translation id="7879499977785298635">عدم الحظر</translation>
 <translation id="7907591526440419938">فتح ملف</translation>
 <translation id="7969046989155602842">Command</translation>

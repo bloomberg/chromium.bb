@@ -18,6 +18,7 @@
 <translation id="1409544243779336081">Препорука за апликацију</translation>
 <translation id="1498028757988366001">Ово сте већ тражили раније. Ако избришете „<ph name="QUERY" />“ из историје, трајно ћете га уклонити са налога на свим уређајима.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минут и }one{# минут и }few{# минута и }other{# минута и }}</translation>
+<translation id="1607452907377890914">Сазнајте како да укључите синхронизацију</translation>
 <translation id="1643823602425662293">Обавештење</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">сада</translation>
@@ -46,8 +47,10 @@
 <translation id="2289052229480071835">Додирните циљна поља за додир на екрану.</translation>
 <translation id="2295140143284145483">Анкета</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">Желите ли да позовете овај број са телефона?</translation>
 <translation id="24452542372838207">Прошири обавештење</translation>
 <translation id="2445449901874883781">Користи високу густину</translation>
+<translation id="2451871130406122810">Послато на уређај</translation>
 <translation id="2482878487686419369">Обавештења</translation>
 <translation id="2497284189126895209">Све датотеке</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -178,6 +181,7 @@
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7781829728241885113">Јуче</translation>
 <translation id="7814458197256864873">&amp;Копирај</translation>
+<translation id="786857616234078769">Да бисте упутили позив са телефона, укључите синхронизацију.</translation>
 <translation id="7879499977785298635">Не блокирај</translation>
 <translation id="7907591526440419938">Отварање датотеке</translation>
 <translation id="7969046989155602842">Command</translation>

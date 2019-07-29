@@ -18,6 +18,7 @@
 <translation id="1409544243779336081">App-Empfehlung</translation>
 <translation id="1498028757988366001">Danach haben Sie schon einmal gesucht. Wenn Sie "<ph name="QUERY" />" aus Ihrem Verlauf löschen, wird diese Suchanfrage dauerhaft von allen Geräten in Ihrem Konto entfernt.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 Minute und  }other{# Minuten und  }}</translation>
+<translation id="1607452907377890914">Weitere Informationen zum Aktivieren der Synchronisierung</translation>
 <translation id="1643823602425662293">Benachrichtigung</translation>
 <translation id="169515659049020177">Umschalttaste</translation>
 <translation id="1710340000377843106">jetzt</translation>
@@ -46,8 +47,10 @@
 <translation id="2289052229480071835">Tippen Sie auf die Zielelemente auf dem Bildschirm.</translation>
 <translation id="2295140143284145483">Umfrage</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">Möchten Sie diese Nummer auf Ihrem Smartphone anrufen?</translation>
 <translation id="24452542372838207">Benachrichtigung erweitern</translation>
 <translation id="2445449901874883781">Hohe Anzeigedichte verwenden</translation>
+<translation id="2451871130406122810">An Gerät gesendet</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
 <translation id="2497284189126895209">Alle Dateien</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -178,6 +181,7 @@
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7781829728241885113">Gestern</translation>
 <translation id="7814458197256864873">&amp;Kopieren</translation>
+<translation id="786857616234078769">Sie müssen die Synchronisierung aktivieren, um einen Anruf mit Ihrem Smartphone zu tätigen.</translation>
 <translation id="7879499977785298635">Nicht blockieren</translation>
 <translation id="7907591526440419938">Datei öffnen</translation>
 <translation id="7969046989155602842">Befehl</translation>

@@ -18,6 +18,7 @@
 <translation id="1409544243779336081">המלצה על אפליקציה</translation>
 <translation id="1498028757988366001">חיפשת את השאילתה הזו בעבר. מחיקת "<ph name="QUERY" />" מההיסטוריה תסיר אותה באופן סופי מהחשבון בכל המכשירים שברשותך.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{דקה אחת ו }two{# דקות ו }many{# דקות ו }other{# דקות ו }}</translation>
+<translation id="1607452907377890914">איך להפעיל סנכרון</translation>
 <translation id="1643823602425662293">הודעה</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">עכשיו</translation>
@@ -46,8 +47,10 @@
 <translation id="2289052229480071835">הקש על יעדי המגע במסך.</translation>
 <translation id="2295140143284145483">סקר</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">להתקשר למספר הזה מהטלפון שלך?</translation>
 <translation id="24452542372838207">הרחבת ההודעה</translation>
 <translation id="2445449901874883781">שימוש בדחיסות גבוהה</translation>
+<translation id="2451871130406122810">נשלח למכשיר</translation>
 <translation id="2482878487686419369">התראות</translation>
 <translation id="2497284189126895209">כל הקבצים</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -178,6 +181,7 @@
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7781829728241885113">אתמול</translation>
 <translation id="7814458197256864873">&amp;העתק</translation>
+<translation id="786857616234078769">כדי להתקשר מהטלפון, יש להפעיל את הסנכרון.</translation>
 <translation id="7879499977785298635">ללא חסימה</translation>
 <translation id="7907591526440419938">פתח קובץ</translation>
 <translation id="7969046989155602842">פקודה</translation>

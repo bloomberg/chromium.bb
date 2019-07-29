@@ -18,6 +18,7 @@
 <translation id="1409544243779336081">Rekomendasyon sa app</translation>
 <translation id="1498028757988366001">Hinanap mo ito dati. Kapag na-delete ang "<ph name="QUERY" />" sa iyong history, permanente itong aalisin sa account mo sa lahat ng iyong device.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto at }one{# minuto at }other{# na minuto at }}</translation>
+<translation id="1607452907377890914">Matutunan kung paano i-on ang pag-sync</translation>
 <translation id="1643823602425662293">Notification</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">ngayon</translation>
@@ -46,8 +47,10 @@
 <translation id="2289052229480071835">I-tap ang mga target sa pagpindot sa iyong screen.</translation>
 <translation id="2295140143284145483">Survey</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> (na) TB/s</translation>
+<translation id="2388990488038464401">Tawagan ang numerong ito mula sa iyong telepono?</translation>
 <translation id="24452542372838207">Palawakin ang notification</translation>
 <translation id="2445449901874883781">Gumamit ng mataas na density</translation>
+<translation id="2451871130406122810">Ipinadala sa device</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="2497284189126895209">Lahat ng Mga File</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -178,6 +181,7 @@
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7781829728241885113">Kahapon</translation>
 <translation id="7814458197256864873">&amp;Kopyahin</translation>
+<translation id="786857616234078769">Para tumawag mula sa iyong telepono, i-on ang pag-sync.</translation>
 <translation id="7879499977785298635">Huwag i-block</translation>
 <translation id="7907591526440419938">Buksan ang File</translation>
 <translation id="7969046989155602842">Command</translation>

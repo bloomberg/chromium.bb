@@ -18,6 +18,7 @@
 <translation id="1409544243779336081">Recomendação de apps</translation>
 <translation id="1498028757988366001">Você já pesquisou isso. Se você excluir "<ph name="QUERY" />" do seu histórico, essa consulta será permanentemente removida da sua conta em todos os seus dispositivos.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Um minuto e }one{# minutos e }other{# minutos e }}</translation>
+<translation id="1607452907377890914">Saiba como ativar a sincronização</translation>
 <translation id="1643823602425662293">Notificação</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">agora</translation>
@@ -46,8 +47,10 @@
 <translation id="2289052229480071835">Toque nas áreas de toque da tela.</translation>
 <translation id="2295140143284145483">Pesquisa</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">Ligar para este número do seu smartphone?</translation>
 <translation id="24452542372838207">Expandir notificação</translation>
 <translation id="2445449901874883781">Usar alta densidade</translation>
+<translation id="2451871130406122810">Enviado para o dispositivo</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="2497284189126895209">Todos os arquivos</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -178,6 +181,7 @@
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="7814458197256864873">Co&amp;piar</translation>
+<translation id="786857616234078769">Para fazer chamadas do seu smartphone, ative a sincronização.</translation>
 <translation id="7879499977785298635">Não bloquear</translation>
 <translation id="7907591526440419938">Abrir arquivo</translation>
 <translation id="7969046989155602842">Command</translation>
