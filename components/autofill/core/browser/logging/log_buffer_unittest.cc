@@ -125,6 +125,17 @@ TEST(LogBuffer, DivWithBr) {
             json);
 }
 
+TEST(LogBuffer, CoalesceStrings) {
+  LogBuffer buffer;
+  buffer << Tag{"div"} << "foo"
+         << "bar";
+  std::string json;
+  EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
+  EXPECT_EQ(R"({"children":[{"type":"text","value":"foobar"}],)"
+            R"("type":"element","value":"div"})",
+            json);
+}
+
 struct SampleObject {
   int x;
   std::string y;
