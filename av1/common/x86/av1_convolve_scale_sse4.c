@@ -236,8 +236,7 @@ void av1_convolve_2d_scale_sse4_1(const uint8_t *src, int src_stride,
                                   const int subpel_x_qn, const int x_step_qn,
                                   const int subpel_y_qn, const int y_step_qn,
                                   ConvolveParams *conv_params) {
-  // TODO(yaowu): remove unnecessary initializations
-  int16_t tmp[(2 * MAX_SB_SIZE + MAX_FILTER_TAP) * MAX_SB_SIZE] = { 0 };
+  int16_t tmp[(2 * MAX_SB_SIZE + MAX_FILTER_TAP) * MAX_SB_SIZE];
   int im_h = (((h - 1) * y_step_qn + subpel_y_qn) >> SCALE_SUBPEL_BITS) +
              filter_params_y->taps;
 
