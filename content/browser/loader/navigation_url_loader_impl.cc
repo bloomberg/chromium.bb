@@ -32,7 +32,6 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/resource_context_impl.h"
@@ -61,7 +60,6 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/plugin_service.h"
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
@@ -989,31 +987,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // When a plugin intercepted the response, we don't want to download it.
     is_download =
         !head.intercepted_by_plugin && (must_download || !known_mime_type);
-
-    // If NetworkService is on, or an interceptor handled the request, the
-    // request doesn't use ResourceDispatcherHost so
-    // CallOnReceivedResponse and return here.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-        !default_loader_used_) {
-      CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
-                             is_download);
-      return;
-    }
-
-    // NetworkService is off and an interceptor didn't handle the request,
-    // so it went to ResourceDispatcherHost.
-    ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-    net::URLRequest* url_request = rdh->GetURLRequest(global_request_id_);
-
-    // The |url_request| maybe have been removed from the resource dispatcher
-    // host during the time it took for OnReceiveResponse() to be received.
-    if (url_request) {
-      ResourceRequestInfoImpl* info =
-          ResourceRequestInfoImpl::ForRequest(url_request);
-      is_download = !head.intercepted_by_plugin && info->IsDownload();
-    } else {
-      is_download = false;
-    }
 
     CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
                            is_download);
