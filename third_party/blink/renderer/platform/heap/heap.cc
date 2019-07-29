@@ -346,9 +346,8 @@ void ThreadHeap::WeakProcessing(Visitor* visitor) {
       stats_collector(), ThreadHeapStatsCollector::kMarkWeakProcessing);
 
   // Weak processing may access unmarked objects but are forbidden from
-  // ressurecting them.
-  ThreadState::ObjectResurrectionForbiddenScope object_resurrection_forbidden(
-      ThreadState::Current());
+  // resurrecting them or allocating new ones.
+  ThreadState::NoAllocationScope allocation_forbidden(ThreadState::Current());
 
   // Call weak callbacks on objects that may now be pointing to dead objects.
   CustomCallbackItem item;

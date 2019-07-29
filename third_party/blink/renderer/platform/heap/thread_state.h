@@ -172,7 +172,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   class GCForbiddenScope;
   class MainThreadGCForbiddenScope;
   class NoAllocationScope;
-  class ObjectResurrectionForbiddenScope;
   class SweepForbiddenScope;
 
   using V8TraceRootsCallback = void (*)(v8::Isolate*, Visitor*);
@@ -298,11 +297,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   // Returns whether it is currently forbidden to sweep objects.
   bool SweepForbidden() const { return sweep_forbidden_; }
-
-  // Returns whether is is currently forbidden to resurrect objects.
-  bool IsObjectResurrectionForbidden() const {
-    return object_resurrection_forbidden_;
-  }
 
   bool in_atomic_pause() const { return in_atomic_pause_; }
 
@@ -457,15 +451,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void EnterNoAllocationScope() { no_allocation_count_++; }
   void LeaveNoAllocationScope() { no_allocation_count_--; }
 
-  void EnterObjectResurrectionForbiddenScope() {
-    DCHECK(!object_resurrection_forbidden_);
-    object_resurrection_forbidden_ = true;
-  }
-  void LeaveObjectResurrectionForbiddenScope() {
-    DCHECK(object_resurrection_forbidden_);
-    object_resurrection_forbidden_ = false;
-  }
-
   void EnterAtomicPause() {
     DCHECK(!in_atomic_pause_);
     in_atomic_pause_ = true;
@@ -576,7 +561,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   intptr_t* start_of_stack_;
   intptr_t* end_of_stack_;
 
-  bool object_resurrection_forbidden_ = false;
   bool in_atomic_pause_ = false;
   bool sweep_forbidden_ = false;
   bool incremental_marking_ = false;
