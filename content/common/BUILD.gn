@@ -276,6 +276,7 @@ source_set("common") {
     ":buildflags",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//build:branding_buildflags",
     "//build/util:webkit_version",
     "//components/discardable_memory/common",
     "//components/services/filesystem/public/mojom",
