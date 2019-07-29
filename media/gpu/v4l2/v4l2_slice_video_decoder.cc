@@ -840,7 +840,7 @@ void V4L2SliceVideoDecoder::DecodeSurface(
   DVLOGF(3);
 
   // Enqueue input_buf and output_buf
-  dec_surface->input_buffer().PrepareQueueBuffer(dec_surface);
+  dec_surface->input_buffer().PrepareQueueBuffer(*dec_surface);
   if (!std::move(dec_surface->input_buffer()).QueueMMap()) {
     SetState(State::kError);
     return;
