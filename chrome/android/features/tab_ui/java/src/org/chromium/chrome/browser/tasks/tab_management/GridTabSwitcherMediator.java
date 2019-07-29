@@ -309,6 +309,8 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
      *               in TabModel.
      */
     private void recordUserSwitchedTab(Tab tab, int lastId) {
+        if (tab == null) return;
+
         Tab fromTab = TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), lastId);
         assert fromTab != null;
 
