@@ -612,6 +612,53 @@ TEST_F(NavigationPredictorSendUkmMetricsEnabledTest, SendLinkUkmMetrics) {
               ::testing::Contains(GetTestMetricsAsVector(anchor_3_metrics)));
 }
 
+// Checks that metrics about which link was clicked are sent to the ukm
+// on-click, and that that index corresponds to a valid url.
+TEST_F(NavigationPredictorSendUkmMetricsEnabledTest, SendClickUkmMetrics) {
+  using ClickUkmEntry = ukm::builders::NavigationPredictorPageLinkClick;
+  using LoadUkmEntry = ukm::builders::NavigationPredictorAnchorElementMetrics;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  const std::string source = "https://example1.com";
+  const std::string clicked_url = "https://example1.com/large";
+
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, clicked_url, 1));
+  metrics.push_back(CreateMetricsPtr(source, "https://example2.com/small", .5));
+  metrics.push_back(
+      CreateMetricsPtr(source, "https://neworigin.com/xsmall", .05));
+
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics),
+                                                        GetDefaultViewport());
+  base::RunLoop().RunUntilIdle();
+
+  // Because NavigationPredictor randomizes the list of all anchor elements,
+  // retrieve the index of the element the test clicks on by looking at the
+  // UKM entry in NavigationPredictorAnchorElementMetrics that has the same
+  // ratio area.
+  auto all_ukm_entries =
+      test_ukm_recorder.GetEntriesByName(LoadUkmEntry::kEntryName);
+  int index = 1;
+  for (auto* entry : all_ukm_entries) {
+    int entry_ratio_area = static_cast<int>(*test_ukm_recorder.GetEntryMetric(
+        entry, LoadUkmEntry::kPercentClickableAreaName));
+    if (entry_ratio_area == 100) {
+      break;
+    } else {
+      index++;
+    }
+  }
+
+  auto metrics_clicked = CreateMetricsPtr(source, clicked_url, 0.01);
+  predictor_service()->ReportAnchorElementMetricsOnClick(
+      std::move(metrics_clicked));
+  base::RunLoop().RunUntilIdle();
+
+  test_ukm_recorder.ExpectEntryMetric(
+      test_ukm_recorder.GetEntriesByName(ClickUkmEntry::kEntryName)[0],
+      ClickUkmEntry::kAnchorElementIndexName, index);
+}
+
 // Checks that per-page link aggregate information is sent to the UKM on page
 // load.
 TEST_F(NavigationPredictorSendUkmMetricsEnabledTest, SendAggregateUkmMetrics) {
