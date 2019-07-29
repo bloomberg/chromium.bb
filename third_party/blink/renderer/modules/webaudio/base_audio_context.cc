@@ -156,7 +156,7 @@ void BaseAudioContext::Uninitialize() {
   // may use destination-related data (e.g. sample rate and channel count)
   // to populate the devtool protocol object.
   if (GraphTracer())
-    GraphTracer()->DidDestroyBaseAudioContext(this);
+    GraphTracer()->WillDestroyBaseAudioContext(this);
 
   // This stops the audio thread and all audio rendering.
   if (destination_node_)
