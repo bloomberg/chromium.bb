@@ -59,7 +59,6 @@
 #include "third_party/blink/renderer/core/workers/shared_worker_content_settings_proxy.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_thread.h"
-#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -295,6 +294,8 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
       Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
       outside_settings_object->GetSecurityOrigin(), document->IsSecureContext(),
       outside_settings_object->GetHttpsState(), CreateWorkerClients(),
+      std::make_unique<SharedWorkerContentSettingsProxy>(
+          std::move(content_settings_info_)),
       base::nullopt /* response_address_space */,
       nullptr /* origin_trial_tokens */, devtools_worker_token_,
       std::move(worker_settings), kV8CacheOptionsDefault,
@@ -341,9 +342,6 @@ WorkerClients* WebSharedWorkerImpl::CreateWorkerClients() {
       *worker_clients);
   CoreInitializer::GetInstance().ProvideIndexedDBClientToWorker(
       *worker_clients);
-  ProvideContentSettingsClientToWorker(
-      worker_clients, std::make_unique<SharedWorkerContentSettingsProxy>(
-                          std::move(content_settings_info_)));
   return worker_clients;
 }
 

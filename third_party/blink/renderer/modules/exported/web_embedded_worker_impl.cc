@@ -59,7 +59,6 @@
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
-#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_proxy.h"
@@ -389,9 +388,6 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   ProvideIndexedDBClientToWorker(
       worker_clients, MakeGarbageCollected<IndexedDBClient>(*worker_clients));
 
-  ProvideContentSettingsClientToWorker(worker_clients,
-                                       std::move(content_settings_client_));
-
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
   if (base::FeatureList::IsEnabled(
           features::kOffMainThreadServiceWorkerScriptFetch)) {
@@ -454,12 +450,15 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
                                 : Vector<CSPHeaderAndType>(),
         referrer_policy, starter_origin.get(), starter_secure_context,
         starter_https_state, worker_clients,
+        std::move(content_settings_client_),
         main_script_loader_->ResponseAddressSpace(),
         main_script_loader_->OriginTrialTokens(), devtools_worker_token_,
         std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         nullptr /* worklet_module_respones_map */,
-        std::move(interface_provider_info_));
+        std::move(interface_provider_info_), BeginFrameProviderParams(),
+        nullptr /* parent_feature_policy */,
+        base::UnguessableToken() /* agent_cluster_id */);
     source_code = main_script_loader_->SourceText();
     cached_meta_data = main_script_loader_->ReleaseCachedMetadata();
     main_script_loader_ = nullptr;
@@ -472,12 +471,15 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         worker_start_data_.user_agent, std::move(web_worker_fetch_context),
         Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
         starter_origin.get(), starter_secure_context, starter_https_state,
-        worker_clients, base::nullopt /* response_address_space */,
+        worker_clients, std::move(content_settings_client_),
+        base::nullopt /* response_address_space */,
         nullptr /* OriginTrialTokens */, devtools_worker_token_,
         std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         nullptr /* worklet_module_respones_map */,
-        std::move(interface_provider_info_));
+        std::move(interface_provider_info_), BeginFrameProviderParams(),
+        nullptr /* parent_feature_policy */,
+        base::UnguessableToken() /* agent_cluster_id */);
   }
 
   // Generate the full code cache in the first execution of the script.
