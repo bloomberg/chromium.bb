@@ -803,7 +803,7 @@
     },
     {
       name: "LargestContentfulPaint",
-      status: "experimental",
+      status: "stable",
     },
     {
       // Exposes layout shift scores to Javascript. See explainer:
