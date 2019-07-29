@@ -14,7 +14,6 @@
 #include "components/cbor/writer.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
@@ -26,12 +25,13 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 
 namespace {
 
-class DeferringURLLoaderThrottle final : public URLLoaderThrottle {
+class DeferringURLLoaderThrottle final : public blink::URLLoaderThrottle {
  public:
   DeferringURLLoaderThrottle() = default;
   ~DeferringURLLoaderThrottle() override = default;
@@ -248,7 +248,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
   SignedExchangeLoadResult result_;
   std::unique_ptr<SignedExchangeCertificateChain> cert_result_;
   URLLoaderFactoryForMockLoader mock_loader_factory_;
-  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles_;
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ResourceDispatcherHostImpl resource_dispatcher_host_;

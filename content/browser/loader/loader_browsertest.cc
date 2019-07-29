@@ -34,7 +34,6 @@
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -57,6 +56,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
@@ -1183,7 +1183,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
   }
 }
 
-class URLModifyingThrottle : public URLLoaderThrottle {
+class URLModifyingThrottle : public blink::URLLoaderThrottle {
  public:
   URLModifyingThrottle(bool modify_start, bool modify_redirect)
       : modify_start_(modify_start), modify_redirect_(modify_redirect) {}
@@ -1242,19 +1242,21 @@ class ThrottleContentBrowserClient : public TestContentBrowserClient {
   ~ThrottleContentBrowserClient() override {}
 
   // ContentBrowserClient overrides:
-  std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottlesOnIO(
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+  CreateURLLoaderThrottlesOnIO(
       const network::ResourceRequest& request,
       ResourceContext* resource_context,
       const base::RepeatingCallback<WebContents*()>& wc_getter,
       NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) override {
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles;
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
     auto throttle =
         std::make_unique<URLModifyingThrottle>(modify_start_, modify_redirect_);
     throttles.push_back(std::move(throttle));
     return throttles;
   }
-  std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottles(
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+  CreateURLLoaderThrottles(
       const network::ResourceRequest& request,
       BrowserContext* browser_context,
       const base::RepeatingCallback<WebContents*()>& wc_getter,
@@ -1271,8 +1273,8 @@ class ThrottleContentBrowserClient : public TestContentBrowserClient {
   DISALLOW_COPY_AND_ASSIGN(ThrottleContentBrowserClient);
 };
 
-// Ensures if a URLLoaderThrottle modifies a URL in WillStartRequest the new
-// request matches
+// Ensures if a URLLoaderThrottle modifies a URL in WillStartRequest the
+// new request matches
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, URLLoaderThrottleStartModify) {
   base::Lock lock;
   ThrottleContentBrowserClient content_browser_client(true, false);

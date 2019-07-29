@@ -355,7 +355,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnUI(
   // frame tree node ID has the same issue.
   base::RepeatingCallback<WebContents*()> wc_getter =
       base::BindRepeating([]() -> WebContents* { return nullptr; });
-  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
       GetContentClient()->browser()->CreateURLLoaderThrottles(
           *resource_request, storage_partition->browser_context(), wc_getter,
           nullptr /* navigation_ui_data */,
@@ -470,7 +470,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
   // frame tree node ID has the same issue.
   base::RepeatingCallback<WebContents*()> wc_getter =
       base::BindRepeating([]() -> WebContents* { return nullptr; });
-  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
       GetContentClient()->browser()->CreateURLLoaderThrottlesOnIO(
           *resource_request, resource_context, wc_getter,
           nullptr /* navigation_ui_data */,
