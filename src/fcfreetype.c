@@ -2608,6 +2608,20 @@ compareulong (const void *a, const void *b)
     return *ua - *ub;
 }
 
+static FcBool
+FindTable (FT_Face face, FT_ULong tabletag)
+{
+    FT_Stream  stream = face->stream;
+    FT_Error   error;
+
+    if (!stream)
+        return FcFalse;
+
+    if (( error = ftglue_face_goto_table( face, tabletag, stream ) ))
+	return FcFalse;
+
+    return FcTrue;
+}
 
 static int
 GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags)
@@ -2746,14 +2760,7 @@ bail:
 static FcBool
 FcFontHasHint (FT_Face face)
 {
-    FT_ULong *prep = NULL;
-    FT_UShort prep_count = 0;
-
-    prep_count = GetScriptTags (face, TTAG_prep, &prep);
-
-    free (prep);
-
-    return prep_count > 0;
+    return FindTable (face, TTAG_prep);
 }
 
 
