@@ -70,6 +70,7 @@
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -479,8 +480,13 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING:
-      return GetWeakPtrOrNull(SessionSyncServiceFactory::GetForProfile(profile_)
-                                  ->GetFaviconCache());
+      if (!base::FeatureList::IsEnabled(switches::kDoNotSyncFaviconDataTypes)) {
+        return GetWeakPtrOrNull(
+            SessionSyncServiceFactory::GetForProfile(profile_)
+                ->GetFaviconCache());
+      }
+      NOTREACHED();
+      return nullptr;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::SUPERVISED_USER_SETTINGS:
       return SupervisedUserSettingsServiceFactory::GetForKey(

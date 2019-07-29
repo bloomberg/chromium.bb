@@ -32,6 +32,7 @@
 #include "components/password_manager/core/browser/sync/password_model_worker.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_util.h"
@@ -235,11 +236,15 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     }
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {
-      sync_sessions::FaviconCache* favicons =
-          SessionSyncServiceFactory::GetForBrowserState(browser_state_)
-              ->GetFaviconCache();
-      return favicons ? favicons->AsWeakPtr()
-                      : base::WeakPtr<syncer::SyncableService>();
+      if (!base::FeatureList::IsEnabled(switches::kDoNotSyncFaviconDataTypes)) {
+        sync_sessions::FaviconCache* favicons =
+            SessionSyncServiceFactory::GetForBrowserState(browser_state_)
+                ->GetFaviconCache();
+        return favicons ? favicons->AsWeakPtr()
+                        : base::WeakPtr<syncer::SyncableService>();
+      }
+      NOTREACHED();
+      return nullptr;
     }
     case syncer::DEPRECATED_ARTICLES: {
       // DomDistillerService is used in iOS ReadingList. The distilled articles
