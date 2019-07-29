@@ -1371,6 +1371,11 @@
       origin_trial_feature_name: "RTCStatsRelativePacketArrivalDelay",
       status: "experimental",
     },
+    // Enables the use of SVC scalability mode in WebRTC.
+    // Spec: https://w3c.github.io/webrtc-svc/
+    {
+      name: "RTCSvcScalabilityMode",
+    },
     // Enables the use of |RTCConfiguration::sdpSemantics| to override the
     // default SDP semantics at RTCPeerConnection construction.
     {
