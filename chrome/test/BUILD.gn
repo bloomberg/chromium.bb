@@ -3186,8 +3186,6 @@ test("unit_tests") {
     "../browser/vr/metrics/session_metrics_helper_unittest.cc",
     "../browser/vr/vr_tab_helper_unittest.cc",
     "../browser/wake_lock/wake_lock_permission_context_unittest.cc",
-    "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
-    "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
     "../browser/win/chrome_elf_init_unittest.cc",
     "../browser/win/jumplist_file_util_unittest.cc",
     "../browser/win/jumplist_update_util_unittest.cc",
@@ -3283,6 +3281,8 @@ test("unit_tests") {
       "../browser/ui/thumbnails/thumbnail_utils_unittest.cc",
       "../browser/ui/toolbar/app_menu_icon_controller_unittest.cc",
       "../browser/ui/webui/favicon_source_unittest.cc",
+      "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
+      "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
     ]
   }
   if (is_chromeos) {
