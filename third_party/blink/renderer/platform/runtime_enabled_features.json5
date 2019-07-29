@@ -135,10 +135,12 @@
     {
       name: "AutomaticLazyFrameLoading",
       depends_on: ["LazyFrameLoading"],
+      status: "experimental",
     },
     {
       name: "AutomaticLazyImageLoading",
       depends_on: ["LazyImageLoading"],
+      status: "experimental",
     },
     {
       name: "AutomationControlled",
@@ -1315,10 +1317,12 @@
     {
       name: "RestrictAutomaticLazyFrameLoadingToDataSaver",
       depends_on: ["AutomaticLazyFrameLoading"],
+      status: "experimental",
     },
     {
       name: "RestrictAutomaticLazyImageLoadingToDataSaver",
       depends_on: ["AutomaticLazyImageLoading"],
+      status: "experimental",
     },
     {
       name: "RtcAudioJitterBufferMaxPackets",
