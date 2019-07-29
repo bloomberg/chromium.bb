@@ -1799,6 +1799,11 @@ bool V4L2SliceVideoDecodeAccelerator::FinishFlush() {
   if (!surfaces_at_device_.empty())
     return false;
 
+  // Even if all output buffers have been returned, the decoder may still
+  // be holding on an input device. Wait until the queue is actually drained.
+  if (input_buffer_queued_count_ != 0)
+    return false;
+
   DCHECK_EQ(state_, kIdle);
 
   // At this point, all remaining surfaces are decoded and dequeued, and since
