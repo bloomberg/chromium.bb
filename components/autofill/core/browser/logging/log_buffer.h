@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 #include "url/gurl.h"
 
 // The desired pattern to generate log messages is to pass a scope, a log
@@ -165,6 +166,19 @@ template <typename T1, typename T2>
 LogBuffer& operator<<(LogBuffer& buf, Tr2Cells<T1, T2>&& row) {
   return buf << Tag{"tr"} << Tag{"td"} << std::move(row.cell1) << CTag{}
              << Tag{"td"} << std::move(row.cell2) << CTag{} << CTag{};
+}
+
+template <typename T>
+LogBuffer& operator<<(LogBuffer& buf,
+                      const ::google::protobuf::RepeatedField<T>& values) {
+  buf << "[";
+  for (int i = 0; i < values.size(); ++i) {
+    if (i)
+      buf << ", ";
+    buf << values.Get(i);
+  }
+  buf << "]";
+  return buf;
 }
 
 }  // namespace autofill
