@@ -543,6 +543,9 @@ static const FcMacRomanFake fcMacRomanFake[] = {
 static FcChar8 *
 FcFontCapabilities(FT_Face face);
 
+static FcBool
+FcFontHasHint (FT_Face face);
+
 static int
 FcFreeTypeSpacing (FT_Face face);
 
@@ -1829,6 +1832,9 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	free (complex_);
     }
 
+    if (!FcPatternAddBool (pat, FC_FONT_HAS_HINT, FcFontHasHint (face)))
+	goto bail1;
+
     if (!variable_size && os2 && os2->version >= 0x0005 && os2->version != 0xffff)
     {
 	double lower_size, upper_size;
@@ -2552,6 +2558,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 #define TTAG_GPOS  FT_MAKE_TAG( 'G', 'P', 'O', 'S' )
 #define TTAG_GSUB  FT_MAKE_TAG( 'G', 'S', 'U', 'B' )
 #define TTAG_SILF  FT_MAKE_TAG( 'S', 'i', 'l', 'f')
+#define TTAG_prep  FT_MAKE_TAG( 'p', 'r', 'e', 'p' )
 
 #define OTLAYOUT_HEAD	    "otlayout:"
 #define OTLAYOUT_HEAD_LEN   9
@@ -2735,6 +2742,20 @@ bail:
     free(gpostags);
     return complex_;
 }
+
+static FcBool
+FcFontHasHint (FT_Face face)
+{
+    FT_ULong *prep = NULL;
+    FT_UShort prep_count = 0;
+
+    prep_count = GetScriptTags (face, TTAG_prep, &prep);
+
+    free (prep);
+
+    return prep_count > 0;
+}
+
 
 #define __fcfreetype__
 #include "fcaliastail.h"
