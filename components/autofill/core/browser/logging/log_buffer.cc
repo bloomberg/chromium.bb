@@ -149,4 +149,28 @@ LogBuffer& operator<<(LogBuffer& buf, const GURL& url) {
   return buf << url.GetOrigin().spec();
 }
 
+LogTableRowBuffer::LogTableRowBuffer(LogBuffer* parent) : parent_(parent) {
+  *parent_ << Tag{"tr"};
+}
+
+LogTableRowBuffer::LogTableRowBuffer(LogTableRowBuffer&& buffer) noexcept
+    : parent_(buffer.parent_) {
+  // Prevent double closing of the <tr> tag.
+  buffer.parent_ = nullptr;
+}
+
+LogTableRowBuffer::~LogTableRowBuffer() {
+  if (parent_)
+    *parent_ << CTag{};
+}
+
+LogTableRowBuffer operator<<(LogBuffer& buf, Tr&& tr) {
+  return LogTableRowBuffer(&buf);
+}
+
+LogTableRowBuffer&& operator<<(LogTableRowBuffer&& buf, Attrib&& attrib) {
+  *buf.parent_ << std::move(attrib);
+  return std::move(buf);
+}
+
 }  // namespace autofill

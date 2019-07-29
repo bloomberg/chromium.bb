@@ -387,34 +387,33 @@ LogBuffer& operator<<(LogBuffer& out,
     return out;
   out << Tag{"div"} << Attrib{"class", "form"};
   out << Tag{"table"};
-  out << MakeTr2Cells("client_version:", upload.client_version());
-  out << MakeTr2Cells("data_present:", upload.data_present());
-  out << MakeTr2Cells("autofill_used:", upload.autofill_used());
-  out << MakeTr2Cells("submission:", upload.submission());
+  out << Tr{} << "client_version:" << upload.client_version();
+  out << Tr{} << "data_present:" << upload.data_present();
+  out << Tr{} << "autofill_used:" << upload.autofill_used();
+  out << Tr{} << "submission:" << upload.submission();
   if (upload.has_submission_event()) {
-    out << MakeTr2Cells("submission_event:",
-                        static_cast<int>(upload.submission_event()));
+    out << Tr{}
+        << "submission_event:" << static_cast<int>(upload.submission_event());
   }
   if (upload.action_signature())
-    out << MakeTr2Cells("action_signature:", upload.action_signature());
+    out << Tr{} << "action_signature:" << upload.action_signature();
   if (upload.login_form_signature())
-    out << MakeTr2Cells("login_form_signature:", upload.login_form_signature());
+    out << Tr{} << "login_form_signature:" << upload.login_form_signature();
   if (!upload.form_name().empty())
-    out << MakeTr2Cells("form_name:", upload.form_name());
+    out << Tr{} << "form_name:" << upload.form_name();
   if (upload.has_passwords_revealed())
-    out << MakeTr2Cells("passwords_revealed:", upload.passwords_revealed());
+    out << Tr{} << "passwords_revealed:" << upload.passwords_revealed();
   if (upload.has_has_form_tag())
-    out << MakeTr2Cells("has_form_tag:", upload.has_form_tag());
+    out << Tr{} << "has_form_tag:" << upload.has_form_tag();
 
-  out << MakeTr2Cells("form_signature:", upload.form_signature());
+  out << Tr{} << "form_signature:" << upload.form_signature();
   for (const auto& field : upload.field()) {
-    out << Tag{"tr"} << Attrib{"style", "font-weight: bold"} << Tag{"td"}
-        << "field_signature:" << CTag{} << Tag{"td"} << field.signature()
-        << CTag{} << CTag{};
+    out << Tr{} << Attrib{"style", "font-weight: bold"}
+        << "field_signature:" << field.signature();
 
     LogBuffer autofill_type;
     autofill_type << Tag{"span"} << field.autofill_type();
-    out << MakeTr2Cells("autofill_type:", std::move(autofill_type));
+    out << Tr{} << "autofill_type:" << std::move(autofill_type);
 
     LogBuffer validities;
     validities << Tag{"span"} << "[";
@@ -423,17 +422,17 @@ LogBuffer& operator<<(LogBuffer& out,
                  << ", validities: " << type_validities.validity() << ")";
     }
     validities << "]";
-    out << MakeTr2Cells("validity_states", std::move(validities));
+    out << Tr{} << "validity_states" << std::move(validities);
 
     if (!field.name().empty())
-      out << MakeTr2Cells("name:", field.name());
+      out << Tr{} << "name:" << field.name();
     if (!field.autocomplete().empty())
-      out << MakeTr2Cells("autocomplete:", field.autocomplete());
+      out << Tr{} << "autocomplete:" << field.autocomplete();
     if (!field.type().empty())
-      out << MakeTr2Cells("type:", field.type());
+      out << Tr{} << "type:" << field.type();
     if (field.generation_type()) {
-      out << MakeTr2Cells("generation_type:",
-                          static_cast<int>(field.generation_type()));
+      out << Tr{}
+          << "generation_type:" << static_cast<int>(field.generation_type());
     }
   }
   out << CTag{"table"};

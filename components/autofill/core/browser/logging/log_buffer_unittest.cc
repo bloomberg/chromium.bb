@@ -163,4 +163,18 @@ TEST(LogBuffer, CanStreamCustomObjects) {
             json);
 }
 
+TEST(LogBuffer, LogTableRowBuffer) {
+  LogBuffer expected;
+  expected << Tag{"table"};
+  expected << Tag{"tr"} << Attrib{"class", "awesome"} << Tag{"td"} << "Foo"
+           << CTag{"td"} << Tag{"td"} << "Bar" << CTag{"td"} << CTag{"tr"};
+  expected << CTag{"table"};
+  LogBuffer actual;
+  actual << Tag{"table"};
+  actual << Tr{} << Attrib{"class", "awesome"} << "Foo"
+         << "Bar";
+  actual << CTag{"table"};
+  EXPECT_EQ(expected.RetrieveResult(), actual.RetrieveResult());
+}
+
 }  // namespace autofill

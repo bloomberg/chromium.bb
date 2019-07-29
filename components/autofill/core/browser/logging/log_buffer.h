@@ -74,19 +74,9 @@ struct Attrib {
 // An <br> HTML tag, note that this does not need to be closed.
 struct Br {};
 
-// A table row containing two cells. This generates
-// <tr><td>%1</td><td>%2</td></tr>
-template <typename T1, typename T2>
-struct Tr2Cells {
-  T1 cell1;
-  T2 cell2;
-};
-
-// Helper function to create Tr2Cells entries w/o specifying the type names.
-template <typename T1, typename T2>
-Tr2Cells<T1, T2> MakeTr2Cells(T1&& cell1, T2&& cell2) {
-  return Tr2Cells<T1, T2>{std::forward<T1>(cell1), std::forward<T2>(cell2)};
-}
+// A table row tag. This is syntactic sugar for logging data into a table.
+// See LogTableRowBuffer below.
+struct Tr {};
 
 // A buffer into which you can stream values. See the top of this header file
 // for samples.
@@ -162,12 +152,6 @@ LogBuffer& operator<<(LogBuffer& buf, LogBuffer&& buffer);
 // reasons.
 LogBuffer& operator<<(LogBuffer& buf, const GURL& url);
 
-template <typename T1, typename T2>
-LogBuffer& operator<<(LogBuffer& buf, Tr2Cells<T1, T2>&& row) {
-  return buf << Tag{"tr"} << Tag{"td"} << std::move(row.cell1) << CTag{}
-             << Tag{"td"} << std::move(row.cell2) << CTag{} << CTag{};
-}
-
 template <typename T>
 LogBuffer& operator<<(LogBuffer& buf,
                       const ::google::protobuf::RepeatedField<T>& values) {
@@ -180,6 +164,40 @@ LogBuffer& operator<<(LogBuffer& buf,
   buf << "]";
   return buf;
 }
+
+// This is syntactic sugar for creating table rows in a LogBuffer. Each
+// value streamed into this LogTableRowBuffer is wrapped by a <td> element.
+// The entire row is wrapped by a <tr>.
+//
+// Here is an example:
+//   LogBuffer buf;
+//   buf << Tr{} << Attrib{"style", "color: red"} << "Foo" << "Bar";
+// This creates:
+//   <tr style="color: red"><td>Foo</td><td>Bar</td></tr>.
+class LogTableRowBuffer {
+ public:
+  explicit LogTableRowBuffer(LogBuffer* parent);
+  LogTableRowBuffer(LogTableRowBuffer&& buffer) noexcept;
+  ~LogTableRowBuffer();
+
+ private:
+  template <typename T>
+  friend LogTableRowBuffer&& operator<<(LogTableRowBuffer&& buf, T&& value);
+  friend LogTableRowBuffer&& operator<<(LogTableRowBuffer&& buf,
+                                        Attrib&& attrib);
+
+  LogBuffer* parent_ = nullptr;
+};
+
+LogTableRowBuffer operator<<(LogBuffer& buf, Tr&& tr);
+
+template <typename T>
+LogTableRowBuffer&& operator<<(LogTableRowBuffer&& buf, T&& value) {
+  *buf.parent_ << Tag{"td"} << std::forward<T>(value) << CTag{};
+  return std::move(buf);
+}
+
+LogTableRowBuffer&& operator<<(LogTableRowBuffer&& buf, Attrib&& attrib);
 
 }  // namespace autofill
 
