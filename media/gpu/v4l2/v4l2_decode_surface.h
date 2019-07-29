@@ -166,6 +166,13 @@ class V4L2RequestDecodeSurface : public V4L2DecodeSurface {
       int request_fd,
       base::OnceClosure release_cb);
 
+  static base::Optional<scoped_refptr<V4L2RequestDecodeSurface>> Create(
+      V4L2WritableBufferRef input_buffer,
+      V4L2WritableBufferRef output_buffer,
+      scoped_refptr<VideoFrame> frame,
+      int request_fd,
+      base::OnceClosure release_cb);
+
   void PrepareSetCtrls(struct v4l2_ext_controls* ctrls) const override;
   void PrepareQueueBuffer(struct v4l2_buffer* buffer) const override;
   uint64_t GetReferenceID() const override;
@@ -179,6 +186,17 @@ class V4L2RequestDecodeSurface : public V4L2DecodeSurface {
                            int output_record,
                            int request_fd,
                            base::OnceClosure release_cb);
+
+  V4L2RequestDecodeSurface(V4L2WritableBufferRef input_buffer,
+                           V4L2WritableBufferRef output_buffer,
+                           scoped_refptr<VideoFrame> frame,
+                           int request_fd,
+                           base::OnceClosure release_cb)
+      : V4L2DecodeSurface(std::move(input_buffer),
+                          std::move(output_buffer),
+                          std::move(frame),
+                          std::move(release_cb)),
+        request_fd_(request_fd) {}
 };
 
 }  // namespace media

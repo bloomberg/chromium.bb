@@ -157,6 +157,25 @@ V4L2RequestDecodeSurface::Create(int input_record,
                                       std::move(release_cb));
 }
 
+// static
+base::Optional<scoped_refptr<V4L2RequestDecodeSurface>>
+V4L2RequestDecodeSurface::Create(V4L2WritableBufferRef input_buffer,
+                                 V4L2WritableBufferRef output_buffer,
+                                 scoped_refptr<VideoFrame> frame,
+                                 int request_fd,
+                                 base::OnceClosure release_cb) {
+  // First reinit the request to make sure we can use it for a new submission.
+  int ret = HANDLE_EINTR(ioctl(request_fd, MEDIA_REQUEST_IOC_REINIT));
+  if (ret < 0) {
+    VPLOGF(1) << "Failed to reinit request: ";
+    return base::nullopt;
+  }
+
+  return new V4L2RequestDecodeSurface(
+      std::move(input_buffer), std::move(output_buffer), std::move(frame),
+      request_fd, std::move(release_cb));
+}
+
 void V4L2RequestDecodeSurface::PrepareSetCtrls(
     struct v4l2_ext_controls* ctrls) const {
   DCHECK_NE(ctrls, nullptr);

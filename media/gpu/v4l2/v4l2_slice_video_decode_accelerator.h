@@ -80,7 +80,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Record for input buffers.
   struct InputRecord {
     InputRecord();
-    V4L2WritableBufferRef buffer;
     // Request fd used for this input buffer if request API is used.
     base::ScopedFD request_fd;
   };
@@ -90,7 +89,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
     OutputRecord();
     OutputRecord(OutputRecord&&);
     ~OutputRecord();
-    bool at_device;
     bool at_client;
     size_t num_times_sent_to_client;
     int32_t picture_id;
@@ -153,7 +151,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Internal methods of this class.
   //
   // Recycle V4L2 output buffer with |index|. Used as surface release callback.
-  void ReuseOutputBuffer(int index);
+  void ReuseOutputBuffer(V4L2ReadableBufferRef buffer);
 
   // Queue a |dec_surface| to device for decoding.
   void Enqueue(const scoped_refptr<V4L2DecodeSurface>& dec_surface);
@@ -162,8 +160,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   void Dequeue();
 
   // V4L2 QBUF helpers.
-  bool EnqueueInputRecord(const V4L2DecodeSurface* dec_surface);
-  bool EnqueueOutputRecord(int index);
+  bool EnqueueInputRecord(V4L2DecodeSurface* dec_surface);
+  bool EnqueueOutputRecord(V4L2DecodeSurface* dec_surface);
 
   // Set input and output formats in hardware.
   bool SetupFormats();
@@ -384,12 +382,10 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Stores the media file descriptor if request API is used
   base::ScopedFD media_fd_;
 
-  // Output queue state.
-  bool output_streamon_;
-  // Number of output buffers enqueued to the device.
-  int output_buffer_queued_count_;
-  // Output buffers ready to use.
-  std::list<int> free_output_buffers_;
+  scoped_refptr<V4L2Queue> output_queue_;
+  // Buffers that have been allocated but are awaiting an ImportBuffer
+  // or AssignDmabufs event.
+  std::map<int32_t, V4L2WritableBufferRef> output_wait_map_;
   // Mapping of int index to an output buffer record.
   std::vector<OutputRecord> output_buffer_map_;
 
@@ -433,9 +429,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
 
   // Surfaces queued to device to keep references to them while decoded.
-  using V4L2DecodeSurfaceByOutputId =
-      std::map<int, scoped_refptr<V4L2DecodeSurface>>;
-  V4L2DecodeSurfaceByOutputId surfaces_at_device_;
+  std::queue<scoped_refptr<V4L2DecodeSurface>> surfaces_at_device_;
 
   // Surfaces sent to client to keep references to them while displayed.
   using V4L2DecodeSurfaceByPictureBufferId =
