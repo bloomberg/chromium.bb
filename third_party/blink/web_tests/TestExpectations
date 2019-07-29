@@ -5996,7 +5996,6 @@ crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-frame-navigate.
 crbug.com/937811 [ Linux Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Failure ]
 crbug.com/937811 [ Linux Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure ]
 crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Failure ]
-crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure ]
 crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function.html [ Failure Pass ]
 crbug.com/937858 [ Debug ] external/wpt/ambient-light/AmbientLightSensor.https.html [ Pass Failure ]
 crbug.com/937902 [ Linux Debug ] virtual/disable-blink-gen-property-trees/compositing/overflow/overflow-scroll-with-local-background.html [ Pass Failure ]
@@ -6382,3 +6381,6 @@ crbug.com/988252 [ Linux Debug ] virtual/threaded/transitions/composited-with-hi
 crbug.com/959129 virtual/threaded/http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 crbug.com/988298 [ Linux ] http/tests/devtools/extensions/extensions-panel.js [ Pass Timeout ]
+
+# Sheriff 2019-07-29
+crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure Timeout ]
