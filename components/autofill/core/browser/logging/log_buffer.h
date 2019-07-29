@@ -112,7 +112,7 @@ class LogBuffer {
 
   // The stack of values being constructed. Each item is a dictionary with the
   // following attributes:
-  // - type: 'node' | 'text'
+  // - type: 'element' | 'text'
   // - value: name of tag | text content
   // - children (opt): list of child nodes
   // - attributes (opt): dictionary of name/value pairs

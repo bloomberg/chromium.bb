@@ -12,6 +12,16 @@ namespace autofill {
 
 namespace {
 
+// The LogBuffer creates a tree that will be rendered as HTML code. This tree
+// supports two node types, "element" (representing a DOM Element) and "text"
+// (representing a text node in the DOM). This function is used to check that
+// attributes and children are only added to "element" nodes but not to "text"
+// nodes.
+bool IsElement(const base::Value& value) {
+  const std::string* type = value.FindStringPath("type");
+  return type && *type == "element";
+}
+
 void AppendChildToLastNode(std::vector<base::Value>* buffer,
                            base::Value&& new_child) {
   if (buffer->empty()) {
@@ -20,6 +30,7 @@ void AppendChildToLastNode(std::vector<base::Value>* buffer,
   }
 
   base::Value& parent = buffer->back();
+  DCHECK(IsElement(parent));
 
   if (auto* children = parent.FindListKey("children")) {
     children->GetList().push_back(std::move(new_child));
@@ -53,7 +64,7 @@ LogBuffer& operator<<(LogBuffer& buf, Tag&& tag) {
     return buf;
 
   base::Value::DictStorage storage;
-  storage.try_emplace("type", std::make_unique<base::Value>("node"));
+  storage.try_emplace("type", std::make_unique<base::Value>("element"));
   storage.try_emplace("value",
                       std::make_unique<base::Value>(std::move(tag.name)));
   buf.buffer_.emplace_back(std::move(storage));
@@ -80,6 +91,7 @@ LogBuffer& operator<<(LogBuffer& buf, Attrib&& attrib) {
     return buf;
 
   base::Value& node = buf.buffer_.back();
+  DCHECK(IsElement(node));
 
   if (auto* attributes = node.FindDictKey("attributes")) {
     attributes->SetKey(std::move(attrib.name),
