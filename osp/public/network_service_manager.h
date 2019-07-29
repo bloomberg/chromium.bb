@@ -40,25 +40,20 @@ class NetworkServiceManager final {
   // by the service instance destructors.
   static void Dispose();
 
-  // Runs the event loop once for all of its owned services.  This mostly
-  // consists of check for available network events and passing that data to the
-  // listening services.
-  void RunEventLoopOnce();
-
-  // Returns an instance of the mDNS receiver listener, or nullptr if
-  // not provided.
+  // Returns an instance of the mDNS receiver listener, or nullptr if not
+  // provided.
   ServiceListener* GetMdnsServiceListener();
 
-  // Returns an instance of the mDNS receiver publisher, or nullptr
-  // if not provided.
+  // Returns an instance of the mDNS receiver publisher, or nullptr if not
+  // provided.
   ServicePublisher* GetMdnsServicePublisher();
 
-  // Returns an instance of the protocol connection client, or nullptr
-  // if not provided.
+  // Returns an instance of the protocol connection client, or nullptr if not
+  // provided.
   ProtocolConnectionClient* GetProtocolConnectionClient();
 
-  // Returns an instance of the protocol connection server, or nullptr if
-  // not provided.
+  // Returns an instance of the protocol connection server, or nullptr if not
+  // provided.
   ProtocolConnectionServer* GetProtocolConnectionServer();
 
  private:

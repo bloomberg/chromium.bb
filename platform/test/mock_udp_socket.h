@@ -17,7 +17,7 @@ namespace platform {
 
 class MockUdpSocket : public UdpSocket {
  public:
-  MockUdpSocket(Version version);
+  explicit MockUdpSocket(Version version = Version::kV4);
   ~MockUdpSocket() override = default;
 
   bool IsIPv4() const override;

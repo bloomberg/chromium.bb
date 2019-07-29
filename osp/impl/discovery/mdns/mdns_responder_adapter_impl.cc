@@ -293,45 +293,67 @@ Error MdnsResponderAdapterImpl::DeregisterInterface(
   responder_interface_info_.erase(info_it);
   return Error::None();
 }
-
-void MdnsResponderAdapterImpl::OnDataReceived(
-    const IPEndpoint& source,
-    const IPEndpoint& original_destination,
-    const uint8_t* data,
-    size_t length,
-    platform::UdpSocket* receiving_socket) {
+void MdnsResponderAdapterImpl::OnRead(platform::UdpPacket packet,
+                                      platform::NetworkRunner* network_runner) {
   mDNSAddr src;
-  if (source.address.IsV4()) {
+  if (packet.source().address.IsV4()) {
     src.type = mDNSAddrType_IPv4;
-    source.address.CopyToV4(src.ip.v4.b);
+    packet.source().address.CopyToV4(src.ip.v4.b);
   } else {
     src.type = mDNSAddrType_IPv6;
-    source.address.CopyToV6(src.ip.v6.b);
+    packet.source().address.CopyToV6(src.ip.v6.b);
   }
   mDNSIPPort srcport;
-  AssignMdnsPort(&srcport, source.port);
+  AssignMdnsPort(&srcport, packet.source().port);
 
   mDNSAddr dst;
-  if (source.address.IsV4()) {
+  if (packet.source().address.IsV4()) {
     dst.type = mDNSAddrType_IPv4;
-    original_destination.address.CopyToV4(dst.ip.v4.b);
+    packet.destination().address.CopyToV4(dst.ip.v4.b);
   } else {
     dst.type = mDNSAddrType_IPv6;
-    original_destination.address.CopyToV6(dst.ip.v6.b);
+    packet.destination().address.CopyToV6(dst.ip.v6.b);
   }
   mDNSIPPort dstport;
-  AssignMdnsPort(&dstport, original_destination.port);
+  AssignMdnsPort(&dstport, packet.destination().port);
 
-  mDNSCoreReceive(&mdns_, const_cast<uint8_t*>(data), data + length, &src,
-                  srcport, &dst, dstport,
-                  reinterpret_cast<mDNSInterfaceID>(receiving_socket));
+  auto* packet_data = packet.data();
+  mDNSCoreReceive(&mdns_, const_cast<uint8_t*>(packet_data),
+                  packet_data + packet.size(), &src, srcport, &dst, dstport,
+                  reinterpret_cast<mDNSInterfaceID>(packet.socket()));
 }
 
-int MdnsResponderAdapterImpl::RunTasks() {
-  const auto t = mDNS_Execute(&mdns_);
-  const auto now = mDNSPlatformRawTime();
-  const auto next = t - now;
-  return next;
+absl::optional<platform::Clock::duration> MdnsResponderAdapterImpl::RunTasks() {
+  mDNS_Execute(&mdns_);
+
+  // Using mDNS_Execute's response to determine the correct timespan before
+  // re-running this method doesn't work as expected. In the demo, under some
+  // cases (about 25% of demo runs), the response is set to an unreasonably
+  // large number (in the order of multiple days).
+  //
+  // From the mDNS documentation: "it is the responsibility [...] to set the
+  // timer according to the m->NextScheduledEvent value, and then when the timer
+  // fires, the timer callback function should call mDNS_Execute()" - for more
+  // details see third_party/mDNSResponder/src/mDNSCore/mDNS.c : 3390
+  //
+  // Together, I understand these to mean that the mdns library code doesn't
+  // expect we need mDNS_Execute called again by the task runner, only in the
+  // other special cases it calls out in documentation (which we currently do
+  // correctly). In our code, when we call mDNS_Execute again outside of the
+  // task runner, the result is currently discarded. What we would need to do is
+  // reach into the Task Runner's task and update how long before the task runs
+  // again. That would require some large refactoring and changes.
+  //
+  // Additionally, beyond this, the mDNS code documents that there are cases
+  // where the return value for mDNS_Execute should be ignored because it may be
+  // stale.
+  //
+  // TODO(rwkeane): More accurately determine when the next run of this method
+  // should be.
+  constexpr auto seconds_before_next_run = 1;
+
+  // Return as a duration.
+  return std::chrono::seconds(seconds_before_next_run);
 }
 
 std::vector<PtrEvent> MdnsResponderAdapterImpl::TakePtrResponses() {

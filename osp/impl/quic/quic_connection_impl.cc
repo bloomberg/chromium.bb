@@ -73,6 +73,15 @@ void QuicStreamImpl::OnClose(::quic::QuartcStream* stream) {
 
 void QuicStreamImpl::OnBufferChanged(::quic::QuartcStream* stream) {}
 
+// Passes a received UDP packet to the QUIC implementation.  If this contains
+// any stream data, it will be passed automatically to the relevant
+// QuicStream::Delegate objects.
+void QuicConnectionImpl::OnRead(platform::UdpPacket data,
+                                platform::NetworkRunner* network_runner) {
+  session_->OnTransportReceived(reinterpret_cast<const char*>(data.data()),
+                                data.size());
+}
+
 QuicConnectionImpl::QuicConnectionImpl(
     QuicConnectionFactoryImpl* parent_factory,
     QuicConnection::Delegate* delegate,
@@ -88,11 +97,6 @@ QuicConnectionImpl::QuicConnectionImpl(
 }
 
 QuicConnectionImpl::~QuicConnectionImpl() = default;
-
-void QuicConnectionImpl::OnDataReceived(const platform::UdpPacket& packet) {
-  session_->OnTransportReceived(reinterpret_cast<const char*>(packet.data()),
-                                packet.size());
-}
 
 std::unique_ptr<QuicStream> QuicConnectionImpl::MakeOutgoingStream(
     QuicStream::Delegate* delegate) {

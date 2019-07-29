@@ -17,6 +17,7 @@
 #include "osp/public/protocol_connection_server.h"
 #include "osp/public/testing/message_demuxer_test_support.h"
 #include "platform/test/fake_clock.h"
+#include "platform/test/fake_network_runner.h"
 
 namespace openscreen {
 namespace presentation {
@@ -66,22 +67,29 @@ class MockReceiverDelegate final : public ReceiverDelegate {
 };
 
 class PresentationReceiverTest : public ::testing::Test {
+ public:
+  PresentationReceiverTest() {
+    network_runner_ = std::make_unique<platform::FakeNetworkRunner>();
+    quic_bridge_ = std::make_unique<FakeQuicBridge>(network_runner_.get(),
+                                                    platform::FakeClock::now);
+  }
+
  protected:
   std::unique_ptr<ProtocolConnection> MakeClientStream() {
     MockConnectRequest mock_connect_request;
     NetworkServiceManager::Get()->GetProtocolConnectionClient()->Connect(
-        quic_bridge_.kReceiverEndpoint, &mock_connect_request);
+        quic_bridge_->kReceiverEndpoint, &mock_connect_request);
     ProtocolConnection* stream;
     EXPECT_CALL(mock_connect_request, OnConnectionOpenedMock(_, _))
         .WillOnce(::testing::SaveArg<1>(&stream));
-    quic_bridge_.RunTasksUntilIdle();
+    quic_bridge_->RunTasksUntilIdle();
     return std::unique_ptr<ProtocolConnection>(stream);
   }
 
   void SetUp() override {
     NetworkServiceManager::Create(nullptr, nullptr,
-                                  std::move(quic_bridge_.quic_client),
-                                  std::move(quic_bridge_.quic_server));
+                                  std::move(quic_bridge_->quic_client),
+                                  std::move(quic_bridge_->quic_server));
     Receiver::Get()->Init();
     Receiver::Get()->SetReceiverDelegate(&mock_receiver_delegate_);
   }
@@ -92,10 +100,11 @@ class PresentationReceiverTest : public ::testing::Test {
     NetworkServiceManager::Dispose();
   }
 
+  std::unique_ptr<platform::FakeNetworkRunner> network_runner_;
   const std::string url1_{"https://www.example.com/receiver.html"};
   platform::FakeClock fake_clock_{
       platform::Clock::time_point(std::chrono::milliseconds(1298424))};
-  FakeQuicBridge quic_bridge_{platform::FakeClock::now};
+  std::unique_ptr<FakeQuicBridge> quic_bridge_;
   MockReceiverDelegate mock_receiver_delegate_;
 };
 
@@ -106,7 +115,7 @@ class PresentationReceiverTest : public ::testing::Test {
 TEST_F(PresentationReceiverTest, QueryAvailability) {
   MockMessageCallback mock_callback;
   MessageDemuxer::MessageWatch availability_watch =
-      quic_bridge_.controller_demuxer->SetDefaultMessageTypeWatch(
+      quic_bridge_->controller_demuxer->SetDefaultMessageTypeWatch(
           msgs::Type::kPresentationUrlAvailabilityResponse, &mock_callback);
 
   std::unique_ptr<ProtocolConnection> stream = MakeClientStream();
@@ -139,7 +148,7 @@ TEST_F(PresentationReceiverTest, QueryAvailability) {
             buffer, buffer_size, &response);
         return result;
       }));
-  quic_bridge_.RunTasksUntilIdle();
+  quic_bridge_->RunTasksUntilIdle();
   EXPECT_EQ(request.request_id, response.request_id);
   EXPECT_EQ(
       (std::vector<msgs::UrlAvailability>{msgs::UrlAvailability::kAvailable}),
@@ -149,7 +158,7 @@ TEST_F(PresentationReceiverTest, QueryAvailability) {
 TEST_F(PresentationReceiverTest, StartPresentation) {
   MockMessageCallback mock_callback;
   MessageDemuxer::MessageWatch initiation_watch =
-      quic_bridge_.controller_demuxer->SetDefaultMessageTypeWatch(
+      quic_bridge_->controller_demuxer->SetDefaultMessageTypeWatch(
           msgs::Type::kPresentationStartResponse, &mock_callback);
 
   std::unique_ptr<ProtocolConnection> stream = MakeClientStream();
@@ -168,7 +177,7 @@ TEST_F(PresentationReceiverTest, StartPresentation) {
   EXPECT_CALL(mock_receiver_delegate_, StartPresentation(_, _, request.headers))
       .WillOnce(::testing::DoAll(::testing::SaveArg<0>(&info),
                                  ::testing::Return(true)));
-  quic_bridge_.RunTasksUntilIdle();
+  quic_bridge_->RunTasksUntilIdle();
   EXPECT_EQ(presentation_id, info.id);
   EXPECT_EQ(url1_, info.url);
 
@@ -187,7 +196,7 @@ TEST_F(PresentationReceiverTest, StartPresentation) {
             buffer, buffer_size, &response);
         return result;
       }));
-  quic_bridge_.RunTasksUntilIdle();
+  quic_bridge_->RunTasksUntilIdle();
   EXPECT_EQ(msgs::Result::kSuccess, response.result);
   EXPECT_EQ(connection.connection_id(), response.connection_id);
 }

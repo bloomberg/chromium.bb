@@ -112,6 +112,8 @@ class MessageDemuxer {
   const size_t buffer_limit_;
   std::map<uint64_t, std::map<msgs::Type, MessageCallback*>> message_callbacks_;
   std::map<msgs::Type, MessageCallback*> default_callbacks_;
+
+  // Map<endpoint_id, Map<connection_id, data_buffer>>
   std::map<uint64_t, std::map<uint64_t, std::vector<uint8_t>>> buffers_;
 };
 

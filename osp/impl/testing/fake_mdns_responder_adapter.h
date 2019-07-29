@@ -97,6 +97,10 @@ class FakeMdnsResponderAdapter final : public mdns::MdnsResponderAdapter {
   bool aaaa_queries_empty() const;
   bool running() const { return running_; }
 
+  // UdpReadCallback overrides.
+  void OnRead(platform::UdpPacket packet,
+              platform::NetworkRunner* network_runner) override;
+
   // mdns::MdnsResponderAdapter overrides.
   Error Init() override;
   void Close() override;
@@ -110,13 +114,7 @@ class FakeMdnsResponderAdapter final : public mdns::MdnsResponderAdapter {
                           platform::UdpSocket* socket) override;
   Error DeregisterInterface(platform::UdpSocket* socket) override;
 
-  void OnDataReceived(const IPEndpoint& source,
-                      const IPEndpoint& original_destination,
-                      const uint8_t* data,
-                      size_t length,
-                      platform::UdpSocket* receiving_socket) override;
-
-  int RunTasks() override;
+  absl::optional<platform::Clock::duration> RunTasks() override;
 
   std::vector<mdns::PtrEvent> TakePtrResponses() override;
   std::vector<mdns::SrvEvent> TakeSrvResponses() override;

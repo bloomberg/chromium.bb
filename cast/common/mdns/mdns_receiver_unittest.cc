@@ -76,7 +76,7 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
 
   // Imitate a call to OnRead from NetworkRunner by calling it manually here
   EXPECT_CALL(delegate, OnQueryReceived(message, packet.source())).Times(1);
-  receiver.OnRead(packet, &runner);
+  receiver.OnRead(std::move(packet), &runner);
 
   EXPECT_CALL(runner, CancelRead(&socket)).WillOnce(Return(Error::Code::kNone));
   receiver.Stop();
@@ -133,7 +133,7 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
 
   // Imitate a call to OnRead from NetworkRunner by calling it manually here
   EXPECT_CALL(delegate, OnResponseReceived(message, packet.source())).Times(1);
-  receiver.OnRead(packet, &runner);
+  receiver.OnRead(std::move(packet), &runner);
 
   EXPECT_CALL(runner, CancelRead(&socket)).WillOnce(Return(Error::Code::kNone));
   receiver.Stop();

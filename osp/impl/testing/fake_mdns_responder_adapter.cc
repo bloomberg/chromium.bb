@@ -236,17 +236,13 @@ Error FakeMdnsResponderAdapter::DeregisterInterface(
   return Error::None();
 }
 
-void FakeMdnsResponderAdapter::OnDataReceived(
-    const IPEndpoint& source,
-    const IPEndpoint& original_destination,
-    const uint8_t* data,
-    size_t length,
-    platform::UdpSocket* receiving_socket) {
+void FakeMdnsResponderAdapter::OnRead(platform::UdpPacket packet,
+                                      platform::NetworkRunner* network_runner) {
   OSP_CHECK(false) << "Tests should not drive this class with packets";
 }
 
-int FakeMdnsResponderAdapter::RunTasks() {
-  return 1;
+absl::optional<platform::Clock::duration> FakeMdnsResponderAdapter::RunTasks() {
+  return absl::nullopt;
 }
 
 std::vector<mdns::PtrEvent> FakeMdnsResponderAdapter::TakePtrResponses() {

@@ -48,12 +48,18 @@ TEST(MdnsResponderAdapterImplTest, ExampleData) {
        4,  '_', 'u', 'd', 'p', 5,   'l', 'o', 'c', 'a', 'l', 0}};
   const IPEndpoint mdns_endpoint{{224, 0, 0, 251}, 5353};
 
+  platform::UdpPacket packet;
+  packet.set_source({{192, 168, 0, 2}, 6556});
+  packet.set_destination(mdns_endpoint);
+  packet.reserve(sizeof(data));
+  std::copy(std::begin(data), std::end(data), back_inserter(packet));
+  packet.set_socket(nullptr);
+
   auto mdns_adapter = std::unique_ptr<mdns::MdnsResponderAdapter>(
       new mdns::MdnsResponderAdapterImpl);
   mdns_adapter->Init();
   mdns_adapter->StartPtrQuery(0, openscreen_service);
-  mdns_adapter->OnDataReceived({{192, 168, 0, 2}, 6556}, mdns_endpoint, data,
-                               sizeof(data), 0);
+  mdns_adapter->OnRead(std::move(packet), nullptr);
   mdns_adapter->RunTasks();
 
   auto ptr = mdns_adapter->TakePtrResponses();

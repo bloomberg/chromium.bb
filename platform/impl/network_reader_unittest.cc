@@ -6,7 +6,6 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "platform/api/event_waiter.h"
 #include "platform/test/mock_udp_socket.h"
 
 namespace openscreen {

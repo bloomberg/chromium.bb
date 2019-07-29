@@ -7,10 +7,8 @@
 
 #include <vector>
 
-#include "platform/api/event_waiter.h"
 #include "platform/api/network_interface.h"
 #include "platform/api/udp_socket.h"
-#include "platform/impl/event_loop.h"
 
 namespace openscreen {
 

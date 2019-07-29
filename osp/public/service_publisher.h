@@ -5,6 +5,7 @@
 #ifndef OSP_PUBLIC_SERVICE_PUBLISHER_H_
 #define OSP_PUBLIC_SERVICE_PUBLISHER_H_
 
+#include <atomic>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -134,8 +135,6 @@ class ServicePublisher {
   // Resumes publishing.  Returns true if state() == kSuspended.
   virtual bool Resume() = 0;
 
-  virtual void RunTasks() = 0;
-
   // Returns the current state of the publisher.
   State state() const { return state_; }
 
@@ -145,7 +144,7 @@ class ServicePublisher {
  protected:
   explicit ServicePublisher(Observer* observer);
 
-  State state_ = State::kStopped;
+  std::atomic<State> state_;
   ServicePublisherError last_error_;
   Observer* observer_;
 

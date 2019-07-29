@@ -150,10 +150,6 @@ bool ServiceListenerImpl::SearchNow() {
   return true;
 }
 
-void ServiceListenerImpl::RunTasks() {
-  delegate_->RunTasksListener();
-}
-
 void ServiceListenerImpl::AddObserver(Observer* observer) {
   OSP_DCHECK(observer);
   observers_.push_back(observer);

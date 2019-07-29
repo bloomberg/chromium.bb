@@ -8,6 +8,8 @@
 
 #include "osp/impl/quic/quic_connection_factory_impl.h"
 #include "osp/impl/quic/quic_server.h"
+#include "osp/public/network_service_manager.h"
+#include "platform/api/network_runner.h"
 
 namespace openscreen {
 
@@ -16,9 +18,12 @@ std::unique_ptr<ProtocolConnectionServer>
 ProtocolConnectionServerFactory::Create(
     const ServerConfig& config,
     MessageDemuxer* demuxer,
-    ProtocolConnectionServer::Observer* observer) {
+    ProtocolConnectionServer::Observer* observer,
+    platform::NetworkRunner* network_runner) {
   return std::make_unique<QuicServer>(
-      config, demuxer, std::make_unique<QuicConnectionFactoryImpl>(), observer);
+      config, demuxer,
+      std::make_unique<QuicConnectionFactoryImpl>(network_runner), observer,
+      network_runner);
 }
 
 }  // namespace openscreen

@@ -5,18 +5,28 @@
 #include "osp/impl/quic/quic_client.h"
 
 #include <algorithm>
+#include <functional>
 #include <memory>
 
+#include "absl/types/optional.h"
 #include "platform/api/logging.h"
+#include "platform/api/task_runner.h"
+#include "platform/api/time.h"
 
 namespace openscreen {
 
 QuicClient::QuicClient(
     MessageDemuxer* demuxer,
     std::unique_ptr<QuicConnectionFactory> connection_factory,
-    ProtocolConnectionServiceObserver* observer)
+    ProtocolConnectionServiceObserver* observer,
+    platform::TaskRunner* task_runner)
     : ProtocolConnectionClient(demuxer, observer),
-      connection_factory_(std::move(connection_factory)) {}
+      connection_factory_(std::move(connection_factory)) {
+  if (task_runner != nullptr) {
+    platform::RepeatingFunction::Post(task_runner,
+                                      std::bind(&QuicClient::Cleanup, this));
+  }
+}
 
 QuicClient::~QuicClient() {
   CloseAllConnections();
@@ -39,8 +49,7 @@ bool QuicClient::Stop() {
   return true;
 }
 
-void QuicClient::RunTasks() {
-  connection_factory_->RunTasks();
+absl::optional<platform::Clock::duration> QuicClient::Cleanup() {
   for (auto& entry : connections_) {
     entry.second.delegate->DestroyClosedStreams();
     if (!entry.second.delegate->has_streams())
@@ -51,6 +60,12 @@ void QuicClient::RunTasks() {
     connections_.erase(entry);
 
   delete_connections_.clear();
+
+  constexpr platform::Clock::duration kQuicCleanupFrequency =
+      std::chrono::milliseconds(500);
+  return state_ == State::kStopped
+             ? absl::optional<platform::Clock::duration>(absl::nullopt)
+             : absl::optional<platform::Clock::duration>(kQuicCleanupFrequency);
 }
 
 QuicClient::ConnectRequest QuicClient::Connect(

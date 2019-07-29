@@ -10,13 +10,14 @@
 #include <string>
 #include <vector>
 
+#include "absl/types/optional.h"
 #include "osp/impl/discovery/mdns/domain_name.h"
 #include "osp/impl/discovery/mdns/mdns_responder_platform.h"
 #include "platform/api/network_interface.h"
+#include "platform/api/time.h"
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
 #include "platform/base/ip_address.h"
-#include "platform/impl/event_loop.h"
 
 namespace openscreen {
 namespace mdns {
@@ -164,7 +165,7 @@ enum class MdnsResponderErrorCode {
 // called after any sequence of calls to mDNSResponder.  It also returns a
 // timeout value, after which it must be called again (e.g. for maintaining its
 // cache).
-class MdnsResponderAdapter {
+class MdnsResponderAdapter : public platform::UdpReadCallback {
  public:
   MdnsResponderAdapter();
   virtual ~MdnsResponderAdapter() = 0;
@@ -193,14 +194,9 @@ class MdnsResponderAdapter {
                                   platform::UdpSocket* socket) = 0;
   virtual Error DeregisterInterface(platform::UdpSocket* socket) = 0;
 
-  virtual void OnDataReceived(const IPEndpoint& source,
-                              const IPEndpoint& original_destination,
-                              const uint8_t* data,
-                              size_t length,
-                              platform::UdpSocket* receiving_socket) = 0;
-
-  // Returns the number of seconds after which this method must be called again.
-  virtual int RunTasks() = 0;
+  // Returns the time period after which this method must be called again, if
+  // any.
+  virtual absl::optional<platform::Clock::duration> RunTasks() = 0;
 
   virtual std::vector<PtrEvent> TakePtrResponses() = 0;
   virtual std::vector<SrvEvent> TakeSrvResponses() = 0;

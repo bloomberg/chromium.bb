@@ -4,6 +4,8 @@
 
 #include "platform/impl/task_runner.h"
 
+#include <thread>
+
 #include "platform/api/logging.h"
 
 namespace openscreen {
