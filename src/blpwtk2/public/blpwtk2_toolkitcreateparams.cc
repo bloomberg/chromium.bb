@@ -65,6 +65,7 @@ struct ToolkitCreateParamsImpl final
     bool d_inProcessResizeOptimizationDisabled;
     std::string d_profileDirectory;
     bool d_isIsolatedProfile;
+    ToolkitDelegate* d_delegate;
 
 
 
@@ -101,6 +102,7 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
     , d_useDefaultPrintSettings(false)
     , d_inProcessResizeOptimizationDisabled(false)
     , d_isIsolatedProfile(true)
+    , d_delegate(nullptr)
 
 
 
@@ -226,6 +228,11 @@ void ToolkitCreateParams::setHostChannel(const StringRef& channelInfoString)
     d_impl->d_hostChannel.assign(
         channelInfoString.data(),
         channelInfoString.length());
+}
+
+void ToolkitCreateParams::setDelegate(ToolkitDelegate* delegate)
+{
+    d_impl->d_delegate = delegate;
 }
 
 // static
@@ -395,6 +402,11 @@ _purecall_handler ToolkitCreateParams::purecallHandler() const
 StringRef ToolkitCreateParams::hostChannel() const
 {
     return d_impl->d_hostChannel;
+}
+
+ToolkitDelegate* ToolkitCreateParams::delegate() const
+{
+    return d_impl->d_delegate;
 }
 
 NativeFont ToolkitCreateParams::tooltipFont() const
