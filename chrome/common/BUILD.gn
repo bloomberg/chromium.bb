@@ -468,6 +468,13 @@ static_library("common") {
     libs = [ "wintrust.lib" ]
   }
 
+  if (is_posix && !is_android) {
+    sources += [
+      "process_singleton_lock_posix.cc",
+      "process_singleton_lock_posix.h",
+    ]
+  }
+
   if (is_mac) {
     public_deps += [ "//third_party/google_toolbox_for_mac" ]
 
