@@ -681,13 +681,16 @@ class MainThreadSchedulerImplTest
             MainThreadTaskQueue::QueueType::kFrameLoading, nullptr);
 
     base::TimeTicks start = Now();
-    scheduler_->OnTaskStarted(fake_queue.get(), FakeTask(),
+    FakeTask fake_task;
+    fake_task.set_enqueue_order(
+        base::sequence_manager::EnqueueOrder::FromIntForTesting(42));
+    scheduler_->OnTaskStarted(fake_queue.get(), fake_task,
                               FakeTaskTiming(start, base::TimeTicks()));
     std::move(task).Run();
     base::TimeTicks end = Now();
     FakeTaskTiming task_timing(start, end);
     scheduler_->OnTaskCompleted(fake_queue->weak_ptr_factory_.GetWeakPtr(),
-                                FakeTask(), &task_timing, nullptr);
+                                fake_task, &task_timing, nullptr);
   }
 
   void RunSlowCompositorTask() {
