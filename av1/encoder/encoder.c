@@ -5845,7 +5845,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   aom_clear_system_state();
 
-  return 0;
+  return AOM_CODEC_OK;
 }
 
 int av1_get_preview_raw_frame(AV1_COMP *cpi, YV12_BUFFER_CONFIG *dest) {
