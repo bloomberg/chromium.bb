@@ -2363,12 +2363,15 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   raster_canvas_ = nullptr;
 
   if (use_ddl_) {
+    TRACE_EVENT0("gpu",
+                 "RasterDecoderImpl::DoEndRasterCHROMIUM::DetachAndDrawDDL");
     auto ddl = recorder_->detach();
     recorder_ = nullptr;
     sk_surface_->draw(ddl.get());
   }
 
   {
+    TRACE_EVENT0("gpu", "RasterDecoderImpl::DoEndRasterCHROMIUM::Flush");
     // This is a slow operation since skia will execute the GPU work for the
     // complete tile. Make sure the progress reporter is notified to avoid
     // hangs.
