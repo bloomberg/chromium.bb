@@ -4,7 +4,13 @@
 
 import("//build_overrides/build.gni")
 
+declare_args() {
+  enable_trace_logging = true
+}
+
 source_set("platform") {
+  defines = []
+
   sources = [
     "api/internal/trace_logging_internal.cc",
     "api/internal/trace_logging_internal.h",
@@ -67,7 +73,7 @@ source_set("platform") {
     if (is_linux) {
       sources += [ "impl/network_interface_linux.cc" ]
     } else if (is_mac) {
-      defines = [
+      defines += [
         # Required, to use the new IPv6 Sockets options introduced by RFC 3542.
         "__APPLE_USE_RFC_3542",
       ]
@@ -90,6 +96,10 @@ source_set("platform") {
     deps = [
       ":default_logger",
     ]
+  }
+
+  if (enable_trace_logging) {
+    defines += [ "ENABLE_TRACE_LOGGING" ]
   }
 }
 

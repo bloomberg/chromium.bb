@@ -30,12 +30,15 @@ namespace openscreen {
 #define TRACE_INTERNAL_IGNORE_UNUSED_VAR [[maybe_unused]]
 #endif  // defined(__clang__)
 
-// Define a macro to check if tracing is enabled so that unit tests don't break
-// when it is not.
+// Define a macro to check if tracing is enabled or not for testing and
+// compilation reasons.
 #ifndef TRACE_FORCE_ENABLE
 #define TRACE_IS_ENABLED(category) \
   openscreen::platform::IsTraceLoggingEnabled(TraceCategory::Value::Any)
-#else
+#ifndef ENABLE_TRACE_LOGGING
+#define TRACE_FORCE_DISABLE true
+#endif  // ENABLE_TRACE_LOGGING
+#else   // TRACE_FORCE_ENABLE defined
 #define TRACE_IS_ENABLED(category) true
 #endif
 

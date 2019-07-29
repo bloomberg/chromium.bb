@@ -11,14 +11,6 @@
 namespace openscreen {
 namespace platform {
 
-TaskRunnerImpl::TaskWithMetadata::TaskWithMetadata(Task task)
-    : task_(std::move(task)), trace_ids_(TRACE_HIERARCHY) {}
-
-void TaskRunnerImpl::TaskWithMetadata::operator()() {
-  TRACE_SET_HIERARCHY(trace_ids_);
-  std::move(task_)();
-}
-
 TaskRunnerImpl::TaskRunnerImpl(platform::ClockNowFunctionPtr now_function,
                                TaskWaiter* event_waiter,
                                Clock::duration waiter_timeout)
