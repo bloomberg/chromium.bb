@@ -318,6 +318,16 @@ android_library("cronet_impl_common_base_java") {
   srcjar_deps = cronet_impl_common_java_srcjar_deps
 }
 
+# cronet_impl_java_util_java.jar - Classes shared between Java Cronet implementations.
+android_library("cronet_impl_java_util_java") {
+  java_files = [ "java/src/org/chromium/net/impl/JavaUrlRequestUtils.java" ]
+
+  deps = [
+    ":cronet_api_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
+  ]
+}
+
 # cronet_impl_platform_base_java.jar - Java platform based implementation of the Cronet engine.
 android_library("cronet_impl_platform_base_java") {
   java_files = [
@@ -331,6 +341,7 @@ android_library("cronet_impl_platform_base_java") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
+    ":cronet_impl_java_util_java",
     "//net/android:net_thread_stats_uid_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
@@ -340,10 +351,10 @@ android_library("cronet_impl_platform_base_java") {
 # cronet_impl_fake_base_java.jar - Fake implementation of Cronet.
 android_library("cronet_impl_fake_base_java") {
   java_files = [
-    "fake/java/org/chromium/net/test/FakeUrlResponse.java",
     "fake/java/org/chromium/net/test/FakeCronetController.java",
     "fake/java/org/chromium/net/test/FakeCronetEngine.java",
     "fake/java/org/chromium/net/test/FakeCronetProvider.java",
+    "fake/java/org/chromium/net/test/FakeUrlResponse.java",
     "fake/java/org/chromium/net/test/ResponseMatcher.java",
     "fake/java/org/chromium/net/test/UrlResponseMatcher.java",
   ]
@@ -351,6 +362,7 @@ android_library("cronet_impl_fake_base_java") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
+    ":cronet_impl_java_util_java",
   ]
 }
 
@@ -876,6 +888,7 @@ if (!is_component_build) {
                                          ]
 
   cronet_javatests_deps_to_package = [
+    ":cronet_fake_javatests",
     ":cronet_test_apk_java",
     "//base:base_java",
     "//base:base_java_test_support",
@@ -884,7 +897,6 @@ if (!is_component_build) {
     "//net/android:net_java_test_support",
     "//url:url_java",
     "//third_party/junit",
-    ":cronet_fake_javatests",
   ]
 
   android_library("cronet_javatests") {
