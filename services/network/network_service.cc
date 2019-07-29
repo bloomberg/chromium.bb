@@ -53,6 +53,7 @@
 #include "services/network/network_context.h"
 #include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_request_context_builder_mojo.h"
@@ -107,26 +108,6 @@ std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
 #endif
   }
   return nullptr;
-}
-
-// This is duplicated in content/browser/loader/resource_dispatcher_host_impl.cc
-bool LoadInfoIsMoreInteresting(const mojom::LoadInfo& a,
-                               const mojom::LoadInfo& b) {
-  // Set |*_uploading_size| to be the size of the corresponding upload body if
-  // it's currently being uploaded.
-
-  uint64_t a_uploading_size = 0;
-  if (a.load_state == net::LOAD_STATE_SENDING_REQUEST)
-    a_uploading_size = a.upload_size;
-
-  uint64_t b_uploading_size = 0;
-  if (b.load_state == net::LOAD_STATE_SENDING_REQUEST)
-    b_uploading_size = b.upload_size;
-
-  if (a_uploading_size != b_uploading_size)
-    return a_uploading_size > b_uploading_size;
-
-  return a.load_state > b.load_state;
 }
 
 void OnGetNetworkList(std::unique_ptr<net::NetworkInterfaceList> networks,
