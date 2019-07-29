@@ -76,22 +76,22 @@ postpunc ' 6-356
 postpunc '' 356
 postpunc ''' 356-3-356
 
-always ' 3
-always , 2
+noback always ' 3
+noback always , 2
 midnum . 256
 decpoint . 256
-always . 256
-always ; 23
-always : 25
-always ! 235
+noback always . 256
+noback always ; 23
+noback always : 25
+noback always ! 235
 always # 456-1456
 midnum / 34-3456
 always / 456-34
-always ? 236
+noback always ? 236
 always % 46-356
 always ^ 4-26
 always ~ 4-35
-always & 234
+noback always & 234
 midnum * 5-236-3456
 always * 5-35
 repeated *** 5-35-5-35-5-35
@@ -282,7 +282,7 @@ always > 4-345
 always + 5-235
 midnum + 5-235-3456
 midnum - 36-3456
-always - 36
+noback always - 36
 always × 5-236
 midnum × 5-236-3456
 midnum ÷ 5-34-3456 division sign

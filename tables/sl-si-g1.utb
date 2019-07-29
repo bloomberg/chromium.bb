@@ -348,7 +348,7 @@ midnum : 25
 postpunc : 25
 postpunc ! 235
 midnum / 23456
-always / 23456
+noback always / 23456
 always < 6-236
 always > 6-356
 punctuation ? 26
@@ -360,14 +360,14 @@ always ~ 5-1356
 always & 5-24
 midnum * 35
 midnum + 1256
-always * 35
+noback always * 35
 midword \x2019 3	# stupid smart apostrophe
 always [ 6-235
 always ] 6-256
 always { 6-126
 always } 6-345
 prepunc ` 236
-always @ 246
+noback always @ 246
 always \\ 12356
 always | 5-1236
 repeated \s 0

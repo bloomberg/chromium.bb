@@ -97,7 +97,7 @@ letter \x00e0 4-1
 replace \x0088 # CHARACTER TABULATION SET 
 replace \x0089 # CHARACTER TABULATION WITH JUSTIFICATION 
 midnum \x0009 46
-always ? 56
+noback always ? 56
 always / 0-456-34-0
 always // 0-456-34-34-0
 
