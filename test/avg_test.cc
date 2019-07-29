@@ -42,7 +42,7 @@ class AverageTestBase : public ::testing::Test {
   static const int kDataBlockSize = 64 * 128;
 
   virtual void SetUp() {
-    source_data_ = reinterpret_cast<Pixel *>(
+    source_data_ = static_cast<Pixel *>(
         aom_memalign(kDataAlignment, kDataBlockSize * sizeof(source_data_[0])));
     ASSERT_TRUE(source_data_ != NULL);
     source_stride_ = (width_ + 31) & ~31;
@@ -138,6 +138,7 @@ TEST_P(AverageTest, Random) {
 typedef void (*IntProRowFunc)(int16_t hbuf[16], uint8_t const *ref,
                               const int ref_stride, const int height);
 
+// Params: height, asm function, c function.
 typedef std::tuple<int, IntProRowFunc, IntProRowFunc> IntProRowParam;
 
 class IntProRowTest : public AverageTestBase<uint8_t>,
@@ -151,13 +152,13 @@ class IntProRowTest : public AverageTestBase<uint8_t>,
 
  protected:
   virtual void SetUp() {
-    source_data_ = reinterpret_cast<uint8_t *>(
+    source_data_ = static_cast<uint8_t *>(
         aom_memalign(kDataAlignment, kDataBlockSize * sizeof(source_data_[0])));
     ASSERT_TRUE(source_data_ != NULL);
 
-    hbuf_asm_ = reinterpret_cast<int16_t *>(
+    hbuf_asm_ = static_cast<int16_t *>(
         aom_memalign(kDataAlignment, sizeof(*hbuf_asm_) * 16));
-    hbuf_c_ = reinterpret_cast<int16_t *>(
+    hbuf_c_ = static_cast<int16_t *>(
         aom_memalign(kDataAlignment, sizeof(*hbuf_c_) * 16));
   }
 
@@ -186,6 +187,7 @@ class IntProRowTest : public AverageTestBase<uint8_t>,
 
 typedef int16_t (*IntProColFunc)(uint8_t const *ref, const int width);
 
+// Params: width, asm function, c function.
 typedef std::tuple<int, IntProColFunc, IntProColFunc> IntProColParam;
 
 class IntProColTest : public AverageTestBase<uint8_t>,
