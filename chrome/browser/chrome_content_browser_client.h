@@ -517,9 +517,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       const std::string& relying_party_id) override;
 #endif
-#if defined(OS_MACOSX)
-  bool IsWebAuthenticationTouchIdAuthenticatorSupported() override;
-#endif
   bool ShowPaymentHandlerWindow(
       content::BrowserContext* browser_context,
       const GURL& url,
