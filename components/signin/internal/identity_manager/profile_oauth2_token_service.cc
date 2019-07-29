@@ -351,14 +351,6 @@ void ProfileOAuth2TokenService::
       max_retries);
 }
 
-size_t ProfileOAuth2TokenService::GetNumPendingRequestsForTesting(
-    const std::string& client_id,
-    const CoreAccountId& account_id,
-    const OAuth2AccessTokenManager::ScopeSet& scopes) const {
-  return token_manager_->GetNumPendingRequestsForTesting(client_id, account_id,
-                                                         scopes);
-}
-
 void ProfileOAuth2TokenService::OverrideAccessTokenManagerForTesting(
     std::unique_ptr<OAuth2AccessTokenManager> token_manager) {
   token_manager_ = std::move(token_manager);

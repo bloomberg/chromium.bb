@@ -726,10 +726,12 @@ TEST_F(ProfileOAuth2TokenServiceTest, SameScopesRequestedForDifferentClients) {
           account_id_, client_id_1, client_secret_1, scope_set, &consumer_));
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(2U, oauth2_service_->GetNumPendingRequestsForTesting(
-                    client_id_1, account_id_, scope_set));
-  ASSERT_EQ(1U, oauth2_service_->GetNumPendingRequestsForTesting(
-                    client_id_2, account_id_, scope_set));
+  ASSERT_EQ(2U,
+            oauth2_service_->token_manager_->GetNumPendingRequestsForTesting(
+                client_id_1, account_id_, scope_set));
+  ASSERT_EQ(1U,
+            oauth2_service_->token_manager_->GetNumPendingRequestsForTesting(
+                client_id_2, account_id_, scope_set));
 }
 
 TEST_F(ProfileOAuth2TokenServiceTest, RequestParametersOrderTest) {
