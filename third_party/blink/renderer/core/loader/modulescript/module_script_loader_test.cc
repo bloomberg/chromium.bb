@@ -193,7 +193,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       "UserAgent", nullptr /* web_worker_fetch_context */,
       Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
       security_origin_.get(), true /* is_secure_context */, HttpsState::kModern,
-      nullptr /* worker_clients */, mojom::IPAddressSpace::kLocal,
+      nullptr /* worker_clients */, network::mojom::IPAddressSpace::kLocal,
       nullptr /* origin_trial_token */, base::UnguessableToken::Create(),
       nullptr /* worker_settings */, kV8CacheOptionsDefault,
       MakeGarbageCollected<WorkletModuleResponsesMap>());

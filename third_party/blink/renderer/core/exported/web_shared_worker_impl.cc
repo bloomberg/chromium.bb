@@ -80,7 +80,7 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(
     WebSharedWorkerClient* client,
     const base::UnguessableToken& appcache_host_id)
     : client_(client),
-      creation_address_space_(mojom::IPAddressSpace::kPublic),
+      creation_address_space_(network::mojom::IPAddressSpace::kPublic),
       parent_execution_context_task_runners_(
           ParentExecutionContextTaskRunners::Create()),
       appcache_host_id_(appcache_host_id) {
@@ -205,7 +205,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
     const WebString& name,
     const WebString& content_security_policy,
     mojom::ContentSecurityPolicyType policy_type,
-    mojom::IPAddressSpace creation_address_space,
+    network::mojom::IPAddressSpace creation_address_space,
     const base::UnguessableToken& devtools_worker_token,
     PrivacyPreferences privacy_preferences,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,

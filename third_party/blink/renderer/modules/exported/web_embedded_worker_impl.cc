@@ -170,11 +170,11 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   //
   // https://crbug.com/590714
   KURL script_url = worker_start_data_.script_url;
-  worker_start_data_.address_space = mojom::IPAddressSpace::kPublic;
+  worker_start_data_.address_space = network::mojom::IPAddressSpace::kPublic;
   if (network_utils::IsReservedIPAddress(script_url.Host()))
-    worker_start_data_.address_space = mojom::IPAddressSpace::kPrivate;
+    worker_start_data_.address_space = network::mojom::IPAddressSpace::kPrivate;
   if (SecurityOrigin::Create(script_url)->IsLocalhost())
-    worker_start_data_.address_space = mojom::IPAddressSpace::kLocal;
+    worker_start_data_.address_space = network::mojom::IPAddressSpace::kLocal;
 
   if (data.pause_after_download_mode ==
       WebEmbeddedWorkerStartData::kPauseAfterDownload)
