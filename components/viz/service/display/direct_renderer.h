@@ -12,8 +12,9 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/service/display/ca_layer_overlay.h"
+#include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/service/viz_service_export.h"
@@ -89,7 +90,9 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;
 
-    OverlayProcessor::CandidateList overlay_list;
+    OverlayCandidateList overlay_list;
+    CALayerOverlayList ca_layer_overlay_list;
+    DCLayerOverlayList dc_layer_overlay_list;
     // When we have buffer queue, the output surface could be treated as an
     // overlay plane, and the struct to store that information is in
     // |output_surface_plane|.
@@ -235,7 +238,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   bool use_partial_swap_ = false;
   // Whether overdraw feedback is enabled and can be used.
   bool overdraw_feedback_ = false;
-#if defined(OS_WIN)
   // Whether the SetDrawRectangle and EnableDCLayers commands are in
   // use.
   bool supports_dc_layers_ = false;
@@ -244,7 +246,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   // This counts the number of draws since the last time
   // DirectComposition layers needed to be used.
   int frames_since_using_dc_layers_ = 0;
-#endif
 
   // A map from RenderPass id to the single quad present in and replacing the
   // RenderPass.
