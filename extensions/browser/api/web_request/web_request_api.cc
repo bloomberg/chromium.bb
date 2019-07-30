@@ -273,7 +273,6 @@ void SendOnMessageEventOnUI(
     return;
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue);
-  event_details->DetermineFrameDataOnUI();
   event_args->Append(event_details->GetAndClearDict());
 
   EventRouter* event_router = EventRouter::Get(browser_context);
@@ -1460,7 +1459,6 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     }
   }
 
-  event_details->SetFrameData(request->frame_data);
   DispatchEventToListeners(browser_context, std::move(listeners_to_dispatch),
                            std::move(event_details));
 
