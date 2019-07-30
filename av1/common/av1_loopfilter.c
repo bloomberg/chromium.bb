@@ -64,7 +64,7 @@ uint8_t av1_get_filter_level(const AV1_COMMON *cm,
                              int plane, const MB_MODE_INFO *mbmi) {
   const int segment_id = mbmi->segment_id;
   if (cm->delta_q_info.delta_lf_present_flag) {
-    int delta_lf;
+    int8_t delta_lf;
     if (cm->delta_q_info.delta_lf_multi) {
       const int delta_lf_idx = delta_lf_id_lut[plane][dir_idx];
       delta_lf = mbmi->delta_lf[delta_lf_idx];
