@@ -292,7 +292,8 @@ _lou_charToFallbackDots(widechar c) {
 		 * 4) The dots to add to the braille pattern.
 		 */
 		0X7F, 0X20, 0X00, LOU_DOT_7,
-		0X5F, 0X20, 0X00, 0,
+		0X60, 0X20, 0X00, 0,
+		0X5F, 0X00, 0X00, 0,
 		0X40, 0X00, 0X00, LOU_DOT_7,
 		0X20, 0X00, 0X00, 0,
 		0X00, 0X00, 0X40, LOU_DOT_7 | LOU_DOT_8,
@@ -366,7 +367,7 @@ _lou_charToFallbackDots(widechar c) {
 		['_'] = LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6
 	};
 
-	if (c & 0X80) c = '?';
+	if (c >= 0X80) c = '?';
 	widechar dots = LOU_DOTS;
 
 	{
