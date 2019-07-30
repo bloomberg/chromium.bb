@@ -22,6 +22,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
+#include "components/viz/service/display/damage_frame_annotator.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
@@ -378,9 +379,12 @@ void Display::InitializeRenderer(bool enable_shared_images) {
       renderer_->use_partial_swap() && !renderer_->has_overlay_validator();
   bool needs_surface_occluding_damage_rect =
       renderer_->OverlayNeedsSurfaceOccludingDamageRect();
-  aggregator_.reset(new SurfaceAggregator(
+  aggregator_ = std::make_unique<SurfaceAggregator>(
       surface_manager_, resource_provider_.get(), output_partial_list,
-      needs_surface_occluding_damage_rect));
+      needs_surface_occluding_damage_rect);
+  if (settings_.show_aggregated_damage)
+    aggregator_->SetFrameAnnotator(std::make_unique<DamageFrameAnnotator>());
+
   aggregator_->set_output_is_secure(output_is_secure_);
   aggregator_->SetOutputColorSpace(device_color_space_);
   // Consider adding a softare limit as well.
