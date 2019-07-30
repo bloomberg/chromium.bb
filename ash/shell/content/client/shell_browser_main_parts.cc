@@ -144,7 +144,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
                             base::Unretained(browser_context_.get()), nullptr),
         base::BindRepeating(base::IgnoreResult(&EmbeddedBrowser::Create),
                             base::Unretained(browser_context_.get()),
-                            GURL("https://www.google.com")));
+                            GURL("https://www.google.com"), base::nullopt));
   }
 }
 
