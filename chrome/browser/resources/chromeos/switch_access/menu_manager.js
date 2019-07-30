@@ -418,12 +418,12 @@ class MenuManager {
         exitAfterAction = false;
         break;
       case SAConstants.MenuAction.SELECT_START:
-        this.navigationManager_.setSelectStart();
+        this.navigationManager_.saveSelectStart();
         this.reloadMenu_(this.navigationManager_.currentNode());
         exitAfterAction = false;
         break;
       case SAConstants.MenuAction.SELECT_END:
-        this.navigationManager_.setSelectEnd();
+        this.navigationManager_.saveSelectEnd();
         exitAfterAction = false;
         break;
       default:
