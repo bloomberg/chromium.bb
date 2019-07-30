@@ -306,8 +306,8 @@ class LaunchCommand(object):
     self.test_results['attempts'] = []
     cancelled_statuses = {'TESTS_DID_NOT_START', 'BUILD_INTERRUPTED'}
     shards = self.shards
-    running_tests = get_all_tests(self.egtests_app.egtests_path,
-                                  self.egtests_app.included_tests)
+    running_tests = set(get_all_tests(self.egtests_app.egtests_path,
+                                      self.egtests_app.included_tests))
 
     # total number of attempts is self.retries+1
     for attempt in range(self.retries + 1):
@@ -330,10 +330,20 @@ class LaunchCommand(object):
       if self.retries == attempt or not self.test_results[
           'attempts'][-1]['failed']:
         break
-      self._log_parser.copy_screenshots(outdir_attempt)
       # Exclude passed tests in next test attempt.
       self.egtests_app.excluded_tests += self.test_results['attempts'][-1][
           'passed']
+      # crbug.com/987664 - for the case when
+      # all tests passed but build was interrupted,
+      # excluded(passed) tests are equal to tests to run.
+      if set(self.egtests_app.excluded_tests) == running_tests:
+        for status in cancelled_statuses:
+          failure = self.test_results['attempts'][-1]['failed'].pop(
+              status, None)
+          if failure:
+            LOGGER.info('Failure for passed tests %s: %s' % (status, failure))
+        break
+      self._log_parser.copy_screenshots(outdir_attempt)
       # If tests are not completed(interrupted or did not start)
       # re-run them with the same number of shards,
       # otherwise re-run with shards=1 and exclude passed tests.
@@ -400,7 +410,7 @@ class LaunchCommand(object):
            '-xctestrun', self.fill_xctest_run(egtests_app),
            '-destination', destination,
            '-resultBundlePath', out_dir]
-    if self.shards > 1:
+    if shards > 1:
       cmd += ['-parallel-testing-enabled', 'YES',
               '-parallel-testing-worker-count', str(shards)]
     return cmd
@@ -567,9 +577,9 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
         all_failures - set(self.logs['failed tests']))
 
     # Gets not-started/interrupted tests
-    aborted_tests = list(
-        set(get_all_tests(self.app_path, self.test_cases)) - set(
-            self.logs['failed tests']) - set(self.logs['passed tests']))
+    all_tests_to_run = set(get_all_tests(self.app_path, self.test_cases))
+    aborted_tests = list(all_tests_to_run - set(self.logs['failed tests']) -
+                         set(self.logs['passed tests']))
     aborted_tests.sort()
     self.logs['aborted tests'] = aborted_tests
 
