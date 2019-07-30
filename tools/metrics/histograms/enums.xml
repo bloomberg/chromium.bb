@@ -24152,6 +24152,8 @@ Called by update_net_error_codes.py.-->
   <int value="2978" label="ToggleEventHandlerDuringParsing"/>
   <int value="2979" label="FragmentDoubleHash"/>
   <int value="2980" label="V8RegExpMatchAllWithNonGlobalRegExp"/>
+  <int value="2981" label="CSSValueOverflowXOverlay"/>
+  <int value="2982" label="CSSValueOverflowYOverlay"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
