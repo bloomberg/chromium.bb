@@ -1078,6 +1078,12 @@ message GetPaymentInformationProto {
   // display a "Show terms" button that will navigate the user to the terms and
   // conditions page when clicked.
   repeated UserActionProto additional_actions = 11;
+  // Optionally requests a payment method with a billing address that has a
+  // postcode value.
+  optional bool require_billing_postal_code = 14;
+  // The error message to display when the billing address is missing the
+  // postal code. This field is mandatory if |require_postal_code| is true.
+  optional string billing_postal_code_missing_text = 15;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.
