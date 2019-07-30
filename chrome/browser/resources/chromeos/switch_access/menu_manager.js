@@ -326,6 +326,9 @@ class MenuManager {
         if (this.navigationManager_.selectionStarted()) {
           actions.push(SAConstants.MenuAction.SELECT_END);
         }
+        actions.push(SAConstants.MenuAction.CUT);
+        actions.push(SAConstants.MenuAction.COPY);
+        actions.push(SAConstants.MenuAction.PASTE);
       }
     } else if (actions.length > 0) {
       actions.push(SAConstants.MenuAction.SELECT);
