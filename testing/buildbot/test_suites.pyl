@@ -2776,6 +2776,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter',
         ],
       },
+      'viz_unittests': {
+        'args': [
+          '--child-arg=--ozone-platform=headless',
+        ],
+      },
       'web_engine_browsertests': {},
       'web_engine_integration_tests': {},
       'web_engine_unittests': {},
