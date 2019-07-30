@@ -1647,7 +1647,6 @@ test("content_unittests") {
     "../browser/loader/navigation_url_loader_impl_unittest.cc",
     "../browser/loader/navigation_url_loader_unittest.cc",
     "../browser/loader/source_stream_to_data_pipe_unittest.cc",
-    "../browser/loader/upload_data_stream_builder_unittest.cc",
     "../browser/manifest/manifest_icon_downloader_unittest.cc",
     "../browser/media/audible_metrics_unittest.cc",
     "../browser/media/audio_input_stream_broker_unittest.cc",

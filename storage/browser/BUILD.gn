@@ -53,8 +53,6 @@ jumbo_component("browser") {
     "blob/shareable_blob_data_item.h",
     "blob/shareable_file_reference.cc",
     "blob/shareable_file_reference.h",
-    "blob/upload_blob_element_reader.cc",
-    "blob/upload_blob_element_reader.h",
     "blob/view_blob_internals_job.cc",
     "blob/view_blob_internals_job.h",
     "database/database_quota_client.cc",
