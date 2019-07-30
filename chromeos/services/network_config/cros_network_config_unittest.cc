@@ -80,6 +80,7 @@ class CrosNetworkConfigTest : public testing::Test {
     base::Value wifi2_onc = base::Value::FromUniquePtrValue(
         onc::ReadDictionaryFromJson(base::StringPrintf(
             R"({"GUID": "wifi2_guid", "Type": "WiFi",
+                "Name": "wifi2", "Priority": 0,
                 "WiFi": { "Passphrase": "fake", "SSID": "%s", "HexSSID": "%s",
                           "Security": "WPA-PSK"}})",
             user_policy_ssid.c_str(),
@@ -431,10 +432,6 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
             properties->connection_state);
   ASSERT_TRUE(properties->wifi);
   EXPECT_EQ(::onc::wifi::kWPA_PSK, properties->wifi->security->active_value);
-  EXPECT_EQ(mojom::OncSource::kUserPolicy,
-            properties->wifi->security->effective_source);
-  EXPECT_EQ(::onc::wifi::kWPA_PSK,
-            *properties->wifi->security->effective_value);
   EXPECT_EQ(100, properties->wifi->signal_strength);
 
   properties = GetManagedProperties("cellular_guid");
@@ -457,7 +454,38 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
             properties->connection_state);
   ASSERT_TRUE(properties->vpn);
   EXPECT_EQ(::onc::vpn::kTypeL2TP_IPsec, properties->vpn->type->active_value);
-  EXPECT_EQ(mojom::OncSource::kNone, properties->vpn->type->effective_source);
+}
+
+// Test managed property policy values.
+TEST_F(CrosNetworkConfigTest, GetManagedPropertiesPolicy) {
+  mojom::ManagedPropertiesPtr properties = GetManagedProperties("wifi2_guid");
+  ASSERT_TRUE(properties);
+  ASSERT_EQ("wifi2_guid", properties->guid);
+  ASSERT_TRUE(properties->name);
+  EXPECT_EQ("wifi2", properties->name->active_value);
+  EXPECT_EQ(mojom::PolicySource::kUserPolicyEnforced,
+            properties->name->policy_source);
+  EXPECT_EQ("wifi2", properties->name->policy_value);
+  ASSERT_TRUE(properties->priority);
+  EXPECT_EQ(0, properties->priority->active_value);
+  EXPECT_EQ(mojom::PolicySource::kUserPolicyEnforced,
+            properties->priority->policy_source);
+  EXPECT_EQ(0, properties->priority->policy_value);
+
+  ASSERT_EQ(mojom::NetworkType::kWiFi, properties->type);
+  ASSERT_TRUE(properties->wifi);
+  EXPECT_EQ(::onc::wifi::kWPA_PSK, properties->wifi->security->active_value);
+  EXPECT_EQ(mojom::PolicySource::kUserPolicyEnforced,
+            properties->wifi->security->policy_source);
+  EXPECT_EQ(::onc::wifi::kWPA_PSK, *properties->wifi->security->policy_value);
+
+  properties = GetManagedProperties("vpn_guid");
+  ASSERT_TRUE(properties);
+  ASSERT_EQ("vpn_guid", properties->guid);
+  ASSERT_EQ(mojom::NetworkType::kVPN, properties->type);
+  ASSERT_TRUE(properties->vpn);
+  EXPECT_EQ(::onc::vpn::kTypeL2TP_IPsec, properties->vpn->type->active_value);
+  EXPECT_EQ(mojom::PolicySource::kNone, properties->vpn->type->policy_source);
 }
 
 TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {

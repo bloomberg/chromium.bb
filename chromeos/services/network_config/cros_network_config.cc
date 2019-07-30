@@ -309,6 +309,14 @@ mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
   return result;
 }
 
+void SetValueIfKeyPresent(const base::Value* dict,
+                          const char* key,
+                          base::Value* out) {
+  const base::Value* v = dict->FindKey(key);
+  if (v)
+    *out = v->Clone();
+}
+
 base::Optional<std::string> GetString(const base::Value* dict,
                                       const char* key) {
   const base::Value* v = dict->FindKey(key);
@@ -388,52 +396,81 @@ base::Optional<std::vector<std::string>> GetStringList(const base::Value* dict,
   return result;
 }
 
-mojom::OncSource EffectiveStringToMojo(
-    const base::Optional<std::string>& onc_effective) {
-  if (!onc_effective)
-    return mojom::OncSource::kNone;
-  if (onc_effective == ::onc::kAugmentationUserPolicy)
-    return mojom::OncSource::kUserPolicy;
-  if (onc_effective == ::onc::kAugmentationDevicePolicy)
-    return mojom::OncSource::kDevicePolicy;
-  if (onc_effective == ::onc::kAugmentationUserSetting)
-    return mojom::OncSource::kUser;
-  if (onc_effective == ::onc::kAugmentationSharedSetting)
-    return mojom::OncSource::kDevice;
-  if (onc_effective == ::onc::kAugmentationActiveExtension)
-    return mojom::OncSource::kActiveExtension;
-  NOTREACHED() << "Unsupported Effective value: " << *onc_effective;
-  return mojom::OncSource::kNone;
-}
+// GetManagedDictionary() returns a ManagedDictionary representing the active
+// and policy values for a managed property. The types of |active_value| and
+// |policy_value| are expected to match the ONC signature for the property type.
 
-// Sets |effective_source| to the mojo value corresponding to the ONC
-// 'Effective' value if provided, or kNone. If the source is a policy, sets
-// |enforced| to true if the policy value is enforced. Returns the key to use
-// to look up the effective value for the property.
-const char* SetEffectiveSource(const base::Value* value,
-                               mojom::OncSource* effective_source,
-                               bool* enforced) {
-  *effective_source = EffectiveStringToMojo(
-      GetString(value, ::onc::kAugmentationEffectiveSetting));
-  switch (*effective_source) {
-    case mojom::OncSource::kNone:
-      return nullptr;
-    case mojom::OncSource::kDevice:
-      return ::onc::kAugmentationSharedSetting;
-    case mojom::OncSource::kDevicePolicy:
-      *enforced = !GetBoolean(value, ::onc::kAugmentationDeviceEditable);
-      return ::onc::kAugmentationDevicePolicy;
-    case mojom::OncSource::kUser:
-      return ::onc::kAugmentationUserSetting;
-    case mojom::OncSource::kUserPolicy:
-      *enforced = !GetBoolean(value, ::onc::kAugmentationUserEditable);
-      return ::onc::kAugmentationUserPolicy;
-    case mojom::OncSource::kActiveExtension:
-      *enforced = !GetBoolean(value, ::onc::kAugmentationUserEditable);
-      return nullptr;
+struct ManagedDictionary {
+  base::Value active_value;
+  mojom::PolicySource policy_source = mojom::PolicySource::kNone;
+  base::Value policy_value;
+};
+
+ManagedDictionary GetManagedDictionary(const base::Value* onc_dict) {
+  ManagedDictionary result;
+
+  // When available, the active value (i.e. the value from Shill) is used.
+  SetValueIfKeyPresent(onc_dict, ::onc::kAugmentationActiveSetting,
+                       &result.active_value);
+
+  base::Optional<std::string> effective =
+      GetString(onc_dict, ::onc::kAugmentationEffectiveSetting);
+  if (!effective)
+    return result;
+
+  // If no active value is set (e.g. the network is not visible), use the
+  // effective value.
+  if (result.active_value.is_none())
+    SetValueIfKeyPresent(onc_dict, effective->c_str(), &result.active_value);
+  if (result.active_value.is_none()) {
+    // No active or effective value, return a default dictionary.
+    return result;
   }
-  NOTREACHED();
-  return nullptr;
+
+  // If the effective value is set by an extension, use kActiveExtension.
+  if (effective == ::onc::kAugmentationActiveExtension) {
+    result.policy_source = mojom::PolicySource::kActiveExtension;
+    result.policy_value = result.active_value.Clone();
+    return result;
+  }
+
+  // Set policy properties based on the effective source and policies.
+  // NOTE: This does not enforce valid ONC. See onc_merger.cc for details.
+  const base::Value* user_policy =
+      onc_dict->FindKey(::onc::kAugmentationUserPolicy);
+  const base::Value* device_policy =
+      onc_dict->FindKey(::onc::kAugmentationDevicePolicy);
+  bool user_enforced = !GetBoolean(onc_dict, ::onc::kAugmentationUserEditable);
+  bool device_enforced =
+      !GetBoolean(onc_dict, ::onc::kAugmentationDeviceEditable);
+  if (effective == ::onc::kAugmentationUserPolicy ||
+      (user_policy && effective != ::onc::kAugmentationDevicePolicy)) {
+    // Set the policy source to "User" when:
+    // * The effective value is set to "UserPolicy" OR
+    // * A User policy exists and the effective value is not "DevicePolicy",
+    //   i.e. no enforced device policy is overriding a recommended user policy.
+    result.policy_source = user_enforced
+                               ? mojom::PolicySource::kUserPolicyEnforced
+                               : mojom::PolicySource::kUserPolicyRecommended;
+    if (user_policy)
+      result.policy_value = user_policy->Clone();
+  } else if (effective == ::onc::kAugmentationDevicePolicy || device_policy) {
+    // Set the policy source to "Device" when:
+    // * The effective value is set to "DevicePolicy" OR
+    // * A Device policy exists (since we checked for a user policy first).
+    result.policy_source = device_enforced
+                               ? mojom::PolicySource::kDevicePolicyEnforced
+                               : mojom::PolicySource::kDevicePolicyRecommended;
+    if (device_policy)
+      result.policy_value = device_policy->Clone();
+  } else {
+    // Unexpected ONC. No policy source or value will be set.
+    NET_LOG(ERROR) << "Unexpected ONC property: " << *onc_dict;
+  }
+
+  DCHECK(result.policy_value.is_none() ||
+         result.policy_value.type() == result.active_value.type());
+  return result;
 }
 
 mojom::ManagedStringPtr GetManagedString(const base::Value* dict,
@@ -447,23 +484,16 @@ mojom::ManagedStringPtr GetManagedString(const base::Value* dict,
     return result;
   }
   if (v->is_dict()) {
-    auto result = mojom::ManagedString::New();
-    base::Optional<std::string> active_value =
-        GetString(v, ::onc::kAugmentationActiveSetting);
-    const char* effective_source_key =
-        SetEffectiveSource(v, &result->effective_source, &result->enforced);
-    if (effective_source_key)
-      result->effective_value = GetString(v, effective_source_key);
-    else if (result->effective_source == mojom::OncSource::kActiveExtension)
-      result->effective_value = result->active_value;
-    // Always provide an active value.
-    if (!active_value)
-      active_value = result->effective_value;
-    if (!active_value) {
+    ManagedDictionary managed_dict = GetManagedDictionary(v);
+    if (!managed_dict.active_value.is_string()) {
       NET_LOG(ERROR) << "No active or effective value for: " << key;
       return nullptr;
     }
-    result->active_value = *active_value;
+    auto result = mojom::ManagedString::New();
+    result->active_value = managed_dict.active_value.GetString();
+    result->policy_source = managed_dict.policy_source;
+    if (!managed_dict.policy_value.is_none())
+      result->policy_value = managed_dict.policy_value.GetString();
     return result;
   }
   NET_LOG(ERROR) << "Expected string or dictionary, found: " << *v;
@@ -484,23 +514,20 @@ mojom::ManagedStringListPtr GetManagedStringList(const base::Value* dict,
     return result;
   }
   if (v->is_dict()) {
-    auto result = mojom::ManagedStringList::New();
-    base::Optional<std::vector<std::string>> active_value =
-        GetStringList(v, ::onc::kAugmentationActiveSetting);
-    const char* effective_source_key =
-        SetEffectiveSource(v, &result->effective_source, &result->enforced);
-    if (effective_source_key)
-      result->effective_value = GetStringList(v, effective_source_key);
-    else if (result->effective_source == mojom::OncSource::kActiveExtension)
-      result->effective_value = active_value;
-    // Always provide an active value.
-    if (!active_value)
-      active_value = result->effective_value;
-    if (!active_value) {
+    ManagedDictionary managed_dict = GetManagedDictionary(v);
+    if (!managed_dict.active_value.is_list()) {
       NET_LOG(ERROR) << "No active or effective value for: " << key;
       return nullptr;
     }
-    result->active_value = *active_value;
+    auto result = mojom::ManagedStringList::New();
+    for (const base::Value& e : managed_dict.active_value.GetList())
+      result->active_value.push_back(e.GetString());
+    result->policy_source = managed_dict.policy_source;
+    if (!managed_dict.policy_value.is_none()) {
+      result->policy_value = std::vector<std::string>();
+      for (const base::Value& e : managed_dict.policy_value.GetList())
+        result->policy_value->push_back(e.GetString());
+    }
     return result;
   }
   NET_LOG(ERROR) << "Expected list or dictionary, found: " << *v;
@@ -518,17 +545,16 @@ mojom::ManagedBooleanPtr GetManagedBoolean(const base::Value* dict,
     return result;
   }
   if (v->is_dict()) {
+    ManagedDictionary managed_dict = GetManagedDictionary(v);
+    if (!managed_dict.active_value.is_bool()) {
+      NET_LOG(ERROR) << "No active or effective value for: " << key;
+      return nullptr;
+    }
     auto result = mojom::ManagedBoolean::New();
-    result->active_value = GetBoolean(v, ::onc::kAugmentationActiveSetting);
-    const char* effective_source_key =
-        SetEffectiveSource(v, &result->effective_source, &result->enforced);
-    if (effective_source_key)
-      result->effective_value = GetBoolean(v, effective_source_key);
-    else if (result->effective_source == mojom::OncSource::kActiveExtension)
-      result->effective_value = result->active_value;
-    // Always provide an active value.
-    if (!result->active_value && result->effective_value)
-      result->active_value = result->effective_value;
+    result->active_value = managed_dict.active_value.GetBool();
+    result->policy_source = managed_dict.policy_source;
+    if (!managed_dict.policy_value.is_none())
+      result->policy_value = managed_dict.policy_value.GetBool();
     return result;
   }
   NET_LOG(ERROR) << "Expected bool or dictionary, found: " << *v;
@@ -540,23 +566,22 @@ mojom::ManagedInt32Ptr GetManagedInt32(const base::Value* dict,
   const base::Value* v = dict->FindKey(key);
   if (!v)
     return nullptr;
-  if (v->is_bool()) {
+  if (v->is_int()) {
     auto result = mojom::ManagedInt32::New();
     result->active_value = v->GetInt();
     return result;
   }
   if (v->is_dict()) {
+    ManagedDictionary managed_dict = GetManagedDictionary(v);
+    if (!managed_dict.active_value.is_int()) {
+      NET_LOG(ERROR) << "No active or effective value for: " << key;
+      return nullptr;
+    }
     auto result = mojom::ManagedInt32::New();
-    result->active_value = GetInt32(v, ::onc::kAugmentationActiveSetting);
-    const char* effective_source_key =
-        SetEffectiveSource(v, &result->effective_source, &result->enforced);
-    if (effective_source_key)
-      result->effective_value = GetInt32(v, effective_source_key);
-    else if (result->effective_source == mojom::OncSource::kActiveExtension)
-      result->effective_value = result->active_value;
-    // Always provide an active value.
-    if (!result->active_value && result->effective_value)
-      result->active_value = result->effective_value;
+    result->active_value = managed_dict.active_value.GetInt();
+    result->policy_source = managed_dict.policy_source;
+    if (!managed_dict.policy_value.is_none())
+      result->policy_value = managed_dict.policy_value.GetInt();
     return result;
   }
   NET_LOG(ERROR) << "Expected int or dictionary, found: " << *v;
@@ -643,22 +668,6 @@ mojom::ApnPropertiesPtr GetApnProperties(const base::Value* dict) {
   return apn;
 }
 
-base::Optional<std::vector<mojom::ApnPropertiesPtr>> GetApnList(
-    const base::Value* dict,
-    const char* key) {
-  const base::Value* v = dict->FindKey(key);
-  if (!v)
-    return base::nullopt;
-  if (!v->is_list()) {
-    NET_LOG(ERROR) << "Expected list, found: " << *v;
-    return base::nullopt;
-  }
-  std::vector<mojom::ApnPropertiesPtr> result;
-  for (const base::Value& e : v->GetList())
-    result.push_back(GetApnProperties(&e));
-  return result;
-}
-
 mojom::ManagedApnPropertiesPtr GetManagedApnProperties(const base::Value* dict,
                                                        const char* key) {
   const base::Value* apn_dict = dict->FindKey(key);
@@ -683,7 +692,7 @@ mojom::ManagedApnPropertiesPtr GetManagedApnProperties(const base::Value* dict,
   return apn;
 }
 
-mojom::ManagedApnListPtr GetManagedApnPList(const base::Value* value) {
+mojom::ManagedApnListPtr GetManagedApnList(const base::Value* value) {
   if (!value)
     return nullptr;
   if (value->is_list()) {
@@ -694,27 +703,19 @@ mojom::ManagedApnListPtr GetManagedApnPList(const base::Value* value) {
     result->active_value = std::move(active);
     return result;
   } else if (value->is_dict()) {
-    auto result = mojom::ManagedApnList::New();
-    base::Optional<std::vector<mojom::ApnPropertiesPtr>> active_value =
-        GetApnList(value, ::onc::kAugmentationActiveSetting);
-    const char* effective_source_key =
-        SetEffectiveSource(value, &result->effective_source, &result->enforced);
-    if (effective_source_key) {
-      result->effective_value = GetApnList(value, effective_source_key);
-    } else if (result->effective_source == mojom::OncSource::kActiveExtension) {
-      result->effective_value =
-          GetApnList(value, ::onc::kAugmentationActiveSetting);
-    }
-    // Always provide an active value.
-    if (active_value) {
-      for (const auto& apn : *active_value)
-        result->active_value.push_back(apn->Clone());
-    } else if (result->effective_value) {
-      for (const auto& apn : *result->effective_value)
-        result->active_value.push_back(apn->Clone());
-    } else {
-      NET_LOG(ERROR) << "No active or effective value for ManagedApnList";
+    ManagedDictionary managed_dict = GetManagedDictionary(value);
+    if (!managed_dict.active_value.is_list()) {
+      NET_LOG(ERROR) << "No active or effective value for APNList";
       return nullptr;
+    }
+    auto result = mojom::ManagedApnList::New();
+    for (const base::Value& e : managed_dict.active_value.GetList())
+      result->active_value.push_back(GetApnProperties(&e));
+    result->policy_source = managed_dict.policy_source;
+    if (!managed_dict.policy_value.is_none()) {
+      result->policy_value = std::vector<mojom::ApnPropertiesPtr>();
+      for (const base::Value& e : managed_dict.policy_value.GetList())
+        result->policy_value->push_back(GetApnProperties(&e));
     }
     return result;
   }
@@ -1091,7 +1092,7 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       cellular->apn =
           GetManagedApnProperties(cellular_dict, ::onc::cellular::kAPN);
       cellular->apn_list =
-          GetManagedApnPList(cellular_dict->FindKey(::onc::cellular::kAPNList));
+          GetManagedApnList(cellular_dict->FindKey(::onc::cellular::kAPNList));
       cellular->activation_state =
           GetString(cellular_dict, ::onc::cellular::kActivationState);
       cellular->allow_roaming =

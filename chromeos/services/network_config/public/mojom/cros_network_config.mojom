@@ -64,20 +64,35 @@ enum NetworkType {
   kWiMAX,
 };
 
-// The ONC source for networks. Also used for the source of policy effective
-// values (see Manged{Boolean|Int32|String}).
+// The ONC source for the network configuration, i.e. whether it is stored in
+// the User or Device profile and whether it was configured by policy.
 enum OncSource {
-  // No source indicates that the network is not remembered.
+  // The network is not remembered, or the property is not configurable.
   kNone,
-  // The network configuration is saved in the device profile.
-  kDevice,
-  // The network configuration came from a device policy.
-  kDevicePolicy,
-  // The network configuration is saved in the user profile.
+  // The configuration is saved in the user profile.
   kUser,
-  // The network configuration came from a user policy.
+  // The configuration is saved in the device profile.
+  kDevice,
+  // The configuration came from a user policy and is saved in the user profile.
   kUserPolicy,
-  // Special setting for effective values provided by an active extension.
+  // The configuration came from a device policy and is saved in the device
+  // profile.
+  kDevicePolicy,
+};
+
+// The policy source for property values managed by policy.
+enum PolicySource {
+  // The property is not controlled by policy.
+  kNone,
+  // The property value came from a user policy and is enforced.
+  kUserPolicyEnforced,
+  // The property value came from a device policy and is enforced.
+  kDevicePolicyEnforced,
+  // The property value came from a user policy and is recommended.
+  kUserPolicyRecommended,
+  // The property value came from a device policy and is recommended.
+  kDevicePolicyRecommended,
+  // The property value came from an extension.
   kActiveExtension,
 };
 
@@ -305,44 +320,39 @@ struct PaymentPortalProperties {
 
 // Managed property types. These types all share a common structure.
 // The structure differs from the structure used in //components/onc which
-// relies on optional boolean and integer values, which are unsupported in mojo,
+// relies on optional boolean and integer values which are unsupported in mojo,
 // and provides more detail than is required by the UI.
 
-// active_value: Either the value provided by the configuration manager
-//     (e.g. Shill) if available, or |effective_value|.
-// effective_source: The effective source for the property (see OncSource).
-// effective_value: The value provided by the effective source (e.g. policy).
-// enforced: Whether |effective_value| is enforced by a policy. If false,
-//     |effective_value| is only recommended by the policy.
+// active_value: The value provided by the configuration manager (e.g. Shill).
+//     This will match |policy_value| when |policy_source| is enforced.
+// policy_source: The source of the value provided by policy when available,
+//     or kNone (see PolicySource).
+// policy_value: The value provided by policy when available.
 
 // Fundamental managed types.
 
 struct ManagedBoolean {
   bool active_value;
-  OncSource effective_source = kNone;
-  bool effective_value = false;
-  bool enforced = false;
+  PolicySource policy_source = kNone;
+  bool policy_value = false;
 };
 
 struct ManagedInt32 {
   int32 active_value = 0;
-  OncSource effective_source = kNone;
-  int32 effective_value = 0;
-  bool enforced = false;
+  PolicySource policy_source = kNone;
+  int32 policy_value = 0;
 };
 
 struct ManagedString {
   string active_value;
-  OncSource effective_source = kNone;
-  string? effective_value;
-  bool enforced = false;
+  PolicySource policy_source = kNone;
+  string? policy_value;
 };
 
 struct ManagedStringList {
   array<string> active_value;
-  OncSource effective_source = kNone;
-  array<string>? effective_value;
-  bool enforced = false;
+  PolicySource policy_source = kNone;
+  array<string>? policy_value;
 };
 
 // Specialized managed types.
@@ -359,9 +369,8 @@ struct ManagedApnProperties {
 
 struct ManagedApnList {
   array<ApnProperties> active_value;
-  OncSource effective_source = kNone;
-  array<ApnProperties>? effective_value;
-  bool enforced = false;
+  PolicySource policy_source = kNone;
+  array<ApnProperties>? policy_value;
 };
 
 struct ManagedIssuerSubjectPattern {

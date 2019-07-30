@@ -217,6 +217,7 @@ namespace networkingPrivate {
   dictionary CertificatePattern {
     DOMString[]? EnrollmentURI;
     IssuerSubjectPattern? Issuer;
+    DOMString[]? IssuerCAPEMs;
     DOMString[]? IssuerCARef;
     IssuerSubjectPattern? Subject;
   };
