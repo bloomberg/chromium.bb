@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceScreen;
 import android.util.Pair;
+import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.AndroidPaymentAppFactory;
@@ -33,6 +34,14 @@ public class AndroidPaymentAppsFragment extends PreferenceFragmentCompat {
         // Create blank preference screen.
         PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(getStyledContext());
         setPreferenceScreen(screen);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Disable animations of preference changes (crbug.com/986241).
+        getListView().setItemAnimator(null);
     }
 
     @Override
