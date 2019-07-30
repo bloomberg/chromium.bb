@@ -9,7 +9,14 @@
 #include "third_party/blink/renderer/core/geometry/dom_point_init.h"
 #include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+
+namespace {
+bool IsWithinEpsilon(double a, double b) {
+  return std::abs(a - b) < std::numeric_limits<double>::epsilon();
+}
+}  // namespace
 
 namespace blink {
 
@@ -59,7 +66,24 @@ XRRigidTransform::XRRigidTransform(DOMPointInit* position,
 }
 
 XRRigidTransform* XRRigidTransform::Create(DOMPointInit* position,
-                                           DOMPointInit* orientation) {
+                                           DOMPointInit* orientation,
+                                           ExceptionState& exception_state) {
+  if (position && !IsWithinEpsilon(1.0, position->w())) {
+    exception_state.ThrowTypeError("W component of position must be 1.0");
+    return nullptr;
+  }
+
+  if (orientation) {
+    if (IsWithinEpsilon(orientation->x(), 0.0) &&
+        IsWithinEpsilon(orientation->y(), 0.0) &&
+        IsWithinEpsilon(orientation->z(), 0.0) &&
+        IsWithinEpsilon(orientation->w(), 0.0)) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        "Orientation's length cannot be 0");
+      return nullptr;
+    }
+  }
+
   return MakeGarbageCollected<XRRigidTransform>(position, orientation);
 }
 
