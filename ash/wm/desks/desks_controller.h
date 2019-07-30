@@ -64,6 +64,9 @@ class ASH_EXPORT DesksController
 
   const Desk* active_desk() const { return active_desk_; }
 
+  // Destroys any pending animations in preparation for shutdown.
+  void Shutdown();
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
