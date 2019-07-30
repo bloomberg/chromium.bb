@@ -188,6 +188,11 @@ void PasswordStoreX::UpdateMigrationPref(MigrationToLoginDBStep step) {
 
 void PasswordStoreX::ShutdownOnUIThread() {
   migration_step_pref_.Destroy();
+  // Invalidate the weak pointer to preempt any posted tasks in
+  // UpdateMigrationToLoginDBStep() because they cannot use the
+  // |migration_step_pref_| anymore. Both ShutdownOnUIThread() and
+  // UpdateMigrationToLoginDBStep() are only executed on the UI thread.
+  weak_ptr_factory_.InvalidateWeakPtrs();
   PasswordStoreDefault::ShutdownOnUIThread();
 }
 
