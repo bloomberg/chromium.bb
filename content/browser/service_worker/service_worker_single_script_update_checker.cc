@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
@@ -192,9 +193,13 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   network::mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
 
+  // Use NavigationURLLoaderImpl to get a unique request id across
+  // browser-initiated navigations and worker script fetch.
+  const int request_id =
+      NavigationURLLoaderImpl::MakeGlobalRequestID().request_id;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&network_loader_), -1 /* routing_id */,
-      -1 /* request_id */, network::mojom::kURLLoadOptionNone, resource_request,
+      mojo::MakeRequest(&network_loader_), MSG_ROUTING_NONE, request_id,
+      network::mojom::kURLLoadOptionNone, resource_request,
       std::move(network_client),
       net::MutableNetworkTrafficAnnotationTag(kUpdateCheckTrafficAnnotation));
   DCHECK_EQ(network_loader_state_,
