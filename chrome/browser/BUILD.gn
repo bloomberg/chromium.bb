@@ -3714,7 +3714,6 @@ jumbo_split_static_library("browser") {
       "//chrome/browser/safe_browsing/chrome_cleaner",
       "//chrome/browser/safe_browsing/chrome_cleaner:public",
       "//chrome/browser/win/conflicts:module_info",
-      "//chrome/chrome_elf:blacklist",
       "//chrome/chrome_elf:constants",
       "//chrome/chrome_elf:dll_hash",
       "//chrome/chrome_watcher:client",
