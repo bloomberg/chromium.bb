@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +23,7 @@
 #include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
@@ -181,6 +184,26 @@ class WebSocketChannelImplTest : public PageTestBase {
   static const uint64_t kDefaultReceiveQuotaThreshold = 1 << 15;
 };
 
+class CallTrackingClosure {
+ public:
+  CallTrackingClosure() = default;
+
+  base::OnceClosure Closure() {
+    // This use of base::Unretained is safe because nothing can call the
+    // callback once the test has finished.
+    return WTF::Bind(&CallTrackingClosure::Called, base::Unretained(this));
+  }
+
+  bool WasCalled() const { return was_called_; }
+
+ private:
+  void Called() { was_called_ = true; }
+
+  bool was_called_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(CallTrackingClosure);
+};
+
 MATCHER_P2(MemEq,
            p,
            len,
@@ -243,9 +266,9 @@ TEST_F(WebSocketChannelImplTest, sendText) {
   ChannelImpl()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
-  Channel()->Send("foo");
-  Channel()->Send("bar");
-  Channel()->Send("baz");
+  Channel()->Send("foo", base::OnceClosure());
+  Channel()->Send("bar", base::OnceClosure());
+  Channel()->Send("baz", base::OnceClosure());
 
   EXPECT_EQ(9ul, sum_of_consumed_buffered_amount_);
 }
@@ -276,9 +299,10 @@ TEST_F(WebSocketChannelImplTest, sendTextContinuation) {
   ChannelImpl()->AddSendFlowControlQuota(Handle(), 16);
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
-  Channel()->Send("0123456789abcdefg");
-  Channel()->Send("hijk");
-  Channel()->Send("lmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+  Channel()->Send("0123456789abcdefg", base::OnceClosure());
+  Channel()->Send("hijk", base::OnceClosure());
+  Channel()->Send("lmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                  base::OnceClosure());
   checkpoint.Call(1);
   ChannelImpl()->AddSendFlowControlQuota(Handle(), 16);
   checkpoint.Call(2);
@@ -301,7 +325,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInVector) {
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   DOMArrayBuffer* foo_buffer = DOMArrayBuffer::Create("foo", 3);
-  Channel()->Send(*foo_buffer, 0, 3);
+  Channel()->Send(*foo_buffer, 0, 3, base::OnceClosure());
 
   EXPECT_EQ(3ul, sum_of_consumed_buffered_amount_);
 }
@@ -325,10 +349,10 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferPartial) {
 
   DOMArrayBuffer* foobar_buffer = DOMArrayBuffer::Create("foobar", 6);
   DOMArrayBuffer* qbazux_buffer = DOMArrayBuffer::Create("qbazux", 6);
-  Channel()->Send(*foobar_buffer, 0, 3);
-  Channel()->Send(*foobar_buffer, 3, 3);
-  Channel()->Send(*qbazux_buffer, 1, 3);
-  Channel()->Send(*qbazux_buffer, 2, 1);
+  Channel()->Send(*foobar_buffer, 0, 3, base::OnceClosure());
+  Channel()->Send(*foobar_buffer, 3, 3, base::OnceClosure());
+  Channel()->Send(*qbazux_buffer, 1, 3, base::OnceClosure());
+  Channel()->Send(*qbazux_buffer, 2, 1, base::OnceClosure());
 
   EXPECT_EQ(10ul, sum_of_consumed_buffered_amount_);
 }
@@ -352,19 +376,19 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferWithNullBytes) {
 
   {
     DOMArrayBuffer* b = DOMArrayBuffer::Create("\0ar", 3);
-    Channel()->Send(*b, 0, 3);
+    Channel()->Send(*b, 0, 3, base::OnceClosure());
   }
   {
     DOMArrayBuffer* b = DOMArrayBuffer::Create("b\0z", 3);
-    Channel()->Send(*b, 0, 3);
+    Channel()->Send(*b, 0, 3, base::OnceClosure());
   }
   {
     DOMArrayBuffer* b = DOMArrayBuffer::Create("qu\0", 3);
-    Channel()->Send(*b, 0, 3);
+    Channel()->Send(*b, 0, 3, base::OnceClosure());
   }
   {
     DOMArrayBuffer* b = DOMArrayBuffer::Create("\0\0\0", 3);
-    Channel()->Send(*b, 0, 3);
+    Channel()->Send(*b, 0, 3, base::OnceClosure());
   }
 
   EXPECT_EQ(12ul, sum_of_consumed_buffered_amount_);
@@ -379,7 +403,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferNonLatin1UTF8) {
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   DOMArrayBuffer* b = DOMArrayBuffer::Create("\xe7\x8b\x90", 3);
-  Channel()->Send(*b, 0, 3);
+  Channel()->Send(*b, 0, 3, base::OnceClosure());
 
   EXPECT_EQ(3ul, sum_of_consumed_buffered_amount_);
 }
@@ -393,7 +417,7 @@ TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferNonUTF8) {
   EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
 
   DOMArrayBuffer* b = DOMArrayBuffer::Create("\x80\xff\xe7", 3);
-  Channel()->Send(*b, 0, 3);
+  Channel()->Send(*b, 0, 3, base::OnceClosure());
 
   EXPECT_EQ(3ul, sum_of_consumed_buffered_amount_);
 }
@@ -421,12 +445,124 @@ TEST_F(WebSocketChannelImplTest,
       "\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b"
       "\x90",
       18);
-  Channel()->Send(*b, 0, 18);
+  Channel()->Send(*b, 0, 18, base::OnceClosure());
   checkpoint.Call(1);
 
   ChannelImpl()->AddSendFlowControlQuota(Handle(), 16);
 
   EXPECT_EQ(18ul, sum_of_consumed_buffered_amount_);
+}
+
+TEST_F(WebSocketChannelImplTest, sendTextSync) {
+  Connect();
+  {
+    InSequence s;
+    EXPECT_CALL(*Handle(), Send(_, _, _, _));
+  }
+
+  ChannelImpl()->AddSendFlowControlQuota(Handle(), 5);
+  EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
+  CallTrackingClosure closure;
+  EXPECT_EQ(WebSocketChannel::SendResult::SENT_SYNCHRONOUSLY,
+            Channel()->Send("hello", closure.Closure()));
+  EXPECT_FALSE(closure.WasCalled());
+}
+
+TEST_F(WebSocketChannelImplTest, sendTextAsyncBecauseQuota) {
+  Connect();
+  {
+    InSequence s;
+    EXPECT_CALL(*Handle(), Send(_, _, _, _));
+    EXPECT_CALL(*Handle(), Send(_, _, _, _));
+  }
+
+  ChannelImpl()->AddSendFlowControlQuota(Handle(), 4);
+  EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
+  CallTrackingClosure closure;
+  EXPECT_EQ(WebSocketChannel::SendResult::CALLBACK_WILL_BE_CALLED,
+            Channel()->Send("hello", closure.Closure()));
+  EXPECT_FALSE(closure.WasCalled());
+  ChannelImpl()->AddSendFlowControlQuota(Handle(), 1);
+  EXPECT_TRUE(closure.WasCalled());
+}
+
+TEST_F(WebSocketChannelImplTest, sendTextAsyncBecauseQueue) {
+  Connect();
+  {
+    InSequence s;
+    EXPECT_CALL(*Handle(), Send(_, _, _, _));
+    EXPECT_CALL(*Handle(), Send(_, _, _, _));
+    EXPECT_CALL(*Handle(), Send(_, _, _, _));
+  }
+
+  ChannelImpl()->AddSendFlowControlQuota(Handle(), 8);
+  EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
+  // Ideally we'd use a Blob to block the queue in this test, but setting up a
+  // working blob environment in a unit-test is complicated, so just block
+  // behind a larger string instead.
+  Channel()->Send("0123456789", base::OnceClosure());
+  CallTrackingClosure closure;
+  EXPECT_EQ(WebSocketChannel::SendResult::CALLBACK_WILL_BE_CALLED,
+            Channel()->Send("hello", closure.Closure()));
+  EXPECT_FALSE(closure.WasCalled());
+  ChannelImpl()->AddSendFlowControlQuota(Handle(), 7);
+  EXPECT_TRUE(closure.WasCalled());
+}
+
+TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferSync) {
+  Connect();
+  {
+    InSequence s;
+    EXPECT_CALL(*Handle(), Send(_, _, _, _));
+  }
+
+  ChannelImpl()->AddSendFlowControlQuota(Handle(), 5);
+  EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
+  CallTrackingClosure closure;
+  const auto* b = DOMArrayBuffer::Create("hello", 5);
+  EXPECT_EQ(WebSocketChannel::SendResult::SENT_SYNCHRONOUSLY,
+            Channel()->Send(*b, 0, 5, closure.Closure()));
+  EXPECT_FALSE(closure.WasCalled());
+}
+
+TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferAsyncBecauseQuota) {
+  Connect();
+  {
+    InSequence s;
+    EXPECT_CALL(*Handle(), Send(_, _, _, _));
+    EXPECT_CALL(*Handle(), Send(_, _, _, _));
+  }
+
+  ChannelImpl()->AddSendFlowControlQuota(Handle(), 4);
+  EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
+  CallTrackingClosure closure;
+  const auto* b = DOMArrayBuffer::Create("hello", 5);
+  EXPECT_EQ(WebSocketChannel::SendResult::CALLBACK_WILL_BE_CALLED,
+            Channel()->Send(*b, 0, 5, closure.Closure()));
+  EXPECT_FALSE(closure.WasCalled());
+  ChannelImpl()->AddSendFlowControlQuota(Handle(), 1);
+  EXPECT_TRUE(closure.WasCalled());
+}
+
+TEST_F(WebSocketChannelImplTest, sendBinaryInArrayBufferAsyncBecauseQueue) {
+  Connect();
+  {
+    InSequence s;
+    EXPECT_CALL(*Handle(), Send(_, _, _, _));
+    EXPECT_CALL(*Handle(), Send(_, _, _, _));
+    EXPECT_CALL(*Handle(), Send(_, _, _, _));
+  }
+
+  ChannelImpl()->AddSendFlowControlQuota(Handle(), 8);
+  EXPECT_CALL(*ChannelClient(), DidConsumeBufferedAmount(_)).Times(AnyNumber());
+  Channel()->Send("0123456789", base::OnceClosure());
+  CallTrackingClosure closure;
+  const auto* b = DOMArrayBuffer::Create("hello", 5);
+  EXPECT_EQ(WebSocketChannel::SendResult::CALLBACK_WILL_BE_CALLED,
+            Channel()->Send(*b, 0, 5, closure.Closure()));
+  EXPECT_FALSE(closure.WasCalled());
+  ChannelImpl()->AddSendFlowControlQuota(Handle(), 7);
+  EXPECT_TRUE(closure.WasCalled());
 }
 
 // FIXME: Add tests for WebSocketChannel::send(scoped_refptr<BlobDataHandle>)

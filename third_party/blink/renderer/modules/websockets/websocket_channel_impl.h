@@ -91,10 +91,12 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
 
   // WebSocketChannel functions.
   bool Connect(const KURL&, const String& protocol) override;
-  void Send(const std::string& message) override;
-  void Send(const DOMArrayBuffer&,
-            unsigned byte_offset,
-            unsigned byte_length) override;
+  SendResult Send(const std::string& message,
+                  base::OnceClosure completion_callback) override;
+  SendResult Send(const DOMArrayBuffer&,
+                  unsigned byte_offset,
+                  unsigned byte_length,
+                  base::OnceClosure completion_callback) override;
   void Send(scoped_refptr<BlobDataHandle>) override;
   // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
   // argument to omit payload.
