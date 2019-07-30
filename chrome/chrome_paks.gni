@@ -196,6 +196,10 @@ template("chrome_extra_paks") {
       sources += [ "$root_gen_dir/chrome/print_preview_resources.pak" ]
       deps += [ "//chrome/browser/resources:print_preview_resources" ]
     }
+    if (enable_webui_tab_strip) {
+      sources += [ "$root_gen_dir/chrome/tab_strip_resources.pak" ]
+      deps += [ "//chrome/browser/resources:tab_strip_resources" ]
+    }
   }
 }
 
