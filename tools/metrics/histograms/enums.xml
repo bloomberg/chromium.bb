@@ -60001,7 +60001,7 @@ Full version information for the fingerprint enum values:
   <int value="3" label="FAILED_OTHER">Failed for other reason</int>
 </enum>
 
-<enum name="VAJDADecoderFailure">
+<enum name="VAJDAFailure">
   <int value="0" label="VAAPI_ERROR"/>
 </enum>
 

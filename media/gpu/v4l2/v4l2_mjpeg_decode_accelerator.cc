@@ -256,6 +256,13 @@ void V4L2MjpegDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer,
             << ", size=" << bitstream_buffer.size();
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
+  if (video_frame->HasDmaBufs()) {
+    VLOGF(1) << "Decoding to dmabuf-backed video frame is not supported, id: "
+             << bitstream_buffer.id();
+    PostNotifyError(bitstream_buffer.id(), INVALID_ARGUMENT);
+    return;
+  }
+
   if (bitstream_buffer.id() < 0) {
     VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
     PostNotifyError(bitstream_buffer.id(), INVALID_ARGUMENT);
