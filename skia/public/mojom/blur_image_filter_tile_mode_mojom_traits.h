@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SKIA_PUBLIC_INTERFACES_BLUR_IMAGE_FILTER_TILE_MODE_STRUCT_TRAITS_H_
-#define SKIA_PUBLIC_INTERFACES_BLUR_IMAGE_FILTER_TILE_MODE_STRUCT_TRAITS_H_
+#ifndef SKIA_PUBLIC_MOJOM_BLUR_IMAGE_FILTER_TILE_MODE_MOJOM_TRAITS_H_
+#define SKIA_PUBLIC_MOJOM_BLUR_IMAGE_FILTER_TILE_MODE_MOJOM_TRAITS_H_
 
-#include "skia/public/interfaces/blur_image_filter_tile_mode.mojom-shared.h"
+#include "skia/public/mojom/blur_image_filter_tile_mode.mojom-shared.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 
 namespace mojo {
@@ -45,4 +45,4 @@ struct EnumTraits<skia::mojom::BlurTileMode, SkBlurImageFilter::TileMode> {
 
 }  // namespace mojo
 
-#endif  // SKIA_PUBLIC_INTERFACES_BLUR_IMAGE_FILTER_TILE_MODE_STRUCT_TRAITS_H_
+#endif  // SKIA_PUBLIC_MOJOM_BLUR_IMAGE_FILTER_TILE_MODE_MOJOM_TRAITS_H_

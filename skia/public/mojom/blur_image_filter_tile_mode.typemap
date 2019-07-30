@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//skia/public/interfaces/blur_image_filter_tile_mode.mojom"
+mojom = "//skia/public/mojom/blur_image_filter_tile_mode.mojom"
 public_headers = [ "//third_party/skia/include/effects/SkBlurImageFilter.h" ]
 traits_headers =
-    [ "//skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h" ]
+    [ "//skia/public/mojom/blur_image_filter_tile_mode_mojom_traits.h" ]
 type_mappings = [ "skia.mojom.BlurTileMode=SkBlurImageFilter::TileMode" ]

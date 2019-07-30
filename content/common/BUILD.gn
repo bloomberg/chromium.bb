@@ -515,7 +515,7 @@ mojom("mojo_bindings") {
     "//services/service_manager/public/mojom",
     "//services/video_capture/public/mojom",
     "//services/viz/public/mojom",
-    "//skia/public/interfaces",
+    "//skia/public/mojom",
     "//third_party/blink/public/mojom:mojom_core",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings",
     "//ui/base/ime/mojom",

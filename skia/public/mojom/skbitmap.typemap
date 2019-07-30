@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//skia/public/interfaces/bitmap.mojom"
+mojom = "//skia/public/mojom/bitmap.mojom"
 public_headers = [ "//third_party/skia/include/core/SkBitmap.h" ]
-traits_headers = [ "//skia/public/interfaces/bitmap_skbitmap_struct_traits.h" ]
+traits_headers = [ "//skia/public/mojom/bitmap_skbitmap_mojom_traits.h" ]
 sources = [
-  "//skia/public/interfaces/bitmap_skbitmap_struct_traits.cc",
+  "//skia/public/mojom/bitmap_skbitmap_mojom_traits.cc",
 ]
 deps = [
   "//mojo/public/cpp/bindings",

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SKIA_PUBLIC_INTERFACES_IMAGE_INFO_STRUCT_TRAITS_H_
-#define SKIA_PUBLIC_INTERFACES_IMAGE_INFO_STRUCT_TRAITS_H_
+#ifndef SKIA_PUBLIC_MOJOM_IMAGE_INFO_MOJOM_TRAITS_H_
+#define SKIA_PUBLIC_MOJOM_IMAGE_INFO_MOJOM_TRAITS_H_
 
 #include <vector>
 
-#include "skia/public/interfaces/image_info.mojom.h"
+#include "skia/public/mojom/image_info.mojom.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace mojo {
@@ -24,4 +24,4 @@ struct StructTraits<skia::mojom::ImageInfoDataView, SkImageInfo> {
 
 }  // namespace mojo
 
-#endif  // SKIA_PUBLIC_INTERFACES_IMAGE_INFO_STRUCT_TRAITS_H_
+#endif  // SKIA_PUBLIC_MOJOM_IMAGE_INFO_MOJOM_TRAITS_H_

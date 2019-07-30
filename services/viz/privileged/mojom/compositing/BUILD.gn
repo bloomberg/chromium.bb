@@ -23,7 +23,7 @@ mojom("compositing") {
     "//media/mojo/interfaces:interfaces",
     "//mojo/public/mojom/base",
     "//services/viz/public/mojom",
-    "//skia/public/interfaces",
+    "//skia/public/mojom",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojom",
     "//ui/latency/mojom",

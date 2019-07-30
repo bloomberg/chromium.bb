@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "skia/public/interfaces/image_filter_struct_traits.h"
+#include "skia/public/mojom/image_filter_mojom_traits.h"
 
 namespace mojo {
 

@@ -4,7 +4,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "skia/public/interfaces/test/traits_test_service.mojom.h"
+#include "skia/public/mojom/test/traits_test_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkImageInfo.h"

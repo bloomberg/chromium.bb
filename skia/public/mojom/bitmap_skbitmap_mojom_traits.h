@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SKIA_PUBLIC_INTERFACES_BITMAP_SKBITMAP_STRUCT_TRAITS_H_
-#define SKIA_PUBLIC_INTERFACES_BITMAP_SKBITMAP_STRUCT_TRAITS_H_
+#ifndef SKIA_PUBLIC_MOJOM_BITMAP_SKBITMAP_MOJOM_TRAITS_H_
+#define SKIA_PUBLIC_MOJOM_BITMAP_SKBITMAP_MOJOM_TRAITS_H_
 
 #include "base/containers/span.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
 #include "mojo/public/cpp/bindings/array_traits.h"
-#include "skia/public/interfaces/bitmap.mojom.h"
-#include "skia/public/interfaces/image_info_struct_traits.h"
+#include "skia/public/mojom/bitmap.mojom.h"
+#include "skia/public/mojom/image_info_mojom_traits.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace mojo {
@@ -38,4 +38,4 @@ struct StructTraits<skia::mojom::InlineBitmapDataView, SkBitmap> {
 
 }  // namespace mojo
 
-#endif  // SKIA_PUBLIC_INTERFACES_BITMAP_SKBITMAP_STRUCT_TRAITS_H_
+#endif  // SKIA_PUBLIC_MOJOM_BITMAP_SKBITMAP_MOJOM_TRAITS_H_
