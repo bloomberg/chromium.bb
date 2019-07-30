@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBRTC_PEER_CONNECTION_REMOTE_AUDIO_SOURCE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBRTC_PEER_CONNECTION_REMOTE_AUDIO_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBRTC_PEER_CONNECTION_REMOTE_AUDIO_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBRTC_PEER_CONNECTION_REMOTE_AUDIO_SOURCE_H_
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace media {
@@ -25,7 +25,7 @@ namespace blink {
 
 // PeerConnectionRemoteAudioTrack is a WebRTC specific implementation of an
 // audio track whose data is sourced from a PeerConnection.
-class BLINK_PLATFORM_EXPORT PeerConnectionRemoteAudioTrack final
+class PLATFORM_EXPORT PeerConnectionRemoteAudioTrack final
     : public MediaStreamAudioTrack {
  public:
   explicit PeerConnectionRemoteAudioTrack(
@@ -107,4 +107,4 @@ class BLINK_PLATFORM_EXPORT PeerConnectionRemoteAudioSource final
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBRTC_PEER_CONNECTION_REMOTE_AUDIO_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBRTC_PEER_CONNECTION_REMOTE_AUDIO_SOURCE_H_

@@ -167,7 +167,6 @@ source_set("blink_headers") {
     "platform/modules/service_worker/web_service_worker_provider.h",
     "platform/modules/service_worker/web_service_worker_provider_client.h",
     "platform/modules/service_worker/web_service_worker_registration_object_info.h",
-    "platform/modules/webrtc/peer_connection_remote_audio_source.h",
     "platform/modules/webrtc/track_observer.h",
     "platform/modules/webrtc/webrtc_logging.h",
     "platform/modules/webrtc/webrtc_source.h",
