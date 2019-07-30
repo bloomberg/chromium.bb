@@ -639,7 +639,7 @@ void UiControllerAndroid::OnUnexpectedTaps() {
   ShowSnackbar(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP),
                base::BindOnce(&UiControllerAndroid::Shutdown,
                               weak_ptr_factory_.GetWeakPtr(),
-                              Metrics::DropOutReason::SHEET_CLOSED));
+                              Metrics::DropOutReason::OVERLAY_STOP));
 }
 
 void UiControllerAndroid::UpdateTouchableArea() {
