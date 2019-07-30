@@ -14,6 +14,7 @@ _sym_db = _symbol_database.Default()
 
 from chromite.api.gen.chromite.api import build_api_pb2 as chromite_dot_api_dot_build__api__pb2
 from chromite.api.gen.chromiumos import common_pb2 as chromiumos_dot_common__pb2
+from chromite.api.gen.chromiumos import metrics_pb2 as chromiumos_dot_metrics__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +22,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
-  serialized_pb=_b('\n!chromite/api/build_api_test.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\",\n\nNestedPath\x12\x1e\n\x04path\x18\x01 \x01(\x0b\x32\x10.chromiumos.Path\"\xc7\x02\n\x12TestRequestMessage\x12\n\n\x02id\x18\x01 \x01(\t\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\x12\x1e\n\x04path\x18\x03 \x01(\x0b\x32\x10.chromiumos.Path\x12&\n\x0c\x61nother_path\x18\x04 \x01(\x0b\x32\x10.chromiumos.Path\x12-\n\x0bnested_path\x18\x05 \x01(\x0b\x32\x18.chromite.api.NestedPath\x12+\n\x0bresult_path\x18\x06 \x01(\x0b\x32\x16.chromiumos.ResultPath\x12-\n\x0c\x62uild_target\x18\x07 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12.\n\rbuild_targets\x18\x08 \x03(\x0b\x32\x17.chromiumos.BuildTarget\"\x9f\x01\n\x11TestResultMessage\x12\x0e\n\x06result\x18\x01 \x01(\t\x12\"\n\x08\x61rtifact\x18\x02 \x01(\x0b\x32\x10.chromiumos.Path\x12\x31\n\x0fnested_artifact\x18\x03 \x01(\x0b\x32\x18.chromite.api.NestedPath\x12#\n\tartifacts\x18\x04 \x03(\x0b\x32\x10.chromiumos.Path2\xe5\x01\n\x0eTestApiService\x12V\n\x11InputOutputMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\x12\x65\n\rRenamedMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\"\x11\xc2\xed\x1a\r\n\x0b\x43orrectName\x1a\x14\xc2\xed\x1a\x10\n\x0e\x62uild_api_test2\xf9\x01\n\x16InsideChrootApiService\x12^\n\x19InsideServiceInsideMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\x12g\n\x1aInsideServiceOutsideMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\"\x06\xc2\xed\x1a\x02\x10\x02\x1a\x16\xc2\xed\x1a\x12\n\x0e\x62uild_api_test\x10\x01\x32\xfc\x01\n\x17OutsideChrootApiService\x12`\n\x1bOutsideServiceOutsideMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\x12g\n\x1aOutsideServiceInsideMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x16\xc2\xed\x1a\x12\n\x0e\x62uild_api_test\x10\x02\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
+  serialized_pb=_b('\n!chromite/api/build_api_test.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\x1a\x18\x63hromiumos/metrics.proto\",\n\nNestedPath\x12\x1e\n\x04path\x18\x01 \x01(\x0b\x32\x10.chromiumos.Path\"\xc7\x02\n\x12TestRequestMessage\x12\n\n\x02id\x18\x01 \x01(\t\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\x12\x1e\n\x04path\x18\x03 \x01(\x0b\x32\x10.chromiumos.Path\x12&\n\x0c\x61nother_path\x18\x04 \x01(\x0b\x32\x10.chromiumos.Path\x12-\n\x0bnested_path\x18\x05 \x01(\x0b\x32\x18.chromite.api.NestedPath\x12+\n\x0bresult_path\x18\x06 \x01(\x0b\x32\x16.chromiumos.ResultPath\x12-\n\x0c\x62uild_target\x18\x07 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12.\n\rbuild_targets\x18\x08 \x03(\x0b\x32\x17.chromiumos.BuildTarget\"\xc8\x01\n\x11TestResultMessage\x12\x0e\n\x06result\x18\x01 \x01(\t\x12\"\n\x08\x61rtifact\x18\x02 \x01(\x0b\x32\x10.chromiumos.Path\x12\x31\n\x0fnested_artifact\x18\x03 \x01(\x0b\x32\x18.chromite.api.NestedPath\x12#\n\tartifacts\x18\x04 \x03(\x0b\x32\x10.chromiumos.Path\x12\'\n\x06\x65vents\x18\x05 \x03(\x0b\x32\x17.chromiumos.MetricEvent2\xe5\x01\n\x0eTestApiService\x12V\n\x11InputOutputMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\x12\x65\n\rRenamedMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\"\x11\xc2\xed\x1a\r\n\x0b\x43orrectName\x1a\x14\xc2\xed\x1a\x10\n\x0e\x62uild_api_test2\xf9\x01\n\x16InsideChrootApiService\x12^\n\x19InsideServiceInsideMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\x12g\n\x1aInsideServiceOutsideMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\"\x06\xc2\xed\x1a\x02\x10\x02\x1a\x16\xc2\xed\x1a\x12\n\x0e\x62uild_api_test\x10\x01\x32\xfc\x01\n\x17OutsideChrootApiService\x12`\n\x1bOutsideServiceOutsideMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\x12g\n\x1aOutsideServiceInsideMethod\x12 .chromite.api.TestRequestMessage\x1a\x1f.chromite.api.TestResultMessage\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x16\xc2\xed\x1a\x12\n\x0e\x62uild_api_test\x10\x02\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
-  dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
+  dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,chromiumos_dot_metrics__pb2.DESCRIPTOR,])
 
 
 
@@ -54,8 +55,8 @@ _NESTEDPATH = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=106,
-  serialized_end=150,
+  serialized_start=132,
+  serialized_end=176,
 )
 
 
@@ -134,8 +135,8 @@ _TESTREQUESTMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=153,
-  serialized_end=480,
+  serialized_start=179,
+  serialized_end=506,
 )
 
 
@@ -174,6 +175,13 @@ _TESTRESULTMESSAGE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='events', full_name='chromite.api.TestResultMessage.events', index=4,
+      number=5, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -186,8 +194,8 @@ _TESTRESULTMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=483,
-  serialized_end=642,
+  serialized_start=509,
+  serialized_end=709,
 )
 
 _NESTEDPATH.fields_by_name['path'].message_type = chromiumos_dot_common__pb2._PATH
@@ -201,6 +209,7 @@ _TESTREQUESTMESSAGE.fields_by_name['build_targets'].message_type = chromiumos_do
 _TESTRESULTMESSAGE.fields_by_name['artifact'].message_type = chromiumos_dot_common__pb2._PATH
 _TESTRESULTMESSAGE.fields_by_name['nested_artifact'].message_type = _NESTEDPATH
 _TESTRESULTMESSAGE.fields_by_name['artifacts'].message_type = chromiumos_dot_common__pb2._PATH
+_TESTRESULTMESSAGE.fields_by_name['events'].message_type = chromiumos_dot_metrics__pb2._METRICEVENT
 DESCRIPTOR.message_types_by_name['NestedPath'] = _NESTEDPATH
 DESCRIPTOR.message_types_by_name['TestRequestMessage'] = _TESTREQUESTMESSAGE
 DESCRIPTOR.message_types_by_name['TestResultMessage'] = _TESTRESULTMESSAGE
@@ -236,8 +245,8 @@ _TESTAPISERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\020\n\016build_api_test'),
-  serialized_start=645,
-  serialized_end=874,
+  serialized_start=712,
+  serialized_end=941,
   methods=[
   _descriptor.MethodDescriptor(
     name='InputOutputMethod',
@@ -269,8 +278,8 @@ _INSIDECHROOTAPISERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=1,
   serialized_options=_b('\302\355\032\022\n\016build_api_test\020\001'),
-  serialized_start=877,
-  serialized_end=1126,
+  serialized_start=944,
+  serialized_end=1193,
   methods=[
   _descriptor.MethodDescriptor(
     name='InsideServiceInsideMethod',
@@ -302,8 +311,8 @@ _OUTSIDECHROOTAPISERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=2,
   serialized_options=_b('\302\355\032\022\n\016build_api_test\020\002'),
-  serialized_start=1129,
-  serialized_end=1381,
+  serialized_start=1196,
+  serialized_end=1448,
   methods=[
   _descriptor.MethodDescriptor(
     name='OutsideServiceOutsideMethod',

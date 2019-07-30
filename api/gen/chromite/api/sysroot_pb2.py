@@ -14,6 +14,7 @@ _sym_db = _symbol_database.Default()
 
 from chromite.api.gen.chromite.api import build_api_pb2 as chromite_dot_api_dot_build__api__pb2
 from chromite.api.gen.chromiumos import common_pb2 as chromiumos_dot_common__pb2
+from chromite.api.gen.chromiumos import metrics_pb2 as chromiumos_dot_metrics__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +22,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
-  serialized_pb=_b('\n\x1a\x63hromite/api/sysroot.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"F\n\x07Sysroot\x12\x0c\n\x04path\x18\x01 \x01(\t\x12-\n\x0c\x62uild_target\x18\x02 \x01(\x0b\x32\x17.chromiumos.BuildTarget\"\x17\n\x07Profile\x12\x0c\n\x04name\x18\x01 \x01(\t\"\xfc\x01\n\x14SysrootCreateRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x37\n\x05\x66lags\x18\x02 \x01(\x0b\x32(.chromite.api.SysrootCreateRequest.Flags\x12&\n\x07profile\x18\x03 \x01(\x0b\x32\x15.chromite.api.Profile\x12\"\n\x06\x63hroot\x18\x04 \x01(\x0b\x32\x12.chromiumos.Chroot\x1a\x30\n\x05\x46lags\x12\x16\n\x0e\x63hroot_current\x18\x01 \x01(\x08\x12\x0f\n\x07replace\x18\x02 \x01(\x08\"?\n\x15SysrootCreateResponse\x12&\n\x07sysroot\x18\x01 \x01(\x0b\x32\x15.chromite.api.Sysroot\"\xc2\x01\n\x17InstallToolchainRequest\x12&\n\x07sysroot\x18\x01 \x01(\x0b\x32\x15.chromite.api.Sysroot\x12:\n\x05\x66lags\x18\x02 \x01(\x0b\x32+.chromite.api.InstallToolchainRequest.Flags\x12\"\n\x06\x63hroot\x18\x03 \x01(\x0b\x32\x12.chromiumos.Chroot\x1a\x1f\n\x05\x46lags\x12\x16\n\x0e\x63ompile_source\x18\x01 \x01(\x08\"L\n\x18InstallToolchainResponse\x12\x30\n\x0f\x66\x61iled_packages\x18\x01 \x03(\x0b\x32\x17.chromiumos.PackageInfo\"\xa7\x02\n\x16InstallPackagesRequest\x12&\n\x07sysroot\x18\x01 \x01(\x0b\x32\x15.chromite.api.Sysroot\x12\x39\n\x05\x66lags\x18\x02 \x01(\x0b\x32*.chromite.api.InstallPackagesRequest.Flags\x12)\n\x08packages\x18\x03 \x03(\x0b\x32\x17.chromiumos.PackageInfo\x12\"\n\x06\x63hroot\x18\x04 \x01(\x0b\x32\x12.chromiumos.Chroot\x12&\n\tuse_flags\x18\x05 \x03(\x0b\x32\x13.chromiumos.UseFlag\x1a\x33\n\x05\x46lags\x12\x16\n\x0e\x63ompile_source\x18\x01 \x01(\x08\x12\x12\n\nevent_file\x18\x02 \x01(\t\"K\n\x17InstallPackagesResponse\x12\x30\n\x0f\x66\x61iled_packages\x18\x01 \x03(\x0b\x32\x17.chromiumos.PackageInfo2\xb7\x02\n\x0eSysrootService\x12Q\n\x06\x43reate\x12\".chromite.api.SysrootCreateRequest\x1a#.chromite.api.SysrootCreateResponse\x12\x61\n\x10InstallToolchain\x12%.chromite.api.InstallToolchainRequest\x1a&.chromite.api.InstallToolchainResponse\x12^\n\x0fInstallPackages\x12$.chromite.api.InstallPackagesRequest\x1a%.chromite.api.InstallPackagesResponse\x1a\x0f\xc2\xed\x1a\x0b\n\x07sysroot\x10\x01\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
+  serialized_pb=_b('\n\x1a\x63hromite/api/sysroot.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\x1a\x18\x63hromiumos/metrics.proto\"F\n\x07Sysroot\x12\x0c\n\x04path\x18\x01 \x01(\t\x12-\n\x0c\x62uild_target\x18\x02 \x01(\x0b\x32\x17.chromiumos.BuildTarget\"\x17\n\x07Profile\x12\x0c\n\x04name\x18\x01 \x01(\t\"\xfc\x01\n\x14SysrootCreateRequest\x12-\n\x0c\x62uild_target\x18\x01 \x01(\x0b\x32\x17.chromiumos.BuildTarget\x12\x37\n\x05\x66lags\x18\x02 \x01(\x0b\x32(.chromite.api.SysrootCreateRequest.Flags\x12&\n\x07profile\x18\x03 \x01(\x0b\x32\x15.chromite.api.Profile\x12\"\n\x06\x63hroot\x18\x04 \x01(\x0b\x32\x12.chromiumos.Chroot\x1a\x30\n\x05\x46lags\x12\x16\n\x0e\x63hroot_current\x18\x01 \x01(\x08\x12\x0f\n\x07replace\x18\x02 \x01(\x08\"?\n\x15SysrootCreateResponse\x12&\n\x07sysroot\x18\x01 \x01(\x0b\x32\x15.chromite.api.Sysroot\"\xc2\x01\n\x17InstallToolchainRequest\x12&\n\x07sysroot\x18\x01 \x01(\x0b\x32\x15.chromite.api.Sysroot\x12:\n\x05\x66lags\x18\x02 \x01(\x0b\x32+.chromite.api.InstallToolchainRequest.Flags\x12\"\n\x06\x63hroot\x18\x03 \x01(\x0b\x32\x12.chromiumos.Chroot\x1a\x1f\n\x05\x46lags\x12\x16\n\x0e\x63ompile_source\x18\x01 \x01(\x08\"L\n\x18InstallToolchainResponse\x12\x30\n\x0f\x66\x61iled_packages\x18\x01 \x03(\x0b\x32\x17.chromiumos.PackageInfo\"\xa7\x02\n\x16InstallPackagesRequest\x12&\n\x07sysroot\x18\x01 \x01(\x0b\x32\x15.chromite.api.Sysroot\x12\x39\n\x05\x66lags\x18\x02 \x01(\x0b\x32*.chromite.api.InstallPackagesRequest.Flags\x12)\n\x08packages\x18\x03 \x03(\x0b\x32\x17.chromiumos.PackageInfo\x12\"\n\x06\x63hroot\x18\x04 \x01(\x0b\x32\x12.chromiumos.Chroot\x12&\n\tuse_flags\x18\x05 \x03(\x0b\x32\x13.chromiumos.UseFlag\x1a\x33\n\x05\x46lags\x12\x16\n\x0e\x63ompile_source\x18\x01 \x01(\x08\x12\x12\n\nevent_file\x18\x02 \x01(\t\"t\n\x17InstallPackagesResponse\x12\x30\n\x0f\x66\x61iled_packages\x18\x01 \x03(\x0b\x32\x17.chromiumos.PackageInfo\x12\'\n\x06\x65vents\x18\x02 \x03(\x0b\x32\x17.chromiumos.MetricEvent2\xb7\x02\n\x0eSysrootService\x12Q\n\x06\x43reate\x12\".chromite.api.SysrootCreateRequest\x1a#.chromite.api.SysrootCreateResponse\x12\x61\n\x10InstallToolchain\x12%.chromite.api.InstallToolchainRequest\x1a&.chromite.api.InstallToolchainResponse\x12^\n\x0fInstallPackages\x12$.chromite.api.InstallPackagesRequest\x1a%.chromite.api.InstallPackagesResponse\x1a\x0f\xc2\xed\x1a\x0b\n\x07sysroot\x10\x01\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
-  dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
+  dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,chromiumos_dot_metrics__pb2.DESCRIPTOR,])
 
 
 
@@ -61,8 +62,8 @@ _SYSROOT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=99,
-  serialized_end=169,
+  serialized_start=125,
+  serialized_end=195,
 )
 
 
@@ -92,8 +93,8 @@ _PROFILE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=171,
-  serialized_end=194,
+  serialized_start=197,
+  serialized_end=220,
 )
 
 
@@ -130,8 +131,8 @@ _SYSROOTCREATEREQUEST_FLAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=401,
-  serialized_end=449,
+  serialized_start=427,
+  serialized_end=475,
 )
 
 _SYSROOTCREATEREQUEST = _descriptor.Descriptor(
@@ -181,8 +182,8 @@ _SYSROOTCREATEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=197,
-  serialized_end=449,
+  serialized_start=223,
+  serialized_end=475,
 )
 
 
@@ -212,8 +213,8 @@ _SYSROOTCREATERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=451,
-  serialized_end=514,
+  serialized_start=477,
+  serialized_end=540,
 )
 
 
@@ -243,8 +244,8 @@ _INSTALLTOOLCHAINREQUEST_FLAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=680,
-  serialized_end=711,
+  serialized_start=706,
+  serialized_end=737,
 )
 
 _INSTALLTOOLCHAINREQUEST = _descriptor.Descriptor(
@@ -287,8 +288,8 @@ _INSTALLTOOLCHAINREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=517,
-  serialized_end=711,
+  serialized_start=543,
+  serialized_end=737,
 )
 
 
@@ -318,8 +319,8 @@ _INSTALLTOOLCHAINRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=713,
-  serialized_end=789,
+  serialized_start=739,
+  serialized_end=815,
 )
 
 
@@ -356,8 +357,8 @@ _INSTALLPACKAGESREQUEST_FLAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1036,
-  serialized_end=1087,
+  serialized_start=1062,
+  serialized_end=1113,
 )
 
 _INSTALLPACKAGESREQUEST = _descriptor.Descriptor(
@@ -414,8 +415,8 @@ _INSTALLPACKAGESREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=792,
-  serialized_end=1087,
+  serialized_start=818,
+  serialized_end=1113,
 )
 
 
@@ -433,6 +434,13 @@ _INSTALLPACKAGESRESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='events', full_name='chromite.api.InstallPackagesResponse.events', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -445,8 +453,8 @@ _INSTALLPACKAGESRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1089,
-  serialized_end=1164,
+  serialized_start=1115,
+  serialized_end=1231,
 )
 
 _SYSROOT.fields_by_name['build_target'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
@@ -468,6 +476,7 @@ _INSTALLPACKAGESREQUEST.fields_by_name['packages'].message_type = chromiumos_dot
 _INSTALLPACKAGESREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
 _INSTALLPACKAGESREQUEST.fields_by_name['use_flags'].message_type = chromiumos_dot_common__pb2._USEFLAG
 _INSTALLPACKAGESRESPONSE.fields_by_name['failed_packages'].message_type = chromiumos_dot_common__pb2._PACKAGEINFO
+_INSTALLPACKAGESRESPONSE.fields_by_name['events'].message_type = chromiumos_dot_metrics__pb2._METRICEVENT
 DESCRIPTOR.message_types_by_name['Sysroot'] = _SYSROOT
 DESCRIPTOR.message_types_by_name['Profile'] = _PROFILE
 DESCRIPTOR.message_types_by_name['SysrootCreateRequest'] = _SYSROOTCREATEREQUEST
@@ -567,8 +576,8 @@ _SYSROOTSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\013\n\007sysroot\020\001'),
-  serialized_start=1167,
-  serialized_end=1478,
+  serialized_start=1234,
+  serialized_end=1545,
   methods=[
   _descriptor.MethodDescriptor(
     name='Create',

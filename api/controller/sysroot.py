@@ -10,12 +10,14 @@ from __future__ import print_function
 from chromite.api import controller
 from chromite.api import validate
 from chromite.api.controller import controller_util
+from chromite.api.metrics import deserialize_metrics_log
 from chromite.lib import build_target_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.service import sysroot
+from chromite.utils import metrics
 
 _ACCEPTED_LICENSES = '@CHROMEOS'
 
@@ -74,6 +76,7 @@ def InstallToolchain(input_proto, output_proto, _config):
 
 @validate.require('sysroot.path', 'sysroot.build_target.name')
 @validate.validation_complete
+@metrics.collect_metrics
 def InstallPackages(input_proto, output_proto, _config):
   """Install packages into a sysroot, building as necessary and permitted."""
   compile_source = input_proto.flags.compile_source
@@ -110,6 +113,9 @@ def InstallPackages(input_proto, output_proto, _config):
       controller_util.CPVToPackageInfo(package, package_info)
 
     return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
+
+  # Read metric events log and pipe them into output_proto.events.
+  deserialize_metrics_log(output_proto.events, prefix=build_target_name)
 
 
 def _LogBinhost(board):

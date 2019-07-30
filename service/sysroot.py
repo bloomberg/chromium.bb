@@ -16,6 +16,7 @@ from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.lib import workon_helper
+from chromite.utils import metrics
 
 
 class Error(Exception):
@@ -303,7 +304,10 @@ def BuildPackages(target, sysroot, run_configs):
       extra_env['USE'] = run_configs.GetUseFlags()
 
     try:
-      cros_build_lib.RunCommand(cmd, enter_chroot=True, extra_env=extra_env)
+      # REVIEW: discuss which dimensions to flatten into the metric
+      # name other than target.name...
+      with metrics.timer('service.sysroot.BuildPackages.RunCommand'):
+        cros_build_lib.RunCommand(cmd, extra_env=extra_env)
     except cros_build_lib.RunCommandError as e:
       failed_pkgs = portage_util.ParseDieHookStatusFile(tempdir)
       raise sysroot_lib.PackageInstallError(
