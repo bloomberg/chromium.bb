@@ -185,7 +185,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
 
   // NetworkHandler and UIProxyConfigService may not exist in tests.
   UIProxyConfigService* ui_proxy_config_service =
-      NetworkHandler::IsInitialized()
+      NetworkHandler::IsInitialized() &&
+              NetworkHandler::Get()->has_ui_proxy_config_service()
           ? NetworkHandler::Get()->ui_proxy_config_service()
           : nullptr;
   result->proxy_mode =
