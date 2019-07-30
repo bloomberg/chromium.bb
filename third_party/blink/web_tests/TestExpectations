@@ -2146,6 +2146,7 @@ crbug.com/753671 external/wpt/css/css-content/quotes-021.html [ Failure ]
 crbug.com/753671 external/wpt/css/css-content/quotes-022.html [ Failure ]
 crbug.com/753671 external/wpt/css/css-content/quotes-025.html [ Failure ]
 crbug.com/753671 external/wpt/css/css-content/quotes-033.html [ Failure ]
+crbug.com/989123 external/wpt/css/css-typed-om/the-stylepropertymap/computed/get-auto-min-size.html [ Failure ]
 
 # ====== Style team owned tests to here ======
 
@@ -2223,6 +2224,7 @@ crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transit
 crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-transition-property-variable-before-value.html [ Skip ]
 crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-value-before-transition-property-variable.html [ Skip ]
 crbug.com/552085 virtual/cascade/external/wpt/css/css-cascade/important-prop.html [ Failure ]
+crbug.com/989123 virtual/cascade/external/wpt/css/css-typed-om/the-stylepropertymap/computed/get-auto-min-size.html [ Failure ]
 
 # This is for some reason WontFix'd in the main expectations (see NeverFixTests).
 # That seems wrong, as we should support 'revert' eventually.
