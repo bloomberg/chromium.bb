@@ -221,6 +221,7 @@ static_library("test_support") {
     "//third_party/leveldatabase",
     "//third_party/zlib",
     "//ui/base",
+    "//ui/base:pixel_diff_test_support",
     "//ui/events:events_base",
     "//ui/gfx:test_support",
     "//ui/gl",
@@ -255,6 +256,8 @@ static_library("test_support") {
       "base/test_browser_window.cc",
       "base/test_browser_window.h",
       "payments/payment_request_test_controller_desktop.cc",
+      "pixel/browser_skia_gold_pixel_diff.cc",
+      "pixel/browser_skia_gold_pixel_diff.h",
     ]
   }
 
@@ -321,13 +324,6 @@ static_library("test_support") {
     sources += [
       "base/test_browser_window_aura.cc",
       "base/test_browser_window_aura.h",
-    ]
-  }
-
-  if (is_win) {
-    sources += [
-      "pixel/skia_gold_pixel_diff.cc",
-      "pixel/skia_gold_pixel_diff.h",
     ]
   }
 
@@ -3264,11 +3260,6 @@ test("unit_tests") {
     }
   }
 
-  # Pixeltests only support win.
-  if (is_win) {
-    sources += [ "../test/pixel/skia_gold_pixel_diff_unittest.cc" ]
-  }
-
   if (!is_android) {
     sources += [
       # CRLSets are not supported on Android or iOS, but available on all other
@@ -3286,6 +3277,7 @@ test("unit_tests") {
       "../browser/ui/webui/favicon_source_unittest.cc",
       "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
       "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
+      "../test/pixel/browser_skia_gold_pixel_diff_unittest.cc",
     ]
   }
   if (is_chromeos) {
