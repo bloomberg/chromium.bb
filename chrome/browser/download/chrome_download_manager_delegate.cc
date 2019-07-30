@@ -220,16 +220,6 @@ std::string GetMimeType(const base::FilePath& path) {
   return mime_type;
 }
 
-// Reason for why danger type is DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE.
-// Used by "Download.DangerousFile.Reason" UMA metric.
-// Do not change the ordering or remove items.
-enum DangerousFileReason {
-  SB_NOT_AVAILABLE = 0,
-  SB_RETURNS_UNKOWN = 1,
-  SB_RETURNS_SAFE = 2,
-  DANGEROUS_FILE_REASON_MAX
-};
-
 // On Android, Chrome wants to warn the user of file overwrites rather than
 // uniquify.
 #if defined(OS_ANDROID)
@@ -517,8 +507,6 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
             download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
             download::DOWNLOAD_INTERRUPT_REASON_NONE);
       }
-      UMA_HISTOGRAM_ENUMERATION("Download.DangerousFile.Reason",
-                                SB_NOT_AVAILABLE, DANGEROUS_FILE_REASON_MAX);
       base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                                internal_complete_callback);
       return false;
@@ -1155,9 +1143,6 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
         if (DownloadItemModel(item).GetDangerLevel() !=
             DownloadFileType::NOT_DANGEROUS) {
           danger_type = download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
-          UMA_HISTOGRAM_ENUMERATION("Download.DangerousFile.Reason",
-                                    SB_RETURNS_UNKOWN,
-                                    DANGEROUS_FILE_REASON_MAX);
         }
         break;
       case safe_browsing::DownloadCheckResult::SAFE:
@@ -1167,8 +1152,6 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
         if (DownloadItemModel(item).GetDangerLevel() ==
             DownloadFileType::DANGEROUS) {
           danger_type = download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
-          UMA_HISTOGRAM_ENUMERATION("Download.DangerousFile.Reason",
-                                    SB_RETURNS_SAFE, DANGEROUS_FILE_REASON_MAX);
         }
         break;
       case safe_browsing::DownloadCheckResult::DANGEROUS:
