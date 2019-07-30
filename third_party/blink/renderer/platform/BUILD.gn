@@ -1424,6 +1424,7 @@ jumbo_component("platform") {
     "//device/vr/public/mojom:mojom_blink",
     "//gin",
     "//media",
+    "//media/capture/mojom:video_capture",
     "//mojo/public/cpp/base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:wtf_support",
