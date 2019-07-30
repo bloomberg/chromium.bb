@@ -10685,6 +10685,7 @@ interface XRInputSource
     getter gamepad
     getter gripSpace
     getter handedness
+    getter profiles
     getter targetRayMode
     getter targetRaySpace
     method constructor
