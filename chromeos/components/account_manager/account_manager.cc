@@ -202,6 +202,7 @@ void AccountManager::Initialize(
     // invocation of |Initialize| matches the one it is currently being called
     // with.
     DCHECK_EQ(home_dir, writer_->path().DirName());
+    std::move(initialization_callback).Run();
     return;
   }
 

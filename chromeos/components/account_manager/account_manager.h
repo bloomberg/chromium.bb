@@ -139,6 +139,8 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
 
   // Same as above except that it accepts an |initialization_callback|, which
   // will be called after Account Manager has been fully initialized.
+  // If Account Manager has already been fully initialized,
+  // |initialization_callback| is called immediately.
   // Note: During initialization, there is no ordering guarantee between
   // |initialization_callback| and Account Manager's observers getting their
   // callbacks.
@@ -261,7 +263,7 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   class GaiaTokenRevocationRequest;
 
   friend class AccountManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestInitialization);
+  FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestInitializationCompletes);
   FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestTokenPersistence);
   FRIEND_TEST_ALL_PREFIXES(AccountManagerTest,
                            UpdatingAccountEmailShouldNotOverwriteTokens);
