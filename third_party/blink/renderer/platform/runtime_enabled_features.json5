@@ -1619,6 +1619,9 @@
       status: "experimental"
     },
     {
+      name: "UseWindowsSystemColors",
+    },
+    {
       name: "V8IdleTasks",
     },
     {
