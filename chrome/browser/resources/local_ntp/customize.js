@@ -1896,7 +1896,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   const richerPicker = $(customize.IDS.CUSTOMIZATION_MENU);
-  richerPicker.onclick = function(event) {
+  richerPicker.onmousedown = function(event) {
     richerPicker.classList.add(customize.CLASSES.MOUSE_NAV);
   };
   richerPicker.onkeydown = function(event) {
