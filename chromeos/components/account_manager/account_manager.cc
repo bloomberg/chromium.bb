@@ -296,6 +296,11 @@ AccountManager::~AccountManager() {
   // AccountManager is supposed to be used as a leaky global.
 }
 
+bool AccountManager::IsInitialized() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return init_state_ == InitializationState::kInitialized;
+}
+
 void AccountManager::RunOnInitialization(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

@@ -195,6 +195,7 @@ TEST_F(AccountManagerTest, TestInitialization) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(account_manager.init_state_,
             AccountManager::InitializationState::kInitialized);
+  EXPECT_TRUE(account_manager.IsInitialized());
 }
 
 TEST_F(AccountManagerTest, TestUpsert) {

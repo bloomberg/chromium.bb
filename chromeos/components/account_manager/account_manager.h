@@ -148,6 +148,9 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
       DelayNetworkCallRunner delay_network_call_runner,
       base::OnceClosure initialization_callback);
 
+  // Returns |true| if |AccountManager| has been fully initialized.
+  bool IsInitialized() const;
+
   // Gets (async) a list of account keys known to |AccountManager|. Note that
   // |callback| will be immediately called in the same thread if
   // |AccountManager| has been fully initialized and hence it may not be safe to
