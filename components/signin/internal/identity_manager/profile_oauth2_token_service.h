@@ -84,10 +84,11 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   bool FixRequestErrorIfPossible() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
-  void OnAccessTokenInvalidated(const CoreAccountId& account_id,
-                                const std::string& client_id,
-                                const std::set<std::string>& scopes,
-                                const std::string& access_token) override;
+  void OnAccessTokenInvalidated(
+      const CoreAccountId& account_id,
+      const std::string& client_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      const std::string& access_token) override;
   void OnAccessTokenFetched(const CoreAccountId& account_id,
                             const GoogleServiceAuthError& error) override;
 

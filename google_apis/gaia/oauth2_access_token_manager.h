@@ -64,7 +64,7 @@ class OAuth2AccessTokenManager {
     // Called when an access token is invalidated.
     virtual void OnAccessTokenInvalidated(const CoreAccountId& account_id,
                                           const std::string& client_id,
-                                          const std::set<std::string>& scopes,
+                                          const ScopeSet& scopes,
                                           const std::string& access_token) {}
 
     // Called when an access token is fetched.

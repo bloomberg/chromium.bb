@@ -104,7 +104,7 @@ ProfileOAuth2TokenService::GetURLLoaderFactory() const {
 void ProfileOAuth2TokenService::OnAccessTokenInvalidated(
     const CoreAccountId& account_id,
     const std::string& client_id,
-    const std::set<std::string>& scopes,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
     const std::string& access_token) {
   delegate_->OnAccessTokenInvalidated(account_id, client_id, scopes,
                                       access_token);
