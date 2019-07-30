@@ -23,13 +23,11 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/appcache/appcache_interceptor.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
-#include "content/browser/devtools/devtools_url_request_interceptor.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
@@ -51,7 +49,6 @@
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
-#include "storage/browser/fileapi/file_system_url_request_job_factory.h"
 
 using storage::FileSystemContext;
 using storage::BlobStorageContext;

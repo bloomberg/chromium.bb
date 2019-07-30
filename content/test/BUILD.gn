@@ -1489,7 +1489,6 @@ test("content_unittests") {
     "../browser/appcache/appcache_storage_unittest.cc",
     "../browser/appcache/appcache_unittest.cc",
     "../browser/appcache/appcache_update_job_unittest.cc",
-    "../browser/appcache/appcache_url_request_job_unittest.cc",
     "../browser/appcache/chrome_appcache_service_unittest.cc",
     "../browser/appcache/mock_appcache_policy.cc",
     "../browser/appcache/mock_appcache_policy.h",

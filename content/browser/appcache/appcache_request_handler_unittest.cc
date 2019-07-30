@@ -31,8 +31,6 @@
 #include "content/browser/appcache/appcache_job.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
-#include "content/browser/appcache/appcache_url_request.h"
-#include "content/browser/appcache/appcache_url_request_job.h"
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -44,10 +42,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_error_job.h"
-#include "net/url_request/url_request_job_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,20 +53,12 @@ namespace content {
 
 static const int kMockProcessId = 1;
 
-// Controls whether we instantiate the URLRequest based AppCache handler or
-// the URLLoader based one.
-enum RequestHandlerType {
-  URLREQUEST,
-  URLLOADER,
-};
-
 // TODO(michaeln/ananta)
 // Build on the abstractions provided by the request and the job classes to
 // provide mock request and job classes to the AppCacheRequestHandler class
 // which would make it testable. It would also allow us to avoid the URLRequest
 // and URLLoader semantics in the test cases here,
-class AppCacheRequestHandlerTest
-    : public testing::TestWithParam<RequestHandlerType> {
+class AppCacheRequestHandlerTest : public ::testing::Test {
  public:
   // Helper callback to run a test on our io_thread. The io_thread is spun up
   // once and reused for all tests.
@@ -81,32 +67,6 @@ class AppCacheRequestHandlerTest
     SetUpTest();
     (this->*method)();
   }
-
-  // Subclasses to simulate particular responses so test cases can
-  // exercise fallback code paths.
-
-  class MockURLRequestDelegate : public net::URLRequest::Delegate {
-   public:
-    MockURLRequestDelegate() : request_status_(1) {}
-
-    void OnResponseStarted(net::URLRequest* request, int net_error) override {
-      DCHECK_NE(net::ERR_IO_PENDING, net_error);
-      request_status_ = net_error;
-    }
-
-    void OnReadCompleted(net::URLRequest* request, int bytes_read) override {
-      DCHECK_NE(net::ERR_IO_PENDING, bytes_read);
-      if (bytes_read >= 0)
-        request_status_ = net::OK;
-      else
-        request_status_ = bytes_read;
-    }
-
-    int request_status() const { return request_status_; }
-
-   private:
-    int request_status_;
-  };
 
   static void SetUpTestCase() {
     thread_bundle_ = std::make_unique<TestBrowserThreadBundle>(
@@ -129,7 +89,7 @@ class AppCacheRequestHandlerTest
     feature_list_.InitWithFeatures({}, {features::kNavigationLoaderOnUI});
   }
 
-  ~AppCacheRequestHandlerTest() {
+  ~AppCacheRequestHandlerTest() override {
     AppCacheRequestHandler::SetRunningInTests(false);
   }
 
@@ -778,7 +738,6 @@ class AppCacheRequestHandlerTest
   std::unique_ptr<MockAppCachePolicy> mock_policy_;
   AppCacheHost* host_;
   mojo::Remote<blink::mojom::AppCacheHost> host_remote_;
-  MockURLRequestDelegate delegate_;
   AppCacheRequest* request_;
   std::unique_ptr<net::URLRequest> url_request_;
   std::unique_ptr<AppCacheRequestHandler> handler_;
