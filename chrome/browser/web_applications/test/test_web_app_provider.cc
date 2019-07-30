@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/test_web_app_provider.h"
 
 #include <utility>
 

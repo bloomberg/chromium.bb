@@ -359,16 +359,20 @@ static_library("test_support") {
 
     public_deps += [
       "//apps:test_support",
-      "//chrome/browser/web_applications:web_applications_test_support",
-      "//chrome/browser/web_applications/bookmark_apps:test_support",
       "//chrome/common/extensions/api",
       "//components/guest_view/browser:test_support",
       "//extensions:test_support",
       "//google_apis/drive:test_support",
     ]
 
-    allow_circular_includes_from =
-        [ "//chrome/browser/web_applications:web_applications_test_support" ]
+    deps += [
+      "//chrome/browser/web_applications:web_applications_on_extensions_test_support",
+      "//chrome/browser/web_applications:web_applications_test_support",
+    ]
+    allow_circular_includes_from = [
+      "//chrome/browser/web_applications:web_applications_on_extensions_test_support",
+      "//chrome/browser/web_applications:web_applications_test_support",
+    ]
   }
 
   if (enable_message_center) {

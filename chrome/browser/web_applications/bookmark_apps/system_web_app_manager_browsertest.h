@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 class Browser;
