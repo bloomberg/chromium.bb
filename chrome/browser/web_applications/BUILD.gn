@@ -91,7 +91,8 @@ source_set("web_applications_test_support") {
     "test/test_web_app_ui_manager.h",
     "test/test_web_app_url_loader.cc",
     "test/test_web_app_url_loader.h",
-    "test/web_app_test.cc",
+    "test/web_app_icon_test_utils.cc",
+    "test/web_app_icon_test_utils.h",
     "test/web_app_test.h",
   ]
 
