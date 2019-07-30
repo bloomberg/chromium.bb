@@ -33,7 +33,7 @@ mojom("interfaces") {
     "//ui/display/mojom:mojom",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/image/mojom",
-    "//ui/gfx/range/mojo",
+    "//ui/gfx/range/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
 

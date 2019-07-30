@@ -12,7 +12,7 @@ import "ui/display/mojom/display.mojom";
 import "ui/events/mojom/event.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/ca_layer_params.mojom";
-import "ui/gfx/range/mojo/range.mojom";
+import "ui/gfx/range/mojom/range.mojom";
 
 // The interface through which code in the browser process, in
 // RenderWidgetHostViewMac, sends messages to the app shim process, targeting

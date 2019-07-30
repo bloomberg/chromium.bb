@@ -841,7 +841,7 @@ test("gfx_unittests") {
       "//ui/gfx/geometry/mojom:unit_test",
       "//ui/gfx/image/mojom:unit_test",
       "//ui/gfx/mojom:test_interfaces",
-      "//ui/gfx/range/mojo:unit_test",
+      "//ui/gfx/range/mojom:unit_test",
     ]
   }
 

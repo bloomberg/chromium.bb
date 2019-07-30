@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_RANGE_MOJO_RANGE_STRUCT_TRAITS_H_
-#define UI_GFX_RANGE_MOJO_RANGE_STRUCT_TRAITS_H_
+#ifndef UI_GFX_RANGE_MOJOM_RANGE_MOJOM_TRAITS_H_
+#define UI_GFX_RANGE_MOJOM_RANGE_MOJOM_TRAITS_H_
 
-#include "ui/gfx/range/mojo/range.mojom-shared.h"
+#include "ui/gfx/range/mojom/range.mojom-shared.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/range/range_f.h"
 
@@ -35,4 +35,4 @@ struct StructTraits<gfx::mojom::RangeFDataView, gfx::RangeF> {
 
 }  // namespace mojo
 
-#endif  // UI_GFX_RANGE_MOJO_RANGE_STRUCT_TRAITS_H_
+#endif  // UI_GFX_RANGE_MOJOM_RANGE_MOJOM_TRAITS_H_

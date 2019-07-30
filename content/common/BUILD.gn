@@ -524,7 +524,7 @@ mojom("mojo_bindings") {
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/image/mojom",
     "//ui/gfx/mojom",
-    "//ui/gfx/range/mojo",
+    "//ui/gfx/range/mojom",
     "//ui/latency/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
