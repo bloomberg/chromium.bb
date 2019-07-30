@@ -145,12 +145,12 @@ ProfileOAuth2TokenService::GetDelegate() const {
 }
 
 void ProfileOAuth2TokenService::AddObserver(
-    OAuth2TokenServiceObserver* observer) {
+    ProfileOAuth2TokenServiceObserver* observer) {
   delegate_->AddObserver(observer);
 }
 
 void ProfileOAuth2TokenService::RemoveObserver(
-    OAuth2TokenServiceObserver* observer) {
+    ProfileOAuth2TokenServiceObserver* observer) {
   delegate_->RemoveObserver(observer);
 }
 

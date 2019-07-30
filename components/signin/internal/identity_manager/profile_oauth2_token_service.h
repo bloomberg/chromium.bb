@@ -14,12 +14,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/buildflag.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
-#include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "net/base/backoff_entry.h"
 
 namespace signin {
@@ -60,7 +60,7 @@ class ProfileOAuth2TokenServiceDelegate;
 //
 // Note: requests should be started from the UI thread.
 class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
-                                  public OAuth2TokenServiceObserver {
+                                  public ProfileOAuth2TokenServiceObserver {
  public:
   typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */,
                                        bool /* is_refresh_token_valid */,
@@ -98,8 +98,8 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   const ProfileOAuth2TokenServiceDelegate* GetDelegate() const;
 
   // Add or remove observers of this token service.
-  void AddObserver(OAuth2TokenServiceObserver* observer);
-  void RemoveObserver(OAuth2TokenServiceObserver* observer);
+  void AddObserver(ProfileOAuth2TokenServiceObserver* observer);
+  void RemoveObserver(ProfileOAuth2TokenServiceObserver* observer);
 
   // Add or remove observers of access token manager.
   void AddAccessTokenDiagnosticsObserver(
@@ -264,7 +264,7 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
  private:
   friend class signin::IdentityManager;
 
-  // OAuth2TokenServiceObserver implementation.
+  // ProfileOAuth2TokenServiceObserver implementation.
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
   void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;
