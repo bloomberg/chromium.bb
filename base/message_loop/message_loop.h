@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop_current.h"
-#include "base/message_loop/message_pump.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
@@ -29,6 +29,7 @@ class MessageLoopTaskEnvironment;
 }  // namespace internal
 
 class MessageLoopImpl;
+class MessagePump;
 
 namespace sequence_manager {
 class TaskQueue;
