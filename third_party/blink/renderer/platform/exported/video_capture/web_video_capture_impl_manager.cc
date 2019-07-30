@@ -6,7 +6,7 @@
 //
 // How is VideoCaptureImpl used:
 //
-// VideoCaptureImpl is an IO thread object while VideoCaptureImplManager
+// VideoCaptureImpl is an IO thread object while WebVideoCaptureImplManager
 // lives only on the render thread. It is only possible to access an
 // object of VideoCaptureImpl via a task on the IO thread.
 //
@@ -22,7 +22,7 @@
 // We make sure deletion is the last task on the IO thread for a
 // VideoCaptureImpl object. This allows the use of Unretained() binding.
 
-#include "content/renderer/media/video_capture/video_capture_impl_manager.h"
+#include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 
 #include <algorithm>
 #include <string>
@@ -31,12 +31,25 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/child/child_process.h"
-#include "content/renderer/media/video_capture/video_capture_impl.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/video_capture/video_capture_impl.h"
 
-namespace content {
+namespace blink {
 
-struct VideoCaptureImplManager::DeviceEntry {
+media::VideoCaptureFormats ToVideoCaptureFormats(
+    const Vector<media::VideoCaptureFormat>& format_vector) {
+  media::VideoCaptureFormats formats;
+  std::copy(format_vector.begin(), format_vector.end(),
+            std::back_inserter(formats));
+  return formats;
+}
+
+void MediaCallbackCaller(VideoCaptureDeviceFormatsCB media_callback,
+                         const Vector<media::VideoCaptureFormat>& formats) {
+  std::move(media_callback).Run(ToVideoCaptureFormats(formats));
+}
+
+struct WebVideoCaptureImplManager::DeviceEntry {
   media::VideoCaptureSessionId session_id;
 
   // To be used and destroyed only on the IO thread.
@@ -46,8 +59,8 @@ struct VideoCaptureImplManager::DeviceEntry {
   int client_count;
 
   // This is set to true if this device is being suspended, via
-  // VideoCaptureImplManager::Suspend().
-  // See also: VideoCaptureImplManager::is_suspending_all_.
+  // WebVideoCaptureImplManager::Suspend().
+  // See also: WebVideoCaptureImplManager::is_suspending_all_.
   bool is_individually_suspended;
 
   DeviceEntry() : client_count(0), is_individually_suspended(false) {}
@@ -56,24 +69,24 @@ struct VideoCaptureImplManager::DeviceEntry {
   ~DeviceEntry() = default;
 };
 
-VideoCaptureImplManager::VideoCaptureImplManager()
+WebVideoCaptureImplManager::WebVideoCaptureImplManager()
     : next_client_id_(0),
       render_main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       is_suspending_all_(false) {}
 
-VideoCaptureImplManager::~VideoCaptureImplManager() {
+WebVideoCaptureImplManager::~WebVideoCaptureImplManager() {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   if (devices_.empty())
     return;
   // Forcibly release all video capture resources.
   for (auto& entry : devices_) {
-    ChildProcess::current()->io_task_runner()->DeleteSoon(FROM_HERE,
-                                                          entry.impl.release());
+    Platform::Current()->GetIOTaskRunner()->DeleteSoon(FROM_HERE,
+                                                       entry.impl.release());
   }
   devices_.clear();
 }
 
-base::OnceClosure VideoCaptureImplManager::UseDevice(
+base::OnceClosure WebVideoCaptureImplManager::UseDevice(
     const media::VideoCaptureSessionId& id) {
   DVLOG(1) << __func__ << " session id: " << id;
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
@@ -90,7 +103,7 @@ base::OnceClosure VideoCaptureImplManager::UseDevice(
   }
   ++it->client_count;
 
-  // Design limit: When there are multiple clients, VideoCaptureImplManager
+  // Design limit: When there are multiple clients, WebVideoCaptureImplManager
   // would have to individually track which ones requested suspending/resuming,
   // in order to determine whether the whole device should be suspended.
   // Instead, handle the non-common use case of multiple clients by just
@@ -99,15 +112,15 @@ base::OnceClosure VideoCaptureImplManager::UseDevice(
   if (it->is_individually_suspended)
     Resume(id);
 
-  return base::BindOnce(&VideoCaptureImplManager::UnrefDevice,
+  return base::BindOnce(&WebVideoCaptureImplManager::UnrefDevice,
                         weak_factory_.GetWeakPtr(), id);
 }
 
-base::OnceClosure VideoCaptureImplManager::StartCapture(
+base::OnceClosure WebVideoCaptureImplManager::StartCapture(
     const media::VideoCaptureSessionId& id,
     const media::VideoCaptureParams& params,
-    const blink::VideoCaptureStateUpdateCB& state_update_cb,
-    const blink::VideoCaptureDeliverFrameCB& deliver_frame_cb) {
+    const VideoCaptureStateUpdateCB& state_update_cb,
+    const VideoCaptureDeliverFrameCB& deliver_frame_cb) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -119,15 +132,15 @@ base::OnceClosure VideoCaptureImplManager::StartCapture(
 
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
-  ChildProcess::current()->io_task_runner()->PostTask(
+  Platform::Current()->GetIOTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::StartCapture,
                                 base::Unretained(it->impl.get()), client_id,
                                 params, state_update_cb, deliver_frame_cb));
-  return base::BindOnce(&VideoCaptureImplManager::StopCapture,
+  return base::BindOnce(&WebVideoCaptureImplManager::StopCapture,
                         weak_factory_.GetWeakPtr(), client_id, id);
 }
 
-void VideoCaptureImplManager::RequestRefreshFrame(
+void WebVideoCaptureImplManager::RequestRefreshFrame(
     const media::VideoCaptureSessionId& id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
@@ -136,12 +149,13 @@ void VideoCaptureImplManager::RequestRefreshFrame(
   DCHECK(it != devices_.end());
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
-  ChildProcess::current()->io_task_runner()->PostTask(
+  Platform::Current()->GetIOTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::RequestRefreshFrame,
                                 base::Unretained(it->impl.get())));
 }
 
-void VideoCaptureImplManager::Suspend(const media::VideoCaptureSessionId& id) {
+void WebVideoCaptureImplManager::Suspend(
+    const media::VideoCaptureSessionId& id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -156,12 +170,13 @@ void VideoCaptureImplManager::Suspend(const media::VideoCaptureSessionId& id) {
     return;  // Device should already be suspended.
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
-  ChildProcess::current()->io_task_runner()->PostTask(
+  Platform::Current()->GetIOTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::SuspendCapture,
                                 base::Unretained(it->impl.get()), true));
 }
 
-void VideoCaptureImplManager::Resume(const media::VideoCaptureSessionId& id) {
+void WebVideoCaptureImplManager::Resume(
+    const media::VideoCaptureSessionId& id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -174,14 +189,14 @@ void VideoCaptureImplManager::Resume(const media::VideoCaptureSessionId& id) {
     return;  // Device must remain suspended until all are resumed.
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
-  ChildProcess::current()->io_task_runner()->PostTask(
+  Platform::Current()->GetIOTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::SuspendCapture,
                                 base::Unretained(it->impl.get()), false));
 }
 
-void VideoCaptureImplManager::GetDeviceSupportedFormats(
+void WebVideoCaptureImplManager::GetDeviceSupportedFormats(
     const media::VideoCaptureSessionId& id,
-    blink::VideoCaptureDeviceFormatsCB callback) {
+    VideoCaptureDeviceFormatsCB callback) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -189,15 +204,16 @@ void VideoCaptureImplManager::GetDeviceSupportedFormats(
   DCHECK(it != devices_.end());
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
-  ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoCaptureImpl::GetDeviceSupportedFormats,
-                     base::Unretained(it->impl.get()), std::move(callback)));
+  Platform::Current()->GetIOTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&VideoCaptureImpl::GetDeviceSupportedFormats,
+                                base::Unretained(it->impl.get()),
+                                base::BindOnce(&MediaCallbackCaller,
+                                               std::move(callback))));
 }
 
-void VideoCaptureImplManager::GetDeviceFormatsInUse(
+void WebVideoCaptureImplManager::GetDeviceFormatsInUse(
     const media::VideoCaptureSessionId& id,
-    blink::VideoCaptureDeviceFormatsCB callback) {
+    VideoCaptureDeviceFormatsCB callback) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -205,19 +221,20 @@ void VideoCaptureImplManager::GetDeviceFormatsInUse(
   DCHECK(it != devices_.end());
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
-  ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoCaptureImpl::GetDeviceFormatsInUse,
-                     base::Unretained(it->impl.get()), std::move(callback)));
+  Platform::Current()->GetIOTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&VideoCaptureImpl::GetDeviceFormatsInUse,
+                                base::Unretained(it->impl.get()),
+                                base::BindOnce(&MediaCallbackCaller,
+                                               std::move(callback))));
 }
 
 std::unique_ptr<VideoCaptureImpl>
-VideoCaptureImplManager::CreateVideoCaptureImplForTesting(
+WebVideoCaptureImplManager::CreateVideoCaptureImplForTesting(
     const media::VideoCaptureSessionId& session_id) const {
   return nullptr;
 }
 
-void VideoCaptureImplManager::StopCapture(
+void WebVideoCaptureImplManager::StopCapture(
     int client_id,
     const media::VideoCaptureSessionId& id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
@@ -227,12 +244,12 @@ void VideoCaptureImplManager::StopCapture(
   DCHECK(it != devices_.end());
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
-  ChildProcess::current()->io_task_runner()->PostTask(
+  Platform::Current()->GetIOTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::StopCapture,
                                 base::Unretained(it->impl.get()), client_id));
 }
 
-void VideoCaptureImplManager::UnrefDevice(
+void WebVideoCaptureImplManager::UnrefDevice(
     const media::VideoCaptureSessionId& id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
@@ -243,19 +260,20 @@ void VideoCaptureImplManager::UnrefDevice(
   --it->client_count;
   if (it->client_count > 0)
     return;
-  ChildProcess::current()->io_task_runner()->DeleteSoon(FROM_HERE,
-                                                        it->impl.release());
+  Platform::Current()->GetIOTaskRunner()->DeleteSoon(FROM_HERE,
+                                                     it->impl.release());
+
   devices_.erase(it);
 }
 
-void VideoCaptureImplManager::SuspendDevices(
-    const blink::MediaStreamDevices& video_devices,
+void WebVideoCaptureImplManager::SuspendDevices(
+    const MediaStreamDevices& video_devices,
     bool suspend) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   if (is_suspending_all_ == suspend)
     return;
   is_suspending_all_ = suspend;
-  for (const blink::MediaStreamDevice& device : video_devices) {
+  for (const MediaStreamDevice& device : video_devices) {
     const media::VideoCaptureSessionId id = device.session_id();
     const auto it = std::find_if(
         devices_.begin(), devices_.end(),
@@ -265,13 +283,13 @@ void VideoCaptureImplManager::SuspendDevices(
       continue;  // Either: 1) Already suspended; or 2) Should not be resumed.
     // Use of base::Unretained() is safe because |devices_| is released on the
     // |io_task_runner()| as well.
-    ChildProcess::current()->io_task_runner()->PostTask(
+    Platform::Current()->GetIOTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&VideoCaptureImpl::SuspendCapture,
                                   base::Unretained(it->impl.get()), suspend));
   }
 }
 
-void VideoCaptureImplManager::OnFrameDropped(
+void WebVideoCaptureImplManager::OnFrameDropped(
     const media::VideoCaptureSessionId& id,
     media::VideoCaptureFrameDropReason reason) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
@@ -279,13 +297,13 @@ void VideoCaptureImplManager::OnFrameDropped(
       devices_.begin(), devices_.end(),
       [id](const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
-  ChildProcess::current()->io_task_runner()->PostTask(
+  Platform::Current()->GetIOTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::OnFrameDropped,
                                 base::Unretained(it->impl.get()), reason));
 }
 
-void VideoCaptureImplManager::OnLog(const media::VideoCaptureSessionId& id,
-                                    const std::string& message) {
+void WebVideoCaptureImplManager::OnLog(const media::VideoCaptureSessionId& id,
+                                       const std::string& message) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -293,9 +311,9 @@ void VideoCaptureImplManager::OnLog(const media::VideoCaptureSessionId& id,
   DCHECK(it != devices_.end());
   // Use of base::Unretained() is safe because |devices_| is released on the
   // |io_task_runner()| as well.
-  ChildProcess::current()->io_task_runner()->PostTask(
+  Platform::Current()->GetIOTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureImpl::OnLog,
                                 base::Unretained(it->impl.get()), message));
 }
 
-}  // namespace content
+}  // namespace blink

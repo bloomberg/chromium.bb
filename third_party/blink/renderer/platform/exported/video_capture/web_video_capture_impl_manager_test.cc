@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <array>
-#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,13 +11,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/child/child_process.h"
-#include "content/renderer/media/video_capture/video_capture_impl.h"
-#include "content/renderer/media/video_capture/video_capture_impl_manager.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/capture/mojom/video_capture.mojom.h"
+#include "media/capture/mojom/video_capture.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
+#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/video_capture/video_capture_impl.h"
 
 using media::BindToCurrentLoop;
 using ::testing::_;
@@ -26,7 +25,7 @@ using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::SaveArg;
 
-namespace content {
+namespace blink {
 
 ACTION_P(RunClosure, closure) {
   closure.Run();
@@ -47,7 +46,7 @@ class PauseResumeCallback {
 };
 
 class MockVideoCaptureImpl : public VideoCaptureImpl,
-                             public media::mojom::VideoCaptureHost {
+                             public media::mojom::blink::VideoCaptureHost {
  public:
   MockVideoCaptureImpl(const media::VideoCaptureSessionId& session_id,
                        PauseResumeCallback* pause_callback,
@@ -62,7 +61,7 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
   void Start(const base::UnguessableToken& device_id,
              const base::UnguessableToken& session_id,
              const media::VideoCaptureParams& params,
-             media::mojom::VideoCaptureObserverPtr observer) override {
+             media::mojom::blink::VideoCaptureObserverPtr observer) override {
     // For every Start(), expect a corresponding Stop() call.
     EXPECT_CALL(*this, Stop(_));
     // Simulate device started.
@@ -100,7 +99,7 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
   MOCK_METHOD2(OnFrameDropped,
                void(const base::UnguessableToken&,
                     media::VideoCaptureFrameDropReason));
-  MOCK_METHOD2(OnLog, void(const base::UnguessableToken&, const std::string&));
+  MOCK_METHOD2(OnLog, void(const base::UnguessableToken&, const String&));
 
   PauseResumeCallback* const pause_callback_;
   const base::Closure destruct_callback_;
@@ -108,7 +107,7 @@ class MockVideoCaptureImpl : public VideoCaptureImpl,
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureImpl);
 };
 
-class MockVideoCaptureImplManager : public VideoCaptureImplManager {
+class MockVideoCaptureImplManager : public WebVideoCaptureImplManager {
  public:
   MockVideoCaptureImplManager(PauseResumeCallback* pause_callback,
                               base::Closure stop_capture_callback)
@@ -203,10 +202,10 @@ class VideoCaptureImplManagerTest : public ::testing::Test,
   MOCK_METHOD1(OnResumed, void(const media::VideoCaptureSessionId& id));
 
   void OnStateUpdate(const media::VideoCaptureSessionId& id,
-                     blink::VideoCaptureState state) {
-    if (state == blink::VIDEO_CAPTURE_STATE_STARTED)
+                     VideoCaptureState state) {
+    if (state == VIDEO_CAPTURE_STATE_STARTED)
       OnStarted(id);
-    else if (state == blink::VIDEO_CAPTURE_STATE_STOPPED)
+    else if (state == VIDEO_CAPTURE_STATE_STOPPED)
       OnStopped(id);
     else
       NOTREACHED();
@@ -223,7 +222,7 @@ class VideoCaptureImplManagerTest : public ::testing::Test,
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ChildProcess child_process_;
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
   base::RunLoop cleanup_run_loop_;
   std::unique_ptr<MockVideoCaptureImplManager> manager_;
 
@@ -253,10 +252,10 @@ TEST_F(VideoCaptureImplManagerTest, NoLeak) {
 
 TEST_F(VideoCaptureImplManagerTest, SuspendAndResumeSessions) {
   std::array<base::OnceClosure, kNumClients> release_callbacks;
-  blink::MediaStreamDevices video_devices;
+  MediaStreamDevices video_devices;
   for (size_t i = 0; i < kNumClients; ++i) {
     release_callbacks[i] = manager_->UseDevice(session_ids_[i]);
-    blink::MediaStreamDevice video_device;
+    MediaStreamDevice video_device;
     video_device.set_session_id(session_ids_[i]);
     video_devices.push_back(video_device);
   }
@@ -360,4 +359,4 @@ TEST_F(VideoCaptureImplManagerTest, SuspendAndResumeSessions) {
   cleanup_run_loop_.Run();
 }
 
-}  // namespace content
+}  // namespace blink

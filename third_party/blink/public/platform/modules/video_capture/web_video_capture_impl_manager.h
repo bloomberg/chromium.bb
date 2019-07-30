@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_IMPL_MANAGER_H_
-#define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_IMPL_MANAGER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_VIDEO_CAPTURE_WEB_VIDEO_CAPTURE_IMPL_MANAGER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_VIDEO_CAPTURE_WEB_VIDEO_CAPTURE_IMPL_MANAGER_H_
 
+#include <string.h>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -16,12 +16,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/platform/web_common.h"
 
-namespace content {
+namespace blink {
 
 class VideoCaptureImpl;
 
@@ -33,15 +33,15 @@ class VideoCaptureImpl;
 //
 // THREADING
 //
-// VideoCaptureImplManager lives only on the Render Main thread. All methods
+// WebVideoCaptureImplManager lives only on the Render Main thread. All methods
 // must be called on this thread.
 //
 // VideoFrames are delivered on the IO thread. Callbacks provided by
 // a client are also called on the IO thread.
-class CONTENT_EXPORT VideoCaptureImplManager {
+class BLINK_PLATFORM_EXPORT WebVideoCaptureImplManager {
  public:
-  VideoCaptureImplManager();
-  virtual ~VideoCaptureImplManager();
+  WebVideoCaptureImplManager();
+  virtual ~WebVideoCaptureImplManager();
 
   // Open a device associated with the session ID.
   // This method must be called before any methods with the same ID
@@ -70,8 +70,8 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   base::OnceClosure StartCapture(
       const media::VideoCaptureSessionId& id,
       const media::VideoCaptureParams& params,
-      const blink::VideoCaptureStateUpdateCB& state_update_cb,
-      const blink::VideoCaptureDeliverFrameCB& deliver_frame_cb);
+      const VideoCaptureStateUpdateCB& state_update_cb,
+      const VideoCaptureDeliverFrameCB& deliver_frame_cb);
 
   // Requests that the video capturer send a frame "soon" (e.g., to resolve
   // picture loss or quality issues).
@@ -84,12 +84,12 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   // Get supported formats supported by the device for the given session
   // ID. |callback| will be called on the IO thread.
   void GetDeviceSupportedFormats(const media::VideoCaptureSessionId& id,
-                                 blink::VideoCaptureDeviceFormatsCB callback);
+                                 VideoCaptureDeviceFormatsCB callback);
 
   // Get supported formats currently in use for the given session ID.
   // |callback| will be called on the IO thread.
   void GetDeviceFormatsInUse(const media::VideoCaptureSessionId& id,
-                             blink::VideoCaptureDeviceFormatsCB callback);
+                             VideoCaptureDeviceFormatsCB callback);
 
   // Make all VideoCaptureImpl instances in the input |video_devices|
   // stop/resume delivering video frames to their clients, depends on flag
@@ -97,9 +97,9 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   // PageHidden/Shown() event.
   // To suspend/resume an individual session, please call Suspend(id) or
   // Resume(id).
-  void SuspendDevices(const blink::MediaStreamDevices& video_devices,
-                      bool suspend);
+  void SuspendDevices(const MediaStreamDevices& video_devices, bool suspend);
 
+  // TODO(crbug.com/704136): Switch to WebString.
   void OnLog(const media::VideoCaptureSessionId& id,
              const std::string& message);
   void OnFrameDropped(const media::VideoCaptureSessionId& id,
@@ -116,6 +116,8 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   void UnrefDevice(const media::VideoCaptureSessionId& id);
 
   // Devices currently in use.
+  //
+  // TODO(crbug.com/704136): Switch to WebVector.
   std::vector<DeviceEntry> devices_;
 
   // This is an internal ID for identifying clients of VideoCaptureImpl.
@@ -133,11 +135,11 @@ class CONTENT_EXPORT VideoCaptureImplManager {
 
   // Bound to the render thread.
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<VideoCaptureImplManager> weak_factory_{this};
+  base::WeakPtrFactory<WebVideoCaptureImplManager> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(VideoCaptureImplManager);
+  DISALLOW_COPY_AND_ASSIGN(WebVideoCaptureImplManager);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_IMPL_MANAGER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_VIDEO_CAPTURE_WEB_VIDEO_CAPTURE_IMPL_MANAGER_H_

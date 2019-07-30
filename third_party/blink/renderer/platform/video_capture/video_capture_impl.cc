@@ -9,36 +9,36 @@
 // VideoCaptureImpl never post task to itself. All operations must be
 // synchronous.
 
-#include "content/renderer/media/video_capture/video_capture_impl.h"
+#include "third_party/blink/renderer/platform/video_capture/video_capture_impl.h"
 
 #include <stddef.h>
 #include <algorithm>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
-#include "content/child/child_process.h"
-#include "content/public/child/child_thread.h"
-#include "content/public/common/service_names.mojom.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
-#include "media/capture/mojom/video_capture_types.mojom.h"
+#include "media/capture/mojom/video_capture_types.mojom-blink.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
-namespace content {
+namespace blink {
 
-using VideoFrameBufferHandleType = media::mojom::VideoBufferHandle::Tag;
+using VideoFrameBufferHandleType = media::mojom::blink::VideoBufferHandle::Tag;
 
 struct VideoCaptureImpl::BufferContext
     : public base::RefCountedThreadSafe<BufferContext> {
  public:
-  explicit BufferContext(media::mojom::VideoBufferHandlePtr buffer_handle)
+  explicit BufferContext(
+      media::mojom::blink::VideoBufferHandlePtr buffer_handle)
       : buffer_type_(buffer_handle->which()) {
     switch (buffer_type_) {
       case VideoFrameBufferHandleType::SHARED_BUFFER_HANDLE:
@@ -67,7 +67,7 @@ struct VideoCaptureImpl::BufferContext
   VideoFrameBufferHandleType buffer_type() const { return buffer_type_; }
   const uint8_t* data() const { return data_; }
   size_t data_size() const { return data_size_; }
-  const std::vector<gpu::MailboxHolder>& mailbox_holders() const {
+  const Vector<gpu::MailboxHolder>& mailbox_holders() const {
     return mailbox_holders_;
   }
 
@@ -99,7 +99,7 @@ struct VideoCaptureImpl::BufferContext
   }
 
   void InitializeFromMailbox(
-      media::mojom::MailboxBufferHandleSetPtr mailbox_handles) {
+      media::mojom::blink::MailboxBufferHandleSetPtr mailbox_handles) {
     DCHECK_EQ(media::VideoFrame::kMaxPlanes,
               mailbox_handles->mailbox_holder.size());
     mailbox_holders_ = std::move(mailbox_handles->mailbox_holder);
@@ -122,7 +122,7 @@ struct VideoCaptureImpl::BufferContext
   size_t data_size_ = 0;
 
   // Only valid for |buffer_type_ == MAILBOX_HANDLES|.
-  std::vector<gpu::MailboxHolder> mailbox_holders_;
+  Vector<gpu::MailboxHolder> mailbox_holders_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferContext);
 };
@@ -137,9 +137,9 @@ struct VideoCaptureImpl::ClientInfo {
 
   media::VideoCaptureParams params;
 
-  blink::VideoCaptureStateUpdateCB state_update_cb;
+  VideoCaptureStateUpdateCB state_update_cb;
 
-  blink::VideoCaptureDeliverFrameCB deliver_frame_cb;
+  VideoCaptureDeliverFrameCB deliver_frame_cb;
 };
 
 VideoCaptureImpl::VideoCaptureImpl(media::VideoCaptureSessionId session_id)
@@ -149,27 +149,25 @@ VideoCaptureImpl::VideoCaptureImpl(media::VideoCaptureSessionId session_id)
       observer_binding_(this),
       state_(blink::VIDEO_CAPTURE_STATE_STOPPED) {
   CHECK(!session_id.is_empty());
-  io_thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(io_thread_checker_);
 
-  if (ChildThread::Get()) {  // This will be null in unit tests.
-    media::mojom::VideoCaptureHostPtr temp_video_capture_host;
-    ChildThread::Get()->GetConnector()->BindInterface(
-        mojom::kBrowserServiceName,
-        mojo::MakeRequest(&temp_video_capture_host));
-    video_capture_host_info_ = temp_video_capture_host.PassInterface();
-  }
+  media::mojom::blink::VideoCaptureHostPtr temp_video_capture_host;
+  Platform::Current()->GetConnector()->BindInterface(
+      Platform::Current()->GetBrowserServiceName(),
+      mojo::MakeRequest(&temp_video_capture_host));
+  video_capture_host_info_ = temp_video_capture_host.PassInterface();
 }
 
 VideoCaptureImpl::~VideoCaptureImpl() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  if ((state_ == blink::VIDEO_CAPTURE_STATE_STARTING ||
-       state_ == blink::VIDEO_CAPTURE_STATE_STARTED) &&
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+  if ((state_ == VIDEO_CAPTURE_STATE_STARTING ||
+       state_ == VIDEO_CAPTURE_STATE_STARTED) &&
       GetVideoCaptureHost())
     GetVideoCaptureHost()->Stop(device_id_);
 }
 
 void VideoCaptureImpl::SuspendCapture(bool suspend) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   if (suspend)
     GetVideoCaptureHost()->Pause(device_id_);
   else
@@ -179,10 +177,10 @@ void VideoCaptureImpl::SuspendCapture(bool suspend) {
 void VideoCaptureImpl::StartCapture(
     int client_id,
     const media::VideoCaptureParams& params,
-    const blink::VideoCaptureStateUpdateCB& state_update_cb,
-    const blink::VideoCaptureDeliverFrameCB& deliver_frame_cb) {
+    const VideoCaptureStateUpdateCB& state_update_cb,
+    const VideoCaptureDeliverFrameCB& deliver_frame_cb) {
   DVLOG(1) << __func__ << " |device_id_| = " << device_id_;
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   OnLog("VideoCaptureImpl got request to start capture.");
 
   ClientInfo client_info;
@@ -191,8 +189,8 @@ void VideoCaptureImpl::StartCapture(
   client_info.deliver_frame_cb = deliver_frame_cb;
 
   switch (state_) {
-    case blink::VIDEO_CAPTURE_STATE_STARTING:
-    case blink::VIDEO_CAPTURE_STATE_STARTED:
+    case VIDEO_CAPTURE_STATE_STARTING:
+    case VIDEO_CAPTURE_STATE_STARTED:
       clients_[client_id] = client_info;
       OnLog("VideoCaptureImpl capture is already started or starting.");
       // TODO(sheu): Allowing resolution change will require that all
@@ -200,13 +198,13 @@ void VideoCaptureImpl::StartCapture(
       DCHECK_EQ(params_.resolution_change_policy,
                 params.resolution_change_policy);
       return;
-    case blink::VIDEO_CAPTURE_STATE_STOPPING:
+    case VIDEO_CAPTURE_STATE_STOPPING:
       clients_pending_on_restart_[client_id] = client_info;
       DVLOG(1) << __func__ << " Got new resolution while stopping: "
                << params.requested_format.frame_size.ToString();
       return;
-    case blink::VIDEO_CAPTURE_STATE_STOPPED:
-    case blink::VIDEO_CAPTURE_STATE_ENDED:
+    case VIDEO_CAPTURE_STATE_STOPPED:
+    case VIDEO_CAPTURE_STATE_ENDED:
       clients_[client_id] = client_info;
       params_ = params;
       params_.requested_format.frame_rate =
@@ -218,12 +216,12 @@ void VideoCaptureImpl::StartCapture(
       OnLog("VideoCaptureImpl starting capture.");
       StartCaptureInternal();
       return;
-    case blink::VIDEO_CAPTURE_STATE_ERROR:
+    case VIDEO_CAPTURE_STATE_ERROR:
       OnLog("VideoCaptureImpl is in error state.");
       state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_ERROR);
       return;
-    case blink::VIDEO_CAPTURE_STATE_PAUSED:
-    case blink::VIDEO_CAPTURE_STATE_RESUMED:
+    case VIDEO_CAPTURE_STATE_PAUSED:
+    case VIDEO_CAPTURE_STATE_RESUMED:
       // The internal |state_| is never set to PAUSED/RESUMED since
       // VideoCaptureImpl is not modified by those.
       NOTREACHED();
@@ -232,7 +230,7 @@ void VideoCaptureImpl::StartCapture(
 }
 
 void VideoCaptureImpl::StopCapture(int client_id) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   // A client ID can be in only one client list.
   // If this ID is in any client list, we can just remove it from
   // that client list and don't have to run the other following RemoveClient().
@@ -249,13 +247,13 @@ void VideoCaptureImpl::StopCapture(int client_id) {
 }
 
 void VideoCaptureImpl::RequestRefreshFrame() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   GetVideoCaptureHost()->RequestRefreshFrame(device_id_);
 }
 
 void VideoCaptureImpl::GetDeviceSupportedFormats(
-    blink::VideoCaptureDeviceFormatsCB callback) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+    VideoCaptureDeviceFormatsCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   GetVideoCaptureHost()->GetDeviceSupportedFormats(
       device_id_, session_id_,
       base::BindOnce(&VideoCaptureImpl::OnDeviceSupportedFormats,
@@ -263,8 +261,8 @@ void VideoCaptureImpl::GetDeviceSupportedFormats(
 }
 
 void VideoCaptureImpl::GetDeviceFormatsInUse(
-    blink::VideoCaptureDeviceFormatsCB callback) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+    VideoCaptureDeviceFormatsCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   GetVideoCaptureHost()->GetDeviceFormatsInUse(
       device_id_, session_id_,
       base::BindOnce(&VideoCaptureImpl::OnDeviceFormatsInUse,
@@ -277,17 +275,17 @@ void VideoCaptureImpl::OnFrameDropped(
 }
 
 void VideoCaptureImpl::OnLog(const std::string& message) {
-  GetVideoCaptureHost()->OnLog(device_id_, message);
+  GetVideoCaptureHost()->OnLog(device_id_, WTF::String(message.data()));
 }
 
 void VideoCaptureImpl::OnStateChanged(media::mojom::VideoCaptureState state) {
   DVLOG(1) << __func__ << " state: " << state;
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
   switch (state) {
     case media::mojom::VideoCaptureState::STARTED:
       OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_STARTED");
-      state_ = blink::VIDEO_CAPTURE_STATE_STARTED;
+      state_ = VIDEO_CAPTURE_STATE_STARTED;
       for (const auto& client : clients_)
         client.second.state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_STARTED);
       // In case there is any frame dropped before STARTED, always request for
@@ -297,7 +295,7 @@ void VideoCaptureImpl::OnStateChanged(media::mojom::VideoCaptureState state) {
       break;
     case media::mojom::VideoCaptureState::STOPPED:
       OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_STOPPED");
-      state_ = blink::VIDEO_CAPTURE_STATE_STOPPED;
+      state_ = VIDEO_CAPTURE_STATE_STOPPED;
       client_buffers_.clear();
       weak_factory_.InvalidateWeakPtrs();
       if (!clients_.empty() || !clients_pending_on_restart_.empty()) {
@@ -318,7 +316,7 @@ void VideoCaptureImpl::OnStateChanged(media::mojom::VideoCaptureState state) {
       for (const auto& client : clients_)
         client.second.state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_ERROR);
       clients_.clear();
-      state_ = blink::VIDEO_CAPTURE_STATE_ERROR;
+      state_ = VIDEO_CAPTURE_STATE_ERROR;
       break;
     case media::mojom::VideoCaptureState::ENDED:
       OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_ENDED");
@@ -326,16 +324,16 @@ void VideoCaptureImpl::OnStateChanged(media::mojom::VideoCaptureState state) {
       for (const auto& client : clients_)
         client.second.state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_STOPPED);
       clients_.clear();
-      state_ = blink::VIDEO_CAPTURE_STATE_ENDED;
+      state_ = VIDEO_CAPTURE_STATE_ENDED;
       break;
   }
 }
 
 void VideoCaptureImpl::OnNewBuffer(
     int32_t buffer_id,
-    media::mojom::VideoBufferHandlePtr buffer_handle) {
+    media::mojom::blink::VideoBufferHandlePtr buffer_handle) {
   DVLOG(1) << __func__ << " buffer_id: " << buffer_id;
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
   const bool inserted =
       client_buffers_
@@ -345,12 +343,13 @@ void VideoCaptureImpl::OnNewBuffer(
   DCHECK(inserted);
 }
 
-void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
-                                     media::mojom::VideoFrameInfoPtr info) {
+void VideoCaptureImpl::OnBufferReady(
+    int32_t buffer_id,
+    media::mojom::blink::VideoFrameInfoPtr info) {
   DVLOG(1) << __func__ << " buffer_id: " << buffer_id;
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
-  bool consume_buffer = state_ == blink::VIDEO_CAPTURE_STATE_STARTED;
+  bool consume_buffer = state_ == VIDEO_CAPTURE_STATE_STARTED;
   if (!consume_buffer) {
     OnFrameDropped(
         media::VideoCaptureFrameDropReason::kVideoCaptureImplNotInStartedState);
@@ -402,23 +401,26 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
         uint8_t* u_data =
             y_data + (media::VideoFrame::Rows(media::VideoFrame::kYPlane,
                                               info->pixel_format,
-                                              info->coded_size.height()) *
+                                              info->coded_size.height) *
                       info->strides->stride_by_plane[0]);
         uint8_t* v_data =
             u_data + (media::VideoFrame::Rows(media::VideoFrame::kUPlane,
                                               info->pixel_format,
-                                              info->coded_size.height()) *
+                                              info->coded_size.height) *
                       info->strides->stride_by_plane[1]);
         frame = media::VideoFrame::WrapExternalYuvData(
-            info->pixel_format, info->coded_size, info->visible_rect,
-            info->visible_rect.size(), info->strides->stride_by_plane[0],
+            info->pixel_format, gfx::Size(info->coded_size),
+            gfx::Rect(info->visible_rect),
+            gfx::Size(info->visible_rect.width, info->visible_rect.height),
+            info->strides->stride_by_plane[0],
             info->strides->stride_by_plane[1],
             info->strides->stride_by_plane[2], y_data, u_data, v_data,
             info->timestamp);
       } else {
         frame = media::VideoFrame::WrapExternalData(
-            info->pixel_format, info->coded_size, info->visible_rect,
-            info->visible_rect.size(),
+            info->pixel_format, gfx::Size(info->coded_size),
+            gfx::Rect(info->visible_rect),
+            gfx::Size(info->visible_rect.width, info->visible_rect.height),
             const_cast<uint8_t*>(buffer_context->data()),
             buffer_context->data_size(), info->timestamp);
       }
@@ -427,8 +429,9 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
       // As with the SHARED_BUFFER_HANDLE type, it is sufficient to just wrap
       // the data without attaching the shared region to the frame.
       frame = media::VideoFrame::WrapExternalData(
-          info->pixel_format, info->coded_size, info->visible_rect,
-          info->visible_rect.size(),
+          info->pixel_format, gfx::Size(info->coded_size),
+          gfx::Rect(info->visible_rect),
+          gfx::Size(info->visible_rect.width, info->visible_rect.height),
           const_cast<uint8_t*>(buffer_context->data()),
           buffer_context->data_size(), info->timestamp);
       break;
@@ -444,8 +447,10 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
       }
       frame = media::VideoFrame::WrapNativeTextures(
           info->pixel_format, mailbox_holder_array,
-          media::VideoFrame::ReleaseMailboxCB(), info->coded_size,
-          info->visible_rect, info->visible_rect.size(), info->timestamp);
+          media::VideoFrame::ReleaseMailboxCB(), gfx::Size(info->coded_size),
+          gfx::Rect(info->visible_rect),
+          gfx::Size(info->visible_rect.width, info->visible_rect.height),
+          info->timestamp);
       break;
     }
 #if defined(OS_CHROMEOS)
@@ -480,7 +485,7 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
 }
 
 void VideoCaptureImpl::OnBufferDestroyed(int32_t buffer_id) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
   const auto& cb_iter = client_buffers_.find(buffer_id);
   if (cb_iter != client_buffers_.end()) {
@@ -494,7 +499,7 @@ void VideoCaptureImpl::OnAllClientsFinishedConsumingFrame(
     int buffer_id,
     scoped_refptr<BufferContext> buffer_context,
     double consumer_resource_utilization) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
 // Subtle race note: It's important that the |buffer_context| argument be
 // std::move()'ed to this method and never copied. This is so that the caller,
@@ -520,19 +525,19 @@ void VideoCaptureImpl::OnAllClientsFinishedConsumingFrame(
 }
 
 void VideoCaptureImpl::StopDevice() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  if (state_ != blink::VIDEO_CAPTURE_STATE_STARTING &&
-      state_ != blink::VIDEO_CAPTURE_STATE_STARTED)
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+  if (state_ != VIDEO_CAPTURE_STATE_STARTING &&
+      state_ != VIDEO_CAPTURE_STATE_STARTED)
     return;
-  state_ = blink::VIDEO_CAPTURE_STATE_STOPPING;
+  state_ = VIDEO_CAPTURE_STATE_STOPPING;
   OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_STOPPING");
   GetVideoCaptureHost()->Stop(device_id_);
   params_.requested_format.frame_size.SetSize(0, 0);
 }
 
 void VideoCaptureImpl::RestartCapture() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(state_, blink::VIDEO_CAPTURE_STATE_STOPPED);
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+  DCHECK_EQ(state_, VIDEO_CAPTURE_STATE_STOPPED);
 
   int width = 0;
   int height = 0;
@@ -551,32 +556,32 @@ void VideoCaptureImpl::RestartCapture() {
 }
 
 void VideoCaptureImpl::StartCaptureInternal() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  state_ = blink::VIDEO_CAPTURE_STATE_STARTING;
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+  state_ = VIDEO_CAPTURE_STATE_STARTING;
   OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_STARTING");
 
-  media::mojom::VideoCaptureObserverPtr observer;
+  media::mojom::blink::VideoCaptureObserverPtr observer;
   observer_binding_.Bind(mojo::MakeRequest(&observer));
   GetVideoCaptureHost()->Start(device_id_, session_id_, params_,
                                std::move(observer));
 }
 
 void VideoCaptureImpl::OnDeviceSupportedFormats(
-    blink::VideoCaptureDeviceFormatsCB callback,
-    const media::VideoCaptureFormats& supported_formats) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+    VideoCaptureDeviceFormatsCallback callback,
+    const Vector<media::VideoCaptureFormat>& supported_formats) {
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   std::move(callback).Run(supported_formats);
 }
 
 void VideoCaptureImpl::OnDeviceFormatsInUse(
-    blink::VideoCaptureDeviceFormatsCB callback,
-    const media::VideoCaptureFormats& formats_in_use) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+    VideoCaptureDeviceFormatsCallback callback,
+    const Vector<media::VideoCaptureFormat>& formats_in_use) {
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   std::move(callback).Run(formats_in_use);
 }
 
 bool VideoCaptureImpl::RemoveClient(int client_id, ClientInfoMap* clients) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
   const ClientInfoMap::iterator it = clients->find(client_id);
   if (it == clients->end())
@@ -587,8 +592,8 @@ bool VideoCaptureImpl::RemoveClient(int client_id, ClientInfoMap* clients) {
   return true;
 }
 
-media::mojom::VideoCaptureHost* VideoCaptureImpl::GetVideoCaptureHost() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+media::mojom::blink::VideoCaptureHost* VideoCaptureImpl::GetVideoCaptureHost() {
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   if (video_capture_host_for_testing_)
     return video_capture_host_for_testing_;
 
@@ -611,4 +616,4 @@ void VideoCaptureImpl::DidFinishConsumingFrame(
   std::move(callback_to_io_thread).Run(consumer_resource_utilization);
 }
 
-}  // namespace content
+}  // namespace blink

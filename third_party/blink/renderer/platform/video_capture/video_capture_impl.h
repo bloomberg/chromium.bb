@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_IMPL_H_
-#define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_VIDEO_CAPTURE_VIDEO_CAPTURE_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_VIDEO_CAPTURE_VIDEO_CAPTURE_IMPL_H_
 
 #include <stdint.h>
-
 #include <list>
 #include <map>
 #include <string>
@@ -14,22 +13,22 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
 #include "media/base/video_frame.h"
-#include "media/capture/mojom/video_capture.mojom.h"
+#include "media/capture/mojom/video_capture.mojom-blink.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/common/media/video_capture.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
-namespace content {
+namespace blink {
 
 // VideoCaptureImpl represents a capture device in renderer process. It provides
 // an interface for clients to command the capture (Start, Stop, etc), and
 // communicates back to these clients e.g. the capture state or incoming
 // captured VideoFrames. VideoCaptureImpl is created in the main Renderer thread
 // but otherwise operates on |io_task_runner_|, which is usually the IO thread.
-class CONTENT_EXPORT VideoCaptureImpl
-    : public media::mojom::VideoCaptureObserver {
+class PLATFORM_EXPORT VideoCaptureImpl
+    : public media::mojom::blink::VideoCaptureObserver {
  public:
   explicit VideoCaptureImpl(media::VideoCaptureSessionId session_id);
   ~VideoCaptureImpl() override;
@@ -44,8 +43,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   // |deliver_frame_cb| will be called when a frame is ready.
   void StartCapture(int client_id,
                     const media::VideoCaptureParams& params,
-                    const blink::VideoCaptureStateUpdateCB& state_update_cb,
-                    const blink::VideoCaptureDeliverFrameCB& deliver_frame_cb);
+                    const VideoCaptureStateUpdateCB& state_update_cb,
+                    const VideoCaptureDeliverFrameCB& deliver_frame_cb);
 
   // Stop capturing. |client_id| is the identifier used to call StartCapture.
   void StopCapture(int client_id);
@@ -56,27 +55,32 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   // Get capturing formats supported by this device.
   // |callback| will be invoked with the results.
-  void GetDeviceSupportedFormats(blink::VideoCaptureDeviceFormatsCB callback);
+  //
+  using VideoCaptureDeviceFormatsCallback =
+      base::OnceCallback<void(const Vector<media::VideoCaptureFormat>&)>;
+  void GetDeviceSupportedFormats(VideoCaptureDeviceFormatsCallback callback);
 
   // Get capturing formats currently in use by this device.
   // |callback| will be invoked with the results.
-  void GetDeviceFormatsInUse(blink::VideoCaptureDeviceFormatsCB callback);
+  void GetDeviceFormatsInUse(VideoCaptureDeviceFormatsCallback callback);
 
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
   void OnLog(const std::string& message);
 
   const media::VideoCaptureSessionId& session_id() const { return session_id_; }
 
-  void SetVideoCaptureHostForTesting(media::mojom::VideoCaptureHost* service) {
+  void SetVideoCaptureHostForTesting(
+      media::mojom::blink::VideoCaptureHost* service) {
     video_capture_host_for_testing_ = service;
   }
 
   // media::mojom::VideoCaptureObserver implementation.
   void OnStateChanged(media::mojom::VideoCaptureState state) override;
-  void OnNewBuffer(int32_t buffer_id,
-                   media::mojom::VideoBufferHandlePtr buffer_handle) override;
+  void OnNewBuffer(
+      int32_t buffer_id,
+      media::mojom::blink::VideoBufferHandlePtr buffer_handle) override;
   void OnBufferReady(int32_t buffer_id,
-                     media::mojom::VideoFrameInfoPtr info) override;
+                     media::mojom::blink::VideoFrameInfoPtr info) override;
   void OnBufferDestroyed(int32_t buffer_id) override;
 
  private:
@@ -103,15 +107,17 @@ class CONTENT_EXPORT VideoCaptureImpl
   void StartCaptureInternal();
 
   void OnDeviceSupportedFormats(
-      blink::VideoCaptureDeviceFormatsCB callback,
-      const media::VideoCaptureFormats& supported_formats);
-  void OnDeviceFormatsInUse(blink::VideoCaptureDeviceFormatsCB callback,
-                            const media::VideoCaptureFormats& formats_in_use);
+      VideoCaptureDeviceFormatsCallback callback,
+      const Vector<media::VideoCaptureFormat>& supported_formats);
+
+  void OnDeviceFormatsInUse(
+      VideoCaptureDeviceFormatsCallback callback,
+      const Vector<media::VideoCaptureFormat>& formats_in_use);
 
   // Tries to remove |client_id| from |clients|, returning false if not found.
   bool RemoveClient(int client_id, ClientInfoMap* clients);
 
-  media::mojom::VideoCaptureHost* GetVideoCaptureHost();
+  media::mojom::blink::VideoCaptureHost* GetVideoCaptureHost();
 
   // Called (by an unknown thread) when all consumers are done with a VideoFrame
   // and its ref-count has gone to zero.  This helper function grabs the
@@ -129,11 +135,11 @@ class CONTENT_EXPORT VideoCaptureImpl
   // |video_capture_host_| is an IO-thread InterfacePtr to a remote service
   // implementation and is created by binding |video_capture_host_info_|,
   // unless a |video_capture_host_for_testing_| has been injected.
-  media::mojom::VideoCaptureHostPtrInfo video_capture_host_info_;
-  media::mojom::VideoCaptureHostPtr video_capture_host_;
-  media::mojom::VideoCaptureHost* video_capture_host_for_testing_;
+  media::mojom::blink::VideoCaptureHostPtrInfo video_capture_host_info_;
+  media::mojom::blink::VideoCaptureHostPtr video_capture_host_;
+  media::mojom::blink::VideoCaptureHost* video_capture_host_for_testing_;
 
-  mojo::Binding<media::mojom::VideoCaptureObserver> observer_binding_;
+  mojo::Binding<media::mojom::blink::VideoCaptureObserver> observer_binding_;
 
   // Buffers available for sending to the client.
   using ClientBufferMap = std::map<int32_t, scoped_refptr<BufferContext>>;
@@ -148,9 +154,9 @@ class CONTENT_EXPORT VideoCaptureImpl
   // First captured frame reference time sent from browser process side.
   base::TimeTicks first_frame_ref_time_;
 
-  blink::VideoCaptureState state_;
+  VideoCaptureState state_;
 
-  base::ThreadChecker io_thread_checker_;
+  THREAD_CHECKER(io_thread_checker_);
 
   // WeakPtrFactory pointing back to |this| object, for use with
   // media::VideoFrames constructed in OnBufferReceived() from buffers cached
@@ -160,6 +166,6 @@ class CONTENT_EXPORT VideoCaptureImpl
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImpl);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_VIDEO_CAPTURE_VIDEO_CAPTURE_IMPL_H_

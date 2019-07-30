@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,13 +11,14 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/child/child_process.h"
-#include "content/renderer/media/video_capture/video_capture_impl.h"
-#include "media/capture/mojom/video_capture.mojom.h"
-#include "media/capture/mojom/video_capture_types.mojom.h"
+#include "media/capture/mojom/video_capture.mojom-blink.h"
+#include "media/capture/mojom/video_capture_types.mojom-blink.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/video_capture/video_capture_impl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -27,20 +27,19 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::SaveArg;
 using ::testing::WithArgs;
 
-namespace content {
-
+namespace blink {
 
 void RunEmptyFormatsCallback(
-    media::mojom::VideoCaptureHost::GetDeviceSupportedFormatsCallback&
+    media::mojom::blink::VideoCaptureHost::GetDeviceSupportedFormatsCallback&
         callback) {
-  media::VideoCaptureFormats formats;
+  Vector<media::VideoCaptureFormat> formats;
   std::move(callback).Run(formats);
 }
 
 ACTION(DoNothing) {}
 
 // Mock implementation of the Mojo Host service.
-class MockMojoVideoCaptureHost : public media::mojom::VideoCaptureHost {
+class MockMojoVideoCaptureHost : public media::mojom::blink::VideoCaptureHost {
  public:
   MockMojoVideoCaptureHost() : released_buffer_count_(0) {
     ON_CALL(*this, GetDeviceSupportedFormatsMock(_, _, _))
@@ -56,7 +55,7 @@ class MockMojoVideoCaptureHost : public media::mojom::VideoCaptureHost {
   void Start(const base::UnguessableToken& device_id,
              const base::UnguessableToken& session_id,
              const media::VideoCaptureParams& params,
-             media::mojom::VideoCaptureObserverPtr observer) override {
+             media::mojom::blink::VideoCaptureObserverPtr observer) override {
     DoStart(device_id, session_id, params);
   }
   MOCK_METHOD3(DoStart,
@@ -83,7 +82,7 @@ class MockMojoVideoCaptureHost : public media::mojom::VideoCaptureHost {
   MOCK_METHOD2(OnFrameDropped,
                void(const base::UnguessableToken&,
                     media::VideoCaptureFrameDropReason));
-  MOCK_METHOD2(OnLog, void(const base::UnguessableToken&, const std::string&));
+  MOCK_METHOD2(OnLog, void(const base::UnguessableToken&, const String&));
 
   void GetDeviceSupportedFormats(
       const base::UnguessableToken& arg1,
@@ -135,10 +134,11 @@ class VideoCaptureImplTest : public ::testing::Test {
   // These four mocks are used to create callbacks for the different oeprations.
   MOCK_METHOD2(OnFrameReady,
                void(scoped_refptr<media::VideoFrame>, base::TimeTicks));
-  MOCK_METHOD1(OnStateUpdate, void(blink::VideoCaptureState));
-  MOCK_METHOD1(OnDeviceFormatsInUse, void(const media::VideoCaptureFormats&));
+  MOCK_METHOD1(OnStateUpdate, void(VideoCaptureState));
+  MOCK_METHOD1(OnDeviceFormatsInUse,
+               void(const Vector<media::VideoCaptureFormat>&));
   MOCK_METHOD1(OnDeviceSupportedFormats,
-               void(const media::VideoCaptureFormats&));
+               void(const Vector<media::VideoCaptureFormat>&));
 
   void StartCapture(int client_id, const media::VideoCaptureParams& params) {
     const auto state_update_callback = base::Bind(
@@ -157,19 +157,22 @@ class VideoCaptureImplTest : public ::testing::Test {
   void SimulateOnBufferCreated(int buffer_id,
                                const base::UnsafeSharedMemoryRegion& region) {
     video_capture_impl_->OnNewBuffer(
-        buffer_id, media::mojom::VideoBufferHandle::NewSharedBufferHandle(
-                       mojo::WrapUnsafeSharedMemoryRegion(region.Duplicate())));
+        buffer_id,
+        media::mojom::blink::VideoBufferHandle::NewSharedBufferHandle(
+            mojo::WrapUnsafeSharedMemoryRegion(region.Duplicate())));
   }
 
   void SimulateReadOnlyBufferCreated(int buffer_id,
                                      base::ReadOnlySharedMemoryRegion region) {
     video_capture_impl_->OnNewBuffer(
-        buffer_id, media::mojom::VideoBufferHandle::NewReadOnlyShmemRegion(
-                       std::move(region)));
+        buffer_id,
+        media::mojom::blink::VideoBufferHandle::NewReadOnlyShmemRegion(
+            std::move(region)));
   }
 
   void SimulateBufferReceived(int buffer_id, const gfx::Size& size) {
-    media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
+    media::mojom::blink::VideoFrameInfoPtr info =
+        media::mojom::blink::VideoFrameInfo::New();
 
     const base::TimeTicks now = base::TimeTicks::Now();
     media::VideoFrameMetadata frame_metadata;
@@ -178,8 +181,8 @@ class VideoCaptureImplTest : public ::testing::Test {
 
     info->timestamp = now - base::TimeTicks();
     info->pixel_format = media::PIXEL_FORMAT_I420;
-    info->coded_size = size;
-    info->visible_rect = gfx::Rect(size);
+    info->coded_size = WebSize(size);
+    info->visible_rect = WebRect(gfx::Rect(size));
 
     video_capture_impl_->OnBufferReady(buffer_id, std::move(info));
   }
@@ -189,16 +192,16 @@ class VideoCaptureImplTest : public ::testing::Test {
   }
 
   void GetDeviceSupportedFormats() {
-    const base::Callback<void(const media::VideoCaptureFormats&)> callback =
-        base::Bind(&VideoCaptureImplTest::OnDeviceSupportedFormats,
-                   base::Unretained(this));
+    const base::Callback<void(const Vector<media::VideoCaptureFormat>&)>
+        callback = base::Bind(&VideoCaptureImplTest::OnDeviceSupportedFormats,
+                              base::Unretained(this));
     video_capture_impl_->GetDeviceSupportedFormats(callback);
   }
 
   void GetDeviceFormatsInUse() {
-    const base::Callback<void(const media::VideoCaptureFormats&)> callback =
-        base::Bind(&VideoCaptureImplTest::OnDeviceFormatsInUse,
-                   base::Unretained(this));
+    const base::Callback<void(const Vector<media::VideoCaptureFormat>&)>
+        callback = base::Bind(&VideoCaptureImplTest::OnDeviceFormatsInUse,
+                              base::Unretained(this));
     video_capture_impl_->GetDeviceFormatsInUse(callback);
   }
 
@@ -208,7 +211,7 @@ class VideoCaptureImplTest : public ::testing::Test {
 
   const base::UnguessableToken session_id_ = base::UnguessableToken::Create();
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const ChildProcess child_process_;
+  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
   const std::unique_ptr<VideoCaptureImpl> video_capture_impl_;
   MockMojoVideoCaptureHost mock_video_capture_host_;
   media::VideoCaptureParams params_small_;
@@ -520,4 +523,4 @@ TEST_F(VideoCaptureImplTest,
   StopCapture(0);
 }
 
-}  // namespace content
+}  // namespace blink
