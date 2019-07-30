@@ -498,13 +498,13 @@ class IdentityManager : public KeyedService,
       const std::string& email,
       const std::string& gaia_id);
   friend void SetRefreshTokenForAccount(IdentityManager* identity_manager,
-                                        const std::string& account_id,
+                                        const CoreAccountId& account_id,
                                         const std::string& token_value);
   friend void SetInvalidRefreshTokenForAccount(
       IdentityManager* identity_manager,
-      const std::string& account_id);
+      const CoreAccountId& account_id);
   friend void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
-                                           const std::string& account_id);
+                                           const CoreAccountId& account_id);
   friend void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
                                           AccountInfo account_info);
   friend void SetFreshnessOfAccountsInGaiaCookie(
@@ -512,7 +512,7 @@ class IdentityManager : public KeyedService,
       bool accounts_are_fresh);
   friend void UpdatePersistentErrorOfRefreshTokenForAccount(
       IdentityManager* identity_manager,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const GoogleServiceAuthError& auth_error);
 
   friend void DisableAccessTokenFetchRetries(IdentityManager* identity_manager);
@@ -527,7 +527,7 @@ class IdentityManager : public KeyedService,
 
   friend void SimulateSuccessfulFetchOfAccountInfo(
       IdentityManager* identity_manager,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const std::string& email,
       const std::string& gaia,
       const std::string& hosted_domain,

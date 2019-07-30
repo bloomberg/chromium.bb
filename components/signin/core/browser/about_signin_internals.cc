@@ -418,7 +418,7 @@ void AboutSigninInternals::OnRefreshTokenRemovedForAccountFromSource(
 
 void AboutSigninInternals::OnRefreshTokensLoaded() {
   RefreshTokenEvent event;
-  // event.account_id = CoreAccountId("All accounts");
+  // This event concerns all accounts, so it does not have any account id.
   event.type = AboutSigninInternals::RefreshTokenEventType::kAllTokensLoaded;
   signin_status_.AddRefreshTokenEvent(event);
   NotifyObservers();
