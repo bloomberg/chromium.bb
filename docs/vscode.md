@@ -84,7 +84,7 @@ changing the font size in your settings:
   // If you would rather just increase the size of the font:
   //"terminal.integrated.fontSize": 15
   // If you would rather decrease the size of the font:
-  //"terminal.integrated.fontSize": 15
+  //"terminal.integrated.fontSize": 13
 }
 ```
 
