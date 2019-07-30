@@ -103,13 +103,14 @@ class LogBuffer {
 
   // The stack of values being constructed. Each item is a dictionary with the
   // following attributes:
-  // - type: 'element' | 'text'
+  // - type: 'element' | 'fragment' | 'text'
   // - value: name of tag | text content
   // - children (opt): list of child nodes
   // - attributes (opt): dictionary of name/value pairs
   // The |buffer_| serves as a stack where the last element is being
   // constructed. Once it is read (i.e. closed via a CTag), it is popped from
   // the stack and attached as a child of the previously second last element.
+  // Only the first element of buffer_ is a 'fragment' and it is never closed.
   std::vector<base::Value> buffer_;
 
   bool active_ = true;
