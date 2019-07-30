@@ -14,8 +14,8 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/image/image_unittest_util.h"
-#include "ui/gfx/image/mojo/image_skia_struct_traits.h"
-#include "ui/gfx/image/mojo/image_traits_test_service.mojom.h"
+#include "ui/gfx/image/mojom/image_skia_mojom_traits.h"
+#include "ui/gfx/image/mojom/image_traits_test_service.mojom.h"
 
 namespace gfx {
 

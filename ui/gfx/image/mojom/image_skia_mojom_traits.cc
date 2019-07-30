@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/image/mojo/image_skia_struct_traits.h"
+#include "ui/gfx/image/mojom/image_skia_mojom_traits.h"
 
 #include <string.h>
 

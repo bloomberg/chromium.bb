@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_IMAGE_MOJO_IMAGE_SKIA_STRUCT_TRAITS_H_
-#define UI_GFX_IMAGE_MOJO_IMAGE_SKIA_STRUCT_TRAITS_H_
+#ifndef UI_GFX_IMAGE_MOJOM_IMAGE_SKIA_MOJOM_TRAITS_H_
+#define UI_GFX_IMAGE_MOJOM_IMAGE_SKIA_MOJOM_TRAITS_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
-#include "ui/gfx/image/mojo/image.mojom-shared.h"
+#include "ui/gfx/image/mojom/image.mojom-shared.h"
 
 namespace mojo {
 
@@ -43,4 +43,4 @@ struct StructTraits<gfx::mojom::ImageSkiaDataView, gfx::ImageSkia> {
 
 }  // namespace mojo
 
-#endif  // UI_GFX_IMAGE_MOJO_IMAGE_SKIA_STRUCT_TRAITS_H_
+#endif  // UI_GFX_IMAGE_MOJOM_IMAGE_SKIA_MOJOM_TRAITS_H_

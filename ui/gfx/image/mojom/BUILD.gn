@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("mojom") {
   sources = [
     "image.mojom",
   ]
@@ -14,14 +14,14 @@ mojom("interfaces") {
   ]
 }
 
-source_set("struct_traits") {
+source_set("mojom_traits") {
   sources = [
-    "image_skia_struct_traits.cc",
-    "image_skia_struct_traits.h",
+    "image_skia_mojom_traits.cc",
+    "image_skia_mojom_traits.h",
   ]
 
   public_deps = [
-    ":interfaces_shared_cpp_sources",
+    ":mojom_shared_cpp_sources",
     "//skia/public/interfaces",
     "//ui/gfx",
   ]
@@ -35,7 +35,7 @@ mojom("test_interfaces") {
   ]
 
   public_deps = [
-    ":interfaces",
+    ":mojom",
   ]
 }
 
@@ -47,7 +47,7 @@ source_set("unit_test") {
   ]
 
   deps = [
-    ":struct_traits",
+    ":mojom_traits",
     ":test_interfaces",
     "//base",
     "//base/test:test_support",

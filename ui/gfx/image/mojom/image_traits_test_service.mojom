@@ -4,7 +4,7 @@
 
 module gfx.mojom;
 
-import "ui/gfx/image/mojo/image.mojom";
+import "ui/gfx/image/mojom/image.mojom";
 
 // A test echo interface for traits.
 interface ImageTraitsTestService {
