@@ -6389,14 +6389,6 @@ crbug.com/986018 fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass
 crbug.com/986477 [ Win ] external/wpt/cookies/path/match.html [ Pass Timeout ]
 crbug.com/986477 [ Win ] virtual/samesite-by-default-cookies/external/wpt/cookies/path/match.html [ Pass Timeout ]
 
-# Sheriff 2019-07-23
-crbug.com/986019 animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
-crbug.com/986019 virtual/threaded/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
-crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
-crbug.com/986666 animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
-crbug.com/986666 virtual/threaded/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
-crbug.com/986666 virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
-
 # Sheriff 2019-07-24
 crbug.com/986019 animations/play-state.html [ Pass Timeout ]
 crbug.com/986019 virtual/threaded/animations/play-state.html [ Pass Timeout ]
