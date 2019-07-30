@@ -382,9 +382,6 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   const HttpsState starter_https_state =
       CalculateHttpsState(starter_origin.get());
 
-  // TODO(bashi): Pass nullptr instead of an empty WorkerClients.
-  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
-
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
   if (base::FeatureList::IsEnabled(
           features::kOffMainThreadServiceWorkerScriptFetch)) {
@@ -446,7 +443,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         content_security_policy ? content_security_policy->Headers()
                                 : Vector<CSPHeaderAndType>(),
         referrer_policy, starter_origin.get(), starter_secure_context,
-        starter_https_state, worker_clients,
+        starter_https_state, nullptr /* worker_clients */,
         std::move(content_settings_client_),
         main_script_loader_->ResponseAddressSpace(),
         main_script_loader_->OriginTrialTokens(), devtools_worker_token_,
@@ -468,7 +465,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         worker_start_data_.user_agent, std::move(web_worker_fetch_context),
         Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
         starter_origin.get(), starter_secure_context, starter_https_state,
-        worker_clients, std::move(content_settings_client_),
+        nullptr /* worker_clients */, std::move(content_settings_client_),
         base::nullopt /* response_address_space */,
         nullptr /* OriginTrialTokens */, devtools_worker_token_,
         std::move(worker_settings),
