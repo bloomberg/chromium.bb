@@ -1132,8 +1132,6 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
                                         ::onc::cellular_payment_portal::kUrl);
         cellular->payment_portal = std::move(payment_portal);
       }
-      cellular->prl_version =
-          GetInt32(cellular_dict, ::onc::cellular::kPRLVersion);
       cellular->roaming_state =
           GetString(cellular_dict, ::onc::cellular::kRoamingState);
       cellular->serving_operator = GetCellularProviderProperties(

@@ -519,7 +519,6 @@ struct ManagedCellularProperties {
   string? model_id;
   string? network_technology;
   PaymentPortalProperties? payment_portal;
-  int32 prl_version = 0;
   string? roaming_state;
   bool scanning = false;
   CellularProviderProperties? serving_operator;
