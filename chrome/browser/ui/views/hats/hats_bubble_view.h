@@ -24,12 +24,21 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
   static void Show(AppMenuButton* anchor_button, Browser* browser);
 
  protected:
-  // views::BubbleDialogDelegateView:
+  // views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
+  gfx::ImageSkia GetWindowIcon() override;
+  bool ShouldShowWindowIcon() const override;
+
+  // views::DialogDelegate:
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Accept() override;
-  bool ShouldShowCloseButton() const override;
+
+  // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
+
+  // views::View:
+  void Layout() override;
 
  private:
   HatsBubbleView(AppMenuButton* anchor_button,
