@@ -638,7 +638,7 @@ AboutSigninInternals::SigninStatus::ToValue(
           signin_error_controller->error_account_id();
       const base::Optional<AccountInfo> error_account_info =
           identity_manager
-              ->FindAccountInfoForAccountWithRefreshTokenByAccountId(
+              ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
                   error_account_id);
       AddSectionEntry(basic_info, "Auth Error",
           signin_error_controller->auth_error().ToString());

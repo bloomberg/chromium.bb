@@ -132,8 +132,9 @@ AccountInfo MakePrimaryAccountAvailable(IdentityManager* identity_manager,
   CoreAccountInfo account_info = SetPrimaryAccount(identity_manager, email);
   SetRefreshTokenForPrimaryAccount(identity_manager);
   base::Optional<AccountInfo> primary_account_info =
-      identity_manager->FindAccountInfoForAccountWithRefreshTokenByAccountId(
-          account_info.account_id);
+      identity_manager
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_info.account_id);
   // Ensure that extended information for the account is available after setting
   // the refresh token.
   DCHECK(primary_account_info.has_value());
