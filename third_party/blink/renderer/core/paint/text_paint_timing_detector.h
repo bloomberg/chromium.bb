@@ -59,6 +59,7 @@ class CORE_EXPORT LargestTextPaintManager {
   LargestTextPaintManager(LocalFrameView*, PaintTimingDetector*);
 
   inline void RemoveVisibleRecord(base::WeakPtr<TextRecord> record) {
+    DCHECK(record);
     size_ordered_set_.erase(record);
     if (cached_largest_paint_candidate_.get() == record.get())
       cached_largest_paint_candidate_ = nullptr;
