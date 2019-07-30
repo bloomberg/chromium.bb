@@ -1829,7 +1829,6 @@ test("content_unittests") {
     "../browser/webrtc/webrtc_internals_message_handler_unittest.cc",
     "../browser/webrtc/webrtc_internals_unittest.cc",
     "../browser/websockets/websocket_manager_unittest.cc",
-    "../browser/webui/url_data_manager_backend_unittest.cc",
     "../browser/webui/web_ui_data_source_unittest.cc",
     "../browser/webui/web_ui_message_handler_unittest.cc",
     "../browser/worker_host/mock_shared_worker.cc",
@@ -2236,10 +2235,7 @@ test("content_unittests") {
       "../renderer/java/gin_java_bridge_value_converter_unittest.cc",
       "../renderer/media/android/stream_texture_wrapper_impl_unittest.cc",
     ]
-    sources -= [
-      "../browser/tracing/tracing_ui_unittest.cc",
-      "../browser/webui/url_data_manager_backend_unittest.cc",
-    ]
+    sources -= [ "../browser/tracing/tracing_ui_unittest.cc" ]
 
     deps += [
       "//base:base_java_unittest_support",

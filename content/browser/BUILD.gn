@@ -1289,8 +1289,6 @@ jumbo_source_set("browser") {
     "net/network_quality_observer_impl.h",
     "net/quota_policy_cookie_store.cc",
     "net/quota_policy_cookie_store.h",
-    "net/view_blob_internals_job_factory.cc",
-    "net/view_blob_internals_job_factory.h",
     "network_service_client.cc",
     "network_service_client.h",
     "network_service_instance_impl.cc",
