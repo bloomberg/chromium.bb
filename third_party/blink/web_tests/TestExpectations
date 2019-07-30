@@ -6414,3 +6414,5 @@ crbug.com/988074 [ Linux ] virtual/cors-rfc1918/http/tests/security/cors-rfc1918
 
 # Sheriff 2019-07-30
 crbug.com/987115 [ Win Linux ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Crash Pass Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/cssom-view/scrollIntoView-sideways-lr-writing-mode-and-rtl-direction.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/cssom-view/scrollIntoView-sideways-rl-writing-mode-and-rtl-direction.html [ Failure ]
