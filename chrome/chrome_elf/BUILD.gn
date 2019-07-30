@@ -119,6 +119,7 @@ static_library("blacklist") {
   deps = [
     ":constants",
     ":nt_registry",
+    ":third_party_dlls",
     "//chrome/install_static:install_static_util",
   ]
 }
@@ -236,6 +237,8 @@ static_library("third_party_dlls") {
   sources = [
     "third_party_dlls/beacon.cc",
     "third_party_dlls/beacon.h",
+    "third_party_dlls/hardcoded_blocklist.cc",
+    "third_party_dlls/hardcoded_blocklist.h",
     "third_party_dlls/hook.cc",
     "third_party_dlls/hook.h",
     "third_party_dlls/logs.cc",
@@ -246,7 +249,6 @@ static_library("third_party_dlls") {
     "third_party_dlls/packed_list_file.h",
   ]
   public_deps = [
-    ":blacklist",
     ":constants",
     ":crash",
     ":hook_util",

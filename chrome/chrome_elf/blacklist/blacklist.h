@@ -11,12 +11,6 @@
 
 namespace blacklist {
 
-// Max size of the DLL blacklist.
-const size_t kTroublesomeDllsMaxCount = 64;
-
-// The DLL blacklist.
-extern const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount];
-
 // Return the size of the current blacklist.
 extern "C" int BlacklistSize();
 
@@ -49,11 +43,6 @@ extern "C" void BlockedDll(size_t blocked_index);
 // Legacy match function.
 // Returns the index of the blacklist found in |g_troublesome_dlls|, or -1.
 int DllMatch(const std::wstring& module_name);
-
-// New wrapper for above match function.
-// Returns true if a matching name is found in the legacy blacklist.
-// Note: |module_name| must be an ASCII encoded string.
-bool DllMatch(const std::string& module_name);
 
 }  // namespace blacklist
 

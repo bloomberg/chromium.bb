@@ -9,81 +9,20 @@
 #include <assert.h>
 #include <string.h>
 
+#include "chrome/chrome_elf/third_party_dlls/hardcoded_blocklist.h"
+
 namespace blacklist {
+
 namespace {
 
 // Record if the blacklist was successfully initialized so processes can easily
 // determine if the blacklist is enabled for them.
 bool g_blacklist_initialized = false;
 
-// Utility function for converting UTF-8 to UTF-16.
-bool UTF8ToUTF16(const std::string& utf8, std::wstring* utf16) {
-  assert(utf16);
-
-  if (utf8.empty()) {
-    utf16->clear();
-    return true;
-  }
-
-  int size_needed_chars = ::MultiByteToWideChar(
-      CP_UTF8, 0, utf8.c_str(), static_cast<int>(utf8.size()), nullptr, 0);
-  if (!size_needed_chars)
-    return false;
-
-  utf16->resize(size_needed_chars);
-  return ::MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(),
-                               static_cast<int>(utf8.size()), &(*utf16)[0],
-                               size_needed_chars);
-}
 }  // namespace
 
-// The DLLs listed here are known (or under strong suspicion) of causing crashes
-// when they are loaded in the browser. DLLs should only be added to this list
-// if there is nothing else Chrome can do to prevent those crashes.
-// For more information about how this list is generated, and how to get off
-// of it, see:
-// https://sites.google.com/a/chromium.org/dev/Home/third-party-developers
-const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
-    L"949ba8b6a9.dll",           // Coupon Time.
-    L"activedetect32.dll",       // Lenovo One Key Theater.
-                                 // See crbug.com/379218.
-    L"activedetect64.dll",       // Lenovo One Key Theater.
-    L"bitguard.dll",             // Unknown (suspected malware).
-    L"bsvc.dll",                 // Unknown (suspected adware).
-    L"chrmxtn.dll",              // Unknown (keystroke logger).
-    L"cplushook.dll",            // Unknown (suspected malware).
-    L"crdli.dll",                // Linkury Inc.
-    L"crdli64.dll",              // Linkury Inc.
-    L"datamngr.dll",             // Unknown (suspected adware).
-    L"dpinterface32.dll",        // Unknown (suspected adware).
-    L"explorerex.dll",           // Unknown (suspected adware).
-    L"hk.dll",                   // Unknown (keystroke logger).
-    L"libapi2hook.dll",          // V-Bates.
-    L"libinject.dll",            // V-Bates.
-    L"libinject2.dll",           // V-Bates.
-    L"libredir2.dll",            // V-Bates.
-    L"libsvn_tsvn32.dll",        // TortoiseSVN.
-    L"libwinhook.dll",           // V-Bates.
-    L"lmrn.dll",                 // Unknown.
-    L"minisp.dll",               // Unknown (suspected malware).
-    L"minisp32.dll",             // Unknown (suspected malware).
-    L"offerswizarddll.dll",      // Unknown (suspected adware).
-    L"safetynut.dll",            // Unknown (suspected adware).
-    L"smdmf.dll",                // Unknown (suspected adware).
-    L"spappsv32.dll",            // Unknown (suspected adware).
-    L"systemk.dll",              // Unknown (suspected adware).
-    L"vntsrv.dll",               // Virtual New Tab by APN LLC.
-    L"wajam_goblin_64.dll",      // Wajam Internet Technologies.
-    L"wajam_goblin.dll",         // Wajam Internet Technologies.
-    L"windowsapihookdll32.dll",  // Lenovo One Key Theater.
-                                 // See crbug.com/379218.
-    L"windowsapihookdll64.dll",  // Lenovo One Key Theater.
-    L"virtualcamera.ax",         // %PROGRAMFILES%\ASUS\VirtualCamera.
-                                 // See crbug.com/422522.
-    L"ycwebcamerasource.ax",     // CyberLink Youcam, crbug.com/424159
-    // Keep this null pointer here to mark the end of the list.
-    NULL,
-};
+using third_party_dlls::g_troublesome_dlls;
+using third_party_dlls::kTroublesomeDllsMaxCount;
 
 bool g_blocked_dlls[kTroublesomeDllsMaxCount] = {};
 int g_num_blocked_dlls = 0;
@@ -183,19 +122,6 @@ int DllMatch(const std::wstring& module_name) {
       return i;
   }
   return -1;
-}
-
-bool DllMatch(const std::string& module_name) {
-  if (module_name.empty())
-    return false;
-
-  // Convert UTF-8 to UTF-16 for this comparison.
-  std::wstring wide_string;
-  if (!UTF8ToUTF16(module_name, &wide_string)) {
-    return false;
-  }
-
-  return DllMatch(wide_string) != -1;
 }
 
 }  // namespace blacklist
