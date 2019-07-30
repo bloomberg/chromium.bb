@@ -615,13 +615,12 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ShiftClick) {
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WebUI) {
-  WebContents* popup =
-      RunCheckTest(browser(), "/popup_blocker/popup-webui.html",
-                   WindowOpenDisposition::CURRENT_TAB, kExpectForegroundTab,
-                   kDontCheckTitle);
-
-  // Check that the new popup displays about:blank.
-  EXPECT_EQ(GURL(content::kBlockedURL), popup->GetURL());
+  GURL url(embedded_test_server()->GetURL("/popup_blocker/popup-webui.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  // A popup to a webui url should be blocked without ever creating a new tab.
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  ASSERT_EQ(0, GetBlockedContentsCount());
 }
 
 // Verify that the renderer can't DOS the browser by creating arbitrarily many
