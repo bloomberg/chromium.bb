@@ -34,6 +34,7 @@
 #include <stdint.h>
 #include <memory>
 #include <utility>
+#include "base/containers/span.h"
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -184,6 +185,12 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
                     const char* data,
                     wtf_size_t total_size,
                     uint64_t* consumed_buffered_amount);
+  void SendAndAdjustQuota(bool final,
+                          WebSocketHandle::MessageType,
+                          base::span<const char>,
+                          uint64_t* consumed_buffered_amount);
+  bool MaybeSendSynchronously(WebSocketHandle::MessageType,
+                              base::span<const char>);
   void ProcessSendQueue();
   void AddReceiveFlowControlIfNecessary();
   void InitialReceiveFlowControl();

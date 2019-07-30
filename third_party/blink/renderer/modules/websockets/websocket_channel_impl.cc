@@ -293,6 +293,11 @@ void WebSocketChannelImpl::Send(const std::string& message) {
   probe::DidSendWebSocketMessage(execution_context_, identifier_,
                                  WebSocketOpCode::kOpCodeText, true,
                                  message.c_str(), message.length());
+  if (messages_.empty() &&
+      MaybeSendSynchronously(WebSocketHandle::kMessageTypeText, message)) {
+    return;
+  }
+
   messages_.push_back(MakeGarbageCollected<Message>(message));
   ProcessSendQueue();
 }
@@ -322,9 +327,15 @@ void WebSocketChannelImpl::Send(const DOMArrayBuffer& buffer,
   probe::DidSendWebSocketMessage(
       execution_context_, identifier_, WebSocketOpCode::kOpCodeBinary, true,
       static_cast<const char*>(buffer.Data()) + byte_offset, byte_length);
-  // buffer.slice copies its contents.
-  // FIXME: Reduce copy by sending the data immediately when we don't need to
-  // queue the data.
+  if (messages_.empty() &&
+      MaybeSendSynchronously(
+          WebSocketHandle::kMessageTypeBinary,
+          base::make_span(static_cast<const char*>(buffer.Data()) + byte_offset,
+                          byte_length))) {
+    return;
+  }
+
+  // buffer.Slice copies its contents.
   messages_.push_back(MakeGarbageCollected<Message>(
       buffer.Slice(byte_offset, byte_offset + byte_length)));
   ProcessSendQueue();
@@ -413,16 +424,47 @@ void WebSocketChannelImpl::SendInternal(
                static_cast<uint64_t>(total_size - sent_size_of_top_message_)));
   bool final = (sent_size_of_top_message_ + size == total_size);
 
-  handle_->Send(final, frame_type, data + sent_size_of_top_message_, size);
+  SendAndAdjustQuota(final, frame_type,
+                     base::make_span(data + sent_size_of_top_message_, size),
+                     consumed_buffered_amount);
 
   sent_size_of_top_message_ += size;
-  sending_quota_ -= size;
-  *consumed_buffered_amount += size;
 
   if (final) {
     messages_.pop_front();
     sent_size_of_top_message_ = 0;
   }
+}
+
+void WebSocketChannelImpl::SendAndAdjustQuota(
+    bool final,
+    WebSocketHandle::MessageType frame_type,
+    base::span<const char> data,
+    uint64_t* consumed_buffered_amount) {
+  const auto size = data.size();
+
+  // This cast is always valid because the data size is limited by
+  // sending_quota_, which is controlled by the browser process and in practice
+  // is always much smaller than 4GB.
+  // TODO(ricea): Change the type of sending_quota_ to wtf_size_t.
+  handle_->Send(final, frame_type, data.data(), static_cast<wtf_size_t>(size));
+  sending_quota_ -= size;
+  *consumed_buffered_amount += size;
+}
+
+bool WebSocketChannelImpl::MaybeSendSynchronously(
+    WebSocketHandle::MessageType frame_type,
+    base::span<const char> data) {
+  DCHECK(messages_.empty());
+  if (data.size() > sending_quota_)
+    return false;
+
+  uint64_t consumed_buffered_amount = 0;
+  SendAndAdjustQuota(true, frame_type, data, &consumed_buffered_amount);
+  if (client_ && consumed_buffered_amount > 0)
+    client_->DidConsumeBufferedAmount(consumed_buffered_amount);
+
+  return true;
 }
 
 void WebSocketChannelImpl::ProcessSendQueue() {
