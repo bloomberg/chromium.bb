@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/snapshots/lru_cache.h"
+#import "ios/chrome/browser/snapshots/snapshot_lru_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -12,10 +12,10 @@
 
 namespace {
 
-using LRUCacheTest = PlatformTest;
+using SnapshotLRUCacheTest = PlatformTest;
 
-TEST_F(LRUCacheTest, Basic) {
-  LRUCache* cache = [[LRUCache alloc] initWithCacheSize:3];
+TEST_F(SnapshotLRUCacheTest, Basic) {
+  SnapshotLRUCache* cache = [[SnapshotLRUCache alloc] initWithCacheSize:3];
 
   NSString* value1 = @"Value 1";
   NSString* value2 = @"Value 2";

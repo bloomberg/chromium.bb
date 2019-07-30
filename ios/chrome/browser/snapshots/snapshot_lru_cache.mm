@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/snapshots/lru_cache.h"
+#import "ios/chrome/browser/snapshots/snapshot_lru_cache.h"
 
 #include <stddef.h>
 
@@ -41,7 +41,7 @@ using NSObjectMRUCache = base::MRUCacheBase<id<NSObject>,
 
 }  // namespace
 
-@implementation LRUCache {
+@implementation SnapshotLRUCache {
   std::unique_ptr<NSObjectMRUCache> _cache;
 }
 
