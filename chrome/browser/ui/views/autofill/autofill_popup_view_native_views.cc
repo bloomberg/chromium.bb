@@ -822,6 +822,13 @@ void AutofillPopupRowView::Init() {
   RefreshStyle();
 }
 
+bool AutofillPopupRowView::HandleAccessibleAction(
+    const ui::AXActionData& action_data) {
+  if (action_data.action == ax::mojom::Action::kFocus)
+    popup_view_->controller()->SetSelectedLine(line_number_);
+  return View::HandleAccessibleAction(action_data);
+}
+
 /************** AutofillPopupViewNativeViews **************/
 
 AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
@@ -860,7 +867,6 @@ void AutofillPopupViewNativeViews::Show() {
 void AutofillPopupViewNativeViews::Hide() {
   // The controller is no longer valid after it hides us.
   controller_ = nullptr;
-
   DoHide();
 }
 
