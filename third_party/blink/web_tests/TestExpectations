@@ -6416,3 +6416,6 @@ crbug.com/988074 [ Linux ] virtual/cors-rfc1918/http/tests/security/cors-rfc1918
 crbug.com/987115 [ Win Linux ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Crash Pass Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/cssom-view/scrollIntoView-sideways-lr-writing-mode-and-rtl-direction.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/cssom-view/scrollIntoView-sideways-rl-writing-mode-and-rtl-direction.html [ Failure ]
+crbug.com/988890 [ Win7 Release ] external/wpt/referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-http/img-tag/keep-origin-redirect/same-insecure.http.html [ Pass Timeout ]
+crbug.com/988890 [ Win7 Release ] virtual/blink-cors/external/wpt/referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-http/img-tag/keep-origin-redirect/same-insecure.http.html [ Pass Timeout ]
+crbug.com/988890 [ Win7 Release ] virtual/not-omt-sw-fetch/external/wpt/referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-http/img-tag/keep-origin-redirect/same-insecure.http.html [ Pass Timeout ]
