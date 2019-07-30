@@ -66,6 +66,21 @@ class FakeOAuth2AccessTokenManagerDelegate
     return false;
   }
 
+  void OnAccessTokenInvalidated(
+      const CoreAccountId& account_id,
+      const std::string& client_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      const std::string& access_token) override {
+    if (!on_access_token_invalidated_callback_)
+      return;
+
+    EXPECT_EQ(access_token_invalidated_account_id_, account_id);
+    EXPECT_EQ(access_token_invalidated_client_id_, client_id);
+    EXPECT_EQ(access_token_invalidated_scopes_, scopes);
+    EXPECT_EQ(access_token_invalidated_access_token_, access_token);
+    std::move(on_access_token_invalidated_callback_).Run();
+  }
+
   void AddAccount(CoreAccountId id, std::string refresh_token) {
     account_ids_to_refresh_tokens_[id] = refresh_token;
   }
@@ -74,10 +89,28 @@ class FakeOAuth2AccessTokenManagerDelegate
     access_token_fetch_closure_ = std::move(closure);
   }
 
+  void SetOnAccessTokenInvalidated(
+      const CoreAccountId& account_id,
+      const std::string& client_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      const std::string& access_token,
+      base::OnceClosure callback) {
+    access_token_invalidated_account_id_ = account_id;
+    access_token_invalidated_client_id_ = client_id;
+    access_token_invalidated_scopes_ = scopes;
+    access_token_invalidated_access_token_ = access_token;
+    on_access_token_invalidated_callback_ = std::move(callback);
+  }
+
  private:
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   std::map<CoreAccountId, std::string> account_ids_to_refresh_tokens_;
   base::OnceClosure access_token_fetch_closure_;
+  CoreAccountId access_token_invalidated_account_id_;
+  std::string access_token_invalidated_client_id_;
+  OAuth2AccessTokenManager::ScopeSet access_token_invalidated_scopes_;
+  std::string access_token_invalidated_access_token_;
+  base::OnceClosure on_access_token_invalidated_callback_;
 };
 
 class FakeOAuth2AccessTokenManagerConsumer
@@ -321,4 +354,17 @@ TEST_F(OAuth2AccessTokenManagerTest, HandleAccessTokenFetch) {
   EXPECT_EQ(0U, token_manager_.GetNumPendingRequestsForTesting(
                     GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
                     account_id_, OAuth2AccessTokenManager::ScopeSet()));
+}
+
+// Test that InvalidateAccessToken triggers OnAccessTokenInvalidated.
+TEST_F(OAuth2AccessTokenManagerTest, OnAccessTokenInvalidated) {
+  base::RunLoop run_loop;
+  OAuth2AccessTokenManager::ScopeSet scope_set;
+  scope_set.insert("scope");
+  std::string access_token("access_token");
+  delegate_.SetOnAccessTokenInvalidated(
+      account_id_, GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
+      scope_set, access_token, run_loop.QuitClosure());
+  token_manager_.InvalidateAccessToken(account_id_, scope_set, access_token);
+  run_loop.Run();
 }
