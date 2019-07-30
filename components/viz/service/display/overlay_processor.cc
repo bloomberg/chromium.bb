@@ -150,7 +150,7 @@ bool OverlayProcessor::ProcessForCALayers(
   // CALayer overlays are all-or-nothing. If all quads were replaced with
   // layers then clear the list and remove the backbuffer from the overcandidate
   // list.
-  output_surface_already_handled_ = true;
+  overlay_candidates->clear();
   overlay_damage_rect_ = render_pass->output_rect;
   *damage_rect = gfx::Rect();
   return true;
@@ -193,9 +193,6 @@ void OverlayProcessor::ProcessForOverlays(
   // they are not promotable.
   SendPromotionHintsBeforeReturning notifier(resource_provider, candidates);
 #endif
-
-  // Clear to get ready to handle output surface as overlay.
-  output_surface_already_handled_ = false;
 
   // Reset |previous_frame_underlay_rect_| in case UpdateDamageRect() not being
   // invoked.  Also reset |previous_frame_underlay_was_unoccluded_|.
@@ -249,7 +246,16 @@ void OverlayProcessor::ProcessForOverlays(
     if (!previous_frame_underlay_rect.IsEmpty())
       damage_rect->Union(previous_frame_underlay_rect);
 
-    DCHECK(candidates->empty());
+    // If no strategy worked the only remaining overlay in the list is the one
+    // backed by the OutputSurface. Make sure the OverlayCandidateValidator
+    // applies any modifications if needed.
+    if (!candidates->empty() && overlay_validator_) {
+      DCHECK_EQ(candidates->size(), 1u);
+      DCHECK(candidates->back().use_output_surface_for_resource);
+
+      overlay_validator_->AdjustOutputSurfaceOverlay(&candidates->back());
+      DCHECK_EQ(candidates->size(), 1u);
+    }
   }
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.debug.overlay_planes"),
@@ -273,12 +279,16 @@ void OverlayProcessor::UpdateDamageRect(
   for (const OverlayCandidate& overlay : *candidates) {
     if (overlay.plane_z_order >= 0) {
       const gfx::Rect overlay_display_rect =
-          overlay_validator_->GetOverlayDamageRectForOutputSurface(overlay);
+          ToEnclosedRect(overlay.display_rect);
       // If an overlay candidate comes from output surface, its z-order should
       // be 0.
-      overlay_damage_rect_.Union(overlay_display_rect);
-      if (overlay.is_opaque)
-        damage_rect->Subtract(overlay_display_rect);
+      DCHECK(!overlay.use_output_surface_for_resource ||
+             overlay.plane_z_order == 0);
+      if (!overlay.use_output_surface_for_resource) {
+        overlay_damage_rect_.Union(overlay_display_rect);
+        if (overlay.is_opaque)
+          damage_rect->Subtract(overlay_display_rect);
+      }
     } else {
       // Process underlay candidates:
       // Track the underlay_rect from frame to frame. If it is the same and
@@ -327,34 +337,6 @@ void OverlayProcessor::UpdateDamageRect(
     damage_rect->Union(previous_frame_underlay_rect);
 
   previous_frame_underlay_rect_ = this_frame_underlay_rect;
-}
-
-base::Optional<OverlayProcessor::OutputSurfaceOverlayPlane>
-OverlayProcessor::ProcessOutputSurfaceAsOverlay(
-    const gfx::Size& viewport_size,
-    const gfx::BufferFormat& buffer_format,
-    const gfx::ColorSpace& color_space) const {
-  if (output_surface_already_handled_)
-    return base::nullopt;
-
-  OutputSurfaceOverlayPlane overlay_plane;
-  overlay_plane.transform = gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE;
-  overlay_plane.resource_size = viewport_size;
-  overlay_plane.format = buffer_format;
-  overlay_plane.color_space = color_space;
-
-  // Adjust transformation and display_rect based on display rotation.
-  overlay_plane.display_rect =
-      gfx::RectF(viewport_size.width(), viewport_size.height());
-  if (overlay_validator_)
-    overlay_validator_->AdjustOutputSurfaceOverlay(&overlay_plane);
-
-#if defined(ALWAYS_ENABLE_BLENDING_FOR_PRIMARY)
-  // On Chromecast, always use RGBA as scanout format for primary plane.
-  overlay_plane.enable_blending = true;
-#endif
-
-  return overlay_plane;
 }
 
 bool OverlayProcessor::NeedsSurfaceOccludingDamageRect() const {

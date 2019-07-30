@@ -37,26 +37,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       bool zero_damage_rect,
       bool occluding_damage_equal_to_damage_rect);
 
-  // Data needed to represent output surface as overlay plane. Due to default
-  // values for primary plane, this is a partial list of OverlayCandidate.
-  struct VIZ_SERVICE_EXPORT OutputSurfaceOverlayPlane {
-    // Display's rotation information.
-    gfx::OverlayTransform transform;
-    // Rect on the display to position to. This takes in account of Display's
-    // rotation.
-    gfx::RectF display_rect;
-    // Size of output surface in pixels.
-    gfx::Size resource_size;
-    // Format of the buffer to scanout.
-    gfx::BufferFormat format;
-    // ColorSpace of the buffer for scanout.
-    gfx::ColorSpace color_space;
-    // Enable blending when we have underlay.
-    bool enable_blending;
-    // Gpu fence to wait for before overlay is ready for display.
-    unsigned gpu_fence_id;
-  };
-
   class VIZ_SERVICE_EXPORT Strategy {
    public:
     virtual ~Strategy() {}
@@ -72,9 +52,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
         RenderPassList* render_pass_list,
         OverlayCandidateList* candidates,
         std::vector<gfx::Rect>* content_bounds) = 0;
-
-    virtual void AdjustOutputSurfaceOverlay(
-        OutputSurfaceOverlayPlane* output_surface_plane) {}
 
     virtual OverlayStrategy GetUMAEnum() const;
   };
@@ -111,14 +88,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       DCLayerOverlayList* dc_layer_overlays,
       gfx::Rect* damage_rect,
       std::vector<gfx::Rect>* content_bounds);
-
-  // TODO(weiliangc): Eventually the asymmetry between primary plane and
-  // non-primary places should be internalized and should not have a special
-  // API.
-  base::Optional<OutputSurfaceOverlayPlane> ProcessOutputSurfaceAsOverlay(
-      const gfx::Size& viewport_size,
-      const gfx::BufferFormat& buffer_format,
-      const gfx::ColorSpace& color_space) const;
 
   void SetDCHasHwOverlaySupportForTesting() {
     dc_processor_->SetHasHwOverlaySupport();
@@ -161,7 +130,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
 
   std::unique_ptr<DCLayerOverlayProcessor> dc_processor_;
 
-  bool output_surface_already_handled_;
   DISALLOW_COPY_AND_ASSIGN(OverlayProcessor);
 };
 
