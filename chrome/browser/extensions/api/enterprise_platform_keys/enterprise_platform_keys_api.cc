@@ -283,7 +283,7 @@ EnterprisePlatformKeysChallengeMachineKeyFunction::Run() {
   // |callback| holds a reference to |this|.
   base::Closure task =
       base::Bind(&EPKPChallengeMachineKey::Run, base::Unretained(impl_),
-                 scoped_refptr<UIThreadExtensionFunction>(this), callback,
+                 scoped_refptr<ExtensionFunction>(this), callback,
                  StringFromVector(params->challenge),
                  params->register_key ? *params->register_key : false);
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, task);
@@ -324,7 +324,7 @@ EnterprisePlatformKeysChallengeUserKeyFunction::Run() {
   // |callback| holds a reference to |this|.
   base::Closure task =
       base::Bind(&EPKPChallengeUserKey::Run, base::Unretained(impl_),
-                 scoped_refptr<UIThreadExtensionFunction>(this), callback,
+                 scoped_refptr<ExtensionFunction>(this), callback,
                  StringFromVector(params->challenge), params->register_key);
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, task);
   return RespondLater();

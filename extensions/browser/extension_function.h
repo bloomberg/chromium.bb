@@ -557,10 +557,4 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
 };
 
-// TODO(http://crbug.com/980774): Delete this when everything has been renamed.
-class UIThreadExtensionFunction : public ExtensionFunction {
- protected:
-  ~UIThreadExtensionFunction() override {}
-};
-
 #endif  // EXTENSIONS_BROWSER_EXTENSION_FUNCTION_H_
