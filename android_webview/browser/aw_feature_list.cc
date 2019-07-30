@@ -24,7 +24,6 @@ namespace {
 // in other locations in the code base (e.g. content/, components/, etc).
 const base::Feature* kFeaturesExposedToJava[] = {
     &features::kWebViewConnectionlessSafeBrowsing,
-    &features::kWebViewPageStartedOnCommit,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
@@ -51,11 +50,6 @@ const base::Feature kWebViewBrotliSupport{"WebViewBrotliSupport",
 // Feature is checked and used in downstream internal code.
 const base::Feature kWebViewConnectionlessSafeBrowsing{
     "WebViewConnectionlessSafeBrowsing", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Kill switch for feature to call onPageFinished for browser-initiated
-// navigations when the navigation commits.
-const base::Feature kWebViewPageStartedOnCommit{
-    "WebViewPageStartedOnCommit", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable raster in wide color gamut for apps that use webview in a wide color
 // gamut activity.
