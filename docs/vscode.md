@@ -266,6 +266,19 @@ $ cp tools/vscode/keybindings.json5 .vscode/keybindings.json
 There are some useful snippets provided in
 [//tools/vscode/cpp.json5](/tools/vscode/cpp.json5).
 
+You can either install them in your user profile (path may vary depending on the
+platform):
+```
+$ cp tools/vscode/cpp.json5 ~/.config/Code/User/snippets/cpp.json
+```
+
+Or install them as project snippets after installing the [Project
+Snippets](https://marketplace.visualstudio.com/items?itemName=rebornix.project-snippets)
+extension:
+```
+$ cp tools/vscode/cpp.json5 .vscode/snippets/cpp.json
+```
+
 ### Tips
 
 #### The `out` folder
