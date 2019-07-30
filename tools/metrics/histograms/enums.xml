@@ -33729,6 +33729,51 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="LoadLibraryExW Unavailable, LoadLibraryW Fail"/>
 </enum>
 
+<enum name="LoadLibraryStatus">
+  <int value="0"
+      label="Failed to load, no fixed address, on retry, child process"/>
+  <int value="1"
+      label="Successfully loaded, no fixed address, on retry, child process"/>
+  <int value="2"
+      label="Failed to load at fixed address, on retry, child process"/>
+  <int value="3"
+      label="Successfully loaded at fixed address, on retry, child process"/>
+  <int value="4"
+      label="Failed to load, no fixed address, first attempt, child process"/>
+  <int value="5"
+      label="Successfully loaded, no fixed address, first attempt, child
+             process"/>
+  <int value="6"
+      label="Failed to load at fixed address, first attempt, child process"/>
+  <int value="7"
+      label="Successfully loaded at fixed address, first attempt, child
+             process"/>
+  <int value="8"
+      label="Failed to load, no fixed address, on retry, browser/webview
+             process"/>
+  <int value="9"
+      label="Successfully loaded, no fixed address, on retry, browser/webview
+             process"/>
+  <int value="10"
+      label="Failed to load at fixed address, on retry, browser/webview
+             process"/>
+  <int value="11"
+      label="Successfully loaded at fixed address, on retry, browser/webview
+             process"/>
+  <int value="12"
+      label="Failed to load, no fixed address, first attempt, browser/webview
+             process"/>
+  <int value="13"
+      label="Successfully loaded, no fixed address, first attempt,
+             browser/webview process"/>
+  <int value="14"
+      label="Failed to load at fixed address, first attempt, browser/webview
+             process"/>
+  <int value="15"
+      label="Successfully loaded at fixed address, first attempt,
+             browser/webview process"/>
+</enum>
+
 <enum name="LoadRulesetResult">
   <int value="0" label="Load succeeded"/>
   <int value="1" label="Load failed - Invalid path"/>
