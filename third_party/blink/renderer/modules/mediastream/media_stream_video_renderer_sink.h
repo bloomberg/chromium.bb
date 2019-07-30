@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_RENDERER_SINK_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_RENDERER_SINK_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_RENDERER_SINK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_RENDERER_SINK_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -11,9 +11,9 @@
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_video_renderer.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -22,7 +22,7 @@ class SingleThreadTaskRunner;
 
 namespace blink {
 
-// MediaStreamVideoRendererSink is a blink::WebMediaStreamVideoRenderer designed
+// MediaStreamVideoRendererSink is a WebMediaStreamVideoRenderer designed
 // for rendering Video MediaStreamTracks [1], MediaStreamVideoRendererSink
 // implements MediaStreamVideoSink in order to render video frames provided from
 // a MediaStreamVideoTrack, to which it connects itself when the
@@ -34,17 +34,17 @@ namespace blink {
 // TODO(wuchengli): Add unit test. See the link below for reference.
 // https://src.chromium.org/viewvc/chrome/trunk/src/content/renderer/media/rtc_
 // video_decoder_unittest.cc?revision=180591&view=markup
-class BLINK_MODULES_EXPORT MediaStreamVideoRendererSink
-    : public blink::WebMediaStreamVideoRenderer,
-      public blink::MediaStreamVideoSink {
+class MODULES_EXPORT MediaStreamVideoRendererSink
+    : public WebMediaStreamVideoRenderer,
+      public MediaStreamVideoSink {
  public:
   MediaStreamVideoRendererSink(
-      const blink::WebMediaStreamTrack& video_track,
-      const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
+      const WebMediaStreamTrack& video_track,
+      const WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner);
 
-  // blink::WebMediaStreamVideoRenderer implementation. Called on the main
+  // WebMediaStreamVideoRenderer implementation. Called on the main
   // thread.
   void Start() override;
   void Stop() override;
@@ -63,14 +63,13 @@ class BLINK_MODULES_EXPORT MediaStreamVideoRendererSink
   };
 
   // MediaStreamVideoSink implementation. Called on the main thread.
-  void OnReadyStateChanged(
-      blink::WebMediaStreamSource::ReadyState state) override;
+  void OnReadyStateChanged(WebMediaStreamSource::ReadyState state) override;
 
   // Helper method used for testing.
   State GetStateForTesting();
 
   const RepaintCB repaint_cb_;
-  const blink::WebMediaStreamTrack video_track_;
+  const WebMediaStreamTrack video_track_;
 
   // Inner class used for transfering frames on compositor thread and running
   // |repaint_cb_|.
@@ -89,4 +88,4 @@ class BLINK_MODULES_EXPORT MediaStreamVideoRendererSink
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_RENDERER_SINK_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_RENDERER_SINK_H_
