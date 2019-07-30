@@ -141,6 +141,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
   auto java_web_contents = web_contents->GetJavaWebContents();
   Java_AutofillAssistantUiController_setWebContents(env, java_object_,
                                                     java_web_contents);
+  Java_AssistantModel_setWebContents(env, GetModel(), java_web_contents);
   Java_AssistantPaymentRequestModel_setWebContents(
       env, GetPaymentRequestModel(), java_web_contents);
   if (ui_delegate->GetState() != AutofillAssistantState::INACTIVE) {
@@ -163,7 +164,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     RectF visual_viewport;
     ui_delegate->GetVisualViewport(&visual_viewport);
     OnTouchableAreaChanged(visual_viewport, area, restricted_area);
-    OnResizeViewportChanged(ui_delegate->GetResizeViewport());
+    OnViewportModeChanged(ui_delegate->GetViewportMode());
     OnPeekModeChanged(ui_delegate->GetPeekMode());
     OnFormChanged(ui_delegate->GetForm());
 
@@ -310,9 +311,9 @@ void UiControllerAndroid::OnProgressVisibilityChanged(bool visible) {
                                                GetHeaderModel(), visible);
 }
 
-void UiControllerAndroid::OnResizeViewportChanged(bool resize_viewport) {
-  Java_AutofillAssistantUiController_setResizeViewport(
-      AttachCurrentThread(), java_object_, resize_viewport);
+void UiControllerAndroid::OnViewportModeChanged(ViewportMode mode) {
+  Java_AutofillAssistantUiController_setViewportMode(AttachCurrentThread(),
+                                                     java_object_, mode);
 }
 
 void UiControllerAndroid::OnPeekModeChanged(
