@@ -6431,3 +6431,6 @@ crbug.com/988298 [ Linux ] http/tests/devtools/extensions/extensions-panel.js [ 
 # Sheriff 2019-07-29
 crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure Timeout ]
 crbug.com/988074 [ Linux ] virtual/cors-rfc1918/http/tests/security/cors-rfc1918/addressspace-serviceworker-basic.html [ Pass Failure ]
+
+# Sheriff 2019-07-30
+crbug.com/987115 [ Win Linux ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Crash Pass Failure ]
