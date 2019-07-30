@@ -10,8 +10,8 @@ namespace media_session {
 
 AudioFocusRequest::AudioFocusRequest(
     base::WeakPtr<AudioFocusManager> owner,
-    mojo::PendingReceiver<mojom::AudioFocusRequestClient> receiver,
-    mojo::PendingRemote<mojom::MediaSession> session,
+    mojom::AudioFocusRequestClientRequest request,
+    mojom::MediaSessionPtr session,
     mojom::MediaSessionInfoPtr session_info,
     mojom::AudioFocusType audio_focus_type,
     const base::UnguessableToken& id,
@@ -21,13 +21,13 @@ AudioFocusRequest::AudioFocusRequest(
       session_(std::move(session)),
       session_info_(std::move(session_info)),
       audio_focus_type_(audio_focus_type),
-      receiver_(this, std::move(receiver)),
+      binding_(this, std::move(request)),
       id_(id),
       source_name_(source_name),
       group_id_(group_id),
       owner_(std::move(owner)) {
   // Listen for mojo errors.
-  receiver_.set_disconnect_handler(base::BindOnce(
+  binding_.set_connection_error_handler(base::BindOnce(
       &AudioFocusRequest::OnConnectionError, base::Unretained(this)));
   session_.set_connection_error_handler(base::BindOnce(
       &AudioFocusRequest::OnConnectionError, base::Unretained(this)));

@@ -300,11 +300,11 @@ base::UnguessableToken MockMediaSession::RequestAudioFocusFromService(
     DCHECK(request_id_.is_empty());
 
     // Build a new audio focus request.
-    mojo::PendingRemote<mojom::MediaSession> media_session;
-    receivers_.Add(this, media_session.InitWithNewPipeAndPassReceiver());
+    mojom::MediaSessionPtr media_session;
+    bindings_.AddBinding(this, mojo::MakeRequest(&media_session));
 
     service->RequestAudioFocus(
-        afr_client_.BindNewPipeAndPassReceiver(), std::move(media_session),
+        mojo::MakeRequest(&afr_client_), std::move(media_session),
         GetMediaSessionInfoSync(), audio_focus_type,
         base::BindOnce(
             [](base::UnguessableToken* id,
@@ -333,11 +333,11 @@ base::UnguessableToken MockMediaSession::RequestGroupedAudioFocusFromService(
     DCHECK(request_id_.is_empty());
 
     // Build a new audio focus request.
-    mojo::PendingRemote<mojom::MediaSession> media_session;
-    receivers_.Add(this, media_session.InitWithNewPipeAndPassReceiver());
+    mojom::MediaSessionPtr media_session;
+    bindings_.AddBinding(this, mojo::MakeRequest(&media_session));
 
     service->RequestGroupedAudioFocus(
-        afr_client_.BindNewPipeAndPassReceiver(), std::move(media_session),
+        mojo::MakeRequest(&afr_client_), std::move(media_session),
         GetMediaSessionInfoSync(), audio_focus_type, group_id,
         base::BindOnce(
             [](base::UnguessableToken* id,

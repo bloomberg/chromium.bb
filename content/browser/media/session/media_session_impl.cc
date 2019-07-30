@@ -778,11 +778,9 @@ AudioFocusDelegate::AudioFocusResult MediaSessionImpl::RequestSystemAudioFocus(
   return result;
 }
 
-mojo::PendingRemote<media_session::mojom::MediaSession>
-MediaSessionImpl::AddRemote() {
-  mojo::PendingRemote<media_session::mojom::MediaSession> remote;
-  receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
-  return remote;
+void MediaSessionImpl::BindToMojoRequest(
+    mojo::InterfaceRequest<media_session::mojom::MediaSession> request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void MediaSessionImpl::GetDebugInfo(GetDebugInfoCallback callback) {
