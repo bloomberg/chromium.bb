@@ -1068,32 +1068,35 @@ html[dir=rtl] #menu-back {
   transform: scaleX(-1);
 }
 
-#backgrounds-upload-wrapper {
+#backgrounds-upload-icon {
+  background: white;
   border: 1px solid rgb(var(--GG300-rgb));
   box-sizing: border-box;
   display: inline-block;
   left: 0;
   opacity: 1;
-  position: relative;
   top: 0;
 }
 
 @media (prefers-color-scheme: dark) {
-  #backgrounds-upload-wrapper {
+  #backgrounds-upload-icon {
+    background-color: rgb(var(--dark-mode-bg-rgb));
     border-color: rgb(var(--GG700-rgb));
   }
 }
 
-#backgrounds-upload-icon {
+#backgrounds-upload-arrow {
   -webkit-mask-image: url(icons/upload.svg);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 100%;
   background: 32px 32px rgb(var(--GG700-rgb));
   height: 32px;
-  margin-bottom: 8px;
-  margin-inline-start: 72px;
-  margin-top: 61px;
+  margin: 61px auto 8px;
   width: 32px;
+}
+
+.selected #backgrounds-upload-arrow {
+  margin-top: 45px;
 }
 
 #backgrounds-upload-text {
@@ -1197,11 +1200,6 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   margin-inline-start: 7px;
   margin-top: 12px;
   width: 116px;
-}
-
-#backgrounds-default.selected #backgrounds-default-icon {
-  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
-      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
 }
 
 #backgrounds-default:not(.selected) .mini-page {
