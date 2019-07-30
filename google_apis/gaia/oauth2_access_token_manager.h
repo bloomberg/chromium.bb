@@ -287,10 +287,6 @@ class OAuth2AccessTokenManager {
   GetDiagnosticsObserversForTesting();
 
  private:
-  // TODO(https://crbug.com/967598): Determine whether ProfileOAuth2TokenService
-  // needs to have API to access to token_cache().
-  friend class ProfileOAuth2TokenService;
-
   class Fetcher;
   friend class Fetcher;
 
@@ -343,6 +339,8 @@ class OAuth2AccessTokenManager {
   static int max_fetch_retry_num_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenManagerTest, ClearCache);
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2AccessTokenManager);
 };

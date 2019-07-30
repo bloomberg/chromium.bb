@@ -288,7 +288,7 @@ void ProfileOAuth2TokenService::RevokeAllCredentials(
   base::AutoReset<SourceForRefreshTokenOperation> auto_reset(
       &update_refresh_token_source_, source);
   token_manager_->CancelAllRequests();
-  ClearCache();
+  token_manager_->ClearCache();
   GetDelegate()->RevokeAllCredentials();
 }
 
@@ -339,10 +339,6 @@ void ProfileOAuth2TokenService::UpdateAuthErrorForTesting(
     const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
   GetDelegate()->UpdateAuthError(account_id, error);
-}
-
-int ProfileOAuth2TokenService::GetTokenCacheCountForTesting() {
-  return token_manager_->token_cache().size();
 }
 
 void ProfileOAuth2TokenService::
@@ -414,10 +410,6 @@ void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {
   // Ensure the device ID is not empty, and recreate it if all tokens were
   // cleared during the loading process.
   RecreateDeviceIdIfNeeded();
-}
-
-void ProfileOAuth2TokenService::ClearCache() {
-  token_manager_->ClearCache();
 }
 
 void ProfileOAuth2TokenService::ClearCacheForAccount(

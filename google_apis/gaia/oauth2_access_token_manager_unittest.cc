@@ -195,3 +195,35 @@ TEST_F(OAuth2AccessTokenManagerTest, CancelRequestsForAccount) {
   EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(3, consumer_.number_of_errors_);
 }
+
+// Test that StartRequest fetches a network request after ClearCache.
+TEST_F(OAuth2AccessTokenManagerTest, ClearCache) {
+  base::RunLoop run_loop1;
+  consumer_.SetResponseCompletedClosure(run_loop1.QuitClosure());
+
+  std::set<std::string> scope_list;
+  scope_list.insert("scope");
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request(
+      token_manager_.StartRequest(account_id_, scope_list, &consumer_));
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
+  run_loop1.Run();
+
+  EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  EXPECT_EQ("token", consumer_.last_token_);
+  EXPECT_EQ(1U, token_manager_.token_cache().size());
+
+  token_manager_.ClearCache();
+
+  EXPECT_EQ(0U, token_manager_.token_cache().size());
+  base::RunLoop run_loop2;
+  consumer_.SetResponseCompletedClosure(run_loop2.QuitClosure());
+
+  SimulateOAuthTokenResponse(GetValidTokenResponse("another token", 3600));
+  request = token_manager_.StartRequest(account_id_, scope_list, &consumer_);
+  run_loop2.Run();
+  EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  EXPECT_EQ("another token", consumer_.last_token_);
+  EXPECT_EQ(1U, token_manager_.token_cache().size());
+}

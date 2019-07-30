@@ -250,8 +250,6 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   void UpdateAuthErrorForTesting(const CoreAccountId& account_id,
                                  const GoogleServiceAuthError& error);
 
-  int GetTokenCacheCountForTesting();
-
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
 
   // Override |token_manager_| for testing.
@@ -268,9 +266,6 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
   void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;
-
-  // Clears the internal token cache.
-  void ClearCache();
 
   // Clears all of the tokens belonging to |account_id| from the internal token
   // cache. It does not matter what other parameters, like |client_id| were
@@ -297,7 +292,6 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   signin_metrics::SourceForRefreshTokenOperation update_refresh_token_source_ =
       signin_metrics::SourceForRefreshTokenOperation::kUnknown;
 
-  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest, UpdateClearsCache);
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
                            SameScopesRequestedForDifferentClients);
 
