@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   CheckNoUkm();
 }
 
-// Test that the heuristics are not triggered even with net errors.
+// Test that the heuristics are not triggered with net errors.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        NetError_SiteEngagement_Interstitial) {
   // Create a test server that returns invalid responses.
@@ -1021,25 +1021,33 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
   LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
 }
 
-// Verify reloading the page results in dismissing an interstitial.
+// Verify reloading the page does not result in dismissing an interstitial.
 // Regression test for crbug/941886.
 IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                        RefreshDoesntDismiss) {
-  // Verify it works when the lookalike domain is the first in the chain
+  // Verify it works when the lookalike domain is the first in the chain.
   const GURL kNavigatedUrl =
       GetLongRedirect("googlé.com", "example.net", "example.com");
-
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
 
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
 
-  content::TestNavigationObserver navigation_observer(web_contents);
-  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  navigation_observer.Wait();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
 
-  EXPECT_EQ(nullptr, GetInterstitialType(web_contents));
-  EXPECT_TRUE(IsUrlShowing(browser()));
-  EXPECT_EQ(GetURL("example.com"), web_contents->GetURL());
+  // Reload the interstitial twice. Should still work.
+  for (size_t i = 0; i < 2; i++) {
+    content::TestNavigationObserver navigation_observer(web_contents);
+    chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+    navigation_observer.Wait();
+
+    EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
+              GetInterstitialType(web_contents));
+    EXPECT_FALSE(IsUrlShowing(browser()));
+  }
+
+  // Go to the affected site directly. This should not result in an
+  // interstitial.
+  TestInterstitialNotShown(browser(),
+                           embedded_test_server()->GetURL("example.net", "/"));
 }

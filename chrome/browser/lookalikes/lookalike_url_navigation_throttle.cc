@@ -17,10 +17,10 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/lookalikes/lookalike_url_allowlist.h"
 #include "chrome/browser/lookalikes/lookalike_url_controller_client.h"
 #include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
+#include "chrome/browser/lookalikes/lookalike_url_tab_storage.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -29,6 +29,7 @@
 #include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
 #include "content/public/browser/navigation_handle.h"
+#include "third_party/blink/public/mojom/referrer.mojom.h"
 
 namespace {
 
@@ -155,6 +156,14 @@ std::string GetSimilarDomainFromEngagedSites(
   return std::string();
 }
 
+// Returns true if |current_url| is at the end of the redirect chain
+// stored in |stored_redirect_chain|.
+bool IsInterstitialReload(const GURL& current_url,
+                          const std::vector<GURL>& stored_redirect_chain) {
+  return stored_redirect_chain.size() > 1 &&
+         stored_redirect_chain[stored_redirect_chain.size() - 1] == current_url;
+}
+
 }  // namespace
 
 namespace lookalikes {
@@ -243,15 +252,48 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
     return content::NavigationThrottle::PROCEED;
   }
 
+  // Get stored interstitial parameters early. By doing so, we ensure that a
+  // navigation to an irrelevant (for this interstitial's purposes) URL such as
+  // chrome://settings while the lookalike interstitial is being shown clears
+  // the stored state:
+  // 1. User navigates to lookalike.tld which redirects to site.tld.
+  // 2. Interstitial shown.
+  // 3. User navigates to chrome://settings.
+  // If, after this, the user somehow ends up on site.tld with a reload (e.g.
+  // with ReloadType::ORIGINAL_REQUEST_URL), this will correctly not show an
+  // interstitial.
+  LookalikeUrlTabStorage* tab_storage =
+      LookalikeUrlTabStorage::GetOrCreate(handle->GetWebContents());
+  const LookalikeUrlTabStorage::InterstitialParams interstitial_params =
+      tab_storage->GetInterstitialParams();
+  tab_storage->ClearInterstitialParams();
+
   if (!url.SchemeIsHTTPOrHTTPS()) {
     return content::NavigationThrottle::PROCEED;
   }
 
   // If the URL is in the allowlist, don't show any warning.
-  LookalikeUrlAllowlist* allowlist =
-      LookalikeUrlAllowlist::GetOrCreateAllowlist(handle->GetWebContents());
-  if (allowlist->IsDomainInList(url.host())) {
+  if (tab_storage->IsDomainAllowed(url.host())) {
     return content::NavigationThrottle::PROCEED;
+  }
+
+  // If this is a reload and if the current URL is the last URL of the stored
+  // redirect chain, the interstitial was probably reloaded. Stop the reload and
+  // navigate back to the original lookalike URL so that the whole throttle is
+  // exercised again.
+  if (handle->GetReloadType() != content::ReloadType::NONE &&
+      IsInterstitialReload(url, interstitial_params.redirect_chain)) {
+    CHECK(interstitial_params.url.SchemeIsHTTPOrHTTPS());
+    // See
+    // https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/plIZV3Rkzok
+    // for why this is OK. Assume interstitial reloads are always browser
+    // initiated.
+    navigation_handle()->GetWebContents()->OpenURL(content::OpenURLParams(
+        interstitial_params.url, interstitial_params.referrer,
+        WindowOpenDisposition::CURRENT_TAB,
+        ui::PageTransition::PAGE_TRANSITION_RELOAD,
+        false /* is_renderer_initiated */));
+    return content::NavigationThrottle::CANCEL_AND_IGNORE;
   }
 
   const DomainInfo navigated_domain = GetDomainInfo(url);
@@ -325,6 +367,16 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::ShowInterstitial(
 
   security_interstitials::SecurityInterstitialTabHelper::AssociateBlockingPage(
       web_contents, handle->GetNavigationId(), std::move(blocking_page));
+
+  // Store interstitial parameters in per-tab storage. Reloading the
+  // interstitial once it's shown navigates to the final URL in the original
+  // redirect chain. It also loses the original redirect chain. By storing these
+  // parameters, we can check if the next navigation is a reload and act
+  // accordingly.
+  content::Referrer referrer(handle->GetReferrer().url,
+                             handle->GetReferrer().policy);
+  LookalikeUrlTabStorage::GetOrCreate(handle->GetWebContents())
+      ->OnLookalikeInterstitialShown(url, referrer, handle->GetRedirectChain());
 
   return ThrottleCheckResult(content::NavigationThrottle::CANCEL,
                              net::ERR_BLOCKED_BY_CLIENT, error_page_contents);
