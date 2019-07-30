@@ -39,6 +39,7 @@ using chrome_test_util::ContextMenuCopyButton;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::SystemSelectionCalloutCopyButton;
+using chrome_test_util::WebViewMatcher;
 
 namespace {
 // Directory containing the |kLogoPagePath| and |kLogoPageImageSourcePath|
@@ -124,9 +125,7 @@ void WaitForContextMenuItemDisappeared(
 
 // Long press on |element_id| to trigger context menu.
 void LongPressElement(const char* element_id) {
-  id<GREYMatcher> web_view_matcher =
-      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
-  [[EarlGrey selectElementWithMatcher:web_view_matcher]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:element_id],
                         true /* menu should appear */)];
@@ -257,9 +256,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
       CGRectGetMidX([chrome_test_util::GetActiveViewController() view].bounds),
       topInset + 20.0);
 
-  id<GREYMatcher> web_view_matcher =
-      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
-  [[EarlGrey selectElementWithMatcher:web_view_matcher]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:grey_longPressAtPointWithDuration(
                         point, kGREYLongPressDefaultDuration)];
 
