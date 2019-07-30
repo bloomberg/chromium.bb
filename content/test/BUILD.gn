@@ -1574,7 +1574,6 @@ test("content_unittests") {
     "../browser/dom_storage/test/storage_area_test_util.cc",
     "../browser/dom_storage/test/storage_area_test_util.h",
     "../browser/download/download_manager_impl_unittest.cc",
-    "../browser/download/download_request_core_unittest.cc",
     "../browser/download/save_package_unittest.cc",
     "../browser/fileapi/browser_file_system_helper_unittest.cc",
     "../browser/fileapi/file_system_operation_runner_unittest.cc",

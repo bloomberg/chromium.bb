@@ -66,7 +66,6 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/compositor/viz_process_transport_factory.h"
 #include "content/browser/dom_storage/storage_area_impl.h"
-#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_client_delegate.h"

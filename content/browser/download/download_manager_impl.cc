@@ -42,13 +42,10 @@
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/download/byte_stream_input_stream.h"
-#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/file_download_url_loader_factory_getter.h"
 #include "content/browser/download/file_system_download_url_loader_factory_getter.h"
 #include "content/browser/download/network_download_url_loader_factory_getter.h"
-#include "content/browser/download/url_downloader.h"
-#include "content/browser/download/url_downloader_factory.h"
 #include "content/browser/download/web_ui_download_url_loader_factory_getter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -306,8 +303,6 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
   DCHECK(browser_context);
   download::SetIOTaskRunner(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    download::UrlDownloadHandlerFactory::Install(new UrlDownloaderFactory());
 
   if (!in_progress_manager_) {
     in_progress_manager_ =

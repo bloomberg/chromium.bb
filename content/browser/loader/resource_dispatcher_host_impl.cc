@@ -356,7 +356,6 @@ ResourceDispatcherHost* ResourceDispatcherHost::Get() {
 }
 
 ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
-    CreateDownloadHandlerIntercept download_handler_intercept,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner,
     bool enable_resource_scheduler)
     : is_shutdown_(false),
@@ -369,7 +368,6 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
           kMaxOutstandingRequestsCostPerProcess),
       delegate_(nullptr),
       loader_delegate_(nullptr),
-      create_download_handler_intercept_(download_handler_intercept),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_thread_task_runner_(io_thread_runner) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
@@ -390,8 +388,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
 // The default ctor is only used by unittests. It is reasonable to assume that
 // the main thread and the IO thread are the same for unittests.
 ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
-    : ResourceDispatcherHostImpl(CreateDownloadHandlerIntercept(),
-                                 base::ThreadTaskRunnerHandle::Get(),
+    : ResourceDispatcherHostImpl(base::ThreadTaskRunnerHandle::Get(),
                                  /* enable_resource_scheduler */ true) {}
 
 ResourceDispatcherHostImpl::~ResourceDispatcherHostImpl() {
@@ -513,24 +510,6 @@ void ResourceDispatcherHostImpl::Shutdown() {
   io_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ResourceDispatcherHostImpl::OnShutdown,
                                 base::Unretained(this)));
-}
-
-std::unique_ptr<ResourceHandler>
-ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
-    net::URLRequest* request,
-    bool is_content_initiated,
-    bool must_download,
-    bool is_new_request) {
-  DCHECK(!create_download_handler_intercept_.is_null());
-  // TODO(ananta)
-  // Find a better way to create the download handler and notifying the
-  // delegate of the download start.
-  std::unique_ptr<ResourceHandler> handler =
-      create_download_handler_intercept_.Run(request);
-  handler =
-      HandleDownloadStarted(request, std::move(handler), is_content_initiated,
-                            must_download, is_new_request);
-  return handler;
 }
 
 std::unique_ptr<LoginDelegate> ResourceDispatcherHostImpl::CreateLoginDelegate(

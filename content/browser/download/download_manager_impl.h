@@ -45,7 +45,6 @@ class DownloadRequestHandleInterface;
 }
 
 namespace content {
-
 class CONTENT_EXPORT DownloadManagerImpl
     : public DownloadManager,
       public download::UrlDownloadHandler::Delegate,
