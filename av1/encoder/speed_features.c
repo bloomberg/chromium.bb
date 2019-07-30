@@ -347,6 +347,7 @@ static void set_good_speed_features_framesize_independent(
     // use_intra_txb_hash, use_inter_txb_hash and use_mb_rd_hash speed features
     sf->enable_winner_mode_for_coeff_opt = 1;
     sf->reduce_wiener_window_size = is_boosted_arf2_bwd_type ? 0 : 1;
+    sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED;
   }
 
   if (speed >= 4) {
