@@ -588,6 +588,7 @@ if (is_win) {
         "/DELAYLOAD:user32.dll",
         "/DELAYLOAD:usp10.dll",
         "/DELAYLOAD:wininet.dll",
+        "/DELAYLOAD:wtsapi32.dll",
       ]
 
       if (is_clang && is_official_build) {
