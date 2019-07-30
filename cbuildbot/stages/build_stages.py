@@ -641,7 +641,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
     # Mount goma directory and service account json file (if necessary)
     # into chroot.
-    chroot_args = ['--goma_dir', goma.goma_dir]
+    chroot_args = ['--goma_dir', goma.chromeos_goma_dir]
     if goma.goma_client_json:
       chroot_args.extend(['--goma_client_json', goma.goma_client_json])
     return chroot_args
