@@ -9495,6 +9495,17 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="GOOGLE_LOCATION_SERVICE"/>
 </enum>
 
+<enum name="ContentIndexCategory">
+  <summary>
+    The type of a Content Index entry. Corresponds to
+    blink.mojom.ContentCategory.
+  </summary>
+  <int value="1" label="Home Page"/>
+  <int value="2" label="Article"/>
+  <int value="3" label="Video"/>
+  <int value="4" label="Audio"/>
+</enum>
+
 <enum name="ContentResourceType">
   <obsolete>
     Superseded by ContentResourceType2 in December 2015 when SUB_RESOURCE was
@@ -24154,6 +24165,9 @@ Called by update_net_error_codes.py.-->
   <int value="2980" label="V8RegExpMatchAllWithNonGlobalRegExp"/>
   <int value="2981" label="CSSValueOverflowXOverlay"/>
   <int value="2982" label="CSSValueOverflowYOverlay"/>
+  <int value="2983" label="ContentIndexAdd"/>
+  <int value="2984" label="ContentIndexDelete"/>
+  <int value="2985" label="ContentIndexGet"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

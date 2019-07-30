@@ -19,7 +19,7 @@ enum ContentIndexError {
   STORAGE_ERROR,
 };
 
-// These values are persisted, do not change or create gaps.
+// These values are persisted and recorded, do not change or create gaps.
 enum ContentCategory {
   // "homepage"
   HOME_PAGE = 1,
