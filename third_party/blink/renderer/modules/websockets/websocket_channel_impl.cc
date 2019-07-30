@@ -194,11 +194,7 @@ WebSocketChannelImpl::WebSocketChannelImpl(
       client_(client),
       identifier_(CreateUniqueIdentifier()),
       execution_context_(execution_context),
-      sending_quota_(0),
-      received_data_size_for_flow_control_(0),
-      sent_size_of_top_message_(0),
       location_at_construction_(std::move(location)),
-      throttle_passed_(false),
       file_reading_task_runner_(
           execution_context->GetTaskRunner(TaskType::kFileReading)) {
   if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_))
@@ -414,6 +410,15 @@ void WebSocketChannelImpl::Disconnect() {
   handle_.reset();
   client_ = nullptr;
   identifier_ = 0;
+}
+
+void WebSocketChannelImpl::ApplyBackpressure() {
+  backpressure_ = true;
+}
+
+void WebSocketChannelImpl::RemoveBackpressure() {
+  backpressure_ = false;
+  AddReceiveFlowControlIfNecessary();
 }
 
 WebSocketChannelImpl::Message::Message(const std::string& text,
@@ -692,7 +697,8 @@ void WebSocketChannelImpl::DidReceiveData(WebSocketHandle* handle,
   }
 
   received_data_size_for_flow_control_ += size;
-  AddReceiveFlowControlIfNecessary();
+  if (!backpressure_)
+    AddReceiveFlowControlIfNecessary();
 
   const size_t message_size_so_far =
       (receiving_message_data_ ? receiving_message_data_->size() : 0) + size;

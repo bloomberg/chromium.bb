@@ -36,6 +36,8 @@ using testing::SaveArg;
 
 namespace blink {
 
+constexpr uint64_t kInitialReceiveFlowControlQuota = 65536;
+
 typedef testing::StrictMock<testing::MockFunction<void(int)>> Checkpoint;
 
 class MockWebSocketChannelClient
@@ -165,7 +167,8 @@ class WebSocketChannelImplTest : public PageTestBase {
       InSequence s;
       EXPECT_CALL(*Handle(),
                   Connect(KURL("ws://localhost/"), _, _, _, ChannelImpl()));
-      EXPECT_CALL(*Handle(), AddReceiveFlowControlQuota(65536));
+      EXPECT_CALL(*Handle(),
+                  AddReceiveFlowControlQuota(kInitialReceiveFlowControlQuota));
       EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
     }
     EXPECT_TRUE(Channel()->Connect(KURL("ws://localhost/"), "x"));
@@ -234,7 +237,8 @@ TEST_F(WebSocketChannelImplTest, connectSuccess) {
                         KURLEq("http://example.com/"), _, ChannelImpl()))
         .WillOnce(SaveArg<1>(&protocols));
     EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*Handle(), AddReceiveFlowControlQuota(65536));
+    EXPECT_CALL(*Handle(),
+                AddReceiveFlowControlQuota(kInitialReceiveFlowControlQuota));
     EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
   }
 
@@ -717,6 +721,32 @@ TEST_F(WebSocketChannelImplTest, receiveBinaryNonUTF8) {
 
   ChannelImpl()->DidReceiveData(
       Handle(), true, WebSocketHandle::kMessageTypeBinary, "\x80\xff", 2);
+}
+
+TEST_F(WebSocketChannelImplTest, receiveWithBackpressure) {
+  Connect();
+  std::string data(kInitialReceiveFlowControlQuota, 'a');
+  Checkpoint checkpoint;
+  {
+    InSequence s;
+    EXPECT_CALL(*ChannelClient(), DidReceiveTextMessage(_));
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*Handle(),
+                AddReceiveFlowControlQuota(kInitialReceiveFlowControlQuota));
+    EXPECT_CALL(*Handle(),
+                AddReceiveFlowControlQuota(kInitialReceiveFlowControlQuota));
+    EXPECT_CALL(*ChannelClient(), DidReceiveTextMessage(_));
+  }
+
+  ChannelImpl()->ApplyBackpressure();
+  ChannelImpl()->DidReceiveData(Handle(), true,
+                                WebSocketHandle::kMessageTypeText, data.data(),
+                                data.size());
+  checkpoint.Call(1);
+  ChannelImpl()->RemoveBackpressure();
+  ChannelImpl()->DidReceiveData(Handle(), true,
+                                WebSocketHandle::kMessageTypeText, data.data(),
+                                data.size());
 }
 
 TEST_F(WebSocketChannelImplTest, closeFromBrowser) {

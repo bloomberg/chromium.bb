@@ -105,6 +105,8 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
             mojom::ConsoleMessageLevel,
             std::unique_ptr<SourceLocation>) override;
   void Disconnect() override;
+  void ApplyBackpressure() override;
+  void RemoveBackpressure() override;
 
   ExecutionContext* GetExecutionContext();
 
@@ -227,24 +229,25 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
   Member<BlobLoader> blob_loader_;
   HeapDeque<Member<Message>> messages_;
   scoped_refptr<SharedBuffer> receiving_message_data_;
-  Member<ExecutionContext> execution_context_;
+  const Member<ExecutionContext> execution_context_;
 
-  bool receiving_message_type_is_text_;
-  uint64_t sending_quota_;
-  uint64_t received_data_size_for_flow_control_;
-  wtf_size_t sent_size_of_top_message_;
+  bool backpressure_ = false;
+  bool receiving_message_type_is_text_ = false;
+  bool throttle_passed_ = false;
+  uint64_t sending_quota_ = 0;
+  uint64_t received_data_size_for_flow_control_ = 0;
+  wtf_size_t sent_size_of_top_message_ = 0;
   FrameScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;
 
-  std::unique_ptr<SourceLocation> location_at_construction_;
+  const std::unique_ptr<const SourceLocation> location_at_construction_;
   network::mojom::blink::WebSocketHandshakeRequestPtr handshake_request_;
   std::unique_ptr<WebSocketHandshakeThrottle> handshake_throttle_;
   // This field is only initialised if the object is still waiting for a
   // throttle response when DidConnect is called.
   std::unique_ptr<ConnectInfo> connect_info_;
-  bool throttle_passed_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 
   base::Optional<uint64_t> receive_quota_threshold_;
 };

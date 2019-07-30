@@ -52,6 +52,7 @@ class MODULES_EXPORT WebSocketChannel
   enum class SendResult { SENT_SYNCHRONOUSLY, CALLBACK_WILL_BE_CALLED };
 
   WebSocketChannel() = default;
+  virtual ~WebSocketChannel() = default;
 
   enum CloseEventCode {
     kCloseEventCodeNotSpecified = -1,
@@ -101,7 +102,14 @@ class MODULES_EXPORT WebSocketChannel
   // Do not call any methods after calling this method.
   virtual void Disconnect() = 0;  // Will suppress didClose().
 
-  virtual ~WebSocketChannel() = default;
+  // Clients can call ApplyBackpressure() to indicate that they want to stop
+  // receiving new messages. WebSocketChannelClient::DidReceive*Message() may
+  // still be called after this, until existing flow control quota is used up.
+  virtual void ApplyBackpressure() = 0;
+
+  // Clients should call RemoveBackpressure() after calling ApplyBackpressure()
+  // to indicate that they are ready to receive new messages.
+  virtual void RemoveBackpressure() = 0;
 
   virtual void Trace(blink::Visitor* visitor) {}
 
