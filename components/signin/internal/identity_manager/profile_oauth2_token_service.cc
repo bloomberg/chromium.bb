@@ -253,7 +253,7 @@ void ProfileOAuth2TokenService::SetRefreshTokenRevokedFromSourceCallback(
 }
 
 void ProfileOAuth2TokenService::Shutdown() {
-  CancelAllRequests();
+  token_manager_->CancelAllRequests();
   GetDelegate()->Shutdown();
 }
 
@@ -287,7 +287,7 @@ void ProfileOAuth2TokenService::RevokeAllCredentials(
     SourceForRefreshTokenOperation source) {
   base::AutoReset<SourceForRefreshTokenOperation> auto_reset(
       &update_refresh_token_source_, source);
-  CancelAllRequests();
+  token_manager_->CancelAllRequests();
   ClearCache();
   GetDelegate()->RevokeAllCredentials();
 }
@@ -372,7 +372,7 @@ void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
     is_valid = false;
   }
 
-  CancelRequestsForAccount(account_id);
+  token_manager_->CancelRequestsForAccount(account_id);
   ClearCacheForAccount(account_id);
 
   signin_metrics::RecordRefreshTokenUpdatedFromSource(
@@ -389,7 +389,7 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
   // If this was the last token, recreate the device ID.
   RecreateDeviceIdIfNeeded();
 
-  CancelRequestsForAccount(account_id);
+  token_manager_->CancelRequestsForAccount(account_id);
   ClearCacheForAccount(account_id);
 
   signin_metrics::RecordRefreshTokenRevokedFromSource(
@@ -423,15 +423,6 @@ void ProfileOAuth2TokenService::ClearCache() {
 void ProfileOAuth2TokenService::ClearCacheForAccount(
     const CoreAccountId& account_id) {
   token_manager_->ClearCacheForAccount(account_id);
-}
-
-void ProfileOAuth2TokenService::CancelAllRequests() {
-  token_manager_->CancelAllRequests();
-}
-
-void ProfileOAuth2TokenService::CancelRequestsForAccount(
-    const CoreAccountId& account_id) {
-  token_manager_->CancelRequestsForAccount(account_id);
 }
 
 bool ProfileOAuth2TokenService::HasLoadCredentialsFinishedWithNoErrors() {

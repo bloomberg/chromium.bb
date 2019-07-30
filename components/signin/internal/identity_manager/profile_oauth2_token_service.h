@@ -277,12 +277,6 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   // used to request the tokens.
   void ClearCacheForAccount(const CoreAccountId& account_id);
 
-  // Cancels all requests that are currently in progress.
-  void CancelAllRequests();
-
-  // Cancels all requests related to a given |account_id|.
-  void CancelRequestsForAccount(const CoreAccountId& account_id);
-
   // Creates a new device ID if there are no accounts, or if the current device
   // ID is empty.
   void RecreateDeviceIdIfNeeded();
@@ -304,9 +298,6 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown;
 
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest, UpdateClearsCache);
-  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest, CancelAllRequests);
-  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
-                           CancelRequestsForAccount);
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
                            SameScopesRequestedForDifferentClients);
 
