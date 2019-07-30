@@ -8,12 +8,12 @@ from .extended_attribute import ExtendedAttributes
 from .exposure import Exposure
 
 
-Identifier = str
+class Identifier(str):
+    pass
 
 
 class WithIdentifier(object):
-    """WithIdentifier class is an interface that indicates the class has an
-    identifier."""
+    """Implements |identifier| as a readonly attribute."""
 
     def __init__(self, identifier):
         assert isinstance(identifier, Identifier)
@@ -21,17 +21,11 @@ class WithIdentifier(object):
 
     @property
     def identifier(self):
-        """
-        Returns the identifier.
-        @return Identifier
-        """
         return self._identifier
 
 
-# ExtendedAttribute and ExtendedAttributes are defined in extended_attribute.py
 class WithExtendedAttributes(object):
-    """WithExtendedAttributes class is an interface that indicates the implemented
-    class can have extended attributes."""
+    """Implements |extended_attributes| as a readonly attribute."""
 
     def __init__(self, extended_attributes=None):
         assert (extended_attributes is None
@@ -40,21 +34,18 @@ class WithExtendedAttributes(object):
 
     @property
     def extended_attributes(self):
-        """
-        Returns the extended attributes.
-        @return ExtendedAttributes
-        """
         return self._extended_attributes
 
 
 class CodeGeneratorInfo(dict):
+    """A bag of properties to be used by bindings code generators"""
+
     def make_copy(self):
         return copy.deepcopy(self)
 
 
 class WithCodeGeneratorInfo(object):
-    """WithCodeGeneratorInfo class is an interface that its inheritances can
-    provide some information for code generators."""
+    """Implements |code_generator_info| as a readonly attribute."""
 
     def __init__(self, code_generator_info=None):
         assert (code_generator_info is None
@@ -63,16 +54,11 @@ class WithCodeGeneratorInfo(object):
 
     @property
     def code_generator_info(self):
-        """
-        Returns information for code generator.
-        @return CodeGeneratorInfo
-        """
         return self._code_generator_info
 
 
 class WithExposure(object):
-    """WithExposure class is an interface that its inheritances can have Exposed
-    extended attributes."""
+    """Implements |exposures| as a readonly attribute."""
 
     def __init__(self, exposures=None):
         assert (exposures is None
@@ -82,21 +68,21 @@ class WithExposure(object):
 
     @property
     def exposures(self):
-        """
-        Returns a set of Exposure's that are applicable on an object.
-        https://heycam.github.io/webidl/#Exposed
-        @return tuple(Expsure)
-        """
         return self._exposures
 
 
-Component = str
+class Component(str):
+    """
+    Represents a component that is a Blink-specific layering concept, such as
+    'core' and 'modules'.
+    """
+
+    pass
 
 
 class WithComponent(object):
     """
-    Implements |components| which is a Blink-specific layering concept of
-    components, such as 'core' and 'modules'.
+    Implements |components| as a readonly attribute.
 
     A single IDL definition such as 'interface' may consist from multiple IDL
     fragments like partial interfaces and mixins, which may exist across
@@ -125,7 +111,6 @@ class WithComponent(object):
     def components(self):
         """
         Returns a list of components' names where this definition is defined
-        @return tuple(Component)
         """
         return tuple(self._components)
 
@@ -214,8 +199,7 @@ class DebugInfo(object):
 
 
 class WithDebugInfo(object):
-    """WithDebugInfo class is an interface that its inheritances can have
-    DebugInfo."""
+    """Implements |debug_info| as a readonly attribute."""
 
     def __init__(self, debug_info=None):
         assert debug_info is None or isinstance(debug_info, DebugInfo)
@@ -223,24 +207,16 @@ class WithDebugInfo(object):
 
     @property
     def debug_info(self):
-        """Returns DebugInfo."""
         return self._debug_info
 
 
 class WithOwner(object):
-    """WithOwner class provides information about who owns this object.
-    If this object is a member, it points either of an interface,
-    a namespace, a dictionary, and so on. If this object is an argument,
-    it points a function like object."""
+    """Implements |owner| as a readonly attribute."""
 
     def __init__(self, owner):
-        assert isinstance(owner, object)  # None is okay
+        assert isinstance(owner, object) and owner is not None
         self._owner = owner
 
     @property
     def owner(self):
-        """
-        Returns the owner of this instance.
-        @return object
-        """
         return self._owner
