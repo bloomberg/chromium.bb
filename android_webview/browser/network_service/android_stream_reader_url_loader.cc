@@ -116,7 +116,6 @@ void AndroidStreamReaderURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {}
-void AndroidStreamReaderURLLoader::ProceedWithResponse() {}
 void AndroidStreamReaderURLLoader::SetPriority(net::RequestPriority priority,
                                                int intra_priority_value) {}
 void AndroidStreamReaderURLLoader::PauseReadingBodyFromNet() {}

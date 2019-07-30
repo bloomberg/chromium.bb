@@ -123,8 +123,6 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
     headers_modified_on_redirect_ = modified_headers;
   }
 
-  void ProceedWithResponse() override {}
-
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
 

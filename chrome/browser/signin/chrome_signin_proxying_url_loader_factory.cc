@@ -108,8 +108,6 @@ class ProxyingURLLoaderFactory::InProgressRequest
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override;
 
-  void ProceedWithResponse() override { target_loader_->ProceedWithResponse(); }
-
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {
     target_loader_->SetPriority(priority, intra_priority_value);
