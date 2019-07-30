@@ -234,6 +234,8 @@ source_set("sha1") {
 static_library("third_party_dlls") {
   visibility = [ ":*" ]  # Only targets in this file can depend on this.
   sources = [
+    "third_party_dlls/beacon.cc",
+    "third_party_dlls/beacon.h",
     "third_party_dlls/hook.cc",
     "third_party_dlls/hook.h",
     "third_party_dlls/logs.cc",
@@ -245,6 +247,7 @@ static_library("third_party_dlls") {
   ]
   public_deps = [
     ":blacklist",
+    ":constants",
     ":crash",
     ":hook_util",
     ":nt_registry",
@@ -278,13 +281,13 @@ source_set("third_party_shared_defines") {
 test("chrome_elf_unittests") {
   output_name = "chrome_elf_unittests"
   sources = [
-    "blacklist/test/blacklist_test.cc",
     "chrome_elf_util_unittest.cc",
     "hook_util/test/hook_util_test.cc",
     "nt_registry/nt_registry_unittest.cc",
     "pe_image_safe/pe_image_safe_unittest.cc",
     "run_all_unittests.cc",
     "sha1/sha1_unittest.cc",
+    "third_party_dlls/beacon_unittest.cc",
     "third_party_dlls/logs_unittest.cc",
     "third_party_dlls/main_unittest.cc",
     "third_party_dlls/main_unittest_exe.h",

@@ -4,12 +4,10 @@
 
 #include "chrome/chrome_elf/blacklist/blacklist.h"
 
+#include <windows.h>
+
 #include <assert.h>
 #include <string.h>
-
-#include "chrome/chrome_elf/chrome_elf_constants.h"
-#include "chrome/chrome_elf/nt_registry/nt_registry.h"
-#include "chrome/install_static/install_util.h"
 
 namespace blacklist {
 namespace {
@@ -89,88 +87,6 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
 
 bool g_blocked_dlls[kTroublesomeDllsMaxCount] = {};
 int g_num_blocked_dlls = 0;
-
-bool LeaveSetupBeacon() {
-  HANDLE key_handle = INVALID_HANDLE_VALUE;
-
-  if (!nt::CreateRegKey(nt::HKCU,
-                        install_static::GetRegistryPath()
-                            .append(kRegistryBeaconKeyName)
-                            .c_str(),
-                        KEY_QUERY_VALUE | KEY_SET_VALUE, &key_handle))
-    return false;
-
-  DWORD blacklist_state = BLACKLIST_STATE_MAX;
-  if (!nt::QueryRegValueDWORD(key_handle, kBeaconState, &blacklist_state) ||
-      blacklist_state == BLACKLIST_DISABLED) {
-    nt::CloseRegKey(key_handle);
-    return false;
-  }
-
-  // Handle attempt count.
-  // Only return true if BL is enabled and succeeded on previous run.
-  bool success = false;
-  if (blacklist_state == BLACKLIST_ENABLED) {
-    // If the blacklist succeeded on the previous run reset the failure
-    // counter.  Then update the beacon state.
-    if (nt::SetRegValueDWORD(key_handle, kBeaconAttemptCount,
-                             static_cast<DWORD>(0))) {
-      if (nt::SetRegValueDWORD(key_handle, kBeaconState,
-                               BLACKLIST_SETUP_RUNNING))
-        success = true;
-    }
-  } else {
-    // Some part of the blacklist setup failed last time.  If this has occured
-    // blacklist::kBeaconMaxAttempts times in a row we switch the state to
-    // failed and skip setting up the blacklist.
-    DWORD attempt_count = 0;
-
-    nt::QueryRegValueDWORD(key_handle, blacklist::kBeaconAttemptCount,
-                           &attempt_count);
-    ++attempt_count;
-    nt::SetRegValueDWORD(key_handle, blacklist::kBeaconAttemptCount,
-                         attempt_count);
-
-    if (attempt_count >= blacklist::kBeaconMaxAttempts) {
-      blacklist_state = blacklist::BLACKLIST_SETUP_FAILED;
-      nt::SetRegValueDWORD(key_handle, blacklist::kBeaconState,
-                           blacklist_state);
-    }
-  }
-
-  nt::CloseRegKey(key_handle);
-  return success;
-}
-
-bool ResetBeacon() {
-  HANDLE key_handle = INVALID_HANDLE_VALUE;
-
-  if (!nt::CreateRegKey(nt::HKCU,
-                        install_static::GetRegistryPath()
-                            .append(kRegistryBeaconKeyName)
-                            .c_str(),
-                        KEY_QUERY_VALUE | KEY_SET_VALUE, &key_handle))
-    return false;
-
-  DWORD blacklist_state = BLACKLIST_STATE_MAX;
-  if (!nt::QueryRegValueDWORD(key_handle, kBeaconState, &blacklist_state)) {
-    nt::CloseRegKey(key_handle);
-    return false;
-  }
-
-  // Reaching this point with the setup running state means the setup did not
-  // crash, so we reset to enabled.  Any other state indicates that setup was
-  // skipped; in that case we leave the state alone for later recording.
-  if (blacklist_state == BLACKLIST_SETUP_RUNNING) {
-    if (!nt::SetRegValueDWORD(key_handle, kBeaconState, BLACKLIST_ENABLED)) {
-      nt::CloseRegKey(key_handle);
-      return false;
-    }
-  }
-
-  nt::CloseRegKey(key_handle);
-  return true;
-}
 
 int BlacklistSize() {
   int size = -1;
@@ -280,19 +196,6 @@ bool DllMatch(const std::string& module_name) {
   }
 
   return DllMatch(wide_string) != -1;
-}
-
-bool Initialize(bool force) {
-  // Check to see if this is a non-browser process, abort if so.
-  if (install_static::IsNonBrowserProcess())
-    return false;
-
-  // Check to see if the blacklist beacon is still set to running (indicating a
-  // failure) or disabled, and abort if so.
-  if (!force && !LeaveSetupBeacon())
-    return false;
-
-  return true;
 }
 
 }  // namespace blacklist

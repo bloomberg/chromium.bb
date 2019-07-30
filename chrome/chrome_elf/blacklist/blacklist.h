@@ -17,19 +17,6 @@ const size_t kTroublesomeDllsMaxCount = 64;
 // The DLL blacklist.
 extern const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount];
 
-// Attempts to leave a beacon in the current user's registry hive. If the
-// blacklist beacon doesn't say it is enabled or there are any other errors when
-// creating the beacon, returns false. Otherwise returns true. The intent of the
-// beacon is to act as an extra failure mode protection whereby if Chrome
-// repeatedly fails to start during blacklist setup, it will skip blacklisting
-// on the subsequent run.
-bool LeaveSetupBeacon();
-
-// Looks for the setup running beacon that LeaveSetupBeacon() creates and resets
-// it to to show the setup was successful.
-// Returns true if the beacon was successfully set to BLACKLIST_ENABLED.
-bool ResetBeacon();
-
 // Return the size of the current blacklist.
 extern "C" int BlacklistSize();
 
@@ -67,11 +54,6 @@ int DllMatch(const std::wstring& module_name);
 // Returns true if a matching name is found in the legacy blacklist.
 // Note: |module_name| must be an ASCII encoded string.
 bool DllMatch(const std::string& module_name);
-
-// Initializes the deprecated DLL blacklist in the current process.
-// - If |force| is set to true, then initialization will take place even if a
-//   beacon is present. This is useful for tests.
-bool Initialize(bool force);
 
 }  // namespace blacklist
 

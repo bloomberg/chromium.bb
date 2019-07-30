@@ -6,23 +6,25 @@
 
 #include <memory>
 
+#include "chrome/chrome_elf/third_party_dlls/beacon.h"
+
 #include "base/strings/string16.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
-#include "chrome/chrome_elf/blacklist/blacklist.h"
 #include "chrome/chrome_elf/chrome_elf_constants.h"
 #include "chrome/chrome_elf/nt_registry/nt_registry.h"
-#include "chrome/common/chrome_version.h"
 #include "chrome/install_static/install_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace third_party_dlls {
+
 namespace {
 
-class BlacklistTest : public testing::Test {
+class BeaconTest : public testing::Test {
  protected:
-  BlacklistTest() : override_manager_() {}
+  BeaconTest() : override_manager_() {}
 
-  std::unique_ptr<base::win::RegKey> blacklist_registry_key_;
+  std::unique_ptr<base::win::RegKey> beacon_registry_key_;
   registry_util::RegistryOverrideManager override_manager_;
 
  private:
@@ -32,7 +34,7 @@ class BlacklistTest : public testing::Test {
         override_manager_.OverrideRegistry(HKEY_CURRENT_USER, &temp));
     ASSERT_TRUE(nt::SetTestingOverride(nt::HKCU, temp));
 
-    blacklist_registry_key_.reset(
+    beacon_registry_key_.reset(
         new base::win::RegKey(HKEY_CURRENT_USER,
                               install_static::GetRegistryPath()
                                   .append(blacklist::kRegistryBeaconKeyName)
@@ -45,25 +47,27 @@ class BlacklistTest : public testing::Test {
   }
 };
 
+}  // namespace
+
 //------------------------------------------------------------------------------
 // Beacon tests
 //------------------------------------------------------------------------------
 
-TEST_F(BlacklistTest, Beacon) {
-  // Ensure that the beacon state starts off 'running' for this version.
-  LONG result = blacklist_registry_key_->WriteValue(
+// Ensure that the beacon state starts off 'running' if a version is specified.
+TEST_F(BeaconTest, Beacon) {
+  LONG result = beacon_registry_key_->WriteValue(
       blacklist::kBeaconState, blacklist::BLACKLIST_SETUP_RUNNING);
   EXPECT_EQ(ERROR_SUCCESS, result);
 
-  result = blacklist_registry_key_->WriteValue(blacklist::kBeaconVersion,
-                                               TEXT(CHROME_VERSION_STRING));
+  result = beacon_registry_key_->WriteValue(blacklist::kBeaconVersion,
+                                            L"beacon_version");
   EXPECT_EQ(ERROR_SUCCESS, result);
 
   // First call should find the beacon and reset it.
-  EXPECT_TRUE(blacklist::ResetBeacon());
+  EXPECT_TRUE(ResetBeacon());
 
   // First call should succeed as the beacon is enabled.
-  EXPECT_TRUE(blacklist::LeaveSetupBeacon());
+  EXPECT_TRUE(LeaveSetupBeacon());
 }
 
 void TestResetBeacon(std::unique_ptr<base::win::RegKey>& key,
@@ -72,76 +76,75 @@ void TestResetBeacon(std::unique_ptr<base::win::RegKey>& key,
   LONG result = key->WriteValue(blacklist::kBeaconState, input_state);
   EXPECT_EQ(ERROR_SUCCESS, result);
 
-  EXPECT_TRUE(blacklist::ResetBeacon());
+  EXPECT_TRUE(ResetBeacon());
   DWORD blacklist_state = blacklist::BLACKLIST_STATE_MAX;
   result = key->ReadValueDW(blacklist::kBeaconState, &blacklist_state);
   EXPECT_EQ(ERROR_SUCCESS, result);
   EXPECT_EQ(expected_output_state, blacklist_state);
 }
 
-TEST_F(BlacklistTest, ResetBeacon) {
+TEST_F(BeaconTest, ResetBeacon) {
   // Ensure that ResetBeacon resets properly on successful runs and not on
   // failed or disabled runs.
-  TestResetBeacon(blacklist_registry_key_, blacklist::BLACKLIST_SETUP_RUNNING,
+  TestResetBeacon(beacon_registry_key_, blacklist::BLACKLIST_SETUP_RUNNING,
                   blacklist::BLACKLIST_ENABLED);
 
-  TestResetBeacon(blacklist_registry_key_, blacklist::BLACKLIST_SETUP_FAILED,
+  TestResetBeacon(beacon_registry_key_, blacklist::BLACKLIST_SETUP_FAILED,
                   blacklist::BLACKLIST_SETUP_FAILED);
 
-  TestResetBeacon(blacklist_registry_key_, blacklist::BLACKLIST_DISABLED,
+  TestResetBeacon(beacon_registry_key_, blacklist::BLACKLIST_DISABLED,
                   blacklist::BLACKLIST_DISABLED);
 }
 
-TEST_F(BlacklistTest, SetupFailed) {
+TEST_F(BeaconTest, SetupFailed) {
   // Ensure that when the number of failed tries reaches the maximum allowed,
   // the blacklist state is set to failed.
-  LONG result = blacklist_registry_key_->WriteValue(
+  LONG result = beacon_registry_key_->WriteValue(
       blacklist::kBeaconState, blacklist::BLACKLIST_SETUP_RUNNING);
   EXPECT_EQ(ERROR_SUCCESS, result);
 
   // Set the attempt count so that on the next failure the blacklist is
   // disabled.
-  result = blacklist_registry_key_->WriteValue(
-      blacklist::kBeaconAttemptCount, blacklist::kBeaconMaxAttempts - 1);
+  result = beacon_registry_key_->WriteValue(blacklist::kBeaconAttemptCount,
+                                            blacklist::kBeaconMaxAttempts - 1);
   EXPECT_EQ(ERROR_SUCCESS, result);
 
-  EXPECT_FALSE(blacklist::LeaveSetupBeacon());
+  EXPECT_FALSE(LeaveSetupBeacon());
 
   DWORD attempt_count = 0;
-  blacklist_registry_key_->ReadValueDW(blacklist::kBeaconAttemptCount,
-                                       &attempt_count);
+  beacon_registry_key_->ReadValueDW(blacklist::kBeaconAttemptCount,
+                                    &attempt_count);
   EXPECT_EQ(attempt_count, blacklist::kBeaconMaxAttempts);
 
   DWORD blacklist_state = blacklist::BLACKLIST_STATE_MAX;
-  result = blacklist_registry_key_->ReadValueDW(blacklist::kBeaconState,
-                                                &blacklist_state);
+  result = beacon_registry_key_->ReadValueDW(blacklist::kBeaconState,
+                                             &blacklist_state);
   EXPECT_EQ(ERROR_SUCCESS, result);
   EXPECT_EQ(blacklist_state,
             static_cast<DWORD>(blacklist::BLACKLIST_SETUP_FAILED));
 }
 
-TEST_F(BlacklistTest, SetupSucceeded) {
+TEST_F(BeaconTest, SetupSucceeded) {
   // Starting with the enabled beacon should result in the setup running state
   // and the attempt counter reset to zero.
-  LONG result = blacklist_registry_key_->WriteValue(
-      blacklist::kBeaconState, blacklist::BLACKLIST_ENABLED);
+  LONG result = beacon_registry_key_->WriteValue(blacklist::kBeaconState,
+                                                 blacklist::BLACKLIST_ENABLED);
   EXPECT_EQ(ERROR_SUCCESS, result);
-  result = blacklist_registry_key_->WriteValue(blacklist::kBeaconAttemptCount,
-                                               blacklist::kBeaconMaxAttempts);
+  result = beacon_registry_key_->WriteValue(blacklist::kBeaconAttemptCount,
+                                            blacklist::kBeaconMaxAttempts);
   EXPECT_EQ(ERROR_SUCCESS, result);
 
-  EXPECT_TRUE(blacklist::LeaveSetupBeacon());
+  EXPECT_TRUE(LeaveSetupBeacon());
 
   DWORD blacklist_state = blacklist::BLACKLIST_STATE_MAX;
-  blacklist_registry_key_->ReadValueDW(blacklist::kBeaconState,
-                                       &blacklist_state);
+  beacon_registry_key_->ReadValueDW(blacklist::kBeaconState, &blacklist_state);
   EXPECT_EQ(blacklist_state,
             static_cast<DWORD>(blacklist::BLACKLIST_SETUP_RUNNING));
 
   DWORD attempt_count = blacklist::kBeaconMaxAttempts;
-  blacklist_registry_key_->ReadValueDW(blacklist::kBeaconAttemptCount,
-                                       &attempt_count);
+  beacon_registry_key_->ReadValueDW(blacklist::kBeaconAttemptCount,
+                                    &attempt_count);
   EXPECT_EQ(static_cast<DWORD>(0), attempt_count);
 }
 
-}  // namespace
+}  // namespace third_party_dlls
