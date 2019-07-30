@@ -93,11 +93,6 @@
 #include "chrome/utility/printing_handler.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
-#include "chrome/services/cups_ipp_parser/cups_ipp_parser_service.h"  // nogncheck
-#include "chrome/services/cups_ipp_parser/public/mojom/constants.mojom.h"  // nogncheck
-#endif
-
 #if BUILDFLAG(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
 #include "chrome/services/file_util/file_util_service.h"  // nogncheck
 #include "chrome/services/file_util/public/mojom/constants.mojom.h"  // nogncheck
@@ -265,12 +260,6 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
 #if defined(OS_CHROMEOS)
   if (service_name == chromeos::ime::mojom::kServiceName)
     return std::make_unique<chromeos::ime::ImeService>(std::move(request));
-
-#if BUILDFLAG(ENABLE_PRINTING)
-  if (service_name == cups_ipp_parser::mojom::kCupsIppParserServiceName)
-    return std::make_unique<cups_ipp_parser::CupsIppParserService>(
-        std::move(request));
-#endif
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   if (service_name == chromeos::assistant::mojom::kAudioDecoderServiceName) {

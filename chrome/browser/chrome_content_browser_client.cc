@@ -612,11 +612,6 @@
 #include "chrome/browser/supervised_user/supervised_user_navigation_throttle.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
-// TODO(crbug.com/948800): Doesn't match BUILD.gn of use_cups && is_chromeos.
-#include "chrome/services/cups_ipp_parser/public/mojom/constants.mojom.h"
-#endif
-
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
