@@ -112,8 +112,7 @@ void ShellContentBrowserClient::RenderProcessWillLaunch(
   BrowserContext* browser_context = browser_main_parts_->browser_context();
   host->AddFilter(
       new ExtensionMessageFilter(render_process_id, browser_context));
-  host->AddFilter(
-      new IOThreadExtensionMessageFilter(render_process_id, browser_context));
+  host->AddFilter(new IOThreadExtensionMessageFilter());
   host->AddFilter(
       new ExtensionsGuestViewMessageFilter(
           render_process_id, browser_context));
