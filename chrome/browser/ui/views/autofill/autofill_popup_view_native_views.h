@@ -74,6 +74,7 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   }
 
   // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnThemeChanged() override;
 
   // AutofillPopupView:
