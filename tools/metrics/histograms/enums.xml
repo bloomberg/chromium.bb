@@ -34463,6 +34463,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="AutofillEnforceMinRequiredFieldsForQuery:disabled"/>
   <int value="-1408370474" label="AssistantRoutines:enabled"/>
   <int value="-1408288176" label="enable-account-consistency"/>
+  <int value="-1407769602" label="UsageStats:disabled"/>
   <int value="-1405349891" label="PictureInPictureAPI:enabled"/>
   <int value="-1405048637" label="OfflinePagesResourceBasedSnapshot:enabled"/>
   <int value="-1399753480" label="disable-harfbuzz-rendertext"/>
@@ -36361,6 +36362,7 @@ from previous Chrome versions.
   <int value="1300753556" label="ManualPasswordGenerationAndroid:disabled"/>
   <int value="1301902557" label="AutofillCreditCardAuthentication:disabled"/>
   <int value="1302421166" label="NativeNotifications:disabled"/>
+  <int value="1303260487" label="UsageStats:enabled"/>
   <int value="1304636193" label="ArcEnableUnifiedAudioFocus:enabled"/>
   <int value="1307003774" label="AutofillEnableCompanyName:disabled"/>
   <int value="1308537004" label="force-pnacl-subzero"/>
