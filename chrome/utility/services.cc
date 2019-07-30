@@ -9,6 +9,8 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "components/services/patch/file_patcher_impl.h"
+#include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "components/services/unzip/unzipper_impl.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
@@ -24,6 +26,10 @@
 #endif  // !defined(OS_ANDROID)
 
 namespace {
+
+auto RunFilePatcher(mojo::PendingReceiver<patch::mojom::FilePatcher> receiver) {
+  return std::make_unique<patch::FilePatcherImpl>(std::move(receiver));
+}
 
 auto RunUnzipper(mojo::PendingReceiver<unzip::mojom::Unzipper> receiver) {
   return std::make_unique<unzip::UnzipperImpl>(std::move(receiver));
@@ -49,6 +55,7 @@ auto RunProxyResolver(
 mojo::ServiceFactory* GetMainThreadServiceFactory() {
   // clang-format off
   static base::NoDestructor<mojo::ServiceFactory> factory {
+    RunFilePatcher,
     RunUnzipper,
 #if defined(OS_WIN)
     RunWindowsUtility,

@@ -165,9 +165,6 @@ class ServiceManagerContext::InProcessServiceManagerContext
 ServiceManagerContext::ServiceManagerContext() {
   std::vector<service_manager::Manifest> manifests = {GetWebSystemManifest(),
                                                       GetWebBrowserManifest()};
-  for (auto& manifest : GetWebClient()->GetExtraServiceManifests())
-    manifests.push_back(std::move(manifest));
-
   mojo::PendingRemote<service_manager::mojom::Service> system_remote;
   ServiceManagerConnection::Set(ServiceManagerConnection::Create(
       system_remote.InitWithNewPipeAndPassReceiver(),
@@ -175,10 +172,8 @@ ServiceManagerContext::ServiceManagerContext() {
   auto* system_connection = ServiceManagerConnection::Get();
 
   in_process_context_ = base::MakeRefCounted<InProcessServiceManagerContext>();
-  in_process_context_->Start(
-      std::move(system_remote), std::move(manifests),
-      base::BindRepeating(&ServiceManagerContext::RunService,
-                          weak_ptr_factory_.GetWeakPtr()));
+  in_process_context_->Start(std::move(system_remote), std::move(manifests),
+                             base::DoNothing());
   system_connection->Start();
 }
 
@@ -191,28 +186,6 @@ ServiceManagerContext::~ServiceManagerContext() {
     in_process_context_->ShutDown();
   if (ServiceManagerConnection::Get())
     ServiceManagerConnection::Destroy();
-}
-
-void ServiceManagerContext::RunService(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
-  std::unique_ptr<service_manager::Service> service =
-      GetWebClient()->HandleServiceRequest(identity.name(),
-                                           std::move(receiver));
-  if (!service) {
-    LOG(ERROR) << "Ignoring unhandled request for service: " << identity.name();
-    return;
-  }
-
-  auto* raw_service = service.get();
-  service->set_termination_closure(
-      base::BindOnce(&ServiceManagerContext::OnServiceQuit,
-                     base::Unretained(this), raw_service));
-  running_services_.emplace(raw_service, std::move(service));
-}
-
-void ServiceManagerContext::OnServiceQuit(service_manager::Service* service) {
-  running_services_.erase(service);
 }
 
 }  // namespace web

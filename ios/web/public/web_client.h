@@ -19,7 +19,6 @@
 #include "ios/web/common/user_agent.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/manifest.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 #include "ui/base/layout.h"
 #include "url/url_util.h"
 
@@ -34,10 +33,6 @@ class GURL;
 
 namespace net {
 class SSLInfo;
-}
-
-namespace service_manager {
-class Service;
 }
 
 namespace web {
@@ -141,11 +136,6 @@ class WebClient {
   virtual NSString* GetDocumentStartScriptForMainFrame(
       BrowserState* browser_state) const;
 
-  // Handles an incoming service request from the Service Manager.
-  virtual std::unique_ptr<service_manager::Service> HandleServiceRequest(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request);
-
   // Allows the embedder to augment service manifests for existing services.
   // Specifically, the sets of exposed and required capabilities, interface
   // filter capabilities (deprecated), and packaged services will be taken from
@@ -155,12 +145,6 @@ class WebClient {
   // If no overlay is provided for the service, this returns |base::nullopt|.
   virtual base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name);
-
-  // Allows the embedder to provide manifests for additional services available
-  // at runtime. Any extra manifests returned by this method should have
-  // corresponding logic to actually run the service on-demand in
-  // |HandleServiceRequest()|.
-  virtual std::vector<service_manager::Manifest> GetExtraServiceManifests();
 
   // Allows the embedder to bind an interface request for a WebState-scoped
   // interface that originated from the main frame of |web_state|. Called if

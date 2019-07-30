@@ -2029,7 +2029,7 @@ jumbo_split_static_library("browser") {
     "//components/security_state/core",
     "//components/send_tab_to_self",
     "//components/services/heap_profiling",
-    "//components/services/patch/public/mojom",
+    "//components/services/patch/content",
     "//components/services/quarantine",
     "//components/services/quarantine/public/mojom",
     "//components/services/unzip/content",

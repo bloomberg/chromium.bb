@@ -96,7 +96,6 @@ specific_include_rules = {
     "+chromeos/services/network_config",
     "+chromeos/services/secure_channel",
     "+components/mirroring/service",
-    "+components/services/patch/public",
     "+components/services/pdf_compositor",
     "+components/services/quarantine",
     "+components/services/unzip/public",

@@ -9,7 +9,6 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/constants.mojom.h"
 #include "chrome/services/file_util/public/cpp/manifest.h"
-#include "components/services/patch/public/cpp/manifest.h"
 #include "components/services/quarantine/public/cpp/manifest.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
@@ -104,7 +103,6 @@ GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
       GetChromeManifest(),
       GetFileUtilManifest(),
-      patch::GetManifest(),
       prefs::GetLocalStateManifest(),
       quarantine::GetQuarantineManifest(),
 #if BUILDFLAG(ENABLE_EXTENSIONS)

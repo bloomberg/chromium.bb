@@ -21,6 +21,7 @@
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #import "ios/web/net/cookie_notification_bridge.h"
 #include "ios/web/public/init/ios_global_state.h"
 #include "ios/web/public/init/web_main_parts.h"

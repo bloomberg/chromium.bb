@@ -12,9 +12,4 @@
 // web_browser service instances.
 const service_manager::Manifest& GetChromeWebBrowserOverlayManifest();
 
-// Returns the manifest Chrome amends to the web_packaged_services service
-// manifest. This allows Chrome to extend the set of in-process services
-// packaged by the browser.
-const service_manager::Manifest& GetChromeWebPackagedServicesOverlayManifest();
-
 #endif  // IOS_CHROME_BROWSER_WEB_CHROME_OVERLAY_MANIFESTS_H_

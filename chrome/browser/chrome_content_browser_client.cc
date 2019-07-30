@@ -255,7 +255,6 @@
 #include "components/services/heap_profiling/heap_profiling_service.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
-#include "components/services/patch/public/mojom/constants.mojom.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
 #include "components/services/quarantine/quarantine_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
