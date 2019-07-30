@@ -39,7 +39,8 @@ A quick guide through the core concepts:
     system level that embedder-level code then made visible to IdentityManager).
 - PrimaryAccountTokenFetcher is the primary client-side interface for obtaining
   access tokens for the primary account. In particular, it can take care of
-  waiting until the primary account is available.
+  waiting until the primary account is available. See
+  primary_account_access_token_fetcher.h for usage explanation and examples.
 - AccessTokenFetcher is the client-side interface for obtaining access tokens
   for arbitrary accounts; see access_token_fetcher.h for usage explanation and
   examples.
