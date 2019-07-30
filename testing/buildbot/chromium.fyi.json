@@ -18098,18 +18098,6 @@
       },
       {
         "isolate_coverage_data": true,
-        "isolate_name": "clear_site_data_fuzzer",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "clear_site_data_fuzzer",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        }
-      },
-      {
-        "isolate_coverage_data": true,
         "isolate_name": "color_transform_fuzzer",
         "merge": {
           "args": [],

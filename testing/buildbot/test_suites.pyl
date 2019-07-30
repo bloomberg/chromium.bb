@@ -712,11 +712,6 @@
           'can_use_on_swarming_builders': False,
         },
       },
-      'clear_site_data_fuzzer': {
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
       'color_transform_fuzzer': {
         'swarming': {
           'can_use_on_swarming_builders': False,

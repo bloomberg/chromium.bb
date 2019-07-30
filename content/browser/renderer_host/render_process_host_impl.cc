@@ -103,7 +103,6 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
-#include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/midi_host.h"
