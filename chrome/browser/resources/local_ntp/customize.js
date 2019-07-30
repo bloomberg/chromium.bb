@@ -1343,7 +1343,7 @@ customize.richerPicker_resetSelectedOptions = function() {
   // Reset color selection.
   customize.richerPicker_removeSelectedState(customize.selectedOptions.color);
   customize.selectedOptions.color = null;
-  customize.colorsPreselectedTile = null;
+  customize.preselectedOptions.colorsMenuTile = null;
 
   customize.richerPicker_preselectShortcutOptions();
 };
@@ -2145,8 +2145,8 @@ customize.colorsMenuPreselectTile = function() {
   }
 
   if (tile && tile !== customize.selectedOptions.color) {
-    if (!customize.colorsPreselectedTile) {
-      customize.colorsPreselectedTile = tile;
+    if (!customize.preselectedOptions.colorsMenuTile) {
+      customize.preselectedOptions.colorsMenuTile = tile;
     }
     customize.updateColorsMenuTileSelection(
         /** @type HTMLElement */ (tile));
@@ -2158,11 +2158,11 @@ customize.colorsMenuPreselectTile = function() {
  * menu.
  */
 customize.isColorOptionSelected = function() {
-  return (!customize.colorsPreselectedTile &&
+  return (!customize.preselectedOptions.colorsMenuTile &&
           customize.selectedOptions.color) ||
-      (customize.colorsPreselectedTile &&
+      (customize.preselectedOptions.colorsMenuTile &&
        customize.selectedOptions.color.id !==
-           customize.colorsPreselectedTile.id);
+           customize.preselectedOptions.colorsMenuTile.id);
 };
 
 /**
