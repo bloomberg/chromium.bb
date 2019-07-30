@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/performance_manager/observers/working_set_trimmer_observer_win.h"
+#include "chrome/browser/performance_manager/mechanisms/working_set_trimmer_win.h"
 
 #include <windows.h>  // Must be in front of other Windows header files.
 
@@ -110,7 +110,6 @@ class WorkingSetTrimmerTest : public GraphTestHarness {
   base::Process child_process_;
   TestNodeWrapper<ProcessNodeImpl> process_node_ =
       CreateNode<ProcessNodeImpl>();
-  WorkingSetTrimmer working_set_trimmer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WorkingSetTrimmerTest);
@@ -126,7 +125,12 @@ TEST_F(WorkingSetTrimmerTest, EmptyWorkingSet) {
   // When all frames in the process node are frozen, the working set of
   // |child_process_| should be emptied.
   size_t working_set_before = GetWorkingSetSizeMb(child_process_.Handle());
-  working_set_trimmer_.OnAllFramesInProcessFrozen(process_node_.get());
+
+  ASSERT_TRUE(mechanism::WorkingSetTrimmer::GetInstance()
+                  ->PlatformSupportsWorkingSetTrim());
+  mechanism::WorkingSetTrimmer::GetInstance()->TrimWorkingSet(
+      process_node_.get());
+
   // Make sure the working set has shrunk by at least the 10mb allocation.
   EXPECT_GE(working_set_before - 10U,
             GetWorkingSetSizeMb(child_process_.Handle()));

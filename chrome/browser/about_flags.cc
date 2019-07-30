@@ -30,6 +30,7 @@
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
+#include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -1541,6 +1542,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-virtual-desks", flag_descriptions::kEnableVirtualDesksName,
      flag_descriptions::kEnableVirtualDesksDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kVirtualDesks)},
+    {"trim-on-all-frames-frozen", flag_descriptions::kTrimOnFreezeName,
+     flag_descriptions::kTrimOnFreezeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         performance_manager::features::chromeos::kTrimOnFreeze)},
+    {"trim-on-memory-pressure", flag_descriptions::kTrimOnMemoryPressureName,
+     flag_descriptions::kTrimOnMemoryPressureDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         performance_manager::features::chromeos::kTrimOnMemoryPressure)},
 #endif  // OS_CHROMEOS
     {
         "disable-accelerated-video-decode",

@@ -3082,6 +3082,16 @@
     "expiry_milestone": 78
   },
   {
+    "name": "trim-on-all-frames-frozen",
+    "owners": [ "bgeffon", "sonnyrao" ],
+    "expiry_milestone": 81
+  },
+  {
+    "name": "trim-on-memory-pressure",
+    "owners": [ "bgeffon", "sonnyrao" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "try-supported-channel-layouts",
     "owners": [ "dalecurtis" ],
     "expiry_milestone": 76
