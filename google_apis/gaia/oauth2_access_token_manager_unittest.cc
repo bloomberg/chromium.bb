@@ -227,3 +227,61 @@ TEST_F(OAuth2AccessTokenManagerTest, ClearCache) {
   EXPECT_EQ("another token", consumer_.last_token_);
   EXPECT_EQ(1U, token_manager_.token_cache().size());
 }
+
+// Test that ClearCacheForAccount clears caches for the specific account.
+TEST_F(OAuth2AccessTokenManagerTest, ClearCacheForAccount) {
+  base::RunLoop run_loop1;
+  consumer_.SetResponseCompletedClosure(run_loop1.QuitClosure());
+
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request1(
+      token_manager_.StartRequest(
+          account_id_, OAuth2AccessTokenManager::ScopeSet(), &consumer_));
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
+  run_loop1.Run();
+
+  EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  EXPECT_EQ("token", consumer_.last_token_);
+  EXPECT_EQ(1U, token_manager_.token_cache().size());
+
+  base::RunLoop run_loop2;
+  consumer_.SetResponseCompletedClosure(run_loop2.QuitClosure());
+  const CoreAccountId account_id_2("account_id_2");
+  delegate_.AddAccount(account_id_2, "refreshToken2");
+  // Makes a request for |account_id_2|.
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request2(
+      token_manager_.StartRequest(
+          account_id_2, OAuth2AccessTokenManager::ScopeSet(), &consumer_));
+  run_loop2.Run();
+
+  EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  EXPECT_EQ("token", consumer_.last_token_);
+  EXPECT_EQ(2U, token_manager_.token_cache().size());
+
+  // Clears caches for |account_id_|.
+  token_manager_.ClearCacheForAccount(account_id_);
+  EXPECT_EQ(1U, token_manager_.token_cache().size());
+
+  base::RunLoop run_loop3;
+  consumer_.SetResponseCompletedClosure(run_loop3.QuitClosure());
+  SimulateOAuthTokenResponse(GetValidTokenResponse("another token", 3600));
+  // Makes a request for |account_id_| again.
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request3(
+      token_manager_.StartRequest(
+          account_id_, OAuth2AccessTokenManager::ScopeSet(), &consumer_));
+  run_loop3.Run();
+
+  EXPECT_EQ(3, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  EXPECT_EQ("another token", consumer_.last_token_);
+  EXPECT_EQ(2U, token_manager_.token_cache().size());
+
+  // Clears caches for |account_id_|.
+  token_manager_.ClearCacheForAccount(account_id_);
+  EXPECT_EQ(1U, token_manager_.token_cache().size());
+
+  // Clears caches for |account_id_2|.
+  token_manager_.ClearCacheForAccount(account_id_2);
+  EXPECT_EQ(0U, token_manager_.token_cache().size());
+}

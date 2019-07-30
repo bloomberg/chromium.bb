@@ -267,11 +267,6 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;
 
-  // Clears all of the tokens belonging to |account_id| from the internal token
-  // cache. It does not matter what other parameters, like |client_id| were
-  // used to request the tokens.
-  void ClearCacheForAccount(const CoreAccountId& account_id);
-
   // Creates a new device ID if there are no accounts, or if the current device
   // ID is empty.
   void RecreateDeviceIdIfNeeded();

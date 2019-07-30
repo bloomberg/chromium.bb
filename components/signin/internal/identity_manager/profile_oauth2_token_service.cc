@@ -369,7 +369,7 @@ void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
   }
 
   token_manager_->CancelRequestsForAccount(account_id);
-  ClearCacheForAccount(account_id);
+  token_manager_->ClearCacheForAccount(account_id);
 
   signin_metrics::RecordRefreshTokenUpdatedFromSource(
       is_valid, update_refresh_token_source_);
@@ -386,7 +386,7 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
   RecreateDeviceIdIfNeeded();
 
   token_manager_->CancelRequestsForAccount(account_id);
-  ClearCacheForAccount(account_id);
+  token_manager_->ClearCacheForAccount(account_id);
 
   signin_metrics::RecordRefreshTokenRevokedFromSource(
       update_refresh_token_source_);
@@ -410,11 +410,6 @@ void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {
   // Ensure the device ID is not empty, and recreate it if all tokens were
   // cleared during the loading process.
   RecreateDeviceIdIfNeeded();
-}
-
-void ProfileOAuth2TokenService::ClearCacheForAccount(
-    const CoreAccountId& account_id) {
-  token_manager_->ClearCacheForAccount(account_id);
 }
 
 bool ProfileOAuth2TokenService::HasLoadCredentialsFinishedWithNoErrors() {

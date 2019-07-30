@@ -341,6 +341,7 @@ class OAuth2AccessTokenManager {
   SEQUENCE_CHECKER(sequence_checker_);
 
   FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenManagerTest, ClearCache);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenManagerTest, ClearCacheForAccount);
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2AccessTokenManager);
 };
