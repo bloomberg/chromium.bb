@@ -498,8 +498,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (service_worker_navigation_handle_) {
       std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
           ServiceWorkerRequestHandler::CreateForNavigationUI(
-              resource_request_->url, service_worker_navigation_handle_,
-              *request_info);
+              resource_request_->url,
+              service_worker_navigation_handle_->AsWeakPtr(), *request_info);
       // The interceptor may not be created in certain cases (e.g., the origin
       // is not secure).
       if (service_worker_interceptor)
