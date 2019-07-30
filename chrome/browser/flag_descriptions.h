@@ -1576,6 +1576,9 @@ extern const char kCastMediaRouteProviderDescription[];
 extern const char kChromeColorsName[];
 extern const char kChromeColorsDescription[];
 
+extern const char kChromeColorsCustomColorPickerName[];
+extern const char kChromeColorsCustomColorPickerDescription[];
+
 extern const char kDialMediaRouteProviderName[];
 extern const char kDialMediaRouteProviderDescription[];
 

@@ -2671,6 +2671,11 @@ const char kChromeColorsName[] = "Chrome Colors menu";
 const char kChromeColorsDescription[] =
     "Show Chrome Colors menu in the NTP customization menu.";
 
+const char kChromeColorsCustomColorPickerName[] =
+    "Custom color picker for Chrome Colors menu";
+const char kChromeColorsCustomColorPickerDescription[] =
+    "Show custom color picker in Chrome Colors menu.";
+
 const char kDialMediaRouteProviderName[] = "DIAL Media Route Provider";
 const char kDialMediaRouteProviderDescription[] =
     "Enables the native DIAL Media Route Provider implementation to be used "
