@@ -205,17 +205,6 @@ bool XRWebGLLayer::antialias() const {
   return webgl_context_->GetDrawingBuffer()->Multisample();
 }
 
-void XRWebGLLayer::getXRWebGLRenderingContext(
-    WebGLRenderingContextOrWebGL2RenderingContext& result) const {
-  if (webgl_context_->ContextType() == Platform::kWebGL2ContextType) {
-    result.SetWebGL2RenderingContext(
-        static_cast<WebGL2RenderingContext*>(webgl_context_.Get()));
-  } else {
-    result.SetWebGLRenderingContext(
-        static_cast<WebGLRenderingContext*>(webgl_context_.Get()));
-  }
-}
-
 XRViewport* XRWebGLLayer::getViewport(XRView* view) {
   if (!view || view->session() != session())
     return nullptr;

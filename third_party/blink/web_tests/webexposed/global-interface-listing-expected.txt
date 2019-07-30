@@ -10798,7 +10798,6 @@ interface XRWebGLLayer
     static method getNativeFramebufferScaleFactor
     attribute @@toStringTag
     getter antialias
-    getter context
     getter framebuffer
     getter framebufferHeight
     getter framebufferWidth

@@ -48,8 +48,6 @@ class XRWebGLLayer final : public ScriptWrappable {
   XRSession* session() const { return session_; }
 
   WebGLRenderingContextBase* context() const { return webgl_context_; }
-  void getXRWebGLRenderingContext(
-      WebGLRenderingContextOrWebGL2RenderingContext&) const;
 
   WebGLFramebuffer* framebuffer() const { return framebuffer_; }
   uint32_t framebufferWidth() const;
