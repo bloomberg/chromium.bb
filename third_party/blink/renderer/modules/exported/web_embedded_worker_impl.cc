@@ -59,7 +59,6 @@
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_proxy.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_thread.h"
@@ -383,9 +382,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   const HttpsState starter_https_state =
       CalculateHttpsState(starter_origin.get());
 
+  // TODO(bashi): Pass nullptr instead of an empty WorkerClients.
   auto* worker_clients = MakeGarbageCollected<WorkerClients>();
-  ProvideIndexedDBClientToWorker(
-      worker_clients, MakeGarbageCollected<IndexedDBClient>(*worker_clients));
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
   if (base::FeatureList::IsEnabled(
