@@ -70,7 +70,6 @@ shared_library("chrome_elf") {
   }
 
   deps = [
-    ":blacklist",
     ":chrome_elf_manifest",
     ":chrome_elf_resources",
     ":constants",
@@ -110,19 +109,6 @@ shared_library("chrome_elf") {
 ##------------------------------------------------------------------------------
 ## chrome_elf sub targets
 ##------------------------------------------------------------------------------
-
-static_library("blacklist") {
-  sources = [
-    "blacklist/blacklist.cc",
-    "blacklist/blacklist.h",
-  ]
-  deps = [
-    ":constants",
-    ":nt_registry",
-    ":third_party_dlls",
-    "//chrome/install_static:install_static_util",
-  ]
-}
 
 source_set("constants") {
   sources = [
@@ -297,7 +283,6 @@ test("chrome_elf_unittests") {
   ]
   include_dirs = [ "$target_gen_dir" ]
   deps = [
-    ":blacklist",
     ":constants",
     ":crash",
     ":hook_util",
