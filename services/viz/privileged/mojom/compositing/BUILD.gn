@@ -25,7 +25,7 @@ mojom("compositing") {
     "//services/viz/public/mojom",
     "//skia/public/interfaces",
     "//ui/gfx/geometry/mojom",
-    "//ui/gfx/mojo",
+    "//ui/gfx/mojom",
     "//ui/latency/mojom",
   ]
 

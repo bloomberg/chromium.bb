@@ -18,8 +18,8 @@ traits_headers = [
   "//services/viz/public/cpp/compositing/selection_mojom_traits.h",
   "//services/viz/public/cpp/compositing/shared_quad_state_mojom_traits.h",
   "//services/viz/public/cpp/compositing/transferable_resource_mojom_traits.h",
-  "//ui/gfx/mojo/selection_bound_struct_traits.h",
-  "//ui/gfx/mojo/transform_struct_traits.h",
+  "//ui/gfx/mojom/selection_bound_mojom_traits.h",
+  "//ui/gfx/mojom/transform_mojom_traits.h",
   "//ui/latency/mojom/latency_info_mojom_traits.h",
 ]
 public_deps = [
@@ -28,7 +28,7 @@ public_deps = [
   "//services/viz/public/mojom",
   "//skia/public/interfaces",
   "//ui/gfx/geometry/mojom",
-  "//ui/gfx/mojo",
+  "//ui/gfx/mojom",
   "//ui/latency/mojom",
 ]
 type_mappings = [ "viz.mojom.CompositorFrame=viz::CompositorFrame[move_only]" ]

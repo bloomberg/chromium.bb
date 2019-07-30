@@ -23,7 +23,7 @@ source_set("tests") {
     "//testing/gtest",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry/mojom:mojom_traits",
-    "//ui/gfx/mojo",
+    "//ui/gfx/mojom",
   ]
 }
 

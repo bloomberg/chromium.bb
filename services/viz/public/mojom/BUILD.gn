@@ -45,7 +45,7 @@ mojom("mojom") {
     "//mojo/public/mojom/base",
     "//skia/public/interfaces",
     "//ui/gfx/geometry/mojom",
-    "//ui/gfx/mojo",
+    "//ui/gfx/mojom",
     "//ui/latency/mojom",
   ]
 
