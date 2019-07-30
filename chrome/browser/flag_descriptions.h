@@ -162,12 +162,6 @@ extern const char kBypassAppBannerEngagementChecksDescription[];
 extern const char kCaptionSettingsName[];
 extern const char kCaptionSettingsDescription[];
 
-extern const char kClickToCallReceiverName[];
-extern const char kClickToCallReceiverDescription[];
-
-extern const char kClickToCallUIName[];
-extern const char kClickToCallUIDescription[];
-
 extern const char kClickToOpenPDFName[];
 extern const char kClickToOpenPDFDescription[];
 
@@ -1330,6 +1324,9 @@ extern const char kChromeDuetLabelsDescription[];
 extern const char kClearOldBrowsingDataName[];
 extern const char kClearOldBrowsingDataDescription[];
 
+extern const char kClickToCallReceiverName[];
+extern const char kClickToCallReceiverDescription[];
+
 extern const char kContextualSearchDefinitionsName[];
 extern const char kContextualSearchDefinitionsDescription[];
 
@@ -2101,6 +2098,9 @@ extern const char kDirectManipulationStylusDescription[];
 
 extern const char kAnimatedAvatarButtonName[];
 extern const char kAnimatedAvatarButtonDescription[];
+
+extern const char kClickToCallUIName[];
+extern const char kClickToCallUIDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
