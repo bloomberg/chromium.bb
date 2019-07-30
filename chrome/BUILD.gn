@@ -1940,6 +1940,8 @@ if (is_linux) {
         ":chrome_symbols",
         ":swiftshader_egl_symbols",
         ":swiftshader_gles_symbols",
+        ":angle_egl_symbols",
+        ":angle_gles_symbols",
       ]
     }
     extract_symbols("chrome_symbols") {
