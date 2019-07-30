@@ -52,13 +52,32 @@ class FakeOAuth2AccessTokenManagerDelegate
     return shared_factory_;
   }
 
+  bool HandleAccessTokenFetch(
+      OAuth2AccessTokenManager::RequestImpl* request,
+      const CoreAccountId& account_id,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::string& client_id,
+      const std::string& client_secret,
+      const OAuth2AccessTokenManager::ScopeSet& scopes) override {
+    if (access_token_fetch_closure_) {
+      std::move(access_token_fetch_closure_).Run();
+      return true;
+    }
+    return false;
+  }
+
   void AddAccount(CoreAccountId id, std::string refresh_token) {
     account_ids_to_refresh_tokens_[id] = refresh_token;
+  }
+
+  void SetAccessTokenHandleClosure(base::OnceClosure closure) {
+    access_token_fetch_closure_ = std::move(closure);
   }
 
  private:
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   std::map<CoreAccountId, std::string> account_ids_to_refresh_tokens_;
+  base::OnceClosure access_token_fetch_closure_;
 };
 
 class FakeOAuth2AccessTokenManagerConsumer
@@ -284,4 +303,22 @@ TEST_F(OAuth2AccessTokenManagerTest, ClearCacheForAccount) {
   // Clears caches for |account_id_2|.
   token_manager_.ClearCacheForAccount(account_id_2);
   EXPECT_EQ(0U, token_manager_.token_cache().size());
+}
+
+// Test that StartRequest checks HandleAccessTokenFetch() from |delegate_|
+// before FetchOAuth2Token.
+TEST_F(OAuth2AccessTokenManagerTest, HandleAccessTokenFetch) {
+  base::RunLoop run_loop;
+  delegate_.SetAccessTokenHandleClosure(run_loop.QuitClosure());
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request(
+      token_manager_.StartRequest(
+          account_id_, OAuth2AccessTokenManager::ScopeSet(), &consumer_));
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
+  run_loop.Run();
+
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  EXPECT_EQ(0U, token_manager_.GetNumPendingRequestsForTesting(
+                    GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
+                    account_id_, OAuth2AccessTokenManager::ScopeSet()));
 }
