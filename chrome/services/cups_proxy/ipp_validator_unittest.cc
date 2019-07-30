@@ -176,6 +176,26 @@ TEST_F(IppValidatorTest, MissingHeaderValue) {
   EXPECT_TRUE(RunValidateIppRequest(request));
 }
 
+// Test that we drop unknown attributes and succeed the request.
+TEST_F(IppValidatorTest, UnknownAttribute) {
+  auto request = GetBasicIppRequest();
+
+  // Add fake attribute.
+  std::string fake_attr_name = "fake-attribute-name";
+  IppAttributePtr fake_attr =
+      BuildAttributePtr(fake_attr_name, IPP_TAG_OPERATION, IPP_TAG_TEXT);
+  fake_attr->type = ValueType::STRING;
+  fake_attr->value->set_strings({"fake_attribute_value"});
+  request->ipp->attributes.push_back(std::move(fake_attr));
+
+  auto result = RunValidateIppRequest(request);
+  ASSERT_TRUE(result);
+
+  // Ensure resulting validated IPP request doesn't contain fake_attr_name.
+  ipp_t* ipp = result->ipp.get();
+  EXPECT_FALSE(ippFindAttribute(ipp, fake_attr_name.c_str(), IPP_TAG_TEXT));
+}
+
 // TODO(crbug.com/945409): Test IPP validation.
 
 }  // namespace

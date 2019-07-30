@@ -42,6 +42,7 @@ class IppValidator {
       base::StringPiece http_version);
 
   base::Optional<std::vector<ipp_converter::HttpHeader>> ValidateHttpHeaders(
+      const size_t http_content_length,
       const base::flat_map<std::string, std::string>& headers);
 
   ipp_t* ValidateIppMessage(cups_ipp_parser::mojom::IppMessagePtr ipp_message);

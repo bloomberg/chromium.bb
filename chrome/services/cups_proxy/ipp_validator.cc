@@ -15,6 +15,7 @@
 
 #include "base/containers/span.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "chrome/services/cups_proxy/ipp_attribute_validator.h"
@@ -121,6 +122,7 @@ base::Optional<HttpRequestLine> IppValidator::ValidateHttpRequestLine(
 
 base::Optional<std::vector<ipp_converter::HttpHeader>>
 IppValidator::ValidateHttpHeaders(
+    const size_t http_content_length,
     const base::flat_map<std::string, std::string>& headers) {
   // Sane, character-set checks.
   for (const auto& header : headers) {
@@ -130,9 +132,20 @@ IppValidator::ValidateHttpHeaders(
     }
   }
 
-  return std::vector<ipp_converter::HttpHeader>(headers.begin(), headers.end());
+  std::vector<ipp_converter::HttpHeader> ret(headers.begin(), headers.end());
+
+  // Update the ContentLength.
+  base::EraseIf(ret, [](const ipp_converter::HttpHeader& header) {
+    return header.first == "Content-Length";
+  });
+  ret.push_back({"Content-Length", base::NumberToString(http_content_length)});
+
+  return ret;
 }
 
+// Note: Since its possible to have valid IPP attributes that our
+// ipp_attribute_validator.cc is unaware of, we drop unknown attributes, rather
+// than fail the request.
 ipp_t* IppValidator::ValidateIppMessage(
     cups_ipp_parser::mojom::IppMessagePtr ipp_message) {
   printing::ScopedIppPtr ipp = printing::WrapIpp(ippNew());
@@ -161,9 +174,16 @@ ipp_t* IppValidator::ValidateIppMessage(
       return nullptr;
     }
 
-    if (!ValidateAttribute(ipp_oper_id, attribute->name, attribute->type,
-                           num_values)) {
+    auto ret = ValidateAttribute(ipp_oper_id, attribute->name, attribute->type,
+                                 num_values);
+    if (ret == ValidateAttributeResult::kFatalError) {
       return nullptr;
+    }
+    if (ret == ValidateAttributeResult::kUnknownAttribute) {
+      // We drop unknown attributes.
+      DVLOG(1) << "CupsProxy validation: dropping unknown attribute "
+               << attribute->name;
+      continue;
     }
 
     switch (attribute->type) {
@@ -275,19 +295,6 @@ base::Optional<IppRequest> IppValidator::ValidateIppRequest(
     return base::nullopt;
   }
 
-  // Build request line.
-  auto request_line = ValidateHttpRequestLine(
-      to_validate->method, to_validate->endpoint, to_validate->http_version);
-  if (!request_line.has_value()) {
-    return base::nullopt;
-  }
-
-  // Build headers.
-  auto headers = ValidateHttpHeaders(to_validate->headers);
-  if (!headers.has_value()) {
-    return base::nullopt;
-  }
-
   // Build ipp message.
   // Note: Moving ipp here, to_validate->ipp no longer valid below.
   printing::ScopedIppPtr ipp =
@@ -299,6 +306,22 @@ base::Optional<IppRequest> IppValidator::ValidateIppRequest(
   // Validate ipp data.
   // TODO(crbug/894607): Validate ippData (pdf).
   if (!ValidateIppData(to_validate->data)) {
+    return base::nullopt;
+  }
+
+  // Build request line.
+  auto request_line = ValidateHttpRequestLine(
+      to_validate->method, to_validate->endpoint, to_validate->http_version);
+  if (!request_line.has_value()) {
+    return base::nullopt;
+  }
+
+  // Build headers; must happen after ipp message/data since it requires the
+  // ContentLength.
+  const size_t http_content_length =
+      ippLength(ipp.get()) + to_validate->data.size();
+  auto headers = ValidateHttpHeaders(http_content_length, to_validate->headers);
+  if (!headers.has_value()) {
     return base::nullopt;
   }
 
