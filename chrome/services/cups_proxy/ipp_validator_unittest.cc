@@ -171,7 +171,7 @@ TEST_F(IppValidatorTest, MissingHeaderName) {
 TEST_F(IppValidatorTest, MissingHeaderValue) {
   auto request = GetBasicIppRequest();
 
-  // Adds new header with an empty name.
+  // Adds new header with an empty value.
   request->headers["arbitrary_valid_header_name"] = "";
   EXPECT_TRUE(RunValidateIppRequest(request));
 }

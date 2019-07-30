@@ -23,8 +23,8 @@ struct IppRequest;
 
 // This class fully validates incoming parsed IPP requests. HTTP metadata
 // validation is handled with net/http. IPP metadata validation is handled
-// largely via libCUPS. This class can be created anywhere, but must be
-// accessed from a sequenced context.
+// largely via libCUPS. This class must be created and accessed from a
+// sequenced context.
 class IppValidator {
  public:
   explicit IppValidator(base::WeakPtr<CupsProxyServiceDelegate> delegate);

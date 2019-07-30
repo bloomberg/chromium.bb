@@ -26,12 +26,11 @@
 namespace cups_proxy {
 namespace {
 
+using ValueType = cups_ipp_parser::mojom::ValueType;
+
 // Initial version only supports english lcoales.
 // TODO(crbug.com/945409): Extending to supporting arbitrary locales.
 const char kLocaleEnglish[] = "en";
-
-// Following ConvertXxx methods translate IPP attribute values to formats'
-// libCUPS APIs accept.
 
 // Converting to vector<char> for libCUPS API:
 // ippAddBooleans(..., int num_values, const char *values)
@@ -56,22 +55,21 @@ std::vector<const char*> ConvertStrings(
   return ret;
 }
 
-// Depending on |type|, returns the number of values associated with
-// |attr_value|.
+// Depending on |type|, returns the number of values associated with |attr|.
 size_t GetAttributeValuesSize(
     const cups_ipp_parser::mojom::IppAttributePtr& attr) {
   const auto& attr_value = attr->value;
   switch (attr->type) {
-    case cups_ipp_parser::mojom::ValueType::DATE:
+    case ValueType::DATE:
       return 1;
 
-    case cups_ipp_parser::mojom::ValueType::BOOLEAN:
+    case ValueType::BOOLEAN:
       DCHECK(attr_value->is_bools());
       return attr_value->get_bools().size();
-    case cups_ipp_parser::mojom::ValueType::INTEGER:
+    case ValueType::INTEGER:
       DCHECK(attr_value->is_ints());
       return attr_value->get_ints().size();
-    case cups_ipp_parser::mojom::ValueType::STRING:
+    case ValueType::STRING:
       DCHECK(attr_value->is_strings());
       return attr_value->get_strings().size();
 
@@ -187,7 +185,7 @@ ipp_t* IppValidator::ValidateIppMessage(
     }
 
     switch (attribute->type) {
-      case cups_ipp_parser::mojom::ValueType::BOOLEAN: {
+      case ValueType::BOOLEAN: {
         DCHECK(attribute->value->is_bools());
         std::vector<char> values =
             ConvertBooleans(attribute->value->get_bools());
@@ -200,7 +198,7 @@ ipp_t* IppValidator::ValidateIppMessage(
         }
         break;
       }
-      case cups_ipp_parser::mojom::ValueType::DATE: {
+      case ValueType::DATE: {
         DCHECK(attribute->value->is_date());
         std::vector<uint8_t> date = attribute->value->get_date();
 
@@ -215,7 +213,7 @@ ipp_t* IppValidator::ValidateIppMessage(
         }
         break;
       }
-      case cups_ipp_parser::mojom::ValueType::INTEGER: {
+      case ValueType::INTEGER: {
         DCHECK(attribute->value->is_ints());
         std::vector<int> values = attribute->value->get_ints();
 
@@ -228,7 +226,7 @@ ipp_t* IppValidator::ValidateIppMessage(
         }
         break;
       }
-      case cups_ipp_parser::mojom::ValueType::STRING: {
+      case ValueType::STRING: {
         DCHECK(attribute->value->is_strings());
 
         // Note: cstrings_values references attribute->value's strings, i.e.
@@ -281,9 +279,7 @@ bool IppValidator::ValidateIppData(const std::vector<uint8_t>& ipp_data) {
 }
 
 IppValidator::IppValidator(base::WeakPtr<CupsProxyServiceDelegate> delegate)
-    : delegate_(std::move(delegate)) {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
+    : delegate_(std::move(delegate)) {}
 
 IppValidator::~IppValidator() = default;
 
