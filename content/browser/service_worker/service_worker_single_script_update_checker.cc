@@ -119,7 +119,13 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   // https://fetch.spec.whatwg.org/#concept-request-origin
   // It's needed to be set to the origin of the main script url.
   // https://github.com/w3c/ServiceWorker/issues/1447
-  resource_request.request_initiator = url::Origin::Create(main_script_url);
+  const url::Origin origin = url::Origin::Create(main_script_url);
+  resource_request.request_initiator = origin;
+
+  // This key is used to isolate requests from different contexts in accessing
+  // shared network resources like the http cache.
+  resource_request.trusted_network_isolation_key =
+      net::NetworkIsolationKey(origin, origin);
 
   if (is_main_script_) {
     // Set the "Service-Worker" header for the main script request:
