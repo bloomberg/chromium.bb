@@ -38,7 +38,6 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
-#include "content/shell/browser/shell_network_delegate.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
@@ -574,8 +573,6 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CookiePolicy) {
   std::string set_cookie_url(base::StringPrintf(
       "http://localhost:%u/set_cookie.html", embedded_test_server()->port()));
   GURL url(embedded_test_server()->GetURL("/redirect?" + set_cookie_url));
-
-  ShellNetworkDelegate::SetBlockThirdPartyCookies(true);
 
   CheckTitleTest(url, "cookie set");
 }

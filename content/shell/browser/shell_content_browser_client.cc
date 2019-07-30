@@ -37,7 +37,6 @@
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "content/shell/browser/shell_quota_permission_context.h"
-#include "content/shell/browser/shell_url_request_context_getter.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/common/power_monitor_test.mojom.h"
 #include "content/shell/common/shell_switches.h"
@@ -357,7 +356,7 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
 }
 
 std::string ShellContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
-  return ShellURLRequestContextGetter::GetAcceptLanguages();
+  return "en-us,en";
 }
 
 std::string ShellContentBrowserClient::GetDefaultDownloadName() {

@@ -3492,7 +3492,6 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
   void MakeService() {
     service_ = std::make_unique<MockAppCacheService>();
-    service_->set_request_context(io_thread_->request_context());
     service_->set_url_loader_factory_getter(loader_factory_getter_.get());
   }
 
