@@ -187,7 +187,8 @@ class PaintArtifactCompositorTest : public testing::Test,
     // Scroll hit test layers are marked as scrollable for hit testing but are
     // in the unscrolled transform space (scroll offset's parent).
     artifact.Chunk(*scroll_offset.Parent(), clip, effect)
-        .ScrollHitTest(scroll_offset);
+        .ScrollHitTest(&scroll_offset,
+                       scroll_offset.ScrollNode()->ContainerRect());
   }
 
   // Returns the |num|th scrollable layer. In CompositeAfterPaint, this will be

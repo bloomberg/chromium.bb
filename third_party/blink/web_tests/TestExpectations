@@ -137,7 +137,24 @@ Bug(none) virtual/composite-after-paint/compositing/z-order/ [ Pass ]
 Bug(none) virtual/composite-after-paint/paint/background/ [ Pass ]
 Bug(none) virtual/composite-after-paint/paint/filters/ [ Pass ]
 Bug(none) virtual/composite-after-paint/paint/frames [ Pass ]
+Bug(none) virtual/composite-after-paint/scrollingcoordinator [ Pass ]
 # --- End CompositeAfterPaint Tests --
+
+# CompositeAfterPaint incorrectly composites all scrollers, and these do not
+# produce non-fast scrollable regions, so there are differences in the non-fast
+# regions compared to pre-CompositeAfterPaint.
+crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/donot-compute-non-fast-scrollable-region-for-hidden-frames.html [ Failure ]
+crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-region-nested.html [ Failure ]
+crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ Failure ]
+crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ Failure ]
+crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-transform-changed.html [ Failure ]
+crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-visibility-change.html [ Failure ]
+
+# Need to support painting non-fast scrollable regions for plugins.
+crbug.com/864567 virtual/composite-after-paint/scrollingcoordinator/plugin-with-wheel-handler.html [ Failure ]
+crbug.com/864567 virtual/paint-non-fast-scrollable-regions/scrollingcoordinator/plugin-with-wheel-handler.html [ Failure ]
+crbug.com/864567 virtual/paint-non-fast-scrollable-regions/scrollingcoordinator/donot-compute-non-fast-scrollable-region-for-hidden-frames.html [ Failure ]
+crbug.com/864567 virtual/paint-non-fast-scrollable-regions/scrollingcoordinator/non-fast-scrollable-region-nested.html [ Failure ]
 
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
@@ -2922,6 +2939,7 @@ crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ Failur
 crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ Failure ]
 
 ### Tests added for non-fast scrolling regions that break as a result of compositor scrolling.
+# TODO(pdr): Mark these as passing when PaintNonFastScrollableRegions launches.
 crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-absolute-scroller.html [ Failure ]
 crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-position-fixed-scroller.html [ Failure ]
 crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-sticky.html [ Failure ]
