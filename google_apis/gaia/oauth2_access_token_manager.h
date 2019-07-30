@@ -217,7 +217,6 @@ class OAuth2AccessTokenManager {
 
   // Fetches an OAuth token for the specified client/scopes. Virtual so it can
   // be overridden for tests.
-  // TODO(https://crbug.com/967598): Move this to protected.
   virtual void FetchOAuth2Token(
       RequestImpl* request,
       const CoreAccountId& account_id,
@@ -250,12 +249,10 @@ class OAuth2AccessTokenManager {
 
   // Cancels all requests that are currently in progress. Virtual so it can be
   // overridden for tests.
-  // TODO(https://crbug.com/967598): Move this to protected.
   virtual void CancelAllRequests();
 
   // Cancels all requests related to a given |account_id|. Virtual so it can be
   // overridden for tests.
-  // TODO(https://crbug.com/967598): Move this to protected.
   virtual void CancelRequestsForAccount(const CoreAccountId& account_id);
 
   // Mark an OAuth2 |access_token| issued for |account_id| and |scopes| as
@@ -267,14 +264,6 @@ class OAuth2AccessTokenManager {
                              const ScopeSet& scopes,
                              const std::string& access_token);
 
-  // Invalidates the |access_token| issued for |account_id|, |client_id| and
-  // |scopes|. Virtual so it can be overridden for tests.
-  // TODO(https://crbug.com/967598): Move this to protected.
-  virtual void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
-                                         const std::string& client_id,
-                                         const ScopeSet& scopes,
-                                         const std::string& access_token);
-
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
 
   // Returns the current number of pending fetchers matching given params.
@@ -285,6 +274,14 @@ class OAuth2AccessTokenManager {
   // Returns a list of DiagnosticsObservers.
   const base::ObserverList<DiagnosticsObserver, true>::Unchecked&
   GetDiagnosticsObserversForTesting();
+
+ protected:
+  // Invalidates the |access_token| issued for |account_id|, |client_id| and
+  // |scopes|. Virtual so it can be overridden for tests.
+  virtual void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
+                                         const std::string& client_id,
+                                         const ScopeSet& scopes,
+                                         const std::string& access_token);
 
  private:
   class Fetcher;
