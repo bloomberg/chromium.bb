@@ -1048,11 +1048,6 @@ typedef struct AV1_COMP {
   int8_t nearest_future_ref;
 
   double *ssim_rdmult_scaling_factors;
-
-  // Whether writing to bitstream. It allows us to encode one frame multiple
-  // times without writing to bitstream and thus provides flexibility for
-  // experiments, for example, temporal filtering on key frames.
-  int pack_bitstream;
 } AV1_COMP;
 
 typedef struct {

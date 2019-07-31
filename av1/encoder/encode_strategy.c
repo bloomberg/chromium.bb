@@ -1031,7 +1031,6 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
                               EncodeFrameResults *const frame_results,
                               int *temporal_filtered) {
   if (frame_params->frame_type != KEY_FRAME) {
-    cpi->pack_bitstream = 1;
     if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
         AOM_CODEC_OK) {
       return AOM_CODEC_ERROR;
@@ -1086,7 +1085,6 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     // Use the filtered frame for encoding.
     frame_input->source = &cpi->alt_ref_buffer;
     *temporal_filtered = 1;
-    cpi->pack_bitstream = 1;
     if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
         AOM_CODEC_OK) {
       return AOM_CODEC_ERROR;
@@ -1099,7 +1097,6 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     }
   } else {
     // Encode other frames.
-    cpi->pack_bitstream = 1;
     if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
         AOM_CODEC_OK) {
       return AOM_CODEC_ERROR;
@@ -1433,7 +1430,6 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     return AOM_CODEC_ERROR;
   }
 #else   // !TEMPORAL_FILTER_KEY_FRAME
-  cpi->pack_bitstream = 1;
   if (av1_encode(cpi, dest, &frame_input, &frame_params, &frame_results) !=
       AOM_CODEC_OK) {
     return AOM_CODEC_ERROR;
