@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -81,7 +80,9 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(
       creation_address_space_(mojom::IPAddressSpace::kPublic),
       parent_execution_context_task_runners_(
           ParentExecutionContextTaskRunners::Create()),
-      appcache_host_id_(appcache_host_id) {
+      appcache_host_(MakeGarbageCollected<ApplicationCacheHostForSharedWorker>(
+          appcache_host_id,
+          Thread::Current()->GetTaskRunner())) {
   DCHECK(IsMainThread());
 }
 
@@ -94,6 +95,7 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
   if (asked_to_terminate_)
     return;
   asked_to_terminate_ = true;
+  appcache_host_->Detach();
   if (shadow_page_ && !shadow_page_->WasInitialized()) {
     client_->WorkerScriptLoadFailed();
     // The worker thread hasn't been started yet. Immediately notify the client
@@ -125,7 +127,7 @@ void WebSharedWorkerImpl::ResumeStartup() {
   is_paused_on_start_ = false;
   if (is_paused_on_start) {
     // We'll continue in OnShadowPageInitialized().
-    shadow_page_->Initialize(script_request_url_, appcache_host_id_);
+    shadow_page_->Initialize(script_request_url_);
   }
 }
 
@@ -140,15 +142,10 @@ void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
 
 void WebSharedWorkerImpl::DidFetchScript(int64_t app_cache_id) {
   DCHECK(IsMainThread());
-  Document* document = shadow_page_->GetDocument();
-  ApplicationCacheHost* host = document->Loader()->GetApplicationCacheHost();
-  if (host) {
-    host->SelectCacheForSharedWorker(
-        app_cache_id, WTF::Bind(&WebSharedWorkerImpl::OnAppCacheSelected,
-                                weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    OnAppCacheSelected();
-  }
+  DCHECK(appcache_host_);
+  appcache_host_->SelectCacheForSharedWorker(
+      app_cache_id, WTF::Bind(&WebSharedWorkerImpl::OnAppCacheSelected,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebSharedWorkerImpl::DidFailToFetchClassicScript() {
@@ -224,8 +221,6 @@ void WebSharedWorkerImpl::StartWorkerContext(
   // token.
   shadow_page_ = std::make_unique<WorkerShadowPage>(
       this, std::move(loader_factory), std::move(privacy_preferences));
-  // TODO(https://crbug.com/982996): Create ApplicationCacheHostForSharedWorker
-  // here without depending on WorkerShadowPage and DocumentLoader.
 
   // If we were asked to pause worker context on start and wait for debugger
   // then now is a good time to do that.
@@ -236,7 +231,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
   }
 
   // We'll continue in OnShadowPageInitialized().
-  shadow_page_->Initialize(script_request_url_, appcache_host_id_);
+  shadow_page_->Initialize(script_request_url_);
 }
 
 void WebSharedWorkerImpl::OnAppCacheSelected() {
@@ -271,7 +266,7 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
       client_->CreateWorkerFetchContext();
   DCHECK(web_worker_fetch_context);
   web_worker_fetch_context->SetApplicationCacheHostID(
-      document->Loader()->GetApplicationCacheHost()->GetHostID());
+      appcache_host_->GetHostID());
 
   // TODO(nhiroki); Set |script_type| to mojom::ScriptType::kModule for module
   // fetch (https://crbug.com/824646).

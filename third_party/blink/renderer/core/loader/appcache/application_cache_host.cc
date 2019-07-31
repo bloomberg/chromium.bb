@@ -69,9 +69,9 @@ mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker(
 
 }  // namespace
 
-// TODO(https://crbug.com/982996): Remove this creation function, and instead
-// directly create an appcache host for frame in DocumentLoader, and for shared
-// workers in WebSharedWorkerImpl.
+// TODO(https://crbug.com/538751): Remove this creation function, and instead
+// directly create an appcache host for frame in DocumentLoader after
+// WorkerShadowPage is removed.
 ApplicationCacheHost* ApplicationCacheHost::Create(
     DocumentLoader* document_loader) {
   DCHECK(document_loader);
@@ -87,10 +87,10 @@ ApplicationCacheHost* ApplicationCacheHost::Create(
           document_loader, GetDocumentInterfaceBroker(local_frame),
           local_frame->GetTaskRunner(TaskType::kNetworking));
     case WebLocalFrameClient::AppCacheType::kAppCacheForSharedWorker:
-      return MakeGarbageCollected<ApplicationCacheHostForSharedWorker>(
-          local_frame->Client()->GetAppCacheHostIDForSharedWorker(),
-          Thread::Current()->GetTaskRunner());
-    default:
+      // This creation function is being called for WorkerShadowPage. Return a
+      // null application cache host. A real host is constructed in
+      // WebSharedWorkerImpl.
+    case WebLocalFrameClient::AppCacheType::kAppCacheForNone:
       return MakeGarbageCollected<ApplicationCacheHost>(
           /*interface_broker=*/nullptr, /*task_runner=*/nullptr);
   }

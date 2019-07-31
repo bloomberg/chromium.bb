@@ -34,12 +34,9 @@ WorkerShadowPage::WorkerShadowPage(
                                     /*compositing_enabled=*/false,
                                     nullptr)),
       loader_factory_(std::move(loader_factory)),
-      appcache_host_id_(base::UnguessableToken()),
       preferences_(std::move(preferences)) {
   DCHECK(IsMainThread());
 
-  // This should be called after |appcache_host_id_| is initialized because this
-  // initiates document loading and accesses it.
   main_frame_ = WebLocalFrameImpl::CreateMainFrame(
       web_view_, this, nullptr /* interface_registry */,
       CreateStubDocumentInterfaceBrokerHandle(), nullptr /* opener */,
@@ -56,16 +53,9 @@ WorkerShadowPage::~WorkerShadowPage() {
   main_frame_->Close();
 }
 
-void WorkerShadowPage::Initialize(
-    const KURL& script_url,
-    const base::UnguessableToken& appcache_host_id) {
+void WorkerShadowPage::Initialize(const KURL& script_url) {
   DCHECK(IsMainThread());
   AdvanceState(State::kInitializing);
-
-  // Lazily set the |appcache_host_id_| in order to avoid the initial document
-  // loading via WebLocalFrameImpl::CreateMainFrame() on the constructor from
-  // consuming the |appcache_host_id_|.
-  appcache_host_id_ = appcache_host_id;
 
   // Construct substitute data source. We only need it to have same origin as
   // the worker so the loading checks work correctly.

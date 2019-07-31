@@ -193,8 +193,7 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
     return;
   }
 
-  shadow_page_->Initialize(worker_start_data_.script_url,
-                           base::UnguessableToken());
+  shadow_page_->Initialize(worker_start_data_.script_url);
 }
 
 void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
@@ -327,10 +326,8 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
 void WebEmbeddedWorkerImpl::ResumeStartup() {
   bool was_waiting = (waiting_for_debugger_state_ == kWaitingForDebugger);
   waiting_for_debugger_state_ = kNotWaitingForDebugger;
-  if (was_waiting) {
-    shadow_page_->Initialize(worker_start_data_.script_url,
-                             base::UnguessableToken());
-  }
+  if (was_waiting)
+    shadow_page_->Initialize(worker_start_data_.script_url);
 }
 
 const base::UnguessableToken& WebEmbeddedWorkerImpl::GetDevToolsWorkerToken() {
