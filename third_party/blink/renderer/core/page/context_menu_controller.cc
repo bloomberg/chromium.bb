@@ -277,7 +277,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
                 media_element))
           data.media_flags |= WebContextMenuData::kMediaPictureInPicture;
       }
-    } else if (IsHTMLAudioElement(*media_element))
+    } else if (IsA<HTMLAudioElement>(*media_element))
       data.media_type = WebContextMenuData::kMediaTypeAudio;
 
     data.suggested_filename = media_element->title();

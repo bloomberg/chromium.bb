@@ -599,7 +599,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsHTMLDListElement(*GetNode()))
     return ax::mojom::Role::kDescriptionList;
 
-  if (IsHTMLAudioElement(*GetNode()))
+  if (IsA<HTMLAudioElement>(*GetNode()))
     return ax::mojom::Role::kAudio;
   if (IsHTMLVideoElement(*GetNode()))
     return ax::mojom::Role::kVideo;

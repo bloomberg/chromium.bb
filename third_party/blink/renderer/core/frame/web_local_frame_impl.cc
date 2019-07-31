@@ -2507,7 +2507,7 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
     const WebMediaPlayerAction& action) {
   HitTestResult result = HitTestResultForVisualViewportPos(location);
   Node* node = result.InnerNode();
-  if (!IsHTMLVideoElement(*node) && !IsHTMLAudioElement(*node))
+  if (!IsHTMLVideoElement(*node) && !IsA<HTMLAudioElement>(*node))
     return;
 
   HTMLMediaElement* media_element = ToHTMLMediaElement(node);
