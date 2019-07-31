@@ -250,8 +250,6 @@ def _ShellLintFile(path, output_format, debug, gentoo_format=False):
     cmd.append('--exclude=SC2148')
     # ebuilds always use bash.
     cmd.append('--shell=bash')
-  else:
-    cmd.append('--uses-shflags')
   cmd.append(file_name)
 
   # TODO(crbug.com/969045): Remove chdir once -P is available in shellcheck.
