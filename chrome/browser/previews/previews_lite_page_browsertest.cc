@@ -447,9 +447,6 @@ class PreviewsLitePageServerBrowserTest
 
     previews::PreviewsUserData* previews_data =
         ui_tab_helper->previews_user_data();
-    // If |previews_data| is null, then no preview was shown.
-    if (!previews_data)
-      return;
     EXPECT_FALSE(previews_data->HasCommittedPreviewsType());
     EXPECT_NE(previews_data->CommittedPreviewsType(),
               previews::PreviewsType::LITE_PAGE_REDIRECT);

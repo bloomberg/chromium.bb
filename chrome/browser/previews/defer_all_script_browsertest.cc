@@ -23,7 +23,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
@@ -67,11 +66,6 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
   }
 }
 
-constexpr char kExpectedDeferScriptLogOrder[] =
-    "ScriptLog:_BodyEnd_InlineScript_SyncScript_DeveloperDeferScript_OnLoad";
-constexpr char kExpectedNormalScriptLogOrder[] =
-    "ScriptLog:_InlineScript_SyncScript_BodyEnd_DeveloperDeferScript_OnLoad";
-
 }  // namespace
 
 class DeferAllScriptBrowserTest : public InProcessBrowserTest {
@@ -107,8 +101,7 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
-    cmd->AppendSwitch(
-        data_reduction_proxy::switches::kEnableDataReductionProxy);
+    cmd->AppendSwitch("enable-spdy-proxy-auth");
 
     cmd->AppendSwitch("optimization-guide-disable-installer");
     cmd->AppendSwitch("purge_hint_cache_store");
@@ -221,7 +214,9 @@ IN_PROC_BROWSER_TEST_F(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
       1);
 
-  EXPECT_EQ(kExpectedDeferScriptLogOrder, GetScriptLog());
+  EXPECT_EQ(
+      "ScriptLog:_BodyEnd_InlineScript_SyncScript_DeveloperDeferScript_OnLoad",
+      GetScriptLog());
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",
@@ -264,7 +259,9 @@ IN_PROC_BROWSER_TEST_F(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
       1);
 
-  EXPECT_EQ(kExpectedNormalScriptLogOrder, GetScriptLog());
+  EXPECT_EQ(
+      "ScriptLog:_InlineScript_SyncScript_BodyEnd_DeveloperDeferScript_OnLoad",
+      GetScriptLog());
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",
@@ -301,7 +298,9 @@ IN_PROC_BROWSER_TEST_F(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
       1);
 
-  EXPECT_EQ(kExpectedNormalScriptLogOrder, GetScriptLog());
+  EXPECT_EQ(
+      "ScriptLog:_InlineScript_SyncScript_BodyEnd_DeveloperDeferScript_OnLoad",
+      GetScriptLog());
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",
@@ -319,40 +318,4 @@ IN_PROC_BROWSER_TEST_F(
   test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kpreviews_likelyName, 1);
   test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kdefer_all_scriptName,
                                       true);
-}
-
-IN_PROC_BROWSER_TEST_F(
-    DeferAllScriptBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(
-        DeferAllScriptHttpsWhitelisted_DataSaver_Enabled_Disabled)) {
-  GURL url = https_url();
-
-  // Whitelist DeferAllScript for any path for the url's host.
-  SetDeferAllScriptHintWithPageWithPattern(url, "*");
-
-  base::HistogramTester histogram_tester;
-
-  // Navigate to |url| again. Verify that the defer triggered.
-  ui_test_utils::NavigateToURL(browser(), url);
-  RetryForHistogramUntilCountReached(
-      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
-      1);
-  EXPECT_EQ(kExpectedDeferScriptLogOrder, GetScriptLog());
-
-  // Navigate to |url| again. Verify that the defer triggered.
-  ui_test_utils::NavigateToURL(browser(), url);
-  RetryForHistogramUntilCountReached(
-      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
-      2);
-  EXPECT_EQ(kExpectedDeferScriptLogOrder, GetScriptLog());
-
-  // Disable data saver and navigate to |url| again. Verify that the defer is
-  // not triggered.
-  base::CommandLine::ForCurrentProcess()->RemoveSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxy);
-  ui_test_utils::NavigateToURL(browser(), url);
-  RetryForHistogramUntilCountReached(
-      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
-      3);
-  EXPECT_EQ(kExpectedNormalScriptLogOrder, GetScriptLog());
 }
