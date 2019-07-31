@@ -7,12 +7,15 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_throttle_runner.h"
@@ -465,6 +468,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   int64_t navigation_handle_id() { return navigation_handle_id_; }
 
+  // Sets the READY_TO_COMMIT -> DID_COMMIT timeout. Resets the timeout to the
+  // default value if |timeout| is zero.
+  static void SetCommitTimeoutForTesting(const base::TimeDelta& timeout);
+
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
   // once NavigationHandleImpl has become a wrapper around NavigationRequest.
@@ -746,6 +753,17 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // TODO(zetamoo): This can be removed once the navigation states are merged.
   void RunCompleteCallback(NavigationThrottle::ThrottleCheckResult result);
 
+  // Called if READY_TO_COMMIT -> COMMIT state transition takes an unusually
+  // long time.
+  void OnCommitTimeout();
+
+  // Called by the RenderProcessHost to handle the case when the process changed
+  // its state of being blocked.
+  void RenderProcessBlockedStateChanged(bool blocked);
+
+  void StopCommitTimeout();
+  void RestartCommitTimeout();
+
   FrameTreeNode* frame_tree_node_;
 
   // Invariant: At least one of |loader_| or |render_frame_host_| is null.
@@ -965,6 +983,14 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
   // corresponding provider is created in the renderer.
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
+
+  // Timer for detecting an unexpectedly long time to commit a navigation.
+  base::OneShotTimer commit_timeout_timer_;
+
+  // The subscription to the notification of the changing of the render
+  // process's blocked state.
+  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+      render_process_blocked_state_changed_subscription_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

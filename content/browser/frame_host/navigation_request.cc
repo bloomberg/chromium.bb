@@ -99,6 +99,16 @@ namespace content {
 
 namespace {
 
+// Default timeout for the READY_TO_COMMIT -> COMMIT transition. Chosen
+// initially based on the Navigation.ReadyToCommitUntilCommit UMA, and then
+// refined based on feedback based on CrashExitCodes.Renderer/RESULT_CODE_HUNG.
+constexpr base::TimeDelta kDefaultCommitTimeout =
+    base::TimeDelta::FromSeconds(30);
+
+// Timeout for the READY_TO_COMMIT -> COMMIT transition.
+// Overrideable via SetCommitTimeoutForTesting.
+base::TimeDelta g_commit_timeout = kDefaultCommitTimeout;
+
 // crbug.com/954271: This feature is a part of an ablation study which makes
 // history navigations slower.
 // TODO(altimin): Clean this up after the study finishes.
@@ -2791,7 +2801,7 @@ void NavigationRequest::DidCommitNavigation(
     handle_state_ = DID_COMMIT;
   }
 
-  navigation_handle_->StopCommitTimeout();
+  StopCommitTimeout();
 
   // Record metrics for the time it took to commit the navigation if it was to
   // another document without error.
@@ -2890,7 +2900,7 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
 
   handle_state_ = READY_TO_COMMIT;
   ready_to_commit_time_ = base::TimeTicks::Now();
-  navigation_handle_->RestartCommitTimeout();
+  RestartCommitTimeout();
 
   if (appcache_handle_)
     appcache_handle_->SetProcessId(render_frame_host_->GetProcess()->GetID());
@@ -2939,6 +2949,57 @@ void NavigationRequest::RunCompleteCallback(
 
   // No code after running the callback, as it might have resulted in our
   // destruction.
+}
+
+void NavigationRequest::RenderProcessBlockedStateChanged(bool blocked) {
+  if (blocked)
+    StopCommitTimeout();
+  else
+    RestartCommitTimeout();
+}
+
+void NavigationRequest::StopCommitTimeout() {
+  commit_timeout_timer_.Stop();
+  render_process_blocked_state_changed_subscription_.reset();
+  render_frame_host()->GetRenderWidgetHost()->RendererIsResponsive();
+}
+
+void NavigationRequest::RestartCommitTimeout() {
+  commit_timeout_timer_.Stop();
+  if (handle_state_ >= DID_COMMIT)
+    return;
+
+  RenderProcessHost* renderer_host =
+      render_frame_host()->GetRenderWidgetHost()->GetProcess();
+  if (!render_process_blocked_state_changed_subscription_) {
+    render_process_blocked_state_changed_subscription_ =
+        renderer_host->RegisterBlockStateChangedCallback(base::BindRepeating(
+            &NavigationRequest::RenderProcessBlockedStateChanged,
+            base::Unretained(this)));
+  }
+  if (!renderer_host->IsBlocked()) {
+    commit_timeout_timer_.Start(
+        FROM_HERE, g_commit_timeout,
+        base::BindRepeating(&NavigationRequest::OnCommitTimeout,
+                            weak_factory_.GetWeakPtr()));
+  }
+}
+
+void NavigationRequest::OnCommitTimeout() {
+  DCHECK_EQ(READY_TO_COMMIT, handle_state_);
+  render_process_blocked_state_changed_subscription_.reset();
+  render_frame_host()->GetRenderWidgetHost()->RendererIsUnresponsive(
+      base::BindRepeating(&NavigationRequest::RestartCommitTimeout,
+                          weak_factory_.GetWeakPtr()));
+}
+
+// static
+void NavigationRequest::SetCommitTimeoutForTesting(
+    const base::TimeDelta& timeout) {
+  if (timeout.is_zero())
+    g_commit_timeout = kDefaultCommitTimeout;
+  else
+    g_commit_timeout = timeout;
 }
 
 }  // namespace content

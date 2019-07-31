@@ -14,12 +14,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigation_throttle_runner.h"
@@ -200,10 +197,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_request_->GetDeferringThrottleForTesting();
   }
 
-  // Sets the READY_TO_COMMIT -> DID_COMMIT timeout.  Resets the timeout to the
-  // default value if |timeout| is zero.
-  static void SetCommitTimeoutForTesting(const base::TimeDelta& timeout);
-
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
   // once NavigationHandleImpl has become a wrapper around NavigationRequest.
@@ -222,17 +215,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_request_->handle_state();
   }
 
-  // Called if READY_TO_COMMIT -> COMMIT state transition takes an unusually
-  // long time.
-  void OnCommitTimeout();
-
-  // Called by the RenderProcessHost to handle the case when the process
-  // changed its state of being blocked.
-  void RenderProcessBlockedStateChanged(bool blocked);
-
-  void StopCommitTimeout();
-  void RestartCommitTimeout();
-
   // The NavigationRequest that owns this NavigationHandle.
   NavigationRequest* navigation_request_;
 
@@ -245,14 +227,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // request.
   std::vector<std::string> removed_request_headers_;
   net::HttpRequestHeaders modified_request_headers_;
-
-  // Timer for detecting an unexpectedly long time to commit a navigation.
-  base::OneShotTimer commit_timeout_timer_;
-
-  // The subscription to the notification of the changing of the render
-  // process's blocked state.
-  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
-      render_process_blocked_state_changed_subscription_;
 
   // Allows to override response_headers_ in tests.
   // TODO(clamy): Clean this up once the architecture of unit tests is better.

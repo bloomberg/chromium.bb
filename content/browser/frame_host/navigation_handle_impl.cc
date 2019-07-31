@@ -31,20 +31,6 @@
 
 namespace content {
 
-namespace {
-
-// Default timeout for the READY_TO_COMMIT -> COMMIT transition.  Chosen
-// initially based on the Navigation.ReadyToCommitUntilCommit UMA, and then
-// refined based on feedback based on CrashExitCodes.Renderer/RESULT_CODE_HUNG.
-constexpr base::TimeDelta kDefaultCommitTimeout =
-    base::TimeDelta::FromSeconds(30);
-
-// Timeout for the READY_TO_COMMIT -> COMMIT transition.
-// Overrideable via SetCommitTimeoutForTesting.
-base::TimeDelta g_commit_timeout = kDefaultCommitTimeout;
-
-}  // namespace
-
 NavigationHandleImpl::NavigationHandleImpl(
     NavigationRequest* navigation_request,
     net::HttpRequestHeaders request_headers)
@@ -366,56 +352,6 @@ bool NavigationHandleImpl::WasResponseCached() {
 
 const net::ProxyServer& NavigationHandleImpl::GetProxyServer() {
   return navigation_request_->proxy_server();
-}
-
-void NavigationHandleImpl::RenderProcessBlockedStateChanged(bool blocked) {
-  if (blocked)
-    StopCommitTimeout();
-  else
-    RestartCommitTimeout();
-}
-
-void NavigationHandleImpl::StopCommitTimeout() {
-  commit_timeout_timer_.Stop();
-  render_process_blocked_state_changed_subscription_.reset();
-  GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsResponsive();
-}
-
-void NavigationHandleImpl::RestartCommitTimeout() {
-  commit_timeout_timer_.Stop();
-  if (state() >= NavigationRequest::DID_COMMIT)
-    return;
-
-  RenderProcessHost* renderer_host =
-      GetRenderFrameHost()->GetRenderWidgetHost()->GetProcess();
-  if (!render_process_blocked_state_changed_subscription_) {
-    render_process_blocked_state_changed_subscription_ =
-        renderer_host->RegisterBlockStateChangedCallback(base::BindRepeating(
-            &NavigationHandleImpl::RenderProcessBlockedStateChanged,
-            base::Unretained(this)));
-  }
-  if (!renderer_host->IsBlocked())
-    commit_timeout_timer_.Start(
-        FROM_HERE, g_commit_timeout,
-        base::BindRepeating(&NavigationHandleImpl::OnCommitTimeout,
-                            weak_factory_.GetWeakPtr()));
-}
-
-void NavigationHandleImpl::OnCommitTimeout() {
-  DCHECK_EQ(NavigationRequest::READY_TO_COMMIT, state());
-  render_process_blocked_state_changed_subscription_.reset();
-  GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsUnresponsive(
-      base::BindRepeating(&NavigationHandleImpl::RestartCommitTimeout,
-                          weak_factory_.GetWeakPtr()));
-}
-
-// static
-void NavigationHandleImpl::SetCommitTimeoutForTesting(
-    const base::TimeDelta& timeout) {
-  if (timeout.is_zero())
-    g_commit_timeout = kDefaultCommitTimeout;
-  else
-    g_commit_timeout = timeout;
 }
 
 }  // namespace content
