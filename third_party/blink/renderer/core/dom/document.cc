@@ -1240,7 +1240,7 @@ ContentSecurityPolicy* Document::GetContentSecurityPolicyForWorld() {
   if (!world.IsIsolatedWorld())
     return GetContentSecurityPolicy();
 
-  int world_id = world.GetWorldId();
+  int32_t world_id = world.GetWorldId();
   auto it = isolated_world_csp_map_->find(world_id);
   if (it != isolated_world_csp_map_->end())
     return it->value;
@@ -8314,7 +8314,7 @@ bool Document::IsInWebAppScope() const {
   return Url().GetString().StartsWith(web_app_scope);
 }
 
-void Document::ClearIsolatedWorldCSPForTesting(int world_id) {
+void Document::ClearIsolatedWorldCSPForTesting(int32_t world_id) {
   isolated_world_csp_map_->erase(world_id);
 }
 

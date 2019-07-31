@@ -1293,7 +1293,7 @@ void RenderFrameHostImpl::ExecuteJavaScript(const base::string16& javascript,
 void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
     const base::string16& javascript,
     JavaScriptResultCallback callback,
-    int world_id) {
+    int32_t world_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_GT(world_id, ISOLATED_WORLD_ID_GLOBAL);
   DCHECK_LE(world_id, ISOLATED_WORLD_ID_MAX);
@@ -1306,7 +1306,7 @@ void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
 void RenderFrameHostImpl::ExecuteJavaScriptForTests(
     const base::string16& javascript,
     JavaScriptResultCallback callback,
-    int world_id) {
+    int32_t world_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const bool has_user_gesture = false;
@@ -1318,7 +1318,7 @@ void RenderFrameHostImpl::ExecuteJavaScriptForTests(
 
 void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
     const base::string16& javascript,
-    int world_id) {
+    int32_t world_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const bool has_user_gesture = true;
