@@ -162,6 +162,13 @@ typedef struct {
   // The fraction for a kf groups total bits allocated to the inter frames
   double kfgroup_inter_fraction;
 
+  // Over time correction for bits per macro block estimation
+  double bpm_factor;
+
+  // Record of target and actual bits spent in current ARF group
+  int rolling_arf_group_target_bits;
+  int rolling_arf_group_actual_bits;
+
   int sr_update_lag;
 
   int kf_zeromotion_pct;

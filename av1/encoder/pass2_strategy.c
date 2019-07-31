@@ -164,12 +164,24 @@ static double calc_correction_factor(double err_per_mb, double err_divisor,
 // Similar to find_qindex_by_rate() function in ratectrl.c, but includes
 // calculation of a correction_factor.
 static int find_qindex_by_rate_with_correction(
-    int desired_bits_per_mb, aom_bit_depth_t bit_depth, FRAME_TYPE frame_type,
-    double error_per_mb, double ediv_size_correction,
+    AV1_COMP *cpi, int desired_bits_per_mb, aom_bit_depth_t bit_depth,
+    FRAME_TYPE frame_type, double error_per_mb, double ediv_size_correction,
     double group_weight_factor, int best_qindex, int worst_qindex) {
   assert(best_qindex <= worst_qindex);
   int low = best_qindex;
   int high = worst_qindex;
+
+  TWO_PASS *twopass = &cpi->twopass;
+  double last_group_rate_err;
+
+  // Based on recent history adjust expectations of bits per macroblock.
+  last_group_rate_err =
+      (double)twopass->rolling_arf_group_actual_bits /
+      DOUBLE_DIVIDE_CHECK((double)twopass->rolling_arf_group_target_bits);
+  last_group_rate_err = AOMMAX(0.25, AOMMIN(4.0, last_group_rate_err));
+  twopass->bpm_factor *= (3.0 + last_group_rate_err) / 4.0;
+  twopass->bpm_factor = AOMMAX(0.25, AOMMIN(4.0, twopass->bpm_factor));
+
   while (low < high) {
     const int mid = (low + high) >> 1;
     const double mid_factor =
@@ -195,8 +207,7 @@ static int find_qindex_by_rate_with_correction(
   return low;
 }
 
-static int get_twopass_worst_quality(const AV1_COMP *cpi,
-                                     const double section_err,
+static int get_twopass_worst_quality(AV1_COMP *cpi, const double section_err,
                                      double inactive_zone,
                                      int section_target_bandwidth,
                                      double group_weight_factor) {
@@ -231,8 +242,8 @@ static int get_twopass_worst_quality(const AV1_COMP *cpi,
     // Try and pick a max Q that will be high enough to encode the
     // content at the given rate.
     int q = find_qindex_by_rate_with_correction(
-        target_norm_bits_per_mb, cpi->common.seq_params.bit_depth, INTER_FRAME,
-        av_err_per_mb, ediv_size_correction, group_weight_factor,
+        cpi, target_norm_bits_per_mb, cpi->common.seq_params.bit_depth,
+        INTER_FRAME, av_err_per_mb, ediv_size_correction, group_weight_factor,
         rc->best_quality, rc->worst_quality);
 
     // Restriction on active max q for constrained quality mode.
@@ -1253,6 +1264,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     twopass->section_intra_rating = calculate_section_intra_ratio(
         start_pos, twopass->stats_in_end, rc->baseline_gf_interval);
   }
+
+  // Reset rolling actual and target bits counters for ARF groups.
+  twopass->rolling_arf_group_target_bits = 1;
+  twopass->rolling_arf_group_actual_bits = 1;
 }
 
 // Minimum % intra coding observed in first pass (1.0 = 100%)
@@ -1893,6 +1908,13 @@ void av1_init_second_pass(AV1_COMP *cpi) {
   // Static sequence monitor variables.
   twopass->kf_zeromotion_pct = 100;
   twopass->last_kfgroup_zeromotion_pct = 100;
+
+  // Initialize bits per macro_block estimate correction factor.
+  twopass->bpm_factor = 1.0;
+  // Initialize actual and target bits counters for ARF groups so that
+  // at the start we have a neutral bpm adjustment.
+  twopass->rolling_arf_group_target_bits = 1;
+  twopass->rolling_arf_group_actual_bits = 1;
 }
 
 #define MINQ_ADJ_LIMIT 48
@@ -1911,6 +1933,10 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
   rc->vbr_bits_off_target += rc->base_frame_target - rc->projected_frame_size;
   twopass->bits_left = AOMMAX(twopass->bits_left - bits_used, 0);
 
+  // Target vs actual bits for this arf group.
+  twopass->rolling_arf_group_target_bits += rc->this_frame_target;
+  twopass->rolling_arf_group_actual_bits += rc->projected_frame_size;
+
   // Calculate the pct rc error.
   if (rc->total_actual_bits) {
     rc->rate_error_estimate =
@@ -1919,6 +1945,27 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
   } else {
     rc->rate_error_estimate = 0;
   }
+
+#if 0
+  {
+    AV1_COMMON *cm = &cpi->common;
+    FILE *fpfile;
+    fpfile = fopen("details.stt", "a");
+    fprintf(fpfile, "%10d %10d %10d %10"PRId64" %10"PRId64" %10d %10d %10d %10.4lf %10.4lf %10.4lf %10.4lf\n",
+            cm->current_frame.frame_number,
+            rc->base_frame_target, rc->projected_frame_size,
+            rc->total_actual_bits, rc->vbr_bits_off_target,
+            rc->rate_error_estimate,
+            twopass->rolling_arf_group_target_bits,
+            twopass->rolling_arf_group_actual_bits,
+            (double)twopass->rolling_arf_group_actual_bits /
+                (double)twopass->rolling_arf_group_target_bits,
+            twopass->bpm_factor,
+            av1_convert_qindex_to_q(cm->base_qindex, cm->seq_params.bit_depth),
+            av1_convert_qindex_to_q(rc->active_worst_quality, cm->seq_params.bit_depth));
+    fclose(fpfile);
+  }
+#endif
 
   if (cpi->common.current_frame.frame_type != KEY_FRAME) {
     twopass->kf_group_bits -= bits_used;
