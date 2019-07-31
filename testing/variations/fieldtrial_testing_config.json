@@ -6547,21 +6547,6 @@
             ]
         }
     ],
-    "WinOOPInspectModule": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WinOOPInspectModule"
-                    ]
-                }
-            ]
-        }
-    ],
     "WinOOPSelectFileDialog": [
         {
             "platforms": [
