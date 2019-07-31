@@ -24,6 +24,7 @@ class ExtendedAttribute(object):
     _FORM_NAMED_ARG_LIST = 'NamedArgList'  # for (e)
 
     def __init__(self, key, values=None, arguments=None, name=None):
+        assert isinstance(key, str)
         # |values| can be either of None, a single string, or a list.
         assert values is None or isinstance(values, (str, tuple, list))
         # |arguments| can be either of None or a list of pairs of strings.
@@ -57,7 +58,15 @@ class ExtendedAttribute(object):
         else:
             raise ValueError('Unknown format for ExtendedAttribute')
 
-    def __str__(self):
+    def make_copy(self):
+        return ExtendedAttribute(
+            key=self._key,
+            values=self._values,
+            arguments=self._arguments,
+            name=self._name)
+
+    @property
+    def syntactic_form(self):
         if self._format == self._FORM_NO_ARGS:
             return self._key
         if self._format == self._FORM_IDENT:
@@ -65,20 +74,12 @@ class ExtendedAttribute(object):
         if self._format == self._FORM_IDENT_LIST:
             return '{}=({})'.format(self._key, ', '.join(self._values))
         args_str = '({})'.format(', '.join(
-            [' '.join(arg) for arg in self._arguments]))
+            ['{} {}'.format(left, right) for left, right in self._arguments]))
         if self._format == self._FORM_ARG_LIST:
             return '{}{}'.format(self._key, args_str)
         if self._format == self._FORM_NAMED_ARG_LIST:
             return '{}={}{}'.format(self._key, self._name, args_str)
-        # Should not reach here.
         assert False, 'Unknown format: {}'.format(self._format)
-
-    def make_copy(self):
-        return ExtendedAttribute(
-            key=self._key,
-            values=self._values,
-            arguments=self._arguments,
-            name=self._name)
 
     @property
     def key(self):
@@ -184,12 +185,13 @@ class ExtendedAttributes(object):
     def __len__(self):
         return len(list(self.__iter__()))
 
-    def __str__(self):
-        attrs = [str(attr) for attr in self]
-        return '[{}]'.format(', '.join(attrs))
-
     def make_copy(self):
         return ExtendedAttributes(map(ExtendedAttribute.make_copy, self))
+
+    @property
+    def syntactic_form(self):
+        attrs = [str(attr) for attr in self]
+        return '[{}]'.format(', '.join(attrs))
 
     def keys(self):
         return self._attributes.keys()
