@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_UI_PAYMENTS_SAVE_CARD_BUBBLE_CONTROLLER_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_UI_PAYMENTS_SAVE_CARD_BUBBLE_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_SAVE_CARD_BUBBLE_CONTROLLER_H_
+#define CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_SAVE_CARD_BUBBLE_CONTROLLER_H_
 
 #include <memory>
 #include <vector>
@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -31,8 +32,14 @@ enum class BubbleType;
 // Interface that exposes controller functionality to SaveCardBubbleView.
 class SaveCardBubbleController {
  public:
-  SaveCardBubbleController() {}
-  virtual ~SaveCardBubbleController() {}
+  SaveCardBubbleController() = default;
+  virtual ~SaveCardBubbleController() = default;
+
+  // Returns a reference to the SaveCardBubbleController associated with the
+  // given |web_contents|. If controller does not exist, this will create the
+  // controller from the |web_contents| then return the reference.
+  static SaveCardBubbleController* GetOrCreate(
+      content::WebContents* web_contents);
 
   // Returns the title that should be displayed in the bubble.
   virtual base::string16 GetWindowTitle() const = 0;
@@ -53,6 +60,10 @@ class SaveCardBubbleController {
 
   // Returns the card that will be uploaded if the user accepts.
   virtual const CreditCard& GetCard() const = 0;
+
+  // Returns the currently active save card bubble view. Can be nullptr if no
+  // bubble is visible.
+  virtual SaveCardBubbleView* GetSaveCardBubbleView() const = 0;
 
   // Returns whether the dialog should include a textfield requesting the user
   // to confirm/provide cardholder name.
@@ -89,6 +100,8 @@ class SaveCardBubbleController {
 
   // Returns empty vector if no legal message should be shown.
   virtual const LegalMessageLines& GetLegalMessageLines() const = 0;
+  // Returns true iff the save card icon is visible.
+  virtual bool IsIconVisible() const = 0;
   // Returns true iff is showing or has showed bubble for upload save.
   virtual bool IsUploadSave() const = 0;
   // Returns the current state of the bubble.
@@ -102,4 +115,4 @@ class SaveCardBubbleController {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_UI_PAYMENTS_SAVE_CARD_BUBBLE_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_SAVE_CARD_BUBBLE_CONTROLLER_H_
