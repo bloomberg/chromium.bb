@@ -4,8 +4,8 @@
 
 module media_router.mojom;
 
-import "chrome/common/media_router/mojo/media_controller.mojom";
-import "chrome/common/media_router/mojo/media_status.mojom";
+import "chrome/common/media_router/mojom/media_controller.mojom";
+import "chrome/common/media_router/mojom/media_status.mojom";
 import "components/mirroring/mojom/mirroring_service_host.mojom";
 import "media/mojo/interfaces/mirror_service_remoting.mojom";
 import "mojo/public/mojom/base/time.mojom";
@@ -205,7 +205,7 @@ struct SinkSearchCriteria {
 // - RouteRequestResult::ResultCode in route_request_result.h
 // - MediaRouteProviderResult enum in tools/metrics/histograms.xml.
 // - mr.RouteRequestResultCode in route_request_error.js
-// - media_router_struct_traits.h
+// - media_router_mojom_traits.h
 enum RouteRequestResultCode {
   UNKNOWN_ERROR,
   OK,

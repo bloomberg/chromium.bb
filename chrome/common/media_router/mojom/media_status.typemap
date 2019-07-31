@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//chrome/common/media_router/mojo/media_status.mojom"
+mojom = "//chrome/common/media_router/mojom/media_status.mojom"
 public_headers = [ "//chrome/common/media_router/media_status.h" ]
 traits_headers =
-    [ "//chrome/common/media_router/mojo/media_status_struct_traits.h" ]
+    [ "//chrome/common/media_router/mojom/media_status_mojom_traits.h" ]
 sources = [
-  "//chrome/common/media_router/mojo/media_status_struct_traits.cc",
+  "//chrome/common/media_router/mojom/media_status_mojom_traits.cc",
 ]
 type_mappings = [ "media_router.mojom.MediaStatus=media_router::MediaStatus" ]

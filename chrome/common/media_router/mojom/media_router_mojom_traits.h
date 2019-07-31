@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_MEDIA_ROUTER_MOJO_MEDIA_ROUTER_STRUCT_TRAITS_H_
-#define CHROME_COMMON_MEDIA_ROUTER_MOJO_MEDIA_ROUTER_STRUCT_TRAITS_H_
+#ifndef CHROME_COMMON_MEDIA_ROUTER_MOJOM_MEDIA_ROUTER_MOJOM_TRAITS_H_
+#define CHROME_COMMON_MEDIA_ROUTER_MOJOM_MEDIA_ROUTER_MOJOM_TRAITS_H_
 
 #include <string>
 
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/issue.h"
-#include "chrome/common/media_router/mojo/media_router.mojom.h"
+#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "net/base/ip_endpoint.h"
 
@@ -522,4 +522,4 @@ struct EnumTraits<media_router::mojom::MediaRouteProvider::Id,
 
 }  // namespace mojo
 
-#endif  // CHROME_COMMON_MEDIA_ROUTER_MOJO_MEDIA_ROUTER_STRUCT_TRAITS_H_
+#endif  // CHROME_COMMON_MEDIA_ROUTER_MOJOM_MEDIA_ROUTER_MOJOM_TRAITS_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/media_router/mojo/media_router_struct_traits.h"
+#include "chrome/common/media_router/mojom/media_router_mojom_traits.h"
 
 #include "chrome/common/media_router/media_source.h"
 #include "services/network/public/cpp/ip_address_mojom_traits.h"

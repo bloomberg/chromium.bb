@@ -12,7 +12,7 @@
 #include "chrome/browser/media/router/providers/cast/activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/common/media_router/media_route.h"
-#include "chrome/common/media_router/mojo/media_router.mojom-forward.h"
+#include "chrome/common/media_router/mojom/media_router.mojom-forward.h"
 #include "components/cast_channel/cast_message_handler.h"
 #include "components/mirroring/mojom/cast_message_channel.mojom.h"
 #include "components/mirroring/mojom/mirroring_service_host.mojom.h"

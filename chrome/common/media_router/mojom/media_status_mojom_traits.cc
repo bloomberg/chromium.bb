@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/media_router/mojo/media_status_struct_traits.h"
+#include "chrome/common/media_router/mojom/media_status_mojom_traits.h"
 
 #include "base/strings/string_util.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"

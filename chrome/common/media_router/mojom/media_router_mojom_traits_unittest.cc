@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/media_router/mojo/media_router_struct_traits.h"
+#include "chrome/common/media_router/mojom/media_router_mojom_traits.h"
 
 #include <utility>
 
 #include "base/test/scoped_task_environment.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
-#include "chrome/common/media_router/mojo/media_router.mojom.h"
-#include "chrome/common/media_router/mojo/media_router_traits_test_service.mojom.h"
+#include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "chrome/common/media_router/mojom/media_router_traits_test_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

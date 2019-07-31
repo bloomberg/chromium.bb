@@ -3,6 +3,6 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//chrome/common/media_router/mojo/media_router.typemap",
-  "//chrome/common/media_router/mojo/media_status.typemap",
+  "//chrome/common/media_router/mojom/media_router.typemap",
+  "//chrome/common/media_router/mojom/media_status.typemap",
 ]

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_MEDIA_ROUTER_MOJO_MEDIA_STATUS_STRUCT_TRAITS_H_
-#define CHROME_COMMON_MEDIA_ROUTER_MOJO_MEDIA_STATUS_STRUCT_TRAITS_H_
+#ifndef CHROME_COMMON_MEDIA_ROUTER_MOJOM_MEDIA_STATUS_MOJOM_TRAITS_H_
+#define CHROME_COMMON_MEDIA_ROUTER_MOJOM_MEDIA_STATUS_MOJOM_TRAITS_H_
 
 #include <string>
 
 #include "chrome/common/media_router/media_status.h"
-#include "chrome/common/media_router/mojo/media_status.mojom.h"
+#include "chrome/common/media_router/mojom/media_status.mojom.h"
 
 namespace mojo {
 
@@ -97,4 +97,4 @@ struct StructTraits<media_router::mojom::MediaStatusDataView,
 
 }  // namespace mojo
 
-#endif  // CHROME_COMMON_MEDIA_ROUTER_MOJO_MEDIA_STATUS_STRUCT_TRAITS_H_
+#endif  // CHROME_COMMON_MEDIA_ROUTER_MOJOM_MEDIA_STATUS_MOJOM_TRAITS_H_

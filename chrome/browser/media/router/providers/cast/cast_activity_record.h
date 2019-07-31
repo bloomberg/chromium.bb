@@ -11,7 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "chrome/browser/media/router/providers/cast/activity_record.h"
-#include "chrome/common/media_router/mojo/media_router.mojom.h"
+#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_handler.h"
 
