@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_WAS_ACTIVATED_OPTION_H_
-#define CONTENT_PUBLIC_COMMON_WAS_ACTIVATED_OPTION_H_
-
-namespace content {
+module content.mojom;
 
 // Whether the navigation should propagate user activation. This can be
 // specified by embedders in NavigationController::LoadURLParams.
-enum class WasActivatedOption {
+enum WasActivatedOption {
   // The content layer should make a decision about whether to propagate user
   // activation.
   kUnknown,
@@ -19,9 +16,4 @@ enum class WasActivatedOption {
 
   // The navigation should not propagate user activation.
   kNo,
-  kMaxValue = kNo,
 };
-
-}  // namespace content
-
-#endif  // CONTENT_PUBLIC_COMMON_WAS_ACTIVATED_OPTION_H_
