@@ -271,6 +271,45 @@ TEST_F(AccessibilityControllerTest, HighContrastTrayMenuVisibility) {
   EXPECT_FALSE(controller->GetTrayVisiblityOfHighContrastSetting());
 }
 
+TEST_F(AccessibilityControllerTest, MonoAudioTrayMenuVisibility) {
+  // Check that when the pref isn't being controlled by any policy will be
+  // visible in the accessibility tray menu despite its value.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  // Check when the value is true and not being controlled by any policy.
+  controller->SetMonoAudioEnabled(true);
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityMonoAudioEnabled));
+  EXPECT_TRUE(controller->mono_audio_enabled());
+  EXPECT_TRUE(controller->GetTrayVisiblityOfMonoAudioSetting());
+  // Check when the value is false and not being controlled by any policy.
+  controller->SetMonoAudioEnabled(false);
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityMonoAudioEnabled));
+  EXPECT_FALSE(controller->mono_audio_enabled());
+  EXPECT_TRUE(controller->GetTrayVisiblityOfMonoAudioSetting());
+
+  // Check that when the pref is managed and being forced on then it will be
+  // visible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityMonoAudioEnabled,
+      std::make_unique<base::Value>(true));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityMonoAudioEnabled));
+  EXPECT_TRUE(controller->GetTrayVisiblityOfMonoAudioSetting());
+  // Check that when the pref is managed and only being forced off then it will
+  // be invisible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityMonoAudioEnabled,
+      std::make_unique<base::Value>(false));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityMonoAudioEnabled));
+  EXPECT_FALSE(controller->mono_audio_enabled());
+  EXPECT_FALSE(controller->GetTrayVisiblityOfMonoAudioSetting());
+}
+
 TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();

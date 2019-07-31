@@ -541,6 +541,11 @@ void AccessibilityControllerImpl::SetMonoAudioEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
+bool AccessibilityControllerImpl::GetTrayVisiblityOfMonoAudioSetting() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityMonoAudioEnabled);
+}
+
 void AccessibilityControllerImpl::SetSpokenFeedbackEnabled(
     bool enabled,
     AccessibilityNotificationVisibility notify) {

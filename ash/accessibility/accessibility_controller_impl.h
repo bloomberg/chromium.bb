@@ -116,6 +116,10 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   void SetMonoAudioEnabled(bool enabled);
   bool mono_audio_enabled() const { return mono_audio_enabled_; }
+  // Returns true if the mono audio is being controlled by a policy which
+  // enforces turning it on or its not being controlled by any type of policy
+  // and false otherwise.
+  bool GetTrayVisiblityOfMonoAudioSetting();
 
   void SetSpokenFeedbackEnabled(bool enabled,
                                 AccessibilityNotificationVisibility notify);
