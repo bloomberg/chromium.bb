@@ -8484,22 +8484,19 @@ static INLINE void find_best_non_dual_interp_filter(
        skip_ver == cpi->default_interp_skip_flags) ||
       (block_size_high[bsize] == 4 &&
        skip_hor == cpi->default_interp_skip_flags)) {
-    int skip_pred = cpi->default_interp_skip_flags;
-    for (i = filter_set_size - 1; i > 0; i -= (SWITCHABLE_FILTERS + 1)) {
-      // This assert tells that (filter_x == filter_y) for non-dual filter case
-      assert(filter_sets[i].as_filters.x_filter ==
-             filter_sets[i].as_filters.y_filter);
-      if (cpi->sf.adaptive_interp_filter_search &&
-          !(get_interp_filter_allowed_mask(cpi->sf.interp_filter_search_mask,
-                                           i))) {
-        skip_pred = (skip_hor & skip_ver);
-        continue;
-      }
-      interpolation_filter_rd(
-          x, cpi, tile_data, bsize, mi_row, mi_col, orig_dst, rd, rd_stats_y,
-          rd_stats, switchable_rate, dst_bufs, i, switchable_ctx, skip_pred);
-      skip_pred = (skip_hor & skip_ver);
-    }
+    int skip_pred = skip_hor & skip_ver;
+    uint16_t allowed_interp_mask = 0;
+
+    // REG_REG filter type is evaluated beforehand, hence skip it
+    set_interp_filter_allowed_mask(&allowed_interp_mask, SHARP_SHARP);
+    set_interp_filter_allowed_mask(&allowed_interp_mask, SMOOTH_SMOOTH);
+    if (cpi->sf.adaptive_interp_filter_search)
+      allowed_interp_mask &= cpi->sf.interp_filter_search_mask;
+
+    find_best_interp_rd_facade(x, cpi, tile_data, bsize, mi_row, mi_col,
+                               orig_dst, rd, rd_stats_y, rd_stats,
+                               switchable_rate, dst_bufs, switchable_ctx,
+                               skip_pred, allowed_interp_mask, 1);
   } else {
     int skip_pred = (skip_hor & skip_ver);
     for (i = (SWITCHABLE_FILTERS + 1); i < filter_set_size;
