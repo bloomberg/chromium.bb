@@ -782,8 +782,12 @@ const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches5[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "5"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches6[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches7[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "7"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches8[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "8"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches9[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "9"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches10[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "10"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches12[] = {
@@ -799,8 +803,12 @@ const FeatureEntry::FeatureVariation
          base::size(kOmniboxUIMaxAutocompleteMatches5), nullptr},
         {"6 matches", kOmniboxUIMaxAutocompleteMatches6,
          base::size(kOmniboxUIMaxAutocompleteMatches6), nullptr},
+        {"7 matches", kOmniboxUIMaxAutocompleteMatches7,
+         base::size(kOmniboxUIMaxAutocompleteMatches7), nullptr},
         {"8 matches", kOmniboxUIMaxAutocompleteMatches8,
          base::size(kOmniboxUIMaxAutocompleteMatches8), nullptr},
+        {"9 matches", kOmniboxUIMaxAutocompleteMatches9,
+         base::size(kOmniboxUIMaxAutocompleteMatches9), nullptr},
         {"10 matches", kOmniboxUIMaxAutocompleteMatches10,
          base::size(kOmniboxUIMaxAutocompleteMatches10), nullptr},
         {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
@@ -2743,7 +2751,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          omnibox::kUIExperimentMaxAutocompleteMatches,
          kOmniboxUIMaxAutocompleteMatchesVariations,
-         "OmniboxUIMaxAutocompleteVariations")},
+         "OmniboxBundledExperimentV1")},
 
     {"omnibox-max-url-matches", flag_descriptions::kOmniboxMaxURLMatchesName,
      flag_descriptions::kOmniboxMaxURLMatchesDescription, kOsAll,
@@ -2788,6 +2796,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxMaterialDesignWeatherIcons)},
+
+    {"omnibox-disable-instant-extended-limit",
+     flag_descriptions::kOmniboxDisableInstantExtendedLimitName,
+     flag_descriptions::kOmniboxDisableInstantExtendedLimitDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxDisableInstantExtendedLimit)},
 
     {"use-new-accept-language-header",
      flag_descriptions::kUseNewAcceptLanguageHeaderName,

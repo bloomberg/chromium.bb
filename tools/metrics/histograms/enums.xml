@@ -34877,6 +34877,7 @@ from previous Chrome versions.
   <int value="-956696029" label="scheduler-configuration"/>
   <int value="-951394314" label="top-chrome-md"/>
   <int value="-950793721" label="TranslateUI2016Q2:disabled"/>
+  <int value="-950384924" label="OmniboxDisableInstantExtendedLimit:enabled"/>
   <int value="-949178861" label="enable-new-avatar-menu"/>
   <int value="-945806012" label="DownloadsUi:enabled"/>
   <int value="-938178614" label="enable-suggestions-with-substring-match"/>
@@ -35819,6 +35820,7 @@ from previous Chrome versions.
   <int value="403741682" label="CrostiniBackup:enabled"/>
   <int value="405329388"
       label="FramebustingNeedsSameOriginOrUserGesture:enabled"/>
+  <int value="408190863" label="OmniboxDisableInstantExtendedLimit:disabled"/>
   <int value="411250226" label="AutoplayMutedVideos:disabled"/>
   <int value="412957264" label="tab-close-buttons-hidden-with-touch"/>
   <int value="413081240" label="enable-new-md-input-view"/>
