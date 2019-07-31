@@ -696,7 +696,7 @@ void AppCacheHost::OnAppCacheAccessed(const GURL& manifest_url, bool blocked) {
   // informing WebContents about this access.
   if (render_frame_id_ != MSG_ROUTING_NONE &&
       BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             [](int process_id, int render_frame_id, const GURL& manifest_url,

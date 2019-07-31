@@ -257,8 +257,7 @@ class AppCacheStorageImplTest : public testing::Test {
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(kProcessId,
                                                        browser_context.get());
 
-    io_runner =
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+    io_runner = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
     // We start the background thread as TYPE_IO because we also use the
     // db_thread for the disk_cache which needs to be of TYPE_IO.

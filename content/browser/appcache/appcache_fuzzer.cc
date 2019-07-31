@@ -58,7 +58,7 @@ struct Env {
     appcache_service->set_url_loader_factory_getter(
         loader_factory_getter.get());
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
         {NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID()},
         base::BindOnce(&ChromeAppCacheService::InitializeOnLoaderThread,
