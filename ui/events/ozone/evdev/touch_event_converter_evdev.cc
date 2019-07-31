@@ -34,6 +34,8 @@
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/touch_evdev_types.h"
 #include "ui/events/ozone/evdev/touch_filter/false_touch_finder.h"
+#include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
+#include "ui/events/ozone/evdev/touch_filter/palm_detection_filter_factory.h"
 #include "ui/ozone/public/input_controller.h"
 
 namespace {
@@ -120,6 +122,7 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
     base::FilePath path,
     int id,
     const EventDeviceInfo& devinfo,
+    SharedPalmDetectionFilterState* shared_palm_state,
     DeviceEventDispatcherEvdev* dispatcher)
     : EventConverterEvdev(fd.get(),
                           path,
@@ -131,7 +134,9 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
                           devinfo.product_id(),
                           devinfo.version()),
       input_device_fd_(std::move(fd)),
-      dispatcher_(dispatcher) {
+      dispatcher_(dispatcher),
+      palm_detection_filter_(
+          CreatePalmDetectionFilter(devinfo, shared_palm_state)) {
   touch_evdev_debug_buffer_.Initialize(devinfo);
 }
 
@@ -547,12 +552,15 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {
 
   if (false_touch_finder_)
     false_touch_finder_->HandleTouches(events_, timestamp);
-
+  std::bitset<kNumTouchEvdevSlots> hold, suppress;
+  palm_detection_filter_->Filter(events_, timestamp, &hold, &suppress);
   for (size_t i = 0; i < events_.size(); i++) {
     InProgressTouchEvdev* event = &events_[i];
     if (IsPalm(*event)) {
       event->cancelled = true;
     }
+    event->held |= hold.test(i);
+    event->cancelled |= suppress.test(i);
     if (event->altered && (event->cancelled ||
                            (false_touch_finder_ &&
                             false_touch_finder_->SlotHasNoise(event->slot)))) {
