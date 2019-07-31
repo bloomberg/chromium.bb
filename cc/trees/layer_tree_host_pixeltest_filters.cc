@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
@@ -1049,20 +1050,14 @@ TEST_P(LayerTreeHostFiltersPixelTestGPU, FilterWithGiantCropRectNoClip) {
       base::FilePath(FILE_PATH_LITERAL("filter_with_giant_crop_rect.png")));
 }
 
-class BackdropFilterWithDeviceScaleFactorTest
-    : public LayerTreeHostFiltersPixelTest {
+class BackdropFilterOffsetTest : public LayerTreeHostFiltersPixelTest {
  protected:
-  void RunPixelTestType(float device_scale_factor,
-                        const base::FilePath& expected_result) {
-    device_scale_factor_ = device_scale_factor;
-
+  void RunPixelTestType(int device_scale_factor) {
     scoped_refptr<Layer> root =
         CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
-
     scoped_refptr<SolidColorLayer> background =
         CreateSolidColorLayer(gfx::Rect(100, 120), SK_ColorBLACK);
     root->AddChild(background);
-
     scoped_refptr<SolidColorLayer> filtered = CreateSolidColorLayer(
         gfx::Rect(0, 100, 200, 100), SkColorSetA(SK_ColorGREEN, 127));
     FilterOperations filters;
@@ -1083,13 +1078,21 @@ class BackdropFilterWithDeviceScaleFactorTest
     filtered->SetBackdropFilters(filters);
     filtered->ClearBackdropFilterBounds();
     root->AddChild(filtered);
-
     // This should appear as a grid of 4 100x100 squares which are:
     // BLACK       WHITE
     // DARK GREEN*  LIGHT GREEN
     //
     // *except for software (see crbug.com/989329) which will be a
     // dark-light-dark horizontal sandwich.
+    device_scale_factor_ = device_scale_factor;
+
+    base::FilePath expected_result =
+        base::FilePath(FILE_PATH_LITERAL("offset_backdrop_filter_.png"));
+    expected_result = expected_result.InsertBeforeExtensionASCII(
+        base::NumberToString(device_scale_factor) + "x");
+    if (renderer_type() == RENDERER_SOFTWARE) {
+      expected_result = expected_result.InsertBeforeExtensionASCII("_sw");
+    }
     RunPixelTest(renderer_type(), std::move(root), expected_result);
   }
 
@@ -1104,25 +1107,62 @@ class BackdropFilterWithDeviceScaleFactorTest
 };
 
 INSTANTIATE_TEST_SUITE_P(,
-                         BackdropFilterWithDeviceScaleFactorTest,
+                         BackdropFilterOffsetTest,
                          ::testing::ValuesIn(kRendererTypes));
 
-TEST_P(BackdropFilterWithDeviceScaleFactorTest, StandardDpi) {
-  RunPixelTestType(
-      1.f,
-      (renderer_type() == RENDERER_SOFTWARE)
-          ? base::FilePath(
-                FILE_PATH_LITERAL("offset_backdrop_filter_1x_sw.png"))
-          : base::FilePath(FILE_PATH_LITERAL("offset_backdrop_filter_1x.png")));
+TEST_P(BackdropFilterOffsetTest, StandardDpi) {
+  RunPixelTestType(1.f);
 }
 
-TEST_P(BackdropFilterWithDeviceScaleFactorTest, HiDpi) {
-  RunPixelTestType(
-      2.f,
-      (renderer_type() == RENDERER_SOFTWARE)
-          ? base::FilePath(
-                FILE_PATH_LITERAL("offset_backdrop_filter_2x_sw.png"))
-          : base::FilePath(FILE_PATH_LITERAL("offset_backdrop_filter_2x.png")));
+TEST_P(BackdropFilterOffsetTest, HiDpi) {
+  RunPixelTestType(2.f);
+}
+
+class BackdropFilterInvertTest : public LayerTreeHostFiltersPixelTest {
+ protected:
+  void RunPixelTestType(int device_scale_factor) {
+    scoped_refptr<Layer> root =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorGREEN);
+    scoped_refptr<SolidColorLayer> filtered =
+        CreateSolidColorLayer(gfx::Rect(50, 50, 100, 100), SK_ColorTRANSPARENT);
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateInvertFilter(1.0));
+    filtered->SetBackdropFilters(filters);
+    gfx::RRectF backdrop_filter_bounds(
+        gfx::RectF(gfx::SizeF(filtered->bounds())), 20);
+    filtered->SetBackdropFilterBounds(backdrop_filter_bounds);
+    root->AddChild(filtered);
+    device_scale_factor_ = device_scale_factor;
+    base::FilePath expected_result =
+        base::FilePath(FILE_PATH_LITERAL("invert_backdrop_filter_.png"));
+    expected_result = expected_result.InsertBeforeExtensionASCII(
+        base::NumberToString(device_scale_factor) + "x");
+    if (renderer_type() == RENDERER_SOFTWARE) {
+      expected_result = expected_result.InsertBeforeExtensionASCII("_sw");
+    }
+    RunPixelTest(renderer_type(), std::move(root), expected_result);
+  }
+
+ private:
+  // LayerTreePixelTest overrides
+  void SetupTree() override {
+    SetInitialDeviceScaleFactor(device_scale_factor_);
+    LayerTreeHostFiltersPixelTest::SetupTree();
+  }
+
+  float device_scale_factor_ = 1;
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         BackdropFilterInvertTest,
+                         ::testing::ValuesIn(kRendererTypes));
+
+TEST_P(BackdropFilterInvertTest, StandardDpi) {
+  RunPixelTestType(1.f);
+}
+
+TEST_P(BackdropFilterInvertTest, HiDpi) {
+  RunPixelTestType(2.f);
 }
 
 }  // namespace

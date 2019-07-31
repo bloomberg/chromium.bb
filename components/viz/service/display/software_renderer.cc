@@ -761,6 +761,10 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
       BackdropFilterBoundsForPass(quad->render_pass_id);
   DCHECK(!FiltersForPass(quad->render_pass_id))
       << "Filters should always be in a separate Effect node";
+  if (backdrop_filter_bounds_input.has_value()) {
+    backdrop_filter_bounds_input->Scale(quad->filters_scale.x(),
+                                        quad->filters_scale.y());
+  }
 
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix,
