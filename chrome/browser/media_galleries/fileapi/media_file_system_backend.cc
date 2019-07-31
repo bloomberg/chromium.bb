@@ -71,7 +71,7 @@ void OnPreferencesInit(
     base::OnceCallback<void(base::File::Error result)> callback) {
   content::WebContents* contents = web_contents_getter.Run();
   if (!contents) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED));
     return;
@@ -120,7 +120,7 @@ void AttemptAutoMountOnUIThread(
     }
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(std::move(callback), base::File::FILE_ERROR_NOT_FOUND));
 }
@@ -207,7 +207,7 @@ bool MediaFileSystemBackend::AttemptAutoMountForURLRequest(
   content::WebContents::Getter web_contents_getter = base::BindRepeating(
       &GetWebContentsFromFrameTreeNodeID, request_info.content_id);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&AttemptAutoMountOnUIThread, web_contents_getter,
                      request_info.storage_domain, mount_point,
