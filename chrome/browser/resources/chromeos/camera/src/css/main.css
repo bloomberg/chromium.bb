@@ -249,6 +249,10 @@ div.mode-item>span {
   z-index: 0;
 }
 
+.mode-item.hide {
+  display: none;
+}
+
 .mode-item>input {
   height: 100%;
   position: absolute;
