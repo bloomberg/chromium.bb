@@ -172,7 +172,7 @@ SAConstants.EMPTY_LOCATION = {
 
 /**
  * Defines the key codes of all key events to be sent.
- * Currently used for text navigation actions.
+ * Currently used for text navigation actions and cut/copy/paste.
  * @enum {number}
  * @const
  */
@@ -182,5 +182,9 @@ SAConstants.KeyCode = {
   LEFT_ARROW: 37,
   UP_ARROW: 38,
   RIGHT_ARROW: 39,
-  DOWN_ARROW: 40
+  DOWN_ARROW: 40,
+  // Key codes for X, C, V used for cut, copy, and paste synthetic key events.
+  C: 67,
+  V: 86,
+  X: 88
 };

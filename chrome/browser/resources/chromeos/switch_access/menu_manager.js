@@ -418,6 +418,18 @@ class MenuManager {
         this.navigationManager_.moveUpOneLineOfText();
         exitAfterAction = false;
         break;
+      case SAConstants.MenuAction.CUT:
+        this.navigationManager_.cut();
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.COPY:
+        this.navigationManager_.copy();
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.PASTE:
+        this.navigationManager_.paste();
+        exitAfterAction = false;
+        break;
       case SAConstants.MenuAction.SELECT_START:
         this.navigationManager_.saveSelectStart();
         this.reloadMenu_(this.navigationManager_.currentNode());
