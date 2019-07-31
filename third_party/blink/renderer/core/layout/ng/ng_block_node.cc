@@ -1055,9 +1055,9 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
 
     input.available_inline_size = constraint_space.AvailableSize().inline_size;
 
-    if (constraint_space.IsFixedSizeInline())
+    if (constraint_space.IsFixedInlineSize())
       input.override_inline_size = constraint_space.AvailableSize().inline_size;
-    if (constraint_space.IsFixedSizeBlock())
+    if (constraint_space.IsFixedBlockSize())
       input.override_block_size = constraint_space.AvailableSize().block_size;
     box_->ComputeAndSetBlockDirectionMargins(box_->ContainingBlock());
 
