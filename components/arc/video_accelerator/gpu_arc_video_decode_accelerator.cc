@@ -402,13 +402,7 @@ void GpuArcVideoDecodeAccelerator::Decode(
   }
 }
 
-void GpuArcVideoDecodeAccelerator::AssignPictureBuffersDeprecated(
-    uint32_t count) {
-  AssignPictureBuffers(count, pending_coded_size_);
-}
-
-void GpuArcVideoDecodeAccelerator::AssignPictureBuffers(uint32_t count,
-                                                        const gfx::Size& size) {
+void GpuArcVideoDecodeAccelerator::AssignPictureBuffers(uint32_t count) {
   VLOGF(2) << "count=" << count;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!vda_) {
@@ -423,7 +417,7 @@ void GpuArcVideoDecodeAccelerator::AssignPictureBuffers(uint32_t count,
     return;
   }
 
-  coded_size_ = size;
+  coded_size_ = pending_coded_size_;
   std::vector<media::PictureBuffer> buffers;
   for (uint32_t id = 0; id < count; ++id) {
     buffers.push_back(
