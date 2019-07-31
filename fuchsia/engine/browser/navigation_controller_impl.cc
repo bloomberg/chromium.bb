@@ -62,12 +62,26 @@ void NavigationControllerImpl::SetEventListener(
   previous_navigation_state_ = {};
   pending_navigation_event_ = {};
 
-  if (listener) {
-    navigation_listener_.Bind(std::move(listener));
-    navigation_listener_.set_error_handler(
-        [this](zx_status_t status) { SetEventListener(nullptr); });
-  } else {
+  // Simply unbind if no new listener was set.
+  if (!listener) {
     navigation_listener_.Unbind();
+    return;
+  }
+
+  navigation_listener_.Bind(std::move(listener));
+  navigation_listener_.set_error_handler(
+      [this](zx_status_t status) { SetEventListener(nullptr); });
+
+  // Immediately send the current navigation state, even if it is empty.
+  if (web_contents_->GetController().GetVisibleEntry() == nullptr) {
+    waiting_for_navigation_event_ack_ = true;
+    navigation_listener_->OnNavigationStateChanged(
+        fuchsia::web::NavigationState(), [this]() {
+          waiting_for_navigation_event_ack_ = false;
+          MaybeSendNavigationEvent();
+        });
+  } else {
+    OnNavigationEntryChanged();
   }
 }
 
