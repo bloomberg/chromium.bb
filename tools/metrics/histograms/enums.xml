@@ -6358,6 +6358,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Offered"/>
 </enum>
 
+<enum name="BooleanOffTheRecord">
+  <int value="0" label="Regular"/>
+  <int value="1" label="Off the record"/>
+</enum>
+
 <enum name="BooleanOnBattery">
   <int value="0" label="Not on battery"/>
   <int value="1" label="On Battery"/>
