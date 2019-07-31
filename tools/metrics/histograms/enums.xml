@@ -10732,6 +10732,7 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Log Lock"/>
   <int value="6" label="TPM Wipe"/>
   <int value="7" label="TRNG Stall"/>
+  <int value="8" label="Dcrypto Failure"/>
   <int value="200" label="Nvmem Malloc"/>
   <int value="201" label="Nvmem Page Header Size Mismatch"/>
   <int value="202" label="Nvmem Read Underrun"/>
