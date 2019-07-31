@@ -5,7 +5,7 @@
 module cros.mojom;
 
 import "media/capture/mojom/image_capture.mojom";
-import "media/capture/video/chromeos/mojo/camera_common.mojom";
+import "media/capture/video/chromeos/mojom/camera_common.mojom";
 
 // Effect that recognized by Chrome OS.
 enum Effect {

@@ -6,8 +6,8 @@
 
 module cros.mojom;
 
-import "media/capture/video/chromeos/mojo/camera3.mojom";
-import "media/capture/video/chromeos/mojo/camera_metadata.mojom";
+import "media/capture/video/chromeos/mojom/camera3.mojom";
+import "media/capture/video/chromeos/mojom/camera_metadata.mojom";
 
 enum CameraFacing {
   CAMERA_FACING_BACK = 0,

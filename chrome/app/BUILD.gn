@@ -462,7 +462,7 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//chromeos/services/multidevice_setup/public/cpp:manifest",
       "//chromeos/services/multidevice_setup/public/mojom",
       "//chromeos/services/network_config/public/mojom",
-      "//media/capture/video/chromeos/mojo:cros_camera",
+      "//media/capture/video/chromeos/mojom:cros_camera",
     ]
 
     if (enable_cros_assistant) {

@@ -6,7 +6,7 @@
 
 module cros.mojom;
 
-import "media/capture/video/chromeos/mojo/camera_metadata.mojom";
+import "media/capture/video/chromeos/mojom/camera_metadata.mojom";
 
 // These usages flags are defined in gralloc.h. They determine the nature of
 // the buffers allocated by gralloc. Read more on:
