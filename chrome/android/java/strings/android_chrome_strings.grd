@@ -1654,15 +1654,6 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SIGN_IN_SYNC" desc="Sync preference title in signed-in prefs and prefix for notification related to sync [CHAR-LIMIT=32]">
         Sync
       </message>
-      <message name="IDS_SYNC_DESCRIPTION" desc="Describes the purpose of syncing. This will be displayed on the sync on/off toggle">
-        Get your bookmarks, history, passwords, and other settings on all your devices
-      </message>
-      <message name="IDS_SYNC_TO_ACCOUNT_HEADER" desc="Header title for selecting the account to sync to [CHAR-LIMIT=32]">
-        Sync to
-      </message>
-      <message name="IDS_SYNC_DATA_TYPES" desc="Preference category name for customization of synced data types. [CHAR-LIMT=32]">
-        Data types
-      </message>
       <message name="IDS_SYNC_EVERYTHING_PREF" desc="Title for preference which enables sync'ing of all data types. [CHAR-LIMT=32]">
         Sync everything
       </message>
@@ -1683,9 +1674,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_SYNC_SETTINGS" desc="Title for preference which enables sync'ing of settings. [CHAR-LIMT=32]">
         Settings
-      </message>
-      <message name="IDS_PAYMENTS_INTEGRATION_LEGACY" desc="Title for preference which enables import of Google Pay data for Autofill. 'Google Pay' should not be translated as it is the product name.">
-        Cards and addresses using Google Pay
       </message>
       <message name="IDS_SYNC_PAYMENTS_INTEGRATION" desc="Title for preference which enables import of Google Pay data for Autofill. 'Google Pay' should not be translated as it is the product name.">
         Credit cards and addresses using Google Pay
