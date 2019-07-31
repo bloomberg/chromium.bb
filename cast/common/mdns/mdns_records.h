@@ -52,9 +52,6 @@ class DomainName {
   bool operator==(const DomainName& rhs) const;
   bool operator!=(const DomainName& rhs) const;
 
-  // Returns a reference to the label at specified label_index. No bounds
-  // checking is performed.
-  const std::string& Label(size_t label_index) const;
   std::string ToString() const;
 
   // Returns the maximum space that the domain name could take up in its
@@ -63,7 +60,12 @@ class DomainName {
   // compression the actual space taken in on-the-wire format is smaller.
   size_t MaxWireSize() const;
   bool empty() const { return labels_.empty(); }
-  size_t label_count() const { return labels_.size(); }
+  const std::vector<std::string>& labels() const { return labels_; }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const DomainName& domain_name) {
+    return H::combine(std::move(h), domain_name.labels_);
+  }
 
  private:
   // max_wire_size_ starts at 1 for the terminating character length.
@@ -94,6 +96,11 @@ class RawRecordRdata {
   size_t MaxWireSize() const;
   uint16_t size() const { return rdata_.size(); }
   const uint8_t* data() const { return rdata_.data(); }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const RawRecordRdata& rdata) {
+    return H::combine(std::move(h), rdata.rdata_);
+  }
 
  private:
   std::vector<uint8_t> rdata_;
@@ -127,6 +134,12 @@ class SrvRecordRdata {
   uint16_t port() const { return port_; }
   const DomainName& target() const { return target_; }
 
+  template <typename H>
+  friend H AbslHashValue(H h, const SrvRecordRdata& rdata) {
+    return H::combine(std::move(h), rdata.priority_, rdata.weight_, rdata.port_,
+                      rdata.target_);
+  }
+
  private:
   uint16_t priority_ = 0;
   uint16_t weight_ = 0;
@@ -153,6 +166,11 @@ class ARecordRdata {
   size_t MaxWireSize() const;
   const IPAddress& ipv4_address() const { return ipv4_address_; }
 
+  template <typename H>
+  friend H AbslHashValue(H h, const ARecordRdata& rdata) {
+    return H::combine(std::move(h), rdata.ipv4_address_.bytes());
+  }
+
  private:
   IPAddress ipv4_address_{0, 0, 0, 0};
 };
@@ -176,6 +194,11 @@ class AAAARecordRdata {
   size_t MaxWireSize() const;
   const IPAddress& ipv6_address() const { return ipv6_address_; }
 
+  template <typename H>
+  friend H AbslHashValue(H h, const AAAARecordRdata& rdata) {
+    return H::combine(std::move(h), rdata.ipv6_address_.bytes());
+  }
+
  private:
   IPAddress ipv6_address_{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 };
@@ -198,6 +221,11 @@ class PtrRecordRdata {
 
   size_t MaxWireSize() const;
   const DomainName& ptr_domain() const { return ptr_domain_; }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const PtrRecordRdata& rdata) {
+    return H::combine(std::move(h), rdata.ptr_domain_);
+  }
 
  private:
   DomainName ptr_domain_;
@@ -240,6 +268,11 @@ class TxtRecordRdata {
 
   size_t MaxWireSize() const;
   const std::vector<std::string>& texts() const { return texts_; }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const TxtRecordRdata& rdata) {
+    return H::combine(std::move(h), rdata.texts_);
+  }
 
  private:
   // max_wire_size_ is at least 3, uint16_t record length and at the
@@ -289,6 +322,13 @@ class MdnsRecord {
   uint32_t ttl() const { return ttl_; }
   const Rdata& rdata() const { return rdata_; }
 
+  template <typename H>
+  friend H AbslHashValue(H h, const MdnsRecord& record) {
+    return H::combine(std::move(h), record.name_, record.type_,
+                      record.record_class_, record.cache_flush_, record.ttl_,
+                      record.rdata_);
+  }
+
  private:
   DomainName name_;
   DnsType type_ = static_cast<DnsType>(0);
@@ -326,6 +366,12 @@ class MdnsQuestion {
   DnsType type() const { return type_; }
   DnsClass record_class() const { return record_class_; }
   bool unicast_response() const { return unicast_response_; }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const MdnsQuestion& record) {
+    return H::combine(std::move(h), record.name_, record.type_,
+                      record.record_class_, record.unicast_response_);
+  }
 
  private:
   void CopyFrom(const MdnsQuestion& other);
@@ -383,6 +429,13 @@ class MdnsMessage {
   }
   const std::vector<MdnsRecord>& additional_records() const {
     return additional_records_;
+  }
+
+  template <typename H>
+  friend H AbslHashValue(H h, const MdnsMessage& message) {
+    return H::combine(std::move(h), message.id_, message.type_,
+                      message.questions_, message.answers_,
+                      message.authority_records_, message.additional_records_);
   }
 
  private:

@@ -21,11 +21,6 @@ bool IsValidDomainLabel(absl::string_view label) {
   return label_size > 0 && label_size <= kMaxLabelLength;
 }
 
-const std::string& DomainName::Label(size_t label_index) const {
-  OSP_DCHECK(label_index < labels_.size());
-  return labels_[label_index];
-}
-
 std::string DomainName::ToString() const {
   return absl::StrJoin(labels_, ".");
 }

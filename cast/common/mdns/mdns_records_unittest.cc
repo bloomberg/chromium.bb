@@ -33,25 +33,25 @@ TEST(MdnsDomainNameTest, Construct) {
   DomainName name1;
   EXPECT_TRUE(name1.empty());
   EXPECT_EQ(name1.MaxWireSize(), UINT64_C(1));
-  EXPECT_EQ(name1.label_count(), UINT64_C(0));
+  EXPECT_EQ(name1.labels().size(), UINT64_C(0));
 
   DomainName name2{"MyDevice", "_mYSERvice", "local"};
   EXPECT_FALSE(name2.empty());
   EXPECT_EQ(name2.MaxWireSize(), UINT64_C(27));
-  ASSERT_EQ(name2.label_count(), UINT64_C(3));
-  EXPECT_EQ(name2.Label(0), "MyDevice");
-  EXPECT_EQ(name2.Label(1), "_mYSERvice");
-  EXPECT_EQ(name2.Label(2), "local");
+  ASSERT_EQ(name2.labels().size(), UINT64_C(3));
+  EXPECT_EQ(name2.labels()[0], "MyDevice");
+  EXPECT_EQ(name2.labels()[1], "_mYSERvice");
+  EXPECT_EQ(name2.labels()[2], "local");
   EXPECT_EQ(name2.ToString(), "MyDevice._mYSERvice.local");
 
   std::vector<absl::string_view> labels{"OtherDevice", "_MYservice", "LOcal"};
   DomainName name3(labels);
   EXPECT_FALSE(name3.empty());
   EXPECT_EQ(name3.MaxWireSize(), UINT64_C(30));
-  ASSERT_EQ(name3.label_count(), UINT64_C(3));
-  EXPECT_EQ(name3.Label(0), "OtherDevice");
-  EXPECT_EQ(name3.Label(1), "_MYservice");
-  EXPECT_EQ(name3.Label(2), "LOcal");
+  ASSERT_EQ(name3.labels().size(), UINT64_C(3));
+  EXPECT_EQ(name3.labels()[0], "OtherDevice");
+  EXPECT_EQ(name3.labels()[1], "_MYservice");
+  EXPECT_EQ(name3.labels()[2], "LOcal");
   EXPECT_EQ(name3.ToString(), "OtherDevice._MYservice.LOcal");
 }
 
