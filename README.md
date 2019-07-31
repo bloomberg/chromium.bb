@@ -45,14 +45,13 @@ To test in a browser under the standalone harness, run `grunt serve`, then
 open:
 
 * http://localhost:8080/ (defaults to ?runnow=0&q=cts)
-* http://localhost:8080/?runnow=1&q=unittests
-* http://localhost:8080/?runnow=1&q=unittests:basic&q=unittests:params
-
-### Export to WPT
-
-Copy the `out-wpt/` directory as the `webgpu/` directory in your WPT checkout.
+* http://localhost:8080/?runnow=1&q=unittests:
+* http://localhost:8080/?runnow=1&q=unittests:basic:&q=unittests:params:
 
 ### Making Changes
+
+To add new tests, simply imitate the pattern in neigboring tests or
+neighboring files. New test files must be named ending in `.spec.ts`.
 
 Since this project is written in TypeScript, it integrates best with Visual
 Studio Code. There are also some default settings (in `.vscode/settings.json`)
@@ -61,3 +60,7 @@ which will be applied automatically.
 Before uploading, you should run pre-submit checks (`grunt pre`).
 
 Be sure to read [CONTRIBUTING.md](CONTRIBUTING.md).
+
+### Export to WPT
+
+Copy the `out-wpt/` directory as the `webgpu/` directory in your WPT checkout.
