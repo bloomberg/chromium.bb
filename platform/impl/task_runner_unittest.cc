@@ -235,7 +235,7 @@ TEST(TaskRunnerImplTest, TaskRunnerUsesEventWaiter) {
   std::unique_ptr<TaskRunnerImpl> runner =
       TaskRunnerWithWaiterFactory::Create(Clock::now);
 
-  int x = 0;
+  std::atomic<int> x{0};
   std::thread t([&runner, &x] {
     runner.get()->RunUntilStopped();
     x = 1;
@@ -262,7 +262,7 @@ TEST(TaskRunnerImplTest, WakesEventWaiterOnPostTask) {
   std::unique_ptr<TaskRunnerImpl> runner =
       TaskRunnerWithWaiterFactory::Create(Clock::now);
 
-  int x = 0;
+  std::atomic<int> x{0};
   std::thread t([&runner] { runner.get()->RunUntilStopped(); });
 
   const Clock::time_point start1 = Clock::now();
@@ -285,8 +285,6 @@ TEST(TaskRunnerImplTest, WakesEventWaiterOnPostTask) {
 
 class RepeatedClass {
  public:
-  RepeatedClass() { execution_count = 0; }
-
   MOCK_METHOD0(Repeat, absl::optional<Clock::duration>());
 
   absl::optional<Clock::duration> DoCall() {
@@ -295,7 +293,7 @@ class RepeatedClass {
     return result;
   }
 
-  int execution_count;
+  std::atomic<int> execution_count{0};
 };
 
 TEST(TaskRunnerImplTest, RepeatingFunctionCalledRepeatedly) {

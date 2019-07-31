@@ -8,6 +8,9 @@ declare_args() {
 
   # Enable address sanitizer.
   is_asan = false
+
+  # Enable thread sanitizer.
+  is_tsan = false
 }
 
 config("compiler_defaults") {
@@ -140,10 +143,17 @@ config("symbol_visibility_default") {
 }
 
 config("default_sanitizers") {
+  # NOTE: This is not an artificial restriction; clang doesn't allow these to be
+  # used together.
+  assert(!is_asan || !is_tsan)
+
   cflags = []
   ldflags = []
   if (is_asan) {
     cflags += [ "-fsanitize=address" ]
     ldflags += [ "-fsanitize=address" ]
+  } else if (is_tsan) {
+    cflags += [ "-fsanitize=thread" ]
+    ldflags += [ "-fsanitize=thread" ]
   }
 }

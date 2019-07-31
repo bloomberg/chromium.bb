@@ -5,6 +5,7 @@
 #ifndef PLATFORM_TEST_FAKE_CLOCK_H_
 #define PLATFORM_TEST_FAKE_CLOCK_H_
 
+#include <atomic>
 #include <vector>
 
 #include "platform/api/time.h"
@@ -33,7 +34,7 @@ class FakeClock {
   std::vector<FakeTaskRunner*> task_runners_;
 
   static FakeClock* instance_;
-  static Clock::time_point now_;
+  static std::atomic<Clock::time_point> now_;
 };
 
 }  // namespace platform
