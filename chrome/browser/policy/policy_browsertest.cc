@@ -3634,9 +3634,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
   // Verify that the window is not in fullscreen mode.
   EXPECT_FALSE(window->GetBaseWindow()->IsFullscreen());
 
-  // For PlzNavigate case, we have to wait for the navigation to commit since
-  // the JS object registration is delayed (see
-  // AppWindowCreateFunction::RunAsync).
+  // We have to wait for the navigation to commit since the JS object
+  // registration is delayed (see AppWindowCreateFunction::RunAsync).
   content::WaitForLoadStop(window->web_contents());
 
   // Verify that the window cannot be toggled into fullscreen mode via apps

@@ -412,10 +412,6 @@ void JavaScriptDialogTabHelper::OnVisibilityChanged(
   }
 }
 
-// This function handles the case where browser-side navigation (PlzNavigate) is
-// enabled. DidStartNavigationToPendingEntry, below, handles the case where
-// PlzNavigate is not enabled. TODO(avi): When the non-PlzNavigate code is
-// removed, remove DidStartNavigationToPendingEntry.
 void JavaScriptDialogTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   // Close the dialog if the user started a new navigation. This allows reloads
@@ -423,10 +419,8 @@ void JavaScriptDialogTabHelper::DidStartNavigation(
   CloseDialog(DismissalCause::kTabNavigated, false, base::string16());
 }
 
-// This function handles the case where browser-side navigation (PlzNavigate) is
-// not enabled. DidStartNavigation, above, handles the case where PlzNavigate is
-// enabled. TODO(avi): When the non-PlzNavigate code is removed, remove
-// DidStartNavigationToPendingEntry.
+// TODO(avi): Remove this function since it is deprecated at the
+// WebContentsObserver level.
 void JavaScriptDialogTabHelper::DidStartNavigationToPendingEntry(
     const GURL& url,
     content::ReloadType reload_type) {
