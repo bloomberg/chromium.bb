@@ -60,11 +60,13 @@ class UprevTest(cros_test_lib.MockTestCase):
     """Test overall successful argument handling."""
     targets = ['foo', 'bar']
     output_dir = '/tmp/uprev_output_dir'
+    changed = ['/ebuild-1.0-r1.ebuild', '/ebuild-1.0-r2.ebuild']
     expected_type = constants.BOTH_OVERLAYS
     request = self._GetRequest(targets=targets, overlay_type=self._BOTH,
                                output_dir=output_dir)
     response = self._GetResponse()
-    uprev_patch = self.PatchObject(packages_service, 'uprev_build_targets')
+    uprev_patch = self.PatchObject(packages_service, 'uprev_build_targets',
+                                   return_value=changed)
 
     packages_controller.Uprev(request, response)
 
@@ -74,6 +76,11 @@ class UprevTest(cros_test_lib.MockTestCase):
     # First argument (build targets) of the first (only) call.
     call_targets = uprev_patch.call_args[0][0]
     self.assertItemsEqual(targets, [t.name for t in call_targets])
+
+    for ebuild in response.modified_ebuilds:
+      self.assertIn(ebuild.path, changed)
+      changed.remove(ebuild.path)
+    self.assertFalse(changed)
 
 
 class GetBestVisibleTest(cros_test_lib.MockTestCase):

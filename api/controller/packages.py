@@ -24,7 +24,7 @@ _OVERLAY_TYPE_TO_NAME = {
 }
 
 
-def Uprev(input_proto, _output_proto):
+def Uprev(input_proto, output_proto):
   """Uprev all cros workon ebuilds that have changes."""
   if not input_proto.overlay_type:
     cros_build_lib.Die('Overlay type is required.')
@@ -39,11 +39,14 @@ def Uprev(input_proto, _output_proto):
   output_dir = input_proto.output_dir or None
 
   try:
-    packages.uprev_build_targets(build_targets, overlay_type, chroot,
-                                 output_dir)
+    uprevved = packages.uprev_build_targets(build_targets, overlay_type, chroot,
+                                            output_dir)
   except packages.Error as e:
     # Handle module errors nicely, let everything else bubble up.
     cros_build_lib.Die(e.message)
+
+  for path in uprevved:
+    output_proto.modified_ebuilds.add().path = path
 
 @validate.require('atom')
 def GetBestVisible(input_proto, output_proto):
