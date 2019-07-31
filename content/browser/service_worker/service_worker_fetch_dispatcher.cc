@@ -20,8 +20,6 @@
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
-#include "content/browser/loader/resource_request_info_impl.h"
-#include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"

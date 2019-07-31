@@ -511,7 +511,6 @@ cast_source_set("unittests") {
     "application_media_info_manager_unittest.cc",
     "bluetooth/cast_bluetooth_chooser_unittest.cc",
     "cast_media_blocker_unittest.cc",
-    "cast_network_delegate_unittest.cc",
     "cast_session_id_map_unittest.cc",
     "devtools/cast_devtools_manager_delegate_unittest.cc",
     "lru_renderer_cache_test.cc",
