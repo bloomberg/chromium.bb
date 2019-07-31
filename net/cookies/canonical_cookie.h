@@ -32,6 +32,8 @@ class NET_EXPORT CanonicalCookie {
   // the resulting CanonicalCookies should not be relied on to be canonical
   // unless the caller has done appropriate validation and canonicalization
   // themselves.
+  // NOTE: Prefer using CreateSanitizedCookie() over directly using this
+  // constructor.
   CanonicalCookie(const std::string& name,
                   const std::string& value,
                   const std::string& domain,
@@ -58,15 +60,14 @@ class NET_EXPORT CanonicalCookie {
     EXCLUDE_NOT_ON_PATH,
     EXCLUDE_SAMESITE_STRICT,
     EXCLUDE_SAMESITE_LAX,
-    // TODO(crbug.com/953995): Implement EXTENDED_MODE which will use the
-    // following value.
+    // TODO(crbug.com/989171): Replace this with FirstPartyLax and
+    // FirstPartyStrict.
     EXCLUDE_SAMESITE_EXTENDED,
     // The following two are used for the SameSiteByDefaultCookies experiment,
     // where if the SameSite attribute is not specified, it will be treated as
     // SameSite=Lax by default.
     EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
     // This is used if SameSite=None is specified, but the cookie is not Secure.
-    // TODO(chlily): Implement the above.
     EXCLUDE_SAMESITE_NONE_INSECURE,
     EXCLUDE_USER_PREFERENCES,
 

@@ -46,13 +46,11 @@
 
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "net/base/features.h"
 #include "net/base/url_util.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -380,7 +378,7 @@ CookieSameSite CanonicalCookie::GetEffectiveSameSite() const {
   // If a cookie does not have a SameSite attribute, the effective SameSite
   // mode depends on the SameSiteByDefaultCookies setting.
   if (SameSite() == CookieSameSite::UNSPECIFIED) {
-    if (base::FeatureList::IsEnabled(features::kSameSiteByDefaultCookies))
+    if (cookie_util::IsSameSiteByDefaultCookiesEnabled())
       return CookieSameSite::LAX_MODE;
     return CookieSameSite::NO_RESTRICTION;
   }
@@ -437,9 +435,7 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
   // ignored. This can apply to cookies which were created before the
   // experimental options were enabled (as non-SameSite, insecure cookies cannot
   // be set while the options are on).
-  if (base::FeatureList::IsEnabled(features::kSameSiteByDefaultCookies) &&
-      base::FeatureList::IsEnabled(
-          features::kCookiesWithoutSameSiteMustBeSecure) &&
+  if (cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled() &&
       GetEffectiveSameSite() == CookieSameSite::NO_RESTRICTION && !IsSecure()) {
     return CanonicalCookie::CookieInclusionStatus::
         EXCLUDE_SAMESITE_NONE_INSECURE;
