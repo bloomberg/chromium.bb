@@ -511,6 +511,8 @@ void EditableCombobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
   }
   if (menu_runner_ && menu_runner_->IsRunning())
     return;
+  if (!GetWidget())
+    return;
 
   // Since we don't capture the mouse, we want to see the events that happen in
   // the EditableCombobox's RootView to get a chance to close the menu if they
