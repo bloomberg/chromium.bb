@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/content_settings/core/common/content_settings_struct_traits.h"
+#include "components/content_settings/core/common/content_settings_mojom_traits.h"
 
 namespace mojo {
 
