@@ -222,6 +222,13 @@ const char* SearchBoxView::GetClassName() const {
   return "SearchBoxView";
 }
 
+bool SearchBoxView::CanProcessEventsWithinSubtree() const {
+  if (!view_delegate_->CanProcessEventsOnApplistViews())
+    return false;
+
+  return views::View::CanProcessEventsWithinSubtree();
+}
+
 // static
 int SearchBoxView::GetFocusRingSpacing() {
   return kSearchBoxFocusRingWidth + kSearchBoxFocusRingPadding;
