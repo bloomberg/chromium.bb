@@ -501,8 +501,13 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
         if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) return null;
         if (!ableToOpenDialog(tab)) return null;
         assert getRelatedTabs(tab.getId()).size() != 1;
+        assert mTabGridDialogResetHandler != null;
         return tabId -> {
-            mTabGridDialogResetHandler.resetWithListOfTabs(getRelatedTabs(tabId));
+            List<Tab> relatedTabs = getRelatedTabs(tabId);
+            if (relatedTabs.size() == 0) {
+                relatedTabs = null;
+            }
+            mTabGridDialogResetHandler.resetWithListOfTabs(relatedTabs);
         };
     }
 
