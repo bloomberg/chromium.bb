@@ -218,7 +218,7 @@ source_set("sha1") {
   ]
 }
 
-static_library("third_party_dlls") {
+source_set("third_party_dlls") {
   visibility = [ ":*" ]  # Only targets in this file can depend on this.
   sources = [
     "third_party_dlls/beacon.cc",

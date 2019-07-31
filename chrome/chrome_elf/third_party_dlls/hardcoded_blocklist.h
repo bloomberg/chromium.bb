@@ -9,12 +9,6 @@
 
 namespace third_party_dlls {
 
-// Max size of the DLL blocklist.
-constexpr size_t kTroublesomeDllsMaxCount = 64u;
-
-// The DLL blacklist.
-extern const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount];
-
 // Returns true if a matching name is found in the hard-coded blocklist.
 // Note: |module_name| must be an ASCII encoded string.
 bool DllMatch(const std::string& module_name);
