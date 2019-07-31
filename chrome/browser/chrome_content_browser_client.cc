@@ -5476,7 +5476,9 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
   // If the profile does not support previews or Data Saver, do not turn on
   // Previews.
   if (!previews_service || !previews_service->previews_ui_service() ||
-      !data_reduction_proxy_settings) {
+      !data_reduction_proxy_settings || !browser_context ||
+      !data_reduction_proxy_settings->IsDataSaverEnabledByUser(
+          Profile::FromBrowserContext(browser_context)->GetPrefs())) {
     return content::PREVIEWS_OFF;
   }
 
@@ -5540,6 +5542,8 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
     previews_state |=
         (previews_data->AllowedPreviewsState() & server_previews_enabled_state);
   } else {
+    DCHECK(data_reduction_proxy_settings->IsDataSaverEnabledByUser(
+        Profile::FromBrowserContext(browser_context)->GetPrefs()));
     if (previews_decider_impl->ShouldAllowPreviewAtNavigationStart(
             previews_data, current_navigation_url, is_reload,
             previews::PreviewsType::LITE_PAGE)) {
@@ -5548,10 +5552,11 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
   }
 
   // Evaluate Offline, NoScript, and ResourceBlocking previews.
+  DCHECK(data_reduction_proxy_settings->IsDataSaverEnabledByUser(
+      Profile::FromBrowserContext(browser_context)->GetPrefs()));
   previews_state |= previews::DetermineAllowedClientPreviewsState(
       previews_data, previews_triggering_logic_already_ran,
-      data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
-      previews_decider_impl, navigation_handle);
+      true /* is_data_saver_user */, previews_decider_impl, navigation_handle);
 
   if (previews_state & content::PREVIEWS_OFF) {
     previews_data->set_allowed_previews_state(content::PREVIEWS_OFF);

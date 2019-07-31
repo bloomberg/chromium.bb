@@ -171,11 +171,11 @@ TEST_F(PreviewsContentUtilTest,
                 previews_triggering_logic_already_ran, is_data_saver_user,
                 enabled_previews_decider(), nullptr));
   is_data_saver_user = false;
-  EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
-            previews::CallDetermineAllowedClientPreviewsState(
-                &user_data, GURL("http://www.google.com"), is_reload,
-                previews_triggering_logic_already_ran, is_data_saver_user,
-                enabled_previews_decider(), nullptr));
+  EXPECT_DEATH(previews::CallDetermineAllowedClientPreviewsState(
+                   &user_data, GURL("http://www.google.com"), is_reload,
+                   previews_triggering_logic_already_ran, is_data_saver_user,
+                   enabled_previews_decider(), nullptr),
+               "Check failed");
 }
 
 TEST_F(PreviewsContentUtilTest,

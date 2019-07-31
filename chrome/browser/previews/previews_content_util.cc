@@ -217,6 +217,8 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     bool is_data_saver_user,
     previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle) {
+  DCHECK(is_data_saver_user);
+
   content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
 
   const GURL& url = navigation_handle->GetURL();
