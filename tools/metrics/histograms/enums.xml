@@ -45322,6 +45322,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Timeout"/>
 </enum>
 
+<enum name="PaintHoldingCommitTrigger2">
+  <int value="0" label="Feature Disabled"/>
+  <int value="1" label="Disallowed"/>
+  <int value="2" label="First Contentful Paint"/>
+  <int value="3" label="Timeout"/>
+  <int value="4" label="Not Deferred"/>
+</enum>
+
 <enum name="PaintHoldingInputTiming">
   <int value="0" label="Before Lifecycle"/>
   <int value="1" label="Before Commit"/>
