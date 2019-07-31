@@ -125,7 +125,7 @@ void WebSharedWorkerImpl::ResumeStartup() {
   is_paused_on_start_ = false;
   if (is_paused_on_start) {
     // We'll continue in OnShadowPageInitialized().
-    shadow_page_->Initialize(script_request_url_);
+    shadow_page_->Initialize(script_request_url_, appcache_host_id_);
   }
 }
 
@@ -223,8 +223,9 @@ void WebSharedWorkerImpl::StartWorkerContext(
   // triggers creation of a InspectorNetworkAgent that tries to access the
   // token.
   shadow_page_ = std::make_unique<WorkerShadowPage>(
-      this, std::move(loader_factory), std::move(privacy_preferences),
-      appcache_host_id_);
+      this, std::move(loader_factory), std::move(privacy_preferences));
+  // TODO(https://crbug.com/982996): Create ApplicationCacheHostForSharedWorker
+  // here without depending on WorkerShadowPage and DocumentLoader.
 
   // If we were asked to pause worker context on start and wait for debugger
   // then now is a good time to do that.
@@ -235,7 +236,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
   }
 
   // We'll continue in OnShadowPageInitialized().
-  shadow_page_->Initialize(script_request_url_);
+  shadow_page_->Initialize(script_request_url_, appcache_host_id_);
 }
 
 void WebSharedWorkerImpl::OnAppCacheSelected() {

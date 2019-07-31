@@ -27,27 +27,23 @@ mojo::ScopedMessagePipeHandle CreateStubDocumentInterfaceBrokerHandle() {
 WorkerShadowPage::WorkerShadowPage(
     Client* client,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-    PrivacyPreferences preferences,
-    const base::UnguessableToken& appcache_host_id)
+    PrivacyPreferences preferences)
     : client_(client),
       web_view_(WebViewImpl::Create(nullptr,
                                     /*is_hidden=*/false,
                                     /*compositing_enabled=*/false,
                                     nullptr)),
-      main_frame_(WebLocalFrameImpl::CreateMainFrame(
-          web_view_,
-          this,
-          nullptr /* interface_registry */,
-          CreateStubDocumentInterfaceBrokerHandle(),
-          nullptr /* opener */,
-          g_empty_atom,
-          WebSandboxFlags::kNone,
-          FeaturePolicy::FeatureState())),
       loader_factory_(std::move(loader_factory)),
-      appcache_host_id_(appcache_host_id),
+      appcache_host_id_(base::UnguessableToken()),
       preferences_(std::move(preferences)) {
   DCHECK(IsMainThread());
 
+  // This should be called after |appcache_host_id_| is initialized because this
+  // initiates document loading and accesses it.
+  main_frame_ = WebLocalFrameImpl::CreateMainFrame(
+      web_view_, this, nullptr /* interface_registry */,
+      CreateStubDocumentInterfaceBrokerHandle(), nullptr /* opener */,
+      g_empty_atom, WebSandboxFlags::kNone, FeaturePolicy::FeatureState());
   main_frame_->SetDevToolsAgentImpl(
       WebDevToolsAgentImpl::CreateForWorker(main_frame_, client_));
 }
@@ -60,9 +56,16 @@ WorkerShadowPage::~WorkerShadowPage() {
   main_frame_->Close();
 }
 
-void WorkerShadowPage::Initialize(const KURL& script_url) {
+void WorkerShadowPage::Initialize(
+    const KURL& script_url,
+    const base::UnguessableToken& appcache_host_id) {
   DCHECK(IsMainThread());
   AdvanceState(State::kInitializing);
+
+  // Lazily set the |appcache_host_id_| in order to avoid the initial document
+  // loading via WebLocalFrameImpl::CreateMainFrame() on the constructor from
+  // consuming the |appcache_host_id_|.
+  appcache_host_id_ = appcache_host_id;
 
   // Construct substitute data source. We only need it to have same origin as
   // the worker so the loading checks work correctly.
@@ -70,7 +73,6 @@ void WorkerShadowPage::Initialize(const KURL& script_url) {
   std::unique_ptr<WebNavigationParams> params =
       WebNavigationParams::CreateWithHTMLBuffer(
           SharedBuffer::Create(content.c_str(), content.length()), script_url);
-  params->appcache_host_id = appcache_host_id_;
   main_frame_->GetFrame()->Loader().CommitNavigation(std::move(params),
                                                      nullptr /* extra_data */);
 }

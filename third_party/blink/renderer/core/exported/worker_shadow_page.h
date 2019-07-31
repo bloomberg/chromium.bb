@@ -53,13 +53,13 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   WorkerShadowPage(
       Client* client,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      PrivacyPreferences preferences,
-      const base::UnguessableToken& appcache_host_id);
+      PrivacyPreferences preferences);
   ~WorkerShadowPage() override;
 
   // Initializes this instance and calls Client::OnShadowPageInitialized() when
   // complete.
-  void Initialize(const KURL& script_url);
+  void Initialize(const KURL& script_url,
+                  const base::UnguessableToken& appcache_host_id);
 
   // WebLocalFrameClient overrides.
   // Note: usually WebLocalFrameClient implementations override
@@ -74,6 +74,9 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override;
   WebLocalFrameClient::AppCacheType GetAppCacheType() override {
     return client_->GetAppCacheType();
+  }
+  base::UnguessableToken GetAppCacheHostIDForSharedWorker() override {
+    return appcache_host_id_;
   }
 
   Document* GetDocument() { return main_frame_->GetFrame()->GetDocument(); }
@@ -93,7 +96,7 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   WebView* web_view_;
   Persistent<WebLocalFrameImpl> main_frame_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
-  const base::UnguessableToken appcache_host_id_;
+  base::UnguessableToken appcache_host_id_;
 
   // TODO(crbug.com/862854): Update the values when the browser process changes
   // the preferences.

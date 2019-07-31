@@ -183,8 +183,7 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   // rather than the shadow page's loader.
   shadow_page_ = std::make_unique<WorkerShadowPage>(
       this, nullptr /* loader_factory */,
-      std::move(worker_start_data_.privacy_preferences),
-      base::UnguessableToken());
+      std::move(worker_start_data_.privacy_preferences));
 
   // If we were asked to wait for debugger then now is a good time to do that.
   worker_context_client_->WorkerReadyForInspectionOnMainThread();
@@ -194,7 +193,8 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
     return;
   }
 
-  shadow_page_->Initialize(worker_start_data_.script_url);
+  shadow_page_->Initialize(worker_start_data_.script_url,
+                           base::UnguessableToken());
 }
 
 void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
@@ -327,8 +327,10 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
 void WebEmbeddedWorkerImpl::ResumeStartup() {
   bool was_waiting = (waiting_for_debugger_state_ == kWaitingForDebugger);
   waiting_for_debugger_state_ = kNotWaitingForDebugger;
-  if (was_waiting)
-    shadow_page_->Initialize(worker_start_data_.script_url);
+  if (was_waiting) {
+    shadow_page_->Initialize(worker_start_data_.script_url,
+                             base::UnguessableToken());
+  }
 }
 
 const base::UnguessableToken& WebEmbeddedWorkerImpl::GetDevToolsWorkerToken() {
