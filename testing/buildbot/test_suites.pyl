@@ -3497,11 +3497,30 @@
           '--test-launcher-jobs=1',
           '--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter',
           '--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization',
-          '--use-gl=any',
           '--use-vulkan=native',
           '--enable-oop-rasterization',
           '--enable-gpu-rasterization',
-          '--enable-raster-to-sk-image',
+          '--force-gpu-rasterization',
+          '--disable-software-compositing-fallback',
+          '--disable-vulkan-fallback-to-gl-for-testing',
+          '--disable-headless-mode',
+        ],
+        'linux_args': [ '--no-xvfb' ],
+        'test': 'content_browsertests',
+      },
+    },
+
+    'gpu_fyi_vulkan_swiftshader_gtests': {
+      'vulkan_swiftshader_content_browsertests': {
+        'args': [
+          '--enable-gpu',
+          '--test-launcher-bot-mode',
+          '--test-launcher-jobs=1',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter',
+          '--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization',
+          '--use-vulkan=swiftshader',
+          '--enable-oop-rasterization',
+          '--enable-gpu-rasterization',
           '--force-gpu-rasterization',
           '--disable-software-compositing-fallback',
           '--disable-vulkan-fallback-to-gl-for-testing',
@@ -4513,7 +4532,7 @@
         'args': [
           '--enable-features=VizDisplayCompositor,UseSkiaRenderer',
           '--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.content_browsertests.filter',
-	],
+        ],
         'swarming': {
           'shards': 1,
         },
@@ -4577,7 +4596,7 @@
         },
         'results_handler': 'layout tests',
       },
-   },
+    },
 
     'system_webview_shell_instrumentation_tests': {
       'system_webview_shell_layout_test_apk': {},
@@ -5509,6 +5528,7 @@
     ],
 
     'linux_viz_gtests': [
+      'gpu_fyi_vulkan_swiftshader_gtests',
       'skia_renderer_fyi_gtests',
     ],
 
