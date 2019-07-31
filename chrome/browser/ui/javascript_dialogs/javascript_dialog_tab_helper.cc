@@ -419,16 +419,6 @@ void JavaScriptDialogTabHelper::DidStartNavigation(
   CloseDialog(DismissalCause::kTabNavigated, false, base::string16());
 }
 
-// TODO(avi): Remove this function since it is deprecated at the
-// WebContentsObserver level.
-void JavaScriptDialogTabHelper::DidStartNavigationToPendingEntry(
-    const GURL& url,
-    content::ReloadType reload_type) {
-  // Close the dialog if the user started a new navigation. This allows reloads
-  // and history navigations to proceed.
-  CloseDialog(DismissalCause::kTabNavigated, false, base::string16());
-}
-
 #if !defined(OS_ANDROID)
 void JavaScriptDialogTabHelper::OnBrowserSetLastActive(Browser* browser) {
   if (IsWebContentsForemost(web_contents())) {
