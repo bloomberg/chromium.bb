@@ -3037,6 +3037,99 @@ TEST_F(OverviewSessionTest, SelectingWindowWithBackdrop) {
   EXPECT_FALSE(InOverviewSession());
 }
 
+class OverviewSessionNewLayoutTest : public OverviewSessionTest {
+ public:
+  OverviewSessionNewLayoutTest() = default;
+  ~OverviewSessionNewLayoutTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kNewOverviewLayout);
+    OverviewSessionTest::SetUp();
+    EnterTabletMode();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewSessionNewLayoutTest);
+};
+
+// Tests that windows are in proper positions in the new overview layout.
+TEST_F(OverviewSessionNewLayoutTest, CheckNewLayoutWindowPositions) {
+  // Windows are created in this order because overview orders windows in terms
+  // of most recently used. |window4| will be created first, but will be
+  // determined last recently used. |window1| will be created last, but will be
+  // determined most recently used. Thus this order will be reflected in
+  // overview mode.
+  std::unique_ptr<aura::Window> window4 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+
+  OverviewItem* item1 = GetWindowItemForWindow(0, window1.get());
+  OverviewItem* item2 = GetWindowItemForWindow(0, window2.get());
+  OverviewItem* item3 = GetWindowItemForWindow(0, window3.get());
+  OverviewItem* item4 = GetWindowItemForWindow(0, window4.get());
+
+  const gfx::RectF item1_bounds = item1->target_bounds();
+  const gfx::RectF item2_bounds = item2->target_bounds();
+  const gfx::RectF item3_bounds = item3->target_bounds();
+  const gfx::RectF item4_bounds = item4->target_bounds();
+
+  // |window1| should be in the top left position. |window2| should be directly
+  // below |window1|, thus sharing the same x-value but not the same y-value.
+  EXPECT_EQ(item1_bounds.x(), item2_bounds.x());
+  EXPECT_LT(item1_bounds.y(), item2_bounds.y());
+  // |window3| should be directly right of |window1|, thus sharing the same
+  // y-value, but not the same x-value.
+  EXPECT_LT(item1_bounds.x(), item3_bounds.x());
+  EXPECT_EQ(item1_bounds.y(), item3_bounds.y());
+  // |window4| should be directly right of |window2| and directly below
+  // |window3|.
+  EXPECT_LT(item2_bounds.x(), item4_bounds.x());
+  EXPECT_EQ(item2_bounds.y(), item4_bounds.y());
+  EXPECT_EQ(item3_bounds.x(), item4_bounds.x());
+  EXPECT_LT(item3_bounds.y(), item4_bounds.y());
+}
+
+TEST_F(OverviewSessionNewLayoutTest, CheckOffscreenWindows) {
+  // Windows are created in this order because overview orders windows in terms
+  // of most recently used. |window|7|| will be created first, but will be
+  // determined last recently used. |window|0|| will be created last, but will
+  // be determined most recently used. Thus this order will be reflected in
+  // overview mode.
+  std::vector<std::unique_ptr<aura::Window>> windows(8);
+  for (int i = 7; i >= 0; --i)
+    windows[i] = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+
+  OverviewItem* item0 = GetWindowItemForWindow(0, windows[0].get());
+  OverviewItem* item1 = GetWindowItemForWindow(0, windows[1].get());
+  OverviewItem* item6 = GetWindowItemForWindow(0, windows[6].get());
+  OverviewItem* item7 = GetWindowItemForWindow(0, windows[7].get());
+
+  const gfx::RectF screen_bounds(GetGridBounds());
+  const gfx::RectF item0_bounds = item0->target_bounds();
+  const gfx::RectF item1_bounds = item1->target_bounds();
+  const gfx::RectF item6_bounds = item6->target_bounds();
+  const gfx::RectF item7_bounds = item7->target_bounds();
+
+  // |item6| should be in the same row of windows as |item0|, but offscreen
+  // (one screen length away).
+  EXPECT_FALSE(screen_bounds.Contains(item6_bounds));
+  EXPECT_EQ(item0_bounds.y(), item6_bounds.y());
+  // |item7| should be in the same row of windows as |item1|, but offscreen
+  // and below |item6|.
+  EXPECT_FALSE(screen_bounds.Contains(item7_bounds));
+  EXPECT_EQ(item1_bounds.y(), item7_bounds.y());
+  EXPECT_LT(item6_bounds.y(), item7_bounds.y());
+}
+
 // Test the split view and overview functionalities in tablet mode.
 class SplitViewOverviewSessionTest : public OverviewSessionTest {
  public:
