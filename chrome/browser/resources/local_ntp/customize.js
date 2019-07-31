@@ -110,7 +110,7 @@ customize.IDS = {
   BACKGROUNDS_IMAGE_MENU: 'backgrounds-image-menu',
   BACKGROUNDS_MENU: 'backgrounds-menu',
   BACKGROUNDS_UPLOAD: 'backgrounds-upload',
-  BACKGROUNDS_UPLOAD_WRAPPER: 'backgrounds-upload-wrapper',
+  BACKGROUNDS_UPLOAD_ICON: 'backgrounds-upload-icon',
   CANCEL: 'bg-sel-footer-cancel',
   COLOR_PICKER_CONTAINER: 'color-picker-container',
   COLORS_BUTTON: 'colors-button',
@@ -820,11 +820,11 @@ customize.showCollectionSelectionDialog = function() {
   }
 
   // Attach event listeners for upload and default tiles
-  $(customize.IDS.BACKGROUNDS_UPLOAD_WRAPPER).onkeydown =
+  $(customize.IDS.BACKGROUNDS_UPLOAD_ICON).onkeydown =
       customize.tileOnKeyDownInteraction;
   $(customize.IDS.BACKGROUNDS_DEFAULT_ICON).onkeydown =
       customize.tileOnKeyDownInteraction;
-  $(customize.IDS.BACKGROUNDS_UPLOAD_WRAPPER).onClickOverride =
+  $(customize.IDS.BACKGROUNDS_UPLOAD_ICON).onClickOverride =
       $(customize.IDS.BACKGROUNDS_UPLOAD).onkeydown;
   $(customize.IDS.BACKGROUNDS_DEFAULT_ICON).onClickOverride =
       $(customize.IDS.BACKGROUNDS_DEFAULT).onkeydown;
@@ -1854,7 +1854,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
 
   $(customize.IDS.BACKGROUNDS_MENU).onkeydown = function(event) {
     if (customize.arrowKeys.includes(event.keyCode)) {
-      $(customize.IDS.BACKGROUNDS_UPLOAD_WRAPPER).focus();
+      $(customize.IDS.BACKGROUNDS_UPLOAD_ICON).focus();
     }
   };
 
