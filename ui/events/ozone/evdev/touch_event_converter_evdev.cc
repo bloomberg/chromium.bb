@@ -19,6 +19,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -594,14 +595,19 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {
       auto empty_q =
           std::queue<std::pair<InProgressTouchEvdev, base::TimeTicks>>();
       held_events_[i].swap(empty_q);
+      UMA_HISTOGRAM_COUNTS_100(kHoldCountAtCancelEventName, empty_q.size());
     }
 
-    while (!held_events_[i].empty()) {
-      auto held_event = held_events_[i].front();
-      held_events_[i].pop();
-      held_event.first.held = false;
-      held_event.first.was_held = true;
-      ProcessTouchEvent(&held_event.first, held_event.second);
+    if (!held_events_[i].empty()) {
+      UMA_HISTOGRAM_COUNTS_100(kHoldCountAtReleaseEventName,
+                               held_events_[i].size());
+      while (!held_events_[i].empty()) {
+        auto held_event = held_events_[i].front();
+        held_events_[i].pop();
+        held_event.first.held = false;
+        held_event.first.was_held = true;
+        ProcessTouchEvent(&held_event.first, held_event.second);
+      }
     }
     ProcessTouchEvent(event, timestamp);
     event->was_cancelled = event->cancelled;
@@ -665,4 +671,8 @@ int TouchEventConverterEvdev::NextTrackingId() {
   return next_tracking_id_++ & kMaxTrackingId;
 }
 
+const char TouchEventConverterEvdev::kHoldCountAtReleaseEventName[] =
+    "Ozone.TouchEventConverterEvdev.HoldCountAtRelease";
+const char TouchEventConverterEvdev::kHoldCountAtCancelEventName[] =
+    "Ozone.TouchEventConverterEvdev.HoldCountAtCancel";
 }  // namespace ui

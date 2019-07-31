@@ -66,6 +66,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   // Unsafe part of initialization.
   virtual void Initialize(const EventDeviceInfo& info);
 
+  static const char kHoldCountAtReleaseEventName[];
+  static const char kHoldCountAtCancelEventName[];
+
  private:
   friend class MockTouchEventConverterEvdev;
 

@@ -20,7 +20,9 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event_switches.h"
@@ -287,6 +289,9 @@ class TouchEventConverterEvdevTest : public testing::Test {
     test_clock_->SetNowTicks(ticks);
   }
 
+ protected:
+  base::HistogramTester histogram_tester_;
+
  private:
   base::MessageLoop* loop_;
   std::unique_ptr<ui::MockTouchEventConverterEvdev> device_;
@@ -299,7 +304,6 @@ class TouchEventConverterEvdevTest : public testing::Test {
     dispatched_events_.push_back(params);
   }
   std::vector<GenericEventParams> dispatched_events_;
-
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdevTest);
 };
 
@@ -1606,6 +1610,12 @@ TEST_F(TouchEventConverterEvdevTest, HeldEventNotSent) {
     EXPECT_EQ(base::TimeDelta::FromMicroseconds(8000 * i),
               (event.timestamp - base_ticks));
   }
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtReleaseEventName),
+              testing::ElementsAre(base::Bucket(3, 1)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtCancelEventName),
+              testing::ElementsAre());
 }
 
 TEST_F(TouchEventConverterEvdevTest, HeldThenEnd) {
@@ -1661,6 +1671,12 @@ TEST_F(TouchEventConverterEvdevTest, HeldThenEnd) {
   device()->ReadNow();
   EXPECT_EQ(4u, size());
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, dispatched_touch_event(3).type);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtReleaseEventName),
+              testing::ElementsAre(base::Bucket(3, 1)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtCancelEventName),
+              testing::ElementsAre());
 }
 
 TEST_F(TouchEventConverterEvdevTest, SentHeldThenPalm) {
@@ -1733,6 +1749,12 @@ TEST_F(TouchEventConverterEvdevTest, SentHeldThenPalm) {
                 (event.timestamp - base_ticks));
     }
   }
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtReleaseEventName),
+              testing::ElementsAre());
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtCancelEventName),
+              testing::ElementsAre(base::Bucket(5, 1)));
 }
 
 TEST_F(TouchEventConverterEvdevTest, HeldThenPalm) {
@@ -1783,6 +1805,12 @@ TEST_F(TouchEventConverterEvdevTest, HeldThenPalm) {
 
   EXPECT_EQ(0u, size());
   EXPECT_FALSE(device()->event(0).held);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtReleaseEventName),
+              testing::ElementsAre());
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtCancelEventName),
+              testing::ElementsAre(base::Bucket(4, 1)));
 }
 
 TEST_F(TouchEventConverterEvdevTest, ScalePressure) {
