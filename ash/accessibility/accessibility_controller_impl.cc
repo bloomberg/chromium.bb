@@ -515,6 +515,11 @@ void AccessibilityControllerImpl::SetHighContrastEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
+bool AccessibilityControllerImpl::GetTrayVisiblityOfHighContrastSetting() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityHighContrastEnabled);
+}
+
 void AccessibilityControllerImpl::SetLargeCursorEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;

@@ -84,9 +84,12 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(dictation_view_,
                                             dictation_enabled_);
 
-  high_contrast_enabled_ = controller->high_contrast_enabled();
-  TrayPopupUtils::UpdateCheckMarkVisibility(high_contrast_view_,
-                                            high_contrast_enabled_);
+  if (high_contrast_view_ &&
+      controller->GetTrayVisiblityOfHighContrastSetting()) {
+    high_contrast_enabled_ = controller->high_contrast_enabled();
+    TrayPopupUtils::UpdateCheckMarkVisibility(high_contrast_view_,
+                                              high_contrast_enabled_);
+  }
 
   screen_magnifier_enabled_ = delegate->IsMagnifierEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(screen_magnifier_view_,
@@ -172,12 +175,14 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION),
       dictation_enabled_);
 
-  high_contrast_enabled_ = controller->high_contrast_enabled();
-  high_contrast_view_ = AddScrollListCheckableItem(
-      kSystemMenuAccessibilityContrastIcon,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE),
-      high_contrast_enabled_);
+  if (controller->GetTrayVisiblityOfHighContrastSetting()) {
+    high_contrast_enabled_ = controller->high_contrast_enabled();
+    high_contrast_view_ = AddScrollListCheckableItem(
+        kSystemMenuAccessibilityContrastIcon,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE),
+        high_contrast_enabled_);
+  }
 
   screen_magnifier_enabled_ = delegate->IsMagnifierEnabled();
   screen_magnifier_view_ = AddScrollListCheckableItem(

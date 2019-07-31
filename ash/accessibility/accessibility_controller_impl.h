@@ -102,6 +102,10 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   void SetHighContrastEnabled(bool enabled);
   bool high_contrast_enabled() const { return high_contrast_enabled_; }
+  // Returns true if the high contrast is being controlled by a policy which
+  // enforces turning it on or its not being controlled by any type of policy
+  // and false otherwise.
+  bool GetTrayVisiblityOfHighContrastSetting();
 
   void SetLargeCursorEnabled(bool enabled);
   bool large_cursor_enabled() const { return large_cursor_enabled_; }

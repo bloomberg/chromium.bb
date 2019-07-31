@@ -232,6 +232,45 @@ TEST_F(AccessibilityControllerTest, LargeCursorTrayMenuVisibility) {
   EXPECT_FALSE(controller->GetTrayVisiblityOfLargeCursorSetting());
 }
 
+TEST_F(AccessibilityControllerTest, HighContrastTrayMenuVisibility) {
+  // Check that when the pref isn't being controlled by any policy will be
+  // visible in the accessibility tray menu despite its value.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  // Check when the value is true and not being controlled by any policy.
+  controller->SetHighContrastEnabled(true);
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_TRUE(controller->high_contrast_enabled());
+  EXPECT_TRUE(controller->GetTrayVisiblityOfHighContrastSetting());
+  // Check when the value is false and not being controlled by any policy.
+  controller->SetHighContrastEnabled(false);
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_FALSE(controller->high_contrast_enabled());
+  EXPECT_TRUE(controller->GetTrayVisiblityOfHighContrastSetting());
+
+  // Check that when the pref is managed and being forced on then it will be
+  // visible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityHighContrastEnabled,
+      std::make_unique<base::Value>(true));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_TRUE(controller->GetTrayVisiblityOfHighContrastSetting());
+  // Check that when the pref is managed and only being forced off then it will
+  // be invisible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityHighContrastEnabled,
+      std::make_unique<base::Value>(false));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_FALSE(controller->high_contrast_enabled());
+  EXPECT_FALSE(controller->GetTrayVisiblityOfHighContrastSetting());
+}
+
 TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
