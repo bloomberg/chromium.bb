@@ -5369,6 +5369,21 @@
             ]
         }
     ],
+    "TabToGTSAnimation": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabToGTSAnimation"
+                    ]
+                }
+            ]
+        }
+    ],
     "ThirdPartyModulesBlocking": [
         {
             "platforms": [
