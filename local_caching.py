@@ -22,7 +22,6 @@ from utils import tools
 tools.force_local_third_party()
 
 # third_party/
-from scandir import scandir
 import six
 
 # The file size to be used when we don't know the correct file size,
@@ -113,18 +112,9 @@ def _get_recursive_size(path):
   """
   try:
     total = 0
-    stack = [path]
-    while stack:
-      for entry in scandir.scandir(stack.pop()):
-        if entry.is_symlink():
-          continue
-        if entry.is_file():
-          total += entry.stat().st_size
-        elif entry.is_dir():
-          stack.append(entry.path)
-        else:
-          logging.warning('non directory/file entry: %s', entry)
-
+    for root, _, files in fs.walk(path):
+      for f in files:
+        total += fs.lstat(os.path.join(root, f)).st_size
     return total
   except (IOError, OSError, UnicodeEncodeError) as exc:
     logging.warning('Exception while getting the size of %s:\n%s', path, exc)
