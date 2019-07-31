@@ -1598,14 +1598,23 @@ class EmergeQueue(object):
     # full output for jobs that have been running for 60 minutes or more.
     if self._show_output:
       interval = 60
+      long_interval_multiplier = 1
       notify_interval = 0
     else:
       interval = 60 * 60
+      long_interval_multiplier = 3
       notify_interval = 60 * 2
     for job in self._build_jobs.values():
       if job:
         last_timestamp = max(job.start_timestamp, job.last_output_timestamp)
-        if last_timestamp + interval < current_time:
+        # The chromeos-base/chromeos-chrome package is expected to take
+        # exceptionally long time, so increase the interval for that package to
+        # 180 minutes.
+        interval_multiplier = (
+            long_interval_multiplier
+            if job.pkgname.startswith('chromeos-chrome-')
+            else 1)
+        if last_timestamp + interval * interval_multiplier < current_time:
           self._print_queue.put(JobPrinter(job))
           job.last_output_timestamp = current_time
           no_output = False
