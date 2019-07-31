@@ -1040,7 +1040,7 @@ init = function() {
     revertThemeChanges: revertThemeChanges,
     selectLocalBackgroundImage: () => {},
     setBackgroundURL: timesCustomBackgroundWasSet,
-    setBackgroundURLWithAttributions: timesCustomBackgroundWasSet,
+    setBackgroundInfo: timesCustomBackgroundWasSet,
     themeBackgroundInfo: themeBackgroundInfo,
     toggleMostVisitedOrCustomLinks: toggleMostVisitedOrCustomLinks,
     toggleShortcutsVisibility: toggleShortcutsVisibility,
