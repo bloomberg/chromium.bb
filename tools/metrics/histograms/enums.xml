@@ -20173,6 +20173,7 @@ Called by update_net_error_codes.py.-->
   <int value="1362" label="ACCESSIBILITY_PRIVATE_OPENSETTINGSSUBPAGE"/>
   <int value="1363" label="ACTION_ENABLE"/>
   <int value="1364" label="ACTION_DISABLE"/>
+  <int value="1365" label="FILEMANAGERPRIVATEINTERNAL_IMPORTCROSTINIIMAGE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -60746,6 +60747,7 @@ Full version information for the fingerprint enum values:
   <int value="72" label=".orf"/>
   <int value="73" label=".raf"/>
   <int value="74" label=".rw2"/>
+  <int value="75" label=".tini"/>
 </enum>
 
 <enum name="VirtualKeyboardContainerType">
