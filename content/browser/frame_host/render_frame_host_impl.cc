@@ -111,7 +111,6 @@
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
-#include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
