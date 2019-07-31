@@ -35,23 +35,28 @@ views::BubbleDialogDelegateView* HatsBubbleView::GetHatsBubble() {
 }
 
 // static
-void HatsBubbleView::Show(AppMenuButton* anchor_button, Browser* browser) {
+void HatsBubbleView::Show(Browser* browser,
+                          AppMenuButton* anchor_button,
+                          const std::string& site_id) {
   base::RecordAction(base::UserMetricsAction("HatsBubble.Show"));
 
   DCHECK(anchor_button->GetWidget());
   gfx::NativeView parent_view = anchor_button->GetWidget()->GetNativeView();
 
   // Bubble delegate will be deleted when its window is destroyed.
-  auto* bubble = new HatsBubbleView(anchor_button, browser, parent_view);
+  auto* bubble =
+      new HatsBubbleView(browser, anchor_button, site_id, parent_view);
   bubble->SetHighlightedButton(anchor_button);
   bubble->GetWidget()->Show();
 }
 
-HatsBubbleView::HatsBubbleView(AppMenuButton* anchor_button,
-                               Browser* browser,
+HatsBubbleView::HatsBubbleView(Browser* browser,
+                               AppMenuButton* anchor_button,
+                               const std::string& site_id,
                                gfx::NativeView parent_view)
     : BubbleDialogDelegateView(anchor_button, views::BubbleBorder::TOP_RIGHT),
       close_bubble_helper_(this, browser),
+      site_id_(site_id),
       browser_(browser) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HATS_BUBBLE);
 
@@ -96,7 +101,7 @@ base::string16 HatsBubbleView::GetDialogButtonLabel(
 }
 
 bool HatsBubbleView::Accept() {
-  HatsWebDialog::Show(browser_);
+  HatsWebDialog::Show(browser_, site_id_);
   return true;
 }
 

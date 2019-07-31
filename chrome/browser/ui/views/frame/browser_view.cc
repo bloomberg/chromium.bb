@@ -3010,7 +3010,7 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 
-void BrowserView::ShowHatsBubbleFromAppMenuButton() {
+void BrowserView::ShowHatsBubbleFromAppMenuButton(const std::string& site_id) {
   // Never show any HaTS bubble in Incognito.
   if (!IsRegularOrGuestSession())
     return;
@@ -3022,7 +3022,7 @@ void BrowserView::ShowHatsBubbleFromAppMenuButton() {
   if (!app_menu_button)
     return;
 
-  HatsBubbleView::Show(app_menu_button, browser());
+  HatsBubbleView::Show(browser(), app_menu_button, site_id);
 }
 
 void BrowserView::ExecuteExtensionCommand(
