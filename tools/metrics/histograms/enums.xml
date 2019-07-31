@@ -6486,6 +6486,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Raced"/>
 </enum>
 
+<enum name="BooleanReady">
+  <int value="0" label="Not Ready"/>
+  <int value="1" label="Ready"/>
+</enum>
+
 <enum name="BooleanRebooted">
   <int value="0" label="Has not rebooted"/>
   <int value="1" label="Rebooted"/>
@@ -40577,6 +40582,20 @@ Called by update_use_counter_css.py.-->
              engaged site"/>
 </enum>
 
+<enum name="NavigationURLScheme">
+  <int value="0" label="(Unknown)"/>
+  <int value="1" label="about"/>
+  <int value="2" label="blob"/>
+  <int value="3" label="content"/>
+  <int value="4" label="cid"/>
+  <int value="5" label="data"/>
+  <int value="6" label="file"/>
+  <int value="7" label="filesystem"/>
+  <int value="8" label="ftp"/>
+  <int value="9" label="http"/>
+  <int value="10" label="https"/>
+</enum>
+
 <enum name="NavigationWasServedFromCache">
   <int value="0" label="Navigation wasn't served from cache"/>
   <int value="1" label="Navigation was served from cache"/>
@@ -42642,6 +42661,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="802.11i/RSN"/>
   <int value="5" label="802.1x"/>
   <int value="6" label="PSK"/>
+</enum>
+
+<enum name="NetworkServiceAvailability">
+  <int value="0" label="Available"/>
+  <int value="1" label="Not created"/>
+  <int value="2" label="Not bound"/>
+  <int value="3" label="Encountered Error"/>
+  <int value="4" label="Not responding"/>
 </enum>
 
 <enum name="NetworkServiceConcerningRequestHeaders">
