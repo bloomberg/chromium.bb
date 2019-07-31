@@ -321,7 +321,7 @@ void DatabaseImpl::OpenCursor(
       transaction, object_store_id, index_id,
       std::make_unique<IndexedDBKeyRange>(key_range), direction, key_only,
       task_type, std::move(aborting_callback), origin_,
-      dispatcher_host_->AsWeakPtr(), idb_runner_);
+      dispatcher_host_->AsWeakPtr());
 }
 
 void DatabaseImpl::Count(
