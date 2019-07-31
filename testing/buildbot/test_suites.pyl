@@ -154,37 +154,35 @@
       },
     },
 
-    # Temporarily disabled due to timeouts causing invalid test results.
-    # TODO(jmadill): Re-enable once timeout is resolved. http://crbug.com/987623
-    # 'android_webview_gpu_telemetry_tests': {
-    #   'pixel_skia': {
-    #     'name': 'android_webview_pixel_skia_gold_test',
-    #     'args': [
-    #       '--dont-restore-color-profile-after-test',
-    #       '--os-type',
-    #       '${os_type}',
-    #       '--build-revision',
-    #       '${got_revision}',
-    #       '--test-machine-name',
-    #       '${buildername}',
-    #     ],
-    #     'precommit_args': [
-    #       # Gerrit issue ID
-    #       '--review-patch-issue',
-    #       '${patch_issue}',
-    #       # Patch set number
-    #       '--review-patch-set',
-    #       '${patch_set}',
-    #       # Buildbucket ID
-    #       '--buildbucket-build-id',
-    #       '${buildbucket_build_id}',
-    #     ],
-    #     'swarming': {
-    #       'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
-    #     },
-    #     'telemetry_test_name': 'pixel',
-    #   },
-    # },
+    'android_webview_gpu_telemetry_tests': {
+      'pixel_skia': {
+        'name': 'android_webview_pixel_skia_gold_test',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--os-type',
+          '${os_type}',
+          '--build-revision',
+          '${got_revision}',
+          '--test-machine-name',
+          '${buildername}',
+        ],
+        'precommit_args': [
+          # Gerrit issue ID
+          '--review-patch-issue',
+          '${patch_issue}',
+          # Patch set number
+          '--review-patch-set',
+          '${patch_set}',
+          # Buildbucket ID
+          '--buildbucket-build-id',
+          '${buildbucket_build_id}',
+        ],
+        'swarming': {
+          'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
+        },
+        'telemetry_test_name': 'pixel',
+      },
+    },
 
     'aura_gtests': {
       'aura_unittests': {},
