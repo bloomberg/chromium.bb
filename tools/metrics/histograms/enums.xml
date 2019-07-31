@@ -33558,16 +33558,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="LinuxPasswordsMigrationToEncryptionStatus">
   <int value="0" label="Not attempted"/>
   <int value="1" label="(DEPRECATED) Failed"/>
-  <int value="2" label="Copied everything"/>
+  <int value="2" label="(DEPRECATED) Copied everything"/>
   <int value="3" label="The standard login database is encrypted"/>
   <int value="4" label="The migration is about to be attempted"/>
   <int value="5" label="No access to the native backend"/>
   <int value="6"
       label="(DEPRECATED) Could not create or write into the temporary file"/>
-  <int value="7" label="Could not read from the native backend"/>
+  <int value="7" label="(DEPRECATED) Could not read from the native backend"/>
   <int value="8" label="Could not replace old database"/>
   <int value="9" label="Could not initialise temporary database"/>
-  <int value="10" label="Could not reset temporary database"/>
+  <int value="10" label="(DEPRECATED) Could not reset temporary database"/>
   <int value="11" label="Could not write into temporary database"/>
 </enum>
 
