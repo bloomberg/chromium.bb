@@ -11430,6 +11430,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileBookmarkManagerDragReorder">
+  <owner>jhimawan@google.com</owner>
+  <owner>twellington@google.com</owner>
+  <description>
+    Recorded when a user drops a bookmark after a drag in the Android bookmark
+    manager.
+  </description>
+</action>
+
 <action name="MobileBookmarkManagerEntryDeleted">
   <owner>sczs@chromium.org</owner>
   <description>
@@ -11447,6 +11456,24 @@ should be able to be added at any place in this file.
 
     This user action is of special interest to the chrome-analysis-team@. Do not
     change its semantics or retire it without talking to them first.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerMoveDown">
+  <owner>jhimawan@google.com</owner>
+  <owner>twellington@google.com</owner>
+  <description>
+    Recorded when a user uses the &quot;Move Down&quot; button to reorder
+    bookmarks in the Android bookmark manager.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerMoveUp">
+  <owner>jhimawan@google.com</owner>
+  <owner>twellington@google.com</owner>
+  <description>
+    Recorded when a user uses the &quot;Move Up&quot; button to reorder
+    bookmarks in the Android bookmark manager.
   </description>
 </action>
 
