@@ -4388,8 +4388,11 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       false /* started_from_context_menu */, false /* has_user_gesture */,
       InitiatorCSPInfo(), std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());
+  mojom::CommitNavigationParams commit_params;
+  commit_params.navigation_token = base::UnguessableToken::Create();
+  commit_params.navigation_timing = mojom::NavigationTiming::New();
   CommitNavigation(
-      nullptr /* navigation_request */, common_params, CommitNavigationParams(),
+      nullptr /* navigation_request */, common_params, commit_params,
       nullptr /* response_head */, mojo::ScopedDataPipeConsumerHandle(),
       network::mojom::URLLoaderClientEndpointsPtr(), false, base::nullopt,
       base::nullopt /* subresource_overrides */, nullptr /* provider_info */,
@@ -4738,7 +4741,7 @@ void RenderFrameHostImpl::SendJavaScriptDialogReply(
 void RenderFrameHostImpl::CommitNavigation(
     NavigationRequest* navigation_request,
     const mojom::CommonNavigationParams& common_params,
-    const CommitNavigationParams& commit_params,
+    const mojom::CommitNavigationParams& commit_params,
     network::ResourceResponse* response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -5049,7 +5052,7 @@ void RenderFrameHostImpl::CommitNavigation(
   if (is_same_document) {
     DCHECK(same_document_navigation_request_);
     GetNavigationControl()->CommitSameDocumentNavigation(
-        common_params.Clone(), commit_params,
+        common_params.Clone(), commit_params.Clone(),
         base::BindOnce(&RenderFrameHostImpl::OnSameDocumentCommitProcessed,
                        base::Unretained(this),
                        same_document_navigation_request_->navigation_handle()
@@ -5178,7 +5181,7 @@ void RenderFrameHostImpl::CommitNavigation(
 
     SendCommitNavigation(
         navigation_client, navigation_request, common_params.Clone(),
-        commit_params, head, std::move(response_body),
+        commit_params.Clone(), head, std::move(response_body),
         std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
@@ -5208,7 +5211,7 @@ void RenderFrameHostImpl::CommitNavigation(
 void RenderFrameHostImpl::FailedNavigation(
     NavigationRequest* navigation_request,
     const mojom::CommonNavigationParams& common_params,
-    const CommitNavigationParams& commit_params,
+    const mojom::CommitNavigationParams& commit_params,
     bool has_stale_copy_in_cache,
     int error_code,
     const base::Optional<std::string>& error_page_content) {
@@ -5251,8 +5254,8 @@ void RenderFrameHostImpl::FailedNavigation(
 
   SendCommitFailedNavigation(
       navigation_client, navigation_request, common_params.Clone(),
-      commit_params, has_stale_copy_in_cache, error_code, error_page_content,
-      std::move(subresource_loader_factories));
+      commit_params.Clone(), has_stale_copy_in_cache, error_code,
+      error_page_content, std::move(subresource_loader_factories));
 
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
@@ -5706,7 +5709,7 @@ void RenderFrameHostImpl::GrantFileAccessFromResourceRequestBody(
 
 void RenderFrameHostImpl::UpdatePermissionsForNavigation(
     const mojom::CommonNavigationParams& common_params,
-    const CommitNavigationParams& commit_params) {
+    const mojom::CommitNavigationParams& commit_params) {
   // Browser plugin guests are not allowed to navigate outside web-safe schemes,
   // so do not grant them the ability to commit additional URLs.
   if (!GetProcess()->IsForGuestsOnly()) {
@@ -6972,7 +6975,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
     mojom::NavigationClient* navigation_client,
     NavigationRequest* navigation_request,
     mojom::CommonNavigationParamsPtr common_params,
-    const content::CommitNavigationParams& commit_params,
+    mojom::CommitNavigationParamsPtr commit_params,
     const network::ResourceResponseHead& response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -6987,7 +6990,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
     const base::UnguessableToken& devtools_navigation_token) {
   if (navigation_client) {
     navigation_client->CommitNavigation(
-        std::move(common_params), commit_params, response_head,
+        std::move(common_params), std::move(commit_params), response_head,
         std::move(response_body), std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
@@ -6996,7 +6999,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
         BuildNavigationClientCommitNavigationCallback(navigation_request));
   } else {
     GetNavigationControl()->CommitNavigation(
-        std::move(common_params), commit_params, response_head,
+        std::move(common_params), std::move(commit_params), response_head,
         std::move(response_body), std::move(url_loader_client_endpoints),
         std::move(subresource_loader_factories),
         std::move(subresource_overrides), std::move(controller),
@@ -7010,7 +7013,7 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
     mojom::NavigationClient* navigation_client,
     NavigationRequest* navigation_request,
     mojom::CommonNavigationParamsPtr common_params,
-    const content::CommitNavigationParams& commit_params,
+    mojom::CommitNavigationParamsPtr commit_params,
     bool has_stale_copy_in_cache,
     int32_t error_code,
     const base::Optional<std::string>& error_page_content,
@@ -7018,14 +7021,16 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
         subresource_loader_factories) {
   if (navigation_client) {
     navigation_client->CommitFailedNavigation(
-        std::move(common_params), commit_params, has_stale_copy_in_cache,
-        error_code, error_page_content, std::move(subresource_loader_factories),
+        std::move(common_params), std::move(commit_params),
+        has_stale_copy_in_cache, error_code, error_page_content,
+        std::move(subresource_loader_factories),
         BuildNavigationClientCommitFailedNavigationCallback(
             navigation_request));
   } else {
     GetNavigationControl()->CommitFailedNavigation(
-        std::move(common_params), commit_params, has_stale_copy_in_cache,
-        error_code, error_page_content, std::move(subresource_loader_factories),
+        std::move(common_params), std::move(commit_params),
+        has_stale_copy_in_cache, error_code, error_page_content,
+        std::move(subresource_loader_factories),
         BuildCommitFailedNavigationCallback(navigation_request));
   }
 }

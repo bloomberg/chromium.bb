@@ -1582,7 +1582,8 @@ void NetworkHandler::NavigationRequestWillBeSent(
     headers_dict->setString(net::HttpRequestHeaders::kReferer, referrer.spec());
 
   std::unique_ptr<Network::Response> redirect_response;
-  const CommitNavigationParams& commit_params = nav_request.commit_params();
+  const mojom::CommitNavigationParams& commit_params =
+      nav_request.commit_params();
   if (!commit_params.redirect_response.empty()) {
     redirect_response = BuildResponse(commit_params.redirects.back(),
                                       commit_params.redirect_response.back());

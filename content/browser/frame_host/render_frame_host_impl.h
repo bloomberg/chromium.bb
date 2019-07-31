@@ -169,7 +169,6 @@ class WebBluetoothServiceImpl;
 struct ContextMenuParams;
 struct FrameOwnerProperties;
 struct PendingNavigation;
-struct CommitNavigationParams;
 struct ResourceTimingInfo;
 struct SubresourceLoaderParams;
 
@@ -692,7 +691,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CommitNavigation(
       NavigationRequest* navigation_request,
       const mojom::CommonNavigationParams& common_params,
-      const CommitNavigationParams& commit_params,
+      const mojom::CommitNavigationParams& commit_params,
       network::ResourceResponse* response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -708,7 +707,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // an error page.
   void FailedNavigation(NavigationRequest* navigation_request,
                         const mojom::CommonNavigationParams& common_params,
-                        const CommitNavigationParams& commit_params,
+                        const mojom::CommitNavigationParams& commit_params,
                         bool has_stale_copy_in_cache,
                         int error_code,
                         const base::Optional<std::string>& error_page_content);
@@ -1034,7 +1033,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojom::NavigationClient* navigation_client,
       NavigationRequest* navigation_request,
       mojom::CommonNavigationParamsPtr common_params,
-      const content::CommitNavigationParams& commit_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -1052,7 +1051,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojom::NavigationClient* navigation_client,
       NavigationRequest* navigation_request,
       mojom::CommonNavigationParamsPtr common_params,
-      const content::CommitNavigationParams& commit_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       bool has_stale_copy_in_cache,
       int32_t error_code,
       const base::Optional<std::string>& error_page_content,
@@ -1355,7 +1354,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void UpdatePermissionsForNavigation(
       const mojom::CommonNavigationParams& common_params,
-      const CommitNavigationParams& commit_params);
+      const mojom::CommitNavigationParams& commit_params);
 
   // Creates a Network Service-backed factory from appropriate |NetworkContext|
   // and sets a connection error handler to trigger
