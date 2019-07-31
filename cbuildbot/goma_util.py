@@ -114,19 +114,7 @@ class Goma(object):
       raise ValueError(
           'GOMA_TMP_DIR does not point a directory: %s' % (goma_tmp_dir,))
 
-    # We may have both Linux Goma client and ChromeOS goma client in goma_dir.
-    # Let's automatically set proper one.
-    # We suppose goma_dir is $cache/goma/extra/chromeos-amd64/,
-    # and linux Goma client exists in $cache/goma.
-    extra_chromeos_dir = 'extra/chromeos-amd64'
-    if extra_chromeos_dir in goma_dir:
-      self.chromeos_goma_dir = goma_dir
-      self.linux_goma_dir = os.path.dirname(os.path.dirname(goma_dir))
-    else:
-      # fallback.
-      self.chromeos_goma_dir = goma_dir
-      self.linux_goma_dir = goma_dir
-
+    self.goma_dir = goma_dir
     self.goma_client_json = goma_client_json
     if stage_name:
       self.goma_cache = os.path.join(goma_dir, 'goma_cache', stage_name)
@@ -156,7 +144,7 @@ class Goma(object):
     """Extra env vars set to use goma."""
     result = dict(
         Goma._DEFAULT_ENV_VARS,
-        GOMA_DIR=self.linux_goma_dir,
+        GOMA_DIR=self.goma_dir,
         GOMA_TMP_DIR=self.goma_tmp_dir,
         GLOG_log_dir=self.goma_log_dir)
     if self.goma_client_json:
@@ -181,11 +169,11 @@ class Goma(object):
 
     if self.goma_cache:
       result['GOMA_CACHE_DIR'] = os.path.join(
-          goma_dir, os.path.relpath(self.goma_cache, self.chromeos_goma_dir))
+          goma_dir, os.path.relpath(self.goma_cache, self.goma_dir))
     return result
 
   def _RunGomaCtl(self, command):
-    goma_ctl = os.path.join(self.linux_goma_dir, 'goma_ctl.py')
+    goma_ctl = os.path.join(self.goma_dir, 'goma_ctl.py')
     cros_build_lib.RunCommand(
         ['python', goma_ctl, command], extra_env=self.GetExtraEnv())
 
