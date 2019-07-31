@@ -2704,99 +2704,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   )
 
 
-def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
-  """Create all incremental build configs.
-
-  Args:
-    site_config: config_lib.SiteConfig to be modified by adding templates
-                 and configs.
-    boards_dict: A dict mapping board types to board name collections.
-    ge_build_config: Dictionary containing the decoded GE configuration file.
-  """
-  board_configs = CreateInternalBoardConfigs(
-      site_config, boards_dict, ge_build_config)
-
-  # Create a postsubmit builder for every important release builder.
-  postsubmit_boards = set()
-  release_boards_importance = {}
-  for child_name in site_config['master-release'].slave_configs:
-    child_config = site_config[child_name]
-    for b in child_config.boards:
-      release_boards_importance[b] = child_config.important
-    if child_config.important:
-      postsubmit_boards.update(child_config.boards)
-
-  paladin_boards_importance = {}
-  for child_name in site_config['master-paladin'].slave_configs:
-    child_config = site_config[child_name]
-    for b in child_config.boards:
-      paladin_boards_importance[b] = child_config.important
-    if child_config.important:
-      postsubmit_boards.update(child_config.boards)
-
-  pre_cq_boards_importance = {}
-  for child_name in constants.PRE_CQ_DEFAULT_CONFIGS:
-    config = site_config[child_name]
-    for b in config.boards:
-      pre_cq_boards_importance[b] = config.important
-    postsubmit_boards.update(config.boards)
-
-  site_config.AddTemplate(
-      'postsubmit',
-      display_label=config_lib.DISPLAY_LABEL_POSTSUBMIT,
-      build_type=constants.POSTSUBMIT_TYPE,
-      luci_builder=config_lib.LUCI_BUILDER_LEGACY_POSTSUBMIT,
-      manifest_version=True,
-      chroot_replace=True,
-      uprev=False,
-      images=[],
-      unittests=False,
-      prebuilts=constants.PRIVATE,
-      factory_toolkit=False,
-      upload_hw_test_artifacts=False,
-      overlays=constants.BOTH_OVERLAYS,
-      description='Postsubmit Builds',
-      doc='TBD',
-  )
-
-  master_config = site_config.Add(
-      'master-postsubmit',
-      site_config.templates.postsubmit,
-      site_config.templates.internal,
-      boards=[],
-      master=True,
-      binhost_test=True,
-      push_overlays=constants.BOTH_OVERLAYS,
-      manifest_version=True,
-      slave_configs=[],
-      schedule='triggered',
-  )
-
-  for board in boards_dict['all_boards']:
-    config = site_config.Add(
-        '%s-postsubmit' % board,
-        site_config.templates.postsubmit,
-        board_configs[board],
-    )
-
-    if board in boards_dict['internal_boards']:
-      config.apply(site_config.templates.internal)
-    else:
-      config.apply(
-          site_config.templates.external,
-          overlays=constants.PUBLIC_OVERLAYS,
-          prebuilts=constants.PUBLIC,
-      )
-
-    if board in postsubmit_boards:
-      # Mark unimportant for postsubmit iff at least one of paladin,
-      # or pre_cq had it marked unimportant.
-      important = (paladin_boards_importance.get(board, True)
-                   and pre_cq_boards_importance.get(board, True))
-      config.update(important=important)
-      master_config.AddSlave(config)
-
-
 def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   """Create all incremental build configs.
 
@@ -3998,10 +3905,6 @@ def ApplyCustomOverrides(site_config):
           'useflags': config_lib.append_useflags(['-chrome_internal']),
       },
 
-      'scarlet-postsubmit': {
-          'useflags': config_lib.append_useflags(['-chrome_internal']),
-      },
-
       # For crbug.com/961920.
       'scarlet-compile-only-pre-cq': {
           'useflags': config_lib.append_useflags(['-chrome_internal']),
@@ -4603,8 +4506,6 @@ def GetConfig():
   PreCqBuilders(site_config, boards_dict, ge_build_config)
 
   CqBuilders(site_config, boards_dict, ge_build_config)
-
-  PostSubmitBuilders(site_config, boards_dict, ge_build_config)
 
   IncrementalBuilders(site_config, boards_dict, ge_build_config)
 
