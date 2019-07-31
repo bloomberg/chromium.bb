@@ -147,9 +147,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         initGL();
 
         session.updateRenderState({
-            baseLayer: new XRWebGLLayer(session, gl, {
-              compositionDisabled: session.mode == 'inline'
-            })
+            baseLayer: new XRWebGLLayer(session, gl)
         });
 
         // Attempt to get a 'bounded' reference space, which will align the

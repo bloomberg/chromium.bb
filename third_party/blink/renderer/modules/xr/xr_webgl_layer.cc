@@ -64,24 +64,6 @@ XRWebGLLayer* XRWebGLLayer::Create(
     return nullptr;
   }
 
-  bool composition_disabled = initializer->compositionDisabled();
-
-  if (composition_disabled && session->immersive()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Cannot create an XRWebGLLayer with "
-                                      "compositionDisabled for an immersive "
-                                      "XRSession.");
-    return nullptr;
-  }
-
-  if (!composition_disabled && !session->immersive()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "compositionDisabled is required when "
-                                      "creating an XRWebGLLayer for an inline "
-                                      "XRSession.");
-    return nullptr;
-  }
-
   // TODO(crbug.com/941753): In the future this should be communicated by the
   // drawing buffer and indicate whether the depth buffers are being supplied to
   // the XR compositor.
@@ -101,7 +83,9 @@ XRWebGLLayer* XRWebGLLayer::Create(
 
   double framebuffer_scale = 1.0;
 
-  if (composition_disabled) {
+  // Inline sessions don't go through the XR compositor, so they don't need to
+  // allocate a separate drawing buffer or expose a framebuffer.
+  if (!session->immersive()) {
     return MakeGarbageCollected<XRWebGLLayer>(session, webgl_context, nullptr,
                                               nullptr, framebuffer_scale,
                                               ignore_depth_values);
