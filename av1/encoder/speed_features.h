@@ -727,6 +727,10 @@ typedef struct SPEED_FEATURES {
 
   // Filter mask to allow certain interp_filter type.
   uint16_t interp_filter_search_mask;
+
+  // Skip a number of expensive mode evaluations for blocks with very low
+  // temporal variance.
+  int short_circuit_low_temp_var;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

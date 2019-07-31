@@ -1031,6 +1031,60 @@ static INLINE void update_thresh_freq_fact(AV1_COMP *cpi, MACROBLOCK *x,
   }
 }
 
+static INLINE int get_force_skip_low_temp_var(uint8_t *variance_low, int mi_row,
+                                              int mi_col, BLOCK_SIZE bsize) {
+  int force_skip_low_temp_var = 0;
+  int x, y;
+  // Set force_skip_low_temp_var based on the block size and block offset.
+  switch (bsize) {
+    case BLOCK_128X128: force_skip_low_temp_var = variance_low[0]; break;
+    case BLOCK_64X64:
+    case BLOCK_32X32:
+    case BLOCK_16X16:
+      x = mi_col % 32;
+      y = mi_row % 32;
+      if (bsize == BLOCK_64X64) {
+        assert((x == 0 || x == 16) && (y == 0 || y == 16));
+      }
+      x >>= 4;
+      y >>= 4;
+      const int idx64 = y * 2 + x;
+      if (bsize == BLOCK_64X64) {
+        force_skip_low_temp_var = variance_low[1 + idx64];
+        break;
+      }
+
+      x = mi_col % 16;
+      y = mi_row % 16;
+      if (bsize == BLOCK_32X32) {
+        assert((x == 0 || x == 8) && (y == 0 || y == 8));
+      }
+      x >>= 3;
+      y >>= 3;
+      const int idx32 = y * 2 + x;
+      if (bsize == BLOCK_32X32) {
+        force_skip_low_temp_var = variance_low[5 + (idx64 << 2) + idx32];
+        break;
+      }
+
+      x = mi_col % 8;
+      y = mi_row % 8;
+      if (bsize == BLOCK_16X16) {
+        assert((x == 0 || x == 4) && (y == 0 || y == 4));
+      }
+      x >>= 2;
+      y >>= 2;
+      const int idx16 = y * 2 + x;
+      if (bsize == BLOCK_16X16) {
+        force_skip_low_temp_var =
+            variance_low[21 + (idx64 << 4) + (idx32 << 2) + idx16];
+        break;
+      }
+    default: break;
+  }
+  return force_skip_low_temp_var;
+}
+
 void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                        MACROBLOCK *x, int mi_row, int mi_col,
                                        RD_STATS *rd_cost, BLOCK_SIZE bsize,
@@ -1152,6 +1206,18 @@ void av1_fast_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     usable_ref_frame = LAST_FRAME;
   } else {
     usable_ref_frame = GOLDEN_FRAME;
+  }
+
+  if (cpi->sf.short_circuit_low_temp_var) {
+    force_skip_low_temp_var =
+        get_force_skip_low_temp_var(&x->variance_low[0], mi_row, mi_col, bsize);
+    // If force_skip_low_temp_var is set, and for short circuit mode = 1 and 3,
+    // skip golden reference.
+    if ((cpi->sf.short_circuit_low_temp_var == 1 ||
+         cpi->sf.short_circuit_low_temp_var == 3) &&
+        force_skip_low_temp_var) {
+      usable_ref_frame = LAST_FRAME;
+    }
   }
 
   if (!(cpi->ref_frame_flags & flag_list[GOLDEN_FRAME]))

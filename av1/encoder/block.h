@@ -422,6 +422,7 @@ struct macroblock {
   float log_q;
 #endif
   int thresh_freq_fact[BLOCK_SIZES_ALL][MAX_MODES];
+  uint8_t variance_low[105];
 };
 
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {

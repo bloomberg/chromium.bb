@@ -380,6 +380,86 @@ static void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[], int q,
   }
 }
 
+static void set_low_temp_var_flag(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
+                                  v128x128 *vt, int64_t thresholds[],
+                                  MV_REFERENCE_FRAME ref_frame_partition,
+                                  int mi_col, int mi_row) {
+  int i, j, k;
+  AV1_COMMON *const cm = &cpi->common;
+  const int mv_thr = cm->width > 640 ? 8 : 4;
+  // Check temporal variance for bsize >= 16x16, if LAST_FRAME was selected and
+  // int_pro mv is small. If the temporal variance is small set the flag
+  // variance_low for the block. The variance threshold can be adjusted, the
+  // higher the more aggressive.
+  if (ref_frame_partition == LAST_FRAME &&
+      (cpi->sf.short_circuit_low_temp_var == 1 ||
+       (xd->mi[0]->mv[0].as_mv.col < mv_thr &&
+        xd->mi[0]->mv[0].as_mv.col > -mv_thr &&
+        xd->mi[0]->mv[0].as_mv.row < mv_thr &&
+        xd->mi[0]->mv[0].as_mv.row > -mv_thr))) {
+    if (xd->mi[0]->sb_type == BLOCK_128X128 ||
+        xd->mi[0]->sb_type == BLOCK_64X128 ||
+        xd->mi[0]->sb_type == BLOCK_128X64) {
+      if ((vt->part_variances).none.variance < (thresholds[0] >> 1))
+        x->variance_low[0] = 1;
+    } else {
+      for (i = 0; i < 4; i++) {
+        const int idx[4][2] = { { 0, 0 }, { 0, 16 }, { 16, 0 }, { 16, 16 } };
+        const int idx_str =
+            cm->mi_stride * (mi_row + idx[i][0]) + mi_col + idx[i][1];
+        MB_MODE_INFO **mi_64 = cm->mi_grid_base + idx_str;
+
+        if (cm->mi_cols <= mi_col + idx[i][1] ||
+            cm->mi_rows <= mi_row + idx[i][0])
+          continue;
+
+        if ((*mi_64)->sb_type == BLOCK_64X64 ||
+            (*mi_64)->sb_type == BLOCK_64X32 ||
+            (*mi_64)->sb_type == BLOCK_32X64) {
+          int64_t threshold_64x64 = (cpi->sf.short_circuit_low_temp_var == 1 ||
+                                     cpi->sf.short_circuit_low_temp_var == 3)
+                                        ? ((5 * thresholds[1]) >> 3)
+                                        : (thresholds[1] >> 1);
+          if (vt->split[i].part_variances.none.variance < threshold_64x64)
+            x->variance_low[1 + i] = 1;
+        } else {
+          for (k = 0; k < 4; k++) {
+            const int idx1[4][2] = { { 0, 0 }, { 0, 8 }, { 8, 0 }, { 8, 8 } };
+            const int idx_str1 = cm->mi_stride * idx1[k][0] + idx1[k][1];
+            MB_MODE_INFO **mi_32 = cm->mi_grid_base + idx_str + idx_str1;
+
+            if (cm->mi_cols <= mi_col + idx[i][1] + idx1[k][1] ||
+                cm->mi_rows <= mi_row + idx[i][0] + idx1[k][0])
+              continue;
+            if ((*mi_32)->sb_type == BLOCK_32X32) {
+              int64_t threshold_32x32 =
+                  (cpi->sf.short_circuit_low_temp_var == 1 ||
+                   cpi->sf.short_circuit_low_temp_var == 3)
+                      ? ((5 * thresholds[2]) >> 3)
+                      : (thresholds[2] >> 1);
+              if (vt->split[i].split[k].part_variances.none.variance <
+                  threshold_32x32)
+                x->variance_low[5 + (i << 2) + k] = 1;
+            } else if (cpi->sf.short_circuit_low_temp_var >= 2) {
+              if ((*mi_32)->sb_type == BLOCK_16X16 ||
+                  (*mi_32)->sb_type == BLOCK_32X16 ||
+                  (*mi_32)->sb_type == BLOCK_16X32) {
+                for (j = 0; j < 4; j++) {
+                  if (vt->split[i]
+                          .split[k]
+                          .split[j]
+                          .part_variances.none.variance < (thresholds[3] >> 8))
+                    x->variance_low[21 + (i << 4) + (k << 2) + j] = 1;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 void av1_set_variance_partition_thresholds(AV1_COMP *cpi, int q,
                                            int content_state) {
   AV1_COMMON *const cm = &cpi->common;
@@ -454,6 +534,9 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   const int is_small_sb = (cm->seq_params.sb_size == BLOCK_64X64);
   const int num_64x64_blocks = is_small_sb ? 1 : 4;
 
+  // Ref frame used in partitioning.
+  MV_REFERENCE_FRAME ref_frame_partition = LAST_FRAME;
+
   CHECK_MEM_ERROR(cm, vt, aom_malloc(sizeof(*vt)));
 
   int64_t thresholds[5] = { cpi->vbp_thresholds[0], cpi->vbp_thresholds[1],
@@ -486,6 +569,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   // Index for force_split: 0 for 64x64, 1-4 for 32x32 blocks,
   // 5-20 for the 16x16 blocks.
   force_split[0] = 0;
+  memset(x->variance_low, 0, sizeof(x->variance_low));
 
   if (!is_key_frame) {
     // TODO(kyslov): we are assuming that the ref is LAST_FRAME! Check if it
@@ -766,6 +850,11 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
         }
       }
     }
+  }
+
+  if (cpi->sf.short_circuit_low_temp_var && !is_small_sb) {
+    set_low_temp_var_flag(cpi, x, xd, vt, thresholds, ref_frame_partition,
+                          mi_col, mi_row);
   }
 
   if (vt2) aom_free(vt2);

@@ -636,6 +636,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->mv.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
     sf->tx_size_search_method = USE_FAST_RD;
     sf->estimate_motion_for_var_based_partition = 0;
+    sf->short_circuit_low_temp_var = 3;
 // TODO(kyslov) Enable when better model is available
 // It gives +5% speedup and 11% overall BDRate degradation
 // So, can not enable now until better CurvFit is there
