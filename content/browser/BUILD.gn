@@ -2550,6 +2550,12 @@ jumbo_source_set("browser") {
       "//chromeos/network",
       "//components/session_manager/core",
     ]
+  } else {
+    sources += [
+      # ChromeOS accessibility metrics provider is in chromeos_metrics_provider.
+      "accessibility/accessibility_metrics_provider.cc",
+      "accessibility/accessibility_metrics_provider.h",
+    ]
   }
 
   if (enable_cros_libassistant) {
