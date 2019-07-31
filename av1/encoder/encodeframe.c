@@ -1413,37 +1413,36 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
         update_inter_mode_stats(fc, counts, mode, mode_ctx, allow_update_cdf);
       }
 
-      int mode_allowed = (mbmi->mode == NEWMV);
-      mode_allowed |= (mbmi->mode == NEW_NEWMV);
-      if (mode_allowed) {
-        uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-        int idx;
-
-        for (idx = 0; idx < 2; ++idx) {
+      const int new_mv = mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV;
+      if (new_mv) {
+        const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+        for (int idx = 0; idx < 2; ++idx) {
           if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
-#if CONFIG_ENTROPY_STATS
-            uint8_t drl_ctx =
+            const uint8_t drl_ctx =
                 av1_drl_ctx(mbmi_ext->weight[ref_frame_type], idx);
+            if (allow_update_cdf) {
+              update_cdf(fc->drl_cdf[drl_ctx], mbmi->ref_mv_idx != idx, 2);
+            }
+#if CONFIG_ENTROPY_STATS
             ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx];
 #endif
-
             if (mbmi->ref_mv_idx == idx) break;
           }
         }
       }
 
       if (have_nearmv_in_inter_mode(mbmi->mode)) {
-        uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-        int idx;
-
-        for (idx = 1; idx < 3; ++idx) {
+        const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+        for (int idx = 1; idx < 3; ++idx) {
           if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
-#if CONFIG_ENTROPY_STATS
-            uint8_t drl_ctx =
+            const uint8_t drl_ctx =
                 av1_drl_ctx(mbmi_ext->weight[ref_frame_type], idx);
+            if (allow_update_cdf) {
+              update_cdf(fc->drl_cdf[drl_ctx], mbmi->ref_mv_idx != idx - 1, 2);
+            }
+#if CONFIG_ENTROPY_STATS
             ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx - 1];
 #endif
-
             if (mbmi->ref_mv_idx == idx - 1) break;
           }
         }
