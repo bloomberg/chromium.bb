@@ -4610,13 +4610,57 @@ static void recode_loop_update_q(
   }
 }
 
+static int get_interp_filter_selected(const AV1_COMMON *const cm,
+                                      MV_REFERENCE_FRAME ref,
+                                      InterpFilter ifilter) {
+  const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref);
+  if (buf == NULL) return 0;
+  return buf->interp_filter_selected[ifilter];
+}
+
+static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
+  const AV1_COMMON *const cm = &cpi->common;
+  int ref_total[REF_FRAMES] = { 0 };
+
+  if (cpi->common.last_frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame)
+    return 0;
+
+  for (MV_REFERENCE_FRAME ref = LAST_FRAME; ref <= ALTREF_FRAME; ++ref) {
+    for (InterpFilter ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP;
+         ++ifilter) {
+      ref_total[ref] += get_interp_filter_selected(cm, ref, ifilter);
+    }
+  }
+  int ref_total_total = (ref_total[LAST2_FRAME] + ref_total[LAST3_FRAME] +
+                         ref_total[GOLDEN_FRAME] + ref_total[BWDREF_FRAME] +
+                         ref_total[ALTREF2_FRAME] + ref_total[ALTREF_FRAME]);
+
+  int mask = 0;
+  for (InterpFilter ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP;
+       ++ifilter) {
+    int last_score = get_interp_filter_selected(cm, LAST_FRAME, ifilter) * 30;
+    if (ref_total[LAST_FRAME] && last_score <= ref_total[LAST_FRAME]) {
+      int filter_score =
+          get_interp_filter_selected(cm, LAST2_FRAME, ifilter) * 20 +
+          get_interp_filter_selected(cm, LAST3_FRAME, ifilter) * 20 +
+          get_interp_filter_selected(cm, GOLDEN_FRAME, ifilter) * 20 +
+          get_interp_filter_selected(cm, BWDREF_FRAME, ifilter) * 10 +
+          get_interp_filter_selected(cm, ALTREF2_FRAME, ifilter) * 10 +
+          get_interp_filter_selected(cm, ALTREF_FRAME, ifilter) * 10;
+      if (filter_score < ref_total_total) mask |= 1 << ifilter;
+    }
+  }
+  return mask;
+}
+
 static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
   const int allow_recode = (cpi->sf.recode_loop != DISALLOW_RECODE);
 
   set_size_independent_vars(cpi);
-
+  if (cpi->oxcf.pass == 2 && cpi->sf.adaptive_interp_filter_search)
+    cpi->sf.interp_filter_search_mask = setup_interp_filter_search_mask(cpi);
   cpi->source->buf_8bit_valid = 0;
 
   av1_setup_frame_size(cpi);
@@ -4863,49 +4907,6 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
   fclose(f_recon);
 }
 #endif  // DUMP_RECON_FRAMES
-
-static int get_interp_filter_selected(const AV1_COMMON *const cm,
-                                      MV_REFERENCE_FRAME ref,
-                                      InterpFilter ifilter) {
-  const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref);
-  if (buf == NULL) return 0;
-  return buf->interp_filter_selected[ifilter];
-}
-
-static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
-  const AV1_COMMON *const cm = &cpi->common;
-  int ref_total[REF_FRAMES] = { 0 };
-
-  if (cpi->common.last_frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame)
-    return 0;
-
-  for (MV_REFERENCE_FRAME ref = LAST_FRAME; ref <= ALTREF_FRAME; ++ref) {
-    for (InterpFilter ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP;
-         ++ifilter) {
-      ref_total[ref] += get_interp_filter_selected(cm, ref, ifilter);
-    }
-  }
-  int ref_total_total = (ref_total[LAST2_FRAME] + ref_total[LAST3_FRAME] +
-                         ref_total[GOLDEN_FRAME] + ref_total[BWDREF_FRAME] +
-                         ref_total[ALTREF2_FRAME] + ref_total[ALTREF_FRAME]);
-
-  int mask = 0;
-  for (InterpFilter ifilter = EIGHTTAP_REGULAR; ifilter <= MULTITAP_SHARP;
-       ++ifilter) {
-    int last_score = get_interp_filter_selected(cm, LAST_FRAME, ifilter) * 30;
-    if (ref_total[LAST_FRAME] && last_score <= ref_total[LAST_FRAME]) {
-      int filter_score =
-          get_interp_filter_selected(cm, LAST2_FRAME, ifilter) * 20 +
-          get_interp_filter_selected(cm, LAST3_FRAME, ifilter) * 20 +
-          get_interp_filter_selected(cm, GOLDEN_FRAME, ifilter) * 20 +
-          get_interp_filter_selected(cm, BWDREF_FRAME, ifilter) * 10 +
-          get_interp_filter_selected(cm, ALTREF2_FRAME, ifilter) * 10 +
-          get_interp_filter_selected(cm, ALTREF_FRAME, ifilter) * 10;
-      if (filter_score < ref_total_total) mask |= 1 << ifilter;
-    }
-  }
-  return mask;
-}
 
 static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
                          const YV12_BUFFER_CONFIG *last_picture,
@@ -5159,8 +5160,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
       cpi->oxcf.allow_warped_motion && frame_might_allow_warped_motion(cm);
 
   cm->last_frame_type = current_frame->frame_type;
-  if (cpi->oxcf.pass == 2 && cpi->sf.adaptive_interp_filter_search)
-    cpi->sf.interp_filter_search_mask = setup_interp_filter_search_mask(cpi);
 
   if (encode_show_existing_frame(cm)) {
     restore_coding_context(cpi);
