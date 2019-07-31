@@ -3030,19 +3030,20 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 	}
 
 	/* Handle capsnocont */
+	/* marks two or more consecutive caps with nocont */
 	if (table->capsNoCont) {
-		int inCaps = 0;
+		int inCaps_cnt = 0;
 		for (i = 0; i < input->length; i++) {
-			if (emphasisBuffer[i].end & capsEmphClass) {
-				inCaps = 0;
-			} else {
-				if ((emphasisBuffer[i].begin & capsEmphClass) &&
-						!(emphasisBuffer[i + 1].end & capsEmphClass))
-					inCaps = 1;
-				if (inCaps) typebuf[i] |= no_contract;
-			}
+			if (checkAttr(input->chars[i], CTC_UpperCase, 0, table)) {
+				inCaps_cnt++;
+				if (inCaps_cnt == 2) /* Second cap, so also mark the previous one */
+					typebuf[i - 1] |= no_contract;
+				if (inCaps_cnt >= 2) typebuf[i] |= no_contract;
+			} else /* Not a capital */
+				inCaps_cnt = 0;
 		}
 	}
+
 	if (table->emphRules[capsRule][begWordOffset]) {
 		/* mark word beginning and end points, whole words, and symbols (single
 		 * characters) */
