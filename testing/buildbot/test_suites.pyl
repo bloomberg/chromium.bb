@@ -392,7 +392,6 @@
         ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
-          'shards': 2,
         },
       },
       'telemetry_unittests': {
@@ -404,7 +403,7 @@
         ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
-          'shards': 12,
+          'shards': 10,
         },
       },
     },
