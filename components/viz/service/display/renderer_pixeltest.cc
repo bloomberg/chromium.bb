@@ -2981,10 +2981,6 @@ TYPED_TEST(RendererPixelTestWithBackdropFilter, InvertFilter) {
 }
 
 TYPED_TEST(RendererPixelTestWithBackdropFilter, InvertFilterWithMask) {
-  // TODO(981207): Need to complete the masking feature on software renderer.
-  const bool is_software_renderer = std::is_same<TypeParam, SoftwareRenderer>();
-  if (is_software_renderer)
-    return;
   const bool is_gl_renderer =
       std::is_same<TypeParam, GLRenderer>() ||
       std::is_same<TypeParam, cc::GLRendererWithExpandedViewport>();
@@ -2995,9 +2991,10 @@ TYPED_TEST(RendererPixelTestWithBackdropFilter, InvertFilterWithMask) {
                              .texture_rectangle) {
     return;
   }
-  // TODO(989312): The mask on gl_renderer appears to be offset from the
-  // correct location.
-  if (is_gl_renderer)
+  // TODO(989312): The mask on gl_renderer and software_renderer appears to be
+  // offset from the correct location.
+  const bool is_software_renderer = std::is_same<TypeParam, SoftwareRenderer>();
+  if (is_gl_renderer || is_software_renderer)
     return;
   this->backdrop_filters_.Append(cc::FilterOperation::CreateInvertFilter(1.f));
   this->filter_pass_layer_rect_ = gfx::Rect(this->device_viewport_size_);
