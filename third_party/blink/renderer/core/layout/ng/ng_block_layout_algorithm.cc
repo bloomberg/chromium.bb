@@ -357,7 +357,24 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 NOINLINE scoped_refptr<const NGLayoutResult>
 NGBlockLayoutAlgorithm::LayoutWithInlineChildLayoutContext() {
   NGInlineChildLayoutContext context;
-  return Layout(&context);
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return Layout(&context);
+  return LayoutWithItemsBuilder(&context);
+}
+
+NOINLINE scoped_refptr<const NGLayoutResult>
+NGBlockLayoutAlgorithm::LayoutWithItemsBuilder(
+    NGInlineChildLayoutContext* context) {
+  NGFragmentItemsBuilder items_builder(&container_builder_);
+  container_builder_.SetItemsBuilder(&items_builder);
+  context->SetItemsBuilder(&items_builder);
+  scoped_refptr<const NGLayoutResult> result = Layout(context);
+  // Ensure stack-allocated |NGFragmentItemsBuilder| is not used anymore.
+  // TODO(kojii): Revisit when the storage of |NGFragmentItemsBuilder| is
+  // finalized.
+  container_builder_.SetItemsBuilder(nullptr);
+  context->SetItemsBuilder(nullptr);
+  return result;
 }
 
 inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
