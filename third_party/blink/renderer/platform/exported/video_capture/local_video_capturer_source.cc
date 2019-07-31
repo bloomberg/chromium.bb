@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/video_capture/local_video_capturer_source.h"
+#include "third_party/blink/public/platform/modules/video_capture/local_video_capturer_source.h"
 
 #include <utility>
 
 #include "base/bind.h"
-#include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
+#include "third_party/blink/public/platform/platform.h"
 
-namespace content {
+namespace blink {
 
 LocalVideoCapturerSource::LocalVideoCapturerSource(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::UnguessableToken& session_id)
     : session_id_(session_id),
-      manager_(RenderThreadImpl::current()->video_capture_impl_manager()),
+      manager_(Platform::Current()->GetVideoCaptureImplManager()),
       release_device_cb_(manager_->UseDevice(session_id_)),
-      task_runner_(std::move(task_runner)) {
-  DCHECK(RenderThreadImpl::current());
-}
+      task_runner_(std::move(task_runner)) {}
 
 LocalVideoCapturerSource::~LocalVideoCapturerSource() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -35,7 +33,7 @@ media::VideoCaptureFormats LocalVideoCapturerSource::GetPreferredFormats() {
 
 void LocalVideoCapturerSource::StartCapture(
     const media::VideoCaptureParams& params,
-    const blink::VideoCaptureDeliverFrameCB& new_frame_callback,
+    const VideoCaptureDeliverFrameCB& new_frame_callback,
     const RunningCallback& running_callback) {
   DCHECK(params.requested_format.IsValid());
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -92,17 +90,17 @@ void LocalVideoCapturerSource::OnStateUpdate(blink::VideoCaptureState state) {
     return;
   }
   switch (state) {
-    case blink::VIDEO_CAPTURE_STATE_STARTED:
+    case VIDEO_CAPTURE_STATE_STARTED:
       OnLog(
           "LocalVideoCapturerSource::OnStateUpdate signaling to "
           "consumer that source is now running.");
       running_callback_.Run(true);
       break;
 
-    case blink::VIDEO_CAPTURE_STATE_STOPPING:
-    case blink::VIDEO_CAPTURE_STATE_STOPPED:
-    case blink::VIDEO_CAPTURE_STATE_ERROR:
-    case blink::VIDEO_CAPTURE_STATE_ENDED:
+    case VIDEO_CAPTURE_STATE_STOPPING:
+    case VIDEO_CAPTURE_STATE_STOPPED:
+    case VIDEO_CAPTURE_STATE_ERROR:
+    case VIDEO_CAPTURE_STATE_ENDED:
       std::move(release_device_cb_).Run();
       release_device_cb_ = manager_->UseDevice(session_id_);
       OnLog(
@@ -111,9 +109,9 @@ void LocalVideoCapturerSource::OnStateUpdate(blink::VideoCaptureState state) {
       running_callback_.Run(false);
       break;
 
-    case blink::VIDEO_CAPTURE_STATE_STARTING:
-    case blink::VIDEO_CAPTURE_STATE_PAUSED:
-    case blink::VIDEO_CAPTURE_STATE_RESUMED:
+    case VIDEO_CAPTURE_STATE_STARTING:
+    case VIDEO_CAPTURE_STATE_PAUSED:
+    case VIDEO_CAPTURE_STATE_RESUMED:
       // Not applicable to reporting on device starts or errors.
       break;
   }
@@ -127,4 +125,4 @@ std::unique_ptr<media::VideoCapturerSource> LocalVideoCapturerSource::Create(
                                                     session_id);
 }
 
-}  // namespace content
+}  // namespace blink
