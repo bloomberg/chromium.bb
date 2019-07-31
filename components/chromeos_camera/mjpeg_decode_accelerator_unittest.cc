@@ -74,6 +74,10 @@ bool g_save_to_file = false;
 // images. This is used for measuring of the similarity of two images.
 constexpr double kDecodeSimilarityThreshold = 1.25;
 
+// The buffer usage used to create GpuMemoryBuffer for testing.
+constexpr gfx::BufferUsage kBufferUsage =
+    gfx::BufferUsage::SCANOUT_CPU_READ_WRITE;
+
 // Environment to create test data for all test cases.
 class MjpegDecodeAcceleratorTestEnvironment;
 MjpegDecodeAcceleratorTestEnvironment* g_env;
@@ -190,6 +194,10 @@ class MjpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
       const gfx::Size& coded_size,
       const gfx::Size& visible_size);
 
+  // Gets a list of supported DMA-buf frame formats for
+  // CreateDmaBufVideoFrame().
+  std::vector<media::VideoPixelFormat> GetSupportedDmaBufFormats();
+
   // Used for InputSizeChange test case. The image size should be smaller than
   // |kDefaultJpegFilename|.
   std::unique_ptr<ParsedJpegImage> image_data_1280x720_black_;
@@ -297,8 +305,7 @@ MjpegDecodeAcceleratorTestEnvironment::CreateDmaBufVideoFrame(
   }
   std::unique_ptr<gfx::GpuMemoryBuffer> gmb =
       gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
-          coded_size, *gfx_format, gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-          gpu::kNullSurfaceHandle);
+          coded_size, *gfx_format, kBufferUsage, gpu::kNullSurfaceHandle);
   if (!gmb) {
     LOG(ERROR) << "Failed to create GpuMemoryBuffer";
     return nullptr;
@@ -347,6 +354,23 @@ MjpegDecodeAcceleratorTestEnvironment::CreateDmaBufVideoFrame(
   return media::VideoFrame::WrapExternalDmabufs(
       *layout, gfx::Rect(visible_size), visible_size, std::move(dmabuf_fds),
       base::TimeDelta());
+}
+
+std::vector<media::VideoPixelFormat>
+MjpegDecodeAcceleratorTestEnvironment::GetSupportedDmaBufFormats() {
+  constexpr media::VideoPixelFormat kPreferredFormats[] = {
+      media::PIXEL_FORMAT_NV12,
+      media::PIXEL_FORMAT_YV12,
+  };
+  std::vector<media::VideoPixelFormat> supported_formats;
+  for (const media::VideoPixelFormat format : kPreferredFormats) {
+    const base::Optional<gfx::BufferFormat> gfx_format =
+        media::VideoPixelFormatToGfxBufferFormat(format);
+    if (gfx_format && gpu_memory_buffer_manager_->IsFormatAndUsageSupported(
+                          *gfx_format, kBufferUsage))
+      supported_formats.push_back(format);
+  }
+  return supported_formats;
 }
 
 enum ClientState {
@@ -531,9 +555,11 @@ void JpegClient::PrepareMemory(int32_t bitstream_buffer_id) {
 
   if (use_dmabuf_) {
     // TODO(kamesan): create test cases for more formats when they're used.
+    std::vector<media::VideoPixelFormat> supported_formats =
+        g_env->GetSupportedDmaBufFormats();
+    ASSERT_FALSE(supported_formats.empty());
     hw_out_dmabuf_frame_ = g_env->CreateDmaBufVideoFrame(
-        media::PIXEL_FORMAT_NV12, image_file->coded_size,
-        image_file->visible_size);
+        supported_formats[0], image_file->coded_size, image_file->visible_size);
     ASSERT_TRUE(hw_out_dmabuf_frame_);
     frame_mapper_ = media::VideoFrameMapperFactory::CreateMapper(
         hw_out_dmabuf_frame_->format(), true);
