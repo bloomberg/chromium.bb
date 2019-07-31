@@ -898,7 +898,13 @@ html[dir=rtl] .menu-option {
 .menu-panel {
   height: 100%;
   left: 0;
+  /* Pad the content by 5px top/left. This will prevent the focus outline on
+   * tiles from being cut off by overflow-y. */
+  margin-inline-start: -5px;
+  margin-top: -5px;
   overflow-y: auto;
+  padding-inline-start: 5px;
+  padding-top: 5px;
   position: absolute;
   top: 0;
   visibility: hidden;
