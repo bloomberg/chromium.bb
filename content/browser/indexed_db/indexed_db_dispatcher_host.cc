@@ -17,7 +17,6 @@
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
-#include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
@@ -94,21 +93,16 @@ void IndexedDBDispatcherHost::AddDatabaseBinding(
   database_bindings_.AddBinding(std::move(database), std::move(request));
 }
 
-blink::mojom::IDBCursorAssociatedPtrInfo
-IndexedDBDispatcherHost::CreateCursorBinding(
-    std::unique_ptr<IndexedDBCursor> cursor) {
+void IndexedDBDispatcherHost::AddCursorBinding(
+    std::unique_ptr<CursorImpl> cursor,
+    blink::mojom::IDBCursorAssociatedRequest request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const auto& context = bindings_.dispatch_context();
-  auto cursor_impl = std::make_unique<CursorImpl>(
-      std::move(cursor), context.origin, this, IDBTaskRunner());
-  auto* cursor_impl_ptr = cursor_impl.get();
-  blink::mojom::IDBCursorAssociatedPtrInfo ptr_info;
-  mojo::BindingId binding_id = cursor_bindings_.AddBinding(
-      std::move(cursor_impl), mojo::MakeRequest(&ptr_info));
-  cursor_impl_ptr->OnRemoveBinding(
+  auto* cursor_ptr = cursor.get();
+  mojo::BindingId binding_id =
+      cursor_bindings_.AddBinding(std::move(cursor), std::move(request));
+  cursor_ptr->OnRemoveBinding(
       base::BindOnce(&IndexedDBDispatcherHost::RemoveCursorBinding,
                      weak_factory_.GetWeakPtr(), binding_id));
-  return ptr_info;
 }
 
 void IndexedDBDispatcherHost::RemoveCursorBinding(mojo::BindingId binding_id) {
