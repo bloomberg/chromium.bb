@@ -445,6 +445,8 @@ void ScopedTaskEnvironment::InitializeThreadPool() {
 }
 
 void ScopedTaskEnvironment::CompleteInitialization() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   if (main_thread_type() == MainThreadType::IO) {
     file_descriptor_watcher_ =
@@ -457,6 +459,8 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(ScopedTaskEnvironment&& other) =
     default;
 
 ScopedTaskEnvironment::~ScopedTaskEnvironment() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+
   // If we've been moved then bail out.
   if (!owns_instance_)
     return;
@@ -466,6 +470,8 @@ ScopedTaskEnvironment::~ScopedTaskEnvironment() {
 }
 
 void ScopedTaskEnvironment::DestroyThreadPool() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+
   if (threading_mode_ == ThreadingMode::MAIN_THREAD_ONLY)
     return;
 
@@ -500,6 +506,8 @@ sequence_manager::SequenceManager* ScopedTaskEnvironment::sequence_manager()
 
 void ScopedTaskEnvironment::DeferredInitFromSubclass(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+
   task_runner_ = std::move(task_runner);
   sequence_manager_->SetDefaultTaskRunner(task_runner_);
   CompleteInitialization();
@@ -507,6 +515,8 @@ void ScopedTaskEnvironment::DeferredInitFromSubclass(
 
 void ScopedTaskEnvironment::
     NotifyDestructionObserversAndReleaseSequenceManager() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+
   // A derived classes may call this method early.
   if (!sequence_manager_)
     return;
@@ -524,6 +534,8 @@ ScopedTaskEnvironment::GetMainThreadTaskRunner() {
 }
 
 bool ScopedTaskEnvironment::MainThreadIsIdle() const {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+
   sequence_manager::internal::SequenceManagerImpl* sequence_manager_impl =
       static_cast<sequence_manager::internal::SequenceManagerImpl*>(
           sequence_manager_.get());
@@ -533,6 +545,8 @@ bool ScopedTaskEnvironment::MainThreadIsIdle() const {
 }
 
 void ScopedTaskEnvironment::RunUntilIdle() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+
   // TODO(gab): This can be heavily simplified to essentially:
   //     bool HasMainThreadTasks() {
   //      if (message_loop_)
@@ -617,6 +631,7 @@ void ScopedTaskEnvironment::RunUntilIdle() {
 }
 
 void ScopedTaskEnvironment::FastForwardBy(TimeDelta delta) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(mock_time_domain_);
   DCHECK_GE(delta, TimeDelta());
 
@@ -654,12 +669,16 @@ const Clock* ScopedTaskEnvironment::GetMockClock() const {
 }
 
 size_t ScopedTaskEnvironment::GetPendingMainThreadTaskCount() const {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+
   // ReclaimMemory sweeps canceled delayed tasks.
   sequence_manager_->ReclaimMemory();
   return sequence_manager_->GetPendingTaskCountForTesting();
 }
 
 TimeDelta ScopedTaskEnvironment::NextMainThreadPendingTaskDelay() const {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+
   // ReclaimMemory sweeps canceled delayed tasks.
   sequence_manager_->ReclaimMemory();
   DCHECK(mock_time_domain_);
@@ -670,11 +689,14 @@ TimeDelta ScopedTaskEnvironment::NextMainThreadPendingTaskDelay() const {
 }
 
 bool ScopedTaskEnvironment::NextTaskIsDelayed() const {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+
   TimeDelta delay = NextMainThreadPendingTaskDelay();
   return !delay.is_zero() && !delay.is_max();
 }
 
 void ScopedTaskEnvironment::DescribePendingMainThreadTasks() const {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   LOG(INFO) << sequence_manager_->DescribeAllPendingTasks();
 }
 
