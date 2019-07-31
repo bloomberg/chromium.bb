@@ -174,7 +174,9 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
                         mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
                 mResetHandler.resetWithTabList(currentTabModelFilter, false);
                 mContainerViewModel.set(IS_INCOGNITO, currentTabModelFilter.isIncognito());
-                mTabGridDialogResetHandler.hideDialog(false);
+                if (mTabGridDialogResetHandler != null) {
+                    mTabGridDialogResetHandler.hideDialog(false);
+                }
             }
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
