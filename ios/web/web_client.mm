@@ -80,11 +80,6 @@ NSString* WebClient::GetDocumentStartScriptForMainFrame(
   return @"";
 }
 
-base::Optional<service_manager::Manifest> WebClient::GetServiceManifestOverlay(
-    base::StringPiece name) {
-  return base::nullopt;
-}
-
 void WebClient::AllowCertificateError(
     WebState* web_state,
     int cert_error,

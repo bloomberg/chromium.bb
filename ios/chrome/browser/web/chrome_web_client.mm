@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/elements/windowed_container_view.h"
-#include "ios/chrome/browser/web/chrome_overlay_manifests.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/public/provider/chrome/browser/browser_url_rewriter_provider.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -31,7 +30,6 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #include "ios/web/common/user_agent.h"
 #include "ios/web/public/navigation/browser_url_rewriter.h"
-#include "ios/web/public/service/service_names.mojom.h"
 #include "net/http/http_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -149,13 +147,6 @@ base::RefCountedMemory* ChromeWebClient::GetDataResourceBytes(
 
 bool ChromeWebClient::IsDataResourceGzipped(int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
-}
-
-base::Optional<service_manager::Manifest>
-ChromeWebClient::GetServiceManifestOverlay(base::StringPiece name) {
-  if (name == web::mojom::kBrowserServiceName)
-    return GetChromeWebBrowserOverlayManifest();
-  return base::nullopt;
 }
 
 void ChromeWebClient::GetAdditionalWebUISchemes(
