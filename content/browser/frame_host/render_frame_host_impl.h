@@ -1802,8 +1802,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool is_waiting_for_swapout_ack_;
 
   // Tracks whether the RenderFrame for this RenderFrameHost has been created in
-  // the renderer process.  Currently only used for subframes.
-  // TODO(creis): Use this for main frames as well when RVH goes away.
+  // the renderer process.
   bool render_frame_created_;
 
   // When the last BeforeUnload message was sent.
