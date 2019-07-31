@@ -1567,7 +1567,8 @@
                   '|chrome/browser/ui/views/settings_reset_prompt',
     },
     'sharing': {
-      'filepath': 'chrome/browser/sharing/',
+      'filepath': 'chrome/browser/sharing/|'\
+                  'chrome/browser/ui/views/sharing/',
     },
     'site_engagement': {
       'filepath': 'chrome/browser/engagement/|'\
