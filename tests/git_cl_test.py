@@ -83,19 +83,6 @@ class PresubmitMock(object):
     return True
 
 
-class GitCheckoutMock(object):
-  def __init__(self, *args, **kwargs):
-    pass
-
-  @staticmethod
-  def reset():
-    GitCheckoutMock.conflict = False
-
-  def apply_patch(self, p):
-    if GitCheckoutMock.conflict:
-      raise Exception('failed')
-
-
 class WatchlistsMock(object):
   def __init__(self, _):
     pass
@@ -673,8 +660,6 @@ class TestGitCl(TestCase):
     self.mock(git_cl, 'write_json', lambda path, contents:
               self._mocked_call('write_json', path, contents))
     self.mock(git_cl.presubmit_support, 'DoPresubmitChecks', PresubmitMock)
-    self.mock(git_cl.checkout, 'GitCheckout', GitCheckoutMock)
-    GitCheckoutMock.reset()
     self.mock(git_cl.watchlists, 'Watchlists', WatchlistsMock)
     self.mock(git_cl.auth, 'get_authenticator_for_host', AuthenticatorMock)
     self.mock(git_cl.gerrit_util, 'GetChangeDetail',

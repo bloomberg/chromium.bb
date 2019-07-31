@@ -40,7 +40,6 @@ import zlib
 from third_party import colorama
 from third_party import httplib2
 import auth
-import checkout
 import clang_format
 import dart_format
 import setup_color
