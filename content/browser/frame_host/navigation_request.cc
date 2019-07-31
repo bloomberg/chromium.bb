@@ -687,7 +687,7 @@ NavigationRequest::NavigationRequest(
     base::FilePath url_path;
     if (net::FileURLToFilePath(common_params_->url, &url_path) &&
         url_path == specified_path) {
-      bundled_exchanges_factory_ = std::make_unique<BundledExchangesFactory>(
+      bundled_exchanges_handle_ = std::make_unique<BundledExchangesHandle>(
           BundledExchangesSource(specified_path));
     }
   }
@@ -1794,8 +1794,8 @@ void NavigationRequest::OnStartChecksComplete(
   // TODO(clamy): Avoid cloning the navigation params and create the
   // ResourceRequest directly here.
   std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptor;
-  if (bundled_exchanges_factory_)
-    interceptor.push_back(bundled_exchanges_factory_->CreateInterceptor());
+  if (bundled_exchanges_handle_)
+    interceptor.push_back(bundled_exchanges_handle_->CreateInterceptor());
   loader_ = NavigationURLLoader::Create(
       browser_context, browser_context->GetResourceContext(), partition,
       std::make_unique<NavigationRequestInfo>(
@@ -2089,7 +2089,7 @@ void NavigationRequest::CommitNavigation() {
       is_view_source_, std::move(subresource_loader_params_),
       std::move(subresource_overrides_),
       std::move(service_worker_provider_info), devtools_navigation_token_,
-      std::move(bundled_exchanges_factory_));
+      std::move(bundled_exchanges_handle_));
 
   // Give SpareRenderProcessHostManager a heads-up about the most recently used
   // BrowserContext.  This is mostly needed to make sure the spare is warmed-up

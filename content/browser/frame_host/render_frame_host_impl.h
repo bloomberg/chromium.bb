@@ -141,7 +141,7 @@ struct ResourceResponse;
 namespace content {
 class AppCacheNavigationHandle;
 class AuthenticatorImpl;
-class BundledExchangesFactory;
+class BundledExchangesHandle;
 class FrameTree;
 class FrameTreeNode;
 class GeolocationServiceImpl;
@@ -702,7 +702,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
           subresource_overrides,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
       const base::UnguessableToken& devtools_navigation_token,
-      std::unique_ptr<BundledExchangesFactory> bundled_exchanges_factory);
+      std::unique_ptr<BundledExchangesHandle> bundled_exchanges_handle);
 
   // Indicates that a navigation failed and that this RenderFrame should display
   // an error page.
@@ -2261,7 +2261,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // The factory to load resources from the BundledExchanges source bound to
   // this file.
-  std::unique_ptr<BundledExchangesFactory> bundled_exchanges_factory_;
+  std::unique_ptr<BundledExchangesHandle> bundled_exchanges_handle_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};
