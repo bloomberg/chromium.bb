@@ -26,6 +26,7 @@ arm_internal_release_boards = frozenset([
     'beaglebone',
     'beaglebone_servo',
     'bob',
+    'bubs',
     'capri',
     'capri-zfpga',
     'cheza',

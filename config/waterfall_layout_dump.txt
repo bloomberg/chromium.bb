@@ -50,6 +50,7 @@
     betty-paladin
     betty-pi-arc-paladin
     bob-paladin
+    bubs-paladin
     capri-paladin
     capri-zfpga-paladin
     caroline-arcnext-paladin
@@ -1078,6 +1079,7 @@
   bob-tot-chrome-pfq-informational-tryjob
   bob-tot-chromium-pfq-informational-tryjob
   bob-unittest-stress
+  bubs-chrome-pfq-tryjob
   bubs-chromium-pfq-tryjob
   bubs-compile-only-pre-cq
   bubs-full-tryjob
@@ -1085,9 +1087,14 @@
   bubs-llvm-toolchain-tryjob
   bubs-no-vmtest-pre-cq
   bubs-paladin-tryjob
+  bubs-payloads-tryjob
   bubs-postsubmit-tryjob
   bubs-pre-cq
+  bubs-release-afdo-generate-tryjob
+  bubs-release-afdo-tryjob
+  bubs-release-afdo-use-tryjob
   bubs-release-tryjob
+  bubs-tot-chrome-pfq-informational-tryjob
   bubs-tot-chromium-pfq-informational-tryjob
   bubs-unittest-stress
   buddy-cfm-chromium-pfq-tryjob
@@ -2587,6 +2594,7 @@
     betty-paladin-tryjob
     betty-pi-arc-paladin-tryjob
     bob-paladin-tryjob
+    bubs-paladin-tryjob
     capri-paladin-tryjob
     capri-zfpga-paladin-tryjob
     caroline-arcnext-paladin-tryjob
