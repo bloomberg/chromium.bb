@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_AUDIO_SINK_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_AUDIO_SINK_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_AUDIO_SINK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_AUDIO_SINK_H_
 
 #include <stddef.h>
 
@@ -16,9 +16,9 @@
 #include "media/base/reentrancy_checker.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace media {
 class AudioBus;
@@ -41,10 +41,7 @@ class WebAudioSourceProviderClient;
 // data from the FIFO.
 //
 // Most calls are protected by a lock.
-//
-// TODO(crbug.com/704136): Move this class out of the Blink exposed API
-// when all users of it have been Onion souped.
-class BLINK_MODULES_EXPORT WebAudioMediaStreamAudioSink
+class MODULES_EXPORT WebAudioMediaStreamAudioSink
     : public WebAudioSourceProvider,
       public media::AudioConverter::InputCallback,
       public WebMediaStreamAudioSink {
@@ -120,4 +117,4 @@ class BLINK_MODULES_EXPORT WebAudioMediaStreamAudioSink
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_AUDIO_SINK_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_AUDIO_SINK_H_
