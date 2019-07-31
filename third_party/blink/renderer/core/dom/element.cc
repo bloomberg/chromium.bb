@@ -4678,7 +4678,7 @@ DOMStringMap& Element::dataset() {
 KURL Element::HrefURL() const {
   // FIXME: These all have href() or url(), but no common super class. Why
   // doesn't <link> implement URLUtils?
-  if (IsHTMLAnchorElement(*this) || IsA<HTMLAreaElement>(*this) ||
+  if (IsA<HTMLAnchorElement>(*this) || IsA<HTMLAreaElement>(*this) ||
       IsHTMLLinkElement(*this))
     return GetURLAttribute(kHrefAttr);
   if (auto* svg_a = ToSVGAElementOrNull(*this))

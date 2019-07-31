@@ -450,7 +450,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     data.custom_items = menu_provider_->PopulateContextMenu();
   }
 
-  if (auto* anchor = ToHTMLAnchorElementOrNull(result.URLElement())) {
+  if (auto* anchor = DynamicTo<HTMLAnchorElement>(result.URLElement())) {
     // Extract suggested filename for same-origin URLS for saving file.
     const SecurityOrigin* origin =
         selected_frame->GetSecurityContext()->GetSecurityOrigin();
