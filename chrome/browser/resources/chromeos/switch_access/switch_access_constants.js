@@ -89,39 +89,12 @@ SAConstants.Focus.BUFFER = 4;
 SAConstants.KEY_PRESS_DURATION_MS = 100;
 
 /**
- * Commands that can be assigned to specific switches.
- * @enum {string}
- * @const
- */
-SAConstants.Command = {
-  MENU: 'menu',
-  NEXT: 'next',
-  PREVIOUS: 'previous',
-  SELECT: 'select'
-};
-
-/**
  * Preferences that are configurable in Switch Access.
  * @enum {string}
  */
 SAConstants.Preference = {
-  AUTO_SCAN_TIME: 'autoScanTime',
-  ENABLE_AUTO_SCAN: 'enableAutoScan'
-};
-// Every available command is also a preference, to store the switch assigned.
-Object.assign(SAConstants.Preference, SAConstants.Command);
-
-/**
- * The default value, for preferences with a default.
- * All preferences should be primitives to prevent changes to default values.
- *
- * Note: All preferences set below should be in the Preference enum (above).
- * @type {Object}
- * @const
- */
-SAConstants.DEFAULT_PREFERENCES = {
-  'autoScanTime': 800,
-  'enableAutoScan': false
+  AUTO_SCAN_ENABLED: 'settings.a11y.switch_access.auto_scan.enabled',
+  AUTO_SCAN_TIME: 'settings.a11y.switch_access.auto_scan.speed_ms'
 };
 
 /**
@@ -158,8 +131,6 @@ SAConstants.MenuAction = {
   MOVE_FORWARD_ONE_WORD_OF_TEXT: 'moveForwardOneWordOfText',
   // Move text caret one line up.
   MOVE_UP_ONE_LINE_OF_TEXT: 'moveUpOneLineOfText',
-  // Open and jump to the Switch Access settings in a new Chrome tab.
-  OPTIONS: 'options',
   // Paste text.
   PASTE: 'paste',
   // Scroll the current element (or its ancestor) logically backwards.
@@ -178,6 +149,8 @@ SAConstants.MenuAction = {
   SCROLL_UP: chrome.automation.ActionType.SCROLL_UP,
   // Either perform the default action or enter a new scope, as applicable.
   SELECT: 'select',
+  // Open and jump to the Switch Access settings.
+  SETTINGS: 'settings',
   // Show the system context menu for the current element.
   SHOW_CONTEXT_MENU: chrome.automation.ActionType.SHOW_CONTEXT_MENU,
   // Set the end of a text selection.

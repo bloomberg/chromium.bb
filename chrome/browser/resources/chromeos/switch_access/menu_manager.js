@@ -337,7 +337,7 @@ class MenuManager {
     if (actions.length === 0)
       return null;
 
-    actions.push(SAConstants.MenuAction.OPTIONS);
+    actions.push(SAConstants.MenuAction.SETTINGS);
     return actions;
   }
 
@@ -376,8 +376,9 @@ class MenuManager {
       case SAConstants.MenuAction.DICTATION:
         chrome.accessibilityPrivate.toggleDictation();
         break;
-      case SAConstants.MenuAction.OPTIONS:
-        window.switchAccess.showOptionsPage();
+      case SAConstants.MenuAction.SETTINGS:
+        chrome.accessibilityPrivate.openSettingsSubpage(
+            'manageAccessibility/switchAccess');
         break;
       case SAConstants.MenuAction.SCROLL_DOWN:
       case SAConstants.MenuAction.SCROLL_UP:
