@@ -7,7 +7,7 @@ The WebGPU CTS is written in TypeScript, and builds into two directories:
 
 ## Docs
 
-- [docs/terms.md](Terminology used in the test framework)
+- [Terminology used in the test framework](docs/terms.md)
 
 ## Developing
 
