@@ -26,7 +26,8 @@ grunt  # show available grunt commands
 
 ### Build
 
-To build and run all pre-submit checks (including type and lint checks), use:
+To build and run all pre-submit checks (including type and lint checks and
+unittests), use:
 
 ```sh
 grunt pre
@@ -40,12 +41,6 @@ grunt build
 
 ### Run
 
-From the command-line (unittests only, for now):
-
-```sh
-tools/run unittests
-```
-
 To test in a browser under the standalone harness, run `grunt serve`, then
 open:
 
@@ -53,7 +48,7 @@ open:
 * http://localhost:8080/?runnow=1&q=unittests
 * http://localhost:8080/?runnow=1&q=unittests:basic&q=unittests:params
 
-### Exporting to WPT
+### Export to WPT
 
 Copy the `out-wpt/` directory as the `webgpu/` directory in your WPT checkout.
 
