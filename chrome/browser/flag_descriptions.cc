@@ -1873,6 +1873,12 @@ const char kTabHoverCardImagesName[] = "Tab Hover Card Images";
 const char kTabHoverCardImagesDescription[] =
     "Shows a preview image in tab hover cards, if tab hover cards are enabled.";
 
+const char kTabOutlinesInLowContrastThemesName[] =
+    "Tab Outlines in Low Contrast Themes";
+const char kTabOutlinesInLowContrastThemesDescription[] =
+    "Expands the range of situations in which tab outline strokes are "
+    "displayed, improving accessiblity in dark and incognito mode.";
+
 const char kTabsInCbdName[] = "Enable tabs for the Clear Browsing Data dialog.";
 const char kTabsInCbdDescription[] =
     "Enables a basic and an advanced tab for the Clear Browsing Data dialog.";

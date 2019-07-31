@@ -3018,6 +3018,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "tab-outlines-in-low-contrast-themes",
+    "owners": [ "dfried" ],
+    "expiry_milestone":  79
+  },
+  {
     "name": "terminal-system-app",
     "owners": [ "joelhockey", "benwells", "//chrome/browser/chromeos/guest_os/OWNERS" ],
     "expiry_milestone": 82

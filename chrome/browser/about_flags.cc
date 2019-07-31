@@ -2857,6 +2857,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDragToPinTabsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDragToPinTabs)},
 
+    {"tab-outlines-in-low-contrast-themes",
+     flag_descriptions::kTabOutlinesInLowContrastThemesName,
+     flag_descriptions::kTabOutlinesInLowContrastThemesDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kTabOutlinesInLowContrastThemes)},
+
 #if defined(OS_ANDROID)
     {"enable-reader-mode-in-cct", flag_descriptions::kReaderModeInCCTName,
      flag_descriptions::kReaderModeInCCTDescription, kOsAndroid,

@@ -34966,6 +34966,7 @@ from previous Chrome versions.
   <int value="-839664591" label="enable-web-authentication-testing-api"/>
   <int value="-836123854" label="wallet-service-use-sandbox"/>
   <int value="-835672415" label="PointerEventV1SpecCapturing:disabled"/>
+  <int value="-835331907" label="TabOutlinesInLowContrastThemes:disabled"/>
   <int value="-834661509" label="ModalPermissionPrompts:disabled"/>
   <int value="-832561975" label="enable-picture-in-picture"/>
   <int value="-825942229" label="tab-management-experiment-type-elderberry"/>
@@ -35416,6 +35417,7 @@ from previous Chrome versions.
   <int value="-181093956" label="ScrollAnchoring:enabled"/>
   <int value="-180481252" label="CompositorThreadedScrollbarScrolling:enabled"/>
   <int value="-175666252" label="Portals:disabled"/>
+  <int value="-174829803" label="TabOutlinesInLowContrastThemes:enabled"/>
   <int value="-174706795"
       label="WebPaymentsPerMethodCanMakePaymentQuota:enabled"/>
   <int value="-174564579"
