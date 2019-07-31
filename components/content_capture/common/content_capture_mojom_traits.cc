@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/content_capture/common/content_capture_struct_traits.h"
+#include "components/content_capture/common/content_capture_mojom_traits.h"
 
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
