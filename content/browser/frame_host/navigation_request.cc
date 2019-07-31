@@ -1487,6 +1487,43 @@ void NavigationRequest::OnResponseStarted(
     return;
   }
 
+  // https://mikewest.github.io/corpp/#process-navigation-response
+  if (base::FeatureList::IsEnabled(
+          network::features::kCrossOriginEmbedderPolicy) &&
+      render_frame_host_) {
+    auto cross_origin_embedder_policy =
+        network::mojom::CrossOriginEmbedderPolicy::kNone;
+    std::string header_value;
+    if (response_head->head.headers &&
+        response_head->head.headers->GetNormalizedHeader(
+            "cross-origin-embedder-policy", &header_value) &&
+        header_value == "require-corp") {
+      cross_origin_embedder_policy =
+          network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+    } else {
+      if (render_frame_host_->GetParent() &&
+          render_frame_host_->GetParent()->cross_origin_embedder_policy() ==
+              network::mojom::CrossOriginEmbedderPolicy::kRequireCorp) {
+        if (common_params_->url.SchemeIsBlob() ||
+            common_params_->url.SchemeIs("data")) {
+          cross_origin_embedder_policy =
+              network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+        } else {
+          OnRequestFailedInternal(
+              network::URLLoaderCompletionStatus(net::ERR_FAILED),
+              false /* skip_throttles */,
+              base::nullopt /* error_page_content */,
+              false /* collapse_frame */);
+          // DO NOT ADD CODE after this. The previous call to
+          // OnRequestFailedInternal has destroyed the NavigationRequest.
+          return;
+        }
+      }
+    }
+    render_frame_host_->set_cross_origin_embedder_policy(
+        cross_origin_embedder_policy);
+  }
+
   // Check if the navigation should be allowed to proceed.
   WillProcessResponse(
       base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,

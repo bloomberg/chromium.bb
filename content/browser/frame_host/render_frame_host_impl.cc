@@ -5814,13 +5814,15 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
   // Create the URLLoaderFactory - either via ContentBrowserClient or ourselves.
   WebPreferences preferences = GetRenderViewHost()->GetWebkitPreferences();
   if (GetCreateNetworkFactoryCallbackForRenderFrame().is_null()) {
-    GetProcess()->CreateURLLoaderFactory(
-        origin, &preferences, network_isolation_key_, std::move(header_client),
-        std::move(default_factory_receiver));
+    GetProcess()->CreateURLLoaderFactory(origin, cross_origin_embedder_policy_,
+                                         &preferences, network_isolation_key_,
+                                         std::move(header_client),
+                                         std::move(default_factory_receiver));
   } else {
     mojo::Remote<network::mojom::URLLoaderFactory> original_factory;
     GetProcess()->CreateURLLoaderFactory(
-        origin, &preferences, network_isolation_key_, std::move(header_client),
+        origin, cross_origin_embedder_policy_, &preferences,
+        network_isolation_key_, std::move(header_client),
         original_factory.BindNewPipeAndPassReceiver());
     GetCreateNetworkFactoryCallbackForRenderFrame().Run(
         std::move(default_factory_receiver), GetProcess()->GetID(),
