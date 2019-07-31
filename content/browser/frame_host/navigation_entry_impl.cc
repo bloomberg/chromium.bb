@@ -691,13 +691,12 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
       false /* is_history_navigation_in_new_child_frame */, input_start);
 }
 
-mojom::CommitNavigationParamsPtr
-NavigationEntryImpl::ConstructCommitNavigationParams(
+CommitNavigationParams NavigationEntryImpl::ConstructCommitNavigationParams(
     const FrameNavigationEntry& frame_entry,
     const GURL& original_url,
     const base::Optional<url::Origin>& origin_to_commit,
     const std::string& original_method,
-    const base::flat_map<std::string, bool>& subframe_unique_names,
+    const std::map<std::string, bool>& subframe_unique_names,
     bool intended_as_new_entry,
     int pending_history_list_offset,
     int current_history_list_offset,
@@ -721,26 +720,15 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
     current_length_to_send = 0;
   }
 
-  mojom::CommitNavigationParamsPtr commit_params =
-      mojom::CommitNavigationParams::New(
-          origin_to_commit, GetIsOverridingUserAgent(), redirects,
-          std::vector<network::ResourceResponseHead>(),
-          std::vector<net::RedirectInfo>(), std::string(), original_url,
-          original_method, GetCanLoadLocalResources(), frame_entry.page_state(),
-          GetUniqueID(), subframe_unique_names, intended_as_new_entry,
-          pending_offset_to_send, current_offset_to_send,
-          current_length_to_send, false, IsViewSourceMode(),
-          should_clear_history_list(), mojom::NavigationTiming::New(),
-          base::nullopt, mojom::WasActivatedOption::kUnknown,
-          base::UnguessableToken::Create(),
-          std::vector<PrefetchedSignedExchangeInfo>(),
-#if defined(OS_ANDROID)
-          std::string(),
-#endif
-          false);
+  CommitNavigationParams commit_params(
+      origin_to_commit, GetIsOverridingUserAgent(), redirects, original_url,
+      original_method, GetCanLoadLocalResources(), frame_entry.page_state(),
+      GetUniqueID(), subframe_unique_names, intended_as_new_entry,
+      pending_offset_to_send, current_offset_to_send, current_length_to_send,
+      IsViewSourceMode(), should_clear_history_list());
 #if defined(OS_ANDROID)
   if (NavigationControllerImpl::ValidateDataURLAsString(GetDataURLAsString())) {
-    commit_params->data_url_as_string = GetDataURLAsString()->data();
+    commit_params.data_url_as_string = GetDataURLAsString()->data();
   }
 #endif
   return commit_params;
@@ -866,9 +854,9 @@ FrameNavigationEntry* NavigationEntryImpl::GetFrameEntry(
   return tree_node ? tree_node->frame_entry.get() : nullptr;
 }
 
-base::flat_map<std::string, bool> NavigationEntryImpl::GetSubframeUniqueNames(
+std::map<std::string, bool> NavigationEntryImpl::GetSubframeUniqueNames(
     FrameTreeNode* frame_tree_node) const {
-  base::flat_map<std::string, bool> names;
+  std::map<std::string, bool> names;
   NavigationEntryImpl::TreeNode* tree_node = GetTreeNode(frame_tree_node);
   if (tree_node) {
     // Return the names of all immediate children.

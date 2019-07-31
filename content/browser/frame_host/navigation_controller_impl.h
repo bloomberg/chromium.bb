@@ -28,6 +28,7 @@
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
+enum class WasActivatedOption;
 class FrameTreeNode;
 class RenderFrameHostImpl;
 class SiteInstance;

@@ -2271,7 +2271,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
   params.started_from_context_menu = false;
   /* params.navigation_ui_data: skip */
   /* params.input_start: skip */
-  params.was_activated = mojom::WasActivatedOption::kUnknown;
+  params.was_activated = WasActivatedOption::kUnknown;
   /* params.reload_type: skip */
 
   std::unique_ptr<NavigationRequest> request =
@@ -3086,36 +3086,22 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           false /* is_history_navigation_in_new_child_frame */,
           params.input_start);
 
-  mojom::CommitNavigationParamsPtr commit_params =
-      mojom::CommitNavigationParams::New(
-          frame_entry->committed_origin(), override_user_agent,
-          params.redirect_chain, std::vector<network::ResourceResponseHead>(),
-          std::vector<net::RedirectInfo>(),
-          std::string() /* post_content_type */, common_params->url,
-          common_params->method, params.can_load_local_resources,
-          frame_entry->page_state(), entry->GetUniqueID(),
-          entry->GetSubframeUniqueNames(node), true /* intended_as_new_entry */,
-          -1 /* pending_history_list_offset */,
-          params.should_clear_history_list ? -1 : GetLastCommittedEntryIndex(),
-          params.should_clear_history_list ? 0 : GetEntryCount(),
-          false /* was_discarded */, is_view_source_mode,
-          params.should_clear_history_list, mojom::NavigationTiming::New(),
-          base::nullopt /* appcache_host_id */,
-          mojom::WasActivatedOption::kUnknown,
-          base::UnguessableToken::Create() /* navigation_token */,
-          std::vector<PrefetchedSignedExchangeInfo>(),
-#if defined(OS_ANDROID)
-          std::string(), /* data_url_as_string */
-#endif
-          false /* is_browser_initiated */
-      );
+  CommitNavigationParams commit_params(
+      frame_entry->committed_origin(), override_user_agent,
+      params.redirect_chain, common_params->url, common_params->method,
+      params.can_load_local_resources, frame_entry->page_state(),
+      entry->GetUniqueID(), entry->GetSubframeUniqueNames(node),
+      true /* intended_as_new_entry */, -1 /* pending_history_list_offset */,
+      params.should_clear_history_list ? -1 : GetLastCommittedEntryIndex(),
+      params.should_clear_history_list ? 0 : GetEntryCount(),
+      is_view_source_mode, params.should_clear_history_list);
 #if defined(OS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
-    commit_params->data_url_as_string = params.data_url_as_string->data();
+    commit_params.data_url_as_string = params.data_url_as_string->data();
   }
 #endif
 
-  commit_params->was_activated = params.was_activated;
+  commit_params.was_activated = params.was_activated;
 
   // A form submission may happen here if the navigation is a renderer-initiated
   // form submission that took the OpenURL path.
@@ -3126,7 +3112,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   base::ReplaceChars(params.extra_headers, "\n", "\r\n", &extra_headers_crlf);
 
   auto navigation_request = NavigationRequest::CreateBrowserInitiated(
-      node, std::move(common_params), std::move(commit_params),
+      node, std::move(common_params), commit_params,
       !params.is_renderer_initiated, extra_headers_crlf, *frame_entry, entry,
       request_body,
       params.navigation_ui_data ? params.navigation_ui_data->Clone() : nullptr);
@@ -3226,17 +3212,15 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   // TODO(clamy): |intended_as_new_entry| below should always be false once
   // Reload no longer leads to this being called for a pending NavigationEntry
   // of index -1.
-  mojom::CommitNavigationParamsPtr commit_params =
-      entry->ConstructCommitNavigationParams(
-          *frame_entry, common_params->url, origin_to_commit,
-          common_params->method, entry->GetSubframeUniqueNames(frame_tree_node),
-          GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
-          GetIndexOfEntry(entry), GetLastCommittedEntryIndex(),
-          GetEntryCount());
-  commit_params->post_content_type = post_content_type;
+  CommitNavigationParams commit_params = entry->ConstructCommitNavigationParams(
+      *frame_entry, common_params->url, origin_to_commit, common_params->method,
+      entry->GetSubframeUniqueNames(frame_tree_node),
+      GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
+      GetIndexOfEntry(entry), GetLastCommittedEntryIndex(), GetEntryCount());
+  commit_params.post_content_type = post_content_type;
 
   return NavigationRequest::CreateBrowserInitiated(
-      frame_tree_node, std::move(common_params), std::move(commit_params),
+      frame_tree_node, std::move(common_params), commit_params,
       !entry->is_renderer_initiated(), entry->extra_headers(), *frame_entry,
       entry, request_body, nullptr /* navigation_ui_data */);
 }

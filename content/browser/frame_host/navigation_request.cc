@@ -514,7 +514,7 @@ int64_t CreateUniqueHandleID() {
 std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     FrameTreeNode* frame_tree_node,
     mojom::CommonNavigationParamsPtr common_params,
-    mojom::CommitNavigationParamsPtr commit_params,
+    const CommitNavigationParams& commit_params,
     bool browser_initiated,
     const std::string& extra_headers,
     const FrameNavigationEntry& frame_entry,
@@ -543,9 +543,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
 
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(navigation_params),
-      std::move(commit_params), browser_initiated,
-      false /* from_begin_navigation */, false /* is_for_commit */,
-      &frame_entry, entry, std::move(navigation_ui_data), nullptr, nullptr));
+      commit_params, browser_initiated, false /* from_begin_navigation */,
+      false /* is_for_commit */, &frame_entry, entry,
+      std::move(navigation_ui_data), nullptr, nullptr));
   navigation_request->blob_url_loader_factory_ =
       frame_entry.blob_url_loader_factory();
 
@@ -593,39 +593,23 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
 
   // TODO(clamy): See if the navigation start time should be measured in the
   // renderer and sent to the browser instead of being measured here.
-  mojom::CommitNavigationParamsPtr commit_params =
-      mojom::CommitNavigationParams::New(
-          base::nullopt, override_user_agent,
-          std::vector<GURL>(),                           // redirects
-          std::vector<network::ResourceResponseHead>(),  // redirect_response
-          std::vector<net::RedirectInfo>(),              // redirect_infos
-          std::string(),                                 // post_content_type
-          common_params->url, common_params->method,
-          false,                                // can_load_local_resources
-          PageState(),                          // page_state
-          0,                                    // nav_entry_id
-          base::flat_map<std::string, bool>(),  // subframe_unique_names
-          false,                                // intended_as_new_entry
-          -1,  // |pending_history_list_offset| is set to -1 because
-               // history-navigations do not use this path. See comments above.
-          current_history_list_offset, current_history_list_length,
-          false,  // was_discarded
-          false,  // is_view_source
-          false /*should_clear_history_list*/,
-          mojom::NavigationTiming::New(),  // navigation_timing
-          base::nullopt,                   // appcache_host_id
-          mojom::WasActivatedOption::kUnknown,
-          base::UnguessableToken::Create(),  // navigation_token
-          std::vector<
-              PrefetchedSignedExchangeInfo>(),  // prefetched_signed_exchanges
-#if defined(OS_ANDROID)
-          std::string(),  // data_url_as_string
-#endif
-          false  // is_browser_initiated
-      );
+  CommitNavigationParams commit_params(
+      base::nullopt, override_user_agent,
+      std::vector<GURL>(),  // redirects
+      common_params->url, common_params->method,
+      false,                          // can_load_local_resources
+      PageState(),                    // page_state
+      0,                              // nav_entry_id
+      std::map<std::string, bool>(),  // subframe_unique_names
+      false,                          // intended_as_new_entry
+      -1,  // |pending_history_list_offset| is set to -1 because
+           // history-navigations do not use this path. See comments above.
+      current_history_list_offset, current_history_list_length,
+      false,  // is_view_source
+      false /*should_clear_history_list*/);
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(begin_params),
-      std::move(commit_params),
+      commit_params,
       false,  // browser_initiated
       true,   // from_begin_navigation
       false,  // is_for_commit
@@ -670,34 +654,22 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           std::string() /* href_translate */,
           false /* is_history_navigation_in_new_child_frame */,
           base::TimeTicks::Now());
-  mojom::CommitNavigationParamsPtr commit_params =
-      mojom::CommitNavigationParams::New(
-          params.origin, params.is_overriding_user_agent, params.redirects,
-          std::vector<network::ResourceResponseHead>(),
-          std::vector<net::RedirectInfo>(), std::string(),
-          params.original_request_url, params.method,
-          false /* can_load_local_resources */, params.page_state,
-          params.nav_entry_id,
-          base::flat_map<std::string, bool>() /* subframe_unique_names */,
-          params.intended_as_new_entry, -1 /* pending_history_list_offset */,
-          -1 /* current_history_list_offset */,
-          -1 /* current_history_list_length */, false /* was_discard */,
-          false /* is_view_source */, params.history_list_was_cleared,
-          mojom::NavigationTiming::New(), base::nullopt /* appcache_host_id; */,
-          mojom::WasActivatedOption::kUnknown,
-          base::UnguessableToken::Create() /* navigation_token */,
-          std::vector<PrefetchedSignedExchangeInfo>(),
-#if defined(OS_ANDROID)
-          std::string(), /* data_url_as_string */
-#endif
-          false /* is_browser_initiated */
-      );
+  CommitNavigationParams commit_params(
+      params.origin, params.is_overriding_user_agent, params.redirects,
+      params.original_request_url, params.method,
+      false /* can_load_local_resources */, params.page_state,
+      params.nav_entry_id,
+      std::map<std::string, bool>() /* subframe_unique_names */,
+      params.intended_as_new_entry, -1 /* pending_history_list_offset */,
+      -1 /* current_history_list_offset */,
+      -1 /* current_history_list_length */, false /* is_view_source */,
+      params.history_list_was_cleared);
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(begin_params),
-      std::move(commit_params), !is_renderer_initiated,
-      false /* from_begin_navigation */, true /* is_for_commit */,
+      commit_params, !is_renderer_initiated, false /* from_begin_navigation */,
+      true /* is_for_commit */,
       entry ? entry->GetFrameEntry(frame_tree_node) : nullptr, entry,
       nullptr /* navigation_ui_data */,
       mojom::NavigationClientAssociatedPtrInfo(),
@@ -716,7 +688,7 @@ NavigationRequest::NavigationRequest(
     FrameTreeNode* frame_tree_node,
     mojom::CommonNavigationParamsPtr common_params,
     mojom::BeginNavigationParamsPtr begin_params,
-    mojom::CommitNavigationParamsPtr commit_params,
+    const CommitNavigationParams& commit_params,
     bool browser_initiated,
     bool from_begin_navigation,
     bool is_for_commit,
@@ -728,7 +700,7 @@ NavigationRequest::NavigationRequest(
     : frame_tree_node_(frame_tree_node),
       common_params_(std::move(common_params)),
       begin_params_(std::move(begin_params)),
-      commit_params_(std::move(commit_params)),
+      commit_params_(commit_params),
       browser_initiated_(browser_initiated),
       navigation_ui_data_(std::move(navigation_ui_data)),
       state_(NOT_STARTED),
@@ -817,7 +789,7 @@ NavigationRequest::NavigationRequest(
   }
 
   std::string user_agent_override;
-  if (commit_params_->is_overriding_user_agent ||
+  if (commit_params.is_overriding_user_agent ||
       (entry && entry->GetIsOverridingUserAgent())) {
     user_agent_override =
         frame_tree_node_->navigator()->GetDelegate()->GetUserAgentOverride();
@@ -853,17 +825,17 @@ NavigationRequest::NavigationRequest(
         frame_tree_node);
 
     if (begin_params_->is_form_submission) {
-      if (browser_initiated && !commit_params_->post_content_type.empty()) {
+      if (browser_initiated && !commit_params.post_content_type.empty()) {
         // This is a form resubmit, so make sure to set the Content-Type header.
         headers.SetHeaderIfMissing(net::HttpRequestHeaders::kContentType,
-                                   commit_params_->post_content_type);
+                                   commit_params.post_content_type);
       } else if (!browser_initiated) {
         // Save the Content-Type in case the form is resubmitted. This will get
         // sent back to the renderer in the CommitNavigation IPC. The renderer
         // will then send it back with the post body so that we can access it
         // along with the body in FrameNavigationEntry::page_state_.
         headers.GetHeader(net::HttpRequestHeaders::kContentType,
-                          &commit_params_->post_content_type);
+                          &commit_params_.post_content_type);
       }
     }
   }
@@ -877,7 +849,7 @@ NavigationRequest::NavigationRequest(
 
   navigation_entry_offset_ = EstimateHistoryOffset();
 
-  commit_params_->is_browser_initiated = browser_initiated_;
+  commit_params_.is_browser_initiated = browser_initiated_;
 }
 
 NavigationRequest::~NavigationRequest() {
@@ -915,7 +887,7 @@ void NavigationRequest::BeginNavigation() {
 
   if (!GetContentClient()->browser()->ShouldOverrideUrlLoading(
           frame_tree_node_->frame_tree_node_id(), browser_initiated_,
-          commit_params_->original_url, commit_params_->original_method,
+          commit_params_.original_url, commit_params_.original_method,
           common_params_->has_user_gesture, false,
           frame_tree_node_->IsMainFrame(), common_params_->transition,
           &should_override_url_loading)) {
@@ -1054,19 +1026,19 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
     // |begin_params_->client_side_redirect_url| will be set when the navigation
     // was triggered by a client-side redirect.
     redirect_chain_.push_back(begin_params_->client_side_redirect_url);
-  } else if (!commit_params_->redirects.empty()) {
+  } else if (!commit_params_.redirects.empty()) {
     // Redirects that were specified at NavigationRequest creation time should
     // be added to the list of redirects. In particular, if the
     // NavigationRequest was created at commit time, redirects that happened
-    // during the navigation have been added to |commit_params_->redirects| and
+    // during the navigation have been added to |commit_params_.redirects| and
     // should be passed to the NavigationHandle.
-    for (const auto& url : commit_params_->redirects)
+    for (const auto& url : commit_params_.redirects)
       redirect_chain_.push_back(url);
   }
 
   // Finally, add the current URL to the vector of redirects.
   // Note: for NavigationRequests created at commit time, the current URL has
-  // been added to |commit_params_->redirects|, so don't add it a second time.
+  // been added to |commit_params_.redirects|, so don't add it a second time.
   if (!is_for_commit)
     redirect_chain_.push_back(common_params_->url);
 
@@ -1269,22 +1241,22 @@ void NavigationRequest::OnRequestRedirected(
     common_params_->post_data.reset();
 
   // Mark time for the Navigation Timing API.
-  if (commit_params_->navigation_timing->redirect_start.is_null()) {
-    commit_params_->navigation_timing->redirect_start =
-        commit_params_->navigation_timing->fetch_start;
+  if (commit_params_.navigation_timing.redirect_start.is_null()) {
+    commit_params_.navigation_timing.redirect_start =
+        commit_params_.navigation_timing.fetch_start;
   }
-  commit_params_->navigation_timing->redirect_end = base::TimeTicks::Now();
-  commit_params_->navigation_timing->fetch_start = base::TimeTicks::Now();
+  commit_params_.navigation_timing.redirect_end = base::TimeTicks::Now();
+  commit_params_.navigation_timing.fetch_start = base::TimeTicks::Now();
 
-  commit_params_->redirect_response.push_back(response_head->head);
-  commit_params_->redirect_infos.push_back(redirect_info);
+  commit_params_.redirect_response.push_back(response_head->head);
+  commit_params_.redirect_infos.push_back(redirect_info);
 
   // On redirects, the initial origin_to_commit is no longer correct, so it
   // must be cleared to avoid sending incorrect value to the renderer process.
-  if (commit_params_->origin_to_commit)
-    commit_params_->origin_to_commit.reset();
+  if (commit_params_.origin_to_commit)
+    commit_params_.origin_to_commit.reset();
 
-  commit_params_->redirects.push_back(common_params_->url);
+  commit_params_.redirects.push_back(common_params_->url);
   common_params_->url = redirect_info.new_url;
   common_params_->method = redirect_info.new_method;
   common_params_->referrer->url = GURL(redirect_info.new_referrer);
@@ -1405,7 +1377,7 @@ void NavigationRequest::OnResponseStarted(
     net_error_ = net::ERR_ABORTED;
 
   // Update the AppCache params of the commit params.
-  commit_params_->appcache_host_id =
+  commit_params_.appcache_host_id =
       appcache_handle_
           ? base::make_optional(appcache_handle_->appcache_host_id())
           : base::nullopt;
@@ -1416,8 +1388,8 @@ void NavigationRequest::OnResponseStarted(
   // worker ready time if it is greater than the current value to make sure
   // fetch start timing always comes after worker start timing (if a service
   // worker intercepted the navigation).
-  commit_params_->navigation_timing->fetch_start =
-      std::max(commit_params_->navigation_timing->fetch_start,
+  commit_params_.navigation_timing.fetch_start =
+      std::max(commit_params_.navigation_timing.fetch_start,
                response_head->head.service_worker_ready_time);
 
   // A navigation is user activated if it contains a user gesture or the frame
@@ -1437,8 +1409,8 @@ void NavigationRequest::OnResponseStarted(
   //    context menu. This should apply to pages that open in a new tab and we
   //    have to follow the referrer. It means that the activation might not be
   //    transmitted if it should have.
-  if (commit_params_->was_activated == mojom::WasActivatedOption::kUnknown) {
-    commit_params_->was_activated = mojom::WasActivatedOption::kNo;
+  if (commit_params_.was_activated == WasActivatedOption::kUnknown) {
+    commit_params_.was_activated = WasActivatedOption::kNo;
 
     if (!browser_initiated_ &&
         (frame_tree_node_->has_received_user_gesture() ||
@@ -1446,7 +1418,7 @@ void NavigationRequest::OnResponseStarted(
         ShouldPropagateUserActivation(
             frame_tree_node_->current_origin(),
             url::Origin::Create(common_params_->url))) {
-      commit_params_->was_activated = mojom::WasActivatedOption::kYes;
+      commit_params_.was_activated = WasActivatedOption::kYes;
       // TODO(805871): the next check is relying on sanitized_referrer_ but
       // should ideally use a more reliable source for the originating URL when
       // the navigation is renderer initiated.
@@ -1455,7 +1427,7 @@ void NavigationRequest::OnResponseStarted(
                ShouldPropagateUserActivation(
                    url::Origin::Create(sanitized_referrer_->url),
                    url::Origin::Create(common_params_->url))) {
-      commit_params_->was_activated = mojom::WasActivatedOption::kYes;
+      commit_params_.was_activated = WasActivatedOption::kYes;
     }
   }
 
@@ -1832,7 +1804,7 @@ void NavigationRequest::OnStartChecksComplete(
   }
 
   // Mark the fetch_start (Navigation Timing API).
-  commit_params_->navigation_timing->fetch_start = base::TimeTicks::Now();
+  commit_params_.navigation_timing.fetch_start = base::TimeTicks::Now();
 
   GURL site_for_cookies =
       frame_tree_node_->current_frame_host()
@@ -2100,7 +2072,7 @@ void NavigationRequest::CommitErrorPage(
   // TODO(nasko): Create an opque origin here and pass it for the renderer
   // to commit into it. Potentially also make it an opaque origin derived from
   // the error page URL, so it can be checked at DidCommit processing.
-  commit_params_->origin_to_commit.reset();
+  commit_params_.origin_to_commit.reset();
   if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
       request_navigation_client_.is_bound()) {
     if (associated_site_instance_id_ ==
@@ -2116,7 +2088,7 @@ void NavigationRequest::CommitErrorPage(
   }
 
   ReadyToCommitNavigation(true);
-  render_frame_host_->FailedNavigation(this, *common_params_, *commit_params_,
+  render_frame_host_->FailedNavigation(this, *common_params_, commit_params_,
                                        has_stale_copy_in_cache_, net_error_,
                                        error_page_content);
 }
@@ -2159,11 +2131,11 @@ void NavigationRequest::CommitNavigation() {
   }
   if (subresource_loader_params_ &&
       !subresource_loader_params_->prefetched_signed_exchanges.empty()) {
-    commit_params_->prefetched_signed_exchanges =
+    commit_params_.prefetched_signed_exchanges =
         std::move(subresource_loader_params_->prefetched_signed_exchanges);
   }
   render_frame_host_->CommitNavigation(
-      this, *common_params_, *commit_params_, response_head_.get(),
+      this, *common_params_, commit_params_, response_head_.get(),
       std::move(response_body_), std::move(url_loader_client_endpoints_),
       is_view_source_, std::move(subresource_loader_params_),
       std::move(subresource_overrides_),
@@ -2356,7 +2328,7 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
         parent->ShouldModifyRequestUrlForCsp(true /* is subresource */)) {
       upgrade_if_insecure_ = true;
       parent->ModifyRequestUrlForCsp(&common_params_->url);
-      commit_params_->original_url = common_params_->url;
+      commit_params_.original_url = common_params_->url;
     }
   }
 
@@ -2463,9 +2435,9 @@ NavigationRequest::AboutSrcDocCheckResult NavigationRequest::CheckAboutSrcDoc()
 void NavigationRequest::UpdateCommitNavigationParamsHistory() {
   NavigationController* navigation_controller =
       frame_tree_node_->navigator()->GetController();
-  commit_params_->current_history_list_offset =
+  commit_params_.current_history_list_offset =
       navigation_controller->GetCurrentEntryIndex();
-  commit_params_->current_history_list_length =
+  commit_params_.current_history_list_length =
       navigation_controller->GetEntryCount();
 }
 
