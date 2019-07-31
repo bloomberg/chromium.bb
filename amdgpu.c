@@ -37,9 +37,9 @@ const static uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
 						  DRM_FORMAT_XRGB8888 };
 
-const static uint32_t texture_source_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8, DRM_FORMAT_NV21,
-						   DRM_FORMAT_NV12, DRM_FORMAT_YVU420_ANDROID,
-						   DRM_FORMAT_YVU420 };
+const static uint32_t texture_source_formats[] = { DRM_FORMAT_GR88,	      DRM_FORMAT_R8,
+						   DRM_FORMAT_NV21,	      DRM_FORMAT_NV12,
+						   DRM_FORMAT_YVU420_ANDROID, DRM_FORMAT_YVU420 };
 
 static int amdgpu_init(struct driver *drv)
 {
@@ -78,6 +78,13 @@ static int amdgpu_init(struct driver *drv)
 
 	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
 			     &metadata, BO_USE_TEXTURE_MASK);
+
+	/*
+	 * Chrome uses DMA-buf mmap to write to YV12 buffers, which are then accessed by the
+	 * Video Encoder Accelerator (VEA). It could also support NV12 potentially in the future.
+	 */
+	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata, BO_USE_HW_VIDEO_ENCODER);
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata, BO_USE_HW_VIDEO_ENCODER);
 
 	/* Android CTS tests require this. */
 	drv_add_combination(drv, DRM_FORMAT_BGR888, &metadata, BO_USE_SW_MASK);

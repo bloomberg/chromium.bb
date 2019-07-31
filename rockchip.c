@@ -121,6 +121,13 @@ static int rockchip_init(struct driver *drv)
 	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
 			     &metadata, BO_USE_TEXTURE_MASK);
 
+	/*
+	 * Chrome uses DMA-buf mmap to write to YV12 buffers, which are then accessed by the
+	 * Video Encoder Accelerator (VEA). It could also support NV12 potentially in the future.
+	 */
+	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata, BO_USE_HW_VIDEO_ENCODER);
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata, BO_USE_HW_VIDEO_ENCODER);
+
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 

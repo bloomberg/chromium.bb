@@ -273,6 +273,10 @@ enum gbm_bo_flags {
     * The buffer will be written by a video decode accelerator.
     */
    GBM_BO_USE_HW_VIDEO_DECODER = (1 << 13),
+   /**
+    * The buffer will be read by a video encode accelerator.
+    */
+   GBM_BO_USE_HW_VIDEO_ENCODER = (1 << 14),
 };
 
 int

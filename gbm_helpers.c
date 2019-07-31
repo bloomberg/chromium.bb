@@ -42,6 +42,8 @@ uint64_t gbm_convert_usage(uint32_t usage)
 		use_flags |= BO_USE_SW_WRITE_RARELY;
 	if (usage & GBM_BO_USE_HW_VIDEO_DECODER)
 		use_flags |= BO_USE_HW_VIDEO_DECODER;
+	if (usage & GBM_BO_USE_HW_VIDEO_ENCODER)
+		use_flags |= BO_USE_HW_VIDEO_ENCODER;
 
 	return use_flags;
 }
