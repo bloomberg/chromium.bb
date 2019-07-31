@@ -5673,6 +5673,7 @@ test("chrome_app_unittests") {
     "//base/test:test_support",
     "//chrome/browser",
     "//chrome/child",
+    "//chrome/common/profiler",
     "//chrome/gpu",
     "//components/crash/core/common",
     "//components/flags_ui:switches",
