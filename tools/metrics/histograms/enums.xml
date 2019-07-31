@@ -56694,6 +56694,13 @@ would be helpful to identify which type is being sent.
   <int value="12" label="Play install"/>
 </enum>
 
+<enum name="SuggestionEntityDecorationType">
+  <summary>Type of decoration beside entity suggestion.</summary>
+  <int value="0" label="Fallback Icon"/>
+  <int value="1" label="Color Tile"/>
+  <int value="2" label="Image"/>
+</enum>
+
 <enum name="SuggestionIconOrFaviconType">
   <summary>Type of icon shown beside omnibox suggestion.</summary>
   <int value="0" label="Invalid (unknown type)"/>
