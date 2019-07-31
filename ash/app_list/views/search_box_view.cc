@@ -119,7 +119,7 @@ void SearchBoxView::ResetForShow() {
   if (!is_search_box_active() && is_tablet_mode())
     return;
 
-  ClearSearch();
+  ClearSearchAndDeactivateSearchBox();
   SetSearchBoxBackgroundCornerRadius(
       GetSearchBoxBorderCornerRadiusForState(contents_view_->GetActiveState()));
 }
