@@ -86,7 +86,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/geometry/rect.h"
@@ -413,7 +412,7 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
   void SetUpOnMainThread() override {
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
-    // By default, all SSL cert checks are valid. Can be overriden in tests.
+    // By default, all SSL cert checks are valid. Can be overridden in tests.
     cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
   }
 
@@ -867,94 +866,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, InScopeHttpUrlsDisplayAppTitle) {
   // title should be used instead.
   EXPECT_EQ(base::ASCIIToUTF16("A Hosted App"),
             app_browser->GetWindowTitleForCurrentTab(false));
-}
-
-class HostedAppFileHandlingTest : public HostedAppTest {
- public:
-  HostedAppFileHandlingTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {blink::features::kNativeFileSystemAPI,
-         blink::features::kFileHandlingAPI},
-        {});
-  }
-
-  base::FilePath NewTestFilePath() {
-    // CreateTemporaryFile blocks, temporarily allow blocking.
-    base::ScopedAllowBlockingForTesting allow_blocking;
-
-    base::FilePath test_file_path;
-    base::CreateTemporaryFile(&test_file_path);
-    return test_file_path;
-  }
-
-  std::string InstallFileHandlingPWA() {
-    DCHECK_EQ(web_app_info_.app_url, GURL());
-    GURL url = GetSecureAppURL();
-
-    web_app_info_.app_url = url;
-    web_app_info_.scope = url.GetWithoutFilename();
-    web_app_info_.title = base::ASCIIToUTF16("A Hosted App");
-    web_app_info_.file_handler = blink::Manifest::FileHandler();
-    web_app_info_.file_handler->action =
-        https_server()->GetURL("app.com", "/ssl/blank_page.html");
-
-    {
-      std::vector<blink::Manifest::FileFilter> filters;
-      blink::Manifest::FileFilter text = {
-          base::ASCIIToUTF16("text"),
-          {base::ASCIIToUTF16(".txt"), base::ASCIIToUTF16("text/*")}};
-      filters.push_back(text);
-      web_app_info_.file_handler->files = std::move(filters);
-    }
-
-    app_ = InstallBookmarkApp(web_app_info_);
-    return app_->id();
-  }
-
-  content::WebContents* LaunchWithFiles(
-      const std::string& app_id,
-      const std::vector<base::FilePath>& files) {
-    AppLaunchParams params(browser()->profile(), app_id,
-                           extensions::LaunchContainer::kLaunchContainerWindow,
-                           WindowOpenDisposition::NEW_WINDOW,
-                           extensions::AppLaunchSource::kSourceFileHandler);
-    params.launch_files = files;
-
-    content::TestNavigationObserver navigation_observer(
-        web_app_info_.file_handler->action);
-    navigation_observer.StartWatchingNewWebContents();
-
-    content::WebContents* web_contents =
-        OpenApplicationWindow(params, web_app_info_.file_handler->action);
-    navigation_observer.Wait();
-    return web_contents;
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  WebApplicationInfo web_app_info_;
-};
-
-IN_PROC_BROWSER_TEST_P(HostedAppFileHandlingTest, PWAsCanViewLaunchParams) {
-  ASSERT_TRUE(https_server()->Start());
-
-  const std::string app_id = InstallFileHandlingPWA();
-  content::WebContents* web_contents = LaunchWithFiles(app_id, {});
-  EXPECT_EQ(0, content::EvalJs(web_contents, "launchParams.files.length"));
-}
-
-IN_PROC_BROWSER_TEST_P(HostedAppFileHandlingTest,
-                       PWAsCanReceiveFileLaunchParams) {
-  ASSERT_TRUE(https_server()->Start());
-
-  const std::string app_id = InstallFileHandlingPWA();
-  base::FilePath test_file_path = NewTestFilePath();
-  content::WebContents* web_contents =
-      LaunchWithFiles(app_id, {test_file_path});
-
-  EXPECT_EQ(1, content::EvalJs(web_contents, "launchParams.files.length"));
-  EXPECT_EQ(test_file_path.BaseName().value(),
-            content::EvalJs(web_contents, "launchParams.files[0].name"));
 }
 
 #if !defined(OS_ANDROID)
@@ -2952,11 +2863,6 @@ INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppSitePerProcessTest,
     ::testing::Values(AppType::HOSTED_APP));
-
-INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
-    HostedAppFileHandlingTest,
-    ::testing::Values(AppType::BOOKMARK_APP));
 
 #if !defined(OS_CHROMEOS)
 INSTANTIATE_TEST_SUITE_P(
