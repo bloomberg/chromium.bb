@@ -166,6 +166,18 @@ LogBuffer& operator<<(LogBuffer& buf,
   return buf;
 }
 
+template <typename T>
+LogBuffer& operator<<(LogBuffer& buf, const std::vector<T>& values) {
+  buf << "[";
+  for (size_t i = 0; i < values.size(); ++i) {
+    if (i)
+      buf << ", ";
+    buf << values.at(i);
+  }
+  buf << "]";
+  return buf;
+}
+
 // This is syntactic sugar for creating table rows in a LogBuffer. Each
 // value streamed into this LogTableRowBuffer is wrapped by a <td> element.
 // The entire row is wrapped by a <tr>.
