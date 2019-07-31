@@ -1359,23 +1359,21 @@ void NavigationRequest::OnResponseStarted(
   if (commit_params_.was_activated == WasActivatedOption::kUnknown) {
     commit_params_.was_activated = WasActivatedOption::kNo;
 
-    if (navigation_handle_->IsRendererInitiated() &&
+    if (!browser_initiated_ &&
         (frame_tree_node_->has_received_user_gesture() ||
          frame_tree_node_->has_received_user_gesture_before_nav()) &&
         ShouldPropagateUserActivation(
             frame_tree_node_->current_origin(),
-            url::Origin::Create(navigation_handle_->GetURL()))) {
+            url::Origin::Create(common_params_->url))) {
       commit_params_.was_activated = WasActivatedOption::kYes;
-      // TODO(805871): the next check is relying on
-      // navigation_handle_->GetReferrer() but should ideally use a more
-      // reliable source for the originating URL when the navigation is renderer
-      // initiated.
-    } else if (((navigation_handle_->HasUserGesture() &&
-                 navigation_handle_->IsRendererInitiated()) ||
-                navigation_handle_->WasStartedFromContextMenu()) &&
+      // TODO(805871): the next check is relying on sanitized_referrer_ but
+      // should ideally use a more reliable source for the originating URL when
+      // the navigation is renderer initiated.
+    } else if (((common_params_->has_user_gesture && !browser_initiated_) ||
+                common_params_->started_from_context_menu) &&
                ShouldPropagateUserActivation(
-                   url::Origin::Create(navigation_handle_->GetReferrer().url),
-                   url::Origin::Create(navigation_handle_->GetURL()))) {
+                   url::Origin::Create(sanitized_referrer_->url),
+                   url::Origin::Create(common_params_->url))) {
       commit_params_.was_activated = WasActivatedOption::kYes;
     }
   }
@@ -1474,7 +1472,7 @@ void NavigationRequest::OnResponseStarted(
   // redirect or not in order to perform its checks. This is the reason why we
   // need to check the CSP both on request and response.
   net::Error net_error = CheckContentSecurityPolicy(
-      navigation_handle_->WasServerRedirect() /* has_followed_redirect */,
+      was_redirected_ /* has_followed_redirect */,
       false /* url_upgraded_after_redirect */, true /* is_response_check */);
   if (net_error != net::OK) {
     OnRequestFailedInternal(network::URLLoaderCompletionStatus(net_error),
@@ -1763,12 +1761,11 @@ void NavigationRequest::OnStartChecksComplete(
                                   : frame_tree_node_->parent()->IsMainFrame();
 
   std::unique_ptr<NavigationUIData> navigation_ui_data;
-  if (navigation_handle_->GetNavigationUIData())
-    navigation_ui_data = navigation_handle_->GetNavigationUIData()->Clone();
+  if (navigation_ui_data_)
+    navigation_ui_data = navigation_ui_data_->Clone();
 
   bool is_for_guests_only =
-      navigation_handle_->GetStartingSiteInstance()->GetSiteURL().
-          SchemeIs(kGuestScheme);
+      starting_site_instance_->GetSiteURL().SchemeIs(kGuestScheme);
 
   // Give DevTools a chance to override begin params (headers, skip SW)
   // before actually loading resource.
@@ -1946,9 +1943,8 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       DownloadManagerImpl* download_manager = static_cast<DownloadManagerImpl*>(
           BrowserContext::GetDownloadManager(browser_context));
       download_manager->InterceptNavigation(
-          std::move(resource_request), navigation_handle_->GetRedirectChain(),
-          response_head_, std::move(response_body_),
-          std::move(url_loader_client_endpoints_),
+          std::move(resource_request), redirect_chain_, response_head_,
+          std::move(response_body_), std::move(url_loader_client_endpoints_),
           ssl_info_.has_value() ? ssl_info_->cert_status : 0,
           frame_tree_node_->frame_tree_node_id());
 
@@ -2049,8 +2045,7 @@ void NavigationRequest::CommitErrorPage(
 void NavigationRequest::CommitNavigation() {
   UpdateCommitNavigationParamsHistory();
   DCHECK(NeedsUrlLoader() == !!response_head_ ||
-         (navigation_handle_->WasServerRedirect() &&
-          common_params_->url.IsAboutBlank()));
+         (was_redirected_ && common_params_->url.IsAboutBlank()));
   DCHECK(!common_params_->url.SchemeIs(url::kJavaScriptScheme));
   DCHECK(!IsRendererDebugURL(common_params_->url));
   DCHECK(render_frame_host_ ==
@@ -2458,7 +2453,7 @@ void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
             "Navigating a cross-origin opener to a download (%s) is "
             "deprecated, see "
             "https://www.chromestatus.com/feature/5742188281462784.",
-            navigation_handle_->GetURL().spec().c_str()));
+            common_params_->url.spec().c_str()));
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOrigin);
   }
@@ -2561,7 +2556,7 @@ void NavigationRequest::OnWillFailRequestProcessed(
   if (result.action() == NavigationThrottle::PROCEED) {
     handle_state_ = WILL_FAIL_REQUEST;
     result = NavigationThrottle::ThrottleCheckResult(
-        NavigationThrottle::PROCEED, navigation_handle_->GetNetErrorCode());
+        NavigationThrottle::PROCEED, net_error_);
   } else {
     handle_state_ = CANCELING;
   }
@@ -2784,7 +2779,7 @@ void NavigationRequest::DidCommitNavigation(
   // If an error page reloads, net_error_code might be 200 but we still want to
   // count it as an error page.
   if (params.base_url.spec() == kUnreachableWebDataURL ||
-      navigation_handle_->GetNetErrorCode() != net::OK) {
+      net_error_ != net::OK) {
     TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle",
                                  navigation_handle_.get(),
                                  "DidCommitNavigation: error page");
