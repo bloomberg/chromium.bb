@@ -285,7 +285,8 @@ void NativeFileSystemWriter::CloseComplete(
   }
   file_ = nullptr;
   pending_operation_ = nullptr;
-  // Closes the mojo pipe. Subsequent operations will fail.
+  // We close the mojo pipe because we intend this writer to be discarded after
+  // close. Subsequent operations will fail.
   mojo_ptr_ = nullptr;
 }
 

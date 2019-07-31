@@ -156,8 +156,7 @@ void NativeFileSystemFileHandleImpl::CreateFileWriterImpl(
   auto base_swap_path =
       base::FilePath(url().path()).AddExtensionASCII(".crswap");
   CreateSwapFile(
-      /*count=*/0, std::move(base_swap_path), keep_existing_data,
-      std::move(callback));
+      /*count=*/0, base_swap_path, keep_existing_data, std::move(callback));
 }
 
 void NativeFileSystemFileHandleImpl::CreateSwapFile(

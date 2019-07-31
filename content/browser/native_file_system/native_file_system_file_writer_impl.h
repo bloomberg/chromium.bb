@@ -89,6 +89,9 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
     kClosed,
   };
   bool is_closed() const { return state_ != State::kOpen; }
+  // Returns whether the File Writer is in a state where any files can be
+  // deleted. We do not want to delete the files if there are clean-up
+  // operations in-flight.
   bool can_purge() const {
     return state_ == State::kOpen || state_ == State::kCloseError;
   }
