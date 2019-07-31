@@ -33,6 +33,7 @@ class CORE_EXPORT UnderlyingValueOwner : public UnderlyingValue {
 
   // UnderlyingValue
   InterpolableValue& MutableInterpolableValue() final;
+  void SetInterpolableValue(std::unique_ptr<InterpolableValue>) final;
   const NonInterpolableValue* GetNonInterpolableValue() const final;
   void SetNonInterpolableValue(scoped_refptr<const NonInterpolableValue>) final;
 

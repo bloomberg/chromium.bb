@@ -24,6 +24,8 @@ class CORE_EXPORT UnderlyingValue {
  public:
   virtual InterpolableValue& MutableInterpolableValue() = 0;
 
+  virtual void SetInterpolableValue(std::unique_ptr<InterpolableValue>) = 0;
+
   virtual const NonInterpolableValue* GetNonInterpolableValue() const = 0;
 
   // The NonInterpolableValue part of the underlying value may not be mutated,

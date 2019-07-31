@@ -17,6 +17,12 @@ InterpolableValue& UnderlyingValueOwner::MutableInterpolableValue() {
   return *MutableValue().interpolable_value;
 }
 
+void UnderlyingValueOwner::SetInterpolableValue(
+    std::unique_ptr<InterpolableValue> interpolable_value) {
+  DCHECK(type_);
+  MutableValue().interpolable_value = std::move(interpolable_value);
+}
+
 const NonInterpolableValue* UnderlyingValueOwner::GetNonInterpolableValue()
     const {
   DCHECK(value_);

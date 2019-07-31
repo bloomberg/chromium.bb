@@ -87,6 +87,11 @@ class UnderlyingTextIndentAsLengthValue : public UnderlyingValue {
     return inner_underlying_value_.MutableInterpolableValue();
   }
 
+  void SetInterpolableValue(
+      std::unique_ptr<InterpolableValue> interpolable_value) final {
+    inner_underlying_value_.SetInterpolableValue(std::move(interpolable_value));
+  }
+
   const NonInterpolableValue* GetNonInterpolableValue() const final {
     const auto& text_indent_non_interpolable_value =
         ToCSSTextIndentNonInterpolableValue(

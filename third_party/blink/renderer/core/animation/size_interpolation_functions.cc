@@ -74,6 +74,11 @@ class UnderlyingSizeAsLengthValue : public UnderlyingValue {
     return inner_underlying_value_.MutableInterpolableValue();
   }
 
+  void SetInterpolableValue(
+      std::unique_ptr<InterpolableValue> interpolable_value) final {
+    inner_underlying_value_.SetInterpolableValue(std::move(interpolable_value));
+  }
+
   const NonInterpolableValue* GetNonInterpolableValue() const final {
     const auto& size_non_interpolable_value = ToCSSSizeNonInterpolableValue(
         *inner_underlying_value_.GetNonInterpolableValue());

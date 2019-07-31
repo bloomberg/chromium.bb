@@ -55,6 +55,11 @@ class TestUnderlyingValue : public UnderlyingValue {
     return *interpolation_value_.interpolable_value;
   }
 
+  void SetInterpolableValue(
+      std::unique_ptr<InterpolableValue> interpolable_value) final {
+    interpolation_value_.interpolable_value = std::move(interpolable_value);
+  }
+
   const NonInterpolableValue* GetNonInterpolableValue() const final {
     return interpolation_value_.non_interpolable_value.get();
   }

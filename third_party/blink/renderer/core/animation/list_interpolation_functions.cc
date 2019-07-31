@@ -35,6 +35,11 @@ class UnderlyingItemValue : public UnderlyingValue {
     return *ToInterpolableList(underlying_list_.MutableInterpolableValue())
                 .GetMutable(index_);
   }
+  void SetInterpolableValue(
+      std::unique_ptr<InterpolableValue> interpolable_value) final {
+    ToInterpolableList(underlying_list_.MutableInterpolableValue())
+        .Set(index_, std::move(interpolable_value));
+  }
   const NonInterpolableValue* GetNonInterpolableValue() const final {
     return ToNonInterpolableList(*underlying_list_.GetNonInterpolableValue())
         .Get(index_);
