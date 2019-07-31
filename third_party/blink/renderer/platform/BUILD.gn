@@ -830,7 +830,6 @@ jumbo_component("platform") {
     "graphics/color_behavior.cc",
     "graphics/color_behavior.h",
     "graphics/color_blend.h",
-    "graphics/color_scheme.h",
     "graphics/color_space_gamut.cc",
     "graphics/color_space_gamut.h",
     "graphics/color_space_profile_data.cc",

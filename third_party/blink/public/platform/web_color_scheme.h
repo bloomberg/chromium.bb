@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_SCHEME_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_SCHEME_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COLOR_SCHEME_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COLOR_SCHEME_H_
 
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -13,11 +13,11 @@ namespace blink {
 // the UA style sheet (setting the text color to white instead of black on the
 // root element for kDark), the frame backdrop color (black instead of white for
 // kDark), theming form controls and scrollbars, etc.
-enum ColorScheme {
+enum WebColorScheme {
   kLight = 1,
   kDark = 2,
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_SCHEME_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COLOR_SCHEME_H_
