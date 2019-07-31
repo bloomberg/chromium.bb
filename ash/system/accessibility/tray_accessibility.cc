@@ -111,9 +111,12 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
                                               switch_access_enabled_);
   }
 
-  large_cursor_enabled_ = controller->large_cursor_enabled();
-  TrayPopupUtils::UpdateCheckMarkVisibility(large_cursor_view_,
-                                            large_cursor_enabled_);
+  if (large_cursor_view_ &&
+      controller->GetTrayVisiblityOfLargeCursorSetting()) {
+    large_cursor_enabled_ = controller->large_cursor_enabled();
+    TrayPopupUtils::UpdateCheckMarkVisibility(large_cursor_view_,
+                                              large_cursor_enabled_);
+  }
 
   mono_audio_enabled_ = controller->mono_audio_enabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(mono_audio_view_,
@@ -221,10 +224,13 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
 
   AddScrollListSubHeader(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ADDITIONAL_SETTINGS);
 
-  large_cursor_enabled_ = controller->large_cursor_enabled();
-  large_cursor_view_ = AddScrollListCheckableItem(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LARGE_CURSOR),
-      large_cursor_enabled_);
+  if (controller->GetTrayVisiblityOfLargeCursorSetting()) {
+    large_cursor_enabled_ = controller->large_cursor_enabled();
+    large_cursor_view_ = AddScrollListCheckableItem(
+        l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LARGE_CURSOR),
+        large_cursor_enabled_);
+  }
 
   mono_audio_enabled_ = controller->mono_audio_enabled();
   mono_audio_view_ = AddScrollListCheckableItem(
