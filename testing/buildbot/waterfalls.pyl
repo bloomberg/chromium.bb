@@ -4322,6 +4322,18 @@
   {
     'name': 'tryserver.chromium.android',
     'machines': {
+      'android-kitkat-arm-coverage-dbg': {
+        'mixins': [
+          'code-coverage',
+          'kitkat',
+          'hammerhead',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+          'junit_tests': 'chromium_junit_tests',
+        },
+        'os_type': 'android',
+      },
       'android_blink_rel': {
         'mixins': [
           'kitkat',
