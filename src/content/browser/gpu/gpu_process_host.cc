@@ -715,6 +715,8 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       process_launched_(false),
       connection_filter_id_(
           ServiceManagerConnection::kInvalidConnectionFilterId),
+      error_message_observer_(
+          std::make_unique<GpuErrorMessageObserver>(this)),
       weak_ptr_factory_(this) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess) ||
@@ -732,10 +734,14 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
 
   process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_GPU, this,
                                                  mojom::kGpuServiceName));
+  GpuDataManagerImpl::GetInstance()->AddObserver(
+      error_message_observer_.get());
 }
 
 GpuProcessHost::~GpuProcessHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  GpuDataManagerImpl::GetInstance()->RemoveObserver(
+      error_message_observer_.get());
   if (in_process_gpu_thread_)
     DCHECK(process_);
 
@@ -1309,6 +1315,27 @@ viz::mojom::GpuService* GpuProcessHost::gpu_service() {
 
 int GpuProcessHost::GetIDForTesting() const {
   return process_->GetData().id;
+}
+
+void GpuProcessHost::OnFatalErrorDetected(const std::string& header,
+                                          const std::string& message) {
+  std::string msg = "OnFatalErrorDetected";
+  msg += "; process_launched_:" + std::to_string(process_launched_);
+  msg += "; sandboxed:" + std::to_string(kind_ == GPU_PROCESS_KIND_SANDBOXED);
+  msg += "; has process_:" + std::to_string(!!process_);
+  msg += "; has gpu_host:" + std::to_string(!!gpu_host_);
+  msg += "; error header:" + header;
+  msg += "; error message:" + message;
+
+  if (process_ && process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED &&
+      gpu_host_) {
+    msg += "; GPU process will be terminated:";
+    process_->TerminateOnBadMessageReceived(msg);
+  }
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, std::move(msg),
+                     logging::LOG_WARNING));
 }
 
 }  // namespace content

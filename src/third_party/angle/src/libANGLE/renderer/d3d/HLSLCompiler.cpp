@@ -161,6 +161,13 @@ angle::Result HLSLCompiler::ensureInitialized(d3d::Context *context)
 
     if (!mD3DCompilerModule)
     {
+        // Error message to be observed. It is explicitly defined to avoid issues
+        // where the error message from upstream code is prone to change.
+        // See content\browser\gpu\gpu_error_message_observer.cc
+        const std::string d3dLoadFailureMsg{
+            "D3D compiler module failed in dll loading"};
+        ERR() << d3dLoadFailureMsg;
+
         DWORD lastError = GetLastError();
         ERR() << "D3D Compiler LoadLibrary failed. GetLastError=" << lastError;
         ANGLE_HISTOGRAM_ENUMERATION("GPU.ANGLE.D3DCompilerLoadLibraryResult", D3DCompilerFailure,
