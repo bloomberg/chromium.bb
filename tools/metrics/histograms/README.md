@@ -544,3 +544,15 @@ Please talk with the metrics team if there are more than a thousand possible
 different values that you could emit.
 
 For more information, see [sparse_histograms.h](https://cs.chromium.org/chromium/src/base/metrics/sparse_histogram.h).
+
+# Team Documentation
+
+This section contains useful information for folks on Chrome Metrics.
+
+## Processing histograms.xml
+
+When working with histograms.xml, verify whether you require fully expanded
+OWNERS files. Many scripts in this directory process histograms.xml, and
+sometimes OWNERS file paths are expanded and other times they are not. OWNERS
+paths are expanded when scripts make use of merge_xml's function MergeFiles;
+otherwise, they are not.
