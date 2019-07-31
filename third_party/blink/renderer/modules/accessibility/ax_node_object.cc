@@ -3135,7 +3135,7 @@ String AXNodeObject::NativeTextAlternative(
   }
 
   // 5.8 img or area Element
-  if (IsHTMLImageElement(GetNode()) || IsHTMLAreaElement(GetNode()) ||
+  if (IsHTMLImageElement(GetNode()) || IsA<HTMLAreaElement>(GetNode()) ||
       (GetLayoutObject() && GetLayoutObject()->IsSVGImage())) {
     // alt
     const AtomicString& alt = GetAttribute(kAltAttr);

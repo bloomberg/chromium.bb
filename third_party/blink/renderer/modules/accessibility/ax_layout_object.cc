@@ -1704,7 +1704,7 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
   if (!node)
     return nullptr;
 
-  if (auto* area = ToHTMLAreaElementOrNull(node))
+  if (auto* area = DynamicTo<HTMLAreaElement>(node))
     return AccessibilityImageMapHitTest(area, point);
 
   if (auto* option = ToHTMLOptionElementOrNull(node)) {
