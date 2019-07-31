@@ -4660,6 +4660,8 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
   const int allow_recode = (cpi->sf.recode_loop != DISALLOW_RECODE);
+  // Must allow recode if minimum compression ratio is set.
+  assert(IMPLIES(cpi->oxcf.min_cr > 0, allow_recode));
 
   set_size_independent_vars(cpi);
   if (cpi->oxcf.pass == 2 && cpi->sf.adaptive_interp_filter_search)
@@ -4764,7 +4766,9 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     // Dummy pack of the bitstream using up to date stats to get an
     // accurate estimate of output frame size to determine if we need
     // to recode.
-    if (cpi->sf.recode_loop >= ALLOW_RECODE_KFARFGF) {
+    const int do_dummy_pack =
+        cpi->sf.recode_loop >= ALLOW_RECODE_KFARFGF || cpi->oxcf.min_cr > 0;
+    if (do_dummy_pack) {
       restore_coding_context(cpi);
 
       finalize_encoded_frame(cpi);
