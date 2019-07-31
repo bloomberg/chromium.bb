@@ -2830,13 +2830,29 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
                         right.height(), client_->GetBackgroundColor());
   }
 
-  pp::Rect bottom =
-      draw_utils::GetBottomFillRect(page_rect, inset_sizes, kBottomSeparator);
-  bottom = GetScreenRect(bottom).Intersect(dirty_in_screen);
+  pp::Rect bottom_in_screen;
+  if (two_up_view_) {
+    pp::Rect page_in_screen = GetScreenRect(page_rect);
+    bottom_in_screen = draw_utils::GetBottomGapBetweenRects(
+        page_in_screen.bottom(), dirty_in_screen);
 
-  FPDFBitmap_FillRect(bitmap, bottom.x() - dirty_in_screen.x(),
-                      bottom.y() - dirty_in_screen.y(), bottom.width(),
-                      bottom.height(), client_->GetBackgroundColor());
+    if (page_index % 2 == 1) {
+      // Only draw over the right two-up view column with empty space.
+      bottom_in_screen.set_width(bottom_in_screen.width() / 2);
+      bottom_in_screen.set_x(page_in_screen.x());
+    }
+
+    bottom_in_screen = bottom_in_screen.Intersect(dirty_in_screen);
+  } else {
+    bottom_in_screen = GetScreenRect(draw_utils::GetBottomFillRect(
+        page_rect, inset_sizes, kBottomSeparator));
+    bottom_in_screen = bottom_in_screen.Intersect(dirty_in_screen);
+  }
+
+  FPDFBitmap_FillRect(bitmap, bottom_in_screen.x() - dirty_in_screen.x(),
+                      bottom_in_screen.y() - dirty_in_screen.y(),
+                      bottom_in_screen.width(), bottom_in_screen.height(),
+                      client_->GetBackgroundColor());
 }
 
 void PDFiumEngine::PaintPageShadow(int progressive_index,
