@@ -356,6 +356,11 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
        r'#define HAVE_VALGRIND_VALGRIND_H 0 /* \1 -- forced to 0. See '
        r'https://crbug.com/590440 */')
   ]
+  pre_make_asm_rewrites = [
+      (r'(%define HAVE_VALGRIND_VALGRIND_H [01])',
+       r'%define HAVE_VALGRIND_VALGRIND_H 0 ; \1 -- forced to 0. See '
+       r'https://crbug.com/590440')
+  ]
 
   if target_os == 'android':
     pre_make_rewrites += [
@@ -390,6 +395,9 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
     ]
 
   RewriteFile(os.path.join(config_dir, 'config.h'), pre_make_rewrites)
+  asm_path = os.path.join(config_dir, 'config.asm')
+  if os.path.exists(asm_path):
+    RewriteFile(asm_path, pre_make_asm_rewrites)
 
   # Windows linking resolves external symbols. Since generate_gn.py does not
   # need a functioning set of libraries, ignore unresolved symbols here.
