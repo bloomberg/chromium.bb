@@ -2254,12 +2254,12 @@ bool Document::NeedsLayoutTreeUpdate() const {
     return true;
   if (ChildNeedsStyleInvalidation())
     return true;
-  if (ChildNeedsReattachLayoutTree()) {
+  if (GetLayoutView() && GetLayoutView()->WasNotifiedOfSubtreeChange())
+    return true;
+  if (documentElement() && documentElement()->ChildNeedsReattachLayoutTree()) {
     DCHECK(InStyleRecalc());
     return true;
   }
-  if (GetLayoutView() && GetLayoutView()->WasNotifiedOfSubtreeChange())
-    return true;
   return false;
 }
 
@@ -2722,15 +2722,19 @@ void Document::UpdateStyle() {
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
-  // All of layout tree dirtiness and rebuilding needs to happen on a stable
-  // flat tree. We have an invariant that all of that happens in this method
-  // as a result of style recalc and the following layout tree rebuild.
-  //
-  // NeedsReattachLayoutTree() marks dirty up the flat tree ancestors. Re-
-  // slotting on a dirty tree could break ancestor chains and fail to update
-  // the tree properly.
-  DCHECK(!ChildNeedsReattachLayoutTree());
-  DCHECK(!NeedsReattachLayoutTree());
+#if DCHECK_IS_ON()
+  if (documentElement()) {
+    // All of layout tree dirtiness and rebuilding needs to happen on a stable
+    // flat tree. We have an invariant that all of that happens in this method
+    // as a result of style recalc and the following layout tree rebuild.
+    //
+    // NeedsReattachLayoutTree() marks dirty up the flat tree ancestors. Re-
+    // slotting on a dirty tree could break ancestor chains and fail to update
+    // the tree properly.
+    DCHECK(!documentElement()->ChildNeedsReattachLayoutTree());
+    DCHECK(!documentElement()->NeedsReattachLayoutTree());
+  }
+#endif
 
   NthIndexCache nth_index_cache(*this);
 
@@ -2780,7 +2784,6 @@ void Document::UpdateStyle() {
   }
   GetStyleEngine().ClearWhitespaceReattachSet();
   ClearChildNeedsStyleRecalc();
-  ClearChildNeedsReattachLayoutTree();
 
   PropagateStyleToViewport();
   GetStyleEngine().UpdateColorSchemeBackground();

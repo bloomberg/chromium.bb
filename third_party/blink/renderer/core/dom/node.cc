@@ -1249,9 +1249,9 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
-ContainerNode* Node::GetReattachParent() const {
+Element* Node::GetReattachParent() const {
   if (IsPseudoElement())
-    return ParentOrShadowHostNode();
+    return ParentOrShadowHostElement();
   if (IsChildOfV1ShadowHost()) {
     if (HTMLSlotElement* slot = AssignedSlot())
       return slot;
@@ -1264,12 +1264,12 @@ ContainerNode* Node::GetReattachParent() const {
       }
     }
   }
-  return ParentOrShadowHostNode();
+  return ParentOrShadowHostElement();
 }
 
 void Node::MarkAncestorsWithChildNeedsReattachLayoutTree() {
   DCHECK(isConnected());
-  ContainerNode* ancestor = GetReattachParent();
+  Element* ancestor = GetReattachParent();
   bool parent_dirty = ancestor && ancestor->NeedsReattachLayoutTree();
   for (; ancestor && !ancestor->ChildNeedsReattachLayoutTree();
        ancestor = ancestor->GetReattachParent()) {
