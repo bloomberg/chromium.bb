@@ -20,10 +20,8 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/appcache_interfaces.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -620,9 +618,6 @@ base::WeakPtr<AppCacheHost> AppCacheHost::GetWeakPtr() {
 }
 
 void AppCacheHost::MaybePassSubresourceFactory() {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // We already have a valid factory. This happens when the document was loaded
   // from the AppCache during navigation.
   if (subresource_url_factory_.get())

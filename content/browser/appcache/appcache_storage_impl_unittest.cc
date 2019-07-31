@@ -52,7 +52,6 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "sql/test/test_helpers.h"
@@ -290,8 +289,7 @@ class AppCacheStorageImplTest : public testing::Test {
                                          status);
     // TODO(http://crbug.com/824840): Enable NavigationLoaderOnUI for these
     // tests.
-    feature_list_.InitWithFeatures({network::features::kNetworkService},
-                                   {features::kNavigationLoaderOnUI});
+    feature_list_.InitWithFeatures({}, {features::kNavigationLoaderOnUI});
   }
 
   template <class Method>

@@ -1969,16 +1969,9 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
   // If the NavigationThrottles allowed the navigation to continue, have the
   // processing of the response resume in the network stack.
   if (result.action() == NavigationThrottle::PROCEED) {
-    // ResourceDispatcherHost is not used when the network service is on or when
-    // a service worker serves the response.
-    bool served_via_resource_dispatcher_host =
-        !base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-        !response_head_->head.was_fetched_via_service_worker;
-
-    // If this is a download without ResourceDispatcherHost, intercept the
-    // navigation response and pass it to DownloadManager, and cancel the
-    // navigation.
-    if (is_download_ && !served_via_resource_dispatcher_host) {
+    // If this is a download, intercept the navigation response and pass it to
+    // DownloadManager, and cancel the navigation.
+    if (is_download_) {
       // TODO(arthursonzogni): Pass the real ResourceRequest. For the moment
       // only these 4 parameters will be used, but it may evolve quickly.
       auto resource_request = std::make_unique<network::ResourceRequest>();
