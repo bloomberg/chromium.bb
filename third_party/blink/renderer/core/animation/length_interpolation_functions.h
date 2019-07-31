@@ -14,6 +14,7 @@ namespace blink {
 
 class CSSToLengthConversionData;
 class CSSValue;
+class UnderlyingValue;
 
 class LengthInterpolationFunctions {
   STATIC_ONLY(LengthInterpolationFunctions);
@@ -31,11 +32,16 @@ class LengthInterpolationFunctions {
   static bool NonInterpolableValuesAreCompatible(const NonInterpolableValue*,
                                                  const NonInterpolableValue*);
   static bool HasPercentage(const NonInterpolableValue*);
+  // TODO(andruud): Unify these Composite* functions.
   static void Composite(std::unique_ptr<InterpolableValue>&,
                         scoped_refptr<NonInterpolableValue>&,
                         double underlying_fraction,
                         const InterpolableValue&,
                         const NonInterpolableValue*);
+  static void CompositeUnderlying(UnderlyingValue&,
+                                  double underlying_fraction,
+                                  const InterpolableValue&,
+                                  const NonInterpolableValue*);
   static Length CreateLength(const InterpolableValue&,
                              const NonInterpolableValue*,
                              const CSSToLengthConversionData&,

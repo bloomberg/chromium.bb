@@ -16,6 +16,40 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE(NonInterpolableList);
 
 const wtf_size_t kRepeatableListMaxLength = 1000;
 
+// An UnderlyingValue used for compositing list items.
+//
+// When new NonInterpolableValues are set, the NonInterpolableList::AutoBuilder
+// is modified at the corresponding index. The NonInterpolableValue of the
+// underlying_list is updated when the AutoBuilder goes out of scope (if
+// any calls to UnderlyingItemValue::SetNonInterpolableValue were made).
+class UnderlyingItemValue : public UnderlyingValue {
+  STACK_ALLOCATED();
+
+ public:
+  UnderlyingItemValue(UnderlyingValue& underlying_list,
+                      NonInterpolableList::AutoBuilder& builder,
+                      wtf_size_t index)
+      : underlying_list_(underlying_list), builder_(builder), index_(index) {}
+
+  InterpolableValue& MutableInterpolableValue() final {
+    return *ToInterpolableList(underlying_list_.MutableInterpolableValue())
+                .GetMutable(index_);
+  }
+  const NonInterpolableValue* GetNonInterpolableValue() const final {
+    return ToNonInterpolableList(*underlying_list_.GetNonInterpolableValue())
+        .Get(index_);
+  }
+  void SetNonInterpolableValue(
+      scoped_refptr<NonInterpolableValue> non_interpolable_value) final {
+    builder_.Set(index_, std::move(non_interpolable_value));
+  }
+
+ private:
+  UnderlyingValue& underlying_list_;
+  NonInterpolableList::AutoBuilder& builder_;
+  wtf_size_t index_;
+};
+
 bool ListInterpolationFunctions::EqualValues(
     const InterpolationValue& a,
     const InterpolationValue& b,
@@ -319,15 +353,15 @@ void ListInterpolationFunctions::Composite(
     if (underlying_length < final_length) {
       RepeatToLength(underlying_value, final_length);
     }
-    InterpolableList& underlying_interpolable_list =
-        ToInterpolableList(*underlying_value.interpolable_value);
     NonInterpolableList& underlying_non_interpolable_list =
         ToNonInterpolableList(*underlying_value.non_interpolable_value);
 
+    NonInterpolableList::AutoBuilder builder(underlying_value_owner,
+                                             underlying_non_interpolable_list);
+
     for (wtf_size_t i = 0; i < final_length; i++) {
-      composite_item.Run(underlying_interpolable_list.GetMutable(i),
-                         underlying_non_interpolable_list.GetMutable(i),
-                         underlying_fraction,
+      UnderlyingItemValue underlying_item(underlying_value_owner, builder, i);
+      composite_item.Run(underlying_item, underlying_fraction,
                          *interpolable_list.Get(i % value_length),
                          non_interpolable_list.Get(i % value_length));
     }
@@ -345,16 +379,54 @@ void ListInterpolationFunctions::Composite(
     NonInterpolableList& underlying_non_interpolable_list =
         ToNonInterpolableList(*underlying_value.non_interpolable_value);
 
+    NonInterpolableList::AutoBuilder builder(underlying_value_owner,
+                                             underlying_non_interpolable_list);
+
     for (wtf_size_t i = 0; i < value_length; i++) {
-      composite_item.Run(underlying_interpolable_list.GetMutable(i),
-                         underlying_non_interpolable_list.GetMutable(i),
-                         underlying_fraction, *interpolable_list.Get(i),
+      UnderlyingItemValue underlying_item(underlying_value_owner, builder, i);
+      composite_item.Run(underlying_item, underlying_fraction,
+                         *interpolable_list.Get(i),
                          non_interpolable_list.Get(i));
     }
     for (wtf_size_t i = value_length; i < final_length; i++) {
       underlying_interpolable_list.GetMutable(i)->Scale(underlying_fraction);
     }
   }
+}
+
+NonInterpolableList::AutoBuilder::AutoBuilder(
+    UnderlyingValue& underlying_value,
+    NonInterpolableList& underlying_non_interpolable_list)
+    : underlying_value_(underlying_value),
+      underlying_non_interpolable_list_(underlying_non_interpolable_list) {
+  DCHECK(underlying_value.GetNonInterpolableValue());
+  DCHECK(IsNonInterpolableList(underlying_value_.GetNonInterpolableValue()));
+}
+
+NonInterpolableList::AutoBuilder::~AutoBuilder() {
+  // If no call to Set ever happened, there is no need to modify
+  // underlying_value_.
+  if (!list_.size())
+    return;
+  const auto& non_interpolable_list =
+      ToNonInterpolableList(*underlying_value_.GetNonInterpolableValue());
+  DCHECK_EQ(non_interpolable_list.length(), list_.size());
+  underlying_value_.SetNonInterpolableValue(
+      NonInterpolableList::Create(std::move(list_)));
+}
+
+void NonInterpolableList::AutoBuilder::Set(
+    wtf_size_t index,
+    scoped_refptr<NonInterpolableValue> non_interpolable_value) {
+  // Copy list on first call to Set.
+  if (!list_.size()) {
+    wtf_size_t underlying_length = underlying_non_interpolable_list_.length();
+    for (wtf_size_t i = 0; i < underlying_length; ++i)
+      list_.push_back(underlying_non_interpolable_list_.Get(i));
+  }
+
+  DCHECK_LT(index, list_.size());
+  list_[index] = non_interpolable_value;
 }
 
 }  // namespace blink

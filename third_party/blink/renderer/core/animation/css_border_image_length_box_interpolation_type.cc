@@ -244,21 +244,19 @@ InterpolationValue ConvertBorderImageLengthBox(const BorderImageLengthBox& box,
       });
 }
 
-void CompositeSide(
-    std::unique_ptr<InterpolableValue>& underlying_interpolable_value,
-    scoped_refptr<NonInterpolableValue>& underlying_non_interpolable_value,
-    double underlying_fraction,
-    const InterpolableValue& interpolable_value,
-    const NonInterpolableValue* non_interpolable_value) {
+void CompositeSide(UnderlyingValue& underlying_value,
+                   double underlying_fraction,
+                   const InterpolableValue& interpolable_value,
+                   const NonInterpolableValue* non_interpolable_value) {
   switch (GetSideType(non_interpolable_value)) {
     case SideType::kNumber:
-      underlying_interpolable_value->ScaleAndAdd(underlying_fraction,
-                                                 interpolable_value);
+      underlying_value.MutableInterpolableValue().ScaleAndAdd(
+          underlying_fraction, interpolable_value);
       break;
     case SideType::kLength:
-      LengthInterpolationFunctions::Composite(
-          underlying_interpolable_value, underlying_non_interpolable_value,
-          underlying_fraction, interpolable_value, non_interpolable_value);
+      LengthInterpolationFunctions::CompositeUnderlying(
+          underlying_value, underlying_fraction, interpolable_value,
+          non_interpolable_value);
       break;
     case SideType::kAuto:
       break;

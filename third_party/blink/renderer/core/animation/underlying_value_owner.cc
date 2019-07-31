@@ -13,6 +13,21 @@ struct NullValueWrapper {
   const InterpolationValue value;
 };
 
+InterpolableValue& UnderlyingValueOwner::MutableInterpolableValue() {
+  return *MutableValue().interpolable_value;
+}
+
+const NonInterpolableValue* UnderlyingValueOwner::GetNonInterpolableValue()
+    const {
+  DCHECK(value_);
+  return value_->non_interpolable_value.get();
+}
+
+void UnderlyingValueOwner::SetNonInterpolableValue(
+    scoped_refptr<NonInterpolableValue> non_interpolable_value) {
+  MutableValue().non_interpolable_value = non_interpolable_value;
+}
+
 const InterpolationValue& UnderlyingValueOwner::Value() const {
   DEFINE_STATIC_LOCAL(NullValueWrapper, null_value_wrapper, ());
   return *this ? *value_ : null_value_wrapper.value;

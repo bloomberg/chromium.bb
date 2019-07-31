@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class UnderlyingValue;
 class UnderlyingValueOwner;
 class InterpolationType;
 
@@ -52,8 +53,7 @@ class CORE_EXPORT ListInterpolationFunctions {
       base::RepeatingCallback<bool(const NonInterpolableValue*,
                                    const NonInterpolableValue*)>;
   using CompositeItemCallback =
-      base::RepeatingCallback<void(std::unique_ptr<InterpolableValue>&,
-                                   scoped_refptr<NonInterpolableValue>&,
+      base::RepeatingCallback<void(UnderlyingValue&,
                                    double underlying_fraction,
                                    const InterpolableValue&,
                                    const NonInterpolableValue*)>;
@@ -83,9 +83,29 @@ class CORE_EXPORT NonInterpolableList : public NonInterpolableValue {
     return list_[index].get();
   }
   NonInterpolableValue* Get(wtf_size_t index) { return list_[index].get(); }
-  scoped_refptr<NonInterpolableValue>& GetMutable(wtf_size_t index) {
-    return list_[index];
-  }
+
+  // This class can update the NonInterpolableList of an UnderlyingValue with
+  // a series of mutations. The actual update of the list is delayed until the
+  // AutoBuilder object goes out of scope, to avoid creating a new list for
+  // every call to Set().
+  class CORE_EXPORT AutoBuilder {
+    STACK_ALLOCATED();
+
+   public:
+    // The UnderlyingValue provided here is assumed to contain a
+    // non-nullptr NonInterpolableList.
+    //
+    // TODO(andruud): Remove NonInterpolableList& param.
+    AutoBuilder(UnderlyingValue&, NonInterpolableList&);
+    ~AutoBuilder();
+
+    void Set(wtf_size_t index, scoped_refptr<NonInterpolableValue>);
+
+   private:
+    UnderlyingValue& underlying_value_;
+    NonInterpolableList& underlying_non_interpolable_list_;
+    Vector<scoped_refptr<NonInterpolableValue>> list_;
+  };
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 

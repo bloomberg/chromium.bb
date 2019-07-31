@@ -145,7 +145,7 @@ void CSSLengthListInterpolationType::Composite(
       ListInterpolationFunctions::LengthMatchingStrategy::kLowestCommonMultiple,
       WTF::BindRepeating(
           LengthInterpolationFunctions::NonInterpolableValuesAreCompatible),
-      WTF::BindRepeating(LengthInterpolationFunctions::Composite));
+      WTF::BindRepeating(LengthInterpolationFunctions::CompositeUnderlying));
 }
 
 void CSSLengthListInterpolationType::ApplyStandardPropertyValue(
