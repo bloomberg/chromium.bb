@@ -238,8 +238,7 @@ TEST_F(PeripheralBatteryNotifierTest, ExtractBluetoothAddress) {
   EXPECT_TRUE(non_bluetooth_device_info.bluetooth_address.empty());
 }
 
-// TODO(crbug.com/765794): Flaky on ash_unittests with mus.
-TEST_F(PeripheralBatteryNotifierTest, DISABLED_DeviceRemove) {
+TEST_F(PeripheralBatteryNotifierTest, DeviceRemove) {
   battery_notifier_->PeripheralBatteryStatusReceived(kTestBatteryPath,
                                                      kTestDeviceName, 5);
   EXPECT_EQ(1u, battery_notifier_->batteries_.count(kTestBatteryId));
@@ -251,8 +250,7 @@ TEST_F(PeripheralBatteryNotifierTest, DISABLED_DeviceRemove) {
               nullptr);
 }
 
-// TODO(crbug.com/765794): Flaky on ash_unittests with mus.
-TEST_F(PeripheralBatteryNotifierTest, DISABLED_StylusNotification) {
+TEST_F(PeripheralBatteryNotifierTest, StylusNotification) {
   const std::string kTestStylusBatteryPath =
       "/sys/class/power_supply/hid-AAAA:BBBB:CCCC.DDDD-battery";
   const std::string kTestStylusName = "test_stylus";
