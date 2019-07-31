@@ -42,6 +42,7 @@ class Commands {
    */
   runCommand_(command) {
     this.commandMap_.get(command)();
+    this.switchAccess_.performedUserAction();
   }
 
   /**
