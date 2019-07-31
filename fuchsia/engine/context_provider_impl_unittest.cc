@@ -323,12 +323,10 @@ static bool WaitUntilJobIsEmpty(zx::unowned_job job, zx::duration timeout) {
 }
 
 // Regression test for https://crbug.com/927403 (Job leak per-Context).
-// TODO(http://crbug.com/989085): Flakily fails on Fuchsia x64.
-TEST_F(ContextProviderImplTest, DISABLED_CleansUpContextJobs) {
+TEST_F(ContextProviderImplTest, CleansUpContextJobs) {
   // Replace the default job with one that is guaranteed to be empty.
   zx::job job;
-  ASSERT_EQ(base::GetDefaultJob()->duplicate(ZX_RIGHT_SAME_RIGHTS, &job),
-            ZX_OK);
+  ASSERT_EQ(zx::job::create(*base::GetDefaultJob(), 0, &job), ZX_OK);
   base::ScopedDefaultJobForTest empty_default_job(std::move(job));
 
   // Bind to the ContextProvider.
