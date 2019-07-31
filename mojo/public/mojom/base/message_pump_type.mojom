@@ -4,8 +4,8 @@
 
 module mojo_base.mojom;
 
-// Mirror of base::MessageLoop::Type.
-enum MessageLoopType {
+// Mirror of base::MessagePumpType.
+enum MessagePumpType {
   kDefault,
   kUi,
   kCustom,
