@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/web_package/bundled_exchanges_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -16,6 +17,7 @@
 
 namespace content {
 
+class BundledExchangesReader;
 class NavigationLoaderInterceptor;
 
 // A class to provide interfaces to communicate with a BundledExchanges for
@@ -36,6 +38,14 @@ class BundledExchangesFactory final {
       mojo::Remote<network::mojom::URLLoaderFactory> fallback_factory);
 
  private:
+  // Methods called on the UI thread.
+  void OnMetadataReady(base::Optional<std::string> error);
+
+  // Following members can be accessed only on the UI thread.
+  std::unique_ptr<BundledExchangesReader> reader_;
+
+  base::WeakPtrFactory<BundledExchangesFactory> weak_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(BundledExchangesFactory);
 };
 

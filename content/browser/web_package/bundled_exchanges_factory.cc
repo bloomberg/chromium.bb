@@ -4,7 +4,9 @@
 
 #include "content/browser/web_package/bundled_exchanges_factory.h"
 
+#include "base/bind.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/web_package/bundled_exchanges_reader.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -15,7 +17,7 @@ namespace {
 class Interceptor final : public content::NavigationLoaderInterceptor {
  public:
   Interceptor() { DCHECK_CURRENTLY_ON(content::BrowserThread::UI); }
-  ~Interceptor() override { DCHECK_CURRENTLY_ON(content::BrowserThread::IO); }
+  ~Interceptor() override { DCHECK_CURRENTLY_ON(content::BrowserThread::UI); }
 
  private:
   // NavigationLoaderInterceptor implementation
@@ -24,7 +26,7 @@ class Interceptor final : public content::NavigationLoaderInterceptor {
                          content::ResourceContext* resource_context,
                          LoaderCallback callback,
                          FallbackCallback fallback_callback) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     std::move(callback).Run({});
   }
@@ -37,12 +39,17 @@ class Interceptor final : public content::NavigationLoaderInterceptor {
 namespace content {
 
 BundledExchangesFactory::BundledExchangesFactory(
-    const BundledExchangesSource& bundled_exchanges_source) {
+    const BundledExchangesSource& bundled_exchanges_source)
+    : reader_(
+          std::make_unique<BundledExchangesReader>(bundled_exchanges_source)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  reader_->ReadMetadata(base::BindOnce(
+      &BundledExchangesFactory::OnMetadataReady, weak_factory_.GetWeakPtr()));
 }
 
-// Can be destructed on IO or UI thread.
-BundledExchangesFactory::~BundledExchangesFactory() = default;
+BundledExchangesFactory::~BundledExchangesFactory() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
 std::unique_ptr<NavigationLoaderInterceptor>
 BundledExchangesFactory::CreateInterceptor() {
@@ -56,6 +63,11 @@ void BundledExchangesFactory::CreateURLLoaderFactory(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   NOTREACHED();
+}
+
+void BundledExchangesFactory::OnMetadataReady(
+    base::Optional<std::string> error) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 }  // namespace content
