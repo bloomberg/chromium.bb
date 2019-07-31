@@ -1288,6 +1288,7 @@ void Node::SetNeedsReattachLayoutTree() {
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(!GetDocument().ChildNeedsDistributionRecalc());
   DCHECK(IsElementNode() || IsTextNode());
+  DCHECK(InActiveDocument());
   SetFlag(kNeedsReattachLayoutTree);
   MarkAncestorsWithChildNeedsReattachLayoutTree();
 }

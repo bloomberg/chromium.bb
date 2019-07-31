@@ -2661,7 +2661,8 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
   }
 
   if (child_change.ReattachLayoutTree()) {
-    if (old_style || new_style)
+    // Don't mark pseudo element which is about to be removed for re-attachment.
+    if (new_style || (old_style && !IsPseudoElement()))
       SetNeedsReattachLayoutTree();
     return child_change;
   }

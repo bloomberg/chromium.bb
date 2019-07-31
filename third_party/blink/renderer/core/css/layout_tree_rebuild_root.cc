@@ -11,6 +11,7 @@ namespace blink {
 Element& LayoutTreeRebuildRoot::RootElement() const {
   Node* root_node = GetRootNode();
   DCHECK(root_node);
+  DCHECK(root_node->isConnected());
   // We need to start from the closest non-dirty ancestor which has a
   // LayoutObject to make WhitespaceAttacher work correctly because text node
   // siblings of nodes being re-attached needs to be traversed to re-evaluate
