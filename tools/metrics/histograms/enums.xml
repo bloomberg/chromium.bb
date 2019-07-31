@@ -7495,25 +7495,28 @@ histogram as enum -->
 
 <enum name="ChromeColorsInfo">
   <int value="0" label="OTHER"/>
-  <int value="1" label="PISTACHIO"/>
-  <int value="2" label="SEAFOAM"/>
-  <int value="3" label="MIST"/>
-  <int value="4" label="FLAMINGO"/>
-  <int value="5" label="WINE"/>
-  <int value="6" label="LAVENDER"/>
-  <int value="7" label="ELEPHANT"/>
-  <int value="8" label="SUNSET"/>
-  <int value="9" label="BANANA"/>
-  <int value="10" label="KIWI"/>
-  <int value="11" label="ROBINS EGG"/>
-  <int value="12" label="BLUE"/>
-  <int value="13" label="PINE"/>
-  <int value="14" label="OCEANIC"/>
-  <int value="15" label="BORDEAUX"/>
-  <int value="16" label="EGGPLANT"/>
-  <int value="17" label="NAVY"/>
-  <int value="18" label="MIDNIGHT"/>
-  <int value="19" label="RASPBERRY"/>
+  <int value="1" label="Elephant"/>
+  <int value="2" label="Light grey"/>
+  <int value="3" label="Midnight"/>
+  <int value="4" label="Black"/>
+  <int value="5" label="Beige/White"/>
+  <int value="6" label="Yellow/White"/>
+  <int value="7" label="Green/White"/>
+  <int value="8" label="Light Teal/White"/>
+  <int value="9" label="Light Purple/White"/>
+  <int value="10" label="Pink/White"/>
+  <int value="11" label="Beige"/>
+  <int value="12" label="Orange"/>
+  <int value="13" label="Light Green"/>
+  <int value="14" label="Light Teal"/>
+  <int value="15" label="Light Blue"/>
+  <int value="16" label="Pink"/>
+  <int value="17" label="Dark Pink/Red"/>
+  <int value="18" label="Dark Red/Orange"/>
+  <int value="19" label="Dark Green"/>
+  <int value="20" label="Dark Teal"/>
+  <int value="21" label="Dark Blue"/>
+  <int value="22" label="Dark Purple"/>
 </enum>
 
 <enum name="ChromeColorsRevertReason">
@@ -35384,6 +35387,7 @@ from previous Chrome versions.
   <int value="-110726049" label="KeyboardLockAPI:disabled"/>
   <int value="-110465424" label="PictureInPicture:enabled"/>
   <int value="-108881882" label="NTPCondensedTileLayout:enabled"/>
+  <int value="-108468535" label="ChromeColorsCustomColorPicker:disabled"/>
   <int value="-102537270" label="extension-content-verification"/>
   <int value="-102227288" label="PasswordExport:disabled"/>
   <int value="-100148609" label="EvDetailsInPageInfo:disabled"/>
@@ -35392,6 +35396,7 @@ from previous Chrome versions.
   <int value="-92116820" label="InlineUpdateFlow:enabled"/>
   <int value="-90032223" label="BuiltInModuleInfra:disabled"/>
   <int value="-89690053" label="MaterialDesignUserManager:enabled"/>
+  <int value="-89567017" label="ChromeColorsCustomColorPicker:enabled"/>
   <int value="-88822940" label="ssl-version-min"/>
   <int value="-88273414" label="ContentSuggestionsShowSummary:enabled"/>
   <int value="-86788587" label="allow-autofill-sync-credential"/>
