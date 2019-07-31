@@ -6,6 +6,7 @@
 """A script to merge multiple source xml files into a single histograms.xml."""
 
 import argparse
+import expand_owners
 import xml.dom.minidom
 
 
@@ -33,7 +34,8 @@ def MakeNodeWithChildren(doc, tag, children):
   """
   node = doc.createElement(tag)
   for child in children:
-    # TODO(crbug/924136): Expand owners here.
+    if child.tagName == 'histograms':
+      expand_owners.ExpandHistogramsOWNERS(child)
     node.appendChild(child)
   return node
 
