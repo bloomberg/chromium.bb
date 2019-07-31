@@ -132,6 +132,7 @@
 #include "services/media_session/public/cpp/features.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/service_manager/sandbox/features.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "storage/browser/fileapi/file_system_features.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
@@ -152,8 +153,6 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_features.h"
 
-#include "services/service_manager/sandbox/features.h"
-
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
@@ -172,6 +171,7 @@
 #include "components/arc/arc_features.h"
 #include "printing/printing_features_chromeos.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
+#include "ui/events/ozone/evdev/touch_filter/palm_detection_filter_factory.h"
 #endif  // OS_CHROMEOS
 
 #if defined(OS_MACOSX)
@@ -3986,6 +3986,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaSessionNotificationsName,
      flag_descriptions::kMediaSessionNotificationsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kMediaSessionNotification)},
+
+    {"enable-heuristic-stylus-palm-rejection",
+     flag_descriptions::kEnableHeuristicStylusPalmRejectionName,
+     flag_descriptions::kEnableHeuristicStylusPalmRejectionDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ui::kEnableHeuristicPalmDetectionFilter)},
 
     {"enable-hide-arc-media-notifications",
      flag_descriptions::kHideArcMediaNotificationsName,

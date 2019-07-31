@@ -34237,6 +34237,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1837401779" label="EnableFileManagerFormatDialog:enabled"/>
   <int value="-1837329460" label="NewEncodeCpuLoadEstimator:enabled"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
+  <int value="-1835608319" label="EnableHeuristicPalmDetectionFilter:disabled"/>
   <int value="-1835123381" label="TemporaryUnexpireFlagsM77:enabled"/>
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
   <int value="-1832575380" label="show-saved-copy"/>
@@ -36726,6 +36727,7 @@ from previous Chrome versions.
   <int value="1707283026" label="SyncPseudoUSSExtensions:disabled"/>
   <int value="1708118086" label="TextFragmentAnchor:disabled"/>
   <int value="1713230497" label="ColorCorrectRendering:disabled"/>
+  <int value="1714016217" label="EnableHeuristicPalmDetectionFilter:enabled"/>
   <int value="1714922056" label="GlobalMediaControls:disabled"/>
   <int value="1715338237" label="ContextualSearchSecondTap:disabled"/>
   <int value="1716104463" label="enable-fullscreen-app-list"/>

@@ -3209,6 +3209,12 @@ const char kEnableGoogleAssistantStereoInputDescription[] =
     "Enable an experimental feature that uses stereo audio input for hotword "
     "and voice to text detection in Google Assistant.";
 
+const char kEnableHeuristicStylusPalmRejectionName[] =
+    "Enable Heuristic for Stylus/Palm Rejection.";
+const char kEnableHeuristicStylusPalmRejectionDescription[] =
+    "Enable additional heuristic palm rejection logic when interacting with "
+    "stylus usage. Not intended for all devices.";
+
 const char kEnableHomeLauncherName[] = "Enable home launcher";
 const char kEnableHomeLauncherDescription[] =
     "Enable home launcher in tablet mode.";

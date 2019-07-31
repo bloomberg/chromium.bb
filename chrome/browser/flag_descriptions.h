@@ -1915,6 +1915,9 @@ extern const char kEnableGoogleAssistantDspDescription[];
 extern const char kEnableGoogleAssistantStereoInputName[];
 extern const char kEnableGoogleAssistantStereoInputDescription[];
 
+extern const char kEnableHeuristicStylusPalmRejectionName[];
+extern const char kEnableHeuristicStylusPalmRejectionDescription[];
+
 extern const char kEnableHomeLauncherName[];
 extern const char kEnableHomeLauncherDescription[];
 
