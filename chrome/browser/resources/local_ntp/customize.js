@@ -984,7 +984,12 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
   };
   customize.richerPicker_applySelectedState(tile);
   customize.richerPicker_maybeToggleDone();
-  customize.richerPicker_previewImage(tile);
+
+  // Don't apply a preview for a preselected image, as it's already the
+  // page background.
+  if (customize.preselectedOptions.backgroundsMenuTile !== tile) {
+    customize.richerPicker_previewImage(tile);
+  }
 };
 
 /**
