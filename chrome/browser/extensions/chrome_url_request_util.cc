@@ -17,7 +17,6 @@
 #include "base/task/post_task.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
-#include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extensions_browser_client.h"

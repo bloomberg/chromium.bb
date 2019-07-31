@@ -237,12 +237,11 @@ using CanDownloadCallback =
     base::OnceCallback<void(bool /* storage permission granted */,
                             bool /*allow*/)>;
 
-void CheckCanDownload(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    const GURL& url,
-    const std::string& request_method,
-    base::Optional<url::Origin> request_initiator,
-    CanDownloadCallback can_download_cb) {
+void CheckCanDownload(const content::WebContents::Getter& web_contents_getter,
+                      const GURL& url,
+                      const std::string& request_method,
+                      base::Optional<url::Origin> request_initiator,
+                      CanDownloadCallback can_download_cb) {
   DownloadRequestLimiter* limiter =
       g_browser_process->download_request_limiter();
   if (limiter) {
@@ -256,7 +255,7 @@ void CheckCanDownload(
 // TODO(qinmin): reuse the similar function defined in
 // DownloadResourceThrottle.
 void OnDownloadAcquireFileAccessPermissionDone(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const content::WebContents::Getter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,
@@ -1388,7 +1387,7 @@ void ChromeDownloadManagerDelegate::MaybeSendDangerousDownloadOpenedReport(
 }
 
 void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const content::WebContents::Getter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,

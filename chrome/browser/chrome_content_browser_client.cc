@@ -1009,11 +1009,10 @@ chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(
   return prerender::PrerenderContents::FromWebContents(web_contents);
 }
 
-void LaunchURL(
-    const GURL& url,
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    ui::PageTransition page_transition,
-    bool has_user_gesture) {
+void LaunchURL(const GURL& url,
+               const content::WebContents::Getter& web_contents_getter,
+               ui::PageTransition page_transition,
+               bool has_user_gesture) {
   // If there is no longer a WebContents, the request may have raced with tab
   // closing. Don't fire the external request. (It may have been a prerender.)
   content::WebContents* web_contents = web_contents_getter.Run();
@@ -5223,7 +5222,7 @@ ChromeContentBrowserClient::CreateLoginDelegate(
 
 bool ChromeContentBrowserClient::HandleExternalProtocol(
     const GURL& url,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents::Getter web_contents_getter,
     int child_id,
     content::NavigationUIData* navigation_data,
     bool is_main_frame,

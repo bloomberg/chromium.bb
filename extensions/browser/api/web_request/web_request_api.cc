@@ -30,7 +30,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
@@ -89,7 +88,6 @@
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
-using content::ResourceRequestInfo;
 using extension_web_request_api_helpers::ExtraInfoSpec;
 
 namespace activity_log = activity_log_web_request_constants;
