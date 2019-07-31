@@ -105,6 +105,10 @@ DesksController* DesksController::Get() {
   return Shell::Get()->desks_controller();
 }
 
+void DesksController::Shutdown() {
+  desk_switch_animators_.clear();
+}
+
 void DesksController::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
