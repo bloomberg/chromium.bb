@@ -356,7 +356,8 @@ bool LayoutBlockFlow::IsSelfCollapsingBlock() const {
     DCHECK(CreatesNewFormattingContext());
     return false;
   }
-  DCHECK_EQ(!is_self_collapsing_, !CheckIfIsSelfCollapsingBlock());
+  if (!IsLayoutNGObject())
+    DCHECK_EQ(!is_self_collapsing_, !CheckIfIsSelfCollapsingBlock());
   return is_self_collapsing_;
 }
 
@@ -541,7 +542,7 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
     PositionDialog();
 
   ClearNeedsLayout();
-  UpdateIsSelfCollapsing();
+  is_self_collapsing_ = CheckIfIsSelfCollapsingBlock();
   NotifyDisplayLockDidLayout(DisplayLockContext::kSelf);
 }
 
