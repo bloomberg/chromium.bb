@@ -327,12 +327,12 @@ void DbusMenu::OnGetGroupProperties(ScopedMethodResponse* response) {
   dbus::MessageReader id_reader(nullptr);
   if (!response->reader().PopArray(&id_reader))
     return;
-  std::set<int32_t> ids;
+  std::vector<int32_t> ids;
   while (id_reader.HasMoreData()) {
     int32_t id;
     if (!id_reader.PopInt32(&id))
       return;
-    ids.insert(id);
+    ids.push_back(id);
   }
 
   std::set<std::string> property_filter;
@@ -349,15 +349,14 @@ void DbusMenu::OnGetGroupProperties(ScopedMethodResponse* response) {
   dbus::MessageWriter& writer = response->Writer();
   dbus::MessageWriter item_writer(nullptr);
   writer.OpenArray("(ia{sv})", &item_writer);
-  for (const auto& item_pair : items_) {
-    if (!ids.empty() && !base::Contains(ids, item_pair.first))
-      continue;
+
+  auto write_item = [&](int32_t id, const MenuItem& item) {
     dbus::MessageWriter struct_writer(nullptr);
     item_writer.OpenStruct(&struct_writer);
-    struct_writer.AppendInt32(item_pair.first);
+    struct_writer.AppendInt32(id);
     dbus::MessageWriter property_writer(nullptr);
     struct_writer.OpenArray("{sv}", &property_writer);
-    for (const auto& property_pair : item_pair.second->properties) {
+    for (const auto& property_pair : item.properties) {
       if (!property_filter.empty() &&
           !base::Contains(property_filter, property_pair.first)) {
         continue;
@@ -370,7 +369,19 @@ void DbusMenu::OnGetGroupProperties(ScopedMethodResponse* response) {
     }
     struct_writer.CloseContainer(&property_writer);
     item_writer.CloseContainer(&struct_writer);
+  };
+
+  if (ids.empty()) {
+    for (const auto& item_pair : items_)
+      write_item(item_pair.first, *item_pair.second);
+  } else {
+    for (int32_t id : ids) {
+      auto it = items_.find(id);
+      if (it != items_.end())
+        write_item(id, *it->second);
+    }
   }
+
   writer.CloseContainer(&item_writer);
 }
 
