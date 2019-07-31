@@ -233,11 +233,16 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
         *layout_result, constraint_space.PercentageResolutionInlineSize());
 
     // Even if we can reuse the result, we may still need to recalculate our
-    // overflow.
+    // overflow. TODO(crbug.com/919415): Explain why.
     if (box_->NeedsLayoutOverflowRecalc())
       box_->RecalcLayoutOverflow();
 
-    return layout_result;
+    // Return the cached result unless we're marked for layout. We may have
+    // added or removed scrollbars during overflow recalculation, which may have
+    // marked us for layout. In that case the cached result is unusable, and we
+    // need to re-lay out now.
+    if (!box_->NeedsLayout())
+      return layout_result;
   }
 
   if (!fragment_geometry) {
