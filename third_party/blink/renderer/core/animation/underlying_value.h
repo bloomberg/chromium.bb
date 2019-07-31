@@ -29,7 +29,8 @@ class CORE_EXPORT UnderlyingValue {
   // The NonInterpolableValue part of the underlying value may not be mutated,
   // hence there is no MutableNonInterpolableValue function. However, the
   // NonInterpolableValue part may be replaced entirely with this function.
-  virtual void SetNonInterpolableValue(scoped_refptr<NonInterpolableValue>) = 0;
+  virtual void SetNonInterpolableValue(
+      scoped_refptr<const NonInterpolableValue>) = 0;
 };
 
 }  // namespace blink

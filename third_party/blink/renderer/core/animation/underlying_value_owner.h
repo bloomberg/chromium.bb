@@ -34,7 +34,7 @@ class CORE_EXPORT UnderlyingValueOwner : public UnderlyingValue {
   // UnderlyingValue
   InterpolableValue& MutableInterpolableValue() final;
   const NonInterpolableValue* GetNonInterpolableValue() const final;
-  void SetNonInterpolableValue(scoped_refptr<NonInterpolableValue>) final;
+  void SetNonInterpolableValue(scoped_refptr<const NonInterpolableValue>) final;
 
   const InterpolationType& GetType() const {
     DCHECK(type_);

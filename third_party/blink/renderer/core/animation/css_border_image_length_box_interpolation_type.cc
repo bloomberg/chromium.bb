@@ -224,7 +224,7 @@ InterpolationValue ConvertBorderImageAutoSide() {
 InterpolationValue ConvertBorderImageLengthBox(const BorderImageLengthBox& box,
                                                double zoom) {
   auto list = std::make_unique<InterpolableList>(kSideIndexCount);
-  Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(
+  Vector<scoped_refptr<const NonInterpolableValue>> non_interpolable_values(
       kSideIndexCount);
   const BorderImageLength* sides[kSideIndexCount] = {};
   sides[kSideTop] = &box.Top();
@@ -254,7 +254,7 @@ void CompositeSide(UnderlyingValue& underlying_value,
           underlying_fraction, interpolable_value);
       break;
     case SideType::kLength:
-      LengthInterpolationFunctions::CompositeUnderlying(
+      LengthInterpolationFunctions::Composite(
           underlying_value, underlying_fraction, interpolable_value,
           non_interpolable_value);
       break;
@@ -313,7 +313,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::MaybeConvertValue(
     return nullptr;
 
   auto list = std::make_unique<InterpolableList>(kSideIndexCount);
-  Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(
+  Vector<scoped_refptr<const NonInterpolableValue>> non_interpolable_values(
       kSideIndexCount);
   const CSSValue* sides[kSideIndexCount] = {};
   sides[kSideTop] = quad->Top();

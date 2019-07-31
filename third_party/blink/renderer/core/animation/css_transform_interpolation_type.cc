@@ -39,9 +39,9 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
   }
 
   static scoped_refptr<CSSTransformNonInterpolableValue> Create(
-      CSSTransformNonInterpolableValue&& start,
+      const CSSTransformNonInterpolableValue& start,
       double start_fraction,
-      CSSTransformNonInterpolableValue&& end,
+      const CSSTransformNonInterpolableValue& end,
       double end_fraction) {
     return base::AdoptRef(new CSSTransformNonInterpolableValue(
         false, start.GetInterpolatedTransform(start_fraction),
@@ -51,7 +51,7 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
 
   scoped_refptr<CSSTransformNonInterpolableValue> Composite(
       const CSSTransformNonInterpolableValue& other,
-      double other_progress) {
+      double other_progress) const {
     DCHECK(!IsAdditive());
     if (other.is_single_) {
       DCHECK_EQ(other_progress, 0);
@@ -107,7 +107,7 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
 
   Vector<scoped_refptr<TransformOperation>> Concat(
       const TransformOperations& a,
-      const TransformOperations& b) {
+      const TransformOperations& b) const {
     Vector<scoped_refptr<TransformOperation>> result;
     result.ReserveCapacity(a.size() + b.size());
     result.AppendVector(a.Operations());
@@ -247,7 +247,7 @@ void CSSTransformInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  CSSTransformNonInterpolableValue& underlying_non_interpolable_value =
+  const CSSTransformNonInterpolableValue& underlying_non_interpolable_value =
       ToCSSTransformNonInterpolableValue(
           *underlying_value_owner.Value().non_interpolable_value);
   const CSSTransformNonInterpolableValue& non_interpolable_value =

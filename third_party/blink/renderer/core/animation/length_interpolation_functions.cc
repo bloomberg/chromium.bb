@@ -143,18 +143,6 @@ bool LengthInterpolationFunctions::HasPercentage(
 }
 
 void LengthInterpolationFunctions::Composite(
-    std::unique_ptr<InterpolableValue>& underlying_interpolable_value,
-    scoped_refptr<NonInterpolableValue>& underlying_non_interpolable_value,
-    double underlying_fraction,
-    const InterpolableValue& interpolable_value,
-    const NonInterpolableValue* non_interpolable_value) {
-  underlying_interpolable_value->ScaleAndAdd(underlying_fraction,
-                                             interpolable_value);
-  underlying_non_interpolable_value = CSSLengthNonInterpolableValue::Merge(
-      underlying_non_interpolable_value.get(), non_interpolable_value);
-}
-
-void LengthInterpolationFunctions::CompositeUnderlying(
     UnderlyingValue& underlying_value,
     double underlying_fraction,
     const InterpolableValue& interpolable_value,

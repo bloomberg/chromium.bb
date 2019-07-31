@@ -24,7 +24,7 @@ const NonInterpolableValue* UnderlyingValueOwner::GetNonInterpolableValue()
 }
 
 void UnderlyingValueOwner::SetNonInterpolableValue(
-    scoped_refptr<NonInterpolableValue> non_interpolable_value) {
+    scoped_refptr<const NonInterpolableValue> non_interpolable_value) {
   MutableValue().non_interpolable_value = non_interpolable_value;
 }
 

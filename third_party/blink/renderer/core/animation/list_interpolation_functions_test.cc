@@ -60,7 +60,7 @@ class TestUnderlyingValue : public UnderlyingValue {
   }
 
   void SetNonInterpolableValue(
-      scoped_refptr<NonInterpolableValue> non_interpolable_value) final {
+      scoped_refptr<const NonInterpolableValue> non_interpolable_value) final {
     interpolation_value_.non_interpolable_value = non_interpolable_value;
   }
 
@@ -254,7 +254,7 @@ TEST(ListInterpolationFunctionsTest, BuilderNoModify) {
 
   {
     TestUnderlyingValue underlying_value(list);
-    NonInterpolableList::AutoBuilder builder(underlying_value, before);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
   }
 
   auto& after = ToNonInterpolableList(*list.non_interpolable_value);
@@ -272,7 +272,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyFirst) {
 
   {
     TestUnderlyingValue underlying_value(list);
-    NonInterpolableList::AutoBuilder builder(underlying_value, before);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
     builder.Set(0, TestNonInterpolableValue::Create(4));
   }
 
@@ -291,7 +291,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyMiddle) {
 
   {
     TestUnderlyingValue underlying_value(list);
-    NonInterpolableList::AutoBuilder builder(underlying_value, before);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
     builder.Set(1, TestNonInterpolableValue::Create(4));
   }
 
@@ -310,7 +310,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyLast) {
 
   {
     TestUnderlyingValue underlying_value(list);
-    NonInterpolableList::AutoBuilder builder(underlying_value, before);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
     builder.Set(2, TestNonInterpolableValue::Create(4));
   }
 
@@ -329,7 +329,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyAll) {
 
   {
     TestUnderlyingValue underlying_value(list);
-    NonInterpolableList::AutoBuilder builder(underlying_value, before);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
     builder.Set(0, TestNonInterpolableValue::Create(4));
     builder.Set(1, TestNonInterpolableValue::Create(5));
     builder.Set(2, TestNonInterpolableValue::Create(6));
@@ -350,7 +350,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyReverse) {
 
   {
     TestUnderlyingValue underlying_value(list);
-    NonInterpolableList::AutoBuilder builder(underlying_value, before);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
     builder.Set(3, TestNonInterpolableValue::Create(6));
     builder.Set(1, TestNonInterpolableValue::Create(7));
   }
@@ -372,7 +372,7 @@ TEST(ListInterpolationFunctionsTest, BuilderModifyListWithOneItem) {
 
   {
     TestUnderlyingValue underlying_value(list);
-    NonInterpolableList::AutoBuilder builder(underlying_value, before);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
     builder.Set(0, TestNonInterpolableValue::Create(4));
   }
 

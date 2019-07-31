@@ -74,7 +74,7 @@ class CORE_EXPORT NonInterpolableList : public NonInterpolableValue {
     return base::AdoptRef(new NonInterpolableList());
   }
   static scoped_refptr<NonInterpolableList> Create(
-      Vector<scoped_refptr<NonInterpolableValue>>&& list) {
+      Vector<scoped_refptr<const NonInterpolableValue>>&& list) {
     return base::AdoptRef(new NonInterpolableList(std::move(list)));
   }
 
@@ -82,7 +82,6 @@ class CORE_EXPORT NonInterpolableList : public NonInterpolableValue {
   const NonInterpolableValue* Get(wtf_size_t index) const {
     return list_[index].get();
   }
-  NonInterpolableValue* Get(wtf_size_t index) { return list_[index].get(); }
 
   // This class can update the NonInterpolableList of an UnderlyingValue with
   // a series of mutations. The actual update of the list is delayed until the
@@ -94,27 +93,24 @@ class CORE_EXPORT NonInterpolableList : public NonInterpolableValue {
    public:
     // The UnderlyingValue provided here is assumed to contain a
     // non-nullptr NonInterpolableList.
-    //
-    // TODO(andruud): Remove NonInterpolableList& param.
-    AutoBuilder(UnderlyingValue&, NonInterpolableList&);
+    AutoBuilder(UnderlyingValue&);
     ~AutoBuilder();
 
-    void Set(wtf_size_t index, scoped_refptr<NonInterpolableValue>);
+    void Set(wtf_size_t index, scoped_refptr<const NonInterpolableValue>);
 
    private:
     UnderlyingValue& underlying_value_;
-    NonInterpolableList& underlying_non_interpolable_list_;
-    Vector<scoped_refptr<NonInterpolableValue>> list_;
+    Vector<scoped_refptr<const NonInterpolableValue>> list_;
   };
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
  private:
   NonInterpolableList() = default;
-  NonInterpolableList(Vector<scoped_refptr<NonInterpolableValue>>&& list)
+  NonInterpolableList(Vector<scoped_refptr<const NonInterpolableValue>>&& list)
       : list_(list) {}
 
-  Vector<scoped_refptr<NonInterpolableValue>> list_;
+  Vector<scoped_refptr<const NonInterpolableValue>> list_;
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(NonInterpolableList);
@@ -126,7 +122,8 @@ InterpolationValue ListInterpolationFunctions::CreateList(
   if (length == 0)
     return CreateEmptyList();
   auto interpolable_list = std::make_unique<InterpolableList>(length);
-  Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(length);
+  Vector<scoped_refptr<const NonInterpolableValue>> non_interpolable_values(
+      length);
   for (wtf_size_t i = 0; i < length; i++) {
     InterpolationValue item = create_item(i);
     if (!item)

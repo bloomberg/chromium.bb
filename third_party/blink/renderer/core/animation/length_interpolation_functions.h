@@ -32,16 +32,10 @@ class LengthInterpolationFunctions {
   static bool NonInterpolableValuesAreCompatible(const NonInterpolableValue*,
                                                  const NonInterpolableValue*);
   static bool HasPercentage(const NonInterpolableValue*);
-  // TODO(andruud): Unify these Composite* functions.
-  static void Composite(std::unique_ptr<InterpolableValue>&,
-                        scoped_refptr<NonInterpolableValue>&,
+  static void Composite(UnderlyingValue&,
                         double underlying_fraction,
                         const InterpolableValue&,
                         const NonInterpolableValue*);
-  static void CompositeUnderlying(UnderlyingValue&,
-                                  double underlying_fraction,
-                                  const InterpolableValue&,
-                                  const NonInterpolableValue*);
   static Length CreateLength(const InterpolableValue&,
                              const NonInterpolableValue*,
                              const CSSToLengthConversionData&,

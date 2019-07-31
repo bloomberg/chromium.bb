@@ -78,7 +78,7 @@ class CSSRotateNonInterpolableValue : public NonInterpolableValue {
 
   scoped_refptr<CSSRotateNonInterpolableValue> Composite(
       const CSSRotateNonInterpolableValue& other,
-      double other_progress) {
+      double other_progress) const {
     DCHECK(is_single_ && !is_start_additive_);
     if (other.is_single_) {
       DCHECK_EQ(other_progress, 0);
@@ -241,7 +241,7 @@ void CSSRotateInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  CSSRotateNonInterpolableValue& underlying_non_interpolable_value =
+  const CSSRotateNonInterpolableValue& underlying_non_interpolable_value =
       ToCSSRotateNonInterpolableValue(
           *underlying_value_owner.Value().non_interpolable_value);
   const CSSRotateNonInterpolableValue& non_interpolable_value =
