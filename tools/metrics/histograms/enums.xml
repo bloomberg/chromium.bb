@@ -24145,6 +24145,7 @@ Called by update_net_error_codes.py.-->
   <int value="2974" label="DownloadInAdFrame"/>
   <int value="2975" label="DownloadInSandbox"/>
   <int value="2976" label="DownloadWithoutUserGesture"/>
+  <int value="2977" label="AutoplayDynamicDelegation"/>
   <int value="2979" label="FragmentDoubleHash"/>
 </enum>
 

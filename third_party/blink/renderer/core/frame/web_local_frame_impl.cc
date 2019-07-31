@@ -2277,6 +2277,8 @@ void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
        msg_event->transferUserActivation()) ||
       msg_event->allowAutoplay()) {
     GetFrame()->TransferUserActivationFrom(source_frame);
+    if (msg_event->allowAutoplay())
+      UseCounter::Count(GetDocument(), WebFeature::kAutoplayDynamicDelegation);
   }
 
   GetFrame()->DomWindow()->DispatchMessageEventWithOriginCheck(
