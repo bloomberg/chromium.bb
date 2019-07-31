@@ -1440,9 +1440,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   int i, j;
   const FIRSTPASS_STATS *const start_position = twopass->stats_in;
   int kf_bits = 0;
-  int loop_decay_counter = 0;
   double decay_accumulator = 1.0;
-  double av_decay_accumulator = 0.0;
   double zero_motion_accumulator = 1.0;
   double boost_score = 0.0;
   double kf_mod_err = 0.0;
@@ -1600,14 +1598,10 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
             get_prediction_decay_rate(cpi, &next_frame);
         decay_accumulator *= loop_decay_rate;
         decay_accumulator = AOMMAX(decay_accumulator, MIN_DECAY_FACTOR);
-        av_decay_accumulator += decay_accumulator;
-        ++loop_decay_counter;
       }
       boost_score += (decay_accumulator * frame_boost);
     }
   }
-  if (loop_decay_counter > 0)
-    av_decay_accumulator /= (double)loop_decay_counter;
 
   reset_fpf_position(twopass, start_position);
 
@@ -1618,7 +1612,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   twopass->section_intra_rating = calculate_section_intra_ratio(
       start_position, twopass->stats_in_end, rc->frames_to_key);
 
-  rc->kf_boost = (int)(av_decay_accumulator * boost_score);
+  rc->kf_boost = (int)boost_score;
 
   // Special case for static / slide show content but don't apply
   // if the kf group is very short.
