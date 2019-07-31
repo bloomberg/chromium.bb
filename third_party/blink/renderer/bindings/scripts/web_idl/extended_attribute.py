@@ -2,9 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file defines some classes to implement extended attributes
-# https://heycam.github.io/webidl/#idl-extended-attributes
-
 import itertools
 
 
@@ -61,6 +58,18 @@ class ExtendedAttribute(object):
             self._format = self._FORM_IDENT_LIST
             self._values = tuple(values)
 
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return (self.key == other.key
+                and self.syntactic_form == other.syntactic_form)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash((self._key, self._values, self._arguments))
+
     def make_copy(self):
         return ExtendedAttribute(
             key=self._key,
@@ -92,7 +101,7 @@ class ExtendedAttribute(object):
     def value(self):
         """
         Returns the value for format Ident.  Returns None for format NoArgs.
-        Raises an error otherwise.
+        Otherwise, raises a ValueError.
         """
         if self._format in (self._FORM_NO_ARGS, self._FORM_IDENT):
             return self._values
@@ -103,7 +112,7 @@ class ExtendedAttribute(object):
     def values(self):
         """
         Returns a list of values for format Ident and IdentList.  Returns an
-        empty list for format NorArgs.  Raises an error otherwise.
+        empty list for format NorArgs.  Otherwise, raises a ValueError.
         """
         if self._format == self._FORM_NO_ARGS:
             return ()
@@ -118,7 +127,7 @@ class ExtendedAttribute(object):
     def arguments(self):
         """
         Returns a list of value pairs for format ArgList and NamedArgList.
-        Raises an error otherwise.
+        Otherwise, raises a ValueError.
         """
         if self._format in (self._FORM_ARG_LIST, self._FORM_NAMED_ARG_LIST):
             return self._arguments
@@ -128,7 +137,7 @@ class ExtendedAttribute(object):
     @property
     def name(self):
         """
-        Returns |Name| for format NamedArgList.  Raises an error otherwise.
+        Returns |Name| for format NamedArgList.  Otherwise, raises a ValueError.
         """
         if self._format == self._FORM_NAMED_ARG_LIST:
             return self._name
@@ -145,49 +154,70 @@ class ExtendedAttributes(object):
       [A, A=(foo, bar), B=baz]
     an ExtendedAttributes instance will be like
       {
-        'A': (ExtendedAttribute('A'), ExtendedAttribute('A', values=('foo', 'bar'))),
+        'A': (ExtendedAttribute('A'),
+              ExtendedAttribute('A', values=('foo', 'bar'))),
         'B': (ExtendedAttribute('B', value='baz')),
       }
+
+    https://heycam.github.io/webidl/#idl-extended-attributes
     """
 
-    def __init__(self, attributes=None):
-        assert attributes is None or (isinstance(attributes, (list, tuple))
-                                      and all(
-                                          isinstance(attr, ExtendedAttribute)
-                                          for attr in attributes))
-        attributes = sorted(attributes or [], key=lambda x: x.key)
-        self._attributes = {
-            key: tuple(attrs)
-            for key, attrs in itertools.groupby(
-                attributes, key=lambda x: x.key)
-        }
+    def __init__(self, extended_attributes=None):
+        assert extended_attributes is None or (isinstance(
+            extended_attributes, (list, tuple)) and all(
+                isinstance(attr, ExtendedAttribute)
+                for attr in extended_attributes))
+        sorted_ext_attrs = sorted(
+            extended_attributes or [], key=lambda x: x.key)
 
-    def __bool__(self):
-        return bool(self._attributes)
+        self._ext_attrs = {
+            key: tuple(sorted(ext_attrs, key=lambda x: x.syntactic_form))
+            for key, ext_attrs in itertools.groupby(
+                sorted_ext_attrs, key=lambda x: x.key)
+        }
+        self._keys = tuple(sorted(self._ext_attrs.keys()))
+        self._length = len(sorted_ext_attrs)
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        if self.keys() != other.keys():
+            return False
+        if len(self) != len(other):
+            return False
+        for lhs, rhs in zip(self, other):
+            if lhs != rhs:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    __hash__ = None
 
     def __contains__(self, key):
         """Returns True if this has an extended attribute with the |key|."""
-        return key in self._attributes
+        return key in self._ext_attrs
 
     def __iter__(self):
         """Yields all ExtendedAttribute instances."""
-        for attrs in self._attributes.itervalues():
-            for attr in attrs:
-                yield attr
+        for key in self._keys:
+            for ext_attr in self._ext_attrs[key]:
+                yield ext_attr
 
     def __len__(self):
-        return len(list(self.__iter__()))
+        return self._length
 
     def make_copy(self):
         return ExtendedAttributes(map(ExtendedAttribute.make_copy, self))
 
     @property
     def syntactic_form(self):
-        attrs = [str(attr) for attr in self]
-        return '[{}]'.format(', '.join(attrs))
+        return '[{}]'.format(', '.join(
+            [ext_attr.syntactic_form for ext_attr in self]))
 
     def keys(self):
-        return self._attributes.keys()
+        return self._keys
 
     def get(self, key):
         """
@@ -207,4 +237,4 @@ class ExtendedAttributes(object):
         """
         Returns a list of extended attributes whose keys are |key|.
         """
-        return self._attributes.get(key, ())
+        return self._ext_attrs.get(key, ())
