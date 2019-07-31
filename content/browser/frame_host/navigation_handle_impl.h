@@ -185,14 +185,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_request_->common_params().source_location;
   }
 
-  std::vector<std::string> TakeRemovedRequestHeaders() {
-    return std::move(removed_request_headers_);
-  }
-
-  net::HttpRequestHeaders TakeModifiedRequestHeaders() {
-    return std::move(modified_request_headers_);
-  }
-
   NavigationThrottle* GetDeferringThrottleForTesting() const {
     return navigation_request_->GetDeferringThrottleForTesting();
   }
@@ -208,8 +200,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // start with |url|. Otherwise |redirect_chain| is used as the starting point.
   // |navigation_start| comes from the CommonNavigationParams associated with
   // this navigation.
-  NavigationHandleImpl(NavigationRequest* navigation_request,
-                       net::HttpRequestHeaders request_headers);
+  NavigationHandleImpl(NavigationRequest* navigation_request);
 
   NavigationRequest::NavigationHandleState state() const {
     return navigation_request_->handle_state();
@@ -217,16 +208,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The NavigationRequest that owns this NavigationHandle.
   NavigationRequest* navigation_request_;
-
-  // The headers used for the request.
-  net::HttpRequestHeaders request_headers_;
-
-  // Used to update the request's headers. When modified during the navigation
-  // start, the headers will be applied to the initial network request. When
-  // modified during a redirect, the headers will be applied to the redirected
-  // request.
-  std::vector<std::string> removed_request_headers_;
-  net::HttpRequestHeaders modified_request_headers_;
 
   // Allows to override response_headers_ in tests.
   // TODO(clamy): Clean this up once the architecture of unit tests is better.

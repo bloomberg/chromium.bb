@@ -472,6 +472,19 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // default value if |timeout| is zero.
   static void SetCommitTimeoutForTesting(const base::TimeDelta& timeout);
 
+  const net::HttpRequestHeaders& request_headers() { return request_headers_; }
+
+  // Remove a request's header. If the header is not present, it has no effect.
+  // Must be called during a redirect.
+  void RemoveRequestHeader(const std::string& header_name);
+
+  // Set a request's header. If the header is already present, its value is
+  // overwritten. When modified during a navigation start, the headers will be
+  // applied to the initial network request. When modified during a redirect,
+  // the headers will be applied to the redirected request.
+  void SetRequestHeader(const std::string& header_name,
+                        const std::string& header_value);
+
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
   // once NavigationHandleImpl has become a wrapper around NavigationRequest.
@@ -764,6 +777,14 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   void StopCommitTimeout();
   void RestartCommitTimeout();
 
+  std::vector<std::string> TakeRemovedRequestHeaders() {
+    return std::move(removed_request_headers_);
+  }
+
+  net::HttpRequestHeaders TakeModifiedRequestHeaders() {
+    return std::move(modified_request_headers_);
+  }
+
   FrameTreeNode* frame_tree_node_;
 
   // Invariant: At least one of |loader_| or |render_frame_host_| is null.
@@ -991,6 +1012,16 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // process's blocked state.
   std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
       render_process_blocked_state_changed_subscription_;
+
+  // The headers used for the request.
+  net::HttpRequestHeaders request_headers_;
+
+  // Used to update the request's headers. When modified during the navigation
+  // start, the headers will be applied to the initial network request. When
+  // modified during a redirect, the headers will be applied to the redirected
+  // request.
+  std::vector<std::string> removed_request_headers_;
+  net::HttpRequestHeaders modified_request_headers_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

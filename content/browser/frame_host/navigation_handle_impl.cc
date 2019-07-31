@@ -32,10 +32,8 @@
 namespace content {
 
 NavigationHandleImpl::NavigationHandleImpl(
-    NavigationRequest* navigation_request,
-    net::HttpRequestHeaders request_headers)
-    : navigation_request_(navigation_request),
-      request_headers_(std::move(request_headers)) {
+    NavigationRequest* navigation_request)
+    : navigation_request_(navigation_request) {
   const GURL& url = navigation_request_->common_params().url;
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle", this,
                            "frame_tree_node",
@@ -170,23 +168,16 @@ bool NavigationHandleImpl::IsSameDocument() {
 }
 
 const net::HttpRequestHeaders& NavigationHandleImpl::GetRequestHeaders() {
-  return request_headers_;
+  return navigation_request_->request_headers();
 }
 
 void NavigationHandleImpl::RemoveRequestHeader(const std::string& header_name) {
-  DCHECK(state() == NavigationRequest::PROCESSING_WILL_REDIRECT_REQUEST ||
-         state() == NavigationRequest::WILL_REDIRECT_REQUEST);
-  removed_request_headers_.push_back(header_name);
+  navigation_request_->RemoveRequestHeader(header_name);
 }
 
 void NavigationHandleImpl::SetRequestHeader(const std::string& header_name,
                                             const std::string& header_value) {
-  DCHECK(state() == NavigationRequest::INITIAL ||
-         state() == NavigationRequest::PROCESSING_WILL_START_REQUEST ||
-         state() == NavigationRequest::PROCESSING_WILL_REDIRECT_REQUEST ||
-         state() == NavigationRequest::WILL_START_REQUEST ||
-         state() == NavigationRequest::WILL_REDIRECT_REQUEST);
-  modified_request_headers_.SetHeader(header_name, header_value);
+  navigation_request_->SetRequestHeader(header_name, header_value);
 }
 
 const net::HttpResponseHeaders* NavigationHandleImpl::GetResponseHeaders() {

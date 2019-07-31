@@ -1021,8 +1021,11 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   handle_state_ = NavigationRequest::INITIAL;
   navigation_handle_id_ = CreateUniqueHandleID();
 
+  request_headers_ = std::move(headers);
+  modified_request_headers_.Clear();
+  removed_request_headers_.clear();
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
-      base::WrapUnique(new NavigationHandleImpl(this, std::move(headers)));
+      base::WrapUnique(new NavigationHandleImpl(this));
 
   if (!frame_tree_node->navigation_request() && !is_for_commit) {
     // A callback could have cancelled this request synchronously in which case
@@ -1798,7 +1801,7 @@ void NavigationRequest::OnStartChecksComplete(
   // Merge headers with embedder's headers.
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(begin_params_->headers);
-  headers.MergeFrom(navigation_handle_->TakeModifiedRequestHeaders());
+  headers.MergeFrom(TakeModifiedRequestHeaders());
   begin_params_->headers = headers.ToString();
 
   // TODO(clamy): Avoid cloning the navigation params and create the
@@ -1865,10 +1868,8 @@ void NavigationRequest::OnRedirectChecksComplete(
 
   devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
-  net::HttpRequestHeaders modified_headers =
-      navigation_handle_->TakeModifiedRequestHeaders();
-  std::vector<std::string> removed_headers =
-      navigation_handle_->TakeRemovedRequestHeaders();
+  net::HttpRequestHeaders modified_headers = TakeModifiedRequestHeaders();
+  std::vector<std::string> removed_headers = TakeRemovedRequestHeaders();
 
   BrowserContext* browser_context =
       frame_tree_node_->navigator()->GetController()->GetBrowserContext();
@@ -3000,6 +3001,22 @@ void NavigationRequest::SetCommitTimeoutForTesting(
     g_commit_timeout = kDefaultCommitTimeout;
   else
     g_commit_timeout = timeout;
+}
+
+void NavigationRequest::RemoveRequestHeader(const std::string& header_name) {
+  DCHECK(handle_state_ == PROCESSING_WILL_REDIRECT_REQUEST ||
+         handle_state_ == WILL_REDIRECT_REQUEST);
+  removed_request_headers_.push_back(header_name);
+}
+
+void NavigationRequest::SetRequestHeader(const std::string& header_name,
+                                         const std::string& header_value) {
+  DCHECK(handle_state_ == INITIAL ||
+         handle_state_ == PROCESSING_WILL_START_REQUEST ||
+         handle_state_ == PROCESSING_WILL_REDIRECT_REQUEST ||
+         handle_state_ == WILL_START_REQUEST ||
+         handle_state_ == WILL_REDIRECT_REQUEST);
+  modified_request_headers_.SetHeader(header_name, header_value);
 }
 
 }  // namespace content
