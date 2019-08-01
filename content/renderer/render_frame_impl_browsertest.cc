@@ -447,9 +447,7 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
   // Verifies navigation to a URL with preset zoom level indeed sets the level.
   // Regression test for http://crbug.com/139559, where the level was not
   // properly set when it is out of the default zoom limits of WebView.
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
+  auto common_params = CreateCommonNavigationParams();
   common_params->url = GURL("data:text/html,min_zoomlimit_test");
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   GetMainRenderFrame()->SetHostZoomLevel(common_params->url, kMinZoomLevel);
