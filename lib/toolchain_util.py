@@ -187,17 +187,19 @@ def _GetOrderfileName(buildroot):
     e.g.
     If benchmark AFDO is chromeos-chrome-amd64-77.0.3849.0_rc-r1.afdo,
     and CWP AFDO is R77-3809.38-1562580965.afdo, the returned name is:
-    chromeos-chrome-orderfile-field-77-3809.38-benchmark-77.0.3849.0-r1
+    chromeos-chrome-orderfile-field-77-3809.38-1562580965-\
+    benchmark-77.0.3849.0-r1
   """
   chrome_ebuild = _FindChromeEbuild(buildroot=buildroot)
   benchmark_afdo_name = _GetAFDOVersion(chrome_ebuild, is_benchmark=True)
   cwp_afdo_name = _GetAFDOVersion(chrome_ebuild, is_benchmark=False)
-  return \
-    'chromeos-chrome-orderfile-field-%d-%d.%d-benchmark-%d.%d.%d.%d-r%d' % (
-        cwp_afdo_name.major, cwp_afdo_name.build, cwp_afdo_name.patch,
-        benchmark_afdo_name.major, benchmark_afdo_name.minor,
-        benchmark_afdo_name.build, benchmark_afdo_name.patch,
-        benchmark_afdo_name.revision)
+  cwp_piece = 'field-%d-%d.%d-%d' % (cwp_afdo_name.major, cwp_afdo_name.build,
+                                     cwp_afdo_name.patch, cwp_afdo_name.clock)
+  benchmark_piece = 'benchmark-%d.%d.%d.%d-r%d' % (
+      benchmark_afdo_name.major, benchmark_afdo_name.minor,
+      benchmark_afdo_name.build, benchmark_afdo_name.patch,
+      benchmark_afdo_name.revision)
+  return 'chromeos-chrome-orderfile-%s-%s' % (cwp_piece, benchmark_piece)
 
 
 class GenerateChromeOrderfile(object):

@@ -93,9 +93,10 @@ class ProfilesNameHelperTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(
         toolchain_util, '_FindChromeEbuild', return_value=ebuild_file)
     result = toolchain_util._GetOrderfileName(buildroot=None)
+    cwp_name = 'field-77-3809.38-1562580965'
+    benchmark_name = 'benchmark-77.0.3849.0-r1'
     self.assertEqual(
-        result,
-        'chromeos-chrome-orderfile-field-77-3809.38-benchmark-77.0.3849.0-r1')
+        result, 'chromeos-chrome-orderfile-%s-%s' % (cwp_name, benchmark_name))
 
 
 class GenerateChromeOrderfileTest(cros_test_lib.MockTempDirTestCase):
