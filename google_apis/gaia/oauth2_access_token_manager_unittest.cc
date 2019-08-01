@@ -81,6 +81,16 @@ class FakeOAuth2AccessTokenManagerDelegate
     std::move(on_access_token_invalidated_callback_).Run();
   }
 
+  void OnAccessTokenFetched(const CoreAccountId& account_id,
+                            const GoogleServiceAuthError& error) override {
+    if (!access_token_fetched_callback_)
+      return;
+
+    EXPECT_EQ(access_token_fetched_account_id_, account_id);
+    EXPECT_EQ(access_token_fetched_error_, error);
+    std::move(access_token_fetched_callback_).Run();
+  }
+
   void AddAccount(CoreAccountId id, std::string refresh_token) {
     account_ids_to_refresh_tokens_[id] = refresh_token;
   }
@@ -102,6 +112,14 @@ class FakeOAuth2AccessTokenManagerDelegate
     on_access_token_invalidated_callback_ = std::move(callback);
   }
 
+  void SetOnAccessTokenFetched(const CoreAccountId& account_id,
+                               const GoogleServiceAuthError& error,
+                               base::OnceClosure callback) {
+    access_token_fetched_account_id_ = account_id;
+    access_token_fetched_error_ = error;
+    access_token_fetched_callback_ = std::move(callback);
+  }
+
  private:
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   std::map<CoreAccountId, std::string> account_ids_to_refresh_tokens_;
@@ -111,6 +129,9 @@ class FakeOAuth2AccessTokenManagerDelegate
   OAuth2AccessTokenManager::ScopeSet access_token_invalidated_scopes_;
   std::string access_token_invalidated_access_token_;
   base::OnceClosure on_access_token_invalidated_callback_;
+  CoreAccountId access_token_fetched_account_id_;
+  GoogleServiceAuthError access_token_fetched_error_;
+  base::OnceClosure access_token_fetched_callback_;
 };
 
 class FakeOAuth2AccessTokenManagerConsumer
@@ -366,5 +387,29 @@ TEST_F(OAuth2AccessTokenManagerTest, OnAccessTokenInvalidated) {
       account_id_, GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
       scope_set, access_token, run_loop.QuitClosure());
   token_manager_.InvalidateAccessToken(account_id_, scope_set, access_token);
+  run_loop.Run();
+}
+
+// Test that OnAccessTokenFetched is invoked when a request is canceled.
+TEST_F(OAuth2AccessTokenManagerTest, OnAccessTokenFetchedOnRequestCanceled) {
+  base::RunLoop run_loop;
+  GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
+  delegate_.SetOnAccessTokenFetched(account_id_, error, run_loop.QuitClosure());
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request(
+      token_manager_.StartRequest(
+          account_id_, OAuth2AccessTokenManager::ScopeSet(), &consumer_));
+  token_manager_.CancelAllRequests();
+  run_loop.Run();
+}
+
+// Test that OnAccessTokenFetched is invoked when a request is completed.
+TEST_F(OAuth2AccessTokenManagerTest, OnAccessTokenFetchedOnRequestCompleted) {
+  base::RunLoop run_loop;
+  GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
+  delegate_.SetOnAccessTokenFetched(account_id_, error, run_loop.QuitClosure());
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request(
+      token_manager_.StartRequest(
+          account_id_, OAuth2AccessTokenManager::ScopeSet(), &consumer_));
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
   run_loop.Run();
 }
