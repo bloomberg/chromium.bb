@@ -761,9 +761,8 @@ int av1_get_refresh_ref_frame_map(int refresh_frame_flags) {
   return ref_map_index;
 }
 
-static void update_arf_stack(AV1_COMP *cpi, int ref_map_index,
+static void update_arf_stack(int ref_map_index,
                              RefBufferStack *ref_buffer_stack) {
-  (void)cpi;
   if (ref_buffer_stack->arf_stack_size >= 0) {
     if (ref_buffer_stack->arf_stack[0] == ref_map_index)
       stack_pop(ref_buffer_stack->arf_stack, &ref_buffer_stack->arf_stack_size);
@@ -819,18 +818,18 @@ void av1_update_ref_frame_map(AV1_COMP *cpi,
                  ref_map_index);
       break;
     case GF_UPDATE:
-      update_arf_stack(cpi, ref_map_index, ref_buffer_stack);
+      update_arf_stack(ref_map_index, ref_buffer_stack);
       stack_push(ref_buffer_stack->gld_stack, &ref_buffer_stack->gld_stack_size,
                  ref_map_index);
       break;
     case LF_UPDATE:
-      update_arf_stack(cpi, ref_map_index, ref_buffer_stack);
+      update_arf_stack(ref_map_index, ref_buffer_stack);
       stack_push(ref_buffer_stack->lst_stack, &ref_buffer_stack->lst_stack_size,
                  ref_map_index);
       break;
     case ARF_UPDATE:
     case INTNL_ARF_UPDATE:
-      update_arf_stack(cpi, ref_map_index, ref_buffer_stack);
+      update_arf_stack(ref_map_index, ref_buffer_stack);
       stack_push(ref_buffer_stack->arf_stack, &ref_buffer_stack->arf_stack_size,
                  ref_map_index);
       break;
