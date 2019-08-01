@@ -59828,6 +59828,18 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Stable"/>
 </enum>
 
+<enum name="UserDemographicsStatus">
+  <int value="0" label="Success - user demographics are available for report"/>
+  <int value="1" label="Sync is not enabled"/>
+  <int value="2" label="User demographics data is ineligible"/>
+  <int value="3"
+      label="Cannot get the current time that is needed to compute user's age"/>
+  <int value="4"
+      label="There is more than one profile in the user data directory of the
+             browser"/>
+  <int value="5" label="There is no sync service available"/>
+</enum>
+
 <enum name="UserGestureRequirement">
   <int value="0" label="Required and available"/>
   <int value="1" label="Required and not available"/>
