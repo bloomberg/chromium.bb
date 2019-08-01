@@ -76,6 +76,10 @@ class MirroringActivityRecord : public ActivityRecord,
   void OnAppMessage(const cast_channel::CastMessage& message) override;
   void OnInternalMessage(const cast_channel::InternalMessage& message) override;
 
+ protected:
+  void CreateMediaController(mojom::MediaControllerRequest media_controller,
+                             mojom::MediaStatusObserverPtr observer) override;
+
  private:
   enum class MirroringType {
     kTab,           // Mirror a single tab.

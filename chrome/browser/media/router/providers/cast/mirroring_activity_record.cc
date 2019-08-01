@@ -252,6 +252,10 @@ void MirroringActivityRecord::OnInternalMessage(
   channel_to_service_->Send(std::move(ptr));
 }
 
+void MirroringActivityRecord::CreateMediaController(
+    mojom::MediaControllerRequest media_controller,
+    mojom::MediaStatusObserverPtr observer) {}
+
 void MirroringActivityRecord::StopMirroring() {
   // Running the callback will cause this object to be deleted.
   if (on_stop_)

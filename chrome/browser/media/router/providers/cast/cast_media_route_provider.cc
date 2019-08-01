@@ -264,8 +264,8 @@ void CastMediaRouteProvider::CreateMediaRouteController(
     mojom::MediaControllerRequest media_controller,
     mojom::MediaStatusObserverPtr observer,
     CreateMediaRouteControllerCallback callback) {
-  NOTIMPLEMENTED();
-  std::move(callback).Run(false);
+  std::move(callback).Run(activity_manager_->CreateMediaController(
+      route_id, std::move(media_controller), std::move(observer)));
 }
 
 void CastMediaRouteProvider::OnSinkQueryUpdated(

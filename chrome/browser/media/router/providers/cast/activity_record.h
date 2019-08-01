@@ -140,6 +140,10 @@ class ActivityRecord {
       blink::mojom::PresentationConnectionCloseReason close_reason) = 0;
   virtual void TerminatePresentationConnections() = 0;
 
+  virtual void CreateMediaController(
+      mojom::MediaControllerRequest media_controller,
+      mojom::MediaStatusObserverPtr observer) = 0;
+
  protected:
   CastSession* GetSession() const;
 

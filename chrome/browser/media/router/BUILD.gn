@@ -110,6 +110,8 @@ static_library("router") {
       "providers/cast/cast_app_discovery_service.h",
       "providers/cast/cast_internal_message_util.cc",
       "providers/cast/cast_internal_message_util.h",
+      "providers/cast/cast_media_controller.cc",
+      "providers/cast/cast_media_controller.h",
       "providers/cast/cast_media_route_provider.cc",
       "providers/cast/cast_media_route_provider.h",
       "providers/cast/cast_media_route_provider_metrics.cc",
