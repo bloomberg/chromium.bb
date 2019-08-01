@@ -6475,3 +6475,6 @@ crbug.com/988074 [ Linux ] virtual/omt-worker-fetch/http/tests/security/cors-rfc
 crbug.com/948167 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker-proxied/thorough/redirect-nocors-base-https-other-https.html [ Pass Failure ]
 crbug.com/948167 [ Linux ] http/tests/fetch/serviceworker-proxied/thorough/redirect-nocors-base-https-other-https.html [ Pass Failure ]
 crbug.com/948167 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker-proxied/thorough/redirect-nocors-base-https-other-https.html [ Pass Failure ]
+crbug.com/855860 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker-proxied/thorough/redirect-password-base-https-other-https.html [ Pass Failure ]
+crbug.com/855860 [ Linux ] http/tests/fetch/serviceworker-proxied/thorough/redirect-password-base-https-other-https.html [ Pass Failure ]
+crbug.com/855860 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker-proxied/thorough/redirect-password-base-https-other-https.html [ Pass Failure ]
