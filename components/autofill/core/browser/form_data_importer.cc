@@ -502,14 +502,6 @@ CreditCard FormDataImporter::ExtractCreditCardFromForm(
     // information into the field, then skip it.
     if (!field->IsFieldFillable() || value.empty())
       continue;
-    // If the field is non-focusable (hidden) after the user entered information
-    // into it, then skip it, unless the experiment to import non-focusable
-    // forms is enabled.
-    if (!field->is_focusable &&
-        !base::FeatureList::IsEnabled(
-            features::kAutofillImportNonFocusableCreditCardForms)) {
-      continue;
-    }
 
     AutofillType field_type = field->Type();
     // Field was not identified as a credit card field.

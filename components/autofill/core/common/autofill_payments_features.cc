@@ -77,12 +77,6 @@ const base::Feature kAutofillEnableToolbarStatusChip{
 const base::Feature kAutofillImportDynamicForms{
     "AutofillImportDynamicForms", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// When enabled, a credit card form that is hidden after receiving input can
-// import the card.
-const base::Feature kAutofillImportNonFocusableCreditCardForms{
-    "AutofillImportNonFocusableCreditCardForms",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether offering to migrate cards will consider data from the
 // Autofill strike database (new version).
 const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2{

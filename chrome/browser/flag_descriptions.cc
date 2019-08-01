@@ -478,13 +478,6 @@ const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[] =
     "If enabled, cards from unsupported networks will not be offered upload "
     "save, and will instead be offered local save.";
 
-const char kEnableAutofillImportNonFocusableCreditCardFormsName[] =
-    "Allow credit card import from forms that disappear after entry";
-const char kEnableAutofillImportNonFocusableCreditCardFormsDescription[] =
-    "If enabled, offers credit card save for forms that are hidden from the "
-    "page after information has been entered into them, including "
-    "accordion-style checkout flows.";
-
 const char kEnableAutofillImportDynamicFormsName[] =
     "Allow credit card import from dynamic forms after entry";
 const char kEnableAutofillImportDynamicFormsDescription[] =

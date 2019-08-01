@@ -2503,13 +2503,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll | kExpireM77,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillDoNotUploadSaveUnsupportedCards)},
-    {"enable-autofill-import-non-focusable-credit-card-forms",
-     flag_descriptions::kEnableAutofillImportNonFocusableCreditCardFormsName,
-     flag_descriptions::
-         kEnableAutofillImportNonFocusableCreditCardFormsDescription,
-     kOsAll | kExpireM77,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillImportNonFocusableCreditCardForms)},
     {"enable-autofill-import-dynamic-forms",
      flag_descriptions::kEnableAutofillImportDynamicFormsName,
      flag_descriptions::kEnableAutofillImportDynamicFormsDescription,

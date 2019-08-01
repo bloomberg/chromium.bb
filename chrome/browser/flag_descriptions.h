@@ -296,9 +296,6 @@ extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[];
 extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsName[];
 extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[];
 
-extern const char kEnableAutofillImportNonFocusableCreditCardFormsName[];
-extern const char kEnableAutofillImportNonFocusableCreditCardFormsDescription[];
-
 extern const char kEnableAutofillImportDynamicFormsName[];
 extern const char kEnableAutofillImportDynamicFormsDescription[];
 
