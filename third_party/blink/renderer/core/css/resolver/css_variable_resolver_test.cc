@@ -283,7 +283,7 @@ TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
 
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
   StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
-                           nullptr /* pseudo_element */, initial, initial);
+                           initial, initial);
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->InheritFrom(*initial);
@@ -471,7 +471,7 @@ TEST_F(CSSVariableResolverTest, CSSWideKeywords) {
 
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
   StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
-                           nullptr /* pseudo_element */, initial, initial);
+                           initial, initial);
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->InheritFrom(*initial);
