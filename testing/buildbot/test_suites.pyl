@@ -2734,6 +2734,7 @@
       'blink_platform_unittests': {},
       'cast_runner_browsertests': {},
       'cast_runner_integration_tests': {},
+      'cast_runner_unittests': {},
       'content_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter',
