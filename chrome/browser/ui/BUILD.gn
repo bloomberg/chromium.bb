@@ -3424,6 +3424,8 @@ jumbo_split_static_library("ui") {
       "app_list/search/search_result_ranker/app_launch_data.h",
       "app_list/search/search_result_ranker/app_launch_event_logger.cc",
       "app_list/search/search_result_ranker/app_launch_event_logger.h",
+      "app_list/search/search_result_ranker/app_launch_event_logger_helper.cc",
+      "app_list/search/search_result_ranker/app_launch_event_logger_helper.h",
       "app_list/search/search_result_ranker/app_launch_predictor.cc",
       "app_list/search/search_result_ranker/app_launch_predictor.h",
       "app_list/search/search_result_ranker/app_list_launch_metrics_provider.cc",
