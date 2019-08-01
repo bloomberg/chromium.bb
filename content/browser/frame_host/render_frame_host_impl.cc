@@ -4298,8 +4298,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
               static_cast<StoragePartitionImpl*>(
                   frame->GetProcess()->GetStoragePartition()),
               NativeFileSystemManagerImpl::BindingContext(
-                  frame->GetLastCommittedOrigin(), frame->GetProcess()->GetID(),
-                  frame->GetRoutingID()),
+                  frame->GetLastCommittedOrigin(), frame->GetLastCommittedURL(),
+                  frame->GetProcess()->GetID(), frame->GetRoutingID()),
               std::move(request));
         },
         base::Unretained(this)));
