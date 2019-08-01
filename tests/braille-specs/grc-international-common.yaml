@@ -9,7 +9,7 @@ display: unicode-without-blank.dis
 table: spaces.uti,grc-international-common.uti
 table: spaces.uti,grc-international-decomposed.uti
 table: spaces.uti,grc-international-composed.uti
-table: grc-international.utb
+table: grc-international-en.utb
 flags: {testmode: forward}
 tests:
 
