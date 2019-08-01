@@ -21,6 +21,7 @@
 #include "ui/views/animation/test/test_ink_drop.h"
 #include "ui/views/animation/test/test_ink_drop_host.h"
 #include "ui/views/context_menu_controller.h"
+#include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/button/button_observer.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -333,7 +334,8 @@ TEST_F(ButtonTest, NotifyAction) {
 
   // Set the notify action to its listener on mouse press.
   button()->Reset();
-  button()->set_notify_action(Button::NOTIFY_ON_PRESS);
+  button()->button_controller()->set_notify_action(
+      ButtonController::NotifyAction::NOTIFY_ON_PRESS);
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
@@ -367,7 +369,8 @@ TEST_F(ButtonTest, NotifyActionNoClick) {
 
   // Set the notify action to its listener on mouse press.
   button()->Reset();
-  button()->set_notify_action(Button::NOTIFY_ON_PRESS);
+  button()->button_controller()->set_notify_action(
+      ButtonController::NotifyAction::NOTIFY_ON_PRESS);
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON));
@@ -622,7 +625,8 @@ TEST_F(ButtonTest, InkDropShowHideOnMouseDraggedNotifyOnRelease) {
 
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
-  button()->set_notify_action(Button::NOTIFY_ON_RELEASE);
+  button()->button_controller()->set_notify_action(
+      ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
 
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
@@ -663,7 +667,8 @@ TEST_F(ButtonTest, InkDropShowHideOnMouseDraggedNotifyOnPress) {
 
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), true);
-  button()->set_notify_action(Button::NOTIFY_ON_PRESS);
+  button()->button_controller()->set_notify_action(
+      ButtonController::NotifyAction::NOTIFY_ON_PRESS);
 
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
