@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SYNTAX_DESCRIPTOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SYNTAX_DESCRIPTOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SYNTAX_DEFINITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SYNTAX_DEFINITION_H_
 
 #include "third_party/blink/renderer/core/css/css_syntax_component.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
@@ -14,7 +14,7 @@ namespace blink {
 class CSSParserContext;
 class CSSValue;
 
-class CORE_EXPORT CSSSyntaxDescriptor {
+class CORE_EXPORT CSSSyntaxDefinition {
  public:
   const CSSValue* Parse(CSSParserTokenRange,
                         const CSSParserContext*,
@@ -26,23 +26,23 @@ class CORE_EXPORT CSSSyntaxDescriptor {
   const Vector<CSSSyntaxComponent>& Components() const {
     return syntax_components_;
   }
-  bool operator==(const CSSSyntaxDescriptor& a) const {
+  bool operator==(const CSSSyntaxDefinition& a) const {
     return Components() == a.Components();
   }
-  bool operator!=(const CSSSyntaxDescriptor& a) const {
+  bool operator!=(const CSSSyntaxDefinition& a) const {
     return Components() != a.Components();
   }
 
-  CSSSyntaxDescriptor IsolatedCopy() const;
+  CSSSyntaxDefinition IsolatedCopy() const;
 
  private:
   friend class CSSSyntaxStringParser;
   friend class CSSSyntaxStringParserTest;
 
-  explicit CSSSyntaxDescriptor(Vector<CSSSyntaxComponent>);
+  explicit CSSSyntaxDefinition(Vector<CSSSyntaxComponent>);
 
   // https://drafts.css-houdini.org/css-properties-values-api-1/#universal-syntax-descriptor
-  static CSSSyntaxDescriptor CreateUniversal();
+  static CSSSyntaxDefinition CreateUniversal();
 
   Vector<CSSSyntaxComponent> syntax_components_;
 };
@@ -53,8 +53,8 @@ namespace WTF {
 
 template <wtf_size_t inlineCapacity, typename Allocator>
 struct CrossThreadCopier<
-    Vector<blink::CSSSyntaxDescriptor, inlineCapacity, Allocator>> {
-  using Type = Vector<blink::CSSSyntaxDescriptor, inlineCapacity, Allocator>;
+    Vector<blink::CSSSyntaxDefinition, inlineCapacity, Allocator>> {
+  using Type = Vector<blink::CSSSyntaxDefinition, inlineCapacity, Allocator>;
   static Type Copy(const Type& value) {
     Type result;
     result.ReserveInitialCapacity(value.size());
@@ -66,4 +66,4 @@ struct CrossThreadCopier<
 
 }  // namespace WTF
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SYNTAX_DESCRIPTOR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SYNTAX_DEFINITION_H_

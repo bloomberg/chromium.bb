@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 
 #include <utility>
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
@@ -127,7 +127,7 @@ const CSSValue* ConsumeSyntaxComponent(const CSSSyntaxComponent& syntax,
 
 }  // namespace
 
-const CSSValue* CSSSyntaxDescriptor::Parse(CSSParserTokenRange range,
+const CSSValue* CSSSyntaxDefinition::Parse(CSSParserTokenRange range,
                                            const CSSParserContext* context,
                                            bool is_animation_tainted) const {
   if (IsTokenStream()) {
@@ -148,7 +148,7 @@ const CSSValue* CSSSyntaxDescriptor::Parse(CSSParserTokenRange range,
                                                          is_animation_tainted);
 }
 
-CSSSyntaxDescriptor CSSSyntaxDescriptor::IsolatedCopy() const {
+CSSSyntaxDefinition CSSSyntaxDefinition::IsolatedCopy() const {
   Vector<CSSSyntaxComponent> syntax_components_copy;
   syntax_components_copy.ReserveCapacity(syntax_components_.size());
   for (const auto& syntax_component : syntax_components_) {
@@ -156,19 +156,19 @@ CSSSyntaxDescriptor CSSSyntaxDescriptor::IsolatedCopy() const {
         syntax_component.GetType(), syntax_component.GetString().IsolatedCopy(),
         syntax_component.GetRepeat()));
   }
-  return CSSSyntaxDescriptor(std::move(syntax_components_copy));
+  return CSSSyntaxDefinition(std::move(syntax_components_copy));
 }
 
-CSSSyntaxDescriptor::CSSSyntaxDescriptor(Vector<CSSSyntaxComponent> components)
+CSSSyntaxDefinition::CSSSyntaxDefinition(Vector<CSSSyntaxComponent> components)
     : syntax_components_(std::move(components)) {
   DCHECK(syntax_components_.size());
 }
 
-CSSSyntaxDescriptor CSSSyntaxDescriptor::CreateUniversal() {
+CSSSyntaxDefinition CSSSyntaxDefinition::CreateUniversal() {
   Vector<CSSSyntaxComponent> components;
   components.push_back(CSSSyntaxComponent(
       CSSSyntaxType::kTokenStream, g_empty_string, CSSSyntaxRepeat::kNone));
-  return CSSSyntaxDescriptor(std::move(components));
+  return CSSSyntaxDefinition(std::move(components));
 }
 
 }  // namespace blink
