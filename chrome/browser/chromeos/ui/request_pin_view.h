@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/certificate_provider/security_token_pin_dialog_host.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -25,29 +26,21 @@ class Label;
 namespace chromeos {
 
 // A dialog box for requesting PIN code. Instances of this class are managed by
-// PinDialogManager.
+// SecurityTokenPinDialogHostPopupImpl.
 class RequestPinView final : public views::DialogDelegateView,
                              public views::TextfieldController {
  public:
-  enum RequestPinCodeType { PIN, PUK, UNCHANGED };
-
-  enum RequestPinErrorType {
-    NONE,
-    INVALID_PIN,
-    INVALID_PUK,
-    MAX_ATTEMPTS_EXCEEDED,
-    UNKNOWN_ERROR
-  };
+  using PinCodeType = SecurityTokenPinDialogHost::SecurityTokenPinCodeType;
+  using PinErrorLabel = SecurityTokenPinDialogHost::SecurityTokenPinErrorLabel;
 
   using PinEnteredCallback =
       base::RepeatingCallback<void(const std::string& user_input)>;
   using ViewDestructionCallback = base::OnceClosure;
 
-  // Creates the view to be embeded in the dialog that requests the PIN/PUK.
+  // Creates the view to be embedded in the dialog that requests the PIN/PUK.
   // |extension_name| - the name of the extension making the request. Displayed
   //     in the title and in the header of the view.
-  // |code_type| - the type of code requested, PIN or PUK. UNCHANGED is not
-  //     accepted here.
+  // |code_type| - the type of code requested, PIN or PUK.
   // |attempts_left| - the number of attempts user has to try the code. When
   //     zero the textfield is disabled and user cannot provide any input. When
   //     -1 the user is allowed to provide the input and no information about
@@ -55,7 +48,7 @@ class RequestPinView final : public views::DialogDelegateView,
   // |pin_entered_callback| - called every time the user submits the input.
   // |view_destruction_callback| - called by the destructor.
   RequestPinView(const std::string& extension_name,
-                 RequestPinCodeType code_type,
+                 PinCodeType code_type,
                  int attempts_left,
                  const PinEnteredCallback& pin_entered_callback,
                  ViewDestructionCallback view_destruction_callback);
@@ -78,21 +71,15 @@ class RequestPinView final : public views::DialogDelegateView,
   // views::View
   gfx::Size CalculatePreferredSize() const override;
 
-  // Returns whether the view is locked while waiting the extension to process
-  // the user input data.
-  bool IsLocked() const;
-
-  // |code_type| - specifies whether the user is asked to enter PIN or PUK. If
-  //     UNCHANGED value is provided, the dialog displays the same value that
-  //     was last set.
-  // |error_type| - the error template to be displayed in red in the dialog. If
-  //     NONE, no error is displayed.
+  // |code_type| - specifies whether the user is asked to enter PIN or PUK.
+  // |error_label| - the error template to be displayed in red in the dialog. If
+  //     |kNone|, no error is displayed.
   // |attempts_left| - included in the view as the number of attepts user can
   //     have to enter correct code.
   // |accept_input| - specifies whether the textfield is enabled. If disabled
   //     the user is unable to provide input.
-  void SetDialogParameters(RequestPinCodeType code_type,
-                           RequestPinErrorType error_type,
+  void SetDialogParameters(PinCodeType code_type,
+                           PinErrorLabel error_label,
                            int attempts_left,
                            bool accept_input);
 
@@ -107,7 +94,7 @@ class RequestPinView final : public views::DialogDelegateView,
   // This initializes the view, with all the UI components.
   void Init();
   void SetAcceptInput(bool accept_input);
-  void SetErrorMessage(RequestPinErrorType error_type, int attempts_left);
+  void SetErrorMessage(PinErrorLabel error_label, int attempts_left);
   // Updates the header text |header_label_| based on values from
   // |window_title_| and |code_type_|.
   void UpdateHeaderText();

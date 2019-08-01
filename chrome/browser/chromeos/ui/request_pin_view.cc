@@ -35,17 +35,16 @@ constexpr int kDefaultTextWidth = 200;
 
 RequestPinView::RequestPinView(
     const std::string& extension_name,
-    RequestPinView::RequestPinCodeType code_type,
+    PinCodeType code_type,
     int attempts_left,
     const PinEnteredCallback& pin_entered_callback,
     ViewDestructionCallback view_destruction_callback)
     : pin_entered_callback_(pin_entered_callback),
       view_destruction_callback_(std::move(view_destruction_callback)) {
-  DCHECK_NE(code_type, RequestPinCodeType::UNCHANGED);
   Init();
   SetExtensionName(extension_name);
   const bool accept_input = (attempts_left != 0);
-  SetDialogParameters(code_type, RequestPinErrorType::NONE, attempts_left,
+  SetDialogParameters(code_type, PinErrorLabel::kNone, attempts_left,
                       accept_input);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::REQUEST_PIN);
 }
@@ -125,27 +124,20 @@ gfx::Size RequestPinView::CalculatePreferredSize() const {
   return gfx::Size(default_width, GetHeightForWidth(default_width));
 }
 
-bool RequestPinView::IsLocked() const {
-  return locked_;
-}
-
-void RequestPinView::SetDialogParameters(
-    RequestPinView::RequestPinCodeType code_type,
-    RequestPinView::RequestPinErrorType error_type,
-    int attempts_left,
-    bool accept_input) {
+void RequestPinView::SetDialogParameters(PinCodeType code_type,
+                                         PinErrorLabel error_label,
+                                         int attempts_left,
+                                         bool accept_input) {
   locked_ = false;
-  SetErrorMessage(error_type, attempts_left);
+  SetErrorMessage(error_label, attempts_left);
   SetAcceptInput(accept_input);
 
   switch (code_type) {
-    case RequestPinCodeType::PIN:
+    case PinCodeType::kPin:
       code_type_ = l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_PIN);
       break;
-    case RequestPinCodeType::PUK:
+    case PinCodeType::kPuk:
       code_type_ = l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_PUK);
-      break;
-    case RequestPinCodeType::UNCHANGED:
       break;
   }
 
@@ -180,7 +172,7 @@ void RequestPinView::Init() {
                         views::GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, column_view_set_id);
 
-  // Infomation label.
+  // Information label.
   int label_text_id = IDS_REQUEST_PIN_DIALOG_HEADER;
   base::string16 label_text = l10n_util::GetStringUTF16(label_text_id);
   auto header_label = std::make_unique<views::Label>(label_text);
@@ -232,27 +224,27 @@ void RequestPinView::SetAcceptInput(bool accept_input) {
   }
 }
 
-void RequestPinView::SetErrorMessage(RequestPinErrorType error_type,
+void RequestPinView::SetErrorMessage(PinErrorLabel error_label,
                                      int attempts_left) {
   base::string16 error_message;
-  switch (error_type) {
-    case RequestPinErrorType::INVALID_PIN:
+  switch (error_label) {
+    case PinErrorLabel::kInvalidPin:
       error_message =
           l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_INVALID_PIN_ERROR);
       break;
-    case RequestPinErrorType::INVALID_PUK:
+    case PinErrorLabel::kInvalidPuk:
       error_message =
           l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_INVALID_PUK_ERROR);
       break;
-    case RequestPinErrorType::MAX_ATTEMPTS_EXCEEDED:
+    case PinErrorLabel::kMaxAttemptsExceeded:
       error_message = l10n_util::GetStringUTF16(
           IDS_REQUEST_PIN_DIALOG_MAX_ATTEMPTS_EXCEEDED_ERROR);
       break;
-    case RequestPinErrorType::UNKNOWN_ERROR:
+    case PinErrorLabel::kUnknown:
       error_message =
           l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_UNKNOWN_ERROR);
       break;
-    case RequestPinErrorType::NONE:
+    case PinErrorLabel::kNone:
       if (attempts_left < 0) {
         error_label_->SetVisible(false);
         textfield_->SetInvalid(false);
