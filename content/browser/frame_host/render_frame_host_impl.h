@@ -1366,6 +1366,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // crashes).
   bool CreateNetworkServiceDefaultFactoryAndObserve(
       const base::Optional<url::Origin>& origin,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
 
@@ -1374,6 +1375,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // crashes).
   bool CreateNetworkServiceDefaultFactoryInternal(
       const base::Optional<url::Origin>& origin,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
 
