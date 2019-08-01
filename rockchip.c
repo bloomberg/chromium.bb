@@ -159,14 +159,18 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 	struct drm_rockchip_gem_create gem_create;
 
 	if (format == DRM_FORMAT_NV12) {
-		uint32_t w_mbs = DIV_ROUND_UP(ALIGN(width, 16), 16);
-		uint32_t h_mbs = DIV_ROUND_UP(ALIGN(height, 16), 16);
+		uint32_t w_mbs = DIV_ROUND_UP(width, 16);
+		uint32_t h_mbs = DIV_ROUND_UP(height, 16);
 
 		uint32_t aligned_width = w_mbs * 16;
-		uint32_t aligned_height = DIV_ROUND_UP(h_mbs * 16 * 3, 2);
+		uint32_t aligned_height = h_mbs * 16;
 
-		drv_bo_from_format(bo, aligned_width, height, format);
-		bo->total_size = bo->strides[0] * aligned_height + w_mbs * h_mbs * 128;
+		drv_bo_from_format(bo, aligned_width, aligned_height, format);
+		/*
+		 * drv_bo_from_format updates total_size. Add an extra data space for rockchip video
+		 * driver to store motion vectors.
+		 */
+		bo->total_size += w_mbs * h_mbs * 128;
 	} else if (width <= 2560 &&
 		   drv_has_modifier(modifiers, count, DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC)) {
 		/* If the caller has decided they can use AFBC, always
