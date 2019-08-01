@@ -1953,7 +1953,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'os': 'Ubuntu-14.04',
+              'os': 'Ubuntu-16.04',
             },
           ],
           'expiration': 36000,
