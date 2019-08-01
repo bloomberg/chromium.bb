@@ -30,6 +30,14 @@ from pylint.config import ConfigurationMixIn
 from pylint.interfaces import IAstroidChecker
 
 
+_THIRD_PARTY = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), '..', '..', 'third_party')
+_PYLINT_QUOTES = os.path.join(_THIRD_PARTY, 'pylint-quotes')
+sys.path.insert(0, _PYLINT_QUOTES)
+# pylint: disable=unused-import
+from pylint_quotes.checker import StringQuoteChecker
+
+
 # pylint: disable=too-few-public-methods
 
 

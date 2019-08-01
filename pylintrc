@@ -25,6 +25,11 @@
 # usually to register additional checkers.
 load-plugins=chromite.cli.cros.lint
 
+# Configure quote preferences.
+string-quote = single-avoid-escape
+triple-quote = double
+docstring-quote = double
+
 
 [MESSAGES CONTROL]
 
