@@ -3141,8 +3141,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
   }
 
   base::Optional<url::Origin> origin_lock;
-  if (base::FeatureList::IsEnabled(features::kPdfIsolation) &&
-      GetContentClient()->renderer()->IsOriginIsolatedPepperPlugin(info.path)) {
+  if (GetContentClient()->renderer()->IsOriginIsolatedPepperPlugin(info.path)) {
     origin_lock = url::Origin::Create(GURL(params.url));
   }
 

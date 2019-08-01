@@ -2192,9 +2192,6 @@ extern const char kPdfAnnotationsDescription[];
 extern const char kPdfFormSaveName[];
 extern const char kPdfFormSaveDescription[];
 
-extern const char kPdfIsolationName[];
-extern const char kPdfIsolationDescription[];
-
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
