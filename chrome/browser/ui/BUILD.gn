@@ -445,7 +445,7 @@ jumbo_split_static_library("ui") {
     "//components/feedback",
     "//components/flags_ui",
     "//components/gcm_driver",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/heap_profiling",
     "//components/history/content/browser",
     "//components/history/core/browser",

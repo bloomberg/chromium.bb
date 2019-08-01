@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/common/google_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using google_util::IsGoogleDomainUrl;
 
@@ -44,7 +44,7 @@ bool StartsWithBaseURL(const std::string& url) {
 
 TEST(GoogleUtilTest, GoodHomePagesNonSecure) {
   // Valid home page hosts.
-  EXPECT_TRUE(IsHomePage(GoogleURLTracker::kDefaultGoogleHomepage));
+  EXPECT_TRUE(IsHomePage(google_util::kGoogleHomepageURL));
   EXPECT_TRUE(IsHomePage("http://google.com"));
   EXPECT_TRUE(IsHomePage("http://www.google.com"));
   EXPECT_TRUE(IsHomePage("http://www.google.ca"));
@@ -188,7 +188,7 @@ TEST(GoogleUtilTest, GoodSearches) {
 
 TEST(GoogleUtilTest, BadSearches) {
   // A home page URL should not be identified as a search URL.
-  EXPECT_FALSE(IsSearch(GoogleURLTracker::kDefaultGoogleHomepage));
+  EXPECT_FALSE(IsSearch(google_util::kGoogleHomepageURL));
 
   // Must be http or https.
   EXPECT_FALSE(IsSearch("ftp://www.google.com/search?q=something"));

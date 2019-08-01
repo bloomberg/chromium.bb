@@ -720,7 +720,7 @@ source_set("common") {
     "//components/crash/core/common",
     "//components/download/public/common:public",
     "//components/embedder_support/android:web_contents_delegate",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/heap_profiling",
     "//components/keyed_service/content",
     "//components/metrics",
