@@ -2811,23 +2811,25 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
     // If in two-up view, only need to draw the left empty space for left pages
     // since the gap between the left and right page will be drawn by the left
     // page.
-    pp::Rect left =
-        draw_utils::GetLeftFillRect(page_rect, inset_sizes, kBottomSeparator);
-    left = GetScreenRect(left).Intersect(dirty_in_screen);
+    pp::Rect left_in_screen = GetScreenRect(
+        draw_utils::GetLeftFillRect(page_rect, inset_sizes, kBottomSeparator));
+    left_in_screen = left_in_screen.Intersect(dirty_in_screen);
 
-    FPDFBitmap_FillRect(bitmap, left.x() - dirty_in_screen.x(),
-                        left.y() - dirty_in_screen.y(), left.width(),
-                        left.height(), client_->GetBackgroundColor());
+    FPDFBitmap_FillRect(bitmap, left_in_screen.x() - dirty_in_screen.x(),
+                        left_in_screen.y() - dirty_in_screen.y(),
+                        left_in_screen.width(), left_in_screen.height(),
+                        client_->GetBackgroundColor());
   }
 
   if (page_rect.right() < layout_.size().width()) {
-    pp::Rect right = draw_utils::GetRightFillRect(
-        page_rect, inset_sizes, layout_.size().width(), kBottomSeparator);
-    right = GetScreenRect(right).Intersect(dirty_in_screen);
+    pp::Rect right_in_screen = GetScreenRect(draw_utils::GetRightFillRect(
+        page_rect, inset_sizes, layout_.size().width(), kBottomSeparator));
+    right_in_screen = right_in_screen.Intersect(dirty_in_screen);
 
-    FPDFBitmap_FillRect(bitmap, right.x() - dirty_in_screen.x(),
-                        right.y() - dirty_in_screen.y(), right.width(),
-                        right.height(), client_->GetBackgroundColor());
+    FPDFBitmap_FillRect(bitmap, right_in_screen.x() - dirty_in_screen.x(),
+                        right_in_screen.y() - dirty_in_screen.y(),
+                        right_in_screen.width(), right_in_screen.height(),
+                        client_->GetBackgroundColor());
   }
 
   pp::Rect bottom_in_screen;
