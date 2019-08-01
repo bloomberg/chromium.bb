@@ -34,6 +34,7 @@
 #include "pdf/pdfium/pdfium_document.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_read.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
+#include "pdf/pdfium/pdfium_permissions.h"
 #include "pdf/pdfium/pdfium_unsupported_features.h"
 #include "pdf/url_loader_wrapper_impl.h"
 #include "ppapi/cpp/instance.h"
@@ -109,13 +110,6 @@ constexpr bool kViewerImplementedPanning = false;
 #else
 constexpr bool kViewerImplementedPanning = true;
 #endif
-
-// See Table 3.20 in
-// http://www.adobe.com/devnet/acrobat/pdfs/pdf_reference_1-7.pdf
-constexpr uint32_t kPDFPermissionPrintLowQualityMask = 1 << 2;
-constexpr uint32_t kPDFPermissionPrintHighQualityMask = 1 << 11;
-constexpr uint32_t kPDFPermissionCopyMask = 1 << 4;
-constexpr uint32_t kPDFPermissionCopyAccessibleMask = 1 << 9;
 
 constexpr int32_t kLoadingTextVerticalOffset = 50;
 
@@ -1998,35 +1992,10 @@ std::string PDFiumEngine::GetLinkAtPosition(const pp::Point& point) {
 }
 
 bool PDFiumEngine::HasPermission(DocumentPermission permission) const {
-  // PDF 1.7 spec, section 3.5.2 says: "If the revision number is 2 or greater,
-  // the operations to which user access can be controlled are as follows: ..."
-  //
-  // Thus for revision numbers less than 2, permissions are ignored and this
-  // always returns true.
-  if (permissions_handler_revision_ < 2)
+  // No |permissions_| means no restrictions.
+  if (!permissions_)
     return true;
-
-  // Handle high quality printing permission separately for security handler
-  // revision 3+. See table 3.20 in the PDF 1.7 spec.
-  if (permission == PERMISSION_PRINT_HIGH_QUALITY &&
-      permissions_handler_revision_ >= 3) {
-    return (permissions_ & kPDFPermissionPrintLowQualityMask) != 0 &&
-           (permissions_ & kPDFPermissionPrintHighQualityMask) != 0;
-  }
-
-  switch (permission) {
-    case PERMISSION_COPY:
-      return (permissions_ & kPDFPermissionCopyMask) != 0;
-    case PERMISSION_COPY_ACCESSIBLE:
-      return (permissions_ & kPDFPermissionCopyAccessibleMask) != 0;
-    case PERMISSION_PRINT_LOW_QUALITY:
-    case PERMISSION_PRINT_HIGH_QUALITY:
-      // With security handler revision 2 rules, check the same bit for high
-      // and low quality. See table 3.20 in the PDF 1.7 spec.
-      return (permissions_ & kPDFPermissionPrintLowQualityMask) != 0;
-    default:
-      return true;
-  }
+  return permissions_->HasPermission(permission);
 }
 
 void PDFiumEngine::SelectAll() {
@@ -2396,8 +2365,7 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
   if (FPDFDoc_GetPageMode(doc()) == PAGEMODE_USEOUTLINES)
     client_->DocumentHasUnsupportedFeature("Bookmarks");
 
-  permissions_ = FPDF_GetDocPermissions(doc());
-  permissions_handler_revision_ = FPDF_GetSecurityHandlerRevision(doc());
+  permissions_ = std::make_unique<PDFiumPermissions>(doc());
 
   LoadBody();
 
