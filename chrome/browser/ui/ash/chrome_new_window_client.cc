@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -36,7 +37,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
@@ -418,9 +418,10 @@ void ChromeNewWindowClient::OpenFileManager() {
 
   const extensions::Extension* const extension =
       service->GetInstalledExtension(kFileManagerAppId);
-  OpenApplication(CreateAppLaunchParamsUserContainer(
-      profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      extensions::AppLaunchSource::kSourceKeyboard));
+  apps::LaunchService::Get(profile)->OpenApplication(
+      CreateAppLaunchParamsUserContainer(
+          profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          apps::mojom::AppLaunchSource::kSourceKeyboard));
 }
 
 void ChromeNewWindowClient::OpenCrosh() {
@@ -543,9 +544,10 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
 
   AppLaunchParams params = CreateAppLaunchParamsUserContainer(
       profile, extension, WindowOpenDisposition::NEW_WINDOW,
-      extensions::AppLaunchSource::kSourceArc);
+      apps::mojom::AppLaunchSource::kSourceArc);
   params.override_url = url;
-  content::WebContents* tab = OpenApplication(params);
+  content::WebContents* tab =
+      apps::LaunchService::Get(profile)->OpenApplication(params);
   if (!tab)
     return;
 
