@@ -4,7 +4,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "sandbox/mac/mojom/seatbelt_extension_token_struct_traits.h"
+#include "sandbox/mac/mojom/seatbelt_extension_token_mojom_traits.h"
 #include "sandbox/mac/mojom/traits_test_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

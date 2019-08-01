@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_MAC_MOJOM_SEATBELT_EXTENSION_TOKEN_STRUCT_TRAITS_H_
-#define SANDBOX_MAC_MOJOM_SEATBELT_EXTENSION_TOKEN_STRUCT_TRAITS_H_
+#ifndef SANDBOX_MAC_MOJOM_SEATBELT_EXTENSION_TOKEN_MOJOM_TRAITS_H_
+#define SANDBOX_MAC_MOJOM_SEATBELT_EXTENSION_TOKEN_MOJOM_TRAITS_H_
 
 #include <string>
 
@@ -24,4 +24,4 @@ struct StructTraits<sandbox::mac::mojom::SeatbeltExtensionTokenDataView,
 
 }  // namespace mojo
 
-#endif  // SANDBOX_MAC_MOJOM_SEATBELT_EXTENSION_TOKEN_STRUCT_TRAITS_H_
+#endif  // SANDBOX_MAC_MOJOM_SEATBELT_EXTENSION_TOKEN_MOJOM_TRAITS_H_
