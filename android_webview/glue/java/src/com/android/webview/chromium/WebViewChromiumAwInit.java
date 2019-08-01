@@ -70,6 +70,7 @@ public class WebViewChromiumAwInit {
     // TODO(gsennton): store aw-objects instead of adapters here
     // Initialization guarded by mLock.
     private AwBrowserContext mBrowserContext;
+    private AwTracingController mTracingController;
     private SharedStatics mSharedStatics;
     private GeolocationPermissionsAdapter mGeolocationPermissions;
     private CookieManagerAdapter mCookieManager;
@@ -205,7 +206,7 @@ public class WebViewChromiumAwInit {
                 mGeolocationPermissions = new GeolocationPermissionsAdapter(
                         mFactory, awBrowserContext.getGeolocationPermissions());
                 mWebStorage = new WebStorageAdapter(mFactory, AwQuotaManagerBridge.getInstance());
-                mAwTracingController = awBrowserContext.getTracingController();
+                mAwTracingController = getTracingController();
                 mServiceWorkerController = awBrowserContext.getServiceWorkerController();
                 mAwProxyController = new AwProxyController();
             }
@@ -342,6 +343,13 @@ public class WebViewChromiumAwInit {
         }
     }
 
+    public AwTracingController getTracingController() {
+        if (mTracingController == null) {
+            mTracingController = new AwTracingController();
+        }
+        return mTracingController;
+    }
+
     // Only on UI thread.
     AwBrowserContext getBrowserContextOnUiThread() {
         assert mStarted;
@@ -352,8 +360,7 @@ public class WebViewChromiumAwInit {
         }
 
         if (mBrowserContext == null) {
-            mBrowserContext = new AwBrowserContext(
-                mFactory.getWebViewPrefs(), ContextUtils.getApplicationContext());
+            mBrowserContext = AwBrowserContext.getDefault();
         }
         return mBrowserContext;
     }

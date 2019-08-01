@@ -76,6 +76,20 @@ void AwBrowserProcess::CreateLocalState() {
   DCHECK(local_state_);
 }
 
+AwBrowserPolicyConnector* AwBrowserProcess::browser_policy_connector() {
+  if (!browser_policy_connector_)
+    CreateBrowserPolicyConnector();
+  return browser_policy_connector_.get();
+}
+
+void AwBrowserProcess::CreateBrowserPolicyConnector() {
+  DCHECK(!browser_policy_connector_);
+
+  browser_policy_connector_ =
+      aw_feature_list_creator_->TakeBrowserPolicyConnector();
+  DCHECK(browser_policy_connector_);
+}
+
 void AwBrowserProcess::InitSafeBrowsing() {
   CreateSafeBrowsingUIManager();
   CreateSafeBrowsingWhitelistManager();
