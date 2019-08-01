@@ -173,7 +173,7 @@ class MockedCallResultsTest(cros_test_lib.TestCase):
                       kwargs=kwargs)
 
   def testKwargsNonStrictLookup(self):
-    """"Nonstrict lookup passes with extra kwarg."""
+    """Nonstrict lookup passes with extra kwarg."""
     self.KwargsHelper(1, self.KWARGS, strict=False)
     kwargs = self.NEW_ENTRY
     kwargs.update(self.KWARGS)

@@ -89,7 +89,7 @@ class ECSigner(signer.BaseSigner):
     return re.search('KEY_RO', fmap.output) is not None
 
   def Sign(self, keyset, input_name, output_name):
-    """"Sign EC image
+    """Sign EC image
 
     Args:
       keyset: keyset used for this signing step

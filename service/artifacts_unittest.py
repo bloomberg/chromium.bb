@@ -253,7 +253,7 @@ class BundleVmFilesTest(cros_test_lib.TempDirTestCase):
   """BundleVmFiles tests."""
 
   def testBundleVmFiles(self):
-    """"Verifies that the correct files are bundled"""
+    """Verifies that the correct files are bundled"""
     # Create the chroot instance.
     chroot_path = os.path.join(self.tempdir, 'chroot')
     chroot = chroot_lib.Chroot(path=chroot_path)

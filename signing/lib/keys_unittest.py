@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-""""ChromeOS key unittests"""
+"""ChromeOS key unittests"""
 
 from __future__ import print_function
 
@@ -288,7 +288,7 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
     self.assertTrue(k1.KeyblockExists())
 
   def testGetSha1sumEmpty(self):
-    """"Test GetSha1sum with bad cmd output."""
+    """Test GetSha1sum with bad cmd output."""
     k1 = keys.KeyPair('key1', self.tempdir)
 
     with self.assertRaises(keys.SignerKeyError):

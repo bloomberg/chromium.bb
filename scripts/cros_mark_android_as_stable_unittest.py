@@ -453,7 +453,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
       self.assertEquals(self._AuxGetArcBasename(build, src), dst)
 
   def testGetArcBasenameRenameInvalid(self):
-    """"Test that basename is unchanged if it's not as expected."""
+    """Test that basename is unchanged if it's not as expected."""
     # Missing hyphen.
     self.assertEquals(self._AuxGetArcBasename('X86_USERDEBUG',
                                               'cheets_x86.zip'),

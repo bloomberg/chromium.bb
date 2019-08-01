@@ -1035,7 +1035,7 @@ class GitRepoPatch(PatchQuery):
     return dict(line.split('\t', 1)[::-1] for line in lines)
 
   def _AmendCommitMessage(self, git_repo):
-    """"Amend the commit and update our sha1 with the new commit."""
+    """Amend the commit and update our sha1 with the new commit."""
     git.RunGit(git_repo, ['commit', '--amend', '-m', self.commit_message])
     self.sha1 = ParseSHA1(self._PullData('HEAD', git_repo)[0], error_ok=False)
 

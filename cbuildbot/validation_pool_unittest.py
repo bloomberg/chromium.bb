@@ -616,7 +616,7 @@ class TestCoreLogic(_Base):
     pool.applied = []
 
     class MyException(Exception):
-      """"Unique Exception used for testing."""
+      """Unique Exception used for testing."""
 
     patch_series.PatchSeries.Apply.configure_mock(side_effect=MyException)
     pool._HandleApplyFailure.configure_mock(return_valu=None)
