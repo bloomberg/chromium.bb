@@ -180,6 +180,20 @@ class DiagnosticsObserverForTesting
     EXPECT_EQ(access_token_requested_scopes_, scopes);
     std::move(access_token_requested_callback_).Run();
   }
+  void OnFetchAccessTokenComplete(
+      const CoreAccountId& account_id,
+      const std::string& consumer_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      GoogleServiceAuthError error,
+      base::Time expiration_time) override {
+    if (!fetch_access_token_completed_callback_)
+      return;
+    EXPECT_EQ(fetch_access_token_completed_account_id_, account_id);
+    EXPECT_EQ(fetch_access_token_completed_consumer_id_, consumer_id);
+    EXPECT_EQ(fetch_access_token_completed_scopes_, scopes);
+    EXPECT_EQ(fetch_access_token_completed_error_, error);
+    std::move(fetch_access_token_completed_callback_).Run();
+  }
 
   void SetOnAccessTokenRequested(
       const CoreAccountId& account_id,
@@ -191,12 +205,29 @@ class DiagnosticsObserverForTesting
     access_token_requested_scopes_ = scopes;
     access_token_requested_callback_ = std::move(callback);
   }
+  void SetOnFetchAccessTokenComplete(
+      const CoreAccountId& account_id,
+      const std::string& consumer_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      GoogleServiceAuthError error,
+      base::OnceClosure callback) {
+    fetch_access_token_completed_account_id_ = account_id;
+    fetch_access_token_completed_consumer_id_ = consumer_id;
+    fetch_access_token_completed_scopes_ = scopes;
+    fetch_access_token_completed_error_ = error;
+    fetch_access_token_completed_callback_ = std::move(callback);
+  }
 
  private:
   CoreAccountId access_token_requested_account_id_;
   std::string access_token_requested_consumer_id_;
   OAuth2AccessTokenManager::ScopeSet access_token_requested_scopes_;
   base::OnceClosure access_token_requested_callback_;
+  CoreAccountId fetch_access_token_completed_account_id_;
+  std::string fetch_access_token_completed_consumer_id_;
+  OAuth2AccessTokenManager::ScopeSet fetch_access_token_completed_scopes_;
+  GoogleServiceAuthError fetch_access_token_completed_error_;
+  base::OnceClosure fetch_access_token_completed_callback_;
 };
 
 }  // namespace
@@ -460,6 +491,48 @@ TEST_F(OAuth2AccessTokenManagerTest, OnAccessTokenRequested) {
 
   std::unique_ptr<OAuth2AccessTokenManager::Request> request(
       token_manager_.StartRequest(account_id_, scopeset, &consumer_));
+  run_loop.Run();
+  token_manager_.RemoveDiagnosticsObserver(&observer);
+}
+
+// Test that DiagnosticsObserver::OnFetchAccessTokenComplete is invoked when a
+// request is completed.
+TEST_F(OAuth2AccessTokenManagerTest,
+       OnFetchAccessTokenCompleteOnRequestCompleted) {
+  DiagnosticsObserverForTesting observer;
+  OAuth2AccessTokenManager::ScopeSet scopeset;
+  scopeset.insert("scope");
+  base::RunLoop run_loop;
+  GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
+  observer.SetOnFetchAccessTokenComplete(account_id_, consumer_.id(), scopeset,
+                                         error, run_loop.QuitClosure());
+  token_manager_.AddDiagnosticsObserver(&observer);
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
+
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request(
+      token_manager_.StartRequest(account_id_, scopeset, &consumer_));
+  run_loop.Run();
+  token_manager_.RemoveDiagnosticsObserver(&observer);
+}
+
+// Test that DiagnosticsObserver::OnFetchAccessTokenComplete is invoked when
+// StartRequest is called for an account without a refresh token.
+TEST_F(OAuth2AccessTokenManagerTest,
+       OnFetchAccessTokenCompleteOnRequestWithoutRefreshToken) {
+  DiagnosticsObserverForTesting observer;
+  OAuth2AccessTokenManager::ScopeSet scopeset;
+  scopeset.insert("scope");
+  base::RunLoop run_loop;
+  // |account_id| doesn't have a refresh token, OnFetchAccessTokenComplete
+  // should report GoogleServiceAuthError::USER_NOT_SIGNED_UP.
+  GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
+  const CoreAccountId account_id("new_account_id");
+  observer.SetOnFetchAccessTokenComplete(account_id, consumer_.id(), scopeset,
+                                         error, run_loop.QuitClosure());
+  token_manager_.AddDiagnosticsObserver(&observer);
+
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request(
+      token_manager_.StartRequest(account_id, scopeset, &consumer_));
   run_loop.Run();
   token_manager_.RemoveDiagnosticsObserver(&observer);
 }
