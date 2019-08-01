@@ -925,5 +925,11 @@ class FnTest(TestCase):
       f.write('0123')
     self.assertEqual(local_caching._get_recursive_size(self.tempdir), 7)
 
+    # symlink should be ignored.
+    os.symlink(nested_dir, os.path.join(self.tempdir, 'symlink_dir'))
+    os.symlink(os.path.join(self.tempdir, '1'),
+               os.path.join(self.tempdir, 'symlink_file'))
+    self.assertEqual(local_caching._get_recursive_size(self.tempdir), 7)
+
 if __name__ == '__main__':
   test_env.main()

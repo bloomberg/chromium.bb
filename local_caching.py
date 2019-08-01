@@ -10,6 +10,7 @@ import io
 import logging
 import os
 import random
+import stat
 import string
 import sys
 import time
@@ -114,7 +115,10 @@ def _get_recursive_size(path):
     total = 0
     for root, _, files in fs.walk(path):
       for f in files:
-        total += fs.lstat(os.path.join(root, f)).st_size
+        st = fs.lstat(os.path.join(root, f))
+        if stat.S_ISLNK(st.st_mode):
+          continue
+        total += st.st_size
     return total
   except (IOError, OSError, UnicodeEncodeError) as exc:
     logging.warning('Exception while getting the size of %s:\n%s', path, exc)
