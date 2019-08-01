@@ -55,7 +55,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
   static std::unique_ptr<ServiceWorkerNavigationHandleCore>
   CreateNavigationHandleCore(ServiceWorkerContextWrapper* context_wrapper) {
     std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core;
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             [](ServiceWorkerContextWrapper* wrapper) {
