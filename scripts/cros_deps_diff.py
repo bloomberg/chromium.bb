@@ -38,7 +38,7 @@ def GetColor(index):
     chars = [0] * 3
     for bit in range(0, 24):
       chars[bit % 3] |= ((index >> bit) & 0x1) << (7-bit/3)
-    return "#%02x%02x%02x" % tuple(chars)
+    return '#%02x%02x%02x' % tuple(chars)
 
 
 def GetReverseDependencyClosure(full_name, deps_map, divergent_set):

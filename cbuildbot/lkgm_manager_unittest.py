@@ -131,9 +131,9 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     self.buildstore = FakeBuildStore()
 
     # Create tmp subdirs based on the one provided TempDirMixin.
-    self.tmpdir = os.path.join(self.tempdir, "base")
+    self.tmpdir = os.path.join(self.tempdir, 'base')
     osutils.SafeMakedirs(self.tmpdir)
-    self.tmpmandir = os.path.join(self.tempdir, "man")
+    self.tmpmandir = os.path.join(self.tempdir, 'man')
     osutils.SafeMakedirs(self.tmpmandir)
 
     repo = repository.RepoRepository(

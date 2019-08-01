@@ -31,70 +31,70 @@ class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
 
   def testExistingDevice(self):
     with cros_test_lib.RunCommandMock() as rc_mock:
-      rc_mock.SetDefaultCmdResult(output='''
+      rc_mock.SetDefaultCmdResult(output="""
   wrong_vg1\t/dev/sda1
   test_vg\t/dev/loop1
   wrong_vg2\t/dev/loop0
-''')
+""")
       vg = cros_sdk_lib.FindVolumeGroupForDevice('/chroot', '/dev/loop1')
       self.assertEqual(vg, 'test_vg')
 
   def testNoMatchingVolumeGroup(self):
     with cros_test_lib.RunCommandMock() as rc_mock:
-      rc_mock.SetDefaultCmdResult(output='''
+      rc_mock.SetDefaultCmdResult(output="""
   wrong_vg1\t/dev/sda1
   wrong_vg2\t/dev/loop0
-''')
+""")
       vg = cros_sdk_lib.FindVolumeGroupForDevice('/chroot', '')
       self.assertEqual(vg, 'cros_chroot_000')
 
   def testPhysicalVolumeWithoutVolumeGroup(self):
     with cros_test_lib.RunCommandMock() as rc_mock:
-      rc_mock.SetDefaultCmdResult(output='''
+      rc_mock.SetDefaultCmdResult(output="""
   wrong_vg1\t/dev/sda1
   \t/dev/loop0
-''')
+""")
       vg = cros_sdk_lib.FindVolumeGroupForDevice('/chroot', '/dev/loop0')
       self.assertEqual(vg, 'cros_chroot_000')
 
   def testMatchingVolumeGroup(self):
     with cros_test_lib.RunCommandMock() as rc_mock:
-      rc_mock.SetDefaultCmdResult(output='''
+      rc_mock.SetDefaultCmdResult(output="""
   wrong_vg1\t/dev/sda1
   cros_chroot_000\t/dev/loop1
   wrong_vg2\t/dev/loop0
-''')
+""")
       vg = cros_sdk_lib.FindVolumeGroupForDevice('/chroot', '')
       self.assertEqual(vg, 'cros_chroot_001')
 
   def testTooManyVolumeGroups(self):
     with cros_test_lib.RunCommandMock() as rc_mock:
-      rc_mock.SetDefaultCmdResult(output='''
+      rc_mock.SetDefaultCmdResult(output="""
   wrong_vg1\t/dev/sda1
 %s
   wrong_vg2\t/dev/loop0
-''' % '\n'.join(['  cros_chroot_%03d\t/dev/any' % i for i in range(1000)]))
+""" % '\n'.join(['  cros_chroot_%03d\t/dev/any' % i for i in range(1000)]))
       vg = cros_sdk_lib.FindVolumeGroupForDevice('/chroot', '')
       self.assertIsNone(vg)
 
   def testInvalidChars(self):
     with cros_test_lib.RunCommandMock() as rc_mock:
-      rc_mock.SetDefaultCmdResult(output='''
+      rc_mock.SetDefaultCmdResult(output="""
   wrong_vg1\t/dev/sda1
   cros_chroot_000\t/dev/loop1
   wrong_vg2\t/dev/loop0
-''')
+""")
       vg = cros_sdk_lib.FindVolumeGroupForDevice(
           '//full path /to& "my" /chroot', '')
       self.assertEqual(vg, 'cros_full+path++to+++my+++chroot_000')
 
   def testInvalidLines(self):
     with cros_test_lib.RunCommandMock() as rc_mock:
-      rc_mock.SetDefaultCmdResult(output='''
+      rc_mock.SetDefaultCmdResult(output="""
   \t/dev/sda1
 
   wrong_vg2\t/dev/loop0\t
-''')
+""")
       vg = cros_sdk_lib.FindVolumeGroupForDevice('/chroot', '')
       self.assertEqual(vg, 'cros_chroot_000')
 
@@ -369,10 +369,10 @@ class TestFindChrootMountSource(cros_test_lib.MockTempDirTestCase):
   def testMatchMultipleMounts(self):
     proc_mounts = os.path.join(self.tempdir, 'proc_mounts')
     with open(proc_mounts, 'w') as f:
-      f.write('''/dev/mapper/cros_first_mount-lv_name /chroot ext4 rw 0 0
+      f.write("""/dev/mapper/cros_first_mount-lv_name /chroot ext4 rw 0 0
 /dev/mapper/cros_inner_mount-lv /chroot/inner ext4 rw 0 0
 /dev/mapper/cros_second_mount-lv_name /chroot ext4 rw 0 0
-''')
+""")
 
     vg, lv = cros_sdk_lib.FindChrootMountSource('/chroot',
                                                 proc_mounts=proc_mounts)

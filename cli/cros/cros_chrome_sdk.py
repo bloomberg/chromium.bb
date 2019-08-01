@@ -980,7 +980,7 @@ class ChromeSDKCommand(command.CliCommand):
     if options.chroot:
       sysroot = os.path.join(options.chroot, 'build', board)
       if not os.path.isdir(sysroot) and not options.cmd:
-        logging.warning("Because --chroot is set, expected a sysroot to be at "
+        logging.warning('Because --chroot is set, expected a sysroot to be at '
                         "%s, but couldn't find one.", sysroot)
     else:
       sysroot = sdk_ctx.key_map[constants.CHROME_SYSROOT_TAR].path

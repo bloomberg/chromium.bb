@@ -28,17 +28,17 @@ class CrosTestCaseTest(cros_test_lib.TestCase):
   """Test the cros_test_lib.TestCase."""
 
   def testAssertStartsWith(self):
-    s = "abcdef"
-    prefix = "abc"
+    s = 'abcdef'
+    prefix = 'abc'
     self.assertStartsWith(s, prefix)
-    prefix = "def"
+    prefix = 'def'
     self.assertRaises(AssertionError, self.assertStartsWith, s, prefix)
 
   def testAssertEndsWith(self):
-    s = "abcdef"
-    suffix = "abc"
+    s = 'abcdef'
+    suffix = 'abc'
     self.assertRaises(AssertionError, self.assertEndsWith, s, suffix)
-    suffix = "def"
+    suffix = 'def'
     self.assertEndsWith(s, suffix)
 
 

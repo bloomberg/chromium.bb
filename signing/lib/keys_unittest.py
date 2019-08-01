@@ -23,11 +23,11 @@ MOCK_SHA1SUM = 'e2c1c92d7d7aa7dfed5e8375edd30b7ae52b7450'
 def MockVbutilKey(rc, sha1sum=MOCK_SHA1SUM):
   """Adds vbutil_key mocks to |rc|"""
 
-  cmd_output = textwrap.dedent('''
+  cmd_output = textwrap.dedent("""
     Public Key file:   firmware_data_key.vbpubk
     Algorithm:         7 RSA4096 SHA256
     Key Version:       1
-    Key sha1sum:       ''' + sha1sum)
+    Key sha1sum:       """ + sha1sum)
 
   rc.AddCmdResult(partial_mock.ListRegex('vbutil_key --unpack .*'),
                   output=cmd_output)
@@ -78,7 +78,7 @@ class KeysetMock(keys.Keyset):
 
     for name in self.KEYS_WITH_ROOT_OF_TRUST_ALIASES:
       for root_of_trust in self.ROOT_OF_TRUST_ALIASES:
-        key = keys.KeyPair("%s.%s" % (name, root_of_trust), key_dir)
+        key = keys.KeyPair('%s.%s' % (name, root_of_trust), key_dir)
         self.AddRootOfTrustKey(name, root_of_trust, key)
 
     for alias, root_of_trust in zip(
@@ -568,23 +568,23 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
   def testKeyExistsPublicAndPrivate(self):
     ks0 = self._get_keyset()
     CreateDummyKeys(ks0.keys['key1'])
-    self.assertTrue(ks0.KeyExists('key1'), msg="key1 should exist")
+    self.assertTrue(ks0.KeyExists('key1'), msg='key1 should exist')
     self.assertTrue(ks0.KeyExists('key1', require_public=True),
-                    msg="key1 public key should exist")
+                    msg='key1 public key should exist')
     self.assertTrue(ks0.KeyExists('key1', require_private=True),
-                    msg="key1 private key should exist")
+                    msg='key1 private key should exist')
     self.assertTrue(ks0.KeyExists('key1',
                                   require_public=True,
                                   require_private=True),
-                    msg="key1 keys should exist")
+                    msg='key1 keys should exist')
 
   def testKeyExistsPrivate(self):
     ks0 = self._get_keyset()
     CreateDummyPrivateKey(ks0.keys['key2'])
     self.assertTrue(ks0.KeyExists('key2'),
-                    msg="should pass with only private key")
+                    msg='should pass with only private key')
     self.assertTrue(ks0.KeyExists('key2', require_private=True),
-                    msg="Should exist with only private key")
+                    msg='Should exist with only private key')
     self.assertFalse(ks0.KeyExists('key2', require_public=True),
                      msg="Shouldn't pass with only private key")
 
@@ -592,9 +592,9 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
     ks0 = self._get_keyset()
     CreateDummyPublic(ks0.keys['key3'])
     self.assertTrue(ks0.KeyExists('key3'),
-                    msg="should pass with only public key")
+                    msg='should pass with only public key')
     self.assertTrue(ks0.KeyExists('key3', require_public=True),
-                    msg="Should exist with only public key")
+                    msg='Should exist with only public key')
     self.assertFalse(ks0.KeyExists('key3', require_private=True),
                      msg="Shouldn't pass with only public key")
 

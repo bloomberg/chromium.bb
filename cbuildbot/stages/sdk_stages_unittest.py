@@ -249,7 +249,7 @@ class SDKPackageToolchainOverlaysStageTest(
                                                        self.buildstore)
 
   # TODO(akeshet): determine why this test is flaky
-  @unittest.skip("Skip flaky test.")
+  @unittest.skip('Skip flaky test.')
   def testTarballCreation(self):
     """Tests that tarballs are created for all board toolchains."""
     self._Prepare('chromiumos-sdk')

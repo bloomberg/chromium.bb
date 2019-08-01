@@ -55,7 +55,7 @@ LSB_KEY_APPID_CANARY = 'CHROMEOS_CANARY_APPID'
 LSB_KEY_ARC_VERSION = 'CHROMEOS_ARC_VERSION'
 LSB_KEY_ARC_ANDROID_SDK_VERSION = 'CHROMEOS_ARC_ANDROID_SDK_VERSION'
 
-CANARY_APP_ID = "{90F229CE-83E2-4FAF-8479-E368A34938B1}"
+CANARY_APP_ID = '{90F229CE-83E2-4FAF-8479-E368A34938B1}'
 
 def _ParseArguments(argv):
   parser = commandline.ArgumentParser(description=__doc__)
@@ -68,9 +68,9 @@ def _ParseArguments(argv):
   parser.add_argument('--sysroot', required=True, type='path',
                       help='The sysroot to install the lsb-release file into.')
   parser.add_argument('--version_string', required=True,
-                      help='The image\'s version string.')
+                      help="The image's version string.")
   parser.add_argument('--builder_path', default=None,
-                      help='The image\'s builder path.')
+                      help="The image's builder path.")
   parser.add_argument('--auserver', default=None,
                       help='The auserver url to use.')
   parser.add_argument('--devserver', default=None,

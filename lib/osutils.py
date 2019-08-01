@@ -797,7 +797,7 @@ MS_ACTIVE = 1 << 30
 MS_NOUSER = 1 << 31
 
 
-def Mount(source, target, fstype, flags, data=""):
+def Mount(source, target, fstype, flags, data=''):
   """Call the mount(2) func; see the man page for details."""
   libc = ctypes.CDLL(ctypes.util.find_library('c'), use_errno=True)
   if libc.mount(source, target, fstype, ctypes.c_int(flags), data) != 0:

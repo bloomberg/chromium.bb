@@ -242,7 +242,7 @@ class VM(device.Device):
     #
     # qemu-x86_64 version 2.10.1
     # Copyright (c) 2003-2017 Fabrice Bellard and the QEMU Project developers
-    m = re.search(r"version ([0-9.]+)", version_str)
+    m = re.search(r'version ([0-9.]+)', version_str)
     if not m:
       raise VMError('Unable to determine QEMU version from:\n%s.' % version_str)
     return m.group(1)

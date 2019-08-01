@@ -265,7 +265,7 @@ class CalculateRootfsHash(object):
            'payload_blocks=%d' % rootfs_blocks,
            'hashtree=%s' % self._file.name]
     if salt:
-      cmd.append("salt=%s" % salt.value)
+      cmd.append('salt=%s' % salt.value)
     verity = cros_build_lib.SudoRunCommand(
         cmd, print_cmd=False, capture_output=True).output
     # verity is a templated DmLine string.

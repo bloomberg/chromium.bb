@@ -334,7 +334,7 @@ def GetParser():
   # etc. These two arguments are required in both cases.
   parser.add_argument('--sysroot', type='path', metavar='DIR', required=True,
                       help="The root path to the board's build root, e.g. "
-                      "/build/eve")
+                      '/build/eve')
   parser.add_argument('--install-root-dir', type='path', metavar='DIR',
                       required=True,
                       help='If building a specific DLC, it is the root path to'

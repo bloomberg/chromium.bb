@@ -98,7 +98,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
   option_name = 'tests'
   config_name = 'hw_tests'
-  stage_name = "HWTest"
+  stage_name = 'HWTest'
   category = constants.TEST_INFRA_STAGE
 
   PERF_RESULTS_EXTENSION = 'results'
@@ -303,7 +303,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 class SkylabHWTestStage(HWTestStage):
   """Stage that runs tests in the Autotest lab with Skylab."""
 
-  stage_name = "SkylabHWTest"
+  stage_name = 'SkylabHWTest'
   category = constants.TEST_INFRA_STAGE
 
   def _SetBranchedSuiteConfig(self, suite_config):
@@ -368,7 +368,7 @@ class SkylabHWTestStage(HWTestStage):
 class ASyncHWTestStage(HWTestStage, generic_stages.ForgivingBuilderStage):
   """Stage that fires and forgets hw test suites to the Autotest lab."""
 
-  stage_name = "ASyncHWTest"
+  stage_name = 'ASyncHWTest'
   category = constants.TEST_INFRA_STAGE
 
   def __init__(self, *args, **kwargs):
@@ -380,7 +380,7 @@ class ASyncSkylabHWTestStage(SkylabHWTestStage,
                              generic_stages.ForgivingBuilderStage):
   """Stage that fires and forgets skylab hw test suites to the Autotest lab."""
 
-  stage_name = "ASyncSkylabHWTest"
+  stage_name = 'ASyncSkylabHWTest'
   category = constants.TEST_INFRA_STAGE
 
   def __init__(self, *args, **kwargs):
@@ -673,9 +673,9 @@ class TestPlanStage(generic_stages.BoardSpecificBuilderStage):
     board = self._current_board
 
     if not builder_run.options.archive:
-      logging.warning("HWTests were requested but could not be run because "
+      logging.warning('HWTests were requested but could not be run because '
                       "artifacts weren't uploaded. Please ensure the archive "
-                      "option in the builder config is set to True.")
+                      'option in the builder config is set to True.')
       return
 
 

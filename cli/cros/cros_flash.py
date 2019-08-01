@@ -78,11 +78,12 @@ Examples:
                                            commandline.DEVICE_SCHEME_SSH,
                                            commandline.DEVICE_SCHEME_USB])
     parser.add_argument(
-        'image', nargs='?', default='latest', help="A local path or an xbuddy "
-        "path: xbuddy://{local|remote}/board/version/{image_type} image_type "
+        'image', nargs='?', default='latest',
+        help='A local path or an xbuddy path: '
+        'xbuddy://{local|remote}/board/version/{image_type} image_type '
         "can be: 'test', 'dev', 'base', 'recovery', or 'signed'. Note any "
-        "strings that do not map to a real file path will be converted to an "
-        "xbuddy path i.e., latest, will map to xbuddy://latest.")
+        'strings that do not map to a real file path will be converted to an '
+        'xbuddy path i.e., latest, will map to xbuddy://latest.')
     parser.add_argument(
         '--clear-cache', default=False, action='store_true',
         help='Clear the devserver static directory. This deletes all the '

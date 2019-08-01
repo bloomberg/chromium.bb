@@ -1280,7 +1280,7 @@ def GetParser():
                       help='Unmerge deprecated packages')
   parser.add_argument('-t', '--targets',
                       dest='targets', default='sdk',
-                      help="Comma separated list of tuples. Special keywords "
+                      help='Comma separated list of tuples. Special keywords '
                            "'host', 'sdk', 'boards', and 'all' are "
                            "allowed. Defaults to 'sdk'.")
   parser.add_argument('--include-boards', default='', metavar='BOARDS',

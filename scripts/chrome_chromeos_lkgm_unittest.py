@@ -44,7 +44,7 @@ class ChromeLKGMCommitterTester(cros_test_lib.RunCommandTestCase,
     osutils.WriteFile(self.lkgm_file, self.old_lkgm)
 
   def testCheckoutChromeLKGM(self):
-    "Tests that we can read/obtain the old LKGM from mocked out git."
+    'Tests that we can read/obtain the old LKGM from mocked out git.'
     self.old_lkgm = '1234.0.0'
     self.rc.AddCmdResult(partial_mock.In('remote'), returncode=0,
                          side_effect=self._createOldLkgm)

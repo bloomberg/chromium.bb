@@ -123,7 +123,7 @@ To install the debug symbols for all available packages, run:
 
   def IsInChroot(self):
     """Decide whether we are in chroot or chrome-sdk."""
-    return os.path.exists("/mnt/host/source/chromite/")
+    return os.path.exists('/mnt/host/source/chromite/')
 
   def SimpleChromeGdb(self):
     """Get the name of the cross gdb based on board name."""
@@ -187,7 +187,7 @@ To install the debug symbols for all available packages, run:
       self.cross_gdb = self.GetCrossGdb()
     else:
       self.chrome_path = os.path.realpath(os.path.join(os.path.dirname(
-          os.path.realpath(__file__)), "../../../.."))
+          os.path.realpath(__file__)), '../../../..'))
       self.sdk_path = os.path.join(
           path_util.FindCacheDir(), 'chrome-sdk/tarballs/')
       self.sysroot = self.SimpleChromeSysroot()
@@ -579,7 +579,7 @@ def main(argv):
                       help='board to debug for')
   parser.add_argument('-g', '--gdb_args', action='append', default=[],
                       help='Arguments to gdb itself.  If multiple arguments are'
-                      ' passed, each argument needs a separate \'-g\' flag.')
+                      " passed, each argument needs a separate '-g' flag.")
   parser.add_argument(
       '--remote', default=None,
       type=commandline.DeviceParser(commandline.DEVICE_SCHEME_SSH),

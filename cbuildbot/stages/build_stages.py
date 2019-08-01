@@ -329,7 +329,7 @@ class CleanUpStage(generic_stages.BuilderStage):
     if (not (self._run.options.buildbot or self._run.options.remote_trybot) and
         self._run.options.clobber):
       if not commands.ValidateClobber(self._build_root):
-        cros_build_lib.Die("--clobber in local mode must be approved.")
+        cros_build_lib.Die('--clobber in local mode must be approved.')
 
     # If we can't get a manifest out of it, then it's not usable and must be
     # clobbered.
@@ -346,7 +346,7 @@ class CleanUpStage(generic_stages.BuilderStage):
         # way, the checkout needs to be wiped since it's in an unknown
         # state.
         if os.path.exists(self._build_root):
-          logging.warning("ManifestCheckout at %s is unusable: %s",
+          logging.warning('ManifestCheckout at %s is unusable: %s',
                           self._build_root, e)
         delete_chroot = True
 

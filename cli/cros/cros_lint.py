@@ -423,5 +423,5 @@ run other checks (e.g. pyflakes, etc.)
             q.put([linter, path])
 
     if errors.value:
-      logging.error("I found lint errors in %i files.", errors.value)
+      logging.error('Found lint errors in %i files.', errors.value)
       sys.exit(1)

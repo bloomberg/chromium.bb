@@ -55,7 +55,7 @@ class DepTrackerTest(cros_test_lib.TempDirTestCase):
     unittest_lib.BuildELF(os.path.join(self.tempdir, 'libabc.so'),
                           ['func_a', 'func_b', 'func_c'])
     osutils.WriteFile(os.path.join(self.tempdir, 'pyscript'),
-                      "#!/usr/bin/python\nimport sys\nsys.exit(42)\n")
+                      '#!/usr/bin/python\nimport sys\nsys.exit(42)\n')
     dt = dep_tracker.DepTracker(self.tempdir)
     dt.Init()
 

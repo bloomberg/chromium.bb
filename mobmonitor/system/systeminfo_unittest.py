@@ -18,7 +18,7 @@ from chromite.lib import partial_mock
 from chromite.mobmonitor.system import systeminfo
 
 # Strings that are used to mock particular system files for testing.
-MOCK_PROC_MEMINFO = u'''
+MOCK_PROC_MEMINFO = u"""
 MemTotal:       65897588 kB
 MemFree:        24802380 kB
 Buffers:         1867288 kB
@@ -62,9 +62,9 @@ Hugepagesize:       2048 kB
 DirectMap4k:     1619840 kB
 DirectMap2M:    46536704 kB
 DirectMap1G:    18874368 kB
-'''
+"""
 
-MOCK_PROC_MOUNTS = u'''
+MOCK_PROC_MOUNTS = u"""
 rootfs / rootfs rw 0 0
 sysfs /sys sysfs rw,nosuid,nodev,noexec,relatime 0 0
 proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
@@ -98,9 +98,9 @@ cros /sys/fs/cgroup/cros cgroup rw,relatime,cpuset 0 0
 gvfsd-fuse /run/user/307266/gvfs fuse.gvfsd-fuse rw,nosuid,nodev,relatime,user_id=307266,group_id=5000 0 0
 objfsd /google/obj fuse.objfsd rw,nosuid,nodev,relatime,user_id=903,group_id=65534,default_permissions,allow_other 0 0
 x20fsd /google/data fuse.x20fsd rw,nosuid,nodev,relatime,user_id=904,group_id=65534,allow_other 0 0
-'''
+"""
 
-MOCK_PROC_FILESYSTEMS = u'''
+MOCK_PROC_FILESYSTEMS = u"""
 nodev sysfs
 nodev rootfs
 nodev ramfs
@@ -143,9 +143,9 @@ nodev autofs
       qnx4
       ufs
       btrfs
-'''
+"""
 
-MOCK_PROC_STAT = u'''
+MOCK_PROC_STAT = u"""
 cpu  36790888 1263256 11740848 7297360559 3637601 444 116964 0 0 0
 intr 3386552889 27 3 0 0 0 0 0 0 1 0 0 0 4 0 0 0 33 26 0 0 0 0 0 3508578 0 0 0
 ctxt 9855640605
@@ -154,7 +154,7 @@ processes 3593799
 procs_running 2
 procs_blocked 0
 softirq 652938841 3508230 208834832 49297758 52442647 16919039 0 47196001 147658748 3188900 123892686
-'''
+"""
 
 
 class SystemInfoStorageTest(cros_test_lib.MockTestCase):

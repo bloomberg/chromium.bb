@@ -123,7 +123,7 @@ def ParseArgs(argv):
   advanced = parser.add_argument_group('Advanced options')
   advanced.add_argument('--nocachebinhost', dest='cachebinhost', default=True,
                         action='store_false', help="Don't cache the list of"
-                        " files contained in binhosts. (Default: cache)")
+                        ' files contained in binhosts. (Default: cache)')
   advanced.add_argument('--clearcache', dest='clearcache', action='store_true',
                         default=False, help='Clear the binhost cache.')
   advanced.add_argument('--jobs', default=None, type=int,

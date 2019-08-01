@@ -170,7 +170,7 @@ class HWTestResultManager(object):
 
     hwtests_without_assignee = failed_hwtests - hwtests_with_assignee
     if hwtests_without_assignee:
-      logging.info('Didn\'t find changes to blame for failed HWtests: %s',
+      logging.info("Didn't find changes to blame for failed HWtests: %s",
                    hwtests_without_assignee)
       no_assignee_hwtests = True
 

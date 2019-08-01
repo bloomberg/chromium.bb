@@ -237,7 +237,7 @@ class AFDOReleaseProfileMergerStage(generic_stages.BuilderStage):
     skipped, merge_plan = afdo.GenerateReleaseProfileMergePlan(
         gs_context, milestones)
     for skip in skipped:
-      logging.warning('Can\'t merge profile(s) for M%s at this time', skip)
+      logging.warning("Can't merge profile(s) for M%s at this time", skip)
 
     if not merge_plan:
       raise ValueError('No mergeable profiles. Fail.')

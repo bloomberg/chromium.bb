@@ -31,6 +31,8 @@ class Table(object):
 
   @staticmethod
   def _SplitCSVLine(line):
+    # pylint: disable=invalid-docstring-quote
+    # https://github.com/edaniszewski/pylint-quotes/issues/20
     r'''Split a single CSV line into separate values.
 
     Behavior illustrated by the following examples, with all but

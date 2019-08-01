@@ -1113,7 +1113,7 @@ class ChromiumOSDevice(RemoteDevice):
     """The $PATH variable on the device."""
     if not self._orig_path:
       try:
-        result = self.BaseRunCommand(['echo', "${PATH}"])
+        result = self.BaseRunCommand(['echo', '${PATH}'])
       except cros_build_lib.RunCommandError as e:
         logging.error('Failed to get $PATH on the device: %s', e.result.error)
         raise

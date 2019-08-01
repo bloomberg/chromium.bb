@@ -955,7 +955,7 @@ class GenerateTidyWarningsStage(generic_stages.BoardSpecificBuilderStage,
     assert self.archive_path.startswith(self._build_root)
     logs_dir = os.path.join('/tmp', 'clang-tidy-logs', self._current_board)
     timestamp = datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d')
-    clang_tidy_tarball = "%s.%s.%s" % (self._current_board, timestamp,
+    clang_tidy_tarball = '%s.%s.%s' % (self._current_board, timestamp,
                                        self.CLANG_TIDY_TAR)
     in_chroot_path = path_util.ToChrootPath(self.archive_path)
     out_chroot_path = os.path.abspath(
@@ -1015,7 +1015,7 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
     first_line = version_string.splitlines()[0].strip()
     match = sha_re.search(first_line)
     if not match:
-      raise ValueError('Can\'t recognize the version string %r' % first_line)
+      raise ValueError("Can't recognize the version string %r" % first_line)
     return match.group(1)
 
   def _CollectLLVMMetadata(self):
@@ -1029,7 +1029,7 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
         ['equery', '-C', '-N', 'uses', 'sys-devel/llvm'])
     use_vars = self._ParseUseFlagState(llvm_uses)
     if '+llvm_pgo_generate' not in use_vars:
-      raise ValueError('The pgo_generate flag isn\'t enabled; USE flags: %r' %
+      raise ValueError("The pgo_generate flag isn't enabled; USE flags: %r" %
                        sorted(use_vars))
 
     clang_version_str = check_chroot_output(['clang', '--version'])

@@ -106,7 +106,7 @@ def GetArgs(argv):
                                       parents=[committer_parser],
                                       add_help=False, logging=False)
   parser.add_argument('--lkgm', required=True,
-                      help="LKGM version to update to.")
+                      help='LKGM version to update to.')
   return parser.parse_args(argv)
 
 def main(argv):

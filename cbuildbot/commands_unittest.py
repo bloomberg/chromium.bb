@@ -339,27 +339,27 @@ class HWLabCommandsTest(cros_test_lib.RunCommandTestCase,
   """Test commands related to HWLab tests that are runing via swarming proxy."""
 
   # pylint: disable=protected-access
-  JOB_ID_OUTPUT = '''
+  JOB_ID_OUTPUT = """
 Autotest instance: cautotest
 02-23-2015 [06:26:51] Submitted create_suite_job rpc
 02-23-2015 [06:26:53] Created suite job: http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110
 Created task id: 26960110
 @@@STEP_LINK@Suite created@http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110@@@
-'''
+"""
 
-  WAIT_RETRY_OUTPUT = '''
+  WAIT_RETRY_OUTPUT = """
 ERROR: Encountered swarming internal error
-'''
+"""
 
-  WAIT_OUTPUT = '''
+  WAIT_OUTPUT = """
 The suite job has another 3:09:50.012887 till timeout.
 The suite job has another 2:39:39.789250 till timeout.
-'''
-  JSON_DICT = '''
+"""
+  JSON_DICT = """
 {"tests": {"test_1":{"status":"GOOD", "attributes": ["suite:test-suite"]},
            "test_2":{"status":"other", "attributes": ["suite:test-suite"]}
 }}
-'''
+"""
   JSON_OUTPUT = ('%s%s%s' % (commands.JSON_DICT_START, JSON_DICT,
                              commands.JSON_DICT_END))
   SWARMING_TIMEOUT_DEFAULT = str(
@@ -828,7 +828,7 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(['./build_packages'])
 
   def testGetFirmwareVersions(self):
-    self.rc.SetDefaultCmdResult(output='''
+    self.rc.SetDefaultCmdResult(output="""
 
 flashrom(8): a8f99c2e61e7dc09c4b25ef5a76ef692 */build/kevin/usr/sbin/flashrom
              ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), statically linked, for GNU/Linux 2.d
@@ -853,7 +853,7 @@ d78722e4f1a0dc2d8c3d6b0bc7010ae3 *./crossystem
 c98ca54db130886142ad582a58e90ddc *./common.sh
 5ba978bdec0f696f47f0f0de90936880 *./mosys
 312e8ee6122057f2a246d7bcf1572f49 *./vpd
-''')
+""")
     build_sbin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
                               'build', self._board, 'usr', 'sbin')
     osutils.Touch(os.path.join(build_sbin, 'chromeos-firmwareupdate'),
@@ -865,7 +865,7 @@ c98ca54db130886142ad582a58e90ddc *./common.sh
 
   def testGetFirmwareVersionsMixedImage(self):
     """Verify that can extract the right version from a mixed RO+RW bundle."""
-    self.rc.SetDefaultCmdResult(output='''
+    self.rc.SetDefaultCmdResult(output="""
 
 flashrom(8): 29c9ec509aaa9c1f575cca883d90980c */build/caroline/usr/sbin/flashrom
              ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, for GNU/Linux 2.6.32, BuildID[sha1]=eb6af9bb9e14e380676ad9607760c54addec4a3a, stripped
@@ -901,7 +901,7 @@ c2728ed24809ec845c53398a15255f49 *./xxd
 c98ca54db130886142ad582a58e90ddc *./common.sh
 a3326e34e8c9f221cc2dcd2489284e30 *./mosys
 ae8cf9fca3165a1c1f12decfd910c4fe *./vpd
-''')
+""")
     build_sbin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
                               'build', self._board, 'usr', 'sbin')
     osutils.Touch(os.path.join(build_sbin, 'chromeos-firmwareupdate'),
@@ -917,7 +917,7 @@ ae8cf9fca3165a1c1f12decfd910c4fe *./vpd
 
   def testGetAllFirmwareVersions(self):
     """Verify that all model firmware versions can be extracted"""
-    self.rc.SetDefaultCmdResult(output='''
+    self.rc.SetDefaultCmdResult(output="""
 
 flashrom(8): 68935ee2fcfcffa47af81b966269cd2b */build/reef/usr/sbin/flashrom
              ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, for GNU/Linux 2.6.32, BuildID[sha1]=e102cc98d45300b50088999d53775acbeff407dc, stripped
@@ -986,7 +986,7 @@ c4db159e84428391d2ee25368c5fe5b6 *./models/snappy/ec.bin
 3ab63ff080596bd7de4e7619f003bb64 *./models/snappy/bios.bin
 fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
 79aabd7cd8a215a54234c53d7bb2e6fb *./vpd
-''')
+""")
     build_sbin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
                               'build', self._board, 'usr', 'sbin')
     osutils.Touch(os.path.join(build_sbin, 'chromeos-firmwareupdate'),
@@ -1482,7 +1482,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     self.assertEquals(returned_archive_name, constants.FIRMWARE_ARCHIVE_NAME)
 
     # Create an archive and specify that archive filename.
-    archive_name = "alternative_archive.tar.bz2"
+    archive_name = 'alternative_archive.tar.bz2'
     returned_archive_name = commands.BuildFirmwareArchive(fw_test_root, board,
                                                           fw_test_root,
                                                           archive_name)
@@ -1528,7 +1528,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     osutils.SafeMakedirs(archive)
 
     # Text file.
-    text_str = "Happiness equals reality minus expectations.\n"
+    text_str = 'Happiness equals reality minus expectations.\n'
     osutils.WriteFile(os.path.join(archive, 'file1.txt'), text_str)
 
     # JSON file.
@@ -1538,7 +1538,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
 
     # Binary file.
     bin_blob = struct.pack('6B', 228, 39, 123, 87, 2, 168)
-    with open(os.path.join(archive, 'file3.bin'), "wb") as f:
+    with open(os.path.join(archive, 'file3.bin'), 'wb') as f:
       f.write(bin_blob)
 
     # Directory.
@@ -1546,7 +1546,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
 
     # List of files in archive.
     uploaded = os.path.join(self.tempdir, 'uploaded')
-    osutils.WriteFile(uploaded, "file1.txt\nfile2.json\nfile3.bin\ndir\n")
+    osutils.WriteFile(uploaded, 'file1.txt\nfile2.json\nfile3.bin\ndir\n')
 
     upload_file = os.path.join(self.tempdir, 'upload.json')
     commands.GenerateUploadJSON(upload_file, archive, uploaded)

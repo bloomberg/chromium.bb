@@ -99,7 +99,7 @@ class GobTest(cros_test_lib.MockTestCase):
 
   def testHtmlParser(self):
     """Verify that GOB error message is parsed properly."""
-    html_data = '''
+    html_data = """
 <!DOCTYPE html>
  <html lang=en>
  <meta charset=utf-8>
@@ -114,11 +114,11 @@ class GobTest(cros_test_lib.MockTestCase):
  <div id="come other stuff">
     some other stuff
  </div>
-<html>'''
-    expected_parsed_data = '''Error 403.
+<html>"""
+    expected_parsed_data = """Error 403.
 That's an error.
 
-Too bad...'''
+Too bad..."""
     ep = gob_util.ErrorParser()
     ep.feed(html_data)
     ep.close()

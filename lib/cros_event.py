@@ -179,7 +179,7 @@ class EventLogger(object):
 
 def getEventFileLogger(file_name, data=None, encoder_func=json.dumps):
   """Returns an EventFileLogger using the given file name"""
-  file_out = open(file_name, "w")
+  file_out = open(file_name, 'w')
   event_logger = EventFileLogger(file_out, data=data, encoder_func=encoder_func)
 
   # make sure the file is closed on exit
@@ -198,7 +198,7 @@ class EventFileLogger(EventLogger):
 
   def write_event(self, event):
     """Writes Event(dict) to file"""
-    self.file_out.write(self.encoder_func(event) + "\n")
+    self.file_out.write(self.encoder_func(event) + '\n')
     self.file_out.flush()
 
   def shutdown(self):
@@ -224,7 +224,7 @@ root = EventDummyLogger()
 def setEventLogger(logger):
   """Set the root EventLogger"""
   if not isinstance(logger, EventLogger):
-    raise TypeError("not an instance of EventLogger")
+    raise TypeError('not an instance of EventLogger')
 
   # pylint: disable=global-statement
   global root

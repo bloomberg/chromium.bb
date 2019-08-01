@@ -26,7 +26,7 @@ AFDO_REGEX = r'^(?P<bef>AFDO_FILE\["%s"\]=")(?P<name>.*)(?P<aft>")'
 
 # NOTE: These regexp are copied from cbuildbot/afdo.py. Keep two copies
 # until deployed and then remove the one in cbuildbot/afdo.py.
-BENCHMARK_PROFILE_NAME_REGEX = r'''
+BENCHMARK_PROFILE_NAME_REGEX = r"""
        ^chromeos-chrome-amd64-
        (\d+)\.                    # Major
        (\d+)\.                    # Minor
@@ -36,19 +36,19 @@ BENCHMARK_PROFILE_NAME_REGEX = r'''
        (-merged)?\.
        afdo(?:\.bz2)?$            # We don't care about the presence of .bz2,
                                   # so we use the ignore-group '?:' operator.
-'''
+"""
 
 BenchmarkProfileVersion = collections.namedtuple(
     'BenchmarkProfileVersion',
     ['major', 'minor', 'build', 'patch', 'revision', 'is_merged'])
 
-CWP_PROFILE_NAME_REGEX = r'''
+CWP_PROFILE_NAME_REGEX = r"""
       ^R(\d+)-                    # Major
        (\d+)\.                    # Build
        (\d+)-                     # Patch
        (\d+)                      # Clock; breaks ties sometimes.
        \.afdo(?:\.xz)?$           # We don't care about the presence of xz
-    '''
+    """
 
 CWPProfileVersion = collections.namedtuple('ProfileVersion',
                                            ['major', 'build', 'patch', 'clock'])
@@ -151,9 +151,9 @@ def _GetAFDOVersion(chrome_ebuild, is_benchmark):
     The AFDO version name in the Chrome ebuild
   """
   if is_benchmark:
-    pattern = re.compile(AFDO_REGEX % "benchmark")
+    pattern = re.compile(AFDO_REGEX % 'benchmark')
   else:
-    pattern = re.compile(AFDO_REGEX % "silvermont")
+    pattern = re.compile(AFDO_REGEX % 'silvermont')
   name = ''
   with open(chrome_ebuild) as f:
     for line in f:
@@ -350,11 +350,11 @@ class UpdateChromeEbuildWithOrderfile(object):
         else:
           modified.write(line)
     if not found:
-      logging.info("Unable to find markers for setting orderfile.")
+      logging.info('Unable to find markers for setting orderfile.')
       raise UpdateChromeEbuildWithOrderfileError(
           'Chrome ebuild file does not have appropriate orderfile marker')
     os.rename(modified_ebuild, original_ebuild)
-    logging.info("Patched %s with %s", original_ebuild, self.orderfile)
+    logging.info('Patched %s with %s', original_ebuild, self.orderfile)
 
   def _UpdateManifest(self, ebuild_file):
     """Regenerate the Manifest file. (To update orderfile)
@@ -393,7 +393,7 @@ def FindLatestChromeOrderfile(gs_url):
       gs_context.List(gs_url, details=True), key=lambda x: x.creation_time)
   orderfile_url = orderfiles[-1].url
   orderfile_name = os.path.basename(orderfile_url)
-  logging.info("Latest orderfile in %s is %s", gs_url, orderfile_name)
+  logging.info('Latest orderfile in %s is %s', gs_url, orderfile_name)
   return orderfile_name
 
 

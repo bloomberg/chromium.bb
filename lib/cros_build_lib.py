@@ -1504,10 +1504,10 @@ def LoadKeyValueFile(obj, ignore_missing=False, multiline=False):
                            % (obj, raw_line))
         key = chunks[0].strip()
         val = chunks[1].strip()
-        if len(val) >= 2 and val[0] in "\"'" and val[0] == val[-1]:
+        if len(val) >= 2 and val[0] in '"\'' and val[0] == val[-1]:
           # Strip matching quotes on the same line.
           val = val[1:-1]
-        elif val and multiline and val[0] in "\"'":
+        elif val and multiline and val[0] in '"\'':
           # Unmatched quote here indicates a multiline value. Do not
           # strip the '\n' at the end of the line.
           in_quotes = val[0]
@@ -1849,6 +1849,8 @@ def _ParseCgpt(lines):
   #                              Type: ChromeOS kernel
   #                              UUID: 7007C2F3-08E5-AB40-A4BC-FF5B01F5460D
   #                              Attr: priority=15 tries=15 successful=1
+  # pylint: disable=invalid-triple-quote
+  # https://github.com/edaniszewski/pylint-quotes/issues/20
   start_pattern = re.compile(r'''\s+(\d+)\s+(\d+)\s+(\d+)\s+Label: "(.+)"''')
   ret = []
   line_no = 0

@@ -114,7 +114,7 @@ _RELEASE_CWP_MERGE_WEIGHT = 75
 CWP_CHROME_PROFILE_NAME_PATTERN = r'R%s-%s.%s-%s' + AFDO_SUFFIX + '.xz'
 
 BENCHMARK_PROFILE_NAME_RE = re.compile(
-    r'''
+    r"""
        ^chromeos-chrome-amd64-
        (\d+)\.                    # Major
        (\d+)\.                    # Minor
@@ -124,7 +124,7 @@ BENCHMARK_PROFILE_NAME_RE = re.compile(
        (-merged)?\.
        afdo(?:\.bz2)?$            # We don't care about the presence of .bz2,
                                   # so we use the ignore-group '?:' operator.
-     ''', re.VERBOSE)
+     """, re.VERBOSE)
 
 BenchmarkProfileVersion = collections.namedtuple(
     'BenchmarkProfileVersion',
@@ -356,13 +356,13 @@ def _EnumerateMostRecentCWPProfiles(gs_context, milestones):
 
   # e.g. R75-3729.38-1554716539.afdo.xz
   profile_name_re = re.compile(
-      r'''
+      r"""
          ^R(\d+)-      # Major
          (\d+)\.       # Build
          (\d+)-        # Patch
          (\d+)         # Clock; breaks ties sometimes.
          \.afdo\.xz$
-       ''', re.VERBOSE)
+       """, re.VERBOSE)
 
   ProfileVersion = collections.namedtuple('ProfileVersion',
                                           ['major', 'build', 'patch', 'clock'])

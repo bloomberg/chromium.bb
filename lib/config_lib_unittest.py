@@ -812,7 +812,7 @@ class GEBuildConfigTests(cros_test_lib.TestCase):
   """Test GE build config related methods."""
 
   def setUp(self):
-    self._fake_ge_build_config_json = '''
+    self._fake_ge_build_config_json = """
 {
   "metadata_version": "1.0",
   "reference_board_unified_builds": [
@@ -847,7 +847,7 @@ class GEBuildConfigTests(cros_test_lib.TestCase):
     }
   ]
 }
-    '''
+    """
     self._fake_ge_build_config = json.loads(self._fake_ge_build_config_json)
 
   def testGetArchBoardDict(self):

@@ -2541,13 +2541,13 @@ class CommitTest(CpuTestBase):
     # - BUG= line (with space after '=' to invalidate it).
     # - TEST= line (with space after '=' to invalidate it).
     body = r'\n'.join([re.sub(r'\s+', r'\s', line) for line in upgrade_lines])
-    regexp = re.compile(r'''^efg:\supgraded\spackage\sto\supstream\n # Summary
+    regexp = re.compile(r"""^efg:\supgraded\spackage\sto\supstream\n # Summary
                             ^\s*\n                            # Blank line
                             %s\n                              # Body
                             ^\s*\n                            # Blank line
                             ^BUG=\s.+\n                       # BUG line
                             ^TEST=\s                          # TEST line
-                            ''' % body,
+                            """ % body,
                         re.VERBOSE | re.MULTILINE)
     self.assertTrue(regexp.search(result))
 
@@ -2566,13 +2566,13 @@ class CommitTest(CpuTestBase):
     # - BUG= line (with space after '=' to invalidate it).
     # - TEST= line (with space after '=' to invalidate it).
     body = r'\n'.join([re.sub(r'\s+', r'\s', line) for line in upgrade_lines])
-    regexp = re.compile(r'''^efg,\spqr,\suvw:\supgraded\spackages.*\n # Summary
+    regexp = re.compile(r"""^efg,\spqr,\suvw:\supgraded\spackages.*\n # Summary
                             ^\s*\n                            # Blank line
                             %s\n                              # Body
                             ^\s*\n                            # Blank line
                             ^BUG=\s.+\n                       # BUG line
                             ^TEST=\s                          # TEST line
-                            ''' % body,
+                            """ % body,
                         re.VERBOSE | re.MULTILINE)
     self.assertTrue(regexp.search(result))
 
@@ -2597,13 +2597,13 @@ class CommitTest(CpuTestBase):
     # - BUG= line (with space after '=' to invalidate it).
     # - TEST= line (with space after '=' to invalidate it).
     body = r'\n'.join([re.sub(r'\s+', r'\s', line) for line in upgrade_lines])
-    regexp = re.compile(r'''^Upgraded\s.*10.*\spackages\n     # Summary
+    regexp = re.compile(r"""^Upgraded\s.*10.*\spackages\n     # Summary
                             ^\s*\n                            # Blank line
                             %s\n                              # Body
                             ^\s*\n                            # Blank line
                             ^BUG=\s.+\n                       # BUG line
                             ^TEST=\s                          # TEST line
-                            ''' % body,
+                            """ % body,
                         re.VERBOSE | re.MULTILINE)
     self.assertTrue(regexp.search(result))
 

@@ -75,30 +75,30 @@ class FileTypeDecoderTest(cros_test_lib.TempDirTestCase):
     # If the file has only one line is considered a "shebang" rather than a
     # script.
     shebang = os.path.join(self.tempdir, 'shebang')
-    osutils.WriteFile(shebang, "#!/bin/python --foo --bar\n")
+    osutils.WriteFile(shebang, '#!/bin/python --foo --bar\n')
     self.assertEquals('text/shebang',
                       filetype.FileTypeDecoder.DecodeFile(shebang))
 
     # A shebang with contents is considered a script.
     script = os.path.join(self.tempdir, 'script')
-    osutils.WriteFile(script, "#!/bin/foobar --foo --bar\n\nexit 1\n")
+    osutils.WriteFile(script, '#!/bin/foobar --foo --bar\n\nexit 1\n')
     self.assertEquals('text/script',
                       filetype.FileTypeDecoder.DecodeFile(script))
 
     bash_script = os.path.join(self.tempdir, 'bash_script')
     osutils.WriteFile(bash_script,
-                      "#!/bin/bash --debug\n# Copyright\nexit 42\n")
+                      '#!/bin/bash --debug\n# Copyright\nexit 42\n')
     self.assertEquals('text/script/bash',
                       filetype.FileTypeDecoder.DecodeFile(bash_script))
 
     pyscript = os.path.join(self.tempdir, 'pyscript')
     osutils.WriteFile(pyscript,
-                      "#!/usr/bin/env PYTHONPATH=/foo python-2.7 -3\n# foo\n")
+                      '#!/usr/bin/env PYTHONPATH=/foo python-2.7 -3\n# foo\n')
     self.assertEquals('text/script/python',
                       filetype.FileTypeDecoder.DecodeFile(pyscript))
 
     perlscript = os.path.join(self.tempdir, 'perlscript')
-    osutils.WriteFile(perlscript, "#!/usr/local/bin/perl\n#\n")
+    osutils.WriteFile(perlscript, '#!/usr/local/bin/perl\n#\n')
     self.assertEquals('text/script/perl',
                       filetype.FileTypeDecoder.DecodeFile(perlscript))
 

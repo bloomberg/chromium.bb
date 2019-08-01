@@ -260,13 +260,13 @@ def _CleanupMetricsFlushingProcess():
     if not flushing_process.is_alive():
       return
 
-  logging.info("Waiting for ts_mon flushing process to finish...")
+  logging.info('Waiting for ts_mon flushing process to finish...')
   flushing_process.join(timeout=FLUSH_INTERVAL*2)
   if flushing_process.is_alive():
     flushing_process.terminate()
   if flushing_process.exitcode:
-    logging.warning("ts_mon_config flushing process did not exit cleanly.")
-  logging.info("Finished waiting for ts_mon process.")
+    logging.warning('ts_mon_config flushing process did not exit cleanly.')
+  logging.info('Finished waiting for ts_mon process.')
 
 
 def _SetupAndConsumeMessages(message_q, options):

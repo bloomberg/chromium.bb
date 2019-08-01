@@ -88,7 +88,7 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
 
       if ret.returncode != 0:
         tty_msg = 'Please disable tty_tickets using these instructions: %s'
-        if os.path.exists("/etc/goobuntu"):
+        if os.path.exists('/etc/goobuntu'):
           url = 'https://goto.google.com/chromeos-sudoers'
         else:
           url = 'https://goo.gl/fz9YW'

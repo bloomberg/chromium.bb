@@ -85,7 +85,7 @@ class InterfaceTest(cros_test_lib.TempDirTestCase):
 
   def testMultiplePkgsTargetName(self):
     """Test getting the right target name with multiple pkgs."""
-    pkgs = "%s virtual/target-os" %constants.CHROME_CP
+    pkgs = '%s virtual/target-os' % constants.CHROME_CP
     options = cros_gen.ParseCommandLine(
         ['--board', BOARD, '--out-dir', self.tempdir,
          '--package', pkgs])

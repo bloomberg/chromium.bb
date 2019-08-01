@@ -396,7 +396,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
               (config_name, buildbucket_id))
       else:
         logging.PrintBuildbotStepText(
-            '%s wasn\'t scheduled by master.' % config_name)
+            "%s wasn't scheduled by master." % config_name)
 
   def _AnnotateFailingBuilders(self, failing, inflight, no_stat, statuses,
                                experimental_statuses, self_destructed):
@@ -530,7 +530,7 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
     msgs.insert(0, title)
     msgs.append('You can also view the summary of the slave failures from '
                 'the %s stage of %s. Click on the failure message to go '
-                'to an individual slave\'s build status page: %s' %
+                "to an individual slave's build status page: %s" %
                 (self.name, builder_name, self.ConstructDashboardURL()))
     msg = '\n\n'.join(msgs)
     logging.warning(msg)

@@ -399,13 +399,13 @@ def FindDuplicates(symbols, status_url, api_key, timeout=DEDUPE_TIMEOUT):
 
 
 def UploadSymbolFile(upload_url, symbol, api_key):
-  '''Upload a symbol file to the crash server, returning the status result.
+  """Upload a symbol file to the crash server, returning the status result.
 
   Args:
     upload_url: The crash URL to POST the |sym_file| to
     symbol: A SymbolFile instance.
     api_key: Authentication key
-  '''
+  """
   timeout = GetUploadTimeout(symbol)
   upload = ExecRequest('post',
                        '%s/uploads:create' % upload_url, timeout, api_key)

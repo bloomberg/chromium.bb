@@ -101,7 +101,7 @@ A typical moblabvm session looks so:
         '--restart',
         action='store_true',
         default=False,
-        help='Stop the VMs if they\'re already running. Default is False.',
+        help="Stop the VMs if they're already running. Default is False.",
     )
 
     _AddSubparser(parser, subparsers, 'stop',

@@ -409,9 +409,9 @@ def _CreateParser():
                            'machine being rebooted.')
   sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
   parser.add_argument('--board', default=sdk_board_env,
-                      help="The board the Chrome build is targeted for.  When "
+                      help='The board the Chrome build is targeted for.  When '
                            "in a 'cros chrome-sdk' shell, defaults to the SDK "
-                           "board.")
+                           'board.')
   parser.add_argument('--build-dir', type='path',
                       help='The directory with Chrome build artifacts to '
                            'deploy from. Typically of format '
@@ -466,7 +466,7 @@ def _CreateParser():
                           'files.')
   group.add_argument('--strip-flags', default=None,
                      help="Flags to call the 'strip' binutil tool with.  "
-                          "Overrides the default arguments.")
+                          'Overrides the default arguments.')
   group.add_argument('--ping', action='store_true', default=False,
                      help='Ping the device before connection attempt.')
   group.add_argument('--process-timeout', type=int,

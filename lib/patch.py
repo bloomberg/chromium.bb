@@ -625,9 +625,9 @@ def GetPaladinDeps(commit_message):
   for prefix, match in matches:
     if prefix == EXPECTED_PREFIX or prefix == WARNING_PREFIX:
       if prefix == WARNING_PREFIX:
-        logging.warning("You are using deprecated CQ-DEPEND syntax that is not"
-                        " supported in Parallel CQ. Please migrate to the new"
-                        " syntax: Cq-Depend: chromium:123,chrome-internal:456")
+        logging.warning('You are using deprecated CQ-DEPEND syntax that is not'
+                        ' supported in Parallel CQ. Please migrate to the new'
+                        ' syntax: Cq-Depend: chromium:123,chrome-internal:456')
       for chunk in PATCH_RE.findall(match):
         chunk = ParsePatchDep(chunk, no_sha1=True)
         if chunk not in dependencies:

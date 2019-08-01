@@ -416,7 +416,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
       rc.AddCmdResult(partial_mock.In('get'), output='key-123')
       rc.AddCmdResult(
           partial_mock.ListRegex('chromeos-firmwareupdate'),
-          output='''
+          output="""
 Model:        reef
 BIOS image:
 BIOS version: Google_Reef.9042.87.1
@@ -436,7 +436,7 @@ BIOS image:
 BIOS version: Google_Reef.9042.87.1
 EC version:   reef_v1.1.5900-ab1ee51
 EC (RW) version: reef_v1.1.5909-bd1f0c9
-''')
+""")
 
     self._update_metadata = True
     update = os.path.join(

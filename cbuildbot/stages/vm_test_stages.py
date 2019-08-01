@@ -329,7 +329,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
 class ForgivenVMTestStage(VMTestStage, generic_stages.ForgivingBuilderStage):
   """Stage that forgives vm test failures."""
 
-  stage_name = "ForgivenVMTest"
+  stage_name = 'ForgivenVMTest'
   category = constants.TEST_INFRA_STAGE
 
   def __init__(self, *args, **kwargs):

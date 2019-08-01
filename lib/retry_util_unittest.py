@@ -194,12 +194,12 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
     }
     osutils.WriteFile(
         path,
-        "import sys\n"
-        "val = int(open(%(store)r).read())\n"
-        "stop_val = int(open(%(stop)r).read())\n"
+        'import sys\n'
+        'val = int(open(%(store)r).read())\n'
+        'stop_val = int(open(%(stop)r).read())\n'
         "open(%(store)r, 'w').write(str(val + 1))\n"
-        "print val\n"
-        "sys.exit(0 if val == stop_val else 1)\n" % paths)
+        'print val\n'
+        'sys.exit(0 if val == stop_val else 1)\n' % paths)
 
     os.chmod(path, 0o755)
 

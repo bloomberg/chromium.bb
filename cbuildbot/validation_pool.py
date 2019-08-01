@@ -206,22 +206,22 @@ class ValidationPool(object):
     # dumps.  Thus we need to assert the given args since we may be getting
     # a value we no longer like (nor work with).
     if overlays not in constants.VALID_OVERLAYS:
-      raise ValueError("Unknown/unsupported overlay: %r" % (overlays,))
+      raise ValueError('Unknown/unsupported overlay: %r' % (overlays,))
 
     self._helper_pool = self.GetGerritHelpersForOverlays(overlays)
 
     if not isinstance(build_number, int):
-      raise ValueError("Invalid build_number: %r" % (build_number,))
+      raise ValueError('Invalid build_number: %r' % (build_number,))
 
     if not isinstance(builder_name, basestring):
-      raise ValueError("Invalid builder_name: %r" % (builder_name,))
+      raise ValueError('Invalid builder_name: %r' % (builder_name,))
 
     if (buildbucket_id is not None and
         not isinstance(buildbucket_id, basestring)):
       if isinstance(buildbucket_id, int):
         buildbucket_id = str(buildbucket_id)
       else:
-        raise ValueError("Invalid buildbucket_id: %r" % (buildbucket_id,))
+        raise ValueError('Invalid buildbucket_id: %r' % (buildbucket_id,))
 
     for changes_name, changes_value in (
         ('candidates', candidates),
@@ -1090,9 +1090,9 @@ class ValidationPool(object):
     errors.update(local_submission_errors)
     errors.update(remote_errors)
     for patch, error in errors.items():
-      logging.error("Could not submit %s, error: %s", patch, error)
+      logging.error('Could not submit %s, error: %s', patch, error)
       logging.PrintBuildbotLink(
-          "Could not submit %s, error: %s" % (patch, error), patch.url)
+          'Could not submit %s, error: %s' % (patch, error), patch.url)
       self._HandleCouldNotSubmit(patch, error)
 
     return submitted_locals | submitted_remotes, errors
@@ -1724,11 +1724,11 @@ class ValidationPool(object):
       msg %= d
     except (TypeError, ValueError) as e:
       logging.error(
-          "Generation of message %s for change %s failed: dict was %r, "
-          "exception %s", msg, change, d, e)
+          'Generation of message %s for change %s failed: dict was %r, '
+          'exception %s', msg, change, d, e)
       raise e.__class__(
-          "Generation of message %s for change %s failed: dict was %r, "
-          "exception %s" % (msg, change, d, e))
+          'Generation of message %s for change %s failed: dict was %r, '
+          'exception %s' % (msg, change, d, e))
     cl_messages.PaladinMessage(
         msg, change, self._helper_pool.ForChange(change)).Send(self.dryrun)
 

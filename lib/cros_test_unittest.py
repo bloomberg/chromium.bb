@@ -85,12 +85,12 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     isolate_map = self.TempFilePath('testing/buildbot/gn_isolate_map.pyl')
     # Add info about the specified chrome test to the isolate map.
     osutils.WriteFile(isolate_map,
-                      '''{
+                      """{
                         "%s": {
                           "label": "%s",
                           "type": "console_test_launcher",
                         }
-                      }''' % (test_exe, test_label), makedirs=True)
+                      }""" % (test_exe, test_label), makedirs=True)
 
     self._tester.build = True
     self._tester.deploy = True
@@ -276,7 +276,7 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     # Check that we enter the chroot before running test_that.
     self.assertIn(
         'cros_sdk -- test_that --board amd64-generic --no-quickmerge'
-        ' --ssh_options \'-F /dev/null -i /dev/null\' localhost:9222'
+        " --ssh_options '-F /dev/null -i /dev/null' localhost:9222"
         ' accessibility_Sanity', output.GetStderr())
 
   def testSingleBaseTastTest(self):

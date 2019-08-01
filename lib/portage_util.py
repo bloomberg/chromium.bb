@@ -533,7 +533,7 @@ class EBuild(object):
         if EBuild._ECLASS_IMPLIES_TEST & eclasses:
           has_test = True
       elif line.startswith('KEYWORDS='):
-        for keyword in line.split('=', 1)[1].strip("\"'").split():
+        for keyword in line.split('=', 1)[1].strip('"\'').split():
           if not keyword.startswith('~') and keyword != '-*':
             is_stable = True
       elif line.startswith('CROS_WORKON_BLACKLIST='):
@@ -731,7 +731,7 @@ class EBuild(object):
     if num_projects != len(localnames):
       raise EbuildFormatIncorrectError(
           ebuild_path,
-          'Number of _PROJECT and _LOCALNAME items don\'t match.')
+          "Number of _PROJECT and _LOCALNAME items don't match.")
 
     # If both SRCPATH and PROJECT are defined, they must have the same number
     # of items.

@@ -77,7 +77,7 @@ class LoopbackPartitions(object):
       self.parts = {}
       part_devs = glob.glob(self.dev + 'p*')
       if not part_devs:
-        logging.Warning('Didn\'t find partition devices nodes for %s.',
+        logging.Warning("Didn't find partition devices nodes for %s.",
                         self.path)
         return
 

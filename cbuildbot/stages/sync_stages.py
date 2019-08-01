@@ -131,9 +131,9 @@ class PatchChangesStage(generic_stages.BuilderStage):
     for change in changes:
       if change.id is None:
         logging.warning(
-            "Change %s lacks a usable ChangeId; duplicate checking cannot "
-            "be done for this change.  If cherry-picking fails, this is a "
-            "potential cause.", change)
+            'Change %s lacks a usable ChangeId; duplicate checking cannot '
+            'be done for this change.  If cherry-picking fails, this is a '
+            'potential cause.', change)
         continue
       conflicts.setdefault(change.id, []).append(change)
 
@@ -143,10 +143,10 @@ class PatchChangesStage(generic_stages.BuilderStage):
 
     for conflict in duplicates:
       logging.error(
-          "Changes %s conflict with each other- they have same id %s., ".join(
+          'Changes %s conflict with each other- they have same id %s., '.join(
               str(x) for x in conflict), conflict[0].id)
 
-    cros_build_lib.Die("Duplicate patches were encountered: %s", duplicates)
+    cros_build_lib.Die('Duplicate patches were encountered: %s', duplicates)
 
   def _PatchSeriesFilter(self, series, changes):
     return self._CheckForDuplicatePatches(series, changes)
@@ -169,7 +169,7 @@ class PatchChangesStage(generic_stages.BuilderStage):
       self.HandleApplyFailures(failures)
 
   def HandleApplyFailures(self, failures):
-    cros_build_lib.Die("Failed applying patches: %s", "\n".join(
+    cros_build_lib.Die('Failed applying patches: %s', '\n'.join(
         str(x) for x in failures))
 
   def PerformStage(self):
@@ -752,7 +752,7 @@ class ManifestVersionedSyncStage(SyncStage):
           branch=self._run.options.branch)
       if latest and str(latest[0]['buildbucket_id']) != str(master_id):
         raise failures_lib.MasterSlaveVersionMismatchFailure(
-            'This slave\'s master (id=%s) has been supplanted by a newer '
+            "This slave's master (id=%s) has been supplanted by a newer "
             'master (id=%s). Aborting.' % (master_id, latest[0]['id']))
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
@@ -1016,7 +1016,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
         if status == constants.CL_STATUS_PASSED:
           changes_to_test.append(change)
     else:
-      logging.warning("DB not available, unable to filter for PreCQ passed.")
+      logging.warning('DB not available, unable to filter for PreCQ passed.')
 
     # Allow Commit-Ready=+2 changes to bypass the Pre-CQ, if there are no other
     # changes.

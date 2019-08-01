@@ -286,7 +286,7 @@ def GconvStrip(opts):
   if unknown_sticky_modules:
     logging.warning(
         'The following charsets were explicitly requested in STICKY_MODULES '
-        'even though they don\'t exist: %s',
+        "even though they don't exist: %s",
         ', '.join(unknown_sticky_modules))
   global_used = [charset in STICKY_MODULES for charset in charsets]
 
@@ -313,7 +313,7 @@ def ParseArgs(argv):
   parser = commandline.ArgumentParser()
   parser.add_argument(
       '--dry-run', action='store_true', default=False,
-      help='process but don\'t modify any file.')
+      help="process but don't modify any file.")
   parser.add_argument(
       'root', type='path',
       help='path to the directory where the rootfs is mounted.')

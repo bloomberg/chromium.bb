@@ -159,7 +159,7 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     })
 
 class FinalizeDlcsTest(cros_test_lib.MockTempDirTestCase):
-  "Tests functions that generate the final DLC images."
+  """Tests functions that generate the final DLC images."""
 
   def testCopyAllDlcs(self):
     """Tests CopyAllDlcs to make sure all DLCs are copied correctly"""

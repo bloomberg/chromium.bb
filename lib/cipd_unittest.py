@@ -22,7 +22,7 @@ class CIPDTest(cros_test_lib.MockTestCase):
 
   def testDownloadCIPD(self):
     MockHttp = self.PatchObject(httplib2, 'Http')
-    first_body = ')]}\'\n' + json.dumps({
+    first_body = ")]}'\n" + json.dumps({
         'clientBinary': {
             'signedUrl': 'http://example.com',
         },

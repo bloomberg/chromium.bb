@@ -53,7 +53,7 @@ class EnforcedCleanupSection(cros_build_lib.MasterPidContextManager):
   @contextlib.contextmanager
   def ForkWatchdog(self):
     if self._forked:
-      raise RuntimeError("ForkWatchdog was invoked twice for %s" % (self,))
+      raise RuntimeError('ForkWatchdog was invoked twice for %s' % (self,))
     self._lock.write_lock()
 
     pid = os.fork()
@@ -81,8 +81,8 @@ class EnforcedCleanupSection(cros_build_lib.MasterPidContextManager):
     try:
       self._lock.write_lock()
     except BaseException as e:
-      print("EnforcedCleanupSection %s excepted(%r) attempting "
-            "to take the write lock; hard exiting." % (self, e),
+      print('EnforcedCleanupSection %s excepted(%r) attempting '
+            'to take the write lock; hard exiting.' % (self, e),
             file=sys.stderr)
       sys.stderr.flush()
       # We have no way of knowing the state of the parent if this locking
@@ -103,7 +103,7 @@ class EnforcedCleanupSection(cros_build_lib.MasterPidContextManager):
     # explicitly designed for this cleanup.
     cros_build_lib.MasterPidContextManager.ALTERNATE_MASTER_PID = os.getpid()
 
-    raise RuntimeError("Parent exited uncleanly; forcing cleanup code to run.")
+    raise RuntimeError('Parent exited uncleanly; forcing cleanup code to run.')
 
   def _enter(self):
     self._lock.write_lock()

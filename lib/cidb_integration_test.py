@@ -145,7 +145,7 @@ class SchemaDumpTest(CIDBIntegrationTest):
 
     # Strip out comment lines, to avoid dumping a problematic timestamp.
     lines = [l for l in result.output.splitlines() if not l.startswith('--')]
-    return "\n".join(lines)
+    return '\n'.join(lines)
 
   def testDump(self):
     """Ensure generated file is up to date."""

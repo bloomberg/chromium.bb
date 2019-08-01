@@ -702,7 +702,7 @@ def GeneralTemplates(site_config):
       paygen=True,
       signer_tests=True,
       hwqual=True,
-      description="Release Builds (canary) (internal)",
+      description='Release Builds (canary) (internal)',
       chrome_sdk=True,
       image_test=True,
       doc='https://dev.chromium.org/chromium-os/build/builder-overview#'
@@ -1060,7 +1060,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
       git_sync=False,
-      description="Toolchain Builds (internal)",
+      description='Toolchain Builds (internal)',
   )
   site_config.AddTemplate(
       'gcc_toolchain',
@@ -1211,7 +1211,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       afdo_use=False,
       slave_configs=[],
       # 3 PM UTC is 7 AM PST (no daylight savings)
-      schedule="0 15 * * *",
+      schedule='0 15 * * *',
   )
 
   def toolchainSlaveHelper(name, board, *args, **kwargs):
@@ -2308,14 +2308,14 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # The definition of what paladins run HW tests are in the
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
-      "betty-kernelnext",
-      "bubs",
+      'betty-kernelnext',
+      'bubs',
       'drallion',
       'jacuzzi',
       'kefka-kernelnext',
       'kumo',
-      "veyron_jerry-kernelnext",
-      "veyron_minnie-kernelnext",
+      'veyron_jerry-kernelnext',
+      'veyron_minnie-kernelnext',
       'zork',
   ])
 

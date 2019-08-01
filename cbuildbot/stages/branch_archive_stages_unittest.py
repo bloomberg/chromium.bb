@@ -57,7 +57,7 @@ class BranchArchiveStageTestBase(workspace_stages_unittest.WorkspaceStageBase,
 
     Note: Must be implemented in subclasses.
     """
-    raise NotImplementedError(self, "ConstructStage: Implement in your test")
+    raise NotImplementedError(self, 'ConstructStage: Implement in your test')
 
 
 class FirmwareArchiveStageTest(BranchArchiveStageTestBase):

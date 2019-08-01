@@ -643,8 +643,8 @@ class CalculateSuspects(object):
           if build_config in passed_in_history_slaves:
             verified_reasons.add(constants.STRATEGY_CQ_PARTIAL_CQ_HISTORY)
           else:
-            logging.info('Failed to verify change %s: relevant build %s isn\'t '
-                         'completed in current run and didn\'t pass in history',
+            logging.info("Failed to verify change %s: relevant build %s isn't "
+                         "completed in current run and didn't pass in history",
                          change.PatchLink(), build_config)
             verified = False
             break
@@ -659,7 +659,7 @@ class CalculateSuspects(object):
           else:
             logging.info('Failed to verify change %s: relevant build %s failed '
                          'with not ignorable failures in current run and '
-                         'didn\'t pass in history',
+                         "didn't pass in history",
                          change.PatchLink(), build_config)
             verified = False
             break

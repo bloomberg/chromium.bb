@@ -534,7 +534,7 @@ def ParseCommandLine(argv):
                    '--remote-cmd or --host-cmd or --chrome-test: %s' %
                    opts.args)
     if opts.args[0] != '--':
-      parser.error('Additional args must start with \'--\': %s' % opts.args)
+      parser.error("Additional args must start with '--': %s" % opts.args)
 
   # Verify CWD.
   if opts.cwd:

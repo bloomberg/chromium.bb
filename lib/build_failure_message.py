@@ -212,7 +212,7 @@ class BuildFailureMessage(object):
 
     packages_without_assignee = set(failed_packages) - packages_with_assignee
     if packages_without_assignee:
-      logging.info('Didn\'t find changes to blame for failed packages: %s',
+      logging.info("Didn't find changes to blame for failed packages: %s",
                    list(packages_without_assignee))
       no_assignee_packages = True
 

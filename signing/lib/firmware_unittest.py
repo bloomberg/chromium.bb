@@ -24,7 +24,7 @@ from chromite.signing.lib import signer_unittest
 
 def MockDumpFmap(rc, ec_ro=True):
   """Add futility dump_fmap mock for bios.bin and ec.bin."""
-  bios_output = textwrap.dedent('''
+  bios_output = textwrap.dedent("""
     SI_ALL 0 2097152
     SI_DESC 0 4096
     SI_ME 4096 2093056
@@ -57,9 +57,9 @@ def MockDumpFmap(rc, ec_ro=True):
     RO_FRID_PAD 12650560 1984
     GBB 12652544 978944
     COREBOOT 13631488
-    ''')
+    """)
 
-  ec_output = textwrap.dedent('''
+  ec_output = textwrap.dedent("""
     EC_RO 64 131072
     FR_MAIN 64 131072
     RO_FRID 388 32
@@ -69,7 +69,7 @@ def MockDumpFmap(rc, ec_ro=True):
     RW_FWID 262468 32
     SIG_RW 392192 1024
     EC_RW_B 393216 131072
-    ''')
+    """)
   if ec_ro:
     ec_output += 'KEY_RO 130112 1024'
 
@@ -531,7 +531,7 @@ class TestWriteSignerNotes(cros_test_lib.RunCommandTempDirTestCase):
     sha1sum = keys_unittest.MOCK_SHA1SUM
     expected_header = ['Signed with keyset in ' + self.tempdir,
                        'recovery: ' + sha1sum,
-                       'List sha1sum of all loem/model\'s signatures:']
+                       "List sha1sum of all loem/model's signatures:"]
 
     expected_loems = ['loem1: ' + sha1sum,
                       'loem2: ' + sha1sum,

@@ -238,7 +238,7 @@ def NamedTupleWithDefaults(name, fields, field_defaults=None):
             kwargs[k] = field_defaults[k]
         except KeyError:
           raise TypeError(
-              "Field %s is not optional when constructiong %s", k, name)
+              'Field %s is not optional when constructiong %s', k, name)
       return to_wrap.__new__(cls, *args, **kwargs)
 
   DefaultWrapped.__name__ = name
@@ -385,10 +385,10 @@ class GSContext(object):
       'ssl.SSLError: The read operation timed out',
       # TODO: Error messages may change in different library versions,
       # use regexes to match resumable error messages.
-      'ssl.SSLError: (\'The read operation timed out\',)',
+      "ssl.SSLError: ('The read operation timed out',)",
       'ssl.SSLError: _ssl.c:495: The handshake operation timed out',
       'Unable to find the server',
-      'doesn\'t match cloud-supplied digest',
+      "doesn't match cloud-supplied digest",
       'ssl.SSLError: [Errno 8]',
       'EOF occurred in violation of protocol',
       # TODO(nxia): crbug.com/775330 narrow down the criteria for retrying
@@ -574,7 +574,7 @@ class GSContext(object):
     # TODO(phobbs) make a class level constant after crbug.com/755415 is fixed.
     self._error_metric = metrics.Counter(
         constants.MON_GS_ERROR,
-        description="Errors encountered with Google Storage",
+        description='Errors encountered with Google Storage',
         field_spec=[ts_mon.StringField('type'),
                     ts_mon.StringField('message_pattern'),
                     ts_mon.BooleanField('retriable')])

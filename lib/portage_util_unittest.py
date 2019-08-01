@@ -1533,7 +1533,7 @@ class PortageqMatchTest(cros_test_lib.MockTestCase):
     It is instead interpreted as a cpv format error by SplitCPV. This isn't
     a hard requirement, just the current expected behavior.
     """
-    output_str = "cat-1/pkg-one-1.0\ncat-2/pkg-two-2.1.3-r45\n"
+    output_str = 'cat-1/pkg-one-1.0\ncat-2/pkg-two-2.1.3-r45\n'
     result = cros_build_lib.CommandResult(returncode=0,
                                           output=output_str)
     self.PatchObject(portage_util, '_Portageq', return_value=result)

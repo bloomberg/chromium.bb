@@ -651,7 +651,7 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
     checkout.SyncFile('manifest.xml')
     manifest_path = os.path.abspath('manifest.xml')
     self.rc_mock.assertCommandContains(
-        ['repo', 'sync', '--manifest-name', manifest_path], cwd="/root")
+        ['repo', 'sync', '--manifest-name', manifest_path], cwd='/root')
 
   def testSyncFileAllOptions(self):
     """Test SyncFile passes all args to repo_sync_manifest."""
@@ -660,7 +660,7 @@ class CrosCheckoutTest(ManifestTestCase, cros_test_lib.MockTestCase):
     checkout.SyncFile('manifest.xml')
     manifest_path = os.path.abspath('manifest.xml')
     self.rc_mock.assertCommandContains(
-        ['repo', 'sync', '--manifest-name', manifest_path], cwd="/root")
+        ['repo', 'sync', '--manifest-name', manifest_path], cwd='/root')
 
   def testAbsolutePath(self):
     """Test AbsolutePath joins root to given path."""

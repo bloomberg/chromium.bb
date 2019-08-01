@@ -912,7 +912,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self._MockGetAllSlaveBuildbucketInfo({})
     self.metadata.UpdateWithDict({
         constants.METADATA_SCHEDULED_EXPERIMENTAL_SLAVES: experimental_builds})
-    mock_cancel_builds = self.PatchObject(builder_status_lib, "CancelBuilds")
+    mock_cancel_builds = self.PatchObject(builder_status_lib, 'CancelBuilds')
 
     slave_status = self._GetSlaveStatus(
         builders_array=important_build_names)
@@ -1079,7 +1079,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
 
   def test_ShouldWaitInvokesCancelBuildsWithListOfIDs(self):
     """Tests that _ShouldWait sends a serializable list of build IDs."""
-    mock_cancel_builds = self.PatchObject(builder_status_lib, "CancelBuilds")
+    mock_cancel_builds = self.PatchObject(builder_status_lib, 'CancelBuilds')
     cidb_status = {
         'build1': CIDBStatusInfos.GetFailedBuild(),
         'build2': CIDBStatusInfos.GetPlannedBuild()

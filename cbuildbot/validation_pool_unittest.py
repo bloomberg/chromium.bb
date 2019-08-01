@@ -1645,7 +1645,7 @@ class RemoveReadyTest(cros_test_lib.MockTempDirTestCase):
     """Test RemoveReady which raises exception."""
     helper_mock = mock.Mock()
     helper_mock.ForChange.return_value.RemoveReady.side_effect = (
-        gob_util.GOBError(http_status=409, reason="test"))
+        gob_util.GOBError(http_status=409, reason='test'))
     self.pool._helper_pool = helper_mock
 
     self.assertRaises(gob_util.GOBError, self.pool.RemoveReady,

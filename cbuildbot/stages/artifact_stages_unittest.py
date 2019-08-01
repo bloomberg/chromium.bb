@@ -524,7 +524,7 @@ class GenerateSysrootStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.PatchObject(path_util, 'ToChrootPath', return_value='', autospec=True)
     self.PatchObject(stage._upload_queue, 'put', autospec=True)
     stage._GenerateSysroot()
-    sysroot_tarball = 'sysroot_%s.tar.xz' % ("virtual_target-os")
+    sysroot_tarball = 'sysroot_%s.tar.xz' % ('virtual_target-os')
     stage._upload_queue.put.assert_called_with([sysroot_tarball])
 
 

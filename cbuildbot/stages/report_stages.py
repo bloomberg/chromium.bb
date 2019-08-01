@@ -1001,7 +1001,7 @@ class ReportStage(generic_stages.BuilderStage,
       # this extra temporary object creation.
       # XXX:HACK We're creating a BuildData with an empty URL. Don't try to
       # MarkGathered this object.
-      build_data = metadata_lib.BuildData("",
+      build_data = metadata_lib.BuildData('',
                                           self._run.attrs.metadata.GetDict())
       # TODO(akeshet): Find a clearer way to get the "primary upload url" for
       # the metadata.json file. One alternative is _GetUploadUrls(...)[0].
@@ -1026,9 +1026,9 @@ class ReportStage(generic_stages.BuilderStage,
             fields=mon_fields)
         metrics.Gauge(
             constants.MON_BUILD_SANITY_ID,
-            description=("The build number of the latest sanity build. Used "
-                         "for recovering the link to the latest failing build "
-                         "in the alert when a sanity build fails."),
+            description='The build number of the latest sanity build. Used '
+                        'for recovering the link to the latest failing build '
+                        'in the alert when a sanity build fails.',
             field_spec=[ts_mon.StringField('status'),
                         ts_mon.StringField('build_config'),
                         ts_mon.StringField('builder_name'),

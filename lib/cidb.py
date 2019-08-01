@@ -650,7 +650,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   # See https://stackoverflow.com/a/7745635/219138 for a discussion of how to
   # perform "greatest-n-per-group" in SQL. I chose the LEFT OUTER JOIN solution.
   # TODO(phobbs) JOIN with buildTable to get status.
-  _SQL_FETCH_LATEST_BUILD_REQUEST = '''
+  _SQL_FETCH_LATEST_BUILD_REQUEST = """
   SELECT t1.*
   FROM buildRequestTable as t1
   LEFT OUTER JOIN buildRequestTable as t2
@@ -658,9 +658,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
        AND t1.request_build_config = t2.request_build_config
        AND t1.timestamp < t2.timestamp
   WHERE t2.request_build_config is NULL
-  '''
+  """
 
-  _SQL_FETCH_RETRIED_PRE_CQ_FAILURES = '''
+  _SQL_FETCH_RETRIED_PRE_CQ_FAILURES = """
   SELECT b.build_config, config_counts.failure_count, count(distinct b.id)
   FROM buildTable as b
     JOIN (
@@ -682,7 +682,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       b.build_config = config_counts.build_config
       {time_constraint}
   GROUP BY b.build_config
-  '''
+  """
 
   _DATE_FORMAT = '%Y-%m-%d'
   _DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'

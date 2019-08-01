@@ -181,7 +181,7 @@ class KeyVersions(object):
     self._path = filename
     if os.path.exists(filename):
       self.saved = True
-      for line in open(filename, "r").readlines():
+      for line in open(filename, 'r').readlines():
         if line.find('=') > 0:
           k, v = line.strip().split('=')
           self._versions[k] = int(v)
@@ -295,7 +295,7 @@ class Keyset(object):
       # which have a table of 'XX = ALIAS', with the implied name 'loemXX'.
       loem_config_filename = os.path.join(key_dir, 'loem.ini')
       if os.path.exists(loem_config_filename):
-        logging.info("Reading loem.ini file")
+        logging.info('Reading loem.ini file')
         loem_config = ConfigParser.ConfigParser()
         if loem_config.read(loem_config_filename):
           if loem_config.has_section('loem'):
@@ -310,7 +310,7 @@ class Keyset(object):
               # be indexed by only name, instead of both.
               self.root_of_trust_map[alias] = alias
         else:
-          logging.warning("Error reading loem.ini file")
+          logging.warning('Error reading loem.ini file')
 
       versions_filename = os.path.join(key_dir, 'key.versions')
       self._versions = KeyVersions(versions_filename)
@@ -441,6 +441,6 @@ class Keyset(object):
 
     if not found:
       raise SignerRootOfTrustKeyMissingError(
-          "Unable to find %s", root_of_trust_name)
+          'Unable to find %s', root_of_trust_name)
 
     return ks

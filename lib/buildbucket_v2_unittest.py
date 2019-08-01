@@ -202,7 +202,7 @@ class BuildbucketV2Test(cros_test_lib.MockTestCase):
     with self.assertRaises(AssertionError):
       bbv2.SearchBuild(build_predicate, None, None)
     with self.assertRaises(AssertionError):
-      bbv2.SearchBuild(build_predicate, "str_fields", 100)
+      bbv2.SearchBuild(build_predicate, 'str_fields', 100)
 
   def testSearchBuild(self):
     """Test redirection to the underlying RPC call."""

@@ -55,10 +55,10 @@ from chromite.lib import proctitle
 # NOTE: .bashrc sets PORTAGE_USERNAME = $USERNAME, so most people won't
 # encounter this case unless they have an old chroot or blow away the
 # environment by running sudo without the -E specifier.
-if "PORTAGE_USERNAME" not in os.environ:
-  homedir = os.environ.get("HOME")
+if 'PORTAGE_USERNAME' not in os.environ:
+  homedir = os.environ.get('HOME')
   if homedir:
-    os.environ["PORTAGE_USERNAME"] = os.path.basename(homedir)
+    os.environ['PORTAGE_USERNAME'] = os.path.basename(homedir)
 
 # Wrap Popen with a lock to ensure no two Popen are executed simultaneously in
 # the same process.
@@ -96,24 +96,24 @@ import portage.debug
 
 def Usage():
   """Print usage."""
-  print("Usage:")
-  print(" ./parallel_emerge [--board=BOARD] [--workon=PKGS] [--rebuild]")
-  print("                   [--eventlogfile=FILE] [emerge args] package")
+  print('Usage:')
+  print(' ./parallel_emerge [--board=BOARD] [--workon=PKGS] [--rebuild]')
+  print('                   [--eventlogfile=FILE] [emerge args] package')
   print()
-  print("Packages specified as workon packages are always built from source.")
+  print('Packages specified as workon packages are always built from source.')
   print()
-  print("The --workon argument is mainly useful when you want to build and")
-  print("install packages that you are working on unconditionally, but do not")
-  print("to have to rev the package to indicate you want to build it from")
-  print("source. The build_packages script will automatically supply the")
-  print("workon argument to emerge, ensuring that packages selected using")
-  print("cros-workon are rebuilt.")
+  print('The --workon argument is mainly useful when you want to build and')
+  print('install packages that you are working on unconditionally, but do not')
+  print('to have to rev the package to indicate you want to build it from')
+  print('source. The build_packages script will automatically supply the')
+  print('workon argument to emerge, ensuring that packages selected using')
+  print('cros-workon are rebuilt.')
   print()
-  print("The --rebuild option rebuilds packages whenever their dependencies")
-  print("are changed. This ensures that your build is correct.")
+  print('The --rebuild option rebuilds packages whenever their dependencies')
+  print('are changed. This ensures that your build is correct.')
   print()
-  print("The --eventlogfile writes events to the given file. File is")
-  print("is overwritten if it exists.")
+  print('The --eventlogfile writes events to the given file. File is')
+  print('is overwritten if it exists.')
 
 
 # Global start time
@@ -131,9 +131,9 @@ class EmergeData(object):
   packages.
   """
 
-  __slots__ = ["action", "cmdline_packages", "depgraph", "favorites",
-               "mtimedb", "opts", "root_config", "scheduler_graph",
-               "settings", "spinner", "trees"]
+  __slots__ = ['action', 'cmdline_packages', 'depgraph', 'favorites',
+               'mtimedb', 'opts', 'root_config', 'scheduler_graph',
+               'settings', 'spinner', 'trees']
 
   def __init__(self):
     # The action the user requested. If the user is installing packages, this
@@ -227,8 +227,8 @@ class DepGraphGenerator(object):
     PrintDepsMap(deps_graph)
   """
 
-  __slots__ = ["board", "emerge", "package_db", "show_output", "sysroot",
-               "unpack_only", "max_retries"]
+  __slots__ = ['board', 'emerge', 'package_db', 'show_output', 'sysroot',
+               'unpack_only', 'max_retries']
 
   def __init__(self):
     self.board = None
@@ -256,28 +256,28 @@ class DepGraphGenerator(object):
     for arg in argv:
       # Specifically match arguments that are specific to parallel_emerge, and
       # pass through the rest.
-      if arg.startswith("--board="):
-        self.board = arg.replace("--board=", "")
-      elif arg.startswith("--sysroot="):
-        self.sysroot = arg.replace("--sysroot=", "")
-      elif arg.startswith("--workon="):
-        workon_str = arg.replace("--workon=", "")
-        emerge_args.append("--reinstall-atoms=%s" % workon_str)
-        emerge_args.append("--usepkg-exclude=%s" % workon_str)
-      elif arg.startswith("--force-remote-binary="):
-        force_remote_binary = arg.replace("--force-remote-binary=", "")
-        emerge_args.append("--useoldpkg-atoms=%s" % force_remote_binary)
-      elif arg.startswith("--retries="):
-        self.max_retries = int(arg.replace("--retries=", ""))
-      elif arg == "--show-output":
+      if arg.startswith('--board='):
+        self.board = arg.replace('--board=', '')
+      elif arg.startswith('--sysroot='):
+        self.sysroot = arg.replace('--sysroot=', '')
+      elif arg.startswith('--workon='):
+        workon_str = arg.replace('--workon=', '')
+        emerge_args.append('--reinstall-atoms=%s' % workon_str)
+        emerge_args.append('--usepkg-exclude=%s' % workon_str)
+      elif arg.startswith('--force-remote-binary='):
+        force_remote_binary = arg.replace('--force-remote-binary=', '')
+        emerge_args.append('--useoldpkg-atoms=%s' % force_remote_binary)
+      elif arg.startswith('--retries='):
+        self.max_retries = int(arg.replace('--retries=', ''))
+      elif arg == '--show-output':
         self.show_output = True
-      elif arg == "--rebuild":
-        emerge_args.append("--rebuild-if-unbuilt")
-      elif arg == "--unpackonly":
-        emerge_args.append("--fetchonly")
+      elif arg == '--rebuild':
+        emerge_args.append('--rebuild-if-unbuilt')
+      elif arg == '--unpackonly':
+        emerge_args.append('--fetchonly')
         self.unpack_only = True
-      elif arg.startswith("--eventlogfile="):
-        log_file_name = arg.replace("--eventlogfile=", "")
+      elif arg.startswith('--eventlogfile='):
+        log_file_name = arg.replace('--eventlogfile=', '')
         event_logger = cros_event.getEventFileLogger(log_file_name)
         event_logger.setKind('ParallelEmerge')
         cros_event.setEventLogger(event_logger)
@@ -288,8 +288,8 @@ class DepGraphGenerator(object):
     # These packages take a really long time to build, so, for expediency, we
     # are blacklisting them from automatic rebuilds because one of their
     # dependencies needs to be recompiled.
-    for pkg in ("chromeos-base/chromeos-chrome",):
-      emerge_args.append("--rebuild-exclude=%s" % pkg)
+    for pkg in ('chromeos-base/chromeos-chrome',):
+      emerge_args.append('--rebuild-exclude=%s' % pkg)
 
     return emerge_args
 
@@ -300,7 +300,7 @@ class DepGraphGenerator(object):
     emerge_args = self.ParseParallelEmergeArgs(args)
 
     if self.sysroot and self.board:
-      cros_build_lib.Die("--sysroot and --board are incompatible.")
+      cros_build_lib.Die('--sysroot and --board are incompatible.')
 
     # Setup various environment variables based on our current board. These
     # variables are normally setup inside emerge-${BOARD}, but since we don't
@@ -312,13 +312,13 @@ class DepGraphGenerator(object):
                                     cros_build_lib.GetSysroot(self.board))
 
     if self.sysroot:
-      os.environ["PORTAGE_CONFIGROOT"] = self.sysroot
-      os.environ["SYSROOT"] = self.sysroot
+      os.environ['PORTAGE_CONFIGROOT'] = self.sysroot
+      os.environ['SYSROOT'] = self.sysroot
 
     # Turn off interactive delays
-    os.environ["EBEEP_IGNORE"] = "1"
-    os.environ["EPAUSE_IGNORE"] = "1"
-    os.environ["CLEAN_DELAY"] = "0"
+    os.environ['EBEEP_IGNORE'] = '1'
+    os.environ['EPAUSE_IGNORE'] = '1'
+    os.environ['CLEAN_DELAY'] = '0'
 
     # Parse the emerge options.
     action, opts, cmdline_packages = parse_opts(emerge_args, silent=True)
@@ -328,21 +328,21 @@ class DepGraphGenerator(object):
     # because it also does a bunch of other stuff that we don't want.
     # TODO(davidjames): Patch portage to move this logic into a function we can
     # reuse here.
-    if "--debug" in opts:
-      os.environ["PORTAGE_DEBUG"] = "1"
-    if "--config-root" in opts:
-      os.environ["PORTAGE_CONFIGROOT"] = opts["--config-root"]
-    if "--root" in opts:
-      os.environ["ROOT"] = opts["--root"]
-    if "--accept-properties" in opts:
-      os.environ["ACCEPT_PROPERTIES"] = opts["--accept-properties"]
+    if '--debug' in opts:
+      os.environ['PORTAGE_DEBUG'] = '1'
+    if '--config-root' in opts:
+      os.environ['PORTAGE_CONFIGROOT'] = opts['--config-root']
+    if '--root' in opts:
+      os.environ['ROOT'] = opts['--root']
+    if '--accept-properties' in opts:
+      os.environ['ACCEPT_PROPERTIES'] = opts['--accept-properties']
 
     # If we're installing packages to the board, we can disable vardb locks.
     # This is safe because we only run up to one instance of parallel_emerge in
     # parallel.
     # TODO(davidjames): Enable this for the host too.
     if self.sysroot:
-      os.environ.setdefault("PORTAGE_LOCKS", "false")
+      os.environ.setdefault('PORTAGE_LOCKS', 'false')
 
     # Now that we've setup the necessary environment variables, we can load the
     # emerge config from disk.
@@ -351,15 +351,15 @@ class DepGraphGenerator(object):
 
     # Add in EMERGE_DEFAULT_OPTS, if specified.
     tmpcmdline = []
-    if "--ignore-default-opts" not in opts:
-      tmpcmdline.extend(settings["EMERGE_DEFAULT_OPTS"].split())
+    if '--ignore-default-opts' not in opts:
+      tmpcmdline.extend(settings['EMERGE_DEFAULT_OPTS'].split())
     tmpcmdline.extend(emerge_args)
     action, opts, cmdline_packages = parse_opts(tmpcmdline)
 
     # If we're installing to the board, we want the --root-deps option so that
     # portage will install the build dependencies to that location as well.
     if self.sysroot:
-      opts.setdefault("--root-deps", True)
+      opts.setdefault('--root-deps', True)
 
     # Check whether our portage tree is out of date. Typically, this happens
     # when you're setting up a new portage tree, such as in setup_board and
@@ -369,41 +369,41 @@ class DepGraphGenerator(object):
     #
     # Portage normally handles this logic in emerge_main, but again, we can't
     # use that function here.
-    if _global_updates(trees, mtimedb["updates"]):
+    if _global_updates(trees, mtimedb['updates']):
       mtimedb.commit()
       # pylint: disable=unpacking-non-sequence
       settings, trees, mtimedb = load_emerge_config(trees=trees)
 
     # Setup implied options. Portage normally handles this logic in
     # emerge_main.
-    if "--buildpkgonly" in opts or "buildpkg" in settings.features:
-      opts.setdefault("--buildpkg", True)
-    if "--getbinpkgonly" in opts:
-      opts.setdefault("--usepkgonly", True)
-      opts.setdefault("--getbinpkg", True)
-    if "getbinpkg" in settings.features:
+    if '--buildpkgonly' in opts or 'buildpkg' in settings.features:
+      opts.setdefault('--buildpkg', True)
+    if '--getbinpkgonly' in opts:
+      opts.setdefault('--usepkgonly', True)
+      opts.setdefault('--getbinpkg', True)
+    if 'getbinpkg' in settings.features:
       # Per emerge_main, FEATURES=getbinpkg overrides --getbinpkg=n
-      opts["--getbinpkg"] = True
-    if "--getbinpkg" in opts or "--usepkgonly" in opts:
-      opts.setdefault("--usepkg", True)
-    if "--fetch-all-uri" in opts:
-      opts.setdefault("--fetchonly", True)
-    if "--skipfirst" in opts:
-      opts.setdefault("--resume", True)
-    if "--buildpkgonly" in opts:
+      opts['--getbinpkg'] = True
+    if '--getbinpkg' in opts or '--usepkgonly' in opts:
+      opts.setdefault('--usepkg', True)
+    if '--fetch-all-uri' in opts:
+      opts.setdefault('--fetchonly', True)
+    if '--skipfirst' in opts:
+      opts.setdefault('--resume', True)
+    if '--buildpkgonly' in opts:
       # --buildpkgonly will not merge anything, so it overrides all binary
       # package options.
-      for opt in ("--getbinpkg", "--getbinpkgonly",
-                  "--usepkg", "--usepkgonly"):
+      for opt in ('--getbinpkg', '--getbinpkgonly',
+                  '--usepkg', '--usepkgonly'):
         opts.pop(opt, None)
-    if (settings.get("PORTAGE_DEBUG", "") == "1" and
-        "python-trace" in settings.features):
+    if (settings.get('PORTAGE_DEBUG', '') == '1' and
+        'python-trace' in settings.features):
       portage.debug.set_trace(True)
 
     # Complain about unsupported options
-    for opt in ("--ask", "--ask-enter-invalid", "--resume", "--skipfirst"):
+    for opt in ('--ask', '--ask-enter-invalid', '--resume', '--skipfirst'):
       if opt in opts:
-        print("%s is not supported by parallel_emerge" % opt)
+        print('%s is not supported by parallel_emerge' % opt)
         sys.exit(1)
 
     # Make emerge specific adjustments to the config (e.g. colors!)
@@ -414,11 +414,11 @@ class DepGraphGenerator(object):
     emerge.action, emerge.opts = action, opts
     emerge.settings, emerge.trees, emerge.mtimedb = settings, trees, mtimedb
     emerge.cmdline_packages = cmdline_packages
-    root = settings["ROOT"]
-    emerge.root_config = trees[root]["root_config"]
+    root = settings['ROOT']
+    emerge.root_config = trees[root]['root_config']
 
-    if "--usepkg" in opts:
-      emerge.trees[root]["bintree"].populate("--getbinpkg" in opts)
+    if '--usepkg' in opts:
+      emerge.trees[root]['bintree'].populate('--getbinpkg' in opts)
 
   def CreateDepgraph(self, emerge, packages):
     """Create an emerge depgraph object."""
@@ -442,9 +442,9 @@ class DepGraphGenerator(object):
     emerge.favorites = favorites
 
     # Prime and flush emerge caches.
-    root = emerge.settings["ROOT"]
-    vardb = emerge.trees[root]["vartree"].dbapi
-    if "--pretend" not in emerge.opts:
+    root = emerge.settings['ROOT']
+    vardb = emerge.trees[root]['vartree'].dbapi
+    if '--pretend' not in emerge.opts:
       vardb.counter_tick()
     vardb.flush_cache()
 
@@ -470,10 +470,10 @@ class DepGraphGenerator(object):
     emerge.spinner = stdout_spinner()
     emerge.spinner.update = emerge.spinner.update_quiet
 
-    if "--quiet" not in emerge.opts:
-      print("Calculating deps...")
+    if '--quiet' not in emerge.opts:
+      print('Calculating deps...')
 
-    with cros_event.newEvent(task_name="GenerateDepTree"):
+    with cros_event.newEvent(task_name='GenerateDepTree'):
       self.CreateDepgraph(emerge, packages)
       depgraph = emerge.depgraph
 
@@ -481,7 +481,7 @@ class DepGraphGenerator(object):
     deps_tree = {}
     # pylint: disable=protected-access
     digraph = depgraph._dynamic_config.digraph
-    root = emerge.settings["ROOT"]
+    root = emerge.settings['ROOT']
     final_db = depgraph._dynamic_config._filtered_trees[root]['graph_db']
     for node, node_deps in digraph.nodes.items():
       # Calculate dependency packages that need to be installed first. Each
@@ -510,10 +510,10 @@ class DepGraphGenerator(object):
           # installing a replacement. If so, just depend on the installation
           # of the new package, because the old package will automatically
           # be uninstalled at that time.
-          if action == "uninstall":
+          if action == 'uninstall':
             for pkg in final_db.match_pkgs(child.slot_atom):
               cpv = str(pkg.cpv)
-              action = "merge"
+              action = 'merge'
               break
 
           deps[cpv] = dict(action=action,
@@ -534,15 +534,15 @@ class DepGraphGenerator(object):
         self.package_db[pkg.cpv] = pkg
 
         # Save off info about the package
-        deps_info[str(pkg.cpv)] = {"idx": len(deps_info)}
+        deps_info[str(pkg.cpv)] = {'idx': len(deps_info)}
 
     seconds = time.time() - start
-    if "--quiet" not in emerge.opts:
-      print("Deps calculated in %dm%.1fs" % (seconds / 60, seconds % 60))
+    if '--quiet' not in emerge.opts:
+      print('Deps calculated in %dm%.1fs' % (seconds / 60, seconds % 60))
 
     return deps_tree, deps_info
 
-  def PrintTree(self, deps, depth=""):
+  def PrintTree(self, deps, depth=''):
     """Print the deps we have seen in the emerge output.
 
     Args:
@@ -550,9 +550,9 @@ class DepGraphGenerator(object):
       depth: Allows printing the tree recursively, with indentation.
     """
     for entry in sorted(deps):
-      action = deps[entry]["action"]
-      print("%s %s (%s)" % (depth, entry, action))
-      self.PrintTree(deps[entry]["deps"], depth=depth + "  ")
+      action = deps[entry]['action']
+      print('%s %s (%s)' % (depth, entry, action))
+      self.PrintTree(deps[entry]['deps'], depth=depth + '  ')
 
   def GenDependencyGraph(self, deps_tree, deps_info):
     """Generate a doubly linked dependency graph.
@@ -590,62 +590,62 @@ class DepGraphGenerator(object):
       Returns:
         Unsanitized digraph.
       """
-      binpkg_phases = set(["setup", "preinst", "postinst"])
-      needed_dep_types = set(["blocker", "buildtime", "buildtime_slot_op",
-                              "runtime", "runtime_slot_op"])
-      ignored_dep_types = set(["ignored", "runtime_post", "soft"])
+      binpkg_phases = set(['setup', 'preinst', 'postinst'])
+      needed_dep_types = set(['blocker', 'buildtime', 'buildtime_slot_op',
+                              'runtime', 'runtime_slot_op'])
+      ignored_dep_types = set(['ignored', 'runtime_post', 'soft'])
 
       # There's a bug in the Portage library where it always returns 'optional'
       # and never 'buildtime' for the digraph while --usepkg is enabled; even
       # when the package is being rebuilt. To work around this, we treat
       # 'optional' as needed when we are using --usepkg. See crbug.com/756240 .
-      if "--usepkg" in self.emerge.opts:
-        needed_dep_types.add("optional")
+      if '--usepkg' in self.emerge.opts:
+        needed_dep_types.add('optional')
       else:
-        ignored_dep_types.add("optional")
+        ignored_dep_types.add('optional')
 
       all_dep_types = ignored_dep_types | needed_dep_types
       for pkg in packages:
 
         # Create an entry for the package
-        action = packages[pkg]["action"]
-        default_pkg = {"needs": {}, "provides": set(), "action": action,
-                       "nodeps": False, "binary": False}
+        action = packages[pkg]['action']
+        default_pkg = {'needs': {}, 'provides': set(), 'action': action,
+                       'nodeps': False, 'binary': False}
         this_pkg = deps_map.setdefault(pkg, default_pkg)
 
         if pkg in deps_info:
-          this_pkg["idx"] = deps_info[pkg]["idx"]
+          this_pkg['idx'] = deps_info[pkg]['idx']
 
         # If a package doesn't have any defined phases that might use the
         # dependent packages (i.e. pkg_setup, pkg_preinst, or pkg_postinst),
         # we can install this package before its deps are ready.
         emerge_pkg = self.package_db.get(pkg)
-        if emerge_pkg and emerge_pkg.type_name == "binary":
-          this_pkg["binary"] = True
+        if emerge_pkg and emerge_pkg.type_name == 'binary':
+          this_pkg['binary'] = True
           defined_phases = emerge_pkg.defined_phases
           defined_binpkg_phases = binpkg_phases.intersection(defined_phases)
           if not defined_binpkg_phases:
-            this_pkg["nodeps"] = True
+            this_pkg['nodeps'] = True
 
         # Create entries for dependencies of this package first.
-        ReverseTree(packages[pkg]["deps"])
+        ReverseTree(packages[pkg]['deps'])
 
         # Add dependencies to this package.
-        for dep, dep_item in packages[pkg]["deps"].items():
+        for dep, dep_item in packages[pkg]['deps'].items():
           # We only need to enforce strict ordering of dependencies if the
           # dependency is a blocker, or is a buildtime or runtime dependency.
           # (I.e., ignored, optional, and runtime_post dependencies don't
           # depend on ordering.)
-          dep_types = dep_item["deptypes"]
+          dep_types = dep_item['deptypes']
           if needed_dep_types.intersection(dep_types):
-            deps_map[dep]["provides"].add(pkg)
-            this_pkg["needs"][dep] = "/".join(dep_types)
+            deps_map[dep]['provides'].add(pkg)
+            this_pkg['needs'][dep] = '/'.join(dep_types)
 
           # Verify we processed all appropriate dependency types.
           unknown_dep_types = set(dep_types) - all_dep_types
           if unknown_dep_types:
-            print("Unknown dependency types found:")
-            print("  %s -> %s (%s)" % (pkg, dep, "/".join(unknown_dep_types)))
+            print('Unknown dependency types found:')
+            print('  %s -> %s (%s)' % (pkg, dep, '/'.join(unknown_dep_types)))
             sys.exit(1)
 
           # If there's a blocker, Portage may need to move files from one
@@ -653,8 +653,8 @@ class DepGraphGenerator(object):
           # both packages. To avoid race conditions while editing this file,
           # the two packages must not be installed in parallel, so we can't
           # safely ignore dependencies. See https://crbug.com/202428.
-          if "blocker" in dep_types:
-            this_pkg["nodeps"] = False
+          if 'blocker' in dep_types:
+            this_pkg['nodeps'] = False
 
     def FindCycles():
       """Find cycles in the dependency tree.
@@ -682,7 +682,7 @@ class DepGraphGenerator(object):
           # dependencies, we can stop now.
           return
         unresolved.append(pkg)
-        for dep in deps_map[pkg]["needs"]:
+        for dep in deps_map[pkg]['needs']:
           if dep in unresolved:
             idx = unresolved.index(dep)
             mycycle = unresolved[idx:] + [dep]
@@ -709,15 +709,15 @@ class DepGraphGenerator(object):
       # it easier for us to crack cycles.
       for pkg in sorted(rm_pkgs):
         this_pkg = deps_map[pkg]
-        needs = this_pkg["needs"]
-        provides = this_pkg["provides"]
+        needs = this_pkg['needs']
+        provides = this_pkg['provides']
         for dep in needs:
-          dep_provides = deps_map[dep]["provides"]
+          dep_provides = deps_map[dep]['provides']
           dep_provides.update(provides)
           dep_provides.discard(pkg)
           dep_provides.discard(dep)
         for target in provides:
-          target_needs = deps_map[target]["needs"]
+          target_needs = deps_map[target]['needs']
           target_needs.update(needs)
           target_needs.pop(pkg, None)
           target_needs.pop(target, None)
@@ -730,27 +730,27 @@ class DepGraphGenerator(object):
       example cycle which contains dep -> basedep.
       """
 
-      needs = deps_map[dep]["needs"]
-      depinfo = needs.get(basedep, "deleted")
+      needs = deps_map[dep]['needs']
+      depinfo = needs.get(basedep, 'deleted')
 
       # It's OK to swap install order for blockers, as long as the two
       # packages aren't installed in parallel. If there is a cycle, then
       # we know the packages depend on each other already, so we can drop the
       # blocker safely without printing a warning.
-      if depinfo == "blocker":
+      if depinfo == 'blocker':
         return
 
       # Notify the user that we're breaking a cycle.
-      print("Breaking %s -> %s (%s)" % (dep, basedep, depinfo))
+      print('Breaking %s -> %s (%s)' % (dep, basedep, depinfo))
 
       # Show cycle.
       for i in range(len(mycycle) - 1):
         pkg1, pkg2 = mycycle[i], mycycle[i+1]
-        needs = deps_map[pkg1]["needs"]
-        depinfo = needs.get(pkg2, "deleted")
+        needs = deps_map[pkg1]['needs']
+        depinfo = needs.get(pkg2, 'deleted')
         if pkg1 == dep and pkg2 == basedep:
-          depinfo = depinfo + ", deleting"
-        print("  %s -> %s (%s)" % (pkg1, pkg2, depinfo))
+          depinfo = depinfo + ', deleting'
+        print('  %s -> %s (%s)' % (pkg1, pkg2, depinfo))
 
     def SanitizeTree():
       """Remove circular dependencies.
@@ -768,15 +768,15 @@ class DepGraphGenerator(object):
       while cycles:
         for dep, mycycles in cycles.items():
           for basedep, mycycle in mycycles.items():
-            if deps_info[basedep]["idx"] >= deps_info[dep]["idx"]:
-              if "--quiet" not in emerge.opts:
+            if deps_info[basedep]['idx'] >= deps_info[dep]['idx']:
+              if '--quiet' not in emerge.opts:
                 PrintCycleBreak(basedep, dep, mycycle)
-              del deps_map[dep]["needs"][basedep]
-              deps_map[basedep]["provides"].remove(dep)
+              del deps_map[dep]['needs'][basedep]
+              deps_map[basedep]['provides'].remove(dep)
         cycles = FindCycles()
       seconds = time.time() - start
-      if "--quiet" not in emerge.opts and seconds >= 0.1:
-        print("Tree sanitized in %dm%.1fs" % (seconds / 60, seconds % 60))
+      if '--quiet' not in emerge.opts and seconds >= 0.1:
+        print('Tree sanitized in %dm%.1fs' % (seconds / 60, seconds % 60))
 
     def FindRecursiveProvides(pkg, seen):
       """Find all nodes that require a particular package.
@@ -791,10 +791,10 @@ class DepGraphGenerator(object):
         return
       seen.add(pkg)
       info = deps_map[pkg]
-      info["tprovides"] = info["provides"].copy()
-      for dep in info["provides"]:
+      info['tprovides'] = info['provides'].copy()
+      for dep in info['provides']:
         FindRecursiveProvides(dep, seen)
-        info["tprovides"].update(deps_map[dep]["tprovides"])
+        info['tprovides'].update(deps_map[dep]['tprovides'])
 
     ReverseTree(deps_tree)
 
@@ -820,9 +820,9 @@ class DepGraphGenerator(object):
     def InstallPlanAtNode(target, deps_map):
       nodes = []
       nodes.append(target)
-      for dep in deps_map[target]["provides"]:
-        del deps_map[dep]["needs"][target]
-        if not deps_map[dep]["needs"]:
+      for dep in deps_map[target]['provides']:
+        del deps_map[dep]['needs'][target]
+        if not deps_map[dep]['needs']:
           nodes.extend(InstallPlanAtNode(dep, deps_map))
       return nodes
 
@@ -830,7 +830,7 @@ class DepGraphGenerator(object):
     install_plan = []
     plan = set()
     for target, info in deps_map.items():
-      if not info["needs"] and target not in plan:
+      if not info['needs'] and target not in plan:
         for item in InstallPlanAtNode(target, deps_map):
           plan.add(item)
           install_plan.append(self.package_db[item])
@@ -839,7 +839,7 @@ class DepGraphGenerator(object):
       del deps_map[pkg]
 
     if deps_map:
-      print("Cyclic dependencies:", " ".join(deps_map))
+      print('Cyclic dependencies:', ' '.join(deps_map))
       PrintDepsMap(deps_map)
       sys.exit(1)
 
@@ -849,20 +849,20 @@ class DepGraphGenerator(object):
 def PrintDepsMap(deps_map):
   """Print dependency graph, for each package list it's prerequisites."""
   for i in sorted(deps_map):
-    print("%s: (%s) needs" % (i, deps_map[i]["action"]))
-    needs = deps_map[i]["needs"]
+    print('%s: (%s) needs' % (i, deps_map[i]['action']))
+    needs = deps_map[i]['needs']
     for j in sorted(needs):
-      print("    %s" % (j))
+      print('    %s' % (j))
     if not needs:
-      print("    no dependencies")
+      print('    no dependencies')
 
 
 class EmergeJobState(object):
   """Structure describing the EmergeJobState."""
 
-  __slots__ = ["done", "filename", "last_notify_timestamp", "last_output_seek",
-               "last_output_timestamp", "pkgname", "retcode", "start_timestamp",
-               "target", "try_count", "fetch_only", "unpack_only"]
+  __slots__ = ['done', 'filename', 'last_notify_timestamp', 'last_output_seek',
+               'last_output_timestamp', 'pkgname', 'retcode', 'start_timestamp',
+               'target', 'try_count', 'fetch_only', 'unpack_only']
 
   def __init__(self, target, pkgname, done, filename, start_timestamp,
                retcode=None, fetch_only=False, try_count=0, unpack_only=False):
@@ -951,7 +951,7 @@ def EmergeProcess(output, job_state, *args, **kwargs):
 
   cpv = portage_util.SplitCPV(target)
 
-  event = cros_event.newEvent(task_name="EmergePackage",
+  event = cros_event.newEvent(task_name='EmergePackage',
                               name=cpv.package,
                               category=cpv.category,
                               version=cpv.version,
@@ -963,9 +963,9 @@ def EmergeProcess(output, job_state, *args, **kwargs):
 
       # Sanity checks.
       if sys.stdout.fileno() != 1:
-        raise Exception("sys.stdout.fileno() != 1")
+        raise Exception('sys.stdout.fileno() != 1')
       if sys.stderr.fileno() != 2:
-        raise Exception("sys.stderr.fileno() != 2")
+        raise Exception('sys.stderr.fileno() != 2')
 
       # - Redirect 1 (stdout) and 2 (stderr) at our temporary file.
       # - Redirect 0 to point at sys.stdin. In this case, sys.stdin
@@ -983,7 +983,7 @@ def EmergeProcess(output, job_state, *args, **kwargs):
       # Portage doesn't like when sys.stdin.fileno() != 0, so point sys.stdin
       # at the filehandle we just created in _setup_pipes.
       if sys.stdin.fileno() != 0:
-        sys.__stdin__ = sys.stdin = os.fdopen(0, "r")
+        sys.__stdin__ = sys.stdin = os.fdopen(0, 'r')
 
       scheduler = Scheduler(*args, **kwargs)
 
@@ -995,7 +995,7 @@ def EmergeProcess(output, job_state, *args, **kwargs):
       with event:
         job_state.retcode = scheduler.merge()
         if job_state.retcode != 0:
-          event.fail(message="non-zero value returned")
+          event.fail(message='non-zero value returned')
 
     # We catch all exceptions here (including SystemExit, KeyboardInterrupt,
     # etc) so as to ensure that we don't confuse the multiprocessing module,
@@ -1023,31 +1023,31 @@ def UnpackPackage(pkg_state):
   Returns:
     Exit code returned by subprocess.
   """
-  pkgdir = os.environ.get("PKGDIR",
-                          os.path.join(os.environ["SYSROOT"], "packages"))
-  root = os.environ.get("ROOT", os.environ["SYSROOT"])
-  path = os.path.join(pkgdir, pkg_state.target + ".tbz2")
+  pkgdir = os.environ.get('PKGDIR',
+                          os.path.join(os.environ['SYSROOT'], 'packages'))
+  root = os.environ.get('ROOT', os.environ['SYSROOT'])
+  path = os.path.join(pkgdir, pkg_state.target + '.tbz2')
   comp = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
-  cmd = [comp, "-dc"]
-  if comp.endswith("pbzip2"):
-    cmd.append("--ignore-trailing-garbage=1")
+  cmd = [comp, '-dc']
+  if comp.endswith('pbzip2'):
+    cmd.append('--ignore-trailing-garbage=1')
   cmd.append(path)
 
-  with cros_event.newEvent(task_name="UnpackPackage", **pkg_state) as event:
+  with cros_event.newEvent(task_name='UnpackPackage', **pkg_state) as event:
     result = cros_build_lib.RunCommand(cmd, cwd=root, stdout_to_pipe=True,
                                        print_cmd=False, error_code_ok=True)
 
     # If we were not successful, return now and don't attempt untar.
     if result.returncode != 0:
-      event.fail("error compressing: returned {}".format(result.returncode))
+      event.fail('error compressing: returned {}'.format(result.returncode))
       return result.returncode
 
-    cmd = ["sudo", "tar", "-xf", "-", "-C", root]
+    cmd = ['sudo', 'tar', '-xf', '-', '-C', root]
 
     result = cros_build_lib.RunCommand(cmd, cwd=root, input=result.output,
                                        print_cmd=False, error_code_ok=True)
     if result.returncode != 0:
-      event.fail("error extracting:returned {}".format(result.returncode))
+      event.fail('error extracting:returned {}'.format(result.returncode))
 
     return result.returncode
 
@@ -1081,19 +1081,19 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db, fetch_only=False,
   settings, trees, mtimedb = emerge.settings, emerge.trees, emerge.mtimedb
 
   # Disable flushing of caches to save on I/O.
-  root = emerge.settings["ROOT"]
-  vardb = emerge.trees[root]["vartree"].dbapi
+  root = emerge.settings['ROOT']
+  vardb = emerge.trees[root]['vartree'].dbapi
   vardb._flush_cache_enabled = False  # pylint: disable=protected-access
-  bindb = emerge.trees[root]["bintree"].dbapi
+  bindb = emerge.trees[root]['bintree'].dbapi
   # Might be a set, might be a list, might be None; no clue, just use shallow
   # copy to ensure we can roll it back.
   # pylint: disable=protected-access
   original_remotepkgs = copy.copy(bindb.bintree._remotepkgs)
 
   opts, spinner = emerge.opts, emerge.spinner
-  opts["--nodeps"] = True
+  opts['--nodeps'] = True
   if fetch_only:
-    opts["--fetchonly"] = True
+    opts['--fetchonly'] = True
 
   while True:
     # Wait for a new item to show up on the queue. This is a blocking wait,
@@ -1113,7 +1113,7 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db, fetch_only=False,
 
     db_pkg = package_db[target]
 
-    if db_pkg.type_name == "binary":
+    if db_pkg.type_name == 'binary':
       if not fetch_only and pkg_state.fetched_successfully:
         # Ensure portage doesn't think our pkg is remote- else it'll force
         # a redownload of it (even if the on-disk file is fine).  In-memory
@@ -1125,13 +1125,13 @@ def EmergeWorker(task_queue, job_queue, emerge, package_db, fetch_only=False,
     db_pkg.root_config = emerge.root_config
     install_list = [db_pkg]
     pkgname = db_pkg.pf
-    output = tempfile.NamedTemporaryFile(prefix=pkgname + "-", delete=False)
+    output = tempfile.NamedTemporaryFile(prefix=pkgname + '-', delete=False)
     os.chmod(output.name, 0o644)
     start_timestamp = time.time()
     job = EmergeJobState(target, pkgname, False, output.name, start_timestamp,
                          fetch_only=fetch_only, unpack_only=unpack_only)
     job_queue.put(job)
-    if "--pretend" in opts:
+    if '--pretend' in opts:
       job.retcode = 0
     else:
       try:
@@ -1194,21 +1194,21 @@ class JobPrinter(object):
     job.last_output_timestamp = self.current_time
 
     # Note that we're starting the job
-    info = "job %s (%dm%.1fs)" % (job.pkgname, seconds / 60, seconds % 60)
+    info = 'job %s (%dm%.1fs)' % (job.pkgname, seconds / 60, seconds % 60)
     last_output_seek = seek_locations.get(job.filename, 0)
     if last_output_seek:
-      print("=== Continue output for %s ===" % info)
+      print('=== Continue output for %s ===' % info)
     else:
-      print("=== Start output for %s ===" % info)
+      print('=== Start output for %s ===' % info)
 
     # Print actual output from job
     f = codecs.open(job.filename, encoding='utf-8', errors='replace')
     f.seek(last_output_seek)
-    prefix = job.pkgname + ":"
+    prefix = job.pkgname + ':'
     for line in f:
 
       # Save off our position in the file
-      if line and line[-1] == "\n":
+      if line and line[-1] == '\n':
         last_output_seek = f.tell()
         line = line[:-1]
 
@@ -1222,9 +1222,9 @@ class JobPrinter(object):
 
     # Note end of output section
     if job.done:
-      print("=== Complete: %s ===" % info)
+      print('=== Complete: %s ===' % info)
     else:
-      print("=== Still running: %s ===" % info)
+      print('=== Still running: %s ===' % info)
 
     if self.unlink:
       os.unlink(job.filename)
@@ -1269,7 +1269,7 @@ def PrintWorker(queue):
 class TargetState(object):
   """Structure describing the TargetState."""
 
-  __slots__ = ("target", "info", "score", "prefetched", "fetched_successfully")
+  __slots__ = ('target', 'info', 'score', 'prefetched', 'fetched_successfully')
 
   def __init__(self, target, info):
     self.target, self.info = target, info
@@ -1298,11 +1298,11 @@ class TargetState(object):
 
   def update_score(self):
     self.score = (
-        -len(self.info["tprovides"]),
-        len(self.info["needs"]),
-        not self.info["binary"],
-        -len(self.info["provides"]),
-        self.info["idx"],
+        -len(self.info['tprovides']),
+        len(self.info['needs']),
+        not self.info['binary'],
+        -len(self.info['provides']),
+        self.info['idx'],
         self.target,
         )
 
@@ -1310,7 +1310,7 @@ class TargetState(object):
 class ScoredHeap(object):
   """Implementation of a general purpose scored heap."""
 
-  __slots__ = ("heap", "_heap_set")
+  __slots__ = ('heap', '_heap_set')
 
   def __init__(self, initial=()):
     self.heap = list()
@@ -1367,14 +1367,14 @@ class EmergeQueue(object):
     self._unpack_jobs = {}
     self._unpack_ready = ScoredHeap()
     # List of total package installs represented in deps_map.
-    install_jobs = [x for x in deps_map if deps_map[x]["action"] == "merge"]
+    install_jobs = [x for x in deps_map if deps_map[x]['action'] == 'merge']
     self._total_jobs = len(install_jobs)
     self._show_output = show_output
     self._unpack_only = unpack_only
     self._max_retries = max_retries
 
-    if "--pretend" in emerge.opts:
-      print("Skipping merge because of --pretend mode.")
+    if '--pretend' in emerge.opts:
+      print('Skipping merge because of --pretend mode.')
       sys.exit(0)
 
     # Set up a session so we can easily terminate all children.
@@ -1389,11 +1389,11 @@ class EmergeQueue(object):
     # hide its output, and said output is quite useful for debugging hung
     # jobs.
     procs = min(self._total_jobs,
-                emerge.opts.pop("--jobs", multiprocessing.cpu_count()))
+                emerge.opts.pop('--jobs', multiprocessing.cpu_count()))
     self._build_procs = self._unpack_procs = max(1, procs)
     # Fetch is IO bound, we can use more processes.
     self._fetch_procs = max(4, procs)
-    self._load_avg = emerge.opts.pop("--load-average", None)
+    self._load_avg = emerge.opts.pop('--load-average', None)
     self._job_queue = multiprocessing.Queue()
     self._print_queue = multiprocessing.Queue()
 
@@ -1524,7 +1524,7 @@ class EmergeQueue(object):
           self._print_queue.put(JobPrinter(job, unlink=True))
 
       # Notify the user that we are exiting
-      self._Print("Exiting on signal %s" % signum)
+      self._Print('Exiting on signal %s' % signum)
       self._print_queue.put(None)
       self._print_worker.join()
 
@@ -1549,7 +1549,7 @@ class EmergeQueue(object):
     this_pkg = pkg_state.info
     target = pkg_state.target
     if pkg_state.info is not None:
-      if this_pkg["action"] == "nomerge":
+      if this_pkg['action'] == 'nomerge':
         self._Finish(target)
       elif target not in self._build_jobs:
         # Kick off the build if it's marked to be built.
@@ -1622,7 +1622,7 @@ class EmergeQueue(object):
               job.last_notify_timestamp + notify_interval < current_time):
           job_seconds = current_time - job.start_timestamp
           args = (job.pkgname, job_seconds / 60, job_seconds % 60, job.filename)
-          info = "Still building %s (%dm%.1fs). Logs in %s" % args
+          info = 'Still building %s (%dm%.1fs). Logs in %s' % args
           job.last_notify_timestamp = current_time
           self._Print(info)
           no_output = False
@@ -1636,17 +1636,17 @@ class EmergeQueue(object):
       bjobs, bready = len(self._build_jobs), len(self._build_ready)
       retries = len(self._retry_queue)
       pending = max(0, len(self._deps_map) - fjobs - bjobs)
-      line = "Pending %s/%s, " % (pending, self._total_jobs)
+      line = 'Pending %s/%s, ' % (pending, self._total_jobs)
       if fjobs or fready:
-        line += "Fetching %s/%s, " % (fjobs, fready + fjobs)
+        line += 'Fetching %s/%s, ' % (fjobs, fready + fjobs)
       if ujobs or uready:
-        line += "Unpacking %s/%s, " % (ujobs, uready + ujobs)
+        line += 'Unpacking %s/%s, ' % (ujobs, uready + ujobs)
       if bjobs or bready or retries:
-        line += "Building %s/%s, " % (bjobs, bready + bjobs)
+        line += 'Building %s/%s, ' % (bjobs, bready + bjobs)
         if retries:
-          line += "Retrying %s, " % (retries,)
-      load = " ".join(str(x) for x in os.getloadavg())
-      line += ("[Time %s | Elapsed %dm%.1fs | Load %s]" % (
+          line += 'Retrying %s, ' % (retries,)
+      load = ' '.join(str(x) for x in os.getloadavg())
+      line += ('[Time %s | Elapsed %dm%.1fs | Load %s]' % (
           time.strftime('%H:%M:%S', current_time_struct), seconds / 60,
           seconds % 60, load))
       self._Print(line)
@@ -1654,22 +1654,22 @@ class EmergeQueue(object):
   def _Finish(self, target):
     """Mark a target as completed and unblock dependencies."""
     this_pkg = self._deps_map[target]
-    if this_pkg["needs"] and this_pkg["nodeps"]:
+    if this_pkg['needs'] and this_pkg['nodeps']:
       # We got installed, but our deps have not been installed yet. Dependent
       # packages should only be installed when our needs have been fully met.
-      this_pkg["action"] = "nomerge"
+      this_pkg['action'] = 'nomerge'
     else:
-      for dep in this_pkg["provides"]:
+      for dep in this_pkg['provides']:
         dep_pkg = self._deps_map[dep]
         state = self._state_map[dep]
-        del dep_pkg["needs"][target]
+        del dep_pkg['needs'][target]
         state.update_score()
         if not state.prefetched:
           if dep in self._fetch_ready:
             # If it's not currently being fetched, update the prioritization
             self._fetch_ready.sort()
-        elif not dep_pkg["needs"]:
-          if dep_pkg["nodeps"] and dep_pkg["action"] == "nomerge":
+        elif not dep_pkg['needs']:
+          if dep_pkg['nodeps'] and dep_pkg['action'] == 'nomerge':
             self._Finish(dep)
           else:
             self._build_ready.put(self._state_map[dep])
@@ -1679,7 +1679,7 @@ class EmergeQueue(object):
     while self._retry_queue:
       state = self._retry_queue.pop(0)
       if self._Schedule(state):
-        self._Print("Retrying emerge of %s." % state.target)
+        self._Print('Retrying emerge of %s.' % state.target)
         break
 
   def _Shutdown(self):
@@ -1760,14 +1760,14 @@ class EmergeQueue(object):
           if self._failed_count:
             print('Packages failed:\n\t%s' %
                   '\n\t'.join(self._failed_count.keys()))
-            status_file = os.environ.get("PARALLEL_EMERGE_STATUS_FILE")
+            status_file = os.environ.get('PARALLEL_EMERGE_STATUS_FILE')
             if status_file:
               failed_pkgs = set(portage.versions.cpv_getkey(x)
                                 for x in self._failed_count.keys())
-              with open(status_file, "a") as f:
-                f.write("%s\n" % " ".join(failed_pkgs))
+              with open(status_file, 'a') as f:
+                f.write('%s\n' % ' '.join(failed_pkgs))
           else:
-            print("Deadlock! Circular dependencies!")
+            print('Deadlock! Circular dependencies!')
           sys.exit(1)
 
       for _ in range(12):
@@ -1792,7 +1792,7 @@ class EmergeQueue(object):
           state.prefetched = True
           state.fetched_successfully = (job.retcode == 0)
           del self._fetch_jobs[job.target]
-          self._Print("Fetched %s in %2.2fs"
+          self._Print('Fetched %s in %2.2fs'
                       % (target, time.time() - job.start_timestamp))
 
           if self._show_output or job.retcode != 0:
@@ -1800,7 +1800,7 @@ class EmergeQueue(object):
           else:
             os.unlink(job.filename)
           # Failure or not, let build work with it next.
-          if not self._deps_map[job.target]["needs"]:
+          if not self._deps_map[job.target]['needs']:
             self._build_ready.put(state)
             self._ScheduleLoop()
 
@@ -1823,7 +1823,7 @@ class EmergeQueue(object):
           self._unpack_jobs[target] = job
         else:
           del self._unpack_jobs[target]
-          self._Print("Unpacked %s in %2.2fs"
+          self._Print('Unpacked %s in %2.2fs'
                       % (target, time.time() - job.start_timestamp))
           if self._show_output or job.retcode != 0:
             self._print_queue.put(JobPrinter(job, unlink=True))
@@ -1837,7 +1837,7 @@ class EmergeQueue(object):
 
       if not job.done:
         self._build_jobs[target] = job
-        self._Print("Started %s (logged in %s)" % (target, job.filename))
+        self._Print('Started %s (logged in %s)' % (target, job.filename))
         continue
 
       # Print output of job
@@ -1848,7 +1848,7 @@ class EmergeQueue(object):
       del self._build_jobs[target]
 
       seconds = time.time() - job.start_timestamp
-      details = "%s (in %dm%.1fs)" % (target, seconds / 60, seconds % 60)
+      details = '%s (in %dm%.1fs)' % (target, seconds / 60, seconds % 60)
 
       # Complain if necessary.
       if job.retcode != 0:
@@ -1857,13 +1857,13 @@ class EmergeQueue(object):
         failed_count = self._failed_count[target]
         if failed_count > self._max_retries:
           # If this job has failed and can't be retried, give up.
-          self._Print("Failed %s. Your build has failed." % details)
+          self._Print('Failed %s. Your build has failed.' % details)
         else:
           # Queue up this build to try again after a long while.
           self._retry_queue.append(self._state_map[target])
-          self._Print("Failed %s, retrying later." % details)
+          self._Print('Failed %s, retrying later.' % details)
       else:
-        self._Print("Completed %s" % details)
+        self._Print('Completed %s' % details)
 
         # Mark as completed and unblock waiting ebuilds.
         self._Finish(target)
@@ -1881,17 +1881,17 @@ class EmergeQueue(object):
 
     # If packages were retried, output a warning.
     if self._failed_count:
-      self._Print("")
-      self._Print("WARNING: The following packages failed once or more,")
-      self._Print("but succeeded upon retry. This might indicate incorrect")
-      self._Print("dependencies.")
+      self._Print('')
+      self._Print('WARNING: The following packages failed once or more,')
+      self._Print('but succeeded upon retry. This might indicate incorrect')
+      self._Print('dependencies.')
       for pkg in self._failed_count.keys():
-        self._Print("  %s" % pkg)
-      self._Print("@@@STEP_WARNINGS@@@")
-      self._Print("")
+        self._Print('  %s' % pkg)
+      self._Print('@@@STEP_WARNINGS@@@')
+      self._Print('')
 
     # Tell child threads to exit.
-    self._Print("Merge complete")
+    self._Print('Merge complete')
 
 
 def main(argv):
@@ -1930,27 +1930,27 @@ def real_main(argv):
   # NOTE: Even if you're running --pretend, it's a good idea to run
   #       parallel_emerge with root access so that portage can write to the
   #       dependency cache. This is important for performance.
-  if "--pretend" not in emerge.opts and portage.data.secpass < 2:
-    print("parallel_emerge: superuser access is required.")
+  if '--pretend' not in emerge.opts and portage.data.secpass < 2:
+    print('parallel_emerge: superuser access is required.')
     return 1
 
-  if "--quiet" not in emerge.opts:
-    cmdline_packages = " ".join(emerge.cmdline_packages)
-    print("Starting fast-emerge.")
-    print(" Building package %s on %s" % (cmdline_packages,
-                                          deps.sysroot or "root"))
+  if '--quiet' not in emerge.opts:
+    cmdline_packages = ' '.join(emerge.cmdline_packages)
+    print('Starting fast-emerge.')
+    print(' Building package %s on %s' % (cmdline_packages,
+                                          deps.sysroot or 'root'))
 
   deps_tree, deps_info = deps.GenDependencyTree()
 
   # You want me to be verbose? I'll give you two trees! Twice as much value.
-  if "--tree" in emerge.opts and "--verbose" in emerge.opts:
+  if '--tree' in emerge.opts and '--verbose' in emerge.opts:
     deps.PrintTree(deps_tree)
 
   deps_graph = deps.GenDependencyGraph(deps_tree, deps_info)
 
   # OK, time to print out our progress so far.
   deps.PrintInstallPlan(deps_graph)
-  if "--tree" in emerge.opts:
+  if '--tree' in emerge.opts:
     PrintDepsMap(deps_graph)
 
   # Are we upgrading portage? If so, and there are more packages to merge,
@@ -1958,16 +1958,16 @@ def real_main(argv):
   # we pick up all updates to portage settings before merging any more
   # packages.
   portage_upgrade = False
-  root = emerge.settings["ROOT"]
+  root = emerge.settings['ROOT']
   # pylint: disable=protected-access
-  if root == "/":
+  if root == '/':
     final_db = emerge.depgraph._dynamic_config._filtered_trees[root]['graph_db']
-    for db_pkg in final_db.cp_list("sys-apps/portage"):
+    for db_pkg in final_db.cp_list('sys-apps/portage'):
       portage_pkg = deps_graph.get(db_pkg.cpv)
       if portage_pkg:
         portage_upgrade = True
-        if "--quiet" not in emerge.opts:
-          print("Upgrading portage first, then restarting...")
+        if '--quiet' not in emerge.opts:
+          print('Upgrading portage first, then restarting...')
 
   # Upgrade Portage first, then the rest of the packages.
   #
@@ -1975,14 +1975,14 @@ def real_main(argv):
   # again. We preserve SUDO_USER here in case an ebuild depends on it.
   if portage_upgrade:
     # Calculate what arguments to use when re-invoking.
-    args = ["sudo", "-E", "SUDO_USER=%s" % os.environ.get("SUDO_USER", "")]
+    args = ['sudo', '-E', 'SUDO_USER=%s' % os.environ.get('SUDO_USER', '')]
     args += [os.path.abspath(sys.argv[0])] + parallel_emerge_args
-    args += ["--exclude=sys-apps/portage"]
+    args += ['--exclude=sys-apps/portage']
 
     # First upgrade Portage.
-    passthrough_args = ("--quiet", "--pretend", "--verbose")
+    passthrough_args = ('--quiet', '--pretend', '--verbose')
     emerge_args = [k for k in emerge.opts if k in passthrough_args]
-    ret = emerge_main(emerge_args + ["portage"])
+    ret = emerge_main(emerge_args + ['portage'])
     if ret != 0:
       return ret
 
@@ -2007,5 +2007,5 @@ def real_main(argv):
 
   clean_logs(emerge.settings)
 
-  print("Done")
+  print('Done')
   return 0

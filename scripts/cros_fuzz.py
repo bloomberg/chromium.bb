@@ -1000,7 +1000,7 @@ def StripFuzzerPrefixes(fuzzer_name):
   if initial_name != fuzzer_name:
     logging.warn(
         '%s contains a prefix from ClusterFuzz (one or more of %s) that is not '
-        'part of the fuzzer\'s name. Interpreting --fuzzer as %s.',
+        "part of the fuzzer's name. Interpreting --fuzzer as %s.",
         initial_name, clusterfuzz_prefixes, fuzzer_name)
 
   return fuzzer_name

@@ -45,12 +45,12 @@ class SanitizeDomainTests(cros_test_lib.TestCase):
 
   def testFullASCII(self):
     """Tests that ASCII-only domains are not mangled."""
-    self.assertEqual(cros_oobe_autoconfig.SanitizeDomain("FoO.cOm"), "foo.com")
+    self.assertEqual(cros_oobe_autoconfig.SanitizeDomain('FoO.cOm'), 'foo.com')
 
   def testUnicode(self):
     """Tests that a Unicode domain is punycoded."""
     self.assertEqual(cros_oobe_autoconfig.SanitizeDomain(
-        "t\xd0\xb5\xd1\x95t.com"), "xn--tt-nlc2k.com")
+        't\xd0\xb5\xd1\x95t.com'), 'xn--tt-nlc2k.com')
 
 
 class PrepareImageTests(cros_test_lib.MockTempDirTestCase):

@@ -71,7 +71,7 @@ def _ChromeInfraRequest(method, request):
   if resp.status != 200:
     raise Error('Got HTTP %d from CIPD %r: %s' % (resp.status, method, body))
   try:
-    return json.loads(body.lstrip(')]}\'\n'))
+    return json.loads(body.lstrip(")]}'\n"))
   except ValueError:
     raise Error('Bad response from CIPD server:\n%s' % (body,))
 
@@ -115,7 +115,7 @@ def _DownloadCIPD(instance_sha256):
             (digest, alias['hexDigest']))
       break
   else:
-    raise Error('CIPD server didn\'t provide expected SHA256')
+    raise Error("CIPD server didn't provide expected SHA256")
 
   return binary
 

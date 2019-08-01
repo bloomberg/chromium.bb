@@ -1507,7 +1507,7 @@ def DeleteStaleLocks(git_repo):
   """
   git_gitdir = GetGitGitdir(git_repo)
   if not git_gitdir:
-    raise GitException("Not a valid git repo: %s" % git_repo)
+    raise GitException('Not a valid git repo: %s' % git_repo)
 
   for root, _, filenames in os.walk(git_gitdir):
     for filename in fnmatch.filter(filenames, '*.lock'):

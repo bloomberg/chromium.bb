@@ -214,7 +214,7 @@ class UnifiedBuildConfigTestCase(object):
   def setUp(self):
     # Code assumes at least one non-unified build exists, so we're accommodating
     # that by keeping the non-unified reef board.
-    self._fake_ge_build_config_json = '''
+    self._fake_ge_build_config_json = """
 {
   "metadata_version": "1.0",
   "release_branch": true,
@@ -254,7 +254,7 @@ class UnifiedBuildConfigTestCase(object):
     }
   ]
 }
-    '''
+    """
     self._fake_ge_build_config = json.loads(self._fake_ge_build_config_json)
 
     defaults = chromeos_config.DefaultSettings()
@@ -630,7 +630,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
       if config.hw_tests or config.hw_tests_override:
         self.assertTrue(
             config.upload_hw_test_artifacts,
-            "%s is trying to run hw tests without uploading payloads." %
+            '%s is trying to run hw tests without uploading payloads.' %
             build_name)
 
   def testTryjobConfigsDontDefineOverrides(self):
@@ -659,7 +659,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
           config.upload_hw_test_artifacts and config.hwqual):
         self.assertTrue(
             config.hw_tests,
-            "Release builder %s must run hw tests." % build_name)
+            'Release builder %s must run hw tests.' % build_name)
 
   def testHWTestsReleaseBuilderWeakRequirement(self):
     """Make sure most release configs run hw tests."""
@@ -673,7 +673,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
           config.upload_hw_test_artifacts and config.hwqual):
         self.assertTrue(
             config.hw_tests,
-            "Release builder %s must run hw tests." % build_name)
+            'Release builder %s must run hw tests.' % build_name)
 
   def testValidUnifiedMasterConfig(self):
     """Make sure any unified master configurations are valid."""

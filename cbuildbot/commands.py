@@ -3095,7 +3095,7 @@ def BuildPinnedGuestImagesTarball(buildroot, board, tarball_dir):
         gs_context.Copy(pin[constants.PIN_KEY_GSURI], filename)
         files.append(pin[constants.PIN_KEY_FILENAME])
       except KeyError as e:
-        logging.warning('Skipping invalid pin file \'%s\': %r', pin_file, e)
+        logging.warning("Skipping invalid pin file '%s': %r", pin_file, e)
 
   if not files:
     return None
@@ -3241,7 +3241,7 @@ def BuildStandaloneArchive(archive_dir, image_dir, artifact_info):
   if archive == 'tar':
     # Add the .compress extension if we don't have a fixed name.
     if 'output' not in artifact_info and compress:
-      filename = "%s.%s" % (filename, compress)
+      filename = '%s.%s' % (filename, compress)
     extra_env = {'XZ_OPT': '-1'}
     cros_build_lib.CreateTarball(
         os.path.join(archive_dir, filename),

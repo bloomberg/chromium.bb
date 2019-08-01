@@ -24,7 +24,7 @@ def _ParseArguments(argv):
                       help='Root directory where source is checked out to.')
   parser.add_argument('--skip-regen', default=True, dest='regen',
                       action='store_false',
-                      help='Don\'t regenerate configs that have already been'
+                      help="Don't regenerate configs that have already been "
                            'generated.')
   opts = parser.parse_args(argv)
   opts.Freeze()

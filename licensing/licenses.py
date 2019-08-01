@@ -143,15 +143,15 @@ EXTRA_PACKAGES = (
 
 def LoadPackageInfo(board, all_packages, generateMissing, packages):
   """Do the work when we're not called as a hook."""
-  logging.info("Using board %s.", board)
+  logging.info('Using board %s.', board)
 
   builddir = os.path.join(cros_build_lib.GetSysroot(board=board),
                           'tmp', 'portage')
 
   if not os.path.exists(builddir):
     raise AssertionError(
-        "FATAL: %s missing.\n"
-        "Did you give the right board and build that tree?" % builddir)
+        'FATAL: %s missing.\n'
+        'Did you give the right board and build that tree?' % builddir)
 
   detect_packages = not packages
   if detect_packages:
@@ -162,15 +162,15 @@ def LoadPackageInfo(board, all_packages, generateMissing, packages):
     raise AssertionError('FATAL: Could not get any packages for board %s' %
                          board)
 
-  logging.debug("Initial Package list to work through:\n%s",
+  logging.debug('Initial Package list to work through:\n%s',
                 '\n'.join(sorted(packages)))
   licensing = licenses_lib.Licensing(board, packages, generateMissing)
 
   licensing.LoadPackageInfo()
-  logging.debug("Package list to skip:\n%s",
+  logging.debug('Package list to skip:\n%s',
                 '\n'.join([p for p in sorted(packages)
                            if licensing.packages[p].skip]))
-  logging.debug("Package list left to work through:\n%s",
+  logging.debug('Package list left to work through:\n%s',
                 '\n'.join([p for p in sorted(packages)
                            if not licensing.packages[p].skip]))
   licensing.ProcessPackageLicenses()
@@ -186,33 +186,33 @@ def LoadPackageInfo(board, all_packages, generateMissing, packages):
 
 def main(args):
   parser = commandline.ArgumentParser(usage=__doc__)
-  parser.add_argument("-b", "--board",
-                      help="which board to run for, like x86-alex")
-  parser.add_argument("-p", "--package", action="append", default=[],
-                      dest="packages",
-                      help="check the license of the package, e.g.,"
-                      "dev-libs/libatomic_ops-7.2d")
-  parser.add_argument("-a", "--all-packages", action="store_true",
-                      dest="all_packages",
-                      help="Run licensing against all packages in the "
-                      "build tree, instead of just virtual/target-os "
-                      "dependencies.")
-  parser.add_argument("-g", "--generate-licenses", action="store_true",
-                      dest="gen_licenses",
-                      help="Generate license information, if missing.")
-  parser.add_argument("-o", "--output", type="path",
-                      help="which html file to create with output")
+  parser.add_argument('-b', '--board',
+                      help='which board to run for, like x86-alex')
+  parser.add_argument('-p', '--package', action='append', default=[],
+                      dest='packages',
+                      help='check the license of the package, e.g.,'
+                      'dev-libs/libatomic_ops-7.2d')
+  parser.add_argument('-a', '--all-packages', action='store_true',
+                      dest='all_packages',
+                      help='Run licensing against all packages in the '
+                      'build tree, instead of just virtual/target-os '
+                      'dependencies.')
+  parser.add_argument('-g', '--generate-licenses', action='store_true',
+                      dest='gen_licenses',
+                      help='Generate license information, if missing.')
+  parser.add_argument('-o', '--output', type='path',
+                      help='which html file to create with output')
   opts = parser.parse_args(args)
 
 
   if not opts.board:
-    raise AssertionError("No board given (--board)")
+    raise AssertionError('No board given (--board)')
 
   if not opts.output and not opts.gen_licenses:
-    raise AssertionError("You must specify --output and/or --generate-licenses")
+    raise AssertionError('You must specify --output and/or --generate-licenses')
 
   if opts.gen_licenses and os.geteuid() != 0:
-    raise AssertionError("Run with sudo if you use --generate-licenses.")
+    raise AssertionError('Run with sudo if you use --generate-licenses.')
 
   licensing = LoadPackageInfo(
       opts.board, opts.all_packages, opts.gen_licenses, opts.packages)

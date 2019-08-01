@@ -201,7 +201,7 @@ class PRPCClient(object):
             transient=IsTransientPRPCCode(prpc_code))
 
       # Verify XSSI prefix.
-      if content[:5] != ')]}\'\n':
+      if content[:5] != ")]}'\n":
         # Unwrap the gRPC message by removing XSSI prefix.
         raise PRPCResponseException('Got a non-matching XSSI prefix')
 

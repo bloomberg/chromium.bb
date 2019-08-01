@@ -387,7 +387,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
 
   # These variables are defined outside the loop so that the nested functions
   # below can access them without 'cell-var-from-loop' linter warning.
-  dst_path = ""
+  dst_path = ''
   files_to_sign = []
   for channel in channels:
     logging.debug('\n\n#### CHANNEL: %s ####\n', channel)

@@ -480,7 +480,7 @@ class Sysroot(object):
     prefix = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party')
     board_overlays = [o for o in portdir_overlays if not o.startswith(prefix)]
 
-    header = "# Created by cros_sysroot_utils from --board=%s." % board
+    header = '# Created by cros_sysroot_utils from --board=%s.' % board
     return self._GenerateConfig(toolchains, board_overlays, portdir_overlays,
                                 header, BOARD_USE=board)
 

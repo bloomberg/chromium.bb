@@ -117,7 +117,7 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
   keyval_str = '%(key)s=%(value)s'
   for line in file_fh:
     # Strip newlines from end of line. We already add newlines below.
-    line = line.rstrip("\n")
+    line = line.rstrip('\n')
 
     if len(line.split('=')) != 2:
       # Skip any line that doesn't fit key=val.
@@ -740,7 +740,7 @@ def ParseOptions(argv):
                       help='Specify the version string')
   parser.add_argument('--sync-binhost-conf', default=False, action='store_true',
                       help='Update binhost.conf in chromiumos-overlay or '
-                           'chromeos-overlay. Commit the changes, but don\'t '
+                           "chromeos-overlay. Commit the changes, but don't "
                            'push them. This is used for preflight binhosts.')
   parser.add_argument('--binhost-conf-dir',
                       help='Directory to commit binhost config with '
@@ -754,7 +754,7 @@ def ParseOptions(argv):
                       help='Upload board tarball to Google Storage.')
   parser.add_argument('-n', '--dry-run', dest='dryrun',
                       action='store_true', default=False,
-                      help='Don\'t push or upload prebuilts.')
+                      help="Don't push or upload prebuilts.")
 
   options = parser.parse_args(argv)
   if not options.upload and not options.skip_upload:

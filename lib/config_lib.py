@@ -606,7 +606,7 @@ class HWTestConfig(object):
                quota_account=None):
     """Constructor -- see members above."""
 
-    assert not async or not blocking, "%s is async and blocking" % suite
+    assert not async or not blocking, '%s is async and blocking' % suite
     assert not warn_only or not critical
     self.suite = suite
     self.pool = pool

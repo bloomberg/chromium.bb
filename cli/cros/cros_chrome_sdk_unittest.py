@@ -179,11 +179,11 @@ class SDKFetcherMock(partial_mock.PartialMock):
   @_DependencyMockCtx
   def _GetManifest(self, _inst, _version):
     return {
-        "packages": {
-            "app-emulation/qemu": [["3.0.0", {}]],
-            "chromeos-base/tast-cmd": [["1.2.3", {}]],
-            "chromeos-base/tast-remote-tests-cros": [["7.8.9", {}]],
-            "sys-firmware/seabios": [["1.11.0", {}]]
+        'packages': {
+            'app-emulation/qemu': [['3.0.0', {}]],
+            'chromeos-base/tast-cmd': [['1.2.3', {}]],
+            'chromeos-base/tast-remote-tests-cros': [['7.8.9', {}]],
+            'sys-firmware/seabios': [['1.11.0', {}]]
         }
     }
 

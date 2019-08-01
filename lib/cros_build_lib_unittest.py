@@ -98,6 +98,8 @@ class CmdToStrTest(cros_test_lib.TestCase):
         """'b"c'""": 'b"c',
         "'a@()b'": 'a@()b',
         'j%k': 'j%k',
+        # pylint: disable=invalid-triple-quote
+        # https://github.com/edaniszewski/pylint-quotes/issues/20
         r'''"s'a\$va\\rs"''': r"s'a$va\rs",
         r'''"\\'\\\""''': r'''\'\"''',
         r'''"'\\\$"''': r"""'\$""",
@@ -106,6 +108,8 @@ class CmdToStrTest(cros_test_lib.TestCase):
     # Expected input output specific to ShellUnquote. This string cannot be
     # produced by ShellQuote but is still a valid bash escaped string.
     tests_unquote = {
+        # pylint: disable=invalid-triple-quote
+        # https://github.com/edaniszewski/pylint-quotes/issues/20
         r'''\$''': r'''"\\$"''',
     }
 
@@ -122,8 +126,10 @@ class CmdToStrTest(cros_test_lib.TestCase):
   def testCmdToStr(self):
     # Dict of expected output strings to input lists.
     tests = {
-        r"a b": ['a', 'b'],
+        r'a b': ['a', 'b'],
         r"'a b' c": ['a b', 'c'],
+        # pylint: disable=invalid-triple-quote
+        # https://github.com/edaniszewski/pylint-quotes/issues/20
         r'''a "b'c"''': ['a', "b'c"],
         r'''a "/'\$b" 'a b c' "xy'z"''':
             [unicode('a'), "/'$b", 'a b c', "xy'z"],
@@ -678,9 +684,9 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
   def testLogOutput(self):
     """Normal log_output, stdout followed by stderr."""
     cmd = 'echo Greece; echo Italy >&2; echo Spain'
-    log_output = ("RunCommand: /bin/bash -c "
+    log_output = ('RunCommand: /bin/bash -c '
                   "'echo Greece; echo Italy >&2; echo Spain'\n"
-                  "(stdout):\nGreece\nSpain\n\n(stderr):\nItaly\n\n")
+                  '(stdout):\nGreece\nSpain\n\n(stderr):\nItaly\n\n')
     self.assertEquals(self._CaptureLogOutput(cmd, shell=True, log_output=True),
                       log_output)
 
@@ -1143,7 +1149,7 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
                          check_attrs={'errno': errno.ENOENT})
 
     # No merge target means the configuration isn't usable, period.
-    assertExcept("git tracking configuration for that branch is broken",
+    assertExcept('git tracking configuration for that branch is broken',
                  merge=None)
 
     # Ensure we detect if we're on the wrong branch, even if it has
@@ -1247,7 +1253,7 @@ ttt"
         'R': 'r\n',
         'RR': 'rr\nrrr',
         'RRR': 'rrr\n RRRR\n rrr\n',
-        'SSS': ' ss\n\'ssss\'\nss',
+        'SSS': " ss\n'ssss'\nss",
         'T': '\nttt'
     }
 

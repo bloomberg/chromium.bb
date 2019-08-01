@@ -140,7 +140,7 @@ TEST_EXEC_TIME = 400
 CHECKDIR = '.'
 
 # Strings that are used to mock actual check modules.
-CHECKFILE_MANY_SIMPLE = '''
+CHECKFILE_MANY_SIMPLE = """
 SERVICE = 'test-service'
 
 class MyHealthCheck2(object):
@@ -163,9 +163,9 @@ class MyHealthCheck4(object):
 
   def Diagnose(self, errcode):
     return ('Unknown error.', [])
-'''
+"""
 
-CHECKFILE_MANY_SIMPLE_ONE_BAD = '''
+CHECKFILE_MANY_SIMPLE_ONE_BAD = """
 SERVICE = 'test-service'
 
 class MyHealthCheck(object):
@@ -185,27 +185,27 @@ class MyHealthCheck2(object):
 
   def Diagnose(self, errcode):
     return ('Unknown error.', [])
-'''
+"""
 
-NOT_A_CHECKFILE = '''
+NOT_A_CHECKFILE = """
 class NotAHealthCheck(object):
   def NotCheckNorDiagnose(self):
     return -1
-'''
+"""
 
-ANOTHER_NOT_A_CHECKFILE = '''
+ANOTHER_NOT_A_CHECKFILE = """
 class AnotherNotAHealthCheck(object):
   def AnotherNotCheckNorDiagnose(self):
     return -2
-'''
+"""
 
-ACTION_FILE = '''
+ACTION_FILE = """
 def TestAction():
   return True
 
 def AnotherAction():
   return False
-'''
+"""
 
 
 class RunCommand(threading.Thread):

@@ -107,8 +107,8 @@ class MobMonitorRoot(object):
     # The mobmonitor's RPC library encodes arguments as strings when
     # making a remote call to the monitor. The checkfile manager expects
     # lists and dicts for the arugments, so we convert them here.
-    args = json.loads(args.replace('\'', '"'))
-    kwargs = json.loads(kwargs.replace('\'', '"'))
+    args = json.loads(args.replace("'", '"'))
+    kwargs = json.loads(kwargs.replace("'", '"'))
 
     status = self.checkfile_manager.RepairService(service, healthcheck, action,
                                                   args, kwargs)

@@ -147,7 +147,7 @@ class ChromeCommitter(object):
 
     parser = commandline.ArgumentParser(usage=__doc__, add_help=False)
     parser.add_argument('--dryrun', action='store_true', default=False,
-                        help='Don\'t commit changes or send out emails.')
+                        help="Don't commit changes or send out emails.")
     parser.add_argument('--user_email', required=False,
                         default=default_git_account,
                         help='Email address to use when comitting changes.')

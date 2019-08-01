@@ -41,7 +41,7 @@ class Pass2Stage(generic_stages.BuilderStage):
 class FailStage(generic_stages.BuilderStage):
   """FailStage always throws an exception"""
 
-  FAIL_EXCEPTION = failures_lib.StepFailure("Fail stage needs to fail.")
+  FAIL_EXCEPTION = failures_lib.StepFailure('Fail stage needs to fail.')
 
   def PerformStage(self):
     """Throw the exception to make us fail."""
@@ -394,17 +394,17 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     results_lib.Results.Report(results)
 
     expectedResults = (
-        "************************************************************\n"
-        "** Stage Results\n"
-        "************************************************************\n"
-        "** PASS Sync (0:00:01)\n"
-        "************************************************************\n"
-        "** PASS Build (0:00:02)\n"
-        "************************************************************\n"
-        "** FAIL Test (0:00:03) with StepFailure\n"
-        "************************************************************\n"
-        "** FAIL Archive (0:00:04) in /bin/false\n"
-        "************************************************************\n")
+        '************************************************************\n'
+        '** Stage Results\n'
+        '************************************************************\n'
+        '** PASS Sync (0:00:01)\n'
+        '************************************************************\n'
+        '** PASS Build (0:00:02)\n'
+        '************************************************************\n'
+        '** FAIL Test (0:00:03) with StepFailure\n'
+        '************************************************************\n'
+        '** FAIL Archive (0:00:04) in /bin/false\n'
+        '************************************************************\n')
 
     expectedLines = expectedResults.split('\n')
     actualLines = results.getvalue().split('\n')
@@ -438,26 +438,26 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     results_lib.Results.Report(results)
 
     expectedResults = (
-        "************************************************************\n"
-        "** Stage Results\n"
-        "************************************************************\n"
-        "** PASS Sync (0:00:01)\n"
-        "************************************************************\n"
-        "** PASS Build (0:00:02)\n"
-        "************************************************************\n"
-        "** FAIL Test (0:00:03) with StepFailure\n"
-        "************************************************************\n"
-        "** FAIL Archive (0:00:04) in /bin/false\n"
-        "************************************************************\n"
-        "\n"
-        "Failed in stage Test:\n"
-        "\n"
-        "failException Msg\n"
-        "Line 2\n"
-        "\n"
-        "Failed in stage Archive:\n"
-        "\n"
-        "FailRunCommand msg\n")
+        '************************************************************\n'
+        '** Stage Results\n'
+        '************************************************************\n'
+        '** PASS Sync (0:00:01)\n'
+        '************************************************************\n'
+        '** PASS Build (0:00:02)\n'
+        '************************************************************\n'
+        '** FAIL Test (0:00:03) with StepFailure\n'
+        '************************************************************\n'
+        '** FAIL Archive (0:00:04) in /bin/false\n'
+        '************************************************************\n'
+        '\n'
+        'Failed in stage Test:\n'
+        '\n'
+        'failException Msg\n'
+        'Line 2\n'
+        '\n'
+        'Failed in stage Archive:\n'
+        '\n'
+        'FailRunCommand msg\n')
 
     expectedLines = expectedResults.split('\n')
     actualLines = results.getvalue().split('\n')
@@ -470,7 +470,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
   def testStagesReportReleaseTag(self):
     """Tests Release Tag entry in stages report."""
 
-    current_version = "release_tag_string"
+    current_version = 'release_tag_string'
     # Store off a known set of results and generate a report
     results_lib.Results.Record('Pass', results_lib.Results.SUCCESS, time=1)
 
@@ -479,13 +479,13 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     results_lib.Results.Report(results, current_version)
 
     expectedResults = (
-        "************************************************************\n"
-        "** RELEASE VERSION: release_tag_string\n"
-        "************************************************************\n"
-        "** Stage Results\n"
-        "************************************************************\n"
-        "** PASS Pass (0:00:01)\n"
-        "************************************************************\n")
+        '************************************************************\n'
+        '** RELEASE VERSION: release_tag_string\n'
+        '************************************************************\n'
+        '** Stage Results\n'
+        '************************************************************\n'
+        '** PASS Pass (0:00:01)\n'
+        '************************************************************\n')
 
     expectedLines = expectedResults.split('\n')
     actualLines = results.getvalue().split('\n')

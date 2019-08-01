@@ -575,7 +575,7 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, sloppy=False,
       copied_paths += copier.Copy(build_dir, staging_dir, p, sloppy=sloppy)
 
   if not copied_paths:
-    raise MissingPathError('Couldn\'t find anything to copy!\n'
+    raise MissingPathError("Couldn't find anything to copy!\n"
                            'Are you looking in the right directory?\n'
                            'Aborting copy...')
 

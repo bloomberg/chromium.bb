@@ -203,7 +203,7 @@ def ArchiveFilesFromImageDir(images_dir, archive_path):
     image_parent_dir = os.path.dirname(image_path)
     image_file = os.path.basename(image_path)
     tarball_path = os.path.join(archive_path,
-                                "%s.tar" % image_rel_path.replace('/', '_'))
+                                '%s.tar' % image_rel_path.replace('/', '_'))
     # Note that tar will chdir to |image_parent_dir|, so that |image_file|
     # is at the top-level of the tar file.
     cros_build_lib.CreateTarball(

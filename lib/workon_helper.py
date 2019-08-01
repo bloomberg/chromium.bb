@@ -654,7 +654,7 @@ class WorkonHelper(object):
       ebuilds = [self._FindEbuildForPackage(atom) for atom in atoms]
 
     build_root = self._src_root
-    src_root = os.path.join(build_root, "src")
+    src_root = os.path.join(build_root, 'src')
     manifest = git.ManifestCheckout.Cached(build_root)
 
     ebuild_to_repos = {}
