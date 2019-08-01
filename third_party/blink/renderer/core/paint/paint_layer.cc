@@ -1532,9 +1532,13 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
     return nullptr;
 
   location += layer->Location();
-  if (layer->GetLayoutObject().IsInFlowPositioned())
+  if (layer->GetLayoutObject().IsRelPositioned()) {
+    location += layer->OffsetForInFlowRelPosition();
+  } else if (layer->GetLayoutObject().IsInFlowPositioned()) {
     location += layer->GetLayoutObject().OffsetForInFlowPosition();
+  }
   location -= PhysicalOffset(containing_layer->ScrolledContentOffset());
+
   return containing_layer;
 }
 
