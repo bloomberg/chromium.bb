@@ -583,7 +583,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineForNode(
     bool emits_original_text) {
   LayoutObject* layout_object = node.GetLayoutObject();
 
-  if (layout_object ? !layout_object->IsBR() : !IsHTMLBRElement(node))
+  if (layout_object ? !layout_object->IsBR() : !IsA<HTMLBRElement>(node))
     return false;
   return emits_original_text || !(node.IsInShadowTree() &&
                                   IsHTMLInputElement(*node.OwnerShadowHost()));

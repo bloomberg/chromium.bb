@@ -249,7 +249,7 @@ bool LineBreakExistsAtPosition(const Position& position) {
   if (position.IsNull())
     return false;
 
-  if (IsHTMLBRElement(*position.AnchorNode()) &&
+  if (IsA<HTMLBRElement>(*position.AnchorNode()) &&
       position.AtFirstEditingPositionForNode())
     return true;
 
@@ -310,7 +310,7 @@ Position LeadingCollapsibleWhitespacePosition(const Position& position,
   if (position.IsNull())
     return Position();
 
-  if (IsHTMLBRElement(*MostBackwardCaretPosition(position).AnchorNode()))
+  if (IsA<HTMLBRElement>(*MostBackwardCaretPosition(position).AnchorNode()))
     return Position();
 
   const Position& prev = PreviousCharacterPosition(position, affinity);
