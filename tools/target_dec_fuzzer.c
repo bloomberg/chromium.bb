@@ -201,8 +201,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     int res = avcodec_open2(ctx, c, NULL);
     if (res < 0) {
-        av_free(ctx);
+        avcodec_free_context(&ctx);
         av_free(parser_avctx);
+        av_parser_close(parser);
         return 0; // Failure of avcodec_open2() does not imply that a issue was found
     }
     parser_avctx->codec_id = ctx->codec_id;
@@ -281,9 +282,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     av_frame_free(&frame);
     avcodec_free_context(&ctx);
-    av_freep(&ctx);
     avcodec_free_context(&parser_avctx);
-    av_freep(&parser_avctx);
     av_parser_close(parser);
     FDBDesroy(&buffer);
     return 0;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sergey Lavrushkin
+ * Copyright (c) 2019 Guo Yejun
  *
  * This file is part of FFmpeg.
  *
@@ -20,19 +20,21 @@
 
 /**
  * @file
- * DNN inference functions interface for TensorFlow backend.
+ * layer pad (equivalent to tf.pad) for native backend.
  */
+#ifndef AVFILTER_DNN_DNN_BACKEND_NATIVE_LAYER_PAD_H
+#define AVFILTER_DNN_DNN_BACKEND_NATIVE_LAYER_PAD_H
 
+#include <stdint.h>
 
-#ifndef AVFILTER_DNN_BACKEND_TF_H
-#define AVFILTER_DNN_BACKEND_TF_H
+typedef enum {LPMP_CONSTANT, LPMP_REFLECT, LPMP_SYMMETRIC} LayerPadModeParam;
 
-#include "dnn_interface.h"
+typedef struct LayerPadParams{
+    int32_t paddings[4][2];
+    LayerPadModeParam mode;
+    float constant_values;
+} LayerPadParams;
 
-DNNModel *ff_dnn_load_model_tf(const char *model_filename);
-
-DNNReturnType ff_dnn_execute_model_tf(const DNNModel *model, DNNData *outputs, uint32_t nb_output);
-
-void ff_dnn_free_model_tf(DNNModel **model);
+void dnn_execute_layer_pad(const float *input, float *output, const LayerPadParams *params, int number, int height, int width, int channel);
 
 #endif

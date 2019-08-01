@@ -1397,7 +1397,7 @@ How much to use filtered signal in output. Default is 1.
 Range is between 0 and 1.
 
 @item response
-Show IR frequency response, magnitude and phase in additional video stream.
+Show IR frequency response, magnitude(magenta), phase(green) and group delay(yellow) in additional video stream.
 By default it is disabled.
 
 @item channel
@@ -3135,7 +3135,7 @@ this goal *without* applying "dynamic range compressing". It will retain 100%
 of the dynamic range *within* each section of the audio file.
 
 @table @option
-@item f
+@item framelen, f
 Set the frame length in milliseconds. In range from 10 to 8000 milliseconds.
 Default is 500 milliseconds.
 The Dynamic Audio Normalizer processes the input audio in small chunks,
@@ -3150,7 +3150,7 @@ been found to give good results with most files.
 Note that the exact frame length, in number of samples, will be determined
 automatically, based on the sampling rate of the individual input audio file.
 
-@item g
+@item gausssize, g
 Set the Gaussian filter window size. In range from 3 to 301, must be odd
 number. Default is 31.
 Probably the most important parameter of the Dynamic Audio Normalizer is the
@@ -3167,7 +3167,7 @@ Normalizer will behave like a "traditional" normalization filter. On the
 contrary, the more you decrease this value, the more the Dynamic Audio
 Normalizer will behave like a dynamic range compressor.
 
-@item p
+@item peak, p
 Set the target peak value. This specifies the highest permissible magnitude
 level for the normalized audio input. This filter will try to approach the
 target peak magnitude as closely as possible, but at the same time it also
@@ -3176,7 +3176,7 @@ A frame's maximum local gain factor is imposed directly by the target peak
 magnitude. The default value is 0.95 and thus leaves a headroom of 5%*.
 It is not recommended to go above this value.
 
-@item m
+@item maxgain, m
 Set the maximum gain factor. In range from 1.0 to 100.0. Default is 10.0.
 The Dynamic Audio Normalizer determines the maximum possible (local) gain
 factor for each input frame, i.e. the maximum gain factor that does not
@@ -3194,7 +3194,7 @@ Instead, a "sigmoid" threshold function will be applied. This way, the
 gain factors will smoothly approach the threshold value, but never exceed that
 value.
 
-@item r
+@item targetrms, r
 Set the target RMS. In range from 0.0 to 1.0. Default is 0.0 - disabled.
 By default, the Dynamic Audio Normalizer performs "peak" normalization.
 This means that the maximum local gain factor for each frame is defined
@@ -3212,7 +3212,7 @@ factor is defined as the factor that would result in exactly that RMS value.
 Note, however, that the maximum local gain factor is still restricted by the
 frame's highest magnitude sample, in order to prevent clipping.
 
-@item n
+@item coupling, n
 Enable channels coupling. By default is enabled.
 By default, the Dynamic Audio Normalizer will amplify all channels by the same
 amount. This means the same gain factor will be applied to all channels, i.e.
@@ -3224,7 +3224,7 @@ the gain factor will be determined independently for each channel, depending
 only on the individual channel's highest magnitude sample. This allows for
 harmonizing the volume of the different channels.
 
-@item c
+@item correctdc, c
 Enable DC bias correction. By default is disabled.
 An audio signal (in the time domain) is a sequence of sample values.
 In the Dynamic Audio Normalizer these sample values are represented in the
@@ -3243,7 +3243,7 @@ are centered around 0.0 again. Also, in order to avoid "gaps" at the frame
 boundaries, the DC correction offset values will be interpolated smoothly
 between neighbouring frames.
 
-@item b
+@item altboundary, b
 Enable alternative boundary mode. By default is disabled.
 The Dynamic Audio Normalizer takes into account a certain neighbourhood
 around each frame. This includes the preceding frames as well as the
@@ -3258,7 +3258,7 @@ to deal with this situation. The default boundary mode assumes a gain factor
 of exactly 1.0 for the missing frames, resulting in a smooth "fade in" and
 "fade out" at the beginning and at the end of the input, respectively.
 
-@item s
+@item compress, s
 Set the compress factor. In range from 0.0 to 30.0. Default is 0.0.
 By default, the Dynamic Audio Normalizer does not apply "traditional"
 compression. This means that signal peaks will not be pruned and thus the
@@ -5931,6 +5931,79 @@ build.
 
 Below is a description of the currently available video filters.
 
+@section addroi
+
+Mark a region of interest in a video frame.
+
+The frame data is passed through unchanged, but metadata is attached
+to the frame indicating regions of interest which can affect the
+behaviour of later encoding.  Multiple regions can be marked by
+applying the filter multiple times.
+
+@table @option
+@item x
+Region distance in pixels from the left edge of the frame.
+@item y
+Region distance in pixels from the top edge of the frame.
+@item w
+Region width in pixels.
+@item h
+Region height in pixels.
+
+The parameters @var{x}, @var{y}, @var{w} and @var{h} are expressions,
+and may contain the following variables:
+@table @option
+@item iw
+Width of the input frame.
+@item ih
+Height of the input frame.
+@end table
+
+@item qoffset
+Quantisation offset to apply within the region.
+
+This must be a real value in the range -1 to +1.  A value of zero
+indicates no quality change.  A negative value asks for better quality
+(less quantisation), while a positive value asks for worse quality
+(greater quantisation).
+
+The range is calibrated so that the extreme values indicate the
+largest possible offset - if the rest of the frame is encoded with the
+worst possible quality, an offset of -1 indicates that this region
+should be encoded with the best possible quality anyway.  Intermediate
+values are then interpolated in some codec-dependent way.
+
+For example, in 10-bit H.264 the quantisation parameter varies between
+-12 and 51.  A typical qoffset value of -1/10 therefore indicates that
+this region should be encoded with a QP around one-tenth of the full
+range better than the rest of the frame.  So, if most of the frame
+were to be encoded with a QP of around 30, this region would get a QP
+of around 24 (an offset of approximately -1/10 * (51 - -12) = -6.3).
+An extreme value of -1 would indicate that this region should be
+encoded with the best possible quality regardless of the treatment of
+the rest of the frame - that is, should be encoded at a QP of -12.
+@item clear
+If set to true, remove any existing regions of interest marked on the
+frame before adding the new one.
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Mark the centre quarter of the frame as interesting.
+@example
+addroi=iw/4:ih/4:iw/2:ih/2:-1/10
+@end example
+@item
+Mark the 100-pixel-wide region on the left edge of the frame as very
+uninteresting (to be encoded at much lower quality than the rest of
+the frame).
+@example
+addroi=0:0:100:ih:+1/5
+@end example
+@end itemize
+
 @section alphaextract
 
 Extract the alpha component from the input as a grayscale video. This
@@ -6685,6 +6758,7 @@ Set color system.
 @item cie1931
 @item rec709, hdtv
 @item uhdtv, rec2020
+@item dcip3
 @end table
 
 @item cie
@@ -14735,6 +14809,12 @@ value for pixel will be used for destination pixel.
 Xmap and Ymap input video streams must be of same dimensions. Output video stream
 will have Xmap/Ymap video stream dimensions.
 Xmap and Ymap input video streams are 16bit depth, single channel.
+
+@table @option
+@item format
+Specify pixel format of output from this filter. Can be @code{color} or @code{gray}.
+Default is @code{color}.
+@end table
 
 @section removegrain
 

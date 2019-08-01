@@ -26,9 +26,8 @@ OBJS-$(HAVE_THREADS)                         += pthread.o
 
 # subsystems
 OBJS-$(CONFIG_QSVVPP)                        += qsvvpp.o
-DNN-OBJS-$(CONFIG_LIBTENSORFLOW)             += dnn_backend_tf.o
-OBJS-$(CONFIG_DNN)                           += dnn_interface.o dnn_backend_native.o $(DNN-OBJS-yes)
 OBJS-$(CONFIG_SCENE_SAD)                     += scene_sad.o
+include $(SRC_PATH)/libavfilter/dnn/Makefile
 
 # audio filters
 OBJS-$(CONFIG_ABENCH_FILTER)                 += f_bench.o
@@ -152,6 +151,7 @@ OBJS-$(CONFIG_SINE_FILTER)                   += asrc_sine.o
 OBJS-$(CONFIG_ANULLSINK_FILTER)              += asink_anullsink.o
 
 # video filters
+OBJS-$(CONFIG_ADDROI_FILTER)                 += vf_addroi.o
 OBJS-$(CONFIG_ALPHAEXTRACT_FILTER)           += vf_extractplanes.o
 OBJS-$(CONFIG_ALPHAMERGE_FILTER)             += vf_alphamerge.o
 OBJS-$(CONFIG_AMPLIFY_FILTER)                += vf_amplify.o
