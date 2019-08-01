@@ -2212,6 +2212,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron_paine',
       'auron_yuna',
       'beaglebone',
+      'betty',
       'betty-arc64',
       'betty-arcnext',
       'bob',
@@ -2322,7 +2323,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'mistral', # crbug.com/987989
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
-      'betty', # crbug.com/984316
       'betty-pi-arc', # Promote when we replace betty-arcnext. b/129410042
       'eve', # crbug.com/984952
       'grunt', # crbug.com/984614
