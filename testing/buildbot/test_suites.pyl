@@ -4988,6 +4988,7 @@
       'chromedriver_py_tests_isolated_scripts',
       'desktop_chromium_isolated_scripts',
       'linux_specific_chromium_isolated_scripts',
+      'skia_renderer_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
     ],
 
