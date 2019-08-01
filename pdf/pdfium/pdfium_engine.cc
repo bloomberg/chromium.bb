@@ -2395,8 +2395,7 @@ void PDFiumEngine::AppendPageRectToPages(const pp::Rect& page_rect,
 void PDFiumEngine::LoadPagesInSingleView(std::vector<pp::Rect> page_rects,
                                          bool reload) {
   for (size_t i = 0; i < page_rects.size(); ++i) {
-    // Center pages relative to the entire document.
-    page_rects[i].set_x((layout_.size().width() - page_rects[i].width()) / 2);
+    draw_utils::CenterRectHorizontally(layout_.size().width(), &page_rects[i]);
     InsetPage(i, page_rects.size(), /*multiplier=*/1, &page_rects[i]);
     AppendPageRectToPages(page_rects[i], i, reload);
   }
