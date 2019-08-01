@@ -27,7 +27,7 @@ SafeBrowsingURLRequestContextGetter::SafeBrowsingURLRequestContextGetter(
       user_data_dir_(user_data_dir),
       system_context_getter_(system_context_getter),
       network_task_runner_(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})) {
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO})) {
   DCHECK(!user_data_dir.empty());
   DCHECK(system_context_getter_);
 }
@@ -45,8 +45,9 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
     safe_browsing_request_context_->CopyFrom(
         system_context_getter_->GetURLRequestContext());
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
+        base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             net::GetCookieStoreBackgroundSequencePriority(),
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
     // Set up the CookieStore
