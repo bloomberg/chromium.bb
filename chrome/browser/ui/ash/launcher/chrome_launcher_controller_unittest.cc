@@ -2524,7 +2524,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
   EXPECT_EQ("Chrome, App1, Fake App 1, App2, Fake App 0", GetPinnedAppStatus());
 }
 
-TEST_F(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
+TEST_F(ChromeLauncherControllerWithArcTest, DISABLED_ArcCustomAppIcon) {
   InitLauncherController();
 
   // Wait until other apps are updated to avoid race condition while accessing
