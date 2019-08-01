@@ -323,7 +323,7 @@ void WebSharedWorkerImpl::StartWorkerThread(
                            parent_execution_context_task_runners_);
 
   GetWorkerThread()->FetchAndRunClassicScript(
-      script_request_url_, outside_settings_object,
+      script_request_url_, outside_settings_object.CopyData(),
       nullptr /* outside_resource_timing_notifier */,
       v8_inspector::V8StackTraceId());
 }

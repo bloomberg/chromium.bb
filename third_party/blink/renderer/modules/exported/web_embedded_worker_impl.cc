@@ -506,8 +506,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       case mojom::ScriptType::kModule:
         worker_thread_->RunInstalledModuleScript(
             worker_start_data_.script_url,
-            *CreateFetchClientSettingsObject(starter_origin.get(),
-                                             starter_https_state),
+            CreateFetchClientSettingsObjectData(starter_origin.get(),
+                                                starter_https_state),
             network::mojom::CredentialsMode::kOmit);
         return;
     }
@@ -528,9 +528,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     return;
   }
 
-  FetchClientSettingsObjectSnapshot* fetch_client_setting_object =
-      CreateFetchClientSettingsObject(starter_origin.get(),
-                                      starter_https_state);
+  std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+      fetch_client_setting_object_data = CreateFetchClientSettingsObjectData(
+          starter_origin.get(), starter_https_state);
 
   // If this is a new (not installed) service worker, we are in the Update
   // algorithm here:
@@ -544,7 +544,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 
     case mojom::ScriptType::kClassic:
       worker_thread_->FetchAndRunClassicScript(
-          worker_start_data_.script_url, *fetch_client_setting_object,
+          worker_start_data_.script_url,
+          std::move(fetch_client_setting_object_data),
           nullptr /* outside_resource_timing_notifier */,
           v8_inspector::V8StackTraceId());
       return;
@@ -553,7 +554,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // > to-be-created environment settings object for this service worker.
     case mojom::ScriptType::kModule:
       worker_thread_->FetchAndRunModuleScript(
-          worker_start_data_.script_url, *fetch_client_setting_object,
+          worker_start_data_.script_url,
+          std::move(fetch_client_setting_object_data),
           nullptr /* outside_resource_timing_notifier */,
           network::mojom::CredentialsMode::kOmit);
       return;
@@ -561,8 +563,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   NOTREACHED();
 }
 
-FetchClientSettingsObjectSnapshot*
-WebEmbeddedWorkerImpl::CreateFetchClientSettingsObject(
+std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+WebEmbeddedWorkerImpl::CreateFetchClientSettingsObjectData(
     const SecurityOrigin* security_origin,
     const HttpsState& https_state) {
   // TODO(crbug.com/967265): Currently we create an incomplete outside settings
@@ -576,11 +578,13 @@ WebEmbeddedWorkerImpl::CreateFetchClientSettingsObject(
   // object over mojo IPCs.
 
   const KURL& script_url = worker_start_data_.script_url;
-  return MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-      script_url /* global_object_url */, script_url /* base_url */,
-      security_origin, network::mojom::ReferrerPolicy::kDefault,
-      script_url.GetString() /* outgoing_referrer */, https_state,
-      AllowedByNosniff::MimeTypeCheck::kLax, worker_start_data_.address_space,
+  return std::make_unique<CrossThreadFetchClientSettingsObjectData>(
+      script_url.Copy() /* global_object_url */,
+      script_url.Copy() /* base_url */, security_origin->IsolatedCopy(),
+      network::mojom::ReferrerPolicy::kDefault,
+      script_url.GetString().IsolatedCopy() /* outgoing_referrer */,
+      https_state, AllowedByNosniff::MimeTypeCheck::kLax,
+      worker_start_data_.address_space,
       kBlockAllMixedContent /* insecure_requests_policy */,
       FetchClientSettingsObject::InsecureNavigationsSet(),
       false /* mixed_autoupgrade_opt_out */);

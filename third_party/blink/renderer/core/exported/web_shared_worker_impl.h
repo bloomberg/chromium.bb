@@ -60,6 +60,7 @@ class SharedURLLoaderFactory;
 
 namespace blink {
 
+class FetchClientSettingsObjectSnapshot;
 class SharedWorkerThread;
 class WebSharedWorkerClient;
 class WebString;
