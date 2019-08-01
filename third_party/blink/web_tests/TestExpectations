@@ -6386,6 +6386,16 @@ crbug.com/959129 virtual/threaded/http/tests/devtools/tracing/timeline-script-pa
 crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 crbug.com/988298 [ Linux ] http/tests/devtools/extensions/extensions-panel.js [ Pass Timeout ]
 
+# WebRTC tests that fails (by timing out) because `getSynchronizationSources()`
+# on the audio side needs a hardware sink for the returned dictionary entries to
+# get updated.
+#
+# Temporarily replaced by:
+#   - WebRtcAudioBrowserTest.EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks
+#   - WebRtcBrowserTest.EstablishVideoOnlyCallAndVerifyGetSynchronizationSourcesWorks
+crbug.com/988432 external/wpt/webrtc/RTCRtpReceiver-getSynchronizationSources.https.html [ Pass Timeout ]
+crbug.com/988432 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCRtpReceiver-getSynchronizationSources.https.html [ Pass Timeout ]
+
 # Sheriff 2019-07-29
 crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure Timeout ]
 crbug.com/988074 [ Linux ] virtual/cors-rfc1918/http/tests/security/cors-rfc1918/addressspace-serviceworker-basic.html [ Pass Failure ]
