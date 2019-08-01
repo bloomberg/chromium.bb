@@ -1422,7 +1422,7 @@ if (!is_android) {
           [ "../browser/ssl/captive_portal_blocking_page_browsertest.cc" ]
     }
 
-    if (!is_android) {
+    if (!is_android && !is_chromeos) {
       sources += [
         "../browser/external_protocol/external_protocol_handler_browsertest.cc",
       ]
