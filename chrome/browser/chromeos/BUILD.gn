@@ -1968,6 +1968,8 @@ source_set("chromeos") {
     "settings/stats_reporting_controller.h",
     "settings/stub_cros_settings_provider.cc",
     "settings/stub_cros_settings_provider.h",
+    "settings/supervised_user_cros_settings_provider.cc",
+    "settings/supervised_user_cros_settings_provider.h",
     "settings/token_encryptor.cc",
     "settings/token_encryptor.h",
     "smb_client/discovery/host_locator.h",
