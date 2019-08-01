@@ -719,7 +719,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldRepresentNodeOffsetZero() {
           EVisibility::kVisible ||
       (node_->GetLayoutObject()->IsLayoutBlockFlow() &&
        !To<LayoutBlock>(node_->GetLayoutObject())->Size().Height() &&
-       !IsHTMLBodyElement(*node_)))
+       !IsA<HTMLBodyElement>(*node_)))
     return false;
 
   // The startPos.isNotNull() check is needed because the start could be before

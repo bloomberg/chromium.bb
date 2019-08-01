@@ -839,7 +839,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
     StyleAdjuster::AdjustComputedStyle(state, element);
   }
 
-  if (IsHTMLBodyElement(*element))
+  if (IsA<HTMLBodyElement>(*element))
     GetDocument().GetTextLinkColors().SetTextColor(state.Style()->GetColor());
 
   SetAnimationUpdateIfNeeded(state, *element);

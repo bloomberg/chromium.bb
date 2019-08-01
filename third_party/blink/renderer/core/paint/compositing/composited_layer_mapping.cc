@@ -2828,7 +2828,7 @@ bool CompositedLayerMapping::ContainsPaintedContent() const {
     // Now look at the body's layoutObject.
     HTMLElement* body = layout_object.GetDocument().body();
     LayoutObject* body_object =
-        IsHTMLBodyElement(body) ? body->GetLayoutObject() : nullptr;
+        IsA<HTMLBodyElement>(body) ? body->GetLayoutObject() : nullptr;
     if (body_object &&
         HasBoxDecorationsOrBackgroundImage(body_object->StyleRef()))
       return true;

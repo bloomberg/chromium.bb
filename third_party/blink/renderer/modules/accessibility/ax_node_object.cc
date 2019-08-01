@@ -194,7 +194,7 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
     return kIgnoreObject;
   }
 
-  if (CanSetFocusAttribute() && GetNode() && !IsHTMLBodyElement(GetNode()))
+  if (CanSetFocusAttribute() && GetNode() && !IsA<HTMLBodyElement>(GetNode()))
     return kIncludeObject;
 
   if (IsLink() || IsInPageLinkTarget())

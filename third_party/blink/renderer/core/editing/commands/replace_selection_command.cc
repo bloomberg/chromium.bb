@@ -982,7 +982,7 @@ void ReplaceSelectionCommand::MergeEndIfNeeded(EditingState* editing_state) {
 
 static Node* EnclosingInline(Node* node) {
   while (ContainerNode* parent = node->parentNode()) {
-    if (IsBlockFlowElement(*parent) || IsHTMLBodyElement(*parent))
+    if (IsBlockFlowElement(*parent) || IsA<HTMLBodyElement>(*parent))
       return node;
     // Stop if any previous sibling is a block.
     for (Node* sibling = node->previousSibling(); sibling;
