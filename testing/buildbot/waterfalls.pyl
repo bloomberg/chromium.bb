@@ -1791,9 +1791,6 @@
         },
       },
       'linux-chromium-tests-staging-builder': {
-        'mixins': [
-          'linux-trusty',
-        ],
         'additional_compile_targets': [
           'all'
         ],
