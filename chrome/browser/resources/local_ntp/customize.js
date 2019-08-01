@@ -135,6 +135,8 @@ customize.IDS = {
   LINK_ICON: 'link-icon',
   MENU: 'bg-sel-menu',
   OPTIONS_TITLE: 'edit-bg-title',
+  REFRESH_DAILY_WRAPPER: 'refresh-daily-wrapper',
+  REFRESH_TOGGLE: 'refresh-daily-toggle',
   RESTORE_DEFAULT: 'edit-bg-restore-default',
   RESTORE_DEFAULT_TEXT: 'edit-bg-restore-default-text',
   SHORTCUTS_BUTTON: 'shortcuts-button',
@@ -233,6 +235,12 @@ customize.showErrorNotification = null;
  * @type {?Function}
  */
 customize.hideCustomLinkNotification = null;
+
+/**
+ * Id of the currently open collection.
+ * @type {string}
+ */
+customize.currentCollectionId = '';
 
 /**
  * The currently active Background submenu. This can be the collections page or
@@ -497,12 +505,14 @@ customize.closeCollectionDialog = function(menu) {
  * @param {string} url The url of the selected background.
  */
 customize.setBackground = function(
-    url, attributionLine1, attributionLine2, attributionActionUrl) {
+    url, attributionLine1, attributionLine2, attributionActionUrl,
+    collection_id) {
   if (!configData.richerPicker) {
     customize.closeCollectionDialog($(customize.IDS.MENU));
   }
   window.chrome.embeddedSearch.newTabPage.setBackgroundInfo(
-      url, attributionLine1, attributionLine2, attributionActionUrl, '');
+      url, attributionLine1, attributionLine2, attributionActionUrl,
+      collection_id);
 };
 
 /**
@@ -981,6 +991,7 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
     attr1: tile.dataset.attributionLine1,
     attr2: tile.dataset.attributionLine2,
     attrUrl: tile.dataset.attributionActionUrl,
+    collectionId: '',
   };
   customize.richerPicker_applySelectedState(tile);
   customize.richerPicker_maybeToggleDone();
@@ -1027,6 +1038,26 @@ customize.richerPicker_toggleShortcutHide = function(areHidden) {
 
   customize.selectedOptions.shortcutsAreHidden = areHidden;
   customize.richerPicker_maybeToggleDone();
+};
+
+/**
+ * Handles the "refresh daily" toggle.
+ * @param {boolean} toggledOn True if the toggle has been enabled.
+ */
+customize.richerPicker_toggleRefreshDaily = function(toggledOn) {
+  $(customize.IDS.MENU_DONE).disabled = !toggledOn;
+  if (!toggledOn) {
+    return;
+  }
+
+  customize.selectedOptions.backgroundData = {
+    id: '',
+    url: '',
+    attr1: '',
+    attr2: '',
+    attrUrl: '',
+    collectionId: customize.currentCollectionId,
+  };
 };
 
 /**
@@ -1132,7 +1163,8 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
           event.currentTarget.dataset.url,
           event.currentTarget.dataset.attributionLine1,
           event.currentTarget.dataset.attributionLine2,
-          event.currentTarget.dataset.attributionActionUrl);
+          event.currentTarget.dataset.attributionActionUrl,
+          /*collection_id=*/ '');
     }
   };
 
@@ -1151,7 +1183,6 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
     dataset.attributionActionUrl = collImg[i].attributionActionUrl;
     dataset.url = collImg[i].imageUrl;
     dataset.tileIndex = i;
-
 
     let tileId = 'img_tile_' + i;
     if (configData.richerPicker) {
@@ -1202,6 +1233,8 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
   } else {
     $(customize.IDS.TILES).focus();
   }
+  customize.currentCollectionId = collImg[0].collectionId;
+  $(customize.IDS.REFRESH_DAILY_WRAPPER).hidden = false;
 };
 
 /**
@@ -1436,7 +1469,8 @@ customize.richerPicker_applyCustomization = function() {
         customize.selectedOptions.backgroundData.url,
         customize.selectedOptions.backgroundData.attr1,
         customize.selectedOptions.backgroundData.attr2,
-        customize.selectedOptions.backgroundData.attrUrl);
+        customize.selectedOptions.backgroundData.attrUrl,
+        customize.selectedOptions.backgroundData.collectionId);
   }
   if (customize.richerPicker_isShortcutOptionSelected()) {
     customize.richerPicker_setShortcutOptions();
@@ -1848,7 +1882,8 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
           customize.selectedOptions.background.dataset.url,
           customize.selectedOptions.background.dataset.attributionLine1,
           customize.selectedOptions.background.dataset.attributionLine2,
-          customize.selectedOptions.background.dataset.attributionActionUrl);
+          customize.selectedOptions.background.dataset.attributionActionUrl,
+          '');
     }
   };
   $(customize.IDS.DONE).onclick = doneInteraction;
@@ -1992,6 +2027,23 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     // keyboard navigation styling) unless propagation is stopped.
     event.stopPropagation();
   };
+
+  const refreshToggle = $(customize.IDS.REFRESH_TOGGLE);
+  refreshToggle.onchange = function(event) {
+    customize.richerPicker_toggleRefreshDaily(refreshToggle.checked);
+  };
+  refreshToggle.onkeydown = function(event) {
+    if (event.keyCode === customize.KEYCODES.ENTER ||
+        event.keyCode === customize.KEYCODES.SPACE) {
+      refreshToggle.onchange(event);
+    }
+  };
+  refreshToggle.onclick = function(event) {
+    // Enter and space fire the 'onclick' event (which will remove special
+    // keyboard navigation styling) unless propagation is stopped.
+    event.stopPropagation();
+  };
+
 
   const richerPickerOpenShortcuts = function() {
     customize.richerPicker_showSubmenu(

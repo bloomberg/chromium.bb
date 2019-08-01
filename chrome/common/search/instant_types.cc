@@ -11,6 +11,7 @@ ThemeBackgroundInfo::ThemeBackgroundInfo()
       custom_background_attribution_line_1(std::string()),
       custom_background_attribution_line_2(std::string()),
       custom_background_attribution_action_url(std::string()),
+      collection_id(std::string()),
       background_color(),
       text_color(),
       text_color_light(),
@@ -36,6 +37,7 @@ bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
              rhs.custom_background_attribution_line_2 &&
          custom_background_attribution_action_url ==
              rhs.custom_background_attribution_action_url &&
+         collection_id == rhs.collection_id &&
          background_color == rhs.background_color &&
          text_color == rhs.text_color &&
          text_color_light == rhs.text_color_light && theme_id == rhs.theme_id &&
