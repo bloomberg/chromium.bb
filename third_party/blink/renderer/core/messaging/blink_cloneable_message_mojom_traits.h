@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_CLONEABLE_MESSAGE_STRUCT_TRAITS_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_CLONEABLE_MESSAGE_STRUCT_TRAITS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_CLONEABLE_MESSAGE_MOJOM_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_CLONEABLE_MESSAGE_MOJOM_TRAITS_H_
 
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/blink_cloneable_message.h"
-#include "third_party/blink/renderer/platform/blob/serialized_blob_struct_traits.h"
+#include "third_party/blink/renderer/platform/blob/serialized_blob_mojom_traits.h"
 
 namespace mojo {
 
@@ -53,4 +53,4 @@ struct CORE_EXPORT StructTraits<blink::mojom::blink::CloneableMessage::DataView,
 
 }  // namespace mojo
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_CLONEABLE_MESSAGE_STRUCT_TRAITS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_CLONEABLE_MESSAGE_MOJOM_TRAITS_H_

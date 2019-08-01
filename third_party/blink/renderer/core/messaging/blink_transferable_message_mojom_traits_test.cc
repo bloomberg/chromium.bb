@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/messaging/blink_transferable_message_struct_traits.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message_mojom_traits.h"
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -112,7 +112,7 @@ TEST(BlinkTransferableMessageStructTraitsTest,
   ASSERT_EQ(originalContentsData, deserialized_contents.Data());
 
   // The original ArrayBufferContents should be neutered.
-  ASSERT_EQ(NULL, v8_buffer->GetContents().Data());
+  ASSERT_EQ(nullptr, v8_buffer->GetContents().Data());
   ASSERT_TRUE(original_array_buffer->IsNeutered());
 }
 
