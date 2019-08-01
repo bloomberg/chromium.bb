@@ -2885,8 +2885,7 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
   // in params even if the navigation is to a blob URL. If that happens, lookup
   // the correct url loader factory to use here.
   auto blob_url_loader_factory = params.blob_url_loader_factory;
-  if (!blob_url_loader_factory && blink::BlobUtils::MojoBlobURLsEnabled() &&
-      params.url.SchemeIsBlob()) {
+  if (!blob_url_loader_factory && params.url.SchemeIsBlob()) {
     blob_url_loader_factory = ChromeBlobStorageContext::URLLoaderFactoryForUrl(
         GetBrowserContext(), params.url);
   }

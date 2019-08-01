@@ -55,7 +55,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
-#include "content/common/fileapi/webblob_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_visual_properties.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -2966,14 +2965,6 @@ std::string ConsoleObserverDelegate::message() {
   if (messages_.empty())
     return std::string();
   return messages_.back();
-}
-
-// static
-void PwnMessageHelper::RegisterBlobURL(RenderProcessHost* process,
-                                       GURL url,
-                                       std::string uuid) {
-  IPC::IpcSecurityTestUtil::PwnMessageReceived(
-      process->GetChannel(), BlobHostMsg_RegisterPublicURL(url, uuid));
 }
 
 namespace {

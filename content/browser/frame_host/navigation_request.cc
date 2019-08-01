@@ -549,8 +549,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   navigation_request->blob_url_loader_factory_ =
       frame_entry.blob_url_loader_factory();
 
-  if (blink::BlobUtils::MojoBlobURLsEnabled() &&
-      navigation_request->common_params().url.SchemeIsBlob() &&
+  if (navigation_request->common_params().url.SchemeIsBlob() &&
       !navigation_request->blob_url_loader_factory_) {
     // If this navigation entry came from session history then the blob factory
     // would have been cleared in NavigationEntryImpl::ResetForCommit(). This is

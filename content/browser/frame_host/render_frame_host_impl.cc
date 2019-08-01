@@ -4046,8 +4046,7 @@ void RenderFrameHostImpl::BeginNavigation(
   // situation where a renderer currently doesn't have an easy way of resolving
   // the blob URL. For those situations resolve the blob URL here, as we don't
   // care about ordering with other blob URL manipulation anyway.
-  if (blink::BlobUtils::MojoBlobURLsEnabled() &&
-      validated_params->url.SchemeIsBlob() && !blob_url_loader_factory) {
+  if (validated_params->url.SchemeIsBlob() && !blob_url_loader_factory) {
     blob_url_loader_factory = ChromeBlobStorageContext::URLLoaderFactoryForUrl(
         GetSiteInstance()->GetBrowserContext(), validated_params->url);
   }

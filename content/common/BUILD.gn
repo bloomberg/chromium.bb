@@ -104,7 +104,6 @@ source_set("common") {
     "fetch/fetch_api_request_proto.h",
     "fetch/fetch_request_type_converters.cc",
     "fetch/fetch_request_type_converters.h",
-    "fileapi/webblob_messages.h",
     "font_cache_dispatcher_win.cc",
     "font_list.cc",
     "font_list.h",
