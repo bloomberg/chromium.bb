@@ -150,12 +150,6 @@ crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scr
 crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-transform-changed.html [ Failure ]
 crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-visibility-change.html [ Failure ]
 
-# Need to support painting non-fast scrollable regions for plugins.
-crbug.com/864567 virtual/composite-after-paint/scrollingcoordinator/plugin-with-wheel-handler.html [ Failure ]
-crbug.com/864567 virtual/paint-non-fast-scrollable-regions/scrollingcoordinator/plugin-with-wheel-handler.html [ Failure ]
-crbug.com/864567 virtual/paint-non-fast-scrollable-regions/scrollingcoordinator/donot-compute-non-fast-scrollable-region-for-hidden-frames.html [ Failure ]
-crbug.com/864567 virtual/paint-non-fast-scrollable-regions/scrollingcoordinator/non-fast-scrollable-region-nested.html [ Failure ]
-
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
