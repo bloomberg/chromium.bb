@@ -95,6 +95,12 @@ if (current_toolchain == host_toolchain) {
       "config/msvc.h",
     ]
 
+    # On Windows, inline functions do not require out of line definitions.
+    # crbug.com/989745
+    if (is_win) {
+      sources -= [ "nasmlib/ilog2.c" ]
+    }
+
     configs -= configs_to_delete
     configs += configs_to_add
     configs += [ ":nasm_config" ]
