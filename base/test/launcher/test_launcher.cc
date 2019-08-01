@@ -643,7 +643,7 @@ void TestRunner::LaunchNextTask(scoped_refptr<TaskRunner> task_runner,
                                 FilePath temp_dir) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // delete previous temporary directory
-  if (!temp_dir.empty() && !DeleteFile(temp_dir, false)) {
+  if (!temp_dir.empty() && !DeleteFile(temp_dir, true)) {
     // This needs to be non-fatal at least for Windows.
     LOG(WARNING) << "Failed to delete " << temp_dir.AsUTF8Unsafe();
   }
