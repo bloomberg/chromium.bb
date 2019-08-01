@@ -2228,6 +2228,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cyan',
       'edgar',
       'elm',
+      'eve',
       'eve-arcnext',
       'fizz',
       'fizz-accelerator',
@@ -2324,7 +2325,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'mistral', # crbug.com/987989
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
       'betty-pi-arc', # Promote when we replace betty-arcnext. b/129410042
-      'eve', # crbug.com/984952
       'grunt', # crbug.com/984614
   ])
 
