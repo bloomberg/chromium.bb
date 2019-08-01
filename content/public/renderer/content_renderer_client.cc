@@ -271,4 +271,7 @@ ContentRendererClient::GetAudioRendererAlgorithmParameters(
   return base::nullopt;
 }
 
+void ContentRendererClient::BindReceiverOnMainThread(
+    mojo::GenericPendingReceiver receiver) {}
+
 }  // namespace content

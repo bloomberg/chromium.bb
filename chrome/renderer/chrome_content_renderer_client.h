@@ -27,6 +27,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -217,6 +218,7 @@ class ChromeContentRendererClient
   bool IsSafeRedirectTarget(const GURL& url) override;
   void DidSetUserAgent(const std::string& user_agent) override;
   bool RequiresHtmlImports(const GURL& url) override;
+  void BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver) override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   static chrome::mojom::PluginInfoHostAssociatedPtr& GetPluginInfoHost();

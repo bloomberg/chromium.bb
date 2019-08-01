@@ -211,6 +211,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // ChildThread implementation via ChildThreadImpl:
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
 
+  // ChildThreadImpl implementation:
+  void OnBindReceiver(mojo::GenericPendingReceiver receiver) override;
+
   // CompositorDependencies implementation.
   bool IsGpuRasterizationForced() override;
   int GetGpuRasterizationMSAASampleCount() override;

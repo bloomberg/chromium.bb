@@ -5637,10 +5637,10 @@ static_library("test_support") {
 
   if (has_spellcheck_panel) {
     sources += [
-      "spellchecker/test/spellcheck_content_browser_client.cc",
-      "spellchecker/test/spellcheck_content_browser_client.h",
       "spellchecker/test/spellcheck_mock_panel_host.cc",
       "spellchecker/test/spellcheck_mock_panel_host.h",
+      "spellchecker/test/spellcheck_panel_browsertest_helper.cc",
+      "spellchecker/test/spellcheck_panel_browsertest_helper.h",
     ]
   }
 }

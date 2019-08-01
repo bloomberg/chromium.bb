@@ -638,6 +638,14 @@
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+#include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
+#include "components/spellcheck/common/spellcheck.mojom.h"
+#if BUILDFLAG(HAS_SPELLCHECK_PANEL)
+#include "chrome/browser/spellchecker/spell_check_panel_host_impl.h"
+#endif
+#endif
+
 #if defined(BROWSER_MEDIA_CONTROLS_MENU)
 #include "third_party/blink/public/mojom/media_controls/touchless/media_controls.mojom.h"
 #endif
@@ -3874,6 +3882,27 @@ void ChromeContentBrowserClient::BindInterfaceRequest(
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   if (source_info.identity.name() == content::mojom::kGpuServiceName)
     gpu_binder_registry_.TryBindInterface(interface_name, interface_pipe);
+}
+
+void ChromeContentBrowserClient::BindHostReceiverForRenderer(
+    content::RenderProcessHost* render_process_host,
+    mojo::GenericPendingReceiver receiver) {
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+  if (auto host_receiver = receiver.As<spellcheck::mojom::SpellCheckHost>()) {
+    SpellCheckHostChromeImpl::Create(render_process_host->GetID(),
+                                     std::move(host_receiver));
+    return;
+  }
+
+#if BUILDFLAG(HAS_SPELLCHECK_PANEL)
+  if (auto panel_host_receiver =
+          receiver.As<spellcheck::mojom::SpellCheckPanelHost>()) {
+    SpellCheckPanelHostImpl::Create(render_process_host->GetID(),
+                                    std::move(panel_host_receiver));
+    return;
+  }
+#endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 }
 
 void ChromeContentBrowserClient::WillStartServiceManager() {

@@ -1481,6 +1481,10 @@ RenderThreadImpl::GetIOTaskRunner() {
   return ChildProcess::current()->io_task_runner();
 }
 
+void RenderThreadImpl::OnBindReceiver(mojo::GenericPendingReceiver receiver) {
+  GetContentClient()->renderer()->BindReceiverOnMainThread(std::move(receiver));
+}
+
 bool RenderThreadImpl::IsGpuRasterizationForced() {
   return is_gpu_rasterization_forced_;
 }
