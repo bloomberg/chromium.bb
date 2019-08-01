@@ -73,7 +73,6 @@ module.exports = {
     'no-caller': 'error',
     'no-case-declarations': 'error',
     'no-div-regex': 'off',
-    'no-else-return': 'error',
     'no-empty-function': 'off',
     'no-empty-pattern': 'error',
     'no-eq-null': 'error',
@@ -94,7 +93,7 @@ module.exports = {
     'no-labels': ['error', {allowLoop: true}],
     'no-lone-blocks': 'error',
     'no-loop-func': 'error',
-    'no-magic-numbers': ['error', {ignore: [0, 1]}],
+    'no-magic-numbers': ['error', {ignore: [0, 1, 2]}],
     'no-multi-spaces': ['error', {ignoreEOLComments: true}],
     'no-multi-str': 'error',
     'no-new': 'error',
@@ -204,7 +203,9 @@ module.exports = {
     'linebreak-style': ['error', 'unix'],
     'lines-around-comment': 'off',
     'max-depth': 'off',
-    'max-len': 'off',
+    'max-len': ['error', {
+        tabWidth: 2,
+        ignorePattern: "(^import |// eslint-disable-line |https?://)"}],
     'max-lines': 'off',
     'max-nested-callbacks': 'off',
     'max-params': 'off',
@@ -218,7 +219,6 @@ module.exports = {
     'no-bitwise': 'off',
     'no-continue': 'off',
     'no-inline-comments': 'off',
-    'no-lonely-if': 'error',
     'no-mixed-operators': [
       'error',
       {
