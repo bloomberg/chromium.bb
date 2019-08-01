@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview;
+package org.chromium.base.metrics;
 
 import android.os.Trace;
 
-// TODO(changwan): remove this file once downstream change lands.
 /**
  * An alternative to @{TraceEvent} that allows us to trace events before native
  * initialization.
