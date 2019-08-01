@@ -1142,9 +1142,9 @@ RenderThreadImpl::CreateVideoFrameCompositorTaskRunner() {
     // be the same thread on which the rendering context was initialized. This
     // is why this must be a SingleThreadTaskRunner instead of a
     // SequencedTaskRunner.
-    video_frame_compositor_task_runner_ =
-        base::CreateSingleThreadTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+    video_frame_compositor_task_runner_ = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE});
   }
 
   return video_frame_compositor_task_runner_;

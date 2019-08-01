@@ -132,8 +132,7 @@ void DumpStackTraceSignalHandler(int signal) {
 void RunTaskOnRendererThread(base::OnceClosure task,
                              base::OnceClosure quit_task) {
   std::move(task).Run();
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           std::move(quit_task));
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(quit_task));
 }
 
 void TraceStopTracingComplete(const base::Closure& quit,

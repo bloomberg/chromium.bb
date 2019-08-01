@@ -761,18 +761,17 @@ class MHTMLHandleWriterDelegate {
   void WriteContents(std::vector<WebThreadSafeData> mhtml_contents) {
     // Using base::Unretained is safe, as calls to WriteContents() always
     // deletes |handle| upon Finish().
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTask(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&MHTMLHandleWriter::WriteContents,
                        base::Unretained(handle_), std::move(mhtml_contents)));
   }
 
   // Within the context of the delegate, only for premature write finish.
   void Finish(mojom::MhtmlSaveStatus save_status) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&MHTMLHandleWriter::Finish, base::Unretained(handle_),
-                       save_status));
+    base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                   base::BindOnce(&MHTMLHandleWriter::Finish,
+                                  base::Unretained(handle_), save_status));
   }
 
  private:

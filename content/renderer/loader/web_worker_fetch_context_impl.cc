@@ -589,8 +589,9 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
       mojo::MakeRequest(&host_ptr_info));
   // To avoid potential dead-lock while synchronous loading, create the
   // SubresourceLoaderFactory on a background thread.
-  auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  auto task_runner = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
