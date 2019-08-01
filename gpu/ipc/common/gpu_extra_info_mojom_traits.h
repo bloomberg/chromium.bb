@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_COMMON_GPU_EXTRA_INFO_STRUCT_TRAITS_H_
-#define GPU_IPC_COMMON_GPU_EXTRA_INFO_STRUCT_TRAITS_H_
+#ifndef GPU_IPC_COMMON_GPU_EXTRA_INFO_MOJOM_TRAITS_H_
+#define GPU_IPC_COMMON_GPU_EXTRA_INFO_MOJOM_TRAITS_H_
 
 #include "gpu/config/gpu_extra_info.h"
 #include "gpu/ipc/common/gpu_extra_info.mojom.h"
@@ -50,4 +50,4 @@ struct StructTraits<gpu::mojom::GpuExtraInfoDataView, gpu::GpuExtraInfo> {
 
 }  // namespace mojo
 
-#endif  // GPU_IPC_COMMON_GPU_EXTRA_INFO_STRUCT_TRAITS_H_
+#endif  // GPU_IPC_COMMON_GPU_EXTRA_INFO_MOJOM_TRAITS_H_

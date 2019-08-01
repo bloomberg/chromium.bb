@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/ipc/common/gpu_feature_info.mojom.h"
-#include "gpu/ipc/common/gpu_feature_info_struct_traits.h"
+#include "gpu/ipc/common/gpu_feature_info_mojom_traits.h"
 #include "gpu/ipc/common/traits_test_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"

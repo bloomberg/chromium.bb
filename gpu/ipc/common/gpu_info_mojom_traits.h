@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_COMMON_GPU_INFO_STRUCT_TRAITS_H_
-#define GPU_IPC_COMMON_GPU_INFO_STRUCT_TRAITS_H_
+#ifndef GPU_IPC_COMMON_GPU_INFO_MOJOM_TRAITS_H_
+#define GPU_IPC_COMMON_GPU_INFO_MOJOM_TRAITS_H_
 
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_info.h"
-#include "gpu/ipc/common/dx_diag_node_struct_traits.h"
+#include "gpu/ipc/common/dx_diag_node_mojom_traits.h"
 #include "gpu/ipc/common/gpu_info.mojom.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
@@ -383,4 +383,4 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
 };
 
 }  // namespace mojo
-#endif  // GPU_IPC_COMMON_GPU_INFO_STRUCT_TRAITS_H_
+#endif  // GPU_IPC_COMMON_GPU_INFO_MOJOM_TRAITS_H_

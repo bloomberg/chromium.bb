@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/ipc/common/mailbox_struct_traits.h"
+#include "gpu/ipc/common/mailbox_mojom_traits.h"
 
 #include "base/containers/span.h"
 

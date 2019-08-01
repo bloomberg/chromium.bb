@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_COMMON_SYNC_TOKEN_STRUCT_TRAITS_H_
-#define GPU_IPC_COMMON_SYNC_TOKEN_STRUCT_TRAITS_H_
+#ifndef GPU_IPC_COMMON_SYNC_TOKEN_MOJOM_TRAITS_H_
+#define GPU_IPC_COMMON_SYNC_TOKEN_MOJOM_TRAITS_H_
 
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/common/sync_token.mojom-shared.h"
@@ -47,4 +47,4 @@ struct StructTraits<gpu::mojom::SyncTokenDataView, gpu::SyncToken> {
 
 }  // namespace mojo
 
-#endif  // GPU_IPC_COMMON_SYNC_TOKEN_STRUCT_TRAITS_H_
+#endif  // GPU_IPC_COMMON_SYNC_TOKEN_MOJOM_TRAITS_H_

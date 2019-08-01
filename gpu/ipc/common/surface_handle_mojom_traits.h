@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_COMMON_SURFACE_HANDLE_STRUCT_TRAITS_H_
-#define GPU_IPC_COMMON_SURFACE_HANDLE_STRUCT_TRAITS_H_
+#ifndef GPU_IPC_COMMON_SURFACE_HANDLE_MOJOM_TRAITS_H_
+#define GPU_IPC_COMMON_SURFACE_HANDLE_MOJOM_TRAITS_H_
 
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/common/surface_handle.mojom-shared.h"
@@ -34,4 +34,4 @@ struct StructTraits<gpu::mojom::SurfaceHandleDataView, gpu::SurfaceHandle> {
 
 }  // namespace mojo
 
-#endif  // GPU_IPC_COMMON_SURFACE_HANDLE_STRUCT_TRAITS_H_
+#endif  // GPU_IPC_COMMON_SURFACE_HANDLE_MOJOM_TRAITS_H_

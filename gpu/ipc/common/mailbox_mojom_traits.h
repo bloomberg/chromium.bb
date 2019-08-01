@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_COMMON_MAILBOX_STRUCT_TRAITS_H_
-#define GPU_IPC_COMMON_MAILBOX_STRUCT_TRAITS_H_
+#ifndef GPU_IPC_COMMON_MAILBOX_MOJOM_TRAITS_H_
+#define GPU_IPC_COMMON_MAILBOX_MOJOM_TRAITS_H_
 
 #include "base/containers/span.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -22,4 +22,4 @@ struct StructTraits<gpu::mojom::MailboxDataView, gpu::Mailbox> {
 
 }  // namespace mojo
 
-#endif  // GPU_IPC_COMMON_MAILBOX_STRUCT_TRAITS_H_
+#endif  // GPU_IPC_COMMON_MAILBOX_MOJOM_TRAITS_H_

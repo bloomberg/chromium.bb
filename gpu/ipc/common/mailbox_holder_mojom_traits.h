@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_IPC_COMMON_MAILBOX_HOLDER_STRUCT_TRAITS_H_
-#define GPU_IPC_COMMON_MAILBOX_HOLDER_STRUCT_TRAITS_H_
+#ifndef GPU_IPC_COMMON_MAILBOX_HOLDER_MOJOM_TRAITS_H_
+#define GPU_IPC_COMMON_MAILBOX_HOLDER_MOJOM_TRAITS_H_
 
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/ipc/common/mailbox_holder.mojom-shared.h"
-#include "gpu/ipc/common/mailbox_struct_traits.h"
-#include "gpu/ipc/common/sync_token_struct_traits.h"
+#include "gpu/ipc/common/mailbox_mojom_traits.h"
+#include "gpu/ipc/common/sync_token_mojom_traits.h"
 
 namespace mojo {
 
@@ -38,4 +38,4 @@ struct StructTraits<gpu::mojom::MailboxHolderDataView, gpu::MailboxHolder> {
 
 }  // namespace mojo
 
-#endif  // GPU_IPC_COMMON_MAILBOX_HOLDER_STRUCT_TRAITS_H_
+#endif  // GPU_IPC_COMMON_MAILBOX_HOLDER_MOJOM_TRAITS_H_
