@@ -21,6 +21,12 @@ function CrostiniImpl() {
    * @private @dict {!Object<!Array<string>>}
    */
   this.shared_paths_ = {};
+
+  /**
+   * True if root access to specified VM is allowed.
+   * @private {Object<boolean>}
+   */
+  this.rootAccessAllowed_ = {};
 }
 
 /**
@@ -79,6 +85,8 @@ CrostiniImpl.prototype.init = function(volumeManager) {
       loadTimeData.getBoolean('CROSTINI_ENABLED');
   this.enabled_[CrostiniImpl.PLUGIN_VM] =
       loadTimeData.getBoolean('PLUGIN_VM_ENABLED');
+  this.rootAccessAllowed_[CrostiniImpl.DEFAULT_VM] =
+      loadTimeData.getBoolean('CROSTINI_ROOT_ACCESS_ALLOWED');
 };
 
 /**
@@ -105,6 +113,26 @@ CrostiniImpl.prototype.setEnabled = function(vmName, enabled) {
  */
 CrostiniImpl.prototype.isEnabled = function(vmName) {
   return this.enabled_[vmName];
+};
+
+/**
+ * Set whether the specified VM allows root access.
+ * @param {string} vmName
+ * @param {boolean} allowed
+ */
+// TODO(crbug.com/988375): add dynamic pref change functionality for
+// RootAccessAllowed.
+CrostiniImpl.prototype.setRootAccessAllowed = function(vmName, allowed) {
+  this.rootAccessAllowed_[vmName] = allowed;
+};
+
+/**
+ * Returns true if root access to specified VM is allowed.
+ * @param {string} vmName
+ * @return {boolean}
+ */
+CrostiniImpl.prototype.isRootAccessAllowed = function(vmName) {
+  return this.rootAccessAllowed_[vmName];
 };
 
 /**
