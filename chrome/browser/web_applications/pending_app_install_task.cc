@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
+#include "chrome/browser/web_applications/pending_app_install_task.h"
 
 #include <memory>
 #include <utility>
@@ -23,48 +23,46 @@
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace extensions {
+namespace web_app {
 
-BookmarkAppInstallationTask::Result::Result(
-    web_app::InstallResultCode code,
-    base::Optional<web_app::AppId> app_id)
+PendingAppInstallTask::Result::Result(InstallResultCode code,
+                                      base::Optional<AppId> app_id)
     : code(code), app_id(std::move(app_id)) {
-  DCHECK_EQ(code == web_app::InstallResultCode::kSuccess, app_id.has_value());
+  DCHECK_EQ(code == InstallResultCode::kSuccess, app_id.has_value());
 }
 
-BookmarkAppInstallationTask::Result::Result(Result&&) = default;
+PendingAppInstallTask::Result::Result(Result&&) = default;
 
-BookmarkAppInstallationTask::Result::~Result() = default;
+PendingAppInstallTask::Result::~Result() = default;
 
 // static
-void BookmarkAppInstallationTask::CreateTabHelpers(
+void PendingAppInstallTask::CreateTabHelpers(
     content::WebContents* web_contents) {
   InstallableManager::CreateForWebContents(web_contents);
   SecurityStateTabHelper::CreateForWebContents(web_contents);
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
 }
 
-BookmarkAppInstallationTask::BookmarkAppInstallationTask(
+PendingAppInstallTask::PendingAppInstallTask(
     Profile* profile,
-    web_app::AppRegistrar* registrar,
-    web_app::InstallFinalizer* install_finalizer,
-    web_app::ExternalInstallOptions install_options)
+    AppRegistrar* registrar,
+    InstallFinalizer* install_finalizer,
+    ExternalInstallOptions install_options)
     : profile_(profile),
       registrar_(registrar),
       install_finalizer_(install_finalizer),
       externally_installed_app_prefs_(profile_->GetPrefs()),
       install_options_(std::move(install_options)) {}
 
-BookmarkAppInstallationTask::~BookmarkAppInstallationTask() = default;
+PendingAppInstallTask::~PendingAppInstallTask() = default;
 
-void BookmarkAppInstallationTask::Install(
-    content::WebContents* web_contents,
-    web_app::WebAppUrlLoader::Result load_url_result,
-    ResultCallback result_callback) {
+void PendingAppInstallTask::Install(content::WebContents* web_contents,
+                                    WebAppUrlLoader::Result load_url_result,
+                                    ResultCallback result_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(web_contents->GetBrowserContext(), profile_);
 
-  if (load_url_result == web_app::WebAppUrlLoader::Result::kUrlLoaded) {
+  if (load_url_result == WebAppUrlLoader::Result::kUrlLoaded) {
     // If we are not re-installing a placeholder, then no need to uninstall
     // anything.
     if (!install_options_.reinstall_placeholder) {
@@ -85,16 +83,15 @@ void BookmarkAppInstallationTask::Install(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(result_callback),
-                     Result(web_app::InstallResultCode::kFailedUnknownReason,
-                            base::nullopt)));
+      FROM_HERE, base::BindOnce(std::move(result_callback),
+                                Result(InstallResultCode::kFailedUnknownReason,
+                                       base::nullopt)));
 }
 
-void BookmarkAppInstallationTask::UninstallPlaceholderApp(
+void PendingAppInstallTask::UninstallPlaceholderApp(
     content::WebContents* web_contents,
     ResultCallback result_callback) {
-  base::Optional<web_app::AppId> app_id =
+  base::Optional<AppId> app_id =
       externally_installed_app_prefs_.LookupPlaceholderAppId(
           install_options_.url);
 
@@ -108,12 +105,12 @@ void BookmarkAppInstallationTask::UninstallPlaceholderApp(
   // Otherwise, uninstall the placeholder app.
   install_finalizer_->UninstallExternalWebApp(
       install_options_.url,
-      base::BindOnce(&BookmarkAppInstallationTask::OnPlaceholderUninstalled,
+      base::BindOnce(&PendingAppInstallTask::OnPlaceholderUninstalled,
                      weak_ptr_factory_.GetWeakPtr(), web_contents,
                      std::move(result_callback)));
 }
 
-void BookmarkAppInstallationTask::OnPlaceholderUninstalled(
+void PendingAppInstallTask::OnPlaceholderUninstalled(
     content::WebContents* web_contents,
     ResultCallback result_callback,
     bool uninstalled) {
@@ -121,43 +118,40 @@ void BookmarkAppInstallationTask::OnPlaceholderUninstalled(
     LOG(ERROR) << "Failed to uninstall placeholder for: "
                << install_options_.url;
     std::move(result_callback)
-        .Run(Result(web_app::InstallResultCode::kFailedUnknownReason,
-                    base::nullopt));
+        .Run(Result(InstallResultCode::kFailedUnknownReason, base::nullopt));
     return;
   }
   ContinueWebAppInstall(web_contents, std::move(result_callback));
 }
 
-void BookmarkAppInstallationTask::ContinueWebAppInstall(
+void PendingAppInstallTask::ContinueWebAppInstall(
     content::WebContents* web_contents,
     ResultCallback result_callback) {
-  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile_);
+  auto* provider = WebAppProviderBase::GetProviderBase(profile_);
   DCHECK(provider);
 
-  auto install_params =
-      web_app::ConvertExternalInstallOptionsToParams(install_options_);
-  auto install_source = web_app::ConvertExternalInstallSourceToInstallSource(
+  auto install_params = ConvertExternalInstallOptionsToParams(install_options_);
+  auto install_source = ConvertExternalInstallSourceToInstallSource(
       install_options_.install_source);
 
   provider->install_manager().InstallWebAppWithParams(
       web_contents, install_params, install_source,
-      base::BindOnce(&BookmarkAppInstallationTask::OnWebAppInstalled,
+      base::BindOnce(&PendingAppInstallTask::OnWebAppInstalled,
                      weak_ptr_factory_.GetWeakPtr(), false /* is_placeholder */,
                      std::move(result_callback)));
 }
 
-void BookmarkAppInstallationTask::InstallPlaceholder(ResultCallback callback) {
+void PendingAppInstallTask::InstallPlaceholder(ResultCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::Optional<web_app::AppId> app_id =
+  base::Optional<AppId> app_id =
       externally_installed_app_prefs_.LookupPlaceholderAppId(
           install_options_.url);
   if (app_id.has_value() && registrar_->IsInstalled(app_id.value())) {
     // No need to install a placeholder app again.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback),
-                       Result(web_app::InstallResultCode::kSuccess, app_id)));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  Result(InstallResultCode::kSuccess, app_id)));
     return;
   }
 
@@ -166,31 +160,30 @@ void BookmarkAppInstallationTask::InstallPlaceholder(ResultCallback callback) {
   web_app_info.app_url = install_options_.url;
 
   switch (install_options_.launch_container) {
-    case web_app::LaunchContainer::kDefault:
-    case web_app::LaunchContainer::kTab:
+    case LaunchContainer::kDefault:
+    case LaunchContainer::kTab:
       web_app_info.open_as_window = false;
       break;
-    case web_app::LaunchContainer::kWindow:
+    case LaunchContainer::kWindow:
       web_app_info.open_as_window = true;
       break;
   }
 
-  web_app::InstallFinalizer::FinalizeOptions options;
+  InstallFinalizer::FinalizeOptions options;
   options.install_source = WebappInstallSource::EXTERNAL_POLICY;
 
   install_finalizer_->FinalizeInstall(
       web_app_info, options,
-      base::BindOnce(&BookmarkAppInstallationTask::OnWebAppInstalled,
+      base::BindOnce(&PendingAppInstallTask::OnWebAppInstalled,
                      weak_ptr_factory_.GetWeakPtr(), true /* is_placeholder */,
                      std::move(callback)));
 }
 
-void BookmarkAppInstallationTask::OnWebAppInstalled(
-    bool is_placeholder,
-    ResultCallback result_callback,
-    const web_app::AppId& app_id,
-    web_app::InstallResultCode code) {
-  if (code != web_app::InstallResultCode::kSuccess) {
+void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
+                                              ResultCallback result_callback,
+                                              const AppId& app_id,
+                                              InstallResultCode code) {
+  if (code != InstallResultCode::kSuccess) {
     std::move(result_callback).Run(Result(code, base::nullopt));
     return;
   }
@@ -200,9 +193,8 @@ void BookmarkAppInstallationTask::OnWebAppInstalled(
   externally_installed_app_prefs_.SetIsPlaceholder(install_options_.url,
                                                    is_placeholder);
 
-  auto success_closure =
-      base::BindOnce(std::move(result_callback),
-                     Result(web_app::InstallResultCode::kSuccess, app_id));
+  auto success_closure = base::BindOnce(
+      std::move(result_callback), Result(InstallResultCode::kSuccess, app_id));
 
   if (!is_placeholder) {
     std::move(success_closure).Run();
@@ -232,4 +224,4 @@ void BookmarkAppInstallationTask::OnWebAppInstalled(
   }
 }
 
-}  // namespace extensions
+}  // namespace web_app
