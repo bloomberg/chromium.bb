@@ -329,6 +329,8 @@ jumbo_split_static_library("browser") {
     "component_updater/recovery_improved_component_installer.h",
     "component_updater/safety_tips_component_installer.cc",
     "component_updater/safety_tips_component_installer.h",
+    "component_updater/ssl_error_assistant_component_installer.cc",
+    "component_updater/ssl_error_assistant_component_installer.h",
     "component_updater/sth_set_component_remover.cc",
     "component_updater/sth_set_component_remover.h",
     "component_updater/subresource_filter_component_installer.cc",
@@ -4245,8 +4247,6 @@ jumbo_split_static_library("browser") {
       "captive_portal/captive_portal_tab_helper.h",
       "captive_portal/captive_portal_tab_reloader.cc",
       "captive_portal/captive_portal_tab_reloader.h",
-      "component_updater/ssl_error_assistant_component_installer.cc",
-      "component_updater/ssl_error_assistant_component_installer.h",
       "ssl/captive_portal_metrics_recorder.cc",
       "ssl/captive_portal_metrics_recorder.h",
     ]
