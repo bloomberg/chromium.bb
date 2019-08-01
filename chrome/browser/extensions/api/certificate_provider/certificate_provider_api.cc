@@ -244,7 +244,6 @@ void CertificateProviderStopPinRequestFunction::OnPinRequestStopped() {
   DCHECK(service);
 
   Respond(NoArguments());
-  service->pin_dialog_manager()->OnPinDialogClosed();
 }
 
 CertificateProviderRequestPinFunction::

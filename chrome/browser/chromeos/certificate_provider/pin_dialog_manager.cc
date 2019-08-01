@@ -71,8 +71,9 @@ PinDialogManager::RequestPinResult PinDialogManager::RequestPin(
     if (!active_pin_dialog_->IsLocked())
       return RequestPinResult::kDialogDisplayedAlready;
 
-    // Set the new callback to be used by the view.
-    active_pin_dialog_->SetCallback(std::move(callback));
+    DCHECK(!active_request_pin_callback_);
+    active_request_pin_callback_ = std::move(callback);
+
     active_pin_dialog_->SetDialogParameters(code_type, error_type,
                                             attempts_left, accept_input);
     active_pin_dialog_->DialogModelChanged();
@@ -88,9 +89,16 @@ PinDialogManager::RequestPinResult PinDialogManager::RequestPin(
   if (current_time - sign_request_times_[key] > kSignRequestIdTimeout)
     return RequestPinResult::kInvalidId;
 
+  DCHECK(!active_request_pin_callback_);
+  active_request_pin_callback_ = std::move(callback);
+
   active_dialog_extension_id_ = extension_id;
-  active_pin_dialog_ = new RequestPinView(
-      extension_name, code_type, attempts_left, std::move(callback), this);
+  active_pin_dialog_ =
+      new RequestPinView(extension_name, code_type, attempts_left,
+                         base::BindRepeating(&PinDialogManager::OnPinEntered,
+                                             weak_factory_.GetWeakPtr()),
+                         base::BindOnce(&PinDialogManager::OnViewDestroyed,
+                                        weak_factory_.GetWeakPtr()));
 
   const gfx::NativeWindow parent = GetBrowserParentWindow();
   // If there is no parent, falls back to the root window for new windows.
@@ -99,18 +107,6 @@ PinDialogManager::RequestPinResult PinDialogManager::RequestPin(
   active_window_->Show();
 
   return RequestPinResult::kSuccess;
-}
-
-void PinDialogManager::OnPinDialogInput() {
-  last_response_closed_[active_dialog_extension_id_] = false;
-}
-
-void PinDialogManager::OnPinDialogClosed() {
-  last_response_closed_[active_dialog_extension_id_] = true;
-  // |active_pin_dialog_| is managed by |active_window_|. This local copy of
-  // the pointer is reset here to allow a new dialog to be created when a new
-  // request comes.
-  active_pin_dialog_ = nullptr;
 }
 
 PinDialogManager::StopPinRequestResult
@@ -126,12 +122,8 @@ PinDialogManager::StopPinRequestWithError(
   if (!active_pin_dialog_->IsLocked())
     return StopPinRequestResult::kNoUserInput;
 
-  active_pin_dialog_->SetCallback(base::BindOnce(
-      [](StopPinRequestCallback callback, const std::string& user_input) {
-        DCHECK(user_input.empty());
-        std::move(callback).Run();
-      },
-      std::move(callback)));
+  DCHECK(!active_stop_pin_request_callback_);
+  active_stop_pin_request_callback_ = std::move(callback);
   active_pin_dialog_->SetDialogParameters(
       RequestPinView::RequestPinCodeType::UNCHANGED, error_type,
       /*attempts_left=*/-1,
@@ -154,10 +146,13 @@ bool PinDialogManager::CloseDialog(const std::string& extension_id) {
     return false;
   }
 
-  // Close the window. |active_pin_dialog_| gets deleted inside Close().
+  // The view destruction may happen asynchronously after the Close() call. For
+  // simplicity, clear our state and execute the callback immediately.
   active_window_->Close();
-  active_pin_dialog_ = nullptr;
-
+  if (active_pin_dialog_) {
+    weak_factory_.InvalidateWeakPtrs();
+    OnPinDialogClosed();
+  }
   return true;
 }
 
@@ -174,6 +169,31 @@ void PinDialogManager::ExtensionUnloaded(const std::string& extension_id) {
     else
       ++it;
   }
+}
+
+void PinDialogManager::OnPinEntered(const std::string& user_input) {
+  DCHECK(!active_stop_pin_request_callback_);
+  last_response_closed_[active_dialog_extension_id_] = false;
+  if (active_request_pin_callback_)
+    std::move(active_request_pin_callback_).Run(user_input);
+}
+
+void PinDialogManager::OnViewDestroyed() {
+  OnPinDialogClosed();
+}
+
+void PinDialogManager::OnPinDialogClosed() {
+  DCHECK(active_pin_dialog_);
+  DCHECK(!active_request_pin_callback_ || !active_stop_pin_request_callback_);
+
+  active_pin_dialog_ = nullptr;
+  active_window_ = nullptr;
+  last_response_closed_[active_dialog_extension_id_] = true;
+  active_dialog_extension_id_.clear();
+  if (active_request_pin_callback_)
+    std::move(active_request_pin_callback_).Run(/*user_input=*/std::string());
+  if (active_stop_pin_request_callback_)
+    std::move(active_stop_pin_request_callback_).Run();
 }
 
 }  // namespace chromeos

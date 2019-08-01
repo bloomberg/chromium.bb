@@ -21,7 +21,7 @@ namespace chromeos {
 // Manages the state of the dialog that requests the PIN from user. Used by the
 // extensions that need to request the PIN. Implemented as requirement for
 // crbug.com/612886
-class PinDialogManager final : RequestPinView::Delegate {
+class PinDialogManager final {
  public:
   enum class RequestPinResult {
     kSuccess,
@@ -75,10 +75,6 @@ class PinDialogManager final : RequestPinView::Delegate {
                               int attempts_left,
                               RequestPinCallback callback);
 
-  // chromeos::RequestPinView::Delegate overrides.
-  void OnPinDialogInput() override;
-  void OnPinDialogClosed() override;
-
   // Updates the existing dialog with new error message. Runs |callback| when
   // user closes the dialog. Returns whether the provided |extension_id| matches
   // the extension owning the active dialog.
@@ -105,6 +101,16 @@ class PinDialogManager final : RequestPinView::Delegate {
  private:
   using ExtensionNameRequestIdPair = std::pair<std::string, int>;
 
+  // The callback that gets invoked once the user sends some input into the PIN
+  // dialog.
+  void OnPinEntered(const std::string& user_input);
+  // The callback that gets invoked once the PIN dialog's view gets destroyed.
+  void OnViewDestroyed();
+
+  // Called when the PIN dialog is closed. Cleans up the internal state and runs
+  // the needed callbacks.
+  void OnPinDialogClosed();
+
   // Tells whether user closed the last request PIN dialog issued by an
   // extension. The extension_id is the key and value is true if user closed the
   // dialog. Used to determine if the limit of dialogs rejected by the user has
@@ -120,6 +126,8 @@ class PinDialogManager final : RequestPinView::Delegate {
   RequestPinView* active_pin_dialog_ = nullptr;
   std::string active_dialog_extension_id_;
   views::Widget* active_window_ = nullptr;
+  RequestPinCallback active_request_pin_callback_;
+  StopPinRequestCallback active_stop_pin_request_callback_;
 
   base::WeakPtrFactory<PinDialogManager> weak_factory_{this};
 };

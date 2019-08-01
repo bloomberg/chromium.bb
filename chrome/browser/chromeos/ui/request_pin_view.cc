@@ -33,14 +33,15 @@ constexpr int kDefaultTextWidth = 200;
 
 }  // namespace
 
-RequestPinView::RequestPinView(const std::string& extension_name,
-                               RequestPinView::RequestPinCodeType code_type,
-                               int attempts_left,
-                               RequestPinCallback callback,
-                               Delegate* delegate)
-    : callback_(std::move(callback)), delegate_(delegate) {
+RequestPinView::RequestPinView(
+    const std::string& extension_name,
+    RequestPinView::RequestPinCodeType code_type,
+    int attempts_left,
+    const PinEnteredCallback& pin_entered_callback,
+    ViewDestructionCallback view_destruction_callback)
+    : pin_entered_callback_(pin_entered_callback),
+      view_destruction_callback_(std::move(view_destruction_callback)) {
   DCHECK_NE(code_type, RequestPinCodeType::UNCHANGED);
-  DCHECK(delegate);
   Init();
   SetExtensionName(extension_name);
   const bool accept_input = (attempts_left != 0);
@@ -49,13 +50,8 @@ RequestPinView::RequestPinView(const std::string& extension_name,
   chrome::RecordDialogCreation(chrome::DialogIdentifier::REQUEST_PIN);
 }
 
-// When the parent window is closed while the dialog is active, this object is
-// destroyed without triggering Accept or Cancel. If the callback_ wasn't called
-// it needs to send the response.
 RequestPinView::~RequestPinView() {
-  if (callback_)
-    std::move(callback_).Run(/*user_input=*/std::string());
-  delegate_->OnPinDialogClosed();
+  std::move(view_destruction_callback_).Run();
 }
 
 void RequestPinView::ContentsChanged(views::Textfield* sender,
@@ -64,16 +60,15 @@ void RequestPinView::ContentsChanged(views::Textfield* sender,
 }
 
 bool RequestPinView::Cancel() {
-  // Destructor will be called after this which notifies the delegate.
+  // Destructor will be called after this which notifies the callback.
   return true;
 }
 
 bool RequestPinView::Accept() {
-  DCHECK(!callback_.is_null());
-
   if (!textfield_->GetEnabled())
     return true;
   DCHECK(!textfield_->GetText().empty());
+  DCHECK(!locked_);
 
   error_label_->SetVisible(true);
   error_label_->SetText(
@@ -84,9 +79,9 @@ bool RequestPinView::Accept() {
   // The |textfield_| and OK button become disabled, but the user still can
   // close the dialog.
   SetAcceptInput(false);
-  std::move(callback_).Run(base::UTF16ToUTF8(textfield_->GetText()));
+  pin_entered_callback_.Run(base::UTF16ToUTF8(textfield_->GetText()));
+  locked_ = true;
   DialogModelChanged();
-  delegate_->OnPinDialogInput();
 
   return false;
 }
@@ -96,7 +91,7 @@ bool RequestPinView::IsDialogButtonEnabled(ui::DialogButton button) const {
     case ui::DialogButton::DIALOG_BUTTON_CANCEL:
       return true;
     case ui::DialogButton::DIALOG_BUTTON_OK:
-      if (callback_.is_null())
+      if (locked_)
         return false;
       // Not locked but the |textfield_| is not enabled. It's just a
       // notification to the user and [OK] button can be used to close the
@@ -131,12 +126,7 @@ gfx::Size RequestPinView::CalculatePreferredSize() const {
 }
 
 bool RequestPinView::IsLocked() const {
-  return callback_.is_null();
-}
-
-void RequestPinView::SetCallback(RequestPinCallback callback) {
-  DCHECK(!callback_);
-  callback_ = std::move(callback);
+  return locked_;
 }
 
 void RequestPinView::SetDialogParameters(
@@ -144,6 +134,7 @@ void RequestPinView::SetDialogParameters(
     RequestPinView::RequestPinErrorType error_type,
     int attempts_left,
     bool accept_input) {
+  locked_ = false;
   SetErrorMessage(error_type, attempts_left);
   SetAcceptInput(accept_input);
 
