@@ -13,8 +13,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_diagnosis_runner.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher_update_checker.h"
@@ -24,6 +22,8 @@
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/crx_file/id_util.h"
 #include "components/session_manager/core/session_manager.h"
@@ -427,11 +427,11 @@ void StartupAppLauncher::LaunchApp() {
   SYSLOG(INFO) << "Attempt to launch app.";
 
   // Always open the app in a window.
-  apps::LaunchService::Get(profile_)->OpenApplication(
+  OpenApplication(
       AppLaunchParams(profile_, extension->id(),
-                      apps::mojom::LaunchContainer::kLaunchContainerWindow,
+                      extensions::LaunchContainer::kLaunchContainerWindow,
                       WindowOpenDisposition::NEW_WINDOW,
-                      apps::mojom::AppLaunchSource::kSourceKiosk));
+                      extensions::AppLaunchSource::kSourceKiosk));
 
   KioskAppManager::Get()->InitSession(profile_, app_id_);
   session_manager::SessionManager::Get()->SessionStarted();

@@ -19,7 +19,6 @@
 #include "base/system/sys_info.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
-#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/download/download_shelf.h"
@@ -33,6 +32,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -140,10 +140,10 @@ void LaunchReleaseNotesImpl(Profile* profile) {
           extensions::ExtensionRegistry::EVERYTHING);
   if (extension) {
     AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
-        profile, extension, 0, apps::mojom::AppLaunchSource::kSourceUntracked,
+        profile, extension, 0, extensions::AppLaunchSource::kSourceUntracked,
         -1);
     params.override_url = GURL(BuildQueryString(profile));
-    apps::LaunchService::Get(profile)->OpenApplication(params);
+    OpenApplication(params);
     return;
   }
   DVLOG(1) << "ReleaseNotes App Not Found";
