@@ -22,6 +22,8 @@ class Point3F;
 
 namespace device {
 
+class OpenXrGamepadHelper;
+
 class OpenXrApiWrapper {
  public:
   OpenXrApiWrapper();
@@ -32,7 +34,8 @@ class OpenXrApiWrapper {
   static bool IsHardwareAvailable();
   static bool IsApiAvailable();
 
-  XrResult StartSession(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device);
+  XrResult StartSession(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
+                        std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
 
   XrResult BeginFrame(Microsoft::WRL::ComPtr<ID3D11Texture2D>* texture);
   XrResult EndFrame();
@@ -59,6 +62,8 @@ class OpenXrApiWrapper {
   XrResult CreateSwapchain();
   XrResult CreateSpace(XrReferenceSpaceType type, XrSpace* space);
   XrResult CreateViewSpace();
+  XrResult CreateGamepadHelper(
+      std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
 
   XrResult BeginSession();
   XrResult UpdateProjectionLayers();
@@ -73,7 +78,7 @@ class OpenXrApiWrapper {
 
   uint32_t GetRecommendedSwapchainSampleCount() const;
 
-  // OpenXR objects
+  // OpenXr objects
 
   // These objects are valid on successful initialization.
   XrInstance instance_;

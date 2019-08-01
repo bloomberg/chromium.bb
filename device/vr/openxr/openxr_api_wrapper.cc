@@ -10,6 +10,7 @@
 #include <array>
 
 #include "base/logging.h"
+#include "device/vr/openxr/openxr_gamepad_helper.h"
 #include "device/vr/openxr/openxr_util.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quaternion.h"
@@ -137,7 +138,7 @@ bool OpenXrApiWrapper::IsInitialized() const {
 }
 
 void OpenXrApiWrapper::Uninitialize() {
-  // Destroying an instance in OpenXR also destroys all child objects of that
+  // Destroying an instance in OpenXr also destroys all child objects of that
   // instance (including the session, swapchain, and spaces objects),
   // so they don't need to be manually destroyed.
   if (HasInstance()) {
@@ -198,7 +199,7 @@ XrResult OpenXrApiWrapper::InitializeSystem() {
   RETURN_IF_XR_FAILED(xrEnumerateViewConfigurationViews(
       instance_, system, kSupportedViewConfiguration, 0, &view_count, nullptr));
 
-  // It would be an error for an OpenXR runtime to return anything other than 2
+  // It would be an error for an OpenXr runtime to return anything other than 2
   // views to an app that only requested
   // XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO.
   DCHECK(view_count == kNumViews);
@@ -251,7 +252,8 @@ XrResult OpenXrApiWrapper::PickEnvironmentBlendMode(XrSystemId system) {
 // this OpenXrApiWrapper object on failure to clean up any intermediate
 // objects that may have been created before the failure.
 XrResult OpenXrApiWrapper::StartSession(
-    const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device) {
+    const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
+    std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper) {
   DCHECK(d3d_device.Get());
   DCHECK(IsInitialized());
 
@@ -262,6 +264,7 @@ XrResult OpenXrApiWrapper::StartSession(
   RETURN_IF_XR_FAILED(
       CreateSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, &local_space_));
   RETURN_IF_XR_FAILED(CreateSpace(XR_REFERENCE_SPACE_TYPE_VIEW, &view_space_));
+  RETURN_IF_XR_FAILED(CreateGamepadHelper(gamepad_helper));
   RETURN_IF_XR_FAILED(BeginSession());
 
   // Since the objects in these arrays are used on every frame,
@@ -275,6 +278,7 @@ XrResult OpenXrApiWrapper::StartSession(
   DCHECK(HasColorSwapChain());
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_VIEW));
+  DCHECK(gamepad_helper);
 
   return xr_result;
 }
@@ -353,6 +357,17 @@ XrResult OpenXrApiWrapper::CreateSpace(XrReferenceSpaceType type,
   space_create_info.poseInReferenceSpace = PoseIdentity();
 
   return xrCreateReferenceSpace(session_, &space_create_info, space);
+}
+
+XrResult OpenXrApiWrapper::CreateGamepadHelper(
+    std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper) {
+  DCHECK(HasSession());
+  DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
+
+  XrResult xr_result = OpenXrGamepadHelper::GetOpenXrGamepadHelper(
+      instance_, session_, local_space_, gamepad_helper);
+
+  return xr_result;
 }
 
 XrResult OpenXrApiWrapper::BeginSession() {
