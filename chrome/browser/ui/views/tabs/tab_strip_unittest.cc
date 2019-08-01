@@ -147,7 +147,7 @@ class TabStripTest : public ChromeViewsTestBase,
     init_params.ownership =
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     init_params.bounds = gfx::Rect(0, 0, 200, 200);
-    widget_->Init(init_params);
+    widget_->Init(std::move(init_params));
     widget_->SetContentsView(parent);
   }
 

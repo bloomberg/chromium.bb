@@ -86,7 +86,7 @@ void RoundedLabelWidget::Init(const InitParams& params) {
   widget_params.accept_events = false;
   widget_params.parent = params.parent;
   set_focus_on_creation(false);
-  views::Widget::Init(widget_params);
+  views::Widget::Init(std::move(widget_params));
 
   SetContentsView(new RoundedLabelView(
       params.horizontal_padding, params.vertical_padding,

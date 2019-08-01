@@ -876,7 +876,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     params.bounds = gfx::Rect(5, 5, 20, 20);
     params.context = ash_test_helper()->CurrentContext();
     views::Widget* widget = new views::Widget();
-    widget->Init(params);
+    widget->Init(std::move(params));
     // Set ARC id before showing the window to be recognized in
     // ArcAppWindowLauncherController.
     exo::SetShellApplicationId(widget->GetNativeWindow(), window_app_id);
@@ -923,7 +923,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     params.context = GetContext();
     params.bounds = gfx::Rect(5, 5, 20, 20);
     views::Widget* widget = new views::Widget();
-    widget->Init(params);
+    widget->Init(std::move(params));
 
     aura::Window* window = widget->GetNativeWindow();
     const ash::ShelfID shelf_id(app_id);

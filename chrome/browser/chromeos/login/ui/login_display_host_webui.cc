@@ -870,7 +870,7 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   ash_util::SetupWidgetInitParamsForContainer(
       &params, ash::kShellWindowId_LockScreenContainer);
   login_window_ = new views::Widget;
-  login_window_->Init(params);
+  login_window_->Init(std::move(params));
 
   login_view_ = new WebUILoginView(WebUILoginView::WebViewSettings());
   login_view_->Init();

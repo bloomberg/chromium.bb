@@ -445,7 +445,7 @@ void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
       Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer);
   DividerView* divider_view = new DividerView(this);
   divider_widget_->set_focus_on_creation(false);
-  divider_widget_->Init(params);
+  divider_widget_->Init(std::move(params));
   aura::Window* widget_window = divider_widget_->GetNativeWindow();
   widget_window->SetProperty(kHideInDeskMiniViewKey, true);
   divider_widget_->SetVisibilityAnimationTransition(

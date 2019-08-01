@@ -36,7 +36,7 @@ class ExtensionsMenuButtonTest : public BrowserWithTestWindowTest {
         CreateNativeWidget(NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA,
                            &init_params, widget_.get());
 #endif
-    widget_->Init(init_params);
+    widget_->Init(std::move(init_params));
 
     auto controller =
         std::make_unique<TestToolbarActionViewController>("hello");

@@ -108,7 +108,7 @@ class CaptivePortalDialogDelegate
         &params, ash::kShellWindowId_LockSystemModalContainer);
 
     widget_ = new views::Widget;
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->SetBounds(display::Screen::GetScreen()
                            ->GetDisplayNearestWindow(widget_->GetNativeWindow())
                            .work_area());
@@ -231,7 +231,7 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
       &params, ash::kShellWindowId_LockScreenContainer);
 
   dialog_widget_ = new views::Widget;
-  dialog_widget_->Init(params);
+  dialog_widget_->Init(std::move(params));
 
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       dialog_view_->web_contents());

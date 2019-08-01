@@ -171,7 +171,7 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   params.bounds = bounds;
   auto widget = std::make_unique<views::Widget>();
   widget->set_focus_on_creation(false);
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // Show plus icon if drag a tab from a multi-tab window.
   widget->SetContentsView(new DropTargetView(

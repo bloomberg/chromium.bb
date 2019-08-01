@@ -94,7 +94,7 @@ class OverviewHighlightController::HighlightWidget : public views::Widget {
     params.parent =
         root_window->GetChildById(kShellWindowId_WallpaperContainer);
     set_focus_on_creation(false);
-    Init(params);
+    Init(std::move(params));
 
     aura::Window* widget_window = GetNativeWindow();
     widget_window->SetProperty(kHideInDeskMiniViewKey, true);

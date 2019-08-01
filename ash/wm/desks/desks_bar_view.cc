@@ -153,7 +153,7 @@ std::unique_ptr<views::Widget> DesksBarView::CreateDesksWidget(
   params.parent = root->GetChildById(kShellWindowId_WallpaperContainer);
   params.bounds = bounds;
   params.name = "VirtualDesksWidget";
-  widget->Init(params);
+  widget->Init(std::move(params));
   ::wm::SetWindowVisibilityAnimationTransition(widget->GetNativeWindow(),
                                                ::wm::ANIMATE_NONE);
 

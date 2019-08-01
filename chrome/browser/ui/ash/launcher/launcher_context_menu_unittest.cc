@@ -101,7 +101,7 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     views::Widget* widget = new views::Widget();
     params.context = CurrentContext();
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     widget->Activate();
     exo::SetShellApplicationId(widget->GetNativeWindow(), window_app_id);

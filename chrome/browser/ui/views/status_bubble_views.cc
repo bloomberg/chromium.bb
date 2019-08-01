@@ -690,7 +690,7 @@ void StatusBubbleViews::InitPopup() {
     params.parent = frame->GetNativeView();
     params.context = frame->GetNativeWindow();
     params.name = "StatusBubble";
-    popup_->Init(params);
+    popup_->Init(std::move(params));
     // We do our own animation and don't want any from the system.
     popup_->SetVisibilityChangedAnimationsEnabled(false);
     popup_->SetOpacity(0.f);

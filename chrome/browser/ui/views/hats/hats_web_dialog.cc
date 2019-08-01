@@ -89,8 +89,9 @@ void HatsWebDialog::Show(const Browser* browser, const std::string& site_id) {
       bounds.x() +
           std::max(0, bounds.width() / 2 - kDefaultHatsDialogWidth / 2),
       bounds.bottom(), kDefaultHatsDialogWidth, kDefaultHatsDialogHeight);
-  chrome::ShowWebDialogWithParams(browser_view->GetWidget()->GetNativeView(),
-                                  profile, hats_dialog, &params);
+  chrome::ShowWebDialogWithParams(
+      browser_view->GetWidget()->GetNativeView(), profile, hats_dialog,
+      base::make_optional<views::Widget::InitParams>(std::move(params)));
 }
 
 HatsWebDialog::HatsWebDialog(const std::string& site_id) : site_id_(site_id) {

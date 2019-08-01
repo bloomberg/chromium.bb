@@ -82,7 +82,7 @@ void ShowAppInfoInAppList(const gfx::Rect& app_info_bounds,
                                                        app_info_bounds);
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_DEFAULT;
   params.shadow_elevation = kDialogShadowElevation;
-  dialog_widget->Init(params);
+  dialog_widget->Init(std::move(params));
   // The title is not shown on the dialog, but it is used for overview mode.
   dialog_widget->GetNativeWindow()->SetTitle(base::UTF8ToUTF16(app->name()));
   dialog_widget->Show();

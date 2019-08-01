@@ -261,7 +261,7 @@ void OverviewSession::Init(const WindowList& windows,
   params.name = "OverviewModeFocusedWidget";
   params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
       kShellWindowId_StatusContainer);
-  overview_focus_widget_->Init(params);
+  overview_focus_widget_->Init(std::move(params));
 
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);
 
@@ -1026,7 +1026,7 @@ void OverviewSession::UpdateNoWindowsWidget() {
     params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
         desks_util::GetActiveDeskContainerId());
     no_windows_widget_ = std::make_unique<RoundedLabelWidget>();
-    no_windows_widget_->Init(params);
+    no_windows_widget_->Init(std::move(params));
 
     aura::Window* widget_window = no_windows_widget_->GetNativeWindow();
     widget_window->SetProperty(kHideInDeskMiniViewKey, true);

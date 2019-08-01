@@ -174,7 +174,7 @@ class ButtonTest : public ViewsTestBase {
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->Show();
 
     button_ = std::make_unique<TestButton>(false);
@@ -260,7 +260,7 @@ TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(700, 700, 10, 10);
-    second_widget.Init(params);
+    second_widget.Init(std::move(params));
     second_widget.Show();
     second_widget.GetNativeWindow()->SetCapture();
 

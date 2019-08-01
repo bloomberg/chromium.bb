@@ -390,7 +390,7 @@ TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
   params.native_widget = CreateNativeWidget(
       NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA, &params, &widget);
 #endif
-  widget.Init(params);
+  widget.Init(std::move(params));
   widget.Show();
   widget.GetRootView()->AddChildView(bookmark_bar_view_.get());
 
