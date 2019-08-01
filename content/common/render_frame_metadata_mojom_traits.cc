@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/render_frame_metadata_struct_traits.h"
+#include "content/common/render_frame_metadata_mojom_traits.h"
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_INPUT_INPUT_EVENT_STRUCT_TRAITS_H_
-#define CONTENT_COMMON_INPUT_INPUT_EVENT_STRUCT_TRAITS_H_
+#ifndef CONTENT_COMMON_INPUT_INPUT_EVENT_MOJOM_TRAITS_H_
+#define CONTENT_COMMON_INPUT_INPUT_EVENT_MOJOM_TRAITS_H_
 
 #include "content/common/input/input_handler.mojom.h"
 
@@ -46,4 +46,4 @@ struct StructTraits<content::mojom::EventDataView, InputEventUniquePtr> {
 
 }  // namespace mojo
 
-#endif  // CONTENT_COMMON_INPUT_INPUT_EVENT_STRUCT_TRAITS_H_
+#endif  // CONTENT_COMMON_INPUT_INPUT_EVENT_MOJOM_TRAITS_H_

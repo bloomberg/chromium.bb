@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_RENDER_FRAME_METADATA_STRUCT_TRAITS_H_
-#define CONTENT_COMMON_RENDER_FRAME_METADATA_STRUCT_TRAITS_H_
+#ifndef CONTENT_COMMON_RENDER_FRAME_METADATA_MOJOM_TRAITS_H_
+#define CONTENT_COMMON_RENDER_FRAME_METADATA_MOJOM_TRAITS_H_
 
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -116,4 +116,4 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
 
 }  // namespace mojo
 
-#endif  // CONTENT_COMMON_RENDER_FRAME_METADATA_STRUCT_TRAITS_H_
+#endif  // CONTENT_COMMON_RENDER_FRAME_METADATA_MOJOM_TRAITS_H_

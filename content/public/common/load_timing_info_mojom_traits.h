@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_LOAD_TIMING_INFO_STRUCT_TRAITS_H_
-#define CONTENT_PUBLIC_COMMON_LOAD_TIMING_INFO_STRUCT_TRAITS_H_
+#ifndef CONTENT_PUBLIC_COMMON_LOAD_TIMING_INFO_MOJOM_TRAITS_H_
+#define CONTENT_PUBLIC_COMMON_LOAD_TIMING_INFO_MOJOM_TRAITS_H_
 
 #include "content/public/common/load_timing_info.mojom.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
@@ -110,4 +110,4 @@ struct StructTraits<content::mojom::LoadTimingInfoDataView,
 
 }  // namespace mojo
 
-#endif  // CONTENT_PUBLIC_COMMON_LOAD_TIMING_INFO_STRUCT_TRAITS_H_
+#endif  // CONTENT_PUBLIC_COMMON_LOAD_TIMING_INFO_MOJOM_TRAITS_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_RESOURCE_TYPE_ENUM_TRAITS_H_
-#define CONTENT_PUBLIC_COMMON_RESOURCE_TYPE_ENUM_TRAITS_H_
+#ifndef CONTENT_PUBLIC_COMMON_RESOURCE_TYPE_MOJOM_TRAITS_H_
+#define CONTENT_PUBLIC_COMMON_RESOURCE_TYPE_MOJOM_TRAITS_H_
 
 #include "content/public/common/resource_type.h"
 #include "content/public/common/resource_type.mojom-shared.h"
@@ -19,4 +19,4 @@ struct EnumTraits<content::mojom::ResourceType, content::ResourceType> {
 };
 }  // namespace mojo
 
-#endif  // CONTENT_PUBLIC_COMMON_RESOURCE_TYPE_ENUM_TRAITS_H_
+#endif  // CONTENT_PUBLIC_COMMON_RESOURCE_TYPE_MOJOM_TRAITS_H_

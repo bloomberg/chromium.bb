@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_INPUT_TOUCH_ACTION_OPTIONAL_STRUCT_TRAITS_H_
-#define CONTENT_COMMON_INPUT_TOUCH_ACTION_OPTIONAL_STRUCT_TRAITS_H_
+#ifndef CONTENT_COMMON_INPUT_TOUCH_ACTION_OPTIONAL_MOJOM_TRAITS_H_
+#define CONTENT_COMMON_INPUT_TOUCH_ACTION_OPTIONAL_MOJOM_TRAITS_H_
 
 #include "base/optional.h"
 #include "content/common/input/input_handler.mojom.h"
@@ -20,4 +20,4 @@ struct StructTraits<content::mojom::TouchActionOptionalDataView,
 
 }  // namespace mojo
 
-#endif  // CONTENT_COMMON_INPUT_TOUCH_ACTION_OPTIONAL_STRUCT_TRAITS_H_
+#endif  // CONTENT_COMMON_INPUT_TOUCH_ACTION_OPTIONAL_MOJOM_TRAITS_H_
