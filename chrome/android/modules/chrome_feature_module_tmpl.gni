@@ -36,7 +36,10 @@ template("chrome_feature_module") {
     # TODO(tiborg): Remove module_name flag from android_app_bundle_module.
     module_name = "${_module_desc.name}${invoker.module_name_suffix}"
     target_sdk_version = android_sdk_version
-    deps = _module_desc.java_deps
+    deps = []
+    if (defined(_module_desc.java_deps)) {
+      deps += _module_desc.java_deps
+    }
 
     if (defined(_module_desc.proguard_async) && _module_desc.proguard_async) {
       enable_class_deps_output = "${_module_desc.name}_constant_pool_deps.txt"
