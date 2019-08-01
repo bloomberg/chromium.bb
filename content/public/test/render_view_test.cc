@@ -447,9 +447,17 @@ void RenderViewTest::SetUp() {
   view_params->never_visible = false;
   view_params->visual_properties = *InitialVisualProperties();
 
-  view_ = RenderViewImpl::Create(compositor_deps_.get(), std::move(view_params),
-                                 RenderWidget::ShowCallback(),
-                                 base::ThreadTaskRunnerHandle::Get());
+  RenderViewImpl* view_impl = RenderViewImpl::Create(
+      compositor_deps_.get(), std::move(view_params),
+      RenderWidget::ShowCallback(), base::ThreadTaskRunnerHandle::Get());
+
+  WidgetMsg_WasShown msg(view_impl->GetWidget()->routing_id(),
+                         /* show_request_timestamp=*/base::TimeTicks(),
+                         /* was_evicted=*/false,
+                         /*record_tab_switch_time_request=*/base::nullopt);
+  view_impl->GetWidget()->OnMessageReceived(msg);
+
+  view_ = view_impl;
 }
 
 void RenderViewTest::TearDown() {

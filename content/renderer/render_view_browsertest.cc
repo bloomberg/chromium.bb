@@ -1052,7 +1052,6 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
 
   mojom::CreateFrameWidgetParams widget_params;
   widget_params.routing_id = view()->GetRoutingID();
-  widget_params.hidden = false;
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
       std::move(stub_document_interface_broker_content),
@@ -1127,7 +1126,6 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
 
   mojom::CreateFrameWidgetParams widget_params;
   widget_params.routing_id = MSG_ROUTING_NONE;
-  widget_params.hidden = false;
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
       std::move(stub_document_interface_broker_content),

@@ -409,18 +409,17 @@ scoped_refptr<RenderWidget> RenderWidget::CreateForFrame(
     const ScreenInfo& screen_info,
     blink::WebDisplayMode display_mode,
     bool is_frozen,
-    bool hidden,
     bool never_visible,
     mojom::WidgetRequest widget_request) {
   if (g_create_render_widget_for_frame) {
     return g_create_render_widget_for_frame(
         widget_routing_id, compositor_deps, screen_info, display_mode,
-        is_frozen, hidden, never_visible, std::move(widget_request));
+        is_frozen, never_visible, std::move(widget_request));
   }
 
   return base::WrapRefCounted(new RenderWidget(
       widget_routing_id, compositor_deps, screen_info, display_mode, is_frozen,
-      hidden, never_visible, std::move(widget_request)));
+      /*hidden=*/true, never_visible, std::move(widget_request)));
 }
 
 scoped_refptr<RenderWidget> RenderWidget::CreateForPopup(
@@ -1101,6 +1100,8 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
   if (!GetWebWidget())
     return;
 
+  DCHECK(!is_frozen_);
+
   // We record metrics only when running in multi-threaded mode, not
   // single-thread mode for testing.
   bool record_main_frame_metrics =
@@ -1297,6 +1298,8 @@ void RenderWidget::SetBackgroundColor(SkColor color) {
 void RenderWidget::UpdateVisualState() {
   if (!GetWebWidget())
     return;
+
+  DCHECK(!is_frozen_);
 
   // We record metrics only when running in multi-threaded mode, not
   // single-thread mode for testing.
@@ -1827,6 +1830,11 @@ void RenderWidget::StartStopCompositor() {
   if (compositor_never_visible_)
     return;
 
+  // TODO(danakj): We should start the compositor before becoming shown for
+  // *all* provisional frames not just provisional main frames (as they become
+  // thawed). However we need to also prevent BeginMainFrame from occurring, in
+  // both cases, until the frame is attached at least. And in the case of main
+  // frames, until blink requests them through StopDeferringMainFrameUpdate().
   if (is_frozen_) {
     layer_tree_view_->SetVisible(false);
     // Drop all gpu resources, this makes SetVisible(true) more expensive/slower

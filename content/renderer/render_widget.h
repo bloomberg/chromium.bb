@@ -169,9 +169,8 @@ class CONTENT_EXPORT RenderWidget
                                       CompositorDependencies*,
                                       const ScreenInfo&,
                                       blink::WebDisplayMode display_mode,
-                                      bool,
-                                      bool,
-                                      bool,
+                                      bool is_frozen,
+                                      bool never_visible,
                                       mojom::WidgetRequest widget_request);
   // Overrides the implementation of CreateForFrame() function below. Used by
   // web tests to return a partial fake of RenderWidget.
@@ -187,7 +186,6 @@ class CONTENT_EXPORT RenderWidget
       const ScreenInfo& screen_info,
       blink::WebDisplayMode display_mode,
       bool is_frozen,
-      bool hidden,
       bool never_visible,
       mojom::WidgetRequest widget_request);
 

@@ -1422,7 +1422,6 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker,
     int32_t widget_routing_id,
-    bool hidden,
     const ScreenInfo& screen_info,
     CompositorDependencies* compositor_deps,
     blink::WebFrame* opener,
@@ -1664,8 +1663,8 @@ void RenderFrameImpl::CreateFrame(
     scoped_refptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params.routing_id, compositor_deps, screen_info_from_main_frame,
         blink::kWebDisplayModeUndefined,
-        /*is_frozen=*/false, widget_params.hidden,
-        /*never_visible=*/false, /*widget_request=*/nullptr);
+        /*is_frozen=*/false, /*never_visible=*/false,
+        /*widget_request=*/nullptr);
 
     // Non-owning pointer that is self-referencing and destroyed by calling
     // Close(). We use the new RenderWidget as the client for this

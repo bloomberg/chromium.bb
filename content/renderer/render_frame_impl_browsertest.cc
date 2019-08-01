@@ -99,7 +99,6 @@ class RenderFrameImplTest : public RenderViewTest {
   void LoadChildFrame() {
     mojom::CreateFrameWidgetParams widget_params;
     widget_params.routing_id = kSubframeWidgetRouteId;
-    widget_params.hidden = false;
 
     FrameReplicationState frame_replication_state;
     frame_replication_state.name = "frame";
