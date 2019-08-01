@@ -100,7 +100,7 @@ scoped_refptr<network::SharedURLLoaderFactory>
 AwSafeBrowsingUIManager::GetURLLoaderFactoryOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!shared_url_loader_factory_on_io_) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&AwSafeBrowsingUIManager::CreateURLLoaderFactoryForIO,
                        this, MakeRequest(&url_loader_factory_on_io_)));

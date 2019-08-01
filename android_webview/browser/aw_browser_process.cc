@@ -88,10 +88,10 @@ void AwBrowserProcess::CreateSafeBrowsingUIManager() {
 
 void AwBrowserProcess::CreateSafeBrowsingWhitelistManager() {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::BEST_EFFORT});
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
   safe_browsing_whitelist_manager_ =
       std::make_unique<AwSafeBrowsingWhitelistManager>(background_task_runner,
                                                        io_task_runner);
@@ -171,7 +171,7 @@ namespace {
 std::unique_ptr<net::ProxyConfigServiceAndroid> CreateProxyConfigService() {
   std::unique_ptr<net::ProxyConfigServiceAndroid> config_service_android =
       std::make_unique<net::ProxyConfigServiceAndroid>(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
           base::ThreadTaskRunnerHandle::Get());
 
   config_service_android->set_exclude_pac_url(true);

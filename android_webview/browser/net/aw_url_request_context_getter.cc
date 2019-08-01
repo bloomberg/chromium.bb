@@ -123,10 +123,10 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
   // AwContentBrowserClient::IsHandledURL.
   bool set_protocol = aw_job_factory->SetProtocolHandler(
       url::kFileScheme,
-      std::make_unique<net::FileProtocolHandler>(
-          base::CreateTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
+      std::make_unique<net::FileProtocolHandler>(base::CreateTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
   DCHECK(set_protocol);
   set_protocol = aw_job_factory->SetProtocolHandler(
       url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
@@ -191,7 +191,7 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
   auth_server_allowlist_.Init(
       prefs::kAuthServerWhitelist, user_pref_service,
@@ -361,7 +361,7 @@ net::URLRequestContext* AwURLRequestContextGetter::GetURLRequestContext() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 AwURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+  return base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 }
 
 void AwURLRequestContextGetter::SetHandlersAndInterceptors(

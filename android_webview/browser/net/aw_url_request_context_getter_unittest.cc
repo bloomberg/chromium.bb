@@ -77,8 +77,7 @@ class AwURLRequestContextGetterTest : public ::testing::Test {
     std::unique_ptr<net::ProxyConfigServiceAndroid> config_service_android;
     config_service_android.reset(static_cast<net::ProxyConfigServiceAndroid*>(
         net::ProxyResolutionService::CreateSystemProxyConfigService(
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {content::BrowserThread::IO}))
+            base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}))
             .release()));
 
     getter_ = base::MakeRefCounted<android_webview::AwURLRequestContextGetter>(

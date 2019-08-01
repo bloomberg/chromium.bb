@@ -185,8 +185,8 @@ void AndroidStreamReaderURLRequestJob::OnInputStreamOpened(
   input_stream_reader_wrapper_ = new InputStreamReaderWrapper(
       std::move(input_stream), std::move(input_stream_reader));
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&InputStreamReaderWrapper::Seek,
                      input_stream_reader_wrapper_, byte_range_),
       base::BindOnce(&AndroidStreamReaderURLRequestJob::OnReaderSeekCompleted,
@@ -220,8 +220,8 @@ int AndroidStreamReaderURLRequestJob::ReadRawData(net::IOBuffer* dest,
     return 0;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&InputStreamReaderWrapper::ReadRawData,
                      input_stream_reader_wrapper_, base::RetainedRef(dest),
                      dest_size),
@@ -282,8 +282,8 @@ void AndroidStreamReaderURLRequestJob::DoStart() {
 
   // This could be done in the InputStreamReader but would force more
   // complex synchronization in the delegate.
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTask(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(
           &OpenInputStreamOnWorkerThread, base::ThreadTaskRunnerHandle::Get(),
           // This is intentional - the job could be deleted while the callback
