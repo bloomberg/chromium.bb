@@ -2424,6 +2424,16 @@ void PDFiumEngine::AppendPageRectToPages(const pp::Rect& page_rect,
   }
 }
 
+void PDFiumEngine::LoadPagesInSingleView(std::vector<pp::Rect> page_rects,
+                                         bool reload) {
+  for (size_t i = 0; i < page_rects.size(); ++i) {
+    // Center pages relative to the entire document.
+    page_rects[i].set_x((layout_.size().width() - page_rects[i].width()) / 2);
+    InsetPage(i, page_rects.size(), /*multiplier=*/1, &page_rects[i]);
+    AppendPageRectToPages(page_rects[i], i, reload);
+  }
+}
+
 void PDFiumEngine::LoadPageInfo(bool reload) {
   if (!doc_loader_)
     return;
@@ -2469,12 +2479,7 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     layout_.AppendPageRect(size);
   }
 
-  for (size_t i = 0; i < new_page_count; ++i) {
-    // Center pages relative to the entire document.
-    page_rects[i].set_x((layout_.size().width() - page_rects[i].width()) / 2);
-    InsetPage(i, new_page_count, /*multiplier=*/1, &page_rects[i]);
-    AppendPageRectToPages(page_rects[i], i, reload);
-  }
+  LoadPagesInSingleView(std::move(page_rects), reload);
 
   // Remove pages that do not exist anymore.
   if (pages_.size() > new_page_count) {

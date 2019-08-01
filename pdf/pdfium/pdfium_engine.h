@@ -238,6 +238,10 @@ class PDFiumEngine : public PDFEngine,
                              size_t page_index,
                              bool reload);
 
+  // Formats the pages of |page_rects| for single-view and appends them to
+  // |pages_|.
+  void LoadPagesInSingleView(std::vector<pp::Rect> page_rects, bool reload);
+
   // Loads information about the pages in the document and calculate the
   // document size.
   void LoadPageInfo(bool reload);
