@@ -18,8 +18,7 @@ namespace blink {
 ValueWrapperSyntheticModuleScript*
 ValueWrapperSyntheticModuleScript::CreateJSONWrapperSyntheticModuleScript(
     const base::Optional<ModuleScriptCreationParams>& params,
-    Modulator* settings_object,
-    const ScriptFetchOptions options_) {
+    Modulator* settings_object) {
   DCHECK(settings_object->HasValidContext());
   ScriptState::Scope scope(settings_object->GetScriptState());
   v8::Local<v8::Context> context =
@@ -51,12 +50,12 @@ ValueWrapperSyntheticModuleScript::CreateJSONWrapperSyntheticModuleScript(
     v8::Local<v8::Value> error = exception_state.GetException();
     exception_state.ClearException();
     return ValueWrapperSyntheticModuleScript::CreateWithError(
-        parsed_json, settings_object, params->GetResponseUrl(),
-        params->GetResponseUrl(), options_, error);
+        parsed_json, settings_object, params->GetResponseUrl(), KURL(),
+        ScriptFetchOptions(), error);
   } else {
     return ValueWrapperSyntheticModuleScript::CreateWithDefaultExport(
-        parsed_json, settings_object, params->GetResponseUrl(),
-        params->GetResponseUrl(), options_);
+        parsed_json, settings_object, params->GetResponseUrl(), KURL(),
+        ScriptFetchOptions());
   }
 }
 

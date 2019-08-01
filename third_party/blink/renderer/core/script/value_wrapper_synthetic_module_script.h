@@ -28,8 +28,7 @@ class CORE_EXPORT ValueWrapperSyntheticModuleScript final
   static ValueWrapperSyntheticModuleScript*
   CreateJSONWrapperSyntheticModuleScript(
       const base::Optional<ModuleScriptCreationParams>& params,
-      Modulator* settings_object,
-      const ScriptFetchOptions options_);
+      Modulator* settings_object);
 
   static ValueWrapperSyntheticModuleScript* CreateWithDefaultExport(
       v8::Local<v8::Value> value,
