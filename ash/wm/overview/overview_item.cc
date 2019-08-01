@@ -521,10 +521,9 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
     params.message_id = IDS_ASH_SPLIT_VIEW_CANNOT_SNAP;
     params.parent =
         root_window()->GetChildById(kShellWindowId_AlwaysOnTopContainer);
+    params.hide_in_mini_view = true;
     cannot_snap_widget_ = std::make_unique<RoundedLabelWidget>();
     cannot_snap_widget_->Init(std::move(params));
-    auto* widget_window = cannot_snap_widget_->GetNativeWindow();
-    widget_window->SetProperty(kHideInDeskMiniViewKey, true);
   }
 
   DoSplitviewOpacityAnimation(cannot_snap_widget_->GetNativeWindow()->layer(),
@@ -973,13 +972,13 @@ void OverviewItem::CreateWindowLabel() {
       views::Widget::InitParams::Activatable::ACTIVATABLE_DEFAULT;
   params.accept_events = true;
   params.parent = transform_window_.window()->parent();
+  params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
 
   item_widget_ = std::make_unique<views::Widget>();
   item_widget_->set_focus_on_creation(false);
   item_widget_->Init(std::move(params));
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   widget_window->parent()->StackChildBelow(widget_window, GetWindow());
-  widget_window->SetProperty(kHideInDeskMiniViewKey, true);
 
   shadow_ = std::make_unique<ui::Shadow>();
   shadow_->Init(kShadowElevation);
