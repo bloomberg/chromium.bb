@@ -619,6 +619,7 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       # https://crbug.com/946858
       'amd64-generic-full': site_config.templates.tast_vm_canary_tests,
       'betty-arc64-release': site_config.templates.tast_vm_canary_tests,
+      'betty-arcnext-release': site_config.templates.tast_vm_canary_tests,
       'betty-release': site_config.templates.tast_vm_canary_tests,
 
       'kumo-pre-cq': {
