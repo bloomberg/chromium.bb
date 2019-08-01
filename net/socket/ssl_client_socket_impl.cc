@@ -27,6 +27,7 @@
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
 #include "net/base/features.h"
@@ -69,8 +70,10 @@ namespace net {
 
 namespace {
 
+#if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
 constexpr base::FeatureParam<std::string> kPostQuantumGroup{
     &features::kPostQuantumCECPQ2, "group", ""};
+#endif
 
 // This constant can be any non-negative/non-zero value (eg: it does not
 // overlap with any value of the net::Error range, including net::OK).
@@ -325,6 +328,9 @@ class SSLClientSocketImpl::SSLContext {
         nullptr /* compression not supported */, DecompressBrotliCert);
 #endif
 
+#if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
+    // CECPQ2b is only optimised for x86-64 and aarch64, and is too slow on
+    // other CPUs to even experiment with.
     const std::string post_quantum_group = kPostQuantumGroup.Get();
     if (!post_quantum_group.empty()) {
       bool send_signal = false;
@@ -346,6 +352,7 @@ class SSLClientSocketImpl::SSLContext {
         SSL_CTX_enable_pq_experiment_signal(ssl_ctx_.get());
       }
     }
+#endif
   }
 
   static int ClientCertRequestCallback(SSL* ssl, void* arg) {
