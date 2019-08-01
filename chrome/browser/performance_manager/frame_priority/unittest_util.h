@@ -29,11 +29,13 @@ class DummyVoteConsumer : public VoteConsumer {
   void VoteInvalidated(AcceptedVote* vote) override;
 
   // Checks that the vote at position |index| is valid, and has the
-  // corresponding |voter|, |frame_node| and |priority|.
+  // corresponding |voter|, |frame_node| and |priority|. If |reason| is non-null
+  // then it will be validated as well.
   void ExpectValidVote(size_t index,
                        VoterId voter_id,
                        const FrameNode* frame_node,
-                       base::TaskPriority priority);
+                       base::TaskPriority priority,
+                       const char* reason = nullptr);
 
   VotingChannelFactory voting_channel_factory_;
   std::vector<AcceptedVote> votes_;

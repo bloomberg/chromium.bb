@@ -56,7 +56,8 @@ void DummyVoteConsumer::VoteInvalidated(AcceptedVote* vote) {
 void DummyVoteConsumer::ExpectValidVote(size_t index,
                                         VoterId voter_id,
                                         const FrameNode* frame_node,
-                                        base::TaskPriority priority) {
+                                        base::TaskPriority priority,
+                                        const char* reason) {
   EXPECT_LT(index, votes_.size());
   const AcceptedVote& accepted_vote = votes_[index];
   EXPECT_EQ(this, accepted_vote.consumer());
@@ -66,6 +67,8 @@ void DummyVoteConsumer::ExpectValidVote(size_t index,
   EXPECT_EQ(frame_node, vote.frame_node());
   EXPECT_EQ(priority, vote.priority());
   EXPECT_TRUE(vote.reason());
+  if (reason)
+    EXPECT_EQ(reason, vote.reason());
 }
 
 // static
