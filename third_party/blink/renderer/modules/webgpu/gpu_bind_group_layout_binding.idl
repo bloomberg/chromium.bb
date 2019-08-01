@@ -14,8 +14,8 @@ dictionary GPUBindGroupLayoutBinding {
 
 enum GPUBindingType {
     "uniform-buffer",
-    "dynamic-uniform-buffer",
+    "storage-buffer",
+    "readonly-storage-buffer",
     "sampler",
     "sampled-texture",
-    "storage-buffer",
 };
