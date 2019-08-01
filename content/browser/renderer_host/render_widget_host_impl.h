@@ -770,10 +770,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Marks all views in the frame tree as evicted.
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
 
-  // Ignore any future TouchEvent acks that have an event ID that is in
-  // |acks_to_ignore|.
-  void IgnoreTouchEventAcks(const std::unordered_set<uint32_t>& acks_to_ignore);
-
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -1234,9 +1230,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // True when the cursor has entered the autoscroll mode. A GSB is not
   // necessarily sent yet.
   bool autoscroll_in_progress_ = false;
-
-  // Event IDs for touch event acks that should be ignored.
-  std::unordered_set<uint32_t> touch_event_acks_to_ignore_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 

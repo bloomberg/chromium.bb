@@ -120,14 +120,15 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
 
   void StopTimeoutMonitor();
 
+  // Empties the queue of touch events. This may result in any number of gesture
+  // events being sent to the renderer.
+  void FlushQueue();
+
  protected:
   void SendTouchCancelEventForTouchEvent(
       const TouchEventWithLatencyInfo& event_to_cancel);
   void UpdateTouchConsumerStates(const blink::WebTouchEvent& event,
                                  InputEventAckState ack_result);
-  // Empties the queue of touch events. This may result in any number of gesture
-  // events being sent to the renderer.
-  void FlushQueue();
 
  private:
   friend class InputRouterImplTestBase;
@@ -225,7 +226,7 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   // this is a stricter condition than an empty |touch_consumer_states_|, as it
   // also prevents forwarding of touchstart events for new pointers in the
   // current sequence. This is only used when the event is synthetically
-  // cancelled after a touch timeout.
+  // cancelled after a touch timeout or before a portal activation.
   bool drop_remaining_touches_in_sequence_;
 
   // Optional handler for timed-out touch event acks.
