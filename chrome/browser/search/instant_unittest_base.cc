@@ -35,6 +35,8 @@ InstantUnitTestBase::~InstantUnitTestBase() {
 void InstantUnitTestBase::SetUp() {
   BrowserWithTestWindowTest::SetUp();
 
+  clock_ = new base::SimpleTestClock();
+
   template_url_service_ = TemplateURLServiceFactory::GetForProfile(profile());
   search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service_);
 
@@ -46,6 +48,9 @@ void InstantUnitTestBase::SetUp() {
 }
 
 void InstantUnitTestBase::TearDown() {
+  delete clock_;
+  clock_ = nullptr;
+
   BrowserWithTestWindowTest::TearDown();
 }
 
