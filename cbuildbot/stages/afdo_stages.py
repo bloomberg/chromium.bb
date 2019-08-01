@@ -8,9 +8,11 @@
 from __future__ import print_function
 
 import json
+import multiprocessing
 import os
 import time
 
+from chromite.api.gen.chromite.api import artifacts_pb2
 from chromite.cbuildbot import afdo
 from chromite.cbuildbot import commands
 from chromite.lib import constants
@@ -252,6 +254,7 @@ class AFDOReleaseProfileMergerStage(generic_stages.BuilderStage):
     run_id = str(int(time.time()))
     afdo.UploadReleaseProfiles(gs_context, run_id, merge_plan, merge_results)
 
+
 class OrderfileUpdateChromeEbuildStage(
     generic_stages.BoardSpecificBuilderStage):
   """Updates the Chrome ebuild with the most recent unvetted orderfile."""
@@ -307,3 +310,46 @@ class UploadVettedOrderfileStage(generic_stages.BoardSpecificBuilderStage):
       if not output['status']:
         raise failures_lib.StepFailure(
             'Failed to upload vetted orderfile')
+
+
+class GenerateAFDOArtifactStage(generic_stages.BoardSpecificBuilderStage,
+                                generic_stages.ArchivingStageMixin):
+  """Base class to generate artifacts (benchmark AFDO or orderfile)."""
+  category = constants.CI_INFRA_STAGE
+
+  def __init__(self, *args, **kwargs):
+    if 'is_orderfile' not in kwargs:
+      raise ValueError('Need to specify argument is_orderfile.')
+    self.is_orderfile = kwargs.pop('is_orderfile')
+    super(GenerateAFDOArtifactStage, self).__init__(*args, **kwargs)
+    self._upload_queue = multiprocessing.Queue()
+
+  def PerformStage(self):
+    assert self.archive_path.startswith(self._build_root)
+    with self.ArtifactUploader(self._upload_queue, archive=False):
+      output_path = os.path.abspath(
+          os.path.join(self._build_root, 'chroot', self.archive_path))
+      if self.is_orderfile:
+        artifacts = commands.GenerateAFDOArtifacts(
+            self._build_root, self._current_board,
+            output_path, artifacts_pb2.ORDERFILE)
+      else:
+        artifacts = commands.GenerateAFDOArtifacts(
+            self._build_root, self._current_board,
+            output_path, artifacts_pb2.BENCHMARK_AFDO)
+      # The artifacts are uploaded to centralized GS bucket in the
+      # APIs. Only need to upload to builder's bucket now.
+      for x in artifacts:
+        self._upload_queue.put([os.path.basename(x)])
+
+class GenerateBenchmarkAFDOStage(GenerateAFDOArtifactStage):
+  """Generate benchmark AFDO artifact in the builder."""
+  def __init__(self, *args, **kwargs):
+    super(GenerateBenchmarkAFDOStage, self).__init__(
+        *args, is_orderfile=False, **kwargs)
+
+class GenerateChromeOrderfileStage(GenerateAFDOArtifactStage):
+  """Generate Chrome orderfile in the builder."""
+  def __init__(self, *args, **kwargs):
+    super(GenerateChromeOrderfileStage, self).__init__(
+        *args, is_orderfile=True, **kwargs)

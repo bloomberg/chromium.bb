@@ -223,8 +223,11 @@ class SimpleBuilder(generic_builders.Builder):
     if config.afdo_generate:
       stage_list += [[afdo_stages.AFDODataGenerateStage, board]]
 
+    if config.afdo_generate_async:
+      stage_list += [[afdo_stages.GenerateBenchmarkAFDOStage, board]]
+
     if config.orderfile_generate:
-      stage_list += [[artifact_stages.GenerateOrderfileStage, board]]
+      stage_list += [[afdo_stages.GenerateChromeOrderfileStage, board]]
 
     if config.orderfile_verify:
       stage_list += [[afdo_stages.UploadVettedOrderfileStage, board]]
@@ -329,17 +332,31 @@ class SimpleBuilder(generic_builders.Builder):
     task_runner = self._RunBackgroundStagesForBoardAndMarkAsSuccessful
     with parallel.BackgroundTaskRunner(task_runner) as queue:
       for builder_run, board in tasks:
+        # Skip generate benchmark AFDO if the board is not suitable or
+        # if it's already in the bucket
+        if builder_run.config.afdo_generate_async and \
+           toolchain_util.CanGenerateAFDOData(board) and \
+           toolchain_util.CheckAFDOArtifactExists(
+               buildroot=builder_run.buildroot,
+               board=board,
+               target='benchmark_afdo'):
+          continue
+
         # Only generate orderfile if Chrome is upreved since last generation
         if builder_run.config.orderfile_generate and \
-           toolchain_util.CheckOrderfileExists(builder_run.buildroot,
-                                               orderfile_verify=False):
+           toolchain_util.CheckAFDOArtifactExists(
+               buildroot=builder_run.buildroot,
+               board=board,
+               target='orderfile_generate'):
           continue
 
         # Update Chrome ebuild with unvetted orderfile
         if builder_run.config.orderfile_verify:
           # Skip verifying orderfile if it's already verified.
-          if toolchain_util.CheckOrderfileExists(builder_run.buildroot,
-                                                 orderfile_verify=True):
+          if toolchain_util.CheckAFDOArtifactExists(
+              buildroot=builder_run.buildroot,
+              board=board,
+              target='orderfile_verify'):
             continue
           self._RunStage(afdo_stages.OrderfileUpdateChromeEbuildStage,
                          board, builder_run=builder_run)

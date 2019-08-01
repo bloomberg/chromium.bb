@@ -12,6 +12,7 @@ import os
 from chromite.api import controller
 from chromite.api import validate
 from chromite.api.controller import controller_util
+from chromite.api.gen.chromite.api import artifacts_pb2
 from chromite.cbuildbot import commands
 from chromite.lib import build_target_util
 from chromite.lib import chroot_lib
@@ -399,26 +400,33 @@ def BundleVmFiles(input_proto, output_proto, _config):
     output_proto.artifacts.add().path = archive
 
 
+_VALID_ARTIFACT_TYPES = [artifacts_pb2.BENCHMARK_AFDO,
+                         artifacts_pb2.ORDERFILE]
 @validate.require('build_target.name', 'output_dir')
+@validate.is_in('artifact_type', _VALID_ARTIFACT_TYPES)
 @validate.exists('output_dir')
 @validate.validation_complete
-def BundleOrderfileGenerationArtifacts(input_proto, output_proto, _config):
-  """Create tarballs of all the artifacts of orderfile_generate builder.
+def BundleAFDOGenerationArtifacts(input_proto, output_proto, _config):
+  """Generic function for creating tarballs of both AFDO and orerfile.
 
   Args:
-    input_proto (BundleRequest): The input proto.
+    input_proto (BundleChromeAFDORequest): The input proto.
     output_proto (BundleResponse): The output proto.
     _config (api_config.ApiConfig): The API call config.
   """
+
   # Required args.
   build_target = build_target_util.BuildTarget(input_proto.build_target.name)
   output_dir = input_proto.output_dir
+  artifact_type = input_proto.artifact_type
 
   chroot = controller_util.ParseChroot(input_proto.chroot)
 
   try:
-    results = artifacts.BundleOrderfileGenerationArtifacts(
-        chroot, build_target, output_dir)
+    is_orderfile = bool(artifact_type is artifacts_pb2.ORDERFILE)
+    results = artifacts.BundleAFDOGenerationArtifacts(
+        is_orderfile, chroot,
+        build_target, output_dir)
   except artifacts.Error as e:
     cros_build_lib.Die('Error %s raised in BundleSimpleChromeArtifacts: %s',
                        type(e), e)

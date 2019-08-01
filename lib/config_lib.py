@@ -852,7 +852,12 @@ def DefaultSettings():
 
       # Generates AFDO data. Will capture a profile of chrome using a hwtest
       # to run a predetermined set of benchmarks.
+      # FIXME(tcwang): Keep this config during transition to async AFDO
       afdo_generate=False,
+
+      # Generates AFDO data asynchronously. Will capture a profile of chrome
+      # using a hwtest to run a predetermined set of benchmarks.
+      afdo_generate_async=False,
 
       # Generate Chrome orderfile. Will build Chrome with C3 ordering and
       # generate an orderfile for uploading as a result.

@@ -8,14 +8,19 @@
 from __future__ import print_function
 
 import json
+import mock
 import os
 
+from chromite.api.gen.chromite.api import artifacts_pb2
+
 from chromite.cbuildbot import afdo
+from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import afdo_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 
 from chromite.lib import alerts
+from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -220,3 +225,54 @@ class UploadVettedOrderfileStageTest(
         chromite_cmd=True,
         redirect_stdout=True
     )
+
+class GenerateBenchmarkStageTests(
+    generic_stages_unittest.AbstractStageTestCase,
+    cbuildbot_unittest.SimpleBuilderTestCase):
+  """Test class of GenerateBenchmarkStage."""
+
+  RELEASE_TAG = ''
+
+  # pylint: disable=protected-access
+  def setUp(self):
+    self._Prepare()
+    self.rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
+    self.rc_mock.SetDefaultCmdResult()
+    self.buildstore = FakeBuildStore()
+    # Prepare the directories
+    chroot_tmp = os.path.join(self.build_root, 'chroot', 'tmp')
+    osutils.SafeMakedirs(chroot_tmp)
+
+  # pylint: disable=arguments-differ
+  def ConstructStage(self, is_afdo):
+    self._run.GetArchive().SetupArchivePath()
+    if is_afdo:
+      return afdo_stages.GenerateBenchmarkAFDOStage(
+          self._run, self.buildstore, self._current_board)
+
+    return afdo_stages.GenerateChromeOrderfileStage(
+        self._run, self.buildstore, self._current_board)
+
+  def testRunSuccess(self):
+    """Test the main function runs without problems."""
+    for is_afdo in [True, False]:
+      stage = self.ConstructStage(is_afdo)
+      artifacts = ['tarball.1.xz', '/path/to/tarball.2.xz']
+      self.PatchObject(stage, 'ArtifactUploader')
+      mock_generate = self.PatchObject(
+          commands, 'GenerateAFDOArtifacts',
+          return_value=artifacts)
+      mock_put = self.PatchObject(stage._upload_queue, 'put')
+      stage.PerformStage()
+      output_path = os.path.abspath(
+          os.path.join(self.build_root, 'chroot',
+                       stage.archive_path))
+      if is_afdo:
+        target = artifacts_pb2.BENCHMARK_AFDO
+      else:
+        target = artifacts_pb2.ORDERFILE
+      mock_generate.assert_called_once_with(
+          self.build_root, self._current_board,
+          output_path, target)
+      calls = [mock.call([os.path.basename(x)]) for x in artifacts]
+      mock_put.assert_has_calls(calls)

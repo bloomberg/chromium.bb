@@ -384,8 +384,8 @@ class BuildFirmwareArchiveTest(cros_test_lib.TempDirTestCase):
     cros_test_lib.VerifyTarball(tarball, fw_archived_files)
 
 
-class BundleOrderfileGenerationArtifactsTest(cros_test_lib.MockTempDirTestCase):
-  """BundleOrderfileGenerationArtifacts tests."""
+class BundleAFDOGenerationArtifacts(cros_test_lib.MockTempDirTestCase):
+  """BundleAFDOGenerationArtifacts tests."""
 
   def setUp(self):
     # Create the build target.
@@ -401,44 +401,55 @@ class BundleOrderfileGenerationArtifactsTest(cros_test_lib.MockTempDirTestCase):
     self.output_dir = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_dir)
 
-    # Create a dummy orderfile_name
-    self.orderfile_name = '%s-1.0.0-r1' % constants.CHROME_PN
+  def testRunSuccess(self):
+    """Generic function for testing success cases for different types."""
 
-  def testSuccess(self):
-    """Test success case."""
     # Separate tempdir for the method itself.
-    call_tempdir = os.path.join(self.chroot_tmp, 'orderfile_call_tempdir')
+    call_tempdir = os.path.join(self.chroot_tmp, 'call_tempdir')
     osutils.SafeMakedirs(call_tempdir)
     self.PatchObject(osutils.TempDir, '__enter__', return_value=call_tempdir)
 
-    # Set up files in the tempdir since the command isn't being called to
-    # generate anything for it to handle.
-    files = [self.orderfile_name+'.orderfile.tar.xz',
-             self.orderfile_name+'.nm.tar.xz']
-    expected_files = [os.path.join(self.output_dir, f) for f in files]
-
-    for f in files:
-      osutils.Touch(os.path.join(call_tempdir, f))
-
-    mock_generate = self.PatchObject(
+    mock_orderfile_generate = self.PatchObject(
         toolchain_util, 'GenerateChromeOrderfile',
         autospec=True)
 
-    created = artifacts.BundleOrderfileGenerationArtifacts(
-        self.chroot, self.build_target, self.output_dir)
+    mock_afdo_generate = self.PatchObject(
+        toolchain_util, 'GenerateBenchmarkAFDOProfile',
+        autospec=True)
 
-    # Test the class is called with right arguments
-    mock_generate.assert_called_with(
-        self.build_target.name,
-        call_tempdir,
-        self.chroot.path,
-        self.chroot.GetEnterArgs()
-    )
+    #Test both orderfile and AFDO.
+    for is_orderfile in [False, True]:
+      # Set up files in the tempdir since the command isn't being called to
+      # generate anything for it to handle.
+      files = ['artifact1', 'artifact2']
+      expected_files = [os.path.join(self.output_dir, f) for f in files]
+      for f in files:
+        osutils.Touch(os.path.join(call_tempdir, f))
 
-    # Make sure we get all the expected files
-    self.assertItemsEqual(expected_files, created)
-    for f in created:
-      self.assertExists(f)
+      created = artifacts.BundleAFDOGenerationArtifacts(
+          is_orderfile, self.chroot, self.build_target, self.output_dir)
+
+      # Test right class is called with right arguments
+      if is_orderfile:
+        mock_orderfile_generate.assert_called_once_with(
+            board=self.build_target.name,
+            output_dir=call_tempdir,
+            chroot_path=self.chroot.path,
+            chroot_args=self.chroot.GetEnterArgs()
+        )
+      else:
+        mock_afdo_generate.assert_called_once_with(
+            board=self.build_target.name,
+            output_dir=call_tempdir,
+            chroot_path=self.chroot.path,
+            chroot_args=self.chroot.GetEnterArgs(),
+        )
+
+      # Make sure we get all the expected files
+      self.assertItemsEqual(expected_files, created)
+      for f in created:
+        self.assertExists(f)
+        os.remove(f)
 
 
 class FetchPinnedGuestImagesTest(cros_test_lib.TempDirTestCase):

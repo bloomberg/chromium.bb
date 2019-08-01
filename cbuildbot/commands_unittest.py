@@ -1787,7 +1787,7 @@ class ImageTestCommandsTest(cros_test_lib.RunCommandTestCase):
         enter_chroot=True,
     )
 
-class GenerateChromeOrderfileArtifactsTests(
+class GenerateAFDOArtifactsTests(
     cros_test_lib.RunCommandTempDirTestCase):
   """Test GenerateChromeOrderfileArtifacts command."""
 
@@ -1799,41 +1799,46 @@ class GenerateChromeOrderfileArtifactsTests(
     self.board = 'board'
     self.output_path = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_path)
+    self.mock_command = self.PatchObject(commands,
+                                         'RunBuildScript')
 
-    self.orderfile_name = 'chromeos-chrome-orderfile-75.0.3761.0'
+  def testGenerateOrderfile(self, target='orderfile'):
+    """Test generate orderfile call correctly.
 
-  def testRun(self):
-    """Verifies GenerateChromeOrderfileArtifacts calls into build-api."""
+    Parameterize the target so we can test both orderfile
+    and afdo.
+    """
     # Redirect the current tempdir to read/write contents inside it.
     self.PatchObject(osutils.TempDir, '__enter__',
                      return_value=self.tempdir)
-
     input_proto_file = os.path.join(self.tempdir, 'input.json')
     output_proto_file = os.path.join(self.tempdir, 'output.json')
-
     # Write dummy outputs to output JSON file
     with open(output_proto_file, 'w') as f:
       output_proto = {
           'artifacts': [
-              {'path': self.orderfile_name + '.orderfile.tar.xz'},
-              {'path': self.orderfile_name + '.nm.tar.xz'}
+              {'path': 'artifact1'},
+              {'path': 'artifact2'},
           ]
       }
       json.dump(output_proto, f)
 
-    commands.GenerateChromeOrderfileArtifacts(
-        self.buildroot, self.board, self.output_path)
+    ret = commands.GenerateAFDOArtifacts(
+        self.buildroot,
+        self.board,
+        self.output_path,
+        target)
 
-    # Verify the command is called correctly
-    self.assertCommandContains(
-        [
-            os.path.join(self.buildroot, constants.CHROMITE_BIN_SUBDIR,
-                         'build_api'),
-            'chromite.api.ArtifactsService/BundleOrderfileGenerationArtifacts',
-            '--input-json', input_proto_file,
-            '--output-json', output_proto_file
-        ]
-    )
+    cmd = [
+        'build_api',
+        'chromite.api.ArtifactsService/BundleAFDOGenerationArtifacts',
+        '--input-json', input_proto_file,
+        '--output-json', output_proto_file,
+    ]
+
+    self.mock_command.assert_called_once_with(
+        self.buildroot, cmd,
+        chromite_cmd=True, redirect_stdout=True)
 
     # Verify the input proto has all the information
     input_proto = json.loads(osutils.ReadFile(input_proto_file))
@@ -1843,6 +1848,13 @@ class GenerateChromeOrderfileArtifactsTests(
                      self.board)
     self.assertEqual(input_proto['output_dir'],
                      self.output_path)
+    self.assertEqual(input_proto['artifact_type'], target)
+
+    # Verify the output matches the proto
+    self.assertEqual(ret, ['artifact1', 'artifact2'])
+
+  def testGenerateAFDO(self):
+    self.testGenerateOrderfile(target='benchmark-afdo')
 
 
 class MarkAndroidAsStableTest(cros_test_lib.RunCommandTempDirTestCase):

@@ -724,9 +724,14 @@ class BundleVmFilesTest(cros_test_lib.MockTempDirTestCase,
     self.assertFalse(expected_files)
 
 
-class BundleOrderfileGenerationArtifactsTestCase(
+
+class BundleAFDOGenerationArtifactsTestCase(
     cros_test_lib.MockTempDirTestCase, api_config.ApiConfigMixin):
-  """Unittests for BundleOrderfileGenerationArtifacts."""
+  """Unittests for BundleAFDOGenerationArtifacts."""
+
+  @staticmethod
+  def mock_die(message, *args):
+    raise cros_build_lib.DieSystemExit(message % args)
 
   def setUp(self):
     self.chroot_dir = os.path.join(self.tempdir, 'chroot_dir')
@@ -736,80 +741,128 @@ class BundleOrderfileGenerationArtifactsTestCase(
     self.output_dir = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_dir)
     self.build_target = 'board'
-    self.orderfile_name = 'chromeos-chrome-1.0'
-
+    self.valid_artifact_type = artifacts_pb2.ORDERFILE
+    self.invalid_artifact_type = artifacts_pb2.NONE_TYPE
     self.does_not_exist = os.path.join(self.tempdir, 'does_not_exist')
+    self.PatchObject(cros_build_lib, 'Die', new=self.mock_die)
 
     self.response = artifacts_pb2.BundleResponse()
 
-  def _GetRequest(self, chroot=None, build_target=None, output_dir=None):
+  def _GetRequest(self, chroot=None, build_target=None, output_dir=None,
+                  artifact_type=None):
     """Helper to create a request message instance.
 
     Args:
       chroot (str): The chroot path.
       build_target (str): The build target name.
       output_dir (str): The output directory.
+      artifact_type (artifacts_pb2.AFDOArtifactType):
+      The type of the artifact.
     """
-    return artifacts_pb2.BundleChromeOrderfileRequest(
-        build_target={'name': build_target},
+    return artifacts_pb2.BundleChromeAFDORequest(
         chroot={'path': chroot},
-        output_dir=output_dir
+        build_target={'name': build_target},
+        output_dir=output_dir,
+        artifact_type=artifact_type,
     )
 
   def testValidateOnly(self):
     """Sanity check that a validate only call does not execute any logic."""
     patch = self.PatchObject(artifacts_svc,
-                             'BundleOrderfileGenerationArtifacts')
+                             'BundleAFDOGenerationArtifacts')
     request = self._GetRequest(chroot=self.chroot_dir,
                                build_target=self.build_target,
-                               output_dir=self.output_dir)
-    artifacts.BundleOrderfileGenerationArtifacts(request, self.response,
-                                                 self.validate_only_config)
+                               output_dir=self.output_dir,
+                               artifact_type=self.valid_artifact_type)
+    artifacts.BundleAFDOGenerationArtifacts(request, self.response,
+                                            self.validate_only_config)
     patch.assert_not_called()
 
   def testNoBuildTarget(self):
     """Test no build target fails."""
     request = self._GetRequest(chroot=self.chroot_dir,
-                               output_dir=self.output_dir)
-    with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleOrderfileGenerationArtifacts(request, self.response,
-                                                   self.api_config)
+                               output_dir=self.output_dir,
+                               artifact_type=self.valid_artifact_type)
+    with self.assertRaises(cros_build_lib.DieSystemExit) as context:
+      artifacts.BundleAFDOGenerationArtifacts(request, self.response,
+                                              self.api_config)
+    self.assertEqual('build_target.name is required.',
+                     str(context.exception))
 
   def testNoOutputDir(self):
     """Test no output dir fails."""
     request = self._GetRequest(chroot=self.chroot_dir,
-                               build_target=self.build_target)
-    with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleOrderfileGenerationArtifacts(request, self.response,
-                                                   self.api_config)
+                               build_target=self.build_target,
+                               artifact_type=self.valid_artifact_type)
+    with self.assertRaises(cros_build_lib.DieSystemExit) as context:
+      artifacts.BundleAFDOGenerationArtifacts(request, self.response,
+                                              self.api_config)
+    self.assertEqual('output_dir is required.',
+                     str(context.exception))
 
   def testOutputDirDoesNotExist(self):
     """Test output directory not existing fails."""
     request = self._GetRequest(chroot=self.chroot_dir,
                                build_target=self.build_target,
-                               output_dir=self.does_not_exist)
-    with self.assertRaises(cros_build_lib.DieSystemExit):
-      artifacts.BundleOrderfileGenerationArtifacts(request, self.response,
-                                                   self.api_config)
+                               output_dir=self.does_not_exist,
+                               artifact_type=self.valid_artifact_type)
+    with self.assertRaises(cros_build_lib.DieSystemExit) as context:
+      artifacts.BundleAFDOGenerationArtifacts(request, self.response,
+                                              self.api_config)
+    self.assertEqual(
+        'output_dir path does not exist: %s' % self.does_not_exist,
+        str(context.exception))
 
-  def testOutputHandling(self):
-    """Test response output."""
-    files = [self.orderfile_name + '.orderfile.tar.xz',
-             self.orderfile_name + '.nm.tar.xz']
+  def testNoArtifactType(self):
+    """Test no artifact type."""
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               build_target=self.build_target,
+                               output_dir=self.output_dir)
+    with self.assertRaises(cros_build_lib.DieSystemExit) as context:
+      artifacts.BundleAFDOGenerationArtifacts(request, self.response,
+                                              self.api_config)
+    self.assertIn('artifact_type (0) must be in',
+                  str(context.exception))
+
+  def testWrongArtifactType(self):
+    """Test passing wrong artifact type."""
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               build_target=self.build_target,
+                               output_dir=self.output_dir,
+                               artifact_type=self.invalid_artifact_type)
+    with self.assertRaises(cros_build_lib.DieSystemExit) as context:
+      artifacts.BundleAFDOGenerationArtifacts(request, self.response,
+                                              self.api_config)
+    # FIXME(tcwang): The error message here should print the error message
+    # of the artifact_type not in valid list. But instead, it reports
+    # no artifact_type specified.
+    self.assertIn('artifact_type (0) must be in',
+                  str(context.exception))
+
+  def testOutputHandlingOnOrderfile(self,
+                                    artifact_type=artifacts_pb2.ORDERFILE):
+    """Test response output for orderfile."""
+    files = ['artifact1', 'artifact2', 'artifact3']
     expected_files = [os.path.join(self.output_dir, f) for f in files]
-    self.PatchObject(artifacts_svc, 'BundleOrderfileGenerationArtifacts',
+    self.PatchObject(artifacts_svc, 'BundleAFDOGenerationArtifacts',
                      return_value=expected_files)
 
     request = self._GetRequest(chroot=self.chroot_dir,
                                build_target=self.build_target,
-                               output_dir=self.output_dir)
-    response = self.response
+                               output_dir=self.output_dir,
+                               artifact_type=artifact_type)
 
-    artifacts.BundleOrderfileGenerationArtifacts(request, response,
-                                                 self.api_config)
+    artifacts.BundleAFDOGenerationArtifacts(request, self.response,
+                                            self.api_config)
 
-    self.assertTrue(response.artifacts)
-    self.assertItemsEqual(expected_files, [a.path for a in response.artifacts])
+    self.assertTrue(self.response.artifacts)
+    self.assertItemsEqual(expected_files,
+                          [a.path for a in self.response.artifacts])
+
+  def testOutputHandlingOnAFDO(self):
+    """Test response output for AFDO."""
+    self.testOutputHandlingOnOrderfile(
+        artifact_type=artifacts_pb2.BENCHMARK_AFDO)
 
 
 class ExportCpeReportTest(cros_test_lib.MockTempDirTestCase,

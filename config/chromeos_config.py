@@ -1128,6 +1128,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       chrome_sdk=False,
       paygen=False,
       signer_tests=False,
+      afdo_use=True,
       useflags=config_lib.append_useflags(['-cros-debug']),
       display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
   )
@@ -1138,7 +1139,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       images=['base', 'test'],
       image_test=True,
       unittests=True,
-      afdo_use=True,
   )
   # This build config is dedicated to improve code layout of Chrome. It adopts
   # the Call-Chain Clustering (C3) approach and other techniques to improve
@@ -1153,7 +1153,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   site_config.AddTemplate(
       'orderfile_generate_toolchain',
       site_config.templates.afdo_toolchain,
-      afdo_use=True,
       orderfile_generate=True,
       useflags=config_lib.append_useflags(['orderfile_generate']),
       description='Build Chrome and generate an orderfile for better layout',
@@ -1178,10 +1177,25 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       'benchmark_afdo_generate',
       site_config.templates.afdo_toolchain,
       images=['test'],
-      hw_tests=[config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE,
-                                        file_bugs=True)],
-      hw_tests_override=[config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE,
-                                                 file_bugs=True)],
+      hw_tests=[
+          config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE,
+                                  pool=constants.HWTEST_MACH_POOL,
+                                  timeout=constants.AFDO_GENERATE_TIMEOUT,
+                                  priority=constants.HWTEST_BUILD_PRIORITY,
+                                  file_bugs=True)],
+      hw_tests_override=[
+          config_lib.HWTestConfig(constants.HWTEST_AFDO_SUITE,
+                                  pool=constants.HWTEST_MACH_POOL,
+                                  timeout=constants.AFDO_GENERATE_TIMEOUT,
+                                  priority=constants.HWTEST_BUILD_PRIORITY,
+                                  file_bugs=True)],
+      afdo_generate_async=True,
+      # FIXME(tcwang): Might need to revisit this later. For now, use the
+      # same useflags as release config, except for the two here.
+      # In other words, it turns on afdo_use, thinlto, cfi compared to
+      # chell-chrome-pfq.
+      useflags=config_lib.append_useflags(['-transparent_hugepage',
+                                           '-debug_fission']),
       description='Generate AFDO profile based on benchmarks.'
   )
 
@@ -1320,7 +1334,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   site_config.Add(
       'benchmark-afdo-generate',
       site_config.templates.benchmark_afdo_generate,
-      boards=['chell'],
+      boards=['samus'],
       # TODO: Add a schedule
   )
 

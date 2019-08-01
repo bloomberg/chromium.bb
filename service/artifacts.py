@@ -434,10 +434,13 @@ def GenerateQuickProvisionPayloads(target_image_path, archive_dir):
   return payloads
 
 
-def BundleOrderfileGenerationArtifacts(chroot, build_target, output_dir):
-  """Generate artifacts for Chrome orderfile.
+def BundleAFDOGenerationArtifacts(is_orderfile, chroot,
+                                  build_target, output_dir):
+  """Generate artifacts for toolchain-related AFDO artifacts.
 
   Args:
+    is_orderfile (boolean): The generation is for orderfile (True) or
+    for AFDO (False).
     chroot (chroot_lib.Chroot): The chroot in which the sysroot should be built.
     build_target (build_target_util.BuildTarget): The build target.
     output_dir (str): The location outside the chroot where the files should be
@@ -448,13 +451,22 @@ def BundleOrderfileGenerationArtifacts(chroot, build_target, output_dir):
   """
   chroot_args = chroot.GetEnterArgs()
   with chroot.tempdir() as tempdir:
-    generate_orderfile = toolchain_util.GenerateChromeOrderfile(
-        build_target.name,
-        tempdir,
-        chroot.path,
-        chroot_args)
+    if is_orderfile:
+      generate_orderfile = toolchain_util.GenerateChromeOrderfile(
+          board=build_target.name,
+          output_dir=tempdir,
+          chroot_path=chroot.path,
+          chroot_args=chroot_args)
 
-    generate_orderfile.Perform()
+      generate_orderfile.Perform()
+    else:
+      generate_afdo = toolchain_util.GenerateBenchmarkAFDOProfile(
+          board=build_target.name,
+          output_dir=tempdir,
+          chroot_path=chroot.path,
+          chroot_args=chroot_args)
+
+      generate_afdo.Perform()
 
     files = []
     for path in osutils.DirectoryIterator(tempdir):
