@@ -774,7 +774,13 @@ TEST_P(LayerWithRealCompositorTest, HierarchyNoTexture) {
   EXPECT_TRUE(d3.painted());
 }
 
-TEST_F(LayerWithDelegateTest, Cloning) {
+// crbug.com/989936
+#if defined(OS_LINUX) && defined(UNDEFINED_SANITIZER)
+#define MAYBE_Cloning DISABLED_Cloning
+#else
+#define MAYBE_Cloning Cloning
+#endif
+TEST_F(LayerWithDelegateTest, MAYBE_Cloning) {
   std::unique_ptr<Layer> layer = CreateLayer(LAYER_SOLID_COLOR);
 
   gfx::Transform transform;
@@ -1039,8 +1045,14 @@ TEST_F(LayerWithNullDelegateTest, EscapedDebugNames) {
   ASSERT_TRUE(roundtrip);
   EXPECT_EQ(name, *roundtrip);
 }
-
-TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
+// crbug.com/989936
+#if defined(OS_LINUX) && defined(UNDEFINED_SANITIZER)
+#define MAYBE_SwitchLayerPreservesCCLayerState \
+  DISABLED_SwitchLayerPreservesCCLayerState
+#else
+#define MAYBE_SwitchLayerPreservesCCLayerState SwitchLayerPreservesCCLayerState
+#endif
+TEST_F(LayerWithNullDelegateTest, MAYBE_SwitchLayerPreservesCCLayerState) {
   std::unique_ptr<Layer> l1 = CreateLayer(LAYER_SOLID_COLOR);
   l1->SetFillsBoundsOpaquely(true);
   l1->SetVisible(false);
