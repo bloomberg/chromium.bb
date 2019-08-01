@@ -617,7 +617,7 @@ static void init_gop_frames_for_tpl(
       tpl_frame->gf_picture = &buf->img;
     }
 
-    av1_get_ref_frames(cpi, frame_update_type, &ref_buffer_stack);
+    av1_get_ref_frames(cpi, &ref_buffer_stack);
     int refresh_mask = av1_get_refresh_frame_flags(
         cpi, &frame_params, frame_update_type, &ref_buffer_stack);
     int refresh_frame_map_index = av1_get_refresh_ref_frame_map(refresh_mask);
@@ -658,7 +658,7 @@ static void init_gop_frames_for_tpl(
     gf_group->update_type[gf_index] = LF_UPDATE;
     gf_group->q_val[gf_index] = pframe_qindex;
 
-    av1_get_ref_frames(cpi, frame_update_type, &ref_buffer_stack);
+    av1_get_ref_frames(cpi, &ref_buffer_stack);
     int refresh_mask = av1_get_refresh_frame_flags(
         cpi, &frame_params, frame_update_type, &ref_buffer_stack);
     int refresh_frame_map_index = av1_get_refresh_ref_frame_map(refresh_mask);
@@ -676,8 +676,7 @@ static void init_gop_frames_for_tpl(
     ++frame_display_index;
   }
 
-  av1_get_ref_frames(cpi, gf_group->update_type[cur_frame_idx],
-                     &cpi->ref_buffer_stack);
+  av1_get_ref_frames(cpi, &cpi->ref_buffer_stack);
 }
 
 static void init_tpl_stats(AV1_COMP *cpi) {

@@ -1099,11 +1099,8 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
 }
 #endif  // !CONFIG_REALTIME_ONLY
 
-void av1_get_ref_frames(AV1_COMP *const cpi,
-                        FRAME_UPDATE_TYPE frame_update_type,
-                        RefBufferStack *ref_buffer_stack) {
+void av1_get_ref_frames(AV1_COMP *const cpi, RefBufferStack *ref_buffer_stack) {
   AV1_COMMON *cm = &cpi->common;
-  (void)frame_update_type;
 
   const int arf_stack_size = ref_buffer_stack->arf_stack_size;
   const int lst_stack_size = ref_buffer_stack->lst_stack_size;
@@ -1369,7 +1366,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
   if (oxcf->pass == 0 || oxcf->pass == 2) {
     if (!cpi->ext_refresh_frame_flags_pending)
-      av1_get_ref_frames(cpi, frame_update_type, &cpi->ref_buffer_stack);
+      av1_get_ref_frames(cpi, &cpi->ref_buffer_stack);
 
     // Work out which reference frame slots may be used.
     frame_params.ref_frame_flags = get_ref_frame_flags(cpi);
