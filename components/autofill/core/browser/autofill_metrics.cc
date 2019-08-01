@@ -651,14 +651,6 @@ void AutofillMetrics::LogSaveCardCardholderNameWasEdited(bool edited) {
 }
 
 // static
-void AutofillMetrics::LogPaymentsCustomerDataBillingIdStatus(
-    BillingIdStatus status) {
-  DCHECK_LE(status, BillingIdStatus::kMaxValue);
-  UMA_HISTOGRAM_ENUMERATION("Autofill.PaymentsCustomerDataBillingIdStatus",
-                            status);
-}
-
-// static
 void AutofillMetrics::LogCardUploadDecisionMetrics(
     int upload_decision_metrics) {
   DCHECK(upload_decision_metrics);
