@@ -10955,6 +10955,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
   mbmi->ref_frame[1] = NONE_FRAME;
   mbmi->use_intrabc = 0;
   mbmi->mv[0].as_int = 0;
+  mbmi->skip_mode = 0;
 
   const int64_t intra_yrd =
       rd_pick_intra_sby_mode(cpi, x, mi_row, mi_col, &rate_y, &rate_y_tokenonly,
