@@ -549,8 +549,9 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
         int br_rate[BR_CDF_SIZE];
         int prev_cost = 0;
         int i, j;
-        av1_cost_tokens_from_cdf(br_rate, fc->coeff_br_cdf[tx_size][plane][ctx],
-                                 NULL);
+        av1_cost_tokens_from_cdf(
+            br_rate, fc->coeff_br_cdf[AOMMIN(tx_size, TX_32X32)][plane][ctx],
+            NULL);
         // printf("br_rate: ");
         // for(j = 0; j < BR_CDF_SIZE; j++)
         //  printf("%4d ", br_rate[j]);
