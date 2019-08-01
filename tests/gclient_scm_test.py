@@ -60,8 +60,6 @@ class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
   def setUp(self):
     SuperMoxTestBase.setUp(self)
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'CheckCallAndFilter')
-    self.mox.StubOutWithMock(gclient_scm.gclient_utils,
-        'CheckCallAndFilterAndHeader')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileRead')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileWrite')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'rmtree')
@@ -347,7 +345,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(file_list, [file_path])
     self.checkstdout(
         ('\n________ running \'git -c core.quotePath=false diff --name-status '
-         '069c602044c5388d2d15c3f875b057c852003458\' in \'%s\'\nM\ta\n') %
+         '069c602044c5388d2d15c3f875b057c852003458\' in \'%s\'\n\nM\ta\n') %
             join(self.root_dir, '.'))
 
   def testStatus2New(self):
@@ -367,8 +365,8 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     self.assertEquals(sorted(file_list), expected_file_list)
     self.checkstdout(
         ('\n________ running \'git -c core.quotePath=false diff --name-status '
-         '069c602044c5388d2d15c3f875b057c852003458\' in \'%s\'\nM\ta\nM\tb\n') %
-            join(self.root_dir, '.'))
+         '069c602044c5388d2d15c3f875b057c852003458\' in \'%s\'\n\nM\ta\nM\tb\n')
+            % join(self.root_dir, '.'))
 
   def testUpdateUpdate(self):
     if not self.enabled:
@@ -1024,8 +1022,7 @@ class CipdWrapperTestCase(BaseTestCase):
     self.mox.StubOutWithMock(tempfile, 'mkdtemp')
 
     tempfile.mkdtemp().AndReturn(self._workdir)
-    gclient_scm.gclient_utils.CheckCallAndFilter(
-        cmd, filter_fn=mox.IgnoreArg(), print_stdout=False)
+    gclient_scm.gclient_utils.CheckCallAndFilter(cmd)
     gclient_scm.gclient_utils.rmtree(self._workdir)
 
     self.mox.ReplayAll()

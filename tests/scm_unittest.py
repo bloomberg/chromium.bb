@@ -37,8 +37,6 @@ class BaseTestCase(SuperMoxTestBase):
 class BaseSCMTestCase(BaseTestCase):
   def setUp(self):
     BaseTestCase.setUp(self)
-    self.mox.StubOutWithMock(scm.gclient_utils, 'CheckCallAndFilter')
-    self.mox.StubOutWithMock(scm.gclient_utils, 'CheckCallAndFilterAndHeader')
     self.mox.StubOutWithMock(subprocess2, 'Popen')
     self.mox.StubOutWithMock(subprocess2, 'communicate')
 
