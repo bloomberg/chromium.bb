@@ -8,6 +8,7 @@ dictionary GPUBindGroupLayoutBinding {
     required unsigned long binding;
     required GPUShaderStageFlags visibility;
     required GPUBindingType type;
+    boolean multisampled = false;
     boolean dynamic = false;
 };
 
