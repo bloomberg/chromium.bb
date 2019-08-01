@@ -65,7 +65,6 @@ class CORE_EXPORT ValueWrapperSyntheticModuleScript final
       v8::Local<v8::Context> context,
       v8::Local<v8::Module> module);
 
-  String InlineSourceTextForCSP() const override;
   void Trace(blink::Visitor* visitor) override;
 
  private:

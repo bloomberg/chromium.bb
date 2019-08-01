@@ -148,17 +148,6 @@ v8::MaybeLocal<v8::Value> ValueWrapperSyntheticModuleScript::EvaluationSteps(
   return v8::Undefined(reinterpret_cast<v8::Isolate*>(isolate));
 }
 
-String ValueWrapperSyntheticModuleScript::InlineSourceTextForCSP() const {
-  // We don't construct a ValueWrapperSyntheticModuleScript with the original
-  // source, but instead construct it from the originally parsed
-  // text. If a need arises for the original module source to be used later,
-  // ValueWrapperSyntheticModuleScript will need to be modified such that its
-  // constructor takes this source text as an additional parameter and stashes
-  // it on the ValueWrapperSyntheticModuleScript.
-  NOTREACHED();
-  return "";
-}
-
 void ValueWrapperSyntheticModuleScript::Trace(Visitor* visitor) {
   visitor->Trace(export_value_);
   ModuleScript::Trace(visitor);
