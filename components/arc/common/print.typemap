@@ -1,4 +1,4 @@
-mojom = "//components/arc/common/print.mojom"
+mojom = "//components/arc/common/print_common.mojom"
 public_headers = [
   "//printing/backend/print_backend.h",
   "//printing/page_range.h",
