@@ -284,6 +284,7 @@ main(int argc, char **argv) {
 	int dotsIOMode = 0;
 	int ucBrlMode = 0;
 	int noUndefinedMode = 0;
+	int noUndefinedDotsMode = 0;
 	int partialTransMode = 0;
 
 	const struct option longopts[] = {
@@ -295,6 +296,7 @@ main(int argc, char **argv) {
 		{ "dotsIO", no_argument, &dotsIOMode, dotsIO },
 		{ "ucBrl", no_argument, &ucBrlMode, ucBrl },
 		{ "noUndefined", no_argument, &noUndefinedMode, noUndefined },
+		{ "noUndefinedDots", no_argument, &noUndefinedDotsMode, noUndefined },
 		{ "partialTrans", no_argument, &partialTransMode, partialTrans },
 		{ NULL, 0, NULL, 0 },
 	};
@@ -324,6 +326,11 @@ main(int argc, char **argv) {
 			exit(EXIT_FAILURE);
 			break;
 		}
+	}
+	if (noUndefinedDotsMode) {
+		fprintf(stderr, "%s: did you mean --noUndefined?\n", program_name);
+		fprintf(stderr, "Try `%s --help' for more information.\n", program_name);
+		exit(EXIT_FAILURE);
 	}
 	mode |= noContractionsMode | dotsIOMode | ucBrlMode | noUndefinedMode |
 			partialTransMode;
