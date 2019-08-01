@@ -993,6 +993,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Crostini, /* crostini.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("mountCrostini"),
+                      TestCase("enableDisableCrostini"),
                       TestCase("sharePathWithCrostini")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

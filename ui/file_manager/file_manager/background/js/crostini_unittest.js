@@ -61,6 +61,23 @@ function setDriveFsEnabled(enabled) {
 }
 
 /**
+ * Tests init sets crostini and PluginVm enabled status.
+ */
+function testInitCrostiniPluginVmEnabled() {
+  window.loadTimeData.data['CROSTINI_ENABLED'] = true;
+  window.loadTimeData.data['PLUGIN_VM_ENABLED'] = true;
+  crostini.init(volumeManager);
+  assertTrue(crostini.isEnabled('termina'));
+  assertTrue(crostini.isEnabled('PvmDefault'));
+
+  window.loadTimeData.data['CROSTINI_ENABLED'] = false;
+  window.loadTimeData.data['PLUGIN_VM_ENABLED'] = false;
+  crostini.init(volumeManager);
+  assertFalse(crostini.isEnabled('termina'));
+  assertFalse(crostini.isEnabled('PvmDefault'));
+}
+
+/**
  * Tests path sharing.
  */
 function testIsPathShared() {
