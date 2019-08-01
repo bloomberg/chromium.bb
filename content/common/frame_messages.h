@@ -743,7 +743,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_SwapIn)
 // Instructs the frame to stop the load in progress, if any.
 IPC_MESSAGE_ROUTED0(FrameMsg_Stop)
 
-// PlzNavigate
 // Informs the renderer that the browser stopped processing a renderer-initiated
 // navigation. It does not stop ongoing loads in the current page.
 IPC_MESSAGE_ROUTED0(FrameMsg_DroppedNavigation)
@@ -877,7 +876,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SelectPopupMenuItems,
 #endif
 #endif
 
-// PlzNavigate
 // Tells the renderer that a navigation was blocked because a content security
 // policy was violated.
 IPC_MESSAGE_ROUTED1(FrameMsg_ReportContentSecurityPolicyViolation,
@@ -1383,7 +1381,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_DidBlockNavigation,
                     GURL /* initiator_url */,
                     blink::NavigationBlockedReason /* reason */)
 
-// PlzNavigate
 // Tells the browser to abort an ongoing renderer-initiated navigation. This is
 // used when the page calls document.open.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_AbortNavigation)

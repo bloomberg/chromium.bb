@@ -1064,7 +1064,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::vector<std::unique_ptr<NavigationThrottle>>
   CreateThrottlesForNavigation(NavigationHandle* navigation_handle);
 
-  // PlzNavigate
   // Called at the start of the navigation to get opaque data the embedder
   // wants to see passed to the corresponding URLRequest on the IO thread.
   virtual std::unique_ptr<NavigationUIData> GetNavigationUIData(

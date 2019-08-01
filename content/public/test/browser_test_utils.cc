@@ -2800,10 +2800,10 @@ TestNavigationManager::~TestNavigationManager() {
 }
 
 bool TestNavigationManager::WaitForRequestStart() {
-  // This is the default desired state. In PlzNavigate, a browser-initiated
-  // navigation can reach this state synchronously, so the TestNavigationManager
-  // is set to always pause navigations at WillStartRequest. This ensures the
-  // user can always call WaitForWillStartRequest.
+  // This is the default desired state. A browser-initiated navigation can reach
+  // this state synchronously, so the TestNavigationManager is set to always
+  // pause navigations at WillStartRequest. This ensures the user can always
+  // call WaitForWillStartRequest.
   DCHECK(desired_state_ == NavigationState::STARTED);
   return WaitForDesiredState();
 }

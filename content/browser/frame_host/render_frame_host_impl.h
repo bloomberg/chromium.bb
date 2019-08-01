@@ -1784,9 +1784,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // from SiteInstance::GetSiteURL.
   GURL last_committed_site_url_;
 
-  // The most recent non-error URL to commit in this frame.  Remove this in
-  // favor of GetLastCommittedURL() once PlzNavigate is enabled or cross-process
-  // transfers work for net errors.  See https://crbug.com/588314.
+  // The most recent non-error URL to commit in this frame.
+  // TODO(clamy): Remove this in favor of GetLastCommittedURL().
+  // See https://crbug.com/588314.
   GURL last_successful_url_;
 
   std::map<uint64_t, VisualStateCallback> visual_state_callbacks_;

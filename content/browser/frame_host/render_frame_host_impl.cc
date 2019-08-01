@@ -2050,8 +2050,8 @@ void RenderFrameHostImpl::DidNavigate(
   // (see https://crbug.com/560511).  Instead, the next cross-process navigation
   // or transfer should decide whether to swap as if the net error had not
   // occurred.
-  // TODO(creis): Remove this block and always set the URL once transfers handle
-  // network errors or PlzNavigate is enabled.  See https://crbug.com/588314.
+  // TODO(creis): Remove this block and always set the URL.
+  // See https://crbug.com/588314.
   if (!params.url_is_unreachable)
     last_successful_url_ = params.url;
 
