@@ -96,8 +96,7 @@ void AwBrowserProcess::InitSafeBrowsing() {
 }
 
 void AwBrowserProcess::CreateSafeBrowsingUIManager() {
-  safe_browsing_ui_manager_ =
-      new AwSafeBrowsingUIManager(AwBrowserProcess::GetAwURLRequestContext());
+  safe_browsing_ui_manager_ = new AwSafeBrowsingUIManager();
 }
 
 void AwBrowserProcess::CreateSafeBrowsingWhitelistManager() {
