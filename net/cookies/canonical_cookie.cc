@@ -182,7 +182,7 @@ Time CanonicalCookie::CanonExpiration(const ParsedCookie& pc,
       return parsed_expiry + (current - server_time);
   }
 
-  // Invalid or no expiration, persistent cookie.
+  // Invalid or no expiration, session cookie.
   return Time();
 }
 
@@ -199,6 +199,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   if (status == nullptr) {
     status = &blank_status;
   }
+  *status = CookieInclusionStatus::INCLUDE;
 
   ParsedCookie parsed_cookie(cookie_line);
 
@@ -214,17 +215,6 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "Create() failed to get a cookie domain";
     *status = CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN;
-    return nullptr;
-  }
-
-  // Per 3.2.1 of "Deprecate modification of 'secure' cookies from non-secure
-  // origins", if the cookie's "secure-only-flag" is "true" and the requesting
-  // URL does not have a secure scheme, the cookie should be thrown away.
-  // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-alone
-  if (parsed_cookie.IsSecure() && !url.SchemeIsCryptographic()) {
-    DVLOG(net::cookie_util::kVlogSetCookies)
-        << "Create() is trying to create a secure cookie from an insecure URL";
-    *status = CookieInclusionStatus::EXCLUDE_SECURE_ONLY;
     return nullptr;
   }
 
@@ -256,11 +246,8 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
       parsed_cookie.IsHttpOnly(), parsed_cookie.SameSite(),
       parsed_cookie.Priority()));
 
-  *status = cc->IsSetPermittedInContext(options);
-  if (*status != CookieInclusionStatus::INCLUDE)
-    return nullptr;
-
   DCHECK(cc->IsCanonical());
+  DCHECK(*status == CookieInclusionStatus::INCLUDE);
   return cc;
 }
 
