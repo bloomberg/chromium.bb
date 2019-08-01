@@ -6430,4 +6430,4 @@ crbug.com/989756 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker-pro
 crbug.com/989756 [ Linux ] http/tests/fetch/serviceworker-proxied/thorough/access-control-base-https-other-https.html [ Pass Failure ]
 
 # Sheriff 2019-08-01
-crbug.com/989860 [ Mac10.13 Debug ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
+crbug.com/989860 [ Mac10.13 Linux Debug ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
