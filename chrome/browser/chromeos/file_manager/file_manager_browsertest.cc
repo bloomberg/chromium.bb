@@ -838,6 +838,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .WithBrowser()
             .InIncognito()
             .EnableMyFilesVolume(),
+        TestCase("openFileDialogPanelsDisabled").WithBrowser(),
         TestCase("saveFileDialogDownloads").WithBrowser(),
         TestCase("saveFileDialogDownloads").WithBrowser().EnableMyFilesVolume(),
         TestCase("saveFileDialogDownloads").WithBrowser().InGuestMode(),
@@ -853,6 +854,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("saveFileDialogDownloadsNewFolderButton")
             .WithBrowser()
             .EnableMyFilesVolume(),
+        TestCase("saveFileDialogPanelsDisabled").WithBrowser(),
         TestCase("openFileDialogCancelDownloads").WithBrowser(),
         TestCase("openFileDialogCancelDownloads")
             .WithBrowser()
