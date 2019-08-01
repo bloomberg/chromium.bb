@@ -165,6 +165,40 @@ class FakeOAuth2AccessTokenManagerConsumer
   base::OnceClosure closure_;
 };
 
+class DiagnosticsObserverForTesting
+    : public OAuth2AccessTokenManager::DiagnosticsObserver {
+ public:
+  // OAuth2AccessTokenManager::DiagnosticsObserver:
+  void OnAccessTokenRequested(
+      const CoreAccountId& account_id,
+      const std::string& consumer_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes) override {
+    if (!access_token_requested_callback_)
+      return;
+    EXPECT_EQ(access_token_requested_account_id_, account_id);
+    EXPECT_EQ(access_token_requested_consumer_id_, consumer_id);
+    EXPECT_EQ(access_token_requested_scopes_, scopes);
+    std::move(access_token_requested_callback_).Run();
+  }
+
+  void SetOnAccessTokenRequested(
+      const CoreAccountId& account_id,
+      const std::string& consumer_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes,
+      base::OnceClosure callback) {
+    access_token_requested_account_id_ = account_id;
+    access_token_requested_consumer_id_ = consumer_id;
+    access_token_requested_scopes_ = scopes;
+    access_token_requested_callback_ = std::move(callback);
+  }
+
+ private:
+  CoreAccountId access_token_requested_account_id_;
+  std::string access_token_requested_consumer_id_;
+  OAuth2AccessTokenManager::ScopeSet access_token_requested_scopes_;
+  base::OnceClosure access_token_requested_callback_;
+};
+
 }  // namespace
 
 // Any public API surfaces that are wrapped by ProfileOAuth2TokenService are
@@ -412,4 +446,20 @@ TEST_F(OAuth2AccessTokenManagerTest, OnAccessTokenFetchedOnRequestCompleted) {
           account_id_, OAuth2AccessTokenManager::ScopeSet(), &consumer_));
   SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
   run_loop.Run();
+}
+
+// Test that StartRequest triggers DiagnosticsObserver::OnAccessTokenRequested.
+TEST_F(OAuth2AccessTokenManagerTest, OnAccessTokenRequested) {
+  DiagnosticsObserverForTesting observer;
+  OAuth2AccessTokenManager::ScopeSet scopeset;
+  scopeset.insert("scope");
+  base::RunLoop run_loop;
+  observer.SetOnAccessTokenRequested(account_id_, consumer_.id(), scopeset,
+                                     run_loop.QuitClosure());
+  token_manager_.AddDiagnosticsObserver(&observer);
+
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request(
+      token_manager_.StartRequest(account_id_, scopeset, &consumer_));
+  run_loop.Run();
+  token_manager_.RemoveDiagnosticsObserver(&observer);
 }
