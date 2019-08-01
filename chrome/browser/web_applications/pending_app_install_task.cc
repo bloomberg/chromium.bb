@@ -204,8 +204,8 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
   // Installation through InstallFinalizer doesn't create shortcuts so create
   // them here.
   if (install_options_.add_to_quick_launch_bar &&
-      install_finalizer_->CanPinAppToShelf()) {
-    install_finalizer_->PinAppToShelf(app_id);
+      install_finalizer_->CanAddAppToQuickLaunchBar()) {
+    install_finalizer_->AddAppToQuickLaunchBar(app_id);
   }
 
   // TODO(ortuno): Make adding a shortcut to the applications menu independent

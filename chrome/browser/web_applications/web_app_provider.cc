@@ -179,6 +179,8 @@ void WebAppProvider::ConnectSubsystems() {
   DCHECK(!started_);
 
   install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
+  install_finalizer_->SetSubsystems(ui_manager_.get());
+
   // TODO(crbug.com/877898): Port all other managers to support BMO.
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
     pending_app_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),

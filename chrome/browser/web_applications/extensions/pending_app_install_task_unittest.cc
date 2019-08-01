@@ -135,7 +135,9 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
   size_t num_create_os_shortcuts_calls() {
     return num_create_os_shortcuts_calls_;
   }
-  size_t num_pin_app_to_shelf_calls() { return num_pin_app_to_shelf_calls_; }
+  size_t num_add_app_to_quick_launch_bar_calls() {
+    return num_add_app_to_quick_launch_bar_calls_;
+  }
   size_t num_reparent_tab_calls() { return num_reparent_tab_calls_; }
   size_t num_reveal_appshim_calls() { return num_reveal_appshim_calls_; }
 
@@ -204,10 +206,10 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
 
   const base::Optional<bool>& add_to_desktop() { return add_to_desktop_; }
 
-  bool CanPinAppToShelf() const override { return true; }
+  bool CanAddAppToQuickLaunchBar() const override { return true; }
 
-  void PinAppToShelf(const AppId& app_id) override {
-    ++num_pin_app_to_shelf_calls_;
+  void AddAppToQuickLaunchBar(const AppId& app_id) override {
+    ++num_add_app_to_quick_launch_bar_calls_;
   }
 
   bool CanReparentTab(const AppId& app_id,
@@ -243,7 +245,7 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
   size_t num_create_os_shortcuts_calls_ = 0;
   base::Optional<bool> add_to_desktop_;
 
-  size_t num_pin_app_to_shelf_calls_ = 0;
+  size_t num_add_app_to_quick_launch_bar_calls_ = 0;
   size_t num_reparent_tab_calls_ = 0;
   size_t num_reveal_appshim_calls_ = 0;
 
@@ -365,7 +367,7 @@ TEST_F(PendingAppInstallTaskTest,
 
         EXPECT_EQ(1u, finalizer()->num_create_os_shortcuts_calls());
         EXPECT_TRUE(finalizer()->add_to_desktop().value());
-        EXPECT_EQ(1u, finalizer()->num_pin_app_to_shelf_calls());
+        EXPECT_EQ(1u, finalizer()->num_add_app_to_quick_launch_bar_calls());
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
         EXPECT_EQ(0u, finalizer()->num_reveal_appshim_calls());
 
@@ -426,7 +428,7 @@ TEST_F(PendingAppInstallTaskTest,
         EXPECT_EQ(1u, finalizer()->num_create_os_shortcuts_calls());
         EXPECT_FALSE(finalizer()->add_to_desktop().value());
 
-        EXPECT_EQ(1u, finalizer()->num_pin_app_to_shelf_calls());
+        EXPECT_EQ(1u, finalizer()->num_add_app_to_quick_launch_bar_calls());
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
         EXPECT_EQ(0u, finalizer()->num_reveal_appshim_calls());
 
@@ -454,7 +456,7 @@ TEST_F(PendingAppInstallTaskTest,
         EXPECT_EQ(1u, finalizer()->num_create_os_shortcuts_calls());
         EXPECT_TRUE(finalizer()->add_to_desktop().value());
 
-        EXPECT_EQ(0u, finalizer()->num_pin_app_to_shelf_calls());
+        EXPECT_EQ(0u, finalizer()->num_add_app_to_quick_launch_bar_calls());
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
         EXPECT_EQ(0u, finalizer()->num_reveal_appshim_calls());
 
@@ -484,7 +486,7 @@ TEST_F(
         EXPECT_EQ(1u, finalizer()->num_create_os_shortcuts_calls());
         EXPECT_FALSE(finalizer()->add_to_desktop().value());
 
-        EXPECT_EQ(0u, finalizer()->num_pin_app_to_shelf_calls());
+        EXPECT_EQ(0u, finalizer()->num_add_app_to_quick_launch_bar_calls());
         EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
         EXPECT_EQ(0u, finalizer()->num_reveal_appshim_calls());
 
