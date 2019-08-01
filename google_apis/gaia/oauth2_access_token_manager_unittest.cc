@@ -194,6 +194,19 @@ class DiagnosticsObserverForTesting
     EXPECT_EQ(fetch_access_token_completed_error_, error);
     std::move(fetch_access_token_completed_callback_).Run();
   }
+  void OnAccessTokenRemoved(
+      const CoreAccountId& account_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes) override {
+    if (!access_token_removed_callback_)
+      return;
+    auto iterator = access_token_removed_account_to_scopes_.find(account_id);
+    EXPECT_NE(iterator, access_token_removed_account_to_scopes_.end());
+    EXPECT_EQ(iterator->second, scopes);
+    access_token_removed_account_to_scopes_.erase(iterator);
+
+    if (access_token_removed_account_to_scopes_.empty())
+      std::move(access_token_removed_callback_).Run();
+  }
 
   void SetOnAccessTokenRequested(
       const CoreAccountId& account_id,
@@ -218,6 +231,20 @@ class DiagnosticsObserverForTesting
     fetch_access_token_completed_callback_ = std::move(callback);
   }
 
+  typedef std::map<CoreAccountId, OAuth2AccessTokenManager::ScopeSet>
+      AccountToScopeSet;
+  // OnAccessTokenRemoved() can be invoked multiple times as part of a given
+  // test expectation (e.g., when clearing the cache of multiple tokens). To
+  // support this, this method takes in a map of account IDs to scopesets, and
+  // OnAccessTokenRemoved() invokes |callback| only once invocations of it have
+  // occurred for all of the (account_id, scopeset) pairs in
+  // |account_to_scopeset|.
+  void SetOnAccessTokenRemoved(const AccountToScopeSet& account_to_scopeset,
+                               base::OnceClosure callback) {
+    access_token_removed_account_to_scopes_ = account_to_scopeset;
+    access_token_removed_callback_ = std::move(callback);
+  }
+
  private:
   CoreAccountId access_token_requested_account_id_;
   std::string access_token_requested_consumer_id_;
@@ -228,6 +255,8 @@ class DiagnosticsObserverForTesting
   OAuth2AccessTokenManager::ScopeSet fetch_access_token_completed_scopes_;
   GoogleServiceAuthError fetch_access_token_completed_error_;
   base::OnceClosure fetch_access_token_completed_callback_;
+  AccountToScopeSet access_token_removed_account_to_scopes_;
+  base::OnceClosure access_token_removed_callback_;
 };
 
 }  // namespace
@@ -256,6 +285,16 @@ class OAuth2AccessTokenManagerTest : public testing::Test {
                                   net::HttpStatusCode status = net::HTTP_OK) {
     test_url_loader_factory_.AddResponse(
         GaiaUrls::GetInstance()->oauth2_token_url().spec(), token, status);
+  }
+
+  void CreateRequestAndBlockUntilComplete(
+      const CoreAccountId& account,
+      const OAuth2AccessTokenManager::ScopeSet& scopeset) {
+    base::RunLoop run_loop;
+    consumer_.SetResponseCompletedClosure(run_loop.QuitClosure());
+    std::unique_ptr<OAuth2AccessTokenManager::Request> request(
+        token_manager_.StartRequest(account, scopeset, &consumer_));
+    run_loop.Run();
   }
 
  protected:
@@ -534,5 +573,78 @@ TEST_F(OAuth2AccessTokenManagerTest,
   std::unique_ptr<OAuth2AccessTokenManager::Request> request(
       token_manager_.StartRequest(account_id, scopeset, &consumer_));
   run_loop.Run();
+  token_manager_.RemoveDiagnosticsObserver(&observer);
+}
+
+// Test that DiagnosticsObserver::OnAccessTokenRemoved is called when a token is
+// removed from the token cache.
+TEST_F(OAuth2AccessTokenManagerTest, OnAccessTokenRemoved) {
+  const std::string access_token("token");
+  SimulateOAuthTokenResponse(GetValidTokenResponse(access_token, 3600));
+
+  // First populate the cache with access tokens for four accounts.
+  OAuth2AccessTokenManager::ScopeSet scopeset1;
+  scopeset1.insert("scope1");
+  CreateRequestAndBlockUntilComplete(account_id_, scopeset1);
+
+  OAuth2AccessTokenManager::ScopeSet scopeset2;
+  scopeset2.insert("scope2");
+  CoreAccountId account_id_2("account_id_2");
+  delegate_.AddAccount(account_id_2, "refreshToken2");
+  CreateRequestAndBlockUntilComplete(account_id_2, scopeset2);
+
+  OAuth2AccessTokenManager::ScopeSet scopeset3;
+  scopeset3.insert("scope3");
+  CoreAccountId account_id_3("account_id_3");
+  delegate_.AddAccount(account_id_3, "refreshToken3");
+  CreateRequestAndBlockUntilComplete(account_id_3, scopeset3);
+
+  OAuth2AccessTokenManager::ScopeSet scopeset4;
+  scopeset4.insert("scope4");
+  CoreAccountId account_id_4("account_id_4");
+  delegate_.AddAccount(account_id_4, "refreshToken4");
+  CreateRequestAndBlockUntilComplete(account_id_4, scopeset4);
+
+  EXPECT_EQ(4, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  EXPECT_EQ("token", consumer_.last_token_);
+  EXPECT_EQ(4U, token_manager_.token_cache().size());
+
+  DiagnosticsObserverForTesting observer;
+  token_manager_.AddDiagnosticsObserver(&observer);
+
+  DiagnosticsObserverForTesting::AccountToScopeSet account_to_scopeset;
+
+  // ClearCacheForAccount should call OnAccessTokenRemoved.
+  base::RunLoop run_loop1;
+  account_to_scopeset[account_id_] = scopeset1;
+  observer.SetOnAccessTokenRemoved(account_to_scopeset,
+                                   run_loop1.QuitClosure());
+  token_manager_.ClearCacheForAccount(account_id_);
+  run_loop1.Run();
+  EXPECT_EQ(3U, token_manager_.token_cache().size());
+
+  // InvalidateAccessToken should call OnAccessTokenRemoved for the cached
+  // token.
+  base::RunLoop run_loop2;
+  account_to_scopeset.clear();
+  account_to_scopeset[account_id_2] = scopeset2;
+  observer.SetOnAccessTokenRemoved(account_to_scopeset,
+                                   run_loop2.QuitClosure());
+  token_manager_.InvalidateAccessToken(account_id_2, scopeset2, access_token);
+  run_loop2.Run();
+  EXPECT_EQ(2U, token_manager_.token_cache().size());
+
+  // ClearCache should call OnAccessTokenRemoved for all of the cached tokens.
+  base::RunLoop run_loop3;
+  account_to_scopeset.clear();
+  account_to_scopeset[account_id_3] = scopeset3;
+  account_to_scopeset[account_id_4] = scopeset4;
+  observer.SetOnAccessTokenRemoved(account_to_scopeset,
+                                   run_loop3.QuitClosure());
+  token_manager_.ClearCache();
+  run_loop3.Run();
+  EXPECT_EQ(0U, token_manager_.token_cache().size());
+
   token_manager_.RemoveDiagnosticsObserver(&observer);
 }

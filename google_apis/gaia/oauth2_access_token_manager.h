@@ -339,6 +339,7 @@ class OAuth2AccessTokenManager {
 
   FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenManagerTest, ClearCache);
   FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenManagerTest, ClearCacheForAccount);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenManagerTest, OnAccessTokenRemoved);
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2AccessTokenManager);
 };
