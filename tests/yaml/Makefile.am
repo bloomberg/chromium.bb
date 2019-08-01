@@ -48,4 +48,4 @@ EXTRA_DIST =					\
 	repword.yaml				\
 	squash_space.yaml			\
 	syllable.yaml				\
-	undefined-dots.yaml
+	undefined.yaml

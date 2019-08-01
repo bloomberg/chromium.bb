@@ -211,7 +211,7 @@ dist_yaml_TESTS =				\
 	yaml/repword.yaml			\
 	yaml/squash_space.yaml			\
 	yaml/syllable.yaml			\
-	yaml/undefined-dots.yaml
+	yaml/undefined.yaml
 
 # This test hangs when configured without --enable-ucs4
 if HAVE_UCS4
