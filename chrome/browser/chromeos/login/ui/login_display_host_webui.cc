@@ -491,10 +491,9 @@ void LoginDisplayHostWebUI::OnFinalize() {
 }
 
 void LoginDisplayHostWebUI::SetStatusAreaVisible(bool visible) {
-  if (!login_view_)
-    status_area_saved_visibility_ = visible;
-  else
-    login_view_->SetStatusAreaVisible(visible);
+  status_area_saved_visibility_ = visible;
+  if (login_view_)
+    login_view_->SetStatusAreaVisible(status_area_saved_visibility_);
 }
 
 void LoginDisplayHostWebUI::OnOobeConfigurationChanged() {
