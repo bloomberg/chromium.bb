@@ -784,7 +784,21 @@ ui::NativeTheme* ToolbarView::GetViewNativeTheme() {
 
 // ToolbarButtonProvider:
 BrowserActionsContainer* ToolbarView::GetBrowserActionsContainer() {
+  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
   return browser_actions_;
+}
+
+ToolbarActionView* ToolbarView::GetToolbarActionViewForId(
+    const std::string& id) {
+  if (extensions_container_)
+    return extensions_container_->GetViewForId(id);
+  return GetBrowserActionsContainer()->GetViewForId(id);
+}
+
+views::View* ToolbarView::GetDefaultExtensionDialogAnchorView() {
+  if (extensions_container_)
+    return extensions_container_;
+  return GetAppMenuButton();
 }
 
 OmniboxPageActionIconContainerView*
