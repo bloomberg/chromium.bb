@@ -331,6 +331,9 @@ class ProfileSyncService : public SyncService,
 
   void ClearUnrecoverableError();
 
+  // Initializes and starts |sync_thread_|.
+  void StartSyncThreadIfNeeded();
+
   // Kicks off asynchronous initialization of the SyncEngine.
   void StartUpSlowEngineComponents();
 
