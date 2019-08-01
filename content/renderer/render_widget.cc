@@ -448,6 +448,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
     : routing_id_(widget_routing_id),
       compositor_deps_(compositor_deps),
       webwidget_internal_(nullptr),
+      delegate_(nullptr),
       auto_resize_mode_(false),
       is_hidden_(hidden),
       compositor_never_visible_(never_visible),
@@ -525,7 +526,13 @@ void RenderWidget::InitForChildLocalRoot(
 
 void RenderWidget::CloseForFrame() {
   DCHECK(for_child_local_root_frame_);
-  OnClose();
+  PrepareForClose();
+
+  // The RenderWidget may be deattached from JS, which in turn may be called
+  // in a re-entrant context. We cannot synchronously destroy the object, so we
+  // post a task to do so later.
+  GetCleanupTaskRunner()->PostNonNestableTask(
+      FROM_HERE, base::BindOnce(&RenderWidget::Close, this));
 }
 
 void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
@@ -571,8 +578,9 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
 
   RenderThread::Get()->AddRoute(routing_id_, this);
-  // Take a reference on behalf of the RenderThread.  This will be balanced
-  // when we receive WidgetMsg_Close.
+  // Take a reference. This object is either owned by the browser process, or by
+  // RenderFrame. Both will eventually call Close() when they wish to destroy
+  // this object.
   AddRef();
 }
 
@@ -705,6 +713,14 @@ bool RenderWidget::ShouldHandleImeEvents() const {
 }
 
 void RenderWidget::OnClose() {
+  // It is always safe to synchronously destroy this object from an IPC message.
+  // That's because the IPC message is asynchronous, which means it can never be
+  // called from a nested context.
+  PrepareForClose();
+  Close();
+}
+
+void RenderWidget::PrepareForClose() {
   DCHECK(RenderThread::IsMainThread());
   if (closing_)
     return;
@@ -732,23 +748,6 @@ void RenderWidget::OnClose() {
     // already-deleted frame.
     CloseWebWidget();
   }
-  // If there is a Send call on the stack, then it could be dangerous to close
-  // now.  Post a task that only gets invoked when there are no nested message
-  // loops.
-  //
-  // The asynchronous Close() takes an owning reference to |this| keeping the
-  // object alive beyond the Release() below. It is the last reference to this
-  // object.
-  //
-  // TODO(https://crbug.com/545684): The actual lifetime for RenderWidget
-  // seems to be single-owner. It is either owned by "IPC" events (popup,
-  // mainframe, and fullscreen), or a RenderFrame. If Close() self-deleting,
-  // all the ref-counting mess could be removed.
-  GetCleanupTaskRunner()->PostNonNestableTask(
-      FROM_HERE, base::BindOnce(&RenderWidget::Close, this));
-
-  // Balances the AddRef taken when we called AddRoute.
-  Release();
 }
 
 void RenderWidget::OnSynchronizeVisualProperties(
@@ -1945,6 +1944,9 @@ void RenderWidget::Close() {
   // Note the ACK is a control message going to the RenderProcessHost.
   RenderThread::Get()->Send(new WidgetHostMsg_Close_ACK(routing_id()));
   closed_ = true;
+
+  // Balances the AddRef in Init.
+  Release();
 }
 
 void RenderWidget::CloseWebWidget() {
