@@ -298,11 +298,6 @@ class TabStrip : public views::AccessiblePaneView,
   void HandleDragExited() override;
 
  private:
-  using Tabs = std::vector<Tab*>;
-  using TabsClosingMap = std::map<int, Tabs>;
-  using FindClosingTabResult =
-      std::pair<TabsClosingMap::iterator, Tabs::iterator>;
-
   class RemoveTabDelegate;
   class TabDragContextImpl;
 
@@ -403,8 +398,7 @@ class TabStrip : public views::AccessiblePaneView,
   // the actual last tab unless the strip is in the overflow node_data.
   const Tab* GetLastVisibleTab() const;
 
-  // Adds the tab at |index| to |tabs_closing_map_| and removes the tab from
-  // |tabs_|.
+  // Removes the tab at |index| from |tabs_|.
   void RemoveTabFromViewModel(int index);
 
   // Cleans up the Tab from the TabStrip. This is called from the tab animation
@@ -415,17 +409,9 @@ class TabStrip : public views::AccessiblePaneView,
   // from the tab animation code and is not a general-purpose method.
   void OnGroupCloseAnimationCompleted(TabGroupId group);
 
-  // Adjusts the indices of all tabs in |tabs_closing_map_| whose index is
-  // >= |index| to have a new index of |index + delta|.
-  void UpdateTabsClosingMap(int index, int delta);
-
   // Invoked from StoppedDraggingTabs to cleanup |tab|. If |tab| is known
   // |is_first_tab| is set to true.
   void StoppedDraggingTab(Tab* tab, bool* is_first_tab);
-
-  // Finds |tab| in the |tab_closing_map_| and returns a pair of iterators
-  // indicating precisely where it is.
-  FindClosingTabResult FindClosingTab(const Tab* tab);
 
   // Invoked when a mouse event occurs over |source|. Potentially switches the
   // |stacked_layout_|.
@@ -563,12 +549,9 @@ class TabStrip : public views::AccessiblePaneView,
   // There is a one-to-one mapping between each of the tabs in the
   // TabStripController (TabStripModel) and |tabs_|. Because we animate tab
   // removal there exists a period of time where a tab is displayed but not in
-  // the model. When this occurs the tab is removed from |tabs_| and placed in
-  // |tabs_closing_map_|. When the animation completes the tab is removed from
-  // |tabs_closing_map_|. The painting code ensures both sets of tabs are
-  // painted, and the event handling code ensures only tabs in |tabs_| are used.
+  // the model. When this occurs the tab is removed from |tabs_|, but remains
+  // in |layout_helper_| until the remove animation completes.
   views::ViewModelT<Tab> tabs_;
-  TabsClosingMap tabs_closing_map_;
 
   // Map associating each group to its TabGroupHeader instance.
   std::map<TabGroupId, std::unique_ptr<TabGroupHeader>> group_headers_;
