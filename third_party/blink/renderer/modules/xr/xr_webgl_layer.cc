@@ -57,10 +57,11 @@ XRWebGLLayer* XRWebGLLayer::Create(
     return nullptr;
   }
 
-  if (!webgl_context->IsXRCompatible()) {
+  if (session->immersive() && !webgl_context->IsXRCompatible()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
-        "This context is not marked as XR compatible.");
+        "WebGL context must be marked as XR compatible in order to "
+        "use with an immersive XRSession");
     return nullptr;
   }
 
