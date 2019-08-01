@@ -7119,7 +7119,7 @@ void RenderFrameImpl::InitializeUserMediaClient() {
 
   DCHECK(!web_user_media_client_);
   web_user_media_client_ = new UserMediaClientImpl(
-      this, RenderThreadImpl::current()->GetPeerConnectionDependencyFactory(),
+      this,
       std::make_unique<blink::WebMediaStreamDeviceObserver>(GetWebFrame()),
       GetTaskRunner(blink::TaskType::kInternalMedia));
 }
