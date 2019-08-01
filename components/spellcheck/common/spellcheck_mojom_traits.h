@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_STRUCT_TRAITS_H
-#define COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_STRUCT_TRAITS_H
+#ifndef COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_MOJOM_TRAITS_H_
+#define COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_MOJOM_TRAITS_H_
 
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_result.h"
@@ -44,4 +44,4 @@ struct StructTraits<spellcheck::mojom::SpellCheckResultDataView,
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_STRUCT_TRAITS_H
+#endif  // COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_MOJOM_TRAITS_H_

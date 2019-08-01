@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/spellcheck/common/spellcheck_struct_traits.h"
+#include "components/spellcheck/common/spellcheck_mojom_traits.h"
 
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 
