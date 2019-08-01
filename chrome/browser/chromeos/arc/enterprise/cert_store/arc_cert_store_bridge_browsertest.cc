@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
-#include "chrome/browser/chromeos/arc/enterprise/arc_cert_store_bridge.h"
+#include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_cert_store_bridge.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions.h"
