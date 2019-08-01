@@ -577,29 +577,15 @@ static int calculate_boost_bits(int frame_count, int boost,
                 0);
 }
 
-#define LEAF_REDUCTION_FACTOR 0.75
-static double lvl_budget_factor[MAX_PYRAMID_LVL - 1][MAX_PYRAMID_LVL - 1] = {
-  { 1.0, 0.0, 0.0 }, { 0.6, 0.4, 0 }, { 0.45, 0.35, 0.20 }
-};
 static void allocate_gf_group_bits(
-    AV1_COMP *cpi, int64_t gf_group_bits, double group_error, int gf_arf_bits,
+    AV1_COMP *cpi, int64_t gf_group_bits, int gf_arf_bits,
     const EncodeFrameParams *const frame_params) {
   RATE_CONTROL *const rc = &cpi->rc;
-  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   TWO_PASS *const twopass = &cpi->twopass;
   GF_GROUP *const gf_group = &cpi->gf_group;
   const int key_frame = (frame_params->frame_type == KEY_FRAME);
   const int max_bits = frame_max_bits(&cpi->rc, &cpi->oxcf);
   int64_t total_group_bits = gf_group_bits;
-
-  // Check if GF group has any internal arfs.
-  int has_internal_arfs = 0;
-  for (int i = 0; i < gf_group->size; ++i) {
-    if (gf_group->update_type[i] == INTNL_ARF_UPDATE) {
-      has_internal_arfs = 1;
-      break;
-    }
-  }
 
   // For key frames the frame target rate is already set and it
   // is also the golden frame.
@@ -626,98 +612,68 @@ static void allocate_gf_group_bits(
   // === [frame_index == 1] ===
   if (rc->source_alt_ref_pending) {
     gf_group->bit_allocation[frame_index] = gf_arf_bits;
-
     ++frame_index;
+  }
 
-    // Skip all the internal ARFs right after ARF at the starting segment of
-    // the current GF group.
-    if (has_internal_arfs) {
-      while (gf_group->update_type[frame_index] == INTNL_ARF_UPDATE) {
-        ++frame_index;
-      }
+  const int gf_group_size = gf_group->size;
+  int arf_depth_bits[MAX_ARF_LAYERS + 1] = { 0 };
+  int arf_depth_count[MAX_ARF_LAYERS + 1] = { 0 };
+  int arf_depth_boost[MAX_ARF_LAYERS + 1] = { 0 };
+  int total_arfs = rc->source_alt_ref_pending;
+
+  for (int idx = 0; idx < gf_group_size; ++idx) {
+    if (gf_group->update_type[idx] == ARF_UPDATE ||
+        gf_group->update_type[idx] == INTNL_ARF_UPDATE) {
+      arf_depth_boost[gf_group->layer_depth[idx]] += gf_group->arf_boost[idx];
+      ++arf_depth_count[gf_group->layer_depth[idx]];
     }
   }
 
-  // Save.
-  const int tmp_frame_index = frame_index;
-  int budget_reduced_from_leaf_level = 0;
+  for (int idx = 2; idx < MAX_ARF_LAYERS; ++idx) {
+    if (arf_depth_boost[idx] == 0) break;
+    arf_depth_bits[idx] = calculate_boost_bits(
+        rc->baseline_gf_interval - total_arfs - arf_depth_count[idx],
+        arf_depth_boost[idx], total_group_bits);
 
-  // Allocate bits to frames other than first frame, which is either a keyframe,
-  // overlay frame or golden frame.
-  const int normal_frames = rc->baseline_gf_interval - 1;
+    total_group_bits -= arf_depth_bits[idx];
+    total_arfs += arf_depth_count[idx];
+  }
 
-  for (int i = 0; i < normal_frames; ++i) {
-    FIRSTPASS_STATS frame_stats;
-    if (EOF == input_stats(twopass, &frame_stats)) break;
+  int normal_frames = rc->baseline_gf_interval - total_arfs;
+  int normal_frame_bits;
 
-    const double modified_err =
-        calculate_modified_err(cpi, twopass, oxcf, &frame_stats);
-    const double err_fraction =
-        (group_error > 0) ? modified_err / DOUBLE_DIVIDE_CHECK(group_error)
-                          : 0.0;
-    const int target_frame_size =
-        clamp((int)((double)total_group_bits * err_fraction), 0,
-              AOMMIN(max_bits, (int)total_group_bits));
+  if (normal_frames > 1)
+    normal_frame_bits = (int)(total_group_bits / normal_frames);
+  else
+    normal_frame_bits = (int)total_group_bits;
 
-    if (gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE) {
-      assert(gf_group->pyramid_height <= MAX_PYRAMID_LVL &&
-             "non-valid height for a pyramid structure");
+  // TODO(jingning): Currently assume even budget distribution for all the
+  // regular frames. Can this be improved?
+  int target_frame_size = normal_frame_bits;
+  target_frame_size =
+      clamp(target_frame_size, 0, AOMMIN(max_bits, (int)total_group_bits));
 
-      const int arf_pos = gf_group->arf_pos_in_gf[frame_index];
-      gf_group->bit_allocation[frame_index] = 0;
-
-      gf_group->bit_allocation[arf_pos] = target_frame_size;
-      // Note: Boost, if needed, is added in the next loop.
-    } else {
-      assert(gf_group->update_type[frame_index] == LF_UPDATE);
-      gf_group->bit_allocation[frame_index] = target_frame_size;
-      if (has_internal_arfs) {
-        const int this_budget_reduction =
-            (int)(target_frame_size * LEAF_REDUCTION_FACTOR);
-        gf_group->bit_allocation[frame_index] -= this_budget_reduction;
-        budget_reduced_from_leaf_level += this_budget_reduction;
-      }
-    }
-
-    ++frame_index;
-
-    // Skip all the internal ARFs.
-    if (has_internal_arfs) {
-      while (gf_group->update_type[frame_index] == INTNL_ARF_UPDATE)
-        ++frame_index;
+  for (int idx = frame_index; idx < gf_group_size; ++idx) {
+    switch (gf_group->update_type[idx]) {
+      case ARF_UPDATE:
+      case INTNL_ARF_UPDATE:
+        gf_group->bit_allocation[idx] =
+            (int)(((int64_t)arf_depth_bits[gf_group->layer_depth[idx]] *
+                   gf_group->arf_boost[idx]) /
+                  arf_depth_boost[gf_group->layer_depth[idx]]);
+        break;
+      case INTNL_OVERLAY_UPDATE:
+      case OVERLAY_UPDATE: gf_group->bit_allocation[idx] = 0; break;
+      default: gf_group->bit_allocation[idx] = target_frame_size; break;
     }
   }
 
-  if (budget_reduced_from_leaf_level > 0) {
-    assert(has_internal_arfs);
-    // Restore.
-    frame_index = tmp_frame_index;
-
-    // Re-distribute this extra budget to overlay frames in the group.
-    for (int i = 0; i < normal_frames; ++i) {
-      if (gf_group->update_type[frame_index] == INTNL_OVERLAY_UPDATE) {
-        assert(gf_group->pyramid_height <= MAX_PYRAMID_LVL &&
-               "non-valid height for a pyramid structure");
-        const int arf_pos = gf_group->arf_pos_in_gf[frame_index];
-        const int this_lvl = gf_group->pyramid_level[arf_pos];
-        const int dist2top = gf_group->pyramid_height - 1 - this_lvl;
-        const double lvl_boost_factor =
-            lvl_budget_factor[gf_group->pyramid_height - 2][dist2top];
-        const int extra_size =
-            (int)(budget_reduced_from_leaf_level * lvl_boost_factor /
-                  gf_group->pyramid_lvl_nodes[this_lvl]);
-        gf_group->bit_allocation[arf_pos] += extra_size;
-      }
-      ++frame_index;
-
-      // Skip all the internal ARFs.
-      if (has_internal_arfs) {
-        while (gf_group->update_type[frame_index] == INTNL_ARF_UPDATE) {
-          ++frame_index;
-        }
-      }
-    }
-  }
+  // Set the frame following the current GOP to 0 bit allocation. For ARF
+  // groups, this next frame will be overlay frame, which is the first frame
+  // in the next GOP. For GF group, next GOP will overwrite the rate allocation.
+  // Setting this frame to use 0 bit (of out the current GOP budget) will
+  // simplify logics in reference frame management.
+  gf_group->bit_allocation[gf_group_size] = 0;
 }
 
 // Given the maximum allowed height of the pyramid structure, return the fixed
@@ -820,7 +776,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
   int flash_detected;
   int64_t gf_group_bits;
-  double gf_group_error_left;
   int gf_arf_bits;
   const int is_intra_only = frame_params->frame_type == KEY_FRAME ||
                             frame_params->frame_type == INTRA_ONLY_FRAME;
@@ -1184,26 +1139,11 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   // Adjust KF group bits and error remaining.
   twopass->kf_group_error_left -= (int64_t)gf_group_err;
 
-  // If this is an arf update we want to remove the score for the overlay
-  // frame at the end which will usually be very cheap to code.
-  // The overlay frame has already, in effect, been coded so we want to spread
-  // the remaining bits among the other frames.
-  // For normal GFs remove the score for the GF itself unless this is
-  // also a key frame in which case it has already been accounted for.
-  if (rc->source_alt_ref_pending) {
-    gf_group_error_left = gf_group_err - mod_frame_err;
-  } else if (!is_intra_only) {
-    gf_group_error_left = gf_group_err - gf_first_frame_err;
-  } else {
-    gf_group_error_left = gf_group_err;
-  }
-
   // Set up the structure of this Group-Of-Pictures (same as GF_GROUP)
   av1_gop_setup_structure(cpi, frame_params);
 
   // Allocate bits to each of the frames in the GF group.
-  allocate_gf_group_bits(cpi, gf_group_bits, gf_group_error_left, gf_arf_bits,
-                         frame_params);
+  allocate_gf_group_bits(cpi, gf_group_bits, gf_arf_bits, frame_params);
 
   // Reset the file position.
   reset_fpf_position(twopass, start_pos);

@@ -62,6 +62,8 @@ static void set_multi_layer_params(AV1_COMP *cpi, GF_GROUP *const gf_group,
     gf_group->frame_disp_idx[*frame_ind] = m;
     gf_group->pyramid_level[*frame_ind] = level;
     gf_group->layer_depth[*frame_ind] = layer_depth;
+
+    // Get the boost factor for intermediate ARF frames.
     gf_group->arf_boost[*frame_ind] =
         av1_calc_arf_boost(cpi, m, end - m, m - start);
     ++gf_group->pyramid_lvl_nodes[level];
