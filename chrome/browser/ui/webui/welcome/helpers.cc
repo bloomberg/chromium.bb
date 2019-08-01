@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/welcome/nux_helper.h"
+#include "chrome/browser/ui/webui/welcome/helpers.h"
 
 #include <string>
 #include <vector>
@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ui/webui/welcome/constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
@@ -28,7 +27,44 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 
-namespace nux {
+namespace welcome {
+
+// Available modules for both new and returning users.
+const char kDefaultNewUserModules[] =
+    "nux-google-apps,nux-set-as-default,signin-view";
+const char kDefaultReturningUserModules[] = "nux-set-as-default";
+
+// Feature flag.
+const base::Feature kOnboardingFeature{"NuxOnboarding",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+// For testing purposes
+const base::Feature kOnboardingForceEnabled = {
+    "NuxOnboardingForceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// The value of these FeatureParam values should be a comma-delimited list
+// of element names whitelisted in the MODULES_WHITELIST list, defined in
+// chrome/browser/resources/welcome/welcome_app.js
+const base::FeatureParam<std::string> kOnboardingNewUserModules{
+    &kOnboardingFeature, "new-user-modules", kDefaultNewUserModules};
+const base::FeatureParam<std::string> kOnboardingReturningUserModules{
+    &kOnboardingFeature, "returning-user-modules",
+    kDefaultReturningUserModules};
+// For testing purposes
+const base::FeatureParam<std::string> kOnboardingForceEnabledNewUserModules = {
+    &kOnboardingForceEnabled, "new-user-modules",
+    "nux-google-apps,nux-ntp-background,nux-set-as-default,"
+    "signin-view"};
+const base::FeatureParam<std::string>
+    kOnboardingForceEnabledReturningUserModules = {&kOnboardingForceEnabled,
+                                                   "returning-user-modules",
+                                                   "nux-set-as-default"};
+
+// FeatureParam for app variation.
+const base::FeatureParam<bool> kOnboardingShowGoogleApp{
+    &kOnboardingFeature, "app-variation-enabled", false};
+// For testing purposes
+const base::FeatureParam<bool> kOnboardingForceEnabledShowGoogleApp = {
+    &kOnboardingForceEnabled, "app-variation-enabled", false};
 
 bool CanShowGoogleAppModule(const policy::PolicyMap& policies) {
   const base::Value* bookmark_bar_enabled_value =
@@ -48,10 +84,6 @@ bool CanShowGoogleAppModule(const policy::PolicyMap& policies) {
   return true;
 }
 
-bool CanShowGoogleAppModuleForTesting(const policy::PolicyMap& policies) {
-  return CanShowGoogleAppModule(policies);
-}
-
 bool CanShowNTPBackgroundModule(const policy::PolicyMap& policies,
                                 Profile* profile) {
   // We can't set the background if the NTP is something other than Google.
@@ -59,20 +91,11 @@ bool CanShowNTPBackgroundModule(const policy::PolicyMap& policies,
          search::DefaultSearchProviderIsGoogle(profile);
 }
 
-bool CanShowNTPBackgroundModuleForTesting(const policy::PolicyMap& policies,
-                                          Profile* profile) {
-  return CanShowNTPBackgroundModule(policies, profile);
-}
-
 bool CanShowSetDefaultModule(const policy::PolicyMap& policies) {
   const base::Value* set_default_value =
       policies.GetValue(policy::key::kDefaultBrowserSettingEnabled);
 
   return !set_default_value || set_default_value->GetBool();
-}
-
-bool CanShowSetDefaultModuleForTesting(const policy::PolicyMap& policies) {
-  return CanShowSetDefaultModule(policies);
 }
 
 bool CanShowSigninModule(const policy::PolicyMap& policies) {
@@ -90,11 +113,7 @@ bool CanShowSigninModule(const policy::PolicyMap& policies) {
          policy::BrowserSigninMode::kDisabled;
 }
 
-bool CanShowSigninModuleForTesting(const policy::PolicyMap& policies) {
-  return CanShowSigninModule(policies);
-}
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
 // These feature flags are used to tie our experiment to specific studies.
 // go/navi-app-variation for details.
 // TODO(hcarmona): find a solution that scales better.
@@ -108,32 +127,10 @@ const base::Feature kNaviShortcutVariationEnabled = {
     "NaviShortcutVariationEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
 
-// This feature flag is used to force the feature to be turned on for non-win
-// and non-branded builds, like with tests or development on other platforms.
-const base::Feature kNuxOnboardingForceEnabled = {
-    "NuxOnboardingForceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// The value of these FeatureParam values should be a comma-delimited list
-// of element names whitelisted in the MODULES_WHITELIST list, defined in
-// chrome/browser/resources/welcome/onboarding_welcome/welcome_app.js
-const base::FeatureParam<std::string> kNuxOnboardingForceEnabledNewUserModules =
-    {&kNuxOnboardingForceEnabled, "new-user-modules",
-     "nux-google-apps,nux-ntp-background,nux-set-as-default,"
-     "signin-view"};
-const base::FeatureParam<std::string>
-    kNuxOnboardingForceEnabledReturningUserModules = {
-        &kNuxOnboardingForceEnabled, "returning-user-modules",
-        "nux-set-as-default"};
-const base::FeatureParam<bool> kNuxOnboardingForceEnabledShowGoogleApp = {
-    &kNuxOnboardingForceEnabled, "app-variation-enabled", false};
-
 // Onboarding experiments depend on Google being the default search provider.
 bool CanExperimentWithVariations(Profile* profile) {
   return search::DefaultSearchProviderIsGoogle(profile);
 }
-
-// Must match study name in configs.
-const char kNuxOnboardingStudyName[] = "NaviOnboarding";
 
 // Get the group for users who onboard in this experiment.
 // Groups are:
@@ -151,8 +148,8 @@ std::string GetOnboardingGroup(Profile* profile) {
   // We need to use |base::GetFieldTrialParamValue| instead of
   // |base::FeatureParam| because our control group needs a custom value for
   // this param.
-  return base::GetFieldTrialParamValue(kNuxOnboardingStudyName,
-                                       "onboarding-group");
+  // "NaviOnboarding" match study name in configs.
+  return base::GetFieldTrialParamValue("NaviOnboarding", "onboarding-group");
 }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
@@ -191,19 +188,19 @@ void JoinOnboardingGroup(Profile* profile) {
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
 
-bool IsNuxOnboardingEnabled(Profile* profile) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  return base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature) ||
-         base::FeatureList::IsEnabled(nux::kNuxOnboardingForceEnabled);
+bool IsOnboardingEnabled(Profile* profile) {
+#if defined(GOOGLE_CHROME_BUILD)
+  return base::FeatureList::IsEnabled(welcome::kOnboardingFeature) ||
+         base::FeatureList::IsEnabled(welcome::kOnboardingForceEnabled);
 #else
   // Allow enabling outside official builds for testing purposes.
-  return base::FeatureList::IsEnabled(nux::kNuxOnboardingForceEnabled);
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return base::FeatureList::IsEnabled(welcome::kOnboardingForceEnabled);
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 bool IsAppVariationEnabled() {
-  return kNuxOnboardingForceEnabledShowGoogleApp.Get() ||
-         kNuxOnboardingShowGoogleApp.Get();
+  return kOnboardingForceEnabledShowGoogleApp.Get() ||
+         kOnboardingShowGoogleApp.Get();
 }
 
 const policy::PolicyMap& GetPoliciesFromProfile(Profile* profile) {
@@ -259,20 +256,19 @@ std::string FilterModules(const std::string& requested_modules,
   return base::JoinString(filtered_modules, ",");
 }
 
-base::DictionaryValue GetNuxOnboardingModules(Profile* profile) {
+base::DictionaryValue GetOnboardingModules(Profile* profile) {
   // This function should not be called when nux onboarding feature is not on.
-  DCHECK(nux::IsNuxOnboardingEnabled(profile));
+  DCHECK(welcome::IsOnboardingEnabled(profile));
 
   std::string new_user_modules = kDefaultNewUserModules;
   std::string returning_user_modules = kDefaultReturningUserModules;
 
-  if (base::FeatureList::IsEnabled(nux::kNuxOnboardingForceEnabled)) {
-    new_user_modules = kNuxOnboardingForceEnabledNewUserModules.Get();
-    returning_user_modules =
-        kNuxOnboardingForceEnabledReturningUserModules.Get();
+  if (base::FeatureList::IsEnabled(welcome::kOnboardingForceEnabled)) {
+    new_user_modules = kOnboardingForceEnabledNewUserModules.Get();
+    returning_user_modules = kOnboardingForceEnabledReturningUserModules.Get();
   } else if (CanExperimentWithVariations(profile)) {
-    new_user_modules = kNuxOnboardingNewUserModules.Get();
-    returning_user_modules = kNuxOnboardingReturningUserModules.Get();
+    new_user_modules = kOnboardingNewUserModules.Get();
+    returning_user_modules = kOnboardingReturningUserModules.Get();
   }
 
   std::vector<std::string> available_modules = GetAvailableModules(profile);
@@ -284,4 +280,21 @@ base::DictionaryValue GetNuxOnboardingModules(Profile* profile) {
                     FilterModules(returning_user_modules, available_modules));
   return modules;
 }
-}  // namespace nux
+
+bool CanShowGoogleAppModuleForTesting(const policy::PolicyMap& policies) {
+  return CanShowGoogleAppModule(policies);
+}
+
+bool CanShowNTPBackgroundModuleForTesting(const policy::PolicyMap& policies,
+                                          Profile* profile) {
+  return CanShowNTPBackgroundModule(policies, profile);
+}
+
+bool CanShowSetDefaultModuleForTesting(const policy::PolicyMap& policies) {
+  return CanShowSetDefaultModule(policies);
+}
+
+bool CanShowSigninModuleForTesting(const policy::PolicyMap& policies) {
+  return CanShowSigninModule(policies);
+}
+}  // namespace welcome

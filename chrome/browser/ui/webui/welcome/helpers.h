@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_HELPER_H_
-#define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_HELPER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_HELPERS_H_
+#define CHROME_BROWSER_UI_WEBUI_WELCOME_HELPERS_H_
 
 #include <string>
 
@@ -22,14 +22,7 @@ class PolicyMap;
 
 class Profile;
 
-namespace nux {
-extern const base::Feature kNuxOnboardingForceEnabled;
-
-extern const base::FeatureParam<std::string>
-    kNuxOnboardingForceEnabledNewUserModules;
-extern const base::FeatureParam<std::string>
-    kNuxOnboardingForceEnabledReturningUserModules;
-
+namespace welcome {
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
 // Onboarding groups are used for running field trials related to first run
 // experience. This will make a new profile join whatever group is currently
@@ -38,21 +31,23 @@ extern const base::FeatureParam<std::string>
 void JoinOnboardingGroup(Profile* profile);
 #endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
 
-bool IsNuxOnboardingEnabled(Profile* profile);
+bool IsOnboardingEnabled(Profile* profile);
 
 bool IsAppVariationEnabled();
 
 bool DoesOnboardingHaveModulesToShow(Profile* profile);
 
-base::DictionaryValue GetNuxOnboardingModules(Profile* profile);
+base::DictionaryValue GetOnboardingModules(Profile* profile);
 
 // Exposed for testing.
+extern const base::Feature kOnboardingForceEnabled;
+
 bool CanShowGoogleAppModuleForTesting(const policy::PolicyMap& policies);
 bool CanShowNTPBackgroundModuleForTesting(const policy::PolicyMap& policies,
                                           Profile* profile);
 bool CanShowSetDefaultModuleForTesting(const policy::PolicyMap& policies);
 bool CanShowSigninModuleForTesting(const policy::PolicyMap& policies);
 
-}  // namespace nux
+}  // namespace welcome
 
-#endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_HELPER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_HELPERS_H_

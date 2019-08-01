@@ -21,7 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace nux {
+namespace welcome {
 
 enum class NtpBackgrounds {
   kArt = 0,
@@ -178,4 +178,4 @@ void NtpBackgroundHandler::HandleSetBackground(const base::ListValue* args) {
   }
 }
 
-}  // namespace nux
+}  // namespace welcome
