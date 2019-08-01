@@ -1505,14 +1505,7 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
                        &sigma);
   }
 
-  int which_arf = gf_group->arf_update_idx[gf_group->index];
-  // Set the temporal filtering status for the corresponding OVERLAY frame
-  if (strength == 0 && frames_to_blur == 1)
-    cpi->is_arf_filter_off[which_arf] = 1;
-  else
-    cpi->is_arf_filter_off[which_arf] = 0;
-
-  cpi->common.showable_frame = cpi->is_arf_filter_off[which_arf];
+  cpi->common.showable_frame = (strength == 0 && frames_to_blur == 1);
 
   if (distance == -1) {
     frames_to_blur_backward = 0;
