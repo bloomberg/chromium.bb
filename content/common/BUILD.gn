@@ -467,6 +467,7 @@ mojom("mojo_bindings") {
     "field_trial_recorder.mojom",
     "frame.mojom",
     "frame_messages.mojom",
+    "frame_proxy.mojom",
     "frame_sink_provider.mojom",
     "histogram_fetcher.mojom",
     "host_zoom.mojom",

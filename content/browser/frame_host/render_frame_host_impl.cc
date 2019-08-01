@@ -1424,7 +1424,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_FrameFocused, OnFrameFocused)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeforeUnload_ACK, OnBeforeUnloadACK)
@@ -1842,7 +1841,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
         GetProcess()->GetID(), previous_routing_id);
     // We have also created a RenderFrameProxy in CreateFrame above, so
     // remember that.
-    proxy->set_render_frame_proxy_created(true);
+    proxy->SetRenderFrameProxyCreated(true);
   }
 
   // The renderer now has a RenderFrame for this RenderFrameHost.  Note that
@@ -2248,7 +2247,7 @@ void RenderFrameHostImpl::OnDetach() {
   PendingDeletionCheckCompletedOnSubtree();  // Can delete |this|.
 }
 
-void RenderFrameHostImpl::OnFrameFocused() {
+void RenderFrameHostImpl::FrameFocused() {
   if (!is_active())
     return;
 
@@ -2518,7 +2517,7 @@ void RenderFrameHostImpl::SwapOut(
                                          is_loading, replication_state));
     // Remember that a RenderFrameProxy was created as part of processing the
     // SwapOut message above.
-    proxy->set_render_frame_proxy_created(true);
+    proxy->SetRenderFrameProxyCreated(true);
 
     StartPendingDeletionOnSubtree();
   }

@@ -1151,7 +1151,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // IPC Message handlers.
   void OnDetach();
-  void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnUpdateState(const PageState& state);
   void OnBeforeUnloadACK(
@@ -1311,6 +1310,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
+  void FrameFocused() override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif
