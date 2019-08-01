@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_ARC_PRINT_PRINT_STRUCT_TRAITS_H_
-#define CHROME_BROWSER_CHROMEOS_ARC_PRINT_PRINT_STRUCT_TRAITS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_PRINT_PRINT_MOJOM_TRAITS_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_PRINT_PRINT_MOJOM_TRAITS_H_
 
 #include <string>
 #include <vector>
@@ -76,4 +76,4 @@ struct StructTraits<arc::mojom::PrinterCapabilitiesDataView,
 
 }  // namespace mojo
 
-#endif  // CHROME_BROWSER_CHROMEOS_ARC_PRINT_PRINT_STRUCT_TRAITS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_PRINT_PRINT_MOJOM_TRAITS_H_
