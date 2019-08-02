@@ -832,7 +832,7 @@ void OverviewGrid::OnPostWindowStateTypeChange(WindowState* window_state,
     return;
 
   // When swiping away overview mode via shelf, windows will get minimized, but
-  // we do not want to create minimized widgets in their place.
+  // we do not want show a mirrored view in this case.
   if (overview_session_->enter_exit_overview_type() ==
       OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
     return;

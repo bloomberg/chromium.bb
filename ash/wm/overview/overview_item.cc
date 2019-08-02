@@ -661,8 +661,8 @@ void OverviewItem::UpdatePhantomsForDragging(
   }
 
   const gfx::Point location = gfx::ToRoundedPoint(location_in_screen);
-    window->layer()->SetOpacity(DragWindowController::GetDragWindowOpacity(
-        root_window_, window, location));
+  window->layer()->SetOpacity(DragWindowController::GetDragWindowOpacity(
+      root_window_, window, location));
   phantoms_for_dragging_->Update(location);
 }
 
