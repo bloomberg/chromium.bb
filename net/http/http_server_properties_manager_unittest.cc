@@ -220,8 +220,8 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   http_server_properties_dict.SetWithoutPathExpansion(
       "quic_servers", std::move(quic_servers_dict));
 
-  // Set up the pref. Prefs should be overwritten, due to the bad data.
-  InitializePrefs(http_server_properties_dict, true /* expect_pref_update */);
+  // Set up the pref.
+  InitializePrefs(http_server_properties_dict);
 
   // Verify that nothing is set.
   HostPortPair google_host_port_pair =
@@ -263,8 +263,8 @@ TEST_F(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
     http_server_properties_dict.SetWithoutPathExpansion(
         "servers", std::move(servers_list));
 
-    // Set up the pref. Prefs should be overwritten, due to the bad data.
-    InitializePrefs(http_server_properties_dict, true /* expect_pref_update */);
+    // Set up the pref.
+    InitializePrefs(http_server_properties_dict);
 
     // Verify alternative service is not set.
     EXPECT_FALSE(HasAlternativeService(

@@ -136,8 +136,7 @@ void HttpServerPropertiesManager::ReadPrefs(
     std::unique_ptr<BrokenAlternativeServiceList>*
         broken_alternative_service_list,
     std::unique_ptr<RecentlyBrokenAlternativeServices>*
-        recently_broken_alternative_services,
-    bool* detected_corrupted_prefs) {
+        recently_broken_alternative_services) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   net_log_.EndEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_INITIALIZATION);
@@ -195,20 +194,15 @@ void HttpServerPropertiesManager::ReadPrefs(
     --it;
     if (!it->GetAsDictionary(&servers_dict)) {
       DVLOG(1) << "Malformed http_server_properties for servers dictionary.";
-      *detected_corrupted_prefs = true;
       continue;
     }
-    if (!AddServersData(*servers_dict, spdy_servers_map->get(),
-                        alternative_service_map->get(),
-                        server_network_stats_map->get())) {
-      *detected_corrupted_prefs = true;
-    }
+    AddServersData(*servers_dict, spdy_servers_map->get(),
+                   alternative_service_map->get(),
+                   server_network_stats_map->get());
   }
 
-  if (!AddToQuicServerInfoMap(*http_server_properties_dict,
-                              quic_server_info_map->get())) {
-    *detected_corrupted_prefs = true;
-  }
+  AddToQuicServerInfoMap(*http_server_properties_dict,
+                         quic_server_info_map->get());
 
   // Read list containing broken and recently-broken alternative services, if
   // it exists.
@@ -228,15 +222,11 @@ void HttpServerPropertiesManager::ReadPrefs(
       const base::DictionaryValue* entry_dict;
       if (!it->GetAsDictionary(&entry_dict)) {
         DVLOG(1) << "Malformed broken alterantive service entry.";
-        *detected_corrupted_prefs = true;
         continue;
       }
-      if (!AddToBrokenAlternativeServices(
-              *entry_dict, broken_alternative_service_list->get(),
-              recently_broken_alternative_services->get())) {
-        *detected_corrupted_prefs = true;
-        continue;
-      }
+      AddToBrokenAlternativeServices(
+          *entry_dict, broken_alternative_service_list->get(),
+          recently_broken_alternative_services->get());
     }
   }
 
@@ -263,7 +253,7 @@ void HttpServerPropertiesManager::ReadPrefs(
   }
 }
 
-bool HttpServerPropertiesManager::AddToBrokenAlternativeServices(
+void HttpServerPropertiesManager::AddToBrokenAlternativeServices(
     const base::DictionaryValue& broken_alt_svc_entry_dict,
     BrokenAlternativeServiceList* broken_alternative_service_list,
     RecentlyBrokenAlternativeServices* recently_broken_alternative_services) {
@@ -271,7 +261,7 @@ bool HttpServerPropertiesManager::AddToBrokenAlternativeServices(
   if (!ParseAlternativeServiceDict(broken_alt_svc_entry_dict, false,
                                    "broken alternative services",
                                    &alt_service)) {
-    return false;
+    return;
   }
 
   // Each entry must contain either broken-count and/or broken-until fields.
@@ -285,11 +275,11 @@ bool HttpServerPropertiesManager::AddToBrokenAlternativeServices(
             kBrokenCountKey, &broken_count)) {
       DVLOG(1) << "Recently broken alternative service has malformed "
                << "broken-count.";
-      return false;
+      return;
     }
     if (broken_count < 0) {
       DVLOG(1) << "Broken alternative service has negative broken-count.";
-      return false;
+      return;
     }
     recently_broken_alternative_services->Put(alt_service, broken_count);
     contains_broken_count_or_broken_until = true;
@@ -305,7 +295,7 @@ bool HttpServerPropertiesManager::AddToBrokenAlternativeServices(
         !base::StringToInt64(expiration_string, &expiration_int64)) {
       DVLOG(1) << "Broken alternative service has malformed broken-until "
                << "string.";
-      return false;
+      return;
     }
 
     time_t expiration_time_t = static_cast<time_t>(expiration_int64);
@@ -321,13 +311,10 @@ bool HttpServerPropertiesManager::AddToBrokenAlternativeServices(
   if (!contains_broken_count_or_broken_until) {
     DVLOG(1) << "Broken alternative service has neither broken-count nor "
              << "broken-until specified.";
-    return false;
   }
-
-  return true;
 }
 
-bool HttpServerPropertiesManager::AddServersData(
+void HttpServerPropertiesManager::AddServersData(
     const base::DictionaryValue& servers_dict,
     SpdyServersMap* spdy_servers_map,
     AlternativeServiceMap* alternative_service_map,
@@ -340,13 +327,13 @@ bool HttpServerPropertiesManager::AddServersData(
     url::SchemeHostPort spdy_server((GURL(spdy_server_url)));
     if (spdy_server.host().empty()) {
       DVLOG(1) << "Malformed http_server_properties for server: " << server_str;
-      return false;
+      return;
     }
 
     const base::DictionaryValue* server_pref_dict = nullptr;
     if (!it.value().GetAsDictionary(&server_pref_dict)) {
       DVLOG(1) << "Malformed http_server_properties server: " << server_str;
-      return false;
+      return;
     }
 
     // Get if server supports Spdy.
@@ -356,14 +343,11 @@ bool HttpServerPropertiesManager::AddServersData(
       spdy_servers_map->Put(spdy_server.Serialize(), supports_spdy);
     }
 
-    if (!AddToAlternativeServiceMap(spdy_server, *server_pref_dict,
-                                    alternative_service_map) ||
-        !AddToNetworkStatsMap(spdy_server, *server_pref_dict,
-                              network_stats_map)) {
-      return false;
+    if (AddToAlternativeServiceMap(spdy_server, *server_pref_dict,
+                                   alternative_service_map)) {
+      AddToNetworkStatsMap(spdy_server, *server_pref_dict, network_stats_map);
     }
   }
-  return true;
 }
 
 bool HttpServerPropertiesManager::ParseAlternativeServiceDict(
@@ -514,34 +498,32 @@ bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
   return true;
 }
 
-bool HttpServerPropertiesManager::ReadSupportsQuic(
+void HttpServerPropertiesManager::ReadSupportsQuic(
     const base::DictionaryValue& http_server_properties_dict,
     IPAddress* last_quic_address) {
   const base::DictionaryValue* supports_quic_dict = nullptr;
   if (!http_server_properties_dict.GetDictionaryWithoutPathExpansion(
           kSupportsQuicKey, &supports_quic_dict)) {
-    return true;
+    return;
   }
   bool used_quic = false;
   if (!supports_quic_dict->GetBooleanWithoutPathExpansion(kUsedQuicKey,
                                                           &used_quic)) {
     DVLOG(1) << "Malformed SupportsQuic";
-    return false;
+    return;
   }
   if (!used_quic)
-    return false;
+    return;
 
   std::string address;
   if (!supports_quic_dict->GetStringWithoutPathExpansion(kAddressKey,
                                                          &address) ||
       !last_quic_address->AssignFromIPLiteral(address)) {
     DVLOG(1) << "Malformed SupportsQuic";
-    return false;
   }
-  return true;
 }
 
-bool HttpServerPropertiesManager::AddToNetworkStatsMap(
+void HttpServerPropertiesManager::AddToNetworkStatsMap(
     const url::SchemeHostPort& server,
     const base::DictionaryValue& server_pref_dict,
     ServerNetworkStatsMap* network_stats_map) {
@@ -549,34 +531,32 @@ bool HttpServerPropertiesManager::AddToNetworkStatsMap(
   const base::DictionaryValue* server_network_stats_dict = nullptr;
   if (!server_pref_dict.GetDictionaryWithoutPathExpansion(
           kNetworkStatsKey, &server_network_stats_dict)) {
-    return true;
+    return;
   }
   int srtt;
   if (!server_network_stats_dict->GetIntegerWithoutPathExpansion(kSrttKey,
                                                                  &srtt)) {
     DVLOG(1) << "Malformed ServerNetworkStats for server: "
              << server.Serialize();
-    return false;
+    return;
   }
   ServerNetworkStats server_network_stats;
   server_network_stats.srtt = base::TimeDelta::FromMicroseconds(srtt);
   // TODO(rtenneti): When QUIC starts using bandwidth_estimate, then persist
   // bandwidth_estimate.
   network_stats_map->Put(server, server_network_stats);
-  return true;
 }
 
-bool HttpServerPropertiesManager::AddToQuicServerInfoMap(
+void HttpServerPropertiesManager::AddToQuicServerInfoMap(
     const base::DictionaryValue& http_server_properties_dict,
     QuicServerInfoMap* quic_server_info_map) {
   const base::DictionaryValue* quic_servers_dict = nullptr;
   if (!http_server_properties_dict.GetDictionaryWithoutPathExpansion(
           kQuicServers, &quic_servers_dict)) {
     DVLOG(1) << "Malformed http_server_properties for quic_servers.";
-    return true;
+    return;
   }
 
-  bool detected_corrupted_prefs = false;
   for (base::DictionaryValue::Iterator it(*quic_servers_dict); !it.IsAtEnd();
        it.Advance()) {
     // Get quic_server_id.
@@ -587,7 +567,6 @@ bool HttpServerPropertiesManager::AddToQuicServerInfoMap(
     if (quic_server_id.host().empty()) {
       DVLOG(1) << "Malformed http_server_properties for quic server: "
                << quic_server_id_str;
-      detected_corrupted_prefs = true;
       continue;
     }
 
@@ -595,7 +574,6 @@ bool HttpServerPropertiesManager::AddToQuicServerInfoMap(
     if (!it.value().GetAsDictionary(&quic_server_pref_dict)) {
       DVLOG(1) << "Malformed http_server_properties quic server dict: "
                << quic_server_id_str;
-      detected_corrupted_prefs = true;
       continue;
     }
 
@@ -604,12 +582,10 @@ bool HttpServerPropertiesManager::AddToQuicServerInfoMap(
             kServerInfoKey, &quic_server_info)) {
       DVLOG(1) << "Malformed http_server_properties quic server info: "
                << quic_server_id_str;
-      detected_corrupted_prefs = true;
       continue;
     }
     quic_server_info_map->Put(quic_server_id, quic_server_info);
   }
-  return !detected_corrupted_prefs;
 }
 
 void HttpServerPropertiesManager::WriteToPrefs(
@@ -916,20 +892,18 @@ void HttpServerPropertiesManager::OnHttpServerPropertiesLoaded() {
   std::unique_ptr<BrokenAlternativeServiceList> broken_alternative_service_list;
   std::unique_ptr<RecentlyBrokenAlternativeServices>
       recently_broken_alternative_services;
-  bool detected_corrupted_prefs = false;
 
   ReadPrefs(&spdy_servers_map, &alternative_service_map,
             &server_network_stats_map, &last_quic_address,
             &quic_server_info_map, &broken_alternative_service_list,
-            &recently_broken_alternative_services, &detected_corrupted_prefs);
+            &recently_broken_alternative_services);
 
   std::move(on_prefs_loaded_callback_)
       .Run(std::move(spdy_servers_map), std::move(alternative_service_map),
            std::move(server_network_stats_map), last_quic_address,
            std::move(quic_server_info_map),
            std::move(broken_alternative_service_list),
-           std::move(recently_broken_alternative_services),
-           detected_corrupted_prefs);
+           std::move(recently_broken_alternative_services));
 }
 
 }  // namespace net

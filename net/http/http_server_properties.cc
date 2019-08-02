@@ -761,8 +761,7 @@ void HttpServerProperties::OnPrefsLoaded(
     std::unique_ptr<BrokenAlternativeServiceList>
         broken_alternative_service_list,
     std::unique_ptr<RecentlyBrokenAlternativeServices>
-        recently_broken_alternative_services,
-    bool prefs_corrupt) {
+        recently_broken_alternative_services) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   DCHECK(!is_initialized_);
@@ -785,9 +784,7 @@ void HttpServerProperties::OnPrefsLoaded(
 
   is_initialized_ = true;
 
-  // TODO(mmenke): Corrupt prefs will be modified in the same way if they're
-  // loaded a second time, so this doesn't seem to get us anything. Remove it.
-  if (queue_write_on_load_ || prefs_corrupt) {
+  if (queue_write_on_load_) {
     // Leaving this as true doesn't actually have any effect, but seems best to
     // be safe.
     queue_write_on_load_ = false;

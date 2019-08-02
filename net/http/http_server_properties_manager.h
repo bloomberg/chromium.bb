@@ -39,8 +39,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   // Called when prefs are loaded. If prefs completely failed to load,
   // everything will be nullptr. Otherwise, everything will be populated, except
   // |broken_alternative_service_list| and
-  // |recently_broken_alternative_services|, which may be null. If prefs were
-  // present but some were corrupt, |prefs_corrupt| will be true.
+  // |recently_broken_alternative_services|, which may be null.
   using OnPrefsLoadedCallback = base::OnceCallback<void(
       std::unique_ptr<SpdyServersMap> spdy_servers_map,
       std::unique_ptr<AlternativeServiceMap> alternative_service_map,
@@ -50,8 +49,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
       std::unique_ptr<BrokenAlternativeServiceList>
           broken_alternative_service_list,
       std::unique_ptr<RecentlyBrokenAlternativeServices>
-          recently_broken_alternative_services,
-      bool prefs_corrupt)>;
+          recently_broken_alternative_services)>;
 
   using GetCannonicalSuffix =
       base::RepeatingCallback<const std::string*(const std::string& host)>;
@@ -79,6 +77,8 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   // present, leaves all values alone. Otherwise, populates them all, with the
   // possible exception of the two broken alt services lists.
   //
+  // Corrupted data is ignored.
+  //
   // TODO(mmenke): Consider always populating fields, unconditionally, for a
   // simpler API.
   void ReadPrefs(
@@ -90,8 +90,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
       std::unique_ptr<BrokenAlternativeServiceList>*
           broken_alternative_service_list,
       std::unique_ptr<RecentlyBrokenAlternativeServices>*
-          recently_broken_alternative_services,
-      bool* detected_corrupted_prefs);
+          recently_broken_alternative_services);
 
   void set_max_server_configs_stored_in_properties(
       size_t max_server_configs_stored_in_properties) {
@@ -128,7 +127,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
                            DoNotLoadAltSvcForInsecureOrigins);
   FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
                            DoNotLoadExpiredAlternativeService);
-  bool AddServersData(const base::DictionaryValue& server_dict,
+  void AddServersData(const base::DictionaryValue& server_dict,
                       SpdyServersMap* spdy_servers_map,
                       AlternativeServiceMap* alternative_service_map,
                       ServerNetworkStatsMap* network_stats_map);
@@ -153,14 +152,14 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
       const url::SchemeHostPort& server,
       const base::DictionaryValue& server_dict,
       AlternativeServiceMap* alternative_service_map);
-  bool ReadSupportsQuic(const base::DictionaryValue& server_dict,
+  void ReadSupportsQuic(const base::DictionaryValue& server_dict,
                         IPAddress* last_quic_address);
-  bool AddToNetworkStatsMap(const url::SchemeHostPort& server,
+  void AddToNetworkStatsMap(const url::SchemeHostPort& server,
                             const base::DictionaryValue& server_dict,
                             ServerNetworkStatsMap* network_stats_map);
-  bool AddToQuicServerInfoMap(const base::DictionaryValue& server_dict,
+  void AddToQuicServerInfoMap(const base::DictionaryValue& server_dict,
                               QuicServerInfoMap* quic_server_info_map);
-  bool AddToBrokenAlternativeServices(
+  void AddToBrokenAlternativeServices(
       const base::DictionaryValue& broken_alt_svc_entry_dict,
       BrokenAlternativeServiceList* broken_alternative_service_list,
       RecentlyBrokenAlternativeServices* recently_broken_alternative_services);

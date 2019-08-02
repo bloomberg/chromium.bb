@@ -424,8 +424,7 @@ class NET_EXPORT HttpServerProperties
       std::unique_ptr<BrokenAlternativeServiceList>
           broken_alternative_service_list,
       std::unique_ptr<RecentlyBrokenAlternativeServices>
-          recently_broken_alternative_services,
-      bool prefs_corrupt);
+          recently_broken_alternative_services);
 
   // These methods are called by OnPrefsLoaded to handle merging properties
   // loaded from prefs with what has been learned while waiting for prefs to
