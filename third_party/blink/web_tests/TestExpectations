@@ -3298,6 +3298,16 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-under
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-rule-nested-balancing-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-multicol/multicol-breaking-000.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-multicol/multicol-breaking-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-multicol/multicol-breaking-nobackground-000.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-rule-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-multicol/multicol-breaking-nobackground-001.html [ Failure ]
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-rule-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-multicol/multicol-rule-nested-balancing-002.html [ Failure ]
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-rule-nested-balancing-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-multicol/multicol-rule-nested-balancing-001.html [ Failure ]
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-005.html [ Failure ]
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-004a.html [ Failure ]
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-children-height-004b.html [ Failure ]
