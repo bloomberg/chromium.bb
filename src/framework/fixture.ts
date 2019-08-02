@@ -49,19 +49,27 @@ export class Fixture {
     this.numOutstandingAsyncExpectations--;
   }
 
-  async shouldReject(p: Promise<unknown>, exceptionType?: string, msg?: string): Promise<void> {
+  private expectErrorValue(ex: unknown, expectedName: string | undefined, m: string): void {
+    if (!(ex instanceof Error)) {
+      this.fail('THREW NON-ERROR');
+      return;
+    }
+    const actualType = ex.name;
+    if (expectedName !== undefined && actualType !== expectedName) {
+      this.fail(`THREW ${actualType} INSTEAD OF ${expectedName}${m}`);
+    } else {
+      this.ok(`threw ${actualType}${m}`);
+    }
+  }
+
+  async shouldReject(p: Promise<unknown>, expectedName?: string, msg?: string): Promise<void> {
     this.asyncExpectation(async () => {
       const m = msg ? ': ' + msg : '';
       try {
         await p;
         this.fail('DID NOT THROW' + m);
       } catch (ex) {
-        const actualType = typeof ex;
-        if (exceptionType !== undefined && actualType === exceptionType) {
-          this.fail(`THREW ${actualType} INSTEAD OF ${exceptionType}${m}`);
-        } else {
-          this.ok(`threw ${actualType}{m}`);
-        }
+        this.expectErrorValue(ex, expectedName, m);
       }
     });
   }
@@ -72,12 +80,7 @@ export class Fixture {
       fn();
       this.fail('DID NOT THROW' + m);
     } catch (ex) {
-      const actualType = typeof ex;
-      if (exceptionType !== undefined && actualType === exceptionType) {
-        this.fail(`THREW ${actualType} INSTEAD OF ${exceptionType}${m}`);
-      } else {
-        this.ok(`threw ${actualType}{m}`);
-      }
+      this.expectErrorValue(ex, exceptionType, m);
     }
   }
 

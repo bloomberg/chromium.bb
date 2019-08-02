@@ -94,3 +94,43 @@ g.test('invalid test name', t => {
     g.test('a' + t.params.char + 'b', () => {});
   });
 }).params(poptions('char', badChars));
+
+g.test('shouldThrow', async t0 => {
+  t0.shouldThrow(() => {
+    throw new TypeError();
+  }, 'TypeError');
+
+  const g = new TestGroup(UnitTest);
+
+  g.test('a', t => {
+    t.shouldThrow(() => {
+      throw new TypeError();
+    }, 'Error');
+  });
+
+  const result = await t0.run(g);
+  t0.expect(result.cases[0].status === 'fail');
+});
+
+g.test('shouldReject', async t0 => {
+  t0.shouldReject(
+    (async () => {
+      throw new TypeError();
+    })(),
+    'TypeError'
+  );
+
+  const g = new TestGroup(UnitTest);
+
+  g.test('a', t => {
+    t.shouldReject(
+      (async () => {
+        throw new TypeError();
+      })(),
+      'Error'
+    );
+  });
+
+  const result = await t0.run(g);
+  t0.expect(result.cases[0].status === 'fail');
+});
