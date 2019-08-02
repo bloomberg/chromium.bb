@@ -454,13 +454,13 @@ class FormStructure {
   // Two or three fields predicted as the whole address should be address lines
   // 1, 2 and 3 instead.
   void RationalizeAddressLineFields(
-      SectionedFieldsIndexes& sections_of_address_indexes,
+      SectionedFieldsIndexes* sections_of_address_indexes,
       AutofillMetrics::FormInteractionsUkmLogger*);
 
   // Rationalize state and country interdependently.
   void RationalizeAddressStateCountry(
-      SectionedFieldsIndexes& sections_of_state_indexes,
-      SectionedFieldsIndexes& sections_of_country_indexes,
+      SectionedFieldsIndexes* sections_of_state_indexes,
+      SectionedFieldsIndexes* sections_of_country_indexes,
       AutofillMetrics::FormInteractionsUkmLogger*);
 
   // Tunes the fields with identical predictions.
