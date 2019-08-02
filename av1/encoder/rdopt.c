@@ -5031,10 +5031,8 @@ static int ml_predict_tx_split(MACROBLOCK *x, BLOCK_SIZE bsize, int blk_row,
   av1_nn_predict(features, nn_config, 1, &score);
   aom_clear_system_state();
 
-  if (score > 8.0f) return 100;
-  if (score < -8.0f) return 0;
-  score = 1.0f / (1.0f + (float)exp(-score));
-  return (int)(score * 100);
+  int int_score = (int)(score * 10000);
+  return clamp(int_score, -80000, 80000);
 }
 
 typedef struct {
@@ -5230,7 +5228,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     if (threshold >= 0) {
       const int split_score =
           ml_predict_tx_split(x, plane_bsize, blk_row, blk_col, tx_size);
-      if (split_score >= 0 && split_score < threshold) try_split = 0;
+      if (split_score < -threshold) try_split = 0;
     }
   }
 
