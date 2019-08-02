@@ -198,6 +198,11 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/quantize_x86.h"
               "${AOM_ROOT}/aom_dsp/x86/sum_squares_sse2.c"
               "${AOM_ROOT}/aom_dsp/x86/variance_sse2.c")
+  if(NOT CONFIG_AV1_HIGHBITDEPTH)
+    list(REMOVE_ITEM AOM_DSP_ENCODER_INTRIN_SSE2
+                     "${AOM_ROOT}/aom_dsp/x86/highbd_adaptive_quantize_sse2.c"
+                     "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_sse2.c")
+  endif()
 
   list(APPEND AOM_DSP_ENCODER_ASM_SSSE3_X86_64
               "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_ssse3_x86_64.asm"
