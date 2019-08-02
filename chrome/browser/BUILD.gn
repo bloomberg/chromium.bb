@@ -5406,6 +5406,8 @@ static_library("test_support") {
     "ssl/ssl_client_auth_requestor_mock.h",
     "subresource_filter/test_ruleset_publisher.cc",
     "subresource_filter/test_ruleset_publisher.h",
+    "translate/translate_test_utils.cc",
+    "translate/translate_test_utils.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
