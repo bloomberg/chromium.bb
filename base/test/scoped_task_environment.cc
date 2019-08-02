@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -46,18 +45,18 @@ namespace test {
 
 namespace {
 
-base::MessagePumpType GetMessagePumpTypeForMainThreadType(
+base::MessagePump::Type GetMessagePumpTypeForMainThreadType(
     ScopedTaskEnvironment::MainThreadType main_thread_type) {
   switch (main_thread_type) {
     case ScopedTaskEnvironment::MainThreadType::DEFAULT:
-      return MessagePumpType::DEFAULT;
+      return MessagePump::Type::DEFAULT;
     case ScopedTaskEnvironment::MainThreadType::UI:
-      return MessagePumpType::UI;
+      return MessagePump::Type::UI;
     case ScopedTaskEnvironment::MainThreadType::IO:
-      return MessagePumpType::IO;
+      return MessagePump::Type::IO;
   }
   NOTREACHED();
-  return MessagePumpType::DEFAULT;
+  return MessagePump::Type::DEFAULT;
 }
 
 std::unique_ptr<sequence_manager::SequenceManager>
