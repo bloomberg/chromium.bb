@@ -15,6 +15,8 @@
 #include "base/sequence_checker.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
+#include "net/http/alternative_service.h"
+#include "net/http/broken_alternative_services.h"
 #include "net/http/http_server_properties.h"
 #include "net/log/net_log_with_source.h"
 

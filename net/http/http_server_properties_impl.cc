@@ -50,7 +50,9 @@ HttpServerPropertiesImpl::HttpServerPropertiesImpl(
                     net_log,
                     tick_clock_)
               : nullptr),
-      broken_alternative_services_(this, tick_clock_),
+      broken_alternative_services_(kMaxRecentlyBrokenAlternativeServiceEntries,
+                                   this,
+                                   tick_clock_),
       canonical_suffixes_({".ggpht.com", ".c.youtube.com", ".googlevideo.com",
                            ".googleusercontent.com"}),
       quic_server_info_map_(kDefaultMaxQuicServerEntries),

@@ -218,7 +218,8 @@ void HttpServerPropertiesManager::ReadPrefs(
     *broken_alternative_service_list =
         std::make_unique<BrokenAlternativeServiceList>();
     *recently_broken_alternative_services =
-        std::make_unique<RecentlyBrokenAlternativeServices>();
+        std::make_unique<RecentlyBrokenAlternativeServices>(
+            kMaxRecentlyBrokenAlternativeServiceEntries);
 
     // Iterate list in reverse-MRU order
     for (auto it = broken_alt_svc_list->end();
