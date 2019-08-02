@@ -6186,34 +6186,30 @@ void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
   // should be consistent with internal reference frame selection. Need to
   // ensure that there is not conflict between the two. In AV1 encoder, the
   // priority rank for 7 reference frames are: LAST, ALTREF, LAST2, LAST3,
-  // GOLDEN, BWDREF, ALTREF2. If only one reference frame is used, it must be
-  // LAST.
+  // GOLDEN, BWDREF, ALTREF2.
   cpi->ext_ref_frame_flags = AOM_REFFRAME_ALL;
   if (flags &
       (AOM_EFLAG_NO_REF_LAST | AOM_EFLAG_NO_REF_LAST2 | AOM_EFLAG_NO_REF_LAST3 |
        AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_REF_BWD |
        AOM_EFLAG_NO_REF_ARF2)) {
-    if (flags & AOM_EFLAG_NO_REF_LAST) {
-      cpi->ext_ref_frame_flags = 0;
+    int ref = AOM_REFFRAME_ALL;
+
+    if (flags & AOM_EFLAG_NO_REF_LAST) ref ^= AOM_LAST_FLAG;
+    if (flags & AOM_EFLAG_NO_REF_LAST2) ref ^= AOM_LAST2_FLAG;
+    if (flags & AOM_EFLAG_NO_REF_LAST3) ref ^= AOM_LAST3_FLAG;
+
+    if (flags & AOM_EFLAG_NO_REF_GF) ref ^= AOM_GOLD_FLAG;
+
+    if (flags & AOM_EFLAG_NO_REF_ARF) {
+      ref ^= AOM_ALT_FLAG;
+      ref ^= AOM_BWD_FLAG;
+      ref ^= AOM_ALT2_FLAG;
     } else {
-      int ref = AOM_REFFRAME_ALL;
-
-      if (flags & AOM_EFLAG_NO_REF_LAST2) ref ^= AOM_LAST2_FLAG;
-      if (flags & AOM_EFLAG_NO_REF_LAST3) ref ^= AOM_LAST3_FLAG;
-
-      if (flags & AOM_EFLAG_NO_REF_GF) ref ^= AOM_GOLD_FLAG;
-
-      if (flags & AOM_EFLAG_NO_REF_ARF) {
-        ref ^= AOM_ALT_FLAG;
-        ref ^= AOM_BWD_FLAG;
-        ref ^= AOM_ALT2_FLAG;
-      } else {
-        if (flags & AOM_EFLAG_NO_REF_BWD) ref ^= AOM_BWD_FLAG;
-        if (flags & AOM_EFLAG_NO_REF_ARF2) ref ^= AOM_ALT2_FLAG;
-      }
-
-      av1_use_as_reference(cpi, ref);
+      if (flags & AOM_EFLAG_NO_REF_BWD) ref ^= AOM_BWD_FLAG;
+      if (flags & AOM_EFLAG_NO_REF_ARF2) ref ^= AOM_ALT2_FLAG;
     }
+
+    av1_use_as_reference(cpi, ref);
   }
 
   if (flags &
