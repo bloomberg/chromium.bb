@@ -104,3 +104,13 @@ tests:
     - ⢥
     - mode: [noUndefined]
 
+# verify that all the fallback dot patterns needed to render undefined characters in hexadecimal work
+table: |
+  include tables/unicode.dis
+  # don't define any characters so that the fallback dot patterns will be used
+flags: {testmode: forward}
+tests:
+
+  - - "\\x98ab\\x76cd \\x54ef\\x3210"
+    - "⠄⡳⠭⠔⠦⠁⠃⠄⠄⡳⠭⠶⠖⠉⠙⠄⠄⡳⠭⠴⠴⠆⠴⠄⠄⡳⠭⠢⠲⠑⠋⠄⠄⡳⠭⠒⠆⠂⠴⠄"
+
