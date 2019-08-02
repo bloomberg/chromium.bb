@@ -71,7 +71,10 @@ class HttpServerPropertiesImplTest : public TestWithScopedTaskEnvironment {
       : TestWithScopedTaskEnvironment(
             base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         test_tick_clock_(GetMockTickClock()),
-        impl_(test_tick_clock_, &test_clock_) {
+        impl_(nullptr /* pref_delegate */,
+              nullptr /* net_log */,
+              test_tick_clock_,
+              &test_clock_) {
     // Set |test_clock_| to some random time.
     test_clock_.Advance(base::TimeDelta::FromSeconds(12345));
   }

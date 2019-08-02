@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_server_properties_impl.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,6 +100,8 @@ class MockPrefDelegate : public net::HttpServerPropertiesManager::PrefDelegate {
 
 }  // namespace
 
+// TODO(mmenke): Move these tests in with the other HttpServerPropertiesImpl
+// tests, and rename |http_server_props_manager_|.
 class HttpServerPropertiesManagerTest : public testing::Test,
                                         public WithScopedTaskEnvironment {
  protected:
@@ -112,7 +115,7 @@ class HttpServerPropertiesManagerTest : public testing::Test,
         HttpNetworkSession::Params().quic_params.supported_versions;
     pref_delegate_ = new MockPrefDelegate;
 
-    http_server_props_manager_ = std::make_unique<HttpServerPropertiesManager>(
+    http_server_props_manager_ = std::make_unique<HttpServerPropertiesImpl>(
         base::WrapUnique(pref_delegate_), /*net_log=*/nullptr,
         GetMockTickClock());
 
@@ -168,7 +171,7 @@ class HttpServerPropertiesManagerTest : public testing::Test,
   }
 
   MockPrefDelegate* pref_delegate_;  // Owned by HttpServerPropertiesManager.
-  std::unique_ptr<HttpServerPropertiesManager> http_server_props_manager_;
+  std::unique_ptr<HttpServerPropertiesImpl> http_server_props_manager_;
   base::Time one_day_from_now_;
   quic::ParsedQuicVersionVector advertised_versions_;
 
@@ -313,7 +316,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
 
   // Move forward the task runner short by 20ms.
-  FastForwardBy(HttpServerPropertiesManager::GetUpdatePrefsDelayForTesting() -
+  FastForwardBy(HttpServerPropertiesImpl::GetUpdatePrefsDelayForTesting() -
                 base::TimeDelta::FromMilliseconds(20));
 
   // Set another spdy server to trigger another call to
@@ -842,7 +845,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 
   // Advance time by just enough so that the prefs update task is executed but
   // not the task to expire the brokenness of |broken_alternative_service|.
-  FastForwardBy(HttpServerPropertiesManager::GetUpdatePrefsDelayForTesting());
+  FastForwardBy(HttpServerPropertiesImpl::GetUpdatePrefsDelayForTesting());
   EXPECT_NE(0u, GetPendingMainThreadTaskCount());
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -1015,7 +1018,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   // |broken_alternative_service|.
   EXPECT_EQ(2u, GetPendingMainThreadTaskCount());
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  FastForwardBy(HttpServerPropertiesManager::GetUpdatePrefsDelayForTesting());
+  FastForwardBy(HttpServerPropertiesImpl::GetUpdatePrefsDelayForTesting());
   EXPECT_EQ(1u, GetPendingMainThreadTaskCount());
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -1058,7 +1061,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   ASSERT_TRUE(base::StringToInt64(expiration_string, &expiration_int64));
   base::TimeDelta expiration_delta =
       base::TimeDelta::FromMinutes(5) -
-      HttpServerPropertiesManager::GetUpdatePrefsDelayForTesting();
+      HttpServerPropertiesImpl::GetUpdatePrefsDelayForTesting();
   time_t time_t_of_prefs_update = static_cast<time_t>(expiration_int64);
   EXPECT_LE((time_before_prefs_update + expiration_delta).ToTimeT(),
             time_t_of_prefs_update);
@@ -1112,8 +1115,9 @@ TEST_F(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
 
   const url::SchemeHostPort server("https", "example.com", 443);
   AlternativeServiceMap alternative_service_map;
-  EXPECT_TRUE(http_server_props_manager_->AddToAlternativeServiceMap(
-      server, *server_dict, &alternative_service_map));
+  EXPECT_TRUE(http_server_props_manager_->properties_manager_for_testing()
+                  ->AddToAlternativeServiceMap(server, *server_dict,
+                                               &alternative_service_map));
 
   auto it = alternative_service_map.Get(server);
   ASSERT_NE(alternative_service_map.end(), it);
@@ -1163,8 +1167,9 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotLoadAltSvcForInsecureOrigins) {
 
   const url::SchemeHostPort server("http", "example.com", 80);
   AlternativeServiceMap alternative_service_map;
-  EXPECT_FALSE(http_server_props_manager_->AddToAlternativeServiceMap(
-      server, *server_dict, &alternative_service_map));
+  EXPECT_FALSE(http_server_props_manager_->properties_manager_for_testing()
+                   ->AddToAlternativeServiceMap(server, *server_dict,
+                                                &alternative_service_map));
 
   auto it = alternative_service_map.Get(server);
   EXPECT_EQ(alternative_service_map.end(), it);
@@ -1212,7 +1217,7 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotPersistExpiredAlternativeService) {
   // |broken_alternative_service|.
   EXPECT_EQ(2U, GetPendingMainThreadTaskCount());
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  FastForwardBy(HttpServerPropertiesManager::GetUpdatePrefsDelayForTesting());
+  FastForwardBy(HttpServerPropertiesImpl::GetUpdatePrefsDelayForTesting());
   EXPECT_EQ(1U, GetPendingMainThreadTaskCount());
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 
@@ -1276,8 +1281,9 @@ TEST_F(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
 
   const url::SchemeHostPort server("https", "example.com", 443);
   AlternativeServiceMap alternative_service_map;
-  ASSERT_TRUE(http_server_props_manager_->AddToAlternativeServiceMap(
-      server, server_pref_dict, &alternative_service_map));
+  ASSERT_TRUE(http_server_props_manager_->properties_manager_for_testing()
+                  ->AddToAlternativeServiceMap(server, server_pref_dict,
+                                               &alternative_service_map));
 
   auto it = alternative_service_map.Get(server);
   ASSERT_NE(alternative_service_map.end(), it);
@@ -1400,8 +1406,9 @@ TEST_F(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
 
   const url::SchemeHostPort server("https", "example.com", 443);
   AlternativeServiceMap alternative_service_map;
-  EXPECT_TRUE(http_server_props_manager_->AddToAlternativeServiceMap(
-      server, *server_dict, &alternative_service_map));
+  EXPECT_TRUE(http_server_props_manager_->properties_manager_for_testing()
+                  ->AddToAlternativeServiceMap(server, *server_dict,
+                                               &alternative_service_map));
 
   auto it = alternative_service_map.Get(server);
   ASSERT_NE(alternative_service_map.end(), it);

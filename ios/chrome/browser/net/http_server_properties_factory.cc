@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/net/http_server_properties_manager_factory.h"
+#include "ios/chrome/browser/net/http_server_properties_factory.h"
 
 #include <memory>
 
@@ -12,7 +12,7 @@
 #include "components/prefs/json_pref_store.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/web/public/thread/web_thread.h"
-#include "net/http/http_server_properties_manager.h"
+#include "net/http/http_server_properties_impl.h"
 
 namespace {
 
@@ -83,11 +83,11 @@ class PrefServiceAdapter
 }  // namespace
 
 // static
-std::unique_ptr<net::HttpServerPropertiesManager>
-HttpServerPropertiesManagerFactory::CreateManager(
+std::unique_ptr<net::HttpServerProperties>
+HttpServerPropertiesFactory::CreateHttpServerProperties(
     scoped_refptr<JsonPrefStore> pref_store,
     net::NetLog* net_log) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  return std::make_unique<net::HttpServerPropertiesManager>(
+  return std::make_unique<net::HttpServerPropertiesImpl>(
       std::make_unique<PrefServiceAdapter>(std::move(pref_store)), net_log);
 }

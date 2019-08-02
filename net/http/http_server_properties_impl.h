@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,13 +17,15 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_export.h"
 #include "net/http/broken_alternative_services.h"
 #include "net/http/http_server_properties.h"
+#include "net/http/http_server_properties_manager.h"
 
 namespace base {
 class Clock;
@@ -32,23 +34,38 @@ class TickClock;
 
 namespace net {
 
+class NetLog;
+
 // The implementation for setting/retrieving the HTTP server properties.
+//
+// Optionally retrieves and saves properties from/to disk using a
+// HttpServerPropertiesManager::PrefDelegate. Delays and rate-limits writes to
+// the file, to improve performance.
+//
+// TODO(mmenke): Merge this with HttpServerProperties.
 class NET_EXPORT HttpServerPropertiesImpl
     : public HttpServerProperties,
       public BrokenAlternativeServices::Delegate {
  public:
+  // If a |pref_delegate| is specified, it will be used to read/write the
+  // properties to a pref file.
+  //
   // |tick_clock| is used for setting expiration times and scheduling the
   // expiration of broken alternative services. If null, default clock will be
   // used.
+  //
   // |clock| is used for converting base::TimeTicks to base::Time for
   // wherever base::Time is preferable.
-  HttpServerPropertiesImpl(const base::TickClock* tick_clock,
-                           base::Clock* clock);
-
-  // Default clock will be used.
-  HttpServerPropertiesImpl();
+  HttpServerPropertiesImpl(
+      std::unique_ptr<HttpServerPropertiesManager::PrefDelegate> pref_delegate =
+          nullptr,
+      NetLog* net_log = nullptr,
+      const base::TickClock* tick_clock = nullptr,
+      base::Clock* clock = nullptr);
 
   ~HttpServerPropertiesImpl() override;
+
+  static base::TimeDelta GetUpdatePrefsDelayForTesting();
 
   // Sets |spdy_servers_map_| with the servers (host/port) from
   // |spdy_servers| that either support SPDY or not.
@@ -150,6 +167,11 @@ class NET_EXPORT HttpServerPropertiesImpl
   void OnExpireBrokenAlternativeService(
       const AlternativeService& expired_alternative_service) override;
 
+  // TODO(mmenke): Look into removing this.
+  HttpServerPropertiesManager* properties_manager_for_testing() {
+    return properties_manager_.get();
+  }
+
  private:
   // TODO (wangyix): modify HttpServerPropertiesImpl unit tests so this
   // friendness is no longer required.
@@ -185,8 +207,36 @@ class NET_EXPORT HttpServerPropertiesImpl
   // have an entry associated with |server|, the method will add one.
   void UpdateCanonicalServerInfoMap(const quic::QuicServerId& server);
 
+  void OnPrefsLoaded(
+      std::unique_ptr<SpdyServersMap> spdy_servers_map,
+      std::unique_ptr<AlternativeServiceMap> alternative_service_map,
+      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map,
+      const IPAddress& last_quic_address,
+      std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+      std::unique_ptr<BrokenAlternativeServiceList>
+          broken_alternative_service_list,
+      std::unique_ptr<RecentlyBrokenAlternativeServices>
+          recently_broken_alternative_services,
+      bool prefs_corrupt);
+
+  // Queue a delayed call to WriteProperties(). If |is_initialized_| is false,
+  // or |properties_manager_| is nullptr, or there's already a queued call to
+  // WriteProperties(), does nothing.
+  void MaybeQueueWriteProperties();
+
+  // Writes cached state to |properties_manager_|, which must not be null.
+  // Invokes |callback| on completion, if non-null.
+  void WriteProperties(base::OnceClosure callback) const;
+
   const base::TickClock* tick_clock_;  // Unowned
   base::Clock* clock_;                 // Unowned
+
+  // Set to true once initial properties have been retrieved from disk by
+  // |properties_manager_|. Always true if |properties_manager_| is nullptr.
+  bool is_initialized_;
+
+  // Used to load/save properties from/to preferences. May be nullptr.
+  std::unique_ptr<HttpServerPropertiesManager> properties_manager_;
 
   SpdyServersMap spdy_servers_map_;
   Http11ServerHostPortSet http11_servers_;
@@ -218,6 +268,9 @@ class NET_EXPORT HttpServerPropertiesImpl
   CanonicalServerInfoMap canonical_server_info_map_;
 
   size_t max_server_configs_stored_in_properties_;
+
+  // Used to post calls to WriteProperties().
+  base::OneShotTimer prefs_update_timer_;
 
   THREAD_CHECKER(thread_checker_);
 

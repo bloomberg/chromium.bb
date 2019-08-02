@@ -56,7 +56,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
-#include "net/http/http_server_properties_manager.h"
+#include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -1869,7 +1869,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     pref_service = pref_service_factory.Create(pref_registry.get());
 
     builder.SetHttpServerProperties(
-        std::make_unique<net::HttpServerPropertiesManager>(
+        std::make_unique<net::HttpServerPropertiesImpl>(
             std::make_unique<HttpServerPropertiesPrefDelegate>(
                 pref_service.get()),
             net_log));

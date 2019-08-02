@@ -5,29 +5,22 @@
 #ifndef NET_HTTP_HTTP_SERVER_PROPERTIES_MANAGER_H_
 #define NET_HTTP_HTTP_SERVER_PROPERTIES_MANAGER_H_
 
-#include <stdint.h>
-
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/time/default_tick_clock.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/http/http_server_properties.h"
-#include "net/http/http_server_properties_impl.h"
 #include "net/log/net_log_with_source.h"
 
 namespace base {
 class DictionaryValue;
+class TickClock;
 }
 
 namespace net {
@@ -37,9 +30,9 @@ class IPAddress;
 ////////////////////////////////////////////////////////////////////////////////
 // HttpServerPropertiesManager
 
-// The manager for creating and updating an HttpServerProperties (for example it
-// tracks if a server supports SPDY or not).
-class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
+// Class responsible for serializing/deserializing HttpServerProperties and
+// reading from/writing to preferences.
+class NET_EXPORT HttpServerPropertiesManager {
  public:
   // Provides an interface to interact with persistent preferences storage
   // implemented by the embedder. The prefs are assumed not to have been loaded
@@ -65,100 +58,89 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
     virtual void WaitForPrefLoad(base::OnceClosure pref_loaded_callback) = 0;
   };
 
+  // Called when prefs are loaded. If prefs completely failed to load,
+  // everything will be nullptr. Otherwise, everything will be populated, except
+  // |broken_alternative_service_list| and
+  // |recently_broken_alternative_services|, which may be null. If prefs were
+  // present but some were corrupt, |prefs_corrupt| will be true.
+  using OnPrefsLoadedCallback = base::OnceCallback<void(
+      std::unique_ptr<SpdyServersMap> spdy_servers_map,
+      std::unique_ptr<AlternativeServiceMap> alternative_service_map,
+      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map,
+      const IPAddress& last_quic_address,
+      std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+      std::unique_ptr<BrokenAlternativeServiceList>
+          broken_alternative_service_list,
+      std::unique_ptr<RecentlyBrokenAlternativeServices>
+          recently_broken_alternative_services,
+      bool prefs_corrupt)>;
+
+  using GetCannonicalSuffix =
+      base::RepeatingCallback<const std::string*(const std::string& host)>;
+
   // Create an instance of the HttpServerPropertiesManager.
   //
-  // Server propertise will be loaded from |pref_delegate| the first time it
-  // notifies the HttpServerPropertiesManager of an update, indicating the prefs
-  // have been loaded from disk.
+  // |on_prefs_loaded_callback| will be invoked with values loaded from
+  // |prefs_delegate| once prefs have been loaded from disk.
+  // If WriteToPrefs() is invoked before this happens,
+  // |on_prefs_loaded_callback| will never be invoked, since the written prefs
+  // take precedence over the ones previously stored on disk.
   //
   // |clock| is used for setting expiration times and scheduling the
-  // expiration of broken alternative services. If null, the default clock will
-  // be used.
+  // expiration of broken alternative services, and must not be nullptr.
   HttpServerPropertiesManager(std::unique_ptr<PrefDelegate> pref_delegate,
+                              OnPrefsLoadedCallback on_prefs_loaded_callback,
+                              size_t max_server_configs_stored_in_properties,
                               NetLog* net_log,
                               const base::TickClock* clock = nullptr);
 
-  ~HttpServerPropertiesManager() override;
+  ~HttpServerPropertiesManager();
 
-  // ----------------------------------
-  // HttpServerProperties methods:
-  // ----------------------------------
+  // Populates passed in objects with data from preferences. If pref data is not
+  // present, leaves all values alone. Otherwise, populates them all, with the
+  // possible exception of the two broken alt services lists.
+  //
+  // TODO(mmenke): Consider always populating fields, unconditionally, for a
+  // simpler API.
+  void ReadPrefs(
+      std::unique_ptr<SpdyServersMap>* spdy_servers_map,
+      std::unique_ptr<AlternativeServiceMap>* alternative_service_map,
+      std::unique_ptr<ServerNetworkStatsMap>* server_network_stats_map,
+      IPAddress* last_quic_address,
+      std::unique_ptr<QuicServerInfoMap>* quic_server_info_map,
+      std::unique_ptr<BrokenAlternativeServiceList>*
+          broken_alternative_service_list,
+      std::unique_ptr<RecentlyBrokenAlternativeServices>*
+          recently_broken_alternative_services,
+      bool* detected_corrupted_prefs);
 
-  void Clear(base::OnceClosure callback) override;
-  bool SupportsRequestPriority(const url::SchemeHostPort& server) override;
-  bool GetSupportsSpdy(const url::SchemeHostPort& server) override;
-  void SetSupportsSpdy(const url::SchemeHostPort& server,
-                       bool support_spdy) override;
-  bool RequiresHTTP11(const HostPortPair& server) override;
-  void SetHTTP11Required(const HostPortPair& server) override;
-  void MaybeForceHTTP11(const HostPortPair& server,
-                        SSLConfig* ssl_config) override;
-  AlternativeServiceInfoVector GetAlternativeServiceInfos(
-      const url::SchemeHostPort& origin) override;
-  bool SetHttp2AlternativeService(const url::SchemeHostPort& origin,
-                                  const AlternativeService& alternative_service,
-                                  base::Time expiration) override;
-  bool SetQuicAlternativeService(
-      const url::SchemeHostPort& origin,
-      const AlternativeService& alternative_service,
-      base::Time expiration,
-      const quic::ParsedQuicVersionVector& advertised_versions) override;
-  bool SetAlternativeServices(const url::SchemeHostPort& origin,
-                              const AlternativeServiceInfoVector&
-                                  alternative_service_info_vector) override;
-  void MarkAlternativeServiceBroken(
-      const AlternativeService& alternative_service) override;
-  void MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      const AlternativeService& alternative_service) override;
-  void MarkAlternativeServiceRecentlyBroken(
-      const AlternativeService& alternative_service) override;
-  bool IsAlternativeServiceBroken(
-      const AlternativeService& alternative_service) const override;
-  bool WasAlternativeServiceRecentlyBroken(
-      const AlternativeService& alternative_service) override;
-  void ConfirmAlternativeService(
-      const AlternativeService& alternative_service) override;
-  bool OnDefaultNetworkChanged() override;
-  const AlternativeServiceMap& alternative_service_map() const override;
-  std::unique_ptr<base::Value> GetAlternativeServiceInfoAsValue()
-      const override;
-  bool GetSupportsQuic(IPAddress* last_address) const override;
-  void SetSupportsQuic(bool used_quic, const IPAddress& last_address) override;
-  void SetServerNetworkStats(const url::SchemeHostPort& server,
-                             ServerNetworkStats stats) override;
-  void ClearServerNetworkStats(const url::SchemeHostPort& server) override;
-  const ServerNetworkStats* GetServerNetworkStats(
-      const url::SchemeHostPort& server) override;
-  const ServerNetworkStatsMap& server_network_stats_map() const override;
-  bool SetQuicServerInfo(const quic::QuicServerId& server_id,
-                         const std::string& server_info) override;
-  const std::string* GetQuicServerInfo(
-      const quic::QuicServerId& server_id) override;
-  const QuicServerInfoMap& quic_server_info_map() const override;
-  size_t max_server_configs_stored_in_properties() const override;
-  void SetMaxServerConfigsStoredInProperties(
-      size_t max_server_configs_stored_in_properties) override;
-  bool IsInitialized() const override;
+  void set_max_server_configs_stored_in_properties(
+      size_t max_server_configs_stored_in_properties) {
+    max_server_configs_stored_in_properties_ =
+        max_server_configs_stored_in_properties;
+  }
 
-  static base::TimeDelta GetUpdatePrefsDelayForTesting();
-
- protected:
-  // Update cached prefs in |http_server_properties_impl_| with data from
-  // preferences.
-  void UpdateCacheFromPrefs();
-
-  // These are used to delay updating the preferences when cached data in
-  // |http_server_properties_impl_| is changing, and execute only one update per
-  // simultaneous changes.
-  // |location| specifies where this method is called from.
-  void ScheduleUpdatePrefs();
-
-  // Update prefs::kHttpServerProperties in preferences with the cached data
-  // from |http_server_properties_impl_|. Invokes |callback| when changes have
-  // been committed, if non-null.
-  void UpdatePrefsFromCache(base::OnceClosure callback);
+  // Update preferences with caller-provided data. Invokes |callback| when
+  // changes have been committed, if non-null.
+  //
+  // If the OnPrefLoadCallback() passed to the constructor hasn't been invoked
+  // by the time this method is called, calling this will prevent it from ever
+  // being invoked, as this method will overwrite any previous preferences.
+  void WriteToPrefs(
+      const SpdyServersMap& spdy_servers_map,
+      const AlternativeServiceMap& alternative_service_map,
+      const GetCannonicalSuffix& get_canonical_suffix,
+      const ServerNetworkStatsMap& server_network_stats_map,
+      const IPAddress& last_quic_address,
+      const QuicServerInfoMap& quic_server_info_map,
+      const BrokenAlternativeServiceList& broken_alternative_service_list,
+      const RecentlyBrokenAlternativeServices&
+          recently_broken_alternative_services,
+      base::OnceClosure callback);
 
  private:
+  // TODO(mmenke): Remove these friend methods, and make all methods static that
+  // can be.
   FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
                            AddToAlternativeServiceMap);
   FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
@@ -227,15 +209,11 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
 
   std::unique_ptr<PrefDelegate> pref_delegate_;
 
+  OnPrefsLoadedCallback on_prefs_loaded_callback_;
+
+  size_t max_server_configs_stored_in_properties_;
+
   const base::TickClock* clock_;  // Unowned
-
-  // Set to true once the initial prefs have been loaded.
-  bool is_initialized_ = false;
-
-  // Used to post |prefs::kHttpServerProperties| pref update tasks.
-  base::OneShotTimer network_prefs_update_timer_;
-
-  std::unique_ptr<HttpServerPropertiesImpl> http_server_properties_impl_;
 
   const NetLogWithSource net_log_;
 

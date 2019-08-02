@@ -5,7 +5,6 @@
 #include "net/http/http_server_properties_impl.h"
 
 #include <algorithm>
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,27 +17,62 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "base/values.h"
 
 namespace net {
 
+namespace {
+
+// Time to wait before starting an update the preferences from the
+// http_server_properties_impl_ cache. Scheduling another update during this
+// period will be a no-op.
+constexpr base::TimeDelta kUpdatePrefsDelay = base::TimeDelta::FromSeconds(60);
+
+}  // namespace
+
 HttpServerPropertiesImpl::HttpServerPropertiesImpl(
+    std::unique_ptr<HttpServerPropertiesManager::PrefDelegate> pref_delegate,
+    NetLog* net_log,
     const base::TickClock* tick_clock,
     base::Clock* clock)
     : tick_clock_(tick_clock ? tick_clock
                              : base::DefaultTickClock::GetInstance()),
       clock_(clock ? clock : base::DefaultClock::GetInstance()),
+      is_initialized_(pref_delegate.get() == nullptr),
+      properties_manager_(
+          pref_delegate
+              ? std::make_unique<HttpServerPropertiesManager>(
+                    std::move(pref_delegate),
+                    base::BindOnce(&HttpServerPropertiesImpl::OnPrefsLoaded,
+                                   base::Unretained(this)),
+                    kDefaultMaxQuicServerEntries,
+                    net_log,
+                    tick_clock_)
+              : nullptr),
       broken_alternative_services_(this, tick_clock_),
       canonical_suffixes_({".ggpht.com", ".c.youtube.com", ".googlevideo.com",
                            ".googleusercontent.com"}),
       quic_server_info_map_(kDefaultMaxQuicServerEntries),
       max_server_configs_stored_in_properties_(kDefaultMaxQuicServerEntries) {}
 
-HttpServerPropertiesImpl::HttpServerPropertiesImpl()
-    : HttpServerPropertiesImpl(nullptr, nullptr) {}
-
 HttpServerPropertiesImpl::~HttpServerPropertiesImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (properties_manager_) {
+    // Stop waiting for initial settings.
+    is_initialized_ = true;
+
+    // Stop the timer if it's running, since this will write to the properties
+    // file immediately.
+    prefs_update_timer_.Stop();
+
+    WriteProperties(base::OnceClosure());
+  }
+}
+
+base::TimeDelta HttpServerPropertiesImpl::GetUpdatePrefsDelayForTesting() {
+  return kUpdatePrefsDelay;
 }
 
 void HttpServerPropertiesImpl::SetSpdyServers(
@@ -189,7 +223,15 @@ void HttpServerPropertiesImpl::Clear(base::OnceClosure callback) {
   quic_server_info_map_.Clear();
   canonical_server_info_map_.clear();
 
-  if (!callback.is_null()) {
+  if (properties_manager_) {
+    // Stop waiting for initial settings.
+    is_initialized_ = true;
+
+    // Stop the timer if it's running, since this will write to the properties
+    // file immediately.
+    prefs_update_timer_.Stop();
+    WriteProperties(std::move(callback));
+  } else if (callback) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(callback));
   }
@@ -236,8 +278,19 @@ void HttpServerPropertiesImpl::SetSupportsSpdy(
       (spdy_server->second == support_spdy)) {
     return;
   }
+
+  // If |supports_spdy| is false, and the server doesn't appear in the map, add
+  // the server to the map, but don't call MaybeQueueWriteProperties().
+  //
+  // TODO(mmenke): Can lack of SPDY support always be represented by not being
+  // in the cache instead? GetSupportsSpdy() does not distinguish between
+  // missing entries and entries that affirmatively do not support SPDY.
+  bool changed = !(spdy_server == spdy_servers_map_.end() && !support_spdy);
+
   // Cache the data.
   spdy_servers_map_.Put(server.Serialize(), support_spdy);
+  if (changed)
+    MaybeQueueWriteProperties();
 }
 
 bool HttpServerPropertiesImpl::RequiresHTTP11(
@@ -256,6 +309,7 @@ void HttpServerPropertiesImpl::SetHTTP11Required(
     return;
 
   http11_servers_.insert(host_port_pair);
+  MaybeQueueWriteProperties();
 }
 
 void HttpServerPropertiesImpl::MaybeForceHTTP11(const HostPortPair& server,
@@ -403,21 +457,22 @@ bool HttpServerPropertiesImpl::SetAlternativeServices(
       return false;
 
     alternative_service_map_.Erase(it);
+    MaybeQueueWriteProperties();
     return true;
   }
 
-  bool changed = true;
+  bool need_update_pref = true;
   if (it != alternative_service_map_.end()) {
     DCHECK(!it->second.empty());
     if (it->second.size() == alternative_service_info_vector.size()) {
       const base::Time now = clock_->Now();
-      changed = false;
+      need_update_pref = false;
       auto new_it = alternative_service_info_vector.begin();
       for (const auto& old : it->second) {
         // Persist to disk immediately if new entry has different scheme, host,
         // or port.
         if (old.alternative_service() != new_it->alternative_service()) {
-          changed = true;
+          need_update_pref = true;
           break;
         }
         // Also persist to disk if new expiration it more that twice as far or
@@ -426,13 +481,13 @@ bool HttpServerPropertiesImpl::SetAlternativeServices(
         base::Time new_time = new_it->expiration();
         if (new_time - now > 2 * (old_time - now) ||
             2 * (new_time - now) < (old_time - now)) {
-          changed = true;
+          need_update_pref = true;
           break;
         }
         // Also persist to disk if new entry has a different list of advertised
         // versions.
         if (old.advertised_versions() != new_it->advertised_versions()) {
-          changed = true;
+          need_update_pref = true;
           break;
         }
         ++new_it;
@@ -465,12 +520,17 @@ bool HttpServerPropertiesImpl::SetAlternativeServices(
       canonical_alt_svc_map_[canonical_server] = origin;
     }
   }
-  return changed;
+
+  if (need_update_pref)
+    MaybeQueueWriteProperties();
+
+  return need_update_pref;
 }
 
 void HttpServerPropertiesImpl::MarkAlternativeServiceBroken(
     const AlternativeService& alternative_service) {
   broken_alternative_services_.MarkBroken(alternative_service);
+  MaybeQueueWriteProperties();
 }
 
 void HttpServerPropertiesImpl::
@@ -478,11 +538,13 @@ void HttpServerPropertiesImpl::
         const AlternativeService& alternative_service) {
   broken_alternative_services_.MarkBrokenUntilDefaultNetworkChanges(
       alternative_service);
+  MaybeQueueWriteProperties();
 }
 
 void HttpServerPropertiesImpl::MarkAlternativeServiceRecentlyBroken(
     const AlternativeService& alternative_service) {
   broken_alternative_services_.MarkRecentlyBroken(alternative_service);
+  MaybeQueueWriteProperties();
 }
 
 bool HttpServerPropertiesImpl::IsAlternativeServiceBroken(
@@ -497,11 +559,21 @@ bool HttpServerPropertiesImpl::WasAlternativeServiceRecentlyBroken(
 
 void HttpServerPropertiesImpl::ConfirmAlternativeService(
     const AlternativeService& alternative_service) {
+  bool old_value = IsAlternativeServiceBroken(alternative_service);
   broken_alternative_services_.Confirm(alternative_service);
+  bool new_value = IsAlternativeServiceBroken(alternative_service);
+
+  // For persisting, we only care about the value returned by
+  // IsAlternativeServiceBroken. If that value changes, then call persist.
+  if (old_value != new_value)
+    MaybeQueueWriteProperties();
 }
 
 bool HttpServerPropertiesImpl::OnDefaultNetworkChanged() {
-  return broken_alternative_services_.OnDefaultNetworkChanged();
+  bool changed = broken_alternative_services_.OnDefaultNetworkChanged();
+  if (changed)
+    MaybeQueueWriteProperties();
+  return changed;
 }
 
 const AlternativeServiceMap& HttpServerPropertiesImpl::alternative_service_map()
@@ -567,17 +639,28 @@ bool HttpServerPropertiesImpl::GetSupportsQuic(IPAddress* last_address) const {
 
 void HttpServerPropertiesImpl::SetSupportsQuic(bool used_quic,
                                                const IPAddress& address) {
-  if (!used_quic) {
-    last_quic_address_ = IPAddress();
-  } else {
-    last_quic_address_ = address;
-  }
+  IPAddress new_quic_address;
+  if (used_quic)
+    new_quic_address = address;
+
+  if (new_quic_address == last_quic_address_)
+    return;
+
+  last_quic_address_ = new_quic_address;
+  MaybeQueueWriteProperties();
 }
 
 void HttpServerPropertiesImpl::SetServerNetworkStats(
     const url::SchemeHostPort& server,
     ServerNetworkStats stats) {
+  const ServerNetworkStats* old_stats = GetServerNetworkStats(server);
+  bool changed = !old_stats || *old_stats != stats;
+
+  // Still need to update the MRU cache, even if the values haven't changed.
   server_network_stats_map_.Put(server, stats);
+
+  if (changed)
+    MaybeQueueWriteProperties();
 }
 
 void HttpServerPropertiesImpl::ClearServerNetworkStats(
@@ -585,6 +668,7 @@ void HttpServerPropertiesImpl::ClearServerNetworkStats(
   auto it = server_network_stats_map_.Get(server);
   if (it != server_network_stats_map_.end()) {
     server_network_stats_map_.Erase(it);
+    MaybeQueueWriteProperties();
   }
 }
 
@@ -610,6 +694,8 @@ bool HttpServerPropertiesImpl::SetQuicServerInfo(
       (it == quic_server_info_map_.end() || it->second != server_info);
   quic_server_info_map_.Put(server_id, server_info);
   UpdateCanonicalServerInfoMap(server_id);
+  if (changed)
+    MaybeQueueWriteProperties();
   return changed;
 }
 
@@ -664,8 +750,9 @@ void HttpServerPropertiesImpl::SetMaxServerConfigsStoredInProperties(
     size_t max_server_configs_stored_in_properties) {
   // Do nothing if the new size is the same as the old one.
   if (max_server_configs_stored_in_properties_ ==
-      max_server_configs_stored_in_properties)
+      max_server_configs_stored_in_properties) {
     return;
+  }
 
   max_server_configs_stored_in_properties_ =
       max_server_configs_stored_in_properties;
@@ -684,6 +771,10 @@ void HttpServerPropertiesImpl::SetMaxServerConfigsStoredInProperties(
   }
 
   quic_server_info_map_.Swap(temp_map);
+  if (properties_manager_) {
+    properties_manager_->set_max_server_configs_stored_in_properties(
+        max_server_configs_stored_in_properties);
+  }
 }
 
 void HttpServerPropertiesImpl::UpdateCanonicalServerInfoMap(
@@ -696,8 +787,7 @@ void HttpServerPropertiesImpl::UpdateCanonicalServerInfoMap(
 }
 
 bool HttpServerPropertiesImpl::IsInitialized() const {
-  // No initialization is needed.
-  return true;
+  return is_initialized_;
 }
 
 AlternativeServiceMap::const_iterator
@@ -788,6 +878,82 @@ void HttpServerPropertiesImpl::OnExpireBrokenAlternativeService(
     }
     ++map_it;
   }
+}
+
+void HttpServerPropertiesImpl::OnPrefsLoaded(
+    std::unique_ptr<SpdyServersMap> spdy_servers_map,
+    std::unique_ptr<AlternativeServiceMap> alternative_service_map,
+    std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map,
+    const IPAddress& last_quic_address,
+    std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+    std::unique_ptr<BrokenAlternativeServiceList>
+        broken_alternative_service_list,
+    std::unique_ptr<RecentlyBrokenAlternativeServices>
+        recently_broken_alternative_services,
+    bool prefs_corrupt) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  DCHECK(!is_initialized_);
+
+  // Either all of these are nullptr, or none of them are (except the broken alt
+  // service fields).
+  if (spdy_servers_map) {
+    SetSpdyServers(std::move(spdy_servers_map));
+    SetAlternativeServiceServers(std::move(alternative_service_map));
+    SetServerNetworkStats(std::move(server_network_stats_map));
+    SetSupportsQuic(last_quic_address);
+    SetQuicServerInfoMap(std::move(quic_server_info_map));
+    if (recently_broken_alternative_services) {
+      DCHECK(broken_alternative_service_list);
+      SetBrokenAndRecentlyBrokenAlternativeServices(
+          std::move(broken_alternative_service_list),
+          std::move(recently_broken_alternative_services));
+    }
+  }
+
+  is_initialized_ = true;
+
+  // TODO(mmenke): Corrupt prefs will be modified in the same way if they're
+  // loaded a second time, so this doesn't seem to get us anything. Remove it.
+  if (prefs_corrupt)
+    MaybeQueueWriteProperties();
+}
+
+void HttpServerPropertiesImpl::MaybeQueueWriteProperties() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (prefs_update_timer_.IsRunning() || !properties_manager_ ||
+      !is_initialized_) {
+    return;
+  }
+
+  prefs_update_timer_.Start(
+      FROM_HERE, kUpdatePrefsDelay,
+      base::BindOnce(&HttpServerPropertiesImpl::WriteProperties,
+                     base::Unretained(this), base::OnceClosure()));
+}
+
+void HttpServerPropertiesImpl::WriteProperties(
+    base::OnceClosure callback) const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(properties_manager_);
+
+  // |this| shouldn't be waiting to load properties cached to disk when this
+  // method is invoked, since this method will overwrite any cached properties.
+  DCHECK(is_initialized_);
+
+  // There shouldn't be a queued update when this is run, since this method
+  // removes the need for any update to be queued.
+  DCHECK(!prefs_update_timer_.IsRunning());
+
+  properties_manager_->WriteToPrefs(
+      spdy_servers_map_, alternative_service_map_,
+      base::BindRepeating(&HttpServerPropertiesImpl::GetCanonicalSuffix,
+                          base::Unretained(this)),
+      server_network_stats_map_, last_quic_address_, quic_server_info_map_,
+      broken_alternative_services_.broken_alternative_service_list(),
+      broken_alternative_services_.recently_broken_alternative_services(),
+      std::move(callback));
 }
 
 }  // namespace net
