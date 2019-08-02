@@ -24242,6 +24242,7 @@ Called by update_net_error_codes.py.-->
   <int value="2990" label="V8SpeechRecognition_Constructor"/>
   <int value="2991" label="V8SpeechRecognition_Grammars_AttributeGetter"/>
   <int value="2992" label="V8SpeechRecognition_Grammars_AttributeSetter"/>
+  <int value="2993" label="ContactsManagerSelect"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
