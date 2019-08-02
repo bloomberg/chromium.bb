@@ -525,13 +525,6 @@ class EmbeddedTestServerThreadingTestDelegate
 
   // base::PlatformThread::Delegate:
   void ThreadMain() override {
-    scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner;
-    base::Thread io_thread("io_thread");
-    base::Thread::Options thread_options;
-    thread_options.message_pump_type = base::MessagePumpType::IO;
-    ASSERT_TRUE(io_thread.StartWithOptions(thread_options));
-    io_thread_runner = io_thread.task_runner();
-
     std::unique_ptr<base::MessageLoop> loop;
     if (message_loop_present_on_initialize_)
       loop = std::make_unique<base::MessageLoopForIO>();
