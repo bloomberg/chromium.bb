@@ -50,6 +50,8 @@ source_set("gfx") {
     "task_forwarding_sequence.h",
     "task_queue_web_view.cc",
     "task_queue_web_view.h",
+    "viz_compositor_thread_runner_webview.cc",
+    "viz_compositor_thread_runner_webview.h",
   ]
 
   deps = [
@@ -63,6 +65,7 @@ source_set("gfx") {
     "//gpu/skia_bindings",
     "//gpu/vulkan:vulkan",
     "//gpu/vulkan/init",
+    "//services/viz/privileged/mojom",
     "//services/viz/public/mojom",
     "//skia",
     "//ui/gfx",

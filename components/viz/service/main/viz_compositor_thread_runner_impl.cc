@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/main/viz_compositor_thread_runner.h"
+#include "components/viz/service/main/viz_compositor_thread_runner_impl.h"
 
 #include <utility>
 
@@ -80,65 +80,69 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
 
 }  // namespace
 
-VizCompositorThreadRunner::VizCompositorThreadRunner()
+VizCompositorThreadRunnerImpl::VizCompositorThreadRunnerImpl()
     : thread_(CreateAndStartCompositorThread()),
       task_runner_(thread_->task_runner()) {}
 
-VizCompositorThreadRunner::~VizCompositorThreadRunner() {
+VizCompositorThreadRunnerImpl::~VizCompositorThreadRunnerImpl() {
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&VizCompositorThreadRunner::TearDownOnCompositorThread,
+      base::BindOnce(&VizCompositorThreadRunnerImpl::TearDownOnCompositorThread,
                      base::Unretained(this)));
   thread_->Stop();
 }
 
-void VizCompositorThreadRunner::CreateFrameSinkManager(
-    mojom::FrameSinkManagerParamsPtr params) {
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &VizCompositorThreadRunner::CreateFrameSinkManagerOnCompositorThread,
-          base::Unretained(this), std::move(params), nullptr, nullptr));
+base::SingleThreadTaskRunner* VizCompositorThreadRunnerImpl::task_runner() {
+  return task_runner_.get();
 }
 
-void VizCompositorThreadRunner::CreateFrameSinkManager(
+void VizCompositorThreadRunnerImpl::CreateFrameSinkManager(
+    mojom::FrameSinkManagerParamsPtr params) {
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VizCompositorThreadRunnerImpl::
+                                    CreateFrameSinkManagerOnCompositorThread,
+                                base::Unretained(this), std::move(params),
+                                nullptr, nullptr));
+}
+
+void VizCompositorThreadRunnerImpl::CreateFrameSinkManager(
     mojom::FrameSinkManagerParamsPtr params,
     gpu::CommandBufferTaskExecutor* task_executor,
     GpuServiceImpl* gpu_service) {
   // All of the unretained objects are owned on the GPU thread and destroyed
   // after VizCompositorThread has been shutdown.
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &VizCompositorThreadRunner::CreateFrameSinkManagerOnCompositorThread,
-          base::Unretained(this), std::move(params),
-          base::Unretained(task_executor), base::Unretained(gpu_service)));
+      FROM_HERE, base::BindOnce(&VizCompositorThreadRunnerImpl::
+                                    CreateFrameSinkManagerOnCompositorThread,
+                                base::Unretained(this), std::move(params),
+                                base::Unretained(task_executor),
+                                base::Unretained(gpu_service)));
 }
 
 #if defined(USE_VIZ_DEVTOOLS)
-void VizCompositorThreadRunner::CreateVizDevTools(
+void VizCompositorThreadRunnerImpl::CreateVizDevTools(
     mojom::VizDevToolsParamsPtr params) {
   // It is safe to use Unretained(this) because |this| owns the |task_runner_|,
   // and will outlive it.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &VizCompositorThreadRunner::CreateVizDevToolsOnCompositorThread,
+          &VizCompositorThreadRunnerImpl::CreateVizDevToolsOnCompositorThread,
           base::Unretained(this), std::move(params)));
 }
 #endif
 
-void VizCompositorThreadRunner::CleanupForShutdown(
+void VizCompositorThreadRunnerImpl::CleanupForShutdown(
     base::OnceClosure cleanup_finished_callback) {
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(
-          &VizCompositorThreadRunner::CleanupForShutdownOnCompositorThread,
+          &VizCompositorThreadRunnerImpl::CleanupForShutdownOnCompositorThread,
           base::Unretained(this)),
       std::move(cleanup_finished_callback));
 }
 
-void VizCompositorThreadRunner::CreateFrameSinkManagerOnCompositorThread(
+void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
     mojom::FrameSinkManagerParamsPtr params,
     gpu::CommandBufferTaskExecutor* task_executor,
     GpuServiceImpl* gpu_service) {
@@ -201,7 +205,7 @@ void VizCompositorThreadRunner::CreateFrameSinkManagerOnCompositorThread(
 }
 
 #if defined(USE_VIZ_DEVTOOLS)
-void VizCompositorThreadRunner::CreateVizDevToolsOnCompositorThread(
+void VizCompositorThreadRunnerImpl::CreateVizDevToolsOnCompositorThread(
     mojom::VizDevToolsParamsPtr params) {
   if (!frame_sink_manager_) {
     DCHECK(!pending_viz_dev_tools_params_);
@@ -211,7 +215,7 @@ void VizCompositorThreadRunner::CreateVizDevToolsOnCompositorThread(
   InitVizDevToolsOnCompositorThread(std::move(params));
 }
 
-void VizCompositorThreadRunner::InitVizDevToolsOnCompositorThread(
+void VizCompositorThreadRunnerImpl::InitVizDevToolsOnCompositorThread(
     mojom::VizDevToolsParamsPtr params) {
   DCHECK(frame_sink_manager_);
   devtools_server_ = ui_devtools::UiDevToolsServer::CreateForViz(
@@ -231,14 +235,14 @@ void VizCompositorThreadRunner::InitVizDevToolsOnCompositorThread(
 }
 #endif
 
-void VizCompositorThreadRunner::CleanupForShutdownOnCompositorThread() {
+void VizCompositorThreadRunnerImpl::CleanupForShutdownOnCompositorThread() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (frame_sink_manager_)
     frame_sink_manager_->ForceShutdown();
 }
 
-void VizCompositorThreadRunner::TearDownOnCompositorThread() {
+void VizCompositorThreadRunnerImpl::TearDownOnCompositorThread() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (server_shared_bitmap_manager_) {
