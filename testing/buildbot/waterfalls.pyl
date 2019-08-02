@@ -623,6 +623,16 @@
           'isolated_scripts': 'memory_infra_isolated_scripts',
         },
       },
+      'android-pie-x86-fyi-rel': {
+        'mixins': [
+          'pie-x86-emulator',
+          'linux-xenial',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+        }
+      },
     },
   },
   {
