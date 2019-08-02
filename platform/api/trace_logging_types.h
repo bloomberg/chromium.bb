@@ -35,6 +35,15 @@ struct TraceIdHierarchy {
   bool HasParent() { return parent != kUnsetTraceId; }
   bool HasRoot() { return root != kUnsetTraceId; }
 };
+inline bool operator==(const TraceIdHierarchy& lhs,
+                       const TraceIdHierarchy& rhs) {
+  return lhs.current == rhs.current && lhs.parent == rhs.parent &&
+         lhs.root == rhs.root;
+}
+inline bool operator!=(const TraceIdHierarchy& lhs,
+                       const TraceIdHierarchy& rhs) {
+  return !(lhs == rhs);
+}
 
 // BitFlags to represent the supported tracing categories.
 // NOTE: These are currently placeholder values and later changes should feel
