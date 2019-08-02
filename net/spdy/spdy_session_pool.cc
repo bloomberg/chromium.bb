@@ -107,7 +107,6 @@ SpdySessionPool::SpdySessionPool(
   NetworkChangeNotifier::AddIPAddressObserver(this);
   if (ssl_client_context_)
     ssl_client_context_->AddObserver(this);
-  CertDatabase::GetInstance()->AddObserver(this);
 }
 
 SpdySessionPool::~SpdySessionPool() {
@@ -133,7 +132,6 @@ SpdySessionPool::~SpdySessionPool() {
   if (ssl_client_context_)
     ssl_client_context_->RemoveObserver(this);
   NetworkChangeNotifier::RemoveIPAddressObserver(this);
-  CertDatabase::GetInstance()->RemoveObserver(this);
 }
 
 base::WeakPtr<SpdySession>
@@ -471,12 +469,9 @@ void SpdySessionPool::OnIPAddressChanged() {
   }
 }
 
-void SpdySessionPool::OnSSLConfigChanged() {
-  CloseCurrentSessions(ERR_NETWORK_CHANGED);
-}
-
-void SpdySessionPool::OnCertDBChanged() {
-  CloseCurrentSessions(ERR_CERT_DATABASE_CHANGED);
+void SpdySessionPool::OnSSLConfigChanged(bool is_cert_database_change) {
+  CloseCurrentSessions(is_cert_database_change ? ERR_CERT_DATABASE_CHANGED
+                                               : ERR_NETWORK_CHANGED);
 }
 
 void SpdySessionPool::RemoveRequestForSpdySession(SpdySessionRequest* request) {

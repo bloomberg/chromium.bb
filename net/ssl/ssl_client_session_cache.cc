@@ -31,15 +31,9 @@ SSLClientSessionCache::SSLClientSessionCache(const Config& config)
       lookups_since_flush_(0) {
   memory_pressure_listener_.reset(new base::MemoryPressureListener(base::Bind(
       &SSLClientSessionCache::OnMemoryPressure, base::Unretained(this))));
-  CertDatabase::GetInstance()->AddObserver(this);
 }
 
 SSLClientSessionCache::~SSLClientSessionCache() {
-  CertDatabase::GetInstance()->RemoveObserver(this);
-  Flush();
-}
-
-void SSLClientSessionCache::OnCertDBChanged() {
   Flush();
 }
 

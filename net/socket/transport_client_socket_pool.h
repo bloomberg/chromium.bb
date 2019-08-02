@@ -603,7 +603,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       bool connect_backup_jobs_enabled);
 
   // SSLClientContext::Observer methods.
-  void OnSSLConfigChanged() override;
+  void OnSSLConfigChanged(bool is_cert_database_change) override;
 
   base::TimeDelta ConnectRetryInterval() const {
     // TODO(mbelshe): Make this tuned dynamically based on measured RTT.

@@ -32,13 +32,10 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
   // connections.
   DCHECK(!common_connect_job_params_.websocket_endpoint_lock_manager);
   DCHECK(websocket_common_connect_job_params.websocket_endpoint_lock_manager);
-
-  CertDatabase::GetInstance()->AddObserver(this);
 }
 
 ClientSocketPoolManagerImpl::~ClientSocketPoolManagerImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  CertDatabase::GetInstance()->RemoveObserver(this);
 }
 
 void ClientSocketPoolManagerImpl::FlushSocketPoolsWithError(int error) {
@@ -109,10 +106,6 @@ ClientSocketPoolManagerImpl::SocketPoolInfoToValue() const {
   }
 
   return std::move(list);
-}
-
-void ClientSocketPoolManagerImpl::OnCertDBChanged() {
-  FlushSocketPoolsWithError(ERR_NETWORK_CHANGED);
 }
 
 void ClientSocketPoolManagerImpl::DumpMemoryStats(

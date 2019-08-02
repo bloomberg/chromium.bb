@@ -787,10 +787,12 @@ TransportClientSocketPool::TransportClientSocketPool(
     ssl_client_context_->AddObserver(this);
 }
 
-void TransportClientSocketPool::OnSSLConfigChanged() {
+void TransportClientSocketPool::OnSSLConfigChanged(
+    bool is_cert_database_change) {
   // When the user changes the SSL config, flush all idle sockets so they won't
   // get re-used.
-  FlushWithError(ERR_NETWORK_CHANGED);
+  FlushWithError(is_cert_database_change ? ERR_CERT_DATABASE_CHANGED
+                                         : ERR_NETWORK_CHANGED);
 }
 
 bool TransportClientSocketPool::HasGroup(const GroupId& group_id) const {

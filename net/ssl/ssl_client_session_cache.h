@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "net/base/net_export.h"
-#include "net/cert/cert_database.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
 namespace base {
@@ -30,7 +29,7 @@ class ProcessMemoryDump;
 
 namespace net {
 
-class NET_EXPORT SSLClientSessionCache : public CertDatabase::Observer {
+class NET_EXPORT SSLClientSessionCache {
  public:
   struct Config {
     // The maximum number of entries in the cache.
@@ -40,9 +39,7 @@ class NET_EXPORT SSLClientSessionCache : public CertDatabase::Observer {
   };
 
   explicit SSLClientSessionCache(const Config& config);
-  ~SSLClientSessionCache() override;
-
-  void OnCertDBChanged() override;
+  ~SSLClientSessionCache();
 
   // Returns true if |entry| is expired as of |now|.
   static bool IsExpired(SSL_SESSION* session, time_t now);

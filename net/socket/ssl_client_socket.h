@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "net/base/net_export.h"
+#include "net/cert/cert_database.h"
 #include "net/socket/ssl_socket.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -80,13 +81,14 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
 };
 
 // Shared state and configuration across multiple SSLClientSockets.
-class NET_EXPORT SSLClientContext : public SSLConfigService::Observer {
+class NET_EXPORT SSLClientContext : public SSLConfigService::Observer,
+                                    public CertDatabase::Observer {
  public:
   class NET_EXPORT Observer : public base::CheckedObserver {
    public:
     // Called when SSL configuration for all hosts changed. Newly-created
     // SSLClientSockets will pick up the new configuration.
-    virtual void OnSSLConfigChanged() = 0;
+    virtual void OnSSLConfigChanged(bool is_cert_database_change) = 0;
   };
 
   // Creates a new SSLClientContext with the specified parameters. The
@@ -135,7 +137,12 @@ class NET_EXPORT SSLClientContext : public SSLConfigService::Observer {
   // SSLConfigService::Observer:
   void OnSSLContextConfigChanged() override;
 
+  // CertDatabase::Observer:
+  void OnCertDBChanged() override;
+
  private:
+  void NotifySSLConfigChanged(bool is_cert_database_change);
+
   SSLContextConfig config_;
 
   SSLConfigService* ssl_config_service_;

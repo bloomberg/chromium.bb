@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "net/socket/ssl_client_socket_impl.h"
 #include "net/socket/stream_socket.h"
+#include "net/ssl/ssl_client_session_cache.h"
 #include "net/ssl/ssl_key_logger.h"
 
 namespace net {
@@ -67,12 +68,14 @@ SSLClientContext::SSLClientContext(
     config_ = ssl_config_service_->GetSSLContextConfig();
     ssl_config_service_->AddObserver(this);
   }
+  CertDatabase::GetInstance()->AddObserver(this);
 }
 
 SSLClientContext::~SSLClientContext() {
   if (ssl_config_service_) {
     ssl_config_service_->RemoveObserver(this);
   }
+  CertDatabase::GetInstance()->RemoveObserver(this);
 }
 
 std::unique_ptr<SSLClientSocket> SSLClientContext::CreateSSLClientSocket(
@@ -97,8 +100,19 @@ void SSLClientContext::OnSSLContextConfigChanged() {
   // never change version or cipher negotiation based on client-offered
   // sessions, other servers do.
   config_ = ssl_config_service_->GetSSLContextConfig();
+  NotifySSLConfigChanged(false /* not a cert database change */);
+}
+
+void SSLClientContext::OnCertDBChanged() {
+  if (ssl_client_session_cache_) {
+    ssl_client_session_cache_->Flush();
+  }
+  NotifySSLConfigChanged(true /* cert database change */);
+}
+
+void SSLClientContext::NotifySSLConfigChanged(bool is_cert_database_change) {
   for (Observer& observer : observers_) {
-    observer.OnSSLConfigChanged();
+    observer.OnSSLConfigChanged(is_cert_database_change);
   }
 }
 
