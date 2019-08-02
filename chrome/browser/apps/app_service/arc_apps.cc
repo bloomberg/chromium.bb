@@ -626,7 +626,6 @@ void ArcApps::ConvertAndPublishPackageApps(
   if (!package_info.permissions.has_value()) {
     return;
   }
-  std::vector<apps::mojom::AppPtr> apps;
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   if (prefs) {
     for (const auto& app_id :
