@@ -698,18 +698,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         browser_context_to_use = browser_context_;
       else
         resource_context_to_use = resource_context_;
-      // TODO(crbug.com/984460): Don't use WeakPtrs for callbacks. These
-      // WeakPtrs are to work around a case where ServiceWorkerNavigationLoader
-      // outlives the interceptor. We may want to reset fallback callback in
-      // ServiceWorkerNavigationLoader when the URLLoaderRequestController is
-      // going away.
       next_interceptor->MaybeCreateLoader(
           *resource_request_, browser_context_to_use, resource_context_to_use,
           base::BindOnce(&URLLoaderRequestController::MaybeStartLoader,
-                         weak_factory_.GetWeakPtr(), next_interceptor),
+                         base::Unretained(this), next_interceptor),
           base::BindOnce(
               &URLLoaderRequestController::FallbackToNonInterceptedRequest,
-              weak_factory_.GetWeakPtr()));
+              base::Unretained(this)));
       return;
     }
 
