@@ -725,8 +725,6 @@ source_set("chromeos") {
     "chrome_browser_main_chromeos.h",
     "chrome_content_browser_client_chromeos_part.cc",
     "chrome_content_browser_client_chromeos_part.h",
-    "chrome_service_name.cc",
-    "chrome_service_name.h",
     "crostini/crostini_export_import.cc",
     "crostini/crostini_export_import.h",
     "crostini/crostini_export_import_notification.cc",

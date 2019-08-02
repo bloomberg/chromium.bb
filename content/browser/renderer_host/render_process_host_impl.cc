@@ -1282,10 +1282,12 @@ class RenderProcessHostImpl::IOThreadHostImpl
     : public mojom::ChildProcessHostBootstrap,
       public mojom::ChildProcessHost {
  public:
-  IOThreadHostImpl(base::WeakPtr<RenderProcessHostImpl> weak_host,
+  IOThreadHostImpl(int render_process_id,
+                   base::WeakPtr<RenderProcessHostImpl> weak_host,
                    mojo::PendingReceiver<mojom::ChildProcessHostBootstrap>
                        bootstrap_receiver)
-      : weak_host_(std::move(weak_host)),
+      : render_process_id_(render_process_id),
+        weak_host_(std::move(weak_host)),
         bootstrap_receiver_(this, std::move(bootstrap_receiver)) {}
   ~IOThreadHostImpl() override = default;
 
@@ -1298,6 +1300,11 @@ class RenderProcessHostImpl::IOThreadHostImpl
 
   // mojom::ChildProcessHost implementation:
   void BindHostReceiver(mojo::GenericPendingReceiver receiver) override {
+    GetContentClient()->browser()->BindHostReceiverForRendererOnIOThread(
+        render_process_id_, &receiver);
+    if (!receiver)
+      return;
+
     base::PostTask(FROM_HERE, {BrowserThread::UI},
                    base::BindOnce(&IOThreadHostImpl::BindHostReceiverOnUIThread,
                                   weak_host_, std::move(receiver)));
@@ -1310,6 +1317,7 @@ class RenderProcessHostImpl::IOThreadHostImpl
       weak_host->OnBindHostReceiver(std::move(receiver));
   }
 
+  const int render_process_id_;
   const base::WeakPtr<RenderProcessHostImpl> weak_host_;
   mojo::Receiver<mojom::ChildProcessHostBootstrap> bootstrap_receiver_;
   mojo::Receiver<mojom::ChildProcessHost> receiver_{this};
@@ -1667,13 +1675,7 @@ bool RenderProcessHostImpl::Init() {
   channel_->Unpause(false /* flush */);
 
   // Call the embedder first so that their IPC filters have priority.
-  service_manager::mojom::ServiceRequest service_request;
-  GetContentClient()->browser()->RenderProcessWillLaunch(this,
-                                                         &service_request);
-  if (service_request.is_pending()) {
-    GetRendererInterface()->CreateEmbedderRendererService(
-        std::move(service_request));
-  }
+  GetContentClient()->browser()->RenderProcessWillLaunch(this);
 
 #if defined(OS_ANDROID)
   // Initialize the java audio manager so that media session tests will pass.
@@ -1807,7 +1809,7 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
 
   mojo::PendingRemote<mojom::ChildProcessHostBootstrap> bootstrap_remote;
   io_thread_host_impl_.emplace(
-      io_task_runner, instance_weak_factory_->GetWeakPtr(),
+      io_task_runner, GetID(), instance_weak_factory_->GetWeakPtr(),
       bootstrap_remote.InitWithNewPipeAndPassReceiver());
   child_process_->Initialize(std::move(bootstrap_remote));
 

@@ -252,9 +252,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // If the client provides a service request, the content layer will ask the
   // corresponding embedder renderer-side component to bind it to an
   // implementation at the appropriate moment during initialization.
-  virtual void RenderProcessWillLaunch(
-      RenderProcessHost* host,
-      service_manager::mojom::ServiceRequest* service_request) {}
+  virtual void RenderProcessWillLaunch(RenderProcessHost* host) {}
 
   // Notifies that a BrowserChildProcessHost has been created.
   virtual void BrowserChildProcessHostCreated(BrowserChildProcessHost* host) {}
@@ -961,6 +959,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void BindHostReceiverForRenderer(
       RenderProcessHost* render_process_host,
       mojo::GenericPendingReceiver receiver) {}
+
+  // Called on the IO thread to handle an unhandled interface receiver binding
+  // request from a render process. See |RenderThread::BindHostReceiver()|.
+  virtual void BindHostReceiverForRendererOnIOThread(
+      int render_process_id,
+      mojo::GenericPendingReceiver* receiver) {}
 
   // Called just before the Service Manager is initialized.
   virtual void WillStartServiceManager() {}
