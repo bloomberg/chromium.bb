@@ -96,8 +96,12 @@ views::View* NewDeskButton::GetView() {
   return this;
 }
 
-gfx::Rect NewDeskButton::GetHighlightBounds() {
+gfx::Rect NewDeskButton::GetHighlightBoundsInScreen() {
   return GetBoundsInScreen();
+}
+
+gfx::RoundedCornersF NewDeskButton::GetRoundedCornersRadii() const {
+  return gfx::RoundedCornersF(kCornerRadius);
 }
 
 }  // namespace ash

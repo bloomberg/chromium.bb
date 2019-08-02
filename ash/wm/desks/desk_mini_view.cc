@@ -222,12 +222,10 @@ views::View* DeskMiniView::GetView() {
   return this;
 }
 
-gfx::Rect DeskMiniView::GetHighlightBounds() {
-  // Use the target bounds instead of |GetBoundsInScreen()| because |this| may
-  // be animating.
-  gfx::Rect target_bounds = layer()->GetTargetBounds();
-  ::wm::ConvertRectFromScreen(root_window_, &target_bounds);
-  return target_bounds;
+gfx::Rect DeskMiniView::GetHighlightBoundsInScreen() {
+  gfx::Rect bounds_in_screen = bounds();
+  views::View::ConvertRectToScreen(this->parent(), &bounds_in_screen);
+  return bounds_in_screen;
 }
 
 bool DeskMiniView::IsPointOnMiniView(const gfx::Point& screen_location) const {
