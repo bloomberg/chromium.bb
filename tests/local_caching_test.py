@@ -8,6 +8,7 @@ import json
 import os
 import random
 import string
+import sys
 import tempfile
 import time
 
@@ -909,7 +910,7 @@ class FnTest(TestCase):
     # Only the last 10 items are kept. The first 90 items were trimmed.
     self.assertEqual(range(1, 91), trimmed)
 
-  def test_get_recursive_size(self):
+  def _check_get_recursive_size(self):
     # Test that _get_recursive_size calculates file size recursively.
     with open(os.path.join(self.tempdir, '1'), 'w') as f:
       f.write('0')
@@ -930,6 +931,16 @@ class FnTest(TestCase):
     os.symlink(os.path.join(self.tempdir, '1'),
                os.path.join(self.tempdir, 'symlink_file'))
     self.assertEqual(local_caching._get_recursive_size(self.tempdir), 7)
+
+  def test_get_recursive_size(self):
+    self._check_get_recursive_size()
+
+  def test_get_recursive_size_scandir_on_non_win(self):
+    if sys.platform == 'win32':
+      return
+    # Test scandir implementation on non-windows.
+    self.mock(sys, 'platform', 'win32')
+    self._check_get_recursive_size()
 
 if __name__ == '__main__':
   test_env.main()
