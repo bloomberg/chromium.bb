@@ -30,7 +30,6 @@
 #include "android_webview/browser/cookie_manager.h"
 #include "android_webview/browser/js_java_interaction/js_api_handler_factory.h"
 #include "android_webview/browser/net/aw_proxy_config_monitor.h"
-#include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/network_service/aw_proxying_restricted_cookie_manager.h"
 #include "android_webview/browser/network_service/aw_proxying_url_loader_factory.h"
 #include "android_webview/browser/network_service/aw_url_loader_throttle.h"
@@ -338,9 +337,6 @@ AwContentBrowserClient::~AwContentBrowserClient() {}
 
 void AwContentBrowserClient::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   network::mojom::HttpAuthStaticParamsPtr auth_static_params =
       network::mojom::HttpAuthStaticParams::New();
   auth_static_params->supported_schemes = AwBrowserContext::GetAuthSchemes();
@@ -352,8 +348,6 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
     bool in_memory,
     const base::FilePath& relative_partition_path) {
   DCHECK(context);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return nullptr;
 
   content::GetNetworkService()->ConfigureHttpAuthPrefs(
       AwBrowserProcess::GetInstance()->CreateHttpAuthDynamicParams());
@@ -755,19 +749,17 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
     blink::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* render_process_host) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      base::FeatureList::IsEnabled(safe_browsing::kCheckByURLLoaderThrottle)) {
-    content::ResourceContext* resource_context =
-        render_process_host->GetBrowserContext()->GetResourceContext();
-    registry->AddInterface(
-        base::BindRepeating(
-            &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate,
-            render_process_host->GetID(), resource_context,
-            base::BindRepeating(
-                &AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
-                base::Unretained(this))),
-        base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
-  }
+  content::ResourceContext* resource_context =
+      render_process_host->GetBrowserContext()->GetResourceContext();
+  registry->AddInterface(
+      base::BindRepeating(
+          &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate,
+          render_process_host->GetID(), resource_context,
+          base::BindRepeating(
+              &AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
+              base::Unretained(this))),
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
+
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   registry->AddInterface(
       base::BindRepeating(&SpellCheckHostImpl::Create),
@@ -913,29 +905,22 @@ bool AwContentBrowserClient::HandleExternalProtocol(
     ui::PageTransition page_transition,
     bool has_user_gesture,
     network::mojom::URLLoaderFactoryPtr* out_factory) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    auto request = mojo::MakeRequest(out_factory);
-    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
-      // Manages its own lifetime.
-      new android_webview::AwProxyingURLLoaderFactory(
-          0 /* process_id */, std::move(request), nullptr,
-          true /* intercept_only */);
-    } else {
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(
-              [](network::mojom::URLLoaderFactoryRequest request) {
-                // Manages its own lifetime.
-                new android_webview::AwProxyingURLLoaderFactory(
-                    0 /* process_id */, std::move(request), nullptr,
-                    true /* intercept_only */);
-              },
-              std::move(request)));
-    }
+  auto request = mojo::MakeRequest(out_factory);
+  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
+    // Manages its own lifetime.
+    new android_webview::AwProxyingURLLoaderFactory(0 /* process_id */,
+                                                    std::move(request), nullptr,
+                                                    true /* intercept_only */);
   } else {
-    // The AwURLRequestJobFactory implementation should ensure this method never
-    // gets called when Network Service is not enabled.
-    NOTREACHED();
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(
+                       [](network::mojom::URLLoaderFactoryRequest request) {
+                         // Manages its own lifetime.
+                         new android_webview::AwProxyingURLLoaderFactory(
+                             0 /* process_id */, std::move(request), nullptr,
+                             true /* intercept_only */);
+                       },
+                       std::move(request)));
   }
   return false;
 }
