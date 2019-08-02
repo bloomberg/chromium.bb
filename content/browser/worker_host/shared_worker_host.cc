@@ -240,9 +240,10 @@ void SharedWorkerHost::Start(
   // Send the CreateSharedWorker message.
   factory_ = std::move(factory);
   factory_->CreateSharedWorker(
-      std::move(info), pause_on_start, devtools_worker_token,
-      std::move(renderer_preferences), std::move(preference_watcher_request),
-      std::move(content_settings), service_worker_handle_->TakeProviderInfo(),
+      std::move(info), GetContentClient()->browser()->GetUserAgent(),
+      pause_on_start, devtools_worker_token, std::move(renderer_preferences),
+      std::move(preference_watcher_request), std::move(content_settings),
+      service_worker_handle_->TakeProviderInfo(),
       appcache_handle_
           ? base::make_optional(appcache_handle_->appcache_host_id())
           : base::nullopt,
