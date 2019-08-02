@@ -918,8 +918,7 @@ void BackgroundSyncManager::RegisterDidGetDelay(
         DevToolsBackgroundService::kPeriodicBackgroundSync,
         /* event_name= */ "Got next event delay",
         /* instance_id= */ registration.options()->tag,
-        {{"Next Attempt Delay (ms)",
-          GetDelayAsString(registration.delay_until() - clock_->Now())}});
+        {{"Next Attempt Delay (ms)", GetDelayAsString(delay)}});
   }
 
   AddOrUpdateActiveRegistration(
@@ -1981,8 +1980,7 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
     std::string event_name = GetSyncEventName(registration->sync_type()) +
                              (succeeded ? " event completed" : " event failed");
     std::map<std::string, std::string> event_metadata = {
-        {"Next Attempt Delay (ms)",
-         GetDelayAsString(registration->delay_until() - clock_->Now())}};
+        {"Next Attempt Delay (ms)", GetDelayAsString(delay)}};
     if (!succeeded) {
       event_metadata.emplace("Failure Reason",
                              GetEventStatusString(status_code));
