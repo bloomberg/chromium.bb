@@ -1092,11 +1092,19 @@ const FeatureEntry::FeatureVariation kOfflineIndicatorFeatureVariations[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kTabSwitcherOnReturn_Immediate[] = {
+    {"tab_switcher_on_return_time_ms", "0"}};
+const FeatureEntry::FeatureParam kTabSwitcherOnReturn_1Minute[] = {
+    {"tab_switcher_on_return_time_ms", "60000"}};
 const FeatureEntry::FeatureParam kTabSwitcherOnReturn_30Minutes[] = {
     {"tab_switcher_on_return_time_ms", "1800000"}};
 const FeatureEntry::FeatureParam kTabSwitcherOnReturn_60Minutes[] = {
     {"tab_switcher_on_return_time_ms", "3600000"}};
 const FeatureEntry::FeatureVariation kTabSwitcherOnReturnVariations[] = {
+    {"Immediate", kTabSwitcherOnReturn_Immediate,
+     base::size(kTabSwitcherOnReturn_30Minutes), nullptr},
+    {"1 minute", kTabSwitcherOnReturn_1Minute,
+     base::size(kTabSwitcherOnReturn_30Minutes), nullptr},
     {"30 minutes", kTabSwitcherOnReturn_30Minutes,
      base::size(kTabSwitcherOnReturn_30Minutes), nullptr},
     {"60 minutes", kTabSwitcherOnReturn_60Minutes,
