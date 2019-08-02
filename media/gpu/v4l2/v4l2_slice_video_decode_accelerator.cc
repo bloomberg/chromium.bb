@@ -1936,8 +1936,12 @@ V4L2SliceVideoDecodeAccelerator::CreateSurface() {
                                                 nullptr, request.get());
     requests_.push(std::move(request));
 
-    if (!ret)
+    // Not being able to create the decode surface at this stage is a
+    // fatal error.
+    if (!ret) {
+      NOTIFY_ERROR(PLATFORM_FAILURE);
       return nullptr;
+    }
 
     dec_surface = std::move(ret).value();
   } else {
