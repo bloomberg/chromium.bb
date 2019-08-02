@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 
 namespace chromeos {
 
@@ -58,7 +59,7 @@ PinDialogManager::RequestPinResult PinDialogManager::RequestPin(
       return RequestPinResult::kInvalidId;
 
     // A new dialog will be opened, so initialize the related internal state.
-    active_dialog_state_.emplace(&default_dialog_host_, extension_id,
+    active_dialog_state_.emplace(GetHostForNewDialog(), extension_id,
                                  extension_name, code_type);
   }
 
@@ -145,6 +146,22 @@ void PinDialogManager::ExtensionUnloaded(const std::string& extension_id) {
   }
 }
 
+void PinDialogManager::AddPinDialogHost(
+    SecurityTokenPinDialogHost* pin_dialog_host) {
+  DCHECK(!base::Contains(added_dialog_hosts_, pin_dialog_host));
+  added_dialog_hosts_.push_back(pin_dialog_host);
+}
+
+void PinDialogManager::RemovePinDialogHost(
+    SecurityTokenPinDialogHost* pin_dialog_host) {
+  if (active_dialog_state_ && active_dialog_state_->host == pin_dialog_host) {
+    pin_dialog_host->CloseSecurityTokenPinDialog();
+    DCHECK(!active_dialog_state_);
+  }
+  DCHECK(base::Contains(added_dialog_hosts_, pin_dialog_host));
+  base::Erase(added_dialog_hosts_, pin_dialog_host);
+}
+
 PinDialogManager::ActiveDialogState::ActiveDialogState(
     SecurityTokenPinDialogHost* host,
     const std::string& extension_id,
@@ -176,6 +193,12 @@ void PinDialogManager::OnPinDialogClosed() {
   if (active_dialog_state_->stop_pin_request_callback)
     std::move(active_dialog_state_->stop_pin_request_callback).Run();
   active_dialog_state_.reset();
+}
+
+SecurityTokenPinDialogHost* PinDialogManager::GetHostForNewDialog() {
+  if (added_dialog_hosts_.empty())
+    return &default_dialog_host_;
+  return added_dialog_hosts_.back();
 }
 
 }  // namespace chromeos

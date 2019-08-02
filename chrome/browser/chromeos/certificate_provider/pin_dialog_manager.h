@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -99,6 +100,15 @@ class PinDialogManager final {
   // Resets the manager data related to the extension.
   void ExtensionUnloaded(const std::string& extension_id);
 
+  // Dynamically adds the dialog host that can be used by this instance for
+  // showing new dialogs. There may be multiple hosts added, in which case the
+  // most recently added is used. Before any hosts have been added, the default
+  // (popup-based) host is used.
+  void AddPinDialogHost(SecurityTokenPinDialogHost* pin_dialog_host);
+  // Removes the previously added dialog host. If a dialog is still opened in
+  // this host, closes it beforehand.
+  void RemovePinDialogHost(SecurityTokenPinDialogHost* pin_dialog_host);
+
   SecurityTokenPinDialogHostPopupImpl* default_dialog_host_for_testing() {
     return &default_dialog_host_;
   }
@@ -132,6 +142,11 @@ class PinDialogManager final {
   // The callback that gets invoked once the PIN dialog gets closed.
   void OnPinDialogClosed();
 
+  // Returns the dialog host that should own the new dialog. Currently returns
+  // the most recently added dialog host (falling back to the default one when
+  // no host has been added).
+  SecurityTokenPinDialogHost* GetHostForNewDialog();
+
   // Tells whether user closed the last request PIN dialog issued by an
   // extension. The extension_id is the key and value is true if user closed the
   // dialog. Used to determine if the limit of dialogs rejected by the user has
@@ -143,6 +158,9 @@ class PinDialogManager final {
   std::map<ExtensionNameRequestIdPair, base::Time> sign_request_times_;
 
   SecurityTokenPinDialogHostPopupImpl default_dialog_host_;
+  // The list of dynamically added dialog hosts, in the same order as they were
+  // added.
+  std::vector<SecurityTokenPinDialogHost*> added_dialog_hosts_;
 
   // There can be only one active dialog to request the PIN at any point of
   // time.
