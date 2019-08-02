@@ -53,6 +53,8 @@ open:
 To add new tests, simply imitate the pattern in neigboring tests or
 neighboring files. New test files must be named ending in `.spec.ts`.
 
+For an example, see `src/suites/cts/examples.spec.ts`.
+
 Since this project is written in TypeScript, it integrates best with Visual
 Studio Code. There are also some default settings (in `.vscode/settings.json`)
 which will be applied automatically.
@@ -63,4 +65,5 @@ Be sure to read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Export to WPT
 
-Copy the `out-wpt/` directory as the `webgpu/` directory in your WPT checkout.
+Copy (or symlink) the `out-wpt/` directory as the `webgpu/` directory in your
+WPT checkout.
