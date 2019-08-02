@@ -48,7 +48,6 @@
 #include "net/log/net_log_values.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
-#include "net/ssl/ssl_client_session_cache.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_handshake_details.h"
 #include "net/ssl/ssl_info.h"
@@ -1669,25 +1668,17 @@ void SSLClientSocketImpl::AddCTInfoToSSLInfo(SSLInfo* ssl_info) const {
   ssl_info->UpdateCertificateTransparencyInfo(ct_verify_result_);
 }
 
-std::string SSLClientSocketImpl::GetSessionCacheKey(
+SSLClientSessionCache::Key SSLClientSocketImpl::GetSessionCacheKey(
     base::Optional<IPAddress> dest_ip_addr) const {
-  std::string ret;
-  if (dest_ip_addr) {
-    ret += dest_ip_addr->ToString();
-  }
-  ret.push_back('/');
-  ret += host_and_port_.ToString();
-  ret.push_back('/');
-  if (ssl_config_.privacy_mode == PRIVACY_MODE_ENABLED) {
-    ret.push_back('1');
-  } else {
-    ret.push_back('0');
-  }
+  SSLClientSessionCache::Key key;
+  key.server = host_and_port_;
+  key.dest_ip_addr = dest_ip_addr;
   if (base::FeatureList::IsEnabled(
           features::kPartitionSSLSessionsByNetworkIsolationKey)) {
-    ret += '/' + ssl_config_.network_isolation_key.ToString();
+    key.network_isolation_key = ssl_config_.network_isolation_key;
   }
-  return ret;
+  key.privacy_mode = ssl_config_.privacy_mode;
+  return key;
 }
 
 bool SSLClientSocketImpl::IsRenegotiationAllowed() const {
