@@ -31,6 +31,7 @@ from chromite.lib import moblab_vm
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import timeout_util
+from chromite.service import artifacts as artifacts_svc
 
 _GCE_TEST_RESULTS = 'gce_test_results_%(attempt)s'
 _VM_TEST_RESULTS = 'vm_test_results_%(attempt)s'
@@ -754,7 +755,7 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
     The paths to the tarballs.
   """
   images_dir = os.path.join(buildroot, 'chroot', test_results_dir.lstrip('/'))
-  return cros_build_lib.ArchiveFilesFromImageDir(images_dir, archive_path)
+  return artifacts_svc.ArchiveFilesFromImageDir(images_dir, archive_path)
 
 
 def RunCrosVMTest(board, image_dir):
