@@ -16,6 +16,8 @@ issues]].
   Bert Frees.
 - Fix position mapping for back-translation when noUndefinedDots mode
   is active. Thanks to Dave Mielke.
+- Fix bug where a translation would hang on words that match both a
+  ~nocont~ and a ~repeated~ rule. Thanks to Dave Mielke.
 
 ** Braille table improvements
 - Fix an issue with ordinal numbers inside caps passages in Dutch
