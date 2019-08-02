@@ -370,9 +370,9 @@ const char kWebKitFontScaleFactor[] = "webkit.webprefs.font_scale_factor";
 const char kWebKitForceEnableZoom[] = "webkit.webprefs.force_enable_zoom";
 const char kWebKitPasswordEchoEnabled[] =
     "webkit.webprefs.password_echo_enabled";
+#endif
 const char kWebKitForceDarkModeEnabled[] =
     "webkit.webprefs.force_dark_mode_enabled";
-#endif
 
 const char kWebKitCommonScript[] = "Zyyy";
 const char kWebKitStandardFontFamily[] = "webkit.webprefs.fonts.standard.Zyyy";
