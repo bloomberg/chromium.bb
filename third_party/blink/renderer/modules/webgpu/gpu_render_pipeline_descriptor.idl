@@ -6,8 +6,7 @@
 
 dictionary GPURenderPipelineDescriptor : GPUPipelineDescriptorBase {
     required GPUPipelineStageDescriptor vertexStage;
-    // TODO(crbug.com/dawn/136): Support vertex-only pipelines.
-    required GPUPipelineStageDescriptor fragmentStage;
+    GPUPipelineStageDescriptor fragmentStage;
 
     required GPUPrimitiveTopology primitiveTopology;
     GPURasterizationStateDescriptor rasterizationState;
