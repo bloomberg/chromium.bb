@@ -71,7 +71,8 @@ export class TestCaseRecorder {
       throw new Error('finish() before start()');
     }
     const endTime = now();
-    this.result.timems = Math.ceil((endTime - this.startTime) * 1000);
+    // Round to next microsecond to avoid storing useless .xxxx00000000000002 in results.
+    this.result.timems = Math.ceil((endTime - this.startTime) * 1000) / 1000;
     this.result.status = this.failed ? 'fail' : this.warned ? 'warn' : 'pass';
 
     this.result.logs = this.logs;
