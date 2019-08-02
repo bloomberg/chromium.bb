@@ -293,6 +293,11 @@ class CORE_EXPORT DocumentLoader
 
   bool IsBrowserInitiated() const { return is_browser_initiated_; }
 
+  // TODO(dcheng, japhet): Some day, Document::Url() will always match
+  // DocumentLoader::Url(), and one of them will be removed. Today is not that
+  // day though.
+  void UpdateUrlForDocumentOpen(const KURL& url) { url_ = url; }
+
  protected:
   Vector<KURL> redirect_chain_;
 
