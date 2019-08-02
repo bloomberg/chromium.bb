@@ -6,7 +6,7 @@ import("//build/config/android/rules.gni")
 
 android_library("java") {
   java_files = [
-    "java/org/chromium/chrome/lib/browser/widget/FadingShadow.java",
-    "java/org/chromium/chrome/lib/browser/widget/FadingShadowView.java",
+    "java/src/org/chromium/chrome//browser/ui/widget/FadingShadow.java",
+    "java/src/org/chromium/chrome//browser/ui/widget/FadingShadowView.java",
   ]
 }
