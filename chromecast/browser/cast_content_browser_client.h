@@ -189,10 +189,6 @@ class CastContentBrowserClient
       const service_manager::Identity& identity,
       mojo::PendingReceiver<service_manager::mojom::Service>* receiver)
       override;
-  void RunServiceInstanceOnIOThread(
-      const service_manager::Identity& identity,
-      mojo::PendingReceiver<service_manager::mojom::Service>* receiver)
-      override;
   base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece service_name) override;
   std::vector<service_manager::Manifest> GetExtraServiceManifests() override;

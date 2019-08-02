@@ -495,8 +495,6 @@ source_set("common") {
     "browser/aw_content_browser_overlay_manifest.h",
     "browser/aw_content_renderer_overlay_manifest.cc",
     "browser/aw_content_renderer_overlay_manifest.h",
-    "browser/aw_content_utility_overlay_manifest.cc",
-    "browser/aw_content_utility_overlay_manifest.h",
     "browser/aw_contents.cc",
     "browser/aw_contents.h",
     "browser/aw_contents_client_bridge.cc",

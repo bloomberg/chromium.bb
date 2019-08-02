@@ -65,7 +65,6 @@ jumbo_source_set("browser") {
     "//components/payments/content/icon",
     "//components/rappor",
     "//components/services/filesystem:lib",
-    "//components/services/heap_profiling/public/cpp:manifest",
     "//components/services/leveldb:lib",
     "//components/tracing",
     "//components/tracing:startup_tracing",

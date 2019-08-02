@@ -644,10 +644,6 @@ void ContentBrowserClient::RunServiceInstance(
     const service_manager::Identity& identity,
     mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {}
 
-void ContentBrowserClient::RunServiceInstanceOnIOThread(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {}
-
 bool ContentBrowserClient::ShouldTerminateOnServiceQuit(
     const service_manager::Identity& id) {
   return false;

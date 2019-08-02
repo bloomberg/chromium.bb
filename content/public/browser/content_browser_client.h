@@ -981,15 +981,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       const service_manager::Identity& identity,
       mojo::PendingReceiver<service_manager::mojom::Service>* receiver);
 
-  // Handles an incoming service instance request on the IO thread.
-  //
-  // NOTE: This should ONLY be overridden to register services which MUST run on
-  // the browser's IO thread. For other in-process services, use
-  // |RunServiceInstance| above.
-  virtual void RunServiceInstanceOnIOThread(
-      const service_manager::Identity& identity,
-      mojo::PendingReceiver<service_manager::mojom::Service>* receiver);
-
   // Allows the embedder to terminate the browser if a specific service instance
   // quits or crashes.
   virtual bool ShouldTerminateOnServiceQuit(

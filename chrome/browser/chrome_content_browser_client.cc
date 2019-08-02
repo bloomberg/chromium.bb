@@ -36,7 +36,6 @@
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
 #include "chrome/app/chrome_content_gpu_overlay_manifest.h"
 #include "chrome/app/chrome_content_renderer_overlay_manifest.h"
-#include "chrome/app/chrome_content_utility_overlay_manifest.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/after_startup_task_utils.h"
@@ -250,9 +249,6 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
-#include "components/services/heap_profiling/heap_profiling_service.h"
-#include "components/services/heap_profiling/public/cpp/settings.h"
-#include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
 #include "components/services/quarantine/quarantine_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -3976,16 +3972,6 @@ void ChromeContentBrowserClient::RunServiceInstance(
 #endif  // defined(OS_CHROMEOS)
 }
 
-void ChromeContentBrowserClient::RunServiceInstanceOnIOThread(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
-  if (identity.name() == heap_profiling::mojom::kServiceName) {
-    heap_profiling::HeapProfilingService::GetServiceFactory().Run(
-        std::move(*receiver));
-    return;
-  }
-}
-
 base::Optional<service_manager::Manifest>
 ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
@@ -3994,8 +3980,6 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
     return GetChromeContentGpuOverlayManifest();
   if (name == content::mojom::kRendererServiceName)
     return GetChromeContentRendererOverlayManifest();
-  if (name == content::mojom::kUtilityServiceName)
-    return GetChromeContentUtilityOverlayManifest();
   return base::nullopt;
 }
 

@@ -135,12 +135,6 @@
 #include "chromecast/external_mojo/broker_service/broker_service.h"
 #endif
 
-#if !defined(OS_FUCHSIA)
-#include "components/services/heap_profiling/heap_profiling_service.h"  // nogncheck
-#include "components/services/heap_profiling/public/cpp/settings.h"  // nogncheck
-#include "components/services/heap_profiling/public/mojom/constants.mojom.h"  // nogncheck
-#endif  // !defined(OS_FUCHSIA)
-
 namespace chromecast {
 namespace shell {
 
@@ -806,18 +800,6 @@ void CastContentBrowserClient::RunServiceInstance(
     return;
   }
 #endif  // BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
-}
-
-void CastContentBrowserClient::RunServiceInstanceOnIOThread(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
-#if !defined(OS_FUCHSIA)
-  if (identity.name() == heap_profiling::mojom::kServiceName) {
-    heap_profiling::HeapProfilingService::GetServiceFactory().Run(
-        std::move(*receiver));
-    return;
-  }
-#endif  // !defined(OS_FUCHSIA)
 }
 
 base::Optional<service_manager::Manifest>

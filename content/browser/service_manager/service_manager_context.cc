@@ -364,9 +364,6 @@ void RunServiceInstanceOnIOThread(
                                 std::move(*receiver));
     return;
   }
-
-  GetContentClient()->browser()->RunServiceInstanceOnIOThread(identity,
-                                                              receiver);
 }
 
 // A ServiceProcessHost implementation which uses the Service Manager's builtin

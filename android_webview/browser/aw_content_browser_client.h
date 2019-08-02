@@ -143,10 +143,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
-  void RunServiceInstanceOnIOThread(
-      const service_manager::Identity& identity,
-      mojo::PendingReceiver<service_manager::mojom::Service>* receiver)
-      override;
   void BindInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
