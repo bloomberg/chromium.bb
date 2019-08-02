@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/previews/previews_top_host_provider.h"
+#include "chrome/browser/data_saver/data_saver_top_host_provider.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
@@ -30,25 +30,26 @@ bool IsHostBlacklisted(const base::DictionaryValue* top_host_blacklist,
 
 }  // namespace
 
-PreviewsTopHostProvider::PreviewsTopHostProvider(
+DataSaverTopHostProvider::DataSaverTopHostProvider(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       pref_service_(Profile::FromBrowserContext(browser_context_)->GetPrefs()) {
 }
 
-PreviewsTopHostProvider::~PreviewsTopHostProvider() {}
+DataSaverTopHostProvider::~DataSaverTopHostProvider() {}
 
-void PreviewsTopHostProvider::InitializeHintsFetcherTopHostBlacklist() {
+void DataSaverTopHostProvider::InitializeHintsFetcherTopHostBlacklist() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(browser_context_);
   DCHECK_EQ(GetCurrentBlacklistState(),
             optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
                 kNotInitialized);
-  DCHECK(pref_service_
-             ->GetDictionary(
-                 optimization_guide::prefs::kHintsFetcherTopHostBlacklist)
-             ->empty());
+  DCHECK(
+      pref_service_
+          ->GetDictionary(
+              optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklist)
+          ->empty());
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   SiteEngagementService* engagement_service =
@@ -83,8 +84,9 @@ void PreviewsTopHostProvider::InitializeHintsFetcherTopHostBlacklist() {
       "OnInitialize",
       top_host_blacklist->size());
 
-  pref_service_->Set(optimization_guide::prefs::kHintsFetcherTopHostBlacklist,
-                     *top_host_blacklist);
+  pref_service_->Set(
+      optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklist,
+      *top_host_blacklist);
 
   UpdateCurrentBlacklistState(
       optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
@@ -92,7 +94,7 @@ void PreviewsTopHostProvider::InitializeHintsFetcherTopHostBlacklist() {
 }
 
 // static
-void PreviewsTopHostProvider::MaybeUpdateTopHostBlacklist(
+void DataSaverTopHostProvider::MaybeUpdateTopHostBlacklist(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
     return;
@@ -103,14 +105,16 @@ void PreviewsTopHostProvider::MaybeUpdateTopHostBlacklist(
           ->GetPrefs();
 
   if (pref_service->GetInteger(
-          optimization_guide::prefs::kHintsFetcherTopHostBlacklistState) !=
+          optimization_guide::prefs::
+              kHintsFetcherDataSaverTopHostBlacklistState) !=
       static_cast<int>(optimization_guide::prefs::
                            HintsFetcherTopHostBlacklistState::kInitialized)) {
     return;
   }
 
   DictionaryPrefUpdate blacklist_pref(
-      pref_service, optimization_guide::prefs::kHintsFetcherTopHostBlacklist);
+      pref_service,
+      optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklist);
   if (!blacklist_pref->FindKey(optimization_guide::HashHostForDictionary(
           navigation_handle->GetURL().host()))) {
     return;
@@ -120,21 +124,22 @@ void PreviewsTopHostProvider::MaybeUpdateTopHostBlacklist(
   if (blacklist_pref->empty()) {
     blacklist_pref->Clear();
     pref_service->SetInteger(
-        optimization_guide::prefs::kHintsFetcherTopHostBlacklistState,
+        optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklistState,
         static_cast<int>(optimization_guide::prefs::
                              HintsFetcherTopHostBlacklistState::kEmpty));
   }
 }
 
 optimization_guide::prefs::HintsFetcherTopHostBlacklistState
-PreviewsTopHostProvider::GetCurrentBlacklistState() const {
+DataSaverTopHostProvider::GetCurrentBlacklistState() const {
   return static_cast<
       optimization_guide::prefs::HintsFetcherTopHostBlacklistState>(
       pref_service_->GetInteger(
-          optimization_guide::prefs::kHintsFetcherTopHostBlacklistState));
+          optimization_guide::prefs::
+              kHintsFetcherDataSaverTopHostBlacklistState));
 }
 
-void PreviewsTopHostProvider::UpdateCurrentBlacklistState(
+void DataSaverTopHostProvider::UpdateCurrentBlacklistState(
     optimization_guide::prefs::HintsFetcherTopHostBlacklistState new_state) {
   optimization_guide::prefs::HintsFetcherTopHostBlacklistState current_state =
       GetCurrentBlacklistState();
@@ -168,11 +173,11 @@ void PreviewsTopHostProvider::UpdateCurrentBlacklistState(
 
   // TODO(mcrouse): Add histogram to record the blacklist state change.
   pref_service_->SetInteger(
-      optimization_guide::prefs::kHintsFetcherTopHostBlacklistState,
+      optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklistState,
       static_cast<int>(new_state));
 }
 
-std::vector<std::string> PreviewsTopHostProvider::GetTopHosts(
+std::vector<std::string> DataSaverTopHostProvider::GetTopHosts(
     size_t max_sites) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -195,7 +200,7 @@ std::vector<std::string> PreviewsTopHostProvider::GetTopHosts(
   if (GetCurrentBlacklistState() !=
       optimization_guide::prefs::HintsFetcherTopHostBlacklistState::kEmpty) {
     top_host_blacklist = pref_service_->GetDictionary(
-        optimization_guide::prefs::kHintsFetcherTopHostBlacklist);
+        optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklist);
     UMA_HISTOGRAM_COUNTS_1000(
         "OptimizationGuide.HintsFetcher.TopHostProvider.BlacklistSize."
         "OnRequest",
@@ -246,7 +251,7 @@ std::vector<std::string> PreviewsTopHostProvider::GetTopHosts(
   return top_hosts;
 }
 
-size_t PreviewsTopHostProvider::GetMinTopHostEngagementThreshold() const {
+size_t DataSaverTopHostProvider::GetMinTopHostEngagementThreshold() const {
   // The base score for the first navigation of a host when added to the site
   // engagement service. The threshold corresponds to the minimum score that a
   // host is considered to be a top host, hosts with a lower score have not

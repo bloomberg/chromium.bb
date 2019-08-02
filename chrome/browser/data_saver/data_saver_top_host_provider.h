@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_TOP_HOST_PROVIDER_H_
-#define CHROME_BROWSER_PREVIEWS_PREVIEWS_TOP_HOST_PROVIDER_H_
+#ifndef CHROME_BROWSER_DATA_SAVER_DATA_SAVER_TOP_HOST_PROVIDER_H_
+#define CHROME_BROWSER_DATA_SAVER_DATA_SAVER_TOP_HOST_PROVIDER_H_
 
 #include <memory>
 #include <string>
@@ -23,11 +23,12 @@ class NavigationHandle;
 }  // namespace content
 
 // An implementation of the optimization_guide::TopHostProvider for getting the
-// top sites based on site engagement scores.
-class PreviewsTopHostProvider : public optimization_guide::TopHostProvider {
+// top sites based on site engagement scores. This is the mechanism that has
+// been approved for users that have Data Saver (aka Lite Mode) enabled.
+class DataSaverTopHostProvider : public optimization_guide::TopHostProvider {
  public:
-  explicit PreviewsTopHostProvider(content::BrowserContext* BrowserContext);
-  ~PreviewsTopHostProvider() override;
+  explicit DataSaverTopHostProvider(content::BrowserContext* BrowserContext);
+  ~DataSaverTopHostProvider() override;
 
   // Update the HintsFetcherTopHostBlacklist by attempting to remove the host
   // for the current navigation from the blacklist. A host is removed if it is
@@ -70,7 +71,7 @@ class PreviewsTopHostProvider : public optimization_guide::TopHostProvider {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsTopHostProvider);
+  DISALLOW_COPY_AND_ASSIGN(DataSaverTopHostProvider);
 };
 
-#endif  // CHROME_BROWSER_PREVIEWS_PREVIEWS_TOP_HOST_PROVIDER_H_
+#endif  // CHROME_BROWSER_DATA_SAVER_DATA_SAVER_TOP_HOST_PROVIDER_H_

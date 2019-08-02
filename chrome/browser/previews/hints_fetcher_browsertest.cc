@@ -203,9 +203,9 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
                                     ->GetActiveWebContents()
                                     ->GetBrowserContext())
         ->GetPrefs()
-        ->SetInteger(
-            optimization_guide::prefs::kHintsFetcherTopHostBlacklistState,
-            static_cast<int>(blacklist_state));
+        ->SetInteger(optimization_guide::prefs::
+                         kHintsFetcherDataSaverTopHostBlacklistState,
+                     static_cast<int>(blacklist_state));
   }
 
   void LoadHintsForUrl(const GURL& url) {
