@@ -32,11 +32,13 @@ table: |
 flags: {testmode: backward}
 tests:
 
+  # by default undefined dot patterns are printed as follows
   - - ⠌
     - \\34/
     - outputPos: [0]
       inputPos: [0, 0, 0, 0]
 
+  # in backward translation, the noUndefined mode omits undefined dot patterns
   - - ⠌
     - ""
     - outputPos: [-1]
@@ -64,11 +66,13 @@ table: |
 flags: {testmode: forward}
 tests:
 
+  # by default undefined characters are converted to an escape sequence and then to braille
   - - "\u2026"
     - ⠄⠡⠭⠆⠴⠆⠖⠄
     - outputPos: [0]
       inputPos: [0, 0, 0, 0, 0, 0, 0, 0]
 
+  # in forward translation, the noUndefined mode omits undefined characters
   - - "\u2026"
     - ""
     - outputPos: [-1]
@@ -86,6 +90,7 @@ tests:
       inputPos: [1, 2, 3, 6, 7, 8]
       mode: [noUndefined]
 
+# the undefined opcode has precedence over the noUndefined mode
 table: |
   include tables/unicode-without-blank.dis
   include tables/spaces.uti
@@ -105,6 +110,7 @@ tests:
     - mode: [noUndefined]
 
 # verify that all the fallback dot patterns needed to render undefined characters in hexadecimal work
+# for example if \ and ' are not defined in the table, the escape sequence is translated using 12567 for \ and 3 for '
 table: |
   include tables/unicode.dis
   # don't define any characters so that the fallback dot patterns will be used
