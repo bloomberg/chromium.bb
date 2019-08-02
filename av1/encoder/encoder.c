@@ -3688,8 +3688,8 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
     process_tpl_stats_frame(cpi);
 
   // Decide q and q bounds.
-  *q = av1_rc_pick_q_and_bounds(cpi, cm->width, cm->height, bottom_index,
-                                top_index);
+  *q = av1_rc_pick_q_and_bounds(cpi, cm->width, cm->height, cpi->gf_group.index,
+                                bottom_index, top_index);
 
   if (!frame_is_intra_only(cm)) {
     set_high_precision_mv(cpi, (*q) < HIGH_PRECISION_MV_QTHRESH,
@@ -4034,7 +4034,8 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       // Now decide the use of superres based on 'q'.
       int bottom_index, top_index;
       const int q = av1_rc_pick_q_and_bounds(
-          cpi, cpi->oxcf.width, cpi->oxcf.height, &bottom_index, &top_index);
+          cpi, cpi->oxcf.width, cpi->oxcf.height, cpi->gf_group.index,
+          &bottom_index, &top_index);
 
       const int qthresh = (frame_is_intra_only(&cpi->common))
                               ? oxcf->superres_kf_qthresh
@@ -4055,7 +4056,8 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       // Now decide the use of superres based on 'q'.
       int bottom_index, top_index;
       const int q = av1_rc_pick_q_and_bounds(
-          cpi, cpi->oxcf.width, cpi->oxcf.height, &bottom_index, &top_index);
+          cpi, cpi->oxcf.width, cpi->oxcf.height, cpi->gf_group.index,
+          &bottom_index, &top_index);
 
       const int qthresh = 128;
       if (q <= qthresh) {

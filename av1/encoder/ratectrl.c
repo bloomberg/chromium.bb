@@ -1322,8 +1322,9 @@ int av1_estimate_q_constant_quality_two_pass(const AV1_COMP *cpi, int width,
 }
 
 static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
-                                         int height, int *bottom_index,
-                                         int *top_index, int *arf_q) {
+                                         int height, int gf_index,
+                                         int *bottom_index, int *top_index,
+                                         int *arf_q) {
   const AV1_COMMON *const cm = &cpi->common;
   const RATE_CONTROL *const rc = &cpi->rc;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
@@ -1338,7 +1339,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
   ASSIGN_MINQ_TABLE(bit_depth, inter_minq);
 
   const int is_intrl_arf_boost =
-      gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE;
+      gf_group->update_type[gf_index] == INTNL_ARF_UPDATE;
 
   if (frame_is_intra_only(cm)) {
     const int is_fwd_kf =
@@ -1367,7 +1368,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
       // Constrained quality use slightly lower active best.
       active_best_quality = active_best_quality * 15 / 16;
 
-      if (gf_group->update_type[gf_group->index] == ARF_UPDATE) {
+      if (gf_group->update_type[gf_index] == ARF_UPDATE) {
         const int min_boost = get_gf_high_motion_quality(q, bit_depth);
         const int boost = min_boost - active_best_quality;
 
@@ -1386,7 +1387,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
       if (!cpi->refresh_alt_ref_frame && !is_intrl_arf_boost) {
         active_best_quality = cq_level;
       } else {
-        if (gf_group->update_type[gf_group->index] == ARF_UPDATE) {
+        if (gf_group->update_type[gf_index] == ARF_UPDATE) {
           active_best_quality = get_gf_active_quality(rc, q, bit_depth);
           const int min_boost = get_gf_high_motion_quality(q, bit_depth);
           const int boost = min_boost - active_best_quality;
@@ -1446,14 +1447,14 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
   return q;
 }
 
-int av1_rc_pick_q_and_bounds(AV1_COMP *cpi, int width, int height,
+int av1_rc_pick_q_and_bounds(AV1_COMP *cpi, int width, int height, int gf_index,
                              int *bottom_index, int *top_index) {
   int q;
   // TODO(sarahparker) merge onepass vbr and altref q computation
   // with two pass
   GF_GROUP *gf_group = &cpi->gf_group;
   if ((cpi->oxcf.rc_mode != AOM_Q ||
-       gf_group->update_type[gf_group->index] == ARF_UPDATE) &&
+       gf_group->update_type[gf_index] == ARF_UPDATE) &&
       cpi->oxcf.pass == 0) {
     if (cpi->oxcf.rc_mode == AOM_CBR)
       q = rc_pick_q_and_bounds_one_pass_cbr(cpi, width, height, bottom_index,
@@ -1469,10 +1470,10 @@ int av1_rc_pick_q_and_bounds(AV1_COMP *cpi, int width, int height,
   } else {
     int arf_q = -1;  // Initialize to invalid value, for sanity check later.
 
-    q = rc_pick_q_and_bounds_two_pass(cpi, width, height, bottom_index,
-                                      top_index, &arf_q);
+    q = rc_pick_q_and_bounds_two_pass(cpi, width, height, gf_index,
+                                      bottom_index, top_index, &arf_q);
   }
-  if (gf_group->update_type[gf_group->index] == ARF_UPDATE) cpi->rc.arf_q = q;
+  if (gf_group->update_type[gf_index] == ARF_UPDATE) cpi->rc.arf_q = q;
 
   return q;
 }
