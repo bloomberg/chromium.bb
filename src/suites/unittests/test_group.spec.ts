@@ -81,7 +81,7 @@ g.test('duplicate test name', t => {
   const g = new TestGroup(UnitTest);
   g.test('abc', () => {});
 
-  t.shouldThrow(() => {
+  t.shouldThrow('Error', () => {
     g.test('abc', () => {});
   });
 });
@@ -90,22 +90,22 @@ const badChars = Array.from('"`~@#$+=\\|!^&*[]<>{}-\'.,');
 g.test('invalid test name', t => {
   const g = new TestGroup(UnitTest);
 
-  t.shouldThrow(() => {
+  t.shouldThrow('Error', () => {
     g.test('a' + t.params.char + 'b', () => {});
   });
 }).params(poptions('char', badChars));
 
 g.test('shouldThrow', async t0 => {
-  t0.shouldThrow(() => {
+  t0.shouldThrow('TypeError', () => {
     throw new TypeError();
-  }, 'TypeError');
+  });
 
   const g = new TestGroup(UnitTest);
 
   g.test('a', t => {
-    t.shouldThrow(() => {
+    t.shouldThrow('Error', () => {
       throw new TypeError();
-    }, 'Error');
+    });
   });
 
   const result = await t0.run(g);
@@ -114,20 +114,20 @@ g.test('shouldThrow', async t0 => {
 
 g.test('shouldReject', async t0 => {
   t0.shouldReject(
+    'TypeError',
     (async () => {
       throw new TypeError();
-    })(),
-    'TypeError'
+    })()
   );
 
   const g = new TestGroup(UnitTest);
 
   g.test('a', t => {
     t.shouldReject(
+      'Error',
       (async () => {
         throw new TypeError();
-      })(),
-      'Error'
+      })()
     );
   });
 

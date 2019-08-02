@@ -50,8 +50,8 @@ export class GPUTest extends Fixture {
         const actHex = Array.from(actual)
           .map(x => x.toString(16).padStart(2, '0'))
           .join('');
-        this.rec.log('EXP: ' + expHex);
-        this.rec.log('ACT: ' + actHex);
+        this.rec.log('EXPECT: ' + expHex);
+        this.rec.log('ACTUAL: ' + actHex);
       }
     });
   }

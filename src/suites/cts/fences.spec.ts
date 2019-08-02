@@ -44,7 +44,7 @@ g.test('wait/greater than signaled', async t => {
   t.queue.signal(fence, 2);
   const promise = fence.onCompletion(3);
 
-  await t.shouldReject(promise, 'OperationError');
+  await t.shouldReject('OperationError', promise);
 });
 
 // Promise resolves when signal is called multiple times.
@@ -79,7 +79,7 @@ g.test('wait/without signal', async t => {
   const fence = t.queue.createFence();
   const promise = fence.onCompletion(2);
 
-  await t.shouldReject(promise, 'OperationError');
+  await t.shouldReject('OperationError', promise);
 });
 
 // Test it is illegal to wait on a fence before it is signaled.
@@ -88,7 +88,7 @@ g.test('wait/before signaled', async t => {
   const promise = fence.onCompletion(2);
   t.queue.signal(fence, 2);
 
-  await t.shouldReject(promise, 'OperationError');
+  await t.shouldReject('OperationError', promise);
 });
 
 // Test many calls to signal and wait on fence values one at a time.

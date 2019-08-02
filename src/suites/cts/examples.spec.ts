@@ -23,17 +23,36 @@ g.test('basic', t => {
   t.expect(true, 'true should be true');
 
   t.shouldThrow(
+    // The expected '.name' of the thrown error.
+    'TypeError',
+    // This function is run inline inside shouldThrow, and is expected to throw.
     () => {
-      throw new Error();
+      throw new TypeError();
     },
-    'Error',
+    // Log message.
     'function should throw Error'
   );
 });
 
 g.test('basic/async', async t => {
   // shouldReject must be awaited to ensure it can wait for the promise before the test ends.
-  await t.shouldReject(Promise.reject(new Error()), 'Error', 'Promise.reject should reject');
+  await t.shouldReject(
+    // The expected '.name' of the thrown error.
+    'TypeError',
+    // Promise expected to reject.
+    Promise.reject(new TypeError()),
+    // Log message.
+    'Promise.reject should reject'
+  );
+
+  // Promise can also be an IIFE.
+  await t.shouldReject(
+    'TypeError',
+    (async () => {
+      throw new TypeError();
+    })(),
+    'Promise.reject should reject'
+  );
 });
 
 g.test('basic/params', t => {

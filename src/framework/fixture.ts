@@ -49,38 +49,38 @@ export class Fixture {
     this.numOutstandingAsyncExpectations--;
   }
 
-  private expectErrorValue(ex: unknown, expectedName: string | undefined, m: string): void {
+  private expectErrorValue(expectedName: string, ex: unknown, m: string): void {
     if (!(ex instanceof Error)) {
       this.fail('THREW NON-ERROR');
       return;
     }
-    const actualType = ex.name;
-    if (expectedName !== undefined && actualType !== expectedName) {
-      this.fail(`THREW ${actualType} INSTEAD OF ${expectedName}${m}`);
+    const actualName = ex.name;
+    if (actualName !== expectedName) {
+      this.fail(`THREW ${actualName} INSTEAD OF ${expectedName}${m}`);
     } else {
-      this.ok(`threw ${actualType}${m}`);
+      this.ok(`threw ${actualName}${m}`);
     }
   }
 
-  async shouldReject(p: Promise<unknown>, expectedName?: string, msg?: string): Promise<void> {
+  async shouldReject(expectedName: string, p: Promise<unknown>, msg?: string): Promise<void> {
     this.asyncExpectation(async () => {
       const m = msg ? ': ' + msg : '';
       try {
         await p;
         this.fail('DID NOT THROW' + m);
       } catch (ex) {
-        this.expectErrorValue(ex, expectedName, m);
+        this.expectErrorValue(expectedName, ex, m);
       }
     });
   }
 
-  shouldThrow(fn: () => void, exceptionType?: string, msg?: string): void {
+  shouldThrow(expectedName: string, fn: () => void, msg?: string): void {
     const m = msg ? ': ' + msg : '';
     try {
       fn();
       this.fail('DID NOT THROW' + m);
     } catch (ex) {
-      this.expectErrorValue(ex, exceptionType, m);
+      this.expectErrorValue(expectedName, ex, m);
     }
   }
 
