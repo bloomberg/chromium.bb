@@ -481,15 +481,6 @@ gfx::ImageSkia AwContentBrowserClient::GetDefaultFavicon() {
   return rb.GetImageNamed(IDR_DEFAULT_FAVICON).AsImageSkia();
 }
 
-bool AwContentBrowserClient::AllowAppCacheOnIO(
-    const GURL& manifest_url,
-    const GURL& first_party,
-    content::ResourceContext* context) {
-  // WebView doesn't have a per-site policy for locally stored data,
-  // instead AppCache can be disabled for individual WebViews.
-  return true;
-}
-
 bool AwContentBrowserClient::AllowAppCache(const GURL& manifest_url,
                                            const GURL& first_party,
                                            content::BrowserContext* context) {
@@ -782,47 +773,6 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
       base::BindRepeating(&SpellCheckHostImpl::Create),
       base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
 #endif
-}
-
-std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
-AwContentBrowserClient::CreateURLLoaderThrottlesOnIO(
-    const network::ResourceRequest& request,
-    content::ResourceContext* resource_context,
-    const base::RepeatingCallback<content::WebContents*()>& wc_getter,
-    content::NavigationUIData* navigation_ui_data,
-    int frame_tree_node_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!base::FeatureList::IsEnabled(::features::kNavigationLoaderOnUI));
-
-  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
-
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      base::FeatureList::IsEnabled(safe_browsing::kCheckByURLLoaderThrottle)) {
-    result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
-        base::BindOnce(
-            [](AwContentBrowserClient* client, content::ResourceContext*) {
-              return client->GetSafeBrowsingUrlCheckerDelegate();
-            },
-            base::Unretained(this)),
-        wc_getter, frame_tree_node_id, resource_context));
-  }
-
-  if (request.resource_type ==
-      static_cast<int>(content::ResourceType::kMainFrame)) {
-    const bool is_load_url =
-        request.transition_type & ui::PAGE_TRANSITION_FROM_API;
-    const bool is_go_back_forward =
-        request.transition_type & ui::PAGE_TRANSITION_FORWARD_BACK;
-    const bool is_reload = ui::PageTransitionCoreTypeIs(
-        static_cast<ui::PageTransition>(request.transition_type),
-        ui::PAGE_TRANSITION_RELOAD);
-    if (is_load_url || is_go_back_forward || is_reload) {
-      result.push_back(std::make_unique<AwURLLoaderThrottle>(
-          static_cast<AwResourceContext*>(resource_context)));
-    }
-  }
-
-  return result;
 }
 
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
