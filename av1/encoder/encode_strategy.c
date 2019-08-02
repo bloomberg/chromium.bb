@@ -158,9 +158,15 @@ static INLINE void update_keyframe_counters(AV1_COMP *cpi) {
 }
 
 static INLINE int is_frame_droppable(const AV1_COMP *const cpi) {
-  return !(cpi->refresh_alt_ref_frame || cpi->refresh_alt2_ref_frame ||
-           cpi->refresh_bwd_ref_frame || cpi->refresh_golden_frame ||
-           cpi->refresh_last_frame);
+  if (cpi->ext_refresh_frame_flags_pending)
+    return !(cpi->ext_refresh_alt_ref_frame ||
+             cpi->ext_refresh_alt2_ref_frame ||
+             cpi->ext_refresh_bwd_ref_frame || cpi->ext_refresh_golden_frame ||
+             cpi->ext_refresh_last_frame);
+  else
+    return !(cpi->refresh_alt_ref_frame || cpi->refresh_alt2_ref_frame ||
+             cpi->refresh_bwd_ref_frame || cpi->refresh_golden_frame ||
+             cpi->refresh_last_frame);
 }
 
 static INLINE void update_frames_till_gf_update(AV1_COMP *cpi) {
