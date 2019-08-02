@@ -1246,6 +1246,12 @@ void TabStrip::ChangeTabGroup(int model_index,
   AnimateToIdealBounds();
 }
 
+void TabStrip::GroupVisualsChanged(TabGroupId group) {
+  group_headers_[group]->VisualsChanged();
+  for (int i : controller_->ListTabsInGroup(group))
+    tabs_.view_at(i)->GroupColorChanged();
+}
+
 bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
   // Detached tabs should always be invisible (as they close).
   if (tab->detached())

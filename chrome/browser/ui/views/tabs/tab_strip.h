@@ -165,6 +165,11 @@ class TabStrip : public views::AccessiblePaneView,
                       base::Optional<TabGroupId> old_group,
                       base::Optional<TabGroupId> new_group);
 
+  // Updates the group's tabs and header when its associated TabGroupVisualData
+  // changes. This should be called when the result of
+  // |TabStripController::GetVisualDataForGroup(group)| changes.
+  void GroupVisualsChanged(TabGroupId group);
+
   // Returns true if the tab is not partly or fully clipped (due to overflow),
   // and the tab couldn't become partly clipped due to changing the selected tab
   // (for example, if currently the strip has the last tab selected, and

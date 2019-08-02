@@ -517,6 +517,13 @@ void BrowserTabStripController::OnTabStripModelChanged(
     tabstrip_->SetSelection(selection.new_model);
 }
 
+void BrowserTabStripController::OnTabGroupVisualDataChanged(
+    TabStripModel* tab_strip_model,
+    TabGroupId group,
+    const TabGroupVisualData* visual_data) {
+  tabstrip_->GroupVisualsChanged(group);
+}
+
 void BrowserTabStripController::TabChangedAt(WebContents* contents,
                                              int model_index,
                                              TabChangeType change_type) {
