@@ -59,6 +59,10 @@ builders used regularly are derived from SimpleBuilder class.
 Each file here has implementations of stages in the build process grouped by
 similarity. Each stage usually has PerformStage as its primary function.
 
+### `chromite/docs`
+
+Additional documentation.
+
 ### `chromite/lib`
 
 Code here is expected to be imported whenever necessary throughout Chromite.
