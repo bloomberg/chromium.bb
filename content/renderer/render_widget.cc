@@ -1092,7 +1092,7 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
 
   // The input handler wants to know about the main frame for metric purposes
   DCHECK(widget_input_handler_manager_);
-  widget_input_handler_manager_->MarkBeginMainFrame();
+  widget_input_handler_manager_->BeginMainFrame();
 
   GetWebWidget()->BeginFrame(frame_time, record_main_frame_metrics);
 }
@@ -1170,7 +1170,7 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
 
   // The input handler wants to know about the commit for metric purposes
   DCHECK(widget_input_handler_manager_);
-  widget_input_handler_manager_->MarkCompositorCommit();
+  widget_input_handler_manager_->CompositorDidCommit();
 
   for (auto& observer : render_frames_)
     observer.DidCommitAndDrawCompositorFrame();
@@ -3684,6 +3684,12 @@ void RenderWidget::DidNavigate() {
   // this method. But since we are closing we can skip it.
   if (closing_)
     return;
+
+  // The input handler wants to know about navigation so that it can
+  // resets the state for UMA reporting of input arrival with respect to
+  // document lifecycle.
+  DCHECK(widget_input_handler_manager_);
+  widget_input_handler_manager_->DidNavigate();
 
   layer_tree_view_->ClearCachesOnNextCommit();
 }
