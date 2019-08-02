@@ -67,7 +67,6 @@ const gfx::Transform kBothMirrorTransform =
     gfx::Transform(-0.9f, 0, 0, -0.8f, 1.0f, 1.0f);  // x,y -> 1-x,1-y.
 const gfx::Transform kSwapTransform =
     gfx::Transform(0, 1, 1, 0, 0, 0);  // x,y -> y,x.
-const gfx::BufferFormat kDefaultBufferFormat = gfx::BufferFormat::RGBA_8888;
 
 class TestOverlayCandidateValidator : public OverlayCandidateValidator {
  public:
@@ -110,6 +109,7 @@ class SingleOverlayValidator : public TestOverlayCandidateValidator {
     ASSERT_GE(2U, surfaces->size());
 
     OverlayCandidate& candidate = surfaces->back();
+    EXPECT_TRUE(!candidate.use_output_surface_for_resource);
     for (const auto& r : expected_rects_) {
       const float kAbsoluteError = 0.01f;
       if (std::abs(r.x() - candidate.display_rect.x()) <= kAbsoluteError &&
@@ -933,6 +933,13 @@ TEST_F(SingleOverlayOnTopTest, DamageRect) {
 
   // Check for potential candidates.
   OverlayCandidateList candidate_list;
+
+  // Primary plane.
+  OverlayCandidate output_surface_plane;
+  output_surface_plane.display_rect = gfx::RectF(kOverlayRect);
+  output_surface_plane.use_output_surface_for_resource = true;
+  output_surface_plane.overlay_handled = true;
+  candidate_list.push_back(output_surface_plane);
 
   OverlayProcessor::FilterOperationsMap render_pass_filters;
   OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
@@ -1929,6 +1936,10 @@ TEST_F(UnderlayTest, PrimaryPlaneOverlayIsTransparentWithUnderlay) {
                         kOverlayRect);
 
   OverlayCandidateList candidate_list;
+  OverlayCandidate candidate;
+  candidate.use_output_surface_for_resource = true;
+  candidate.is_opaque = true;
+  candidate_list.push_back(candidate);
 
   OverlayProcessor::FilterOperationsMap render_pass_filters;
   OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
@@ -1939,12 +1950,8 @@ TEST_F(UnderlayTest, PrimaryPlaneOverlayIsTransparentWithUnderlay) {
       render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
 
-  auto output_surface_plane = overlay_processor_->ProcessOutputSurfaceAsOverlay(
-      kDisplaySize, kDefaultBufferFormat, gfx::ColorSpace());
-
-  ASSERT_TRUE(output_surface_plane.has_value());
-  EXPECT_EQ(1U, candidate_list.size());
-  ASSERT_EQ(true, output_surface_plane->enable_blending);
+  EXPECT_EQ(2U, candidate_list.size());
+  ASSERT_EQ(false, candidate_list[0].is_opaque);
 }
 
 TEST_F(UnderlayTest, UpdateDamageWhenChangingUnderlays) {
@@ -2243,7 +2250,6 @@ TEST_F(UnderlayCastTest, RoundContentBounds) {
   EXPECT_EQ(kOverlayRect, content_bounds_[0]);
 }
 
-#if defined(ALWAYS_ENABLE_BLENDING_FOR_PRIMARY)
 TEST_F(UnderlayCastTest, PrimaryPlaneOverlayIsAlwaysTransparent) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   gfx::Rect output_rect = pass->output_rect;
@@ -2252,6 +2258,10 @@ TEST_F(UnderlayCastTest, PrimaryPlaneOverlayIsAlwaysTransparent) {
                      output_rect, SK_ColorWHITE);
 
   OverlayCandidateList candidate_list;
+  OverlayCandidate candidate;
+  candidate.use_output_surface_for_resource = true;
+  candidate.is_opaque = true;
+  candidate_list.push_back(candidate);
 
   OverlayProcessor::FilterOperationsMap render_pass_filters;
   OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
@@ -2262,14 +2272,9 @@ TEST_F(UnderlayCastTest, PrimaryPlaneOverlayIsAlwaysTransparent) {
       render_pass_filters, render_pass_backdrop_filters, &candidate_list,
       nullptr, nullptr, &damage_rect_, &content_bounds_);
 
-  auto output_surface_plane = overlay_processor_->ProcessOutputSurfaceAsOverlay(
-      kDisplaySize, kDefaultBufferFormat, gfx::ColorSpace());
-
-  ASSERT_TRUE(output_surface_plane.has_value());
-  ASSERT_EQ(true, output_surface_plane->enable_blending);
+  ASSERT_EQ(false, candidate_list[0].is_opaque);
   EXPECT_EQ(0U, content_bounds_.size());
 }
-#endif
 
 TEST_F(UnderlayCastTest, NoOverlayPromotionWithoutProtectedContent) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -2292,6 +2297,16 @@ TEST_F(UnderlayCastTest, NoOverlayPromotionWithoutProtectedContent) {
   EXPECT_TRUE(content_bounds_.empty());
 }
 
+OverlayCandidateList BackbufferOverlayList(const RenderPass* root_render_pass) {
+  OverlayCandidateList list;
+  OverlayCandidate output_surface_plane;
+  output_surface_plane.display_rect = gfx::RectF(root_render_pass->output_rect);
+  output_surface_plane.use_output_surface_for_resource = true;
+  output_surface_plane.overlay_handled = true;
+  list.push_back(output_surface_plane);
+  return list;
+}
+
 TEST_F(CALayerOverlayTest, AllowNonAxisAlignedTransform) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   CreateFullscreenCandidateQuad(
@@ -2299,10 +2314,10 @@ TEST_F(CALayerOverlayTest, AllowNonAxisAlignedTransform) {
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
   pass->shared_quad_state_list.back()
       ->quad_to_target_transform.RotateAboutZAxis(45.f);
-  gfx::Size display_size(pass->output_rect.width(), pass->output_rect.height());
+
   gfx::Rect damage_rect;
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list;
+  OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
   OverlayProcessor::FilterOperationsMap render_pass_filters;
   OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
@@ -2311,11 +2326,6 @@ TEST_F(CALayerOverlayTest, AllowNonAxisAlignedTransform) {
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
       render_pass_filters, render_pass_backdrop_filters, &overlay_list,
       &ca_layer_list, nullptr, &damage_rect_, &content_bounds_);
-  auto output_surface_plane = overlay_processor_->ProcessOutputSurfaceAsOverlay(
-      display_size, kDefaultBufferFormat, gfx::ColorSpace());
-
-  ASSERT_FALSE(output_surface_plane.has_value());
-
   EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
@@ -2329,10 +2339,9 @@ TEST_F(CALayerOverlayTest, ThreeDTransform) {
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
   pass->shared_quad_state_list.back()
       ->quad_to_target_transform.RotateAboutXAxis(45.f);
-  gfx::Size display_size(pass->output_rect.width(), pass->output_rect.height());
 
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list;
+  OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
   OverlayProcessor::FilterOperationsMap render_pass_filters;
   OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
@@ -2341,15 +2350,11 @@ TEST_F(CALayerOverlayTest, ThreeDTransform) {
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
       render_pass_filters, render_pass_backdrop_filters, &overlay_list,
       &ca_layer_list, nullptr, &damage_rect_, &content_bounds_);
-  auto output_surface_plane = overlay_processor_->ProcessOutputSurfaceAsOverlay(
-      display_size, kDefaultBufferFormat, gfx::ColorSpace());
-  ASSERT_FALSE(output_surface_plane.has_value());
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
   gfx::Transform expected_transform;
   expected_transform.RotateAboutXAxis(45.f);
   gfx::Transform actual_transform(ca_layer_list.back().shared_state->transform);
-
   EXPECT_EQ(expected_transform.ToString(), actual_transform.ToString());
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
 }
@@ -2361,11 +2366,10 @@ TEST_F(CALayerOverlayTest, AllowContainingClip) {
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
   pass->shared_quad_state_list.back()->is_clipped = true;
   pass->shared_quad_state_list.back()->clip_rect = kOverlayRect;
-  gfx::Size display_size(pass->output_rect.width(), pass->output_rect.height());
 
   gfx::Rect damage_rect;
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list;
+  OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
   OverlayProcessor::FilterOperationsMap render_pass_filters;
   OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
@@ -2374,10 +2378,6 @@ TEST_F(CALayerOverlayTest, AllowContainingClip) {
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
       render_pass_filters, render_pass_backdrop_filters, &overlay_list,
       &ca_layer_list, nullptr, &damage_rect_, &content_bounds_);
-  auto output_surface_plane = overlay_processor_->ProcessOutputSurfaceAsOverlay(
-      display_size, kDefaultBufferFormat, gfx::ColorSpace());
-  ASSERT_FALSE(output_surface_plane.has_value());
-
   EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
@@ -2391,11 +2391,10 @@ TEST_F(CALayerOverlayTest, NontrivialClip) {
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
   pass->shared_quad_state_list.back()->is_clipped = true;
   pass->shared_quad_state_list.back()->clip_rect = gfx::Rect(64, 64, 128, 128);
-  gfx::Size display_size(pass->output_rect.width(), pass->output_rect.height());
 
   gfx::Rect damage_rect;
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list;
+  OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
   OverlayProcessor::FilterOperationsMap render_pass_filters;
   OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
@@ -2404,10 +2403,6 @@ TEST_F(CALayerOverlayTest, NontrivialClip) {
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
       render_pass_filters, render_pass_backdrop_filters, &overlay_list,
       &ca_layer_list, nullptr, &damage_rect_, &content_bounds_);
-  auto output_surface_plane = overlay_processor_->ProcessOutputSurfaceAsOverlay(
-      display_size, kDefaultBufferFormat, gfx::ColorSpace());
-  ASSERT_FALSE(output_surface_plane.has_value());
-
   EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(1U, ca_layer_list.size());
@@ -2423,11 +2418,10 @@ TEST_F(CALayerOverlayTest, SkipTransparent) {
       resource_provider_.get(), child_resource_provider_.get(),
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
   pass->shared_quad_state_list.back()->opacity = 0;
-  gfx::Size display_size(pass->output_rect.width(), pass->output_rect.height());
 
   gfx::Rect damage_rect;
   CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list;
+  OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
   OverlayProcessor::FilterOperationsMap render_pass_filters;
   OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
   RenderPassList pass_list;
@@ -2436,9 +2430,6 @@ TEST_F(CALayerOverlayTest, SkipTransparent) {
       resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
       render_pass_filters, render_pass_backdrop_filters, &overlay_list,
       &ca_layer_list, nullptr, &damage_rect_, &content_bounds_);
-  auto output_surface_plane = overlay_processor_->ProcessOutputSurfaceAsOverlay(
-      display_size, kDefaultBufferFormat, gfx::ColorSpace());
-  ASSERT_FALSE(output_surface_plane.has_value());
   EXPECT_EQ(gfx::Rect(), damage_rect);
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(0U, ca_layer_list.size());
@@ -3100,8 +3091,7 @@ class OverlayInfoRendererGL : public GLRenderer {
       return;
     }
 
-    ASSERT_TRUE(current_frame()->output_surface_plane.has_value());
-    ASSERT_EQ(1U, current_frame()->overlay_list.size());
+    ASSERT_EQ(2U, current_frame()->overlay_list.size());
     EXPECT_GE(current_frame()->overlay_list.back().resource_id, 0U);
   }
 
@@ -3411,24 +3401,24 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
 
   DirectRenderer::DrawingFrame frame1;
   frame1.render_passes_in_draw_order = &pass_list;
-  frame1.overlay_list.resize(1);
-  frame1.output_surface_plane = OverlayProcessor::OutputSurfaceOverlayPlane();
+  frame1.overlay_list.resize(2);
+  frame1.overlay_list.front().use_output_surface_for_resource = true;
   OverlayCandidate& overlay1 = frame1.overlay_list.back();
   overlay1.resource_id = mapped_resource1;
   overlay1.plane_z_order = 1;
 
   DirectRenderer::DrawingFrame frame2;
   frame2.render_passes_in_draw_order = &pass_list;
-  frame2.overlay_list.resize(1);
-  frame2.output_surface_plane = OverlayProcessor::OutputSurfaceOverlayPlane();
+  frame2.overlay_list.resize(2);
+  frame2.overlay_list.front().use_output_surface_for_resource = true;
   OverlayCandidate& overlay2 = frame2.overlay_list.back();
   overlay2.resource_id = mapped_resource2;
   overlay2.plane_z_order = 1;
 
   DirectRenderer::DrawingFrame frame3;
   frame3.render_passes_in_draw_order = &pass_list;
-  frame3.overlay_list.resize(1);
-  frame3.output_surface_plane = OverlayProcessor::OutputSurfaceOverlayPlane();
+  frame3.overlay_list.resize(2);
+  frame3.overlay_list.front().use_output_surface_for_resource = true;
   OverlayCandidate& overlay3 = frame3.overlay_list.back();
   overlay3.resource_id = mapped_resource3;
   overlay3.plane_z_order = 1;
@@ -3599,24 +3589,24 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
 
   DirectRenderer::DrawingFrame frame1;
   frame1.render_passes_in_draw_order = &pass_list;
-  frame1.overlay_list.resize(1);
-  frame1.output_surface_plane = OverlayProcessor::OutputSurfaceOverlayPlane();
+  frame1.overlay_list.resize(2);
+  frame1.overlay_list.front().use_output_surface_for_resource = true;
   OverlayCandidate& overlay1 = frame1.overlay_list.back();
   overlay1.resource_id = mapped_resource1;
   overlay1.plane_z_order = 1;
 
   DirectRenderer::DrawingFrame frame2;
   frame2.render_passes_in_draw_order = &pass_list;
-  frame2.overlay_list.resize(1);
-  frame2.output_surface_plane = OverlayProcessor::OutputSurfaceOverlayPlane();
+  frame2.overlay_list.resize(2);
+  frame2.overlay_list.front().use_output_surface_for_resource = true;
   OverlayCandidate& overlay2 = frame2.overlay_list.back();
   overlay2.resource_id = mapped_resource2;
   overlay2.plane_z_order = 1;
 
   DirectRenderer::DrawingFrame frame3;
   frame3.render_passes_in_draw_order = &pass_list;
-  frame3.overlay_list.resize(1);
-  frame3.output_surface_plane = OverlayProcessor::OutputSurfaceOverlayPlane();
+  frame3.overlay_list.resize(2);
+  frame3.overlay_list.front().use_output_surface_for_resource = true;
   OverlayCandidate& overlay3 = frame3.overlay_list.back();
   overlay3.resource_id = mapped_resource3;
   overlay3.plane_z_order = 1;
@@ -3696,17 +3686,11 @@ class CALayerOverlayRPDQTest : public CALayerOverlayTest {
   }
 
   void ProcessForOverlays() {
-    overlay_list_.clear();
+    overlay_list_ = BackbufferOverlayList(pass_);
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list_, GetIdentityColorMatrix(),
         render_pass_filters_, render_pass_backdrop_filters_, &overlay_list_,
         &ca_layer_list_, nullptr, &damage_rect_, &content_bounds_);
-    auto output_surface_plane =
-        overlay_processor_->ProcessOutputSurfaceAsOverlay(
-            gfx::Size(pass_->output_rect.width(), pass_->output_rect.height()),
-            kDefaultBufferFormat, gfx::ColorSpace());
-    if (!ca_layer_list_.empty())
-      ASSERT_FALSE(output_surface_plane.has_value());
   }
   RenderPassList pass_list_;
   RenderPass* pass_;
