@@ -682,6 +682,7 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
         registration->set_num_attempts(registration_proto.num_attempts());
         registration->set_delay_until(
             base::Time::FromInternalValue(registration_proto.delay_until()));
+        registration->set_origin(registrations->origin);
         if (registration->is_suspended()) {
           suspended_periodic_sync_origins.insert(registration->origin());
         }
