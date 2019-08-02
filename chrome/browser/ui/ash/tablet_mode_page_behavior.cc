@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_page_behavior.h"
 
 #include <utility>
 
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
@@ -21,72 +20,38 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/material_design/material_design_controller.h"
 
-namespace {
-
-TabletModeClient* g_tablet_mode_client_instance = nullptr;
-
-}  // namespace
-
-TabletModeClient::TabletModeClient() {
-  DCHECK(!g_tablet_mode_client_instance);
-  g_tablet_mode_client_instance = this;
-}
-
-TabletModeClient::~TabletModeClient() {
-  DCHECK_EQ(this, g_tablet_mode_client_instance);
-  g_tablet_mode_client_instance = nullptr;
-  // The Ash Shell and TabletMode instance should have been destroyed by now.
-  DCHECK(!ash::TabletMode::Get());
-}
-
-void TabletModeClient::Init() {
+TabletModePageBehavior::TabletModePageBehavior() {
   ash::TabletMode::Get()->AddObserver(this);
   OnTabletModeToggled(ash::TabletMode::Get()->InTabletMode());
 }
 
-// static
-TabletModeClient* TabletModeClient::Get() {
-  return g_tablet_mode_client_instance;
+TabletModePageBehavior::~TabletModePageBehavior() {
+  // The Ash Shell and TabletMode instance should have been destroyed by now.
+  DCHECK(!ash::TabletMode::Get());
 }
 
-void TabletModeClient::AddObserver(TabletModeClientObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void TabletModeClient::RemoveObserver(TabletModeClientObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-void TabletModeClient::OnTabletModeToggled(bool enabled) {
-  if (tablet_mode_enabled_ == enabled)
-    return;
-
-  tablet_mode_enabled_ = enabled;
-
+void TabletModePageBehavior::OnTabletModeToggled(bool enabled) {
   SetMobileLikeBehaviorEnabled(enabled);
-
   ui::MaterialDesignController::OnTabletModeToggled(enabled);
-  for (auto& observer : observers_)
-    observer.OnTabletModeToggled(enabled);
 }
 
-void TabletModeClient::OnTabletModeStarted() {
+void TabletModePageBehavior::OnTabletModeStarted() {
   OnTabletModeToggled(true);
 }
 
-void TabletModeClient::OnTabletModeEnded() {
+void TabletModePageBehavior::OnTabletModeEnded() {
   OnTabletModeToggled(false);
 }
 
-void TabletModeClient::OnTabletControllerDestroyed() {
+void TabletModePageBehavior::OnTabletControllerDestroyed() {
   ash::TabletMode::Get()->RemoveObserver(this);
 }
 
-bool TabletModeClient::ShouldTrackBrowser(Browser* browser) {
-  return tablet_mode_enabled_;
+bool TabletModePageBehavior::ShouldTrackBrowser(Browser* browser) {
+  return ash::TabletMode::Get()->InTabletMode();
 }
 
-void TabletModeClient::OnTabStripModelChanged(
+void TabletModePageBehavior::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
@@ -102,7 +67,7 @@ void TabletModeClient::OnTabStripModelChanged(
     contents.contents->NotifyPreferencesChanged();
 }
 
-void TabletModeClient::SetMobileLikeBehaviorEnabled(bool enabled) {
+void TabletModePageBehavior::SetMobileLikeBehaviorEnabled(bool enabled) {
   // Toggling tablet mode on/off should trigger refreshing the WebKit
   // preferences, since in tablet mode, we enable certain mobile-like features
   // such as "double tap to zoom", "shrink page contents to fit", ... etc.
