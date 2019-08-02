@@ -14,5 +14,5 @@ g.test('basic', async t => {
   });
   new Uint32Array(map).set([0, value, 0]);
   src.unmap();
-  await t.expectContents(src, new Uint8Array(new Uint32Array([0, value, 0]).buffer));
+  await t.expectContents(src, new Uint32Array([0, value, 0]));
 }).params(poptions('value', [0x00000001, 0x01020304]));

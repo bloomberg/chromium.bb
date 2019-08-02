@@ -17,7 +17,7 @@ g.test('basic', async t => {
   const mappedBuffer = new Uint32Array(await buf.mapWriteAsync());
   mappedBuffer[1] = value;
   buf.unmap();
-  await t.expectContents(buf, new Uint8Array(new Uint32Array([0, value, 0]).buffer));
+  await t.expectContents(buf, new Uint32Array([0, value, 0]));
 }).params(poptions('value', [0x00000001, 0x01020304]));
 
 g.test('unmap', async t => {
