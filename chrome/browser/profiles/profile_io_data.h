@@ -96,6 +96,10 @@ class ProfileIOData {
     return &safe_browsing_enabled_;
   }
 
+  StringListPrefMember* safe_browsing_whitelist_domains() const {
+    return &safe_browsing_whitelist_domains_;
+  }
+
   IntegerPrefMember* network_prediction_options() const {
     return &network_prediction_options_;
   }
@@ -124,6 +128,18 @@ class ProfileIOData {
 
   bool IsOffTheRecord() const;
 
+  BooleanPrefMember* force_google_safesearch() const {
+    return &force_google_safesearch_;
+  }
+
+  IntegerPrefMember* force_youtube_restrict() const {
+    return &force_youtube_restrict_;
+  }
+
+  StringPrefMember* allowed_domains_for_apps() const {
+    return &allowed_domains_for_apps_;
+  }
+
   IntegerPrefMember* incognito_availibility() const {
     return &incognito_availibility_pref_;
   }
@@ -148,6 +164,11 @@ class ProfileIOData {
   data_reduction_proxy::DataReductionProxyIOData*
   data_reduction_proxy_io_data() const {
     return data_reduction_proxy_io_data_.get();
+  }
+
+  ProtocolHandlerRegistry::IOThreadDelegate*
+  protocol_handler_registry_io_thread_delegate() const {
+    return protocol_handler_registry_io_thread_delegate_.get();
   }
 
   // Get platform ClientCertStore. May return nullptr.
@@ -267,7 +288,11 @@ class ProfileIOData {
 #endif
 
   // Member variables which are pointed to by the various context objects.
+  mutable BooleanPrefMember force_google_safesearch_;
+  mutable IntegerPrefMember force_youtube_restrict_;
   mutable BooleanPrefMember safe_browsing_enabled_;
+  mutable StringListPrefMember safe_browsing_whitelist_domains_;
+  mutable StringPrefMember allowed_domains_for_apps_;
   mutable IntegerPrefMember network_prediction_options_;
   mutable IntegerPrefMember incognito_availibility_pref_;
   mutable BooleanPrefMember signed_exchange_enabled_;
@@ -285,6 +310,9 @@ class ProfileIOData {
 
   mutable std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data_;
+
+  mutable scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>
+      protocol_handler_registry_io_thread_delegate_;
 
 #if defined(OS_CHROMEOS)
   mutable std::string username_hash_;
