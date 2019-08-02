@@ -391,9 +391,13 @@ def FindLatestChromeOrderfile(gs_url):
     The orderfile name.
   """
   gs_context = gs.GSContext()
-  orderfiles = sorted(
-      gs_context.List(gs_url, details=True), key=lambda x: x.creation_time)
-  orderfile_url = orderfiles[-1].url
+
+  pattern = '.orderfile'
+  # Obtain all files from gs_url and filter out those not match
+  # pattern.
+  results = [x for x in gs_context.List(gs_url, details=True)
+             if pattern in x.url]
+  orderfile_url = max(results, key=lambda x: x.creation_time).url
   orderfile_name = os.path.basename(orderfile_url)
   logging.info('Latest orderfile in %s is %s', gs_url, orderfile_name)
   return orderfile_name

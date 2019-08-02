@@ -293,26 +293,26 @@ class OrderfileUpdateChromeEbuildTest(cros_test_lib.RunCommandTempDirTestCase):
                                             ('url', 'creation_time'))
     self.unvetted_orderfiles = [
         MockListResult(
-            url=self.unvetted_gs_url + '/chrome-orderfile-2.0',
+            url=self.unvetted_gs_url + '/chrome-orderfile-2.0.orderfile.xz',
             creation_time=2.0),
         MockListResult(
-            url=self.unvetted_gs_url + '/chrome-orderfile-3.0',
+            url=self.unvetted_gs_url + '/chrome-orderfile-3.0.xz',
             creation_time=3.0),
         MockListResult(
-            url=self.unvetted_gs_url + '/chrome-orderfile-1.0',
+            url=self.unvetted_gs_url + '/chrome-orderfile-1.0.orderfile.xz',
             creation_time=1.0)
     ]  # Intentionally unsorted
     self.PatchObject(toolchain_util, 'UpdateChromeEbuildWithOrderfile')
     self.PatchObject(
         gs.GSContext, 'List', return_value=self.unvetted_orderfiles)
 
-  def testFindLatestChromeOrderfile(self):
+  def testFindLatestChromeOrderfilePass(self):
     """Test FindLatestChromeOrderfile() returns latest orderfile."""
     orderfile = toolchain_util.FindLatestChromeOrderfile(self.unvetted_gs_url)
-    self.assertEqual(orderfile, 'chrome-orderfile-3.0')
+    self.assertEqual(orderfile, 'chrome-orderfile-2.0.orderfile.xz')
 
   def testOrderfileUpdateChromePass(self):
     ret = toolchain_util.OrderfileUpdateChromeEbuild(self.board)
     self.assertTrue(ret)
     toolchain_util.UpdateChromeEbuildWithOrderfile.assert_called_with(
-        self.board, 'chrome-orderfile-3.0')
+        self.board, 'chrome-orderfile-2.0.orderfile.xz')
