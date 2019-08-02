@@ -320,11 +320,19 @@ void ProcessedTrace::FillTableForPacket(Table* table,
 
   table->AddRow("Time", FormatTime(packet->time_us()));
 
-  if (packet->event_type() == PACKET_SENT) {
-    table->AddRow("Size", absl::StrCat(packet->packet_size(), " bytes"));
+  if(packet->event_type() == PACKET_SENT ||
+    packet->event_type() == PACKET_LOST ||
+    packet->event_type() == PACKET_RECEIVED) {
     table->AddRow("Encryption",
                   EncryptionLevelToString(packet->encryption_level()));
+  }
 
+  if (packet->event_type() == PACKET_SENT ||
+      packet->event_type() == PACKET_LOST) {
+    table->AddRow("Size", absl::StrCat(packet->packet_size(), " bytes"));
+  }
+
+  if (packet->event_type() == PACKET_SENT) {
     table->AddHeader("Frame list");
     for (const Frame& frame : packet->frames()) {
       switch (frame.frame_type()) {
@@ -373,10 +381,6 @@ void ProcessedTrace::FillTableForPacket(Table* table,
           break;
       }
     }
-  }
-  if(packet->event_type() == PACKET_RECEIVED) {
-    table->AddRow("Encryption",
-              EncryptionLevelToString(packet->encryption_level()));
   }
 
   if (packet->has_transport_state()) {
