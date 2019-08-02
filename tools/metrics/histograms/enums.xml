@@ -39802,6 +39802,12 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Interrupted"/>
 </enum>
 
+<enum name="MobileDownloadBackgroundTargetDeterminationResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Target path missing"/>
+  <int value="2" label="Path reservation failed"/>
+</enum>
+
 <enum name="MobileDownloadCancelReason">
   <int value="0" label="Not canceled"/>
   <int value="1" label="Click on the cancel button"/>
