@@ -487,6 +487,13 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   void SetRequestHeader(const std::string& header_name,
                         const std::string& header_value);
 
+  void set_response_headers_for_testing(
+      scoped_refptr<net::HttpResponseHeaders> response_headers) {
+    response_headers_for_testing_ = response_headers;
+  }
+
+  const net::HttpResponseHeaders* GetResponseHeaders();
+
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
   // once NavigationHandleImpl has become a wrapper around NavigationRequest.
@@ -1024,6 +1031,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // request.
   std::vector<std::string> removed_request_headers_;
   net::HttpRequestHeaders modified_request_headers_;
+
+  // Allows to override response_headers_ in tests.
+  // TODO(clamy): Clean this up once the architecture of unit tests is better.
+  scoped_refptr<net::HttpResponseHeaders> response_headers_for_testing_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

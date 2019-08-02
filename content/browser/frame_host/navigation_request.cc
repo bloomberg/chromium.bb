@@ -3090,4 +3090,10 @@ void NavigationRequest::SetRequestHeader(const std::string& header_name,
   modified_request_headers_.SetHeader(header_name, header_value);
 }
 
+const net::HttpResponseHeaders* NavigationRequest::GetResponseHeaders() {
+  if (response_headers_for_testing_)
+    return response_headers_for_testing_.get();
+  return response_head_.get() ? response_head_->head.headers.get() : nullptr;
+}
+
 }  // namespace content

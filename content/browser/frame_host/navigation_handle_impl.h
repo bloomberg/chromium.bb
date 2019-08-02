@@ -171,11 +171,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_request_->navigation_type();
   }
 
-  void set_response_headers_for_testing(
-      scoped_refptr<net::HttpResponseHeaders> response_headers) {
-    response_headers_for_testing_ = response_headers;
-  }
-
   CSPDisposition should_check_main_world_csp() const {
     return navigation_request_->common_params()
         .initiator_csp_info.should_check_main_world_csp;
@@ -208,10 +203,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The NavigationRequest that owns this NavigationHandle.
   NavigationRequest* navigation_request_;
-
-  // Allows to override response_headers_ in tests.
-  // TODO(clamy): Clean this up once the architecture of unit tests is better.
-  scoped_refptr<net::HttpResponseHeaders> response_headers_for_testing_;
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_{this};
 
