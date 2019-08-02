@@ -20,16 +20,15 @@ void OpenXrRenderLoop::GetViewSize(uint32_t* width, uint32_t* height) const {
 }
 
 mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
+  frame_data->frame_id = next_frame_id_;
 
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
   if (XR_FAILED(openxr_->BeginFrame(&texture))) {
-    return nullptr;
+    return frame_data;
   }
 
   texture_helper_.SetBackbuffer(texture.Get());
-
-  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
-  frame_data->frame_id = next_frame_id_;
 
   frame_data->time_delta =
       base::TimeDelta::FromNanoseconds(openxr_->GetPredictedDisplayTime());

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "device/vr/vr_export.h"
 #include "third_party/openxr/include/openxr/openxr.h"
 #include "third_party/openxr/include/openxr/openxr_platform.h"
 
@@ -23,6 +24,8 @@ class Point3F;
 namespace device {
 
 class OpenXrGamepadHelper;
+class VRTestHook;
+class ServiceTestHook;
 
 class OpenXrApiWrapper {
  public:
@@ -34,6 +37,8 @@ class OpenXrApiWrapper {
   static bool IsHardwareAvailable();
   static bool IsApiAvailable();
 
+  static VRTestHook* GetTestHook();
+
   XrResult StartSession(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
                         std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
 
@@ -44,6 +49,8 @@ class OpenXrApiWrapper {
                        gfx::Point3F* position) const;
 
   XrTime GetPredictedDisplayTime() const;
+
+  static void DEVICE_VR_EXPORT SetTestHook(VRTestHook* hook);
 
   void GetViewSize(uint32_t* width, uint32_t* height) const;
   XrResult GetLuid(LUID* luid) const;
@@ -66,7 +73,7 @@ class OpenXrApiWrapper {
       std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
 
   XrResult BeginSession();
-  XrResult UpdateProjectionLayers();
+  XrResult UpdateProjectionLayers(XrTime predicted_display_time);
 
   bool HasInstance() const;
   bool HasSystem() const;
@@ -78,7 +85,11 @@ class OpenXrApiWrapper {
 
   uint32_t GetRecommendedSwapchainSampleCount() const;
 
-  // OpenXr objects
+  // Testing objects
+  static VRTestHook* test_hook_;
+  static ServiceTestHook* service_test_hook_;
+
+  // OpenXR objects
 
   // These objects are valid on successful initialization.
   XrInstance instance_;
