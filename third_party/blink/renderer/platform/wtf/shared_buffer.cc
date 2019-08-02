@@ -24,17 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
 #include <memory>
 
-#include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 #include "third_party/skia/include/core/SkData.h"
 
-namespace blink {
+namespace WTF {
 
 constexpr unsigned SharedBuffer::kSegmentSize;
 
@@ -53,7 +52,7 @@ struct SharedBuffer::SegmentDeleter {
 SharedBuffer::Segment SharedBuffer::CreateSegment() {
   return std::unique_ptr<char[], SegmentDeleter>(
       static_cast<char*>(WTF::Partitions::FastMalloc(SharedBuffer::kSegmentSize,
-                                                     "blink::SharedBuffer")));
+                                                     "WTF::SharedBuffer")));
 }
 
 SharedBuffer::Iterator& SharedBuffer::Iterator::operator++() {
@@ -249,4 +248,4 @@ SharedBuffer::DeprecatedFlatData::DeprecatedFlatData(
   data_ = flat_buffer_.data();
 }
 
-}  // namespace blink
+}  // namespace WTF

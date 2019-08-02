@@ -24,33 +24,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SHARED_BUFFER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SHARED_BUFFER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SHARED_BUFFER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SHARED_BUFFER_H_
 
 #include <algorithm>
 #include <utility>
 #include <vector>
 
 #include "base/containers/span.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 class SkData;
 template <typename T>
 class sk_sp;
 
-namespace blink {
+namespace WTF {
 
-class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
+class WTF_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
  public:
   // Iterator for ShreadBuffer contents. An Iterator will get invalid once the
   // associated SharedBuffer is modified (e.g., Append() is called). An Iterator
   // doesn't retain the associated container.
-  class PLATFORM_EXPORT Iterator final {
+  class WTF_EXPORT Iterator final {
    public:
     ~Iterator() = default;
 
@@ -185,7 +185,7 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   // Helper for providing a contiguous view of the data.  If the SharedBuffer is
   // segmented, this will copy/merge all segments into a temporary buffer.
   // In general, clients should use the efficient/segmented accessors.
-  class PLATFORM_EXPORT DeprecatedFlatData {
+  class WTF_EXPORT DeprecatedFlatData {
     STACK_ALLOCATED();
 
    public:
@@ -278,6 +278,6 @@ inline std::vector<uint8_t> SharedBuffer::CopyAs() const {
   return buffer;
 }
 
-}  // namespace blink
+}  // namespace WTF
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SHARED_BUFFER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SHARED_BUFFER_H_
