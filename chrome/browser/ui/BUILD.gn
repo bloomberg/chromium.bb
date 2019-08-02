@@ -530,6 +530,7 @@ jumbo_split_static_library("ui") {
     "//components/variations/service",
     "//components/vector_icons",
     "//components/version_ui",
+    "//components/viz/host",
     "//components/web_cache/browser",
     "//components/web_resource",
     "//components/webrtc_logging/browser",
