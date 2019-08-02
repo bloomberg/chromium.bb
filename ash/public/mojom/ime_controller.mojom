@@ -4,7 +4,7 @@
 
 module ash.mojom;
 
-import "ash/public/interfaces/ime_info.mojom";
+import "ash/public/mojom/ime_info.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/base/ime/chromeos/public/mojom/ime_keyset.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";

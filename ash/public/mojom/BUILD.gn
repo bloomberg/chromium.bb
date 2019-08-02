@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("mojom") {
   disable_variants = true
 
   sources = [
@@ -49,7 +49,7 @@ mojom("test_interfaces") {
     "status_area_widget_test_api.test-mojom",
   ]
   deps = [
-    ":interfaces",
+    ":mojom",
     "//components/account_id/mojom",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojom",

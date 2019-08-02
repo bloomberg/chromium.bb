@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_PUBLIC_CPP_APP_LIST_APP_LIST_STRUCT_TRAITS_H_
-#define ASH_PUBLIC_CPP_APP_LIST_APP_LIST_STRUCT_TRAITS_H_
+#ifndef ASH_PUBLIC_CPP_APP_LIST_APP_LIST_MOJOM_TRAITS_H_
+#define ASH_PUBLIC_CPP_APP_LIST_APP_LIST_MOJOM_TRAITS_H_
 
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/interfaces/app_list.mojom-shared.h"
+#include "ash/public/mojom/app_list.mojom-shared.h"
 #include "base/containers/span.h"
 #include "base/strings/string16.h"
 #include "mojo/public/mojom/base/string16.mojom.h"
@@ -244,4 +244,4 @@ struct StructTraits<ash::mojom::SearchResultActionDataView,
 
 }  // namespace mojo
 
-#endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_STRUCT_TRAITS_H_
+#endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_MOJOM_TRAITS_H_
