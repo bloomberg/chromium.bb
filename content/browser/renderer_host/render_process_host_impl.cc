@@ -100,7 +100,6 @@
 #include "content/browser/histogram_controller.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/midi_host.h"
@@ -2120,19 +2119,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&CreateReportingServiceProxy, GetID()));
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    AddUIThreadInterface(
-        registry.get(),
-        base::BindRepeating(
-            &ChromeAppCacheService::CreateBackendForRequest,
-            base::Unretained(storage_partition_impl_->GetAppCacheService()),
-            GetID()));
-  } else {
-    registry->AddInterface(base::BindRepeating(
-        &ChromeAppCacheService::CreateBackendForRequest,
-        base::Unretained(storage_partition_impl_->GetAppCacheService()),
-        GetID()));
-  }
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(
+          &ChromeAppCacheService::CreateBackendForRequest,
+          base::Unretained(storage_partition_impl_->GetAppCacheService()),
+          GetID()));
 
   AddUIThreadInterface(
       registry.get(),

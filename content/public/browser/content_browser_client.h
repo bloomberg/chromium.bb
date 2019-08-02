@@ -526,11 +526,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const base::CommandLine& command_line);
 
   // Allow the embedder to control if an AppCache can be used for the given url.
-  // This is called on the IO thread.
-  virtual bool AllowAppCacheOnIO(const GURL& manifest_url,
-                                 const GURL& first_party,
-                                 ResourceContext* context);
-  // Same as above but called on UI thread.
+  // This is called on the UI thread.
   virtual bool AllowAppCache(const GURL& manifest_url,
                              const GURL& first_party,
                              BrowserContext* context);
@@ -567,11 +563,7 @@ class CONTENT_EXPORT ContentBrowserClient {
                                  int render_frame_id);
 
   // Allows the embedder to control whether Signed HTTP Exchanges (SXG) can be
-  // loaded. This is called on the IO thread.
-  // Relying on ResourceContext to access preferences on IO thread until we move
-  // the call sites out of the IO thread. See crbug.com/908955 for more context.
-  virtual bool AllowSignedExchangeOnIO(ResourceContext* context);
-  // Same as above but called on UI thread.
+  // loaded. This is called on the UI thread.
   virtual bool AllowSignedExchange(BrowserContext* context);
 
   virtual bool IsDataSaverEnabled(BrowserContext* context);
@@ -1131,7 +1123,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // and |frame_tree_node_id| take a callback returning a nullptr, nullptr, and
   // RenderFrameHost::kNoFrameTreeNodeId respectively.
   //
-  // This is called both when the network service is enabled and disabled.
   // This is called on the IO thread.
   virtual std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateURLLoaderThrottlesOnIO(
@@ -1492,10 +1483,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       PictureInPictureWindowController* controller);
 
   // Returns true if it is safe to redirect to |url|, otherwise returns false.
-  // This is called on the IO thread.
-  virtual bool IsSafeRedirectTargetOnIO(const GURL& url,
-                                        ResourceContext* context);
-  // Same as above but called on UI thread.
+  // This is called on the UI thread.
   virtual bool IsSafeRedirectTarget(const GURL& url, BrowserContext* context);
 
   // Registers the watcher to observe updates in RendererPreferences.
