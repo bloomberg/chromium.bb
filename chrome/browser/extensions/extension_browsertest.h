@@ -44,6 +44,15 @@ class ProcessManager;
 // Base class for extension browser tests. Provides utilities for loading,
 // unloading, and installing extensions.
 class ExtensionBrowserTest : virtual public InProcessBrowserTest {
+ public:
+  // Different types of extension's lazy background contexts used in some tests.
+  enum class ContextType {
+    // A non-persistent background page/JS based extension.
+    kEventPage,
+    // A Service Worker based extension.
+    kServiceWorker,
+  };
+
  protected:
   // Flags used to configure how the tests are run.
   enum Flags {
