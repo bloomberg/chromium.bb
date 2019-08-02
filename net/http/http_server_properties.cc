@@ -43,6 +43,7 @@ HttpServerProperties::HttpServerProperties(
                              : base::DefaultTickClock::GetInstance()),
       clock_(clock ? clock : base::DefaultClock::GetInstance()),
       is_initialized_(pref_delegate.get() == nullptr),
+      queue_write_on_load_(false),
       properties_manager_(
           pref_delegate
               ? std::make_unique<HttpServerPropertiesManager>(
@@ -90,6 +91,9 @@ void HttpServerProperties::Clear(base::OnceClosure callback) {
   if (properties_manager_) {
     // Stop waiting for initial settings.
     is_initialized_ = true;
+    // Leaving this as-is doesn't actually have any effect, if it's true, but
+    // seems best to be safe.
+    queue_write_on_load_ = false;
 
     // Stop the timer if it's running, since this will write to the properties
     // file immediately.
@@ -783,8 +787,12 @@ void HttpServerProperties::OnPrefsLoaded(
 
   // TODO(mmenke): Corrupt prefs will be modified in the same way if they're
   // loaded a second time, so this doesn't seem to get us anything. Remove it.
-  if (prefs_corrupt)
+  if (queue_write_on_load_ || prefs_corrupt) {
+    // Leaving this as true doesn't actually have any effect, but seems best to
+    // be safe.
+    queue_write_on_load_ = false;
     MaybeQueueWriteProperties();
+  }
 }
 
 void HttpServerProperties::OnSpdyServersLoaded(
@@ -912,8 +920,11 @@ void HttpServerProperties::OnBrokenAndRecentlyBrokenAlternativeServicesLoaded(
 void HttpServerProperties::MaybeQueueWriteProperties() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (prefs_update_timer_.IsRunning() || !properties_manager_ ||
-      !is_initialized_) {
+  if (prefs_update_timer_.IsRunning() || !properties_manager_)
+    return;
+
+  if (!is_initialized_) {
+    queue_write_on_load_ = true;
     return;
   }
 

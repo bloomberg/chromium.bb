@@ -128,8 +128,8 @@ class HttpServerPropertiesManagerTest : public testing::Test,
   // couple extra expectations about whether any tasks are posted, and if a pref
   // update is queued.
   //
-  // |expect_pref_update| should be true if |dict| has a set of corrupted prefs
-  // and should trigger a pref update to fix the cached prefs.
+  // |expect_pref_update| should be true if a pref update is expected to be
+  // queued in response to the load.
   void InitializePrefs(
       const base::DictionaryValue& dict = base::DictionaryValue(),
       bool expect_pref_update = false) {
@@ -474,7 +474,7 @@ TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
 }
 
 // Check the case that prefs are loaded only after setting alternative service
-// info. Prefs should not be written.
+// info. Prefs should not be written until after the load happens.
 TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
@@ -494,9 +494,7 @@ TEST_F(HttpServerPropertiesManagerTest, LateLoadAlternativeServiceInfo) {
             alternative_service_info_vector[0].alternative_service());
 
   // Initializing prefs does not result in a task to write the prefs.
-  InitializePrefs();
-  EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
-  EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
+  InitializePrefs(base::DictionaryValue(), true /* expect_pref_update */);
   alternative_service_info_vector =
       http_server_props_manager_->GetAlternativeServiceInfos(spdy_server_mail);
   EXPECT_EQ(1u, alternative_service_info_vector.size());
@@ -1619,10 +1617,16 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   ASSERT_TRUE(server_value->GetAsDictionary(&server_dict));
 
   // Don't use the test fixture's InitializePrefs() method, since there are
-  // pending tasks.
+  // pending tasks. Initializing prefs should queue a pref update task, since
+  // prefs have been modified.
   pref_delegate_->InitializePrefs(*server_dict);
   EXPECT_TRUE(http_server_props_manager_->IsInitialized());
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
+
+  // Run until prefs are updated.
+  FastForwardBy(HttpServerProperties::GetUpdatePrefsDelayForTesting());
+  EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
+  EXPECT_NE(0u, GetPendingMainThreadTaskCount());
 
   //
   // Verify alternative service info for https://www.google.com
@@ -1681,13 +1685,15 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
       cached_broken_service2));
   EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
       prefs_broken_service));
+
   // Verify brokenness expiration times.
   // |cached_broken_service|'s expiration time should've been overwritten by the
   // prefs to be approximately 1 day from now. |cached_broken_service2|'s
   // expiration time should still be 5 minutes due to being marked broken.
   // |prefs_broken_service|'s expiration time should be approximately 1 day from
   // now which comes from the prefs.
-  FastForwardBy(base::TimeDelta::FromMinutes(5));
+  FastForwardBy(base::TimeDelta::FromMinutes(5) -
+                HttpServerProperties::GetUpdatePrefsDelayForTesting());
   EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
       cached_broken_service));
   EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(

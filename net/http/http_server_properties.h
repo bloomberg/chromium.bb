@@ -460,6 +460,11 @@ class NET_EXPORT HttpServerProperties
   // |properties_manager_|. Always true if |properties_manager_| is nullptr.
   bool is_initialized_;
 
+  // Queue a write when resources finish loading. Set to true when
+  // MaybeQueueWriteProperties() is invoked while still waiting on
+  // initialization to complete.
+  bool queue_write_on_load_;
+
   // Used to load/save properties from/to preferences. May be nullptr.
   std::unique_ptr<HttpServerPropertiesManager> properties_manager_;
 
