@@ -237,7 +237,7 @@ const std::string& PlatformFontSkia::GetFontName() const {
   return font_family_;
 }
 
-std::string PlatformFontSkia::GetActualFontNameForTesting() const {
+std::string PlatformFontSkia::GetActualFontName() const {
   SkString family_name;
   typeface_->getFamilyName(&family_name);
   return family_name.c_str();
