@@ -319,7 +319,6 @@ class SSLClientSocketImpl::SSLContext {
     // Deduplicate all certificates minted from the SSL_CTX in memory.
     SSL_CTX_set0_buffer_pool(ssl_ctx_.get(), x509_util::GetBufferPool());
 
-    SSL_CTX_set_info_callback(ssl_ctx_.get(), InfoCallback);
     SSL_CTX_set_msg_callback(ssl_ctx_.get(), MessageCallback);
 
 #if !defined(NET_DISABLE_BROTLI)
@@ -388,11 +387,6 @@ class SSLClientSocketImpl::SSLContext {
 
   static void KeyLogCallback(const SSL* ssl, const char* line) {
     GetInstance()->ssl_key_logger_->WriteLine(line);
-  }
-
-  static void InfoCallback(const SSL* ssl, int type, int value) {
-    SSLClientSocketImpl* socket = GetInstance()->GetClientSocketFromSSL(ssl);
-    socket->InfoCallback(type, value);
   }
 
   static void MessageCallback(int is_write,
@@ -1773,13 +1767,6 @@ void SSLClientSocketImpl::OnPrivateKeyComplete(
   // During a renegotiation, either Read or Write calls may be blocked on an
   // asynchronous private key operation.
   RetryAllOperations();
-}
-
-void SSLClientSocketImpl::InfoCallback(int type, int value) {
-  if (type == SSL_CB_HANDSHAKE_START && completed_connect_) {
-    UMA_HISTOGRAM_BOOLEAN("Net.SSLSecureRenegotiation",
-                          SSL_get_secure_renegotiation_support(ssl_.get()));
-  }
 }
 
 void SSLClientSocketImpl::MessageCallback(int is_write,
