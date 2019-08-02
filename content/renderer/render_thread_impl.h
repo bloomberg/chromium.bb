@@ -506,6 +506,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnGetAccessibilityTree();
 
   // mojom::Renderer:
+  void CreateEmbedderRendererService(
+      service_manager::mojom::ServiceRequest service_request) override;
   void CreateView(mojom::CreateViewParamsPtr params) override;
   void CreateFrame(mojom::CreateFrameParamsPtr params) override;
   void CreateFrameProxy(

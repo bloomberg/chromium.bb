@@ -284,6 +284,8 @@ jumbo_split_static_library("browser") {
     "chrome_quota_permission_context.h",
     "chrome_resource_bundle_helper.cc",
     "chrome_resource_bundle_helper.h",
+    "chrome_service.cc",
+    "chrome_service.h",
     "client_hints/client_hints.cc",
     "client_hints/client_hints.h",
     "client_hints/client_hints_factory.cc",
