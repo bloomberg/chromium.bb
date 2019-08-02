@@ -31,7 +31,7 @@ class ProfileActivityMetricsRecorderTest : public testing::Test {
  public:
   ProfileActivityMetricsRecorderTest()
       : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {
     base::SetRecordActionTaskRunner(thread_bundle_.GetMainThreadTaskRunner());
   }

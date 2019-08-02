@@ -2151,7 +2151,7 @@ class TransportClientSocketPoolMockNowSourceTest
  protected:
   TransportClientSocketPoolMockNowSourceTest()
       : TransportClientSocketPoolTest(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPoolMockNowSourceTest);

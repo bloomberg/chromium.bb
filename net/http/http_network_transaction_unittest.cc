@@ -366,7 +366,7 @@ class HttpNetworkTransactionTest : public PlatformTest,
  protected:
   HttpNetworkTransactionTest()
       : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         dummy_connect_job_params_(
             nullptr /* client_socket_factory */,
             nullptr /* host_resolver */,
