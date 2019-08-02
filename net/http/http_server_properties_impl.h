@@ -65,44 +65,6 @@ class NET_EXPORT HttpServerPropertiesImpl
 
   ~HttpServerPropertiesImpl() override;
 
-  static base::TimeDelta GetUpdatePrefsDelayForTesting();
-
-  // Sets |spdy_servers_map_| with the servers (host/port) from
-  // |spdy_servers| that either support SPDY or not.
-  void SetSpdyServers(std::unique_ptr<SpdyServersMap> spdy_servers_map);
-
-  void SetAlternativeServiceServers(
-      std::unique_ptr<AlternativeServiceMap> alternate_protocol_servers);
-
-  void SetSupportsQuic(const IPAddress& last_address);
-
-  void SetServerNetworkStats(
-      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map);
-
-  void SetQuicServerInfoMap(
-      std::unique_ptr<QuicServerInfoMap> quic_server_info_map);
-
-  const SpdyServersMap& spdy_servers_map() const;
-
-  void SetBrokenAndRecentlyBrokenAlternativeServices(
-      std::unique_ptr<BrokenAlternativeServiceList>
-          broken_alternative_service_list,
-      std::unique_ptr<RecentlyBrokenAlternativeServices>
-          recently_broken_alternative_services);
-
-  const BrokenAlternativeServiceList& broken_alternative_service_list() const;
-
-  const RecentlyBrokenAlternativeServices&
-  recently_broken_alternative_services() const;
-
-  // Returns flattened string representation of the |host_port_pair|. Used by
-  // unittests.
-  static std::string GetFlattenedSpdyServer(const HostPortPair& host_port_pair);
-
-  // Returns the canonical host suffix for |host|, or nullptr if none
-  // exists.
-  const std::string* GetCanonicalSuffix(const std::string& host) const;
-
   // -----------------------------
   // HttpServerProperties methods:
   // -----------------------------
@@ -167,6 +129,49 @@ class NET_EXPORT HttpServerPropertiesImpl
   void OnExpireBrokenAlternativeService(
       const AlternativeService& expired_alternative_service) override;
 
+  static base::TimeDelta GetUpdatePrefsDelayForTesting();
+
+  // Test-only routines that call the methods used to load the specified
+  // field(s) from a prefs file. Unlike OnPrefsLoaded(), these may be invoked
+  // multiple times.
+  void OnSpdyServersLoadedForTesting(
+      std::unique_ptr<SpdyServersMap> spdy_servers_map) {
+    OnSpdyServersLoaded(std::move(spdy_servers_map));
+  }
+  void OnAlternativeServiceServersLoadedForTesting(
+      std::unique_ptr<AlternativeServiceMap> alternate_protocol_servers) {
+    OnAlternativeServiceServersLoaded(std::move(alternate_protocol_servers));
+  }
+  void OnServerNetworkStatsLoadedForTesting(
+      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map) {
+    OnServerNetworkStatsLoaded(std::move(server_network_stats_map));
+  }
+  void OnSupportsQuicLoadedForTesting(const IPAddress& last_address) {
+    OnSupportsQuicLoaded(last_address);
+  }
+  void OnQuicServerInfoMapLoadedForTesting(
+      std::unique_ptr<QuicServerInfoMap> quic_server_info_map) {
+    OnQuicServerInfoMapLoaded(std::move(quic_server_info_map));
+  }
+  void OnBrokenAndRecentlyBrokenAlternativeServicesLoadedForTesting(
+      std::unique_ptr<BrokenAlternativeServiceList>
+          broken_alternative_service_list,
+      std::unique_ptr<RecentlyBrokenAlternativeServices>
+          recently_broken_alternative_services) {
+    OnBrokenAndRecentlyBrokenAlternativeServicesLoaded(
+        std::move(broken_alternative_service_list),
+        std::move(recently_broken_alternative_services));
+  }
+
+  const std::string* GetCanonicalSuffixForTesting(
+      const std::string& host) const {
+    return GetCanonicalSuffix(host);
+  }
+
+  const SpdyServersMap& spdy_servers_map_for_testing() const {
+    return spdy_servers_map_;
+  }
+
   // TODO(mmenke): Look into removing this.
   HttpServerPropertiesManager* properties_manager_for_testing() {
     return properties_manager_.get();
@@ -207,6 +212,10 @@ class NET_EXPORT HttpServerPropertiesImpl
   // have an entry associated with |server|, the method will add one.
   void UpdateCanonicalServerInfoMap(const quic::QuicServerId& server);
 
+  // Returns the canonical host suffix for |host|, or nullptr if none
+  // exists.
+  const std::string* GetCanonicalSuffix(const std::string& host) const;
+
   void OnPrefsLoaded(
       std::unique_ptr<SpdyServersMap> spdy_servers_map,
       std::unique_ptr<AlternativeServiceMap> alternative_service_map,
@@ -218,6 +227,23 @@ class NET_EXPORT HttpServerPropertiesImpl
       std::unique_ptr<RecentlyBrokenAlternativeServices>
           recently_broken_alternative_services,
       bool prefs_corrupt);
+
+  // These methods are called by OnPrefsLoaded to handle merging properties
+  // loaded from prefs with what has been learned while waiting for prefs to
+  // load.
+  void OnSpdyServersLoaded(std::unique_ptr<SpdyServersMap> spdy_servers_map);
+  void OnAlternativeServiceServersLoaded(
+      std::unique_ptr<AlternativeServiceMap> alternate_protocol_servers);
+  void OnServerNetworkStatsLoaded(
+      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map);
+  void OnSupportsQuicLoaded(const IPAddress& last_address);
+  void OnQuicServerInfoMapLoaded(
+      std::unique_ptr<QuicServerInfoMap> quic_server_info_map);
+  void OnBrokenAndRecentlyBrokenAlternativeServicesLoaded(
+      std::unique_ptr<BrokenAlternativeServiceList>
+          broken_alternative_service_list,
+      std::unique_ptr<RecentlyBrokenAlternativeServices>
+          recently_broken_alternative_services);
 
   // Queue a delayed call to WriteProperties(). If |is_initialized_| is false,
   // or |properties_manager_| is nullptr, or there's already a queued call to

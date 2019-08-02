@@ -1047,7 +1047,7 @@ TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
                                             "192.168.0.1", "");
   Initialize();
   factory_->set_require_confirmation(true);
-  http_server_properties_.SetSupportsQuic(IPAddress(192, 0, 2, 33));
+  http_server_properties_.SetSupportsQuic(true, IPAddress(192, 0, 2, 33));
 
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
