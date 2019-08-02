@@ -239,9 +239,7 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
 
   video_profile_ = config.profile;
 
-  // TODO(posciak): This needs to be queried once supported.
   input_planes_count_ = 1;
-  output_planes_count_ = 1;
 
   input_format_fourcc_ =
       V4L2Device::VideoCodecProfileToV4L2PixFmt(video_profile_, true);
@@ -466,9 +464,12 @@ bool V4L2SliceVideoDecodeAccelerator::SetupFormats() {
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   format.fmt.pix_mp.pixelformat = output_format_fourcc_;
-  format.fmt.pix_mp.num_planes = output_planes_count_;
+  format.fmt.pix_mp.num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(output_format_fourcc_);
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_S_FMT, &format);
   DCHECK_EQ(format.fmt.pix_mp.pixelformat, output_format_fourcc_);
+
+  DCHECK_EQ(V4L2Device::GetNumPlanesOfV4L2PixFmt(output_format_fourcc_), static_cast<size_t>(format.fmt.pix_mp.num_planes));
+  output_planes_count_ = format.fmt.pix_mp.num_planes;
 
   return true;
 }
