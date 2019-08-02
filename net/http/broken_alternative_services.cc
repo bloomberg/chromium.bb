@@ -8,7 +8,7 @@
 #include "base/memory/singleton.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 
 namespace net {
 

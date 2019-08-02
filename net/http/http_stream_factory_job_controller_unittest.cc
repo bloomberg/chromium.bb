@@ -26,6 +26,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_network_session_peer.h"
+#include "net/http/http_server_properties.h"
+#include "net/http/http_server_properties_manager.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_stream_factory_job.h"
 #include "net/http/http_stream_factory_test_util.h"
@@ -97,12 +99,23 @@ class FailingProxyResolverFactory : public ProxyResolverFactory {
   }
 };
 
-// A mock HttpServerProperties that always returns false for IsInitialized().
-class MockHttpServerProperties : public HttpServerPropertiesImpl {
+// A mock HttpServerProperties::PrefDelegate that never finishes loading, so
+// HttpServerProperties::IsInitialized() always returns false.
+class MockPrefDelegate : public HttpServerProperties::PrefDelegate {
  public:
-  MockHttpServerProperties() = default;
-  ~MockHttpServerProperties() override = default;
-  bool IsInitialized() const override { return false; }
+  MockPrefDelegate() = default;
+  ~MockPrefDelegate() override = default;
+
+  // HttpServerProperties::PrefDelegate implementation:
+  const base::DictionaryValue* GetServerProperties() const override {
+    return nullptr;
+  }
+  void SetServerProperties(const base::DictionaryValue& value,
+                           base::OnceClosure callback) override {}
+  void WaitForPrefLoad(base::OnceClosure pref_loaded_callback) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPrefDelegate);
 };
 
 }  // anonymous namespace
@@ -2847,7 +2860,8 @@ class HttpStreamFactoryJobControllerPreconnectTest
 
   void Initialize() {
     session_deps_.http_server_properties =
-        std::make_unique<MockHttpServerProperties>();
+        std::make_unique<HttpServerProperties>(
+            std::make_unique<MockPrefDelegate>(), nullptr /* net_log */);
     session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
     factory_ = session_->http_stream_factory();
     request_info_.method = "GET";

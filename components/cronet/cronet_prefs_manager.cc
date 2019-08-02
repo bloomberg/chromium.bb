@@ -22,7 +22,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/nqe/network_qualities_prefs_manager.h"
 #include "net/url_request/url_request_context_builder.h"
 
@@ -99,9 +99,8 @@ void InitializeStorageDirectory(const base::FilePath& dir) {
   }
 }
 
-// Connects the HttpServerPropertiesManager's storage to the prefs.
-class PrefServiceAdapter
-    : public net::HttpServerPropertiesManager::PrefDelegate {
+// Connects the HttpServerProperties's storage to the prefs.
+class PrefServiceAdapter : public net::HttpServerProperties::PrefDelegate {
  public:
   explicit PrefServiceAdapter(PrefService* pref_service)
       : pref_service_(pref_service), path_(kHttpServerPropertiesPref) {
@@ -256,7 +255,7 @@ CronetPrefsManager::CronetPrefsManager(
   }
 
   context_builder->SetHttpServerProperties(
-      std::make_unique<net::HttpServerPropertiesImpl>(
+      std::make_unique<net::HttpServerProperties>(
           std::make_unique<PrefServiceAdapter>(pref_service_.get()), net_log));
 }
 

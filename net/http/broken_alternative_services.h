@@ -134,9 +134,9 @@ class NET_EXPORT_PRIVATE BrokenAlternativeServices {
   recently_broken_alternative_services() const;
 
  private:
-  // TODO (wangyix): modify HttpServerPropertiesImpl unit tests so this
-  // friendness is no longer required.
-  friend class HttpServerPropertiesImplPeer;
+  // TODO (wangyix): modify HttpServerProperties unit tests so this friendness
+  // is no longer required.
+  friend class HttpServerPropertiesPeer;
 
   struct AlternativeServiceHash {
     size_t operator()(const net::AlternativeService& entry) const {

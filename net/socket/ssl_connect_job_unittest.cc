@@ -27,7 +27,7 @@
 #include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
@@ -163,7 +163,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
   const std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   const std::unique_ptr<SSLConfigService> ssl_config_service_;
   const std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
-  HttpServerPropertiesImpl http_server_properties_;
+  HttpServerProperties http_server_properties_;
   const std::unique_ptr<HttpNetworkSession> session_;
 
   scoped_refptr<TransportSocketParams> direct_transport_socket_params_;

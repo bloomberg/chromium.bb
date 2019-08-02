@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 
 #include <memory>
 #include <string>
@@ -36,10 +36,10 @@ const base::TimeDelta BROKEN_ALT_SVC_EXPIRE_DELAYS[10] = {
     base::TimeDelta::FromSeconds(76800), base::TimeDelta::FromSeconds(153600),
 };
 
-class HttpServerPropertiesImplPeer {
+class HttpServerPropertiesPeer {
  public:
   static void AddBrokenAlternativeServiceWithExpirationTime(
-      HttpServerPropertiesImpl* impl,
+      HttpServerProperties* impl,
       const AlternativeService& alternative_service,
       base::TimeTicks when) {
     BrokenAlternativeServiceList::iterator unused_it;
@@ -58,16 +58,16 @@ class HttpServerPropertiesImplPeer {
   }
 
   static void ExpireBrokenAlternateProtocolMappings(
-      HttpServerPropertiesImpl* impl) {
+      HttpServerProperties* impl) {
     impl->broken_alternative_services_.ExpireBrokenAlternateProtocolMappings();
   }
 };
 
 namespace {
 
-class HttpServerPropertiesImplTest : public TestWithScopedTaskEnvironment {
+class HttpServerPropertiesTest : public TestWithScopedTaskEnvironment {
  protected:
-  HttpServerPropertiesImplTest()
+  HttpServerPropertiesTest()
       : TestWithScopedTaskEnvironment(
             base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         test_tick_clock_(GetMockTickClock()),
@@ -106,10 +106,10 @@ class HttpServerPropertiesImplTest : public TestWithScopedTaskEnvironment {
   const base::TickClock* test_tick_clock_;
   base::SimpleTestClock test_clock_;
 
-  HttpServerPropertiesImpl impl_;
+  HttpServerProperties impl_;
 };
 
-typedef HttpServerPropertiesImplTest SpdyServerPropertiesTest;
+typedef HttpServerPropertiesTest SpdyServerPropertiesTest;
 
 TEST_F(SpdyServerPropertiesTest, SetWithSchemeHostPort) {
   // Check spdy servers are correctly set with SchemeHostPort key.
@@ -339,7 +339,7 @@ TEST_F(SpdyServerPropertiesTest, MRUOfSpdyServersMap) {
   ASSERT_EQ(spdy_server_m, it->first);
 }
 
-typedef HttpServerPropertiesImplTest AlternateProtocolServerPropertiesTest;
+typedef HttpServerPropertiesTest AlternateProtocolServerPropertiesTest;
 
 TEST_F(AlternateProtocolServerPropertiesTest, Basic) {
   url::SchemeHostPort test_server("http", "foo", 80);
@@ -1111,12 +1111,12 @@ TEST_F(AlternateProtocolServerPropertiesTest,
 
   base::TimeTicks past =
       test_tick_clock_->NowTicks() - base::TimeDelta::FromSeconds(42);
-  HttpServerPropertiesImplPeer::AddBrokenAlternativeServiceWithExpirationTime(
+  HttpServerPropertiesPeer::AddBrokenAlternativeServiceWithExpirationTime(
       &impl_, alternative_service, past);
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
   EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
 
-  HttpServerPropertiesImplPeer::ExpireBrokenAlternateProtocolMappings(&impl_);
+  HttpServerPropertiesPeer::ExpireBrokenAlternateProtocolMappings(&impl_);
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
   EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
 }
@@ -1141,11 +1141,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc) {
   // Mark "bar:443" as broken.
   base::TimeTicks past =
       test_tick_clock_->NowTicks() - base::TimeDelta::FromSeconds(42);
-  HttpServerPropertiesImplPeer::AddBrokenAlternativeServiceWithExpirationTime(
+  HttpServerPropertiesPeer::AddBrokenAlternativeServiceWithExpirationTime(
       &impl_, bar_alternative_service, past);
 
   // Expire brokenness of "bar:443".
-  HttpServerPropertiesImplPeer::ExpireBrokenAlternateProtocolMappings(&impl_);
+  HttpServerPropertiesPeer::ExpireBrokenAlternateProtocolMappings(&impl_);
 
   // "foo:443" should have no alternative service now.
   EXPECT_FALSE(HasAlternativeService(foo_server));
@@ -1292,7 +1292,7 @@ TEST_F(AlternateProtocolServerPropertiesTest,
   EXPECT_EQ(expected_json, alternative_service_info_json);
 }
 
-typedef HttpServerPropertiesImplTest SupportsQuicServerPropertiesTest;
+typedef HttpServerPropertiesTest SupportsQuicServerPropertiesTest;
 
 TEST_F(SupportsQuicServerPropertiesTest, Set) {
   HostPortPair quic_server_google("www.google.com", 443);
@@ -1329,7 +1329,7 @@ TEST_F(SupportsQuicServerPropertiesTest, SetSupportsQuic) {
   EXPECT_FALSE(impl_.GetSupportsQuic(&address));
 }
 
-typedef HttpServerPropertiesImplTest ServerNetworkStatsServerPropertiesTest;
+typedef HttpServerPropertiesTest ServerNetworkStatsServerPropertiesTest;
 
 TEST_F(ServerNetworkStatsServerPropertiesTest, Set) {
   url::SchemeHostPort google_server("https", "www.google.com", 443);
@@ -1340,7 +1340,7 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, Set) {
   impl_.OnServerNetworkStatsLoadedForTesting(
       std::move(init_server_network_stats_map));
   const ServerNetworkStats* stats = impl_.GetServerNetworkStats(google_server);
-  EXPECT_EQ(NULL, stats);
+  EXPECT_EQ(nullptr, stats);
 
   // Check by initializing with www.google.com:443.
   ServerNetworkStats stats_google;
@@ -1406,8 +1406,8 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, Set) {
 TEST_F(ServerNetworkStatsServerPropertiesTest, SetServerNetworkStats) {
   url::SchemeHostPort foo_http_server("http", "foo", 443);
   url::SchemeHostPort foo_https_server("https", "foo", 443);
-  EXPECT_EQ(NULL, impl_.GetServerNetworkStats(foo_http_server));
-  EXPECT_EQ(NULL, impl_.GetServerNetworkStats(foo_https_server));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_http_server));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
 
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
@@ -1419,11 +1419,11 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, SetServerNetworkStats) {
   EXPECT_EQ(10, stats2->srtt.ToInternalValue());
   EXPECT_EQ(100, stats2->bandwidth_estimate.ToBitsPerSecond());
   // Https server should have nothing set for server network stats.
-  EXPECT_EQ(NULL, impl_.GetServerNetworkStats(foo_https_server));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
 
   impl_.Clear(base::OnceClosure());
-  EXPECT_EQ(NULL, impl_.GetServerNetworkStats(foo_http_server));
-  EXPECT_EQ(NULL, impl_.GetServerNetworkStats(foo_https_server));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_http_server));
+  EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
 }
 
 TEST_F(ServerNetworkStatsServerPropertiesTest, ClearServerNetworkStats) {
@@ -1437,7 +1437,7 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, ClearServerNetworkStats) {
   EXPECT_EQ(nullptr, impl_.GetServerNetworkStats(foo_https_server));
 }
 
-typedef HttpServerPropertiesImplTest QuicServerInfoServerPropertiesTest;
+typedef HttpServerPropertiesTest QuicServerInfoServerPropertiesTest;
 
 TEST_F(QuicServerInfoServerPropertiesTest, Set) {
   quic::QuicServerId google_quic_server_id("www.google.com", 443, true);

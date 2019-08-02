@@ -33,7 +33,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_proxy_connect_job.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction_test_util.h"
@@ -929,7 +929,7 @@ class QuicNetworkTransactionTest
   std::unique_ptr<SSLConfigServiceDefaults> ssl_config_service_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
-  HttpServerPropertiesImpl http_server_properties_;
+  HttpServerProperties http_server_properties_;
   HttpNetworkSession::Params session_params_;
   HttpNetworkSession::Context session_context_;
   HttpRequestInfo request_;
@@ -6327,7 +6327,7 @@ class QuicURLRequestContext : public URLRequestContext {
     storage_.set_http_auth_handler_factory(
         HttpAuthHandlerFactory::CreateDefault());
     storage_.set_http_server_properties(
-        std::make_unique<HttpServerPropertiesImpl>());
+        std::make_unique<HttpServerProperties>());
     storage_.set_job_factory(std::make_unique<URLRequestJobFactoryImpl>());
     storage_.set_http_network_session(std::move(session));
     storage_.set_http_transaction_factory(std::make_unique<HttpCache>(
@@ -6824,7 +6824,7 @@ class QuicNetworkTransactionWithDestinationTest
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
   quic::test::MockRandom random_generator_;
-  HttpServerPropertiesImpl http_server_properties_;
+  HttpServerProperties http_server_properties_;
   BoundTestNetLog net_log_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   std::vector<std::unique_ptr<StaticSocketDataProvider>>

@@ -89,7 +89,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"

@@ -25,7 +25,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/http/transport_security_state_test_util.h"
@@ -827,7 +827,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   const quic::ParsedQuicVersion version_;
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;
-  HttpServerPropertiesImpl http_server_properties_;
+  HttpServerProperties http_server_properties_;
   std::unique_ptr<CertVerifier> cert_verifier_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;

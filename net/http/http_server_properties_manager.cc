@@ -16,8 +16,10 @@
 #include "net/base/ip_address.h"
 #include "net/base/port_util.h"
 #include "net/base/privacy_mode.h"
+#include "net/http/http_server_properties.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_hostname_utils.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
 
 namespace net {
 
@@ -96,10 +98,8 @@ std::string QuicServerIdToString(const quic::QuicServerId& server_id) {
 ////////////////////////////////////////////////////////////////////////////////
 //  HttpServerPropertiesManager
 
-HttpServerPropertiesManager::PrefDelegate::~PrefDelegate() = default;
-
 HttpServerPropertiesManager::HttpServerPropertiesManager(
-    std::unique_ptr<PrefDelegate> pref_delegate,
+    std::unique_ptr<HttpServerProperties::PrefDelegate> pref_delegate,
     OnPrefsLoadedCallback on_prefs_loaded_callback,
     size_t max_server_configs_stored_in_properties,
     NetLog* net_log,

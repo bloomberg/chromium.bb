@@ -12,13 +12,12 @@
 #include "components/prefs/json_pref_store.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/web/public/thread/web_thread.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 
 namespace {
 
-class PrefServiceAdapter
-    : public net::HttpServerPropertiesManager::PrefDelegate,
-      public PrefStore::Observer {
+class PrefServiceAdapter : public net::HttpServerProperties::PrefDelegate,
+                           public PrefStore::Observer {
  public:
   explicit PrefServiceAdapter(scoped_refptr<JsonPrefStore> pref_store)
       : pref_store_(std::move(pref_store)),
@@ -88,6 +87,6 @@ HttpServerPropertiesFactory::CreateHttpServerProperties(
     scoped_refptr<JsonPrefStore> pref_store,
     net::NetLog* net_log) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  return std::make_unique<net::HttpServerPropertiesImpl>(
+  return std::make_unique<net::HttpServerProperties>(
       std::make_unique<PrefServiceAdapter>(std::move(pref_store)), net_log);
 }

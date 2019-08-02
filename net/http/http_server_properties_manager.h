@@ -34,32 +34,8 @@ class IPAddress;
 
 // Class responsible for serializing/deserializing HttpServerProperties and
 // reading from/writing to preferences.
-class NET_EXPORT HttpServerPropertiesManager {
+class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
  public:
-  // Provides an interface to interact with persistent preferences storage
-  // implemented by the embedder. The prefs are assumed not to have been loaded
-  // before HttpServerPropertiesManager construction.
-  class NET_EXPORT PrefDelegate {
-   public:
-    virtual ~PrefDelegate();
-
-    // Returns the branch of the preferences system for the server properties.
-    // Returns nullptr if the pref system has no data for the server properties.
-    virtual const base::DictionaryValue* GetServerProperties() const = 0;
-
-    // Sets the server properties to the given value. If |callback| is
-    // non-empty, flushes data to persistent storage and invokes |callback|
-    // asynchronously when complete.
-    virtual void SetServerProperties(const base::DictionaryValue& value,
-                                     base::OnceClosure callback) = 0;
-
-    // Starts listening for prefs to be loaded. If prefs are already loaded,
-    // |pref_loaded_callback| will be invoked asynchronously. Callback will be
-    // invoked even if prefs fail to load. Will only be called once by the
-    // HttpServerPropertiesManager.
-    virtual void WaitForPrefLoad(base::OnceClosure pref_loaded_callback) = 0;
-  };
-
   // Called when prefs are loaded. If prefs completely failed to load,
   // everything will be nullptr. Otherwise, everything will be populated, except
   // |broken_alternative_service_list| and
@@ -90,11 +66,12 @@ class NET_EXPORT HttpServerPropertiesManager {
   //
   // |clock| is used for setting expiration times and scheduling the
   // expiration of broken alternative services, and must not be nullptr.
-  HttpServerPropertiesManager(std::unique_ptr<PrefDelegate> pref_delegate,
-                              OnPrefsLoadedCallback on_prefs_loaded_callback,
-                              size_t max_server_configs_stored_in_properties,
-                              NetLog* net_log,
-                              const base::TickClock* clock = nullptr);
+  HttpServerPropertiesManager(
+      std::unique_ptr<HttpServerProperties::PrefDelegate> pref_delegate,
+      OnPrefsLoadedCallback on_prefs_loaded_callback,
+      size_t max_server_configs_stored_in_properties,
+      NetLog* net_log,
+      const base::TickClock* clock = nullptr);
 
   ~HttpServerPropertiesManager();
 
@@ -209,7 +186,7 @@ class NET_EXPORT HttpServerPropertiesManager {
 
   void OnHttpServerPropertiesLoaded();
 
-  std::unique_ptr<PrefDelegate> pref_delegate_;
+  std::unique_ptr<HttpServerProperties::PrefDelegate> pref_delegate_;
 
   OnPrefsLoadedCallback on_prefs_loaded_callback_;
 
