@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_creator.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_protocols.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
@@ -86,6 +87,10 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // Useful accessors.
   ExtensionService* extension_service() {
     return ExtensionSystem::Get(profile())->extension_service();
+  }
+
+  ExtensionRegistry* extension_registry() {
+    return ExtensionRegistry::Get(profile());
   }
 
   const std::string& last_loaded_extension_id() {

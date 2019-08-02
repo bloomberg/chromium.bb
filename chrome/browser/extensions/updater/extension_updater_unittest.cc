@@ -400,14 +400,6 @@ class ServiceForManifestTests : public MockService {
 
   ~ServiceForManifestTests() override {}
 
-  const Extension* GetExtensionById(const std::string& id,
-                                    bool include_disabled) const override {
-    const Extension* result = registry_->enabled_extensions().GetByID(id);
-    if (result || !include_disabled)
-      return result;
-    return registry_->disabled_extensions().GetByID(id);
-  }
-
   PendingExtensionManager* pending_extension_manager() override {
     return &pending_extension_manager_;
   }
@@ -469,12 +461,6 @@ class ServiceForDownloadTests : public MockService {
     return &pending_extension_manager_;
   }
 
-  const Extension* GetExtensionById(const std::string& id,
-                                    bool) const override {
-    last_inquired_extension_id_ = id;
-    return NULL;
-  }
-
   const std::string& extension_id() const { return extension_id_; }
   const base::FilePath& install_path() const { return install_path_; }
 
@@ -488,12 +474,6 @@ class ServiceForDownloadTests : public MockService {
   std::string extension_id_;
   base::FilePath install_path_;
   GURL download_url_;
-
-  // The last extension ID that GetExtensionById was called with.
-  // Mutable because the method that sets it (GetExtensionById) is const
-  // in the actual extension service, but must record the last extension
-  // ID in this test class.
-  mutable std::string last_inquired_extension_id_;
 };
 
 static const int kUpdateFrequencySecs = 15;
@@ -2554,7 +2534,8 @@ TEST_F(ExtensionUpdaterTest, TestUninstallWhileUpdateCheck) {
 
   ASSERT_EQ(1u, tmp.size());
   ExtensionId id = tmp.front()->id();
-  ASSERT_TRUE(service.GetExtensionById(id, false));
+  ExtensionRegistry* registry = ExtensionRegistry::Get(service.profile());
+  ASSERT_TRUE(registry->GetExtensionById(id, ExtensionRegistry::ENABLED));
 
   ExtensionUpdater updater(&service,
                            service.extension_prefs(),
@@ -2569,7 +2550,7 @@ TEST_F(ExtensionUpdaterTest, TestUninstallWhileUpdateCheck) {
   updater.CheckNow(std::move(params));
 
   service.set_extensions(ExtensionList(), ExtensionList());
-  ASSERT_FALSE(service.GetExtensionById(id, false));
+  ASSERT_FALSE(registry->GetExtensionById(id, ExtensionRegistry::ENABLED));
 
   // RunUntilIdle is needed to make sure that the UpdateService instance that
   // runs the extension update process has a chance to exit gracefully; without
