@@ -1403,7 +1403,7 @@
       },
       'Mojo Linux': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'mojo_linux_gtests',
