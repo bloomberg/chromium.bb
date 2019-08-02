@@ -43,11 +43,33 @@ export class Fixture {
     this.log('OK' + m);
   }
 
-  async shouldReject(p: Promise<unknown>, exceptionType?: string, msg?: string): Promise<void> {
+  protected async asyncExpectation(fn: () => Promise<void>): Promise<void> {
     this.numOutstandingAsyncExpectations++;
+    await fn();
+    this.numOutstandingAsyncExpectations--;
+  }
+
+  async shouldReject(p: Promise<unknown>, exceptionType?: string, msg?: string): Promise<void> {
+    this.asyncExpectation(async () => {
+      const m = msg ? ': ' + msg : '';
+      try {
+        await p;
+        this.fail('DID NOT THROW' + m);
+      } catch (ex) {
+        const actualType = typeof ex;
+        if (exceptionType !== undefined && actualType === exceptionType) {
+          this.fail(`THREW ${actualType} INSTEAD OF ${exceptionType}${m}`);
+        } else {
+          this.ok(`threw ${actualType}{m}`);
+        }
+      }
+    });
+  }
+
+  shouldThrow(fn: () => void, exceptionType?: string, msg?: string): void {
     const m = msg ? ': ' + msg : '';
     try {
-      await p;
+      fn();
       this.fail('DID NOT THROW' + m);
     } catch (ex) {
       const actualType = typeof ex;
@@ -56,17 +78,6 @@ export class Fixture {
       } else {
         this.ok(`threw ${actualType}{m}`);
       }
-    }
-    this.numOutstandingAsyncExpectations--;
-  }
-
-  shouldThrow(fn: () => void, msg?: string): void {
-    const m = msg ? ': ' + msg : '';
-    try {
-      fn();
-      this.fail('DID NOT THROW' + m);
-    } catch (ex) {
-      this.ok('threw' + m);
     }
   }
 
