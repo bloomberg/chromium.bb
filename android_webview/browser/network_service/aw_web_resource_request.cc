@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/net/aw_web_resource_request.h"
+#include "android_webview/browser/network_service/aw_web_resource_request.h"
 
 #include "content/public/common/resource_type.h"
 #include "net/http/http_request_headers.h"

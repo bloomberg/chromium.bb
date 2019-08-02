@@ -15,7 +15,7 @@
 #include "android_webview/browser/aw_metrics_service_client.h"
 #include "android_webview/browser/aw_web_ui_controller_factory.h"
 #include "android_webview/browser/memory_metrics_logger.h"
-#include "android_webview/browser/net/aw_network_change_notifier_factory.h"
+#include "android_webview/browser/network_service/aw_network_change_notifier_factory.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_resource.h"

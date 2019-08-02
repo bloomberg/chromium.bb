@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/net/aw_network_change_notifier.h"
+#include "android_webview/browser/network_service/aw_network_change_notifier.h"
 
 namespace android_webview {
 

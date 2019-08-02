@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/net/input_stream_reader.h"
+#include "android_webview/browser/network_service/input_stream_reader.h"
 
 #include "android_webview/browser/input_stream.h"
 #include "base/android/scoped_java_ref.h"

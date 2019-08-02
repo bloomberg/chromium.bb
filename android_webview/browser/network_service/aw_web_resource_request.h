@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_NET_AW_WEB_RESOURCE_REQUEST_H_
-#define ANDROID_WEBVIEW_BROWSER_NET_AW_WEB_RESOURCE_REQUEST_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_WEB_RESOURCE_REQUEST_H_
+#define ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_WEB_RESOURCE_REQUEST_H_
 
 #include <string>
 #include <vector>
@@ -67,4 +67,4 @@ struct AwWebResourceRequest final {
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_NET_AW_WEB_RESOURCE_REQUEST_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_WEB_RESOURCE_REQUEST_H_
