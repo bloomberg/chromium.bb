@@ -8,6 +8,7 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
@@ -30,7 +31,18 @@ constexpr float kInkDropVisibleOpacity = 0.2f;
 
 constexpr float kInkDropHighlightVisibleOpacity = 0.3f;
 
-constexpr SkColor kHighlightBackgroundColor = SkColorSetARGB(60, 255, 255, 255);
+// The text and icon color when the new desk button is enabled/disabled. The
+// disabled color is 38% opacity of the enabled color.
+constexpr SkColor kTextAndIconColor = gfx::kGoogleGrey200;
+constexpr SkColor kDisabledTextAndIconColor =
+    SkColorSetA(kTextAndIconColor, 0x61);
+
+// The background color when the new desk button is enabled/disabled. The
+// disabled color is 38% opacity of the enabled color.
+// TODO(minch): Migrate to use ControlsLayerType::kInactiveControlBackground in
+// AshColorProvider.
+constexpr SkColor kBackgroundColor = SkColorSetA(SK_ColorWHITE, 0x1A);
+constexpr SkColor kDisabledBackgroundColor = SkColorSetA(SK_ColorWHITE, 0xA);
 
 }  // namespace
 
@@ -41,21 +53,25 @@ NewDeskButton::NewDeskButton(views::ButtonListener* listener)
   layer()->SetFillsBoundsOpaquely(false);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(kDesksNewDeskButtonIcon, SK_ColorWHITE));
+           gfx::CreateVectorIcon(kDesksNewDeskButtonIcon, kTextAndIconColor));
   SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(kDesksNewDeskButtonIcon, SK_ColorGRAY));
-  SetTextColor(views::Button::STATE_NORMAL, SK_ColorWHITE);
-  SetTextColor(views::Button::STATE_HOVERED, SK_ColorWHITE);
-  SetTextColor(views::Button::STATE_PRESSED, SK_ColorWHITE);
-  SetTextColor(views::Button::STATE_DISABLED, SK_ColorGRAY);
+           gfx::CreateVectorIcon(kDesksNewDeskButtonIcon,
+                                 kDisabledTextAndIconColor));
+  SetEnabledTextColors(kTextAndIconColor);
+  SetTextColor(views::Button::STATE_DISABLED, kDisabledTextAndIconColor);
   SetImageLabelSpacing(kImageLabelSpacing);
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
   SetFocusPainter(nullptr);
-  SetBackground(
-      CreateBackgroundFromPainter(views::Painter::CreateSolidRoundRectPainter(
-          kHighlightBackgroundColor, kCornerRadius)));
+  UpdateButtonState();
+}
+
+void NewDeskButton::UpdateButtonState() {
+  const bool enabled = DesksController::Get()->CanCreateDesks();
+  SetEnabled(enabled);
+  SetBackground(views::CreateRoundedRectBackground(
+      enabled ? kBackgroundColor : kDisabledBackgroundColor, kCornerRadius));
 }
 
 const char* NewDeskButton::GetClassName() const {
@@ -64,7 +80,7 @@ const char* NewDeskButton::GetClassName() const {
 
 std::unique_ptr<views::InkDrop> NewDeskButton::CreateInkDrop() {
   auto ink_drop = CreateDefaultFloodFillInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(true);
+  ink_drop->SetShowHighlightOnHover(false);
   ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
   return std::move(ink_drop);
 }
