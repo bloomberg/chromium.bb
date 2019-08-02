@@ -607,7 +607,7 @@ void BackgroundSyncManager::InitImpl(base::OnceClosure callback) {
     return;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&GetControllerParameters, service_worker_context_,
                      std::make_unique<BackgroundSyncParameters>(*parameters_)),
@@ -769,7 +769,7 @@ void BackgroundSyncManager::RegisterImpl(
   }
 
   BackgroundSyncType sync_type = GetBackgroundSyncType(options);
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &GetBackgroundSyncPermissionOnUIThread, service_worker_context_,
@@ -815,14 +815,14 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
       blink::mojom::BackgroundSyncType::ONE_SHOT) {
     bool is_reregistered =
         existing_registration && existing_registration->IsFiring();
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NotifyOneShotBackgroundSyncRegisteredOnUIThread,
                        service_worker_context_, origin,
                        /* can_fire= */ AreOptionConditionsMet(),
                        is_reregistered));
   } else {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &NotifyPeriodicBackgroundSyncRegisteredOnUIThread,
@@ -872,7 +872,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
           : parameters_->max_sync_attempts);
 
   if (registration.sync_type() == BackgroundSyncType::PERIODIC) {
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &GetNextEventDelay, service_worker_context_, registration,
@@ -1143,7 +1143,7 @@ void BackgroundSyncManager::DidResolveRegistrationImpl(
   }
 
   registration->set_resolved();
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CreateBackgroundSyncEventKeepAliveOnUIThread,
                      service_worker_context_, std::move(*registration_info)),
@@ -1597,7 +1597,7 @@ void BackgroundSyncManager::ReviveOriginImpl(url::Origin origin,
           weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 
   for (const auto* registration : to_revive) {
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &GetNextEventDelay, service_worker_context_, *registration,
@@ -1921,7 +1921,7 @@ void BackgroundSyncManager::EventCompleteImpl(
   if (registration->sync_type() == BackgroundSyncType::PERIODIC ||
       (!succeeded &&
        registration->num_attempts() < registration->max_attempts())) {
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &GetNextEventDelay, service_worker_context_, *registration,
@@ -2009,14 +2009,14 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
 
     if (registration_info->sync_type ==
         blink::mojom::BackgroundSyncType::ONE_SHOT) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&NotifyOneShotBackgroundSyncCompletedOnUIThread,
                          service_worker_context_, origin, status_code,
                          registration->num_attempts(),
                          registration->max_attempts()));
     } else {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&NotifyPeriodicBackgroundSyncCompletedOnUIThread,
                          service_worker_context_, origin, status_code,

@@ -634,23 +634,21 @@ class UpdateViewportIntersectionMessageFilter
     // OnUpdateViewportIntersection returns. This additional post on the IO
     // thread guarantees that by the time OnUpdateViewportIntersectionOnUI runs,
     // the message has been handled on the UI thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&UpdateViewportIntersectionMessageFilter::
-                           OnUpdateViewportIntersectionPostOnIO,
-                       this, viewport_intersection, compositing_rect,
-                       occlusion_state));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&UpdateViewportIntersectionMessageFilter::
+                                      OnUpdateViewportIntersectionPostOnIO,
+                                  this, viewport_intersection, compositing_rect,
+                                  occlusion_state));
   }
   void OnUpdateViewportIntersectionPostOnIO(
       const gfx::Rect& viewport_intersection,
       const gfx::Rect& compositing_rect,
       blink::FrameOcclusionState occlusion_state) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&UpdateViewportIntersectionMessageFilter::
-                           OnUpdateViewportIntersectionOnUI,
-                       this, viewport_intersection, compositing_rect,
-                       occlusion_state));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&UpdateViewportIntersectionMessageFilter::
+                                      OnUpdateViewportIntersectionOnUI,
+                                  this, viewport_intersection, compositing_rect,
+                                  occlusion_state));
   }
   void OnUpdateViewportIntersectionOnUI(
       const gfx::Rect& viewport_intersection,
@@ -7932,14 +7930,14 @@ class PendingWidgetMessageFilter : public BrowserMessageFilter {
                            WindowOpenDisposition disposition,
                            const gfx::Rect& initial_rect,
                            bool user_gesture) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&PendingWidgetMessageFilter::OnReceivedRoutingIDOnUI,
                        this, pending_widget_routing_id));
   }
 
   void OnShowWidget(int routing_id, const gfx::Rect& initial_rect) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&PendingWidgetMessageFilter::OnReceivedRoutingIDOnUI,
                        this, routing_id));
@@ -9835,10 +9833,9 @@ class SetIsInertMessageFilter : public content::BrowserMessageFilter {
   ~SetIsInertMessageFilter() override {}
 
   void OnSetIsInert(bool is_inert) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&SetIsInertMessageFilter::OnSetIsInertOnUI, this,
-                       is_inert));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&SetIsInertMessageFilter::OnSetIsInertOnUI,
+                                  this, is_inert));
   }
   void OnSetIsInertOnUI(bool is_inert) {
     is_inert_ = is_inert;

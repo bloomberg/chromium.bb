@@ -1766,14 +1766,13 @@ void NavigationRequest::OnStartChecksComplete(
     // is no onbeforeunload handler or if a NavigationThrottle cancelled it,
     // then this could cause reentrancy into NavigationController. So use a
     // PostTask to avoid that.
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            &NavigationRequest::OnRequestFailedInternal,
-            weak_factory_.GetWeakPtr(),
-            network::URLLoaderCompletionStatus(result.net_error_code()),
-            true /* skip_throttles */, result.error_page_content(),
-            collapse_frame));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&NavigationRequest::OnRequestFailedInternal,
+                                  weak_factory_.GetWeakPtr(),
+                                  network::URLLoaderCompletionStatus(
+                                      result.net_error_code()),
+                                  true /* skip_throttles */,
+                                  result.error_page_content(), collapse_frame));
 
     // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
     // has destroyed the NavigationRequest.
