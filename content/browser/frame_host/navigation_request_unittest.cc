@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/navigation_request.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/url_constants.h"
@@ -59,9 +58,9 @@ class DeletingNavigationThrottle : public NavigationThrottle {
   base::RepeatingClosure deletion_callback_;
 };
 
-class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
+class NavigationRequestTest : public RenderViewHostImplTestHarness {
  public:
-  NavigationHandleImplTest()
+  NavigationRequestTest()
       : was_callback_called_(false),
         callback_result_(NavigationThrottle::DEFER) {}
 
@@ -91,9 +90,9 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     callback_result_ = NavigationThrottle::DEFER;
 
     // It's safe to use base::Unretained since the NavigationHandle is owned by
-    // the NavigationHandleImplTest.
+    // the NavigationRequestTest.
     request_->WillStartRequest(
-        base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
+        base::Bind(&NavigationRequestTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }
 
@@ -107,10 +106,10 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     callback_result_ = NavigationThrottle::DEFER;
 
     // It's safe to use base::Unretained since the NavigationHandle is owned by
-    // the NavigationHandleImplTest.
+    // the NavigationRequestTest.
     request_->WillRedirectRequest(
         GURL(), nullptr,
-        base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
+        base::Bind(&NavigationRequestTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }
 
@@ -125,9 +124,9 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     request_->set_net_error(net_error_code);
 
     // It's safe to use base::Unretained since the NavigationHandle is owned by
-    // the NavigationHandleImplTest.
+    // the NavigationRequestTest.
     request_->WillFailRequest(
-        base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
+        base::Bind(&NavigationRequestTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }
 
@@ -140,18 +139,13 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     was_callback_called_ = false;
     callback_result_ = NavigationThrottle::DEFER;
 
-    // It's safe to use base::Unretained since the NavigationHandle is owned
-    // by the NavigationHandleImplTest. The ConnectionInfo is different from
-    // that sent to WillRedirectRequest to verify that it's correctly plumbed
-    // in both cases.
+    // It's safe to use base::Unretained since the NavigationHandle is owned by
+    // the NavigationRequestTest. The ConnectionInfo is different from that sent
+    // to WillRedirectRequest to verify that it's correctly plumbed in both
+    // cases.
     request_->WillProcessResponse(
-        base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
+        base::Bind(&NavigationRequestTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
-  }
-
-  // Returns the handle used in tests.
-  NavigationHandleImpl* test_handle() const {
-    return request_->navigation_handle();
   }
 
   // Whether the callback was called.
@@ -163,7 +157,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
   }
 
   NavigationRequest::NavigationHandleState state() {
-    return test_handle()->state();
+    return request_->handle_state();
   }
 
   bool is_deferring() {
@@ -198,10 +192,10 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
   TestNavigationThrottle* CreateTestNavigationThrottle(
       NavigationThrottle::ThrottleCheckResult result) {
     TestNavigationThrottle* test_throttle =
-        new TestNavigationThrottle(test_handle());
+        new TestNavigationThrottle(request_->navigation_handle());
     test_throttle->SetResponseForAllMethods(TestNavigationThrottle::SYNCHRONOUS,
                                             result);
-    test_handle()->RegisterThrottleForTesting(
+    request_->RegisterThrottleForTesting(
         std::unique_ptr<TestNavigationThrottle>(test_throttle));
     return test_throttle;
   }
@@ -250,7 +244,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
 
 // Checks that the request_context_type is properly set.
 // Note: can be extended to cover more internal members.
-TEST_F(NavigationHandleImplTest, SimpleDataChecksRedirectAndProcess) {
+TEST_F(NavigationRequestTest, SimpleDataChecksRedirectAndProcess) {
   const GURL kUrl1 = GURL("http://chromium.org");
   const GURL kUrl2 = GURL("http://google.com");
   auto navigation =
@@ -278,7 +272,7 @@ TEST_F(NavigationHandleImplTest, SimpleDataChecksRedirectAndProcess) {
             navigation->GetNavigationHandle()->GetConnectionInfo());
 }
 
-TEST_F(NavigationHandleImplTest, SimpleDataCheckNoRedirect) {
+TEST_F(NavigationRequestTest, SimpleDataCheckNoRedirect) {
   const GURL kUrl = GURL("http://chromium.org");
   auto navigation =
       NavigationSimulatorImpl::CreateRendererInitiated(kUrl, main_rfh());
@@ -293,7 +287,7 @@ TEST_F(NavigationHandleImplTest, SimpleDataCheckNoRedirect) {
             navigation->GetNavigationHandle()->GetConnectionInfo());
 }
 
-TEST_F(NavigationHandleImplTest, SimpleDataChecksFailure) {
+TEST_F(NavigationRequestTest, SimpleDataChecksFailure) {
   const GURL kUrl = GURL("http://chromium.org");
   auto navigation =
       NavigationSimulatorImpl::CreateRendererInitiated(kUrl, main_rfh());
@@ -319,7 +313,7 @@ TEST_F(NavigationHandleImplTest, SimpleDataChecksFailure) {
 
 // Checks that a navigation deferred during WillStartRequest can be properly
 // cancelled.
-TEST_F(NavigationHandleImplTest, MAYBE_CancelDeferredWillStart) {
+TEST_F(NavigationRequestTest, MAYBE_CancelDeferredWillStart) {
   TestNavigationThrottle* test_throttle =
       CreateTestNavigationThrottle(NavigationThrottle::DEFER);
   EXPECT_EQ(NavigationRequest::INITIAL, state());
@@ -349,7 +343,7 @@ TEST_F(NavigationHandleImplTest, MAYBE_CancelDeferredWillStart) {
 
 // Checks that a navigation deferred during WillRedirectRequest can be properly
 // cancelled.
-TEST_F(NavigationHandleImplTest, MAYBE_CancelDeferredWillRedirect) {
+TEST_F(NavigationRequestTest, MAYBE_CancelDeferredWillRedirect) {
   TestNavigationThrottle* test_throttle =
       CreateTestNavigationThrottle(NavigationThrottle::DEFER);
   EXPECT_EQ(NavigationRequest::INITIAL, state());
@@ -379,7 +373,7 @@ TEST_F(NavigationHandleImplTest, MAYBE_CancelDeferredWillRedirect) {
 
 // Checks that a navigation deferred during WillFailRequest can be properly
 // cancelled.
-TEST_F(NavigationHandleImplTest, MAYBE_CancelDeferredWillFail) {
+TEST_F(NavigationRequestTest, MAYBE_CancelDeferredWillFail) {
   TestNavigationThrottle* test_throttle = CreateTestNavigationThrottle(
       TestNavigationThrottle::WILL_FAIL_REQUEST, NavigationThrottle::DEFER);
   EXPECT_EQ(NavigationRequest::INITIAL, state());
@@ -414,7 +408,7 @@ TEST_F(NavigationHandleImplTest, MAYBE_CancelDeferredWillFail) {
 #endif
 
 // Checks that a navigation deferred can be canceled and not ignored.
-TEST_F(NavigationHandleImplTest, MAYBE_CancelDeferredWillRedirectNoIgnore) {
+TEST_F(NavigationRequestTest, MAYBE_CancelDeferredWillRedirectNoIgnore) {
   TestNavigationThrottle* test_throttle =
       CreateTestNavigationThrottle(NavigationThrottle::DEFER);
   EXPECT_EQ(NavigationRequest::INITIAL, state());
@@ -445,7 +439,7 @@ TEST_F(NavigationHandleImplTest, MAYBE_CancelDeferredWillRedirectNoIgnore) {
 
 // Checks that a navigation deferred by WillFailRequest can be canceled and not
 // ignored.
-TEST_F(NavigationHandleImplTest, MAYBE_CancelDeferredWillFailNoIgnore) {
+TEST_F(NavigationRequestTest, MAYBE_CancelDeferredWillFailNoIgnore) {
   TestNavigationThrottle* test_throttle = CreateTestNavigationThrottle(
       TestNavigationThrottle::WILL_FAIL_REQUEST, NavigationThrottle::DEFER);
   EXPECT_EQ(NavigationRequest::INITIAL, state());
@@ -473,7 +467,7 @@ TEST_F(NavigationHandleImplTest, MAYBE_CancelDeferredWillFailNoIgnore) {
 
 // Checks that data from the SSLInfo passed into SimulateWillStartRequest() is
 // stored on the handle.
-TEST_F(NavigationHandleImplTest, WillFailRequestSetsSSLInfo) {
+TEST_F(NavigationRequestTest, WillFailRequestSetsSSLInfo) {
   uint16_t cipher_suite = 0xc02f;  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
   int connection_status = 0;
   net::SSLConnectionStatusSetCipherSuite(cipher_suite, &connection_status);
@@ -545,8 +539,7 @@ class ThrottleTestContentBrowserClient : public ContentBrowserClient {
 // throttle in WillFailRequest(), as well as after deferring the failure.  This
 // is allowed, since at that point the final RenderFrameHost will have already
 // been chosen. See https://crbug.com/817881.
-TEST_F(NavigationHandleImplTest,
-       MAYBE_WillFailRequestCanAccessRenderFrameHost) {
+TEST_F(NavigationRequestTest, MAYBE_WillFailRequestCanAccessRenderFrameHost) {
   std::unique_ptr<ContentBrowserClient> client(
       new ThrottleTestContentBrowserClient);
   ContentBrowserClient* old_browser_client =

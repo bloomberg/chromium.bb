@@ -185,10 +185,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   }
 
  private:
-  // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
-  // once NavigationHandleImpl has become a wrapper around NavigationRequest.
-  // Then remove them from friends.
-  friend class NavigationHandleImplTest;
   friend class NavigationRequest;
 
   // If |redirect_chain| is empty, then the redirect chain will be created to

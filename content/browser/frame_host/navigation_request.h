@@ -495,9 +495,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   const net::HttpResponseHeaders* GetResponseHeaders();
 
  private:
-  // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
-  // once NavigationHandleImpl has become a wrapper around NavigationRequest.
-  friend class NavigationHandleImplTest;
+  friend class NavigationRequestTest;
 
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     mojom::CommonNavigationParamsPtr common_params,
