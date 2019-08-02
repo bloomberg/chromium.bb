@@ -6516,3 +6516,5 @@ crbug.com/989863 [ Linux ] virtual/streaming-preload/http/tests/fetch/servicewor
 crbug.com/990145 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker-proxied/thorough/cookie-base-https-other-https.html [ Pass Failure ]
 crbug.com/990145 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker-proxied/thorough/cookie-base-https-other-https.html [ Pass Failure ]
 crbug.com/990146 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker/thorough/cookie-nocors-base-https-other-https.html [ Pass Failure ]
+crbug.com/989863 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker/thorough/redirect-loop-base-https-other-https.html [ Pass Failure ]
+crbug.com/989863 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker/thorough/access-control-base-https-other-https.html [ Pass Failure ]
