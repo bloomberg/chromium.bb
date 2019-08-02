@@ -16,7 +16,6 @@
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/socket/websocket_transport_client_socket_pool.h"
-#include "net/ssl/ssl_config_service.h"
 
 namespace net {
 
@@ -25,11 +24,9 @@ class SocketPerformanceWatcherFactory;
 ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
     const CommonConnectJobParams& common_connect_job_params,
     const CommonConnectJobParams& websocket_common_connect_job_params,
-    SSLConfigService* ssl_config_service,
     HttpNetworkSession::SocketPoolType pool_type)
     : common_connect_job_params_(common_connect_job_params),
       websocket_common_connect_job_params_(websocket_common_connect_job_params),
-      ssl_config_service_(ssl_config_service),
       pool_type_(pool_type) {
   // |websocket_endpoint_lock_manager| must only be set for websocket
   // connections.
@@ -86,7 +83,7 @@ ClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPool(
         sockets_per_proxy_server, sockets_per_group,
         unused_idle_socket_timeout(pool_type_), proxy_server,
         pool_type_ == HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
-        &common_connect_job_params_, ssl_config_service_);
+        &common_connect_job_params_);
   }
 
   std::pair<SocketPoolMap::iterator, bool> ret =

@@ -46,12 +46,14 @@ std::vector<uint8_t> SSLClientSocket::SerializeNextProtos(
 }
 
 SSLClientContext::SSLClientContext(
+    SSLConfigService* ssl_config_service,
     CertVerifier* cert_verifier,
     TransportSecurityState* transport_security_state,
     CTVerifier* cert_transparency_verifier,
     CTPolicyEnforcer* ct_policy_enforcer,
     SSLClientSessionCache* ssl_client_session_cache)
-    : cert_verifier_(cert_verifier),
+    : ssl_config_service_(ssl_config_service),
+      cert_verifier_(cert_verifier),
       transport_security_state_(transport_security_state),
       cert_transparency_verifier_(cert_transparency_verifier),
       ct_policy_enforcer_(ct_policy_enforcer),
@@ -60,9 +62,18 @@ SSLClientContext::SSLClientContext(
   CHECK(transport_security_state_);
   CHECK(cert_transparency_verifier_);
   CHECK(ct_policy_enforcer_);
+
+  if (ssl_config_service_) {
+    config_ = ssl_config_service_->GetSSLContextConfig();
+    ssl_config_service_->AddObserver(this);
+  }
 }
 
-SSLClientContext::~SSLClientContext() = default;
+SSLClientContext::~SSLClientContext() {
+  if (ssl_config_service_) {
+    ssl_config_service_->RemoveObserver(this);
+  }
+}
 
 std::unique_ptr<SSLClientSocket> SSLClientContext::CreateSSLClientSocket(
     std::unique_ptr<StreamSocket> stream_socket,
@@ -70,6 +81,25 @@ std::unique_ptr<SSLClientSocket> SSLClientContext::CreateSSLClientSocket(
     const SSLConfig& ssl_config) {
   return std::make_unique<SSLClientSocketImpl>(this, std::move(stream_socket),
                                                host_and_port, ssl_config);
+}
+
+void SSLClientContext::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void SSLClientContext::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void SSLClientContext::OnSSLContextConfigChanged() {
+  // TODO(davidben): Should we flush |ssl_client_session_cache_| here? We flush
+  // the socket pools, but not the session cache. While BoringSSL-based servers
+  // never change version or cipher negotiation based on client-offered
+  // sessions, other servers do.
+  config_ = ssl_config_service_->GetSSLContextConfig();
+  for (Observer& observer : observers_) {
+    observer.OnSSLConfigChanged();
+  }
 }
 
 }  // namespace net

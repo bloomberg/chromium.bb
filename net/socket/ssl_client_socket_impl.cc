@@ -832,10 +832,14 @@ int SSLClientSocketImpl::Init() {
   BIO_up_ref(transport_bio);  // SSL_set0_wbio takes ownership.
   SSL_set0_wbio(ssl_.get(), transport_bio);
 
-  DCHECK_LT(SSL3_VERSION, ssl_config_.version_min);
-  DCHECK_LT(SSL3_VERSION, ssl_config_.version_max);
-  if (!SSL_set_min_proto_version(ssl_.get(), ssl_config_.version_min) ||
-      !SSL_set_max_proto_version(ssl_.get(), ssl_config_.version_max)) {
+  uint16_t version_min =
+      ssl_config_.version_min_override.value_or(context_->config().version_min);
+  uint16_t version_max =
+      ssl_config_.version_max_override.value_or(context_->config().version_max);
+  DCHECK_LT(SSL3_VERSION, version_min);
+  DCHECK_LT(SSL3_VERSION, version_max);
+  if (!SSL_set_min_proto_version(ssl_.get(), version_min) ||
+      !SSL_set_max_proto_version(ssl_.get(), version_max)) {
     return ERR_UNEXPECTED;
   }
 
@@ -877,7 +881,7 @@ int SSLClientSocketImpl::Init() {
     command.append(":!kRSA");
 
   // Remove any disabled ciphers.
-  for (uint16_t id : ssl_config_.disabled_cipher_suites) {
+  for (uint16_t id : context_->config().disabled_cipher_suites) {
     const SSL_CIPHER* cipher = SSL_get_cipher_by_value(id);
     if (cipher) {
       command.append(":!");

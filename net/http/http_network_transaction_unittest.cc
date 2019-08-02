@@ -104,6 +104,7 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_private_key.h"
+#include "net/ssl/test_ssl_config_service.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
@@ -346,27 +347,6 @@ class FailingProxyResolverFactory : public ProxyResolverFactory {
                           std::unique_ptr<Request>* request) override {
     return ERR_PAC_SCRIPT_FAILED;
   }
-};
-
-class TestSSLConfigService : public SSLConfigService {
- public:
-  explicit TestSSLConfigService(const SSLConfig& config) : config_(config) {}
-  ~TestSSLConfigService() override = default;
-
-  void GetSSLConfig(SSLConfig* config) override { *config = config_; }
-
-  bool CanShareConnectionWithClientCerts(
-      const std::string& hostname) const override {
-    return false;
-  }
-
-  void UpdateSSLConfigAndNotify(const SSLConfig& config) {
-    config_ = config;
-    NotifySSLConfigChange();
-  }
-
- private:
-  SSLConfig config_;
 };
 
 }  // namespace
@@ -673,8 +653,7 @@ class CaptureGroupIdTransportSocketPool : public TransportClientSocketPool {
                                   base::TimeDelta(),
                                   ProxyServer::Direct(),
                                   false /* is_for_websockets */,
-                                  common_connect_job_params,
-                                  nullptr /* ssl_config_service */) {}
+                                  common_connect_job_params) {}
 
   const ClientSocketPool::GroupId& last_group_id_received() const {
     return last_group_id_;
@@ -7721,7 +7700,7 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
       ProxyResolutionService::CreateFixedFromPacResult(
           "PROXY server", TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  SSLConfig config;
+  SSLContextConfig config;
   session_deps_.ssl_config_service =
       std::make_unique<TestSSLConfigService>(config);
 
@@ -14344,7 +14323,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
       1,                                 // Max sockets per group
       base::TimeDelta::FromSeconds(10),  // unused_idle_socket_timeout
       ProxyServer::Direct(), false,      // is_for_websockets
-      &common_connect_job_params, session_deps_.ssl_config_service.get());
+      &common_connect_job_params);
   auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
   mock_pool_manager->SetSocketPool(ProxyServer::Direct(),
                                    base::WrapUnique(transport_pool));
@@ -21433,9 +21412,10 @@ TEST_F(HttpNetworkTransactionTest, NetworkIsolationSSLProxy) {
 // Test that SSLConfig changes from SSLConfigService are picked up even when
 // there are live sockets.
 TEST_F(HttpNetworkTransactionTest, SSLConfigChanged) {
-  SSLConfig ssl_config;
-  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  auto ssl_config_service = std::make_unique<TestSSLConfigService>(ssl_config);
+  SSLContextConfig ssl_context_config;
+  ssl_context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  auto ssl_config_service =
+      std::make_unique<TestSSLConfigService>(ssl_context_config);
   TestSSLConfigService* ssl_config_service_raw = ssl_config_service.get();
 
   session_deps_.ssl_config_service = std::move(ssl_config_service);
@@ -21526,8 +21506,8 @@ TEST_F(HttpNetworkTransactionTest, SSLConfigChanged) {
   EXPECT_EQ("2", response_data2);
   trans2.reset();
 
-  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
-  ssl_config_service_raw->UpdateSSLConfigAndNotify(ssl_config);
+  ssl_context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  ssl_config_service_raw->UpdateSSLConfigAndNotify(ssl_context_config);
 
   auto trans3 =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
@@ -21540,9 +21520,10 @@ TEST_F(HttpNetworkTransactionTest, SSLConfigChanged) {
 }
 
 TEST_F(HttpNetworkTransactionTest, SSLConfigChangedPendingConnect) {
-  SSLConfig ssl_config;
-  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  auto ssl_config_service = std::make_unique<TestSSLConfigService>(ssl_config);
+  SSLContextConfig ssl_context_config;
+  ssl_context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  auto ssl_config_service =
+      std::make_unique<TestSSLConfigService>(ssl_context_config);
   TestSSLConfigService* ssl_config_service_raw = ssl_config_service.get();
 
   session_deps_.ssl_config_service = std::move(ssl_config_service);
@@ -21568,8 +21549,8 @@ TEST_F(HttpNetworkTransactionTest, SSLConfigChangedPendingConnect) {
   int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
-  ssl_config_service_raw->UpdateSSLConfigAndNotify(ssl_config);
+  ssl_context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  ssl_config_service_raw->UpdateSSLConfigAndNotify(ssl_context_config);
 
   EXPECT_THAT(callback.GetResult(rv), IsError(ERR_NETWORK_CHANGED));
 }

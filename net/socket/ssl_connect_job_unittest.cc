@@ -104,7 +104,6 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                       TRAFFIC_ANNOTATION_FOR_TESTS,
                                       NetworkIsolationKey())),
         common_connect_job_params_(session_->CreateCommonConnectJobParams()) {
-    ssl_config_service_->GetSSLConfig(&ssl_config_);
   }
 
   ~SSLConnectJobTest() override = default;
@@ -124,7 +123,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                             : nullptr,
         proxy == ProxyServer::SCHEME_SOCKS5 ? socks_socket_params_ : nullptr,
         proxy == ProxyServer::SCHEME_HTTP ? http_proxy_socket_params_ : nullptr,
-        HostPortPair("host", 443), ssl_config_, PRIVACY_MODE_DISABLED,
+        HostPortPair("host", 443), SSLConfig(), PRIVACY_MODE_DISABLED,
         NetworkIsolationKey());
   }
 
@@ -172,7 +171,6 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
   scoped_refptr<SOCKSSocketParams> socks_socket_params_;
   scoped_refptr<HttpProxySocketParams> http_proxy_socket_params_;
 
-  SSLConfig ssl_config_;
   const CommonConnectJobParams common_connect_job_params_;
 };
 

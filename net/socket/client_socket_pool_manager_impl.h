@@ -29,7 +29,6 @@ class ProcessMemoryDump;
 namespace net {
 
 class ProxyServer;
-class SSLConfigService;
 class ClientSocketPool;
 
 class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
@@ -42,7 +41,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   ClientSocketPoolManagerImpl(
       const CommonConnectJobParams& common_connect_job_params,
       const CommonConnectJobParams& websocket_common_connect_job_params,
-      SSLConfigService* ssl_config_service,
       HttpNetworkSession::SocketPoolType pool_type);
   ~ClientSocketPoolManagerImpl() override;
 
@@ -68,8 +66,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   const CommonConnectJobParams common_connect_job_params_;
   // Used only for direct WebSocket connections (i.e., no proxy in use).
   const CommonConnectJobParams websocket_common_connect_job_params_;
-
-  SSLConfigService* const ssl_config_service_;
 
   const HttpNetworkSession::SocketPoolType pool_type_;
 
