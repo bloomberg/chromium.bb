@@ -629,6 +629,7 @@ if (!is_android) {
       "//base",
       "//base:i18n",
       "//base/test:test_support",
+      "//build:branding_buildflags",
       "//chrome:browser_tests_pak",
       "//chrome:packed_resources",
       "//chrome:resources",
