@@ -706,7 +706,26 @@ static void init_tpl_stats(AV1_COMP *cpi) {
 void av1_tpl_setup_stats(AV1_COMP *cpi,
                          const EncodeFrameParams *const frame_params,
                          const EncodeFrameInput *const frame_input) {
+  AV1_COMMON *cm = &cpi->common;
   GF_GROUP *gf_group = &cpi->gf_group;
+  int bottom_index, top_index;
+  EncodeFrameParams this_frame_params = *frame_params;
+
+  for (int gf_index = gf_group->index; gf_index < gf_group->size; ++gf_index) {
+    av1_configure_buffer_updates(cpi, &this_frame_params,
+                                 gf_group->update_type[gf_index], 0);
+
+    cpi->refresh_last_frame = this_frame_params.refresh_last_frame;
+    cpi->refresh_golden_frame = this_frame_params.refresh_golden_frame;
+    cpi->refresh_bwd_ref_frame = this_frame_params.refresh_bwd_ref_frame;
+    cpi->refresh_alt2_ref_frame = this_frame_params.refresh_alt2_ref_frame;
+    cpi->refresh_alt_ref_frame = this_frame_params.refresh_alt_ref_frame;
+
+    gf_group->q_val[gf_index] = av1_rc_pick_q_and_bounds(
+        cpi, cm->width, cm->height, gf_index, &bottom_index, &top_index);
+
+    cm->current_frame.frame_type = INTER_FRAME;
+  }
 
   init_gop_frames_for_tpl(cpi, frame_params, gf_group,
                           &cpi->tpl_gf_group_frames, frame_input);
@@ -727,6 +746,10 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
       if (is_process) mc_flow_dispenser(cpi, frame_idx);
     }
   }
+
+  av1_configure_buffer_updates(cpi, &this_frame_params,
+                               gf_group->update_type[gf_group->index], 0);
+  cm->current_frame.frame_type = frame_params->frame_type;
 }
 
 static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
