@@ -624,14 +624,13 @@ customize.richerPicker_getNextTile = function(deltaX, deltaY, current) {
   const container = customize.richerPicker_selectedSubmenu.menu;
 
   const tiles = Array.from(
-      container.getElementsByClassName(customize.CLASSES.COLLECTION_TILE));
-  const curIndex = tiles.indexOf(current);
+      container.getElementsByClassName(customize.CLASSES.COLLECTION_TILE_BG));
+  let nextIndex = tiles.indexOf(current.parentElement);
   if (deltaX != 0) {
-    return tiles[curIndex + deltaX];
+    nextIndex += deltaX;
   } else if (deltaY != 0) {
-    let nextIndex = tiles.indexOf(current);
-    const startingTop = current.getBoundingClientRect().top;
-    const startingLeft = current.getBoundingClientRect().left;
+    const startingTop = current.parentElement.getBoundingClientRect().top;
+    const startingLeft = current.parentElement.getBoundingClientRect().left;
 
     // Search until a tile in a different row and the same column is found.
     while (tiles[nextIndex] &&
@@ -639,7 +638,9 @@ customize.richerPicker_getNextTile = function(deltaX, deltaY, current) {
             tiles[nextIndex].getBoundingClientRect().left != startingLeft)) {
       nextIndex += deltaY;
     }
-    return tiles[nextIndex];
+  }
+  if (tiles[nextIndex]) {
+    return tiles[nextIndex].children[0];
   }
   return null;
 };
