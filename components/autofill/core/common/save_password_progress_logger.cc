@@ -482,6 +482,10 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "HttpAuthManager::DetachObserver";
     case SavePasswordProgressLogger::STRING_SHOW_ONBOARDING:
       return "Show onboarding experience and offer to save password";
+    case STRING_LEAK_DETECTION_FINISHED:
+      return "Leak detection finished with result";
+    case STRING_LEAK_DETECTION_SIGNED_OUT_ERROR:
+      return "Leak detection failed: signed out";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

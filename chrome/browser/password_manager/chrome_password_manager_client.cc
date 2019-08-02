@@ -143,11 +143,6 @@ const syncer::SyncService* GetSyncService(Profile* profile) {
   return nullptr;
 }
 
-const signin::IdentityManager* GetIdentityManagerForOriginalProfile(
-    Profile* profile) {
-  return IdentityManagerFactory::GetForProfile(profile->GetOriginalProfile());
-}
-
 #if !defined(OS_ANDROID)
 // Adds |observer| to the input observers of |widget_host|.
 void AddToWidgetInputEventObservers(
@@ -190,10 +185,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       content_credential_manager_(this),
       password_generation_driver_bindings_(web_contents, this),
       observer_(nullptr),
-      credentials_filter_(
-          this,
-          base::BindRepeating(&GetSyncService, profile_),
-          base::BindRepeating(&GetIdentityManagerForOriginalProfile, profile_)),
+      credentials_filter_(this, base::BindRepeating(&GetSyncService, profile_)),
       helper_(this) {
   ContentPasswordManagerDriverFactory::CreateForWebContents(web_contents, this,
                                                             autofill_client);
@@ -210,7 +202,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
   static base::NoDestructor<password_manager::StoreMetricsReporter> reporter(
       *saving_and_filling_passwords_enabled_, this, GetSyncService(profile_),
-      GetIdentityManagerForOriginalProfile(profile_), GetPrefs());
+      GetIdentityManager(), GetPrefs());
   driver_factory_->RequestSendLoggingAvailability();
 }
 
@@ -966,6 +958,10 @@ ChromePasswordManagerClient::GetPasswordRequirementsService() {
 favicon::FaviconService* ChromePasswordManagerClient::GetFaviconService() {
   return FaviconServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
+}
+
+signin::IdentityManager* ChromePasswordManagerClient::GetIdentityManager() {
+  return IdentityManagerFactory::GetForProfile(profile_->GetOriginalProfile());
 }
 
 bool ChromePasswordManagerClient::IsUnderAdvancedProtection() const {
