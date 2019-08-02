@@ -276,34 +276,34 @@ AlternativeServiceInfoVector HttpServerProperties::GetAlternativeServiceInfos(
   return valid_alternative_service_infos;
 }
 
-bool HttpServerProperties::SetHttp2AlternativeService(
+void HttpServerProperties::SetHttp2AlternativeService(
     const url::SchemeHostPort& origin,
     const AlternativeService& alternative_service,
     base::Time expiration) {
   DCHECK_EQ(alternative_service.protocol, kProtoHTTP2);
 
-  return SetAlternativeServices(
+  SetAlternativeServices(
       origin,
       AlternativeServiceInfoVector(
           /*size=*/1, AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
                           alternative_service, expiration)));
 }
 
-bool HttpServerProperties::SetQuicAlternativeService(
+void HttpServerProperties::SetQuicAlternativeService(
     const url::SchemeHostPort& origin,
     const AlternativeService& alternative_service,
     base::Time expiration,
     const quic::ParsedQuicVersionVector& advertised_versions) {
   DCHECK(alternative_service.protocol == kProtoQUIC);
 
-  return SetAlternativeServices(
+  SetAlternativeServices(
       origin, AlternativeServiceInfoVector(
                   /*size=*/1,
                   AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
                       alternative_service, expiration, advertised_versions)));
 }
 
-bool HttpServerProperties::SetAlternativeServices(
+void HttpServerProperties::SetAlternativeServices(
     const url::SchemeHostPort& origin,
     const AlternativeServiceInfoVector& alternative_service_info_vector) {
   auto it = alternative_service_map_.Peek(origin);
@@ -311,11 +311,11 @@ bool HttpServerProperties::SetAlternativeServices(
   if (alternative_service_info_vector.empty()) {
     RemoveAltSvcCanonicalHost(origin);
     if (it == alternative_service_map_.end())
-      return false;
+      return;
 
     alternative_service_map_.Erase(it);
     MaybeQueueWriteProperties();
-    return true;
+    return;
   }
 
   bool need_update_pref = true;
@@ -380,8 +380,6 @@ bool HttpServerProperties::SetAlternativeServices(
 
   if (need_update_pref)
     MaybeQueueWriteProperties();
-
-  return need_update_pref;
 }
 
 void HttpServerProperties::MarkAlternativeServiceBroken(
@@ -426,11 +424,10 @@ void HttpServerProperties::ConfirmAlternativeService(
     MaybeQueueWriteProperties();
 }
 
-bool HttpServerProperties::OnDefaultNetworkChanged() {
+void HttpServerProperties::OnDefaultNetworkChanged() {
   bool changed = broken_alternative_services_.OnDefaultNetworkChanged();
   if (changed)
     MaybeQueueWriteProperties();
-  return changed;
 }
 
 const AlternativeServiceMap& HttpServerProperties::alternative_service_map()
@@ -543,7 +540,7 @@ const ServerNetworkStatsMap& HttpServerProperties::server_network_stats_map()
   return server_network_stats_map_;
 }
 
-bool HttpServerProperties::SetQuicServerInfo(
+void HttpServerProperties::SetQuicServerInfo(
     const quic::QuicServerId& server_id,
     const std::string& server_info) {
   auto it = quic_server_info_map_.Peek(server_id);
@@ -553,7 +550,6 @@ bool HttpServerProperties::SetQuicServerInfo(
   UpdateCanonicalServerInfoMap(server_id);
   if (changed)
     MaybeQueueWriteProperties();
-  return changed;
 }
 
 const std::string* HttpServerProperties::GetQuicServerInfo(

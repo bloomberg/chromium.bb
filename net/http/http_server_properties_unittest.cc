@@ -85,17 +85,16 @@ class HttpServerPropertiesTest : public TestWithScopedTaskEnvironment {
     return !alternative_service_info_vector.empty();
   }
 
-  bool SetAlternativeService(const url::SchemeHostPort& origin,
+  void SetAlternativeService(const url::SchemeHostPort& origin,
                              const AlternativeService& alternative_service) {
     const base::Time expiration =
         test_clock_.Now() + base::TimeDelta::FromDays(1);
     if (alternative_service.protocol == kProtoQUIC) {
-      return impl_.SetQuicAlternativeService(
+      impl_.SetQuicAlternativeService(
           origin, alternative_service, expiration,
           HttpNetworkSession::Params().quic_params.supported_versions);
     } else {
-      return impl_.SetHttp2AlternativeService(origin, alternative_service,
-                                              expiration);
+      impl_.SetHttp2AlternativeService(origin, alternative_service, expiration);
     }
   }
 
@@ -948,7 +947,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, OnDefaultNetworkChanged) {
   EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
 
   // Default network change clears alt svc broken until default network changes.
-  EXPECT_TRUE(impl_.OnDefaultNetworkChanged());
+  impl_.OnDefaultNetworkChanged();
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
   EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
 
@@ -963,7 +962,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, OnDefaultNetworkChanged) {
 
   // Default network change doesn't affect alt svc that was simply marked broken
   // most recently.
-  EXPECT_FALSE(impl_.OnDefaultNetworkChanged());
+  impl_.OnDefaultNetworkChanged();
   EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
   EXPECT_TRUE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
 
@@ -975,7 +974,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, OnDefaultNetworkChanged) {
   // Default network change clears alt svc that was marked broken until default
   // network change most recently even if the alt svc was initially marked
   // broken.
-  EXPECT_TRUE(impl_.OnDefaultNetworkChanged());
+  impl_.OnDefaultNetworkChanged();
   EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
   EXPECT_FALSE(impl_.WasAlternativeServiceRecentlyBroken(alternative_service));
 }

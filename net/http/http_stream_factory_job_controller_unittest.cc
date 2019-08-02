@@ -2944,8 +2944,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
   // that is supported.
   quic::ParsedQuicVersionVector supported_versions =
       session_->params().quic_params.supported_versions;
-  ASSERT_TRUE(session_->http_server_properties()->SetQuicAlternativeService(
-      server, alternative_service, expiration, supported_versions));
+  session_->http_server_properties()->SetQuicAlternativeService(
+      server, alternative_service, expiration, supported_versions);
 
   alt_svc_info = JobControllerPeer::GetAlternativeServiceInfoFor(
       job_controller_, request_info, &request_delegate_,
@@ -2980,8 +2980,8 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
   quic::ParsedQuicVersionVector mixed_quic_versions = {
       unsupported_version_1,
       session_->params().quic_params.supported_versions[0]};
-  ASSERT_TRUE(session_->http_server_properties()->SetQuicAlternativeService(
-      server, alternative_service, expiration, mixed_quic_versions));
+  session_->http_server_properties()->SetQuicAlternativeService(
+      server, alternative_service, expiration, mixed_quic_versions);
 
   alt_svc_info = JobControllerPeer::GetAlternativeServiceInfoFor(
       job_controller_, request_info, &request_delegate_,
@@ -2997,9 +2997,9 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
 
   // Set alternative service for the same server with two unsupported QUIC
   // versions: |unsupported_version_1|, |unsupported_version_2|.
-  ASSERT_TRUE(session_->http_server_properties()->SetQuicAlternativeService(
+  session_->http_server_properties()->SetQuicAlternativeService(
       server, alternative_service, expiration,
-      {unsupported_version_1, unsupported_version_2}));
+      {unsupported_version_1, unsupported_version_2});
 
   alt_svc_info = JobControllerPeer::GetAlternativeServiceInfoFor(
       job_controller_, request_info, &request_delegate_,

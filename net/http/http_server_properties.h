@@ -215,18 +215,14 @@ class NET_EXPORT HttpServerProperties
   // Set a single HTTP/2 alternative service for |origin|.  Previous
   // alternative services for |origin| are discarded.
   // |alternative_service.host| may be empty.
-  // Return true if |alternative_service_map_| has changed significantly enough
-  // that it should be persisted to disk.
-  bool SetHttp2AlternativeService(const url::SchemeHostPort& origin,
+  void SetHttp2AlternativeService(const url::SchemeHostPort& origin,
                                   const AlternativeService& alternative_service,
                                   base::Time expiration);
 
   // Set a single QUIC alternative service for |origin|.  Previous alternative
   // services for |origin| are discarded.
   // |alternative_service.host| may be empty.
-  // Return true if |alternative_service_map_| has changed significantly enough
-  // that it should be persisted to disk.
-  bool SetQuicAlternativeService(
+  void SetQuicAlternativeService(
       const url::SchemeHostPort& origin,
       const AlternativeService& alternative_service,
       base::Time expiration,
@@ -236,9 +232,7 @@ class NET_EXPORT HttpServerProperties
   // |origin| are discarded.
   // Hostnames in |alternative_service_info_vector| may be empty.
   // |alternative_service_info_vector| may be empty.
-  // Return true if |alternative_service_map_| has changed significantly enough
-  // that it should be persisted to disk.
-  bool SetAlternativeServices(
+  void SetAlternativeServices(
       const url::SchemeHostPort& origin,
       const AlternativeServiceInfoVector& alternative_service_info_vector);
 
@@ -274,9 +268,7 @@ class NET_EXPORT HttpServerProperties
   // Called when the default network changes.
   // Clears all the alternative services that were marked broken until the
   // default network changed.
-  // Returns true if there is any broken alternative service affected by the
-  // default network change.
-  bool OnDefaultNetworkChanged();
+  void OnDefaultNetworkChanged();
 
   // Returns all alternative service mappings.
   // Returned alternative services may have empty hostnames.
@@ -304,8 +296,7 @@ class NET_EXPORT HttpServerProperties
   const ServerNetworkStatsMap& server_network_stats_map() const;
 
   // Save QuicServerInfo (in std::string form) for the given |server_id|.
-  // Returns true if the value has changed otherwise it returns false.
-  bool SetQuicServerInfo(const quic::QuicServerId& server_id,
+  void SetQuicServerInfo(const quic::QuicServerId& server_id,
                          const std::string& server_info);
 
   // Get QuicServerInfo (in std::string form) for the given |server_id|.
