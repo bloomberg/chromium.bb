@@ -297,11 +297,6 @@ const base::Feature kEnableAmbientAuthenticationInGuestSession{
     "EnableAmbientAuthenticationInGuestSession",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Show the number of open incognito windows besides incognito icon on the
-// toolbar.
-const base::Feature kEnableIncognitoWindowCounter{
-    "EnableIncognitoWindowCounter", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if !defined(OS_ANDROID)
 // Upload enterprise cloud reporting without the extension.
 const base::Feature kEnterpriseReportingInBrowser{
