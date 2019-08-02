@@ -1890,8 +1890,13 @@ void RenderWidget::AbortWarmupCompositor() {
     std::move(after_warmup_callback_).Run(nullptr);
 }
 
-void RenderWidget::DoDeferredClose() {
-  Send(new WidgetHostMsg_Close(routing_id_));
+// static
+void RenderWidget::DoDeferredClose(int widget_routing_id) {
+  // DoDeferredClose() was a posted task, which means the RenderWidget may have
+  // become frozen in the meantime. Frozen RenderWidgets do not send messages,
+  // so break the dependency on RenderWidget here, by making this method static
+  // and going to RenderThread directly to send.
+  RenderThread::Get()->Send(new WidgetHostMsg_Close(widget_routing_id));
 }
 
 void RenderWidget::ClosePopupWidgetSoon() {
@@ -1922,7 +1927,7 @@ void RenderWidget::CloseWidgetSoon() {
   // message back to the message loop, which won't run until the JS is
   // complete, and then the Close request can be sent.
   GetCleanupTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&RenderWidget::DoDeferredClose, this));
+      FROM_HERE, base::BindOnce(&RenderWidget::DoDeferredClose, routing_id_));
 }
 
 void RenderWidget::Close() {
