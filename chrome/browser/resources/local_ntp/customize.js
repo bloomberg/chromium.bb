@@ -905,6 +905,9 @@ customize.richerPicker_removeSelectedState = function(option) {
  * @param {!Element} tile The tile that was selected.
  */
 customize.richerPicker_previewImage = function(tile) {
+  if (!configData.richerPicker) {
+    return;
+  }
   // Set preview images at 720p by replacing the params in the url.
   const background = $(customize.IDS.CUSTOM_BG);
   const preview = $(customize.IDS.CUSTOM_BG_PREVIEW);
@@ -933,6 +936,9 @@ customize.richerPicker_previewImage = function(tile) {
  * Remove a preview image of a custom backgrounds.
  */
 customize.richerPicker_unpreviewImage = function() {
+  if (!configData.richerPicker) {
+    return;
+  }
   const preview = $(customize.IDS.CUSTOM_BG_PREVIEW);
   if (!preview.dataset || !preview.dataset.hasPreview) {
     return;
@@ -1354,6 +1360,10 @@ customize.richerPicker_preselectShortcutOptions = function() {
  * background.
  */
 customize.richerPicker_preselectBackgroundOption = function() {
+  if (!configData.richerPicker) {
+    return;
+  }
+
   customize.preselectedOptions.backgroundsMenuTile = null;
 
   const themeInfo = ntpApiHandle.themeBackgroundInfo;
