@@ -120,3 +120,14 @@ tests:
   - - "\\x98ab\\x76cd \\x54ef\\x3210"
     - "⠄⡳⠭⠔⠦⠁⠃⠄⠄⡳⠭⠶⠖⠉⠙⠄⠄⡳⠭⠴⠴⠆⠴⠄⠄⡳⠭⠢⠲⠑⠋⠄⠄⡳⠭⠒⠆⠂⠴⠄"
 
+# noUndefined has no effect on characters and dots that are matched by a translation rule
+table: |
+  include tables/unicode.dis
+  always xx 34
+flags: {testmode: bothDirections}
+tests:
+  - - xx
+    - ⠌
+    - outputPos: [0, 0]
+      inputPos: [0]
+      mode: [noUndefined]
