@@ -4944,90 +4944,71 @@ static void tx_type_rd(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   }
 }
 
-static void get_mean_and_dev(const int16_t *data, int stride, int bw, int bh,
-                             float *mean, float *dev) {
-  int x_sum = 0;
-  uint64_t x2_sum = 0;
+static void get_blk_sse_sum_c(const int16_t *data, int stride, int bw, int bh,
+                              int *x_sum, int *x2_sum) {
+  *x_sum = 0;
+  *x2_sum = 0;
   for (int i = 0; i < bh; ++i) {
     for (int j = 0; j < bw; ++j) {
       const int val = data[j];
-      x_sum += val;
-      x2_sum += val * val;
+      *x_sum += val;
+      *x2_sum += val * val;
     }
     data += stride;
   }
-
-  const int num = bw * bh;
-  const float e_x = (float)x_sum / num;
-  const float e_x2 = (float)((double)x2_sum / num);
-  const float diff = e_x2 - e_x * e_x;
-  *dev = (diff > 0) ? sqrtf(diff) : 0;
-  *mean = e_x;
 }
 
-static void get_mean_and_dev_float(const float *data, int stride, int bw,
-                                   int bh, float *mean, float *dev) {
-  float x_sum = 0;
-  float x2_sum = 0;
-  for (int i = 0; i < bh; ++i) {
-    for (int j = 0; j < bw; ++j) {
-      const float val = data[j];
-      x_sum += val;
-      x2_sum += val * val;
-    }
-    data += stride;
-  }
-
-  const int num = bw * bh;
-  const float e_x = x_sum / num;
-  const float e_x2 = x2_sum / num;
-  const float diff = e_x2 - e_x * e_x;
-  *dev = (diff > 0) ? sqrtf(diff) : 0;
-  *mean = e_x;
+static float get_dev(float mean, float x2_sum, int num) {
+  const float e_x2 = (float)((double)x2_sum / num);
+  const float diff = e_x2 - mean * mean;
+  const float dev = (diff > 0) ? sqrtf(diff) : 0;
+  return dev;
 }
 
 // Feature used by the model to predict tx split: the mean and standard
 // deviation values of the block and sub-blocks.
 static void get_mean_dev_features(const int16_t *data, int stride, int bw,
-                                  int bh, int levels, float *feature) {
-  int feature_idx = 0;
-  int width = bw;
-  int height = bh;
+                                  int bh, float *feature) {
   const int16_t *const data_ptr = &data[0];
-  for (int lv = 0; lv < levels; ++lv) {
-    if (width < 2 || height < 2) break;
-    float mean_buf[16];
-    float dev_buf[16];
-    int blk_idx = 0;
-    for (int row = 0; row < bh; row += height) {
-      for (int col = 0; col < bw; col += width) {
-        float mean, dev;
-        get_mean_and_dev(data_ptr + row * stride + col, stride, width, height,
-                         &mean, &dev);
-        feature[feature_idx++] = mean;
-        feature[feature_idx++] = dev;
-        mean_buf[blk_idx] = mean;
-        dev_buf[blk_idx++] = dev;
-      }
-    }
-    if (blk_idx > 1) {
-      float mean, dev;
-      // Deviation of means.
-      get_mean_and_dev_float(mean_buf, 1, 1, blk_idx, &mean, &dev);
-      feature[feature_idx++] = dev;
-      // Mean of deviations.
-      get_mean_and_dev_float(dev_buf, 1, 1, blk_idx, &mean, &dev);
+  const int subh = (bh >= bw) ? (bh >> 1) : bh;
+  const int subw = (bw >= bh) ? (bw >> 1) : bw;
+  const int num = bw * bh;
+  const int sub_num = subw * subh;
+  int feature_idx = 2;
+  int total_x_sum = 0;
+  int total_x2_sum = 0;
+  int blk_idx = 0;
+  float mean2_sum = 0.0f;
+  float dev_sum = 0.0f;
+
+  for (int row = 0; row < bh; row += subh) {
+    for (int col = 0; col < bw; col += subw) {
+      int x_sum, x2_sum;
+      // TODO(any): Write a SIMD version. Clear registers.
+      get_blk_sse_sum_c(data_ptr + row * stride + col, stride, subw, subh,
+                        &x_sum, &x2_sum);
+      total_x_sum += x_sum;
+      total_x2_sum += x2_sum;
+
+      const float mean = (float)x_sum / sub_num;
+      const float dev = get_dev(mean, (float)x2_sum, sub_num);
       feature[feature_idx++] = mean;
+      feature[feature_idx++] = dev;
+      mean2_sum += mean * mean;
+      dev_sum += dev;
+      blk_idx++;
     }
-    // Reduce the block size when proceeding to the next level.
-    if (height == width) {
-      height = height >> 1;
-      width = width >> 1;
-    } else if (height > width) {
-      height = height >> 1;
-    } else {
-      width = width >> 1;
-    }
+  }
+
+  const float lvl0_mean = (float)total_x_sum / num;
+  feature[0] = lvl0_mean;
+  feature[1] = get_dev(lvl0_mean, (float)total_x2_sum, num);
+
+  if (blk_idx > 1) {
+    // Deviation of means.
+    feature[feature_idx++] = get_dev(lvl0_mean, mean2_sum, blk_idx);
+    // Mean of deviations.
+    feature[feature_idx++] = dev_sum / blk_idx;
   }
 }
 
@@ -5044,11 +5025,12 @@ static int ml_predict_tx_split(MACROBLOCK *x, BLOCK_SIZE bsize, int blk_row,
   aom_clear_system_state();
 
   float features[64] = { 0.0f };
-  get_mean_dev_features(diff, diff_stride, bw, bh, 2, features);
+  get_mean_dev_features(diff, diff_stride, bw, bh, features);
 
   float score = 0.0f;
   av1_nn_predict(features, nn_config, 1, &score);
   aom_clear_system_state();
+
   if (score > 8.0f) return 100;
   if (score < -8.0f) return 0;
   score = 1.0f / (1.0f + (float)exp(-score));
