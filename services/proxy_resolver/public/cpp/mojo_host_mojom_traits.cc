@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/proxy_resolver/public/cpp/mojo_host_struct_traits.h"
+#include "services/proxy_resolver/public/cpp/mojo_host_mojom_traits.h"
 
 #include <utility>
 

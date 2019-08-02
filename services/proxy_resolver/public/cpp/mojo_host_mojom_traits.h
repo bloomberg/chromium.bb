@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_PROXY_RESOLVER_PUBLIC_CPP_MOJO_HOST_STRUCT_TRAITS_H_
-#define SERVICES_PROXY_RESOLVER_PUBLIC_CPP_MOJO_HOST_STRUCT_TRAITS_H_
+#ifndef SERVICES_PROXY_RESOLVER_PUBLIC_CPP_MOJO_HOST_MOJOM_TRAITS_H_
+#define SERVICES_PROXY_RESOLVER_PUBLIC_CPP_MOJO_HOST_MOJOM_TRAITS_H_
 
 #include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
@@ -24,4 +24,4 @@ struct EnumTraits<proxy_resolver::mojom::HostResolveOperation,
 
 }  // namespace mojo
 
-#endif  // SERVICES_PROXY_RESOLVER_PUBLIC_CPP_MOJO_HOST_STRUCT_TRAITS_H_
+#endif  // SERVICES_PROXY_RESOLVER_PUBLIC_CPP_MOJO_HOST_MOJOM_TRAITS_H_
