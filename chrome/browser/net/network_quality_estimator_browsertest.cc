@@ -5,34 +5,21 @@
 #include <map>
 #include <memory>
 
-#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/features.h"
-#include "net/base/filename_util.h"
-#include "net/base/host_port_pair.h"
-#include "net/cert/ct_verifier.h"
-#include "net/http/http_auth_preferences.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/simple_connection_listener.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
-#include "services/network/public/cpp/simple_url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -97,10 +84,10 @@ void CheckEffectiveConnectionType(net::EffectiveConnectionType expected) {
   network_quality_observer.WaitForNotification(expected);
 }
 
-class IOThreadBrowserTest : public InProcessBrowserTest {
+class NetworkQualityEstimatorBrowserTest : public InProcessBrowserTest {
  public:
-  IOThreadBrowserTest() {}
-  ~IOThreadBrowserTest() override {}
+  NetworkQualityEstimatorBrowserTest() {}
+  ~NetworkQualityEstimatorBrowserTest() override {}
 
   void SetUp() override {
     // Must start listening (And get a port for the proxy) before calling
@@ -120,10 +107,11 @@ class IOThreadBrowserTest : public InProcessBrowserTest {
   }
 };
 
-class IOThreadEctCommandLineBrowserTest : public IOThreadBrowserTest {
+class NetworkQualityEstimatorEctCommandLineBrowserTest
+    : public NetworkQualityEstimatorBrowserTest {
  public:
-  IOThreadEctCommandLineBrowserTest() {}
-  ~IOThreadEctCommandLineBrowserTest() override {}
+  NetworkQualityEstimatorEctCommandLineBrowserTest() {}
+  ~NetworkQualityEstimatorEctCommandLineBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII("--force-effective-connection-type",
@@ -131,15 +119,16 @@ class IOThreadEctCommandLineBrowserTest : public IOThreadBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(IOThreadEctCommandLineBrowserTest,
+IN_PROC_BROWSER_TEST_F(NetworkQualityEstimatorEctCommandLineBrowserTest,
                        ForceECTFromCommandLine) {
   CheckEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 }
 
-class IOThreadEctFieldTrialBrowserTest : public IOThreadBrowserTest {
+class NetworkQualityEstimatorEctFieldTrialBrowserTest
+    : public NetworkQualityEstimatorBrowserTest {
  public:
-  IOThreadEctFieldTrialBrowserTest() {}
-  ~IOThreadEctFieldTrialBrowserTest() override {}
+  NetworkQualityEstimatorEctFieldTrialBrowserTest() {}
+  ~NetworkQualityEstimatorEctFieldTrialBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     variations::testing::ClearAllVariationParams();
@@ -153,76 +142,29 @@ class IOThreadEctFieldTrialBrowserTest : public IOThreadBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(IOThreadEctFieldTrialBrowserTest,
+IN_PROC_BROWSER_TEST_F(NetworkQualityEstimatorEctFieldTrialBrowserTest,
                        ForceECTUsingFieldTrial) {
   CheckEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
 }
 
-class IOThreadEctFieldTrialAndCommandLineBrowserTest
-    : public IOThreadEctFieldTrialBrowserTest {
+class NetworkQualityEstimatorEctFieldTrialAndCommandLineBrowserTest
+    : public NetworkQualityEstimatorEctFieldTrialBrowserTest {
  public:
-  IOThreadEctFieldTrialAndCommandLineBrowserTest() {}
-  ~IOThreadEctFieldTrialAndCommandLineBrowserTest() override {}
+  NetworkQualityEstimatorEctFieldTrialAndCommandLineBrowserTest() {}
+  ~NetworkQualityEstimatorEctFieldTrialAndCommandLineBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    IOThreadEctFieldTrialBrowserTest::SetUpCommandLine(command_line);
+    NetworkQualityEstimatorEctFieldTrialBrowserTest::SetUpCommandLine(
+        command_line);
     command_line->AppendSwitchASCII("--force-effective-connection-type",
                                     "Slow-2G");
   }
 };
 
-IN_PROC_BROWSER_TEST_F(IOThreadEctFieldTrialAndCommandLineBrowserTest,
-                       ECTFromCommandLineOverridesFieldTrial) {
+IN_PROC_BROWSER_TEST_F(
+    NetworkQualityEstimatorEctFieldTrialAndCommandLineBrowserTest,
+    ECTFromCommandLineOverridesFieldTrial) {
   CheckEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-}
-
-class IOThreadBrowserTestWithHangingPacRequest : public IOThreadBrowserTest {
- public:
-  IOThreadBrowserTestWithHangingPacRequest() {}
-  ~IOThreadBrowserTestWithHangingPacRequest() override {}
-
-  void SetUpOnMainThread() override {
-    // This must be created after the main message loop has been set up.
-    // Waits for one connection.  Additional connections are fine.
-    connection_listener_ =
-        std::make_unique<net::test_server::SimpleConnectionListener>(
-            1, net::test_server::SimpleConnectionListener::
-                   ALLOW_ADDITIONAL_CONNECTIONS);
-
-    embedded_test_server()->SetConnectionListener(connection_listener_.get());
-
-    IOThreadBrowserTest::SetUpOnMainThread();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kProxyPacUrl, embedded_test_server()->GetURL("/hung").spec());
-  }
-
- protected:
-  std::unique_ptr<net::test_server::SimpleConnectionListener>
-      connection_listener_;
-};
-
-// Make sure that the SystemURLRequestContext is shut down correctly when
-// there's an in-progress PAC script fetch.
-IN_PROC_BROWSER_TEST_F(IOThreadBrowserTestWithHangingPacRequest, Shutdown) {
-  // Request that should hang while trying to request the PAC script.
-  // Enough requests are created on startup that this probably isn't needed, but
-  // best to be safe.
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = GURL("http://blah/");
-  auto simple_loader = network::SimpleURLLoader::Create(
-      std::move(resource_request), TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  auto* context_manager = g_browser_process->system_network_context_manager();
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      context_manager->GetURLLoaderFactory(),
-      base::BindOnce([](std::unique_ptr<std::string> body) {
-        ADD_FAILURE() << "This request should never complete.";
-      }));
-
-  connection_listener_->WaitForConnections();
 }
 
 }  // namespace
