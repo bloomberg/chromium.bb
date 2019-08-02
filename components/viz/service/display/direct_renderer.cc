@@ -69,12 +69,10 @@ static gfx::Transform window_matrix(int x, int y, int width, int height) {
   return canvas;
 }
 
-#if defined(OS_WIN)
 // Switching between enabling DC layers and not is expensive, so only
 // switch away after a large number of frames not needing DC layers have
 // been produced.
 constexpr int kNumberOfFramesBeforeDisablingDCLayers = 60;
-#endif  // defined(OS_WIN)
 
 // Returns the bounding box that contains the specified rounded corner.
 gfx::RectF ComputeRoundedCornerBoundingBox(const gfx::RRectF& rrect,
@@ -130,10 +128,8 @@ void DirectRenderer::Initialize() {
   if (context_provider) {
     if (context_provider->ContextCapabilities().commit_overlay_planes)
       allow_empty_swap_ = true;
-#if defined(OS_WIN)
     if (context_provider->ContextCapabilities().dc_layers)
       supports_dc_layers_ = true;
-#endif
     if (context_provider->ContextCapabilities()
             .disable_non_empty_post_sub_buffers) {
       use_partial_swap_ = false;
@@ -384,6 +380,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       resource_provider_, render_passes_in_draw_order,
       output_surface_->color_matrix(), render_pass_filters_,
       render_pass_backdrop_filters_, &current_frame()->overlay_list,
+      &current_frame()->ca_layer_overlay_list,
+      &current_frame()->dc_layer_overlay_list,
       &current_frame()->root_damage_rect,
       &current_frame()->root_content_bounds);
 
@@ -394,9 +392,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
             reshape_device_color_space_);
   }
 
-#if defined(OS_WIN)
   bool was_using_dc_layers = using_dc_layers_;
-  if (!current_frame()->overlay_list.empty()) {
+  if (!current_frame()->dc_layer_overlay_list.empty()) {
     DCHECK(supports_dc_layers_);
     using_dc_layers_ = true;
     frames_since_using_dc_layers_ = 0;
@@ -407,7 +404,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 
   if (supports_dc_layers_ && (was_using_dc_layers != using_dc_layers_))
     SetEnableDCLayers(using_dc_layers_);
-#endif
 
   // Draw all non-root render passes except for the root render pass.
   for (const auto& pass : *render_passes_in_draw_order) {
@@ -416,7 +412,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     DrawRenderPassAndExecuteCopyRequests(pass.get());
   }
 
-#if defined(OS_WIN)
   if (supports_dc_layers_ &&
       (did_reshape || (was_using_dc_layers != using_dc_layers_))) {
     // The entire surface has to be redrawn if it was reshaped or if switching
@@ -424,7 +419,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     // discarded and some contents would otherwise be undefined.
     current_frame()->root_damage_rect = gfx::Rect(device_viewport_size);
   }
-#endif
 
   // We can skip all drawing if the damage rect is now empty.
   bool skip_drawing_root_render_pass =
@@ -652,10 +646,8 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
   // set on the root framebuffer or else the rendering may modify something
   // outside the damage rectangle, even if the damage rectangle is the size of
   // the full backbuffer.
-  bool render_pass_requires_scissor = render_pass_is_clipped;
-#if defined(OS_WIN)
-  render_pass_requires_scissor |= (supports_dc_layers_ && is_root_render_pass);
-#endif
+  bool render_pass_requires_scissor =
+      (supports_dc_layers_ && is_root_render_pass) || render_pass_is_clipped;
   bool has_external_stencil_test =
       is_root_render_pass && output_surface_->HasExternalStencilTest();
   bool should_clear_surface =
@@ -760,7 +752,6 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   current_frame()->current_render_pass = render_pass;
   if (render_pass == current_frame()->root_render_pass) {
     BindFramebufferToOutputSurface();
-
     output_surface_->SetDrawRectangle(current_frame()->root_damage_rect);
     InitializeViewport(current_frame(), render_pass->output_rect,
                        gfx::Rect(current_frame()->device_viewport_size),
