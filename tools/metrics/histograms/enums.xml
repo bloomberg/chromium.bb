@@ -24234,6 +24234,13 @@ Called by update_net_error_codes.py.-->
   <int value="2983" label="ContentIndexAdd"/>
   <int value="2984" label="ContentIndexDelete"/>
   <int value="2985" label="ContentIndexGet"/>
+  <int value="2986" label="V8SpeechGrammar_Constructor"/>
+  <int value="2987" label="V8SpeechGrammarList_AddFromString_Method"/>
+  <int value="2988" label="V8SpeechGrammarList_Constructor"/>
+  <int value="2989" label="V8SpeechGrammarList_Item_Method"/>
+  <int value="2990" label="V8SpeechRecognition_Constructor"/>
+  <int value="2991" label="V8SpeechRecognition_Grammars_AttributeGetter"/>
+  <int value="2992" label="V8SpeechRecognition_Grammars_AttributeSetter"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
