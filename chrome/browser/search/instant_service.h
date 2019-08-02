@@ -135,12 +135,12 @@ class InstantService : public KeyedService,
   // Invoked when a custom background is selected on the NTP.
   void SetCustomBackgroundURL(const GURL& url);
 
-  // Invoked when a custom background with attributions is selected on the NTP.
-  void SetCustomBackgroundURLWithAttributions(
-      const GURL& background_url,
-      const std::string& attribution_line_1,
-      const std::string& attribution_line_2,
-      const GURL& action_url);
+  // Invoked when a custom background is configured on the NTP.
+  void SetCustomBackgroundInfo(const GURL& background_url,
+                               const std::string& attribution_line_1,
+                               const std::string& attribution_line_2,
+                               const GURL& action_url,
+                               const std::string& collection_id);
 
   // Invoked when a user selected the "Upload an image" option on the NTP.
   void SelectLocalBackgroundImage(const base::FilePath& path);

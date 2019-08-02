@@ -401,15 +401,17 @@ void InstantService::SendNewTabPageURLToRenderer(
 }
 
 void InstantService::SetCustomBackgroundURL(const GURL& url) {
-  SetCustomBackgroundURLWithAttributions(url, std::string(), std::string(),
-                                         GURL());
+  SetCustomBackgroundInfo(url, std::string(), std::string(), GURL(),
+                          std::string());
 }
 
-void InstantService::SetCustomBackgroundURLWithAttributions(
+void InstantService::SetCustomBackgroundInfo(
     const GURL& background_url,
     const std::string& attribution_line_1,
     const std::string& attribution_line_2,
-    const GURL& action_url) {
+    const GURL& action_url,
+    const std::string& collection_id) {
+  DCHECK(background_url.is_empty() || collection_id.empty());
   bool is_backdrop_url =
       background_service_ &&
       background_service_->IsValidBackdropUrl(background_url);

@@ -501,8 +501,8 @@ customize.setBackground = function(
   if (!configData.richerPicker) {
     customize.closeCollectionDialog($(customize.IDS.MENU));
   }
-  window.chrome.embeddedSearch.newTabPage.setBackgroundURLWithAttributions(
-      url, attributionLine1, attributionLine2, attributionActionUrl);
+  window.chrome.embeddedSearch.newTabPage.setBackgroundInfo(
+      url, attributionLine1, attributionLine2, attributionActionUrl, '');
 };
 
 /**
