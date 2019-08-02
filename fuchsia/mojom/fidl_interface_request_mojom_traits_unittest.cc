@@ -4,8 +4,8 @@
 
 #include "base/fuchsia/testfidl/cpp/fidl.h"
 #include "base/message_loop/message_loop.h"
-#include "fuchsia/mojo/example.mojom.h"
-#include "fuchsia/mojo/test_interface_request_mojom_traits.h"
+#include "fuchsia/mojom/example.mojom.h"
+#include "fuchsia/mojom/test_interface_request_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

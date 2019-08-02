@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FUCHSIA_MOJO_FIDL_INTERFACE_REQUEST_MOJOM_TRAITS_H_
-#define FUCHSIA_MOJO_FIDL_INTERFACE_REQUEST_MOJOM_TRAITS_H_
+#ifndef FUCHSIA_MOJOM_FIDL_INTERFACE_REQUEST_MOJOM_TRAITS_H_
+#define FUCHSIA_MOJOM_FIDL_INTERFACE_REQUEST_MOJOM_TRAITS_H_
 
 #include <lib/fidl/cpp/interface_request.h>
 
@@ -40,4 +40,4 @@ struct FidlInterfaceRequestStructTraits {
 
 }  // namespace mojo
 
-#endif  // FUCHSIA_MOJO_FIDL_INTERFACE_REQUEST_MOJOM_TRAITS_H_
+#endif  // FUCHSIA_MOJOM_FIDL_INTERFACE_REQUEST_MOJOM_TRAITS_H_
