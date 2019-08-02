@@ -12,6 +12,7 @@
 #include "authpolicy/dbus-constants.h"
 #include "biod/dbus-constants.h"
 #include "bluetooth/dbus-constants.h"
+#include "bootlockbox/dbus-constants.h"
 #include "cecservice/dbus-constants.h"
 #include "chunneld/dbus-constants.h"
 #include "cros-disks/dbus-constants.h"
