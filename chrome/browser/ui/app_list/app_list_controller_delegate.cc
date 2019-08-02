@@ -118,7 +118,8 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
         const extensions::Extension* extension =
             GetExtension(profile, extension_id);
         DCHECK(extension);
-        ShowAppInfoInAppList(bounds, profile, extension);
+        ShowAppInfoInAppList(self->GetAppListWindow(), bounds, profile,
+                             extension);
       },
       weak_ptr_factory_.GetWeakPtr(), profile, extension_id));
 }
