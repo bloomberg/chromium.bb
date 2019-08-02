@@ -23,7 +23,7 @@ from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import cros_portage_upgrade as cpu
-from chromite.scripts import parallel_emerge
+from chromite.scripts import parallel_emerge_old as parallel_emerge
 
 # This left in, but disabled, until we can get GetCurrentVersionsTest
 # working again.

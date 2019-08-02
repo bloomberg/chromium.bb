@@ -24,7 +24,7 @@ from chromite.lib import operation
 from chromite.lib import portage_util
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import merge_package_status as mps
-from chromite.scripts import parallel_emerge
+from chromite.scripts import parallel_emerge_old as parallel_emerge
 
 
 oper = operation.Operation('cros_portage_upgrade')
