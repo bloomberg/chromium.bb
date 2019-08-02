@@ -136,10 +136,7 @@ const char kEmptyUpdateUrlData[] = "";
 
 const char kAuthUserQueryKey[] = "authuser";
 
-int kExpectedLoadFlags =
-    net::LOAD_DO_NOT_SEND_COOKIES |
-    net::LOAD_DO_NOT_SAVE_COOKIES |
-    net::LOAD_DISABLE_CACHE;
+int kExpectedLoadFlags = net::LOAD_DISABLE_CACHE;
 
 int kExpectedLoadFlagsForDownloadWithCookies = net::LOAD_DISABLE_CACHE;
 
@@ -1255,6 +1252,8 @@ class ExtensionUpdaterTest : public testing::Test {
     helper.test_url_loader_factory().SetInterceptor(base::BindLambdaForTesting(
         [&](const network::ResourceRequest& request) {
           EXPECT_TRUE(request.load_flags == kExpectedLoadFlags);
+          EXPECT_EQ(network::mojom::CredentialsMode::kOmit,
+                    request.credentials_mode);
         }));
     for (int i = 0; i <= ExtensionDownloader::kMaxRetries; ++i) {
       // All fetches will fail.
