@@ -72,6 +72,10 @@
 #include "ui/gfx/range/range.h"
 #include "ui/surface/transport_dib.h"
 
+#if defined(OS_MACOSX)
+#include "content/renderer/text_input_client_observer.h"
+#endif
+
 namespace IPC {
 class SyncMessageFilter;
 }
@@ -118,7 +122,6 @@ class RenderFrameProxy;
 class RenderViewImpl;
 class RenderWidgetDelegate;
 class RenderWidgetScreenMetricsEmulator;
-class TextInputClientObserver;
 class WidgetInputHandlerManager;
 struct ContextMenuParams;
 struct VisualProperties;
@@ -931,7 +934,7 @@ class CONTENT_EXPORT RenderWidget
   // Use GetWebWidget() instead of using webwidget_internal_ directly.
   // We are responsible for destroying this object via its Close method.
   // May be NULL when the window is closing.
-  blink::WebWidget* webwidget_internal_;
+  blink::WebWidget* webwidget_internal_ = nullptr;
 
   // The delegate for this object which is just a RenderViewImpl.
   std::unique_ptr<RenderWidgetDelegate> delegate_;
@@ -959,7 +962,7 @@ class CONTENT_EXPORT RenderWidget
 
   // Whether the WebWidget is in auto resize mode, which is used for example
   // by extension popups.
-  bool auto_resize_mode_;
+  bool auto_resize_mode_ = false;
 
   // The minimum size to use for auto-resize.
   gfx::Size min_size_for_auto_resize_;
@@ -974,14 +977,14 @@ class CONTENT_EXPORT RenderWidget
   const bool compositor_never_visible_;
 
   // Indicates whether tab-initiated fullscreen was granted.
-  bool is_fullscreen_granted_;
+  bool is_fullscreen_granted_ = false;
 
   // Indicates the display mode.
   blink::WebDisplayMode display_mode_;
 
   // It is possible that one ImeEventGuard is nested inside another
   // ImeEventGuard. We keep track of the outermost one, and update it as needed.
-  ImeEventGuard* ime_event_guard_;
+  ImeEventGuard* ime_event_guard_ = nullptr;
 
   bool closed_ = false;
   // True if we have requested this widget be closed.  No more messages will
@@ -1024,20 +1027,23 @@ class CONTENT_EXPORT RenderWidget
   blink::WebTextInputInfo text_input_info_;
 
   // Stores the current text input type of |webwidget_|.
-  ui::TextInputType text_input_type_;
+  ui::TextInputType text_input_type_ = ui::TEXT_INPUT_TYPE_NONE;
 
   // Stores the current text input mode of |webwidget_|.
-  ui::TextInputMode text_input_mode_;
+  ui::TextInputMode text_input_mode_ = ui::TEXT_INPUT_MODE_DEFAULT;
 
   // Stores the current text input flags of |webwidget_|.
-  int text_input_flags_;
+  int text_input_flags_ = 0;
 
   // Indicates whether currently focused input field has next/previous focusable
   // form input field.
   int next_previous_flags_;
 
   // Stores the current type of composition text rendering of |webwidget_|.
-  bool can_compose_inline_;
+  bool can_compose_inline_ = true;
+
+  // Stores whether the IME should always be hidden for |webwidget_|.
+  bool always_hide_ime_ = false;
 
   // Stores the current selection bounds.
   gfx::Rect selection_focus_rect_;
@@ -1047,11 +1053,11 @@ class CONTENT_EXPORT RenderWidget
   std::vector<gfx::Rect> composition_character_bounds_;
 
   // Stores the current composition range.
-  gfx::Range composition_range_;
+  gfx::Range composition_range_ = gfx::Range::InvalidRange();
 
   // While we are waiting for the browser to update window sizes, we track the
   // pending size temporarily.
-  int pending_window_rect_count_;
+  int pending_window_rect_count_ = 0;
   gfx::Rect pending_window_rect_;
 
   // The screen rects of the view and the window that contains it.
@@ -1069,7 +1075,7 @@ class CONTENT_EXPORT RenderWidget
   ScreenInfo screen_info_;
 
   // True if the IME requests updated composition info.
-  bool monitor_composition_info_;
+  bool monitor_composition_info_ = false;
 
   std::unique_ptr<RenderWidgetScreenMetricsEmulator> screen_metrics_emulator_;
 
@@ -1077,7 +1083,7 @@ class CONTENT_EXPORT RenderWidget
   // These values are used to properly adjust popup position.
   gfx::Point popup_view_origin_for_emulation_;
   gfx::Point popup_screen_origin_for_emulation_;
-  float popup_origin_scale_for_emulation_;
+  float popup_origin_scale_for_emulation_ = 0.f;
 
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
 
@@ -1092,7 +1098,7 @@ class CONTENT_EXPORT RenderWidget
 
   base::ObserverList<BrowserPlugin>::Unchecked browser_plugins_;
 
-  bool has_host_context_menu_location_;
+  bool has_host_context_menu_location_ = false;
   gfx::Point host_context_menu_location_;
 
   std::unique_ptr<blink::scheduler::WebRenderWidgetSchedulingState>
@@ -1119,12 +1125,12 @@ class CONTENT_EXPORT RenderWidget
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
 
   // Indicates whether this widget has focus.
-  bool has_focus_;
+  bool has_focus_ = false;
 
   // Whether this widget is for a child local root frame. This excludes widgets
   // that are not for a frame (eg popups) and excludes the widget for the main
   // frame (which is attached to the RenderViewImpl).
-  bool for_child_local_root_frame_;
+  bool for_child_local_root_frame_ = false;
 
   // A callback into the creator/opener of this widget, to be executed when
   // WebWidgetClient::Show() occurs.
@@ -1133,7 +1139,8 @@ class CONTENT_EXPORT RenderWidget
 #if defined(OS_MACOSX)
   // Responds to IPCs from TextInputClientMac regarding getting string at given
   // position or range as well as finding character index at a given position.
-  std::unique_ptr<TextInputClientObserver> text_input_client_observer_;
+  std::unique_ptr<TextInputClientObserver> text_input_client_observer_ =
+      std::make_unique<TextInputClientObserver>(this);
 #endif
 
   // Stores edit commands associated to the next key event.
@@ -1145,8 +1152,8 @@ class CONTENT_EXPORT RenderWidget
   // session, this info is sent to the browser along with other drag/drop info.
   DragEventSourceInfo possible_drag_event_info_;
 
-  bool first_update_visual_state_after_hidden_;
-  base::TimeTicks was_shown_time_;
+  bool first_update_visual_state_after_hidden_ = false;
+  base::TimeTicks was_shown_time_ = base::TimeTicks::Now();
 
   // Object to record tab switch time into this RenderWidget
   TabSwitchTimeRecorder tab_switch_time_recorder_;
