@@ -145,5 +145,22 @@ TEST_F(SystemFontsWinTest, AdjustLOGFONT_ScaleUpWithRounding) {
   EXPECT_STREQ(kSegoeUI, logfont.lfFaceName);
 }
 
+TEST_F(SystemFontsWinTest, GetFontFromLOGFONT) {
+  LOGFONT logfont = CreateLOGFONT(kSegoeUI, -10);
+  Font font = GetFontFromLOGFONTForTesting(logfont);
+  EXPECT_EQ(font.GetStyle(), Font::FontStyle::NORMAL);
+  EXPECT_EQ(font.GetWeight(), Font::Weight::NORMAL);
+}
+
+TEST_F(SystemFontsWinTest, GetFontFromLOGFONT_WithStyle) {
+  LOGFONT logfont = CreateLOGFONT(kSegoeUI, -10);
+  logfont.lfItalic = 1;
+  logfont.lfWeight = 700;
+
+  Font font = GetFontFromLOGFONTForTesting(logfont);
+  EXPECT_EQ(font.GetStyle(), Font::FontStyle::ITALIC);
+  EXPECT_EQ(font.GetWeight(), Font::Weight::BOLD);
+}
+
 }  // namespace win
 }  // namespace gfx

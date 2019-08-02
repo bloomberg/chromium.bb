@@ -54,7 +54,10 @@ GFX_EXPORT int AdjustFontSize(int lf_height, int size_delta);
 GFX_EXPORT void AdjustLOGFONTForTesting(const FontAdjustment& font_adjustment,
                                         LOGFONT* logfont);
 
-// Clear the system fonts cache. SystemFonts is keeping a global state that
+// Retrieves a FONT from a LOGFONT structure.
+GFX_EXPORT Font GetFontFromLOGFONTForTesting(const LOGFONT& logfont);
+
+// Clears the system fonts cache. SystemFonts is keeping a global state that
 // must be reset in unittests when using |GetMinimumFontSizeCallback| or
 // |SetAdjustFontCallback|.
 GFX_EXPORT void ResetSystemFontsForTesting();
