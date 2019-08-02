@@ -711,7 +711,7 @@
     'machines': {
       'CFI Linux ToT': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',
@@ -807,7 +807,7 @@
       },
       'ToTLinux': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -820,7 +820,7 @@
       },
       'ToTLinuxASan': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -834,7 +834,7 @@
       },
       'ToTLinuxMSan': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -846,7 +846,7 @@
       # Used on an internal builder.
       'ToTLinuxOfficial': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -854,7 +854,7 @@
       },
       'ToTLinuxTSan': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -865,7 +865,7 @@
       },
       'ToTLinuxThinLTO': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -873,7 +873,7 @@
       },
       'ToTLinuxUBSanVptr': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
