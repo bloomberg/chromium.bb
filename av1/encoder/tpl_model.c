@@ -41,6 +41,27 @@ static BLOCK_SIZE convert_length_to_bsize(int length) {
   }
 }
 
+static void get_quantize_error(MACROBLOCK *x, int plane, tran_low_t *coeff,
+                               tran_low_t *qcoeff, tran_low_t *dqcoeff,
+                               TX_SIZE tx_size, int64_t *recon_error,
+                               int64_t *sse) {
+  const struct macroblock_plane *const p = &x->plane[plane];
+  const SCAN_ORDER *const scan_order = &av1_default_scan_orders[tx_size];
+  uint16_t eob;
+  int pix_num = 1 << num_pels_log2_lookup[txsize_to_bsize[tx_size]];
+  const int shift = tx_size == TX_32X32 ? 0 : 2;
+
+  av1_quantize_fp(coeff, pix_num, p->zbin_QTX, p->round_fp_QTX, p->quant_fp_QTX,
+                  p->quant_shift_QTX, qcoeff, dqcoeff, p->dequant_QTX, &eob,
+                  scan_order->scan, scan_order->iscan);
+
+  *recon_error = av1_block_error(coeff, dqcoeff, pix_num, sse) >> shift;
+  *recon_error = AOMMAX(*recon_error, 1);
+
+  *sse = (*sse) >> shift;
+  *sse = AOMMAX(*sse, 1);
+}
+
 static void wht_fwd_txfm(int16_t *src_diff, int bw, tran_low_t *coeff,
                          TX_SIZE tx_size, int is_hbd) {
   if (is_hbd) {
@@ -115,14 +136,13 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   return bestsme;
 }
 
-static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
-                            struct scale_factors *sf, int frame_idx,
-                            int16_t *src_diff, tran_low_t *coeff, int use_satd,
-                            int mi_row, int mi_col, BLOCK_SIZE bsize,
-                            TX_SIZE tx_size,
-                            const YV12_BUFFER_CONFIG *ref_frame[],
-                            uint8_t *predictor, TplDepStats *tpl_stats,
-                            int *ref_frame_index, int_mv *mv) {
+static void mode_estimation(
+    AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd, struct scale_factors *sf,
+    int frame_idx, int16_t *src_diff, tran_low_t *coeff, tran_low_t *qcoeff,
+    tran_low_t *dqcoeff, int use_satd, int mi_row, int mi_col, BLOCK_SIZE bsize,
+    TX_SIZE tx_size, const YV12_BUFFER_CONFIG *ref_frame[], uint8_t *predictor,
+    int64_t *recon_error, int64_t *sse, TplDepStats *tpl_stats,
+    int *ref_frame_index, int_mv *mv) {
   AV1_COMMON *cm = &cpi->common;
   const GF_GROUP *gf_group = &cpi->gf_group;
 
@@ -178,15 +198,16 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
       wht_fwd_txfm(src_diff, bw, coeff, tx_size, is_cur_buf_hbd(xd));
       intra_cost = aom_satd(coeff, pix_num);
     } else {
-      int64_t sse;
+      int64_t intra_sse;
       if (is_cur_buf_hbd(xd)) {
-        sse = aom_highbd_sse(xd->cur_buf->y_buffer + mb_y_offset,
-                             xd->cur_buf->y_stride, predictor, bw, bw, bh);
+        intra_sse =
+            aom_highbd_sse(xd->cur_buf->y_buffer + mb_y_offset,
+                           xd->cur_buf->y_stride, predictor, bw, bw, bh);
       } else {
-        sse = aom_sse(xd->cur_buf->y_buffer + mb_y_offset,
-                      xd->cur_buf->y_stride, predictor, bw, bw, bh);
+        intra_sse = aom_sse(xd->cur_buf->y_buffer + mb_y_offset,
+                            xd->cur_buf->y_stride, predictor, bw, bw, bh);
       }
-      intra_cost = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
+      intra_cost = ROUND_POWER_OF_TWO(intra_sse, (xd->bd - 8) * 2);
     }
     intra_cost += qstep_cur_noise;
 
@@ -220,7 +241,6 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
         use_satd
             ? ((int)qstep_ref * pix_num + 16) / (4 * 8)
             : ((int)qstep_ref * (int)qstep_ref * pix_num + 384) / (12 * 64);
-
     int mb_y_offset_ref =
         mi_row * MI_SIZE * ref_frame[rf_idx]->y_stride + mi_col * MI_SIZE;
 
@@ -253,15 +273,16 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
 
       inter_cost = aom_satd(coeff, pix_num);
     } else {
-      int64_t sse;
+      int64_t inter_sse;
       if (is_cur_buf_hbd(xd)) {
-        sse = aom_highbd_sse(xd->cur_buf->y_buffer + mb_y_offset,
-                             xd->cur_buf->y_stride, predictor, bw, bw, bh);
+        inter_sse =
+            aom_highbd_sse(xd->cur_buf->y_buffer + mb_y_offset,
+                           xd->cur_buf->y_stride, predictor, bw, bw, bh);
       } else {
-        sse = aom_sse(xd->cur_buf->y_buffer + mb_y_offset,
-                      xd->cur_buf->y_stride, predictor, bw, bw, bh);
+        inter_sse = aom_sse(xd->cur_buf->y_buffer + mb_y_offset,
+                            xd->cur_buf->y_stride, predictor, bw, bw, bh);
       }
-      inter_cost = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
+      inter_cost = ROUND_POWER_OF_TWO(inter_sse, (xd->bd - 8) * 2);
     }
     inter_cost_weighted = inter_cost + qstep_ref_noise;
 
@@ -269,6 +290,8 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
       best_rf_idx = rf_idx;
       best_inter_cost_weighted = inter_cost_weighted;
       best_mv.as_int = x->best_mv.as_int;
+      get_quantize_error(x, 0, coeff, qcoeff, dqcoeff, tx_size, recon_error,
+                         sse);
     }
   }
   best_intra_cost = AOMMAX(best_intra_cost, 1);
@@ -334,8 +357,9 @@ static double iiratio_nonlinear(double iiratio) {
 
 static void tpl_model_update_b(TplDepFrame *tpl_frame,
                                TplDepStats *tpl_stats_ptr, int mi_row,
-                               int mi_col, const BLOCK_SIZE bsize,
-                               int ref_frame_index, int_mv mv) {
+                               int mi_col, double quant_ratio,
+                               const BLOCK_SIZE bsize, int ref_frame_index,
+                               int_mv mv) {
   TplDepFrame *ref_tpl_frame = &tpl_frame[ref_frame_index];
   TplDepStats *ref_stats_ptr = ref_tpl_frame->tpl_stats_ptr;
 
@@ -366,8 +390,8 @@ static void tpl_model_update_b(TplDepFrame *tpl_frame,
 
       const double iiratio_nl = iiratio_nonlinear(
           (double)tpl_stats_ptr->inter_cost / tpl_stats_ptr->intra_cost);
-      int64_t mc_flow =
-          (int64_t)(tpl_stats_ptr->mc_dep_cost * (1.0 - iiratio_nl));
+      int64_t mc_flow = (int64_t)(quant_ratio * tpl_stats_ptr->mc_dep_cost *
+                                  (1.0 - iiratio_nl));
       /*
       int64_t mc_flow =
           tpl_stats_ptr->mc_dep_cost -
@@ -396,8 +420,9 @@ static void tpl_model_update_b(TplDepFrame *tpl_frame,
 }
 
 static void tpl_model_update(TplDepFrame *tpl_frame, TplDepStats *tpl_stats_ptr,
-                             int mi_row, int mi_col, const BLOCK_SIZE bsize,
-                             int ref_frame_index, int_mv mv) {
+                             int mi_row, int mi_col, double quant_ratio,
+                             const BLOCK_SIZE bsize, int ref_frame_index,
+                             int_mv mv) {
   int idx, idy;
   const int mi_height = mi_size_high[bsize];
   const int mi_width = mi_size_wide[bsize];
@@ -407,7 +432,7 @@ static void tpl_model_update(TplDepFrame *tpl_frame, TplDepStats *tpl_stats_ptr,
       TplDepStats *tpl_ptr =
           &tpl_stats_ptr[(mi_row + idy) * tpl_frame->stride + (mi_col + idx)];
       tpl_model_update_b(tpl_frame, tpl_ptr, mi_row + idy, mi_col + idx,
-                         BLOCK_4X4, ref_frame_index, mv);
+                         quant_ratio, BLOCK_4X4, ref_frame_index, mv);
     }
   }
 }
@@ -475,10 +500,14 @@ static void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
   DECLARE_ALIGNED(32, uint8_t, predictor8[MC_FLOW_NUM_PELS * 2]);
   DECLARE_ALIGNED(32, int16_t, src_diff[MC_FLOW_NUM_PELS]);
   DECLARE_ALIGNED(32, tran_low_t, coeff[MC_FLOW_NUM_PELS]);
+  DECLARE_ALIGNED(32, tran_low_t, qcoeff[MC_FLOW_NUM_PELS]);
+  DECLARE_ALIGNED(32, tran_low_t, dqcoeff[MC_FLOW_NUM_PELS]);
 
   const TX_SIZE tx_size = max_txsize_lookup[bsize];
   const int mi_height = mi_size_high[bsize];
   const int mi_width = mi_size_wide[bsize];
+
+  int64_t recon_error = 1, sse = 1;
 
   // Setup scaling factor
   av1_setup_scale_factors_for_frame(
@@ -536,17 +565,18 @@ static void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
                              (17 - 2 * AOM_INTERP_EXTEND);
       xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
       xd->mb_to_right_edge = ((cm->mi_cols - mi_width - mi_col) * MI_SIZE) * 8;
-      mode_estimation(cpi, x, xd, &sf, frame_idx, src_diff, coeff, 1, mi_row,
-                      mi_col, bsize, tx_size, ref_frame, predictor, &tpl_stats,
+      mode_estimation(cpi, x, xd, &sf, frame_idx, src_diff, coeff, qcoeff,
+                      dqcoeff, 1, mi_row, mi_col, bsize, tx_size, ref_frame,
+                      predictor, &recon_error, &sse, &tpl_stats,
                       &ref_frame_index, &mv);
 
       // Motion flow dependency dispenser.
       tpl_model_store(tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
                       tpl_frame->stride, &tpl_stats);
-
+      double quant_ratio = (double)recon_error / sse;
       if (frame_idx)
         tpl_model_update(cpi->tpl_frame, tpl_frame->tpl_stats_ptr, mi_row,
-                         mi_col, bsize, ref_frame_index, mv);
+                         mi_col, quant_ratio, bsize, ref_frame_index, mv);
     }
   }
 
