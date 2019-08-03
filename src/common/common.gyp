@@ -229,6 +229,7 @@
         'simple_string_dictionary_unittest.cc',
         'stabs_reader_unittest.cc',
         'stabs_to_module_unittest.cc',
+        'string_conversion_unittest.cc',
         'test_assembler_unittest.cc',
         'tests/auto_tempdir.h',
         'tests/file_utils.cc',

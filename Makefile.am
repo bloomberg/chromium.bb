@@ -658,6 +658,7 @@ src_tools_mac_dump_syms_dump_syms_mac_LDADD= \
 
 src_common_dumper_unittest_SOURCES = \
 	src/common/byte_cursor_unittest.cc \
+	src/common/convert_UTF.c \
 	src/common/dwarf_cfi_to_module.cc \
 	src/common/dwarf_cfi_to_module_unittest.cc \
 	src/common/dwarf_cu_to_module.cc \
@@ -674,6 +675,8 @@ src_common_dumper_unittest_SOURCES = \
 	src/common/stabs_reader_unittest.cc \
 	src/common/stabs_to_module.cc \
 	src/common/stabs_to_module_unittest.cc \
+	src/common/string_conversion.cc \
+	src/common/string_conversion_unittest.cc \
 	src/common/test_assembler.cc \
 	src/common/dwarf/bytereader.cc \
 	src/common/dwarf/bytereader.h \
