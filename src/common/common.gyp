@@ -61,7 +61,7 @@
         'android/ucontext_constants.h',
         'basictypes.h',
         'byte_cursor.h',
-        'convert_UTF.c',
+        'convert_UTF.cc',
         'convert_UTF.h',
         'dwarf/bytereader-inl.h',
         'dwarf/bytereader.cc',

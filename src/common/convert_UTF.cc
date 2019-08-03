@@ -60,10 +60,16 @@ See the header file "ConvertUTF.h" for complete documentation.
 #include <stdio.h>
 #endif
 
-static const int halfShift  = 10; /* used for shifting by 10 bits */
+namespace google_breakpad {
 
-static const UTF32 halfBase = 0x0010000UL;
-static const UTF32 halfMask = 0x3FFUL;
+namespace {
+
+const int halfShift  = 10; /* used for shifting by 10 bits */
+
+const UTF32 halfBase = 0x0010000UL;
+const UTF32 halfMask = 0x3FFUL;
+
+}  // namespace
 
 #define UNI_SUR_HIGH_START  (UTF32)0xD800
 #define UNI_SUR_HIGH_END    (UTF32)0xDBFF
@@ -183,6 +189,8 @@ ConversionResult ConvertUTF16toUTF32 (const UTF16** sourceStart, const UTF16* so
 
 /* --------------------------------------------------------------------- */
 
+namespace {
+
 /*
  * Index into the table below with the first byte of a UTF-8 sequence to
  * get the number of trailing bytes that are supposed to follow it.
@@ -190,7 +198,7 @@ ConversionResult ConvertUTF16toUTF32 (const UTF16** sourceStart, const UTF16* so
  * left as-is for anyone who may want to do such conversion, which was
  * allowed in earlier algorithms.
  */
-static const char trailingBytesForUTF8[256] = {
+const char trailingBytesForUTF8[256] = {
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -206,7 +214,7 @@ static const char trailingBytesForUTF8[256] = {
  * This table contains as many values as there might be trailing bytes
  * in a UTF-8 sequence.
  */
-static const UTF32 offsetsFromUTF8[6] = { 0x00000000UL, 0x00003080UL, 0x000E2080UL,
+const UTF32 offsetsFromUTF8[6] = { 0x00000000UL, 0x00003080UL, 0x000E2080UL,
   0x03C82080UL, 0xFA082080UL, 0x82082080UL };
 
 /*
@@ -216,7 +224,7 @@ static const UTF32 offsetsFromUTF8[6] = { 0x00000000UL, 0x00003080UL, 0x000E2080
  * (I.e., one byte sequence, two byte... etc.). Remember that sequencs
  * for *legal* UTF-8 will be 4 or fewer bytes total.
  */
-static const UTF8 firstByteMark[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+const UTF8 firstByteMark[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
 
 /* --------------------------------------------------------------------- */
 
@@ -227,6 +235,8 @@ static const UTF8 firstByteMark[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC 
 * If your compiler supports it, the "isLegalUTF8" call can be turned
 * into an inline function.
 */
+
+}  // namespace
 
 /* --------------------------------------------------------------------- */
 
@@ -299,6 +309,8 @@ return result;
 
 /* --------------------------------------------------------------------- */
 
+namespace {
+
 /*
  * Utility routine to tell whether a sequence of bytes is legal UTF-8.
  * This must be called with the length pre-determined by the first byte.
@@ -309,8 +321,7 @@ return result;
  * If presented with a length > 4, this returns false.  The Unicode
  * definition of UTF-8 goes up to 4-byte sequences.
  */
-
-static Boolean isLegalUTF8(const UTF8 *source, int length) {
+Boolean isLegalUTF8(const UTF8 *source, int length) {
   UTF8 a;
   const UTF8 *srcptr = source+length;
   switch (length) {
@@ -334,6 +345,8 @@ static Boolean isLegalUTF8(const UTF8 *source, int length) {
   if (*source > 0xF4) return false;
   return true;
 }
+
+}  // namespace
 
 /* --------------------------------------------------------------------- */
 
@@ -552,3 +565,5 @@ In UTF-8 writing code, the switches on "bytesToWrite" are
 similarly unrolled loops.
 
 --------------------------------------------------------------------- */
+
+}  // namespace google_breakpad

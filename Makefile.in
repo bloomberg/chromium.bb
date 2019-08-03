@@ -307,7 +307,7 @@ am__src_client_linux_libbreakpad_client_a_SOURCES_DIST =  \
 	src/client/linux/minidump_writer/minidump_writer.cc \
 	src/client/minidump_file_writer-inl.h \
 	src/client/minidump_file_writer.cc \
-	src/client/minidump_file_writer.h src/common/convert_UTF.c \
+	src/client/minidump_file_writer.h src/common/convert_UTF.cc \
 	src/common/convert_UTF.h src/common/md5.cc src/common/md5.h \
 	src/common/string_conversion.cc src/common/string_conversion.h \
 	src/common/linux/elf_core_dump.cc src/common/linux/elfutils.cc \
@@ -689,7 +689,7 @@ src_client_linux_linux_dumper_unittest_helper_LINK = $(CXXLD) \
 	$(src_client_linux_linux_dumper_unittest_helper_LDFLAGS) \
 	$(LDFLAGS) -o $@
 am__src_common_dumper_unittest_SOURCES_DIST =  \
-	src/common/byte_cursor_unittest.cc src/common/convert_UTF.c \
+	src/common/byte_cursor_unittest.cc src/common/convert_UTF.cc \
 	src/common/dwarf_cfi_to_module.cc \
 	src/common/dwarf_cfi_to_module_unittest.cc \
 	src/common/dwarf_cu_to_module.cc \
@@ -2157,7 +2157,7 @@ CLEANFILES = $(am__append_12)
 @LINUX_HOST_TRUE@	src/client/minidump_file_writer-inl.h \
 @LINUX_HOST_TRUE@	src/client/minidump_file_writer.cc \
 @LINUX_HOST_TRUE@	src/client/minidump_file_writer.h \
-@LINUX_HOST_TRUE@	src/common/convert_UTF.c \
+@LINUX_HOST_TRUE@	src/common/convert_UTF.cc \
 @LINUX_HOST_TRUE@	src/common/convert_UTF.h src/common/md5.cc \
 @LINUX_HOST_TRUE@	src/common/md5.h \
 @LINUX_HOST_TRUE@	src/common/string_conversion.cc \
@@ -2522,7 +2522,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_common_dumper_unittest_SOURCES = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/byte_cursor_unittest.cc \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/convert_UTF.c \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/convert_UTF.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_cfi_to_module.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_cfi_to_module_unittest.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_cu_to_module.cc \
@@ -5170,20 +5170,6 @@ src/common/android/src_client_linux_linux_client_unittest_shlib-breakpad_getcont
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-src/common/src_common_dumper_unittest-convert_UTF.o: src/common/convert_UTF.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT src/common/src_common_dumper_unittest-convert_UTF.o -MD -MP -MF src/common/$(DEPDIR)/src_common_dumper_unittest-convert_UTF.Tpo -c -o src/common/src_common_dumper_unittest-convert_UTF.o `test -f 'src/common/convert_UTF.c' || echo '$(srcdir)/'`src/common/convert_UTF.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_common_dumper_unittest-convert_UTF.Tpo src/common/$(DEPDIR)/src_common_dumper_unittest-convert_UTF.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/common/convert_UTF.c' object='src/common/src_common_dumper_unittest-convert_UTF.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o src/common/src_common_dumper_unittest-convert_UTF.o `test -f 'src/common/convert_UTF.c' || echo '$(srcdir)/'`src/common/convert_UTF.c
-
-src/common/src_common_dumper_unittest-convert_UTF.obj: src/common/convert_UTF.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT src/common/src_common_dumper_unittest-convert_UTF.obj -MD -MP -MF src/common/$(DEPDIR)/src_common_dumper_unittest-convert_UTF.Tpo -c -o src/common/src_common_dumper_unittest-convert_UTF.obj `if test -f 'src/common/convert_UTF.c'; then $(CYGPATH_W) 'src/common/convert_UTF.c'; else $(CYGPATH_W) '$(srcdir)/src/common/convert_UTF.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_common_dumper_unittest-convert_UTF.Tpo src/common/$(DEPDIR)/src_common_dumper_unittest-convert_UTF.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/common/convert_UTF.c' object='src/common/src_common_dumper_unittest-convert_UTF.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o src/common/src_common_dumper_unittest-convert_UTF.obj `if test -f 'src/common/convert_UTF.c'; then $(CYGPATH_W) 'src/common/convert_UTF.c'; else $(CYGPATH_W) '$(srcdir)/src/common/convert_UTF.c'; fi`
-
 .cc.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
@@ -5661,6 +5647,20 @@ src/common/src_common_dumper_unittest-byte_cursor_unittest.obj: src/common/byte_
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/byte_cursor_unittest.cc' object='src/common/src_common_dumper_unittest-byte_cursor_unittest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_common_dumper_unittest-byte_cursor_unittest.obj `if test -f 'src/common/byte_cursor_unittest.cc'; then $(CYGPATH_W) 'src/common/byte_cursor_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/byte_cursor_unittest.cc'; fi`
+
+src/common/src_common_dumper_unittest-convert_UTF.o: src/common/convert_UTF.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_common_dumper_unittest-convert_UTF.o -MD -MP -MF src/common/$(DEPDIR)/src_common_dumper_unittest-convert_UTF.Tpo -c -o src/common/src_common_dumper_unittest-convert_UTF.o `test -f 'src/common/convert_UTF.cc' || echo '$(srcdir)/'`src/common/convert_UTF.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_common_dumper_unittest-convert_UTF.Tpo src/common/$(DEPDIR)/src_common_dumper_unittest-convert_UTF.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/convert_UTF.cc' object='src/common/src_common_dumper_unittest-convert_UTF.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_common_dumper_unittest-convert_UTF.o `test -f 'src/common/convert_UTF.cc' || echo '$(srcdir)/'`src/common/convert_UTF.cc
+
+src/common/src_common_dumper_unittest-convert_UTF.obj: src/common/convert_UTF.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_common_dumper_unittest-convert_UTF.obj -MD -MP -MF src/common/$(DEPDIR)/src_common_dumper_unittest-convert_UTF.Tpo -c -o src/common/src_common_dumper_unittest-convert_UTF.obj `if test -f 'src/common/convert_UTF.cc'; then $(CYGPATH_W) 'src/common/convert_UTF.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/convert_UTF.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_common_dumper_unittest-convert_UTF.Tpo src/common/$(DEPDIR)/src_common_dumper_unittest-convert_UTF.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/convert_UTF.cc' object='src/common/src_common_dumper_unittest-convert_UTF.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_common_dumper_unittest-convert_UTF.obj `if test -f 'src/common/convert_UTF.cc'; then $(CYGPATH_W) 'src/common/convert_UTF.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/convert_UTF.cc'; fi`
 
 src/common/src_common_dumper_unittest-dwarf_cfi_to_module.o: src/common/dwarf_cfi_to_module.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_common_dumper_unittest-dwarf_cfi_to_module.o -MD -MP -MF src/common/$(DEPDIR)/src_common_dumper_unittest-dwarf_cfi_to_module.Tpo -c -o src/common/src_common_dumper_unittest-dwarf_cfi_to_module.o `test -f 'src/common/dwarf_cfi_to_module.cc' || echo '$(srcdir)/'`src/common/dwarf_cfi_to_module.cc
