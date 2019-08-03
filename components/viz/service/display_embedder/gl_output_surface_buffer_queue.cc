@@ -115,10 +115,6 @@ void GLOutputSurfaceBufferQueue::SwapBuffers(OutputSurfaceFrame frame) {
   GLOutputSurface::SwapBuffers(std::move(frame));
 }
 
-gfx::Rect GLOutputSurfaceBufferQueue::GetCurrentFramebufferDamage() const {
-  return buffer_queue_->CurrentBufferDamage();
-}
-
 uint32_t GLOutputSurfaceBufferQueue::GetFramebufferCopyTextureFormat() {
   return buffer_queue_->internal_format();
 }
