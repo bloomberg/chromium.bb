@@ -892,6 +892,14 @@ void OverviewSession::OnShellDestroying() {
   EndOverview();
 }
 
+void OverviewSession::OnShelfAlignmentChanged(aura::Window* root_window) {
+  // When the shelf alignment changes while in overview, the display work area
+  // doesn't get updated anyways (see https://crbug.com/834400). In this case,
+  // even updating the grid bounds won't make any difference, so we simply exit
+  // overview.
+  EndOverview();
+}
+
 void OverviewSession::OnSplitViewStateChanged(SplitViewState previous_state,
                                               SplitViewState state) {
   // Do nothing if overview is being shutdown.

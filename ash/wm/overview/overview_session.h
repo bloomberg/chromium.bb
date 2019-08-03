@@ -246,6 +246,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // ShelObserver:
   void OnShellDestroying() override;
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
