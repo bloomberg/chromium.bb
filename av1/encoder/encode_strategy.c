@@ -215,20 +215,6 @@ static INLINE FRAME_UPDATE_TYPE get_frame_update_type(const AV1_COMP *cpi) {
   return gf_group->update_type[gf_group->index];
 }
 
-// Get ARF update index for the current frame.
-// Returns 1 for internal ARF, and 0 otherwise (including top-level ARF).
-static INLINE int get_arf_update_idx(const GF_GROUP *const gf_group) {
-  if (gf_group->index == gf_group->size) {
-    // Special case: happens at the start of a video, or at the start of next GF
-    // group, or at the end of the key-frame group. So, not marked in
-    // gf_group->arf_update_idx array, but can implicitly inferred be a
-    // top-level ARF.
-    return 0;
-  }
-  // General case.
-  return (gf_group->arf_update_idx[gf_group->index] > 0);
-}
-
 // Note: the parameters related to OVERLAY_UPDATE will be taken care of in
 // av1_get_second_pass_params().
 static void check_show_existing_frame(AV1_COMP *const cpi,
