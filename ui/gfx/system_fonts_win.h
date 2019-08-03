@@ -34,6 +34,10 @@ GFX_EXPORT void SetGetMinimumFontSizeCallback(
 typedef void (*AdjustFontCallback)(FontAdjustment* font_adjustment);
 GFX_EXPORT void SetAdjustFontCallback(AdjustFontCallback callback);
 
+// Returns the specified Windows default system font. By default, this is the
+// font used for message boxes (see struct NONCLIENTMETRICS).
+GFX_EXPORT const Font& GetDefaultSystemFont();
+
 // Returns the specified Windows system font, suitable for drawing on screen
 // elements.
 GFX_EXPORT const Font& GetSystemFont(SystemFont system_font);

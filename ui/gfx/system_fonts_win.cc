@@ -250,6 +250,13 @@ void SetAdjustFontCallback(AdjustFontCallback callback) {
   SystemFonts::SetAdjustFontCallback(callback);
 }
 
+const Font& GetDefaultSystemFont() {
+  // The message font is the closest font for a default system font from the
+  // structure NONCLIENTMETRICS. The lfMessageFont field contains information
+  // about the logical font used to display text in message boxes.
+  return GetSystemFont(SystemFont::kMessage);
+}
+
 const Font& GetSystemFont(SystemFont system_font) {
   return SystemFonts::Instance()->GetFont(system_font);
 }

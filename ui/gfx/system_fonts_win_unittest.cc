@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -160,6 +161,11 @@ TEST_F(SystemFontsWinTest, GetFontFromLOGFONT_WithStyle) {
   Font font = GetFontFromLOGFONTForTesting(logfont);
   EXPECT_EQ(font.GetStyle(), Font::FontStyle::ITALIC);
   EXPECT_EQ(font.GetWeight(), Font::Weight::BOLD);
+}
+
+TEST_F(SystemFontsWinTest, GetDefaultSystemFont) {
+  Font system_font = GetDefaultSystemFont();
+  EXPECT_EQ(base::WideToUTF8(kSegoeUI), system_font.GetFontName());
 }
 
 }  // namespace win
