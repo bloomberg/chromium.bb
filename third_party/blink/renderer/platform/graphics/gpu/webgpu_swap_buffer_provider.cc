@@ -13,13 +13,28 @@
 
 namespace blink {
 
+namespace {
+viz::ResourceFormat DawnFormatToViz(DawnTextureFormat format) {
+  if (format == DAWN_TEXTURE_FORMAT_BGRA8_UNORM) {
+    return viz::BGRA_8888;
+  }
+  if (format == DAWN_TEXTURE_FORMAT_RGBA8_UNORM) {
+    return viz::RGBA_8888;
+  }
+  NOTREACHED();
+  return viz::RGBA_8888;
+}
+}  // namespace
+
 WebGPUSwapBufferProvider::WebGPUSwapBufferProvider(
     Client* client,
     scoped_refptr<DawnControlClientHolder> dawn_control_client,
-    DawnTextureUsageBit usage)
+    DawnTextureUsageBit usage,
+    DawnTextureFormat format)
     : dawn_control_client_(dawn_control_client),
       client_(client),
-      usage_(usage) {
+      usage_(usage),
+      format_(DawnFormatToViz(format)) {
   // Create a layer that will be used by the canvas and will ask for a
   // SharedImage each frame.
   layer_ = cc::TextureLayer::CreateForMailbox(this);
@@ -81,8 +96,7 @@ DawnTexture WebGPUSwapBufferProvider::GetNewTexture(DawnDevice device,
   // Create a new swap buffer.
   // TODO(cwallez@chromium.org): have some recycling mechanism.
   gpu::Mailbox mailbox = sii->CreateSharedImage(
-      viz::RGBA_8888, static_cast<gfx::Size>(size),
-      gfx::ColorSpace::CreateSRGB(),
+      format_, static_cast<gfx::Size>(size), gfx::ColorSpace::CreateSRGB(),
       gpu::SHARED_IMAGE_USAGE_WEBGPU | gpu::SHARED_IMAGE_USAGE_DISPLAY);
   gpu::SyncToken creation_token = sii->GenUnverifiedSyncToken();
 
@@ -156,7 +170,7 @@ bool WebGPUSwapBufferProvider::PrepareTransferableResource(
       current_swap_buffer_->access_finished_token, current_swap_buffer_->size,
       false);
   out_resource->color_space = gfx::ColorSpace::CreateSRGB();
-  out_resource->format = viz::RGBA_8888;
+  out_resource->format = format_;
 
   // This holds a ref on the SwapBuffers that will keep it alive until the
   // mailbox is released (and while the release callback is running).
