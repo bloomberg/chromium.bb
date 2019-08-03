@@ -116,7 +116,7 @@ sign \x2116 1345 NUMERO SIGN
 punctuation \x00Ad 36			# 173	  soft hyphen
 sign \x00B0 356 degrees
 sign \x00B4 4
-always \x00B4 4 # acute accent sign
+noback always \x00B4 4 # acute accent sign
 sign \x00B5 2-134 # micro sign, (mu)
 sign \x00B6 4-1234-345		#	182	  ¶ pilcrow sign
 math \x00D7 56-236				# 215		× multiplication sign
@@ -302,8 +302,8 @@ postpunc ) 345
 begword ` 6-236
 prepunc " 236
 postpunc " 356
-always \x00AB 236 (opening quotation mark) 
-always \x00BB 356 (closing quotation mark)
+noback always \x00AB 236 (opening quotation mark)
+noback always \x00BB 356 (closing quotation mark)
 prepunc ' 6-236
 postpunc ' 356-3
 word 'em = 

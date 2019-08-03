@@ -270,8 +270,8 @@ always	\x2013 5-36		 # 8211		smart minus sign
 
 always	\x201C 45-236	 # 8220			smart opening double quote
 always	\x201D 45-356	 # 8221			smart closing double quote
-always	\x201E 236	 # 8222			smart double low quotation mark
-always	\x201F 356	 # 8223			smart double high reverse quotation mark
+noback always	\x201E 236	 # 8222			smart double low quotation mark
+noback always	\x201F 356	 # 8223			smart double high reverse quotation mark
 
 # mathematical symbols
 decpoint . 256
