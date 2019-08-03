@@ -7,8 +7,14 @@
 #include <utility>
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_util.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_highlight_controller.h"
+#include "ash/wm/overview/overview_session.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
@@ -69,9 +75,27 @@ NewDeskButton::NewDeskButton(views::ButtonListener* listener)
 
 void NewDeskButton::UpdateButtonState() {
   const bool enabled = DesksController::Get()->CanCreateDesks();
+  if (GetEnabled() == enabled)
+    return;
+
+  // Notify the overview highlight if we are about to be disabled.
+  if (!enabled) {
+    OverviewSession* overview_session =
+        Shell::Get()->overview_controller()->overview_session();
+    DCHECK(overview_session);
+    overview_session->highlight_controller()->OnViewDestroyingOrDisabling(this);
+  }
   SetEnabled(enabled);
   SetBackground(views::CreateRoundedRectBackground(
       enabled ? kBackgroundColor : kDisabledBackgroundColor, kCornerRadius));
+}
+
+void NewDeskButton::OnButtonPressed() {
+  auto* controller = DesksController::Get();
+  if (controller->CanCreateDesks()) {
+    controller->NewDesk(DesksCreationRemovalSource::kButton);
+    UpdateButtonState();
+  }
 }
 
 const char* NewDeskButton::GetClassName() const {
@@ -119,5 +143,14 @@ gfx::Rect NewDeskButton::GetHighlightBoundsInScreen() {
 gfx::RoundedCornersF NewDeskButton::GetRoundedCornersRadii() const {
   return gfx::RoundedCornersF(kCornerRadius);
 }
+
+void NewDeskButton::MaybeActivateHighlightedView() {
+  if (!GetEnabled())
+    return;
+
+  OnButtonPressed();
+}
+
+void NewDeskButton::MaybeCloseHighlightedView() {}
 
 }  // namespace ash

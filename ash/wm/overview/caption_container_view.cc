@@ -267,6 +267,16 @@ gfx::Rect CaptionContainerView::GetHighlightBoundsInScreen() {
   return target_bounds;
 }
 
+void CaptionContainerView::MaybeActivateHighlightedView() {
+  if (event_delegate_)
+    event_delegate_->OnHighlightedViewActivated();
+}
+
+void CaptionContainerView::MaybeCloseHighlightedView() {
+  if (event_delegate_)
+    event_delegate_->OnHighlightedViewClosed();
+}
+
 void CaptionContainerView::Layout() {
   gfx::Rect bounds(GetLocalBounds());
   bounds.Inset(kMarginDp, kMarginDp);

@@ -28,9 +28,6 @@ class OverviewSession;
 // Manages highlighting items while in overview. Creates a semi transparent
 // highlight when users try to traverse through overview items using arrow keys
 // or tab keys, or when users are tab dragging.
-// TODO(sammiequon): Add a new test class which tests highlighting desk items,
-// and move the existing OverviewSession highlight related tests to the new
-// class.
 class ASH_EXPORT OverviewHighlightController {
  public:
   // An interface that must be implemented by classes that want to be
@@ -47,6 +44,10 @@ class ASH_EXPORT OverviewHighlightController {
     // |this|.
     virtual gfx::RoundedCornersF GetRoundedCornersRadii() const;
 
+    // Attempts to activate or close this view. Overriders may do nothing.
+    virtual void MaybeActivateHighlightedView() = 0;
+    virtual void MaybeCloseHighlightedView() = 0;
+
    protected:
     virtual ~OverviewHighlightableView() {}
   };
@@ -59,11 +60,16 @@ class ASH_EXPORT OverviewHighlightController {
 
   // Called when a |view| that might be in the focus traversal rotation is about
   // to be deleted.
-  void OnViewDestroying(OverviewHighlightableView* view);
+  void OnViewDestroyingOrDisabling(OverviewHighlightableView* view);
 
   // Sets and gets the visibility of |highlight_widget_|.
   void SetFocusHighlightVisibility(bool visible);
   bool IsFocusHighlightVisible() const;
+
+  // Activates or closes the currently highlighted view (if any) if it supports
+  // the activation or closing operations respectively.
+  bool MaybeActivateHighlightedView();
+  bool MaybeCloseHighlightedView();
 
   // Tries to get the item that is currently highlighted. Returns null if there
   // is no highlight, or if the highlight is on a desk view.

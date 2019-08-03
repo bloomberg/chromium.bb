@@ -131,6 +131,7 @@ DesksBarView::DesksBarView()
 
   AddChildView(background_view_);
   AddChildView(new_desk_button_);
+
   DesksController::Get()->AddObserver(this);
 }
 
@@ -244,10 +245,7 @@ void DesksBarView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
   auto* controller = DesksController::Get();
   if (sender == new_desk_button_) {
-    if (controller->CanCreateDesks()) {
-      controller->NewDesk(DesksCreationRemovalSource::kButton);
-      UpdateNewDeskButtonState();
-    }
+    new_desk_button_->OnButtonPressed();
     return;
   }
 
@@ -277,7 +275,7 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   // removed from the collection because it needs to know the index of the mini
   // view relative to other traversable views.
   auto* highlight_controller = GetHighlightController();
-  highlight_controller->OnViewDestroying(iter->get());
+  highlight_controller->OnViewDestroyingOrDisabling(iter->get());
 
   const int begin_x = GetFirstMiniViewXOffset();
   std::unique_ptr<DeskMiniView> removed_mini_view = std::move(*iter);
@@ -285,7 +283,7 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
 
   Layout();
   UpdateMiniViewsLabels();
-  UpdateNewDeskButtonState();
+  new_desk_button_->UpdateButtonState();
 
   // Once the remaining mini views have their bounds updated, notify the
   // overview highlight controller so that it can update the focus highlight, if
@@ -319,10 +317,6 @@ void DesksBarView::OnDeskActivationChanged(const Desk* activated,
 }
 
 void DesksBarView::OnDeskSwitchAnimationFinished() {}
-
-void DesksBarView::UpdateNewDeskButtonState() {
-  new_desk_button_->UpdateButtonState();
-}
 
 void DesksBarView::UpdateNewMiniViews(bool animate) {
   const auto& desks = DesksController::Get()->desks();

@@ -738,6 +738,23 @@ bool OverviewSession::IsEmpty() const {
   return true;
 }
 
+void OverviewSession::OnHighlightedItemActivated(OverviewItem* item) {
+  UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.ArrowKeyPresses",
+                           num_key_presses_);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.WindowSelector.KeyPressesOverItemsRatio",
+                              (num_key_presses_ * 100) / num_items_, 1, 300,
+                              30);
+  base::RecordAction(
+      base::UserMetricsAction("WindowSelector_OverviewEnterKey"));
+  SelectWindow(item);
+}
+
+void OverviewSession::OnHighlightedItemClosed(OverviewItem* item) {
+  base::RecordAction(
+      base::UserMetricsAction("WindowSelector_OverviewCloseKey"));
+  item->CloseWindow();
+}
+
 void OverviewSession::OnDisplayRemoved(const display::Display& display) {
   // TODO(flackr): Keep window selection active on remaining displays.
   EndOverview();
@@ -843,40 +860,16 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
       Move(/*reverse=*/true);
       break;
     case ui::VKEY_W: {
-      // TODO(afakhry|sammiequon): Make ctrl W and enter shortcut work for desk
-      // items. ctrl W should activate the mini desk close button and do nothing
-      // for the new desk button. Enter should activate the desk mini view or
-      // new desk button.
-      if (!(event->flags() & ui::EF_CONTROL_DOWN) ||
-          !highlight_controller_->IsFocusHighlightVisible()) {
+      if (!(event->flags() & ui::EF_CONTROL_DOWN))
         return;
-      }
 
-      OverviewItem* item = highlight_controller_->GetHighlightedItem();
-      if (!item)
+      if (!highlight_controller_->MaybeCloseHighlightedView())
         return;
-      base::RecordAction(
-          base::UserMetricsAction("WindowSelector_OverviewCloseKey"));
-      item->CloseWindow();
       break;
     }
     case ui::VKEY_RETURN: {
-      // Ignore if no item is selected.
-      if (!highlight_controller_->IsFocusHighlightVisible())
+      if (!highlight_controller_->MaybeActivateHighlightedView())
         return;
-
-      OverviewItem* item = highlight_controller_->GetHighlightedItem();
-      if (!item)
-        return;
-
-      UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.ArrowKeyPresses",
-                               num_key_presses_);
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.WindowSelector.KeyPressesOverItemsRatio",
-                                  (num_key_presses_ * 100) / num_items_, 1, 300,
-                                  30);
-      base::RecordAction(
-          base::UserMetricsAction("WindowSelector_OverviewEnterKey"));
-      SelectWindow(item);
       break;
     }
     default:
