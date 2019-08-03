@@ -1414,7 +1414,7 @@
       'Mac Retina Debug (AMD)',
       'Win10 Debug (NVIDIA)',
       # chromium.gpu.fyi
-      'Win10 FYI Debug (NVIDIA)',
+      'Win10 FYI x64 Debug (NVIDIA)',
       'Win7 FYI Debug (AMD)',
       # Disabled due to dbus crashes crbug.com/927465
       'Linux FYI Experimental Release (Intel HD 630)',
@@ -1614,9 +1614,9 @@
     'remove_from': [
       # chromium.gpu.fyi
       # Windows Intel doesn't have the GL extensions to support this test.
-      'ANGLE GPU Win10 Release (Intel HD 630)',
-      'Optional Win10 Release (Intel HD 630)',
-      'Win10 FYI Release (Intel HD 630)',
+      'ANGLE GPU Win10 x64 Release (Intel HD 630)',
+      'Optional Win10 x64 Release (Intel HD 630)',
+      'Win10 FYI x64 Release (Intel HD 630)',
       'Win10 FYI x64 Exp Release (Intel HD 630)',
     ],
   },
@@ -1675,7 +1675,7 @@
   'webgl2_conformance_gl_passthrough_tests': {
     'remove_from': [
       # Not enough capacity. https://crbug.com/946694
-      'ANGLE GPU Win10 Release (Intel HD 630)',
+      'ANGLE GPU Win10 x64 Release (Intel HD 630)',
     ],
   },
   'webgl2_conformance_tests': {
