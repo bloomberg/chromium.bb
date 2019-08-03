@@ -20,8 +20,7 @@ set up dependencies:
 cd cts/
 yarn install
 
-yarn global add grunt-cli  # install grunt globally
-grunt  # show available grunt commands
+npx grunt  # show available grunt commands
 ```
 
 ### Build
@@ -30,13 +29,13 @@ To build and run all pre-submit checks (including type and lint checks and
 unittests), use:
 
 ```sh
-grunt pre
+npx grunt pre
 ```
 
 To just build the project, use:
 
 ```sh
-grunt build
+npx grunt build
 ```
 
 ### Run
