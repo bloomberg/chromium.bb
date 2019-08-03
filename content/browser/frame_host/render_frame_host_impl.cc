@@ -167,7 +167,7 @@
 #include "media/base/user_input_monitor.h"
 #include "media/learning/common/value.h"
 #include "media/media_buildflags.h"
-#include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/mojo/mojom/remoting.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_perf_history.h"

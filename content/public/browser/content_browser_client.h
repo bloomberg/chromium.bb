@@ -41,7 +41,7 @@
 #include "media/base/video_codecs.h"
 #include "media/cdm/cdm_proxy.h"
 #include "media/media_buildflags.h"
-#include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/mojo/mojom/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/mime_util.h"

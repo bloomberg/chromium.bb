@@ -2110,8 +2110,8 @@ jumbo_split_static_library("browser") {
     "//media/midi",
     "//media/mojo:buildflags",
     "//media/mojo/common",
-    "//media/mojo/interfaces:mirror_service_remoting",
-    "//media/mojo/interfaces:remoting",
+    "//media/mojo/mojom:mirror_service_remoting",
+    "//media/mojo/mojom:remoting",
     "//media/mojo/services",
     "//media/webrtc",
     "//mojo/core/embedder",
@@ -2861,7 +2861,7 @@ jumbo_split_static_library("browser") {
       "//components/send_tab_to_self",
       "//components/signin/internal/identity_manager",  # see android/signin/DEPS
       "//media/mojo/clients",
-      "//media/mojo/interfaces:constants",
+      "//media/mojo/mojom:constants",
       "//rlz:rlz_utils",
       "//sandbox",
       "//sandbox:sandbox_buildflags",
@@ -4529,7 +4529,7 @@ jumbo_split_static_library("browser") {
       "media/output_protection_impl.cc",
       "media/output_protection_impl.h",
     ]
-    deps += [ "//media/mojo/interfaces" ]
+    deps += [ "//media/mojo/mojom" ]
 
     if (enable_widevine) {
       if (enable_widevine_cdm_component) {
@@ -4562,7 +4562,7 @@ jumbo_split_static_library("browser") {
 
     if (mojo_media_host == "browser") {
       deps += [
-        "//media/mojo/interfaces:constants",
+        "//media/mojo/mojom:constants",
         "//media/mojo/services",
       ]
     }

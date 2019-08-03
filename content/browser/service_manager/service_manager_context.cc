@@ -53,7 +53,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
-#include "media/mojo/interfaces/constants.mojom.h"
+#include "media/mojo/mojom/constants.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"

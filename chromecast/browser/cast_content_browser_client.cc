@@ -84,7 +84,7 @@
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 #include "chromecast/media/service/cast_mojo_media_client.h"
-#include "media/mojo/interfaces/constants.mojom.h"  // nogncheck
+#include "media/mojo/mojom/constants.mojom.h"  // nogncheck
 #include "media/mojo/services/media_service.h"      // nogncheck
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
 
