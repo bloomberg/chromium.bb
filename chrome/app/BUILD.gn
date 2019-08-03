@@ -562,7 +562,6 @@ source_set("builtin_service_manifests") {
     "//device/vr/buildflags",
     "//extensions/buildflags",
     "//printing/buildflags",
-    "//services/preferences/public/cpp:local_state_manifest",
     "//services/service_manager/public/cpp",
   ]
 

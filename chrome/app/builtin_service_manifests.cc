@@ -12,7 +12,6 @@
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/preferences/public/cpp/local_state_manifest.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/manifest.h"
@@ -61,7 +60,6 @@ const std::vector<service_manager::Manifest>&
 GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
       GetFileUtilManifest(),
-      prefs::GetLocalStateManifest(),
       quarantine::GetQuarantineManifest(),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       GetRemovableStorageWriterManifest(),

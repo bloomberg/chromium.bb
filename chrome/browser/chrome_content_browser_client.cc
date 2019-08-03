@@ -329,8 +329,6 @@
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/preferences/public/cpp/in_process_service_factory.h"
-#include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
@@ -3897,16 +3895,6 @@ void ChromeContentBrowserClient::RunServiceInstance(
     const service_manager::Identity& identity,
     mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
   const std::string& service_name = identity.name();
-  if (service_name == prefs::mojom::kLocalStateServiceName) {
-    if (!g_browser_process || !g_browser_process->pref_service_factory())
-      return;
-
-    service_manager::Service::RunAsyncUntilTermination(
-        g_browser_process->pref_service_factory()->CreatePrefService(
-            std::move(*receiver)));
-    return;
-  }
-
 #if defined(OS_WIN)
   bool run_quarantine_service_in_process =
       !base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine);
