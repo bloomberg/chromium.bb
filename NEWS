@@ -10,7 +10,7 @@ issues]].
   braille cell for back-translation. Thanks to Bue Vester-Andersen.
 - Implement noUndefined mode for forward translation, thanks to Dave
   Mielke.
-- Use fallback braille representations for rendering undefined
+- Use fallback braille representations (NABCC) for rendering undefined
   characters in hexadecimal notation, thanks to Dave Mielke.
 - Always render undefined characters, also ASCII characters, in
   hexadecimal notation.

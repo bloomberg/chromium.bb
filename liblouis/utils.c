@@ -279,6 +279,7 @@ _lou_isValidMode(int mode) {
 	return !mode;
 }
 
+/* Map char to dots according to North American Braille Computer Code (NABCC) */
 widechar EXPORT_CALL
 _lou_charToFallbackDots(widechar c) {
 	static const unsigned char charToDots[] = {
