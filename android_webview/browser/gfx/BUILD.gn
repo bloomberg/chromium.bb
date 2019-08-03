@@ -44,6 +44,8 @@ source_set("gfx") {
     "render_thread_manager.h",
     "scoped_app_gl_state_restore.cc",
     "scoped_app_gl_state_restore.h",
+    "skia_output_surface_dependency_webview.cc",
+    "skia_output_surface_dependency_webview.h",
     "surfaces_instance.cc",
     "surfaces_instance.h",
     "task_forwarding_sequence.cc",
