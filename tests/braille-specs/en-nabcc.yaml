@@ -20,7 +20,7 @@
 
 display: unicode.dis
 table: |
-  include en-nabcc.uti
+  include en-nabcc.utb
 flags: {testmode: forward}
 tests:
 

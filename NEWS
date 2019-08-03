@@ -44,7 +44,7 @@ issues]].
   Sweden, and maybe also in other countries thanks to Lars Bjørndal.
 - Fix handling of colon within number in Dutch braille, thanks to Jake
   Kyle.
-- Added North American Braille Computer Code table (en-nabcc.uti)
+- Added North American Braille Computer Code table (en-nabcc.utb)
   which is the counterpart of the text_nabcc.dis display table. Thanks
   to Dave Mielke.
 
@@ -72,7 +72,7 @@ None
 - grc-international-common.uti
 - grc-international-composed.uti
 - grc-international-decomposed.uti
-- en-nabcc.uti
+- en-nabcc.utb
 
 *** Renamed
 - gr-bb.ctb -> grc-international-en.utb
