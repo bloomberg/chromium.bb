@@ -75,18 +75,6 @@
 
     'chromium.android.fyi': {
       'Memory Infra Tester': 'android_release_thumb_bot',
-      'NDK Next arm Builder':
-        'android_ndk_next_release_bot_minimal_symbols',
-      'NDK Next arm64 Builder':
-        'android_ndk_next_release_bot_minimal_symbols_arm64',
-      'NDK Next x64 Builder':
-        'android_ndk_next_release_bot_minimal_symbols_x64',
-      'NDK Next x86 Builder':
-        'android_ndk_next_release_bot_minimal_symbols_x86',
-      'x64 Device Tester': 'android_shared_release_bot_x64',
-      'x86 Cloud Tester': 'android_debug_static_bot_x86',
-      'x86 Emulator Tester': 'android_debug_static_bot_x86',
-
       'android-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86',
     },
 
@@ -1075,22 +1063,6 @@
       'android', 'jumbo', 'release_bot', 'minimal_symbols',
     ],
 
-    'android_ndk_next_release_bot_minimal_symbols': [
-      'android', 'ndk_next', 'release_bot', 'minimal_symbols', 'strip_debug_info',
-    ],
-
-    'android_ndk_next_release_bot_minimal_symbols_arm64': [
-      'android', 'ndk_next', 'release_bot', 'minimal_symbols', 'arm64', 'strip_debug_info',
-    ],
-
-    'android_ndk_next_release_bot_minimal_symbols_x64': [
-      'android', 'ndk_next', 'release_bot', 'minimal_symbols', 'x64', 'strip_debug_info',
-    ],
-
-    'android_ndk_next_release_bot_minimal_symbols_x86': [
-      'android', 'ndk_next', 'release_bot', 'minimal_symbols', 'x86', 'strip_debug_info',
-    ],
-
     'android_release_bot_minimal_symbols': [
       'android', 'release_bot', 'minimal_symbols',
       'strip_debug_info',
@@ -1130,10 +1102,6 @@
 
     'android_release_trybot_x86': [
       'android', 'release_trybot', 'strip_debug_info', 'x86',
-    ],
-
-    'android_shared_release_bot_x64': [
-      'android_without_codecs', 'shared_release_bot', 'x64', 'dcheck_always_on',
     ],
 
     'android_webview_google_debug_static_bot': [
@@ -2262,12 +2230,6 @@
 
     'msan_no_origins': {
       'gn_args': 'is_msan=true msan_track_origins=0 use_prebuilt_instrumented_libraries=true',
-    },
-
-    'ndk_next': {
-      # GCC is unsupported starting in r13.
-      'mixins': ['clang'],
-      'gn_args': 'android_ndk_version="r13b" android_ndk_major_version=13',
     },
 
     'no_com_init_hooks': {
