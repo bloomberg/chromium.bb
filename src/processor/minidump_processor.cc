@@ -1345,7 +1345,7 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, uint64_t *address) {
           reason = "SIGBUS / ";
           switch (exception_flags) {
             case MD_EXCEPTION_FLAG_LIN_BUS_ADRALN:
-              reason.append("BUS_ADALN");
+              reason.append("BUS_ADRALN");
               break;
             case MD_EXCEPTION_FLAG_LIN_BUS_ADRERR:
               reason.append("BUS_ADRERR");
