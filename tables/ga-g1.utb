@@ -36,10 +36,16 @@
 #
 #  Maintained by Ronan McGuirk
 
- 
-# This table is based on UEB Grade 1 and has a small number of override rules below. Apart from these rules, Irish Grade 1 is the same as UEB Grade 1.
 
- #Irish Long accent signs (sínte fada)
+# This table is based on UEB Grade 1 and has a small number of
+# override rules below. Apart from these rules, Irish Grade 1 is the
+# same as UEB Grade 1.
+
+# Note that the uplow rules need to be placed before AND after the "en-ueb-g1.ctb"
+# include in order for both the lower- and uppercase part to take precedence
+# (see issue https://github.com/liblouis/liblouis/issues/384)
+
+# Irish Long accent signs (sínte fada)
 uplow \x00c1\x00e1 12346 Áá
 uplow \x00c9\x00e9 123456 Éé
 uplow \x00cd\x00ed 12356 Íí
@@ -59,4 +65,18 @@ noback uplow \x1E6A\x1E6B 1456 Ṫṫ
 noback sign \x204A 234 tironian eth 
 include en-ueb-g1.ctb
 
-
+# repeat uplow rules
+uplow \x00c1\x00e1 12346 Áá
+uplow \x00c9\x00e9 123456 Éé
+uplow \x00cd\x00ed 12356 Íí
+uplow \x00d3\x00f3 2346 Óó
+uplow \x00da\x00fa 23456 Úú
+noback uplow \x1E02\x1E03 12-125 Ḃḃ
+noback uplow \x010A\x010B 16 Ċċ
+noback uplow \x1E0A\x1E0B 145-125 Ḋḋ
+noback uplow \x1E1E\x1E1F 124-125 Ḟḟ
+noback uplow \x0120\x0121 126 Ġġ
+noback uplow \x1E40\x1E41 134-125 Ṁṁ
+noback uplow \x1E56\x1E57 1234-125 Ṗṗ
+noback uplow \x1E60\x1E61 146 Ṡṡ
+noback uplow \x1E6A\x1E6B 1456 Ṫṫ
