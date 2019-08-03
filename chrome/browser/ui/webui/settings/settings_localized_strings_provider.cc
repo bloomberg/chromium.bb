@@ -1612,6 +1612,10 @@ void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
       "secondaryUserBannerText",
       l10n_util::GetStringFUTF16(IDS_SETTINGS_SECONDARY_USER_BANNER,
                                  base::ASCIIToUTF16(primary_user_email)));
+  html_source->AddString(
+      "browserSettingsBannerText",
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_BROWSER_SETTINGS_BANNER,
+                                 base::ASCIIToUTF16("chrome://settings")));
   html_source->AddBoolean("isActiveDirectoryUser",
                           user && user->IsActiveDirectoryUser());
 

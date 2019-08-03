@@ -312,6 +312,7 @@ extern const char kAppReinstallRecommendationEnabled[];
 extern const char kStartupBrowserWindowLaunchSuppressed[];
 extern const char kDeviceWebUsbAllowDevicesForUrls[];
 extern const char kLoginExtensionApiDataForNextLoginAttempt[];
+extern const char kSettingsShowBrowserBanner[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];
