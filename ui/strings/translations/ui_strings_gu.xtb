@@ -9,6 +9,7 @@
 <translation id="1181037720776840403">કાઢી નાખો</translation>
 <translation id="1243314992276662751">અપલોડ કરો</translation>
 <translation id="1269641567813814718">Win</translation>
+<translation id="1279732219630636100">અહીંથી તમારા ફોન પર નંબર મોકલવા માટે, સેટિંગમાં બંને ડિવાઇસ માટે <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" />ને <ph name="FOLDER_NAME" /> ફોલ્ડરમાં ખસેડો.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ભલામણ કરેલ ઍપ</translation>
@@ -18,7 +19,6 @@
 <translation id="1409544243779336081">ઍપ માટે સુઝાવ</translation>
 <translation id="1498028757988366001">તમે આ અગાઉ શોધ્યું હતું. "<ph name="QUERY" />"ને તમારા સ્થાન ઇતિહાસમાંથી ડિલીટ કરવાથી તેને તમારા બધા ડિવાઇસ પરના તમારા એકાઉન્ટમાંથી કાઢી નાખવામાં આવશે.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 મિનિટ અને }one{# મિનિટ અને }other{# મિનિટ અને }}</translation>
-<translation id="1607452907377890914">સિંક કેવી રીતે ચાલુ કરવું તે જાણો</translation>
 <translation id="1643823602425662293">સૂચના</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">હમણાં</translation>
@@ -101,6 +101,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 મહિના પહેલાં}one{# મહિના પહેલાં}other{# મહિના પહેલાં}}</translation>
 <translation id="4289300219472526559">બોલવાનું પ્રારંભ કરો</translation>
 <translation id="4316910396681052118">બધી ઍપ્લિકેશનો</translation>
+<translation id="4467014365953759647">નંબર મોકલી શકાતો નથી</translation>
 <translation id="4588090240171750605">જમણે સ્ક્રોલ કરો</translation>
 <translation id="4690510401873698237">શેલ્ફ સૌથી નીચે છે</translation>
 <translation id="4724120544754982507">સૂચના કેન્દ્ર, વાંચ્યા વગરની <ph name="UNREAD_NOTIFICATION_COUNT" /> સૂચનાઓ</translation>
@@ -117,6 +118,7 @@
 <translation id="5266161281976477809">પ્રકટીકરણ ત્રિકોણ</translation>
 <translation id="5278860589123563674">મોકલવામાં નિષ્ફળ રહ્યાં</translation>
 <translation id="528468243742722775">સમાપ્ત</translation>
+<translation id="5327567770033251652">સિંક ચાલુ કરો</translation>
 <translation id="5329858601952122676">&amp;કાઢી નાખો</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" />ની સૌથી ઉપર <ph name="DRAGGED_APP_NAME" /> પર, ફોલ્ડર બનાવવા માટે રિલીઝ કરો.</translation>
 <translation id="5463830097259460683">ઇમોજી અને પ્રતીકો</translation>
@@ -174,6 +176,7 @@
 <translation id="7319740667687257810">લૉન્ચર, આંશિક દૃશ્ય</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 મિ પહેલાં}one{# મિ પહેલાં}other{# મિ પહેલાં}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">તમારા ફોનનું કનેક્શન ચેક કરો અને ફરી પ્રયાસ કરો</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 મિનિટ બાકી}one{# મિનિટ બાકી}other{# મિનિટ બાકી}}</translation>
 <translation id="7430878839542012341">તમારા ઇતિહાસમાંથી આ શોધ ડિલીટ કરીએ?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
@@ -181,7 +184,6 @@
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7781829728241885113">ગઈ કાલે</translation>
 <translation id="7814458197256864873">&amp;કૉપિ કરો</translation>
-<translation id="786857616234078769">તમારા ફોન પરથી કૉલ કરવા માટે, સિંક ચાલુ કરો.</translation>
 <translation id="7879499977785298635">બ્લૉક કરશો નહીં</translation>
 <translation id="7907591526440419938">ફાઇલ ખોલો</translation>
 <translation id="7969046989155602842">આદેશ</translation>

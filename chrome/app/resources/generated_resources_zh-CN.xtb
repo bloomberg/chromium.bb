@@ -181,7 +181,7 @@
 <translation id="1244265436519979884">正在进行 Linux 恢复</translation>
 <translation id="1244303850296295656">扩展程序错误</translation>
 <translation id="1249643471736608405">“<ph name="PLUGIN_NAME" />”已被屏蔽，因为它已被弃用</translation>
-<translation id="1251366534849411931">左大括号缺失：<ph name="ERROR_LINE" /></translation>
+<translation id="1251366534849411931">缺少左大括号：<ph name="ERROR_LINE" /></translation>
 <translation id="1252987234827889034">发生个人资料错误</translation>
 <translation id="1254593899333212300">直接连接到互联网</translation>
 <translation id="1260240842868558614">显示：</translation>
@@ -664,7 +664,7 @@
 <translation id="1965624977906726414">无需特殊权限。</translation>
 <translation id="1969654639948595766">WebRTC 文本日志 (<ph name="WEBRTC_TEXT_LOG_COUNT" />)</translation>
 <translation id="1970368523891847084">已进入视频模式</translation>
-<translation id="197228003527531594">此页面可查看您设备上某个文件夹内的全部文件。</translation>
+<translation id="197228003527531594">此页面可查看您设备上文件夹内的全部文件。</translation>
 <translation id="197288927597451399">保留</translation>
 <translation id="1974043046396539880">CRL 分发点</translation>
 <translation id="1974060860693918893">高级</translation>
@@ -1329,7 +1329,7 @@
 <translation id="2948300991547862301">转到“<ph name="PAGE_TITLE" />”</translation>
 <translation id="29488703364906173">一款快速、简单且安全的网络浏览器，能很好满足现代网络对浏览器的要求。</translation>
 <translation id="2949289451367477459">使用位置信息。允许具有位置权限的应用和服务使用此设备的位置信息。Google 可能会定期收集位置数据，并以匿名方式使用这类数据，从而提高位置信息精确度并改善基于地理位置的服务。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
-<translation id="2956070239128776395">某个区段嵌套在分组中：<ph name="ERROR_LINE" /></translation>
+<translation id="2956070239128776395">有区段嵌套在分组中：<ph name="ERROR_LINE" /></translation>
 <translation id="2958721676848865875">打包扩展程序警告</translation>
 <translation id="2959842337402130152">存储空间不足，因此无法恢复。请从设备中释放 <ph name="SPACE_REQUIRED" /> 空间，然后重试。</translation>
 <translation id="296026337010986570">大功告成！已移除有害软件。要想重新开启扩展程序，请前往&lt;a href="chrome://extensions"&gt;扩展程序&lt;/a&gt;页面。</translation>
@@ -1527,6 +1527,7 @@
 <translation id="3281892622610078515">要隔离的文件和程序：</translation>
 <translation id="3282568296779691940">登录 Chrome</translation>
 <translation id="3285322247471302225">打开新的标签页(&amp;T)</translation>
+<translation id="3286654161521615710">Chrome 浏览器和 <ph name="DEVICE_TYPE" /> 启动器均使用搜索引擎</translation>
 <translation id="3286737518123001369">查看和删除您的安全密钥中存储的登录数据</translation>
 <translation id="3288047731229977326">以开发者模式运行的扩展程序可能会损害您的计算机。如果您不是开发者，那么，为安全起见，应停用以开发者模式运行的扩展程序。</translation>
 <translation id="3289856944988573801">要检查是否有更新，请使用以太网或 WLAN。</translation>
@@ -1870,6 +1871,7 @@
 <translation id="3775432569830822555">SSL 服务器证书</translation>
 <translation id="3775705724665058594">发送到您的设备</translation>
 <translation id="3776796446459804932">此扩展程序违反了 Chrome 网上应用店政策。</translation>
+<translation id="3777483481409781352">无法激活移动网络设备</translation>
 <translation id="3777806571986431400">扩展程序已启用</translation>
 <translation id="3778152852029592020">已取消下载。</translation>
 <translation id="3778208826288864398">此安全密钥已被锁定，因为您输错 PIN 码的次数过多。您需要重置此安全密钥。</translation>
@@ -2133,6 +2135,7 @@
 <translation id="4131410914670010031">黑白色</translation>
 <translation id="4136203100490971508">夜间模式将于日出时自动关闭</translation>
 <translation id="4138267921960073861">在登录屏幕上显示用户名和照片</translation>
+<translation id="4142052906269098341">使用手机解锁 <ph name="DEVICE_TYPE" />。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">获取更优质的视频并减少耗电量。视频仅会在支持 Cast 的屏幕上播放。</translation>
 <translation id="4145922204387553806">让 Google 助理为您显示与您屏幕上的内容相关的信息</translation>
 <translation id="4146026355784316281">始终使用系统查看器打开</translation>
@@ -2174,6 +2177,7 @@
 <translation id="42126664696688958">导出</translation>
 <translation id="42137655013211669">服务器禁止访问此资源。</translation>
 <translation id="4215350869199060536">糟糕，名称中包含非法符号！</translation>
+<translation id="4220648711404560261">激活时出错。</translation>
 <translation id="4225397296022057997">在所有网站上</translation>
 <translation id="4232375817808480934">配置 Kerberos</translation>
 <translation id="4235200303672858594">整个屏幕</translation>
@@ -2322,6 +2326,7 @@
 <translation id="4470957202018033307">外部存储偏好设置</translation>
 <translation id="447252321002412580">帮助我们改进 Chrome 的功能和性能</translation>
 <translation id="4474155171896946103">为所有标签页添加书签...</translation>
+<translation id="4474461121892222090">移动数据激活最多可能需要 15 分钟才能完成。</translation>
 <translation id="4475552974751346499">搜索下载内容</translation>
 <translation id="4476590490540813026">运动员</translation>
 <translation id="4477015793815781985">必须以 Ctrl 键、Alt 键或 ⌘ 键开头</translation>
@@ -2434,6 +2439,7 @@
 <translation id="4647697156028544508">请输入“<ph name="DEVICE_NAME" />”的 PIN：</translation>
 <translation id="4648491805942548247">权限不足</translation>
 <translation id="4648499713050786492">在添加用户前，请先解锁您的个人资料。</translation>
+<translation id="4650591383426000695">将手机与 <ph name="DEVICE_TYPE" /> 断开连接</translation>
 <translation id="4651484272688821107">无法加载包含演示模式资源的在线组件。</translation>
 <translation id="465878909996028221">浏览器重定向仅支持 http、https 和文件协议。</translation>
 <translation id="4659077111144409915">主帐号</translation>
@@ -2735,6 +2741,7 @@
 <translation id="5115309401544567011">请为您的 <ph name="DEVICE_TYPE" /> 接通电源。</translation>
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">音频存储为(&amp;V)...</translation>
+<translation id="5117139026559873716">断开手机与 <ph name="DEVICE_TYPE" /> 的连接。断开后，它们将无法再自动连接。</translation>
 <translation id="5117427536932535467">主题背景和壁纸</translation>
 <translation id="5117625797180141189">已成功打印 <ph name="DOCUMENT_NAME" /></translation>
 <translation id="5117930984404104619">监控其他扩展程序的行为（包括访问过的网址）</translation>
@@ -2964,6 +2971,7 @@
 <translation id="5463275305984126951"><ph name="LOCATION" /> 的索引</translation>
 <translation id="5463856536939868464">包含隐藏书签的菜单</translation>
 <translation id="5464632865477611176">运行一次</translation>
+<translation id="5464660706533281090">未成年用户无法更改此设置。</translation>
 <translation id="5466374726908360271">粘贴并搜索“<ph name="SEARCH_TERMS" />”</translation>
 <translation id="5471768120198416576">您好！这是文字转语音的语音。</translation>
 <translation id="5473333559083690127">请重新输入新的 PIN 码</translation>
@@ -2977,7 +2985,7 @@
 <translation id="5486561344817861625">模拟浏览器重启</translation>
 <translation id="5487521232677179737">清除数据</translation>
 <translation id="5488093641312826914">已复制“<ph name="COPIED_ITEM_NAME" />”</translation>
-<translation id="5488468185303821006">在隐身模式下启用</translation>
+<translation id="5488468185303821006">在无痕模式下启用</translation>
 <translation id="5489435190927933437">已保存的用于登录 <ph name="DOMAIN" /> 的密码</translation>
 <translation id="5493792505296048976">已开启屏幕</translation>
 <translation id="5494362494988149300">完成后打开(&amp;D)</translation>
@@ -3199,6 +3207,7 @@
 <translation id="5817918615728894473">配对</translation>
 <translation id="5821565227679781414">创建快捷方式</translation>
 <translation id="5825412242012995131">开启（推荐）</translation>
+<translation id="5826395379250998812">请将您的 <ph name="DEVICE_TYPE" /> 连接到手机。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="5826507051599432481">公用名 (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">正在打印...</translation>
@@ -3405,7 +3414,7 @@
 <translation id="6107012941649240045">颁发对象</translation>
 <translation id="6112294629795967147">触摸即可调整大小</translation>
 <translation id="6112727384379533756">添加票据</translation>
-<translation id="6112931163620622315">查看您的手机</translation>
+<translation id="6112931163620622315">请查看您的手机</translation>
 <translation id="6112952769866305444">修改用户，<ph name="PROFILE_NAME" />，<ph name="USERNAME" /></translation>
 <translation id="6113942107547980621">要使用 Smart Lock，请切换到您手机上的主要用户个人资料</translation>
 <translation id="6116338172782435947">查看复制到剪贴板的文字和图片</translation>
@@ -3466,6 +3475,7 @@
 <translation id="620722923698527029">始终在关联的应用中打开这些类型的链接</translation>
 <translation id="6207282396926186323">安装<ph name="APP_NAME" />（Linux 应用）</translation>
 <translation id="6207937957461833379">国家/地区</translation>
+<translation id="6208521041562685716">正在激活移动数据</translation>
 <translation id="6211495400987308581"><ph name="PROFILE_NAME" />：同步功能无法正常运行</translation>
 <translation id="6212039847102026977">显示高级网络属性</translation>
 <translation id="6212168817037875041">关闭显示屏</translation>
@@ -3909,7 +3919,7 @@
 <translation id="6900284862687837908">后台应用：<ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6900651018461749106">重新登录后即可更新 <ph name="USER_EMAIL" /></translation>
 <translation id="6902066522699286937">要试听的语音</translation>
-<translation id="6902336033320348843">某个区段不受支持：<ph name="ERROR_LINE" /></translation>
+<translation id="6902336033320348843">有区段不受支持：<ph name="ERROR_LINE" /></translation>
 <translation id="6902837902700739466">将设备加入网域</translation>
 <translation id="6904344821472985372">撤消文件访问权限</translation>
 <translation id="6904655473976120856">按“应用”按钮即可退出</translation>
@@ -4114,6 +4124,7 @@
 <translation id="7197632491113152433">我们发现，您的帐号中有 <ph name="NUMBER_OF_APPS" /> 款可在此设备上使用的应用。</translation>
 <translation id="7199158086730159431">获取帮助(&amp;E)</translation>
 <translation id="7200083590239651963">选择配置</translation>
+<translation id="7201042526153088083">在 <ph name="DEVICE_TYPE" /> 上安装从 Google Play 下载的应用和游戏。&lt;a target="_blank" href="<ph name="URL" />"&gt;了解详情&lt;/a&gt;</translation>
 <translation id="720110658997053098">让此设备永久处于自助服务终端模式</translation>
 <translation id="7201118060536064622">已删除“<ph name="DELETED_ITEM_NAME" />”</translation>
 <translation id="7201420661433230412">查看文件</translation>
@@ -5307,7 +5318,7 @@
 <translation id="894871326938397531">退出隐身模式？</translation>
 <translation id="8948939328578167195"><ph name="WEBSITE" /> 想查看您的安全密钥的品牌和型号</translation>
 <translation id="8951256747718668828">发生错误，因此无法完成恢复</translation>
-<translation id="8952831374766033534">某配置选项不受支持：<ph name="ERROR_LINE" /></translation>
+<translation id="8952831374766033534">有配置选项不受支持：<ph name="ERROR_LINE" /></translation>
 <translation id="895347679606913382">即将开始下载...</translation>
 <translation id="8956941634583033512">{0,plural, =1{请在 1 天内更新}other{请在 # 天内更新}}</translation>
 <translation id="895944840846194039">JavaScript 使用的内存</translation>
@@ -5428,6 +5439,7 @@
 <translation id="9131487537093447019">向蓝牙设备发送消息，以及接收来自蓝牙设备的消息。</translation>
 <translation id="9134304429738380103">立即启用。</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
+<translation id="9137157311132182254">首选搜索引擎</translation>
 <translation id="9137916601698928395">以 <ph name="USER" /> 身份打开链接</translation>
 <translation id="9138978632494473300">在以下位置添加快捷方式：</translation>
 <translation id="9140067245205650184">您使用的是不受支持的功能标记：<ph name="BAD_FLAG" />。稳定性和安全性会有所下降。</translation>
@@ -5500,6 +5512,7 @@
 <translation id="962802172452141067">书签文件夹树</translation>
 <translation id="964286338916298286">您的 IT 管理员已禁止您的设备享用 Chrome 附赠的好礼。</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{应用}other{应用}}</translation>
+<translation id="965211523698323809">通过您的 <ph name="DEVICE_TYPE" /> 收发短信。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="967007123645306417">执行此操作会使您退出 Google 帐号。您对自己的书签、历史记录、密码及其他设置所做的更改将不再同步到您的 Google 帐号。但是，您的现有数据将会继续存储在您的 Google 帐号中并可通过 <ph name="BEGIN_LINK" />Google 信息中心<ph name="END_LINK" />进行管理。</translation>
 <translation id="967624055006145463">已存储的数据</translation>
 <translation id="968000525894980488">开启 Google Play 服务。</translation>

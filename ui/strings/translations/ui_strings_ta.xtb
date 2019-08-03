@@ -18,7 +18,6 @@
 <translation id="1409544243779336081">ஆப்ஸ் பரிந்துரை</translation>
 <translation id="1498028757988366001">இதை முன்பே தேடியிருக்கிறீர்கள். "<ph name="QUERY" />"யைத் தேடல் வரலாற்றிலிருந்து நீக்கினால் உங்கள் கணக்கு பயன்படுத்தப்படும் அனைத்து சாதனங்களில் இருந்தும் நிரந்தரமாக அகற்றப்படும்.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 நிமிடம், }other{# நிமிடங்கள், }}</translation>
-<translation id="1607452907377890914">ஒத்திசைவை ஆன் செய்வது எப்படி எனத் தெரிந்துகொள்ளுங்கள்</translation>
 <translation id="1643823602425662293">அறிவிப்பு</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">இப்போது</translation>
@@ -117,6 +116,7 @@
 <translation id="5266161281976477809">கூடுதல் உள்ளடக்கத்தைக் காட்டும் முக்கோணம்</translation>
 <translation id="5278860589123563674">அனுப்ப முடியவில்லை</translation>
 <translation id="528468243742722775">நிறுத்து</translation>
+<translation id="5327567770033251652">ஒத்திசைவை இயக்கவும்</translation>
 <translation id="5329858601952122676">&amp;நீக்கு</translation>
 <translation id="5395308026110844773"><ph name="IN_PLACE_APP" />ன் மேல் <ph name="DRAGGED_APP_NAME" />ஐ இழுத்துவிடுகிறீர்கள். கோப்புறையை உருவாக்க, விடுவிக்கவும்.</translation>
 <translation id="5463830097259460683">ஈமோஜி &amp;&amp; குறியீடுகள்</translation>
@@ -181,7 +181,6 @@
 <translation id="7658239707568436148">ரத்து செய்</translation>
 <translation id="7781829728241885113">நேற்று</translation>
 <translation id="7814458197256864873">&amp;நகலெடு</translation>
-<translation id="786857616234078769">மொபைலில் இருந்து அழைக்க ஒத்திசைவை ஆன் செய்யவும்.</translation>
 <translation id="7879499977785298635">தடுக்காதே</translation>
 <translation id="7907591526440419938">கோப்பைத் திற</translation>
 <translation id="7969046989155602842">கமாண்ட்</translation>

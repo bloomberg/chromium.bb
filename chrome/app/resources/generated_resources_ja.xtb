@@ -1532,6 +1532,7 @@
 <translation id="3281892622610078515">隔離対象のファイルとプログラム:</translation>
 <translation id="3282568296779691940">Chrome にログイン</translation>
 <translation id="3285322247471302225">新しいタブ(&amp;T)</translation>
+<translation id="3286654161521615710">Chrome ブラウザと <ph name="DEVICE_TYPE" /> ランチャーで使用されます</translation>
 <translation id="3286737518123001369">セキュリティ キーに保存されているログインデータを確認したうえで削除できます</translation>
 <translation id="3288047731229977326">デベロッパー モードで実行される拡張機能はパソコンにダメージを与える恐れがあります。デベロッパーでない場合は、安全のため、デベロッパー モードで実行されているこれらの拡張機能を無効にしてください。</translation>
 <translation id="3289856944988573801">アップデートの有無を確認するには、イーサネットまたは Wi-Fi を使用してください。</translation>
@@ -1877,6 +1878,7 @@
 <translation id="3775432569830822555">SSL サーバー証明書</translation>
 <translation id="3775705724665058594">お使いのデバイスに送信</translation>
 <translation id="3776796446459804932">この拡張機能は Chrome ウェブストアのポリシーに違反しています。</translation>
+<translation id="3777483481409781352">モバイル デバイスを有効化できませんでした</translation>
 <translation id="3777806571986431400">有効化された拡張機能</translation>
 <translation id="3778152852029592020">ダウンロードがキャンセルされました。</translation>
 <translation id="3778208826288864398">PIN の入力間違いが許容回数を超えたため、セキュリティ キーがロックされています。セキュリティ キーをリセットする必要があります。</translation>
@@ -2141,6 +2143,7 @@
 <translation id="4131410914670010031">白黒</translation>
 <translation id="4136203100490971508">夜間モードは日の出時刻に自動的にオフになります</translation>
 <translation id="4138267921960073861">ログイン ページにユーザー名と写真を表示する</translation>
+<translation id="4142052906269098341">スマートフォンを使って <ph name="DEVICE_TYPE" /> のロックを解除します。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">動画の品質を向上させ、バッテリー消費を抑えます。動画はキャスト対応のスクリーンでのみ再生されます。</translation>
 <translation id="4145922204387553806">アシスタントが画面上のアイテムに関連した情報を表示できるようにします</translation>
 <translation id="4146026355784316281">常にシステム ビューアで開く</translation>
@@ -2182,6 +2185,7 @@
 <translation id="42126664696688958">エクスポート</translation>
 <translation id="42137655013211669">このリソースへのアクセスはサーバーにより禁止されています。</translation>
 <translation id="4215350869199060536">名前に間違った記号が含まれています。</translation>
+<translation id="4220648711404560261">有効化中にエラーが発生しました。</translation>
 <translation id="4225397296022057997">すべてのサイト</translation>
 <translation id="4232375817808480934">Kerberos の設定</translation>
 <translation id="4235200303672858594">画面全体</translation>
@@ -2326,10 +2330,11 @@
 <translation id="4459169140545916303">最終同期: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> 日前</translation>
 <translation id="4462159676511157176">カスタム ネーム サーバー</translation>
 <translation id="4469477701382819144">煩わしい広告や誤解を招く広告が表示されるサイトでブロックされています</translation>
-<translation id="4469943624506685059">充電やパフォーマンスに関する問題を回避するには、USB Type-C の電源アダプターまたは Chromebook の製造元が提供するアダプターを使用してください。</translation>
+<translation id="4469943624506685059">充電やパフォーマンスに関する問題を回避するには、USB Type-C の電源アダプターまたは Chromebook の製造元が提供する純正アダプターを使用してください。</translation>
 <translation id="4470957202018033307">外部ストレージの設定</translation>
 <translation id="447252321002412580">Chrome の機能と動作の改善に協力する</translation>
 <translation id="4474155171896946103">すべてのタブをブックマークに追加...</translation>
+<translation id="4474461121892222090">モバイルデータの有効化が完了するまでには最大 15 分かかります。</translation>
 <translation id="4475552974751346499">ダウンロード検索</translation>
 <translation id="4476590490540813026">競技選手</translation>
 <translation id="4477015793815781985">Ctrl キー、Alt キー、⌘ キーのいずれかが必要です</translation>
@@ -2442,6 +2447,7 @@
 <translation id="4647697156028544508">「<ph name="DEVICE_NAME" />」の PIN を入力してください:</translation>
 <translation id="4648491805942548247">十分な権限がありません</translation>
 <translation id="4648499713050786492">ユーザーを追加するにはまずプロフィールのロックを解除してください。</translation>
+<translation id="4650591383426000695">スマートフォンを <ph name="DEVICE_TYPE" /> から切断します</translation>
 <translation id="4651484272688821107">デモモード リソースでオンライン コンポーネントを読み込めませんでした。</translation>
 <translation id="465878909996028221">ブラウザのリダイレクトでは、http、https、file プロトコルのみサポートされています。</translation>
 <translation id="4659077111144409915">メイン アカウント</translation>
@@ -2743,6 +2749,7 @@
 <translation id="5115309401544567011"><ph name="DEVICE_TYPE" /> を電源に接続してください。</translation>
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">名前を付けてオーディオを保存(&amp;V)...</translation>
+<translation id="5117139026559873716"><ph name="DEVICE_TYPE" /> からスマートフォンを切断します。以降、自動接続は行われなくなります。</translation>
 <translation id="5117427536932535467">テーマと壁紙</translation>
 <translation id="5117625797180141189">「<ph name="DOCUMENT_NAME" />」の印刷が正常に完了しました</translation>
 <translation id="5117930984404104619">他の拡張機能の動作を監視（アクセスした URL を含む）</translation>
@@ -2799,7 +2806,7 @@
 <translation id="5213891612754844763">プロキシ設定を表示</translation>
 <translation id="5215502535566372932">国を選択</translation>
 <translation id="521582610500777512">写真を破棄しました</translation>
-<translation id="5217313969810784338">充電するには、Chromebook の製造元が提供するバッテリーを使用してください。</translation>
+<translation id="5217313969810784338">充電するには、Chromebook の製造元が提供する純正バッテリーを使用してください。</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="52232769093306234">圧縮できませんでした。</translation>
 <translation id="5225324770654022472">アプリのショートカットを表示</translation>
@@ -2972,6 +2979,7 @@
 <translation id="5463275305984126951"><ph name="LOCATION" /> のインデックス</translation>
 <translation id="5463856536939868464">非表示のブックマークを含むメニュー</translation>
 <translation id="5464632865477611176">今回は実行する</translation>
+<translation id="5464660706533281090">子ユーザーはこの設定を変更できません。</translation>
 <translation id="5466374726908360271">「<ph name="SEARCH_TERMS" />」を貼り付けて検索</translation>
 <translation id="5471768120198416576">こんにちは。テキスト読み上げの音声です。</translation>
 <translation id="5473333559083690127">新しい PIN を再入力</translation>
@@ -3207,6 +3215,7 @@
 <translation id="5817918615728894473">ペア設定</translation>
 <translation id="5821565227679781414">ショートカットを作成</translation>
 <translation id="5825412242012995131">オン（推奨）</translation>
+<translation id="5826395379250998812"><ph name="DEVICE_TYPE" /> をスマートフォンと接続します。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="5826507051599432481">一般名（CN）</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">印刷中...</translation>
@@ -3474,6 +3483,7 @@
 <translation id="620722923698527029">このタイプのリンクは常に関連付けられたアプリで開く</translation>
 <translation id="6207282396926186323"><ph name="APP_NAME" />（Linux アプリ）のインストール</translation>
 <translation id="6207937957461833379">国/地域</translation>
+<translation id="6208521041562685716">モバイルデータを有効化しています</translation>
 <translation id="6211495400987308581"><ph name="PROFILE_NAME" />: 同期が機能していません</translation>
 <translation id="6212039847102026977">ネットワークの詳細プロパティを表示</translation>
 <translation id="6212168817037875041">画面をオフにする</translation>
@@ -4122,6 +4132,7 @@
 <translation id="7197632491113152433">お使いのアカウントから、このデバイスで使用できるアプリが <ph name="NUMBER_OF_APPS" /> 個見つかりました。</translation>
 <translation id="7199158086730159431">ヘルプ(&amp;E)</translation>
 <translation id="7200083590239651963">設定の選択</translation>
+<translation id="7201042526153088083">Google Play のアプリとゲームを <ph name="DEVICE_TYPE" /> にインストールします。&lt;a target="_blank" href="<ph name="URL" />"&gt;詳細&lt;/a&gt;</translation>
 <translation id="720110658997053098">このデバイスをキオスクモードに固定する</translation>
 <translation id="7201118060536064622">「<ph name="DELETED_ITEM_NAME" />」が削除されました</translation>
 <translation id="7201420661433230412">ファイルを表示する</translation>
@@ -5440,6 +5451,7 @@
 <translation id="9131487537093447019">Bluetooth デバイスとのメッセージの送受信。</translation>
 <translation id="9134304429738380103">利用する</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
+<translation id="9137157311132182254">優先する検索エンジン</translation>
 <translation id="9137916601698928395"><ph name="USER" /> としてリンクを開く</translation>
 <translation id="9138978632494473300">ショートカットを次の場所に追加:</translation>
 <translation id="9140067245205650184">サポートされていない機能フラグ <ph name="BAD_FLAG" /> が使用されています。これにより、安全性とセキュリティが損なわれます。</translation>
@@ -5512,6 +5524,7 @@
 <translation id="962802172452141067">ブックマーク フォルダ ツリー</translation>
 <translation id="964286338916298286">お使いのデバイスの Chrome 特典は IT 管理者によって無効にされています。</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{アプリケーション}other{アプリケーション}}</translation>
+<translation id="965211523698323809"><ph name="DEVICE_TYPE" /> でテキスト メッセージを送受信します。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="967007123645306417">この操作を行うと Google アカウントからログアウトします。ブックマーク、履歴、パスワードなどの設定に行った変更は Google アカウントと同期されなくなります。ただし、既存のデータは Google アカウントに保存されたまま残り、<ph name="BEGIN_LINK" />Google ダッシュボード<ph name="END_LINK" />で管理できます。</translation>
 <translation id="967624055006145463">保存データ</translation>
 <translation id="968000525894980488">Google Play 開発者サービスを有効にします。</translation>

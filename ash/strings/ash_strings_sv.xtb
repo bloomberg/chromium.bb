@@ -157,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Ansluten till en enhet}other{Ansluten till # enheter}}</translation>
 <translation id="3226991577105957773">och <ph name="COUNT" /> till</translation>
 <translation id="3236488194889173876">Det finns inget tillgängligt mobilnätverk</translation>
+<translation id="3249513730522716925">Fönstret <ph name="WINDOW_TITLE" /> flyttades från skrivbordet <ph name="ACTIVE_DESK" /> till skrivbordet <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Vad kan du göra?</translation>
 <translation id="3294437725009624529">Gäst</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan ändå logga in igen senare.</translation>
@@ -178,6 +179,7 @@
 <translation id="3573179567135747900">Byt tillbaka till "<ph name="FROM_LOCALE" />" (kräver omstart)</translation>
 <translation id="3576141592585647168">Ändra tidszon</translation>
 <translation id="3595596368722241419">Batteriet är fulladdat</translation>
+<translation id="3604801046548457007">Skrivbordet <ph name="DESK_TITILE" /> har skapats</translation>
 <translation id="3606978283550408104">Punktskriftsskärm ansluten.</translation>
 <translation id="3621202678540785336">Ingång</translation>
 <translation id="3626281679859535460">Ljusstyrka</translation>
@@ -379,6 +381,7 @@
 <translation id="6723839937902243910">Batteri</translation>
 <translation id="6727969043791803658">Ansluten, <ph name="BATTERY_PERCENTAGE" /> % batterinivå</translation>
 <translation id="6751826523481687655">Prestandaspårning har aktiverats</translation>
+<translation id="6752912906630585008">Skrivbordet <ph name="REMOVED_DESK" /> har tagits bort och slagits samman med skrivbordet <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Spela</translation>
 <translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>
 <translation id="6820676911989879663">Ta en paus!</translation>
@@ -489,6 +492,7 @@
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8433186206711564395">Nätverksinställningar</translation>
 <translation id="8433977262951327081">Kortkommandot för att visa menybubblan för inmatningsalternativ i hyllan har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Skrivbordet <ph name="DESK_TITILE" /> har aktiverats</translation>
 <translation id="8452135315243592079">SIM-kort saknas</translation>
 <translation id="8454013096329229812">Wi-Fi är aktiverat.</translation>
 <translation id="847056008324733326">Inställningar för skala på skärmen</translation>

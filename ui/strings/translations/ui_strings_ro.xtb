@@ -9,6 +9,7 @@
 <translation id="1181037720776840403">Elimină</translation>
 <translation id="1243314992276662751">Încărcați</translation>
 <translation id="1269641567813814718">Win</translation>
+<translation id="1279732219630636100">Pentru a trimite un număr de aici pe telefon, <ph name="TROUBLESHOOT_LINK" /> pentru ambele dispozitive din setări.</translation>
 <translation id="1290982764014248209">Mută <ph name="DRAGGED_APP" /> în dosarul <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">APLICAȚII RECOMANDATE</translation>
@@ -18,7 +19,6 @@
 <translation id="1409544243779336081">Recomandarea aplicației</translation>
 <translation id="1498028757988366001">Ai mai căutat asta. Dacă ștergi „<ph name="QUERY" />” din istoric, se va elimina definitiv din contul tău, de pe toate dispozitivele.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Un minut și  }few{# minute și  }other{# de minute și  }}</translation>
-<translation id="1607452907377890914">Află cum să activezi sincronizarea</translation>
 <translation id="1643823602425662293">Notificare</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">acum</translation>
@@ -101,6 +101,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Acum 1 lună}few{Acum # luni}other{Acum # de luni}}</translation>
 <translation id="4289300219472526559">Începeți să vorbiți</translation>
 <translation id="4316910396681052118">TOATE APLICAȚIILE</translation>
+<translation id="4467014365953759647">Numărul nu poate fi trimis</translation>
 <translation id="4588090240171750605">Derulează spre dreapta</translation>
 <translation id="4690510401873698237">Raft în partea de jos</translation>
 <translation id="4724120544754982507">Centrul de notificări, <ph name="UNREAD_NOTIFICATION_COUNT" /> notificări necitite</translation>
@@ -117,6 +118,7 @@
 <translation id="5266161281976477809">Triunghi pentru afișare</translation>
 <translation id="5278860589123563674">Nu s-a trimis</translation>
 <translation id="528468243742722775">Oprește</translation>
+<translation id="5327567770033251652">activează sincronizarea</translation>
 <translation id="5329858601952122676">&amp;Șterge</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> deasupra <ph name="IN_PLACE_APP" />, eliberează pentru a crea un dosar.</translation>
 <translation id="5463830097259460683">Emoji și simboluri</translation>
@@ -174,6 +176,7 @@
 <translation id="7319740667687257810">Lansator, afișare parțială</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Acum un min.}few{Acum # min.}other{Acum # min.}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Verifică-ți conexiunea telefonului și încearcă din nou</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Un minut rămas}few{# minute rămase}other{# de minute rămase}}</translation>
 <translation id="7430878839542012341">Ștergi această căutare din istoric?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
@@ -181,7 +184,6 @@
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7781829728241885113">Ieri</translation>
 <translation id="7814458197256864873">&amp;Copiază</translation>
-<translation id="786857616234078769">Activează sincronizarea pentru a efectua un apel de pe telefon.</translation>
 <translation id="7879499977785298635">Nu bloca</translation>
 <translation id="7907591526440419938">Deschide fișierul</translation>
 <translation id="7969046989155602842">Tasta Command</translation>

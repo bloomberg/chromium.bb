@@ -1211,7 +1211,7 @@
 <translation id="2773288106548584039">Compatibilidad con navegadores heredados</translation>
 <translation id="2773802008104670137">Este tipo de archivo puede dañar tu computadora.</translation>
 <translation id="2775104091073479743">Editar huellas digitales</translation>
-<translation id="2775188527796017992"><ph name="ORIGIN" /> podrá guardar tus cambios directamente en <ph name="FILENAME" />. El sitio podrá guardar cambios hasta que cierres esta pestaña.</translation>
+<translation id="2775188527796017992"><ph name="ORIGIN" /> podrá guardar tus cambios directamente en <ph name="FILENAME" />. El sitio puede guardar cambios hasta que cierres esta pestaña.</translation>
 <translation id="2776441542064982094">Parece que no hay dispositivos disponibles para registrar en la red. Si el dispositivo está activado y conectado a Internet, prueba a registrarlo siguiendo las instrucciones del manual.</translation>
 <translation id="2780009105947267877">Configurando Plugin VM…</translation>
 <translation id="2781692009645368755">Google Pay</translation>
@@ -1529,6 +1529,7 @@
 <translation id="3281892622610078515">Archivos y programas que se guardarán en cuarentena:</translation>
 <translation id="3282568296779691940">Acceder a Chrome</translation>
 <translation id="3285322247471302225">Nueva pes&amp;taña en</translation>
+<translation id="3286654161521615710">Lo usa el navegador Chrome y el Selector de <ph name="DEVICE_TYPE" /></translation>
 <translation id="3286737518123001369">Visualiza y borra los datos de acceso almacenados en la llave de seguridad</translation>
 <translation id="3288047731229977326">Las extensiones que se ejecutan en modo de programador pueden dañar tu computadora. Si no eres programador, debes inhabilitar las extensiones que se ejecutan en modo de programador para mantenerte protegido.</translation>
 <translation id="3289856944988573801">Para comprobar si hay actualizaciones, utiliza una conexión Ethernet o Wi-Fi.</translation>
@@ -1829,7 +1830,7 @@
 <translation id="3712217561553024354">Permite que este dispositivo encuentre a otros dispositivos con tu cuenta de Google que tengan una conexión de datos móviles</translation>
 <translation id="3712897371525859903">Gu&amp;ardar página como...</translation>
 <translation id="371300529209814631">Atrás/adelante</translation>
-<translation id="3713047097299026954">Esta llave de seguridad no tiene datos de acceso</translation>
+<translation id="3713047097299026954">Esta llave de seguridad no tiene almacenados datos de acceso</translation>
 <translation id="3714195043138862580">Se estableció el estado de desaprovisionamiento para este dispositivo de demostración.</translation>
 <translation id="3714633008798122362">Calendario web</translation>
 <translation id="3719826155360621982">Página principal</translation>
@@ -1874,6 +1875,7 @@
 <translation id="3775432569830822555">Certificado del servidor SSL</translation>
 <translation id="3775705724665058594">Enviar a tus dispositivos</translation>
 <translation id="3776796446459804932">Esta extensión infringe la política de Chrome Web Store.</translation>
+<translation id="3777483481409781352">No se pudo activar el dispositivo celular</translation>
 <translation id="3777806571986431400">Extensión habilitada</translation>
 <translation id="3778152852029592020">Se canceló la descarga.</translation>
 <translation id="3778208826288864398">Se ingresó el PIN de forma incorrecta demasiadas veces; por lo tanto, se bloqueó la llave de seguridad. Deberás restablecerla.</translation>
@@ -2138,6 +2140,7 @@
 <translation id="4131410914670010031">Blanco y negro</translation>
 <translation id="4136203100490971508">La Luz nocturna se desactivará automáticamente al amanecer</translation>
 <translation id="4138267921960073861">Mostrar nombres de usuarios y fotos en la pantalla de inicio</translation>
+<translation id="4142052906269098341">Desbloquea tu <ph name="DEVICE_TYPE" /> con el teléfono. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="4144218403971135344">Obtén videos de mejor calidad y extiende la duración de la batería. El video solo se reproducirá en tu pantalla compatible con Cast.</translation>
 <translation id="4145922204387553806">Permitir que el Asistente proporcione información relacionada con lo que aparece en tu pantalla</translation>
 <translation id="4146026355784316281">Abrir siempre con el visualizador del sistema</translation>
@@ -2179,6 +2182,7 @@
 <translation id="42126664696688958">Exportar</translation>
 <translation id="42137655013211669">El servidor prohibió el acceso a este recurso.</translation>
 <translation id="4215350869199060536">El nombre incluye símbolos no permitidos.</translation>
+<translation id="4220648711404560261">Se produjo un error durante la activación.</translation>
 <translation id="4225397296022057997">En todos los sitios</translation>
 <translation id="4232375817808480934">Configurar Kerberos</translation>
 <translation id="4235200303672858594">Toda la pantalla</translation>
@@ -2327,6 +2331,7 @@
 <translation id="4470957202018033307">Preferencias de almacenamiento externo</translation>
 <translation id="447252321002412580">Ayudar a mejorar las funciones y el rendimiento de Chrome</translation>
 <translation id="4474155171896946103">Agregar a favoritos todas las pestañas...</translation>
+<translation id="4474461121892222090">La activación de los datos móviles puede tardar hasta 15 minutos en completarse.</translation>
 <translation id="4475552974751346499">Buscar descargas</translation>
 <translation id="4476590490540813026">Atleta</translation>
 <translation id="4477015793815781985">Incluye Ctrl, Alt o ⌘</translation>
@@ -2439,6 +2444,7 @@
 <translation id="4647697156028544508">Ingresa el PIN para "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Permisos insuficientes</translation>
 <translation id="4648499713050786492">Desbloquea tu perfil antes de agregar una persona.</translation>
+<translation id="4650591383426000695">Desconecta el teléfono de tu <ph name="DEVICE_TYPE" /></translation>
 <translation id="4651484272688821107">No se pudo cargar el componente en línea con los recursos del modo de demostración.</translation>
 <translation id="465878909996028221">Solo se admiten los protocolos http, https y de archivo para las redirecciones a navegadores.</translation>
 <translation id="4659077111144409915">Cuenta principal</translation>
@@ -2729,7 +2735,7 @@
 <translation id="5097002363526479830">Error al conectar a la red "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="5101042277149003567">Abrir todos los favoritos</translation>
 <translation id="5101839224773798795">Hacer clic automáticamente cuando se detenga el cursor</translation>
-<translation id="5102007300153090427">Esta página puede guardar archivos.</translation>
+<translation id="5102007300153090427">Esta página puede guardar cambios en archivos.</translation>
 <translation id="5108967062857032718">Configuración - Quitar las apps de Android</translation>
 <translation id="5109044022078737958">Victoria</translation>
 <translation id="5111646998522066203">Salir del modo incógnito</translation>
@@ -2740,6 +2746,7 @@
 <translation id="5115309401544567011">Conecta el dispositivo <ph name="DEVICE_TYPE" /> a una fuente de alimentación.</translation>
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Gu&amp;ardar audio como...</translation>
+<translation id="5117139026559873716">Desconecta el teléfono de tu <ph name="DEVICE_TYPE" />. Ya no se conectarán automáticamente.</translation>
 <translation id="5117427536932535467">Temas y fondos de pantalla</translation>
 <translation id="5117625797180141189">El documento <ph name="DOCUMENT_NAME" /> se imprimió correctamente</translation>
 <translation id="5117930984404104619">Supervisar el comportamiento de otras extensiones (incluidas las URL visitadas)</translation>
@@ -2903,7 +2910,7 @@
 <translation id="5370819323174483825">&amp;Volver a cargar</translation>
 <translation id="5372529912055771682">El modo de inscripción proporcionado no es compatible con esta versión del sistema operativo. Asegúrate de que estás ejecutando la versión más reciente y vuelve a intentarlo.</translation>
 <translation id="5374359983950678924">Cambiar imagen</translation>
-<translation id="5375793835576008230"><ph name="ORIGIN" /> podrá guardar tus cambios directamente en los archivos de la carpeta <ph name="FOLDERNAME" />. El sitio podrá guardar cambios hasta que cierres esta pestaña.</translation>
+<translation id="5375793835576008230"><ph name="ORIGIN" /> podrá guardar tus cambios directamente en los archivos de la carpeta <ph name="FOLDERNAME" />. El sitio puede guardar cambios hasta que cierres esta pestaña.</translation>
 <translation id="5376169624176189338">Haz clic para volver atrás o espera para ver el historial</translation>
 <translation id="5376931455988532197">Archivo demasiado grande</translation>
 <translation id="537813040452600081">Las páginas a las que accedas desde esta ventana no aparecerán en el historial del navegador ni dejarán rastros (por ejemplo, cookies) en la computadora una vez que salgas del navegador. Los archivos que descargues y los favoritos que crees no se guardarán.</translation>
@@ -2969,6 +2976,7 @@
 <translation id="5463275305984126951">Índice de <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">El menú contiene favoritos ocultos.</translation>
 <translation id="5464632865477611176">Ejecutar esta vez</translation>
+<translation id="5464660706533281090">Un niño no puede cambiar esta configuración.</translation>
 <translation id="5466374726908360271">&amp;Pegar y buscar "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="5471768120198416576">Hola, soy la voz que leerá tus textos.</translation>
 <translation id="5473333559083690127">Vuelve a ingresar el PIN nuevo</translation>
@@ -3204,6 +3212,7 @@
 <translation id="5817918615728894473">Sincronizar</translation>
 <translation id="5821565227679781414">Crear acceso directo</translation>
 <translation id="5825412242012995131">Activado (recomendado)</translation>
+<translation id="5826395379250998812">Conecta tu <ph name="DEVICE_TYPE" /> con el teléfono. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="5826507051599432481">Nombre común (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828633471261496623">Impresión...</translation>
@@ -3471,6 +3480,7 @@
 <translation id="620722923698527029">Siempre abrir este tipo de vínculos en la app asociada</translation>
 <translation id="6207282396926186323">Instalar <ph name="APP_NAME" /> (app de Linux)</translation>
 <translation id="6207937957461833379">País/Región</translation>
+<translation id="6208521041562685716">Se están activando los datos móviles</translation>
 <translation id="6211495400987308581"><ph name="PROFILE_NAME" />: La sincronización no funciona</translation>
 <translation id="6212039847102026977">Mostrar las propiedades de red avanzadas</translation>
 <translation id="6212168817037875041">Apagar la pantalla</translation>
@@ -4041,7 +4051,7 @@
 <translation id="7078120482318506217">Todas las redes</translation>
 <translation id="708060913198414444">Copiar dirección del audio</translation>
 <translation id="7081952801286122383">Estás en modo de navegación incógnito</translation>
-<translation id="7082772857801260480">Algunas funciones no son compatibles en este conector</translation>
+<translation id="7082772857801260480">Algunas funciones de este conector no son compatibles</translation>
 <translation id="708278670402572152">Desactiva la conexión para habilitar el análisis</translation>
 <translation id="7085389578340536476">¿Permitir que Chrome grabe audio?</translation>
 <translation id="7088434364990739311">Error al iniciar la verificación de actualizaciones (código de error <ph name="ERROR" />).</translation>
@@ -4119,6 +4129,7 @@
 <translation id="7197632491113152433">Encontramos <ph name="NUMBER_OF_APPS" /> apps de tu cuenta que pueden usarse en este dispositivo.</translation>
 <translation id="7199158086730159431">Obtener ayuda</translation>
 <translation id="7200083590239651963">Seleccionar configuración</translation>
+<translation id="7201042526153088083">Instala apps y juegos de Google Play en tu <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Más información&lt;/a&gt;</translation>
 <translation id="720110658997053098">Mantener este dispositivo en modo kiosco de forma permanente</translation>
 <translation id="7201118060536064622">Se borró "<ph name="DELETED_ITEM_NAME" />"</translation>
 <translation id="7201420661433230412">Ver archivos</translation>
@@ -5436,6 +5447,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9131487537093447019">Enviar y recibir mensajes desde dispositivos Bluetooth</translation>
 <translation id="9134304429738380103">Acepto.</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
+<translation id="9137157311132182254">Motor de búsqueda preferido</translation>
 <translation id="9137916601698928395">Abrir vínculo como <ph name="USER" /></translation>
 <translation id="9138978632494473300">Agregar accesos directos a los siguientes lugares:</translation>
 <translation id="9140067245205650184">Estás usando una marca de función no compatible: <ph name="BAD_FLAG" />. Esto afectará la estabilidad y la seguridad.</translation>
@@ -5508,6 +5520,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="962802172452141067">Árbol de carpetas de favoritos</translation>
 <translation id="964286338916298286">El administrador de TI inhabilitó los accesorios de Chrome para tu dispositivo.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Aplicación}other{Aplicaciones}}</translation>
+<translation id="965211523698323809">Usa tu <ph name="DEVICE_TYPE" /> para enviar o recibir mensajes de texto. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="967007123645306417">Con esta acción, saldrás de tus cuentas de Google. Los cambios en tus favoritos, historial, contraseñas y demás opciones de configuración ya no se sincronizarán con tu cuenta. Sin embargo, los datos existentes permanecerán almacenados allí y se podrán administrar en el <ph name="BEGIN_LINK" />Panel de control de Google<ph name="END_LINK" />.</translation>
 <translation id="967624055006145463">Datos almacenados</translation>
 <translation id="968000525894980488">Activa los Servicios de Google Play.</translation>
@@ -5533,5 +5546,5 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="995782501881226248">YouTube</translation>
 <translation id="996250603853062861">Estableciendo una conexión segura...</translation>
 <translation id="998747458861718449">Inspeccionar</translation>
-<translation id="999180493986838144"><ph name="ORIGIN" /> podrá ver todos los archivos que se encuentran en <ph name="FOLDERNAME" />. El sitio puede ver cualquier cambio que se produzca en la carpeta hasta que cierres esta pestaña.</translation>
+<translation id="999180493986838144"><ph name="ORIGIN" /> podrá ver todos los archivos que se encuentran en <ph name="FOLDERNAME" />. El sitio puede ver cualquier cambio que se realice en la carpeta hasta que cierres esta pestaña.</translation>
 </translationbundle>

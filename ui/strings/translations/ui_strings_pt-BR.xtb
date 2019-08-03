@@ -9,6 +9,7 @@
 <translation id="1181037720776840403">Remover</translation>
 <translation id="1243314992276662751">Fazer upload</translation>
 <translation id="1269641567813814718">Win</translation>
+<translation id="1279732219630636100">Para enviar um número daqui para seu smartphone, <ph name="TROUBLESHOOT_LINK" /> para os dois dispositivos nas configurações.</translation>
 <translation id="1290982764014248209">Move <ph name="DRAGGED_APP" /> para a pasta <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">APPS RECOMENDADOS</translation>
@@ -18,7 +19,6 @@
 <translation id="1409544243779336081">Recomendação de apps</translation>
 <translation id="1498028757988366001">Você já pesquisou isso. Se você excluir "<ph name="QUERY" />" do seu histórico, essa consulta será permanentemente removida da sua conta em todos os seus dispositivos.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Um minuto e }one{# minutos e }other{# minutos e }}</translation>
-<translation id="1607452907377890914">Saiba como ativar a sincronização</translation>
 <translation id="1643823602425662293">Notificação</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">agora</translation>
@@ -101,6 +101,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 mês atrás}one{# mês atrás}other{# meses atrás}}</translation>
 <translation id="4289300219472526559">Comece a falar</translation>
 <translation id="4316910396681052118">TODOS OS APPS</translation>
+<translation id="4467014365953759647">Não é possível enviar o número</translation>
 <translation id="4588090240171750605">Percorrer à direita</translation>
 <translation id="4690510401873698237">Estante na parte inferior</translation>
 <translation id="4724120544754982507">Central de Notificações: <ph name="UNREAD_NOTIFICATION_COUNT" /> notificações não lidas</translation>
@@ -117,6 +118,7 @@
 <translation id="5266161281976477809">Triângulo de divulgação</translation>
 <translation id="5278860589123563674">Falha ao enviar</translation>
 <translation id="528468243742722775">Fim</translation>
+<translation id="5327567770033251652">ative a sincronização</translation>
 <translation id="5329858601952122676">&amp;Excluir</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> sobre <ph name="IN_PLACE_APP" />, solte para criar pasta.</translation>
 <translation id="5463830097259460683">Emojis e símbolos</translation>
@@ -174,6 +176,7 @@
 <translation id="7319740667687257810">Iniciador, visualização parcial</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Um minuto atrás}one{# minutos atrás}other{# minutos atrás}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Verifique a conexão do smartphone e tente novamente</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Um minuto restante}one{# minutos restantes}other{# minutos restantes}}</translation>
 <translation id="7430878839542012341">Excluir essa pesquisa do seu histórico?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
@@ -181,7 +184,6 @@
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="7814458197256864873">Co&amp;piar</translation>
-<translation id="786857616234078769">Para fazer chamadas do seu smartphone, ative a sincronização.</translation>
 <translation id="7879499977785298635">Não bloquear</translation>
 <translation id="7907591526440419938">Abrir arquivo</translation>
 <translation id="7969046989155602842">Command</translation>

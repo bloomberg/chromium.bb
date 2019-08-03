@@ -9,6 +9,7 @@
 <translation id="1181037720776840403">删除</translation>
 <translation id="1243314992276662751">上传</translation>
 <translation id="1269641567813814718">Win 键</translation>
+<translation id="1279732219630636100">要从此处将电话号码发送到手机，请在“设置”中为这两台设备<ph name="TROUBLESHOOT_LINK" />。</translation>
 <translation id="1290982764014248209">将“<ph name="DRAGGED_APP" />”移至文件夹“<ph name="FOLDER_NAME" />”内。</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">推荐的应用</translation>
@@ -18,7 +19,6 @@
 <translation id="1409544243779336081">推荐的应用</translation>
 <translation id="1498028757988366001">您以前搜索过此内容。如果您将“<ph name="QUERY" />”从历史记录中删除，该条目将会从登录您帐号的所有设备上永久移除。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分钟 }other{# 分钟 }}</translation>
-<translation id="1607452907377890914">了解如何开启同步功能</translation>
 <translation id="1643823602425662293">通知</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">现在</translation>
@@ -47,7 +47,7 @@
 <translation id="2289052229480071835">点按您屏幕上的触摸目标。</translation>
 <translation id="2295140143284145483">调查问卷</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
-<translation id="2388990488038464401">从手机拨打此号码？</translation>
+<translation id="2388990488038464401">要用手机拨打此号码？</translation>
 <translation id="24452542372838207">展开通知</translation>
 <translation id="2445449901874883781">使用高密度</translation>
 <translation id="2451871130406122810">已发送到设备</translation>
@@ -101,6 +101,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 个月前}other{# 个月前}}</translation>
 <translation id="4289300219472526559">开始讲话</translation>
 <translation id="4316910396681052118">所有应用</translation>
+<translation id="4467014365953759647">无法发送电话号码</translation>
 <translation id="4588090240171750605">向右滚动</translation>
 <translation id="4690510401873698237">任务栏位于屏幕底部</translation>
 <translation id="4724120544754982507">通知中心，<ph name="UNREAD_NOTIFICATION_COUNT" /> 条未读通知</translation>
@@ -117,6 +118,7 @@
 <translation id="5266161281976477809">开合三角标记</translation>
 <translation id="5278860589123563674">发送失败</translation>
 <translation id="528468243742722775">结束</translation>
+<translation id="5327567770033251652">开启同步功能</translation>
 <translation id="5329858601952122676">删除(&amp;D)</translation>
 <translation id="5395308026110844773">“<ph name="DRAGGED_APP_NAME" />”已拖至“<ph name="IN_PLACE_APP" />”上，松开即可创建文件夹。</translation>
 <translation id="5463830097259460683">表情符号与符号</translation>
@@ -174,6 +176,7 @@
 <translation id="7319740667687257810">启动器，局部视图</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分钟前}other{# 分钟前}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">请检查手机的网络连接，然后重试</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{还剩 1 分钟}other{还剩 # 分钟}}</translation>
 <translation id="7430878839542012341">要将这项搜索从您的历史记录中删除吗？</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
@@ -181,7 +184,6 @@
 <translation id="7658239707568436148">取消</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="7814458197256864873">复制(&amp;C)</translation>
-<translation id="786857616234078769">如需通过手机拨打电话，请开启同步功能。</translation>
 <translation id="7879499977785298635">不屏蔽</translation>
 <translation id="7907591526440419938">打开文件</translation>
 <translation id="7969046989155602842">Cmd 键</translation>
