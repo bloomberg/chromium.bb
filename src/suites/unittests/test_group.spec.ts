@@ -66,7 +66,7 @@ g.test('stack', async t0 => {
 
   const res = await t0.run(g);
 
-  const search = /unittests\/test_group\.spec\.[tj]s|suites\/unittests\/unit_test\.[tj]s/;
+  const search = /unittests[\/\\]test_group\.spec\.[tj]s|suites[\/\\]unittests[\/\\]unit_test\.[tj]s/;
   for (const { logs } of res.cases) {
     if (logs === undefined) {
       throw new Error('expected logs');

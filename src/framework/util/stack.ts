@@ -10,9 +10,10 @@ export function getStackTrace(e: Error): string {
 
   const stack = [];
   let found = false;
+  const suitesRegex = /[\/\\]suites[\/\\]/;
   for (let i = 0; i < parts.length; ++i) {
     const part = parts[i].trim();
-    const isSuites = part.indexOf('/suites/') !== -1;
+    const isSuites = suitesRegex.test(part);
     if (found && !isSuites) {
       break;
     }
@@ -28,21 +29,21 @@ export function getStackTrace(e: Error): string {
 // *** Examples ***
 //
 // Node fail()
-// x Error:
-// x    at CaseRecorder.fail (/Users/kainino/src/cts-experiment/src/framework/logger.ts:99:30)
+// > Error:
+// >    at CaseRecorder.fail (/Users/kainino/src/cts-experiment/src/framework/logger.ts:99:30)
 // >    at RunCaseSpecific.exports.g.test.t [as fn] (/Users/kainino/src/cts-experiment/src/suites/unittests/logger.spec.ts:80:7)
 // x    at RunCaseSpecific.run (/Users/kainino/src/cts-experiment/src/framework/test_group.ts:121:18)
 // x    at processTicksAndRejections (internal/process/task_queues.js:86:5)
 //
 // Node throw
-// x Error: hello
+// > Error: hello
 // >     at RunCaseSpecific.g.test.t [as fn] (/Users/kainino/src/cts-experiment/src/suites/unittests/test_group.spec.ts:51:11)
 // x     at RunCaseSpecific.run (/Users/kainino/src/cts-experiment/src/framework/test_group.ts:121:18)
 // x     at processTicksAndRejections (internal/process/task_queues.js:86:5)
 //
 // Firefox fail()
-// x fail@http://localhost:8080/out/framework/logger.js:104:30
-// x expect@http://localhost:8080/out/framework/default_fixture.js:59:16
+// > fail@http://localhost:8080/out/framework/logger.js:104:30
+// > expect@http://localhost:8080/out/framework/default_fixture.js:59:16
 // > @http://localhost:8080/out/suites/unittests/util.spec.js:35:5
 // x run@http://localhost:8080/out/framework/test_group.js:119:18
 //
@@ -51,8 +52,8 @@ export function getStackTrace(e: Error): string {
 // x run@http://localhost:8080/out/framework/test_group.js:119:18
 //
 // Safari fail()
-// x fail@http://localhost:8080/out/framework/logger.js:104:39
-// x expect@http://localhost:8080/out/framework/default_fixture.js:59:20
+// > fail@http://localhost:8080/out/framework/logger.js:104:39
+// > expect@http://localhost:8080/out/framework/default_fixture.js:59:20
 // > http://localhost:8080/out/suites/unittests/util.spec.js:35:11
 // x http://localhost:8080/out/framework/test_group.js:119:20
 // x asyncFunctionResume@[native code]

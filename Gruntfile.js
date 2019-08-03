@@ -15,23 +15,25 @@ module.exports = function(grunt) {
 
     run: {
       'generate-listings': {
-        cmd: 'tools/gen',
-        args: ['cts', 'unittests'],
+        cmd: 'node',
+        args: ['tools/gen', 'cts', 'unittests'],
       },
       'generate-version': {
-        cmd: 'tools/gen_version',
+        cmd: 'node',
+        args: ['tools/gen_version'],
       },
       test: {
-        cmd: 'tools/run',
-        args: ['unittests:'],
+        cmd: 'node',
+        args: ['tools/run', 'unittests:'],
       },
       'build-out': {
-        cmd: 'node_modules/.bin/babel',
-        args: ['--source-maps', 'true', '--extensions', '.ts', '--out-dir', 'out/', 'src/'],
+        cmd: 'node',
+        args: ['node_modules/@babel/cli/bin/babel', '--source-maps', 'true', '--extensions', '.ts', '--out-dir', 'out/', 'src/'],
       },
       'build-shaderc': {
-        cmd: 'node_modules/.bin/babel',
+        cmd: 'node',
         args: [
+          'node_modules/@babel/cli/bin/babel',
           '--plugins',
           'babel-plugin-transform-commonjs-es2015-modules',
           'node_modules/@webgpu/shaderc/dist/index.js',
@@ -39,8 +41,14 @@ module.exports = function(grunt) {
           'out/shaderc.js',
         ],
       },
-      'gts-check': { cmd: 'node_modules/.bin/gts', args: ['check'] },
-      'gts-fix': { cmd: 'node_modules/.bin/gts', args: ['fix'] },
+      'gts-check': {
+        cmd: 'node',
+        args: ['node_modules/gts/build/src/cli', 'check'],
+      },
+      'gts-fix': {
+        cmd: 'node',
+        args: ['node_modules/gts/build/src/cli', 'fix'],
+      },
     },
 
     copy: {
