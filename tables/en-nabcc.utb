@@ -1,5 +1,14 @@
 # LibLouis: North American Braille Computer Code
 #
+# -----------
+#-display-name: North American Braille Computer Code
+#
+#+locale: en
+#+type: computer
+#+contraction: no
+#+system: nabcc
+# -----------
+#
 # Copyright (C) 2019 Dave Mielke: <dave@mielke.cc>, [http://mielke.cc/]
 #
 #  This file is part of liblouis.
