@@ -3773,61 +3773,6 @@
     },
   },
   {
-    'name': 'chromium.webkit',
-    'machines': {
-      # TODO(jchinlee): The below three builders are in chromium.memory on LUCI,
-      # see crbug.com/790309, crbug.com/790294, crbug.com/790286.
-      'WebKit Linux ASAN': {
-        'mixins': [
-          'linux-trusty',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      'WebKit Linux Leak': {
-        'mixins': [
-          'linux-trusty',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      'WebKit Linux MSAN': {
-        'mixins': [
-          'linux-trusty',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      # TODO(vadimsh): This builder is in chromium.mac on LUCI, see
-      # crbug.com/864817.
-      'WebKit Mac10.13 (retina)': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '1002:6821',
-              'hidpi': '1',
-              'os': 'Mac-10.13.6',
-              'pool': 'Chrome-GPU',
-            }
-          ],
-        },
-      },
-      # TODO(jchinlee): This builder is in chromium.win on LUCI, see
-      # crbug.com/790343.
-      'WebKit Win10': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-    },
-  },
-  {
     'name': 'chromium.webrtc',
     'machines': {
       'WebRTC Chromium Android Builder': {},
