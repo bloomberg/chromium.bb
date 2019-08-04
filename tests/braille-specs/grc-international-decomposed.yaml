@@ -7,7 +7,10 @@
 
 display: unicode-without-blank.dis
 table: spaces.uti,grc-international-decomposed.uti
-table: grc-international-en.utb
+table:
+  locale: grc
+  region: en
+  __assert-match: grc-international-en.utb
 flags: {testmode: forward}
 tests:
 
