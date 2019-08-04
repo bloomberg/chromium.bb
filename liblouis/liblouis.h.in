@@ -321,6 +321,10 @@ LIBLOUIS_API
 void EXPORT_CALL
 lou_setLogLevel(logLevels level);
 
+typedef enum {
+	LOU_ROW_BRAILLE = 0X2800
+} LOU_UnicodeConstants;
+
 /* ========================= Sort-of private API ========================= */
 
 /**

@@ -1268,7 +1268,7 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 			}
 			if ((mode & dotsIO)) {
 				if ((mode & ucBrl))
-					outbuf[k] = ((output.chars[k] & 0xff) | 0x2800);
+					outbuf[k] = ((output.chars[k] & 0xff) | LOU_ROW_BRAILLE);
 				else
 					outbuf[k] = output.chars[k];
 			} else
@@ -3805,7 +3805,7 @@ lou_dotsToChar(
 	if (table == NULL || length <= 0) return 0;
 	for (k = 0; k < length; k++) {
 		dots = inbuf[k];
-		if (!(dots & LOU_DOTS) && (dots & 0xff00) == 0x2800) /* Unicode braille */
+		if (!(dots & LOU_DOTS) && (dots & 0xff00) == LOU_ROW_BRAILLE) /* Unicode braille */
 			dots = (dots & 0x00ff) | LOU_DOTS;
 		outbuf[k] = _lou_getCharFromDots(dots);
 	}
@@ -3823,7 +3823,7 @@ lou_charToDots(const char *tableList, const widechar *inbuf, widechar *outbuf, i
 	if (table == NULL || length <= 0) return 0;
 	for (k = 0; k < length; k++)
 		if ((mode & ucBrl))
-			outbuf[k] = ((_lou_getDotsForChar(inbuf[k]) & 0xff) | 0x2800);
+			outbuf[k] = ((_lou_getDotsForChar(inbuf[k]) & 0xff) | LOU_ROW_BRAILLE);
 		else
 			outbuf[k] = _lou_getDotsForChar(inbuf[k]);
 	return 1;
