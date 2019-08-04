@@ -676,7 +676,7 @@ lou_findTables(const char *query) {
 	}
 }
 
-const char *EXPORT_CALL
+char *EXPORT_CALL
 lou_getTableInfo(const char *table, const char *key) {
 	const char *value = NULL;
 	List *features = analyzeTable(table, 0);
@@ -692,7 +692,7 @@ lou_getTableInfo(const char *table, const char *key) {
 	return value;
 }
 
-const char **EXPORT_CALL
+char **EXPORT_CALL
 lou_listTables(void) {
 	const char **tablesArray;
 	List *tables = NULL;
