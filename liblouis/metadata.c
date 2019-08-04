@@ -618,6 +618,7 @@ lou_findTable(const char *query) {
 		int q = matchFeatureLists(queryFeatures, table->features, 0);
 		if (q > bestQuotient) {
 			bestQuotient = q;
+			if (bestMatch) free(bestMatch);
 			bestMatch = strdup(table->name);
 		}
 	}
