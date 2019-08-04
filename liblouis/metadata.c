@@ -343,11 +343,15 @@ parseQuery(const char *query) {
 		} else
 			goto compile_error;
 	}
-	int k = 1;
-	List *l;
-	for (l = features; l; l = l->tail) {
-		FeatureWithImportance *f = l->head;
-		f->importance = k++;
+
+	{
+		int k = 1;
+		List *l;
+
+		for (l = features; l; l = l->tail) {
+			FeatureWithImportance *f = l->head;
+			f->importance = k++;
+		}
 	}
 	return list_sort(features, (int (*)(void *, void *))cmpKeys);
 compile_error:
@@ -594,16 +598,16 @@ static void
 indexTablePath(void) {
 	char *searchPath;
 	List *tables;
-	const char **tablesArray;
+	void *tablesArray;
 	_lou_logMessage(
 			LOU_LOG_WARN, "Tables have not been indexed yet. Indexing LOUIS_TABLEPATH.");
 	searchPath = _lou_getTablePath();
 	tables = listFiles(searchPath);
-	tablesArray = (const char **)list_toArray(tables, NULL);
+	tablesArray = list_toArray(tables, NULL);
 	lou_indexTables(tablesArray);
 	free(searchPath);
 	list_free(tables);
-	free((char **)tablesArray);
+	free(tablesArray);
 }
 
 char *EXPORT_CALL
@@ -695,7 +699,7 @@ lou_getTableInfo(const char *table, const char *key) {
 
 char **EXPORT_CALL
 lou_listTables(void) {
-	char **tablesArray;
+	void *tablesArray;
 	List *tables = NULL;
 	List *l;
 	if (!tableIndex) indexTablePath();
@@ -704,7 +708,7 @@ lou_listTables(void) {
 		tables = list_conj(
 				tables, strdup(table->name), (int (*)(void *, void *))strcmp, NULL, NULL);
 	}
-	tablesArray = (char **)list_toArray(tables, NULL);
+	tablesArray = list_toArray(tables, NULL);
 	list_free(tables);
 	return tablesArray;
 }
