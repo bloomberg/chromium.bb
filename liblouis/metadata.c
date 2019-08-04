@@ -170,7 +170,7 @@ typedef struct {
  */
 static Feature
 feature_new(const char *key, const char *val) {
-	static char *YES = "yes";
+	static const char *YES = "yes";
 	Feature f;
 	f.key = strdup(key);
 	f.val = strdup(val ? val : YES);
@@ -214,14 +214,14 @@ cmpKeys(Feature *f1, Feature *f2) {
  */
 static int
 matchFeatureLists(const List *query, const List *tableFeatures, int fuzzy) {
-	static int POS_MATCH = 10;
-	static int NEG_MATCH = -100;
-	static int UNDEFINED = -20;
-	static int EXTRA = -1;
-	static int POS_MATCH_FUZZY = 10;
-	static int NEG_MATCH_FUZZY = -25;
-	static int UNDEFINED_FUZZY = -5;
-	static int EXTRA_FUZZY = -1;
+	static const int POS_MATCH = 10;
+	static const int NEG_MATCH = -100;
+	static const int UNDEFINED = -20;
+	static const int EXTRA = -1;
+	static const int POS_MATCH_FUZZY = 10;
+	static const int NEG_MATCH_FUZZY = -25;
+	static const int UNDEFINED_FUZZY = -5;
+	static const int EXTRA_FUZZY = -1;
 	int posMatch, negMatch, undefined, extra;
 	if (!fuzzy) {
 		posMatch = POS_MATCH;
@@ -679,7 +679,7 @@ lou_findTables(const char *query) {
 
 char *EXPORT_CALL
 lou_getTableInfo(const char *table, const char *key) {
-	const char *value = NULL;
+	char *value = NULL;
 	List *features = analyzeTable(table, 0);
 	List *l;
 	for (l = features; l; l = l->tail) {
@@ -695,7 +695,7 @@ lou_getTableInfo(const char *table, const char *key) {
 
 char **EXPORT_CALL
 lou_listTables(void) {
-	const char **tablesArray;
+	char **tablesArray;
 	List *tables = NULL;
 	List *l;
 	if (!tableIndex) indexTablePath();
@@ -704,7 +704,7 @@ lou_listTables(void) {
 		tables = list_conj(
 				tables, strdup(table->name), (int (*)(void *, void *))strcmp, NULL, NULL);
 	}
-	tablesArray = (const char **)list_toArray(tables, NULL);
+	tablesArray = (char **)list_toArray(tables, NULL);
 	list_free(tables);
 	return tablesArray;
 }
