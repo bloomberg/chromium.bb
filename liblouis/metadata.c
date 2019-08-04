@@ -378,24 +378,30 @@ widestrToStr(const widechar *str, size_t n) {
 static List *
 analyzeTable(const char *table, int activeOnly) {
 	static char fileName[MAXSTRING];
-	char **resolved;
 	List *features = NULL;
 	FileInfo info;
-	int k;
-	resolved = _lou_resolveTable(table, NULL);
-	if (resolved == NULL) {
-		_lou_logMessage(LOU_LOG_ERROR, "Cannot resolve table '%s'", table);
-		return NULL;
+
+	{
+		char **resolved = _lou_resolveTable(table, NULL);
+
+		if (resolved == NULL) {
+			_lou_logMessage(LOU_LOG_ERROR, "Cannot resolve table '%s'", table);
+			return NULL;
+		}
+
+		sprintf(fileName, "%s", *resolved);
+		int k = 0;
+
+		for (k=0; resolved[k]; k+=1) free(resolved[k]);
+		free(resolved);
+
+		if (k > 1) {
+			_lou_logMessage(
+					LOU_LOG_ERROR, "Table '%s' resolves to more than one file", table);
+			return NULL;
+		}
 	}
-	sprintf(fileName, "%s", *resolved);
-	k = 0;
-	for (k = 0; resolved[k]; k++) free(resolved[k]);
-	free(resolved);
-	if (k > 1) {
-		_lou_logMessage(
-				LOU_LOG_ERROR, "Table '%s' resolves to more than one file", table);
-		return NULL;
-	}
+
 	info.fileName = fileName;
 	info.encoding = noEncoding;
 	info.status = 0;
