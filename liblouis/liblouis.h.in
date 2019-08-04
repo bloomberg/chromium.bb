@@ -109,7 +109,7 @@ typedef enum {
 #define noUndefinedDots noUndefined
 
 LIBLOUIS_API
-char *EXPORT_CALL
+const char *EXPORT_CALL
 lou_version(void);
 
 /**

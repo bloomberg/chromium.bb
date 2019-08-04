@@ -4474,9 +4474,9 @@ lou_free(void) {
 	gOpcodeLengths[0] = 0;
 }
 
-char *EXPORT_CALL
+const char *EXPORT_CALL
 lou_version(void) {
-	static char *version = PACKAGE_VERSION;
+	static const char *version = PACKAGE_VERSION;
 	return version;
 }
 
