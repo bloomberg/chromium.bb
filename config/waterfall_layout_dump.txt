@@ -616,6 +616,7 @@
     samus-kernelnext-release
     samus-release
     sand-release
+    sarien-kvm-release
     sarien-release
     scarlet-arcnext-release
     scarlet-release
@@ -2926,6 +2927,7 @@
     samus-kernelnext-release-tryjob
     samus-release-tryjob
     sand-release-tryjob
+    sarien-kvm-release-tryjob
     sarien-release-tryjob
     scarlet-arcnext-release-tryjob
     scarlet-release-tryjob
@@ -3451,6 +3453,18 @@
   sarien-compile-only-pre-cq
   sarien-factory-sarien-12033.B-factorybranch-tryjob
   sarien-full-tryjob
+  sarien-kvm-chromium-pfq-tryjob
+  sarien-kvm-compile-only-pre-cq
+  sarien-kvm-full-tryjob
+  sarien-kvm-llvm-next-toolchain-tryjob
+  sarien-kvm-llvm-toolchain-tryjob
+  sarien-kvm-no-vmtest-pre-cq
+  sarien-kvm-paladin-tryjob
+  sarien-kvm-postsubmit-tryjob
+  sarien-kvm-pre-cq
+  sarien-kvm-release-tryjob
+  sarien-kvm-tot-chromium-pfq-informational-tryjob
+  sarien-kvm-unittest-stress
   sarien-llvm-next-toolchain-tryjob
   sarien-llvm-toolchain-tryjob
   sarien-master-factorybranch-tryjob
