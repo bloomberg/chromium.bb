@@ -528,9 +528,6 @@ compile_findCharOrDots(widechar c, int m, TranslationTableHeader *table) {
 	return NULL;
 }
 
-static char *
-unknownDots(widechar dots);
-
 static TranslationTableCharacter *
 addCharOrDots(FileInfo *nested, widechar c, int m, TranslationTableHeader **table) {
 	/* See if a character or dot pattern is in the appropriate table. If not,
@@ -641,25 +638,6 @@ putCharAndDots(FileInfo *nested, widechar c, widechar d, DisplayTableHeader **ta
 		}
 	}
 	return 1;
-}
-
-/**
- * Print out dot numbers
- *
- * @return a string containing the dot numbers. The longest possible
- * output is "\123456789ABCDEF0/"
- */
-static char *
-unknownDots(widechar dots) {
-	static char buffer[20];
-	int k = 1;
-	buffer[0] = '\\';
-	for (int mappingPos = 0; dotMapping[mappingPos].key; mappingPos++) {
-		if (dots & dotMapping[mappingPos].key) buffer[k++] = dotMapping[mappingPos].value;
-	}
-	buffer[k++] = '/';
-	buffer[k] = 0;
-	return buffer;
 }
 
 static TranslationTableOffset gNewRuleOffset = 0;

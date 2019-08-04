@@ -194,6 +194,50 @@ _lou_showString(widechar const *chars, int length, int forceHex) {
 }
 
 /**
+ * Mapping between braille dot and textual representation as used in dots operands
+ */
+static const intCharTupple dotMapping[] = {
+	{ LOU_DOT_1, '1' },
+	{ LOU_DOT_2, '2' },
+	{ LOU_DOT_3, '3' },
+	{ LOU_DOT_4, '4' },
+	{ LOU_DOT_5, '5' },
+	{ LOU_DOT_6, '6' },
+	{ LOU_DOT_7, '7' },
+	{ LOU_DOT_8, '8' },
+	{ LOU_DOT_9, '9' },
+	{ LOU_DOT_10, 'A' },
+	{ LOU_DOT_11, 'B' },
+	{ LOU_DOT_12, 'C' },
+	{ LOU_DOT_13, 'D' },
+	{ LOU_DOT_14, 'E' },
+	{ LOU_DOT_15, 'F' },
+	{ 0, 0 },
+};
+
+/**
+ * Print out dot numbers
+ *
+ * @return a string containing the dot numbers. The longest possible
+ * output is "\123456789ABCDEF0/"
+ */
+const char *EXPORT_CALL
+_lou_unknownDots(widechar dots) {
+	static char buffer[20];
+
+	int k = 0;
+	buffer[k++] = '\\';
+
+	for (int mappingPos = 0; dotMapping[mappingPos].key; mappingPos++) {
+		if (dots & dotMapping[mappingPos].key) buffer[k++] = dotMapping[mappingPos].value;
+	}
+
+	buffer[k++] = '/';
+	buffer[k] = 0;
+	return buffer;
+}
+
+/**
  * Translate a sequence of dots to the encoding used in dots operands.
  */
 char *EXPORT_CALL
