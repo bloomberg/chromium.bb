@@ -136,7 +136,7 @@ _lou_charHash(widechar c) {
 	return (unsigned long int)c % HASHNUM;
 }
 
-char *EXPORT_CALL
+const char *EXPORT_CALL
 _lou_showString(widechar const *chars, int length, int forceHex) {
 	/* Translate a string of characters to the encoding used in character
 	 * operands */
@@ -240,7 +240,7 @@ _lou_unknownDots(widechar dots) {
 /**
  * Translate a sequence of dots to the encoding used in dots operands.
  */
-char *EXPORT_CALL
+const char *EXPORT_CALL
 _lou_showDots(widechar const *dots, int length) {
 	int bufPos = 0;
 	static char scratchBuf[MAXSTRING];

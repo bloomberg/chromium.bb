@@ -662,7 +662,7 @@ _lou_charHash(widechar c);
 /**
  * Return a string in the same format as the characters operand in opcodes
  */
-char *EXPORT_CALL
+const char *EXPORT_CALL
 _lou_showString(widechar const *chars, int length, int forceHex);
 
 /**
@@ -677,7 +677,7 @@ _lou_unknownDots(widechar dots);
 /**
  * Return a character string in the format of the dots operand
  */
-char *EXPORT_CALL
+const char *EXPORT_CALL
 _lou_showDots(widechar const *dots, int length);
 
 /**
