@@ -1118,18 +1118,6 @@
       ]
     },
     {
-      "name": "sarien-kvm",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "sentry",
       "configs": [
         {
@@ -2708,6 +2696,39 @@
         },
         {
           "board_name": "sarien",
+          "name": "sarien_signed",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "sarien-kvm",
+      "reference_board_name": "sarien-kvm",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "sarien-kvm",
+          "name": "arcada",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "sarien-kvm",
+          "name": "arcada_signed",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "sarien-kvm",
+          "name": "sarien",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "sarien-kvm",
           "name": "sarien_signed",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
