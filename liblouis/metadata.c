@@ -254,7 +254,7 @@ matchFeatureLists(const List *query, const List *tableFeatures, int fuzzy) {
 				quotient += extra;
 				l2 = l2->tail;
 			} else {
-				if (strcmp(((Feature *)l1->head)->val, ((Feature *)l2->head)->val) == 0)
+				if (strcasecmp(((Feature *)l1->head)->val, ((Feature *)l2->head)->val) == 0)
 					quotient += posMatch;
 				else
 					quotient += negMatch;
