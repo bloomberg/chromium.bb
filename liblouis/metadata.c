@@ -196,7 +196,7 @@ feature_free(Feature *f) {
  */
 static int
 cmpKeys(Feature *f1, Feature *f2) {
-	return strcmp(f1->key, f2->key);
+	return strcasecmp(f1->key, f2->key);
 }
 
 /**
@@ -683,7 +683,7 @@ lou_getTableInfo(const char *table, const char *key) {
 	List *l;
 	for (l = features; l; l = l->tail) {
 		Feature *f = l->head;
-		if (strcmp(f->key, key) == 0) {
+		if (strcasecmp(f->key, key) == 0) {
 			value = strdup(f->val);
 			list_free(features);
 			break;
