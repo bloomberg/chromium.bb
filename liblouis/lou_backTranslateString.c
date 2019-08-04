@@ -192,7 +192,7 @@ _lou_backTranslateWithTracing(const char *tableList, const widechar *inbuf, int 
 		passbuf1 = stringBufferPool->buffers[idx];
 		for (k = 0; k < srcmax; k++)
 			if ((mode & dotsIO))
-				passbuf1[k] = inbuf[k] | 0x8000;
+				passbuf1[k] = inbuf[k] | LOU_DOTS;
 			else
 				passbuf1[k] = _lou_getDotsForChar(inbuf[k]);
 		passbuf1[srcmax] = _lou_getDotsForChar(' ');
