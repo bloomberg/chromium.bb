@@ -8,20 +8,15 @@
 #+dots: 6
 #+contraction: no
 #+direction: forward
-#
-# TODO: Please correct the metadata above. It is not meant to be
-# accurate nor complete. It hasn't been verified by the table
-# author yet. It is merely an attempt by the liblouis maintainers
-# to get some sensible initial values in place.
-#
-# TODO: Please add a reference to official documentation about
-# the implemented braille code. Preferably submit the documents
-# to https://github.com/liblouis/braille-specs.
+#+region: en
+#+system: grc-international-en
 # ------------
 #
 #  Copyright (C) 2004-2008 ViewPlus Technologies, Inc. www.viewplus.com
 #  Copyright (C) 2004-2006 JJB Software, Inc. www.jjb-software.com
 #  Copyright (C) 2012 Mesar Hameed <mesar.hameed@gmail.com>
+#  Copyright (C) 2019 Dave Mielke: <dave@mielke.cc>, [http://mielke.cc/]
+#  Copyright (C) 2019 Μαρια Γεωργακαράκου <mylarynx@gmail.com>
 #
 #  This file is part of liblouis.
 #
@@ -42,8 +37,11 @@
 # This braille code isn't used in Greece. We're not aware of any official
 # documentation for it. It's based on a braille code developed by scholars to
 # facilitate their study of classical and biblical Greek. It's possible that
-# some people are still using it. One known user is Professor Panagiotis
-# Antonopoulos, who was using it for several years at Oxford back around 1980.
+# some people are still using it. Most of the data for this table came from
+# Professor Panagiotis Antonopoulos, who was using the code for several years at
+# Oxford back around 1980. The table also corresponds with the chapter "Greek
+# (International)" on page 185 of
+# http://liblouis.org/braille-specs/#world-braille-usage-3rd-edition.
 
 space \t 7 tab
 space \x00a0 9 unbreakable space
