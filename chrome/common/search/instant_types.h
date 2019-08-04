@@ -68,6 +68,9 @@ struct ThemeBackgroundInfo {
   // Url to learn more info about the custom background.
   GURL custom_background_attribution_action_url;
 
+  // Id of the collection being used for "daily refresh".
+  std::string collection_id;
+
   // The theme background color. Always valid.
   SkColor background_color;
 

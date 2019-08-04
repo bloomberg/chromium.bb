@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "chrome/browser/search/background/ntp_background_service_observer.h"
 #include "chrome/browser/search/search_provider_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
@@ -39,6 +40,7 @@ class InstantIOContext;
 class InstantServiceObserver;
 class NtpBackgroundService;
 class Profile;
+struct CollectionImage;
 struct InstantMostVisitedInfo;
 struct ThemeBackgroundInfo;
 
@@ -53,6 +55,7 @@ extern const char kNtpCustomBackgroundMainColor[];
 // necessary information (most visited tiles and theme info) updated in those
 // renderer processes.
 class InstantService : public KeyedService,
+                       public NtpBackgroundServiceObserver,
                        public content::NotificationObserver,
                        public ntp_tiles::MostVisitedSites::Observer,
                        public ui::NativeThemeObserver {
@@ -154,6 +157,13 @@ class InstantService : public KeyedService,
   // Used for testing.
   void AddValidBackdropUrlForTesting(const GURL& url) const;
 
+  // Used for testing.
+  void AddValidBackdropCollectionForTesting(
+      const std::string& collection_id) const;
+
+  // Used for testing.
+  void SetNextCollectionImageForTesting(const CollectionImage& image) const;
+
   // Check if a custom background has been set by the user.
   bool IsCustomBackgroundSet();
 
@@ -199,6 +209,12 @@ class InstantService : public KeyedService,
 
   // KeyedService:
   void Shutdown() override;
+
+  // NtpBackgroundServiceObserver:
+  void OnCollectionInfoAvailable() override {}
+  void OnCollectionImagesAvailable() override {}
+  void OnNextCollectionImageAvailable() override;
+  void OnNtpBackgroundServiceShuttingDown() override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -289,6 +305,9 @@ class InstantService : public KeyedService,
   PrefService* pref_service_;
 
   ScopedObserver<ui::NativeTheme, InstantService> theme_observer_;
+
+  ScopedObserver<NtpBackgroundService, NtpBackgroundServiceObserver>
+      background_service_observer_;
 
   ui::NativeTheme* native_theme_;
 

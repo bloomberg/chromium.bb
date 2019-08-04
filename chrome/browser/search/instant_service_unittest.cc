@@ -41,6 +41,8 @@ base::DictionaryValue GetBackgroundInfoAsDict(const GURL& background_url) {
   background_info.SetKey("attribution_line_1", base::Value(std::string()));
   background_info.SetKey("attribution_line_2", base::Value(std::string()));
   background_info.SetKey("attribution_action_url", base::Value(std::string()));
+  background_info.SetKey("collection_id", base::Value(std::string()));
+  background_info.SetKey("resume_token", base::Value(std::string()));
 
   return background_info;
 }
@@ -657,4 +659,55 @@ TEST_F(InstantServiceTest, LocalImageDoesNotUpdateCustomBackgroundColor) {
   EXPECT_FALSE(CheckBackgroundColor(
       SK_ColorRED,
       pref_service->GetDictionary(prefs::kNtpCustomBackgroundDict)));
+}
+
+TEST_F(InstantServiceTest, SetCustomBackgroundCollectionId) {
+  ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
+  const std::string kInvalidId("aarrtt");
+  const std::string kValidId("art");
+
+  // A valid id should update the pref/background.
+  CollectionImage image;
+  image.collection_id = kValidId;
+  image.image_url = GURL("https://www.test.com/");
+  instant_service_->SetNextCollectionImageForTesting(image);
+
+  instant_service_->AddValidBackdropCollectionForTesting(kValidId);
+  instant_service_->SetCustomBackgroundInfo(GURL(), "", "", GURL(), kValidId);
+  thread_bundle()->RunUntilIdle();
+
+  ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
+  EXPECT_EQ(kValidId, theme_info->collection_id);
+  EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
+
+  // An invalid id should clear the pref/background.
+  CollectionImage image2;
+  instant_service_->SetNextCollectionImageForTesting(image2);
+  instant_service_->SetCustomBackgroundInfo(GURL(), "", "", GURL(), kInvalidId);
+  thread_bundle()->RunUntilIdle();
+
+  theme_info = instant_service_->GetInitializedThemeInfo();
+  EXPECT_EQ(std::string(), theme_info->collection_id);
+  EXPECT_FALSE(instant_service_->IsCustomBackgroundSet());
+}
+
+TEST_F(InstantServiceTest, CollectionIdTakePriorityOverBackgroundURL) {
+  ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
+  const std::string kValidId("art");
+  const GURL kUrl("https://www.foo.com/");
+
+  CollectionImage image;
+  image.collection_id = kValidId;
+  image.image_url = GURL("https://www.test.com/");
+  instant_service_->SetNextCollectionImageForTesting(image);
+  instant_service_->AddValidBackdropUrlForTesting(kUrl);
+  instant_service_->AddValidBackdropCollectionForTesting(kValidId);
+
+  instant_service_->SetCustomBackgroundInfo(kUrl, "", "", GURL(), kValidId);
+  thread_bundle()->RunUntilIdle();
+
+  ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
+  EXPECT_EQ(kValidId, theme_info->collection_id);
+  EXPECT_EQ("https://www.test.com/", theme_info->custom_background_url);
+  EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
