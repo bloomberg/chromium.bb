@@ -12,6 +12,7 @@ import os
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import portage_util
@@ -25,12 +26,29 @@ class Error(Exception):
   """Module's base error class."""
 
 
+class UnknownPackageError(Error):
+  """Uprev attempted for a package without a registered handler."""
+
+
 class UprevError(Error):
   """An error occurred while uprevving packages."""
 
 
-class UnknownPackageError(Error):
-  """Uprev attempted for a package without a registered handler."""
+class AndroidIsPinnedUprevError(UprevError):
+  """Raised when we try to uprev while Android is pinned."""
+
+  def __init__(self, new_android_atom):
+    """Initialize a AndroidIsPinnedUprevError.
+
+    Args:
+      new_android_atom: The Android atom that we failed to
+                        uprev to, due to Android being pinned.
+    """
+    assert new_android_atom
+    msg = ('Failed up uprev to Android version %s as Android was pinned.' %
+           new_android_atom)
+    super(AndroidIsPinnedUprevError, self).__init__(msg)
+    self.new_android_atom = new_android_atom
 
 
 def uprevs_versioned_package(package):
@@ -48,6 +66,65 @@ def uprevs_versioned_package(package):
     return pass_through
 
   return register
+
+
+def uprev_android(tracking_branch, android_package, android_build_branch,
+                  chroot, build_targets=None, android_version=None,
+                  android_gts_build_branch=None):
+  """Returns the portage atom for the revved Android ebuild - see man emerge."""
+  command = ['cros_mark_android_as_stable',
+             '--tracking_branch=%s' % tracking_branch,
+             '--android_package=%s' % android_package,
+             '--android_build_branch=%s' % android_build_branch]
+  if build_targets:
+    command.append('--boards=%s' % ':'.join(bt.name for bt in build_targets))
+  if android_version:
+    command.append('--force_version=%s' % android_version)
+  if android_gts_build_branch:
+    command.append('--android_gts_build_branch=%s' % android_gts_build_branch)
+
+  result = cros_build_lib.RunCommand(command, redirect_stdout=True,
+                                     enter_chroot=True,
+                                     chroot_args=chroot.get_enter_args())
+
+  android_atom = _parse_android_atom(result)
+  if not android_atom:
+    logging.info('Found nothing to rev.')
+    return None
+
+  for target in build_targets or []:
+    # Sanity check: We should always be able to merge the version of
+    # Android we just unmasked.
+    command = ['emerge-%s' % target.name, '-p', '--quiet',
+               '=%s' % android_atom]
+    try:
+      cros_build_lib.RunCommand(command, enter_chroot=True,
+                                chroot_args=chroot.get_enter_args())
+    except cros_build_lib.RunCommandError:
+      logging.error(
+          'Cannot emerge-%s =%s\nIs Android pinned to an older '
+          'version?', target, android_atom)
+      raise AndroidIsPinnedUprevError(android_atom)
+
+  return android_atom
+
+
+def _parse_android_atom(result):
+  """Helper to parse the atom from the cros_mark_android_as_stable output.
+
+  This function is largely just intended to make testing easier.
+
+  Args:
+    result (cros_build_lib.CommandResult): The cros_mark_android_as_stable
+      command result.
+  """
+  portage_atom_string = result.output.strip()
+
+  android_atom = None
+  if portage_atom_string:
+    android_atom = portage_atom_string.splitlines()[-1].partition('=')[-1]
+
+  return android_atom
 
 
 def uprev_build_targets(build_targets, overlay_type, chroot=None,

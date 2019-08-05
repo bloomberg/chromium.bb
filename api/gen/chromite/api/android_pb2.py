@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
-  serialized_pb=_b('\n\x1a\x63hromite/api/android.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"\xd7\x01\n\x11MarkStableRequest\x12\x17\n\x0ftracking_branch\x18\x01 \x01(\t\x12\x14\n\x0cpackage_name\x18\x02 \x01(\t\x12\x1c\n\x14\x61ndroid_build_branch\x18\x03 \x01(\t\x12\x17\n\x0f\x61ndroid_version\x18\x04 \x01(\t\x12 \n\x18\x61ndroid_gts_build_branch\x18\x05 \x01(\t\x12\'\n\x06\x62oards\x18\x06 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x12\x11\n\tbuildroot\x18\x07 \x01(\t\"w\n\x12MarkStableResponse\x12\x32\n\x06status\x18\x01 \x01(\x0e\x32\".chromite.api.MarkStableStatusType\x12-\n\x0c\x61ndroid_atom\x18\x02 \x01(\x0b\x32\x17.chromiumos.PackageInfo\"9\n\x13UnpinVersionRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\"\x16\n\x14UnpinVersionResponse*\x9c\x01\n\x14MarkStableStatusType\x12\"\n\x1eMARK_STABLE_STATUS_UNSPECIFIED\x10\x00\x12\x1e\n\x1aMARK_STABLE_STATUS_SUCCESS\x10\x01\x12\x1d\n\x19MARK_STABLE_STATUS_PINNED\x10\x02\x12!\n\x1dMARK_STABLE_STATUS_EARLY_EXIT\x10\x03\x32\xd9\x01\n\x0e\x41ndroidService\x12W\n\nMarkStable\x12\x1f.chromite.api.MarkStableRequest\x1a .chromite.api.MarkStableResponse\"\x06\xc2\xed\x1a\x02\x10\x02\x12]\n\x0cUnpinVersion\x12!.chromite.api.UnpinVersionRequest\x1a\".chromite.api.UnpinVersionResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x0f\xc2\xed\x1a\x0b\n\x07\x61ndroid\x10\x01\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
+  serialized_pb=_b('\n\x1a\x63hromite/api/android.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\"\xef\x01\n\x11MarkStableRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\x12\x17\n\x0ftracking_branch\x18\x02 \x01(\t\x12\x14\n\x0cpackage_name\x18\x03 \x01(\t\x12\x1c\n\x14\x61ndroid_build_branch\x18\x04 \x01(\t\x12\x17\n\x0f\x61ndroid_version\x18\x05 \x01(\t\x12 \n\x18\x61ndroid_gts_build_branch\x18\x06 \x01(\t\x12.\n\rbuild_targets\x18\x07 \x03(\x0b\x32\x17.chromiumos.BuildTarget\"w\n\x12MarkStableResponse\x12\x32\n\x06status\x18\x01 \x01(\x0e\x32\".chromite.api.MarkStableStatusType\x12-\n\x0c\x61ndroid_atom\x18\x02 \x01(\x0b\x32\x17.chromiumos.PackageInfo\"9\n\x13UnpinVersionRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\"\x16\n\x14UnpinVersionResponse*\x9c\x01\n\x14MarkStableStatusType\x12\"\n\x1eMARK_STABLE_STATUS_UNSPECIFIED\x10\x00\x12\x1e\n\x1aMARK_STABLE_STATUS_SUCCESS\x10\x01\x12\x1d\n\x19MARK_STABLE_STATUS_PINNED\x10\x02\x12!\n\x1dMARK_STABLE_STATUS_EARLY_EXIT\x10\x03\x32\xd9\x01\n\x0e\x41ndroidService\x12W\n\nMarkStable\x12\x1f.chromite.api.MarkStableRequest\x1a .chromite.api.MarkStableResponse\"\x06\xc2\xed\x1a\x02\x10\x02\x12]\n\x0cUnpinVersion\x12!.chromite.api.UnpinVersionRequest\x1a\".chromite.api.UnpinVersionResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x0f\xc2\xed\x1a\x0b\n\x07\x61ndroid\x10\x01\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
@@ -51,8 +51,8 @@ _MARKSTABLESTATUSTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=522,
-  serialized_end=678,
+  serialized_start=546,
+  serialized_end=702,
 )
 _sym_db.RegisterEnumDescriptor(_MARKSTABLESTATUSTYPE)
 
@@ -72,51 +72,51 @@ _MARKSTABLEREQUEST = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='tracking_branch', full_name='chromite.api.MarkStableRequest.tracking_branch', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='chroot', full_name='chromite.api.MarkStableRequest.chroot', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='package_name', full_name='chromite.api.MarkStableRequest.package_name', index=1,
+      name='tracking_branch', full_name='chromite.api.MarkStableRequest.tracking_branch', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='android_build_branch', full_name='chromite.api.MarkStableRequest.android_build_branch', index=2,
+      name='package_name', full_name='chromite.api.MarkStableRequest.package_name', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='android_version', full_name='chromite.api.MarkStableRequest.android_version', index=3,
+      name='android_build_branch', full_name='chromite.api.MarkStableRequest.android_build_branch', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='android_gts_build_branch', full_name='chromite.api.MarkStableRequest.android_gts_build_branch', index=4,
+      name='android_version', full_name='chromite.api.MarkStableRequest.android_version', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='boards', full_name='chromite.api.MarkStableRequest.boards', index=5,
-      number=6, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='android_gts_build_branch', full_name='chromite.api.MarkStableRequest.android_gts_build_branch', index=5,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='buildroot', full_name='chromite.api.MarkStableRequest.buildroot', index=6,
-      number=7, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='build_targets', full_name='chromite.api.MarkStableRequest.build_targets', index=6,
+      number=7, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -133,7 +133,7 @@ _MARKSTABLEREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=100,
-  serialized_end=315,
+  serialized_end=339,
 )
 
 
@@ -170,8 +170,8 @@ _MARKSTABLERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=317,
-  serialized_end=436,
+  serialized_start=341,
+  serialized_end=460,
 )
 
 
@@ -201,8 +201,8 @@ _UNPINVERSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=438,
-  serialized_end=495,
+  serialized_start=462,
+  serialized_end=519,
 )
 
 
@@ -225,11 +225,12 @@ _UNPINVERSIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=497,
-  serialized_end=519,
+  serialized_start=521,
+  serialized_end=543,
 )
 
-_MARKSTABLEREQUEST.fields_by_name['boards'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
+_MARKSTABLEREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
+_MARKSTABLEREQUEST.fields_by_name['build_targets'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
 _MARKSTABLERESPONSE.fields_by_name['status'].enum_type = _MARKSTABLESTATUSTYPE
 _MARKSTABLERESPONSE.fields_by_name['android_atom'].message_type = chromiumos_dot_common__pb2._PACKAGEINFO
 _UNPINVERSIONREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
@@ -277,8 +278,8 @@ _ANDROIDSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\013\n\007android\020\001'),
-  serialized_start=681,
-  serialized_end=898,
+  serialized_start=705,
+  serialized_end=922,
   methods=[
   _descriptor.MethodDescriptor(
     name='MarkStable',
