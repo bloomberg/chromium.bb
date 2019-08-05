@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "platform/api/logging.h"
+#include "platform/api/trace_logging.h"
 
 namespace openscreen {
 namespace mdns {
@@ -203,6 +204,7 @@ Error MdnsResponderAdapterImpl::Init() {
 }
 
 void MdnsResponderAdapterImpl::Close() {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::Close");
   mDNS_StartExit(&mdns_);
   // Let all services send goodbyes.
   while (!service_records_.empty()) {
@@ -224,6 +226,7 @@ void MdnsResponderAdapterImpl::Close() {
 }
 
 Error MdnsResponderAdapterImpl::SetHostLabel(const std::string& host_label) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::SetHostLabel");
   if (host_label.size() > DomainName::kDomainNameMaxLabelLength)
     return Error::Code::kDomainNameTooLong;
 
@@ -240,6 +243,8 @@ Error MdnsResponderAdapterImpl::RegisterInterface(
     const platform::InterfaceInfo& interface_info,
     const platform::IPSubnet& interface_address,
     platform::UdpSocket* socket) {
+  TRACE_SCOPED(TraceCategory::mDNS,
+               "MdnsResponderAdapterImpl::RegisterInterface");
   OSP_DCHECK(socket);
 
   const auto info_it = responder_interface_info_.find(socket);
@@ -277,6 +282,8 @@ Error MdnsResponderAdapterImpl::RegisterInterface(
 
 Error MdnsResponderAdapterImpl::DeregisterInterface(
     platform::UdpSocket* socket) {
+  TRACE_SCOPED(TraceCategory::mDNS,
+               "MdnsResponderAdapterImpl::DeregisterInterface");
   const auto info_it = responder_interface_info_.find(socket);
   if (info_it == responder_interface_info_.end())
     return Error::Code::kNoItemFound;
@@ -295,6 +302,7 @@ Error MdnsResponderAdapterImpl::DeregisterInterface(
 }
 void MdnsResponderAdapterImpl::OnRead(platform::UdpPacket packet,
                                       platform::NetworkRunner* network_runner) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::OnRead");
   mDNSAddr src;
   if (packet.source().address.IsV4()) {
     src.type = mDNSAddrType_IPv4;
@@ -324,6 +332,8 @@ void MdnsResponderAdapterImpl::OnRead(platform::UdpPacket packet,
 }
 
 absl::optional<platform::Clock::duration> MdnsResponderAdapterImpl::RunTasks() {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::RunTasks");
+
   mDNS_Execute(&mdns_);
 
   // Using mDNS_Execute's response to determine the correct timespan before
@@ -379,6 +389,7 @@ std::vector<AaaaEvent> MdnsResponderAdapterImpl::TakeAaaaResponses() {
 MdnsResponderErrorCode MdnsResponderAdapterImpl::StartPtrQuery(
     platform::UdpSocket* socket,
     const DomainName& service_type) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::StartPtrQuery");
   auto& ptr_questions = socket_to_questions_[socket].ptr;
   if (ptr_questions.find(service_type) != ptr_questions.end())
     return MdnsResponderErrorCode::kNoError;
@@ -425,6 +436,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StartPtrQuery(
 MdnsResponderErrorCode MdnsResponderAdapterImpl::StartSrvQuery(
     platform::UdpSocket* socket,
     const DomainName& service_instance) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::StartSrvQuery");
   if (!service_instance.EndsWithLocalDomain())
     return MdnsResponderErrorCode::kInvalidParameters;
 
@@ -462,6 +474,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StartSrvQuery(
 MdnsResponderErrorCode MdnsResponderAdapterImpl::StartTxtQuery(
     platform::UdpSocket* socket,
     const DomainName& service_instance) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::StartTxtQuery");
   if (!service_instance.EndsWithLocalDomain())
     return MdnsResponderErrorCode::kInvalidParameters;
 
@@ -499,6 +512,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StartTxtQuery(
 MdnsResponderErrorCode MdnsResponderAdapterImpl::StartAQuery(
     platform::UdpSocket* socket,
     const DomainName& domain_name) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::StartAQuery");
   if (!domain_name.EndsWithLocalDomain())
     return MdnsResponderErrorCode::kInvalidParameters;
 
@@ -536,6 +550,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StartAQuery(
 MdnsResponderErrorCode MdnsResponderAdapterImpl::StartAaaaQuery(
     platform::UdpSocket* socket,
     const DomainName& domain_name) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::StartAaaaQuery");
   if (!domain_name.EndsWithLocalDomain())
     return MdnsResponderErrorCode::kInvalidParameters;
 
@@ -573,6 +588,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StartAaaaQuery(
 MdnsResponderErrorCode MdnsResponderAdapterImpl::StopPtrQuery(
     platform::UdpSocket* socket,
     const DomainName& service_type) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::StopPtrQuery");
   auto interface_entry = socket_to_questions_.find(socket);
   if (interface_entry == socket_to_questions_.end())
     return MdnsResponderErrorCode::kNoError;
@@ -590,6 +606,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StopPtrQuery(
 MdnsResponderErrorCode MdnsResponderAdapterImpl::StopSrvQuery(
     platform::UdpSocket* socket,
     const DomainName& service_instance) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::StopSrvQuery");
   auto interface_entry = socket_to_questions_.find(socket);
   if (interface_entry == socket_to_questions_.end())
     return MdnsResponderErrorCode::kNoError;
@@ -607,6 +624,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StopSrvQuery(
 MdnsResponderErrorCode MdnsResponderAdapterImpl::StopTxtQuery(
     platform::UdpSocket* socket,
     const DomainName& service_instance) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::StopTxtQuery");
   auto interface_entry = socket_to_questions_.find(socket);
   if (interface_entry == socket_to_questions_.end())
     return MdnsResponderErrorCode::kNoError;
@@ -624,6 +642,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StopTxtQuery(
 MdnsResponderErrorCode MdnsResponderAdapterImpl::StopAQuery(
     platform::UdpSocket* socket,
     const DomainName& domain_name) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::StopAQuery");
   auto interface_entry = socket_to_questions_.find(socket);
   if (interface_entry == socket_to_questions_.end())
     return MdnsResponderErrorCode::kNoError;
@@ -641,6 +660,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::StopAQuery(
 MdnsResponderErrorCode MdnsResponderAdapterImpl::StopAaaaQuery(
     platform::UdpSocket* socket,
     const DomainName& domain_name) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::StopAaaaQuery");
   auto interface_entry = socket_to_questions_.find(socket);
   if (interface_entry == socket_to_questions_.end())
     return MdnsResponderErrorCode::kNoError;
@@ -662,6 +682,8 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::RegisterService(
     const DomainName& target_host,
     uint16_t target_port,
     const std::map<std::string, std::string>& txt_data) {
+  TRACE_SCOPED(TraceCategory::mDNS,
+               "MdnsResponderAdapterImpl::RegisterService");
   OSP_DCHECK(IsValidServiceName(service_name));
   OSP_DCHECK(IsValidServiceProtocol(service_protocol));
   service_records_.push_back(std::make_unique<ServiceRecordSet>());
@@ -705,6 +727,8 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::DeregisterService(
     const std::string& service_instance,
     const std::string& service_name,
     const std::string& service_protocol) {
+  TRACE_SCOPED(TraceCategory::mDNS,
+               "MdnsResponderAdapterImpl::DeregisterService");
   domainlabel instance;
   domainlabel name;
   domainlabel protocol;
@@ -733,6 +757,7 @@ MdnsResponderErrorCode MdnsResponderAdapterImpl::UpdateTxtData(
     const std::string& service_name,
     const std::string& service_protocol,
     const std::map<std::string, std::string>& txt_data) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::UpdateTxtData");
   domainlabel instance;
   domainlabel name;
   domainlabel protocol;
@@ -766,6 +791,7 @@ void MdnsResponderAdapterImpl::AQueryCallback(mDNS* m,
                                               DNSQuestion* question,
                                               const ResourceRecord* answer,
                                               QC_result added) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderAdapterImpl::AQueryCallback");
   OSP_DCHECK(question);
   OSP_DCHECK(answer);
   OSP_DCHECK_EQ(answer->rrtype, kDNSType_A);
@@ -796,6 +822,8 @@ void MdnsResponderAdapterImpl::AaaaQueryCallback(mDNS* m,
                                                  DNSQuestion* question,
                                                  const ResourceRecord* answer,
                                                  QC_result added) {
+  TRACE_SCOPED(TraceCategory::mDNS,
+               "MdnsResponderAdapterImpl::AaaaQueryCallback");
   OSP_DCHECK(question);
   OSP_DCHECK(answer);
   OSP_DCHECK_EQ(answer->rrtype, kDNSType_A);
@@ -826,6 +854,8 @@ void MdnsResponderAdapterImpl::PtrQueryCallback(mDNS* m,
                                                 DNSQuestion* question,
                                                 const ResourceRecord* answer,
                                                 QC_result added) {
+  TRACE_SCOPED(TraceCategory::mDNS,
+               "MdnsResponderAdapterImpl::PtrQueryCallback");
   OSP_DCHECK(question);
   OSP_DCHECK(answer);
   OSP_DCHECK_EQ(answer->rrtype, kDNSType_PTR);
@@ -855,6 +885,8 @@ void MdnsResponderAdapterImpl::SrvQueryCallback(mDNS* m,
                                                 DNSQuestion* question,
                                                 const ResourceRecord* answer,
                                                 QC_result added) {
+  TRACE_SCOPED(TraceCategory::mDNS,
+               "MdnsResponderAdapterImpl::SrvQueryCallback");
   OSP_DCHECK(question);
   OSP_DCHECK(answer);
   OSP_DCHECK_EQ(answer->rrtype, kDNSType_SRV);
@@ -938,6 +970,8 @@ void MdnsResponderAdapterImpl::ServiceCallback(mDNS* m,
 }
 
 void MdnsResponderAdapterImpl::AdvertiseInterfaces() {
+  TRACE_SCOPED(TraceCategory::mDNS,
+               "MdnsResponderAdapterImpl::AdvertiseInterfaces");
   for (auto& info : responder_interface_info_) {
     platform::UdpSocket* socket = info.first;
     NetworkInterfaceInfo& interface_info = info.second;

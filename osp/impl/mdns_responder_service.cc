@@ -10,6 +10,7 @@
 
 #include "osp/impl/internal_services.h"
 #include "platform/api/logging.h"
+#include "platform/api/trace_logging.h"
 #include "platform/base/error.h"
 
 namespace openscreen {
@@ -59,6 +60,7 @@ void MdnsResponderService::SetServiceConfig(
 
 void MdnsResponderService::OnRead(platform::UdpPacket packet,
                                   platform::NetworkRunner* network_runner) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderService::OnRead");
   if (!mdns_responder_) {
     return;
   }
@@ -205,6 +207,7 @@ bool MdnsResponderService::NetworkScopedDomainNameComparator::operator()(
 }
 
 void MdnsResponderService::HandleMdnsEvents() {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderService::HandleMdnsEvents");
   // NOTE: In the common case, we will get a single combined packet for
   // PTR/SRV/TXT/A and then no other packets.  If we don't loop here, we would
   // start SRV/TXT queries based on the PTR response, but never check for events

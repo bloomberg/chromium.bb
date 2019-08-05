@@ -51,9 +51,9 @@ inline bool operator!=(const TraceIdHierarchy& lhs,
 struct TraceCategory {
   enum Value : uint64_t {
     Any = std::numeric_limits<uint64_t>::max(),
-    CastPlatformLayer = 0x01,
-    CastStreaming = 0x01 << 1,
-    CastFlinging = 0x01 << 2
+    mDNS = 0x01 << 0,
+    Quic = 0x01 << 1,
+    Presentation = 0x01 << 2,
   };
 };
 

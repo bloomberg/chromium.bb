@@ -5,6 +5,7 @@
 #include "cast/common/mdns/mdns_receiver.h"
 
 #include "cast/common/mdns/mdns_reader.h"
+#include "platform/api/trace_logging.h"
 
 namespace cast {
 namespace mdns {
@@ -47,6 +48,7 @@ Error MdnsReceiver::Stop() {
 }
 
 void MdnsReceiver::OnRead(UdpPacket packet, NetworkRunner* network_runner) {
+  TRACE_SCOPED(TraceCategory::mDNS, "MdnsReceiver::OnRead");
   MdnsReader reader(packet.data(), packet.size());
   MdnsMessage message;
   if (!reader.Read(&message)) {

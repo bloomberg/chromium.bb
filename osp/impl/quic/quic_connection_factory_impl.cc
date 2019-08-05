@@ -12,6 +12,7 @@
 #include "platform/api/network_runner.h"
 #include "platform/api/task_runner.h"
 #include "platform/api/time.h"
+#include "platform/api/trace_logging.h"
 #include "platform/base/error.h"
 #include "third_party/chromium_quic/src/base/location.h"
 #include "third_party/chromium_quic/src/base/task_runner.h"
@@ -108,6 +109,7 @@ void QuicConnectionFactoryImpl::SetServerDelegate(
 void QuicConnectionFactoryImpl::OnRead(
     platform::UdpPacket packet,
     platform::NetworkRunner* network_runner) {
+  TRACE_SCOPED(TraceCategory::Quic, "QuicConnectionFactoryImpl::OnRead");
   // Ensure that |packet.socket| is one of the instances owned by
   // QuicConnectionFactoryImpl.
   auto packet_ptr = &packet;

@@ -4,10 +4,6 @@
 
 import("//build_overrides/build.gni")
 
-declare_args() {
-  enable_trace_logging = true
-}
-
 source_set("platform") {
   defines = []
 
@@ -96,10 +92,6 @@ source_set("platform") {
     deps = [
       ":default_logger",
     ]
-  }
-
-  if (enable_trace_logging) {
-    defines += [ "ENABLE_TRACE_LOGGING" ]
   }
 }
 
