@@ -731,7 +731,12 @@ void UiControllerAndroid::OnPaymentRequestOptionsChanged(
           env, payment_options->accept_terms_and_conditions_text));
   Java_AssistantPaymentRequestModel_setShowTermsAsCheckbox(
       env, jmodel, payment_options->show_terms_as_checkbox);
-
+  Java_AssistantPaymentRequestModel_setRequireBillingPostalCode(
+      env, jmodel, payment_options->require_billing_postal_code);
+  Java_AssistantPaymentRequestModel_setBillingPostalCodeMissingText(
+      env, jmodel,
+      base::android::ConvertUTF8ToJavaString(
+          env, payment_options->billing_postal_code_missing_text));
   Java_AssistantPaymentRequestModel_setSupportedBasicCardNetworks(
       env, jmodel,
       base::android::ToJavaArrayOfStrings(
