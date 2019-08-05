@@ -13,6 +13,7 @@
 #include <math.h>
 #include <stdio.h>
 
+#include "av1/common/enums.h"
 #include "config/aom_config.h"
 #include "config/aom_dsp_rtcd.h"
 #include "config/aom_scale_rtcd.h"
@@ -424,11 +425,23 @@ static void dealloc_context_buffers_ext(AV1_COMP *cpi) {
 
 static void alloc_context_buffers_ext(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
-  int mi_size = cm->mi_cols * cm->mi_rows;
+  const int is_4k_or_larger = AOMMIN(cm->width, cm->height) >= 2160;
+
+  cpi->mi_alloc_bsize = is_4k_or_larger ? BLOCK_8X8 : BLOCK_4X4;
+  cpi->mi_alloc_size_1d = mi_size_wide[cpi->mi_alloc_bsize];
+  cpi->mi_alloc_rows =
+      (cm->mi_rows + cpi->mi_alloc_size_1d - 1) / cpi->mi_alloc_size_1d;
+  cpi->mi_alloc_cols =
+      (cm->mi_cols + cpi->mi_alloc_size_1d - 1) / cpi->mi_alloc_size_1d;
+
+  assert(mi_size_wide[cpi->mi_alloc_bsize] ==
+         mi_size_high[cpi->mi_alloc_bsize]);
+
+  const int alloc_mi_size = cpi->mi_alloc_rows * cpi->mi_alloc_cols;
 
   dealloc_context_buffers_ext(cpi);
   CHECK_MEM_ERROR(cm, cpi->mbmi_ext_base,
-                  aom_calloc(mi_size, sizeof(*cpi->mbmi_ext_base)));
+                  aom_calloc(alloc_mi_size, sizeof(*cpi->mbmi_ext_base)));
 }
 
 static void reset_film_grain_chroma_params(aom_film_grain_t *pars) {
@@ -932,8 +945,9 @@ static void update_frame_size(AV1_COMP *cpi) {
   av1_set_mb_mi(cm, cm->width, cm->height);
   av1_init_context_buffers(cm);
   av1_init_macroblockd(cm, xd, NULL);
-  memset(cpi->mbmi_ext_base, 0,
-         cm->mi_rows * cm->mi_cols * sizeof(*cpi->mbmi_ext_base));
+
+  const int alloc_mi_size = cpi->mi_alloc_rows * cpi->mi_alloc_cols;
+  memset(cpi->mbmi_ext_base, 0, alloc_mi_size * sizeof(*cpi->mbmi_ext_base));
   set_tile_info(cpi);
 }
 

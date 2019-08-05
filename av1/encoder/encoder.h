@@ -768,6 +768,12 @@ typedef struct AV1_COMP {
   struct lookahead_entry *alt_ref_source;
   int no_show_kf;
 
+  // The minimum size each allocateed mi_ext can correspond to. Currently set to
+  // BLOCK_4X4 for resolution below 4k, and BLOCK_8X8 for resolution above 4k
+  BLOCK_SIZE mi_alloc_bsize;
+  int mi_alloc_size_1d;  // Number of 4x4 blocks in an allocated mi_ext
+  int mi_alloc_rows, mi_alloc_cols;
+
   int optimize_seg_arr[MAX_SEGMENTS];
 
   YV12_BUFFER_CONFIG *source;
@@ -1372,7 +1378,12 @@ static INLINE void set_mode_info_offsets(const AV1_COMP *const cpi,
   const int idx_str = xd->mi_stride * mi_row + mi_col;
   xd->mi = cm->mi_grid_base + idx_str;
   xd->mi[0] = cm->mi + idx_str;
-  x->mbmi_ext = cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
+
+  const int mi_alloc_size_1d = cpi->mi_alloc_size_1d;
+  const int mi_alloc_row = (mi_row + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
+  const int mi_alloc_col = (mi_col + mi_alloc_size_1d - 1) / mi_alloc_size_1d;
+  x->mbmi_ext =
+      cpi->mbmi_ext_base + (mi_alloc_row * cpi->mi_alloc_cols + mi_alloc_col);
 }
 
 // Check to see if the given partition size is allowed for a specified number
