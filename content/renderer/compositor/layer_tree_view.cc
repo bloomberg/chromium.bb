@@ -198,13 +198,6 @@ void LayerTreeView::SetLayerTreeFrameSink(
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
-void LayerTreeView::UpdateBrowserControlsState(
-    cc::BrowserControlsState constraints,
-    cc::BrowserControlsState current,
-    bool animate) {
-  layer_tree_host_->UpdateBrowserControlsState(constraints, current, animate);
-}
-
 void LayerTreeView::WillBeginMainFrame() {
   delegate_->WillBeginCompositorFrame();
 }

@@ -128,10 +128,6 @@ class CONTENT_EXPORT LayerTreeView
   viz::FrameSinkId GetFrameSinkId() override;
   void SetNonBlinkManagedRootLayer(scoped_refptr<cc::Layer> layer);
 
-  void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
-                                  cc::BrowserControlsState current,
-                                  bool animate) override;
-
   // cc::LayerTreeHostClient implementation.
   void WillBeginMainFrame() override;
   void DidBeginMainFrame() override;

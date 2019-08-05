@@ -47,15 +47,6 @@ class WebLayerTreeView {
 
   virtual ~WebLayerTreeView() = default;
 
-  // View properties ---------------------------------------------------
-
-  // Update browser controls permitted and current states
-  virtual void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
-                                          cc::BrowserControlsState current,
-                                          bool animate) {}
-
-  // Input properties ---------------------------------------------------
-
   // Returns the FrameSinkId of the widget associated with this layer tree view.
   virtual viz::FrameSinkId GetFrameSinkId() { return viz::FrameSinkId(); }
 };

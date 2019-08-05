@@ -1781,8 +1781,11 @@ void RenderViewImpl::UpdateBrowserControlsState(
                        "animated", animate);
 
   if (GetWidget() && GetWidget()->layer_tree_view()) {
-    GetWidget()->layer_tree_view()->UpdateBrowserControlsState(
-        ContentToCc(constraints), ContentToCc(current), animate);
+    GetWidget()
+        ->layer_tree_view()
+        ->layer_tree_host()
+        ->UpdateBrowserControlsState(ContentToCc(constraints),
+                                     ContentToCc(current), animate);
   }
 
   top_controls_constraints_ = constraints;
