@@ -28,7 +28,6 @@ extern const base::Feature kAutofillCacheQueryResponses;
 extern const base::Feature kAutofillCreateDataForTest;
 extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillEnableAccountWalletStorage;
-extern const base::Feature kAutofillEnableAccountWalletStorageUpload;
 extern const base::Feature kAutofillEnableCompanyName;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;

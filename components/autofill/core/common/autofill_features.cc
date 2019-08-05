@@ -50,12 +50,6 @@ const base::Feature kAutofillCreditCardAssist{
 const base::Feature kAutofillEnableAccountWalletStorage{
     "AutofillEnableAccountWalletStorage", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether we show also upload prompts when we are using the
-// account-based storage for server cards.
-const base::Feature kAutofillEnableAccountWalletStorageUpload{
-    "AutofillEnableAccountWalletStorageUpload",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether we use COMPANY as part of Autofill
 const base::Feature kAutofillEnableCompanyName{
     "AutofillEnableCompanyName", base::FEATURE_ENABLED_BY_DEFAULT};
