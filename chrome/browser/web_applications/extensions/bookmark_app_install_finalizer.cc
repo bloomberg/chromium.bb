@@ -8,10 +8,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/bookmark_app_extension_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_finalizer_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
 #include "extensions/browser/extension_registry.h"
@@ -30,6 +32,10 @@
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_set.h"
 #include "url/gurl.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut_mac.h"
+#endif
 
 namespace extensions {
 
@@ -220,12 +226,22 @@ bool BookmarkAppInstallFinalizer::CanReparentTab(const web_app::AppId& app_id,
 }
 
 bool BookmarkAppInstallFinalizer::CanRevealAppShim() const {
-  return CanBookmarkAppRevealAppShim();
+#if defined(OS_MACOSX)
+  return true;
+#else   // defined(OS_MACOSX)
+  return false;
+#endif  // !defined(OS_MACOSX)
 }
 
 void BookmarkAppInstallFinalizer::RevealAppShim(const web_app::AppId& app_id) {
+  DCHECK(CanRevealAppShim());
+#if defined(OS_MACOSX)
   const Extension* app = GetExtensionById(profile_, app_id);
-  BookmarkAppRevealAppShim(profile_, app);
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kDisableHostedAppShimCreation)) {
+    web_app::RevealAppShimInFinderForApp(profile_, app);
+  }
+#endif  // defined(OS_MACOSX)
 }
 
 bool BookmarkAppInstallFinalizer::CanSkipAppUpdateForSync(
