@@ -3768,16 +3768,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kForceEnableSystemAec)},
 #endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-    {"autofill-always-show-server-cards-in-sync-transport",
-     flag_descriptions::kAutofillAlwaysShowServerCardsInSyncTransportName,
-     flag_descriptions::
-         kAutofillAlwaysShowServerCardsInSyncTransportDescription,
-     kOsMac | kOsWin | kOsLinux | kExpireM77,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillAlwaysShowServerCardsInSyncTransport)},
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_MACOSX)
     {"enable-custom-mac-paper-sizes",
      flag_descriptions::kEnableCustomMacPaperSizesName,
