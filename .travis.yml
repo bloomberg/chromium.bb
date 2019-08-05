@@ -7,9 +7,10 @@ before_install: yarn global add grunt-cli
 deploy:
   provider: pages
   skip_cleanup: true
-  github_token: $GITHUB_TOKEN # Set in the settings page of your repository, as a secure variable
+  github_token: $GITHUB_TOKEN
   on:
     branch: master
+
 before_deploy:
   - sed -i '/out\//d' .gitignore
   - sed -i '/out-wpt\//d' .gitignore
