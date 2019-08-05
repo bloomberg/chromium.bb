@@ -424,9 +424,6 @@ void OverviewGrid::PositionWindows(
           ? GetWindowRectsForTabletModeLayout(ignored_items)
           : GetWindowRects(ignored_items);
 
-  // TODO(dantonvu): Performance-wise, windows offscreen should not be
-  // animated. If we're in entering overview process, not all window items in
-  // the grid might need animation even if the grid needs animation.
   if (transition == OverviewSession::OverviewTransition::kEnter) {
     CalculateWindowListAnimationStates(/*selected_item=*/nullptr, transition,
                                        rects);
@@ -957,6 +954,7 @@ void OverviewGrid::CalculateWindowListAnimationStates(
               return false;
             });
 
+  gfx::Rect screen_bounds = GetGridEffectiveBounds();
   SkRegion occluded_region;
   for (size_t i = 0; i < items.size(); ++i) {
     const bool minimized =
@@ -990,6 +988,12 @@ void OverviewGrid::CalculateWindowListAnimationStates(
     SkIRect dst_bounds = gfx::RectToSkIRect(gfx::ToEnclosedRect(
         transition == OverviewTransition::kEnter ? target_bounds[i]
                                                  : items[i]->target_bounds()));
+
+    if (!screen_bounds.Contains(gfx::SkIRectToRect(dst_bounds))) {
+      items[i]->set_should_animate_when_entering(false);
+      items[i]->set_should_animate_when_exiting(false);
+      continue;
+    }
 
     if (!occluded_region.isEmpty()) {
       src_occluded |=
