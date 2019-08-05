@@ -501,13 +501,19 @@ void PDFiumEngine::Paint(const pp::Rect& rect,
     // Compute the leftover dirty region. The first page may have blank space
     // above it, in which case we also need to subtract that space from the
     // dirty region.
-    if (i == 0) {
-      pp::Rect blank_space_in_screen = dirty_in_screen;
-      blank_space_in_screen.set_y(0);
-      blank_space_in_screen.set_height(dirty_in_screen.y());
-      leftover = leftover.Subtract(blank_space_in_screen);
+    // If |two_up_view_|, we don't need to recompute |leftover| since
+    // subtracting |leftover| with a two-up view page won't result in a
+    // rectangle.
+    if (!two_up_view_) {
+      if (i == 0) {
+        pp::Rect blank_space_in_screen = dirty_in_screen;
+        blank_space_in_screen.set_y(0);
+        blank_space_in_screen.set_height(dirty_in_screen.y());
+        leftover = leftover.Subtract(blank_space_in_screen);
+      }
+
+      leftover = leftover.Subtract(dirty_in_screen);
     }
-    leftover = leftover.Subtract(dirty_in_screen);
 
     if (pages_[index]->available()) {
       int progressive = GetProgressiveIndex(index);
