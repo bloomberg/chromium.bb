@@ -1278,13 +1278,17 @@ message ConfigureBottomSheetProto {
     // Don't change resizing configuration.
     NO_CHANGE = 0;
 
-    // Resize the viewport such that it is completely visible when the sheet is
-    // in the peek state.
-    RESIZE = 1;
+    // Resize the layout viewport such that it is completely visible when the
+    // sheet is in the peek state.
+    RESIZE_LAYOUT_VIEWPORT = 1;
 
     // Don't resize the viewport such that it is overlaid by the sheet, even in
     // the peek state.
     NO_RESIZE = 2;
+
+    // Dynamically resize the visual viewport by the height of the sheet. This
+    // allows to fully scroll the page above the sheet at any time.
+    RESIZE_VISUAL_VIEWPORT = 3;
   }
 
   // The peek mode allows to set what components are visible when the sheet is
@@ -1309,8 +1313,9 @@ message ConfigureBottomSheetProto {
   optional ViewportResizing viewport_resizing = 1;
 
   // Set the peek mode. This will change the peek height of the sheet. If
-  // resize_viewport is true or was set to true by a previous actions, the
-  // viewport will be resized to match the new peek height.
+  // viewport_resizing is set to RESIZE_LAYOUT_VIEWPORT or was set by a previous
+  // ConfigureBottomSheet action, the viewport will be resized to match the new
+  // peek height.
   optional PeekMode peek_mode = 2;
 
   // Maximum time to wait for the window to resize before continuing with the

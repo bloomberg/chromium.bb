@@ -300,13 +300,13 @@ bool Controller::PerformUserActionWithContext(
   return true;
 }
 
-void Controller::SetResizeViewport(bool resize_viewport) {
-  if (resize_viewport == resize_viewport_)
+void Controller::SetViewportMode(ViewportMode mode) {
+  if (mode == viewport_mode_)
     return;
 
-  resize_viewport_ = resize_viewport;
+  viewport_mode_ = mode;
   for (ControllerObserver& observer : observers_) {
-    observer.OnResizeViewportChanged(resize_viewport);
+    observer.OnViewportModeChanged(mode);
   }
 }
 
@@ -440,8 +440,8 @@ void Controller::RemoveObserver(const ControllerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool Controller::GetResizeViewport() {
-  return resize_viewport_;
+ViewportMode Controller::GetViewportMode() {
+  return viewport_mode_;
 }
 
 ConfigureBottomSheetProto::PeekMode Controller::GetPeekMode() {
