@@ -18,6 +18,7 @@
  */
 #include "aom/aom.h"
 #include "aom/aom_encoder.h"
+#include "av1/common/enums.h"
 
 /*!\file
  * \brief Provides definitions for using AOM or AV1 encoder algorithm within the
@@ -1127,9 +1128,10 @@ enum aome_enc_control_id {
    */
   AV1E_SET_SVC_PARAMS = 151,
 
-  /*!\brief Codec control function to set SVC reference frame map.
+  /*!\brief Codec control function to set reference frame config:
+   * the ref_idx and the refresh flags for each buffer slot.
    */
-  AV1E_SET_SVC_REF_IDX = 152
+  AV1E_SET_SVC_REF_FRAME_CONFIG = 152
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1243,10 +1245,14 @@ typedef struct aom_svc_params {
   int framerate_factor[AOM_MAX_TS_LAYERS];
 } aom_svc_params_t;
 
-/*!brief Parameter type for SVC */
-typedef struct aom_svc_ref_idx {
-  int ref_idx[8]; /**< Reference buffer slot */
-} aom_svc_ref_idx_t;
+/*!brief Parameters for setting ref frame config */
+typedef struct aom_svc_ref_frame_config {
+  // 7 references: LAST_FRAME (0), LAST2_FRAME(1), LAST3_FRAME(2),
+  // GOLDEN_FRAME(3), BWDREF_FRAME(4), ALTREF2_FRAME(5), ALTREF_FRAME(6).
+  /*! Buffer slot index for each of 7 references. */
+  int ref_idx[INTER_REFS_PER_FRAME];
+  int refresh[REF_FRAMES]; /**< Refresh flag for each of the 8 slots. */
+} aom_svc_ref_frame_config_t;
 
 /*!\cond */
 /*!\brief Encoder control function parameter type
@@ -1592,8 +1598,8 @@ AOM_CTRL_USE_TYPE(AV1E_SET_SVC_LAYER_ID, aom_svc_layer_id_t *)
 AOM_CTRL_USE_TYPE(AV1E_SET_SVC_PARAMS, aom_svc_params_t *)
 #define AOME_CTRL_AV1E_SET_SVC_PARAMS
 
-AOM_CTRL_USE_TYPE(AV1E_SET_SVC_REF_IDX, aom_svc_ref_idx_t *)
-#define AOME_CTRL_AV1E_SET_SVC_REF_IDX
+AOM_CTRL_USE_TYPE(AV1E_SET_SVC_REF_FRAME_CONFIG, aom_svc_ref_frame_config_t *)
+#define AOME_CTRL_AV1E_SET_SVC_REF_FRAME_CONFIG
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

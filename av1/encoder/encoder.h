@@ -175,10 +175,12 @@ typedef struct {
 } LAYER_CONTEXT;
 
 typedef struct SVC {
-  int apply_external_ref_idx;
+  int external_ref_frame_config;
+  int non_reference_frame;
   // Layer context used for rate control in one pass temporal CBR mode.
   LAYER_CONTEXT layer_context[AOM_MAX_LAYERS];
   int ref_idx[INTER_REFS_PER_FRAME];
+  int refresh[REF_FRAMES];
 } SVC;
 
 #define MAX_LENGTH_TPL_FRAME_STATS (27 + 9)

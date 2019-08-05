@@ -2182,13 +2182,16 @@ static aom_codec_err_t ctrl_set_svc_params(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_OK;
 }
 
-static aom_codec_err_t ctrl_set_svc_ref_idx(aom_codec_alg_priv_t *ctx,
-                                            va_list args) {
+static aom_codec_err_t ctrl_set_svc_ref_frame_config(aom_codec_alg_priv_t *ctx,
+                                                     va_list args) {
   AV1_COMP *const cpi = ctx->cpi;
-  aom_svc_ref_idx_t *const data = va_arg(args, aom_svc_ref_idx_t *);
-  cpi->svc.apply_external_ref_idx = 1;
+  aom_svc_ref_frame_config_t *const data =
+      va_arg(args, aom_svc_ref_frame_config_t *);
+  cpi->svc.external_ref_frame_config = 1;
   for (unsigned int i = 0; i < INTER_REFS_PER_FRAME; ++i)
     cpi->svc.ref_idx[i] = data->ref_idx[i];
+  for (unsigned int i = 0; i < REF_FRAMES; ++i)
+    cpi->svc.refresh[i] = data->refresh[i];
   return AOM_CODEC_OK;
 }
 
@@ -2398,7 +2401,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_MIN_CR, ctrl_set_min_cr },
   { AV1E_SET_SVC_LAYER_ID, ctrl_set_layer_id },
   { AV1E_SET_SVC_PARAMS, ctrl_set_svc_params },
-  { AV1E_SET_SVC_REF_IDX, ctrl_set_svc_ref_idx },
+  { AV1E_SET_SVC_REF_FRAME_CONFIG, ctrl_set_svc_ref_frame_config },
 
   // Getters
   { AOME_GET_LAST_QUANTIZER, ctrl_get_quantizer },

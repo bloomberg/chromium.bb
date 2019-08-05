@@ -238,16 +238,16 @@ static void printout_rate_control_summary(struct RateControlMetrics *rc,
 // Layer pattern configuration.
 static int set_layer_pattern(int layering_mode, int frame_cnt,
                              aom_svc_layer_id_t *layer_id,
-                             aom_svc_ref_idx_t *svc_ref_idx) {
+                             aom_svc_ref_frame_config_t *ref_frame_config) {
   int i;
   // No spatial layers in this test.
   layer_id->spatial_layer_id = 0;
-  // Set the referende map buffer idx for the 6 references:
+  // Set the referende map buffer idx for the 7 references:
   // LAST_FRAME (0), LAST2_FRAME(1), LAST3_FRAME(2), GOLDEN_FRAME(3),
   // BWDREF_FRAME(4), ALTREF2_FRAME(5), ALTREF_FRAME(6).
-  for (i = 0; i < INTER_REFS_PER_FRAME; i++)
-    svc_ref_idx->ref_idx[i] = (i < 3) ? 0 : i - 2;
-  // We only use LAST and GF for prediction in RTC mode.
+  for (i = 0; i < INTER_REFS_PER_FRAME; i++) ref_frame_config->ref_idx[i] = i;
+  for (i = 0; i < REF_FRAMES; i++) ref_frame_config->refresh[i] = 0;
+  // Note only use LAST and GF for prediction in non-rd mode (speed 8).
   int layer_flags = AOM_EFLAG_NO_REF_LAST2 | AOM_EFLAG_NO_REF_LAST3 |
                     AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_REF_BWD |
                     AOM_EFLAG_NO_REF_ARF2;
@@ -255,7 +255,7 @@ static int set_layer_pattern(int layering_mode, int frame_cnt,
     case 0:
       // 1-layer: update LAST on every frame, reference LAST and GF.
       layer_id->temporal_layer_id = 0;
-      layer_flags |= AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF;
+      ref_frame_config->refresh[0] = 1;
       break;
     case 1:
       // 2-layer.
@@ -264,12 +264,11 @@ static int set_layer_pattern(int layering_mode, int frame_cnt,
       if (frame_cnt % 2 == 0) {
         layer_id->temporal_layer_id = 0;
         // Update LAST on layer 0, reference LAST and GF.
-        layer_flags |= AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF;
+        ref_frame_config->refresh[0] = 1;
       } else {
         layer_id->temporal_layer_id = 1;
         // No updates on layer 1, only reference LAST (TL0).
-        layer_flags |= AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
-                       AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_REF_GF;
+        layer_flags |= AOM_EFLAG_NO_REF_GF;
       }
       break;
     case 2:
@@ -281,27 +280,24 @@ static int set_layer_pattern(int layering_mode, int frame_cnt,
         // Base layer.
         layer_id->temporal_layer_id = 0;
         // Update LAST on layer 0, reference LAST and GF.
-        layer_flags |= AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF;
+        ref_frame_config->refresh[0] = 1;
       } else if ((frame_cnt - 1) % 4 == 0) {
         layer_id->temporal_layer_id = 2;
         // First top layer: no updates, only reference LAST (TL0).
-        layer_flags |= AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
-                       AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_REF_GF;
+        layer_flags |= AOM_EFLAG_NO_REF_GF;
       } else if ((frame_cnt - 2) % 4 == 0) {
         layer_id->temporal_layer_id = 1;
-        // Middle layer (TL1): update ARF, only reference LAST (TL0).
-        // Updating ARF corresponds to buffer slot 6.
-        layer_flags |=
-            AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_REF_GF;
+        // Middle layer (TL1): update LAST2, only reference LAST (TL0).
+        ref_frame_config->refresh[1] = 1;
+        layer_flags |= AOM_EFLAG_NO_REF_GF;
       } else if ((frame_cnt - 3) % 4 == 0) {
         layer_id->temporal_layer_id = 2;
         // Second top layer: no updates, only reference LAST.
-        // Set buffer idx for LAST to slot 6, since that was the slot
-        // updated in previous frame. So LAST is TL1.
-        layer_flags |= AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
-                       AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_REF_GF;
-        svc_ref_idx->ref_idx[0] = 4;
-        svc_ref_idx->ref_idx[4] = 0;
+        // Set buffer idx for LAST to slot 1, since that was the slot
+        // updated in previous frame. So LAST is TL1 frame.
+        ref_frame_config->ref_idx[0] = 1;
+        ref_frame_config->ref_idx[1] = 0;
+        layer_flags |= AOM_EFLAG_NO_REF_GF;
       }
       break;
     default: assert(0); die("Error: Unsupported temporal layering mode!\n");
@@ -329,7 +325,7 @@ int main(int argc, char **argv) {
   int layering_mode = 0;
   aom_svc_layer_id_t layer_id;
   aom_svc_params_t svc_params;
-  aom_svc_ref_idx_t svc_ref_idx;
+  aom_svc_ref_frame_config_t ref_frame_config;
   const AvxInterface *encoder = NULL;
   struct AvxInputContext input_ctx;
   struct RateControlMetrics rc;
@@ -525,10 +521,10 @@ int main(int argc, char **argv) {
 
     // Set the reference/update flags, layer_id, and reference_map
     // buffer index.
-    flags =
-        set_layer_pattern(layering_mode, frame_cnt, &layer_id, &svc_ref_idx);
+    flags = set_layer_pattern(layering_mode, frame_cnt, &layer_id,
+                              &ref_frame_config);
     aom_codec_control(&codec, AV1E_SET_SVC_LAYER_ID, &layer_id);
-    aom_codec_control(&codec, AV1E_SET_SVC_REF_IDX, &svc_ref_idx);
+    aom_codec_control(&codec, AV1E_SET_SVC_REF_FRAME_CONFIG, &ref_frame_config);
 
     frame_avail = read_frame(&input_ctx, &raw);
     if (frame_avail) ++rc.layer_input_frames[layer_id.temporal_layer_id];
