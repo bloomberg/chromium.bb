@@ -48,6 +48,13 @@ def Uprev(input_proto, output_proto):
   for path in uprevved:
     output_proto.modified_ebuilds.add().path = path
 
+def UprevVersionedPackage(_input_proto, _output_proto):
+  """Uprev a versioned package.
+
+  See go/pupr-generator for details about this endpoint.
+  """
+  pass
+
 @validate.require('atom')
 def GetBestVisible(input_proto, output_proto):
   """Returns the best visible PackageInfo for the indicated atom."""
