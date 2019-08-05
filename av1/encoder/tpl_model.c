@@ -16,6 +16,7 @@
 #include "config/aom_dsp_rtcd.h"
 
 #include "aom/aom_codec.h"
+#include "aom_ports/system_state.h"
 
 #include "av1/common/enums.h"
 #include "av1/common/onyxc_int.h"
@@ -1006,4 +1007,113 @@ void av1_tpl_setup_forward_stats(AV1_COMP *cpi) {
       }
     }
   }
+}
+
+void av1_tpl_rdmult_setup(AV1_COMP *cpi) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const GF_GROUP *const gf_group = &cpi->gf_group;
+  const int tpl_idx = gf_group->index;
+
+  assert(IMPLIES(gf_group->size > 0, tpl_idx < gf_group->size));
+
+  const TplDepFrame *const tpl_frame = &cpi->tpl_frame[tpl_idx];
+  if (!tpl_frame->is_valid) return;
+  if (cpi->oxcf.superres_mode != SUPERRES_NONE) return;
+  const TplDepStats *const tpl_stats = tpl_frame->tpl_stats_ptr;
+  const int tpl_stride = tpl_frame->stride;
+
+  const int block_size = BLOCK_16X16;
+  const int num_mi_w = mi_size_wide[block_size];
+  const int num_mi_h = mi_size_high[block_size];
+  const int num_cols = (cm->mi_cols + num_mi_w - 1) / num_mi_w;
+  const int num_rows = (cm->mi_rows + num_mi_h - 1) / num_mi_h;
+  const double c = 1.2;
+  const int step = 1 << cpi->tpl_stats_block_mis_log2;
+
+  aom_clear_system_state();
+
+  // Loop through each 'block_size' X 'block_size' block.
+  for (int row = 0; row < num_rows; row++) {
+    for (int col = 0; col < num_cols; col++) {
+      double intra_cost = 0.0, mc_dep_cost = 0.0;
+      // Loop through each mi block.
+      for (int mi_row = row * num_mi_h; mi_row < (row + 1) * num_mi_h;
+           mi_row += step) {
+        for (int mi_col = col * num_mi_w; mi_col < (col + 1) * num_mi_w;
+             mi_col += step) {
+          if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) continue;
+          const TplDepStats *this_stats =
+              &tpl_stats[av1_tpl_ptr_pos(cpi, mi_row, mi_col, tpl_stride)];
+          intra_cost += (double)this_stats->intra_cost;
+          mc_dep_cost += (double)this_stats->intra_cost + this_stats->mc_flow;
+        }
+      }
+      const double rk = intra_cost / mc_dep_cost;
+      const int index = row * num_cols + col;
+      cpi->tpl_rdmult_scaling_factors[index] = rk / cpi->rd.r0 + c;
+    }
+  }
+  aom_clear_system_state();
+}
+
+void av1_tpl_rdmult_setup_sb(AV1_COMP *cpi, MACROBLOCK *const x,
+                             BLOCK_SIZE sb_size, int mi_row, int mi_col) {
+  AV1_COMMON *const cm = &cpi->common;
+  assert(IMPLIES(cpi->gf_group.size > 0,
+                 cpi->gf_group.index < cpi->gf_group.size));
+  const int tpl_idx = cpi->gf_group.index;
+  TplDepFrame *tpl_frame = &cpi->tpl_frame[tpl_idx];
+
+  if (cpi->tpl_model_pass == 1) {
+    assert(cpi->oxcf.enable_tpl_model == 2);
+    return;
+  }
+  if (tpl_frame->is_valid == 0) return;
+  if (!is_frame_tpl_eligible(cpi)) return;
+  if (tpl_idx >= MAX_LAG_BUFFERS) return;
+  if (cpi->oxcf.superres_mode != SUPERRES_NONE) return;
+
+  const int bsize_base = BLOCK_16X16;
+  const int num_mi_w = mi_size_wide[bsize_base];
+  const int num_mi_h = mi_size_high[bsize_base];
+  const int num_cols = (cm->mi_cols + num_mi_w - 1) / num_mi_w;
+  const int num_rows = (cm->mi_rows + num_mi_h - 1) / num_mi_h;
+  const int num_bcols = (mi_size_wide[sb_size] + num_mi_w - 1) / num_mi_w;
+  const int num_brows = (mi_size_high[sb_size] + num_mi_h - 1) / num_mi_h;
+  int row, col;
+
+  double base_block_count = 0.0;
+  double log_sum = 0.0;
+
+  aom_clear_system_state();
+  for (row = mi_row / num_mi_w;
+       row < num_rows && row < mi_row / num_mi_w + num_brows; ++row) {
+    for (col = mi_col / num_mi_h;
+         col < num_cols && col < mi_col / num_mi_h + num_bcols; ++col) {
+      const int index = row * num_cols + col;
+      log_sum += log(cpi->tpl_rdmult_scaling_factors[index]);
+      base_block_count += 1.0;
+    }
+  }
+
+  MACROBLOCKD *const xd = &x->e_mbd;
+  const int orig_rdmult =
+      av1_compute_rd_mult(cpi, cm->base_qindex + cm->y_dc_delta_q);
+  const int new_rdmult = av1_compute_rd_mult(
+      cpi, cm->base_qindex + xd->delta_qindex + cm->y_dc_delta_q);
+  const double scaling_factor = (double)new_rdmult / (double)orig_rdmult;
+
+  double scale_adj = log(scaling_factor) - log_sum / base_block_count;
+  scale_adj = exp(scale_adj);
+
+  for (row = mi_row / num_mi_w;
+       row < num_rows && row < mi_row / num_mi_w + num_brows; ++row) {
+    for (col = mi_col / num_mi_h;
+         col < num_cols && col < mi_col / num_mi_h + num_bcols; ++col) {
+      const int index = row * num_cols + col;
+      cpi->tpl_sb_rdmult_scaling_factors[index] =
+          scale_adj * cpi->tpl_rdmult_scaling_factors[index];
+    }
+  }
+  aom_clear_system_state();
 }

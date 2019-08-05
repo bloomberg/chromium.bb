@@ -555,6 +555,12 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->ssim_rdmult_scaling_factors);
   cpi->ssim_rdmult_scaling_factors = NULL;
 
+  aom_free(cpi->tpl_rdmult_scaling_factors);
+  cpi->tpl_rdmult_scaling_factors = NULL;
+
+  aom_free(cpi->tpl_sb_rdmult_scaling_factors);
+  cpi->tpl_sb_rdmult_scaling_factors = NULL;
+
   aom_free(cpi->td.mb.above_pred_buf);
   cpi->td.mb.above_pred_buf = NULL;
 
@@ -2838,6 +2844,20 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
     const int h = mi_size_high[bsize];
     const int num_cols = (cm->mi_cols + w - 1) / w;
     const int num_rows = (cm->mi_rows + h - 1) / h;
+    CHECK_MEM_ERROR(cm, cpi->tpl_rdmult_scaling_factors,
+                    aom_calloc(num_rows * num_cols,
+                               sizeof(*cpi->tpl_rdmult_scaling_factors)));
+    CHECK_MEM_ERROR(cm, cpi->tpl_sb_rdmult_scaling_factors,
+                    aom_calloc(num_rows * num_cols,
+                               sizeof(*cpi->tpl_sb_rdmult_scaling_factors)));
+  }
+
+  {
+    const int bsize = BLOCK_16X16;
+    const int w = mi_size_wide[bsize];
+    const int h = mi_size_high[bsize];
+    const int num_cols = (cm->mi_cols + w - 1) / w;
+    const int num_rows = (cm->mi_rows + h - 1) / h;
     CHECK_MEM_ERROR(cm, cpi->ssim_rdmult_scaling_factors,
                     aom_calloc(num_rows * num_cols,
                                sizeof(*cpi->ssim_rdmult_scaling_factors)));
@@ -3779,8 +3799,10 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
   av1_set_speed_features_framesize_dependent(cpi, cpi->speed);
 
   if (cpi->oxcf.enable_tpl_model && cpi->tpl_model_pass == 0 &&
-      is_frame_tpl_eligible(cpi))
+      is_frame_tpl_eligible(cpi)) {
     process_tpl_stats_frame(cpi);
+    av1_tpl_rdmult_setup(cpi);
+  }
 
   // Decide q and q bounds.
   *q = av1_rc_pick_q_and_bounds(cpi, cm->width, cm->height, cpi->gf_group.index,
