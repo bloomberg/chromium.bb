@@ -13,22 +13,18 @@
 #include "chrome/services/file_util/public/mojom/constants.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 SandboxedDMGAnalyzer::SandboxedDMGAnalyzer(
     const base::FilePath& dmg_file,
     const uint64_t max_size,
     const ResultCallback& callback,
-    mojo::PendingRemote<chrome::mojom::FileUtilService> service)
+    service_manager::Connector* connector)
     : file_path_(dmg_file),
       max_size_(max_size),
       callback_(callback),
-      service_(std::move(service)) {
+      connector_(connector) {
   DCHECK(callback);
-  service_->BindSafeArchiveAnalyzer(
-      remote_analyzer_.BindNewPipeAndPassReceiver());
-  remote_analyzer_.set_disconnect_handler(base::BindOnce(
-      &SandboxedDMGAnalyzer::AnalyzeFileDone, base::Unretained(this),
-      safe_browsing::ArchiveAnalyzerResults()));
 }
 
 void SandboxedDMGAnalyzer::Start() {
@@ -70,6 +66,7 @@ void SandboxedDMGAnalyzer::PrepareFileToAnalyze() {
 
 void SandboxedDMGAnalyzer::ReportFileFailure() {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!analyzer_ptr_);
 
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
@@ -78,15 +75,22 @@ void SandboxedDMGAnalyzer::ReportFileFailure() {
 
 void SandboxedDMGAnalyzer::AnalyzeFile(base::File file) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  remote_analyzer_->AnalyzeDmgFile(
+  DCHECK(!analyzer_ptr_);
+
+  connector_->BindInterface(chrome::mojom::kFileUtilServiceName,
+                            mojo::MakeRequest(&analyzer_ptr_));
+  analyzer_ptr_.set_connection_error_handler(
+      base::Bind(&SandboxedDMGAnalyzer::AnalyzeFileDone, base::Unretained(this),
+                 safe_browsing::ArchiveAnalyzerResults()));
+  analyzer_ptr_->AnalyzeDmgFile(
       std::move(file),
-      base::BindOnce(&SandboxedDMGAnalyzer::AnalyzeFileDone, this));
+      base::Bind(&SandboxedDMGAnalyzer::AnalyzeFileDone, this));
 }
 
 void SandboxedDMGAnalyzer::AnalyzeFileDone(
     const safe_browsing::ArchiveAnalyzerResults& results) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  remote_analyzer_.reset();
+  analyzer_ptr_.reset();
   callback_.Run(results);
 }

@@ -8,6 +8,7 @@ import("//components/safe_browsing/buildflags.gni")
 source_set("cpp") {
   public_deps = [
     "//chrome/services/file_util/public/mojom",
+    "//services/service_manager/public/cpp",
   ]
 
   if (safe_browsing_mode == 1) {
@@ -30,6 +31,21 @@ source_set("cpp") {
   }
 }
 
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome:strings",
+    "//chrome/services/file_util/public/mojom",
+    "//components/safe_browsing:buildflags",
+    "//services/service_manager/public/cpp",
+  ]
+}
+
 if (safe_browsing_mode == 1) {
   source_set("unit_tests") {
     testonly = true
@@ -42,8 +58,9 @@ if (safe_browsing_mode == 1) {
 
     deps = [
       ":cpp",
-      "//chrome/services/file_util",
+      "//chrome/services/file_util:lib",
       "//crypto:platform",
+      "//services/service_manager/public/cpp/test:test_support",
       "//skia",
       "//testing/gmock",
       "//testing/gtest",
@@ -63,7 +80,6 @@ if (is_chromeos) {
     deps = [
       "//base",
       "//chrome/test:test_support",
-      "//content/public/browser",
       "//content/public/common",
       "//content/test:test_support",
       "//testing/gtest",

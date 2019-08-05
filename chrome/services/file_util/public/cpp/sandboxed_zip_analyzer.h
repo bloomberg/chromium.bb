@@ -10,13 +10,14 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/services/file_util/public/mojom/file_util_service.mojom.h"
 #include "chrome/services/file_util/public/mojom/safe_archive_analyzer.mojom.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 
 namespace safe_browsing {
 struct ArchiveAnalyzerResults;
+}
+
+namespace service_manager {
+class Connector;
 }
 
 // This class is used to analyze zip files in a sandboxed utility process for
@@ -28,10 +29,9 @@ class SandboxedZipAnalyzer
   using ResultCallback =
       base::Callback<void(const safe_browsing::ArchiveAnalyzerResults&)>;
 
-  SandboxedZipAnalyzer(
-      const base::FilePath& zip_file,
-      const ResultCallback& callback,
-      mojo::PendingRemote<chrome::mojom::FileUtilService> service);
+  SandboxedZipAnalyzer(const base::FilePath& zip_file,
+                       const ResultCallback& callback,
+                       service_manager::Connector* connector);
 
   // Starts the analysis. Must be called on the UI thread.
   void Start();
@@ -59,9 +59,11 @@ class SandboxedZipAnalyzer
   // Callback invoked on the UI thread with the file analyze results.
   const ResultCallback callback_;
 
-  // Remote interfaces to the file util service. Only used from the UI thread.
-  mojo::Remote<chrome::mojom::FileUtilService> service_;
-  mojo::Remote<chrome::mojom::SafeArchiveAnalyzer> remote_analyzer_;
+  // The connector to the service manager, only used on the UI thread.
+  service_manager::Connector* connector_;
+
+  // Pointer to the SafeArchiveAnalyzer interface. Only used from the UI thread.
+  chrome::mojom::SafeArchiveAnalyzerPtr analyzer_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxedZipAnalyzer);
 };

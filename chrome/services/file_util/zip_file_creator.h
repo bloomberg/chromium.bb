@@ -9,6 +9,7 @@
 
 #include "chrome/services/file_util/public/mojom/zip_file_creator.mojom.h"
 #include "components/services/filesystem/public/mojom/directory.mojom.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace base {
 class FilePath;
@@ -18,17 +19,19 @@ namespace chrome {
 
 class ZipFileCreator : public chrome::mojom::ZipFileCreator {
  public:
-  ZipFileCreator();
+  explicit ZipFileCreator(
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
   ~ZipFileCreator() override;
 
  private:
   // chrome::mojom::ZipFileCreator:
-  void CreateZipFile(
-      mojo::PendingRemote<filesystem::mojom::Directory> source_dir_remote,
-      const base::FilePath& source_dir,
-      const std::vector<base::FilePath>& source_relative_paths,
-      base::File zip_file,
-      CreateZipFileCallback callback) override;
+  void CreateZipFile(filesystem::mojom::DirectoryPtr source_dir_mojo,
+                     const base::FilePath& source_dir,
+                     const std::vector<base::FilePath>& source_relative_paths,
+                     base::File zip_file,
+                     CreateZipFileCallback callback) override;
+
+  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(ZipFileCreator);
 };

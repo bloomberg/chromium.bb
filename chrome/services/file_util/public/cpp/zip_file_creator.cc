@@ -8,10 +8,12 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "chrome/services/file_util/public/mojom/constants.mojom.h"
 #include "components/services/filesystem/directory_impl.h"
 #include "components/services/filesystem/lock_table.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -22,46 +24,44 @@ base::File OpenFileHandleAsync(const base::FilePath& zip_path) {
 
 void BindDirectoryInBackground(
     const base::FilePath& src_dir,
-    mojo::PendingReceiver<filesystem::mojom::Directory> receiver) {
+    mojo::InterfaceRequest<filesystem::mojom::Directory> request) {
   auto directory_impl = std::make_unique<filesystem::DirectoryImpl>(
       src_dir, /*temp_dir=*/nullptr, /*lock_table=*/nullptr);
-  mojo::MakeSelfOwnedReceiver(std::move(directory_impl), std::move(receiver));
+  mojo::MakeStrongBinding(std::move(directory_impl), std::move(request));
 }
 
 }  // namespace
 
 ZipFileCreator::ZipFileCreator(
-    ResultCallback callback,
+    const ResultCallback& callback,
     const base::FilePath& src_dir,
     const std::vector<base::FilePath>& src_relative_paths,
     const base::FilePath& dest_file)
-    : callback_(std::move(callback)),
+    : callback_(callback),
       src_dir_(src_dir),
       src_relative_paths_(src_relative_paths),
       dest_file_(dest_file) {
-  DCHECK(callback_);
+  DCHECK(!callback_.is_null());
 }
 
-void ZipFileCreator::Start(
-    mojo::PendingRemote<chrome::mojom::FileUtilService> service) {
+void ZipFileCreator::Start(service_manager::Connector* connector) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Note this class owns itself (it self-deletes when finished in ReportDone),
   // so it is safe to use base::Unretained(this).
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::BindOnce(&OpenFileHandleAsync, dest_file_),
-      base::BindOnce(&ZipFileCreator::CreateZipFile, base::Unretained(this),
-                     std::move(service)));
+      base::Bind(&OpenFileHandleAsync, dest_file_),
+      base::Bind(&ZipFileCreator::CreateZipFile, base::Unretained(this),
+                 base::Unretained(connector)));
 }
 
 ZipFileCreator::~ZipFileCreator() = default;
 
-void ZipFileCreator::CreateZipFile(
-    mojo::PendingRemote<chrome::mojom::FileUtilService> service,
-    base::File file) {
+void ZipFileCreator::CreateZipFile(service_manager::Connector* connector,
+                                   base::File file) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!remote_zip_file_creator_);
+  DCHECK(!zip_file_creator_ptr_);
 
   if (!file.IsValid()) {
     LOG(ERROR) << "Failed to create dest zip file " << dest_file_.value();
@@ -76,27 +76,27 @@ void ZipFileCreator::CreateZipFile(
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
 
-  mojo::PendingRemote<filesystem::mojom::Directory> directory;
+  filesystem::mojom::DirectoryPtr directory_ptr;
+  mojo::InterfaceRequest<filesystem::mojom::Directory> request =
+      mojo::MakeRequest(&directory_ptr);
   directory_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&BindDirectoryInBackground, src_dir_,
-                                directory.InitWithNewPipeAndPassReceiver()));
+                                base::Passed(&request)));
 
-  service_.Bind(std::move(service));
-  service_->BindZipFileCreator(
-      remote_zip_file_creator_.BindNewPipeAndPassReceiver());
-
+  connector->BindInterface(chrome::mojom::kFileUtilServiceName,
+                           mojo::MakeRequest(&zip_file_creator_ptr_));
   // See comment in Start() on why using base::Unretained(this) is safe.
-  remote_zip_file_creator_.set_disconnect_handler(base::BindOnce(
-      &ZipFileCreator::ReportDone, base::Unretained(this), false));
-  remote_zip_file_creator_->CreateZipFile(
-      std::move(directory), src_dir_, src_relative_paths_, std::move(file),
-      base::BindOnce(&ZipFileCreator::ReportDone, base::Unretained(this)));
+  zip_file_creator_ptr_.set_connection_error_handler(
+      base::Bind(&ZipFileCreator::ReportDone, base::Unretained(this), false));
+  zip_file_creator_ptr_->CreateZipFile(
+      std::move(directory_ptr), src_dir_, src_relative_paths_, std::move(file),
+      base::Bind(&ZipFileCreator::ReportDone, base::Unretained(this)));
 }
 
 void ZipFileCreator::ReportDone(bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  remote_zip_file_creator_.reset();
+  zip_file_creator_ptr_.reset();
   std::move(callback_).Run(success);
 
   delete this;
