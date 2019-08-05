@@ -26,7 +26,7 @@
 #include <vector>
 
 class FuzzedDataProvider {
-public:
+ public:
   // |data| is an array of length |size| that the FuzzedDataProvider wraps to
   // provide more granular access. |data| must outlive the FuzzedDataProvider.
   FuzzedDataProvider(const uint8_t *data, size_t size)
@@ -186,7 +186,7 @@ public:
   // Reports the remaining bytes available for fuzzed input.
   size_t remaining_bytes() { return remaining_bytes_; }
 
-private:
+ private:
   FuzzedDataProvider(const FuzzedDataProvider &) = delete;
   FuzzedDataProvider &operator=(const FuzzedDataProvider &) = delete;
 
