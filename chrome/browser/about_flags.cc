@@ -901,34 +901,6 @@ const FeatureEntry::FeatureVariation kTranslateBubbleUIVariations[] = {
      base::size(kTranslateBubbleUIButton), nullptr}};
 #endif  // OS_LINUX || OS_MACOSX || OS_WIN || OS_CHROMEOS
 
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin0px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "0"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin2px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "2"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin4px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "4"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin6px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "6"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin8px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "8"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin10px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "10"}};
-
-const FeatureEntry::FeatureVariation kOmniboxUIVerticalMarginVariations[] = {
-    {"0px vertical margin", kOmniboxUIVerticalMargin0px,
-     base::size(kOmniboxUIVerticalMargin0px), nullptr},
-    {"2px vertical margin", kOmniboxUIVerticalMargin2px,
-     base::size(kOmniboxUIVerticalMargin2px), nullptr},
-    {"4px vertical margin", kOmniboxUIVerticalMargin4px,
-     base::size(kOmniboxUIVerticalMargin4px), nullptr},
-    {"6px vertical margin", kOmniboxUIVerticalMargin6px,
-     base::size(kOmniboxUIVerticalMargin6px), nullptr},
-    {"8px vertical margin", kOmniboxUIVerticalMargin8px,
-     base::size(kOmniboxUIVerticalMargin8px), nullptr},
-    {"10px vertical margin", kOmniboxUIVerticalMargin10px,
-     base::size(kOmniboxUIVerticalMargin10px), nullptr},
-};
-
 const FeatureEntry::FeatureParam kMarkHttpAsDangerous[] = {
     {security_state::features::kMarkHttpAsFeatureParameterName,
      security_state::features::kMarkHttpAsParameterDangerous}};
@@ -2821,20 +2793,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOmniboxMaxURLMatches,
                                     kOmniboxMaxURLMatchesVariations,
                                     "OmniboxMaxURLMatchesVariations")},
-
-    {"omnibox-ui-vertical-margin",
-     flag_descriptions::kOmniboxUIVerticalMarginName,
-     flag_descriptions::kOmniboxUIVerticalMarginDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kUIExperimentVerticalMargin,
-                                    kOmniboxUIVerticalMarginVariations,
-                                    "OmniboxUIVerticalMarginVariations")},
-
-    {"omnibox-ui-vertical-margin-limit-to-non-touch-only",
-     flag_descriptions::kOmniboxUIVerticalMarginLimitToNonTouchOnlyName,
-     flag_descriptions::kOmniboxUIVerticalMarginLimitToNonTouchOnlyDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         omnibox::kUIExperimentVerticalMarginLimitToNonTouchOnly)},
 
     {"omnibox-ui-show-suggestion-favicons",
      flag_descriptions::kOmniboxUIShowSuggestionFaviconsName,

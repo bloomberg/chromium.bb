@@ -851,12 +851,6 @@ extern const char kOmniboxUIShowSuggestionFaviconsDescription[];
 extern const char kOmniboxUISwapTitleAndUrlName[];
 extern const char kOmniboxUISwapTitleAndUrlDescription[];
 
-extern const char kOmniboxUIVerticalMarginName[];
-extern const char kOmniboxUIVerticalMarginDescription[];
-
-extern const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyName[];
-extern const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyDescription[];
-
 extern const char kOmniboxZeroSuggestionsOnNTPName[];
 extern const char kOmniboxZeroSuggestionsOnNTPDescription[];
 

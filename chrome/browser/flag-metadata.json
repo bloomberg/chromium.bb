@@ -2611,16 +2611,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "omnibox-ui-vertical-margin",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "omnibox-ui-vertical-margin-limit-to-non-touch-only",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "omnibox-wrap-popup-position",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 78

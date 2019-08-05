@@ -3557,9 +3557,6 @@
             "experiments": [
                 {
                     "name": "DesktopExperiments",
-                    "params": {
-                        "UIVerticalMargin": "10"
-                    },
                     "enable_features": [
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
