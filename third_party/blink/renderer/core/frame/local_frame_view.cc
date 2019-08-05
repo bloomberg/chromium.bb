@@ -2917,6 +2917,10 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
 
   // These asserts ensure that parent frames are clean, when child frames
   // finished updating layout and style.
+  // TODO(szager): this is the last call to CheckDoesNotNeedLayout during the
+  // lifecycle code, but it can happen that NeedsLayout() becomes true after
+  // this point, even while the document lifecycle proceeds to kLayoutClean
+  // and beyond. Figure out how this happens, and do something sensible.
   CheckDoesNotNeedLayout();
 #if DCHECK_IS_ON()
   frame_->GetDocument()->GetLayoutView()->AssertLaidOut();
