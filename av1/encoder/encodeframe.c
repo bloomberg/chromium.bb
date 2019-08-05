@@ -4796,6 +4796,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
           for (i = 0; i < RANSAC_NUM_MOTIONS; ++i) {
             memcpy(params_by_motion[i].params, kIdentityParams,
                    (MAX_PARAMDIM - 1) * sizeof(*(params_by_motion[i].params)));
+            params_by_motion[i].num_inliers = 0;
           }
 
           av1_compute_global_motion(
