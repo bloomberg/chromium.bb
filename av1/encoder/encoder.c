@@ -3619,8 +3619,10 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
     int tpl_stride = tpl_frame->stride;
     int64_t intra_cost_base = 0;
     int64_t mc_dep_cost_base = 0;
+#if !USE_TPL_CLASSIC_MODEL
     int64_t mc_saved_base = 0;
     int64_t mc_count_base = 0;
+#endif  // !USE_TPL_CLASSIC_MODEL
     int row, col;
 
     const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
@@ -3629,8 +3631,10 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
         TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
         intra_cost_base += this_stats->intra_cost;
         mc_dep_cost_base += this_stats->intra_cost + this_stats->mc_flow;
+#if !USE_TPL_CLASSIC_MODEL
         mc_count_base += this_stats->mc_count;
         mc_saved_base += this_stats->mc_saved;
+#endif  // !USE_TPL_CLASSIC_MODEL
       }
     }
 
@@ -3660,10 +3664,12 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
               cpi->rc.kf_boost, kf_boost, cpi->rc.frames_to_key);
         }
       }
+#if !USE_TPL_CLASSIC_MODEL
       cpi->rd.mc_count_base =
           (double)mc_count_base / (cm->mi_rows * cm->mi_cols);
       cpi->rd.mc_saved_base =
           (double)mc_saved_base / (cm->mi_rows * cm->mi_cols);
+#endif  // !USE_TPL_CLASSIC_MODEL
       aom_clear_system_state();
     }
   }

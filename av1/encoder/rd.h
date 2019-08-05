@@ -64,7 +64,9 @@ typedef struct RD_OPT {
   int RDMULT;
 
   double r0, arf_r0;
+#if !USE_TPL_CLASSIC_MODEL
   double mc_saved_base, mc_count_base;
+#endif  // !USE_TPL_CLASSIC_MODEL
 } RD_OPT;
 
 static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {

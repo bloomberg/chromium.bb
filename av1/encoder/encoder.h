@@ -188,8 +188,10 @@ typedef struct TplDepStats {
   int64_t inter_cost;
   int64_t mc_flow;
   int64_t mc_dep_cost;
+#if !USE_TPL_CLASSIC_MODEL
   int64_t mc_count;
   int64_t mc_saved;
+#endif  // !USE_TPL_CLASSIC_MODEL
 
   int ref_frame_index;
   int ref_disp_frame_index;

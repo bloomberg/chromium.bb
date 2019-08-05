@@ -30,6 +30,9 @@
 extern "C" {
 #endif
 
+// 1: use classic model 0: use count or saving stats
+#define USE_TPL_CLASSIC_MODEL 0
+
 typedef struct {
   unsigned int sse;
   int sum;

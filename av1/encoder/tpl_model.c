@@ -376,7 +376,9 @@ static void tpl_model_update_b(TplDepFrame *tpl_frame,
           (tpl_stats_ptr->mc_dep_cost * tpl_stats_ptr->inter_cost) /
               tpl_stats_ptr->intra_cost;
               */
+#if !USE_TPL_CLASSIC_MODEL
       int64_t mc_saved = tpl_stats_ptr->intra_cost - tpl_stats_ptr->inter_cost;
+#endif  // #if !USE_TPL_CLASSIC_MODEL
       int idx, idy;
       for (idy = 0; idy < mi_height; ++idy) {
         for (idx = 0; idx < mi_width; ++idx) {
@@ -384,8 +386,10 @@ static void tpl_model_update_b(TplDepFrame *tpl_frame,
               &ref_stats_ptr[(ref_mi_row + idy) * ref_tpl_frame->stride +
                              (ref_mi_col + idx)];
           des_stats->mc_flow += (mc_flow * overlap_area) / pix_num;
+#if !USE_TPL_CLASSIC_MODEL
           des_stats->mc_count += overlap_area << TPL_DEP_COST_SCALE_LOG2;
           des_stats->mc_saved += (mc_saved * overlap_area) / pix_num;
+#endif  // !USE_TPL_CLASSIC_MODEL
           assert(overlap_area >= 0);
         }
       }
@@ -727,8 +731,9 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                                   YV12_BUFFER_CONFIG *ref,
                                   YV12_BUFFER_CONFIG *src,
                                   TplDepFrame *ref_tpl_frame) {
+// TODO(yuec) Consider deleting forward tpl model completely
+#if !USE_TPL_CLASSIC_MODEL
   AV1_COMMON *cm = &cpi->common;
-
   const int bw = 4 << mi_size_wide_log2[bsize];
   const int bh = 4 << mi_size_high_log2[bsize];
   const int mi_height = mi_size_high[bsize];
@@ -890,6 +895,7 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                                  (ref_mi_col + idx)];
               des_stats->mc_count += overlap_area << TPL_DEP_COST_SCALE_LOG2;
               des_stats->mc_saved += (mc_saved * overlap_area) / pix_num;
+
               assert(overlap_area >= 0);
             }
           }
@@ -897,6 +903,16 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
       }
     }
   }
+#else
+  (void)cpi;
+  (void)x;
+  (void)xd;
+  (void)bsize;
+  (void)use_satd;
+  (void)ref;
+  (void)src;
+  (void)ref_tpl_frame;
+#endif  // !USE_TPL_CLASSIC_MODEL
 }
 
 void av1_tpl_setup_forward_stats(AV1_COMP *cpi) {
