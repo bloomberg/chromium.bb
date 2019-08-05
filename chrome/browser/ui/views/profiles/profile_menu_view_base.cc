@@ -289,9 +289,8 @@ DiceSigninButtonView* ProfileMenuViewBase::CreateAndAddDiceSigninButton(
     AccountInfo* account_info,
     gfx::Image* account_icon) {
   std::unique_ptr<DiceSigninButtonView> button =
-      account_info ? std::make_unique<DiceSigninButtonView>(
-                         *account_info, *account_icon, this,
-                         false /* show_drop_down_arrow */)
+      account_info ? std::make_unique<DiceSigninButtonView>(*account_info,
+                                                            *account_icon, this)
                    : std::make_unique<DiceSigninButtonView>(this);
   DiceSigninButtonView* pointer = button.get();
 
