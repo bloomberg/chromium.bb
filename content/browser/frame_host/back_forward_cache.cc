@@ -187,4 +187,14 @@ void BackForwardCache::DisableForTesting() {
   DCHECK(render_frame_hosts_.empty());
 }
 
+bool BackForwardCache::ContainsDocument(int navigation_entry_id) {
+  auto matching_rfh = std::find_if(
+      render_frame_hosts_.begin(), render_frame_hosts_.end(),
+      [navigation_entry_id](std::unique_ptr<RenderFrameHostImpl>& rfh) {
+        return rfh->nav_entry_id() == navigation_entry_id;
+      });
+
+  return matching_rfh != render_frame_hosts_.end();
+}
+
 }  // namespace content

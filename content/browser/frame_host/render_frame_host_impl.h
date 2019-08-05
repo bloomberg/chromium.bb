@@ -1007,6 +1007,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
     cross_origin_embedder_policy_ = policy;
   }
 
+  // This function mimics DidCommitProvisionalLoad for navigations served from
+  // the back-forward cache.
+  void DidCommitBackForwardCacheNavigation(
+      NavigationRequest* committing_navigation_request,
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+          validated_params);
+
  protected:
   friend class RenderFrameHostFactory;
 

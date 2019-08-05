@@ -340,10 +340,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VisibleURL) {
 
   // 3) Go back to A.
   web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(url_a, web_contents()->GetVisibleURL());
 
   // 4) Go forward to B.
   web_contents()->GetController().GoForward();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(url_b, web_contents()->GetVisibleURL());
 }
 
