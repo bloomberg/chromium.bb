@@ -127,7 +127,6 @@ DesksBarView::DesksBarView()
 
   AddChildView(background_view_);
   AddChildView(new_desk_button_);
-  UpdateNewDeskButtonState();
   DesksController::Get()->AddObserver(this);
 }
 
@@ -318,7 +317,7 @@ void DesksBarView::OnDeskActivationChanged(const Desk* activated,
 void DesksBarView::OnDeskSwitchAnimationFinished() {}
 
 void DesksBarView::UpdateNewDeskButtonState() {
-  new_desk_button_->SetEnabled(DesksController::Get()->CanCreateDesks());
+  new_desk_button_->UpdateButtonState();
 }
 
 void DesksBarView::UpdateNewMiniViews(bool animate) {

@@ -23,6 +23,9 @@ class ASH_EXPORT NewDeskButton
   NewDeskButton(views::ButtonListener* listener);
   ~NewDeskButton() override = default;
 
+  // Update the button's enable/disable state based on current desks state.
+  void UpdateButtonState();
+
   // LabelButton:
   const char* GetClassName() const override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
