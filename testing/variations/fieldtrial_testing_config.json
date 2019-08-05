@@ -2496,7 +2496,7 @@
             ]
         }
     ],
-    "HomePageButtonForceEnabled": [
+    "HomeButtonAndroid": [
         {
             "platforms": [
                 "android"
