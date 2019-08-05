@@ -64,7 +64,7 @@ static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER]
                                               { 1, 1, 1, 1 },  // unused
                                               { 1, 1, 0, 0 },
                                               { 0, 0, 1, 0 },
-                                              { 0, 0, 0, 1 },
+                                              { 0, 1, 1, 1 },
                                             };
 
 static const int av1_ext_tx_set_idx_to_type[2][AOMMAX(EXT_TX_SETS_INTRA,
