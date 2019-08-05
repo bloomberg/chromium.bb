@@ -36,7 +36,10 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         // Do not enable this feature when the bottom bar is enabled since it will
         // overlap the start surface's bottom bar.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TWO_PANES_START_SURFACE_ANDROID)
+        if ((ChromeFeatureList
+                            .getFieldTrialParamByFeature(ChromeFeatureList.START_SURFACE_ANDROID,
+                                    "start_surface_variation")
+                            .equals("twopanes"))
                 && !FeatureUtilities.isBottomToolbarEnabled()) {
             // Margin the bottom of the Tab grid to save space for the bottom bar.
             int bottomBarHeight =

@@ -1137,6 +1137,17 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
     {"New Tab Variation", kTabGridLayoutAndroid_NewTabVariation,
      base::size(kTabGridLayoutAndroid_NewTabVariation), nullptr},
 };
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
+    {"start_surface_variation", "single"}};
+
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_TwoPanesSurface[] = {
+    {"start_surface_variation", "twopanes"}};
+
+const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
+    {"Single Surface", kStartSurfaceAndroid_SingleSurface,
+     base::size(kStartSurfaceAndroid_SingleSurface), nullptr},
+    {"Two Panes Surface", kStartSurfaceAndroid_TwoPanesSurface,
+     base::size(kStartSurfaceAndroid_TwoPanesSurface), nullptr}};
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
@@ -3144,10 +3155,11 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout)},
 
 #if defined(OS_ANDROID)
-    {"enable-two-panes-start-surface",
-     flag_descriptions::kTwoPanesStartSurfaceAndroidName,
-     flag_descriptions::kTwoPanesStartSurfaceAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kTwoPanesStartSurfaceAndroid)},
+    {"enable-start-surface", flag_descriptions::kStartSurfaceAndroidName,
+     flag_descriptions::kStartSurfaceAndroidDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kStartSurfaceAndroid,
+                                    kStartSurfaceAndroidVariations,
+                                    "StartSurfaceAndroid")},
 
     {"enable-horizontal-tab-switcher",
      flag_descriptions::kHorizontalTabSwitcherAndroidName,

@@ -1759,7 +1759,7 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-two-panes-start-surface",
+    "name": "enable-start-surface",
     "owners": [ "gogerald"],
     "expiry_milestone": 83
   },
