@@ -30573,7 +30573,7 @@
           "-v",
           "--upload-results",
           "--output-format=histograms",
-          "--browser=release"
+          "--browser=release_x64"
         ],
         "experiment_percentage": 100,
         "isolate_name": "vr_perf_tests",
