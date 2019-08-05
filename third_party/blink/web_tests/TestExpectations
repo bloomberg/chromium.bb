@@ -6529,3 +6529,6 @@ crbug.com/989860 [ Mac10.13 Linux Debug ] http/tests/devtools/indexeddb/live-upd
 crbug.com/989717 [ Fuchsia ] http/tests/preload/avoid_delaying_onload_link_preload.html [ Pass Failure ]
 crbug.com/988074 [ Linux ] virtual/not-omt-sw-fetch/http/tests/security/cors-rfc1918/addressspace-serviceworker-basic.html [ Pass Failure ]
 crbug.com/988074 [ Linux ] virtual/omt-worker-fetch/http/tests/security/cors-rfc1918/addressspace-serviceworker-basic.html [ Pass Failure ]
+
+# Sheriff 2019-08-05
+crbug.com/981522 [ Linux ] external/wpt/svg/animations/correct-events-for-short-animations-with-syncbases.html [ Pass Failure Timeout ]
