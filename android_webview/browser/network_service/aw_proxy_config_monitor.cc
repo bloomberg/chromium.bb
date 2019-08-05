@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/net/aw_proxy_config_monitor.h"
+#include "android_webview/browser/network_service/aw_proxy_config_monitor.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/feature_list.h"
-#include "services/network/public/cpp/features.h"
 
 namespace android_webview {
 
