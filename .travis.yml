@@ -11,7 +11,8 @@ deploy:
   on:
     branch: master
 before_deploy:
-  - ls -la
+  - sed -i '/out\//d' .gitignore
+  - sed -i '/out-wpt\//d' .gitignore
 
 env:
   global:
