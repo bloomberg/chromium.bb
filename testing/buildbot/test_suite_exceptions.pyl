@@ -1932,11 +1932,6 @@
           '--enable-sanitizer',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            },
-          ],
           'shards': 20,
         },
       },
@@ -1949,11 +1944,6 @@
           '--enable-leak-detection',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            },
-          ],
           'shards': 10,
         },
       },
@@ -1966,24 +1956,10 @@
           '--enable-sanitizer',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            },
-          ],
           'expiration': 36000,
           'hard_timeout': 10800,
           'io_timeout': 3600,
           'shards': 20,
-        },
-      },
-      'WebKit Win10': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Windows-10-15063',
-            },
-          ],
         },
       },
       # chromium.win

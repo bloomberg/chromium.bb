@@ -3974,6 +3974,9 @@
     'name': 'chromium.win',
     'machines': {
       'WebKit Win10': {
+        'mixins': [
+            'win10',
+        ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
