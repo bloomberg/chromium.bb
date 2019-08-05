@@ -39749,6 +39749,22 @@ Called by update_use_counter_css.py.-->
   </int>
 </enum>
 
+<enum name="MirroringServiceErrorType">
+  <int value="0" label="ANSWER_TIME_OUT"/>
+  <int value="1" label="ANSWER_NOT_OK"/>
+  <int value="2" label="ANSWER_MISMATCHED_CAST_MODE"/>
+  <int value="3" label="ANSWER_MISMATCHED_SSRC_LENGTH"/>
+  <int value="4" label="ANSWER_SELECT_MULTIPLE_AUDIO"/>
+  <int value="5" label="ANSWER_SELECT_MULTIPLE_VIDEO"/>
+  <int value="6" label="ANSWER_SELECT_INVALID_INDEX"/>
+  <int value="7" label="ANSWER_NO_AUDIO_OR_VIDEO"/>
+  <int value="8" label="AUDIO_CAPTURE_ERROR"/>
+  <int value="9" label="VIDEO_CAPTURE_ERROR"/>
+  <int value="10" label="RTP_STREAM_ERROR"/>
+  <int value="11" label="ENCODING_ERROR"/>
+  <int value="12" label="CAST_TRANSPORT_ERROR"/>
+</enum>
+
 <enum name="MissingStartType">
   <int value="0" label="Nothing missing"/>
   <int value="1" label="Start missing"/>
