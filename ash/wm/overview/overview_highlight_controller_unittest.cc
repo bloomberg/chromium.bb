@@ -10,6 +10,7 @@
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/new_desk_button.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -329,6 +330,17 @@ class DesksOverviewHighlightControllerTest
     return grid->desks_bar_view();
   }
 
+  // Checks to see if a view is completely covered by the overview highlight.
+  bool CoveredByOverviewHighlight(views::View* view) {
+    if (!Shell::Get()->overview_controller()->InOverviewSession())
+      return false;
+
+    gfx::Rect view_bounds = view->GetBoundsInScreen();
+    return GetHighlightController()
+        ->GetHighlightBoundsInScreenForTesting()
+        .Contains(view_bounds);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(DesksOverviewHighlightControllerTest);
@@ -490,6 +502,95 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
   // tab will bring us to the first mini view on the first display.
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view1->mini_views()[0].get(), GetHighlightedView());
+}
+
+// Tests that the location of the overview highlight is fully covering each
+// views bounds.
+TEST_F(DesksOverviewHighlightControllerTest,
+       TabbingMultiDisplayHighlightLocation) {
+  UpdateDisplay("600x400,600x400,600x400");
+  std::vector<aura::Window*> roots = Shell::GetAllRootWindows();
+  ASSERT_EQ(3u, roots.size());
+
+  auto* desk_controller = DesksController::Get();
+  desk_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desk_controller->desks().size());
+
+  std::unique_ptr<aura::Window> window1(CreateTestWindow(gfx::Rect(200, 200)));
+  std::unique_ptr<aura::Window> window2(
+      CreateTestWindow(gfx::Rect(600, 0, 200, 200)));
+  ASSERT_EQ(roots[0], window1->GetRootWindow());
+  ASSERT_EQ(roots[1], window2->GetRootWindow());
+
+  ToggleOverview();
+  const auto* desk_bar_view1 = GetDesksBarViewForRoot(roots[0]);
+  EXPECT_EQ(2u, desk_bar_view1->mini_views().size());
+
+  SendKey(ui::VKEY_TAB);
+  EXPECT_TRUE(
+      CoveredByOverviewHighlight(desk_bar_view1->mini_views()[0].get()));
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  EXPECT_TRUE(CoveredByOverviewHighlight(desk_bar_view1->new_desk_button()));
+  SendKey(ui::VKEY_TAB);
+  auto* item1 = GetOverviewItemInGridWithWindow(0, window1.get());
+  EXPECT_TRUE(CoveredByOverviewHighlight(item1->caption_container_view()));
+
+  const auto* desk_bar_view2 = GetDesksBarViewForRoot(roots[1]);
+  SendKey(ui::VKEY_TAB);
+  EXPECT_TRUE(
+      CoveredByOverviewHighlight(desk_bar_view2->mini_views()[0].get()));
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  EXPECT_TRUE(CoveredByOverviewHighlight(desk_bar_view2->new_desk_button()));
+  SendKey(ui::VKEY_TAB);
+  auto* item2 = GetOverviewItemInGridWithWindow(1, window2.get());
+  EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
+
+  const auto* desk_bar_view3 = GetDesksBarViewForRoot(roots[2]);
+  SendKey(ui::VKEY_TAB);
+  EXPECT_TRUE(
+      CoveredByOverviewHighlight(desk_bar_view3->mini_views()[0].get()));
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  EXPECT_TRUE(CoveredByOverviewHighlight(desk_bar_view3->new_desk_button()));
+}
+
+TEST_F(DesksOverviewHighlightControllerTest,
+       TabbingMDisplayHighlightLocationAfterItemRemoval) {
+  auto* desk_controller = DesksController::Get();
+  desk_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desk_controller->desks().size());
+
+  std::unique_ptr<views::Widget> widget3(CreateTestWidget());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow(gfx::Rect(200, 200)));
+  std::unique_ptr<views::Widget> widget1(CreateTestWidget());
+
+  ToggleOverview();
+  const auto* desk_bar_view =
+      GetDesksBarViewForRoot(Shell::GetAllRootWindows()[0]);
+  EXPECT_EQ(2u, desk_bar_view->mini_views().size());
+
+  // Tests that if we delete desk2 while desk1 is highlighted, the overview
+  // highlight bounds still contains desk1's bounds.
+  SendKey(ui::VKEY_TAB);
+  EXPECT_TRUE(CoveredByOverviewHighlight(desk_bar_view->mini_views()[0].get()));
+  RemoveDesk(DesksController::Get()->desks()[1].get());
+  EXPECT_TRUE(CoveredByOverviewHighlight(desk_bar_view->mini_views()[0].get()));
+
+  // Tests that if we delete items on the right and left of item2, the overview
+  // highlight bounds still contains item2's bounds.
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  auto* item2 = GetOverviewItemInGridWithWindow(0, window2.get());
+  EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
+  auto* item1 = GetOverviewItemInGridWithWindow(0, widget1->GetNativeWindow());
+  item1->CloseWindow();
+  EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
+  auto* item3 = GetOverviewItemInGridWithWindow(0, widget3->GetNativeWindow());
+  item3->CloseWindow();
+  EXPECT_TRUE(CoveredByOverviewHighlight(item2->caption_container_view()));
 }
 
 }  // namespace ash

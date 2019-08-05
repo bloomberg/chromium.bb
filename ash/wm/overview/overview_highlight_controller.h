@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 
 namespace aura {
 class Window;
@@ -40,7 +41,11 @@ class ASH_EXPORT OverviewHighlightController {
     virtual views::View* GetView() = 0;
     // Get the bounds of where the highlight should be for |this|, in screen
     // coordinates.
-    virtual gfx::Rect GetHighlightBounds() = 0;
+    virtual gfx::Rect GetHighlightBoundsInScreen() = 0;
+
+    // Get the rounded corners the highlight should have when highlighting
+    // |this|.
+    virtual gfx::RoundedCornersF GetRoundedCornersRadii() const;
 
    protected:
     virtual ~OverviewHighlightableView() {}
@@ -67,12 +72,14 @@ class ASH_EXPORT OverviewHighlightController {
   // Clears, creates or repositions the tab dragging highlight.
   void ClearTabDragHighlight();
   void UpdateTabDragHighlight(aura::Window* root_window,
-                              const gfx::Rect& bounds);
+                              const gfx::Rect& bounds_in_screen);
   bool IsTabDragHighlightVisible() const;
 
   // Called when an overview grid repositions its windows. Moves the focus
   // highlight widget without animation.
   void OnWindowsRepositioned(aura::Window* root_window);
+
+  gfx::Rect GetHighlightBoundsInScreenForTesting() const;
 
  private:
   class HighlightWidget;

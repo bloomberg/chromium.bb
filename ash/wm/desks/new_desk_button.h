@@ -35,7 +35,8 @@ class ASH_EXPORT NewDeskButton
 
   // OverviewHighlightController::OverviewHighlightableView:
   views::View* GetView() override;
-  gfx::Rect GetHighlightBounds() override;
+  gfx::Rect GetHighlightBoundsInScreen() override;
+  gfx::RoundedCornersF GetRoundedCornersRadii() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NewDeskButton);

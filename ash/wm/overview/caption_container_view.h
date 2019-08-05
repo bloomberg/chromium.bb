@@ -100,7 +100,7 @@ class ASH_EXPORT CaptionContainerView
 
   // OverviewHighlightController::OverviewHighlightableView:
   views::View* GetView() override;
-  gfx::Rect GetHighlightBounds() override;
+  gfx::Rect GetHighlightBoundsInScreen() override;
 
   // TODO(sammiequon): Move these to a test api.
   views::View* header_view() { return header_view_; }
