@@ -2,16 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/fuchsia/fuchsia_cdm_factory.h"
+#include "media/fuchsia/cdm/fuchsia_cdm_factory.h"
 
+#include <fuchsia/media/drm/cpp/fidl.h>
+
+#include "base/bind.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/cdm_config.h"
 #include "media/base/key_systems.h"
 #include "media/cdm/aes_decryptor.h"
+#include "media/fuchsia/cdm/fuchsia_cdm.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "url/origin.h"
 
 namespace media {
 
-FuchsiaCdmFactory::FuchsiaCdmFactory() = default;
+FuchsiaCdmFactory::FuchsiaCdmFactory(
+    service_manager::InterfaceProvider* interface_provider)
+    : interface_provider_(interface_provider) {
+  DCHECK(interface_provider_);
+}
 
 FuchsiaCdmFactory::~FuchsiaCdmFactory() = default;
 
@@ -35,12 +45,26 @@ void FuchsiaCdmFactory::Create(
     auto cdm = base::MakeRefCounted<AesDecryptor>(
         session_message_cb, session_closed_cb, session_keys_change_cb,
         session_expiration_update_cb);
-    std::move(bound_cdm_created_cb).Run(cdm, std::string());
+    std::move(bound_cdm_created_cb).Run(std::move(cdm), "");
     return;
   }
 
-  // TODO(yucliu): Create CDM with platform support.
-  std::move(bound_cdm_created_cb).Run(nullptr, "Unsupported key system.");
+  if (!cdm_provider_)
+    interface_provider_->GetInterface(mojo::MakeRequest(&cdm_provider_));
+
+  fuchsia::media::drm::ContentDecryptionModulePtr cdm_ptr;
+  cdm_provider_->CreateCdmInterface(key_system, cdm_ptr.NewRequest());
+
+  FuchsiaCdm::SessionCallbacks callbacks;
+  callbacks.message_cb = session_message_cb;
+  callbacks.closed_cb = session_closed_cb;
+  callbacks.keys_change_cb = session_keys_change_cb;
+  callbacks.expiration_update_cb = session_expiration_update_cb;
+
+  auto cdm = base::MakeRefCounted<FuchsiaCdm>(std::move(cdm_ptr),
+                                              std::move(callbacks));
+
+  std::move(bound_cdm_created_cb).Run(std::move(cdm), "");
 }
 
 }  // namespace media
