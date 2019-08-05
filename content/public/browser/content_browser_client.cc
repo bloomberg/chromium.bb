@@ -948,7 +948,7 @@ ContentBrowserClient::GetWideColorGamutHeuristic() {
 
 base::flat_set<std::string>
 ContentBrowserClient::GetPluginMimeTypesWithExternalHandlers(
-    ResourceContext* resource_context) {
+    BrowserContext* browser_context) {
   return base::flat_set<std::string>();
 }
 

@@ -4670,7 +4670,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   result.push_back(std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(
-      browser_context, request.resource_type, frame_tree_node_id));
+      request.resource_type, frame_tree_node_id));
 #endif
 
   auto delegate =
@@ -5710,10 +5710,10 @@ ChromeContentBrowserClient::GetWideColorGamutHeuristic() {
 
 base::flat_set<std::string>
 ChromeContentBrowserClient::GetPluginMimeTypesWithExternalHandlers(
-    content::ResourceContext* resource_context) {
+    content::BrowserContext* browser_context) {
   base::flat_set<std::string> mime_types;
 #if BUILDFLAG(ENABLE_PLUGINS)
-  auto map = PluginUtils::GetMimeTypeToExtensionIdMap(resource_context);
+  auto map = PluginUtils::GetMimeTypeToExtensionIdMap(browser_context);
   for (const auto& pair : map)
     mime_types.insert(pair.first);
 #endif
