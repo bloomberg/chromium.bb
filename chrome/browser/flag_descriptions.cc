@@ -3315,6 +3315,10 @@ const char kListAllDisplayModesName[] = "List all display modes";
 const char kListAllDisplayModesDescription[] =
     "Enables listing all external displays' modes in the display settings.";
 
+const char kLockScreenMediaControlsName[] = "Lock screen media controls";
+const char kLockScreenMediaControlsDescription[] =
+    "Enable media controls on the lock screen.";
+
 const char kLockScreenNotificationName[] = "Lock screen notification";
 const char kLockScreenNotificationDescription[] =
     "Enable notifications on the lock screen.";

@@ -1983,6 +1983,9 @@ extern const char kImeInputLogicFstDescription[];
 extern const char kListAllDisplayModesName[];
 extern const char kListAllDisplayModesDescription[];
 
+extern const char kLockScreenMediaControlsName[];
+extern const char kLockScreenMediaControlsDescription[];
+
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];
 

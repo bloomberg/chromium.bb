@@ -4286,6 +4286,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUnexpireFlagsM77Description, kOsAll,
      FEATURE_VALUE_TYPE(flags_ui::kUnexpireFlagsM77)},
 
+#if defined(OS_CHROMEOS)
+    {"lock-screen-media-controls",
+     flag_descriptions::kLockScreenMediaControlsName,
+     flag_descriptions::kLockScreenMediaControlsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kLockScreenMediaControls)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
