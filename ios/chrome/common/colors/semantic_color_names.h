@@ -35,6 +35,7 @@ extern NSString* const kRedColor;
 // available in iOS 12, any views that should always be dark (e.g. incognito)
 // need to use colorsets that always use the dark variant.
 // TODO(crbug.com/981889): Clean up after iOS 12 support is dropped.
+
 extern NSString* const kBackgroundDarkColor;
 extern NSString* const kTableViewRowHighlightDarkColor;
 extern NSString* const kTextPrimaryDarkColor;
