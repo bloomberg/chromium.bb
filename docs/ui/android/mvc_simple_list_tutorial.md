@@ -8,7 +8,8 @@ In this example we'll be creating a simple menu list where each list item consis
 label.
 
 ### Additional Resources
-[Introductory MVC tutorial][mvc_tutorial_link]
+* [Introductory MVC tutorial][mvc_tutorial_link]
+* [Expanding to RecyclerViews in MVC][mvc_recycler_view_tutorial]
 
 ### File Structure
 The file structure of our component will be the following:
@@ -168,4 +169,5 @@ class SimpleMenuItemViewBinder {
 ```
 
 [mvc_tutorial_link]:https://chromium.googlesource.com/chromium/src/+/HEAD/docs/ui/android/mvc_architecture_tutorial.md
+[Expanding to RecyclerViews in MVC]:https://chromium.googlesource.com/chromium/src/+/HEAD/docs/ui/android/mvc_simple_recycler_view__tutorial.md
 
