@@ -317,6 +317,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // During a history navigation, unfreezes and swaps in a document from the
   // BackForwardCache, making it active.
   void RestoreFromBackForwardCache(std::unique_ptr<RenderFrameHostImpl>);
+  void EvictFromBackForwardCache(RenderFrameHostImpl*);
 
   // Deletes any proxy hosts associated with this node. Used during destruction
   // of WebContentsImpl.

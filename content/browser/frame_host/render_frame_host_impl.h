@@ -295,6 +295,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void SendAccessibilityEventsToManager(
       const AXEventNotificationDetails& details);
+  void EvictFromBackForwardCache() override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;

@@ -158,6 +158,9 @@
       settable_from_internals: true,
     },
     {
+      name: "BackForwardCache",
+    },
+    {
       name: "BackgroundFetch",
       status: "stable",
     },

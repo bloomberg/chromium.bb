@@ -46,6 +46,9 @@ class CONTENT_EXPORT BackForwardCache {
   // |navigation_entry_id|.
   bool ContainsDocument(int navigation_entry_id);
 
+  // Remove a document from the BackForwardCache.
+  void EvictDocument(RenderFrameHostImpl* render_frame_host);
+
   // During a history navigation, move a document out of the BackForwardCache
   // knowing its |navigation_entry_id|. Returns nullptr when none is found.
   std::unique_ptr<RenderFrameHostImpl> RestoreDocument(int navigation_entry_id);

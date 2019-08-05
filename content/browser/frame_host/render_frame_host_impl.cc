@@ -3383,6 +3383,28 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
   }
 }
 
+void RenderFrameHostImpl::EvictFromBackForwardCache() {
+  DCHECK(IsBackForwardCacheEnabled());
+
+  bool in_back_forward_cache = is_in_back_forward_cache();
+
+  RenderFrameHostImpl* top_document = this;
+  while (top_document->parent_) {
+    top_document = top_document->parent_;
+    DCHECK_EQ(top_document->is_in_back_forward_cache(), in_back_forward_cache);
+  }
+
+  if (!in_back_forward_cache) {
+    // TODO(hajimehoshi): A document is evicted from the BackForwardCache, but
+    // it has already been restored. This race condition can be resolved by
+    // reloading the current document to avoid stale state. (crbug.com/989392)
+    return;
+  }
+
+  frame_tree_node_->render_manager()->EvictFromBackForwardCache(top_document);
+  // DO NOT ADD CODE after this. The previous call destroyed |this|.
+}
+
 void RenderFrameHostImpl::OnAccessibilityLocationChanges(
     const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
   if (accessibility_reset_token_)
