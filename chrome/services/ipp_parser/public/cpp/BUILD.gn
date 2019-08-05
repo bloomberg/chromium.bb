@@ -13,7 +13,7 @@ if (use_cups) {
     ]
 
     public_deps = [
-      "//chrome/services/cups_ipp_parser/public/mojom",
+      "//chrome/services/ipp_parser/public/mojom",
     ]
 
     deps = [

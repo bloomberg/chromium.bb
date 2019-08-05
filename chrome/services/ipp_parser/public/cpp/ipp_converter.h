@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_SERVICES_CUPS_IPP_PARSER_PUBLIC_CPP_IPP_CONVERTER_H_
-#define CHROME_SERVICES_CUPS_IPP_PARSER_PUBLIC_CPP_IPP_CONVERTER_H_
+#ifndef CHROME_SERVICES_IPP_PARSER_PUBLIC_CPP_IPP_CONVERTER_H_
+#define CHROME_SERVICES_IPP_PARSER_PUBLIC_CPP_IPP_CONVERTER_H_
 
 #include <string>
 #include <utility>
@@ -11,7 +11,7 @@
 
 #include "base/containers/span.h"
 #include "base/strings/string_piece.h"
-#include "chrome/services/cups_ipp_parser/public/mojom/ipp_parser.mojom.h"
+#include "chrome/services/ipp_parser/public/mojom/ipp_parser.mojom.h"
 #include "printing/backend/cups_ipp_util.h"
 
 // This namespace is filled with helpful (conversion) functions for working with
@@ -86,8 +86,8 @@ base::Optional<std::vector<uint8_t>> BuildIppRequest(
 
 // Mojom converter for ipp_t objects, return nullptr on failure.
 // Note: This function does not take ownership of |ipp|.
-cups_ipp_parser::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp);
+ipp_parser::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp);
 
 }  // namespace ipp_converter
 
-#endif  // CHROME_SERVICES_CUPS_IPP_PARSER_PUBLIC_CPP_IPP_CONVERTER_H_
+#endif  // CHROME_SERVICES_IPP_PARSER_PUBLIC_CPP_IPP_CONVERTER_H_

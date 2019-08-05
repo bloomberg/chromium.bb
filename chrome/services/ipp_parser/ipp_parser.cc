@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/services/cups_ipp_parser/ipp_parser.h"
+#include "chrome/services/ipp_parser/ipp_parser.h"
 
 #include <cups/ipp.h>
 #include <memory>
@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "base/optional.h"
-#include "chrome/services/cups_ipp_parser/public/cpp/ipp_converter.h"
 #include "chrome/services/cups_proxy/public/cpp/type_conversions.h"
+#include "chrome/services/ipp_parser/public/cpp/ipp_converter.h"
 #include "net/http/http_util.h"
 
-namespace cups_ipp_parser {
+namespace ipp_parser {
 namespace {
 
 using ipp_converter::HttpHeader;
@@ -189,4 +189,4 @@ void IppParser::ParseIpp(const std::vector<uint8_t>& to_parse,
   std::move(callback).Run(std::move(parsed_request));
 }
 
-}  // namespace cups_ipp_parser
+}  // namespace ipp_parser

@@ -185,8 +185,8 @@ static_library("utility") {
 
     if (is_chromeos) {
       deps += [
-        "//chrome/services/cups_ipp_parser",
-        "//chrome/services/cups_ipp_parser/public/mojom",
+        "//chrome/services/ipp_parser",
+        "//chrome/services/ipp_parser/public/mojom",
       ]
     }
   }

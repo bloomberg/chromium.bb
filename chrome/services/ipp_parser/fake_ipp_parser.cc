@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/services/cups_ipp_parser/ipp_parser.h"
+#include "chrome/services/ipp_parser/ipp_parser.h"
 
 #include <memory>
 #include <utility>
 
-namespace cups_ipp_parser {
+namespace ipp_parser {
 
 IppParser::IppParser(mojo::PendingReceiver<mojom::IppParser> receiver)
     : receiver_(this, std::move(receiver)) {}
@@ -20,4 +20,4 @@ void IppParser::ParseIpp(const std::vector<uint8_t>& to_parse,
   std::move(callback).Run(nullptr);
 }
 
-}  // namespace cups_ipp_parser
+}  // namespace ipp_parser

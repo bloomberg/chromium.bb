@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/services/cups_ipp_parser/public/cpp/ipp_converter.h"
+#include "chrome/services/ipp_parser/public/cpp/ipp_converter.h"
 
 // This turns off service error logging.
 struct Environment {

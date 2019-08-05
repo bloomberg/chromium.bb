@@ -4,6 +4,7 @@
 
 #include "chrome/utility/services.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -28,8 +29,8 @@
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
-#include "chrome/services/cups_ipp_parser/ipp_parser.h"  // nogncheck
-#include "chrome/services/cups_ipp_parser/public/mojom/ipp_parser.mojom.h"  // nogncheck
+#include "chrome/services/ipp_parser/ipp_parser.h"  // nogncheck
+#include "chrome/services/ipp_parser/public/mojom/ipp_parser.mojom.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
@@ -63,8 +64,8 @@ auto RunProxyResolver(
 
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
 auto RunCupsIppParser(
-    mojo::PendingReceiver<cups_ipp_parser::mojom::IppParser> receiver) {
-  return std::make_unique<cups_ipp_parser::IppParser>(std::move(receiver));
+    mojo::PendingReceiver<ipp_parser::mojom::IppParser> receiver) {
+  return std::make_unique<ipp_parser::IppParser>(std::move(receiver));
 }
 #endif
 

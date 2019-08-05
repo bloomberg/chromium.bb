@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_SERVICES_CUPS_IPP_PARSER_IPP_PARSER_H_
-#define CHROME_SERVICES_CUPS_IPP_PARSER_IPP_PARSER_H_
+#ifndef CHROME_SERVICES_IPP_PARSER_IPP_PARSER_H_
+#define CHROME_SERVICES_IPP_PARSER_IPP_PARSER_H_
 
-#include "chrome/services/cups_ipp_parser/public/mojom/ipp_parser.mojom.h"
+#include <vector>
+
+#include "chrome/services/ipp_parser/public/mojom/ipp_parser.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace cups_ipp_parser {
+namespace ipp_parser {
 
-// cups_ipp_parser.IppParser handler.
+// ipp_parser.IppParser handler.
 //
 // This handler accepts incoming IPP requests as arbitrary buffers, parses
 // the contents using libCUPS, and yields a chrome::mojom::IppRequest. It is
@@ -35,6 +37,6 @@ class IppParser : public mojom::IppParser {
   DISALLOW_COPY_AND_ASSIGN(IppParser);
 };
 
-}  // namespace cups_ipp_parser
+}  // namespace ipp_parser
 
-#endif  // CHROME_SERVICES_CUPS_IPP_PARSER_IPP_PARSER_H_
+#endif  // CHROME_SERVICES_IPP_PARSER_IPP_PARSER_H_

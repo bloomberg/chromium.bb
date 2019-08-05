@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/services/cups_ipp_parser/public/cpp/ipp_converter.h"
+#include "chrome/services/ipp_parser/public/cpp/ipp_converter.h"
 
 #include <algorithm>
 #include <string>
@@ -17,7 +17,7 @@
 namespace ipp_converter {
 namespace {
 
-using ValueType = cups_ipp_parser::mojom::ValueType;
+using ValueType = ipp_parser::mojom::ValueType;
 
 const char kStatusDelimiter[] = " ";
 const char kHeaderDelimiter[] = ": ";
@@ -304,9 +304,8 @@ base::Optional<std::vector<uint8_t>> BuildIppRequest(
 
 // Parses and converts |ipp| to corresponding mojom type for marshalling.
 // Returns nullptr on failure.
-cups_ipp_parser::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp) {
-  cups_ipp_parser::mojom::IppMessagePtr ret =
-      cups_ipp_parser::mojom::IppMessage::New();
+ipp_parser::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp) {
+  ipp_parser::mojom::IppMessagePtr ret = ipp_parser::mojom::IppMessage::New();
 
   // Parse version numbers
   int major, minor;
@@ -327,11 +326,11 @@ cups_ipp_parser::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp) {
     return nullptr;
   }
 
-  std::vector<cups_ipp_parser::mojom::IppAttributePtr> attributes;
-  for (ipp_attribute_t* attr = ippFirstAttribute(ipp); attr != NULL;
+  std::vector<ipp_parser::mojom::IppAttributePtr> attributes;
+  for (ipp_attribute_t* attr = ippFirstAttribute(ipp); attr != nullptr;
        attr = ippNextAttribute(ipp)) {
-    cups_ipp_parser::mojom::IppAttributePtr attrptr =
-        cups_ipp_parser::mojom::IppAttribute::New();
+    ipp_parser::mojom::IppAttributePtr attrptr =
+        ipp_parser::mojom::IppAttribute::New();
 
     auto* name = ippGetName(attr);
     if (!name) {
@@ -355,7 +354,7 @@ cups_ipp_parser::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp) {
     }
     attrptr->type = type.value();
 
-    attrptr->value = cups_ipp_parser::mojom::IppAttributeValue::New();
+    attrptr->value = ipp_parser::mojom::IppAttributeValue::New();
     switch (attrptr->type) {
       case ValueType::BOOLEAN: {
         attrptr->value->set_bools(IppGetBools(attr));
