@@ -12,6 +12,8 @@ deploy:
   github_token: $GITHUB_TOKEN # Set in the settings page of your repository, as a secure variable
   on:
     branch: master
+before_deploy:
+  - ls -la
 
 env:
   global:
