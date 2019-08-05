@@ -1549,7 +1549,12 @@ class CONTENT_EXPORT RenderFrameImpl
   // Non-null when the RenderFrame is a local root for compositing, input,
   // layout, etc. A local frame is also a local root iff it does not have a
   // parent that is a local frame.
-  scoped_refptr<RenderWidget> render_widget_;
+  RenderWidget* render_widget_ = nullptr;
+
+  // If this is a main frame, the RenderView owns the RenderWidget and this
+  // member is null. If this is a child frame, then this object owns the
+  // RenderWidget and this member is not null.
+  std::unique_ptr<RenderWidget> owned_render_widget_;
 
   // Keeps track of which future subframes the browser process has history items
   // for during a history navigation, as well as whether those items are for
