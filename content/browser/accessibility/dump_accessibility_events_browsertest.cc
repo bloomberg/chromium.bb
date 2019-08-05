@@ -797,7 +797,7 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("select-selected-add-remove.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest, DISABLED_DeleteSubtree) {
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest, DeleteSubtree) {
   RunEventTest(FILE_PATH_LITERAL("delete-subtree.html"));
 }
 
