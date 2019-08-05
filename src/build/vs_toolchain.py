@@ -24,6 +24,7 @@ json_data_file = os.path.join(script_dir, 'win_toolchain.json')
 # Use MSVS2017 as the default toolchain.
 CURRENT_DEFAULT_TOOLCHAIN_VERSION = '2017'
 
+DEVKIT_VERSION = '74a'
 
 def SetEnvironmentAndGetRuntimeDllDirs():
   """Sets up os.environ to use the depot_tools VS toolchain with gyp, and
@@ -369,7 +370,7 @@ def _GetDesiredVsToolchainHashes():
   if env_version == '2017':
     # VS 2017 Update 9 (15.9.3) with 10.0.17763.132 SDK, 10.0.17134 version of
     # d3dcompiler_47.dll, with ARM64 libraries.
-    toolchain_hash = '818a152b3f1da991c1725d85be19a0f27af6bab4'
+    toolchain_hash = '4d34c0324d1da6399cd46d51092132de0a02788a'
     # Third parties that do not have access to the canonical toolchain can map
     # canonical toolchain version to their own toolchain versions.
     toolchain_hash_mapping_key = 'GYP_MSVS_HASH_%s' % toolchain_hash
@@ -444,6 +445,8 @@ def Update(force=False, no_download=False):
                     'get_toolchain_if_necessary.py'),
         '--output-json', json_data_file,
       ] + _GetDesiredVsToolchainHashes()
+    base_url = os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL', '')
+    os.environ['DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL'] = os.path.join(base_url, DEVKIT_VERSION)
     if force:
       get_toolchain_args.append('--force')
     if no_download:
