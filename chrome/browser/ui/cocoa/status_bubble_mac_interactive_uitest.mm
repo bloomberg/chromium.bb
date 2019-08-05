@@ -17,11 +17,8 @@ class StatusBubbleMacInteractiveUITest : public InProcessBrowserTest {
   StatusBubbleMacInteractiveUITest() {}
 };
 
-// interactive_ui_tests brings browser window to front using
-// ui_test_utils::BringBrowserWindowToFront, which cause NSApp hide: and unhide:
-// do not work properly.
 IN_PROC_BROWSER_TEST_F(StatusBubbleMacInteractiveUITest,
-                       DISABLED_TestSettingStatusDoesNotUnhideApp) {
+                       TestSettingStatusDoesNotUnhideApp) {
   StatusBubble* status_bubble = browser()->window()->GetStatusBubble();
 
   EXPECT_FALSE(NSApp.hidden);
