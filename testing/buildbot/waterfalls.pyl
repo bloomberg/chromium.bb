@@ -1752,15 +1752,11 @@
         },
       },
       'linux-blink-rel-dummy': {
+        'mixins': [
+          'linux-xenial',
+        ],
         'test_suites': {
           'isolated_scripts': 'chromium_web_tests_and_wpt_webdriver_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04',
-            },
-          ],
         },
       },
       'linux-chromeos-code-coverage': {
