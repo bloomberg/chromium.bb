@@ -37,6 +37,8 @@ namespace {
 const char kTelUrl[] = "tel:+9876543210";
 }  // namespace
 
+// TODO(himanshujaju): refactor out SharingBrowserTest to be reused by other
+// features.
 class ClickToCallBrowserTest : public SyncTest {
  public:
   ClickToCallBrowserTest()
@@ -65,6 +67,9 @@ class ClickToCallBrowserTest : public SyncTest {
     gcm_service_ = static_cast<gcm::FakeGCMProfileService*>(
         gcm::GCMProfileServiceFactory::GetForProfile(GetProfile(0)));
     gcm_service_->set_collect(true);
+
+    sharing_service_ =
+        SharingServiceFactory::GetForBrowserContext(GetProfile(0));
   }
 
   void SetUpDevices(int count) {
@@ -130,16 +135,26 @@ class ClickToCallBrowserTest : public SyncTest {
     return menu;
   }
 
-  void GetDeviceFCMToken(SharingService* sharing_service,
-                         const std::string& guid,
+  void GetDeviceFCMToken(const std::string& guid,
                          std::string* fcm_token) const {
-    auto devices = sharing_service->GetSyncPreferences()->GetSyncedDevices();
+    auto devices = sharing_service_->GetSyncPreferences()->GetSyncedDevices();
     auto it = devices.find(guid);
     ASSERT_NE(devices.end(), it);
     *fcm_token = it->second.fcm_token;
   }
 
-  gcm::FakeGCMProfileService* GetGCMService() const { return gcm_service_; }
+  void CheckLastSharingMessageSent(const std::string& fcm_token,
+                                   const GURL& url) const {
+    EXPECT_EQ(fcm_token, gcm_service_->last_receiver_id());
+    chrome_browser_sharing::SharingMessage sharing_message;
+    sharing_message.ParseFromString(
+        gcm_service_->last_web_push_message().payload);
+    ASSERT_TRUE(sharing_message.has_click_to_call_message());
+    EXPECT_EQ(url.GetContent(),
+              sharing_message.click_to_call_message().phone_number());
+  }
+
+  SharingService* sharing_service() const { return sharing_service_; }
 
  private:
   gcm::GCMProfileServiceFactory::ScopedTestingFactoryInstaller
@@ -149,17 +164,16 @@ class ClickToCallBrowserTest : public SyncTest {
   content::WebContents* web_contents_;
   syncer::FakeDeviceInfoTracker fake_device_info_tracker_;
   std::vector<std::unique_ptr<syncer::DeviceInfo>> device_infos_;
+  SharingService* sharing_service_;
   DISALLOW_COPY_AND_ASSIGN(ClickToCallBrowserTest);
 };
 
-// TODO(himanshujaju): Add UI checks. Modularize common functions.
+// TODO(himanshujaju): Add UI checks.
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_SingleDeviceAvailable) {
   SetUpDevices(/*count=*/1);
 
-  SharingService* sharing_service =
-      SharingServiceFactory::GetForBrowserContext(GetProfile(0));
-  auto devices = sharing_service->GetDeviceCandidates(
+  auto devices = sharing_service()->GetDeviceCandidates(
       static_cast<int>(SharingDeviceCapability::kTelephony));
 
   ASSERT_EQ(1u, devices.size());
@@ -173,19 +187,12 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   EXPECT_FALSE(menu->IsItemPresent(
       IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES));
 
+  // Check fcm token and message sent.
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
                        0);
-
-  // Check SharingMessage and Receiver id
   std::string fcm_token;
-  GetDeviceFCMToken(sharing_service, devices[0].guid(), &fcm_token);
-  EXPECT_EQ(fcm_token, GetGCMService()->last_receiver_id());
-  chrome_browser_sharing::SharingMessage sharing_message;
-  sharing_message.ParseFromString(
-      GetGCMService()->last_web_push_message().payload);
-  ASSERT_TRUE(sharing_message.has_click_to_call_message());
-  EXPECT_EQ(GURL(kTelUrl).GetContent(),
-            sharing_message.click_to_call_message().phone_number());
+  GetDeviceFCMToken(devices[0].guid(), &fcm_token);
+  CheckLastSharingMessageSent(fcm_token, GURL(kTelUrl));
 }
 
 IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_NoDevicesAvailable) {
@@ -216,9 +223,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
                        ContextMenu_MultipleDevicesAvailable) {
   SetUpDevices(/*count=*/2);
 
-  SharingService* sharing_service =
-      SharingServiceFactory::GetForBrowserContext(GetProfile(0));
-  auto devices = sharing_service->GetDeviceCandidates(
+  auto devices = sharing_service()->GetDeviceCandidates(
       static_cast<int>(SharingDeviceCapability::kTelephony));
 
   ASSERT_EQ(2u, devices.size());
@@ -237,22 +242,14 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   EXPECT_EQ(2, sub_menu_model->GetItemCount());
   EXPECT_EQ(0, device_id);
 
-  // Todo(himanshujaju): Modularize the checks for gcm message
   for (auto& device : devices) {
     EXPECT_EQ(kSubMenuFirstDeviceCommandId + device_id,
               sub_menu_model->GetCommandIdAt(device_id));
     sub_menu_model->ActivatedAt(device_id);
 
     std::string fcm_token;
-    GetDeviceFCMToken(sharing_service, device.guid(), &fcm_token);
-    EXPECT_EQ(fcm_token, GetGCMService()->last_receiver_id());
-    chrome_browser_sharing::SharingMessage sharing_message;
-    sharing_message.ParseFromString(
-        GetGCMService()->last_web_push_message().payload);
-    ASSERT_TRUE(sharing_message.has_click_to_call_message());
-    EXPECT_EQ(GURL(kTelUrl).GetContent(),
-              sharing_message.click_to_call_message().phone_number());
-
+    GetDeviceFCMToken(device.guid(), &fcm_token);
+    CheckLastSharingMessageSent(fcm_token, GURL(kTelUrl));
     device_id++;
   }
 }
