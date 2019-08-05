@@ -161,6 +161,25 @@ def _PopulateBuiltImages(board, image_types, output_proto):
     new_image.build_target.name = board
 
 
+@validate.require('build_target.name')
+@validate.exists('image.path')
+def SignerTest(input_proto, output_proto):
+  """Run image tests.
+
+  Args:
+    input_proto (image_pb2.ImageTestRequest): The input message.
+    output_proto (image_pb2.ImageTestResult): The output message.
+  """
+  board = input_proto.build_target.name
+  image_path = input_proto.image.path
+
+  result = image_lib.SecurityTest(board=board, image=image_path)
+  output_proto.success = result
+  if result:
+    return controller.RETURN_CODE_SUCCESS
+  else:
+    return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
+
 @validate.require('build_target.name', 'result.directory')
 @validate.exists('image.path')
 def Test(input_proto, output_proto):
