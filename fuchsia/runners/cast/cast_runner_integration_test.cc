@@ -10,9 +10,9 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/fuchsia/service_directory_client.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "fuchsia/base/agent_impl.h"
@@ -242,7 +242,9 @@ class CastRunnerIntegrationTest : public testing::Test {
   }
 
   const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   net::EmbeddedTestServer test_server_;
 
   // Returns fake Cast application information to the CastRunner.

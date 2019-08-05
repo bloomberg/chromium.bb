@@ -90,6 +90,7 @@ test("cr_fuchsia_base_unittests") {
     "//base",
     "//base:testfidl",
     "//base/test:run_all_unittests",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
 }
