@@ -6524,6 +6524,8 @@ crbug.com/989365 [ Win7 ] http/tests/security/img-crossorigin-redirect-credentia
 crbug.com/989014 [ Linux Debug ] external/wpt/cookie-store/serviceworker_cookieStore_subscriptions_eventhandler_attribute.tentative.https.html [ Pass Timeout ]
 crbug.com/989665 [ Win Linux ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Timeout ]
 
+crbug.com/990900 [ Linux ] virtual/omt-worker-fetch/external/wpt/resource-timing/idlharness.any.worker.html [ Pass Timeout ]
+
 # Sheriff 2019-08-01
 crbug.com/989860 [ Mac10.13 Linux Debug ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
 crbug.com/989717 [ Fuchsia ] http/tests/preload/avoid_delaying_onload_link_preload.html [ Pass Failure ]
