@@ -169,5 +169,5 @@ class SimpleMenuItemViewBinder {
 ```
 
 [mvc_tutorial_link]:https://chromium.googlesource.com/chromium/src/+/HEAD/docs/ui/android/mvc_architecture_tutorial.md
-[Expanding to RecyclerViews in MVC]:https://chromium.googlesource.com/chromium/src/+/HEAD/docs/ui/android/mvc_simple_recycler_view__tutorial.md
+[mvc_recycler_view_tutorial]:https://chromium.googlesource.com/chromium/src/+/HEAD/docs/ui/android/mvc_simple_recycler_view_tutorial.md
 
