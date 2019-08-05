@@ -113,6 +113,7 @@ static void set_good_speed_feature_framesize_dependent(
   const AV1_COMMON *const cm = &cpi->common;
   const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
   const int is_480p_or_larger = AOMMIN(cm->width, cm->height) >= 480;
+  const int is_4k_or_larger = AOMMIN(cm->width, cm->height) >= 2160;
 
   if (is_480p_or_larger) {
     sf->use_square_partition_only_threshold = BLOCK_128X128;
@@ -123,6 +124,10 @@ static void set_good_speed_feature_framesize_dependent(
   } else {
     sf->use_square_partition_only_threshold = BLOCK_64X64;
     sf->auto_max_partition_based_on_simple_motion = DIRECT_PRED;
+  }
+
+  if (is_4k_or_larger) {
+    sf->default_min_partition_size = BLOCK_8X8;
   }
 
   // TODO(huisu@google.com): train models for 720P and above.
@@ -680,6 +685,15 @@ void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi, int speed) {
     cpi->find_fractional_mv_step = av1_return_max_sub_pixel_mv;
   else if (cpi->oxcf.motion_vector_unit_test == 2)
     cpi->find_fractional_mv_step = av1_return_min_sub_pixel_mv;
+
+  MACROBLOCK *const x = &cpi->td.mb;
+  AV1_COMMON *const cm = &cpi->common;
+  x->min_partition_size = AOMMAX(sf->default_min_partition_size,
+                                 dim_to_size(cpi->oxcf.min_partition_size));
+  x->max_partition_size = AOMMIN(sf->default_max_partition_size,
+                                 dim_to_size(cpi->oxcf.max_partition_size));
+  x->min_partition_size = AOMMIN(x->min_partition_size, cm->seq_params.sb_size);
+  x->max_partition_size = AOMMIN(x->max_partition_size, cm->seq_params.sb_size);
 }
 
 void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
