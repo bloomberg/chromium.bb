@@ -1,3 +1,10 @@
 language: node_js
 node_js:
-  - "node"
+  - 'node'
+
+before_install: yarn global add grunt-cli
+
+env:
+  global:
+    - ENCRYPTION_LABEL: '36eb7b9455f3'
+    - COMMIT_AUTHOR_EMAIL: travis-ci@w3.org
