@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">ફરીથી બતાવશો નહીં</translation>
 <translation id="1692118695553449118">સમન્વયન ચાલુ છે</translation>
 <translation id="169515064810179024">સાઇટને મોશન સેન્સરને ઍક્સેસ કરવાથી બ્લૉક કરો</translation>
-<translation id="1697480839793160072">ટેલિફોન</translation>
-<translation id="1698058317516161971">ઇમેઇલ</translation>
 <translation id="1717218214683051432">મોશન સેન્સર</translation>
 <translation id="1718835860248848330">છેલ્લા એક કલાક</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> અપડેટ કર્યું</translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">સ્વતઃભરો</translation>
 <translation id="271033894570825754">નવું</translation>
 <translation id="2714850608275780394">કોડની રાહ જુએ છે</translation>
+<translation id="2717722538473713889">ઇમેઇલ ઍડ્રેસ</translation>
 <translation id="2728754400939377704">સાઇટ અનુસાર સૉર્ટ કરો</translation>
 <translation id="2744248271121720757">ઝટપટ શોધ કરવા માટે શબ્દ પર ટૅપ કરો અથવા સંબંધિત ક્રિયાઓ જુઓ</translation>
 <translation id="2760989362628427051">જ્યારે તમારા ડિવાઇસની ઘેરી થીમ અથવા બૅટરી સેવર ચાલુ હોય ત્યારે ઘેરી થીમ ચાલુ કરો</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">ઇન્સ્ટોલ કરો</translation>
 <translation id="3810838688059735925">વીડિયો</translation>
 <translation id="3810973564298564668">મેનેજ કરો</translation>
+<translation id="381841723434055211">ફોન નંબર</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ડાઉનલોડ કાઢી નાખ્યાં</translation>
 <translation id="3822502789641063741">સાઇટ સ્ટોરેજ સાફ કરીએ?</translation>
 <translation id="385051799172605136">પાછળ</translation>
@@ -589,6 +589,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}one{<ph name="OPEN_TABS_MANY" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}other{<ph name="OPEN_TABS_MANY" /> ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}}</translation>
 <translation id="5391532827096253100">આ સાઇટ સાથેનું તમારું કનેક્શન સુરક્ષિત નથી. સાઇટની માહિતી</translation>
 <translation id="5400569084694353794">આ એપ્લિકેશનનો ઉપયોગ કરીને, તમે Chrome ની <ph name="BEGIN_LINK1" />સેવાની શરતો<ph name="END_LINK1" /> અને <ph name="BEGIN_LINK2" />ગોપનીયતા સૂચના<ph name="END_LINK2" /> સાથે સંમત છો.</translation>
+<translation id="5403592356182871684">નામ</translation>
 <translation id="5403644198645076998">ફક્ત અમુક સાઇટની મંજૂરી આપો</translation>
 <translation id="5414836363063783498">ચકાસી રહ્યું છે...</translation>
 <translation id="5423934151118863508">તમારા સૌથી વધુ મુલાકાત લીધેલા પૃષ્ઠો અહીં દેખાશે</translation>

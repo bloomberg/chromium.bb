@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Nie pokazuj ponownie</translation>
 <translation id="1692118695553449118">Synchronizacja jest włączona</translation>
 <translation id="169515064810179024">Blokuj stronom dostęp do czujników ruchu</translation>
-<translation id="1697480839793160072">Telefony</translation>
-<translation id="1698058317516161971">E-maile</translation>
 <translation id="1717218214683051432">Czujniki ruchu</translation>
 <translation id="1718835860248848330">Ostatnia godzina</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – zaktualizowano <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Autouzupełnianie</translation>
 <translation id="271033894570825754">Nowy</translation>
 <translation id="2714850608275780394">Czekam na kod</translation>
+<translation id="2717722538473713889">Adresy e-mail</translation>
 <translation id="2728754400939377704">Sortuj według witryny</translation>
 <translation id="2744248271121720757">Kliknij słowo, by szybko je wyszukać lub wyświetlić powiązane czynności</translation>
 <translation id="2760989362628427051">Włącz ciemny motyw, gdy urządzenie ma włączony ciemny motyw lub Oszczędzanie baterii</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Zainstaluj</translation>
 <translation id="3810838688059735925">Wideo</translation>
 <translation id="3810973564298564668">Zarządzaj</translation>
+<translation id="381841723434055211">Numery telefonów</translation>
 <translation id="3819178904835489326">Usunięte pobrane pliki: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Wyczyścić dane witryn?</translation>
 <translation id="385051799172605136">Wstecz</translation>
@@ -589,6 +589,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> otwarta karta. Kliknij, by przełączyć się między kartami}few{<ph name="OPEN_TABS_MANY" /> otwarte karty. Kliknij, by przełączyć się między kartami}many{<ph name="OPEN_TABS_MANY" /> otwartych kart. Kliknij, by przełączyć się między kartami}other{<ph name="OPEN_TABS_MANY" /> otwartej karty. Kliknij, by przełączyć się między kartami}}</translation>
 <translation id="5391532827096253100">Twoje połączenie z tą witryną nie jest bezpieczne. Informacje o witrynie</translation>
 <translation id="5400569084694353794">Korzystając z tej aplikacji, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z Chrome<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności w Chrome<ph name="END_LINK2" />.</translation>
+<translation id="5403592356182871684">Nazwy</translation>
 <translation id="5403644198645076998">Pozwól na otwieranie tylko wybranych stron</translation>
 <translation id="5414836363063783498">Weryfikuję…</translation>
 <translation id="5423934151118863508">Tu pojawią się strony, na które najczęściej wchodzisz</translation>

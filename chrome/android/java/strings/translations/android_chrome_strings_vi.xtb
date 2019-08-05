@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Không hiển thị lại</translation>
 <translation id="1692118695553449118">Đồng bộ hóa đang bật</translation>
 <translation id="169515064810179024">Chặn không cho các trang web sử dụng cảm biến chuyển động</translation>
-<translation id="1697480839793160072">Điện thoại</translation>
-<translation id="1698058317516161971">Email</translation>
 <translation id="1717218214683051432">Cảm biến chuyển động</translation>
 <translation id="1718835860248848330">Giờ vừa qua</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Đã cập nhật <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Tự động điền</translation>
 <translation id="271033894570825754">Mới</translation>
 <translation id="2714850608275780394">Đang đợi mã</translation>
+<translation id="2717722538473713889">Địa chỉ email</translation>
 <translation id="2728754400939377704">Sắp xếp theo trang web</translation>
 <translation id="2744248271121720757">Hãy nhấn vào một từ để tìm kiếm ngay hoặc xem các hành động có liên quan</translation>
 <translation id="2760989362628427051">Bật giao diện tối khi Trình tiết kiệm pin hoặc giao diện tối trên thiết bị đang bật</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Cài đặt</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Quản lý</translation>
+<translation id="381841723434055211">Số điện thoại</translation>
 <translation id="3819178904835489326">Đã xóa <ph name="NUMBER_OF_DOWNLOADS" /> bản tải xuống</translation>
 <translation id="3822502789641063741">Xóa dữ liệu trang trong bộ nhớ?</translation>
 <translation id="385051799172605136">Quay lại</translation>
@@ -589,6 +589,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> tab đang mở, nhấn để chuyển tab}other{<ph name="OPEN_TABS_MANY" /> tab đang mở, nhấn để chuyển tab}}</translation>
 <translation id="5391532827096253100">Kết nối của bạn tới trang web này không an toàn. Thông tin trang web</translation>
 <translation id="5400569084694353794">Bằng việc sử dụng ứng dụng này, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo quyền riêng tư<ph name="END_LINK2" /> của Chrome.</translation>
+<translation id="5403592356182871684">Tên</translation>
 <translation id="5403644198645076998">Chỉ cho phép một số trang web</translation>
 <translation id="5414836363063783498">Đang xác minh...</translation>
 <translation id="5423934151118863508">Trang bạn truy cập nhiều nhất sẽ xuất hiện ở đây</translation>

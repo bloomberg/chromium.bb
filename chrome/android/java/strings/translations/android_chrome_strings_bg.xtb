@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Да не се показва отново</translation>
 <translation id="1692118695553449118">Синхронизирането е включено</translation>
 <translation id="169515064810179024">Блокиране на достъпа на сайтовете до сензорите за движение</translation>
-<translation id="1697480839793160072">Телефони</translation>
-<translation id="1698058317516161971">Имейли</translation>
 <translation id="1717218214683051432">Сензори за движение</translation>
 <translation id="1718835860248848330">Последния час</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – актуализирано <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Автоматично попълване</translation>
 <translation id="271033894570825754">Създаване</translation>
 <translation id="2714850608275780394">Чака се код</translation>
+<translation id="2717722538473713889">Имейл адреси</translation>
 <translation id="2728754400939377704">Сортиране по сайт</translation>
 <translation id="2744248271121720757">Докоснете дума, за да извършите незабавно търсене, или вижте свързаните действия</translation>
 <translation id="2760989362628427051">Включване на тъмната тема, когато тъмната тема на устройството или режимът за запазване на батерията в него са включени</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Инсталиране</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3810973564298564668">Управление</translation>
+<translation id="381841723434055211">Телефонни номера</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> изтегляния бяха изтрити</translation>
 <translation id="3822502789641063741">Изчистване на данните?</translation>
 <translation id="385051799172605136">Назад</translation>
@@ -589,6 +589,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> отворен раздел. Докоснете за превключване между разделите}other{<ph name="OPEN_TABS_MANY" /> отворени раздела. Докоснете за превключване между тях}}</translation>
 <translation id="5391532827096253100">Връзката ви с този сайт не е защитена. Информация за сайта</translation>
 <translation id="5400569084694353794">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome.</translation>
+<translation id="5403592356182871684">Имена</translation>
 <translation id="5403644198645076998">Разрешаване само на конкретни сайтове</translation>
 <translation id="5414836363063783498">Потвърждава се…</translation>
 <translation id="5423934151118863508">Най-посещаваните от вас страници ще се показват тук</translation>

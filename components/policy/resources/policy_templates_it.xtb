@@ -682,7 +682,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa impostazione viene configurata, gli utenti che usano lo sblocco rapido devono inserire le proprie password nella schermata di blocco in base a questa impostazione.
 
       Se questa impostazione non viene configurata, gli utenti che usano lo sblocco rapido devono inserire ogni giorno la propria password nella schermata di blocco.</translation>
-<translation id="219297066914002620">Consente di indicare a <ph name="PRODUCT_OS_NAME" /> di attivare o disattivare gli strumenti della console di gestione delle macchine virtuali.
+<translation id="219297066914002620">Indica a <ph name="PRODUCT_OS_NAME" /> di attivare o disattivare gli strumenti della console di gestione delle macchine virtuali.
 
       Se il criterio viene impostato su true o non viene impostato, l'utente potrà usare l'interfaccia a riga di comando di gestione delle macchine virtuali.
       In caso contrario, l'intera interfaccia a riga di comando di gestione delle macchine virtuali viene disattivata e nascosta.
@@ -2013,7 +2013,7 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 
           Se questa norma non è impostata, <ph name="PRODUCT_NAME" /> non delegherà le credenziali utente, anche se viene rilevato un server sulla Intranet.</translation>
 <translation id="4752880493649142945">Certificato client per la connessione a RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4756984056524699088">Permette di consentire all'utente l'accesso root ai contenitori Crostini.
+<translation id="4756984056524699088">Consente all'utente l'accesso root ai contenitori Crostini.
 
       Se il criterio viene impostato su true o non viene impostato, all'utente viene concesso l'accesso root ai contenitori Crostini.
       Se il criterio viene impostato su false, all'utente non viene concesso l'accesso root ai contenitori Crostini nuovi ed esistenti.</translation>

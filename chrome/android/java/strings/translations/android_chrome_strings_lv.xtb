@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Vairs nerādīt</translation>
 <translation id="1692118695553449118">Sinhronizācija ieslēgta</translation>
 <translation id="169515064810179024">Bloķēt vietņu piekļuvi kustību sensoriem</translation>
-<translation id="1697480839793160072">Tālruņi</translation>
-<translation id="1698058317516161971">E-pasta ziņojumi</translation>
 <translation id="1717218214683051432">Kustību sensori</translation>
 <translation id="1718835860248848330">Pēdējā stunda</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> — atjaunināts <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Automātiskā aizpilde</translation>
 <translation id="271033894570825754">Jauns</translation>
 <translation id="2714850608275780394">Koda gaidīšana</translation>
+<translation id="2717722538473713889">E-pasta adreses</translation>
 <translation id="2728754400939377704">Kārtot pēc vietnes</translation>
 <translation id="2744248271121720757">Pieskarieties vārdam, lai meklētu tūlīt vai skatītu saistītas darbības.</translation>
 <translation id="2760989362628427051">Ieslēgt tumšo motīvu, kad ierīcē ir ieslēgts tumšais motīvs vai akumulatora jaudas taupīšanas režīms</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Instalēt</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Pārvaldīt</translation>
+<translation id="381841723434055211">Tālruņa numuri</translation>
 <translation id="3819178904835489326">Izdzēsti <ph name="NUMBER_OF_DOWNLOADS" /> lejupielādētie vienumi</translation>
 <translation id="3822502789641063741">Vai notīrīt vietnes krātuvi?</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
@@ -589,6 +589,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> atvērta cilne. Pieskarieties, lai pārslēgtu cilnes.}zero{<ph name="OPEN_TABS_MANY" /> atvērtu ciļņu. Pieskarieties, lai pārslēgtu cilnes.}one{<ph name="OPEN_TABS_MANY" /> atvērta cilne. Pieskarieties, lai pārslēgtu cilnes.}other{<ph name="OPEN_TABS_MANY" /> atvērtas cilnes. Pieskarieties, lai pārslēgtu cilnes.}}</translation>
 <translation id="5391532827096253100">Savienojums ar šo vietni nav drošs. Vietnes informācija</translation>
 <translation id="5400569084694353794">Izmantojot šo lietojumprogrammu, jūs piekrītat Chrome <ph name="BEGIN_LINK1" />pakalpojumu sniegšanas noteikumiem<ph name="END_LINK1" /> un <ph name="BEGIN_LINK2" />konfidencialitātes paziņojumam<ph name="END_LINK2" />.</translation>
+<translation id="5403592356182871684">Nosaukumi</translation>
 <translation id="5403644198645076998">Atļaut apmeklēt tikai konkrētas vietnes</translation>
 <translation id="5414836363063783498">Notiek verifikācija...</translation>
 <translation id="5423934151118863508">Šeit tiks parādītas jūsu visvairāk apmeklētās lapas.</translation>

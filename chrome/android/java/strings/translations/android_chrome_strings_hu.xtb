@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Ne jelenjen meg többé</translation>
 <translation id="1692118695553449118">Szinkronizálás bekapcsolva</translation>
 <translation id="169515064810179024">A mozgásérzékelőkhöz való hozzáférés letiltása a webhelyek számára</translation>
-<translation id="1697480839793160072">Telefonok</translation>
-<translation id="1698058317516161971">E-mailek</translation>
 <translation id="1717218214683051432">Mozgásérzékelők</translation>
 <translation id="1718835860248848330">Az elmúlt órából</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Frissítve: <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
 <translation id="271033894570825754">Új</translation>
 <translation id="2714850608275780394">Várakozás a kódra…</translation>
+<translation id="2717722538473713889">E-mail-címek</translation>
 <translation id="2728754400939377704">Rendezés webhely szerint</translation>
 <translation id="2744248271121720757">Az azonnali kereséshez koppintson a kívánt szóra, vagy tekintse meg a kapcsolódó műveleteket</translation>
 <translation id="2760989362628427051">Sötét téma bekapcsolása, amikor az eszköz sötét témája vagy Akkumulátorkímélő módja be van kapcsolva</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Telepítés</translation>
 <translation id="3810838688059735925">Videó</translation>
 <translation id="3810973564298564668">Szerkesztés</translation>
+<translation id="381841723434055211">Telefonszámok</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> letöltés törölve</translation>
 <translation id="3822502789641063741">Törli a webhely tárhelyét?</translation>
 <translation id="385051799172605136">Vissza</translation>
@@ -589,6 +589,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> megnyitott lap. A lapok között koppintással válthat.}other{<ph name="OPEN_TABS_MANY" /> megnyitott lap. A lapok között koppintással válthat.}}</translation>
 <translation id="5391532827096253100">Kapcsolata a webhellyel nem biztonságos. Webhelyadatok</translation>
 <translation id="5400569084694353794">Az alkalmazás használatával Ön elfogadja a Chrome <ph name="BEGIN_LINK1" />Általános Szerződési Feltételeit<ph name="END_LINK1" /> és az <ph name="BEGIN_LINK2" />Adatvédelmi közleményt<ph name="END_LINK2" />.</translation>
+<translation id="5403592356182871684">Nevek</translation>
 <translation id="5403644198645076998">Csak bizonyos webhelyek engedélyezése</translation>
 <translation id="5414836363063783498">Ellenőrzés...</translation>
 <translation id="5423934151118863508">A leggyakrabban látogatott oldalak fognak itt megjelenni</translation>

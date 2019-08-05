@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">عدم العرض مرة أخرى</translation>
 <translation id="1692118695553449118">المزامنة ممكنة</translation>
 <translation id="169515064810179024">حظر مواقع الويب من الوصول إلى مستشعرات الحركة</translation>
-<translation id="1697480839793160072">الهواتف</translation>
-<translation id="1698058317516161971">عناوين البريد الإلكتروني</translation>
 <translation id="1717218214683051432">مستشعرات الحركة</translation>
 <translation id="1718835860248848330">آخر ساعة</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - تم تحديثه منذ <ph name="TIME_SINCE_UPDATE" /> دقائق</translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">الملء التلقائي</translation>
 <translation id="271033894570825754">جديدة</translation>
 <translation id="2714850608275780394">في انتظار الرمز</translation>
+<translation id="2717722538473713889">عنوان البريد الإلكتروني</translation>
 <translation id="2728754400939377704">الترتيب حسب الموقع</translation>
 <translation id="2744248271121720757">النقر على الكلمة للبحث عنها فورًا أو الاطلاع على الإجراءات ذات الصلة</translation>
 <translation id="2760989362628427051">تفعيل المظهر الداكن عند تفعيل المظهر الداكن للجهاز أو ميزة "توفير شحن البطارية"</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">تثبيت</translation>
 <translation id="3810838688059735925">الفيديوهات</translation>
 <translation id="3810973564298564668">إدارة محرّكات البحث</translation>
+<translation id="381841723434055211">أرقام الهواتف</translation>
 <translation id="3819178904835489326">تم إلغاء <ph name="NUMBER_OF_DOWNLOADS" /> من التنزيلات</translation>
 <translation id="3822502789641063741">هل تريد محو مساحة تخزين المواقع؟</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
@@ -589,6 +589,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}zero{<ph name="OPEN_TABS_MANY" /> علامات تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}two{علامتا تبويب مفتوحتان<ph name="OPEN_TABS_MANY" />، يُرجى النقر لتبديل علامات التبويب}few{<ph name="OPEN_TABS_MANY" /> علامات تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}many{<ph name="OPEN_TABS_MANY" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}other{<ph name="OPEN_TABS_MANY" /> علامة تبويب مفتوحة، يُرجى النقر لتبديل علامات التبويب}}</translation>
 <translation id="5391532827096253100">إن اتصالك بهذا الموقع الإلكتروني غير آمن. معلومات موقع الويب</translation>
 <translation id="5400569084694353794">باستخدام هذا التطبيق، أنت توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" />.</translation>
+<translation id="5403592356182871684">الأسماء</translation>
 <translation id="5403644198645076998">السماح بمواقع ويب معيّنة فقط</translation>
 <translation id="5414836363063783498">جارٍ التحقق...</translation>
 <translation id="5423934151118863508">ستظهر صفحاتك الأكثر زيارة هنا</translation>

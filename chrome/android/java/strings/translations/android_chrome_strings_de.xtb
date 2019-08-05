@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Nicht mehr anzeigen</translation>
 <translation id="1692118695553449118">Synchronisierung ist aktiviert</translation>
 <translation id="169515064810179024">Zugriff auf Bewegungssensoren für Websites blockieren</translation>
-<translation id="1697480839793160072">Telefone</translation>
-<translation id="1698058317516161971">E-Mails</translation>
 <translation id="1717218214683051432">Bewegungssensoren</translation>
 <translation id="1718835860248848330">Letzte Stunde</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – <ph name="TIME_SINCE_UPDATE" /> aktualisiert</translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="271033894570825754">Neu</translation>
 <translation id="2714850608275780394">Warten auf den Code</translation>
+<translation id="2717722538473713889">E-Mail-Adressen</translation>
 <translation id="2728754400939377704">Nach Website sortieren</translation>
 <translation id="2744248271121720757">Tippen Sie auf ein Wort, um eine Sofortsuche zu starten oder weitere Aktionen anzuzeigen</translation>
 <translation id="2760989362628427051">Dunkles Design verwenden, wenn der Energiesparmodus des Geräts aktiviert ist</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Installieren</translation>
 <translation id="3810838688059735925">Videos</translation>
 <translation id="3810973564298564668">Verwalten</translation>
+<translation id="381841723434055211">Telefonnummern</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> Downloads gelöscht</translation>
 <translation id="3822502789641063741">Websitespeicher löschen?</translation>
 <translation id="385051799172605136">Zurück</translation>
@@ -589,6 +589,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> geöffneter Tab, zum Wechseln der Tabs tippen}other{<ph name="OPEN_TABS_MANY" /> geöffnete Tabs, zum Wechseln der Tabs tippen}}</translation>
 <translation id="5391532827096253100">Die Verbindung zu dieser Website ist nicht sicher. Websiteinformationen</translation>
 <translation id="5400569084694353794">Durch die Verwendung dieser App stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome zu.</translation>
+<translation id="5403592356182871684">Namen</translation>
 <translation id="5403644198645076998">Nur bestimmte Websites zulassen</translation>
 <translation id="5414836363063783498">Überprüfung...</translation>
 <translation id="5423934151118863508">Hier werden Ihre am meisten aufgerufenen Seiten angezeigt.</translation>

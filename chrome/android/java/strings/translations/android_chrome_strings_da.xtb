@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Vis ikke igen</translation>
 <translation id="1692118695553449118">Synkronisering er slået til</translation>
 <translation id="169515064810179024">Bloker adgang til bevægelsessensorer på websites</translation>
-<translation id="1697480839793160072">Telefoner</translation>
-<translation id="1698058317516161971">Mails</translation>
 <translation id="1717218214683051432">Bevægelsessensorer</translation>
 <translation id="1718835860248848330">Den seneste time</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – opdateret <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">AutoFyld</translation>
 <translation id="271033894570825754">Nyt</translation>
 <translation id="2714850608275780394">Venter på koden</translation>
+<translation id="2717722538473713889">Mailadresser</translation>
 <translation id="2728754400939377704">Sortér efter website</translation>
 <translation id="2744248271121720757">Tryk på et ord for at søge øjeblikkeligt eller se relaterede handlinger</translation>
 <translation id="2760989362628427051">Aktivér mørkt tema, når enhedens mørke tema eller batterisparefunktion er aktiveret</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Installer</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Valgmuligheder</translation>
+<translation id="381841723434055211">Telefonnumre</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads blev slettet</translation>
 <translation id="3822502789641063741">Vil du rydde websitelagerpladsen?</translation>
 <translation id="385051799172605136">Tilbage</translation>
@@ -589,6 +589,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> åben fane – tryk for at skifte fane}one{<ph name="OPEN_TABS_MANY" /> åben fane – tryk for at skifte fane}other{<ph name="OPEN_TABS_MANY" /> åbne faner – tryk for at skifte fane}}</translation>
 <translation id="5391532827096253100">Din forbindelse til dette website er ikke sikker. Websiteoplysninger</translation>
 <translation id="5400569084694353794">Ved at bruge denne app accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" />.</translation>
+<translation id="5403592356182871684">Navne</translation>
 <translation id="5403644198645076998">Tillad kun bestemte websites</translation>
 <translation id="5414836363063783498">Bekræfter...</translation>
 <translation id="5423934151118863508">Dine mest besøgte sider vises her</translation>

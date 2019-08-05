@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Não mostrar de novo</translation>
 <translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="169515064810179024">Impedir que os sites acedam aos sensores de movimentos</translation>
-<translation id="1697480839793160072">Telefones</translation>
-<translation id="1698058317516161971">Emails</translation>
 <translation id="1717218214683051432">Sensores de movimento</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – atualizado <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Preenchimento automático</translation>
 <translation id="271033894570825754">Novo</translation>
 <translation id="2714850608275780394">A aguardar pelo código…</translation>
+<translation id="2717722538473713889">Endereços de email</translation>
 <translation id="2728754400939377704">Ordenar por site</translation>
 <translation id="2744248271121720757">Toque numa palavra para pesquisar instantaneamente ou ver as ações relacionadas.</translation>
 <translation id="2760989362628427051">Ative o tema escuro quando a Poupança de bateria ou o tema escuro do dispositivo estiver ativado(a).</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3810973564298564668">Gerir</translation>
+<translation id="381841723434055211">Números de telefone</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> transferências eliminadas</translation>
 <translation id="3822502789641063741">Limpar armazenamento do site?</translation>
 <translation id="385051799172605136">Anterior</translation>
@@ -589,6 +589,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> separador aberto, toque para alternar entre separadores}other{<ph name="OPEN_TABS_MANY" /> separadores abertos, toque para alternar entre separadores}}</translation>
 <translation id="5391532827096253100">A sua ligação a este site não é segura. Informações do site</translation>
 <translation id="5400569084694353794">Ao utilizar esta aplicação, concorda com os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
+<translation id="5403592356182871684">Nomes</translation>
 <translation id="5403644198645076998">Permitir apenas determinados sites</translation>
 <translation id="5414836363063783498">A validar…</translation>
 <translation id="5423934151118863508">As páginas mais visitadas aparecem aqui</translation>

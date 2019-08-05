@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Usionyeshe tena</translation>
 <translation id="1692118695553449118">Usawazishajii umewashwa</translation>
 <translation id="169515064810179024">Zuia tovuti zisifikie vitambuzi vya mwendo</translation>
-<translation id="1697480839793160072">Simu</translation>
-<translation id="1698058317516161971">Barua pepe</translation>
 <translation id="1717218214683051432">Vitambuzi vya mwendo</translation>
 <translation id="1718835860248848330">Saa iliyopita</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Imesasishwa <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Kujaza Kiotomatiki</translation>
 <translation id="271033894570825754">Mpya</translation>
 <translation id="2714850608275780394">Inasubiri nambari</translation>
+<translation id="2717722538473713889">Anwani za barua pepe</translation>
 <translation id="2728754400939377704">Panga kulingana na tovuti</translation>
 <translation id="2744248271121720757">Gusa neno ili utafute papo hapo au uone vitendo vinavyohusiana</translation>
 <translation id="2760989362628427051">Washa hali ya mandhari meusi wakati umewasha kipengele cha mandhari meusi au Kiokoa Betri cha kifaa chako</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Sakinisha</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Dhibiti</translation>
+<translation id="381841723434055211">Nambari za simu</translation>
 <translation id="3819178904835489326">Vipakuliwa <ph name="NUMBER_OF_DOWNLOADS" /> vimefutwa</translation>
 <translation id="3822502789641063741">Ungependa kufuta hifadhi ya tovuti?</translation>
 <translation id="385051799172605136">Rudi nyuma</translation>
@@ -589,6 +589,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{Umefungua kichupo <ph name="OPEN_TABS_ONE" />, gusa ili ubadilishe vichupo}other{Umefungua vichupo <ph name="OPEN_TABS_MANY" />, gusa ili ubadilishe vichupo}}</translation>
 <translation id="5391532827096253100">Muunganisho wako kwenye tovuti hii si salama. Maelezo ya tovuti</translation>
 <translation id="5400569084694353794">Kwa kutumia programu hii, unakubali <ph name="BEGIN_LINK1" />Sheria na Masharti<ph name="END_LINK1" /> na <ph name="BEGIN_LINK2" />Ilani ya Faragha<ph name="END_LINK2" /> ya Chrome.</translation>
+<translation id="5403592356182871684">Majina</translation>
 <translation id="5403644198645076998">Ruhusu tovuti maalum pekee</translation>
 <translation id="5414836363063783498">Inathibitisha...</translation>
 <translation id="5423934151118863508">Kurasa zako zilizotembelewa sana zitaonekana hapa</translation>

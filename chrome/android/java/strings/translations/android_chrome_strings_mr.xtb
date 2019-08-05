@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">पुन्हा दाखवू नका</translation>
 <translation id="1692118695553449118">संकालन चालू आहे</translation>
 <translation id="169515064810179024">साइटना मोशन सेन्सर ॲक्सेसपासून ब्लॉक करा</translation>
-<translation id="1697480839793160072">टेलिफोन</translation>
-<translation id="1698058317516161971">ईमेल</translation>
 <translation id="1717218214683051432">मोशन सेन्सर</translation>
 <translation id="1718835860248848330">शेवटच्या तासामधील</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> रोजी अपडेट केले</translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">ऑटोफिल</translation>
 <translation id="271033894570825754">नवीन</translation>
 <translation id="2714850608275780394">कोडची प्रतीक्षा करत आहे</translation>
+<translation id="2717722538473713889">ईमेल अॅड्रेस</translation>
 <translation id="2728754400939377704">साइटनुसार क्रमाने लावा</translation>
 <translation id="2744248271121720757">झटपट शोधण्यासाठी किंवा संबंधित ॲक्‍शन पाहण्यासाठी एखाद्या शब्दावर टॅप करा</translation>
 <translation id="2760989362628427051">तुमच्या डिव्हाइसची गडद थीम किंवा बॅटरी सेव्हर सुरू असताना गडद थीम सुरू करा</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">स्थापना करा</translation>
 <translation id="3810838688059735925">व्हिडिओ</translation>
 <translation id="3810973564298564668">व्यवस्थापित करा</translation>
+<translation id="381841723434055211">फोन नंबर</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> डाउनलोड हटविले</translation>
 <translation id="3822502789641063741">साइट स्टोरेज साफ करायचे?</translation>
 <translation id="385051799172605136">मागील</translation>
@@ -589,6 +589,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> खुला टॅब, टॅब स्विच करण्यासाठी टॅप करा}other{<ph name="OPEN_TABS_MANY" /> खुला टॅब, टॅब स्विच करण्यासाठी टॅप करा}}</translation>
 <translation id="5391532827096253100">या साइटवरील तुमचे कनेक्शन सुरक्षित नाही. साइट माहिती</translation>
 <translation id="5400569084694353794">हे ॲप्लिकेशन वापरून, तुम्ही Chrome च्या <ph name="BEGIN_LINK1" />सेवा अटी<ph name="END_LINK1" /> आणि <ph name="BEGIN_LINK2" />गोपनीयता सूचना<ph name="END_LINK2" /> ला सहमती देता.</translation>
+<translation id="5403592356182871684">नावे</translation>
 <translation id="5403644198645076998">केवळ काही साइटना अनुमती द्या</translation>
 <translation id="5414836363063783498">सत्यापित करत आहे...</translation>
 <translation id="5423934151118863508">तुमची सर्वाधिक भेट दिलेली पेज येथे दिसतील</translation>

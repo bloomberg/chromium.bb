@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Больше не показывать</translation>
 <translation id="1692118695553449118">Синхронизация включена</translation>
 <translation id="169515064810179024">Закрыть сайтам доступ к датчикам движения</translation>
-<translation id="1697480839793160072">Номера телефонов</translation>
-<translation id="1698058317516161971">Адреса эл. почты</translation>
 <translation id="1717218214683051432">Датчики движения</translation>
 <translation id="1718835860248848330">Последний час</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" />. Обновление <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="271033894570825754">Новый</translation>
 <translation id="2714850608275780394">Получение кода…</translation>
+<translation id="2717722538473713889">Адреса электронной почты</translation>
 <translation id="2728754400939377704">Сортировать по имени домена</translation>
 <translation id="2744248271121720757">Нажмите на слово, чтобы увидеть связанные с ним результаты поиска и действия.</translation>
 <translation id="2760989362628427051">Использовать тёмную тему, когда на устройстве включена тёмная тема или режим энергосбережения.</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Установить</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3810973564298564668">Настроить</translation>
+<translation id="381841723434055211">Номера телефонов</translation>
 <translation id="3819178904835489326">Удаленные скачивания: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Удалить данные сайтов?</translation>
 <translation id="385051799172605136">Назад</translation>
@@ -589,6 +589,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{Открыта <ph name="OPEN_TABS_ONE" /> вкладка. Нажмите для переключения.}one{Открыта <ph name="OPEN_TABS_MANY" /> вкладка. Нажмите для переключения.}few{Открыто <ph name="OPEN_TABS_MANY" /> вкладки. Нажмите для переключения.}many{Открыто <ph name="OPEN_TABS_MANY" /> вкладок. Нажмите для переключения.}other{Открыто <ph name="OPEN_TABS_MANY" /> вкладки. Нажмите для переключения.}}</translation>
 <translation id="5391532827096253100">Подключение к сайту не защищено. Информация о сайте</translation>
 <translation id="5400569084694353794">Работая с приложением, вы принимаете <ph name="BEGIN_LINK1" />Условия использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечание о конфиденциальности<ph name="END_LINK2" /> Chrome.</translation>
+<translation id="5403592356182871684">Имена</translation>
 <translation id="5403644198645076998">Разрешить доступ только к определенным сайтам</translation>
 <translation id="5414836363063783498">Проверка…</translation>
 <translation id="5423934151118863508">Здесь появятся страницы, которые вы чаще всего просматриваете.</translation>

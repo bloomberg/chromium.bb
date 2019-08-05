@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">No m'ho tornis a mostrar</translation>
 <translation id="1692118695553449118">La sincronització està activada</translation>
 <translation id="169515064810179024">Impedeix que els llocs web accedeixin als sensors de moviment</translation>
-<translation id="1697480839793160072">Telèfons</translation>
-<translation id="1698058317516161971">Correus electrònics</translation>
 <translation id="1717218214683051432">Sensors de moviment</translation>
 <translation id="1718835860248848330">Darrera hora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> (actualitzat <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Emplenament automàtic</translation>
 <translation id="271033894570825754">Nou</translation>
 <translation id="2714850608275780394">S'està esperant el codi</translation>
+<translation id="2717722538473713889">Adreces electròniques</translation>
 <translation id="2728754400939377704">Ordena per lloc web</translation>
 <translation id="2744248271121720757">Toca una paraula per fer una cerca a l'instant o per veure accions relacionades</translation>
 <translation id="2760989362628427051">Activa el tema fosc quan aquest mode de visualització o l'estalvi de bateria del dispositiu estiguin activats</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Instal·la</translation>
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3810973564298564668">Gestiona</translation>
+<translation id="381841723434055211">Números de telèfon</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> baixades suprimides</translation>
 <translation id="3822502789641063741">Esborrem emmagatz. lloc web?</translation>
 <translation id="385051799172605136">Enrere</translation>
@@ -589,6 +589,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> pestanya oberta; toca per canviar de pestanya}other{<ph name="OPEN_TABS_MANY" /> pestanyes obertes; toca per canviar de pestanya}}</translation>
 <translation id="5391532827096253100">La connexió amb aquest lloc web no és segura. Informació del lloc web</translation>
 <translation id="5400569084694353794">En fer servir aquesta aplicació, acceptes les <ph name="BEGIN_LINK1" />condicions del servei<ph name="END_LINK1" /> i l'<ph name="BEGIN_LINK2" />avís de privadesa<ph name="END_LINK2" /> de Chrome.</translation>
+<translation id="5403592356182871684">Noms</translation>
 <translation id="5403644198645076998">Permet només certs llocs</translation>
 <translation id="5414836363063783498">S'està verificant...</translation>
 <translation id="5423934151118863508">Les pàgines més visitades es mostraran aquí</translation>

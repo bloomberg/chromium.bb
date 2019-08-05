@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">আর দেখতে চাই না</translation>
 <translation id="1692118695553449118">সিঙ্ক চালু রয়েছে</translation>
 <translation id="169515064810179024">মোশন সেন্সর অ্যাক্সেস করা থেকে সাইটকে ব্লক করুন</translation>
-<translation id="1697480839793160072">টেলিফোন</translation>
-<translation id="1698058317516161971">ইমেল</translation>
 <translation id="1717218214683051432">মোশন সেন্সর</translation>
 <translation id="1718835860248848330">শেষ ঘণ্টা</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - আপডেট হয়েছে <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">স্বয়ংপূরণ</translation>
 <translation id="271033894570825754">নতুন</translation>
 <translation id="2714850608275780394">কোডের জন্য অপেক্ষা করা হচ্ছে</translation>
+<translation id="2717722538473713889">ইমেল আইডি</translation>
 <translation id="2728754400939377704">সাইট অনুযায়ী সাজান</translation>
 <translation id="2744248271121720757">ঝটপট সার্চ এবং সম্পর্কিত অ্যাকশন দেখতে একটি শব্দ ট্যাপ করুন</translation>
 <translation id="2760989362628427051">আপনার ডিভাইসে গাঢ় থিম বা ব্যাটারি সেভার চালু থাকলে, গাঢ় থিম চালু করুন</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">ইনস্টল করুন</translation>
 <translation id="3810838688059735925">ভিডিও</translation>
 <translation id="3810973564298564668">পরিচালনা</translation>
+<translation id="381841723434055211">ফোন নম্বর</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" />টি ডাউনলোড মোছা হয়েছে</translation>
 <translation id="3822502789641063741">সাইটের সঞ্চয়স্থান সাফ করবেন?</translation>
 <translation id="385051799172605136">ফিরুন</translation>
@@ -591,6 +591,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" />টি খোলা ট্যাব, এক ট্যাব থেকে অন্য ট্যাবে যেতে ট্যাপ করুন}one{<ph name="OPEN_TABS_MANY" />টি খোলা ট্যাব, এক ট্যাব থেকে অন্য ট্যাবে যেতে ট্যাপ করুন}other{<ph name="OPEN_TABS_MANY" />টি খোলা ট্যাব, এক ট্যাব থেকে অন্য ট্যাবে যেতে ট্যাপ করুন}}</translation>
 <translation id="5391532827096253100">এই সাইটে আপনার কানেকশন নিরাপদ নয়। সাইটের তথ্য</translation>
 <translation id="5400569084694353794">এই অ্যাপ্লিকেশানটি ব্যবহার করার মাধ্যমে আপনি Chrome এর <ph name="BEGIN_LINK1" />পরিষেবার শর্তাবলি<ph name="END_LINK1" /> এবং <ph name="BEGIN_LINK2" />গোপনীয়তা বিজ্ঞপ্তিতে<ph name="END_LINK2" /> সম্মত হচ্ছেন৷</translation>
+<translation id="5403592356182871684">নাম</translation>
 <translation id="5403644198645076998">শুধুমাত্র নির্দিষ্ট কিছু সাইটকে অনুমতি দিন</translation>
 <translation id="5414836363063783498">যাচাই করা হচ্ছে...</translation>
 <translation id="5423934151118863508">আপনার সর্বাধিক দেখা পৃষ্ঠাগুলি এখানে দেখা যাবে</translation>

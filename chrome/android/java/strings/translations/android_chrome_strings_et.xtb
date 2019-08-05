@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Ära kuva uuesti</translation>
 <translation id="1692118695553449118">Sünkroonimine on sisse lülitatud</translation>
 <translation id="169515064810179024">Blokeeri saitide juurdepääs liikumisanduritele</translation>
-<translation id="1697480839793160072">Telefonid</translation>
-<translation id="1698058317516161971">E-posti aadressid</translation>
 <translation id="1717218214683051432">Liikumisandurid</translation>
 <translation id="1718835860248848330">Viimase tunni jooksul</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – värskendati <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Automaatne täitmine</translation>
 <translation id="271033894570825754">Uus</translation>
 <translation id="2714850608275780394">Koodi ootel</translation>
+<translation id="2717722538473713889">E-posti aadressid</translation>
 <translation id="2728754400939377704">Sordi saidi alusel</translation>
 <translation id="2744248271121720757">Puudutage sõna, et kohe otsida või seotud toiminguid näha</translation>
 <translation id="2760989362628427051">Aktiveeri tume teema, kui tume teema või akusäästja on seadmes sisse lülitatud</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Installi</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Halda</translation>
+<translation id="381841723434055211">Telefoninumbrid</translation>
 <translation id="3819178904835489326">Tuvastati <ph name="NUMBER_OF_DOWNLOADS" /> allalaadimist</translation>
 <translation id="3822502789641063741">Kas tühj. saidi salvestusruum?</translation>
 <translation id="385051799172605136">Tagasi</translation>
@@ -589,6 +589,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> avatud vaheleht, puudutage vahelehtede vahetamiseks}other{<ph name="OPEN_TABS_MANY" /> avatud vahelehte, puudutage vahelehtede vahetamiseks}}</translation>
 <translation id="5391532827096253100">Teie ühendus selle saidiga ei ole turvaline. Saidi teave</translation>
 <translation id="5400569084694353794">Seda rakendust kasutades nõustute Chrome'i <ph name="BEGIN_LINK1" />teenusetingimuste<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />privaatsusteatisega<ph name="END_LINK2" />.</translation>
+<translation id="5403592356182871684">Nimed</translation>
 <translation id="5403644198645076998">Luba ainult kindlad saidid</translation>
 <translation id="5414836363063783498">Kinnitamine ...</translation>
 <translation id="5423934151118863508">Teie enim külastatud lehed ilmuvad siin</translation>

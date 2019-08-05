@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Tega ne prikaži več</translation>
 <translation id="1692118695553449118">Sinhroniziranje je vklopljeno</translation>
 <translation id="169515064810179024">Spletnim mestom prepreči dostop do tipal gibanja</translation>
-<translation id="1697480839793160072">Telefoni</translation>
-<translation id="1698058317516161971">E-poštni naslovi</translation>
 <translation id="1717218214683051432">Tipala gibanja</translation>
 <translation id="1718835860248848330">Zadnja ura</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Posodobljeno: <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Samodejno izpolnjevanje</translation>
 <translation id="271033894570825754">Novo</translation>
 <translation id="2714850608275780394">Čakanje na kodo</translation>
+<translation id="2717722538473713889">E-poštni naslovi</translation>
 <translation id="2728754400939377704">Razvrsti glede na spletno mesto</translation>
 <translation id="2744248271121720757">Dotaknite se besede, če želite dinamično iskati ali prikazati sorodna dejanja</translation>
 <translation id="2760989362628427051">Vklop temne teme, ko je v napravi vklopljena temna tema ali je vklopljeno varčevanje z energijo akumulatorja</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Namesti</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Upravljanje</translation>
+<translation id="381841723434055211">Telefonske številke</translation>
 <translation id="3819178904835489326">Št. izbrisanih prenosov: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Izbris shrambe mesta?</translation>
 <translation id="385051799172605136">Nazaj</translation>
@@ -589,6 +589,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> odprt zavihek, dotaknite se, če želite preklopiti med zavihki}one{<ph name="OPEN_TABS_MANY" /> odprt zavihek, dotaknite se, če želite preklopiti med zavihki}two{<ph name="OPEN_TABS_MANY" /> odprta zavihka, dotaknite se, če želite preklopiti med zavihki}few{<ph name="OPEN_TABS_MANY" /> odprti zavihki, dotaknite se, če želite preklopiti med zavihki}other{<ph name="OPEN_TABS_MANY" /> odprtih zavihkov, dotaknite se, če želite preklopiti med zavihki}}</translation>
 <translation id="5391532827096253100">Povezava s tem spletnim mestom ni varna. Podatki o spletnem mestu.</translation>
 <translation id="5400569084694353794">Če uporabljate to aplikacijo, se strinjate s <ph name="BEGIN_LINK1" />pogoji storitve<ph name="END_LINK1" /> in <ph name="BEGIN_LINK2" />pravilnikom o zasebnosti<ph name="END_LINK2" /> za Chrome.</translation>
+<translation id="5403592356182871684">Imena</translation>
 <translation id="5403644198645076998">Dovoli samo nekatera spletna mesta</translation>
 <translation id="5414836363063783498">Preverjanje …</translation>
 <translation id="5423934151118863508">Tu bodo prikazane strani, ki jih obiskujete najpogosteje</translation>

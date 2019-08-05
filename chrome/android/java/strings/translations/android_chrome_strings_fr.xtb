@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Ne plus afficher</translation>
 <translation id="1692118695553449118">La synchronisation est activée.</translation>
 <translation id="169515064810179024">Empêcher les sites d'accéder aux capteurs de mouvement</translation>
-<translation id="1697480839793160072">Numéros de téléphone</translation>
-<translation id="1698058317516161971">Adresses e-mail</translation>
 <translation id="1717218214683051432">Capteurs de mouvement</translation>
 <translation id="1718835860248848330">Dernière heure</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Dernière mise à jour : <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Saisie automatique</translation>
 <translation id="271033894570825754">Nouveau</translation>
 <translation id="2714850608275780394">Réception du code…</translation>
+<translation id="2717722538473713889">Adresses e-mail</translation>
 <translation id="2728754400939377704">Trier par site</translation>
 <translation id="2744248271121720757">Appuyez sur un mot pour lancer une recherche instantanée ou afficher les actions associées</translation>
 <translation id="2760989362628427051">Activer le thème sombre lorsque le thème sombre ou l'économiseur de batterie de votre appareil est activé</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Installer</translation>
 <translation id="3810838688059735925">Vidéo</translation>
 <translation id="3810973564298564668">Gérer</translation>
+<translation id="381841723434055211">Numéros de téléphone</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> téléchargements supprimés</translation>
 <translation id="3822502789641063741">Suppr. données de site ?</translation>
 <translation id="385051799172605136">Retour</translation>
@@ -589,6 +589,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> onglet ouvert, appuyez pour changer d'onglet}one{<ph name="OPEN_TABS_MANY" /> onglet ouvert, appuyez pour changer d'onglet}other{<ph name="OPEN_TABS_MANY" /> onglets ouverts, appuyez pour changer d'onglet}}</translation>
 <translation id="5391532827096253100">Votre connexion à ce site n'est pas sécurisée. Informations sur le site</translation>
 <translation id="5400569084694353794">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome.</translation>
+<translation id="5403592356182871684">Noms</translation>
 <translation id="5403644198645076998">N'autoriser que certains sites</translation>
 <translation id="5414836363063783498">Validation en cours…</translation>
 <translation id="5423934151118863508">Les pages les plus consultées s'affichent ici.</translation>

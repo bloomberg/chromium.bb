@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Jangan tampilkan lagi</translation>
 <translation id="1692118695553449118">Sinkronisasi aktif</translation>
 <translation id="169515064810179024">Memblokir situs agar tidak mengakses sensor gerakan</translation>
-<translation id="1697480839793160072">Telepon</translation>
-<translation id="1698058317516161971">Email</translation>
 <translation id="1717218214683051432">Sensor gerakan</translation>
 <translation id="1718835860248848330">1 jam terakhir</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Diupdate <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Isi-Otomatis</translation>
 <translation id="271033894570825754">Baru</translation>
 <translation id="2714850608275780394">Menunggu kode</translation>
+<translation id="2717722538473713889">Alamat email</translation>
 <translation id="2728754400939377704">Urutkan menurut situs</translation>
 <translation id="2744248271121720757">Ketuk sebuah kata untuk menelusuri secara instan atau melihat tindakan terkait</translation>
 <translation id="2760989362628427051">Mengaktifkan tema gelap ketika tema gelap perangkat atau Penghemat Baterai aktif</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Instal</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Kelola</translation>
+<translation id="381841723434055211">Nomor telepon</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> download dihapus</translation>
 <translation id="3822502789641063741">Kosongkan penyimpanan situs?</translation>
 <translation id="385051799172605136">Mundur</translation>
@@ -589,6 +589,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> tab terbuka, ketuk untuk beralih tab}other{<ph name="OPEN_TABS_MANY" /> tab terbuka, ketuk untuk beralih tab}}</translation>
 <translation id="5391532827096253100">Sambungan ke situs ini tidak aman. Informasi situs</translation>
 <translation id="5400569084694353794">Dengan menggunakan aplikasi ini, Anda menyetujui <ph name="BEGIN_LINK1" />Persyaratan Layanan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Pemberitahuan Privasi<ph name="END_LINK2" /> Chrome.</translation>
+<translation id="5403592356182871684">Nama</translation>
 <translation id="5403644198645076998">Hanya izinkan situs tertentu</translation>
 <translation id="5414836363063783498">Memverifikasi...</translation>
 <translation id="5423934151118863508">Halaman yang paling sering dikunjungi akan muncul di sini</translation>

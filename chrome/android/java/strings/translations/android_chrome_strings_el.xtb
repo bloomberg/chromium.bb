@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Να μην εμφανιστεί ξανά</translation>
 <translation id="1692118695553449118">Ο συγχρονισμός είναι ενεργοποιημένος</translation>
 <translation id="169515064810179024">Αποκλεισμός πρόσβασης σε αισθητήρες κίνησης από ιστοτόπους</translation>
-<translation id="1697480839793160072">Τηλέφωνα</translation>
-<translation id="1698058317516161971">Μηνύματα ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="1717218214683051432">Αισθητήρες κίνησης</translation>
 <translation id="1718835860248848330">Τελευταία ώρα</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Ενημερώθηκε <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
 <translation id="271033894570825754">Νέο</translation>
 <translation id="2714850608275780394">Αναμονή για κωδικό</translation>
+<translation id="2717722538473713889">Διευθύνσεις ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="2728754400939377704">Ταξινόμηση κατά ιστότοπο</translation>
 <translation id="2744248271121720757">Πατήστε μια λέξη για άμεση αναζήτηση ή για να δείτε τις σχετικές ενέργειες</translation>
 <translation id="2760989362628427051">Να ενεργοποιείται το σκούρο θέμα όταν το σκούρο θέμα ή η Εξοικονόμηση μπαταρίας της συσκευής σας έχουν ενεργοποιηθεί.</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Εγκατάσταση</translation>
 <translation id="3810838688059735925">Βίντεο</translation>
 <translation id="3810973564298564668">Διαχείριση</translation>
+<translation id="381841723434055211">Αριθμοί τηλεφώνου</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> λήψεις διαγράφηκαν</translation>
 <translation id="3822502789641063741">Διαγ.αποθ.χώρου ιστότ.;</translation>
 <translation id="385051799172605136">Πίσω</translation>
@@ -589,6 +589,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ανοιχτή καρτέλα, πατήστε για εναλλαγή καρτελών}other{<ph name="OPEN_TABS_MANY" /> ανοιχτές καρτέλες, πατήστε για εναλλαγή καρτελών}}</translation>
 <translation id="5391532827096253100">Η σύνδεσή σας σε αυτόν τον ιστότοπο δεν είναι ασφαλής. Πληροφορίες ιστοτόπου</translation>
 <translation id="5400569084694353794">Χρησιμοποιώντας αυτήν την εφαρμογή, αποδέχεστε τους <ph name="BEGIN_LINK1" />Όρους Παροχής Υπηρεσιών<ph name="END_LINK1" /> και τη <ph name="BEGIN_LINK2" />Σημείωση Απορρήτου<ph name="END_LINK2" /> του Chrome.</translation>
+<translation id="5403592356182871684">Ονόματα</translation>
 <translation id="5403644198645076998">Να επιτρέπονται μόνο συγκεκριμένοι ιστότοποι</translation>
 <translation id="5414836363063783498">Γίνεται επαλήθευση…</translation>
 <translation id="5423934151118863508">Οι πιο δημοφιλείς σελίδες σας θα εμφανίζονται εδώ</translation>

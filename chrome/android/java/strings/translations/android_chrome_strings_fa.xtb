@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">دیگر نشان داده نشود</translation>
 <translation id="1692118695553449118">همگام‌سازی روشن است</translation>
 <translation id="169515064810179024">سایت‌ها نمی‌توانند به حسگرهای حرکتی دسترسی داشته باشند</translation>
-<translation id="1697480839793160072">تلفن</translation>
-<translation id="1698058317516161971">ایمیل‌ها</translation>
 <translation id="1717218214683051432">حسگرهای حرکتی</translation>
 <translation id="1718835860248848330">ساعت قبل</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> به‌روزرسانی شده است</translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">تکمیل خودکار</translation>
 <translation id="271033894570825754">جدید</translation>
 <translation id="2714850608275780394">در انتظار کد</translation>
+<translation id="2717722538473713889">آدرس‌های ایمیل</translation>
 <translation id="2728754400939377704">مرتب‌سازی براساس سایت</translation>
 <translation id="2744248271121720757">برای جستجوی فوری، روی کلمه‌ای ضربه بزنید یا اقدام‌های مرتبط را ببینید</translation>
 <translation id="2760989362628427051">روشن شدن طرح زمینه تیره وقتی طرح زمینه تیره دستگاه یا «بهینه‌سازی باتری» روشن است</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">نصب</translation>
 <translation id="3810838688059735925">فیلم</translation>
 <translation id="3810973564298564668">مدیریت</translation>
+<translation id="381841723434055211">شماره‌های تلفن</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> بارگیری حذف شد</translation>
 <translation id="3822502789641063741">فضای ذخیره سایت پاک شود؟</translation>
 <translation id="385051799172605136">بازگشت</translation>
@@ -589,6 +589,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> برگه باز، برای جستجوی برگه ضربه بزنید}one{<ph name="OPEN_TABS_MANY" /> برگه باز، برای جستجوی برگه ضربه بزنید}other{<ph name="OPEN_TABS_MANY" /> برگه باز، برای جستجوی برگه ضربه بزنید}}</translation>
 <translation id="5391532827096253100">اتصال شما به این سایت امن نیست. اطلاعات سایت</translation>
 <translation id="5400569084694353794">‏استفاده از این برنامه به معنای اعلام موافقت شما با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلامیه حریم خصوصی<ph name="END_LINK2" /> Chrome است.</translation>
+<translation id="5403592356182871684">نام‌ها</translation>
 <translation id="5403644198645076998">فقط بعضی از سایت‌ها مجاز هستند</translation>
 <translation id="5414836363063783498">در حال تأیید...</translation>
 <translation id="5423934151118863508">صفحاتی که بیشترین بازدید را از آنها داشته‌اید در اینجا نمایان می‌شوند</translation>

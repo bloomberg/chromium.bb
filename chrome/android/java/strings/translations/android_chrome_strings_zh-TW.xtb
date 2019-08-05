@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">不要再顯示</translation>
 <translation id="1692118695553449118">同步功能已啟用</translation>
 <translation id="169515064810179024">禁止網站存取動作感應器</translation>
-<translation id="1697480839793160072">電話</translation>
-<translation id="1698058317516161971">電子郵件</translation>
 <translation id="1717218214683051432">動作感應器</translation>
 <translation id="1718835860248848330">過去 1 小時</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - 上次更新時間：<ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="271033894570825754">新</translation>
 <translation id="2714850608275780394">正在等待驗證碼</translation>
+<translation id="2717722538473713889">電子郵件地址</translation>
 <translation id="2728754400939377704">依網站排序</translation>
 <translation id="2744248271121720757">只要輕觸字詞就能立即展開搜尋或查看相關的動作</translation>
 <translation id="2760989362628427051">當裝置開啟深色主題或節約耗電量功能時，啟用深色主題</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">安裝</translation>
 <translation id="3810838688059735925">影片</translation>
 <translation id="3810973564298564668">管理</translation>
+<translation id="381841723434055211">電話號碼</translation>
 <translation id="3819178904835489326">已刪除 <ph name="NUMBER_OF_DOWNLOADS" /> 個下載項目</translation>
 <translation id="3822502789641063741">要清除網站儲存的資料嗎？</translation>
 <translation id="385051799172605136">返回</translation>
@@ -589,6 +589,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{已開啟 <ph name="OPEN_TABS_ONE" /> 個分頁，輕觸即可切換分頁}other{已開啟 <ph name="OPEN_TABS_MANY" /> 個分頁，輕觸即可切換分頁}}</translation>
 <translation id="5391532827096253100">你與這個網站的連線不安全。網站資訊</translation>
 <translation id="5400569084694353794">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》。</translation>
+<translation id="5403592356182871684">名稱</translation>
 <translation id="5403644198645076998">只允許特定網站</translation>
 <translation id="5414836363063783498">驗證中…</translation>
 <translation id="5423934151118863508">這裡會顯示您最常造訪的網頁</translation>

@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Visa inte igen</translation>
 <translation id="1692118695553449118">Synkronisering är på</translation>
 <translation id="169515064810179024">Blockera webbplatser från att använda enhetens rörelsesensorer</translation>
-<translation id="1697480839793160072">Telefoner</translation>
-<translation id="1698058317516161971">E-post</translation>
 <translation id="1717218214683051432">Rörelsesensorer</translation>
 <translation id="1718835860248848330">Senaste timmen</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – uppdaterades <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="271033894570825754">Ny</translation>
 <translation id="2714850608275780394">Väntar på koden</translation>
+<translation id="2717722538473713889">E-postadresser</translation>
 <translation id="2728754400939377704">Sortera efter webbplats</translation>
 <translation id="2744248271121720757">Tryck på ett ord om du vill söka direkt eller visa relaterade åtgärder</translation>
 <translation id="2760989362628427051">Aktivera mörkt tema när batterisparläget eller mörkt tema aktiveras på enheten</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Installera</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Hantera</translation>
+<translation id="381841723434055211">Telefonnummer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> nedladdningar har raderats</translation>
 <translation id="3822502789641063741">Rensa webbplatslagring?</translation>
 <translation id="385051799172605136">Bakåt</translation>
@@ -589,6 +589,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> flik öppen, tryck här om du vill byta flik}other{<ph name="OPEN_TABS_MANY" /> flikar öppna, tryck här om du vill byta flik}}</translation>
 <translation id="5391532827096253100">Anslutningen till webbplatsen är inte säker. Webbplatsinformation</translation>
 <translation id="5400569084694353794">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" />.</translation>
+<translation id="5403592356182871684">Namn</translation>
 <translation id="5403644198645076998">Tillåt endast vissa webbplatser</translation>
 <translation id="5414836363063783498">Verifierar ...</translation>
 <translation id="5423934151118863508">Dina mest besökta sidor visas här</translation>

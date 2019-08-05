@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Ikke vis igjen</translation>
 <translation id="1692118695553449118">Synkronisering er slått på.</translation>
 <translation id="169515064810179024">Blokkér nettsteder fra å få tilgang til bevegelsessensorer</translation>
-<translation id="1697480839793160072">Telefoner</translation>
-<translation id="1698058317516161971">E-poster</translation>
 <translation id="1717218214683051432">Bevegelsessensorer</translation>
 <translation id="1718835860248848330">Siste time</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – oppdatert <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="271033894570825754">Ny</translation>
 <translation id="2714850608275780394">Venter på koden</translation>
+<translation id="2717722538473713889">E-postadresser</translation>
 <translation id="2728754400939377704">Sortér etter nettsted</translation>
 <translation id="2744248271121720757">Trykk på et ord for å søke umiddelbart eller se relaterte handlinger</translation>
 <translation id="2760989362628427051">Slå på mørkt tema når batterisparing eller enhetsinnstillingen for mørkt tema er på</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Installer</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Administrer</translation>
+<translation id="381841723434055211">Telefonnumre</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> nedlastinger er slettet</translation>
 <translation id="3822502789641063741">Slette nettstedslagring?</translation>
 <translation id="385051799172605136">Tilbake</translation>
@@ -589,6 +589,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> åpen fane – trykk for å bytte fane}other{<ph name="OPEN_TABS_MANY" /> åpne faner – trykk for å bytte fane}}</translation>
 <translation id="5391532827096253100">Tilkoblingen din til dette nettstedet er ikke sikker. Informasjon om nettstedet</translation>
 <translation id="5400569084694353794">Ved å bruke dette programmet samtykker du i Chromes <ph name="BEGIN_LINK1" />vilkår for bruk<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />merknad om personvern<ph name="END_LINK2" />.</translation>
+<translation id="5403592356182871684">Navn</translation>
 <translation id="5403644198645076998">Tillat bare visse nettsteder</translation>
 <translation id="5414836363063783498">Bekrefter …</translation>
 <translation id="5423934151118863508">Sidene du besøker mest, vises her</translation>

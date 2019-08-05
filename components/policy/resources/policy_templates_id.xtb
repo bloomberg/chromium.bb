@@ -696,7 +696,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="219297066914002620">Instruksikan <ph name="PRODUCT_OS_NAME" /> untuk mengaktifkan atau menonaktifkan fitur konsol pengelola mesin virtual.
 
       Jika kebijakan ditetapkan ke true atau tidak ditetapkan, pengguna akan dapat menggunakan CLI pengelolaan VM.
-      Jika tidak, semua CLI pengelolaan VM dinonaktifkan dan disembunyikan.
+      Jika tidak, semua CLI pengelolaan VM akan dinonaktifkan dan disembunyikan.
       </translation>
 <translation id="2194470398825717446">Kebijakan ini sudah tidak digunakan lagi di M61, sebagai gantinya harap gunakan EcryptfsMigrationStrategy.
 
@@ -2043,7 +2043,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="4752880493649142945">Sertifikat klien untuk menyambung ke RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4756984056524699088">Izinkan akses root pengguna ini ke penampung Crostini.
 
-      Jika kebijakan ditetapkan ke true atau tidak ditetapkan, akses root ke penampung Crostini tidak akan diberikan kepada pengguna.
+      Jika kebijakan ditetapkan ke true atau tidak ditetapkan, akses root ke penampung Crostini akan diberikan kepada pengguna.
       Jika kebijakan ditetapkan ke false, akses root ke penampung Crostini yang ada maupun yang baru tidak akan diberikan kepada pengguna.</translation>
 <translation id="4759650396863318477">Memungkinkan Anda menyetel jangka waktu, dalam milidetik, untuk memberi tahu pengguna bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan ulang atau bahwa perangkat <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang untuk menerapkan update yang tertunda.
 
@@ -2196,7 +2196,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika setelan ini dinonaktifkan atau tidak ditetapkan, hanya entri daftar dari sumber dengan prioritas tertinggi yang akan diambil. Semua sumber lainnya akan ditampilkan sebagai konflik tetapi diabaikan.</translation>
 <translation id="5141670636904227950">Menyetel jenis lup default yang diaktifkan di layar masuk</translation>
 <translation id="5142301680741828703">Selalu mengurai pola URL berikut di <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5146261336206349846">Ketika kebijakan ini ditetapkan ke nonaktif, semua URL yang dikunjungi akan diperiksa menggunakan Safe Browsing secara real time.
+<translation id="5146261336206349846">Ketika kebijakan ini ditetapkan ke aktif, semua URL yang dikunjungi akan diperiksa menggunakan Safe Browsing secara real time.
 
       Ketika kebijakan ini ditetapkan ke nonaktif, atau tidak ditetapkan, pemeriksaan Safe Browsing pelanggan akan diterapkan.</translation>
 <translation id="5148753489738115745">Memungkinkan Anda menentukan parameter tambahan yang digunakan saat <ph name="PRODUCT_FRAME_NAME" /> meluncurkan <ph name="PRODUCT_NAME" />.
@@ -2318,7 +2318,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan tidak disetel, atau jika disetel menjadi string kosong maupun rentang port yang tidak valid, WebRTC diizinkan untuk menggunakan port UDP lokal mana pun yang tersedia.</translation>
 <translation id="5290940294294002042">Tentukan daftar plugin yang dapat diaktifkan atau dinonaktifkan pengguna</translation>
-<translation id="5306186200045823863">Mengaktifkan kepercayaan pada Infrastruktur IKU Lama milik Symantec Corporation</translation>
+<translation id="5306186200045823863">Mengaktifkan kepercayaan pada Infrastruktur IKP Lama milik Symantec Corporation</translation>
 <translation id="5307432759655324440">Ketersediaan mode samaran</translation>
 <translation id="5318185076587284965">Aktifkan penggunaan server relay oleh hosting akses jarak jauh</translation>
 <translation id="5323128137188992869">Izinkan konten untuk ditransmisikan ke perangkat menggunakan <ph name="PRODUCT_NAME" />.

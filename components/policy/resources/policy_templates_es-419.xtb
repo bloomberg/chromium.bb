@@ -2049,8 +2049,8 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4752880493649142945">Certificado de cliente para conectarse a RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4756984056524699088">Permite que el usuario acceda con permisos de administrador a los contenedores de Crostini.
 
-      Si se establece esta política como verdadera o no se establece, se otorgará acceso con permisos de administrador al usuario para los contenedores de Crostini.
-      Si se establece como falsa, no se otorgará acceso con permisos de administrador al usuario para ningún contenedor de Crostini, ya sea existente o nuevo.</translation>
+      Si se establece esta política como verdadera o no se establece, el usuario tendrá acceso con permisos de administrador a los contenedores de Crostini.
+      Si se establece como falsa, el usuario no tendrá acceso con permisos de administrador a ningún contenedor de Crostini, ya sea existente o nuevo.</translation>
 <translation id="4759650396863318477">Te permite establecer el período, en milisegundos, en el que se notifica a los usuarios que deben reiniciar <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente.
 
       En este período, se le informará reiteradamente al usuario acerca de la necesidad de la actualización. En dispositivos <ph name="PRODUCT_OS_NAME" />, se muestra una notificación de reinicio en la bandeja del sistema, en conformidad con la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En navegadores <ph name="PRODUCT_NAME" />, el menú de la app indica que se debe reiniciar después de transcurrido un tercio del período de la notificación. Esta notificación cambia de color tras dos tercios del período de la notificación y una vez más cuando finaliza este período. Las notificaciones adicionales que habilita la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> siguen el mismo patrón.
@@ -2200,9 +2200,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si inhabilitas esta configuración o no se establece, solo se usarán las entradas de listas de la fuente con la prioridad más alta. El resto de las fuentes aparecerá en conflicto, pero se ignorará.</translation>
 <translation id="5141670636904227950">Establece el tipo de lupa predeterminado habilitado en la pantalla de acceso.</translation>
 <translation id="5142301680741828703">Siempre procesar los siguientes patrones de URL en <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5146261336206349846">Si se habilita esta política, se verificarán en "Navegación segura" todas las URL que visite el usuario en tiempo real.
+<translation id="5146261336206349846">Si se habilita esta política, la función Navegación segura verificará todas las URL que visite el usuario en tiempo real.
 
-      Si se inhabilita o no se establece, se aplicarán las verificaciones predeterminadas de "Navegación segura".</translation>
+      Si se inhabilita o no se establece, se aplicarán las verificaciones predeterminadas de Navegación segura.</translation>
 <translation id="5148753489738115745">Te permite especificar los parámetros adicionales que se utilizan cuando <ph name="PRODUCT_FRAME_NAME" /> inicia <ph name="PRODUCT_NAME" />.
 
           Si no se configura esta política, se utilizará la línea de comandos predeterminada.</translation>

@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Nu mai afișa</translation>
 <translation id="1692118695553449118">Sincronizarea este activată</translation>
 <translation id="169515064810179024">Împiedică site-urile să acceseze senzorii de mișcare</translation>
-<translation id="1697480839793160072">Telefoane</translation>
-<translation id="1698058317516161971">E-mailuri</translation>
 <translation id="1717218214683051432">Senzori de mișcare</translation>
 <translation id="1718835860248848330">Ultima oră</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – actualizat <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Completare automată</translation>
 <translation id="271033894570825754">Nou</translation>
 <translation id="2714850608275780394">Se așteaptă codul</translation>
+<translation id="2717722538473713889">Adrese de e-mail</translation>
 <translation id="2728754400939377704">Sortează după site</translation>
 <translation id="2744248271121720757">Atinge un cuvânt pentru a căuta instantaneu sau pentru a vedea acțiuni conexe</translation>
 <translation id="2760989362628427051">Activează tema întunecată când este activată tema întunecată sau Economisirea bateriei pentru dispozitiv</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Instalează</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Gestionează</translation>
+<translation id="381841723434055211">Numere de telefon</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descărcări șterse</translation>
 <translation id="3822502789641063741">Ștergi stocarea site-urilor?</translation>
 <translation id="385051799172605136">Înapoi</translation>
@@ -589,6 +589,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> filă deschisă, atinge pentru a comuta filele}few{<ph name="OPEN_TABS_MANY" /> file deschise, atinge pentru a comuta filele}other{<ph name="OPEN_TABS_MANY" /> de file deschise, atinge pentru a comuta filele}}</translation>
 <translation id="5391532827096253100">Conexiunea la acest site nu este sigură. Informații despre site</translation>
 <translation id="5400569084694353794">Folosind această aplicație, accepți <ph name="BEGIN_LINK1" />Termenii și condițiile<ph name="END_LINK1" /> și <ph name="BEGIN_LINK2" />Notificarea privind confidențialitatea<ph name="END_LINK2" /> Chrome.</translation>
+<translation id="5403592356182871684">Nume</translation>
 <translation id="5403644198645076998">Permite numai anumite site-uri</translation>
 <translation id="5414836363063783498">Se verifică...</translation>
 <translation id="5423934151118863508">Cele mai accesate pagini vor apărea aici</translation>

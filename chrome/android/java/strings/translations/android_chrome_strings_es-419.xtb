@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">No volver a mostrar</translation>
 <translation id="1692118695553449118">La sincronización está activada.</translation>
 <translation id="169515064810179024">Impedir que los sitios accedan a los sensores de movimiento</translation>
-<translation id="1697480839793160072">Teléfonos</translation>
-<translation id="1698058317516161971">Correos electrónicos</translation>
 <translation id="1717218214683051432">Sensores de movimiento</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Actualizado hace <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Autocompletar</translation>
 <translation id="271033894570825754">Nuevo</translation>
 <translation id="2714850608275780394">Esperando el código</translation>
+<translation id="2717722538473713889">Direcciones de correo electrónico</translation>
 <translation id="2728754400939377704">Ordenar por sitio</translation>
 <translation id="2744248271121720757">Presiona una palabra para realizar una búsqueda instantánea o ver acciones relacionadas</translation>
 <translation id="2760989362628427051">Activa el tema oscuro cuando esté activado el Ahorro de batería o el tema oscuro de tu dispositivo</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Administrar</translation>
+<translation id="381841723434055211">Números de teléfono</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descargas borradas</translation>
 <translation id="3822502789641063741">¿Borrar el almacenamiento de sitios?</translation>
 <translation id="385051799172605136">Atrás</translation>
@@ -589,6 +589,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> pestaña abierta; presiona para cambiar de pestaña}other{<ph name="OPEN_TABS_MANY" /> pestañas abiertas; presiona para cambiar de pestaña}}</translation>
 <translation id="5391532827096253100">La conexión con este sitio no es segura. Consulta la información del sitio.</translation>
 <translation id="5400569084694353794">Si usas esta aplicación, aceptas las <ph name="BEGIN_LINK1" />Condiciones del Servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de Privacidad<ph name="END_LINK2" /> de Chrome.</translation>
+<translation id="5403592356182871684">Nombres</translation>
 <translation id="5403644198645076998">Permitir solo algunos sitios</translation>
 <translation id="5414836363063783498">Verificando…</translation>
 <translation id="5423934151118863508">Aquí aparecerán las páginas que visites con más frecuencia</translation>

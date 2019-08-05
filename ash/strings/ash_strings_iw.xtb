@@ -157,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{מחובר למכשיר אחד}two{מחובר ל-# מכשירים}many{מחובר ל-# מכשירים}other{מחובר ל-# מכשירים}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> נוספות</translation>
 <translation id="3236488194889173876">אין רשת סלולרית זמינה</translation>
+<translation id="3249513730522716925">החלון <ph name="WINDOW_TITLE" /> הועבר משולחן העבודה <ph name="ACTIVE_DESK" /> אל שולחן העבודה <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">מה אפשר לעשות?</translation>
 <translation id="3294437725009624529">אורח</translation>
 <translation id="3308453408813785101">ל-<ph name="USER_EMAIL_ADDRESS" /> תהיה עדיין אפשרות להיכנס לחשבון מאוחר יותר.</translation>
@@ -178,6 +179,7 @@
 <translation id="3573179567135747900">שנה בחזרה ל"<ph name="FROM_LOCALE" />" (דורש הפעלה מחדש)</translation>
 <translation id="3576141592585647168">שינוי אזור הזמן</translation>
 <translation id="3595596368722241419">סוללה מלאה</translation>
+<translation id="3604801046548457007">שולחן העבודה <ph name="DESK_TITILE" /> נוצר</translation>
 <translation id="3606978283550408104">צג ברייל מחובר</translation>
 <translation id="3621202678540785336">קלט</translation>
 <translation id="3626281679859535460">בהירות</translation>
@@ -379,6 +381,7 @@
 <translation id="6723839937902243910">חשמל</translation>
 <translation id="6727969043791803658">‏מחובר, ‎<ph name="BATTERY_PERCENTAGE" />%‎ סוללה</translation>
 <translation id="6751826523481687655">מעקב הביצועים פועל</translation>
+<translation id="6752912906630585008">שולחן העבודה <ph name="REMOVED_DESK" /> הוסר ושולב עם שולחן העבודה <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">הפעל</translation>
 <translation id="6803622936009808957">לא ניתן היה לשקף מסכים מכיוון שלא נמצאה רזולוציה נתמכת. במקום זאת התצוגה עברה למצב שולחן עבודה מורחב.</translation>
 <translation id="6820676911989879663">הגיע הזמן להפסקה</translation>
@@ -491,6 +494,7 @@
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8433186206711564395">הגדרות רשת</translation>
 <translation id="8433977262951327081">שינינו את קיצור הדרך להצגה של בועת התפריט של אפשרויות הקלט במדף. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">שולחן העבודה <ph name="DESK_TITILE" /> הופעל</translation>
 <translation id="8452135315243592079">‏כרטיס SIM חסר</translation>
 <translation id="8454013096329229812">‏Wi-Fi מופעל.</translation>
 <translation id="847056008324733326">הגדרות קנה המידה של התצוגה</translation>

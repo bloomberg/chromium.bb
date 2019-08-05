@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Bir daha gösterme</translation>
 <translation id="1692118695553449118">Senkronizasyon açık.</translation>
 <translation id="169515064810179024">Sitelerin hareket sensörlerine erişimini engelle</translation>
-<translation id="1697480839793160072">Telefonlar</translation>
-<translation id="1698058317516161971">E-postalar</translation>
 <translation id="1717218214683051432">Hareket sensörleri</translation>
 <translation id="1718835860248848330">Son saat</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Son Güncellenme: <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Otomatik doldurma</translation>
 <translation id="271033894570825754">Yeni</translation>
 <translation id="2714850608275780394">Kod bekleniyor</translation>
+<translation id="2717722538473713889">E-posta adresleri</translation>
 <translation id="2728754400939377704">Siteye göre sırala</translation>
 <translation id="2744248271121720757">Anında aramak veya ilgili işlemleri görmek için bir kelimeye dokunun</translation>
 <translation id="2760989362628427051">Cihazınızın koyu tema veya Pil Tasarrufu özelliği açık olduğunda koyu tema açılır</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Yükle</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Yönet</translation>
+<translation id="381841723434055211">Telefon numaraları</translation>
 <translation id="3819178904835489326">İndirilen <ph name="NUMBER_OF_DOWNLOADS" /> dosya silindi</translation>
 <translation id="3822502789641063741">Site depolama silinsin mi?</translation>
 <translation id="385051799172605136">Geri</translation>
@@ -589,6 +589,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> açık sekme, sekmeler arasında geçiş yapmak için dokunun}other{<ph name="OPEN_TABS_MANY" /> açık sekme, sekmeler arasında geçiş yapmak için dokunun}}</translation>
 <translation id="5391532827096253100">Bu siteye bağlantınız güvenli değil. Site bilgileri</translation>
 <translation id="5400569084694353794">Bu uygulamayı kullanarak <ph name="BEGIN_LINK1" />Chrome'un Gizlilik Şartları<ph name="END_LINK1" />'nı ve <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı kabul etmiş olursunuz.</translation>
+<translation id="5403592356182871684">Adlar</translation>
 <translation id="5403644198645076998">Yalnızca belirli sitelere izin ver</translation>
 <translation id="5414836363063783498">Doğrulanıyor…</translation>
 <translation id="5423934151118863508">En çok ziyaret ettiğiniz sayfalar burada görünecektir</translation>

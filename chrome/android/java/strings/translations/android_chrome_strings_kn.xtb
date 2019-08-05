@@ -96,8 +96,6 @@
 <translation id="1672586136351118594">ಮತ್ತೊಮ್ಮೆ ತೋರಿಸಬೇಡಿ</translation>
 <translation id="1692118695553449118">ಸಿಂಕ್‌ ಆನ್‌ ಆಗಿದೆ</translation>
 <translation id="169515064810179024">ಚಲನಾ ಸೆನ್ಸರ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸದಂತೆ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
-<translation id="1697480839793160072">ಟೆಲಿಫೋನ್‌ಗಳು</translation>
-<translation id="1698058317516161971">ಇಮೇಲ್‌ಗಳು</translation>
 <translation id="1717218214683051432">ಮೋಷನ್ ಸೆನ್ಸಾರ್‌ಗಳು</translation>
 <translation id="1718835860248848330">ಕೊನೆಯ ಗಂಟೆ</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> ಸಮಯದ ಹಿಂದೆ ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದೆ</translation>
@@ -241,6 +239,7 @@
 <translation id="2709516037105925701">ಸ್ವಯಂತುಂಬುವಿಕೆ</translation>
 <translation id="271033894570825754">ಹೊಸತು</translation>
 <translation id="2714850608275780394">ಕೋಡ್‌ಗಾಗಿ ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="2717722538473713889">ಇಮೇಲ್ ವಿಳಾಸಗಳು</translation>
 <translation id="2728754400939377704">ಸೈಟ್ ಪ್ರಕಾರ ವಿಂಗಡಿಸಿ</translation>
 <translation id="2744248271121720757">ತತ್‌ಕ್ಷಣ ಹುಡುಕಲು ಅಥವಾ ಸಂಬಂಧಿತ ಕ್ರಿಯೆಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಪದವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="2760989362628427051">ನಿಮ್ಮ ಸಾಧನದ ಡಾರ್ಕ್ ಥೀಮ್ ಅಥವಾ ಬ್ಯಾಟರಿ ಸೇವರ್ ಆನ್ ಆಗಿರುವಾಗ, ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡಿ</translation>
@@ -373,6 +372,7 @@
 <translation id="3789841737615482174">ಸ್ಥಾಪಿಸು</translation>
 <translation id="3810838688059735925">ವೀಡಿಯೊ</translation>
 <translation id="3810973564298564668">ನಿರ್ವಹಿಸು</translation>
+<translation id="381841723434055211">ಫೋನ್ ಸಂಖ್ಯೆಗಳು</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗಿದೆ</translation>
 <translation id="3822502789641063741">ಸೈಟ್ ಸಂಗ್ರಹಣೆ ತೆರವುಗೊಳಿಸುವುದೇ?</translation>
 <translation id="385051799172605136">ಹಿಂದೆ</translation>
@@ -589,6 +589,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ಟ್ಯಾಬ್ ತೆರೆದಿದೆ, ಟ್ಯಾಬ್‌ಗಳನ್ನು ಬದಲಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ}one{<ph name="OPEN_TABS_MANY" /> ಟ್ಯಾಬ್‌ಗಳು ತೆರೆದಿವೆ, ಟ್ಯಾಬ್‌ಗಳನ್ನು ಬದಲಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ}other{<ph name="OPEN_TABS_MANY" /> ಟ್ಯಾಬ್‌ಗಳು ತೆರೆದಿವೆ, ಟ್ಯಾಬ್‌ಗಳನ್ನು ಬದಲಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ}}</translation>
 <translation id="5391532827096253100">ಈ ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಸಂಪರ್ಕವು ಸುರಕ್ಷಿತವಾಗಿಲ್ಲ. ಸೈಟ್ ಮಾಹಿತಿ</translation>
 <translation id="5400569084694353794">ಈ ಅಪ್ಲಿಕೇಶನ್ ಬಳಸುವ ಮೂಲಕ, ನೀವು Chrome ನ <ph name="BEGIN_LINK1" />ಸೇವಾ ನಿಯಮಗಳು<ph name="END_LINK1" /> ಮತ್ತು <ph name="BEGIN_LINK2" />ಗೌಪ್ಯತೆ ಪ್ರಕಟಣೆ<ph name="END_LINK2" />ಗೆ ಸಮ್ಮತಿಸುತ್ತೀರಿ.</translation>
+<translation id="5403592356182871684">ಹೆಸರುಗಳು</translation>
 <translation id="5403644198645076998">ಕೆಲವು ಸೈಟ್‌ಗಳಿಗೆ ಮಾತ್ರ ಅನುಮತಿಸಿ</translation>
 <translation id="5414836363063783498">ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="5423934151118863508">ನಿವು ಹೆಚ್ಚು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ</translation>

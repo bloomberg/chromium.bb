@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Não mostrar novamente</translation>
 <translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="169515064810179024">Impedir que sites acessem os sensores de movimento</translation>
-<translation id="1697480839793160072">Telefones</translation>
-<translation id="1698058317516161971">E-mails</translation>
 <translation id="1717218214683051432">Sensores de movimento</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> — Última atualização: <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">Preenchimento automático</translation>
 <translation id="271033894570825754">Novo</translation>
 <translation id="2714850608275780394">Aguardando código</translation>
+<translation id="2717722538473713889">Endereços de e-mail</translation>
 <translation id="2728754400939377704">Classificar por site</translation>
 <translation id="2744248271121720757">Toque em uma palavra para pesquisar instantaneamente ou ver as ações relacionadas</translation>
 <translation id="2760989362628427051">Ativa o tema escuro quando essa opção ou a "Economia de bateria" do dispositivo está ativada</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3810973564298564668">Gerenciar</translation>
+<translation id="381841723434055211">Números de telefone</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads excluídos</translation>
 <translation id="3822502789641063741">Limpar armazenamento de sites?</translation>
 <translation id="385051799172605136">Voltar</translation>
@@ -590,6 +590,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> guia aberta, toque para alternar}one{<ph name="OPEN_TABS_MANY" /> guia aberta, toque para alternar}other{<ph name="OPEN_TABS_MANY" /> guias abertas, toque para alternar}}</translation>
 <translation id="5391532827096253100">Sua conexão com este site não é segura. Informações do site</translation>
 <translation id="5400569084694353794">Ao usar este aplicativo, você concorda com os <ph name="BEGIN_LINK1" />Termos de Serviço<ph name="END_LINK1" /> e com o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" />.</translation>
+<translation id="5403592356182871684">Nomes</translation>
 <translation id="5403644198645076998">Permitir apenas determinados sites</translation>
 <translation id="5414836363063783498">Verificando...</translation>
 <translation id="5423934151118863508">Suas páginas mais visitadas aparecerão aqui</translation>

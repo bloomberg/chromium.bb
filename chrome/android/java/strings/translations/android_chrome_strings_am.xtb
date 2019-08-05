@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">ዳግም አታሳይ</translation>
 <translation id="1692118695553449118">አመሳስል በርቷል</translation>
 <translation id="169515064810179024">ጣቢያዎች የእንቅስቃሴ ዳሳሾችን እንዳይደርሱ ያግዱ</translation>
-<translation id="1697480839793160072">ስልኮች</translation>
-<translation id="1698058317516161971">ኢሜይሎች</translation>
 <translation id="1717218214683051432">የእንቅስቃሴ ዳሳሾች</translation>
 <translation id="1718835860248848330">የመጨረሻው ሰዓት</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> ላይ ተዘምኗል</translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">ራስ-ሙላ</translation>
 <translation id="271033894570825754">አዲስ</translation>
 <translation id="2714850608275780394">ኮድን በመጠበቅ ላይ</translation>
+<translation id="2717722538473713889">ኢሜይል አድራሻዎች</translation>
 <translation id="2728754400939377704">በጣቢያ ደርድር</translation>
 <translation id="2744248271121720757">አንድ ቃል በቅጽበት ለመፈለግ ወይም ተዛማጅ እርምጃዎችን ለመመልከት አንድ ቃል መታ ያድርጉ</translation>
 <translation id="2760989362628427051">የእርስዎ መሣሪያ በጨለማ ገጽታ ላይ ሲሆን ወይም ባትሪ ቆጣሪ ሲበራ የጨለማ ገጽታን አብራ</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">ጫን  </translation>
 <translation id="3810838688059735925">ቪዲዮ</translation>
 <translation id="3810973564298564668">አቀናብር</translation>
+<translation id="381841723434055211">ስልክ ቁጥሮች</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> የሚወርዱ ተሰርዘዋል</translation>
 <translation id="3822502789641063741">የጣቢያ ማከማቻ ይጽዳ?</translation>
 <translation id="385051799172605136">ተመለስ</translation>
@@ -589,6 +589,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ትርን ይክፈቱ፣ ትሮችን ለመቀየር መታ ያድርጉ}one{<ph name="OPEN_TABS_MANY" /> ትሮችን ይክፈቱ፣ ትሮችን ለመቀየር መታ ያድርጉ}other{<ph name="OPEN_TABS_MANY" /> ትሮችን ይክፈቱ፣ ትሮችን ለመቀየር መታ ያድርጉ}}</translation>
 <translation id="5391532827096253100">ወደዚህ ጣቢያ ያልዎት ግንኙነት ደህንነቱ የተጠበቀ አይደለም። የጣቢያ መረጃ</translation>
 <translation id="5400569084694353794">ይህን መተግበሪያ በመጠቀምዎ በChrome <ph name="BEGIN_LINK1" />አገልግሎት ውል<ph name="END_LINK1" /> እና <ph name="BEGIN_LINK2" />የግላዊነት ማስታወቂያ<ph name="END_LINK2" /> ተስማምተዋል።</translation>
+<translation id="5403592356182871684">ስሞች</translation>
 <translation id="5403644198645076998">የተወሰኑ ጣቢያዎችን ብቻ ፍቀድ</translation>
 <translation id="5414836363063783498">በማረጋገጥ ላይ…</translation>
 <translation id="5423934151118863508">በጣም በብዛት የተጎበኙ ገጾችዎ እዚህ ይመጣሉ</translation>

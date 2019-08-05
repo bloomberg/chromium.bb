@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">மீண்டும் காட்டாதே</translation>
 <translation id="1692118695553449118">ஒத்திசைவு இயக்கத்தில்</translation>
 <translation id="169515064810179024">தளங்கள் மோஷன் சென்சார்களை அணுகுவதைத் தடுக்கும்</translation>
-<translation id="1697480839793160072">மொபைல்கள்</translation>
-<translation id="1698058317516161971">மின்னஞ்சல்கள்</translation>
 <translation id="1717218214683051432">மோஷன் சென்சார்கள்</translation>
 <translation id="1718835860248848330">கடந்த ஒரு மணிநேரம்</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> புதுப்பிக்கப்பட்டது</translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">தானாகநிரப்பு</translation>
 <translation id="271033894570825754">புதிது</translation>
 <translation id="2714850608275780394">குறியீட்டிற்காகக் காத்திருக்கிறது</translation>
+<translation id="2717722538473713889">மின்னஞ்சல் முகவரிகள்</translation>
 <translation id="2728754400939377704">தளத்தின்படி வரிசைப்படுத்தும்</translation>
 <translation id="2744248271121720757">உடனடியாகத் தேட அல்லது தொடர்புடைய செயல்களைப் பார்க்க, சொல்லைத் தட்டவும்</translation>
 <translation id="2760989362628427051">சாதனத்தில் டார்க் தீம் அல்லது பேட்டரி சேமிப்பான் ஆன் செய்யப்பட்டால் டார்க் தீமினை ஆன் செய்யும்</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">நிறுவுக</translation>
 <translation id="3810838688059735925">வீடியோ</translation>
 <translation id="3810973564298564668">நிர்வகி</translation>
+<translation id="381841723434055211">ஃபோன் எண்கள்</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> பதிவிறக்கங்கள் உள்ளன</translation>
 <translation id="3822502789641063741">தளச் சேமிப்பகத்தை அழிக்கவா?</translation>
 <translation id="385051799172605136">முந்தைய பக்கம்</translation>
@@ -589,6 +589,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> திறந்துள்ள தாவல், தாவல்களை மாற்ற, தட்டவும்}other{<ph name="OPEN_TABS_MANY" /> திறந்துள்ள தாவல்கள், தாவல்களை மாற்ற, தட்டவும்}}</translation>
 <translation id="5391532827096253100">இந்தத் தளத்திற்கான இணைப்பு பாதுகாப்பானதல்ல. தளத் தகவல்</translation>
 <translation id="5400569084694353794">இந்தப் பயன்பாட்டைப் பயன்படுத்துவதன் மூலம், Chrome இன் <ph name="BEGIN_LINK1" />சேவை விதிமுறைகள்<ph name="END_LINK1" /> மற்றும் <ph name="BEGIN_LINK2" />தனியுரிமை அறிக்கையை<ph name="END_LINK2" /> ஏற்கிறீர்கள்.</translation>
+<translation id="5403592356182871684">பெயர்கள்</translation>
 <translation id="5403644198645076998">குறிப்பிட்ட தளங்களை மட்டும் அனுமதி</translation>
 <translation id="5414836363063783498">சரிபார்க்கிறது...</translation>
 <translation id="5423934151118863508">நீங்கள் அதிகமாகப் பார்வையிட்ட பக்கங்கள் இங்கு தோன்றும்</translation>

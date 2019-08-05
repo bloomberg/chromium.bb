@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">다시 표시하지 않음</translation>
 <translation id="1692118695553449118">동기화 사용 중</translation>
 <translation id="169515064810179024">사이트에서 움직임 감지 센서에 액세스하지 못하도록 차단</translation>
-<translation id="1697480839793160072">전화</translation>
-<translation id="1698058317516161971">이메일</translation>
 <translation id="1717218214683051432">움직임 감지 센서</translation>
 <translation id="1718835860248848330">지난 1시간</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" />: <ph name="TIME_SINCE_UPDATE" />에 업데이트됨</translation>
@@ -240,6 +238,7 @@
 <translation id="2709516037105925701">자동 완성</translation>
 <translation id="271033894570825754">새 파일</translation>
 <translation id="2714850608275780394">코드를 기다리는 중</translation>
+<translation id="2717722538473713889">이메일 주소</translation>
 <translation id="2728754400939377704">사이트별 정렬</translation>
 <translation id="2744248271121720757">단어를 탭하여 즉시 검색하거나 관련 작업을 확인하세요</translation>
 <translation id="2760989362628427051">기기의 어두운 테마 또는 절전 모드가 켜지면 어두운 테마를 사용 설정합니다.</translation>
@@ -372,6 +371,7 @@
 <translation id="3789841737615482174">설치</translation>
 <translation id="3810838688059735925">동영상</translation>
 <translation id="3810973564298564668">관리</translation>
+<translation id="381841723434055211">전화번호</translation>
 <translation id="3819178904835489326">다운로드 <ph name="NUMBER_OF_DOWNLOADS" />개 삭제됨</translation>
 <translation id="3822502789641063741">사이트 저장공간을 삭제하시겠습니까?</translation>
 <translation id="385051799172605136">뒤로</translation>
@@ -589,6 +589,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{열려 있는 탭 <ph name="OPEN_TABS_ONE" />개, 탭 간에 전환하려면 탭하세요.}other{열려 있는 탭 <ph name="OPEN_TABS_MANY" />개, 탭 간에 전환하려면 탭하세요.}}</translation>
 <translation id="5391532827096253100">이 사이트와의 연결은 안전하지 않습니다. 사이트 정보</translation>
 <translation id="5400569084694353794">이 애플리케이션을 사용하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />과 <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" />에 동의하게 됩니다.</translation>
+<translation id="5403592356182871684">이름</translation>
 <translation id="5403644198645076998">특정 사이트만 허용</translation>
 <translation id="5414836363063783498">확인 중...</translation>
 <translation id="5423934151118863508">자주 방문한 페이지가 여기에 표시됩니다.</translation>
