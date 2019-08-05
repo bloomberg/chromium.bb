@@ -804,12 +804,6 @@ static void define_gf_group_pass0(AV1_COMP *cpi,
   rc->gfu_boost = DEFAULT_GF_BOOST;
   rc->constrained_gf_group =
       (rc->baseline_gf_interval >= rc->frames_to_key) ? 1 : 0;
-  const int use_alt_ref =
-      is_altref_enabled(cpi) &&
-      (rc->baseline_gf_interval < cpi->oxcf.lag_in_frames) &&
-      !(cpi->lookahead->sz < rc->baseline_gf_interval - 1) &&
-      (cpi->oxcf.gf_max_pyr_height > MIN_PYRAMID_LVL);
-  rc->source_alt_ref_pending = use_alt_ref;
 
   // Set up the structure of this Group-Of-Pictures (same as GF_GROUP)
   av1_gop_setup_structure(cpi, frame_params);
