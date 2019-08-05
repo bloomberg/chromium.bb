@@ -1418,7 +1418,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'mojo_linux_gtests',
-          'isolated_scripts': 'navigation_loader_on_ui_isolated_scripts',
         },
       },
       'Mojo Windows': {
