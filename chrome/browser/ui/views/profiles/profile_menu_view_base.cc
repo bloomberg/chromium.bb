@@ -434,9 +434,8 @@ gfx::ImageSkia ProfileMenuViewBase::CreateVectorIcon(
     const gfx::VectorIcon& icon) {
   return gfx::CreateVectorIcon(
       icon, kIconSize,
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
-          ? gfx::kGoogleGrey500
-          : gfx::kChromeIconGrey);
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_DefaultIconColor));
 }
 
 int ProfileMenuViewBase::GetDefaultIconSize() {

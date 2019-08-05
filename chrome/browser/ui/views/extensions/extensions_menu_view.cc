@@ -30,12 +30,13 @@ ExtensionsMenuView* g_extensions_dialog = nullptr;
 
 constexpr int EXTENSIONS_SETTINGS_ID = 42;
 
+// TODO(minch): This function should be a class function of ExtensionsMenuView,
+// then View::GetNativeTheme can be used to get the icon color.
 gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& icon) {
   return gfx::CreateVectorIcon(
       icon, 16,
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
-          ? gfx::kGoogleGrey500
-          : gfx::kChromeIconGrey);
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_DefaultIconColor));
 }
 
 }  // namespace
