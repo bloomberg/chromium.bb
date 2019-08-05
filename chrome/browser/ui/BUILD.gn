@@ -2748,6 +2748,8 @@ jumbo_split_static_library("ui") {
       "views/global_media_controls/media_toolbar_button_view.h",
       "views/hover_button.cc",
       "views/hover_button.h",
+      "views/hover_button_controller.cc",
+      "views/hover_button_controller.h",
       "views/hung_renderer_view.cc",
       "views/hung_renderer_view.h",
       "views/ime/ime_warning_bubble_view.cc",
