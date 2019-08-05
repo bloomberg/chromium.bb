@@ -492,6 +492,10 @@ class CONTENT_EXPORT RenderWidget
   void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
   void RequestBeginMainFrameNotExpected(bool request) override;
   int GetLayerTreeId() const override;
+  void SetBrowserControlsShownRatio(float ratio) override;
+  void SetBrowserControlsHeight(float top_height,
+                                float bottom_height,
+                                bool shrink_viewport) override;
 
   // Registers a SwapPromise to report presentation time and possibly swap time.
   // If |swap_time_callback| is not a null callback, it would be called once

@@ -131,10 +131,6 @@ class CONTENT_EXPORT LayerTreeView
   void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
                                   cc::BrowserControlsState current,
                                   bool animate) override;
-  void SetBrowserControlsHeight(float top_height,
-                                float bottom_height,
-                                bool shrink) override;
-  void SetBrowserControlsShownRatio(float) override;
 
   // cc::LayerTreeHostClient implementation.
   void WillBeginMainFrame() override;

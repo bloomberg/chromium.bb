@@ -1612,7 +1612,7 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
                              new_compositor_viewport_pixel_size,
                              params.screen_info);
   UpdateCaptureSequenceNumber(params.capture_sequence_number);
-  layer_tree_view_->SetBrowserControlsHeight(
+  layer_tree_view_->layer_tree_host()->SetBrowserControlsHeight(
       params.top_controls_height, params.bottom_controls_height,
       params.browser_controls_shrink_blink_size);
 
@@ -3557,6 +3557,17 @@ void RenderWidget::RequestBeginMainFrameNotExpected(bool request) {
 
 int RenderWidget::GetLayerTreeId() const {
   return layer_tree_view_->layer_tree_host()->GetId();
+}
+
+void RenderWidget::SetBrowserControlsShownRatio(float ratio) {
+  layer_tree_view_->layer_tree_host()->SetBrowserControlsShownRatio(ratio);
+}
+
+void RenderWidget::SetBrowserControlsHeight(float top_height,
+                                            float bottom_height,
+                                            bool shrink_viewport) {
+  layer_tree_view_->layer_tree_host()->SetBrowserControlsHeight(
+      top_height, bottom_height, shrink_viewport);
 }
 
 void RenderWidget::NotifySwapAndPresentationTime(
