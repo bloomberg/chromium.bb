@@ -234,7 +234,10 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   }
 
   // ImpressionHistoryTracker::Delegate implementation.
-  void OnImpressionUpdated() override { ScheduleBackgroundTask(); }
+  void OnImpressionUpdated() override {
+    // TODO(xingliu): Fix duplicate ScheduleBackgroundTask() call.
+    ScheduleBackgroundTask();
+  }
 
   void FindNotificationToShow(SchedulerTaskTime task_start_time) {
     DisplayDecider::Results results;
