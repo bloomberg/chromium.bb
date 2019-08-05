@@ -33,7 +33,6 @@ struct FRAME_COUNTS;
 struct tokenize_b_args {
   const struct AV1_COMP *cpi;
   struct ThreadData *td;
-  TOKENEXTRA **tp;
   int this_rate;
   uint8_t allow_update_cdf;
 };

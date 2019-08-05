@@ -195,7 +195,7 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   (void)t;
-  struct tokenize_b_args arg = { cpi, td, t, 0, allow_update_cdf };
+  struct tokenize_b_args arg = { cpi, td, 0, allow_update_cdf };
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
   assert(bsize < BLOCK_SIZES_ALL);
