@@ -1191,6 +1191,8 @@ ChromeContentBrowserClient::~ChromeContentBrowserClient() {
 // static
 void ChromeContentBrowserClient::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
+  registry->RegisterFilePathPref(prefs::kDiskCacheDir, base::FilePath());
+  registry->RegisterIntegerPref(prefs::kDiskCacheSize, 0);
   registry->RegisterStringPref(prefs::kIsolateOrigins, std::string());
   registry->RegisterBooleanPref(prefs::kSitePerProcess, false);
   registry->RegisterBooleanPref(prefs::kTabLifecyclesEnabled, true);
@@ -2674,12 +2676,15 @@ ChromeContentBrowserClient::GetGeneratedCodeCacheSettings(
   // heuristics based on available disk size. These are implemented in
   // disk_cache::PreferredCacheSize in net/disk_cache/cache_util.cc.
   int64_t size_in_bytes = 0;
-  PrefService* prefs = Profile::FromBrowserContext(context)->GetPrefs();
-  DCHECK(prefs);
-  size_in_bytes = prefs->GetInteger(prefs::kDiskCacheSize);
-  base::FilePath disk_cache_dir = prefs->GetFilePath(prefs::kDiskCacheDir);
-  if (!disk_cache_dir.empty())
-    cache_path = disk_cache_dir.Append(cache_path.BaseName());
+  DCHECK(g_browser_process);
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state) {
+    size_in_bytes = local_state->GetInteger(prefs::kDiskCacheSize);
+    base::FilePath disk_cache_dir =
+        local_state->GetFilePath(prefs::kDiskCacheDir);
+    if (!disk_cache_dir.empty())
+      cache_path = disk_cache_dir.Append(cache_path.BaseName());
+  }
   return content::GeneratedCodeCacheSettings(true, size_in_bytes, cache_path);
 }
 
