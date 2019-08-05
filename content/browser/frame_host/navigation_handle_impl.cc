@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/network_service_instance_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
@@ -43,6 +44,45 @@ constexpr base::TimeDelta kDefaultCommitTimeout =
 // Timeout for the READY_TO_COMMIT -> COMMIT transition.
 // Overrideable via SetCommitTimeoutForTesting.
 base::TimeDelta g_commit_timeout = kDefaultCommitTimeout;
+
+// Corresponds to the "NavigationURLScheme" histogram enumeration type in
+// src/tools/metrics/histograms/enums.xml.
+//
+// DO NOT REORDER OR CHANGE THE MEANING OF THESE VALUES.
+enum class NavigationURLScheme {
+  UNKNOWN = 0,
+  ABOUT = 1,
+  BLOB = 2,
+  CONTENT = 3,
+  CONTENT_ID = 4,
+  DATA = 5,
+  FILE = 6,
+  FILE_SYSTEM = 7,
+  FTP = 8,
+  HTTP = 9,
+  HTTPS = 10,
+  kMaxValue = HTTPS
+};
+
+NavigationURLScheme GetScheme(const GURL& url) {
+  static const base::NoDestructor<std::map<std::string, NavigationURLScheme>>
+      kSchemeMap({
+          {url::kAboutScheme, NavigationURLScheme::ABOUT},
+          {url::kBlobScheme, NavigationURLScheme::BLOB},
+          {url::kContentScheme, NavigationURLScheme::CONTENT},
+          {url::kContentIDScheme, NavigationURLScheme::CONTENT_ID},
+          {url::kDataScheme, NavigationURLScheme::DATA},
+          {url::kFileScheme, NavigationURLScheme::FILE},
+          {url::kFileSystemScheme, NavigationURLScheme::FILE_SYSTEM},
+          {url::kFtpScheme, NavigationURLScheme::FTP},
+          {url::kHttpScheme, NavigationURLScheme::HTTP},
+          {url::kHttpsScheme, NavigationURLScheme::HTTPS},
+      });
+  auto it = kSchemeMap->find(url.scheme());
+  if (it != kSchemeMap->end())
+    return it->second;
+  return NavigationURLScheme::UNKNOWN;
+}
 
 }  // namespace
 
@@ -437,6 +477,19 @@ void NavigationHandleImpl::RestartCommitTimeout() {
 
 void NavigationHandleImpl::OnCommitTimeout() {
   DCHECK_EQ(NavigationRequest::READY_TO_COMMIT, state());
+  UMA_HISTOGRAM_ENUMERATION(
+      "Navigation.CommitTimeout.NetworkServiceAvailability",
+      GetNetworkServiceAvailability());
+  base::TimeDelta last_crash_time = GetTimeSinceLastNetworkServiceCrash();
+  if (!last_crash_time.is_zero()) {
+    UMA_HISTOGRAM_LONG_TIMES(
+        "Navigation.CommitTimeout.NetworkServiceLastCrashTime",
+        last_crash_time);
+  }
+  UMA_HISTOGRAM_BOOLEAN("Navigation.CommitTimeout.IsRendererProcessReady",
+                        GetRenderFrameHost()->GetProcess()->IsReady());
+  UMA_HISTOGRAM_ENUMERATION("Navigation.CommitTimeout.Scheme",
+                            GetScheme(GetURL()));
   render_process_blocked_state_changed_subscription_.reset();
   GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsUnresponsive(
       base::BindRepeating(&NavigationHandleImpl::RestartCommitTimeout,
