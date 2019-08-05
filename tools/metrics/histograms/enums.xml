@@ -24147,6 +24147,7 @@ Called by update_net_error_codes.py.-->
   <int value="2976" label="DownloadWithoutUserGesture"/>
   <int value="2977" label="AutoplayDynamicDelegation"/>
   <int value="2979" label="FragmentDoubleHash"/>
+  <int value="2993" label="ContactsManagerSelect"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
