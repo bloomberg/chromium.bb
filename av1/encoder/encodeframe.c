@@ -5320,7 +5320,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif
 
     av1_encode_sb(cpi, x, bsize, mi_row, mi_col, dry_run);
-    av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col, bsize, rate,
+    av1_tokenize_sb_vartx(cpi, td, dry_run, mi_row, mi_col, bsize, rate,
                           tile_data->allow_update_cdf);
   }
 
