@@ -46,6 +46,7 @@ public class AssistantPaymentRequestTermsSection {
     @Nullable
     private final TextView mTermsRequiresReview;
     private final TextView mThirdPartyPrivacyNotice;
+    @Nullable
     private Delegate mDelegate;
 
     private final SpanInfo mBoldSpanInfo =
@@ -140,10 +141,9 @@ public class AssistantPaymentRequestTermsSection {
     }
 
     private void onTermsAndConditionsLinkClicked(int link) {
-        // Ignore first click if the option is not selected yet.
-        if (!mTermsList.isChecked(mTermsAgree) || mDelegate == null) return;
-
-        mDelegate.onLinkClicked(link);
+        if (mDelegate != null) {
+            mDelegate.onLinkClicked(link);
+        }
     }
 
     public void setTermsStatus(@AssistantTermsAndConditionsState int status) {
