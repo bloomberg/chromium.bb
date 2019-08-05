@@ -20,6 +20,8 @@ import shutil
 import sys
 import tempfile
 
+from chromite.api.gen.chromite.api import android_pb2
+
 from chromite.cbuildbot import swarming_lib
 from chromite.cbuildbot import topology
 
@@ -47,6 +49,9 @@ from chromite.lib.paygen import filelib
 
 from chromite.scripts import pushimage
 from chromite.service import artifacts as artifacts_service
+
+from google.protobuf import json_format
+
 
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
@@ -1976,43 +1981,39 @@ def MarkAndroidAsStable(buildroot,
                         android_version=None,
                         android_gts_build_branch=None):
   """Returns the portage atom for the revved Android ebuild - see man emerge."""
-  command = [
-      'cros_mark_android_as_stable',
-      '--tracking_branch=%s' % tracking_branch
-  ]
-  command.append('--android_package=%s' % android_package)
-  command.append('--android_build_branch=%s' % android_build_branch)
-  if boards:
-    command.append('--boards=%s' % ':'.join(boards))
+  input_msg = android_pb2.MarkStableRequest()
+  input_msg.tracking_branch = tracking_branch
+  input_msg.package_name = android_package
+  input_msg.android_build_branch = android_build_branch
   if android_version:
-    command.append('--force_version=%s' % android_version)
+    input_msg.android_version = android_version
   if android_gts_build_branch:
-    command.append('--android_gts_build_branch=%s' % android_gts_build_branch)
+    input_msg.android_gts_build_branch = android_gts_build_branch
+  if boards:
+    for board in boards:
+      input_msg.build_targets.add().name = board
 
-  portage_atom_string = RunBuildScript(
-      buildroot,
-      command,
-      chromite_cmd=True,
-      enter_chroot=True,
-      redirect_stdout=True).output.rstrip()
-  android_atom = None
-  if portage_atom_string:
-    android_atom = portage_atom_string.splitlines()[-1].partition('=')[-1]
-  if not android_atom:
-    logging.info('Found nothing to rev.')
+  result = CallBuildApiWithInputProto(
+      buildroot, 'chromite.api.AndroidService/MarkStable',
+      json_format.MessageToDict(input_msg))
+
+  if result['status'] == android_pb2.MARK_STABLE_STATUS_EARLY_EXIT:
+    # Early exit (nothing to uprev).
     return None
 
-  for board in boards:
-    # Sanity check: We should always be able to merge the version of
-    # Android we just unmasked.
-    try:
-      command = ['emerge-%s' % board, '-p', '--quiet', '=%s' % android_atom]
-      RunBuildScript(buildroot, command, enter_chroot=True)
-    except failures_lib.BuildScriptFailure:
-      logging.error(
-          'Cannot emerge-%s =%s\nIs Android pinned to an older '
-          'version?', board, android_atom)
-      raise AndroidIsPinnedUprevError(android_atom)
+  # The result comes back with camelCase names rather than the underscore
+  # separated names we use for the response objects. I'm not sure yet why, so
+  # for now, adding support for both just in case. Will need to fix that so
+  # we can use response objects in the long term.
+  atom = result.get('androidAtom') or result.get('android_atom')
+  category = atom['category']
+  package = atom.get('packageName') or atom.get('package_name')
+  version = atom['version']
+  android_atom = '%s/%s-%s' % (category, package, version)
+
+  if result['status'] == android_pb2.MARK_STABLE_STATUS_PINNED:
+    # Failed to emerge the new package, probably pinned.
+    raise AndroidIsPinnedUprevError(android_atom)
 
   return android_atom
 
@@ -3403,7 +3404,7 @@ def CallBuildApiWithInputProto(buildroot, build_api_command, input_proto):
   Args:
     buildroot: Root directory where build occurs.
     build_api_command: Service (command) to execute.
-    input_proto (BundleRequest): The input proto.
+    input_proto (dict): The input proto as a dict.
 
   Returns:
     The json-encoded output proto.
