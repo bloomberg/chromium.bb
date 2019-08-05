@@ -8415,7 +8415,7 @@ static INLINE void find_best_non_dual_interp_filter(
     const BUFFER_SET *const orig_dst, int64_t *const rd, RD_STATS *rd_stats_y,
     RD_STATS *rd_stats, int *const switchable_rate,
     const BUFFER_SET *dst_bufs[2], const int switchable_ctx[2],
-    const int skip_ver, const int skip_hor, int filter_set_size) {
+    const int skip_ver, const int skip_hor) {
   int8_t i;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -8423,7 +8423,6 @@ static INLINE void find_best_non_dual_interp_filter(
   // Regular filter evaluation should have been done and hence the same should
   // be the winner
   assert(x->e_mbd.mi[0]->interp_filters.as_int == filter_sets[0].as_int);
-  assert(filter_set_size == DUAL_FILTER_SET_SIZE);
   if ((skip_hor & skip_ver) != cpi->default_interp_skip_flags) {
     INTERP_PRED_TYPE pred_filter_type = INTERP_HORZ_NEQ_VERT_NEQ;
     int_interpfilters af = av1_broadcast_interp_filter(INTERP_INVALID);
@@ -8481,7 +8480,7 @@ static INLINE void find_best_non_dual_interp_filter(
                                skip_pred, allowed_interp_mask, 1);
   } else {
     int skip_pred = (skip_hor & skip_ver);
-    for (i = (SWITCHABLE_FILTERS + 1); i < filter_set_size;
+    for (i = (SWITCHABLE_FILTERS + 1); i < DUAL_FILTER_SET_SIZE;
          i += (SWITCHABLE_FILTERS + 1)) {
       // This assert tells that (filter_x == filter_y) for non-dual filter case
       assert(filter_sets[i].as_filters.x_filter ==
@@ -8809,7 +8808,6 @@ static int64_t interpolation_filter_search(
   calc_interp_skip_pred_flag(x, cpi, &skip_hor, &skip_ver);
 
   // do interp_filter search
-  const int filter_set_size = DUAL_FILTER_SET_SIZE;
   restore_dst_buf(xd, *tmp_dst, num_planes);
   const BUFFER_SET *dst_bufs[2] = { tmp_dst, orig_dst };
   // Evaluate dual interp filters
@@ -8835,7 +8833,7 @@ static int64_t interpolation_filter_search(
     find_best_non_dual_interp_filter(x, cpi, tile_data, bsize, mi_row, mi_col,
                                      orig_dst, rd, &rd_stats_luma, &rd_stats,
                                      switchable_rate, dst_bufs, switchable_ctx,
-                                     skip_ver, skip_hor, filter_set_size);
+                                     skip_ver, skip_hor);
   }
   swap_dst_buf(xd, dst_bufs, num_planes);
   // Recompute final MC data if required
