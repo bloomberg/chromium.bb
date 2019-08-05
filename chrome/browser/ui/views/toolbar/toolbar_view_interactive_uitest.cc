@@ -139,14 +139,7 @@ void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
   ToolbarActionsBar::disable_animations_for_testing_ = true;
 }
 
-// TODO(pkasting): https://crbug.com/939621 Fails on Mac.
-#if defined(OS_MACOSX)
-#define MAYBE_TestAppMenuOpensOnDrag DISABLED_TestAppMenuOpensOnDrag
-#else
-#define MAYBE_TestAppMenuOpensOnDrag TestAppMenuOpensOnDrag
-#endif
-IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest,
-                       MAYBE_TestAppMenuOpensOnDrag) {
+IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest, TestAppMenuOpensOnDrag) {
   // Load an extension that has a browser action.
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
                                           .AppendASCII("browser_action")
@@ -276,25 +269,11 @@ void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
     EXPECT_EQ(ids[i], reverse_ids[count - 2 - i]);
 }
 
-#if defined(OS_MACOSX)
-// Widget activation doesn't work on Mac: https://crbug.com/823543
-#define MAYBE_ToolbarCycleFocus DISABLED_ToolbarCycleFocus
-#else
-#define MAYBE_ToolbarCycleFocus ToolbarCycleFocus
-#endif
-IN_PROC_BROWSER_TEST_F(ToolbarViewTest, MAYBE_ToolbarCycleFocus) {
+IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocus) {
   RunToolbarCycleFocusTest(browser());
 }
 
-#if defined(OS_MACOSX)
-// Widget activation doesn't work on Mac: https://crbug.com/823543
-#define MAYBE_ToolbarCycleFocusWithBookmarkBar \
-  DISABLED_ToolbarCycleFocusWithBookmarkBar
-#else
-#define MAYBE_ToolbarCycleFocusWithBookmarkBar ToolbarCycleFocusWithBookmarkBar
-#endif
-IN_PROC_BROWSER_TEST_F(ToolbarViewTest,
-                       MAYBE_ToolbarCycleFocusWithBookmarkBar) {
+IN_PROC_BROWSER_TEST_F(ToolbarViewTest, ToolbarCycleFocusWithBookmarkBar) {
   CommandUpdater* updater = browser()->command_controller();
   updater->ExecuteCommand(IDC_SHOW_BOOKMARK_BAR);
 
