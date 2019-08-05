@@ -523,7 +523,7 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item) {
   window_state_observer_.Remove(WindowState::Get(window));
 
   if (overview_session_) {
-    overview_session_->highlight_controller()->OnViewDestroying(
+    overview_session_->highlight_controller()->OnViewDestroyingOrDisabling(
         (*iter)->caption_container_view());
   }
 
@@ -746,7 +746,7 @@ void OverviewGrid::OnWindowDestroying(aura::Window* window) {
   auto iter = GetOverviewItemIterContainingWindow(window);
   DCHECK(iter != window_list_.end());
   if (overview_session_) {
-    overview_session_->highlight_controller()->OnViewDestroying(
+    overview_session_->highlight_controller()->OnViewDestroyingOrDisabling(
         (*iter)->caption_container_view());
   }
 

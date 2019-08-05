@@ -200,7 +200,7 @@ void OverviewHighlightController::MoveHighlight(bool reverse) {
   UpdateFocusWidget(traversable_views[index], reverse);
 }
 
-void OverviewHighlightController::OnViewDestroying(
+void OverviewHighlightController::OnViewDestroyingOrDisabling(
     OverviewHighlightableView* view) {
   DCHECK(view);
   if (view != highlighted_view_)
@@ -230,6 +230,22 @@ void OverviewHighlightController::SetFocusHighlightVisibility(bool visible) {
 
 bool OverviewHighlightController::IsFocusHighlightVisible() const {
   return highlight_widget_ && highlight_widget_->IsVisible();
+}
+
+bool OverviewHighlightController::MaybeActivateHighlightedView() {
+  if (!highlighted_view_)
+    return false;
+
+  highlighted_view_->MaybeActivateHighlightedView();
+  return true;
+}
+
+bool OverviewHighlightController::MaybeCloseHighlightedView() {
+  if (!highlighted_view_)
+    return false;
+
+  highlighted_view_->MaybeCloseHighlightedView();
+  return true;
 }
 
 OverviewItem* OverviewHighlightController::GetHighlightedItem() const {
