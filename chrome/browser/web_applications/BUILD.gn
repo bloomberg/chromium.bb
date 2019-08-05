@@ -61,7 +61,7 @@ source_set("web_applications") {
       "//ash/public/cpp:cpp",
       "//chromeos/constants",
       "//components/arc:arc_base",
-      "//components/arc/common",
+      "//components/arc/mojom",
     ]
   }
 
@@ -146,7 +146,7 @@ source_set("web_applications_unit_tests") {
       "//chrome/browser/chromeos",
       "//components/arc:arc",
       "//components/arc:arc_test_support",
-      "//components/arc/common",
+      "//components/arc/mojom",
     ]
   }
 }
