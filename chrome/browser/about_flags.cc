@@ -3495,7 +3495,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableChromeOsAccountManagerName,
      flag_descriptions::kEnableChromeOsAccountManagerDescription,
      kOsCrOS | kExpireM77,
-     FEATURE_VALUE_TYPE(chromeos::switches::kAccountManager)},
+     FEATURE_VALUE_TYPE(chromeos::features::kAccountManager)},
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -3595,7 +3595,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-native-google-assistant",
      flag_descriptions::kEnableGoogleAssistantName,
      flag_descriptions::kEnableGoogleAssistantDescription, kOsCrOS | kExpireM77,
-     FEATURE_VALUE_TYPE(chromeos::switches::kAssistantFeature)},
+     FEATURE_VALUE_TYPE(chromeos::features::kAssistantFeature)},
 
     {"enable-assistant-dsp", flag_descriptions::kEnableGoogleAssistantDspName,
      flag_descriptions::kEnableGoogleAssistantDspDescription,
@@ -4176,7 +4176,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-parental-controls-settings",
      flag_descriptions::kEnableParentalControlsSettingsName,
      flag_descriptions::kEnableParentalControlsSettingsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::switches::kParentalControlsSettings)},
+     FEATURE_VALUE_TYPE(chromeos::features::kParentalControlsSettings)},
 #endif  // defined(OS_CHROMEOS)
 
     {"mouse-subframe-no-implicit-capture",
