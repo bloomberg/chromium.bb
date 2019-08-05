@@ -157,7 +157,7 @@ bool VideoPlayer::WaitForEvent(VideoPlayerEvent event,
       return false;
 
     const base::TimeTicks start_time = base::TimeTicks::Now();
-    event_cv_.TimedWait(max_wait);
+    event_cv_.TimedWait(max_wait - time_waiting);
     time_waiting += base::TimeTicks::Now() - start_time;
   }
 }
