@@ -1771,7 +1771,7 @@
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'args': [
           '--release',
-          '--additional-driver-flag=--enable-blink-features=HeapConcurrentMarking',
+          '--additional-driver-flag=--enable-features=BlinkHeapConcurrentMarking',
         ],
       },
       'linux-blink-heap-unified-gc': {

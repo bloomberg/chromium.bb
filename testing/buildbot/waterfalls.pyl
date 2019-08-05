@@ -1741,7 +1741,7 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
         'gtest_args': [
-          '--enable-blink-features=HeapConcurrentMarking',
+          '--enable-features=BlinkHeapConcurrentMarking',
         ]
       },
       'linux-blink-heap-unified-gc': {
