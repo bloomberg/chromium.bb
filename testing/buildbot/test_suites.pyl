@@ -5324,6 +5324,7 @@
       'gpu_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
     ],
 
     'gpu_fyi_optional_linux_telemetry_tests': [

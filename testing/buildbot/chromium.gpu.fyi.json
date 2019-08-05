@@ -11874,6 +11874,49 @@
           "--browser=release",
           "--passthrough",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl_conformance_gl_passthrough_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "os": "Mac-10.14.4",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "idempotent": false,
+          "optional_dimensions": {
+            "300": [
+              {
+                "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
+              }
+            ]
+          },
+          "shards": 2
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -12685,6 +12728,49 @@
           "--browser=release",
           "--passthrough",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl_conformance_gl_passthrough_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.14.4",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "idempotent": false,
+          "optional_dimensions": {
+            "300": [
+              {
+                "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
+              }
+            ]
+          },
+          "shards": 2
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -13487,6 +13573,49 @@
             ]
           },
           "shards": 20
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl_conformance_gl_passthrough_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:0fe9",
+              "os": "Mac-10.14.4",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "idempotent": false,
+          "optional_dimensions": {
+            "300": [
+              {
+                "os": "Mac-10.14.3"
+              }
+            ],
+            "600": [
+              {
+                "os": "Mac-10.14.5"
+              }
+            ]
+          },
+          "shards": 2
         }
       },
       {
@@ -14536,6 +14665,37 @@
           "--browser=release",
           "--passthrough",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl_conformance_gl_passthrough_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "idempotent": false,
+          "shards": 2
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -15097,6 +15257,38 @@
           "expiration": 21600,
           "idempotent": false,
           "shards": 20
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl_conformance_gl_passthrough_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "idempotent": false,
+          "shards": 2
         }
       },
       {
@@ -15668,6 +15860,38 @@
           "expiration": 21600,
           "idempotent": false,
           "shards": 20
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl_conformance_gl_passthrough_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:0fe9",
+              "hidpi": "1",
+              "os": "Mac-10.13.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "idempotent": false,
+          "shards": 2
         }
       },
       {
@@ -16289,6 +16513,41 @@
           "--browser=release",
           "--passthrough",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl_conformance_gl_passthrough_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "mac-intel-stable"
+            },
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "mac-amd-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false,
+          "shards": 2
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--is-asan"
         ],
@@ -16841,6 +17100,35 @@
           ],
           "idempotent": false,
           "shards": 20
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl_conformance_gl_passthrough_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "mac-intel-stable"
+            }
+          ],
+          "idempotent": false,
+          "shards": 2
         }
       },
       {
@@ -18437,6 +18725,37 @@
           "--browser=release",
           "--passthrough",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl_conformance_gl_passthrough_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "mac-amd-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false,
+          "shards": 2
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -18999,6 +19318,37 @@
           ],
           "idempotent": false,
           "shards": 20
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl_conformance_gl_passthrough_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:0fe9",
+              "hidpi": "1",
+              "os": "mac-nvidia-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false,
+          "shards": 2
         }
       },
       {
@@ -19686,6 +20036,37 @@
           "expiration": 21600,
           "idempotent": false,
           "shards": 20
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl_conformance_gl_passthrough_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "1002:679e",
+              "os": "Mac-10.12.6",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "idempotent": false,
+          "shards": 2
         }
       },
       {
