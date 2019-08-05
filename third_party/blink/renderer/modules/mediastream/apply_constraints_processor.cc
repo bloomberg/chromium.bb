@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/apply_constraints_processor.h"
+#include "third_party/blink/renderer/modules/mediastream/apply_constraints_processor.h"
 
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/sequenced_task_runner.h"
-#include "base/task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
@@ -21,8 +19,9 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-namespace content {
+namespace blink {
 namespace {
 
 void RequestFailed(blink::WebApplyConstraintsRequest request,
@@ -33,6 +32,14 @@ void RequestFailed(blink::WebApplyConstraintsRequest request,
 
 void RequestSucceeded(blink::WebApplyConstraintsRequest request) {
   request.RequestSucceeded();
+}
+
+media::VideoCaptureFormats ToVideoCaptureFormats(
+    const Vector<media::VideoCaptureFormat>& format_vector) {
+  media::VideoCaptureFormats formats;
+  std::copy(format_vector.begin(), format_vector.end(),
+            std::back_inserter(formats));
+  return formats;
 }
 
 }  // namespace
@@ -130,13 +137,13 @@ void ApplyConstraintsProcessor::ProcessVideoDeviceRequest() {
   // restarted. To determine if the current format is the best, it is necessary
   // to know all the formats potentially supported by the source.
   GetMediaDevicesDispatcher()->GetAllVideoInputDeviceFormats(
-      video_source_->device().id,
+      String(video_source_->device().id.data()),
       base::BindOnce(&ApplyConstraintsProcessor::MaybeStopSourceForRestart,
                      weak_factory_.GetWeakPtr()));
 }
 
 void ApplyConstraintsProcessor::MaybeStopSourceForRestart(
-    const media::VideoCaptureFormats& formats) {
+    const Vector<media::VideoCaptureFormat>& formats) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (AbortIfVideoRequestStateInvalid())
     return;
@@ -171,13 +178,13 @@ void ApplyConstraintsProcessor::MaybeSourceStoppedForRestart(
 
   DCHECK_EQ(result, blink::MediaStreamVideoSource::RestartResult::IS_STOPPED);
   GetMediaDevicesDispatcher()->GetAvailableVideoInputDeviceFormats(
-      video_source_->device().id,
+      String(video_source_->device().id.data()),
       base::BindOnce(&ApplyConstraintsProcessor::FindNewFormatAndRestart,
                      weak_factory_.GetWeakPtr()));
 }
 
 void ApplyConstraintsProcessor::FindNewFormatAndRestart(
-    const media::VideoCaptureFormats& formats) {
+    const Vector<media::VideoCaptureFormat>& formats) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (AbortIfVideoRequestStateInvalid())
     return;
@@ -232,7 +239,7 @@ void ApplyConstraintsProcessor::FinalizeVideoRequest() {
 }
 
 blink::VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
-    media::VideoCaptureFormats formats) {
+    Vector<media::VideoCaptureFormat> formats) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!current_request_.IsNull());
   DCHECK_EQ(current_request_.Track().Source().GetType(),
@@ -248,7 +255,9 @@ blink::VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
   device_capabilities.facing_mode =
       GetCurrentVideoSource() ? GetCurrentVideoSource()->device().video_facing
                               : media::MEDIA_VIDEO_FACING_NONE;
-  device_capabilities.formats = std::move(formats);
+  // TODO(crbug.com/704136): Eliminate need for this extra conversion
+  // round from WTF::Vector to std::vector.
+  device_capabilities.formats = ToVideoCaptureFormats(formats);
 
   blink::VideoDeviceCaptureCapabilities video_capabilities;
   video_capabilities.noise_reduction_capabilities.push_back(
@@ -350,10 +359,10 @@ void ApplyConstraintsProcessor::CleanupRequest(
   video_source_ = nullptr;
 }
 
-const blink::mojom::MediaDevicesDispatcherHostPtr&
+const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
 ApplyConstraintsProcessor::GetMediaDevicesDispatcher() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return media_devices_dispatcher_cb_.Run();
 }
 
-}  // namespace content
+}  // namespace blink

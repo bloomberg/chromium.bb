@@ -121,7 +121,6 @@
 #include "content/renderer/media/audio/audio_output_ipc_factory.h"
 #include "content/renderer/media/audio/audio_renderer_sink_cache.h"
 #include "content/renderer/media/media_permission_dispatcher.h"
-#include "content/renderer/media/stream/user_media_client_impl.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/mhtml_handle_writer.h"
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
@@ -218,6 +217,7 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_surrounding_text.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
+#include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "ui/events/base_event_utils.h"
@@ -1848,7 +1848,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
       handling_select_range_(false),
-      web_user_media_client_(nullptr),
       render_accessibility_(nullptr),
       previews_state_(PREVIEWS_UNSPECIFIED),
       effective_connection_type_(
@@ -2220,7 +2219,7 @@ RenderFrameImpl::GetMediaStreamDeviceObserver() {
   if (!web_user_media_client_)
     InitializeUserMediaClient();
   return web_user_media_client_
-             ? web_user_media_client_->media_stream_device_observer()
+             ? web_user_media_client_->GetMediaStreamDeviceObserver()
              : nullptr;
 }
 
@@ -7117,8 +7116,8 @@ void RenderFrameImpl::InitializeUserMediaClient() {
     return;
 
   DCHECK(!web_user_media_client_);
-  web_user_media_client_ = std::make_unique<UserMediaClientImpl>(
-      this,
+  web_user_media_client_ = blink::CreateWebUserMediaClient(
+      GetWebFrame(),
       std::make_unique<blink::WebMediaStreamDeviceObserver>(GetWebFrame()),
       GetTaskRunner(blink::TaskType::kInternalMedia));
 }

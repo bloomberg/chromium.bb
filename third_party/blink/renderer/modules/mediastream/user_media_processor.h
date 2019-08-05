@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_USER_MEDIA_PROCESSOR_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_USER_MEDIA_PROCESSOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_PROCESSOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_PROCESSOR_H_
 
 #include <memory>
 #include <string>
@@ -12,17 +12,19 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
-#include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_dispatcher_eventhandler.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace gfx {
 class Size;
@@ -31,6 +33,7 @@ class Size;
 namespace blink {
 class AudioCaptureSettings;
 class AudioDeviceCaptureCapability;
+class LocalFrame;
 class MediaStreamAudioSource;
 class MediaStreamVideoSource;
 class VideoCaptureSettings;
@@ -38,11 +41,6 @@ class WebMediaStream;
 class WebMediaStreamDeviceObserver;
 class WebMediaStreamSource;
 class WebString;
-}  // namespace blink
-
-namespace content {
-
-class RenderFrameImpl;
 
 // TODO(guidou): Add |request_id| and |is_processing_user_gesture| to
 // blink::WebUserMediaRequest and remove this struct.
@@ -60,15 +58,15 @@ struct UserMediaRequestInfo {
 // getUserMedia().
 // It communicates with the browser via MediaStreamDispatcherHost.
 // Only one MediaStream at a time can be in the process of being created.
-// UserMediaProcessor must be created, called and destroyed on the main render
-// thread. There should be only one UserMediaProcessor per frame.
-class CONTENT_EXPORT UserMediaProcessor
+// UserMediaProcessor must be created, called and destroyed on the main
+// render thread. There should be only one UserMediaProcessor per frame.
+class MODULES_EXPORT UserMediaProcessor
     : public blink::MediaStreamDispatcherEventHandler {
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
-      const blink::mojom::MediaDevicesDispatcherHostPtr&()>;
-  // |render_frame| must outlive this instance.
-  UserMediaProcessor(RenderFrameImpl* render_frame,
+      const blink::mojom::blink::MediaDevicesDispatcherHostPtr&()>;
+  // |web_frame| must outlive this instance.
+  UserMediaProcessor(LocalFrame* frame,
                      std::unique_ptr<blink::WebMediaStreamDeviceObserver>
                          media_stream_device_observer,
                      MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
@@ -113,7 +111,7 @@ class CONTENT_EXPORT UserMediaProcessor
                        const blink::MediaStreamDevice& new_device) override;
 
   void set_media_stream_dispatcher_host_for_testing(
-      blink::mojom::MediaStreamDispatcherHostPtr dispatcher_host) {
+      blink::mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host) {
     dispatcher_host_ = std::move(dispatcher_host);
   }
 
@@ -125,7 +123,7 @@ class CONTENT_EXPORT UserMediaProcessor
       const blink::WebMediaStream& stream,
       blink::WebUserMediaRequest web_request);
   virtual void GetUserMediaRequestFailed(
-      blink::mojom::MediaStreamRequestResult result,
+      blink::mojom::blink::MediaStreamRequestResult result,
       const blink::WebString& constraint_name = blink::WebString());
 
   // Creates a MediaStreamAudioSource/MediaStreamVideoSource objects.
@@ -148,21 +146,22 @@ class CONTENT_EXPORT UserMediaProcessor
   using LocalStreamSources = std::vector<blink::WebMediaStreamSource>;
 
   void OnStreamGenerated(int request_id,
-                         blink::mojom::MediaStreamRequestResult result,
-                         const std::string& label,
-                         const blink::MediaStreamDevices& audio_devices,
-                         const blink::MediaStreamDevices& video_devices);
+                         blink::mojom::blink::MediaStreamRequestResult result,
+                         const String& label,
+                         const Vector<blink::MediaStreamDevice>& audio_devices,
+                         const Vector<blink::MediaStreamDevice>& video_devices);
 
   void GotAllVideoInputFormatsForDevice(
       const blink::WebUserMediaRequest& web_request,
-      const std::string& label,
-      const std::string& device_id,
-      const media::VideoCaptureFormats& formats);
+      const String& label,
+      const String& device_id,
+      const Vector<media::VideoCaptureFormat>& formats);
 
   gfx::Size GetScreenSize();
 
-  void OnStreamGenerationFailed(int request_id,
-                                blink::mojom::MediaStreamRequestResult result);
+  void OnStreamGenerationFailed(
+      int request_id,
+      blink::mojom::blink::MediaStreamRequestResult result);
 
   bool IsCurrentRequestInfo(int request_id) const;
   bool IsCurrentRequestInfo(
@@ -172,7 +171,7 @@ class CONTENT_EXPORT UserMediaProcessor
       blink::WebUserMediaRequest web_request);
   void DelayedGetUserMediaRequestFailed(
       blink::WebUserMediaRequest web_request,
-      blink::mojom::MediaStreamRequestResult result,
+      blink::mojom::blink::MediaStreamRequestResult result,
       const blink::WebString& constraint_name);
 
   // Called when |source| has been stopped from JavaScript.
@@ -187,48 +186,49 @@ class CONTENT_EXPORT UserMediaProcessor
       const blink::MediaStreamDevice& device,
       bool* is_pending);
 
-  void StartTracks(const std::string& label);
+  void StartTracks(const String& label);
 
   void CreateVideoTracks(
-      const blink::MediaStreamDevices& devices,
+      const Vector<blink::MediaStreamDevice>& devices,
       blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks);
 
   void CreateAudioTracks(
-      const blink::MediaStreamDevices& devices,
+      const Vector<blink::MediaStreamDevice>& devices,
       blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks);
 
   // Callback function triggered when all native versions of the
   // underlying media sources and tracks have been created and started.
   void OnCreateNativeTracksCompleted(
-      const std::string& label,
+      const String& label,
       RequestInfo* request,
-      blink::mojom::MediaStreamRequestResult result,
+      blink::mojom::blink::MediaStreamRequestResult result,
       const blink::WebString& result_name);
 
   void OnStreamGeneratedForCancelledRequest(
-      const blink::MediaStreamDevices& audio_devices,
-      const blink::MediaStreamDevices& video_devices);
+      const Vector<blink::MediaStreamDevice>& audio_devices,
+      const Vector<blink::MediaStreamDevice>& video_devices);
 
   static void OnAudioSourceStartedOnAudioThread(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::WeakPtr<UserMediaProcessor> weak_ptr,
       blink::WebPlatformMediaStreamSource* source,
-      blink::mojom::MediaStreamRequestResult result,
+      blink::mojom::blink::MediaStreamRequestResult result,
       const blink::WebString& result_name);
 
-  void OnAudioSourceStarted(blink::WebPlatformMediaStreamSource* source,
-                            blink::mojom::MediaStreamRequestResult result,
-                            const blink::WebString& result_name);
+  void OnAudioSourceStarted(
+      blink::WebPlatformMediaStreamSource* source,
+      blink::mojom::blink::MediaStreamRequestResult result,
+      const blink::WebString& result_name);
 
   void NotifyCurrentRequestInfoOfAudioSourceStarted(
       blink::WebPlatformMediaStreamSource* source,
-      blink::mojom::MediaStreamRequestResult result,
+      blink::mojom::blink::MediaStreamRequestResult result,
       const blink::WebString& result_name);
 
   void DeleteAllUserMediaRequests();
 
   // Returns the source that use a device with |device.session_id|
-  // and |device.device.id|. NULL if such source doesn't exist.
+  // and |device.device.id|. nullptr if such source doesn't exist.
   const blink::WebMediaStreamSource* FindLocalSource(
       const blink::MediaStreamDevice& device) const {
     return FindLocalSource(local_sources_, device);
@@ -242,7 +242,7 @@ class CONTENT_EXPORT UserMediaProcessor
       const blink::MediaStreamDevice& device) const;
 
   // Looks up a local source and returns it if found. If not found, prepares
-  // a new WebMediaStreamSource with a NULL extraData pointer.
+  // a new WebMediaStreamSource with a nullptr extraData pointer.
   blink::WebMediaStreamSource FindOrInitializeSourceObject(
       const blink::MediaStreamDevice& device);
 
@@ -253,15 +253,15 @@ class CONTENT_EXPORT UserMediaProcessor
   void StopLocalSource(const blink::WebMediaStreamSource& source,
                        bool notify_dispatcher);
 
-  const blink::mojom::MediaStreamDispatcherHostPtr&
+  const blink::mojom::blink::MediaStreamDispatcherHostPtr&
   GetMediaStreamDispatcherHost();
-  const blink::mojom::MediaDevicesDispatcherHostPtr&
+  const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
   GetMediaDevicesDispatcher();
 
   void SetupAudioInput();
   void SelectAudioDeviceSettings(
       const blink::WebUserMediaRequest& web_request,
-      std::vector<blink::mojom::AudioInputDeviceCapabilitiesPtr>
+      Vector<blink::mojom::blink::AudioInputDeviceCapabilitiesPtr>
           audio_input_capabilities);
   void SelectAudioSettings(
       const blink::WebUserMediaRequest& web_request,
@@ -270,7 +270,7 @@ class CONTENT_EXPORT UserMediaProcessor
   void SetupVideoInput();
   void SelectVideoDeviceSettings(
       const blink::WebUserMediaRequest& web_request,
-      std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
+      Vector<blink::mojom::blink::VideoInputDeviceCapabilitiesPtr>
           video_input_capabilities);
   void FinalizeSelectVideoDeviceSettings(
       const blink::WebUserMediaRequest& web_request,
@@ -294,7 +294,7 @@ class CONTENT_EXPORT UserMediaProcessor
   LocalStreamSources local_sources_;
   LocalStreamSources pending_local_sources_;
 
-  blink::mojom::MediaStreamDispatcherHostPtr dispatcher_host_;
+  blink::mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host_;
 
   // UserMedia requests are processed sequentially. |current_request_info_|
   // contains the request currently being processed, if any, and
@@ -303,7 +303,9 @@ class CONTENT_EXPORT UserMediaProcessor
   MediaDevicesDispatcherCallback media_devices_dispatcher_cb_;
   base::OnceClosure request_completed_cb_;
 
-  RenderFrameImpl* const render_frame_;
+  // TODO(crbug.com/704136): Consider moving UserMediaClientImpl to
+  // Oilpan and use a Member.
+  WeakPersistent<LocalFrame> frame_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
@@ -315,6 +317,6 @@ class CONTENT_EXPORT UserMediaProcessor
   DISALLOW_COPY_AND_ASSIGN(UserMediaProcessor);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_USER_MEDIA_PROCESSOR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_PROCESSOR_H_

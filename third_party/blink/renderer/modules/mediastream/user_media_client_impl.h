@@ -2,49 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_USER_MEDIA_CLIENT_IMPL_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_USER_MEDIA_CLIENT_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CLIENT_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CLIENT_IMPL_H_
 
 #include <list>
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/stream/user_media_processor.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
-#include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/web/web_apply_constraints_request.h"
 #include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_processor.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
-namespace content {
+namespace blink {
 
 class ApplyConstraintsProcessor;
+class LocalFrame;
 class WebMediaStreamDeviceObserver;
 
 // UserMediaClientImpl handles requests coming from the Blink MediaDevices
 // object. This includes getUserMedia and enumerateDevices. It must be created,
 // called and destroyed on the render thread.
-class CONTENT_EXPORT UserMediaClientImpl : public blink::WebUserMediaClient {
+class MODULES_EXPORT UserMediaClientImpl : public blink::WebUserMediaClient {
  public:
   // TODO(guidou): Make all constructors private and replace with Create methods
   // that return a std::unique_ptr. This class is intended for instantiation on
   // the free store. https://crbug.com/764293
-  // |render_frame| must outlive this instance.
-  UserMediaClientImpl(RenderFrameImpl* render_frame,
+  // |frame| and its respective RenderFrame must outlive this instance.
+  UserMediaClientImpl(LocalFrame* frame,
                       std::unique_ptr<blink::WebMediaStreamDeviceObserver>
                           media_stream_device_observer,
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  UserMediaClientImpl(RenderFrameImpl* render_frame,
+  UserMediaClientImpl(LocalFrame* frame,
                       std::unique_ptr<UserMediaProcessor> user_media_processor,
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~UserMediaClientImpl() override;
 
-  blink::WebMediaStreamDeviceObserver* media_stream_device_observer() const {
+  blink::WebMediaStreamDeviceObserver* GetMediaStreamDeviceObserver() override {
     return user_media_processor_->media_stream_device_observer();
   }
 
@@ -59,7 +61,8 @@ class CONTENT_EXPORT UserMediaClientImpl : public blink::WebUserMediaClient {
   void ContextDestroyed() override;
 
   void SetMediaDevicesDispatcherForTesting(
-      blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher);
+      blink::mojom::blink::MediaDevicesDispatcherHostPtr
+          media_devices_dispatcher);
 
  private:
   class Request {
@@ -100,11 +103,15 @@ class CONTENT_EXPORT UserMediaClientImpl : public blink::WebUserMediaClient {
 
   void DeleteAllUserMediaRequests();
 
-  const blink::mojom::MediaDevicesDispatcherHostPtr&
+  const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
   GetMediaDevicesDispatcher();
 
-  // |render_frame_| is the frame owning this UserMediaClientImpl.
-  RenderFrameImpl* const render_frame_;
+  // LocalFrame instance associated with the RenderFrameImpl that
+  // own this UserMediaClientImpl.
+  //
+  // TODO(crbug.com/704136): Consider moving UserMediaClientImpl to
+  // Oilpan and use a Member.
+  WeakPersistent<LocalFrame> frame_;
 
   // |user_media_processor_| is a unique_ptr for testing purposes.
   std::unique_ptr<UserMediaProcessor> user_media_processor_;
@@ -112,12 +119,14 @@ class CONTENT_EXPORT UserMediaClientImpl : public blink::WebUserMediaClient {
   // problems in builds that do not include WebRTC.
   std::unique_ptr<ApplyConstraintsProcessor> apply_constraints_processor_;
 
-  blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
+  blink::mojom::blink::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
 
   // UserMedia requests are processed sequentially. |is_processing_request_|
   // is a flag that indicates if a request is being processed at a given time,
   // and |pending_request_infos_| is a list of queued requests.
   bool is_processing_request_ = false;
+
+  // TODO(crbug.com/704136): Use WTF::HashSet.
   std::list<Request> pending_request_infos_;
 
   SEQUENCE_CHECKER(sequence_checker_);
@@ -129,6 +138,6 @@ class CONTENT_EXPORT UserMediaClientImpl : public blink::WebUserMediaClient {
   DISALLOW_COPY_AND_ASSIGN(UserMediaClientImpl);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_USER_MEDIA_CLIENT_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CLIENT_IMPL_H_

@@ -123,6 +123,7 @@ class WebMediaStreamDeviceObserver;
 class WebSecurityOrigin;
 class WebString;
 class WebURL;
+class WebUserMediaClient;
 struct FramePolicy;
 struct WebContextMenuData;
 struct WebCursorInfo;
@@ -168,7 +169,6 @@ class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
-class UserMediaClientImpl;
 struct CSPViolationParams;
 struct CustomContextMenuContext;
 struct FrameOwnerProperties;
@@ -1614,7 +1614,7 @@ class CONTENT_EXPORT RenderFrameImpl
   bool handling_select_range_;
 
   // Implements getUserMedia() and related functionality.
-  std::unique_ptr<UserMediaClientImpl> web_user_media_client_;
+  std::unique_ptr<blink::WebUserMediaClient> web_user_media_client_;
 
   mojom::RendererAudioInputStreamFactoryPtr audio_input_stream_factory_;
 

@@ -2,24 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/user_media_client_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
 
 #include <stddef.h>
-
 #include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_runner.h"
-#include "content/renderer/media/stream/apply_constraints_processor.h"
-#include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/render_frame_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
@@ -28,8 +24,11 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/mediastream/apply_constraints_processor.h"
 
-namespace content {
+namespace blink {
 namespace {
 
 static int g_next_request_id = 0;
@@ -101,11 +100,23 @@ UserMediaClientImpl::Request::MoveUserMediaRequest() {
   return std::move(user_media_request_);
 }
 
+std::unique_ptr<WebUserMediaClient> CreateWebUserMediaClient(
+    WebLocalFrame* web_frame,
+    std::unique_ptr<WebMediaStreamDeviceObserver> media_stream_device_observer,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  DCHECK(web_frame);
+  auto* local_frame =
+      static_cast<LocalFrame*>(WebLocalFrame::ToCoreFrame(*web_frame));
+  return std::make_unique<UserMediaClientImpl>(
+      local_frame, std::move(media_stream_device_observer),
+      std::move(task_runner));
+}
+
 UserMediaClientImpl::UserMediaClientImpl(
-    RenderFrameImpl* render_frame,
+    LocalFrame* frame,
     std::unique_ptr<UserMediaProcessor> user_media_processor,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : render_frame_(render_frame),
+    : frame_(frame),
       user_media_processor_(std::move(user_media_processor)),
       apply_constraints_processor_(new ApplyConstraintsProcessor(
           base::BindRepeating(&UserMediaClientImpl::GetMediaDevicesDispatcher,
@@ -115,19 +126,19 @@ UserMediaClientImpl::UserMediaClientImpl(
 // base::Unretained(this) is safe here because |this| owns
 // |user_media_processor_|.
 UserMediaClientImpl::UserMediaClientImpl(
-    RenderFrameImpl* render_frame,
+    LocalFrame* frame,
     std::unique_ptr<blink::WebMediaStreamDeviceObserver>
         media_stream_device_observer,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : UserMediaClientImpl(
-          render_frame,
+          frame,
           std::make_unique<UserMediaProcessor>(
-              render_frame,
+              frame,
               std::move(media_stream_device_observer),
               base::BindRepeating(
                   &UserMediaClientImpl::GetMediaDevicesDispatcher,
                   base::Unretained(this)),
-              render_frame->GetTaskRunner(blink::TaskType::kInternalMedia)),
+              frame->GetTaskRunner(blink::TaskType::kInternalMedia)),
           std::move(task_runner)) {}
 
 UserMediaClientImpl::~UserMediaClientImpl() {
@@ -145,18 +156,18 @@ void UserMediaClientImpl::RequestUserMedia(
   DCHECK(web_request.Audio() || web_request.Video());
   // ownerDocument may be null if we are in a test.
   // In that case, it's OK to not check frame().
+
   DCHECK(web_request.OwnerDocument().IsNull() ||
-         render_frame_->GetWebFrame() ==
+         WebFrame::FromFrame(frame_) ==
              static_cast<blink::WebFrame*>(
                  web_request.OwnerDocument().GetFrame()));
 
   // Save histogram data so we can see how much GetUserMedia is used.
   UpdateAPICount(web_request.MediaRequestType());
 
-  if (RenderThreadImpl::current()) {
-    RenderThreadImpl::current()->peer_connection_tracker()->TrackGetUserMedia(
-        web_request);
-  }
+  // TODO(crbug.com/787254): Communicate directly with the
+  // PeerConnectionTrackerHost mojo object once it is available from Blink.
+  Platform::Current()->TrackGetUserMedia(web_request);
 
   int request_id = g_next_request_id++;
   blink::WebRtcLogMessage(base::StringPrintf(
@@ -240,7 +251,7 @@ void UserMediaClientImpl::CurrentRequestCompleted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_processing_request_ = false;
   if (!pending_request_infos_.empty()) {
-    render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)
+    frame_->GetTaskRunner(blink::TaskType::kInternalMedia)
         ->PostTask(
             FROM_HERE,
             base::BindOnce(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
@@ -298,18 +309,19 @@ void UserMediaClientImpl::ContextDestroyed() {
 }
 
 void UserMediaClientImpl::SetMediaDevicesDispatcherForTesting(
-    blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher) {
+    blink::mojom::blink::MediaDevicesDispatcherHostPtr
+        media_devices_dispatcher) {
   media_devices_dispatcher_ = std::move(media_devices_dispatcher);
 }
 
-const blink::mojom::MediaDevicesDispatcherHostPtr&
+const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
 UserMediaClientImpl::GetMediaDevicesDispatcher() {
   if (!media_devices_dispatcher_) {
-    render_frame_->GetRemoteInterfaces()->GetInterface(
+    frame_->GetInterfaceProvider().GetInterface(
         mojo::MakeRequest(&media_devices_dispatcher_));
   }
 
   return media_devices_dispatcher_;
 }
 
-}  // namespace content
+}  // namespace blink
