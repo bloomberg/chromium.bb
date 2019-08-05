@@ -3045,6 +3045,7 @@ jumbo_split_static_library("ui") {
       "views/tabs/tab_icon.h",
       "views/tabs/tab_renderer_data.cc",
       "views/tabs/tab_renderer_data.h",
+      "views/tabs/tab_slot_view.h",
       "views/tabs/tab_strip.cc",
       "views/tabs/tab_strip.h",
       "views/tabs/tab_strip_controller.h",
