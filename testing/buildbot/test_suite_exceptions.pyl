@@ -1833,11 +1833,6 @@
           '--additional-driver-flag=--disable-blink-features=LayoutNG',
         ],
       },
-      'WebKit Linux root_layer_scrolls Dummy Builder': {
-        'args': [
-          '--additional-driver-flag=--root-layer-scrolls',
-        ],
-      },
       # chromium.linux
       'Fuchsia x64': {
         'args': [

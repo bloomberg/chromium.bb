@@ -1390,35 +1390,6 @@
       }
     ]
   },
-  "WebKit Linux root_layer_scrolls Dummy Builder": {
-    "isolated_scripts": [
-      {
-        "args": [
-          "--num-retries=3",
-          "--additional-driver-flag=--root-layer-scrolls"
-        ],
-        "isolate_name": "blink_web_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "hard_timeout": 900,
-          "shards": 12
-        }
-      }
-    ]
-  },
   "Win 10 Fast Ring": {
     "gtest_tests": [
       {

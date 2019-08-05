@@ -1485,19 +1485,6 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
-      'WebKit Linux root_layer_scrolls Dummy Builder': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04',
-            },
-          ],
-          'hard_timeout': 900,
-        },
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
       'Win 10 Fast Ring': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
