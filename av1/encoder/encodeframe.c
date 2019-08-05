@@ -2288,8 +2288,7 @@ static bool rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   const int pl = bsize_at_least_8x8
                      ? partition_plane_context(xd, mi_row, mi_col, bsize)
                      : 0;
-  const int *partition_cost =
-      pl >= 0 ? x->partition_cost[pl] : x->partition_cost[0];
+  const int *partition_cost = x->partition_cost[pl];
 
   int do_rectangular_split = cpi->oxcf.enable_rect_partitions;
   int64_t cur_none_rd = 0;
