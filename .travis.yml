@@ -6,7 +6,6 @@ before_install: yarn global add grunt-cli
 
 deploy:
   provider: pages
-  verbose: true
   skip_cleanup: true
   keep_history: true
   local_dir: .
