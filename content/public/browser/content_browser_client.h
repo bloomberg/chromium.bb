@@ -1118,15 +1118,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // and |frame_tree_node_id| take a callback returning a nullptr, nullptr, and
   // RenderFrameHost::kNoFrameTreeNodeId respectively.
   //
-  // This is called on the IO thread.
-  virtual std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
-  CreateURLLoaderThrottlesOnIO(
-      const network::ResourceRequest& request,
-      ResourceContext* resource_context,
-      const base::RepeatingCallback<WebContents*()>& wc_getter,
-      NavigationUIData* navigation_ui_data,
-      int frame_tree_node_id);
-  // Same as above but called on UI thread.
+  // This is called on the UI thread.
   virtual std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
       const network::ResourceRequest& request,
