@@ -1339,6 +1339,9 @@
       status: "experimental",
     },
     {
+      name: "RestrictedWebkitAppearance",
+    },
+    {
       name: "RtcAudioJitterBufferMaxPackets",
       origin_trial_feature_name: "RtcAudioJitterBufferMaxPackets",
       status: "experimental",
