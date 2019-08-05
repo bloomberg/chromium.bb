@@ -116,6 +116,22 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: JsonWriteError";
     case Error::Code::kFileLoadFailure:
       return os << "Failure: FileLoadFailure";
+    case Error::Code::kErrCertsMissing:
+      return os << "Failure: ErrCertsMissing";
+    case Error::Code::kErrCertsParse:
+      return os << "Failure: ErrCertsParse";
+    case Error::Code::kErrCertsRestrictions:
+      return os << "Failure: ErrCertsRestrictions";
+    case Error::Code::kErrCertsDateInvalid:
+      return os << "Failure: ErrCertsDateInvalid";
+    case Error::Code::kErrCertsVerifyGeneric:
+      return os << "Failure: ErrCertsVerifyGeneric";
+    case Error::Code::kErrCrlInvalid:
+      return os << "Failure: ErrCrlInvalid";
+    case Error::Code::kErrCertsRevoked:
+      return os << "Failure: ErrCertsRevoked";
+    case Error::Code::kErrCertsPathlen:
+      return os << "Failure: ErrCertsPathlen";
     case Error::Code::kInsufficientBuffer:
       return os << "Failure: InsufficientBuffer";
   }

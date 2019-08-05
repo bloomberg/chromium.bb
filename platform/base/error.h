@@ -81,6 +81,33 @@ class Error {
     // OpenSSL errors
     kFileLoadFailure,
 
+    // Cast certificate errors.
+
+    // Certificates were not provided for verification.
+    kErrCertsMissing,
+
+    // The certificates provided could not be parsed.
+    kErrCertsParse,
+
+    // Key usage is missing or is not set to Digital Signature.
+    // This error could also be thrown if the CN is missing.
+    kErrCertsRestrictions,
+
+    // The current date is before the notBefore date or after the notAfter date.
+    kErrCertsDateInvalid,
+
+    // The certificate failed to chain to a trusted root.
+    kErrCertsVerifyGeneric,
+
+    // The CRL is missing or failed to verify.
+    kErrCrlInvalid,
+
+    // One of the certificates in the chain is revoked.
+    kErrCertsRevoked,
+
+    // The pathlen constraint of the root certificate was exceeded.
+    kErrCertsPathlen,
+
     kInsufficientBuffer,
   };
 
