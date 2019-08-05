@@ -1834,9 +1834,10 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'grunt',
       'kevin',
   ])
-  _pi_vmtest_boards = frozenset([])
+  _pi_vmtest_boards = frozenset([
+      'betty-arcnext'
+  ])
   _pi_vmtest_experimental_boards = frozenset([
-      'betty-arcnext',  # crbug.com/988329
       'betty-pi-arc',
   ])
 
