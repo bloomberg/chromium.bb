@@ -1670,13 +1670,14 @@ void ProfileSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {
   }
 }
 
-base::Optional<UserDemographics> ProfileSyncService::GetUserDemographics(
-    base::Time now) {
+UserDemographicsResult ProfileSyncService::GetUserDemographics(base::Time now) {
   // Do not provide demographics when sync is disabled or paused because user
   // demographics should only be provided when the other sync data can be
   // uploaded to the sync server.
-  if (!IsSyncFeatureEnabled() || auth_manager_->IsSyncPaused())
-    return base::nullopt;
+  if (!IsSyncFeatureEnabled() || auth_manager_->IsSyncPaused()) {
+    return UserDemographicsResult::ForStatus(
+        UserDemographicsStatus::kSyncNotEnabled);
+  }
 
   return sync_prefs_.GetUserDemographics(now);
 }
