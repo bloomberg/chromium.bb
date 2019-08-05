@@ -260,7 +260,7 @@ bool DownloadRequestCore::OnResponseStarted(
 
   if (request()->response_headers()) {
     download::RecordDownloadHttpResponseCode(
-        request()->response_headers()->response_code());
+        request()->response_headers()->response_code(), false);
   }
 
   std::unique_ptr<download::DownloadCreateInfo> create_info =
