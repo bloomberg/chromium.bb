@@ -669,6 +669,7 @@ if (!is_android) {
       "//components/strings",
       "//components/sync",
       "//components/sync:test_support_model",
+      "//components/sync_device_info:test_support",
       "//components/translate/core/common",
       "//content/public/common:buildflags",
       "//content/test:test_support",
