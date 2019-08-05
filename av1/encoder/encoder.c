@@ -378,14 +378,8 @@ static void setup_frame(AV1_COMP *cpi) {
 }
 
 static void enc_setup_mi(AV1_COMMON *cm) {
-  int i;
   int mi_rows_sb_aligned = calc_mi_size(cm->mi_rows);
   memset(cm->mi, 0, cm->mi_stride * mi_rows_sb_aligned * sizeof(*cm->mi));
-  // Clear top border row
-  memset(cm->prev_mi, 0, sizeof(*cm->prev_mi) * cm->mi_stride);
-  // Clear left border column
-  for (i = 0; i < mi_rows_sb_aligned; ++i)
-    memset(&cm->prev_mi[i * cm->mi_stride], 0, sizeof(*cm->prev_mi));
 
   memset(cm->mi_grid_base, 0,
          cm->mi_stride * mi_rows_sb_aligned * sizeof(*cm->mi_grid_base));
@@ -394,16 +388,11 @@ static void enc_setup_mi(AV1_COMMON *cm) {
 static int enc_alloc_mi(AV1_COMMON *cm, int mi_size) {
   cm->mi = aom_calloc(mi_size, sizeof(*cm->mi));
   if (!cm->mi) return 1;
-  cm->prev_mi = aom_calloc(mi_size, sizeof(*cm->prev_mi));
-  if (!cm->prev_mi) return 1;
   cm->mi_alloc_size = mi_size;
 
   cm->mi_grid_base =
       (MB_MODE_INFO **)aom_calloc(mi_size, sizeof(MB_MODE_INFO *));
   if (!cm->mi_grid_base) return 1;
-  cm->prev_mi_grid_base =
-      (MB_MODE_INFO **)aom_calloc(mi_size, sizeof(MB_MODE_INFO *));
-  if (!cm->prev_mi_grid_base) return 1;
 
   return 0;
 }
@@ -411,25 +400,9 @@ static int enc_alloc_mi(AV1_COMMON *cm, int mi_size) {
 static void enc_free_mi(AV1_COMMON *cm) {
   aom_free(cm->mi);
   cm->mi = NULL;
-  aom_free(cm->prev_mi);
-  cm->prev_mi = NULL;
   aom_free(cm->mi_grid_base);
   cm->mi_grid_base = NULL;
-  aom_free(cm->prev_mi_grid_base);
-  cm->prev_mi_grid_base = NULL;
   cm->mi_alloc_size = 0;
-}
-
-static void swap_mi_and_prev_mi(AV1_COMMON *cm) {
-  // Current mi will be the prev_mi for the next frame.
-  MB_MODE_INFO **temp_base = cm->prev_mi_grid_base;
-  MB_MODE_INFO *temp = cm->prev_mi;
-  cm->prev_mi = cm->mi;
-  cm->mi = temp;
-
-  // Update the upper left visible macroblock ptrs.
-  cm->prev_mi_grid_base = cm->mi_grid_base;
-  cm->mi_grid_base = temp_base;
 }
 
 void av1_initialize_enc(void) {
@@ -5698,13 +5671,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   // it is not shown, we still need update the count down.
 
   if (cm->show_frame) {
-    // TODO(zoeliu): We may only swamp mi and prev_mi for those frames that
-    // are
-    // being used as reference.
-    swap_mi_and_prev_mi(cm);
     // Don't increment frame counters if this was an altref buffer
     // update not a real frame
-
     ++current_frame->frame_number;
   }
 

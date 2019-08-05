@@ -430,10 +430,6 @@ typedef struct AV1Common {
   int mi_alloc_size;
   MB_MODE_INFO *mi;  /* Corresponds to upper left visible macroblock */
 
-  // TODO(agrange): Move prev_mi into encoder structure.
-  // prev_mi will only be allocated in encoder.
-  MB_MODE_INFO *prev_mi;  /* 'mi' from last frame */
-
   // Separate mi functions between encoder and decoder.
   int (*alloc_mi)(struct AV1Common *cm, int mi_size);
   void (*free_mi)(struct AV1Common *cm);
@@ -442,7 +438,6 @@ typedef struct AV1Common {
   // Grid of pointers to 4x4 MB_MODE_INFO structs. Any 4x4 not in the visible
   // area will be NULL.
   MB_MODE_INFO **mi_grid_base;
-  MB_MODE_INFO **prev_mi_grid_base;
 
   // Whether to use previous frames' motion vectors for prediction.
   int allow_ref_frame_mvs;

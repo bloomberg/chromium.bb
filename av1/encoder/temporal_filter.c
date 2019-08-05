@@ -12,6 +12,7 @@
 #include <math.h>
 #include <limits.h>
 
+#include "av1/common/blockd.h"
 #include "config/aom_config.h"
 
 #include "av1/common/alloccommon.h"
@@ -1029,6 +1030,12 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
 
   for (i = 0; i < num_planes; i++) input_buffer[i] = mbd->plane[i].pre[0].buf;
 
+  // Make a temporary mbmi for temporal filtering
+  MB_MODE_INFO **backup_mi_grid = mbd->mi;
+  MB_MODE_INFO mbmi = { 0 };
+  MB_MODE_INFO *mbmi_ptr = &mbmi;
+  mbd->mi = &mbmi_ptr;
+
   for (mb_row = 0; mb_row < mb_rows; mb_row++) {
     // Source frames are extended to 16 pixels. This is different than
     //  L/A/G reference frames that have a border of 32 (AV1ENCBORDERINPIXELS)
@@ -1305,6 +1312,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
 
   // Restore input state
   for (i = 0; i < num_planes; i++) mbd->plane[i].pre[0].buf = input_buffer[i];
+
+  mbd->mi = backup_mi_grid;
 }
 
 // This is an adaptation of the mehtod in the following paper:

@@ -493,8 +493,12 @@ static void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
   for (idx = 0; idx < INTER_REFS_PER_FRAME; ++idx)
     ref_frame[idx] = cpi->tpl_frame[tpl_frame->ref_map_index[idx]].gf_picture;
 
-  xd->mi = cm->mi_grid_base;
-  xd->mi[0] = cm->mi;
+  // Make a temporary mbmi for tpl model
+  MB_MODE_INFO **backup_mi_grid = xd->mi;
+  MB_MODE_INFO mbmi = { 0 };
+  MB_MODE_INFO *mbmi_ptr = &mbmi;
+  xd->mi = &mbmi_ptr;
+
   xd->block_ref_scale_factors[0] = &sf;
 
   const int base_qindex = gf_group->q_val[frame_idx];
@@ -538,6 +542,9 @@ static void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
                          mi_col, bsize);
     }
   }
+
+  // Restore the mi_grid
+  xd->mi = backup_mi_grid;
 }
 
 static void init_gop_frames_for_tpl(
