@@ -597,6 +597,7 @@ def GeneralTemplates(site_config):
       vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
       hw_tests=[],
       hw_tests_override=[],
+      unittests=False,
       uprev=True,
       overlays=constants.BOTH_OVERLAYS,
       push_overlays=constants.BOTH_OVERLAYS,
