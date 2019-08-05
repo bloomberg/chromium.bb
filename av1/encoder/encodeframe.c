@@ -766,8 +766,8 @@ static void pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
 }
 
 static void update_inter_mode_stats(FRAME_CONTEXT *fc, FRAME_COUNTS *counts,
-                                    PREDICTION_MODE mode, int16_t mode_context,
-                                    uint8_t allow_update_cdf) {
+                                    PREDICTION_MODE mode,
+                                    int16_t mode_context) {
   (void)counts;
 
   int16_t mode_ctx = mode_context & NEWMV_CTX_MASK;
@@ -775,38 +775,38 @@ static void update_inter_mode_stats(FRAME_CONTEXT *fc, FRAME_COUNTS *counts,
 #if CONFIG_ENTROPY_STATS
     ++counts->newmv_mode[mode_ctx][0];
 #endif
-    if (allow_update_cdf) update_cdf(fc->newmv_cdf[mode_ctx], 0, 2);
+    update_cdf(fc->newmv_cdf[mode_ctx], 0, 2);
     return;
-  } else {
-#if CONFIG_ENTROPY_STATS
-    ++counts->newmv_mode[mode_ctx][1];
-#endif
-    if (allow_update_cdf) update_cdf(fc->newmv_cdf[mode_ctx], 1, 2);
-
-    mode_ctx = (mode_context >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
-    if (mode == GLOBALMV) {
-#if CONFIG_ENTROPY_STATS
-      ++counts->zeromv_mode[mode_ctx][0];
-#endif
-      if (allow_update_cdf) update_cdf(fc->zeromv_cdf[mode_ctx], 0, 2);
-      return;
-    } else {
-#if CONFIG_ENTROPY_STATS
-      ++counts->zeromv_mode[mode_ctx][1];
-#endif
-      if (allow_update_cdf) update_cdf(fc->zeromv_cdf[mode_ctx], 1, 2);
-      mode_ctx = (mode_context >> REFMV_OFFSET) & REFMV_CTX_MASK;
-#if CONFIG_ENTROPY_STATS
-      ++counts->refmv_mode[mode_ctx][mode != NEARESTMV];
-#endif
-      if (allow_update_cdf)
-        update_cdf(fc->refmv_cdf[mode_ctx], mode != NEARESTMV, 2);
-    }
   }
+
+#if CONFIG_ENTROPY_STATS
+  ++counts->newmv_mode[mode_ctx][1];
+#endif
+  update_cdf(fc->newmv_cdf[mode_ctx], 1, 2);
+
+  mode_ctx = (mode_context >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
+  if (mode == GLOBALMV) {
+#if CONFIG_ENTROPY_STATS
+    ++counts->zeromv_mode[mode_ctx][0];
+#endif
+    update_cdf(fc->zeromv_cdf[mode_ctx], 0, 2);
+    return;
+  }
+
+#if CONFIG_ENTROPY_STATS
+  ++counts->zeromv_mode[mode_ctx][1];
+#endif
+  update_cdf(fc->zeromv_cdf[mode_ctx], 1, 2);
+
+  mode_ctx = (mode_context >> REFMV_OFFSET) & REFMV_CTX_MASK;
+#if CONFIG_ENTROPY_STATS
+  ++counts->refmv_mode[mode_ctx][mode != NEARESTMV];
+#endif
+  update_cdf(fc->refmv_cdf[mode_ctx], mode != NEARESTMV, 2);
 }
 
 static void update_palette_cdf(MACROBLOCKD *xd, const MB_MODE_INFO *const mbmi,
-                               FRAME_COUNTS *counts, uint8_t allow_update_cdf) {
+                               FRAME_COUNTS *counts) {
   FRAME_CONTEXT *fc = xd->tile_ctx;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
@@ -821,17 +821,14 @@ static void update_palette_cdf(MACROBLOCKD *xd, const MB_MODE_INFO *const mbmi,
 #if CONFIG_ENTROPY_STATS
     ++counts->palette_y_mode[palette_bsize_ctx][palette_mode_ctx][n > 0];
 #endif
-    if (allow_update_cdf)
-      update_cdf(fc->palette_y_mode_cdf[palette_bsize_ctx][palette_mode_ctx],
-                 n > 0, 2);
+    update_cdf(fc->palette_y_mode_cdf[palette_bsize_ctx][palette_mode_ctx],
+               n > 0, 2);
     if (n > 0) {
 #if CONFIG_ENTROPY_STATS
       ++counts->palette_y_size[palette_bsize_ctx][n - PALETTE_MIN_SIZE];
 #endif
-      if (allow_update_cdf) {
-        update_cdf(fc->palette_y_size_cdf[palette_bsize_ctx],
-                   n - PALETTE_MIN_SIZE, PALETTE_SIZES);
-      }
+      update_cdf(fc->palette_y_size_cdf[palette_bsize_ctx],
+                 n - PALETTE_MIN_SIZE, PALETTE_SIZES);
     }
   }
 
@@ -842,17 +839,14 @@ static void update_palette_cdf(MACROBLOCKD *xd, const MB_MODE_INFO *const mbmi,
 #if CONFIG_ENTROPY_STATS
     ++counts->palette_uv_mode[palette_uv_mode_ctx][n > 0];
 #endif
-    if (allow_update_cdf)
-      update_cdf(fc->palette_uv_mode_cdf[palette_uv_mode_ctx], n > 0, 2);
+    update_cdf(fc->palette_uv_mode_cdf[palette_uv_mode_ctx], n > 0, 2);
 
     if (n > 0) {
 #if CONFIG_ENTROPY_STATS
       ++counts->palette_uv_size[palette_bsize_ctx][n - PALETTE_MIN_SIZE];
 #endif
-      if (allow_update_cdf) {
-        update_cdf(fc->palette_uv_size_cdf[palette_bsize_ctx],
-                   n - PALETTE_MIN_SIZE, PALETTE_SIZES);
-      }
+      update_cdf(fc->palette_uv_size_cdf[palette_bsize_ctx],
+                 n - PALETTE_MIN_SIZE, PALETTE_SIZES);
     }
   }
 }
@@ -861,11 +855,9 @@ static void sum_intra_stats(const AV1_COMMON *const cm, FRAME_COUNTS *counts,
                             MACROBLOCKD *xd, const MB_MODE_INFO *const mbmi,
                             const MB_MODE_INFO *above_mi,
                             const MB_MODE_INFO *left_mi, const int intraonly,
-                            const int mi_row, const int mi_col,
-                            uint8_t allow_update_cdf) {
+                            const int mi_row, const int mi_col) {
   FRAME_CONTEXT *fc = xd->tile_ctx;
   const PREDICTION_MODE y_mode = mbmi->mode;
-  const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
   (void)counts;
   const BLOCK_SIZE bsize = mbmi->sb_type;
 
@@ -877,14 +869,12 @@ static void sum_intra_stats(const AV1_COMMON *const cm, FRAME_COUNTS *counts,
     const int left_ctx = intra_mode_context[left];
     ++counts->kf_y_mode[above_ctx][left_ctx][y_mode];
 #endif  // CONFIG_ENTROPY_STATS
-    if (allow_update_cdf)
-      update_cdf(get_y_mode_cdf(fc, above_mi, left_mi), y_mode, INTRA_MODES);
+    update_cdf(get_y_mode_cdf(fc, above_mi, left_mi), y_mode, INTRA_MODES);
   } else {
 #if CONFIG_ENTROPY_STATS
     ++counts->y_mode[size_group_lookup[bsize]][y_mode];
 #endif  // CONFIG_ENTROPY_STATS
-    if (allow_update_cdf)
-      update_cdf(fc->y_mode_cdf[size_group_lookup[bsize]], y_mode, INTRA_MODES);
+    update_cdf(fc->y_mode_cdf[size_group_lookup[bsize]], y_mode, INTRA_MODES);
   }
 
   if (av1_filter_intra_allowed(cm, mbmi)) {
@@ -897,14 +887,11 @@ static void sum_intra_stats(const AV1_COMMON *const cm, FRAME_COUNTS *counts,
             ->filter_intra_mode[mbmi->filter_intra_mode_info.filter_intra_mode];
     }
 #endif  // CONFIG_ENTROPY_STATS
-    if (allow_update_cdf) {
-      update_cdf(fc->filter_intra_cdfs[mbmi->sb_type], use_filter_intra_mode,
-                 2);
-      if (use_filter_intra_mode) {
-        update_cdf(fc->filter_intra_mode_cdf,
-                   mbmi->filter_intra_mode_info.filter_intra_mode,
-                   FILTER_INTRA_MODES);
-      }
+    update_cdf(fc->filter_intra_cdfs[mbmi->sb_type], use_filter_intra_mode, 2);
+    if (use_filter_intra_mode) {
+      update_cdf(fc->filter_intra_mode_cdf,
+                 mbmi->filter_intra_mode_info.filter_intra_mode,
+                 FILTER_INTRA_MODES);
     }
   }
   if (av1_is_directional_mode(mbmi->mode) && av1_use_angle_delta(bsize)) {
@@ -912,11 +899,9 @@ static void sum_intra_stats(const AV1_COMMON *const cm, FRAME_COUNTS *counts,
     ++counts->angle_delta[mbmi->mode - V_PRED]
                          [mbmi->angle_delta[PLANE_TYPE_Y] + MAX_ANGLE_DELTA];
 #endif
-    if (allow_update_cdf) {
-      update_cdf(fc->angle_delta_cdf[mbmi->mode - V_PRED],
-                 mbmi->angle_delta[PLANE_TYPE_Y] + MAX_ANGLE_DELTA,
-                 2 * MAX_ANGLE_DELTA + 1);
-    }
+    update_cdf(fc->angle_delta_cdf[mbmi->mode - V_PRED],
+               mbmi->angle_delta[PLANE_TYPE_Y] + MAX_ANGLE_DELTA,
+               2 * MAX_ANGLE_DELTA + 1);
   }
 
   if (!is_chroma_reference(mi_row, mi_col, bsize,
@@ -924,14 +909,13 @@ static void sum_intra_stats(const AV1_COMMON *const cm, FRAME_COUNTS *counts,
                            xd->plane[AOM_PLANE_U].subsampling_y))
     return;
 
+  const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
+  const CFL_ALLOWED_TYPE cfl_allowed = is_cfl_allowed(xd);
 #if CONFIG_ENTROPY_STATS
-  ++counts->uv_mode[is_cfl_allowed(xd)][y_mode][uv_mode];
+  ++counts->uv_mode[cfl_allowed][y_mode][uv_mode];
 #endif  // CONFIG_ENTROPY_STATS
-  if (allow_update_cdf) {
-    const CFL_ALLOWED_TYPE cfl_allowed = is_cfl_allowed(xd);
-    update_cdf(fc->uv_mode_cdf[cfl_allowed][y_mode], uv_mode,
-               UV_INTRA_MODES - !cfl_allowed);
-  }
+  update_cdf(fc->uv_mode_cdf[cfl_allowed][y_mode], uv_mode,
+             UV_INTRA_MODES - !cfl_allowed);
   if (uv_mode == UV_CFL_PRED) {
     const int8_t joint_sign = mbmi->cfl_alpha_signs;
     const uint8_t idx = mbmi->cfl_alpha_idx;
@@ -939,16 +923,14 @@ static void sum_intra_stats(const AV1_COMMON *const cm, FRAME_COUNTS *counts,
 #if CONFIG_ENTROPY_STATS
     ++counts->cfl_sign[joint_sign];
 #endif
-    if (allow_update_cdf)
-      update_cdf(fc->cfl_sign_cdf, joint_sign, CFL_JOINT_SIGNS);
+    update_cdf(fc->cfl_sign_cdf, joint_sign, CFL_JOINT_SIGNS);
     if (CFL_SIGN_U(joint_sign) != CFL_SIGN_ZERO) {
       aom_cdf_prob *cdf_u = fc->cfl_alpha_cdf[CFL_CONTEXT_U(joint_sign)];
 
 #if CONFIG_ENTROPY_STATS
       ++counts->cfl_alpha[CFL_CONTEXT_U(joint_sign)][CFL_IDX_U(idx)];
 #endif
-      if (allow_update_cdf)
-        update_cdf(cdf_u, CFL_IDX_U(idx), CFL_ALPHABET_SIZE);
+      update_cdf(cdf_u, CFL_IDX_U(idx), CFL_ALPHABET_SIZE);
     }
     if (CFL_SIGN_V(joint_sign) != CFL_SIGN_ZERO) {
       aom_cdf_prob *cdf_v = fc->cfl_alpha_cdf[CFL_CONTEXT_V(joint_sign)];
@@ -956,8 +938,7 @@ static void sum_intra_stats(const AV1_COMMON *const cm, FRAME_COUNTS *counts,
 #if CONFIG_ENTROPY_STATS
       ++counts->cfl_alpha[CFL_CONTEXT_V(joint_sign)][CFL_IDX_V(idx)];
 #endif
-      if (allow_update_cdf)
-        update_cdf(cdf_v, CFL_IDX_V(idx), CFL_ALPHABET_SIZE);
+      update_cdf(cdf_v, CFL_IDX_V(idx), CFL_ALPHABET_SIZE);
     }
   }
   if (av1_is_directional_mode(get_uv_mode(uv_mode)) &&
@@ -966,14 +947,13 @@ static void sum_intra_stats(const AV1_COMMON *const cm, FRAME_COUNTS *counts,
     ++counts->angle_delta[uv_mode - UV_V_PRED]
                          [mbmi->angle_delta[PLANE_TYPE_UV] + MAX_ANGLE_DELTA];
 #endif
-    if (allow_update_cdf) {
-      update_cdf(fc->angle_delta_cdf[uv_mode - UV_V_PRED],
-                 mbmi->angle_delta[PLANE_TYPE_UV] + MAX_ANGLE_DELTA,
-                 2 * MAX_ANGLE_DELTA + 1);
-    }
+    update_cdf(fc->angle_delta_cdf[uv_mode - UV_V_PRED],
+               mbmi->angle_delta[PLANE_TYPE_UV] + MAX_ANGLE_DELTA,
+               2 * MAX_ANGLE_DELTA + 1);
   }
-  if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
-    update_palette_cdf(xd, mbmi, counts, allow_update_cdf);
+  if (av1_allow_palette(cm->allow_screen_content_tools, bsize)) {
+    update_palette_cdf(xd, mbmi, counts);
+  }
 }
 
 static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
@@ -1052,7 +1032,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 
   if (!is_inter_block(mbmi)) {
     sum_intra_stats(cm, td->counts, xd, mbmi, xd->above_mbmi, xd->left_mbmi,
-                    frame_is_intra_only(cm), mi_row, mi_col, 1);
+                    frame_is_intra_only(cm), mi_row, mi_col);
   }
 
   if (av1_allow_intrabc(cm)) {
@@ -1320,7 +1300,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
       update_cdf(fc->inter_compound_mode_cdf[mode_ctx],
                  INTER_COMPOUND_OFFSET(mode), INTER_COMPOUND_MODES);
     } else {
-      update_inter_mode_stats(fc, counts, mode, mode_ctx, 1);
+      update_inter_mode_stats(fc, counts, mode, mode_ctx);
     }
 
     const int new_mv = mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV;
