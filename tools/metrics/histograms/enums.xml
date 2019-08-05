@@ -62509,6 +62509,34 @@ Full version information for the fingerprint enum values:
   <int value="77" label="stopLoading"/>
 </enum>
 
+<enum name="WebViewAppProvidedMimeType">
+  <int value="0"
+      label="Null MIME type for content supplied by an app ContentProvider."/>
+  <int value="1"
+      label="Nonnull MIME type for content supplied by an app
+             ContentProvider."/>
+  <int value="2"
+      label="Could not guess MIME type for Android asset from file extension."/>
+  <int value="3"
+      label="Successfully guessed MIME type for Android asset from file
+             extension."/>
+  <int value="4" label="Could not guess MIME type due to generic Exception."/>
+  <int value="5"
+      label="Could not guess MIME type for Android asset from InputStream
+             content. This is not ideal, but we have a fallback to try to
+             guess by sniffing the InputStream."/>
+  <int value="6"
+      label="Successfully guessed MIME type for Android asset from
+             InputStream content. Although this means we've guessed a MIME
+             type, this is not ideal because we would prefer to guess from
+             the file extension only."/>
+  <int value="7" label="Could not guess MIME type due to IOException."/>
+  <int value="8"
+      label="Null MIME type from shouldInterceptRequest return value."/>
+  <int value="9"
+      label="Nonnull MIME type from shouldInterceptRequest return value."/>
+</enum>
+
 <enum name="WebViewCallbackType">
   <int value="0" label="onReceivedLoginRequest"/>
   <int value="1" label="onReceivedClientCertRequest"/>
