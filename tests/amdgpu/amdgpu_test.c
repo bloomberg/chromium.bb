@@ -464,9 +464,12 @@ static void amdgpu_disable_suites()
 			fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
 
 	/* This test was ran on GFX9 only */
-	if (family_id < AMDGPU_FAMILY_AI || family_id > AMDGPU_FAMILY_RV)
-		if (amdgpu_set_test_active(BASIC_TESTS_STR, "Dispatch Test", CU_FALSE))
+	if (family_id < AMDGPU_FAMILY_AI || family_id > AMDGPU_FAMILY_RV) {
+		if (amdgpu_set_test_active(BASIC_TESTS_STR, "Dispatch Test (GFX)", CU_FALSE))
 			fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
+		if (amdgpu_set_test_active(BASIC_TESTS_STR, "Dispatch Test (Compute)", CU_FALSE))
+			fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
+	}
 
 	/* This test was ran on GFX9 only */
 	if (family_id < AMDGPU_FAMILY_AI || family_id > AMDGPU_FAMILY_RV)
