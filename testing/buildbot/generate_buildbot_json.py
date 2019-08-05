@@ -673,6 +673,8 @@ class BBJSONGenerator(object):
         gpu = ['10de', '1cb3']
       elif gpu.startswith('intel-hd-630'):
         gpu = ['8086', '5912']
+      elif gpu.startswith('intel-uhd-630'):
+        gpu = ['8086', '3e92']
       else:
         gpu = gpu.split('-')[0].split(':')
       substitutions['gpu_vendor_id'] = gpu[0]

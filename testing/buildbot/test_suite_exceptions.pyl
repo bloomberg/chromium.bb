@@ -1617,6 +1617,7 @@
       'ANGLE GPU Win10 x64 Release (Intel HD 630)',
       'Optional Win10 x64 Release (Intel HD 630)',
       'Win10 FYI x64 Release (Intel HD 630)',
+      'Win10 FYI x64 Release (Intel UHD 630)',
       'Win10 FYI x64 Exp Release (Intel HD 630)',
     ],
   },
