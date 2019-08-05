@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingMetricsRecorder.getHistogramForType;
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabMetricsRecorder.UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS;
-import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type.ADDRESS_INFO;
+import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type.CREDIT_CARD_INFO;
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type.TITLE;
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.getType;
 
@@ -50,12 +50,12 @@ import org.chromium.ui.modelutil.ListObservable;
 import java.util.HashMap;
 
 /**
- * Controller tests for the address accessory sheet.
+ * Controller tests for the credit card accessory sheet.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
         shadows = {CustomShadowAsyncTask.class, ShadowRecordHistogram.class})
-public class AddressAccessorySheetControllerTest {
+public class CreditCardAccessorySheetControllerTest {
     @Rule
     public JniMocker mocker = new JniMocker();
     @Mock
@@ -65,7 +65,7 @@ public class AddressAccessorySheetControllerTest {
     @Mock
     private RecordHistogram.Natives mMockRecordHistogramNatives;
 
-    private AddressAccessorySheetCoordinator mCoordinator;
+    private CreditCardAccessorySheetCoordinator mCoordinator;
     private AccessorySheetTabModel mSheetDataPieces;
 
     @Before
@@ -75,7 +75,8 @@ public class AddressAccessorySheetControllerTest {
         mocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogramNatives);
         AccessorySheetTabCoordinator.IconProvider.setIconForTesting(mock(Drawable.class));
         setAutofillFeature(true);
-        mCoordinator = new AddressAccessorySheetCoordinator(RuntimeEnvironment.application, null);
+        mCoordinator =
+                new CreditCardAccessorySheetCoordinator(RuntimeEnvironment.application, null);
         assertNotNull(mCoordinator);
         mSheetDataPieces = mCoordinator.getSheetDataPiecesForTesting();
     }
@@ -107,13 +108,13 @@ public class AddressAccessorySheetControllerTest {
 
         // If the coordinator receives a set of initial items, the model should report an insertion.
         testProvider.notifyObservers(
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses"));
+                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments"));
         verify(mMockItemListObserver).onItemRangeInserted(mSheetDataPieces, 0, 1);
         assertThat(mSheetDataPieces.size(), is(1));
 
         // If the coordinator receives a new set of items, the model should report a change.
         testProvider.notifyObservers(
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Other Addresses"));
+                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Other Payments"));
         verify(mMockItemListObserver).onItemRangeChanged(mSheetDataPieces, 0, 1, null);
         assertThat(mSheetDataPieces.size(), is(1));
 
@@ -131,18 +132,18 @@ public class AddressAccessorySheetControllerTest {
     public void testSplitsTabDataToList() {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses for this site");
+                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments");
         testData.getUserInfoList().add(new UserInfo("", null));
         testData.getUserInfoList().get(0).addField(
-                new UserInfoField("Name", "Name", "", false, null));
+                new UserInfoField("Todd", "Todd", "", false, field -> {}));
         testData.getUserInfoList().get(0).addField(
-                new UserInfoField("Street", "Street", "", true, field -> {}));
+                new UserInfoField("**** 9219", "**** 9219", "", true, field -> {}));
 
         mCoordinator.registerDataProvider(testProvider);
         testProvider.notifyObservers(testData);
 
         assertThat(mSheetDataPieces.size(), is(1));
-        assertThat(getType(mSheetDataPieces.get(0)), is(ADDRESS_INFO));
+        assertThat(getType(mSheetDataPieces.get(0)), is(CREDIT_CARD_INFO));
         assertThat(mSheetDataPieces.get(0).getDataPiece(), is(testData.getUserInfoList().get(0)));
     }
 
@@ -150,25 +151,25 @@ public class AddressAccessorySheetControllerTest {
     public void testUsesTitleElementForEmptyState() {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "No addresses");
+                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments");
         mCoordinator.registerDataProvider(testProvider);
 
         testProvider.notifyObservers(testData);
 
         assertThat(mSheetDataPieces.size(), is(1));
         assertThat(getType(mSheetDataPieces.get(0)), is(TITLE));
-        assertThat(mSheetDataPieces.get(0).getDataPiece(), is(equalTo("No addresses")));
+        assertThat(mSheetDataPieces.get(0).getDataPiece(), is(equalTo("Payments")));
 
         // As soon UserInfo is available, discard the title.
         testData.getUserInfoList().add(new UserInfo("", null));
         testData.getUserInfoList().get(0).addField(
-                new UserInfoField("Name", "Name", "", false, null));
+                new UserInfoField("Todd", "Todd", "", false, field -> {}));
         testData.getUserInfoList().get(0).addField(
-                new UserInfoField("Address", "Address for Name", "", true, field -> {}));
+                new UserInfoField("**** 9219", "**** 9219", "", true, field -> {}));
         testProvider.notifyObservers(testData);
 
         assertThat(mSheetDataPieces.size(), is(1));
-        assertThat(getType(mSheetDataPieces.get(0)), is(ADDRESS_INFO));
+        assertThat(getType(mSheetDataPieces.get(0)), is(CREDIT_CARD_INFO));
     }
 
     @Test
@@ -178,16 +179,16 @@ public class AddressAccessorySheetControllerTest {
         assertThat(RecordHistogram.getHistogramTotalCountForTesting(
                            UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS),
                 is(0));
-        assertThat(getSuggestionsImpressions(AccessoryTabType.ADDRESSES, 0), is(0));
+        assertThat(getSuggestionsImpressions(AccessoryTabType.CREDIT_CARDS, 0), is(0));
         assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 0), is(0));
 
         // If the tab is shown without interactive item, log "0" samples.
         AccessorySheetData accessorySheetData =
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "No addresses!");
+                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments");
         testProvider.notifyObservers(accessorySheetData);
         mCoordinator.onTabShown();
 
-        assertThat(getSuggestionsImpressions(AccessoryTabType.ADDRESSES, 0), is(1));
+        assertThat(getSuggestionsImpressions(AccessoryTabType.CREDIT_CARDS, 0), is(1));
         assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 0), is(1));
     }
 
@@ -198,23 +199,23 @@ public class AddressAccessorySheetControllerTest {
         assertThat(RecordHistogram.getHistogramTotalCountForTesting(
                            UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS),
                 is(0));
-        assertThat(getSuggestionsImpressions(AccessoryTabType.ADDRESSES, 1), is(0));
+        assertThat(getSuggestionsImpressions(AccessoryTabType.CREDIT_CARDS, 1), is(0));
         assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 1), is(0));
 
         // Add only two interactive items - the third one should not be recorded.
         AccessorySheetData accessorySheetData =
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses");
+                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments");
         accessorySheetData.getUserInfoList().add(new UserInfo("", null));
         accessorySheetData.getUserInfoList().get(0).addField(
                 new UserInfoField("Todd Tester", "Todd Tester", "0", false, result -> {}));
         accessorySheetData.getUserInfoList().get(0).addField(
-                new UserInfoField("Main Street", "Main Street", "1", false, result -> {}));
+                new UserInfoField("**** 9219", "Card for Todd Tester", "1", false, result -> {}));
         accessorySheetData.getUserInfoList().get(0).addField(
                 new UserInfoField("Unselectable", "Unselectable", "-1", false, null));
         testProvider.notifyObservers(accessorySheetData);
         mCoordinator.onTabShown();
 
-        assertThat(getSuggestionsImpressions(AccessoryTabType.ADDRESSES, 2), is(1));
+        assertThat(getSuggestionsImpressions(AccessoryTabType.CREDIT_CARDS, 2), is(1));
         assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 2), is(1));
     }
 
