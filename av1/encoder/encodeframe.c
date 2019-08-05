@@ -66,6 +66,7 @@
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/tokenize.h"
 #include "av1/encoder/var_based_part.h"
+#include "av1/encoder/tpl_model.h"
 
 static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                               ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
@@ -3443,9 +3444,8 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
   int tpl_stride = tpl_frame->stride;
   int64_t intra_cost = 0;
   int64_t mc_dep_cost = 0;
-  int mi_wide = mi_size_wide[bsize];
-  int mi_high = mi_size_high[bsize];
-  int row, col;
+  const int mi_wide = mi_size_wide[bsize];
+  const int mi_high = mi_size_high[bsize];
 
   if (tpl_frame->is_valid == 0) return orig_rdmult;
 
@@ -3462,10 +3462,12 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int analysis_type,
   const int mi_col_end_sr = av1_coded_to_superres_mi(
       mi_col + mi_wide, cm->superres_scale_denominator);
   const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
-  for (row = mi_row; row < mi_row + mi_high; ++row) {
-    for (col = mi_col_sr; col < mi_col_end_sr; ++col) {
+  const int step = 1 << cpi->tpl_stats_block_mis_log2;
+  for (int row = mi_row; row < mi_row + mi_high; row += step) {
+    for (int col = mi_col_sr; col < mi_col_end_sr; col += step) {
       if (row >= cm->mi_rows || col >= mi_cols_sr) continue;
-      TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
+      TplDepStats *this_stats =
+          &tpl_stats[av1_tpl_ptr_pos(cpi, row, col, tpl_stride)];
       intra_cost += this_stats->intra_cost;
       mc_dep_cost += this_stats->intra_cost + this_stats->mc_flow;
 #if !USE_TPL_CLASSIC_MODEL
@@ -3526,9 +3528,8 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   int tpl_stride = tpl_frame->stride;
   int64_t intra_cost = 0;
   int64_t mc_dep_cost = 0;
-  int mi_wide = mi_size_wide[bsize];
-  int mi_high = mi_size_high[bsize];
-  int row, col;
+  const int mi_wide = mi_size_wide[bsize];
+  const int mi_high = mi_size_high[bsize];
 
   if (cpi->tpl_model_pass == 1) {
     assert(cpi->oxcf.enable_tpl_model == 2);
@@ -3550,10 +3551,12 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   const int mi_col_end_sr = av1_coded_to_superres_mi(
       mi_col + mi_wide, cm->superres_scale_denominator);
   const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
-  for (row = mi_row; row < mi_row + mi_high; ++row) {
-    for (col = mi_col_sr; col < mi_col_end_sr; ++col) {
+  const int step = 1 << cpi->tpl_stats_block_mis_log2;
+  for (int row = mi_row; row < mi_row + mi_high; row += step) {
+    for (int col = mi_col_sr; col < mi_col_end_sr; col += step) {
       if (row >= cm->mi_rows || col >= mi_cols_sr) continue;
-      TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
+      TplDepStats *this_stats =
+          &tpl_stats[av1_tpl_ptr_pos(cpi, row, col, tpl_stride)];
       intra_cost += this_stats->intra_cost;
       mc_dep_cost += this_stats->intra_cost + this_stats->mc_flow;
 #if !USE_TPL_CLASSIC_MODEL

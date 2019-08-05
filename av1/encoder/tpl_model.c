@@ -355,7 +355,13 @@ static double iiratio_nonlinear(double iiratio) {
   return iiratio * iiratio;
 }
 
-static void tpl_model_update_b(TplDepFrame *tpl_frame,
+int av1_tpl_ptr_pos(AV1_COMP *cpi, int mi_row, int mi_col, int stride) {
+  const int right_shift = cpi->tpl_stats_block_mis_log2;
+
+  return (mi_row >> right_shift) * stride + (mi_col >> right_shift);
+}
+
+static void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
                                TplDepStats *tpl_stats_ptr, int mi_row,
                                int mi_col, double quant_ratio,
                                const BLOCK_SIZE bsize, int ref_frame_index,
@@ -395,12 +401,11 @@ static void tpl_model_update_b(TplDepFrame *tpl_frame,
 #if !USE_TPL_CLASSIC_MODEL
       int64_t mc_saved = tpl_stats_ptr->intra_cost - tpl_stats_ptr->inter_cost;
 #endif  // #if !USE_TPL_CLASSIC_MODEL
-      int idx, idy;
-      for (idy = 0; idy < mi_height; ++idy) {
-        for (idx = 0; idx < mi_width; ++idx) {
-          TplDepStats *des_stats =
-              &ref_stats_ptr[(ref_mi_row + idy) * ref_tpl_frame->stride +
-                             (ref_mi_col + idx)];
+      const int step = 1 << cpi->tpl_stats_block_mis_log2;
+      for (int idy = 0; idy < mi_height; idy += step) {
+        for (int idx = 0; idx < mi_width; idx += step) {
+          TplDepStats *des_stats = &ref_stats_ptr[av1_tpl_ptr_pos(
+              cpi, ref_mi_row + idy, ref_mi_col + idx, ref_tpl_frame->stride)];
           des_stats->mc_flow += (mc_flow * overlap_area) / pix_num;
 #if !USE_TPL_CLASSIC_MODEL
           des_stats->mc_count += overlap_area << TPL_DEP_COST_SCALE_LOG2;
@@ -413,30 +418,32 @@ static void tpl_model_update_b(TplDepFrame *tpl_frame,
   }
 }
 
-static void tpl_model_update(TplDepFrame *tpl_frame, TplDepStats *tpl_stats_ptr,
-                             int mi_row, int mi_col, double quant_ratio,
-                             const BLOCK_SIZE bsize, int ref_frame_index,
-                             int_mv mv) {
-  int idx, idy;
+static void tpl_model_update(AV1_COMP *cpi, TplDepFrame *tpl_frame,
+                             TplDepStats *tpl_stats_ptr, int mi_row, int mi_col,
+                             double quant_ratio, const BLOCK_SIZE bsize,
+                             int ref_frame_index, int_mv mv) {
   const int mi_height = mi_size_high[bsize];
   const int mi_width = mi_size_wide[bsize];
+  const int step = 1 << cpi->tpl_stats_block_mis_log2;
+  const BLOCK_SIZE tpl_block_size =
+      convert_length_to_bsize(MI_SIZE << cpi->tpl_stats_block_mis_log2);
 
-  for (idy = 0; idy < mi_height; ++idy) {
-    for (idx = 0; idx < mi_width; ++idx) {
-      TplDepStats *tpl_ptr =
-          &tpl_stats_ptr[(mi_row + idy) * tpl_frame->stride + (mi_col + idx)];
-      tpl_model_update_b(tpl_frame, tpl_ptr, mi_row + idy, mi_col + idx,
-                         quant_ratio, BLOCK_4X4, ref_frame_index, mv);
+  for (int idy = 0; idy < mi_height; idy += step) {
+    for (int idx = 0; idx < mi_width; idx += step) {
+      TplDepStats *tpl_ptr = &tpl_stats_ptr[av1_tpl_ptr_pos(
+          cpi, mi_row + idy, mi_col + idx, tpl_frame->stride)];
+      tpl_model_update_b(cpi, tpl_frame, tpl_ptr, mi_row + idy, mi_col + idx,
+                         quant_ratio, tpl_block_size, ref_frame_index, mv);
     }
   }
 }
 
-static void tpl_model_store(TplDepStats *tpl_stats_ptr, int mi_row, int mi_col,
-                            BLOCK_SIZE bsize, int stride,
-                            const TplDepStats *src_stats) {
+static void tpl_model_store(AV1_COMP *cpi, TplDepStats *tpl_stats_ptr,
+                            int mi_row, int mi_col, BLOCK_SIZE bsize,
+                            int stride, const TplDepStats *src_stats) {
   const int mi_height = mi_size_high[bsize];
   const int mi_width = mi_size_wide[bsize];
-  int idx, idy;
+  const int step = 1 << cpi->tpl_stats_block_mis_log2;
 
   int64_t intra_cost = src_stats->intra_cost / (mi_height * mi_width);
   int64_t inter_cost = src_stats->inter_cost / (mi_height * mi_width);
@@ -446,9 +453,10 @@ static void tpl_model_store(TplDepStats *tpl_stats_ptr, int mi_row, int mi_col,
   intra_cost = AOMMAX(1, intra_cost);
   inter_cost = AOMMAX(1, inter_cost);
 
-  for (idy = 0; idy < mi_height; ++idy) {
-    tpl_ptr = &tpl_stats_ptr[(mi_row + idy) * stride + mi_col];
-    for (idx = 0; idx < mi_width; ++idx) {
+  for (int idy = 0; idy < mi_height; idy += step) {
+    tpl_ptr =
+        &tpl_stats_ptr[av1_tpl_ptr_pos(cpi, mi_row + idy, mi_col, stride)];
+    for (int idx = 0; idx < mi_width; idx += step) {
       tpl_ptr->intra_cost = intra_cost;
       tpl_ptr->inter_cost = inter_cost;
       tpl_ptr->mc_dep_cost = tpl_ptr->intra_cost + tpl_ptr->mc_flow;
@@ -565,12 +573,13 @@ static void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
                       &ref_frame_index, &mv);
 
       // Motion flow dependency dispenser.
-      tpl_model_store(tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
+      tpl_model_store(cpi, tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
                       tpl_frame->stride, &tpl_stats);
       double quant_ratio = (double)recon_error / sse;
-      if (frame_idx)
-        tpl_model_update(cpi->tpl_frame, tpl_frame->tpl_stats_ptr, mi_row,
+      if (frame_idx) {
+        tpl_model_update(cpi, cpi->tpl_frame, tpl_frame->tpl_stats_ptr, mi_row,
                          mi_col, quant_ratio, bsize, ref_frame_index, mv);
+      }
     }
   }
 

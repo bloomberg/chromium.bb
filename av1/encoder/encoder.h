@@ -786,6 +786,7 @@ typedef struct AV1_COMP {
   YV12_BUFFER_CONFIG *unscaled_last_source;
   YV12_BUFFER_CONFIG scaled_last_source;
 
+  uint8_t tpl_stats_block_mis_log2;  // block granularity of tpl score storage
   TplDepFrame tpl_stats_buffer[MAX_LENGTH_TPL_FRAME_STATS];
   TplDepFrame *tpl_frame;
 

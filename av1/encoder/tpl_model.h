@@ -22,6 +22,8 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
 
 void av1_tpl_setup_forward_stats(AV1_COMP *cpi);
 
+int av1_tpl_ptr_pos(AV1_COMP *cpi, int mi_row, int mi_col, int stride);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
