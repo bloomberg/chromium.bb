@@ -21,6 +21,7 @@
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
+#include "fuchsia/base/string_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 #include "fuchsia/runners/cast/fake_application_config_manager.h"
@@ -44,11 +45,6 @@ void ComponentErrorHandler(zx_status_t status) {
   ADD_FAILURE();
 }
 
-std::vector<uint8_t> StringToUnsignedVector(base::StringPiece str) {
-  const uint8_t* raw_data = reinterpret_cast<const uint8_t*>(str.data());
-  return std::vector<uint8_t>(raw_data, raw_data + str.length());
-}
-
 class FakeAdditionalHeadersProvider
     : public fuchsia::web::AdditionalHeadersProvider {
  public:
@@ -61,8 +57,8 @@ class FakeAdditionalHeadersProvider
   void GetHeaders(GetHeadersCallback callback) override {
     std::vector<fuchsia::net::http::Header> headers;
     fuchsia::net::http::Header header;
-    header.name = StringToUnsignedVector("Test");
-    header.value = StringToUnsignedVector("Value");
+    header.name = cr_fuchsia::StringToBytes("Test");
+    header.value = cr_fuchsia::StringToBytes("Value");
     headers.push_back(std::move(header));
     callback(std::move(headers), 0);
   }

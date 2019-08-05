@@ -12,9 +12,11 @@ import("//testing/test.gni")
 source_set("base") {
   sources = [
     "mem_buffer_util.cc",
+    "string_util.cc",
   ]
   public = [
     "mem_buffer_util.h",
+    "string_util.h",
   ]
   deps = [
     "//base",
