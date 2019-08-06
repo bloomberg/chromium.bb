@@ -1431,10 +1431,12 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     // First pass doesn't modify reference buffer assignment or produce frame
     // flags
     update_frame_flags(cpi, frame_flags);
-    int ref_map_index =
-        av1_get_refresh_ref_frame_map(cm->current_frame.refresh_frame_flags);
-    av1_update_ref_frame_map(cpi, frame_update_type, ref_map_index,
-                             &cpi->ref_buffer_stack);
+    if (!cpi->ext_refresh_frame_flags_pending) {
+      int ref_map_index =
+          av1_get_refresh_ref_frame_map(cm->current_frame.refresh_frame_flags);
+      av1_update_ref_frame_map(cpi, frame_update_type, ref_map_index,
+                               &cpi->ref_buffer_stack);
+    }
   }
 
 #if !CONFIG_REALTIME_ONLY
