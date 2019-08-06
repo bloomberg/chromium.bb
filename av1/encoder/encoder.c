@@ -1043,7 +1043,7 @@ static void set_bitstream_level_tier(SequenceHeader *seq, AV1_COMMON *cm,
 
 static void init_seq_coding_tools(SequenceHeader *seq, AV1_COMMON *cm,
                                   const AV1EncoderConfig *oxcf, int use_svc) {
-  seq->still_picture = (oxcf->limit == 1);
+  seq->still_picture = (oxcf->force_video_mode == 0) && (oxcf->limit == 1);
   seq->reduced_still_picture_hdr = seq->still_picture;
   seq->reduced_still_picture_hdr &= !oxcf->full_still_picture_hdr;
   seq->force_screen_content_tools = (oxcf->mode == REALTIME) ? 0 : 2;

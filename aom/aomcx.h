@@ -572,6 +572,16 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_RESTORATION,
 
+  /*!\brief Codec control function to force video mode
+   *
+   *                          0 = do not force video mode
+   *                          1 = force video mode even for a single frame
+   *
+   *  By default, the encoder does not force video and allows still picture.
+   *
+   */
+  AV1E_SET_FORCE_VIDEO_MODE,
+
   /*!\brief Codec control function to predict with OBMC mode.
    *
    *                          0 = do not allow OBMC mode
@@ -1330,6 +1340,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_CDEF, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_RESTORATION, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_RESTORATION
+
+AOM_CTRL_USE_TYPE(AV1E_SET_FORCE_VIDEO_MODE, unsigned int)
+#define AOM_CTRL_AV1E_SET_FORCE_VIDEO_MODE
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_OBMC, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_OBMC

@@ -278,6 +278,7 @@ typedef struct AV1EncoderConfig {
   int deltalf_mode;
   int enable_cdef;
   int enable_restoration;
+  int force_video_mode;
   int enable_obmc;
   int disable_trellis_quant;
   int using_qm;
