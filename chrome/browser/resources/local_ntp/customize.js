@@ -704,7 +704,8 @@ customize.getNextTile = function(deltaX, deltaY, currentElem) {
  */
 customize.tileOnKeyDownInteraction = function(event) {
   const tile = event.currentTarget;
-  if (event.keyCode === customize.KEYCODES.ENTER) {
+  if (event.keyCode === customize.KEYCODES.ENTER ||
+      event.keyCode === customize.KEYCODES.SPACE) {
     event.preventDefault();
     event.stopPropagation();
     if (tile.onClickOverride) {
@@ -1995,6 +1996,14 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   const clOption = $(customize.IDS.SHORTCUTS_OPTION_CUSTOM_LINKS);
+  const mvOption = $(customize.IDS.SHORTCUTS_OPTION_MOST_VISITED);
+  const hideToggle = $(customize.IDS.SHORTCUTS_HIDE_TOGGLE);
+  $(customize.IDS.SHORTCUTS_MENU).onkeydown = function(event) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
+      clOption.focus();
+    }
+  };
+
   clOption.onclick = function() {
     if (customize.selectedOptions.shortcutType !== clOption) {
       ntpApiHandle.logEvent(
@@ -2006,10 +2015,18 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     if (event.keyCode === customize.KEYCODES.ENTER ||
         event.keyCode === customize.KEYCODES.SPACE) {
       clOption.click();
+    } else if (customize.arrowKeys.includes(event.keyCode)) {
+      // Handle arrow key navigation.
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.keyCode === customize.KEYCODES.RIGHT) {
+        mvOption.focus();
+      } else if (event.keyCode === customize.KEYCODES.DOWN) {
+        hideToggle.focus();
+      }
     }
   };
 
-  const mvOption = $(customize.IDS.SHORTCUTS_OPTION_MOST_VISITED);
   mvOption.onclick = function() {
     if (customize.selectedOptions.shortcutType !== mvOption) {
       ntpApiHandle.logEvent(
@@ -2021,10 +2038,20 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     if (event.keyCode === customize.KEYCODES.ENTER ||
         event.keyCode === customize.KEYCODES.SPACE) {
       mvOption.click();
+    } else if (customize.arrowKeys.includes(event.keyCode)) {
+      // Handle arrow key navigation.
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.keyCode === customize.KEYCODES.LEFT) {
+        clOption.focus();
+      } else if (
+          event.keyCode === customize.KEYCODES.RIGHT ||
+          event.keyCode === customize.KEYCODES.DOWN) {
+        hideToggle.focus();
+      }
     }
   };
 
-  const hideToggle = $(customize.IDS.SHORTCUTS_HIDE_TOGGLE);
   hideToggle.onchange = function(event) {
     customize.richerPicker_toggleShortcutHide(hideToggle.checked);
     ntpApiHandle.logEvent(
@@ -2034,6 +2061,14 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     if (event.keyCode === customize.KEYCODES.ENTER ||
         event.keyCode === customize.KEYCODES.SPACE) {
       hideToggle.onchange(event);
+    } else if (customize.arrowKeys.includes(event.keyCode)) {
+      // Handle arrow key navigation.
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.keyCode === customize.KEYCODES.LEFT ||
+          event.keyCode === customize.KEYCODES.UP) {
+        mvOption.focus();
+      }
     }
   };
   hideToggle.onclick = function(event) {
