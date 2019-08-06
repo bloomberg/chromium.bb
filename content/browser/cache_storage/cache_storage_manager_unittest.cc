@@ -1402,15 +1402,36 @@ TEST_F(CacheStorageManagerTest, TestErrorInitializingCache) {
   CacheStorageHandle cache_storage = CacheStorageForOrigin(origin1_);
   auto cache_handle =
       LegacyCacheStorage::From(cache_storage)->GetLoadedCache(kCacheName);
-  base::FilePath index_path =
-      LegacyCacheStorageCache::From(cache_handle)->path().AppendASCII("index");
+  base::FilePath cache_path =
+      LegacyCacheStorageCache::From(cache_handle)->path();
+  base::FilePath storage_path = cache_path.DirName();
+  base::FilePath index_path = cache_path.AppendASCII("index");
   cache_handle = CacheStorageCacheHandle();
+
+  // Do our best to flush any pending cache_storage index file writes to disk
+  // before proceeding.  This does not guarantee the simple disk_cache index
+  // is written, though.
+  EXPECT_TRUE(FlushCacheStorageIndex(origin1_));
+  EXPECT_FALSE(FlushCacheStorageIndex(origin1_));
 
   DestroyStorageManager();
 
   // Truncate the SimpleCache index to force an error when next opened.
   ASSERT_FALSE(index_path.empty());
   ASSERT_EQ(5, base::WriteFile(index_path, "hello", 5));
+
+  // The cache_storage index and simple disk_cache index files are written from
+  // background threads.  They may be written in unexpected orders due to timing
+  // differences.  We need to ensure the cache directory to have a newer time
+  // stamp, though, in order for the Size() method to actually try calculating
+  // the size from the corrupted simple disk_cache.  Therefore we force the
+  // cache_storage index to have a much older time to ensure that it is not used
+  // in the following Size() call.
+  base::FilePath cache_index_path =
+      storage_path.AppendASCII(LegacyCacheStorage::kIndexFileName);
+  base::Time t = base::Time::Now() + base::TimeDelta::FromHours(-1);
+  EXPECT_TRUE(base::TouchFile(cache_index_path, t, t));
+  EXPECT_FALSE(IsIndexFileCurrent(storage_path));
 
   CreateStorageManager();
 
