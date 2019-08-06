@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <map>
 #include <utility>
 
 #include "base/bind.h"
@@ -312,15 +311,15 @@ class UserMediaProcessor::RequestInfo
 
   void AddNativeVideoFormats(const String& device_id,
                              Vector<media::VideoCaptureFormat> formats) {
-    video_formats_map_[device_id.Utf8()] = std::move(formats);
+    video_formats_map_.insert(device_id, std::move(formats));
   }
 
   // Do not store or delete the returned pointer.
   Vector<media::VideoCaptureFormat>* GetNativeVideoFormats(
       const String& device_id) {
-    auto it = video_formats_map_.find(device_id.Utf8());
+    auto it = video_formats_map_.find(device_id);
     CHECK(it != video_formats_map_.end());
-    return &it->second;
+    return &it->value;
   }
 
   const Vector<MediaStreamDevice>& audio_devices() const {
@@ -368,12 +367,9 @@ class UserMediaProcessor::RequestInfo
   MediaStreamRequestResult request_result_ = MediaStreamRequestResult::OK;
   blink::WebString request_result_name_;
   // Sources used in this request.
-  // TODO(crbug.com/704136): Switch away from std::vector.
-  std::vector<blink::WebMediaStreamSource> sources_;
-  std::vector<blink::WebPlatformMediaStreamSource*>
-      sources_waiting_for_callback_;
-  // TODO(crbug.com/704136): Switch away from std::string and std::map.
-  std::map<std::string, Vector<media::VideoCaptureFormat>> video_formats_map_;
+  Vector<blink::WebMediaStreamSource> sources_;
+  Vector<blink::WebPlatformMediaStreamSource*> sources_waiting_for_callback_;
+  HashMap<String, Vector<media::VideoCaptureFormat>> video_formats_map_;
   Vector<MediaStreamDevice> audio_devices_;
   Vector<MediaStreamDevice> video_devices_;
 };
@@ -439,8 +435,8 @@ void UserMediaProcessor::RequestInfo::OnTrackStarted(
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
   DVLOG(1) << "OnTrackStarted result " << result;
-  auto it = std::find(sources_waiting_for_callback_.begin(),
-                      sources_waiting_for_callback_.end(), source);
+  auto** it = std::find(sources_waiting_for_callback_.begin(),
+                        sources_waiting_for_callback_.end(), source);
   DCHECK(it != sources_waiting_for_callback_.end());
   sources_waiting_for_callback_.erase(it);
   // All tracks must be started successfully. Otherwise the request is a
@@ -454,7 +450,7 @@ void UserMediaProcessor::RequestInfo::OnTrackStarted(
 }
 
 void UserMediaProcessor::RequestInfo::CheckAllTracksStarted() {
-  if (ready_callback_ && sources_waiting_for_callback_.empty()) {
+  if (ready_callback_ && sources_waiting_for_callback_.IsEmpty()) {
     std::move(ready_callback_).Run(this, request_result_, request_result_name_);
     // NOTE: |this| might now be deleted.
   }
