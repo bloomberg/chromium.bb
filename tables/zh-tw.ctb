@@ -91,6 +91,7 @@ letter \x00E0 17-256
 letter \x00E1 17-23
 letter \x00E4 3458
 letter \x00E6 146
+noback sign \x00E7 235-14
 letter \x00E8 157-256
 letter \x00E9 157-23
 letter \x00EC 247-256
@@ -100,6 +101,7 @@ letter \x00F2 1357-256
 letter \x00F3 1357-23
 letter \x00F6 2468
 math \x00F7 46-34
+noback sign \x00F8 1256
 letter \x00F9 1367-256
 letter \x00FA 1367-23
 letter \x00FC 12568
@@ -111,6 +113,7 @@ letter \x0113 157-2
 letter \x011B 157-25
 letter \x012B 247-2
 letter \x014D 1357-2
+noback sign \x0153 246
 letter \x016B 1367-2
 letter \x017F 234
 #end Latin Extended-A
@@ -1230,6 +1233,10 @@ sign \x2BC4 1246-456-236
 sign \x2BD1 1246-145-456-1246-456-236-12456
 sign \x2BD2 4-12356-4-1246-246-25-25-12456
 #end Miscellaneous Symbols and Arrows
+
+#begin Latin Extended-C (U+2C60-U+2C7F)
+noback sign \x2C71 235-1236
+#end Latin Extended-C
 
 #begin Supplemental Punctuation (U+2E00-U+2E7F)
 punctuation \x2E1B 5-4-156-126-46-16-12456
