@@ -858,10 +858,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // blink::mojom::ColorChooserFactory ---------------------------------------
 
   void OnColorChooserFactoryRequest(
-      blink::mojom::ColorChooserFactoryRequest request);
+      mojo::PendingReceiver<blink::mojom::ColorChooserFactory> receiver);
   void OpenColorChooser(
-      blink::mojom::ColorChooserRequest chooser,
-      blink::mojom::ColorChooserClientPtr client,
+      mojo::PendingReceiver<blink::mojom::ColorChooser> chooser,
+      mojo::PendingRemote<blink::mojom::ColorChooserClient> client,
       SkColor color,
       std::vector<blink::mojom::ColorSuggestionPtr> suggestions) override;
 
@@ -1793,10 +1793,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   std::unique_ptr<WakeLockContextHost> wake_lock_context_host_;
 
-  service_manager::BinderRegistry registry_;
+  service_manager::BinderMap binders_;
 
-  mojo::BindingSet<blink::mojom::ColorChooserFactory>
-      color_chooser_factory_bindings_;
+  mojo::ReceiverSet<blink::mojom::ColorChooserFactory>
+      color_chooser_factory_receivers_;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<NFCHost> nfc_host_;
