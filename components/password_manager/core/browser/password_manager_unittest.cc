@@ -48,6 +48,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -96,10 +97,11 @@ class MockLeakDetectionCheck : public LeakDetectionCheck {
 
 class MockLeakDetectionRequestFactory : public LeakDetectionRequestFactory {
  public:
-  MOCK_CONST_METHOD2(
-      TryCreateLeakCheck,
-      std::unique_ptr<LeakDetectionCheck>(LeakDetectionDelegateInterface*,
-                                          signin::IdentityManager*));
+  MOCK_CONST_METHOD3(TryCreateLeakCheck,
+                     std::unique_ptr<LeakDetectionCheck>(
+                         LeakDetectionDelegateInterface*,
+                         signin::IdentityManager*,
+                         scoped_refptr<network::SharedURLLoaderFactory>));
 };
 
 class MockStoreResultFilter : public StubCredentialsFilter {

@@ -972,6 +972,12 @@ signin::IdentityManager* ChromePasswordManagerClient::GetIdentityManager() {
   return IdentityManagerFactory::GetForProfile(profile_->GetOriginalProfile());
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+ChromePasswordManagerClient::GetURLLoaderFactory() {
+  return content::BrowserContext::GetDefaultStoragePartition(profile_)
+      ->GetURLLoaderFactoryForBrowserProcess();
+}
+
 bool ChromePasswordManagerClient::IsUnderAdvancedProtection() const {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   return safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
