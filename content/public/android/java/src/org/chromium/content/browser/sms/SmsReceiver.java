@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.browser.sms;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,14 +10,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 
 import com.google.android.gms.auth.api.phone.SmsRetriever;
-import com.google.android.gms.auth.api.phone.SmsRetrieverClient;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.Task;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
@@ -25,17 +26,20 @@ import org.chromium.base.annotations.JNINamespace;
  * SMS retriever.
  */
 @JNINamespace("content")
+@JNIAdditionalImport(Wrappers.class)
 public class SmsReceiver extends BroadcastReceiver {
     private static final String TAG = "SmsReceiver";
     private static final boolean DEBUG = false;
     private final long mSmsProviderAndroid;
     private boolean mDestroyed;
+    private Wrappers.SmsRetrieverClientWrapper mClient;
+    private Wrappers.SmsReceiverContext mContext;
 
     private SmsReceiver(long smsProviderAndroid) {
         mDestroyed = false;
         mSmsProviderAndroid = smsProviderAndroid;
 
-        final Context context = ContextUtils.getApplicationContext();
+        mContext = new Wrappers.SmsReceiverContext(ContextUtils.getApplicationContext());
 
         // A broadcast receiver is registered upon the creation of this class
         // which happens when the SMS Retriever API is used for the first time
@@ -47,7 +51,7 @@ public class SmsReceiver extends BroadcastReceiver {
         if (DEBUG) Log.d(TAG, "Registering intent filters.");
         IntentFilter filter = new IntentFilter();
         filter.addAction(SmsRetriever.SMS_RETRIEVED_ACTION);
-        context.registerReceiver(this, filter);
+        mContext.registerReceiver(this, filter);
     }
 
     @CalledByNative
@@ -60,8 +64,7 @@ public class SmsReceiver extends BroadcastReceiver {
     private void destroy() {
         if (DEBUG) Log.d(TAG, "Destroying SmsReceiver.");
         mDestroyed = true;
-        final Context context = ContextUtils.getApplicationContext();
-        context.unregisterReceiver(this);
+        mContext.unregisterReceiver(this);
     }
 
     @Override
@@ -104,12 +107,25 @@ public class SmsReceiver extends BroadcastReceiver {
 
     @CalledByNative
     private void listen() {
-        final Context context = ContextUtils.getApplicationContext();
-
-        SmsRetrieverClient client = SmsRetriever.getClient(context);
+        Wrappers.SmsRetrieverClientWrapper client = getClient();
         Task<Void> task = client.startSmsRetriever();
 
         if (DEBUG) Log.d(TAG, "Installed task");
+    }
+
+    private Wrappers.SmsRetrieverClientWrapper getClient() {
+        if (mClient != null) {
+            return mClient;
+        }
+        mClient = new Wrappers.SmsRetrieverClientWrapper(SmsRetriever.getClient(mContext));
+        return mClient;
+    }
+
+    @VisibleForTesting
+    public void setClientForTesting(Wrappers.SmsRetrieverClientWrapper client) {
+        assert mClient == null;
+        mClient = client;
+        mClient.setContext(mContext);
     }
 
     private static native void nativeOnReceive(long nativeSmsProviderAndroid, String sms);
