@@ -2739,6 +2739,21 @@
             ]
         }
     ],
+    "IsolatePasswordSites": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "site-isolation-for-password-sites"
+                    ]
+                }
+            ]
+        }
+    ],
     "JankTrackingSweepLine": [
         {
             "platforms": [
