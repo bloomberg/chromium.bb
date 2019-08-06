@@ -22,9 +22,9 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
- * ViewBinder for TabGridContainer.
+ * ViewBinder for TabListRecyclerView.
  */
-class TabGridContainerViewBinder {
+class TabListContainerViewBinder {
     /**
      * Bind the given model to the given view, updating the payload in propertyKey.
      * @param model The model to use.

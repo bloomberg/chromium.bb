@@ -14,8 +14,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.TasksSurface;
-import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -45,7 +45,7 @@ public class StartSurfaceCoordinator implements StartSurface {
             int bottomBarHeight =
                     ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
                             R.dimen.ss_bottom_bar_height);
-            mTasksSurface.getTabGridDelegate().setBottomControlsHeight(bottomBarHeight);
+            mTasksSurface.getTabListDelegate().setBottomControlsHeight(bottomBarHeight);
 
             mPropertyModel = new PropertyModel(StartSurfaceProperties.ALL_KEYS);
             mPropertyModel.set(BOTTOM_BAR_HEIGHT, bottomBarHeight);
@@ -69,7 +69,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                     activity, exploreSurfaceContainer, mPropertyModel);
         }
 
-        mStartSurfaceMediator = new StartSurfaceMediator(mTasksSurface.getGridController(),
+        mStartSurfaceMediator = new StartSurfaceMediator(mTasksSurface.getController(),
                 activity.getTabModelSelector(), mPropertyModel,
                 mExploreSurfaceCoordinator == null
                         ? null
@@ -88,7 +88,7 @@ public class StartSurfaceCoordinator implements StartSurface {
     }
 
     @Override
-    public GridTabSwitcher.TabGridDelegate getTabGridDelegate() {
-        return mTasksSurface.getTabGridDelegate();
+    public TabSwitcher.TabListDelegate getTabListDelegate() {
+        return mTasksSurface.getTabListDelegate();
     }
 }

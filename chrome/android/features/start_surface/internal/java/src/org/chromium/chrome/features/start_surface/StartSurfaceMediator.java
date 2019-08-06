@@ -18,23 +18,22 @@ import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** The mediator implements the logic to interact with the surfaces and caller. */
-class StartSurfaceMediator
-        implements StartSurface.Controller, GridTabSwitcher.GridOverviewModeObserver {
+class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.OverviewModeObserver {
     private final ObserverList<StartSurface.OverviewModeObserver> mObservers = new ObserverList<>();
-    private final GridTabSwitcher.GridController mGridController;
+    private final TabSwitcher.Controller mController;
     @Nullable
     private final PropertyModel mPropertyModel;
     @Nullable
     private final ExploreSurfaceCoordinator.FeedSurfaceCreator mFeedSurfaceCreator;
 
-    StartSurfaceMediator(GridTabSwitcher.GridController gridController,
-            TabModelSelector tabModelSelector, @Nullable PropertyModel propertyModel,
+    StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
+            @Nullable PropertyModel propertyModel,
             @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator) {
-        mGridController = gridController;
+        mController = controller;
         mPropertyModel = propertyModel;
         mFeedSurfaceCreator = feedSurfaceCreator;
 
@@ -67,13 +66,13 @@ class StartSurfaceMediator
             updateIncognitoMode(tabModelSelector.isIncognitoSelected());
         }
 
-        mGridController.addOverviewModeObserver(this);
+        mController.addOverviewModeObserver(this);
     }
 
     // Implements StartSurface.Controller
     @Override
     public boolean overviewVisible() {
-        return mGridController.overviewVisible();
+        return mController.overviewVisible();
     }
 
     @Override
@@ -88,12 +87,12 @@ class StartSurfaceMediator
 
     @Override
     public void hideOverview(boolean animate) {
-        mGridController.hideOverview(animate);
+        mController.hideOverview(animate);
     }
 
     @Override
     public void showOverview(boolean animate) {
-        mGridController.showOverview(animate);
+        mController.showOverview(animate);
 
         // TODO(crbug.com/982018): Animate the bottom bar together with the Tab Grid view.
         if (mPropertyModel != null) {
@@ -115,10 +114,10 @@ class StartSurfaceMediator
             setExploreSurfaceVisibility(false);
             return true;
         }
-        return mGridController.onBackPressed();
+        return mController.onBackPressed();
     }
 
-    // Implements GridTabSwitcher.GridOverviewModeObserver.
+    // Implements TabSwitcher.OverviewModeObserver.
     @Override
     public void startedShowing() {
         for (StartSurface.OverviewModeObserver observer : mObservers) {

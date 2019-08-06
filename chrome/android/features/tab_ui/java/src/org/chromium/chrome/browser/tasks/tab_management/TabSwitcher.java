@@ -15,9 +15,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
 /**
- * Interface for the Grid Tab Switcher.
+ * Interface for the Tab Switcher.
  */
-public interface GridTabSwitcher {
+public interface TabSwitcher {
     /**
      * Defines an interface to pass out tab selecting event.
      */
@@ -32,16 +32,16 @@ public interface GridTabSwitcher {
     }
 
     /**
-     * Set the listener to get the {@link Layout#onTabSelecting} event from the Grid Tab Switcher.
+     * Set the listener to get the {@link Layout#onTabSelecting} event from the Tab Switcher.
      * @param listener The {@link OnTabSelectingListener} to use.
      */
     void setOnTabSelectingListener(OnTabSelectingListener listener);
 
     // TODO(960196): Remove the following interfaces when the associated bug is resolved.
     /**
-     * An observer that is notified when the GridTabSwitcher view state changes.
+     * An observer that is notified when the TabSwitcher view state changes.
      */
-    interface GridOverviewModeObserver {
+    interface OverviewModeObserver {
         /**
          * Called when overview mode starts showing.
          */
@@ -64,9 +64,9 @@ public interface GridTabSwitcher {
     }
 
     /**
-     * Interface to control the GridTabSwitcher.
+     * Interface to control the TabSwitcher.
      */
-    interface GridController {
+    interface Controller {
         /**
          * @return Whether or not the overview {@link Layout} is visible.
          */
@@ -75,12 +75,12 @@ public interface GridTabSwitcher {
         /**
          * @param listener Registers {@code listener} for overview mode status changes.
          */
-        void addOverviewModeObserver(GridOverviewModeObserver listener);
+        void addOverviewModeObserver(OverviewModeObserver listener);
 
         /**
          * @param listener Unregisters {@code listener} for overview mode status changes.
          */
-        void removeOverviewModeObserver(GridOverviewModeObserver listener);
+        void removeOverviewModeObserver(OverviewModeObserver listener);
 
         /**
          * Hide the overview.
@@ -96,23 +96,23 @@ public interface GridTabSwitcher {
 
         /**
          * Called by the StartSurfaceLayout when the system back button is pressed.
-         * @return Whether or not the GridTabSwitcher consumed the event.
+         * @return Whether or not the TabSwitcher consumed the event.
          */
         boolean onBackPressed();
     }
 
     /**
-     * @return GridController implementation that can be used for controlling
-     *         grid visibility changes.
+     * @return Controller implementation that can be used for controlling
+     *         visibility changes.
      */
-    GridController getGridController();
+    Controller getController();
 
     /**
-     * Interface to access the Tab Grid.
+     * Interface to access the Tab List.
      */
-    interface TabGridDelegate {
+    interface TabListDelegate {
         /**
-         * @return The dynamic resource ID of the GridTabSwitcher RecyclerView.
+         * @return The dynamic resource ID of the TabSwitcher RecyclerView.
          */
         int getResourceId();
 
@@ -129,8 +129,8 @@ public interface GridTabSwitcher {
         void setBottomControlsHeight(int bottomControlsHeight);
 
         /**
-         * Before calling {@link GridController#showOverview} to start showing the
-         * GridTabSwitcher {@link TabListRecyclerView}, call this to populate it without making it
+         * Before calling {@link Controller#showOverview} to start showing the
+         * TabSwitcher {@link TabListRecyclerView}, call this to populate it without making it
          * visible.
          * @return Whether the {@link TabListRecyclerView} can be shown quickly.
          */
@@ -138,7 +138,7 @@ public interface GridTabSwitcher {
 
         /**
          * This is called after the compositor animation is done, for potential clean-up work.
-         * {@link GridOverviewModeObserver#finishedHiding} happens after
+         * {@link OverviewModeObserver#finishedHiding} happens after
          * the Android View animation, but before the compositor animation.
          */
         void postHiding();
@@ -147,7 +147,7 @@ public interface GridTabSwitcher {
          * @param forceUpdate Whether to measure the current location again. If not, return the last
          *                    location measured on last layout, which can be wrong after scrolling.
          * @return The {@link Rect} of the thumbnail of the current tab, relative to the
-         *         GridTabSwitcher {@link TabListRecyclerView} coordinates.
+         *         TabSwitcher {@link TabListRecyclerView} coordinates.
          */
         @NonNull
         Rect getThumbnailLocationOfCurrentTab(boolean forceUpdate);
@@ -180,7 +180,7 @@ public interface GridTabSwitcher {
     }
 
     /**
-     * @return The {@link TabGridDelegate}.
+     * @return The {@link TabListDelegate}.
      */
-    TabGridDelegate getTabGridDelegate();
+    TabListDelegate getTabListDelegate();
 }

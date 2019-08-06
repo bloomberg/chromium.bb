@@ -36,16 +36,26 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     }
 
     @Override
-    public GridTabSwitcher createGridTabSwitcher(ChromeActivity activity, ViewGroup containerView) {
+    public TabSwitcher createGridTabSwitcher(ChromeActivity activity, ViewGroup containerView) {
         if (UmaSessionStats.isMetricsServiceAvailable()) {
             UmaSessionStats.registerSyntheticFieldTrial(
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + SYNTHETIC_TRIAL_POSTFIX,
                     "Downloaded_Enabled");
         }
-        return new GridTabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
+        return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
                 activity.getCompositorViewHolder(), activity.getFullscreenManager(), activity,
-                activity.getMenuOrKeyboardActionController(), activity, containerView);
+                activity.getMenuOrKeyboardActionController(), activity, containerView,
+                TabListCoordinator.TabListMode.GRID);
+    }
+
+    @Override
+    public TabSwitcher createCarouselTabSwitcher(ChromeActivity activity, ViewGroup containerView) {
+        return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
+                activity.getTabModelSelector(), activity.getTabContentManager(),
+                activity.getCompositorViewHolder(), activity.getFullscreenManager(), activity,
+                activity.getMenuOrKeyboardActionController(), activity, containerView,
+                TabListCoordinator.TabListMode.CAROUSEL);
     }
 
     @Override

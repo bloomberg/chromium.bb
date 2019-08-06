@@ -35,7 +35,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
     TabGridDialogCoordinator(Context context, TabModelSelector tabModelSelector,
             TabContentManager tabContentManager, TabCreatorManager tabCreatorManager,
             CompositorViewHolder compositorViewHolder,
-            GridTabSwitcherMediator.ResetHandler resetHandler,
+            TabSwitcherMediator.ResetHandler resetHandler,
             TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             TabGridDialogMediator.AnimationOriginProvider animationOriginProvider) {
         mContext = context;

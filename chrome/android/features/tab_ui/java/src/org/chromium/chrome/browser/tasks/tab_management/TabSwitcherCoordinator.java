@@ -34,24 +34,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Parent coordinator that is responsible for showing a grid of tabs for the main TabSwitcher UI.
+ * Parent coordinator that is responsible for showing a grid or carousel of tabs for the main
+ * TabSwitcher UI.
  */
-public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
-                                                   GridTabSwitcher.TabGridDelegate,
-                                                   GridTabSwitcherMediator.ResetHandler {
+public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
+                                               TabSwitcher.TabListDelegate,
+                                               TabSwitcherMediator.ResetHandler {
+    // TODO(crbug.com/982018): Rename 'COMPONENT_NAME' so as to add different metrics for carousel
+    // tab switcher.
     final static String COMPONENT_NAME = "GridTabSwitcher";
     private final PropertyModelChangeProcessor mContainerViewChangeProcessor;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
-    private final TabListCoordinator mTabGridCoordinator;
-    private final GridTabSwitcherMediator mMediator;
+    private final TabListCoordinator mTabListCoordinator;
+    private final TabSwitcherMediator mMediator;
     private final MultiThumbnailCardProvider mMultiThumbnailCardProvider;
     private final TabGridDialogCoordinator mTabGridDialogCoordinator;
     private final TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
     private final UndoGroupSnackbarController mUndoGroupSnackbarController;
 
     private final MenuOrKeyboardActionController
-            .MenuOrKeyboardActionHandler mGridTabSwitcherMenuActionHandler =
+            .MenuOrKeyboardActionHandler mTabSwitcherMenuActionHandler =
             new MenuOrKeyboardActionController.MenuOrKeyboardActionHandler() {
                 @Override
                 public boolean handleMenuOrKeyboardAction(int id, boolean fromMenu) {
@@ -64,18 +67,19 @@ public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
                 }
             };
 
-    public GridTabSwitcherCoordinator(Context context,
-            ActivityLifecycleDispatcher lifecycleDispatcher, TabModelSelector tabModelSelector,
-            TabContentManager tabContentManager, CompositorViewHolder compositorViewHolder,
-            ChromeFullscreenManager fullscreenManager, TabCreatorManager tabCreatorManager,
+    public TabSwitcherCoordinator(Context context, ActivityLifecycleDispatcher lifecycleDispatcher,
+            TabModelSelector tabModelSelector, TabContentManager tabContentManager,
+            CompositorViewHolder compositorViewHolder, ChromeFullscreenManager fullscreenManager,
+            TabCreatorManager tabCreatorManager,
             MenuOrKeyboardActionController menuOrKeyboardActionController,
-            SnackbarManager.SnackbarManageable snackbarManageable, @Nullable ViewGroup container) {
+            SnackbarManager.SnackbarManageable snackbarManageable, @Nullable ViewGroup container,
+            @TabListCoordinator.TabListMode int mode) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
         mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
                 context, compositorViewHolder, tabModelSelector, tabContentManager);
 
-        mMediator = new GridTabSwitcherMediator(this, containerViewModel, tabModelSelector,
+        mMediator = new TabSwitcherMediator(this, containerViewModel, tabModelSelector,
                 fullscreenManager, compositorViewHolder,
                 mTabSelectionEditorCoordinator.getController());
 
@@ -106,35 +110,35 @@ public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
         };
 
         ViewGroup tabListContainerView = container != null ? container : compositorViewHolder;
-        mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
-                tabModelSelector, mMultiThumbnailCardProvider, titleProvider, true,
-                mMediator::getCreateGroupButtonOnClickListener, mMediator, null, null, null,
-                tabListContainerView, compositorViewHolder.getDynamicResourceLoader(), true,
-                COMPONENT_NAME);
+        mTabListCoordinator =
+                new TabListCoordinator(mode, context, tabModelSelector, mMultiThumbnailCardProvider,
+                        titleProvider, true, mMediator::getCreateGroupButtonOnClickListener,
+                        mMediator, null, null, null, tabListContainerView,
+                        compositorViewHolder.getDynamicResourceLoader(), true, COMPONENT_NAME);
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
-                mTabGridCoordinator.getContainerView(), TabGridContainerViewBinder::bind);
+                mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
 
         mMenuOrKeyboardActionController = menuOrKeyboardActionController;
         mMenuOrKeyboardActionController.registerMenuOrKeyboardActionHandler(
-                mGridTabSwitcherMenuActionHandler);
+                mTabSwitcherMenuActionHandler);
 
         mLifecycleDispatcher = lifecycleDispatcher;
         mLifecycleDispatcher.register(this);
     }
 
-    // GridTabSwitcher implementation.
+    // TabSwitcher implementation.
     @Override
     public void setOnTabSelectingListener(OnTabSelectingListener listener) {
         mMediator.setOnTabSelectingListener(listener);
     }
 
     @Override
-    public GridController getGridController() {
+    public Controller getController() {
         return mMediator;
     }
 
     @Override
-    public TabGridDelegate getTabGridDelegate() {
+    public TabListDelegate getTabListDelegate() {
         return this;
     }
 
@@ -146,13 +150,13 @@ public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
     @Override
     public boolean prepareOverview() {
         boolean quick = mMediator.prepareOverview();
-        mTabGridCoordinator.prepareOverview();
+        mTabListCoordinator.prepareOverview();
         return quick;
     }
 
     @Override
     public void postHiding() {
-        mTabGridCoordinator.postHiding();
+        mTabListCoordinator.postHiding();
         mMediator.postHiding();
     }
 
@@ -163,22 +167,22 @@ public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
             assert forceUpdate;
             Rect thumbnail = mTabGridDialogCoordinator.getGlobalLocationOfCurrentThumbnail();
             // Adjust to the relative coordinate.
-            Rect root = mTabGridCoordinator.getRecyclerViewLocation();
+            Rect root = mTabListCoordinator.getRecyclerViewLocation();
             thumbnail.offset(-root.left, -root.top);
             return thumbnail;
         }
-        if (forceUpdate) mTabGridCoordinator.updateThumbnailLocation();
-        return mTabGridCoordinator.getThumbnailLocationOfCurrentTab();
+        if (forceUpdate) mTabListCoordinator.updateThumbnailLocation();
+        return mTabListCoordinator.getThumbnailLocationOfCurrentTab();
     }
 
     @Override
     public int getResourceId() {
-        return mTabGridCoordinator.getResourceId();
+        return mTabListCoordinator.getResourceId();
     }
 
     @Override
     public long getLastDirtyTimeForTesting() {
-        return mTabGridCoordinator.getLastDirtyTimeForTesting();
+        return mTabListCoordinator.getLastDirtyTimeForTesting();
     }
 
     @Override
@@ -215,24 +219,24 @@ public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
                 tabs.add(tabList.getTabAt(i));
             }
         }
-        return mTabGridCoordinator.resetWithListOfTabs(tabs, quickMode);
+        return mTabListCoordinator.resetWithListOfTabs(tabs, quickMode);
     }
 
     private Rect getTabGridCardPosition(int index) {
-        return mTabGridCoordinator.getContainerView().getRectOfCurrentTabGridCard(index);
+        return mTabListCoordinator.getContainerView().getRectOfCurrentTabGridCard(index);
     }
 
     @Override
     public void softCleanup() {
-        mTabGridCoordinator.softCleanup();
+        mTabListCoordinator.softCleanup();
     }
 
     // ResetHandler implementation.
     @Override
     public void destroy() {
         mMenuOrKeyboardActionController.unregisterMenuOrKeyboardActionHandler(
-                mGridTabSwitcherMenuActionHandler);
-        mTabGridCoordinator.destroy();
+                mTabSwitcherMenuActionHandler);
+        mTabListCoordinator.destroy();
         mContainerViewChangeProcessor.destroy();
         if (mTabGridDialogCoordinator != null) {
             mTabGridDialogCoordinator.destroy();
