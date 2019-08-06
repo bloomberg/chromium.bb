@@ -3218,7 +3218,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'bob',
       'caroline',
       'caroline-arcnext',
-      'chell',
       'coral',
       'cyan',
       'eve',
@@ -3229,6 +3228,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'nocturne',
       'nyan_big',
       'reef',
+      'samus',
       'terra',
       'veyron_minnie',
       'veyron_rialto',
@@ -3917,7 +3917,7 @@ def ApplyCustomOverrides(site_config):
           'useflags': config_lib.append_useflags(['-chrome_internal']),
       },
 
-      'chell-chrome-pfq': {
+      'samus-chrome-pfq': {
           'afdo_generate': True,
           'archive_build_debug': True,
           # Disable hugepages before collecting AFDO profile.

@@ -556,10 +556,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'vm_tests':[],
       },
 
-      'chell-chrome-pfq': {
-          'hw_tests': [hw_test_list.AFDORecordTest()]
-      },
-
       'cyan-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
@@ -588,6 +584,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'reef-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'samus-chrome-pfq': {
+          'hw_tests': [hw_test_list.AFDORecordTest()]
       },
 
       'veyron_minnie-chrome-pfq': {

@@ -19,7 +19,6 @@
     bob-chrome-pfq
     caroline-arcnext-chrome-pfq
     caroline-chrome-pfq
-    chell-chrome-pfq
     coral-chrome-pfq
     cyan-chrome-pfq
     eve-arcnext-chrome-pfq
@@ -30,6 +29,7 @@
     nocturne-chrome-pfq
     nyan_big-chrome-pfq
     reef-chrome-pfq
+    samus-chrome-pfq
     scarlet-chromium-pfq
     terra-chrome-pfq
     veyron_jerry-chromium-pfq
@@ -2321,7 +2321,6 @@
     bob-chrome-pfq-tryjob
     caroline-arcnext-chrome-pfq-tryjob
     caroline-chrome-pfq-tryjob
-    chell-chrome-pfq-tryjob
     coral-chrome-pfq-tryjob
     cyan-chrome-pfq-tryjob
     eve-arcnext-chrome-pfq-tryjob
@@ -2332,6 +2331,7 @@
     nocturne-chrome-pfq-tryjob
     nyan_big-chrome-pfq-tryjob
     reef-chrome-pfq-tryjob
+    samus-chrome-pfq-tryjob
     scarlet-chromium-pfq-tryjob
     terra-chrome-pfq-tryjob
     veyron_jerry-chromium-pfq-tryjob
