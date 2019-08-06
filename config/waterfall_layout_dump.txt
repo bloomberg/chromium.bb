@@ -1920,23 +1920,6 @@
   guado_labstation-tot-chrome-pfq-informational-tryjob
   guado_labstation-tot-chromium-pfq-informational-tryjob
   guado_labstation-unittest-stress
-  guado_moblab-chrome-pfq-tryjob
-  guado_moblab-chromium-pfq-tryjob
-  guado_moblab-compile-only-pre-cq
-  guado_moblab-full-tryjob
-  guado_moblab-llvm-next-toolchain-tryjob
-  guado_moblab-llvm-toolchain-tryjob
-  guado_moblab-no-vmtest-pre-cq
-  guado_moblab-paladin-tryjob
-  guado_moblab-payloads-tryjob
-  guado_moblab-pre-cq
-  guado_moblab-release-afdo-generate-tryjob
-  guado_moblab-release-afdo-tryjob
-  guado_moblab-release-afdo-use-tryjob
-  guado_moblab-release-tryjob
-  guado_moblab-tot-chrome-pfq-informational-tryjob
-  guado_moblab-tot-chromium-pfq-informational-tryjob
-  guado_moblab-unittest-stress
   hana-chrome-pfq-tryjob
   hana-chromium-pfq-tryjob
   hana-compile-only-pre-cq

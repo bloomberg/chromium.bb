@@ -114,7 +114,6 @@ x86_internal_release_boards = frozenset([
     'guado',
     'guado-accelerator',
     'guado_labstation',
-    'guado_moblab',
     'hatch',
     'heli',
     'jecht',
@@ -228,7 +227,6 @@ wshwos_boards = frozenset([
 
 moblab_boards = frozenset([
     'fizz-moblab',
-    'guado_moblab',
     'moblab-generic-vm',
 ])
 
