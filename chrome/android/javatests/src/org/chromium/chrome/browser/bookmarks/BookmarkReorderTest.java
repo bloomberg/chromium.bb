@@ -576,6 +576,34 @@ public class BookmarkReorderTest extends BookmarkTest {
         onView(withText("Move down")).check(doesNotExist());
     }
 
+    @Test
+    @MediumTest
+    public void testTopLevelFolderUpdateAfterSync() throws Exception {
+        // Set up the test and open the bookmark manager to the Mobile Bookmarks folder.
+        MockSyncContentResolverDelegate syncDelegate = new MockSyncContentResolverDelegate();
+        syncDelegate.setMasterSyncAutomatically(true);
+        AndroidSyncSettings.overrideForTests(syncDelegate, null);
+        readPartnerBookmarks();
+        openBookmarkManager();
+        ReorderBookmarkItemsAdapter adapter = getReorderAdapter();
+
+        // Open the root folder.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mManager.openFolder(mBookmarkModel.getRootFolderId()));
+
+        // Add a bookmark to the Other Bookmarks folder.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mBookmarkModel.addBookmark(
+                    mBookmarkModel.getOtherFolderId(), 0, TEST_TITLE_A, TEST_URL_A);
+        });
+
+        // Dismiss promo header and simulate a sign in.
+        syncDelegate.setMasterSyncAutomatically(false);
+        TestThreadUtils.runOnUiThreadBlocking(adapter::simulateSignInForTests);
+        Assert.assertEquals(
+                "Expected \"Other Bookmarks\" folder to appear!", 2, adapter.getItemCount());
+    }
+
     @Override
     protected void openBookmarkManager() throws InterruptedException {
         super.openBookmarkManager();
