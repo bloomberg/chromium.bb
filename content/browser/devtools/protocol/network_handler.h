@@ -41,10 +41,7 @@ class DevToolsAgentHostImpl;
 class DevToolsIOContext;
 class RenderFrameHostImpl;
 class RenderProcessHost;
-class InterceptionHandle;
-class NavigationHandle;
 class NavigationRequest;
-class NavigationThrottle;
 class SignedExchangeEnvelope;
 class StoragePartition;
 struct GlobalRequestID;
@@ -210,8 +207,6 @@ class NetworkHandler : public DevToolsDomainHandler,
       const net::URLRequest* request,
       const std::string& cookie);
 
-  std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
-      NavigationHandle* navigation_handle);
   bool ShouldCancelNavigation(const GlobalRequestID& global_request_id);
   void WillSendNavigationRequest(net::HttpRequestHeaders* headers,
                                  bool* skip_service_worker,
@@ -239,7 +234,6 @@ class NetworkHandler : public DevToolsDomainHandler,
   RenderFrameHostImpl* host_;
   bool enabled_;
   std::vector<std::pair<std::string, std::string>> extra_headers_;
-  std::unique_ptr<InterceptionHandle> interception_handle_;
   std::unique_ptr<DevToolsURLLoaderInterceptor> url_loader_interceptor_;
   bool bypass_service_worker_;
   bool cache_disabled_;
