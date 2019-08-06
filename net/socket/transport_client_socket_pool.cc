@@ -41,10 +41,10 @@ bool g_connect_backup_jobs_enabled = true;
 base::Value NetLogCreateConnectJobParams(
     bool backup_job,
     const ClientSocketPool::GroupId* group_id) {
-  base::DictionaryValue dict;
-  dict.SetBoolean("backup_job", backup_job);
-  dict.SetString("group_id", group_id->ToString());
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetBoolKey("backup_job", backup_job);
+  dict.SetStringKey("group_id", group_id->ToString());
+  return dict;
 }
 
 }  // namespace

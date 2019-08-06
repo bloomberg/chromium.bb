@@ -86,11 +86,11 @@ const int kDefaultOpenSSLBufferSize = 17 * 1024;
 
 base::Value NetLogPrivateKeyOperationParams(uint16_t algorithm,
                                             SSLPrivateKey* key) {
-  base::DictionaryValue value;
-  value.SetString("algorithm", SSL_get_signature_algorithm_name(
-                                   algorithm, 0 /* exclude curve */));
-  value.SetString("provider", key->GetProviderName());
-  return std::move(value);
+  base::Value value(base::Value::Type::DICTIONARY);
+  value.SetStringKey("algorithm", SSL_get_signature_algorithm_name(
+                                      algorithm, 0 /* exclude curve */));
+  value.SetStringKey("provider", key->GetProviderName());
+  return value;
 }
 
 base::Value NetLogSSLInfoParams(SSLClientSocketImpl* socket) {
@@ -98,42 +98,42 @@ base::Value NetLogSSLInfoParams(SSLClientSocketImpl* socket) {
   if (!socket->GetSSLInfo(&ssl_info))
     return base::Value();
 
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
   const char* version_str;
   SSLVersionToString(&version_str,
                      SSLConnectionStatusToVersion(ssl_info.connection_status));
-  dict.SetString("version", version_str);
-  dict.SetBoolean("is_resumed",
+  dict.SetStringKey("version", version_str);
+  dict.SetBoolKey("is_resumed",
                   ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME);
-  dict.SetInteger("cipher_suite",
-                  SSLConnectionStatusToCipherSuite(ssl_info.connection_status));
+  dict.SetIntKey("cipher_suite",
+                 SSLConnectionStatusToCipherSuite(ssl_info.connection_status));
 
-  dict.SetString("next_proto",
-                 NextProtoToString(socket->GetNegotiatedProtocol()));
+  dict.SetStringKey("next_proto",
+                    NextProtoToString(socket->GetNegotiatedProtocol()));
 
-  return std::move(dict);
+  return dict;
 }
 
 base::Value NetLogSSLAlertParams(const void* bytes, size_t len) {
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetKey("bytes", NetLogBinaryValue(bytes, len));
-  return std::move(dict);
+  return dict;
 }
 
 base::Value NetLogSSLMessageParams(bool is_write,
                                    const void* bytes,
                                    size_t len,
                                    NetLogCaptureMode capture_mode) {
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
   if (len == 0) {
     NOTREACHED();
-    return std::move(dict);
+    return dict;
   }
 
   // The handshake message type is the first byte. Include it so elided messages
   // still report their type.
   uint8_t type = reinterpret_cast<const uint8_t*>(bytes)[0];
-  dict.SetInteger("type", type);
+  dict.SetIntKey("type", type);
 
   // Elide client certificate messages unless logging socket bytes. The client
   // certificate does not contain information needed to impersonate the user
@@ -144,7 +144,7 @@ base::Value NetLogSSLMessageParams(bool is_write,
     dict.SetKey("bytes", NetLogBinaryValue(bytes, len));
   }
 
-  return std::move(dict);
+  return dict;
 }
 
 // This enum is used in histograms, so values may not be reused.
