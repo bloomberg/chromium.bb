@@ -417,17 +417,11 @@ _lou_charToFallbackDots(widechar c) {
 
 	{
 		const unsigned char *p = charToDots;
+		while (*p > c) p += 4;
 
-		while (1) {
-			if (*p <= c) {
-				c &= ~*++p;
-				c |= *++p;
-				dots |= *++p;
-				break;
-			}
-
-			p += 4;
-		}
+		c &= ~*++p;
+		c |= *++p;
+		dots |= *++p;
 	}
 
 	dots |= charToDots[c];
