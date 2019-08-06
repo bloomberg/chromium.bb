@@ -137,8 +137,6 @@ QuicTestPacketMaker::QuicTestPacketMaker(
       client_headers_include_h2_stream_dependency_(
           client_headers_include_h2_stream_dependency &&
           version.transport_version >= quic::QUIC_VERSION_43) {
-  stream_offsets_[quic::QuicUtils::GetHeadersStreamId(
-      version_.transport_version)] = 0;
   DCHECK(!(perspective_ == quic::Perspective::IS_SERVER &&
            client_headers_include_h2_stream_dependency_));
 }
@@ -407,7 +405,7 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
     *spdy_headers_frame_length = spdy_frame.size();
   }
   quic::QuicStreamFrame headers_frame = GenerateNextStreamFrame(
-      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+      GetHeadersStreamId(), false,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   frames.push_back(quic::QuicFrame(headers_frame));
 
@@ -685,17 +683,6 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
   return encrypted.Clone();
 }
 
-std::unique_ptr<quic::QuicReceivedPacket>
-QuicTestPacketMaker::MakeHeadersDataPacket(uint64_t packet_number,
-                                           bool should_include_version,
-                                           bool fin,
-                                           quic::QuicStringPiece data) {
-  return MakeDataPacket(
-      packet_number,
-      quic::QuicUtils::GetHeadersStreamId(version_.transport_version),
-      should_include_version, fin, data);
-}
-
 std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeDataPacket(
     uint64_t packet_number,
     quic::QuicStreamId stream_id,
@@ -869,7 +856,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     *spdy_headers_frame_length = spdy_frame.size();
   }
   quic::QuicStreamFrame frame = GenerateNextStreamFrame(
-      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+      GetHeadersStreamId(), false,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   quic::QuicFrames frames;
   frames.push_back(quic::QuicFrame(frame));
@@ -954,7 +941,7 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
     *spdy_headers_frame_length = spdy_frame.size();
 
   quic::QuicStreamFrame frame = GenerateNextStreamFrame(
-      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+      GetHeadersStreamId(), false,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   return MakePacket(header_, quic::QuicFrame(frame));
 }
@@ -1035,7 +1022,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
     *spdy_headers_frame_length = spdy_frame.size();
   }
   quic::QuicStreamFrame headers_frame = GenerateNextStreamFrame(
-      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+      GetHeadersStreamId(), false,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
 
   quic::QuicRstStreamFrame rst_frame(1, stream_id, error_code,
@@ -1120,7 +1107,7 @@ QuicTestPacketMaker::MakePushPromisePacket(
     *spdy_headers_frame_length = spdy_frame.size();
   }
   quic::QuicStreamFrame frame = GenerateNextStreamFrame(
-      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+      GetHeadersStreamId(), false,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   return MakePacket(header_, quic::QuicFrame(frame));
 }
@@ -1138,8 +1125,8 @@ QuicTestPacketMaker::MakeForceHolDataPacket(uint64_t packet_number,
       spdy_request_framer_.SerializeFrame(spdy_data));
   InitializeHeader(packet_number, should_include_version);
   quic::QuicStreamFrame quic_frame(
-      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-      *offset, quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+      GetHeadersStreamId(), false, *offset,
+      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   *offset += spdy_frame.size();
   return MakePacket(header_, quic::QuicFrame(quic_frame));
 }
@@ -1178,7 +1165,7 @@ QuicTestPacketMaker::MakeResponseHeadersPacket(
     *spdy_headers_frame_length = spdy_frame.size();
   }
   quic::QuicStreamFrame frame = GenerateNextStreamFrame(
-      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+      GetHeadersStreamId(), false,
       quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
   return MakePacket(header_, quic::QuicFrame(frame));
 }
@@ -1313,7 +1300,7 @@ QuicTestPacketMaker::MakeSettingsPacket(uint64_t packet_number,
         spdy_request_framer_.SerializeFrame(settings_frame));
     InitializeHeader(packet_number, should_include_version);
     quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
-        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+        GetHeadersStreamId(), false,
         quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
     return MakePacket(header_, quic::QuicFrame(quic_frame));
   }
@@ -1358,7 +1345,7 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
         spdy_request_framer_.SerializeFrame(settings_frame));
     InitializeHeader(packet_number, /*should_include_version*/ true);
     quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
-        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+        GetHeadersStreamId(), false,
         quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
     return MakePacket(header_, quic::QuicFrame(quic_frame));
   }
@@ -1414,7 +1401,7 @@ QuicTestPacketMaker::MakePriorityPacket(uint64_t packet_number,
         spdy_request_framer_.SerializeFrame(priority_frame));
 
     quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
-        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+        GetHeadersStreamId(), false,
         quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
     InitializeHeader(packet_number, should_include_version);
     return MakePacket(header_, quic::QuicFrame(quic_frame));
@@ -1475,8 +1462,10 @@ QuicTestPacketMaker::MakeAckAndMultiplePriorityFramesPacket(
 
     spdy::SpdySerializedFrame* spdy_frame = spdy_frames.back().get();
     quic::QuicStreamFrame stream_frame = GenerateNextStreamFrame(
-        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-        quic::QuicStringPiece(spdy_frame->data(), spdy_frame->size()));
+        quic::VersionUsesQpack(version_.transport_version)
+            ? GetFirstBidirectionalStreamId()
+            : GetHeadersStreamId(),
+        false, quic::QuicStringPiece(spdy_frame->data(), spdy_frame->size()));
 
     frames.push_back(quic::QuicFrame(stream_frame));
   }
@@ -1657,6 +1646,15 @@ quic::QuicConnectionIdIncluded QuicTestPacketMaker::HasSourceConnectionId()
 void QuicTestPacketMaker::Reset() {
   for (const auto& kv : stream_offsets_)
     stream_offsets_[kv.first] = 0;
+}
+
+quic::QuicStreamId QuicTestPacketMaker::GetFirstBidirectionalStreamId() const {
+  return quic::QuicUtils::GetFirstBidirectionalStreamId(
+      version_.transport_version, perspective_);
+}
+
+quic::QuicStreamId QuicTestPacketMaker::GetHeadersStreamId() const {
+  return quic::QuicUtils::GetHeadersStreamId(version_.transport_version);
 }
 
 }  // namespace test
