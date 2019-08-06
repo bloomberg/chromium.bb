@@ -485,9 +485,9 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasSim_: function() {
+  showSimMissing_: function() {
     return !!this.deviceStateProperties_ &&
-        !!this.deviceStateProperties_.simLockStatus;
+        !this.deviceStateProperties_.simLockStatus;
   },
 
   /**
