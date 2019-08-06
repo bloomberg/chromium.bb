@@ -21,6 +21,8 @@
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_constant.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace notifications {
 namespace {
@@ -285,11 +287,15 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     NotificationData::Button helpful_button;
     helpful_button.type = ActionButtonType::kHelpful;
     helpful_button.id = notifications::kDefaultHelpfulButtonId;
+    helpful_button.text =
+        l10n_util::GetStringUTF16(IDS_NOTIFICATION_DEFAULT_HELPFUL_BUTTON_TEXT);
     buttons->emplace_back(std::move(helpful_button));
 
     NotificationData::Button unhelpful_button;
     unhelpful_button.type = ActionButtonType::kUnhelpful;
     unhelpful_button.id = notifications::kDefaultUnhelpfulButtonId;
+    unhelpful_button.text = l10n_util::GetStringUTF16(
+        IDS_NOTIFICATION_DEFAULT_UNHELPFUL_BUTTON_TEXT);
     buttons->emplace_back(std::move(unhelpful_button));
   }
 
