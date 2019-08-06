@@ -42,10 +42,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_common.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -92,9 +88,6 @@ class BLINK_EXPORT WebSharedWorker {
   virtual void BindDevToolsAgent(
       mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
       mojo::ScopedInterfaceEndpointHandle devtools_agent_request) = 0;
-
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
-      TaskType) = 0;
 };
 
 }  // namespace blink

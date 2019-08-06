@@ -117,7 +117,6 @@ class WorkerThreadForTest : public WorkerThread {
   void StartWithSourceCode(
       const SecurityOrigin* security_origin,
       const String& source,
-      ParentExecutionContextTaskRunners* parent_execution_context_task_runners,
       const KURL& script_url = KURL("http://fake.url/"),
       WorkerClients* worker_clients = nullptr) {
     Vector<CSPHeaderAndType> headers{
@@ -138,8 +137,7 @@ class WorkerThreadForTest : public WorkerThread {
 
     Start(std::move(creation_params),
           WorkerBackingThreadStartupData::CreateDefault(),
-          std::make_unique<WorkerDevToolsParams>(),
-          parent_execution_context_task_runners);
+          std::make_unique<WorkerDevToolsParams>());
     EvaluateClassicScript(script_url, source, nullptr /* cached_meta_data */,
                           v8_inspector::V8StackTraceId());
   }

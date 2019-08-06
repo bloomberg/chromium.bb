@@ -50,10 +50,6 @@
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -110,7 +106,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   void BindDevToolsAgent(
       mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
       mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
   // Callback methods for SharedWorkerReportingProxy.
   void CountFeature(WebFeature);
@@ -161,15 +156,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       pending_interface_provider_;
-
-  // SharedWorker can sometimes run tasks that are initiated by/associated with
-  // a document's frame but these documents can be from a different process. So
-  // we intentionally populate the task runners with default task runners of the
-  // main thread. Note that |shadow_page_| should not be used as it's a dummy
-  // document for loading that doesn't represent the frame of any associated
-  // document.
-  Persistent<ParentExecutionContextTaskRunners>
-      parent_execution_context_task_runners_;
 
   Persistent<ApplicationCacheHostForSharedWorker> appcache_host_;
 
