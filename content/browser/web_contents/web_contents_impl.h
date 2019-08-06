@@ -354,6 +354,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsCurrentlyAudible() override;
   bool IsConnectedToBluetoothDevice() override;
   bool IsConnectedToSerialPort() override;
+  bool HasNativeFileSystemHandles() override;
   bool HasNativeFileSystemDirectoryHandles() override;
   std::vector<base::FilePath> GetNativeFileSystemDirectoryHandles() override;
   bool HasWritableNativeFileSystemHandles() override;
@@ -972,6 +973,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // ports.
   void IncrementSerialActiveFrameCount();
   void DecrementSerialActiveFrameCount();
+
+  // Modify the counter of native file system handles for this WebContents.
+  void IncrementNativeFileSystemHandleCount();
+  void DecrementNativeFileSystemHandleCount();
 
   // Add and remove a reference for a native file system directory handle for a
   // certain |path|. Multiple Add calls should be balanced by the same number of
@@ -1817,6 +1822,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   size_t bluetooth_connected_device_count_ = 0;
   size_t serial_active_frame_count_ = 0;
 
+  size_t native_file_system_handle_count_ = 0;
   std::map<base::FilePath, size_t> native_file_system_directory_handles_;
   size_t native_file_system_writable_handle_count_ = 0;
 

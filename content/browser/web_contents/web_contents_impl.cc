@@ -1566,6 +1566,9 @@ bool WebContentsImpl::IsConnectedToSerialPort() {
   return serial_active_frame_count_ > 0;
 }
 
+bool WebContentsImpl::HasNativeFileSystemHandles() {
+  return native_file_system_handle_count_ > 0;
+}
 bool WebContentsImpl::HasNativeFileSystemDirectoryHandles() {
   return !native_file_system_directory_handles_.empty();
 }
@@ -6888,6 +6891,39 @@ void WebContentsImpl::DecrementSerialActiveFrameCount() {
   serial_active_frame_count_--;
   if (serial_active_frame_count_ == 0)
     NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+}
+
+void WebContentsImpl::IncrementNativeFileSystemHandleCount() {
+  // Trying to invalidate the tab state while being destroyed could result in a
+  // use after free.
+  if (IsBeingDestroyed())
+    return;
+
+  // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
+  // to update both the tab-level usage indicator and the usage indicator in the
+  // omnibox.
+  native_file_system_handle_count_++;
+  if (native_file_system_handle_count_ == 1) {
+    NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
+        INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
+  }
+}
+
+void WebContentsImpl::DecrementNativeFileSystemHandleCount() {
+  // Trying to invalidate the tab state while being destroyed could result in a
+  // use after free.
+  if (IsBeingDestroyed())
+    return;
+
+  // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
+  // to update both the tab-level usage indicator and the usage indicator in the
+  // omnibox.
+  DCHECK_NE(0u, native_file_system_handle_count_);
+  native_file_system_handle_count_--;
+  if (native_file_system_handle_count_ == 0) {
+    NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
+        INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
+  }
 }
 
 void WebContentsImpl::AddNativeFileSystemDirectoryHandle(
