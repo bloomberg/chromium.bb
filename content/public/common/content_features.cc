@@ -110,7 +110,7 @@ const base::Feature kCompositeOpaqueScrollers{"CompositeOpaqueScrollers",
 
 // When enabled, event.movement is calculated in blink instead of in browser.
 const base::Feature kConsolidatedMovementXY{"ConsolidatedMovementXY",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Show messages in the DevTools console about upcoming deprecations
 // that would affect sent/received cookies.
