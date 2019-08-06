@@ -649,6 +649,10 @@ base::Optional<int> AXNode::GetPosInSet() {
     return base::nullopt;
   }
 
+  if (data().HasState(ax::mojom::State::kIgnored)) {
+    return base::nullopt;
+  }
+
   const AXNode* ordered_set = GetOrderedSet();
   if (!ordered_set) {
     return base::nullopt;
@@ -668,6 +672,10 @@ base::Optional<int> AXNode::GetSetSize() {
   // are defined in the ARIA spec.
   if (!(IsOrderedSetItem() || IsOrderedSet()))
     return base::nullopt;
+
+  if (data().HasState(ax::mojom::State::kIgnored)) {
+    return base::nullopt;
+  }
 
   // If node is item-like, find its outerlying ordered set. Otherwise,
   // this node is the ordered set.

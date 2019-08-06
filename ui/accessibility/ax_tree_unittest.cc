@@ -66,6 +66,9 @@ class TestAXTreeObserver : public AXTreeObserver {
   void OnNodeDataWillChange(AXTree* tree,
                             const AXNodeData& old_node_data,
                             const AXNodeData& new_node_data) override {}
+  void OnNodeDataChanged(AXTree* tree,
+                         const AXNodeData& old_node_data,
+                         const AXNodeData& new_node_data) override {}
   void OnTreeDataChanged(AXTree* tree,
                          const ui::AXTreeData& old_data,
                          const ui::AXTreeData& new_data) override {
@@ -104,8 +107,6 @@ class TestAXTreeObserver : public AXTreeObserver {
 
   void OnNodeChanged(AXTree* tree, AXNode* node) override {
     changed_ids_.push_back(node->id());
-    if (call_posinset_and_setsize)
-      AssertPosinsetAndSetsizeNotSet(node);
   }
 
   void OnAtomicUpdateFinished(AXTree* tree,
@@ -234,12 +235,6 @@ class TestAXTreeObserver : public AXTreeObserver {
   }
   const std::vector<std::string>& attribute_change_log() {
     return attribute_change_log_;
-  }
-
-  bool call_posinset_and_setsize = false;
-  void AssertPosinsetAndSetsizeNotSet(AXNode* node) {
-    ASSERT_FALSE(node->GetPosInSet());
-    ASSERT_FALSE(node->GetSetSize());
   }
 
  private:
@@ -2992,20 +2987,78 @@ TEST(AXTreeTest, TestSetSizePosInSetSubtreeDeleted) {
   initial_state.nodes[2].role = ax::mojom::Role::kTreeItem;
   AXTree tree(initial_state);
 
-  // This should work normally.
+  AXNode* tree_node = tree.GetFromId(1);
   AXNode* item = tree.GetFromId(3);
+
+  // This should work normally.
   EXPECT_OPTIONAL_EQ(2, item->GetPosInSet());
   EXPECT_OPTIONAL_EQ(2, item->GetSetSize());
 
-  // Use test observer to assert posinset and setsize are 0.
-  TestAXTreeObserver test_observer(&tree);
-  test_observer.call_posinset_and_setsize = true;
   // Remove item from tree.
   AXTreeUpdate tree_update = initial_state;
   tree_update.nodes.resize(1);
   tree_update.nodes[0].child_ids = {2};
 
   ASSERT_TRUE(tree.Unserialize(tree_update));
+
+  // These values are lazily created, so to test that they fail when
+  // called in the middle of a tree update, fake the update state.
+  tree.SetTreeUpdateInProgressState(true);
+  ASSERT_FALSE(tree_node->GetPosInSet());
+  ASSERT_FALSE(tree_node->GetSetSize());
+
+  // Then reset the state to make sure we have the expected values
+  // after |Unserialize|.
+  tree.SetTreeUpdateInProgressState(false);
+  ASSERT_FALSE(tree_node->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(1, tree_node->GetSetSize());
+}
+
+// Tests that GetPosInSet and GetSetSize work when there are ignored nodes.
+TEST(AXTreeTest, TestSetSizePosInSetIgnoredItem) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(3);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = ax::mojom::Role::kTree;
+  initial_state.nodes[0].child_ids = {2, 3};
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kTreeItem;
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kTreeItem;
+  AXTree tree(initial_state);
+
+  AXNode* tree_node = tree.GetFromId(1);
+  AXNode* item1 = tree.GetFromId(2);
+  AXNode* item2 = tree.GetFromId(3);
+
+  // This should work normally.
+  ASSERT_FALSE(tree_node->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, tree_node->GetSetSize());
+
+  EXPECT_OPTIONAL_EQ(1, item1->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, item1->GetSetSize());
+
+  EXPECT_OPTIONAL_EQ(2, item2->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, item2->GetSetSize());
+
+  // Remove item from tree.
+  AXTreeUpdate tree_update;
+  tree_update.nodes.resize(1);
+  tree_update.nodes[0] = initial_state.nodes[1];
+  tree_update.nodes[0].AddState(ax::mojom::State::kIgnored);
+
+  ASSERT_TRUE(tree.Unserialize(tree_update));
+
+  ASSERT_FALSE(tree_node->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(1, tree_node->GetSetSize());
+
+  // Ignored nodes are not part of ordered sets.
+  EXPECT_FALSE(item1->GetPosInSet());
+  EXPECT_FALSE(item1->GetSetSize());
+
+  EXPECT_OPTIONAL_EQ(1, item2->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(1, item2->GetSetSize());
 }
 
 // Tests that kPopUpButtons are assigned the SetSize of the wrapped

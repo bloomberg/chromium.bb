@@ -214,9 +214,14 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
       AXNode* node,
       const AXTreeUpdateState* update_state);
 
-  void CallNodeChangeCallbacks(AXNode* node,
-                               const AXNodeData& old_data,
-                               const AXNodeData& new_data);
+  // Notify the delegate that a node will change its data.
+  void NotifyNodeDataWillChange(const AXNodeData& old_data,
+                                const AXNodeData& new_data);
+
+  // Notify the delegate that |node| has changed its data.
+  void NotifyNodeDataHasBeenChanged(AXNode* node,
+                                    const AXNodeData& old_data,
+                                    const AXNodeData& new_data);
 
   void UpdateReverseRelations(AXNode* node, const AXNodeData& new_data);
 

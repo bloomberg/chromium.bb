@@ -239,7 +239,9 @@ struct PendingStructureChanges {
 // Intermediate state to keep track of during a tree update.
 struct AXTreeUpdateState {
   AXTreeUpdateState(const AXTree& tree)
-      : computing_pending_changes(false), new_root(nullptr), tree(tree) {}
+      : computing_pending_changes(false),
+        root_will_be_created(false),
+        tree(tree) {}
 
   // Returns whether this update removes |node|.
   bool IsRemovedNode(const AXNode* node) const {
@@ -446,6 +448,12 @@ struct AXTreeUpdateState {
   // during an update before the update applies changes.
   base::Optional<AXNode::AXID> pending_root_id;
 
+  // Keeps track of whether the root node will need to be created as a new node.
+  // This may occur either when the root node does not exist before applying
+  // updates to the tree (new tree), or if the root is the |node_id_to_clear|
+  // and will be destroyed before applying AXNodeData updates to the tree.
+  bool root_will_be_created;
+
   // During an update, this keeps track of all nodes that have been
   // implicitly referenced as part of this update, but haven't been
   // updated yet. It's an error if there are any pending nodes at the
@@ -467,9 +475,6 @@ struct AXTreeUpdateState {
   // Keeps track of new nodes created during this update.
   std::set<AXNode::AXID> new_node_ids;
 
-  // The new root in this update, if any.
-  AXNode* new_root;
-
   // Keeps track of any nodes removed. Nodes are removed when their AXID no
   // longer exist in the parent |child_ids| list, or the node is part of to the
   // subtree of the AXID that was explicitally cleared with |node_id_to_clear|.
@@ -481,9 +486,9 @@ struct AXTreeUpdateState {
   std::map<AXNode::AXID, std::unique_ptr<PendingStructureChanges>>
       node_id_to_pending_data;
 
-  // Maps between a node id and its data. We need to keep this around because
-  // the reparented nodes in this update were actually deleted.
-  std::map<AXNode::AXID, AXNodeData> reparented_node_id_to_data;
+  // Maps between a node id and the data it owned before being updated.
+  // We need to keep this around in order to correctly fire post-update events.
+  std::map<AXNode::AXID, AXNodeData> old_node_id_to_data;
 
   // Optional copy of the old tree data, only populated when the tree
   // data has changed.
@@ -790,6 +795,23 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     }
   }
 
+  // Notify observers of nodes that are about to change their data.
+  // This must be done before applying any updates to the tree.
+  // This is iterating in reverse order so that we only notify once per node id,
+  // and that we only notify the initial node data against the final node data,
+  // unless the node is a new root.
+  std::set<int32_t> notified_node_data_will_change;
+  for (size_t i = update.nodes.size(); i-- > 0;) {
+    const AXNodeData& new_data = update.nodes[i];
+    const bool is_new_root =
+        update_state.root_will_be_created && new_data.id == update.root_id;
+    if (!is_new_root) {
+      AXNode* node = GetFromId(new_data.id);
+      if (node && notified_node_data_will_change.insert(new_data.id).second)
+        NotifyNodeDataWillChange(node->data(), new_data);
+    }
+  }
+
   // Handle |node_id_to_clear| before applying ordinary node updates.
   // We distinguish between updating the root, e.g. changing its children or
   // some of its attributes, or replacing the root completely. If the root is
@@ -829,6 +851,8 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     }
   }
 
+  DCHECK_EQ(!GetFromId(update.root_id), update_state.root_will_be_created);
+
   // Update the tree data, do not call |UpdateData| since we want to defer
   // the |OnTreeDataChanged| event until after the tree has finished updating.
   if (update.has_tree_data && data_ != update.tree_data) {
@@ -836,11 +860,10 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     data_ = update.tree_data;
   }
 
-  const bool root_exists = GetFromId(update.root_id) != nullptr;
-
   // Update all of the nodes in the update.
   for (size_t i = 0; i < update.nodes.size(); ++i) {
-    bool is_new_root = !root_exists && update.nodes[i].id == update.root_id;
+    const bool is_new_root = update_state.root_will_be_created &&
+                             update.nodes[i].id == update.root_id;
     if (!UpdateNode(update.nodes[i], is_new_root, &update_state))
       return false;
   }
@@ -926,6 +949,9 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
       node->UpdateUnignoredCachedValues();
   }
 
+  // Tree is no longer updating.
+  SetTreeUpdateInProgressState(false);
+
   // Now that the tree is stable and its nodes have been updated, notify if
   // the tree data changed. We must do this after updating nodes in case the
   // root has been replaced, so observers have the most up-to-date information.
@@ -944,14 +970,24 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   // node changes.
   for (AXNode::AXID node_data_changed_id : update_state.node_data_changed_ids) {
     AXNode* node = GetFromId(node_data_changed_id);
-    if (node) {
-      for (AXTreeObserver& observer : observers_)
-        observer.OnNodeChanged(this, node);
-    }
-  }
+    DCHECK(node);
 
-  // Tree is no longer updating.
-  SetTreeUpdateInProgressState(false);
+    // If the node exists and is in the old data map, then the node data
+    // may have changed unless this is a new root.
+    const bool is_new_root = update_state.root_will_be_created &&
+                             node_data_changed_id == update.root_id;
+    if (!is_new_root) {
+      auto it = update_state.old_node_id_to_data.find(node_data_changed_id);
+      if (it != update_state.old_node_id_to_data.end()) {
+        const AXNodeData& old_node_data = it->second;
+        NotifyNodeDataHasBeenChanged(node, old_node_data, node->data());
+      }
+    }
+
+    // |OnNodeChanged| should be fired for all nodes that have been updated.
+    for (AXTreeObserver& observer : observers_)
+      observer.OnNodeChanged(this, node);
+  }
 
   for (AXTreeObserver& observer : observers_) {
     observer.OnAtomicUpdateFinished(this, root_->id() != old_root_id, changes);
@@ -961,6 +997,7 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
 }
 
 AXTableInfo* AXTree::GetTableInfo(const AXNode* const_table_node) const {
+  DCHECK(!GetTreeUpdateInProgressState());
   // Note: the const_casts are here because we want this function to be able
   // to be called from a const virtual function on AXNode. AXTableInfo is
   // computed on demand and cached, but that's an implementation detail
@@ -1064,14 +1101,15 @@ bool AXTree::ComputePendingChanges(const AXTreeUpdate& update,
     }
   }
 
-  const bool root_exists =
-      !!GetFromId(update.root_id) &&
-      update_state.ShouldPendingNodeExistInTree(update.root_id);
+  update_state.root_will_be_created =
+      !GetFromId(update.root_id) ||
+      !update_state.ShouldPendingNodeExistInTree(update.root_id);
 
   // Populate |update_state| with all of the changes that will be performed
   // on the tree during the update.
   for (const AXNodeData& new_data : update.nodes) {
-    bool is_new_root = !root_exists && new_data.id == update.root_id;
+    bool is_new_root =
+        update_state.root_will_be_created && new_data.id == update.root_id;
     if (!ComputePendingChangesToNode(new_data, is_new_root, &update_state)) {
       return false;
     }
@@ -1219,19 +1257,12 @@ bool AXTree::UpdateNode(const AXNodeData& src,
   AXNode* node = GetFromId(src.id);
   if (node) {
     update_state->pending_nodes.erase(node->id());
-
-    // TODO(accessibility): CallNodeChangeCallbacks should not pass |node|,
-    // since the tree and the node data are not yet in a consistent
-    // state. Possibly only pass id.
+    UpdateReverseRelations(node, src);
     if (!update_state->IsCreatedNode(node) ||
         update_state->IsReparentedNode(node)) {
-      auto it = update_state->reparented_node_id_to_data.find(node->id());
-      const AXNodeData& old_data =
-          it != update_state->reparented_node_id_to_data.end() ? it->second
-                                                               : node->data();
-      CallNodeChangeCallbacks(node, old_data, src);
+      update_state->old_node_id_to_data.insert(
+          std::make_pair(node->id(), node->TakeData()));
     }
-    UpdateReverseRelations(node, src);
     node->SetData(src);
   } else {
     if (!is_new_root) {
@@ -1240,8 +1271,7 @@ bool AXTree::UpdateNode(const AXNodeData& src,
       return false;
     }
 
-    update_state->new_root = CreateNode(nullptr, src.id, 0, update_state);
-    node = update_state->new_root;
+    node = CreateNode(nullptr, src.id, 0, update_state);
     UpdateReverseRelations(node, src);
     node->SetData(src);
   }
@@ -1327,14 +1357,23 @@ void AXTree::NotifyNodeHasBeenReparentedOrCreated(
   }
 }
 
-void AXTree::CallNodeChangeCallbacks(AXNode* node,
-                                     const AXNodeData& old_data,
-                                     const AXNodeData& new_data) {
-  if (node->id() == AXNode::kInvalidAXID)
+void AXTree::NotifyNodeDataWillChange(const AXNodeData& old_data,
+                                      const AXNodeData& new_data) {
+  if (new_data.id == AXNode::kInvalidAXID)
     return;
 
   for (AXTreeObserver& observer : observers_)
     observer.OnNodeDataWillChange(this, old_data, new_data);
+}
+
+void AXTree::NotifyNodeDataHasBeenChanged(AXNode* node,
+                                          const AXNodeData& old_data,
+                                          const AXNodeData& new_data) {
+  if (node->id() == AXNode::kInvalidAXID)
+    return;
+
+  for (AXTreeObserver& observer : observers_)
+    observer.OnNodeDataChanged(this, old_data, new_data);
 
   if (old_data.role != new_data.role) {
     for (AXTreeObserver& observer : observers_)
@@ -1590,11 +1629,11 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
     update_state->DecrementPendingDestroyNodeCount(node->id());
     update_state->removed_node_ids.insert(node->id());
     update_state->new_node_ids.erase(node->id());
-  }
-
-  if (update_state && update_state->IsReparentedNode(node)) {
-    update_state->reparented_node_id_to_data.insert(
-        std::make_pair(node->id(), node->TakeData()));
+    update_state->node_data_changed_ids.erase(node->id());
+    if (update_state->IsReparentedNode(node)) {
+      update_state->old_node_id_to_data.emplace(
+          std::make_pair(node->id(), node->TakeData()));
+    }
   }
   node->Destroy();
 }
