@@ -77,8 +77,7 @@ flat_rule::ElementType GetElementType(const WebRequestInfo& request) {
   if (request.url.SchemeIsWSOrWSS())
     return flat_rule::ElementType_WEBSOCKET;
 
-  return request.type.has_value() ? GetElementType(request.type.value())
-                                  : flat_rule::ElementType_OTHER;
+  return GetElementType(request.type);
 }
 
 // Returns whether the request to |url| is third party to its |document_origin|.
