@@ -6,6 +6,7 @@
 
 #include "gtest/gtest.h"
 #include "streaming/cast/rtp_defines.h"
+#include "util/big_endian.h"
 
 namespace openscreen {
 namespace cast_streaming {
@@ -269,7 +270,7 @@ TEST(RtpPacketParserTest, RejectsTruncatedPackets) {
 }
 
 // Tests that the parser rejects invalid packet ID values.
-TEST(RtpPacketParserTest, RejectsPacketWithBadFramePacketId) {
+TEST(RtpPacketParserTest, RejectsPacketWithBadFramePacketIds) {
   // clang-format off
   const uint8_t kInput[] = {
     0b10000000,  // Version/Padding byte.
@@ -286,8 +287,22 @@ TEST(RtpPacketParserTest, RejectsPacketWithBadFramePacketId) {
   // clang-format on
   const Ssrc kSenderSsrc = 0x01020304;
 
+  // The parser should reject the packet because its packet ID field is greater
+  // than the max packet ID.
   RtpPacketParser parser(kSenderSsrc);
   ASSERT_FALSE(parser.Parse(kInput));
+
+  // Now, modify the packet such that its "max packet ID" field is set to the
+  // special "all packets lost" value. This makes the "packet ID" field valid,
+  // because it is less than the "max packet ID", but the "max packet ID" value
+  // itself is invalid.
+  uint8_t input_with_bad_max_packet_id[sizeof(kInput)];
+  memcpy(input_with_bad_max_packet_id, kInput, sizeof(kInput));
+  WriteBigEndian<uint16_t>(kAllPacketsLost, &input_with_bad_max_packet_id[16]);
+  const uint16_t packet_id =
+      ReadBigEndian<uint16_t>(&input_with_bad_max_packet_id[14]);
+  ASSERT_LE(packet_id, kAllPacketsLost);
+  ASSERT_FALSE(parser.Parse(input_with_bad_max_packet_id));
 }
 
 }  // namespace

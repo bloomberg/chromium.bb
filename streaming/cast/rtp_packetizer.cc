@@ -55,6 +55,7 @@ absl::Span<uint8_t> RtpPacketizer::GeneratePacket(const EncryptedFrame& frame,
   OSP_CHECK_GE(static_cast<int>(buffer.size()), max_packet_size_);
 
   const int num_packets = ComputeNumberOfPackets(frame);
+  OSP_DCHECK_GT(num_packets, 0);
   OSP_DCHECK_LT(int{packet_id}, num_packets);
   const bool is_last_packet = int{packet_id} == (num_packets - 1);
 
@@ -128,8 +129,7 @@ int RtpPacketizer::ComputeNumberOfPackets(const EncryptedFrame& frame) const {
   num_packets = std::max(1, num_packets);
 
   // Ensure that the entire range of FramePacketIds can be represented.
-  OSP_DCHECK_LE(num_packets, int{kMaxAllowedFramePacketId});
-  return num_packets;
+  return num_packets <= int{kMaxAllowedFramePacketId} ? num_packets : -1;
 }
 
 }  // namespace cast_streaming
