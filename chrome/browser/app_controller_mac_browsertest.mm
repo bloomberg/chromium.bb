@@ -472,7 +472,8 @@ IN_PROC_BROWSER_TEST_F(AppControllerNewProfileManagementBrowserTest,
 class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {
  protected:
   AppControllerOpenShortcutBrowserTest() {
-    scoped_feature_list_.InitWithFeatures({welcome::kForceEnabled}, {});
+    scoped_feature_list_.InitWithFeatures({welcome::kOnboardingForceEnabled},
+                                          {});
   }
 
   void SetUpInProcessBrowserTestFixture() override {

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Runs the Polymer welcome tests on welcome UI. */
+/** @fileoverview Runs the Polymer welcome tests on onboarding-welcome UI. */
 
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/browser/ui/webui/welcome/helpers.h"');
 
-/** Test fixture for Polymer welcome elements. */
-const WelcomeBrowserTest = class extends PolymerTest {
+/** Test fixture for Polymer onboarding welcome elements. */
+const OnboardingWelcomeBrowserTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     throw 'this is abstract and should be overridden by subclasses';
@@ -24,12 +24,13 @@ const WelcomeBrowserTest = class extends PolymerTest {
 
   /** @override */
   get featureList() {
-    return {enabled: ['welcome::kForceEnabled']};
+    return {enabled: ['welcome::kOnboardingForceEnabled']};
   }
 };
 
 // eslint-disable-next-line no-var
-var WelcomeAppChooserTest = class extends WelcomeBrowserTest {
+var OnboardingWelcomeAppChooserTest =
+    class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://welcome/google_apps/nux_google_apps.html';
@@ -46,12 +47,13 @@ var WelcomeAppChooserTest = class extends WelcomeBrowserTest {
   }
 };
 
-TEST_F('WelcomeAppChooserTest', 'All', function() {
+TEST_F('OnboardingWelcomeAppChooserTest', 'All', function() {
   mocha.run();
 });
 
 // eslint-disable-next-line no-var
-var WelcomeWelcomeAppTest = class extends WelcomeBrowserTest {
+var OnboardingWelcomeWelcomeAppTest =
+    class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://welcome/welcome_app.html';
@@ -69,12 +71,13 @@ var WelcomeWelcomeAppTest = class extends WelcomeBrowserTest {
   }
 };
 
-TEST_F('WelcomeWelcomeAppTest', 'All', function() {
+TEST_F('OnboardingWelcomeWelcomeAppTest', 'All', function() {
   mocha.run();
 });
 
 // eslint-disable-next-line no-var
-var WelcomeSigninViewTest = class extends WelcomeBrowserTest {
+var OnboardingWelcomeSigninViewTest =
+    class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://welcome/signin_view.html';
@@ -89,12 +92,13 @@ var WelcomeSigninViewTest = class extends WelcomeBrowserTest {
   }
 };
 
-TEST_F('WelcomeSigninViewTest', 'All', function() {
+TEST_F('OnboardingWelcomeSigninViewTest', 'All', function() {
   mocha.run();
 });
 
 // eslint-disable-next-line no-var
-var WelcomeNavigationBehaviorTest = class extends WelcomeBrowserTest {
+var OnboardingWelcomeNavigationBehaviorTest =
+    class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://welcome/navigation_behavior.html';
@@ -109,12 +113,13 @@ var WelcomeNavigationBehaviorTest = class extends WelcomeBrowserTest {
   }
 };
 
-TEST_F('WelcomeNavigationBehaviorTest', 'All', function() {
+TEST_F('OnboardingWelcomeNavigationBehaviorTest', 'All', function() {
   mocha.run();
 });
 
 // eslint-disable-next-line no-var
-var WelcomeModuleMetricsTest = class extends WelcomeBrowserTest {
+var OnboardingWelcomeModuleMetricsTest =
+    class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://welcome/shared/module_metrics_proxy.html';
@@ -129,12 +134,13 @@ var WelcomeModuleMetricsTest = class extends WelcomeBrowserTest {
   }
 };
 
-TEST_F('WelcomeModuleMetricsTest', 'All', function() {
+TEST_F('OnboardingWelcomeModuleMetricsTest', 'All', function() {
   mocha.run();
 });
 
 // eslint-disable-next-line no-var
-var WelcomeSetAsDefaultTest = class extends WelcomeBrowserTest {
+var OnboardingWelcomeSetAsDefaultTest =
+    class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://welcome/set_as_default/nux_set_as_default.html';
@@ -150,12 +156,13 @@ var WelcomeSetAsDefaultTest = class extends WelcomeBrowserTest {
   }
 };
 
-TEST_F('WelcomeSetAsDefaultTest', 'All', function() {
+TEST_F('OnboardingWelcomeSetAsDefaultTest', 'All', function() {
   mocha.run();
 });
 
 // eslint-disable-next-line no-var
-var WelcomeNtpBackgroundTest = class extends WelcomeBrowserTest {
+var OnboardingWelcomeNtpBackgroundTest =
+    class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://welcome/ntp_background/nux_ntp_background.html';
@@ -171,6 +178,6 @@ var WelcomeNtpBackgroundTest = class extends WelcomeBrowserTest {
   }
 };
 
-TEST_F('WelcomeNtpBackgroundTest', 'All', function() {
+TEST_F('OnboardingWelcomeNtpBackgroundTest', 'All', function() {
   mocha.run();
 });

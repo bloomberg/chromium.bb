@@ -1026,7 +1026,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
  public:
   StartupBrowserCreatorFirstRunTest() {
-    scoped_feature_list_.InitWithFeatures({welcome::kForceEnabled}, {});
+    scoped_feature_list_.InitWithFeatures({welcome::kOnboardingForceEnabled},
+                                          {});
   }
 
  protected:

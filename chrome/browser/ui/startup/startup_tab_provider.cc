@@ -44,7 +44,7 @@ bool ProfileHasOtherTabbedBrowser(Profile* profile) {
 }  // namespace
 
 StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
-// Chrome OS has its own welcome flow provided by OOBE.
+// Onboarding content has not been launched on Chrome OS.
 #if defined(OS_CHROMEOS)
   return StartupTabs();
 #else

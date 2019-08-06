@@ -1666,7 +1666,7 @@ group("extra_resources") {
   }
 
   if (!is_android && !is_chromeos) {
-    public_deps += [ "//chrome/browser/resources:welcome_resources" ]
+    public_deps += [ "//chrome/browser/resources:onboarding_welcome_resources" ]
   }
 
   if (enable_extensions) {
@@ -1939,11 +1939,11 @@ if (is_linux) {
   if (is_official_build) {
     group("linux_symbols") {
       deps = [
-        ":angle_egl_symbols",
-        ":angle_gles_symbols",
         ":chrome_symbols",
         ":swiftshader_egl_symbols",
         ":swiftshader_gles_symbols",
+        ":angle_egl_symbols",
+        ":angle_gles_symbols",
       ]
     }
     extract_symbols("chrome_symbols") {

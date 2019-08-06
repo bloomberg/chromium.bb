@@ -213,9 +213,9 @@ are declared in tools/grit/grit_rule.gni.
         <part file="extensions_strings.grdp" />
       </if>
 
-      <!-- Welcome strings -->
+      <!-- NUX Welcome onboarding experience strings -->
       <if expr="not chromeos and not is_android">
-        <part file="welcome_strings.grdp" />
+        <part file="onboarding_welcome_strings.grdp" />
       </if>
 
       <!-- Printing specific strings -->

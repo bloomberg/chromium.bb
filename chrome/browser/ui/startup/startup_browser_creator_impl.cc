@@ -628,16 +628,17 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
         !SessionStartupPref::TypeHasRecommendedValue(profile_->GetPrefs());
   }
 
-  bool welcome_enabled = true;
+  bool onboarding_enabled = true;
 #if !defined(OS_CHROMEOS)
-  welcome_enabled =
-      welcome::IsEnabled(profile_) && welcome::HasModulesToShow(profile_);
+  onboarding_enabled = welcome::IsOnboardingEnabled(profile_) &&
+                       welcome::DoesOnboardingHaveModulesToShow(profile_);
 #endif  // !defined(OS_CHROMEOS)
 
-  StartupTabs tabs = DetermineStartupTabs(
-      StartupTabProviderImpl(), cmd_line_tabs, process_startup,
-      is_incognito_or_guest, is_post_crash_launch,
-      has_incompatible_applications, promotional_tabs_enabled, welcome_enabled);
+  StartupTabs tabs =
+      DetermineStartupTabs(StartupTabProviderImpl(), cmd_line_tabs,
+                           process_startup, is_incognito_or_guest,
+                           is_post_crash_launch, has_incompatible_applications,
+                           promotional_tabs_enabled, onboarding_enabled);
 
   // Return immediately if we start an async restore, since the remainder of
   // that process is self-contained.
@@ -689,7 +690,7 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
     bool is_post_crash_launch,
     bool has_incompatible_applications,
     bool promotional_tabs_enabled,
-    bool welcome_enabled) {
+    bool onboarding_enabled) {
   // Only the New Tab Page or command line URLs may be shown in incognito mode.
   // A similar policy exists for crash recovery launches, to prevent getting the
   // user stuck in a crash loop.
@@ -738,8 +739,8 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
         profile_, browser_creator_, process_startup);
     AppendTabs(welcome_back_tabs, &tabs);
 
-    if (welcome_enabled) {
-      // Policies for welcome (e.g., first run) may show promotional and
+    if (onboarding_enabled) {
+      // Policies for onboarding (e.g., first run) may show promotional and
       // introductory content depending on a number of system status factors,
       // including OS and whether or not this is First Run.
       onboarding_tabs = provider.GetOnboardingTabs(profile_);

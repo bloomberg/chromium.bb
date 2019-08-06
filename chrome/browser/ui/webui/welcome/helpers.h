@@ -31,16 +31,16 @@ namespace welcome {
 void JoinOnboardingGroup(Profile* profile);
 #endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
 
-bool IsEnabled(Profile* profile);
+bool IsOnboardingEnabled(Profile* profile);
 
 bool IsAppVariationEnabled();
 
-bool HasModulesToShow(Profile* profile);
+bool DoesOnboardingHaveModulesToShow(Profile* profile);
 
-base::DictionaryValue GetModules(Profile* profile);
+base::DictionaryValue GetOnboardingModules(Profile* profile);
 
 // Exposed for testing.
-extern const base::Feature kForceEnabled;
+extern const base::Feature kOnboardingForceEnabled;
 
 bool CanShowGoogleAppModuleForTesting(const policy::PolicyMap& policies);
 bool CanShowNTPBackgroundModuleForTesting(const policy::PolicyMap& policies,

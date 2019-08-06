@@ -9,7 +9,7 @@ GEN_INCLUDE([
 ]);
 GEN('#include "chrome/browser/ui/webui/welcome/helpers.h"');
 
-WelcomeA11y = class extends PolymerTest {
+OnboardingA11y = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     return 'chrome://welcome/';
@@ -17,13 +17,13 @@ WelcomeA11y = class extends PolymerTest {
 
   /** @override */
   get featureList() {
-    return {enabled: ['welcome::kForceEnabled']};
+    return {enabled: ['welcome::kOnboardingForceEnabled']};
   }
 };
 
-AccessibilityTest.define('WelcomeA11y', {
+AccessibilityTest.define('OnboardingA11y', {
   // Must be unique within the test fixture and cannot have spaces.
-  name: 'WelcomeFlow',
+  name: 'OnboardingFlow',
 
   // Optional. Configuration for axe-core. Can be used to disable a test.
   axeOptions: {},

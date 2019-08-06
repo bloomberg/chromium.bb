@@ -11,11 +11,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/background/ntp_backgrounds.h"
+#include "chrome/browser/search/background/onboarding_ntp_backgrounds.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/welcome_resources.h"
+#include "chrome/grit/onboarding_welcome_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -64,14 +64,16 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
   CHECK(args->Get(0, &callback_id));
 
   base::ListValue list_value;
-  std::array<GURL, kNtpBackgroundsCount> NtpBackgrounds = GetNtpBackgrounds();
+  std::array<GURL, kOnboardingNtpBackgroundsCount> onboardingNtpBackgrounds =
+      GetOnboardingNtpBackgrounds();
   const std::string kUrlPrefix = "preview-background.jpg?";
 
   auto element = std::make_unique<base::DictionaryValue>();
   int id = static_cast<int>(NtpBackgrounds::kEarth);
   element->SetInteger("id", id);
-  element->SetString("title", l10n_util::GetStringUTF8(
-                                  IDS_WELCOME_NTP_BACKGROUND_EARTH_TITLE));
+  element->SetString("title",
+                     l10n_util::GetStringUTF8(
+                         IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_EARTH_TITLE));
   element->SetString("imageUrl", kUrlPrefix + base::NumberToString(id));
   element->SetString("thumbnailClass", "earth");
   list_value.Append(std::move(element));
@@ -79,8 +81,9 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
   element = std::make_unique<base::DictionaryValue>();
   id = static_cast<int>(NtpBackgrounds::kCityscape);
   element->SetInteger("id", id);
-  element->SetString("title", l10n_util::GetStringUTF8(
-                                  IDS_WELCOME_NTP_BACKGROUND_CITYSCAPE_TITLE));
+  element->SetString(
+      "title", l10n_util::GetStringUTF8(
+                   IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_CITYSCAPE_TITLE));
   element->SetString("imageUrl", kUrlPrefix + base::NumberToString(id));
   element->SetString("thumbnailClass", "cityscape");
   list_value.Append(std::move(element));
@@ -88,8 +91,9 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
   element = std::make_unique<base::DictionaryValue>();
   id = static_cast<int>(NtpBackgrounds::kLandscape);
   element->SetInteger("id", id);
-  element->SetString("title", l10n_util::GetStringUTF8(
-                                  IDS_WELCOME_NTP_BACKGROUND_LANDSCAPE_TITLE));
+  element->SetString(
+      "title", l10n_util::GetStringUTF8(
+                   IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_LANDSCAPE_TITLE));
   element->SetString("imageUrl", kUrlPrefix + base::NumberToString(id));
   element->SetString("thumbnailClass", "landscape");
   list_value.Append(std::move(element));
@@ -97,8 +101,9 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
   element = std::make_unique<base::DictionaryValue>();
   id = static_cast<int>(NtpBackgrounds::kArt);
   element->SetInteger("id", id);
-  element->SetString(
-      "title", l10n_util::GetStringUTF8(IDS_WELCOME_NTP_BACKGROUND_ART_TITLE));
+  element->SetString("title",
+                     l10n_util::GetStringUTF8(
+                         IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_ART_TITLE));
   element->SetString("imageUrl", kUrlPrefix + base::NumberToString(id));
   element->SetString("thumbnailClass", "art");
   list_value.Append(std::move(element));
@@ -106,9 +111,10 @@ void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {
   element = std::make_unique<base::DictionaryValue>();
   id = static_cast<int>(NtpBackgrounds::kGeometricShapes);
   element->SetInteger("id", id);
-  element->SetString("title",
-                     l10n_util::GetStringUTF8(
-                         IDS_WELCOME_NTP_BACKGROUND_GEOMETRIC_SHAPES_TITLE));
+  element->SetString(
+      "title",
+      l10n_util::GetStringUTF8(
+          IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_GEOMETRIC_SHAPES_TITLE));
   element->SetString("imageUrl", kUrlPrefix + base::NumberToString(id));
   element->SetString("thumbnailClass", "geometric-shapes");
   list_value.Append(std::move(element));
@@ -121,22 +127,24 @@ void NtpBackgroundHandler::HandleSetBackground(const base::ListValue* args) {
   int backgroundIndex;
   args->GetInteger(0, &backgroundIndex);
 
-  std::array<GURL, kNtpBackgroundsCount> NtpBackgrounds = GetNtpBackgrounds();
+  std::array<GURL, kOnboardingNtpBackgroundsCount> onboardingNtpBackgrounds =
+      GetOnboardingNtpBackgrounds();
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
 
   switch (backgroundIndex) {
     case static_cast<int>(NtpBackgrounds::kArt):
       instant_service->SetCustomBackgroundInfo(
-          NtpBackgrounds[backgroundIndex], "Universe Cosmic Vacum",
+          onboardingNtpBackgrounds[backgroundIndex], "Universe Cosmic Vacum",
           "Philipp Rietz — Walli",
           GURL("https://walli.shanga.co/image/view/?id=370"), "");
       break;
     case static_cast<int>(NtpBackgrounds::kCityscape):
       instant_service->SetCustomBackgroundInfo(
-          NtpBackgrounds[backgroundIndex],
-          l10n_util::GetStringFUTF8(IDS_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
-                                    base::UTF8ToUTF16("Ev Tchebotarev")),
+          onboardingNtpBackgrounds[backgroundIndex],
+          l10n_util::GetStringFUTF8(
+              IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
+              base::UTF8ToUTF16("Ev Tchebotarev")),
           "",
           GURL("https://500px.com/photo/135751035/"
                "soulseek-by-%E5%B0%A4%E9%87%91%E5%B0%BC-ev-tchebotarev"),
@@ -144,22 +152,24 @@ void NtpBackgroundHandler::HandleSetBackground(const base::ListValue* args) {
       break;
     case static_cast<int>(NtpBackgrounds::kEarth):
       instant_service->SetCustomBackgroundInfo(
-          NtpBackgrounds[backgroundIndex],
-          l10n_util::GetStringFUTF8(IDS_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
-                                    base::UTF8ToUTF16("NASA Image Library")),
+          onboardingNtpBackgrounds[backgroundIndex],
+          l10n_util::GetStringFUTF8(
+              IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
+              base::UTF8ToUTF16("NASA Image Library")),
           "", GURL("https://www.google.com/sky/"), "");
       break;
     case static_cast<int>(NtpBackgrounds::kGeometricShapes):
       instant_service->SetCustomBackgroundInfo(
-          NtpBackgrounds[backgroundIndex], "Tessellation 15",
+          onboardingNtpBackgrounds[backgroundIndex], "Tessellation 15",
           "Justin Prno — Walli",
           GURL("https://walli.shanga.co/image/view/?id=1375"), "");
       break;
     case static_cast<int>(NtpBackgrounds::kLandscape):
       instant_service->SetCustomBackgroundInfo(
-          NtpBackgrounds[backgroundIndex],
-          l10n_util::GetStringFUTF8(IDS_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
-                                    base::UTF8ToUTF16("Giulio Rosso Chioso")),
+          onboardingNtpBackgrounds[backgroundIndex],
+          l10n_util::GetStringFUTF8(
+              IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
+              base::UTF8ToUTF16("Giulio Rosso Chioso")),
           "",
           GURL("https://500px.com/photo/41149196/"
                "le-piscine-sunset-by-giulio-rosso-chioso"),
