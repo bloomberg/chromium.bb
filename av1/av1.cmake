@@ -234,6 +234,11 @@ list(APPEND AOM_AV1_COMMON_INTRIN_SSE2
             "${AOM_ROOT}/av1/common/x86/av1_txfm_sse2.h"
             "${AOM_ROOT}/av1/common/x86/warp_plane_sse2.c")
 
+if(NOT CONFIG_AV1_HIGHBITDEPTH)
+  list(REMOVE_ITEM AOM_AV1_COMMON_INTRIN_SSE2
+                   "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_sse2.c")
+endif()
+
 list(APPEND AOM_AV1_COMMON_INTRIN_SSSE3
             "${AOM_ROOT}/av1/common/cdef_block_ssse3.c"
             "${AOM_ROOT}/av1/common/x86/av1_inv_txfm_ssse3.c"
@@ -243,6 +248,11 @@ list(APPEND AOM_AV1_COMMON_INTRIN_SSSE3
             "${AOM_ROOT}/av1/common/x86/highbd_wiener_convolve_ssse3.c"
             "${AOM_ROOT}/av1/common/x86/jnt_convolve_ssse3.c"
             "${AOM_ROOT}/av1/common/x86/reconinter_ssse3.c")
+
+if(NOT CONFIG_AV1_HIGHBITDEPTH)
+  list(REMOVE_ITEM AOM_AV1_COMMON_INTRIN_SSSE3
+                   "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_ssse3.c")
+endif()
 
 list(APPEND AOM_AV1_COMMON_INTRIN_SSE4_1
             "${AOM_ROOT}/av1/common/cdef_block_sse4.c"
@@ -260,6 +270,11 @@ list(APPEND AOM_AV1_COMMON_INTRIN_SSE4_1
             "${AOM_ROOT}/av1/common/x86/selfguided_sse4.c"
             "${AOM_ROOT}/av1/common/x86/warp_plane_sse4.c")
 
+if(NOT CONFIG_AV1_HIGHBITDEPTH)
+  list(REMOVE_ITEM AOM_AV1_COMMON_INTRIN_SSE4_1
+                   "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_sse4.c")
+endif()
+
 list(APPEND AOM_AV1_COMMON_INTRIN_AVX2
             "${AOM_ROOT}/av1/common/cdef_block_avx2.c"
             "${AOM_ROOT}/av1/common/x86/av1_inv_txfm_avx2.c"
@@ -276,6 +291,11 @@ list(APPEND AOM_AV1_COMMON_INTRIN_AVX2
             "${AOM_ROOT}/av1/common/x86/selfguided_avx2.c"
             "${AOM_ROOT}/av1/common/x86/warp_plane_avx2.c"
             "${AOM_ROOT}/av1/common/x86/wiener_convolve_avx2.c")
+
+if(NOT CONFIG_AV1_HIGHBITDEPTH)
+  list(REMOVE_ITEM AOM_AV1_COMMON_INTRIN_AVX2
+                   "${AOM_ROOT}/av1/common/x86/highbd_convolve_2d_avx2.c")
+endif()
 
 list(APPEND AOM_AV1_ENCODER_ASM_SSE2 "${AOM_ROOT}/av1/encoder/x86/dct_sse2.asm"
             "${AOM_ROOT}/av1/encoder/x86/error_sse2.asm")

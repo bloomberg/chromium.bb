@@ -750,6 +750,7 @@ TEST_P(ConvolveTest, DISABLED_Speed) {
 
 using ::testing::make_tuple;
 
+#if CONFIG_AV1_HIGHBITDEPTH
 #define WRAP(func, bd)                                                       \
   static void wrap_##func##_##bd(                                            \
       const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,                \
@@ -758,6 +759,16 @@ using ::testing::make_tuple;
     aom_highbd_##func(src, src_stride, dst, dst_stride, filter_x,            \
                       filter_x_stride, filter_y, filter_y_stride, w, h, bd); \
   }
+#else
+#define WRAP(func, bd)                                                      \
+  static void wrap_##func##_##bd(                                           \
+      const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,               \
+      ptrdiff_t dst_stride, const int16_t *filter_x, int filter_x_stride,   \
+      const int16_t *filter_y, int filter_y_stride, int w, int h) {         \
+    aom_##func(src, src_stride, dst, dst_stride, filter_x, filter_x_stride, \
+               filter_y, filter_y_stride, w, h);                            \
+  }
+#endif
 #if HAVE_SSE2 && ARCH_X86_64
 WRAP(convolve_copy_sse2, 8)
 WRAP(convolve_copy_sse2, 10)
@@ -780,7 +791,7 @@ WRAP(convolve_copy_c, 12)
 WRAP(convolve8_horiz_c, 12)
 WRAP(convolve8_vert_c, 12)
 
-#if HAVE_AVX2
+#if HAVE_AVX2 && CONFIG_AV1_HIGHBITDEPTH
 WRAP(convolve_copy_avx2, 8)
 WRAP(convolve8_horiz_avx2, 8)
 WRAP(convolve8_vert_avx2, 8)
@@ -792,7 +803,7 @@ WRAP(convolve8_vert_avx2, 10)
 WRAP(convolve_copy_avx2, 12)
 WRAP(convolve8_horiz_avx2, 12)
 WRAP(convolve8_vert_avx2, 12)
-#endif  // HAVE_AVX2
+#endif  // HAVE_AVX2 && CONFIG_AV1_HIGHBITDEPTH
 
 #undef WRAP
 
@@ -842,7 +853,7 @@ INSTANTIATE_TEST_CASE_P(SSSE3, ConvolveTest,
                         ::testing::ValuesIn(kArrayConvolve8_ssse3));
 #endif
 
-#if HAVE_AVX2
+#if HAVE_AVX2 && CONFIG_AV1_HIGHBITDEPTH
 const ConvolveFunctions convolve8_avx2(aom_convolve_copy_c,
                                        aom_convolve8_horiz_avx2,
                                        aom_convolve8_vert_avx2, 0);
@@ -856,12 +867,13 @@ const ConvolveFunctions wrap_convolve10_avx2(wrap_convolve_copy_avx2_10,
 const ConvolveFunctions wrap_convolve12_avx2(wrap_convolve_copy_avx2_12,
                                              wrap_convolve8_horiz_avx2_12,
                                              wrap_convolve8_vert_avx2_12, 12);
+
 const ConvolveParam kArray_Convolve8_avx2[] = {
   ALL_SIZES_64(wrap_convolve8_avx2), ALL_SIZES_64(wrap_convolve10_avx2),
   ALL_SIZES_64(wrap_convolve12_avx2), ALL_SIZES(convolve8_avx2)
 };
 INSTANTIATE_TEST_CASE_P(AVX2, ConvolveTest,
                         ::testing::ValuesIn(kArray_Convolve8_avx2));
-#endif  // HAVE_AVX2
+#endif  // HAVE_AVX2 && CONFIG_AV1_HIGHBITDEPTH
 
 }  // namespace

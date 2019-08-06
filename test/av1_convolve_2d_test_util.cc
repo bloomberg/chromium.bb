@@ -355,6 +355,7 @@ void AV1JntConvolve2DTest::RunSpeedTest(convolve_2d_func test_impl) {
 }
 }  // namespace AV1Convolve2D
 
+#if CONFIG_AV1_HIGHBITDEPTH
 namespace AV1HighbdConvolve2D {
 ::testing::internal::ParamGenerator<HighbdConvolve2DParam> BuildParams(
     highbd_convolve_2d_func filter, int has_subx, int has_suby) {
@@ -703,4 +704,5 @@ void AV1HighbdJntConvolve2DTest::RunCheckOutput(
   }
 }
 }  // namespace AV1HighbdConvolve2D
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 }  // namespace libaom_test

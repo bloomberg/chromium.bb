@@ -64,13 +64,19 @@ typedef int64_t (*sse_part_extractor_type)(const YV12_BUFFER_CONFIG *a,
                                            int hstart, int width, int vstart,
                                            int height);
 
+#if CONFIG_AV1_HIGHBITDEPTH
 #define NUM_EXTRACTORS (3 * (1 + 1))
-
 static const sse_part_extractor_type sse_part_extractors[NUM_EXTRACTORS] = {
   aom_get_y_sse_part,        aom_get_u_sse_part,
   aom_get_v_sse_part,        aom_highbd_get_y_sse_part,
   aom_highbd_get_u_sse_part, aom_highbd_get_v_sse_part,
 };
+#else
+#define NUM_EXTRACTORS 3
+static const sse_part_extractor_type sse_part_extractors[NUM_EXTRACTORS] = {
+  aom_get_y_sse_part, aom_get_u_sse_part, aom_get_v_sse_part
+};
+#endif
 
 static int64_t sse_restoration_unit(const RestorationTileLimits *limits,
                                     const YV12_BUFFER_CONFIG *src,

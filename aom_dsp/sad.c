@@ -159,6 +159,7 @@ sadMxNx4D(16, 64);
 sadMxN(64, 16);
 sadMxNx4D(64, 16);
 
+#if CONFIG_AV1_HIGHBITDEPTH
 static INLINE unsigned int highbd_sad(const uint8_t *a8, int a_stride,
                                       const uint8_t *b8, int b_stride,
                                       int width, int height) {
@@ -306,3 +307,4 @@ highbd_sadMxN(16, 64);
 highbd_sadMxNx4D(16, 64);
 highbd_sadMxN(64, 16);
 highbd_sadMxNx4D(64, 16);
+#endif  // CONFIG_AV1_HIGHBITDEPTH

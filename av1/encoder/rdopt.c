@@ -962,13 +962,17 @@ static unsigned pixel_dist_visible_only(
     cpi->fn_ptr[tx_bsize].vf(src, src_stride, dst, dst_stride, &sse);
     return sse;
   }
-  const MACROBLOCKD *xd = &x->e_mbd;
 
+#if CONFIG_AV1_HIGHBITDEPTH
+  const MACROBLOCKD *xd = &x->e_mbd;
   if (is_cur_buf_hbd(xd)) {
     uint64_t sse64 = aom_highbd_sse_odd_size(src, src_stride, dst, dst_stride,
                                              visible_cols, visible_rows);
     return (unsigned int)ROUND_POWER_OF_TWO(sse64, (xd->bd - 8) * 2);
   }
+#else
+  (void)x;
+#endif
   sse = aom_sse_odd_size(src, src_stride, dst, dst_stride, visible_cols,
                          visible_rows);
   return sse;
@@ -2111,6 +2115,7 @@ static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
   uint8_t *recon;
   DECLARE_ALIGNED(16, uint16_t, recon16[MAX_TX_SQUARE]);
 
+#if CONFIG_AV1_HIGHBITDEPTH
   if (is_cur_buf_hbd(xd)) {
     recon = CONVERT_TO_BYTEPTR(recon16);
     av1_highbd_convolve_2d_copy_sr(CONVERT_TO_SHORTPTR(dst), dst_stride,
@@ -2121,6 +2126,11 @@ static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
     av1_convolve_2d_copy_sr(dst, dst_stride, recon, MAX_TX_SIZE, bsw, bsh, NULL,
                             NULL, 0, 0, NULL);
   }
+#else
+  recon = (uint8_t *)recon16;
+  av1_convolve_2d_copy_sr(dst, dst_stride, recon, MAX_TX_SIZE, bsw, bsh, NULL,
+                          NULL, 0, 0, NULL);
+#endif
 
   const PLANE_TYPE plane_type = get_plane_type(plane);
   TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size,
@@ -14168,6 +14178,7 @@ void av1_gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
   assert(w % 8 == 0);
   // Because we use an eight tap filter, the stride should be at least 7 + w.
   assert(src_stride >= w + 7);
+#if CONFIG_AV1_HIGHBITDEPTH
   if (high_bd) {
     av1_highbd_convolve_2d_sr(CONVERT_TO_SHORTPTR(src), src_stride,
                               CONVERT_TO_SHORTPTR(dst), w, w, h, &filter,
@@ -14176,6 +14187,11 @@ void av1_gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
     av1_convolve_2d_sr(src, src_stride, dst, w, w, h, &filter, &filter, 0, 0,
                        &conv_params);
   }
+#else
+  (void)high_bd;
+  av1_convolve_2d_sr(src, src_stride, dst, w, w, h, &filter, &filter, 0, 0,
+                     &conv_params);
+#endif
 }
 
 static EdgeInfo edge_probability(const uint8_t *input, int w, int h,

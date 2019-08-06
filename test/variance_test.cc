@@ -1251,6 +1251,7 @@ INSTANTIATE_TEST_CASE_P(
         ObmcSubpelVarianceParams(4, 2, &aom_obmc_sub_pixel_variance16x4_c, 0),
         ObmcSubpelVarianceParams(2, 4, &aom_obmc_sub_pixel_variance4x16_c, 0)));
 
+#if CONFIG_AV1_HIGHBITDEPTH
 typedef MainTestClass<VarianceMxNFunc> AvxHBDMseTest;
 typedef MainTestClass<VarianceMxNFunc> AvxHBDVarianceTest;
 typedef SubpelVarianceTest<SubpixVarMxNFunc> AvxHBDSubpelVarianceTest;
@@ -1668,6 +1669,7 @@ const ObmcSubpelVarianceParams kArrayHBDObmcSubpelVariance_c[] = {
 };
 INSTANTIATE_TEST_CASE_P(C, AvxHBDObmcSubpelVarianceTest,
                         ::testing::ValuesIn(kArrayHBDObmcSubpelVariance_c));
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 #if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(SSE2, SumOfSquaresTest,
@@ -1762,6 +1764,7 @@ INSTANTIATE_TEST_CASE_P(
         SubpelAvgVarianceParams(2, 4, &aom_sub_pixel_avg_variance4x16_sse2,
                                 0)));
 
+#if CONFIG_AV1_HIGHBITDEPTH
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(
     SSE4_1, AvxSubpelVarianceTest,
@@ -2064,6 +2067,7 @@ const SubpelAvgVarianceParams kArrayHBDSubpelAvgVariance_sse2[] = {
 INSTANTIATE_TEST_CASE_P(SSE2, AvxHBDSubpelAvgVarianceTest,
                         ::testing::ValuesIn(kArrayHBDSubpelAvgVariance_sse2));
 #endif  // HAVE_SSE2
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
 #if HAVE_SSSE3
 INSTANTIATE_TEST_CASE_P(

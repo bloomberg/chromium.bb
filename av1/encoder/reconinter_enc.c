@@ -578,6 +578,7 @@ static void build_wedge_inter_predictor_from_buf(
                             h, w);
     }
   } else {
+#if CONFIG_AV1_HIGHBITDEPTH
     if (is_hbd) {
       aom_highbd_convolve_copy(CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
                                dst, dst_buf->stride, NULL, 0, NULL, 0, w, h,
@@ -586,6 +587,10 @@ static void build_wedge_inter_predictor_from_buf(
       aom_convolve_copy(ext_dst0, ext_dst_stride0, dst, dst_buf->stride, NULL,
                         0, NULL, 0, w, h);
     }
+#else
+    aom_convolve_copy(ext_dst0, ext_dst_stride0, dst, dst_buf->stride, NULL, 0,
+                      NULL, 0, w, h);
+#endif
   }
 }
 

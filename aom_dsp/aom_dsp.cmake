@@ -76,6 +76,11 @@ list(APPEND AOM_DSP_COMMON_INTRIN_SSE2
             "${AOM_ROOT}/aom_dsp/x86/avg_intrin_sse2.c"
             "${AOM_ROOT}/aom_dsp/x86/bitdepth_conversion_sse2.h")
 
+if(NOT CONFIG_AV1_HIGHBITDEPTH)
+  list(REMOVE_ITEM AOM_DSP_COMMON_INTRIN_SSE2
+                   "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_sse2.c")
+endif()
+
 list(APPEND AOM_DSP_COMMON_ASM_SSSE3
             "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_ssse3.asm"
             "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_bilinear_ssse3.asm")
@@ -84,6 +89,11 @@ list(APPEND AOM_DSP_COMMON_INTRIN_SSSE3
             "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_ssse3.c"
             "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_ssse3.c"
             "${AOM_ROOT}/aom_dsp/x86/intrapred_ssse3.c")
+
+if(NOT CONFIG_AV1_HIGHBITDEPTH)
+  list(REMOVE_ITEM AOM_DSP_COMMON_INTRIN_SSSE3
+                   "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_ssse3.c")
+endif()
 
 list(APPEND AOM_DSP_COMMON_INTRIN_SSE4_1
             "${AOM_ROOT}/aom_dsp/x86/blend_mask_sse4.h"
@@ -103,6 +113,11 @@ list(APPEND AOM_DSP_COMMON_INTRIN_AVX2
             "${AOM_ROOT}/aom_dsp/x86/blend_a64_mask_avx2.c"
             "${AOM_ROOT}/aom_dsp/x86/avg_intrin_avx2.c"
             "${AOM_ROOT}/aom_dsp/x86/bitdepth_conversion_avx2.h")
+
+if(NOT CONFIG_AV1_HIGHBITDEPTH)
+  list(REMOVE_ITEM AOM_DSP_COMMON_INTRIN_AVX2
+                   "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_avx2.c")
+endif()
 
 list(APPEND AOM_DSP_COMMON_INTRIN_NEON "${AOM_ROOT}/aom_dsp/arm/fwd_txfm_neon.c"
             "${AOM_ROOT}/aom_dsp/arm/loopfilter_neon.c"
@@ -201,7 +216,8 @@ if(CONFIG_AV1_ENCODER)
   if(NOT CONFIG_AV1_HIGHBITDEPTH)
     list(REMOVE_ITEM AOM_DSP_ENCODER_INTRIN_SSE2
                      "${AOM_ROOT}/aom_dsp/x86/highbd_adaptive_quantize_sse2.c"
-                     "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_sse2.c")
+                     "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_sse2.c"
+                     "${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse2.c")
   endif()
 
   list(APPEND AOM_DSP_ENCODER_ASM_SSSE3_X86_64
@@ -244,6 +260,11 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/sse_sse4.c"
               "${AOM_ROOT}/aom_dsp/x86/obmc_sad_sse4.c"
               "${AOM_ROOT}/aom_dsp/x86/obmc_variance_sse4.c")
+
+  if(NOT CONFIG_AV1_HIGHBITDEPTH)
+    list(REMOVE_ITEM AOM_DSP_ENCODER_INTRIN_SSE4_1
+                     "${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse4.c")
+  endif()
 
   list(APPEND AOM_DSP_ENCODER_INTRIN_NEON "${AOM_ROOT}/aom_dsp/arm/sad4d_neon.c"
               "${AOM_ROOT}/aom_dsp/arm/sad_neon.c"
