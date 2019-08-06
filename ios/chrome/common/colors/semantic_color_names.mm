@@ -11,6 +11,7 @@
 #pragma mark - Element Colors
 NSString* const kBackgroundColor = @"background_color";
 NSString* const kDisabledTintColor = @"disabled_tint_color";
+NSString* const kFaviconBackgroundColor = @"favicon_background_color";
 NSString* const kMDCInkColor = @"mdc_ink_color";
 NSString* const kScrimBackgroundColor = @"scrim_background_color";
 NSString* const kSolidButtonTextColor = @"solid_button_text_color";

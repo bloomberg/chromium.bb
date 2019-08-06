@@ -11,6 +11,7 @@ group("resources") {
     ":blue_color",
     ":blue_dark_color",
     ":disabled_tint_color",
+    ":favicon_background_color",
     ":green_color",
     ":green_dark_color",
     ":mdc_ink_color",
@@ -57,6 +58,12 @@ colorset("blue_dark_color") {
 colorset("disabled_tint_color") {
   sources = [
     "disabled_tint_color.colorset/Contents.json",
+  ]
+}
+
+colorset("favicon_background_color") {
+  sources = [
+    "favicon_background_color.colorset/Contents.json",
   ]
 }
 
