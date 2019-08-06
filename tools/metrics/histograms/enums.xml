@@ -38966,6 +38966,12 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Has errors"/>
 </enum>
 
+<enum name="MediaPlayerWatchTimeType">
+  <int value="0" label="Non-HLS"/>
+  <int value="1" label="HLS audio-only"/>
+  <int value="2" label="HLS video"/>
+</enum>
+
 <enum name="MediaRecorderVEAUsed">
   <int value="0" label="Not used"/>
   <int value="1" label="Used"/>
