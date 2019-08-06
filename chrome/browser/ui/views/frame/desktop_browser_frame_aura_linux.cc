@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/desktop_browser_frame_aurax11.h"
+#include "chrome/browser/ui/views/frame/desktop_browser_frame_aura_linux.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -13,21 +13,20 @@
 #include "chrome/common/pref_names.h"
 #include "ui/views/widget/widget.h"
 
-DesktopBrowserFrameAuraX11::DesktopBrowserFrameAuraX11(
+DesktopBrowserFrameAuraLinux::DesktopBrowserFrameAuraLinux(
     BrowserFrame* browser_frame,
     BrowserView* browser_view)
     : DesktopBrowserFrameAura(browser_frame, browser_view) {
   use_custom_frame_pref_.Init(
       prefs::kUseCustomChromeFrame,
       browser_view->browser()->profile()->GetPrefs(),
-      base::Bind(&DesktopBrowserFrameAuraX11::OnUseCustomChromeFrameChanged,
+      base::Bind(&DesktopBrowserFrameAuraLinux::OnUseCustomChromeFrameChanged,
                  base::Unretained(this)));
 }
 
-DesktopBrowserFrameAuraX11::~DesktopBrowserFrameAuraX11() {
-}
+DesktopBrowserFrameAuraLinux::~DesktopBrowserFrameAuraLinux() {}
 
-views::Widget::InitParams DesktopBrowserFrameAuraX11::GetWidgetParams() {
+views::Widget::InitParams DesktopBrowserFrameAuraLinux::GetWidgetParams() {
   views::Widget::InitParams params;
   params.native_widget = this;
 
@@ -53,7 +52,7 @@ views::Widget::InitParams DesktopBrowserFrameAuraX11::GetWidgetParams() {
   return params;
 }
 
-bool DesktopBrowserFrameAuraX11::UseCustomFrame() const {
+bool DesktopBrowserFrameAuraLinux::UseCustomFrame() const {
   // Normal browser windows get a custom frame (per the user's preference).
   if (use_custom_frame_pref_.GetValue() &&
       browser_view()->IsBrowserTypeNormal()) {
@@ -68,10 +67,10 @@ bool DesktopBrowserFrameAuraX11::UseCustomFrame() const {
   return false;
 }
 
-void DesktopBrowserFrameAuraX11::OnUseCustomChromeFrameChanged() {
+void DesktopBrowserFrameAuraLinux::OnUseCustomChromeFrameChanged() {
   // Tell the window manager to add or remove system borders.
-  browser_frame()->set_frame_type(
-      UseCustomFrame() ? views::Widget::FRAME_TYPE_FORCE_CUSTOM
-                       : views::Widget::FRAME_TYPE_FORCE_NATIVE);
+  browser_frame()->set_frame_type(UseCustomFrame()
+                                      ? views::Widget::FRAME_TYPE_FORCE_CUSTOM
+                                      : views::Widget::FRAME_TYPE_FORCE_NATIVE);
   browser_frame()->FrameTypeChanged();
 }
