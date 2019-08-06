@@ -32,6 +32,7 @@ NSString* const kBackgroundDarkColor = @"background_dark_color";
 NSString* const kTableViewRowHighlightDarkColor =
     @"table_view_row_highlight_dark_color";
 NSString* const kTextPrimaryDarkColor = @"text_primary_dark_color";
+NSString* const kTextSecondaryDarkColor = @"text_secondary_dark_color";
 NSString* const kTextfieldBackgroundDarkColor =
     @"textfield_background_dark_color";
 NSString* const kTextfieldPlaceholderDarkColor =

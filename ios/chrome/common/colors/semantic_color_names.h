@@ -41,6 +41,7 @@ extern NSString* const kRedColor;
 extern NSString* const kBackgroundDarkColor;
 extern NSString* const kTableViewRowHighlightDarkColor;
 extern NSString* const kTextPrimaryDarkColor;
+extern NSString* const kTextSecondaryDarkColor;
 extern NSString* const kTextfieldBackgroundDarkColor;
 extern NSString* const kTextfieldPlaceholderDarkColor;
 
