@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_
 
-#include <string>
-#include <vector>
-
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 class MediaStreamAudioSource;
@@ -30,7 +29,7 @@ namespace blink {
 // acceptable values for the deviceId constraint, while in case (3) no such
 // restriction is imposed and any requested deviceID value will be acceptable
 // while processing constraints.
-class BLINK_MODULES_EXPORT AudioDeviceCaptureCapability {
+class MODULES_EXPORT AudioDeviceCaptureCapability {
  public:
   // This creates an AudioDeviceCaptureCapability that admits all possible
   // device names and settings. This is intended to be used as the single
@@ -43,8 +42,8 @@ class BLINK_MODULES_EXPORT AudioDeviceCaptureCapability {
   // are limited by the given |parameters|. |device_id| must not be empty.
   // Intended to be used by getUserMedia() with device capture for devices that
   // are not currently in use.
-  AudioDeviceCaptureCapability(std::string device_id,
-                               std::string group_id,
+  AudioDeviceCaptureCapability(String device_id,
+                               String group_id,
                                const media::AudioParameters& parameters);
 
   // This creates an AudioDeviceCaptureCapability where the device ID and other
@@ -64,10 +63,10 @@ class BLINK_MODULES_EXPORT AudioDeviceCaptureCapability {
   // it means that this capability is not associated with a known device and
   // no restrictions are imposed on the deviceId or other constraints while
   // processing constraints.
-  const std::string& DeviceID() const;
+  String DeviceID() const;
 
   // Returns the group ID of the device associated with this capability.
-  const std::string& GroupID() const;
+  String GroupID() const;
 
   // Returns the audio parameters for the device associated with this
   // capability. If DeviceID() returns an empty string, these parameters contain
@@ -76,13 +75,12 @@ class BLINK_MODULES_EXPORT AudioDeviceCaptureCapability {
 
  private:
   blink::MediaStreamAudioSource* source_ = nullptr;
-  std::string device_id_;
-  std::string group_id_;
+  String device_id_;
+  String group_id_;
   media::AudioParameters parameters_;
 };
 
-using AudioDeviceCaptureCapabilities =
-    std::vector<AudioDeviceCaptureCapability>;
+using AudioDeviceCaptureCapabilities = Vector<AudioDeviceCaptureCapability>;
 
 // This function implements the SelectSettings algorithm for audio tracks as
 // described in https://w3c.github.io/mediacapture-main/#dfn-selectsettings
@@ -175,4 +173,4 @@ GetMinMaxLatenciesForAudioParameters(const media::AudioParameters& parameters);
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_AUDIO_H_

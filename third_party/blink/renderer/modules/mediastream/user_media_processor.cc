@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/local_media_stream_audio_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_audio.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
@@ -42,6 +41,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
@@ -568,10 +568,8 @@ void UserMediaProcessor::SelectAudioDeviceSettings(
     if (audio_source) {
       capabilities.emplace_back(audio_source);
     } else {
-      // TODO(crbug.com/704136): Change AudioDeviceCaptureCapabilities to
-      // operate over WTF::String.
-      capabilities.emplace_back(device->device_id.Utf8(),
-                                device->group_id.Utf8(), device->parameters);
+      capabilities.emplace_back(device->device_id, device->group_id,
+                                device->parameters);
     }
   }
 
@@ -580,7 +578,7 @@ void UserMediaProcessor::SelectAudioDeviceSettings(
 
 void UserMediaProcessor::SelectAudioSettings(
     const blink::WebUserMediaRequest& web_request,
-    const std::vector<blink::AudioDeviceCaptureCapability>& capabilities) {
+    const blink::AudioDeviceCaptureCapabilities& capabilities) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The frame might reload or |web_request| might be cancelled while
   // capabilities are queried. Do nothing if a different request is being
