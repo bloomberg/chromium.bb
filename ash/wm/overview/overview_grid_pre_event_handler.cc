@@ -22,8 +22,6 @@ void OverviewGridPreEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void OverviewGridPreEventHandler::OnGestureEvent(ui::GestureEvent* event) {
-  // TODO(sammiequon): Investigate why scrolling on the bottom of the grid exits
-  // overview.
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
       HandleClickOrTap(event);
