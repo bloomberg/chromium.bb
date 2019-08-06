@@ -141,9 +141,10 @@ class DedicatedWorkerMessagingProxyForTest
             false /* starter_secure_context */,
             CalculateHttpsState(security_origin_.get()),
             nullptr /* worker_clients */, nullptr /* content_settings_client */,
-            mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_tokens */,
-            base::UnguessableToken::Create(), std::move(worker_settings),
-            kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */),
+            network::mojom::IPAddressSpace::kLocal,
+            nullptr /* origin_trial_tokens */, base::UnguessableToken::Create(),
+            std::move(worker_settings), kV8CacheOptionsDefault,
+            nullptr /* worklet_module_responses_map */),
         WorkerBackingThreadStartupData(
             WorkerBackingThreadStartupData::HeapLimitMode::kDefault,
             WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow));
