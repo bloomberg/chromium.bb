@@ -30171,6 +30171,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="IDBKeyPathType">
+  <obsolete>
+    Removed August 2019. Was added to measure use of features which not all
+    actively developed browser engines supported. No longer relevant.
+  </obsolete>
   <int value="0" label="None">No key path.</int>
   <int value="1" label="String">Key path is a string.</int>
   <int value="2" label="Array">Key path is an array of strings.</int>
