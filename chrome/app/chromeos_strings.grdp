@@ -3266,9 +3266,6 @@
   <message name="IDS_ASSISTANT_DONE_BUTTON" desc="Done button for asssitant optin flow.">
     Done
   </message>
-  <message name="IDS_ASSISTANT_HOTWORD_NOTIFICATION_TITLE" desc="Title for assistant hotword enable notification.">
-    Turn on 'Ok Google'
-  </message>
   <message name="IDS_ASSISTANT_ACTIVITY_CONTROL_POPUP_LINK" desc="Link text for activity control details popup.">
     Learn more
   </message>
