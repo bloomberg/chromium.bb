@@ -276,7 +276,10 @@ class V8_EXPORT V8Inspector {
   // Connection.
   class V8_EXPORT Channel {
    public:
-    virtual ~Channel() = default;
+    // Destructor
+    // Since this header file does not have a corresponding source file, this
+    // destructor is defined in v8-inspector-impl.cc
+    virtual ~Channel();
     virtual void sendResponse(int callId,
                               std::unique_ptr<StringBuffer> message) = 0;
     virtual void sendNotification(std::unique_ptr<StringBuffer> message) = 0;
