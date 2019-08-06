@@ -19,18 +19,19 @@ constexpr uint8_t kBitPatterns[] = {0b00000000, 0b11111111, 0b01010101,
 
 // These are used for testing various vector sizes, begins/ends of ranges, etc.
 // They will exercise both the "inlined storage" (size <= 64 case) and
-// "heap-allocated storage" cases.
-const int kPrimeNumbers[] = {1,   2,   3,   5,   7,   11,  13,  17,  19,  23,
-                             29,  31,  37,  41,  43,  47,  53,  59,  61,  67,
-                             71,  73,  79,  83,  89,  97,  101, 103, 107, 109,
-                             113, 127, 131, 137, 139, 149, 151, 157, 163, 167,
-                             173, 179, 181, 191, 193, 197, 199};
+// "heap-allocated storage" cases. These are all of the prime numbers less than
+// 200, and also any non-negative multiples of 64 less than 200.
+const int kTestSizes[] = {0,   1,   2,   3,   5,   7,   11,  13,  17,  19,  23,
+                          29,  31,  37,  41,  43,  47,  53,  59,  61,  64,  67,
+                          71,  73,  79,  83,  89,  97,  101, 103, 107, 109, 113,
+                          127, 128, 131, 137, 139, 149, 151, 157, 163, 167, 173,
+                          179, 181, 191, 192, 193, 197, 199};
 
-// Returns a subspan of |kPrimeNumbers| that contains all values in the range
+// Returns a subspan of |kTestSizes| that contains all values in the range
 // [first,last].
-absl::Span<const int> GetPrimeNumbersInRange(int first, int last) {
-  const auto begin = absl::c_lower_bound(kPrimeNumbers, first);
-  const auto end = absl::c_upper_bound(kPrimeNumbers, last);
+absl::Span<const int> GetTestSizesInRange(int first, int last) {
+  const auto begin = absl::c_lower_bound(kTestSizes, first);
+  const auto end = absl::c_upper_bound(kTestSizes, last);
   return absl::Span<const int>(&*begin, std::distance(begin, end));
 }
 
@@ -60,7 +61,7 @@ TEST(YetAnotherBitVectorTest, ConstructsAndResizes) {
   ASSERT_EQ(v.size(), 0);
 
   for (int fill_set = 0; fill_set <= 1; ++fill_set) {
-    for (int size : kPrimeNumbers) {
+    for (int size : kTestSizes) {
       const bool all_bits_should_be_set = !!fill_set;
       v.Resize(size, all_bits_should_be_set ? YetAnotherBitVector::SET
                                             : YetAnotherBitVector::CLEARED);
@@ -77,7 +78,7 @@ TEST(YetAnotherBitVectorTest, ConstructsAndResizes) {
 TEST(YetAnotherBitVectorTest, SetsAndClearsIndividualBits) {
   YetAnotherBitVector v;
   for (int fill_set = 0; fill_set <= 1; ++fill_set) {
-    for (int size : kPrimeNumbers) {
+    for (int size : kTestSizes) {
       v.Resize(size, fill_set ? YetAnotherBitVector::SET
                               : YetAnotherBitVector::CLEARED);
 
@@ -95,23 +96,31 @@ TEST(YetAnotherBitVectorTest, SetsAndClearsIndividualBits) {
 // vector sizes and bit patterns.
 TEST(YetAnotherBitVectorTest, ShiftsRight) {
   YetAnotherBitVector v;
-  for (int size : kPrimeNumbers) {
+  for (int size : kTestSizes) {
     v.Resize(size, YetAnotherBitVector::CLEARED);
 
-    for (int steps_per_shift : GetPrimeNumbersInRange(0, size)) {
+    for (int steps_per_shift : GetTestSizesInRange(0, size)) {
       for (uint8_t pattern : kBitPatterns) {
         FillWithPattern(pattern, 0, &v);
 
-        const int num_shifts = 2 * size / steps_per_shift;
-        for (int iteration = 1; iteration <= num_shifts; ++iteration) {
-          v.ShiftRight(steps_per_shift);
-          const int total_shift_amount = iteration * steps_per_shift;
+        if (size == 0 || steps_per_shift == 0) {
+          v.ShiftRight(0);
           for (int i = 0; i < size; ++i) {
-            const int original_position = i + total_shift_amount;
-            if (original_position >= size) {
-              ASSERT_FALSE(v.IsSet(i));
-            } else {
-              ASSERT_EQ(IsSetInPattern(pattern, original_position), v.IsSet(i));
+            ASSERT_EQ(IsSetInPattern(pattern, i), v.IsSet(i));
+          }
+        } else {
+          const int num_shifts = 2 * size / steps_per_shift;
+          for (int iteration = 1; iteration <= num_shifts; ++iteration) {
+            v.ShiftRight(steps_per_shift);
+            const int total_shift_amount = iteration * steps_per_shift;
+            for (int i = 0; i < size; ++i) {
+              const int original_position = i + total_shift_amount;
+              if (original_position >= size) {
+                ASSERT_FALSE(v.IsSet(i));
+              } else {
+                ASSERT_EQ(IsSetInPattern(pattern, original_position),
+                          v.IsSet(i));
+              }
             }
           }
         }
@@ -125,22 +134,19 @@ TEST(YetAnotherBitVectorTest, ShiftsRight) {
 TEST(YetAnotherBitVectorTest, FindsTheFirstBitSet) {
   YetAnotherBitVector v;
 
-  // In an empty vector, the first bit set is the size(), which is zero.
-  ASSERT_EQ(0, v.FindFirstSet());
-
   // For various sizes of vector where no bits are set, the FFS operation should
   // always return size().
-  for (int size : kPrimeNumbers) {
+  for (int size : kTestSizes) {
     v.Resize(size, YetAnotherBitVector::CLEARED);
     ASSERT_EQ(size, v.FindFirstSet());
   }
 
   // For various sizes of vector where only one bit is set, the FFS operation
   // should always return the position of that bit.
-  for (int size : kPrimeNumbers) {
+  for (int size : kTestSizes) {
     v.Resize(size, YetAnotherBitVector::CLEARED);
 
-    for (int position_plus_one : GetPrimeNumbersInRange(0, size)) {
+    for (int position_plus_one : GetTestSizesInRange(1, size)) {
       const int position = position_plus_one - 1;
       v.Set(position);
       ASSERT_EQ(position, v.FindFirstSet());
@@ -150,10 +156,10 @@ TEST(YetAnotherBitVectorTest, FindsTheFirstBitSet) {
 
   // For various sizes of vector where a pattern of bits are set, the FFS
   // operation should always return the first one set.
-  for (int size : kPrimeNumbers) {
+  for (int size : kTestSizes) {
     v.Resize(size, YetAnotherBitVector::CLEARED);
 
-    for (int position_plus_one : GetPrimeNumbersInRange(0, size)) {
+    for (int position_plus_one : GetTestSizesInRange(1, size)) {
       const int position = position_plus_one - 1;
       v.ClearAll();
       v.Set(position);
@@ -171,15 +177,12 @@ TEST(YetAnotherBitVectorTest, FindsTheFirstBitSet) {
 TEST(YetAnotherBitVector, CountsTheNumberOfBitsSet) {
   YetAnotherBitVector v;
 
-  // There are zero bits set in an empty vector.
-  ASSERT_EQ(0, v.CountBitsSet(0, v.size()));
-
   // For various sizes of vector where no bits are set, the operation should
   // always return zero for any range.
-  for (int size : kPrimeNumbers) {
+  for (int size : kTestSizes) {
     v.Resize(size, YetAnotherBitVector::CLEARED);
-    for (int begin : GetPrimeNumbersInRange(0, size)) {
-      for (int end : GetPrimeNumbersInRange(begin, size)) {
+    for (int begin : GetTestSizesInRange(0, size)) {
+      for (int end : GetTestSizesInRange(begin, size)) {
         ASSERT_EQ(0, v.CountBitsSet(begin, end));
       }
     }
@@ -187,23 +190,23 @@ TEST(YetAnotherBitVector, CountsTheNumberOfBitsSet) {
 
   // For various sizes of vector where all bits are set, the operation should
   // always return the length of the range (or zero for invalid ranges).
-  for (int size : kPrimeNumbers) {
+  for (int size : kTestSizes) {
     v.Resize(size, YetAnotherBitVector::SET);
-    for (int begin : GetPrimeNumbersInRange(0, size)) {
-      for (int end : GetPrimeNumbersInRange(begin, size)) {
+    for (int begin : GetTestSizesInRange(0, size)) {
+      for (int end : GetTestSizesInRange(begin, size)) {
         ASSERT_EQ(end - begin, v.CountBitsSet(begin, end));
       }
     }
   }
 
   // Test various sizes of vector where various patterns of bits are set.
-  for (int size : kPrimeNumbers) {
+  for (int size : kTestSizes) {
     v.Resize(size, YetAnotherBitVector::CLEARED);
     for (uint8_t pattern : kBitPatterns) {
       FillWithPattern(pattern, 0, &v);
 
-      for (int begin : GetPrimeNumbersInRange(0, size)) {
-        for (int end : GetPrimeNumbersInRange(begin, size)) {
+      for (int begin : GetTestSizesInRange(0, size)) {
+        for (int end : GetTestSizesInRange(begin, size)) {
           // Note: The expected value being manually computed by examining each
           // bit individually by calling IsSet(). Thus, this value is only good
           // if IsSet() is working (which is tested by a different unit test).

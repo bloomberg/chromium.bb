@@ -14,11 +14,16 @@ namespace openscreen {
 namespace {
 
 // Returns a bitmask where all the bits whose positions are in the range
-// [begin,end) are set, and all other bits are cleared.
-constexpr uint64_t MakeBitmask(int begin, int end) {
-  const int num_consecutive_bits_to_set = end - begin;
-  const uint64_t some_power_of_two = uint64_t{1} << num_consecutive_bits_to_set;
-  const uint64_t bits_in_wrong_position = some_power_of_two - 1;
+// [begin,begin+count) are set, and all other bits are cleared.
+constexpr uint64_t MakeBitmask(int begin, int count) {
+  // Form a contiguous sequence of bits by subtracting one from the appropriate
+  // power of 2. Set all the bits if count >= 64.
+  const uint64_t bits_in_wrong_position =
+      (count >= std::numeric_limits<uint64_t>::digits)
+          ? std::numeric_limits<uint64_t>::max()
+          : ((uint64_t{1} << count) - 1);
+
+  // Now shift the contiguous sequence of bits into the correct position.
   return bits_in_wrong_position << begin;
 }
 
@@ -90,14 +95,10 @@ void YetAnotherBitVector::SetAll() {
   // valid range are not set.
 
   if (using_array_storage()) {
-    if (int end_bit_offset = (size_ % kBitsPerInteger)) {
-      uint64_t* last = &bits_.as_array[array_size() - 1];
-      std::fill(&bits_.as_array[0], last, kAllBitsSet);
-      *last = MakeBitmask(0, end_bit_offset);
-    } else {
-      // The size is an exact multiple of 64. So, just set all the bits.
-      std::fill(&bits_.as_array[0], &bits_.as_array[array_size()], kAllBitsSet);
-    }
+    const int last_index = array_size() - 1;
+    uint64_t* const last = &bits_.as_array[last_index];
+    std::fill(&bits_.as_array[0], last, kAllBitsSet);
+    *last = MakeBitmask(0, size_ - (last_index * kBitsPerInteger));
   } else {
     bits_.as_integer = MakeBitmask(0, size_);
   }
@@ -144,7 +145,11 @@ void YetAnotherBitVector::ShiftRight(int steps) {
       incoming_carry_bits = outgoing_carry_bits;
     }
   } else {
-    bits_.as_integer >>= steps;
+    if (steps < kBitsPerInteger) {
+      bits_.as_integer >>= steps;
+    } else {
+      bits_.as_integer = 0;
+    }
   }
 }
 
@@ -217,10 +222,9 @@ int YetAnotherBitVector::CountBitsSet(int begin, int end) const {
     const int first = begin / kBitsPerInteger;
     const int last = (end - 1) / kBitsPerInteger;
     if (first == last) {
-      count =
-          PopCount(bits_.as_array[first] &
-                   MakeBitmask(begin % kBitsPerInteger, end % kBitsPerInteger));
-    } else {
+      count = PopCount(bits_.as_array[first] &
+                       MakeBitmask(begin % kBitsPerInteger, end - begin));
+    } else if (first < last) {
       // Count a subset of the bits in the first and last integers (according to
       // |begin| and |end|), and all of the bits in the integers in-between.
       const uint64_t* p = &bits_.as_array[first];
@@ -229,10 +233,12 @@ int YetAnotherBitVector::CountBitsSet(int begin, int end) const {
       for (++p; p != &bits_.as_array[last]; ++p) {
         count += PopCount(*p);
       }
-      count += PopCount((*p) & MakeBitmask(0, end % kBitsPerInteger));
+      count += PopCount((*p) & MakeBitmask(0, end - (last * kBitsPerInteger)));
+    } else {
+      count = 0;
     }
   } else {
-    count = PopCount(bits_.as_integer & MakeBitmask(begin, end));
+    count = PopCount(bits_.as_integer & MakeBitmask(begin, end - begin));
   }
   return count;
 }
