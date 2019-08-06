@@ -296,6 +296,7 @@ def BuildPackages(target, sysroot, run_configs):
   with osutils.TempDir(base_dir='/tmp') as tempdir:
     extra_env = {
         constants.CROS_METRICS_DIR_ENVVAR: tempdir,
+        'USE_NEW_PARALLEL_EMERGE': '1',
     }
 
     if run_configs.use_flags:
