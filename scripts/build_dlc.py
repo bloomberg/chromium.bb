@@ -234,6 +234,23 @@ class DlcGenerator(object):
     else:
       raise ValueError('Wrong fs type: %s used:' % self.fs_type)
 
+    self.VerifyImageSize(os.path.getsize(self.dest_image))
+
+  def VerifyImageSize(self, image_bytes):
+    """Verify the image can fit to the reserved file."""
+    preallocated_bytes = self.pre_allocated_blocks * self._BLOCK_SIZE
+    # Verifies the actual size of the DLC image is NOT smaller than the
+    # preallocated space.
+    if preallocated_bytes < image_bytes:
+      raise ValueError(
+          'The DLC_PREALLOC_BLOCKS (%s) value set in DLC ebuild resulted in a '
+          'max size of DLC_PREALLOC_BLOCKS * 4K (%s) bytes the DLC image is '
+          'allowed to occupy. The value is smaller than the actual image size '
+          '(%s) required. Increase DLC_PREALLOC_BLOCKS in your ebuild to at '
+          'least %d.' % (
+              self.pre_allocated_blocks, preallocated_bytes, image_bytes,
+              image_bytes // self._BLOCK_SIZE))
+
   def GetImageloaderJsonContent(self, image_hash, table_hash, blocks):
     """Return the content of imageloader.json file.
 

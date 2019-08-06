@@ -29,6 +29,8 @@ _NAME = 'name'
 _META_DIR = 'opt/google/dlc/'
 _IMAGE_DIR = 'build/rootfs/dlc/'
 
+_BLOCK_SIZE = 4096
+
 
 class HashFileTest(cros_test_lib.TempDirTestCase):
   """Test build_dlc.HashFile"""
@@ -157,6 +159,17 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
         'is-removable': True,
         'manifest-version': 1,
     })
+
+  def testVerifyImageSize(self):
+    """Test that VerifyImageSize throws exception on errors only."""
+    # Succeeds since image size is smaller than preallocated size.
+    self.GetDlcGenerator().VerifyImageSize(
+        (_PRE_ALLOCATED_BLOCKS - 1) * _BLOCK_SIZE)
+
+    with self.assertRaises(ValueError):
+      # Fails since image size is bigger than preallocated size.
+      self.GetDlcGenerator().VerifyImageSize(
+          (_PRE_ALLOCATED_BLOCKS + 1) * _BLOCK_SIZE)
 
 class FinalizeDlcsTest(cros_test_lib.MockTempDirTestCase):
   """Tests functions that generate the final DLC images."""
