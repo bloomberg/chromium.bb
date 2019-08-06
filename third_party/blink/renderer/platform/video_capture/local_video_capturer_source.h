@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_VIDEO_CAPTURE_LOCAL_VIDEO_CAPTURER_SOURCE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_VIDEO_CAPTURE_LOCAL_VIDEO_CAPTURER_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_VIDEO_CAPTURE_LOCAL_VIDEO_CAPTURER_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_VIDEO_CAPTURE_LOCAL_VIDEO_CAPTURER_SOURCE_H_
 
 #include <memory>
 #include <string>
@@ -16,7 +16,8 @@
 #include "media/capture/video_capture_types.h"
 #include "media/capture/video_capturer_source.h"
 #include "third_party/blink/public/common/media/video_capture.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -31,10 +32,7 @@ class WebVideoCaptureImplManager;
 // WebVideoCaptureImplManager to start / stop and receive I420 frames from
 // Chrome's video capture implementation. This is a main Render thread only
 // object.
-//
-// TODO(crbug.com/704136) Remove this class out of the Blink exposed API
-// when its user in content/ get Onion souped - namely UserMediaProcessor.
-class BLINK_PLATFORM_EXPORT LocalVideoCapturerSource
+class PLATFORM_EXPORT LocalVideoCapturerSource
     : public media::VideoCapturerSource {
  public:
   static std::unique_ptr<media::VideoCapturerSource> Create(
@@ -85,4 +83,4 @@ class BLINK_PLATFORM_EXPORT LocalVideoCapturerSource
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_VIDEO_CAPTURE_LOCAL_VIDEO_CAPTURER_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_VIDEO_CAPTURE_LOCAL_VIDEO_CAPTURER_SOURCE_H_

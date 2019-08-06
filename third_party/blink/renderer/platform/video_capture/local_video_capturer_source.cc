@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/modules/video_capture/local_video_capturer_source.h"
+#include "third_party/blink/renderer/platform/video_capture/local_video_capturer_source.h"
 
 #include <utility>
 
-#include "base/bind.h"
 #include "media/base/bind_to_current_loop.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -41,10 +41,10 @@ void LocalVideoCapturerSource::StartCapture(
 
   stop_capture_cb_ = manager_->StartCapture(
       session_id_, params,
-      media::BindToLoop(
-          task_runner_,
-          base::BindRepeating(&LocalVideoCapturerSource::OnStateUpdate,
-                              weak_factory_.GetWeakPtr())),
+      media::BindToLoop(task_runner_,
+                        ConvertToBaseCallback(CrossThreadBindRepeating(
+                            &LocalVideoCapturerSource::OnStateUpdate,
+                            weak_factory_.GetWeakPtr()))),
       new_frame_callback);
 }
 
