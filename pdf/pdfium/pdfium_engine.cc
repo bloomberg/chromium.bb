@@ -2400,6 +2400,16 @@ void PDFiumEngine::LoadPagesInSingleView(std::vector<pp::Rect> page_rects,
   }
 }
 
+void PDFiumEngine::LoadPagesInTwoUpView(std::vector<pp::Rect> page_rects,
+                                        bool reload) {
+  std::vector<pp::Rect> two_up_view_layout =
+      layout_.GetTwoUpViewLayout(page_rects);
+
+  for (size_t i = 0; i < two_up_view_layout.size(); ++i) {
+    AppendPageRectToPages(two_up_view_layout[i], i, reload);
+  }
+}
+
 void PDFiumEngine::LoadPageInfo(bool reload) {
   if (!doc_loader_)
     return;
@@ -2445,7 +2455,11 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     layout_.AppendPageRect(size);
   }
 
-  LoadPagesInSingleView(std::move(page_rects), reload);
+  if (two_up_view_) {
+    LoadPagesInTwoUpView(std::move(page_rects), reload);
+  } else {
+    LoadPagesInSingleView(std::move(page_rects), reload);
+  }
 
   // Remove pages that do not exist anymore.
   if (pages_.size() > new_page_count) {
