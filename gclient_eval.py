@@ -5,13 +5,13 @@
 import ast
 import collections
 import logging
+import six
 import sys
 import tokenize
 
 import gclient_utils
 
 from third_party import schema
-from third_party import six
 
 if six.PY2:
   # We use cStringIO.StringIO because it is equivalent to Py3's io.StringIO.

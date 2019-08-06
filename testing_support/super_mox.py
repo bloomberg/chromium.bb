@@ -13,9 +13,8 @@ import string
 import subprocess
 import sys
 
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import mox
-from third_party.six.moves import StringIO
+from six.moves import StringIO
 
 
 class IsOneOf(mox.Comparator):
