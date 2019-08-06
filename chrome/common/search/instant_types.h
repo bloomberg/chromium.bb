@@ -74,13 +74,13 @@ struct ThemeBackgroundInfo {
   std::string collection_id;
 
   // The theme background color. Always valid.
-  SkColor background_color;
+  SkColor background_color = gfx::kPlaceholderColor;
 
   // The theme text color.
-  SkColor text_color;
+  SkColor text_color = gfx::kPlaceholderColor;
 
   // The theme text color light.
-  SkColor text_color_light;
+  SkColor text_color_light = gfx::kPlaceholderColor;
 
   // The theme id for the theme background image.
   // Value is only valid if there's a custom theme background image.
