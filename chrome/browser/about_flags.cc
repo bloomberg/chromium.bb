@@ -2353,15 +2353,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(
          ::switches::
              kEnableExperimentalAccessibilityChromeVoxLanguageSwitching)},
-    {"enable-experimental-accessibility-chromevox-rich-text-indication",
-     flag_descriptions::
-         kExperimentalAccessibilityChromeVoxRichTextIndicationName,
-     flag_descriptions::
-         kExperimentalAccessibilityChromeVoxRichTextIndicationDescription,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         ::switches::
-             kEnableExperimentalAccessibilityChromeVoxRichTextIndication)},
     {"enable-experimental-kernel-vm-support",
      flag_descriptions::kKernelnextVMsName,
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,

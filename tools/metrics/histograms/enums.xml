@@ -35341,8 +35341,6 @@ from previous Chrome versions.
   <int value="-428599163" label="NTPDownloadSuggestions:enabled"/>
   <int value="-426815606" label="HomepageTile:enabled"/>
   <int value="-424701311" label="SignedHTTPExchange:disabled"/>
-  <int value="-424544273"
-      label="enable-experimental-accessibility-chromevox-rich-text-indication"/>
   <int value="-424134004" label="WebPaymentsExperimentalFeatures:disabled"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-416660617" label="EnforceTLS13Downgrade:disabled"/>

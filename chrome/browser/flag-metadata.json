@@ -1118,11 +1118,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "enable-experimental-accessibility-chromevox-rich-text-indication",
-    "owners": [ "akihiroota", "dtseng" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-experimental-kernel-vm-support",
     "owners": [ "jflat", "zwisler" ],
     "expiry_milestone": 78

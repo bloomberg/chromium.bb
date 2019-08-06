@@ -3256,12 +3256,6 @@ const char kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[] =
     "Enable ChromeVox language switching, which changes ChromeVox's "
     "output language upon detection of new language.";
 
-const char kExperimentalAccessibilityChromeVoxRichTextIndicationName[] =
-    "Enable experimental ChromeVox rich text indication.";
-const char kExperimentalAccessibilityChromeVoxRichTextIndicationDescription[] =
-    "Enable ChromeVox rich text indication, which automatically notifies the "
-    "user of text styling.";
-
 const char kExperimentalAccessibilitySwitchAccessName[] =
     "Experimental feature Switch Access";
 const char kExperimentalAccessibilitySwitchAccessDescription[] =

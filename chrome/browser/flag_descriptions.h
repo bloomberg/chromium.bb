@@ -1946,10 +1946,6 @@ extern const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[];
 extern const char
     kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[];
 
-extern const char kExperimentalAccessibilityChromeVoxRichTextIndicationName[];
-extern const char
-    kExperimentalAccessibilityChromeVoxRichTextIndicationDescription[];
-
 extern const char kExperimentalAccessibilitySwitchAccessName[];
 extern const char kExperimentalAccessibilitySwitchAccessDescription[];
 
