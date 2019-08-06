@@ -574,8 +574,8 @@ class SchemaVersionedMySQLConnection(object):
     """
     f = lambda: engine.execute(query, *args, **kwargs)
 
-    log.info('Running cidb query on pid %s, repr(query) starts with %s',
-             os.getpid(), repr(query)[:100])
+    log.info('Running cidb query on pid %s, str(query) starts with %s',
+             os.getpid(), str(query)[:100])
     return self._RunFunctorWithRetries(f)
 
   def _RunFunctorWithRetries(self, functor):
