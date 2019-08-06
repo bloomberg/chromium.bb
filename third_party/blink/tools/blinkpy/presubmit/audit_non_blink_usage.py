@@ -678,6 +678,7 @@ _CONFIG = [
             'cc::VideoLayer',
             'gpu::gles2::GLES2Interface',
             'libyuv::.+',
+            'media_constraints::.+',
             "rtc::RefCountedObject",
             'viz::.+',
             "webrtc::AudioProcessorInterface",
