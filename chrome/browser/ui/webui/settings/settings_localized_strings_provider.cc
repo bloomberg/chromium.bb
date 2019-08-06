@@ -196,6 +196,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"moreFeaturesLinkDescription",
      IDS_SETTINGS_MORE_FEATURES_LINK_DESCRIPTION},
     {"captionsTitle", IDS_SETTINGS_CAPTIONS},
+    {"captionsSettings", IDS_SETTINGS_CAPTIONS_SETTINGS},
+    {"captionsPreview", IDS_SETTINGS_CAPTIONS_PREVIEW},
     {"captionsTextSize", IDS_SETTINGS_CAPTIONS_TEXT_SIZE},
     {"captionsTextFont", IDS_SETTINGS_CAPTIONS_TEXT_FONT},
     {"captionsTextColor", IDS_SETTINGS_CAPTIONS_TEXT_COLOR},
