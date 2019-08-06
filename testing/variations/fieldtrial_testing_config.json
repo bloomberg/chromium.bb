@@ -4519,7 +4519,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "ad_popup_trigger_quota": "5"
+                        "ad_popup_trigger_quota": "10"
                     },
                     "enable_features": [
                         "SafeBrowsingAdPopupTrigger"
@@ -4541,7 +4541,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "ad_redirect_trigger_quota": "5"
+                        "ad_redirect_trigger_quota": "10"
                     },
                     "enable_features": [
                         "SafeBrowsingAdRedirectTrigger"
