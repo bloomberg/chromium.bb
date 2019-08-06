@@ -19,9 +19,9 @@
 #include "media/base/audio_converter.h"
 #include "media/webrtc/audio_delay_stats_reporter.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
-#include "third_party/blink/public/platform/modules/mediastream/aec_dump_agent_impl_delegate.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_source.h"
+#include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
@@ -51,7 +51,7 @@ using webrtc::AudioProcessorInterface;
 class PLATFORM_EXPORT MediaStreamAudioProcessor
     : public WebRtcPlayoutDataSource::Sink,
       public AudioProcessorInterface,
-      public AecDumpAgentImplDelegate {
+      public AecDumpAgentImpl::Delegate {
  public:
   // |playout_data_source| is used to register this class as a sink to the
   // WebRtc playout data for processing AEC. If clients do not enable AEC,
@@ -104,7 +104,7 @@ class PLATFORM_EXPORT MediaStreamAudioProcessor
   // Accessor to check if the audio processing is enabled or not.
   bool has_audio_processing() const { return !!audio_processing_; }
 
-  // AecDumpAgentImplDelegate implementation.
+  // AecDumpAgentImpl::Delegate implementation.
   // Called on the main render thread.
   void OnStartDump(base::File dump_file) override;
   void OnStopDump() override;
