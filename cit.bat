@@ -9,4 +9,4 @@ setlocal
 set PATH=%PATH%;%~dp0
 
 :: Defer control.
-vpython "%~dp0\cit.py" %*
+python "%~dp0\cit.py" %*

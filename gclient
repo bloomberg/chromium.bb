@@ -19,4 +19,4 @@ if [[ "#grep#fetch#cleanup#diff#setdep#" != *"#$1#"* ]]; then
   esac
 fi
 
-PYTHONDONTWRITEBYTECODE=1 exec vpython "$base_dir/gclient.py" "$@"
+PYTHONDONTWRITEBYTECODE=1 exec python "$base_dir/gclient.py" "$@"
