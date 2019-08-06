@@ -813,6 +813,10 @@ void av1_update_ref_frame_map(AV1_COMP *cpi,
       update_arf_stack(ref_map_index, ref_buffer_stack);
       stack_push(ref_buffer_stack->gld_stack, &ref_buffer_stack->gld_stack_size,
                  ref_map_index);
+      // For fast nonrd_mode: update LAST as well on GF_UPDATE frame.
+      if (cpi->sf.use_fast_nonrd_pick_mode)
+        stack_push(ref_buffer_stack->lst_stack,
+                   &ref_buffer_stack->lst_stack_size, ref_map_index);
       break;
     case LF_UPDATE:
       update_arf_stack(ref_map_index, ref_buffer_stack);
