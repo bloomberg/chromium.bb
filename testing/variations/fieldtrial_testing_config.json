@@ -915,6 +915,26 @@
             ]
         }
     ],
+    "AutofillSaveCardBubbleStringExperiment": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledConfirmAndSaveCardVariation",
+                    "params": {
+                        "AutofillSaveCreditCardUsesImprovedMessaging": "Confirm & Save Card"
+                    },
+                    "enable_features": [
+                        "AutofillSaveCreditCardUsesImprovedMessaging"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillSmallFormSupport": [
         {
             "platforms": [
