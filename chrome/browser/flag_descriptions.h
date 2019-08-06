@@ -800,6 +800,9 @@ extern const char kOfferStoreUnmaskedWalletCardsDescription[];
 extern const char kOmniboxAlternateMatchDescriptionSeparatorName[];
 extern const char kOmniboxAlternateMatchDescriptionSeparatorDescription[];
 
+extern const char kOmniboxDisableInstantExtendedLimitName[];
+extern const char kOmniboxDisableInstantExtendedLimitDescription[];
+
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
