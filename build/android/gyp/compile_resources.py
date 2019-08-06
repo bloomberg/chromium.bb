@@ -723,6 +723,7 @@ def _PackageApk(options, build):
       options.min_sdk_version,
       '--target-sdk-version',
       options.target_sdk_version,
+      '--proguard-conditional-keep-rules',
   ]
 
   for j in options.include_resources:

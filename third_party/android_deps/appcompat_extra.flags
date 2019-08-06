@@ -1,0 +1,8 @@
+# These flags are used as a temporary fix for an aapt2 bug.
+# Remove this file and update BuildConfigGenerator.groovy to not use this file
+# for proguard.
+#
+# Link for Googlers: go/aapt-conditional-keep-bug.
+
+-if class **.R$styleable { int AlertDialog_android_layout; }
+-keep class **.R$layout { int abc_alert_dialog_material; }

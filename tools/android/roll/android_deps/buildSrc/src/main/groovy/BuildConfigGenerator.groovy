@@ -243,6 +243,11 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # https://crbug.com/887942#c1\n')
                 sb.append('  ignore_proguard_configs = true\n')
                 break
+            case 'com_android_support_appcompat_v7':
+                sb.append('  if (!is_java_debug) {\n')
+                sb.append('    proguard_configs = ["appcompat_extra.flags"]\n')
+                sb.append('  }\n')
+                break
             case 'com_android_support_support_compat':
             case 'com_android_support_support_media_compat':
                 // Target has AIDL, but we don't support it yet: http://crbug.com/644439
