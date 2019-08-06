@@ -48718,6 +48718,8 @@ Called by update_net_trust_anchors.py.-->
              loop was detected"/>
   <int value="10" label="(DEPRECATED IN M74) Disallowed by PreviewsState"/>
   <int value="11" label="The chrome-proxy header is invalid"/>
+  <int value="12" label="The network probe has not completed yet"/>
+  <int value="13" label="The network probe completed and failed"/>
 </enum>
 
 <enum name="PreviewsServerLitePageServerResponse">
