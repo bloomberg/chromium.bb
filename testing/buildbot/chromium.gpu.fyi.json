@@ -27249,6 +27249,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -27270,7 +27271,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "angle_gles1_conformance_tests"
       },
@@ -27293,7 +27295,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "angle_unittests"
       },
@@ -27315,7 +27318,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "angle_white_box_tests"
       },
@@ -27340,7 +27344,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "browser_tests"
       },
@@ -27362,7 +27367,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gl_tests"
       },
@@ -27385,7 +27391,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gl_tests"
       },
@@ -27406,7 +27413,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gl_unittests"
       },
@@ -27427,7 +27435,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gles2_conform_test"
       },
@@ -27450,7 +27459,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gles2_conform_test"
       },
@@ -27474,7 +27484,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gles2_conform_test"
       },
@@ -27492,7 +27503,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gpu_unittests"
       },
@@ -27510,7 +27522,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "swiftshader_unittests"
       },
@@ -27534,7 +27547,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "video_decode_accelerator_unittest"
       },
@@ -27558,7 +27572,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "video_decode_accelerator_unittest"
       },
@@ -27580,7 +27595,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "xr_browser_tests"
       }
@@ -27609,7 +27625,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -27638,6 +27655,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27667,6 +27685,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27696,6 +27715,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27725,6 +27745,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27758,6 +27779,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27794,6 +27816,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27838,6 +27861,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -27868,6 +27892,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27892,7 +27917,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -27922,6 +27948,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27951,6 +27978,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27982,6 +28010,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 20
         }
@@ -28014,6 +28043,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 20
         }
@@ -28046,6 +28076,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 20
         }
@@ -28076,6 +28107,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 2
         }
@@ -28106,6 +28138,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 2
         }
@@ -28136,6 +28169,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 2
         }
@@ -28166,6 +28200,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 2
         }
