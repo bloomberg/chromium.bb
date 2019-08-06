@@ -1471,14 +1471,9 @@
       },
       'WebKit Linux composite_after_paint Dummy Builder': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04',
-            },
-          ],
           'hard_timeout': 900,
         },
         'test_suites': {
@@ -1487,14 +1482,9 @@
       },
       'WebKit Linux layout_ng Dummy Builder': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04',
-            },
-          ],
           'hard_timeout': 900,
         },
         'test_suites': {
