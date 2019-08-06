@@ -258,7 +258,6 @@ void BrowserAccessibilityManagerAuraLinux::OnStateChanged(
 void BrowserAccessibilityManagerAuraLinux::OnSubtreeWillBeDeleted(
     ui::AXTree* tree,
     ui::AXNode* node) {
-  BrowserAccessibilityManager::OnSubtreeWillBeDeleted(tree, node);
   // Sending events on load/destruction would create a lot of spam, avoid that.
   if (!GetTreeData().loaded)
     return;

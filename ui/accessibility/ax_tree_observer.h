@@ -85,19 +85,18 @@ class AX_EXPORT AXTreeObserver : public base::CheckedObserver {
       const std::vector<std::string>& old_value,
       const std::vector<std::string>& new_value) {}
 
-  // Called when tree data changes.
+  // Called when tree data changes, after all nodes have been updated.
   virtual void OnTreeDataChanged(AXTree* tree,
                                  const AXTreeData& old_data,
                                  const AXTreeData& new_data) {}
 
-  // Called just before a node is deleted. Its id and data will be valid,
-  // but its links to parents and children are invalid. This is called
-  // in the middle of an update, the tree may be in an invalid state!
+  // Called before any tree modifications have occurred, notifying that a single
+  // node will be deleted. Its id and data will be valid, but its links to
+  // parents and children are only valid within this callstack. Do not hold
+  // a reference to node outside of the event.
   virtual void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) {}
 
   // Same as OnNodeWillBeDeleted, but only called once for an entire subtree.
-  // This is called in the middle of an update, the tree may be in an
-  // invalid state!
   virtual void OnSubtreeWillBeDeleted(AXTree* tree, AXNode* node) {}
 
   // Called just before a node is deleted for reparenting. See
@@ -108,12 +107,12 @@ class AX_EXPORT AXTreeObserver : public base::CheckedObserver {
   // |OnSubtreeWillBeDeleted| for additional information.
   virtual void OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) {}
 
-  // Called immediately after a new node is created. The tree may be in
-  // the middle of an update, don't walk the parents and children now.
+  // Called after all tree mutations have occurred, notifying that a single node
+  // has been created. Its id, data, and links to parent and children will all
+  // be valid, since the tree is in a stable state after updating.
   virtual void OnNodeCreated(AXTree* tree, AXNode* node) {}
 
-  // Called immediately after a node is reparented. The tree may be in the
-  // middle of an update, don't walk the parents and children now.
+  // Same as |OnNodeCreated|, but called for nodes that have been reparented.
   virtual void OnNodeReparented(AXTree* tree, AXNode* node) {}
 
   // Called when a node changes its data or children. The tree may be in
