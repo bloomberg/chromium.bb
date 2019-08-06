@@ -117,7 +117,6 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   bool HandleAttributeChanged(const QualifiedName& attr_name,
                               Element*) override;
-  void HandleAutofillStateChanged(Element*, bool) override;
   void HandleValidationMessageVisibilityChanged(
       const Element* form_control) override;
   void HandleFocusedUIElementChanged(Element* old_focused_element,

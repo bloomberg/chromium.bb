@@ -1323,12 +1323,6 @@ void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(
   }
 }
 
-void AXObjectCacheImpl::HandleAutofillStateChanged(Element* elem,
-                                                   bool is_available) {
-  if (AXObject* obj = Get(elem))
-    obj->HandleAutofillStateChanged(is_available);
-}
-
 AXObject* AXObjectCacheImpl::GetOrCreateValidationMessageObject() {
   AXObject* message_ax_object = nullptr;
   // Create only if it does not already exist.
