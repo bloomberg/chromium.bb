@@ -37,10 +37,9 @@ DevToolsInterceptorController::StartInterceptingRequests(
   std::unique_ptr<InterceptionHandle> handle(new InterceptionHandle(
       std::move(registration_handle), interceptor_, filter_entry.get()));
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&DevToolsNetworkInterceptor::AddFilterEntry, interceptor_,
-                     std::move(filter_entry)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&DevToolsNetworkInterceptor::AddFilterEntry,
+                                interceptor_, std::move(filter_entry)));
   return handle;
 }
 
@@ -50,7 +49,7 @@ void DevToolsInterceptorController::ContinueInterceptedRequest(
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&DevToolsNetworkInterceptor::ContinueInterceptedRequest,
                      interceptor_, interception_id, std::move(modifications),
@@ -71,7 +70,7 @@ void DevToolsInterceptorController::GetResponseBody(
     std::string interception_id,
     std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&DevToolsNetworkInterceptor::GetResponseBody, interceptor_,
                      std::move(interception_id), std::move(callback)));
@@ -117,15 +116,14 @@ InterceptionHandle::InterceptionHandle(
       entry_(entry) {}
 
 InterceptionHandle::~InterceptionHandle() {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&DevToolsNetworkInterceptor::RemoveFilterEntry,
-                     interceptor_, entry_));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&DevToolsNetworkInterceptor::RemoveFilterEntry,
+                                interceptor_, entry_));
 }
 
 void InterceptionHandle::UpdatePatterns(
     std::vector<DevToolsNetworkInterceptor::Pattern> patterns) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&DevToolsNetworkInterceptor::UpdatePatterns, interceptor_,
                      base::Unretained(entry_), std::move(patterns)));

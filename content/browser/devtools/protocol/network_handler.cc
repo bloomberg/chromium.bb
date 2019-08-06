@@ -810,7 +810,7 @@ class BackgroundSyncRestorer {
         static_cast<StoragePartitionImpl*>(storage_partition_)
             ->GetBackgroundSyncContext();
     if (offline) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(
               &SetServiceWorkerOfflineOnIO, sync_context,
@@ -819,10 +819,9 @@ class BackgroundSyncRestorer {
               service_worker_host->version_id(),
               offline_sw_registration_id_.get()));
     } else {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&SetServiceWorkerOnlineOnIO, sync_context,
-                         offline_sw_registration_id_.get()));
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(&SetServiceWorkerOnlineOnIO, sync_context,
+                                    offline_sw_registration_id_.get()));
     }
   }
 
