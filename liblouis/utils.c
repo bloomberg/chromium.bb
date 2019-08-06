@@ -147,7 +147,7 @@ _lou_showString(widechar const *chars, int length, int forceHex) {
 	for (int charPos=0; (charPos < length) && (bufPos < (MAXSTRING - 2)); charPos+=1) {
 		widechar c = chars[charPos];
 
-		if (!forceHex && (c >= 0X20) && (c < 0X7F)) {
+		if (!forceHex && isASCII(c)) {
 			scratchBuf[bufPos++] = (char)c;
 		} else {
 			char hexbuf[20];
