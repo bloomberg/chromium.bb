@@ -20629,7 +20629,7 @@ Called by update_net_error_codes.py.-->
   <int value="59" label="kEnterprisePlatformKeysPrivate"/>
   <int value="60" label="kDeleted_ExperienceSamplingPrivate"/>
   <int value="61" label="kExperimental"/>
-  <int value="62" label="kExtensionView"/>
+  <int value="62" label="kDeleted_ExtensionView"/>
   <int value="63" label="kExternallyConnectableAllUrls"/>
   <int value="64" label="kFeedbackPrivate"/>
   <int value="65" label="kFileBrowserHandler"/>
