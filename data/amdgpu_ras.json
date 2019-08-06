@@ -1,6 +1,9 @@
 {
     "version": "0.0.1",
     "block": {
+        "umc": {
+            "index": 0
+        },
         "gfx": {
             "index": 2,
             "subblock": {
@@ -126,6 +129,20 @@
         "poison": 8
     },
     "tests": [
+        {
+            "name": "ras_umc.1.0",
+            "block": "umc",
+            "type": "single_correctable",
+            "address": 0,
+            "value": 0
+        },
+        {
+            "name": "ras_umc.1.0",
+            "block": "umc",
+            "type": "multi_uncorrectable",
+            "address": 0,
+            "value": 0
+        },
         {
             "name": "ras_gfx.2.1",
             "block": "gfx",
