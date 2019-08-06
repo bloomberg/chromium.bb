@@ -255,7 +255,8 @@ def write_patches_file(origin_branch, output_file):
     print("\nAffects:", file=output_file)
     # TODO(liberato): maybe add the lines that were affected.
     for file in sorted(sha1ToFiles[sha1]):
-      print("    " + os.path.relpath(file, wd), file=output_file)
+      relfile = os.path.relpath(file, wd).replace('\\', '/')
+      print("    " + relfile, file=output_file)
     print(file=output_file)
 
   log("Done")
