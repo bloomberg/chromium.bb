@@ -121,7 +121,8 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                             int mi_row, int mi_col, BLOCK_SIZE bsize,
                             TX_SIZE tx_size,
                             const YV12_BUFFER_CONFIG *ref_frame[],
-                            uint8_t *predictor, TplDepStats *tpl_stats) {
+                            uint8_t *predictor, TplDepStats *tpl_stats,
+                            int *ref_frame_index, int_mv *mv) {
   AV1_COMMON *cm = &cpi->common;
   const GF_GROUP *gf_group = &cpi->gf_group;
 
@@ -280,9 +281,8 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   tpl_stats->intra_cost = best_intra_cost << TPL_DEP_COST_SCALE_LOG2;
 
   if (frame_idx && best_rf_idx != -1) {
-    tpl_stats->ref_frame_index =
-        cpi->tpl_frame[frame_idx].ref_map_index[best_rf_idx];
-    tpl_stats->mv.as_int = best_mv.as_int;
+    *ref_frame_index = cpi->tpl_frame[frame_idx].ref_map_index[best_rf_idx];
+    mv->as_int = best_mv.as_int;
   }
 }
 
@@ -334,15 +334,13 @@ static double iiratio_nonlinear(double iiratio) {
 
 static void tpl_model_update_b(TplDepFrame *tpl_frame,
                                TplDepStats *tpl_stats_ptr, int mi_row,
-                               int mi_col, const BLOCK_SIZE bsize) {
-  TplDepFrame *ref_tpl_frame = &tpl_frame[tpl_stats_ptr->ref_frame_index];
+                               int mi_col, const BLOCK_SIZE bsize,
+                               int ref_frame_index, int_mv mv) {
+  TplDepFrame *ref_tpl_frame = &tpl_frame[ref_frame_index];
   TplDepStats *ref_stats_ptr = ref_tpl_frame->tpl_stats_ptr;
-  MV mv = tpl_stats_ptr->mv.as_mv;
-  int mv_row = mv.row >> 3;
-  int mv_col = mv.col >> 3;
 
-  int ref_pos_row = mi_row * MI_SIZE + mv_row;
-  int ref_pos_col = mi_col * MI_SIZE + mv_col;
+  const int ref_pos_row = mi_row * MI_SIZE + (mv.as_mv.row >> 3);
+  const int ref_pos_col = mi_col * MI_SIZE + (mv.as_mv.col >> 3);
 
   const int bw = 4 << mi_size_wide_log2[bsize];
   const int bh = 4 << mi_size_high_log2[bsize];
@@ -398,7 +396,8 @@ static void tpl_model_update_b(TplDepFrame *tpl_frame,
 }
 
 static void tpl_model_update(TplDepFrame *tpl_frame, TplDepStats *tpl_stats_ptr,
-                             int mi_row, int mi_col, const BLOCK_SIZE bsize) {
+                             int mi_row, int mi_col, const BLOCK_SIZE bsize,
+                             int ref_frame_index, int_mv mv) {
   int idx, idy;
   const int mi_height = mi_size_high[bsize];
   const int mi_width = mi_size_wide[bsize];
@@ -408,7 +407,7 @@ static void tpl_model_update(TplDepFrame *tpl_frame, TplDepStats *tpl_stats_ptr,
       TplDepStats *tpl_ptr =
           &tpl_stats_ptr[(mi_row + idy) * tpl_frame->stride + (mi_col + idx)];
       tpl_model_update_b(tpl_frame, tpl_ptr, mi_row + idy, mi_col + idx,
-                         BLOCK_4X4);
+                         BLOCK_4X4, ref_frame_index, mv);
     }
   }
 }
@@ -434,8 +433,6 @@ static void tpl_model_store(TplDepStats *tpl_stats_ptr, int mi_row, int mi_col,
       tpl_ptr->intra_cost = intra_cost;
       tpl_ptr->inter_cost = inter_cost;
       tpl_ptr->mc_dep_cost = tpl_ptr->intra_cost + tpl_ptr->mc_flow;
-      tpl_ptr->ref_frame_index = src_stats->ref_frame_index;
-      tpl_ptr->mv.as_int = src_stats->mv.as_int;
       ++tpl_ptr;
     }
   }
@@ -527,6 +524,10 @@ static void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
     xd->mb_to_bottom_edge = ((cm->mi_rows - mi_height - mi_row) * MI_SIZE) * 8;
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += mi_width) {
       TplDepStats tpl_stats;
+      int ref_frame_index = -1;
+      int_mv mv;
+
+      mv.as_int = 0;
 
       // Motion estimation column boundary
       x->mv_limits.col_min =
@@ -536,7 +537,8 @@ static void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
       xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
       xd->mb_to_right_edge = ((cm->mi_cols - mi_width - mi_col) * MI_SIZE) * 8;
       mode_estimation(cpi, x, xd, &sf, frame_idx, src_diff, coeff, 1, mi_row,
-                      mi_col, bsize, tx_size, ref_frame, predictor, &tpl_stats);
+                      mi_col, bsize, tx_size, ref_frame, predictor, &tpl_stats,
+                      &ref_frame_index, &mv);
 
       // Motion flow dependency dispenser.
       tpl_model_store(tpl_frame->tpl_stats_ptr, mi_row, mi_col, bsize,
@@ -544,7 +546,7 @@ static void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
 
       if (frame_idx)
         tpl_model_update(cpi->tpl_frame, tpl_frame->tpl_stats_ptr, mi_row,
-                         mi_col, bsize);
+                         mi_col, bsize, ref_frame_index, mv);
     }
   }
 

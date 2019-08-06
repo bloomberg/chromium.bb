@@ -192,10 +192,6 @@ typedef struct TplDepStats {
   int64_t mc_count;
   int64_t mc_saved;
 #endif  // !USE_TPL_CLASSIC_MODEL
-
-  int ref_frame_index;
-  int ref_disp_frame_index;
-  int_mv mv;
 } TplDepStats;
 
 typedef struct TplDepFrame {
