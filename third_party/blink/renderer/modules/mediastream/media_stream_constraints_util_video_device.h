@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_
-
-#include <string>
-#include <vector>
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_
 
 #include "base/optional.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 class WebString;
@@ -22,32 +21,30 @@ namespace blink {
 
 // Calculates and returns videoKind value for |format|.
 // See https://w3c.github.io/mediacapture-depth.
-BLINK_MODULES_EXPORT WebString
+MODULES_EXPORT WebString
 GetVideoKindForFormat(const media::VideoCaptureFormat& format);
 
-BLINK_MODULES_EXPORT WebMediaStreamTrack::FacingMode ToWebFacingMode(
+MODULES_EXPORT WebMediaStreamTrack::FacingMode ToWebFacingMode(
     media::VideoFacingMode video_facing);
 
 // This is a temporary struct to bridge blink and content mojo types.
-// TODO(crbug.com/704136): Replace references to this type with the blink mojo
-// type once all dependent types are migrated to Blink.
-struct BLINK_MODULES_EXPORT VideoInputDeviceCapabilities {
-  VideoInputDeviceCapabilities(std::string device_id,
-                               std::string group_id,
-                               std::vector<media::VideoCaptureFormat> formats,
+struct MODULES_EXPORT VideoInputDeviceCapabilities {
+  VideoInputDeviceCapabilities(String device_id,
+                               String group_id,
+                               Vector<media::VideoCaptureFormat> formats,
                                media::VideoFacingMode facing_mode);
   VideoInputDeviceCapabilities();
   VideoInputDeviceCapabilities(VideoInputDeviceCapabilities&& other);
   VideoInputDeviceCapabilities& operator=(VideoInputDeviceCapabilities&& other);
   ~VideoInputDeviceCapabilities();
 
-  std::string device_id;
-  std::string group_id;
-  std::vector<media::VideoCaptureFormat> formats;
+  String device_id;
+  String group_id;
+  Vector<media::VideoCaptureFormat> formats;
   media::VideoFacingMode facing_mode;
 };
 
-struct BLINK_MODULES_EXPORT VideoDeviceCaptureCapabilities {
+struct MODULES_EXPORT VideoDeviceCaptureCapabilities {
   VideoDeviceCaptureCapabilities();
   VideoDeviceCaptureCapabilities(VideoDeviceCaptureCapabilities&& other);
   ~VideoDeviceCaptureCapabilities();
@@ -59,8 +56,8 @@ struct BLINK_MODULES_EXPORT VideoDeviceCaptureCapabilities {
   // |device_capabilities| definition with the Blink mojo
   // VideoInputDeviceCapabilitiesPtr type once dependent types are migrated to
   // Blink.
-  std::vector<VideoInputDeviceCapabilities> device_capabilities;
-  std::vector<base::Optional<bool>> noise_reduction_capabilities;
+  Vector<VideoInputDeviceCapabilities> device_capabilities;
+  Vector<base::Optional<bool>> noise_reduction_capabilities;
 };
 
 // This function performs source, source-settings and track-settings selection
@@ -125,7 +122,7 @@ struct BLINK_MODULES_EXPORT VideoDeviceCaptureCapabilities {
 // the track_adapter_settings() accessor. For more details about the algorithm
 // for track adapter settings, see the SelectVideoTrackAdapterSettings
 // documentation.
-VideoCaptureSettings BLINK_MODULES_EXPORT SelectSettingsVideoDeviceCapture(
+VideoCaptureSettings MODULES_EXPORT SelectSettingsVideoDeviceCapture(
     const VideoDeviceCaptureCapabilities& capabilities,
     const WebMediaConstraints& constraints,
     int default_width,
@@ -134,4 +131,4 @@ VideoCaptureSettings BLINK_MODULES_EXPORT SelectSettingsVideoDeviceCapture(
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_

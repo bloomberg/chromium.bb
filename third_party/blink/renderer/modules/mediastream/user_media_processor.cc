@@ -36,7 +36,6 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_audio.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_content.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
@@ -44,6 +43,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 #include "ui/gfx/geometry/size.h"
@@ -217,20 +217,16 @@ media::VideoFacingMode ToMediaVideoFacingMode(
   return media::MEDIA_VIDEO_FACING_NONE;
 }
 
-std::vector<blink::VideoInputDeviceCapabilities> ToVideoInputDeviceCapabilities(
+Vector<blink::VideoInputDeviceCapabilities> ToVideoInputDeviceCapabilities(
     const Vector<blink::mojom::blink::VideoInputDeviceCapabilitiesPtr>&
         input_capabilities) {
-  std::vector<blink::VideoInputDeviceCapabilities> capabilities;
+  Vector<blink::VideoInputDeviceCapabilities> capabilities;
   for (const auto& capability : input_capabilities) {
-    // TODO(crbug.com/704136): Change VideoInputDeviceCapabilities to operate
-    // over WTF::Vector and WTF::String, in its ctor's.
-    //
     // TODO(crbug.com/704136): Make the conversion from mojom::blink::FacingMode
     // to be handled automatically, eg by making media_devices.typemap work in
     // blink/renderer/platform/mojo/blink_typemaps.gni.
-    capabilities.emplace_back(capability->device_id.Utf8(),
-                              capability->group_id.Utf8(),
-                              ToStdVector(capability->formats),
+    capabilities.emplace_back(capability->device_id, capability->group_id,
+                              capability->formats,
                               ToMediaVideoFacingMode(capability->facing_mode));
   }
 
@@ -714,9 +710,6 @@ void UserMediaProcessor::SelectVideoDeviceSettings(
       current_request_info_->stream_controls()->video.stream_type));
 
   blink::VideoDeviceCaptureCapabilities capabilities;
-  // TODO(crbug.com/704136): Change
-  // VideoDeviceCaptureCapabilities.device_capabilities to operate over
-  // WTF::Vector.
   capabilities.device_capabilities =
       ToVideoInputDeviceCapabilities(video_input_capabilities);
   capabilities.noise_reduction_capabilities = {base::Optional<bool>(),
