@@ -357,3 +357,9 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames,
     false)
+
+// If true, static streams should never be closed before QuicSession
+// destruction.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_active_streams_never_negative,
+          false)
