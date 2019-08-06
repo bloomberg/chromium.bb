@@ -168,7 +168,7 @@ def BundleTastFiles(input_proto, output_proto, config):
   # TODO(saklein) Cleanup legacy handling after it has been switched over.
   if target:
     # Legacy handling.
-    chroot.path = os.path.join(build_root, 'chroot')
+    chroot = chroot_lib.Chroot(path=os.path.join(build_root, 'chroot'))
     sysroot_path = os.path.join('/build', target)
 
   # New handling - chroot & sysroot based.
@@ -294,7 +294,7 @@ def BundleEbuildLogs(input_proto, output_proto, config):
   if target:
     # Legacy handling.
     build_root = constants.SOURCE_ROOT
-    chroot.path = os.path.join(build_root, 'chroot')
+    chroot = chroot_lib.Chroot(path=os.path.join(build_root, 'chroot'))
     sysroot_path = os.path.join('/build', target)
 
   # TODO(saklein): Switch to validation_complete decorator after legacy

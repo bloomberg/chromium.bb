@@ -7,12 +7,35 @@
 
 from __future__ import print_function
 
-from chromite.lib import chroot_lib
+from chromite.api.gen.chromiumos import common_pb2
+
 from chromite.lib import portage_util
+from chromite.lib.build_target_util import BuildTarget
+from chromite.lib.chroot_lib import Chroot
+
+
+class Error(Exception):
+  """Base error class for the module."""
+
+
+class InvalidMessageError(Error):
+  """Invalid message."""
 
 
 def ParseChroot(chroot_message):
-  """Create a chroot object from the chroot message."""
+  """Create a chroot object from the chroot message.
+
+  Args:
+    chroot_message (common_pb2.Chroot): The chroot message.
+
+  Returns:
+    Chroot: The parsed chroot object.
+
+  Raises:
+    AssertionError: When the message is not a Chroot message.
+  """
+  assert isinstance(chroot_message, common_pb2.Chroot)
+
   path = chroot_message.path
   cache_dir = chroot_message.cache_dir
   chrome_root = chroot_message.chrome_dir
@@ -29,8 +52,40 @@ def ParseChroot(chroot_message):
   if features:
     env['FEATURES'] = ' '.join(features)
 
-  return chroot_lib.Chroot(path=path, cache_dir=cache_dir,
-                           chrome_root=chrome_root, env=env)
+  return Chroot(path=path, cache_dir=cache_dir, chrome_root=chrome_root,
+                env=env)
+
+
+def ParseBuildTarget(build_target_message):
+  """Create a BuildTarget object from a build_target message.
+
+  Args:
+    build_target_message (common_pb2.BuildTarget): The BuildTarget message.
+
+  Returns:
+    BuildTarget: The parsed instance.
+
+  Raises:
+    AssertionError: When the field is not a BuildTarget message.
+  """
+  assert isinstance(build_target_message, common_pb2.BuildTarget)
+
+  return BuildTarget(build_target_message.name)
+
+
+def ParseBuildTargets(repeated_build_target_field):
+  """Create a BuildTarget for each entry in the repeated field.
+
+  Args:
+    repeated_build_target_field: The repeated BuildTarget field.
+
+  Returns:
+    list[BuildTarget]: The parsed BuildTargets.
+
+  Raises:
+    AssertionError: When the field contains non-BuildTarget messages.
+  """
+  return [ParseBuildTarget(target) for target in repeated_build_target_field]
 
 
 def CPVToPackageInfo(cpv, package_info):

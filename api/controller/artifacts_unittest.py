@@ -252,7 +252,7 @@ class BundleTastFilesTest(BundleTestCase):
     osutils.SafeMakedirs(sysroot_path)
     osutils.SafeMakedirs(output_dir)
 
-    chroot = chroot_lib.Chroot(chroot_dir, env={'FEATURES': 'separatedebug'})
+    chroot = chroot_lib.Chroot(chroot_dir)
     sysroot = sysroot_lib.Sysroot('/build/board')
 
     expected_archive = os.path.join(output_dir, artifacts_svc.TAST_BUNDLE_NAME)

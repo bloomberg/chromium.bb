@@ -91,3 +91,21 @@ class ChrootTest(cros_test_lib.TempDirTestCase):
     """Test has path for a non-existent path."""
     chroot = chroot_lib.Chroot(self.tempdir)
     self.assertFalse(chroot.has_path('/does/not/exist'))
+
+  def testEqual(self):
+    """__eq__ method sanity check."""
+    path = '/chroot/path'
+    cache_dir = '/cache/dir'
+    chrome_root = '/chrome/root'
+    env = {'USE': 'useflag',
+           'FEATURES': 'feature'}
+    chroot1 = chroot_lib.Chroot(path=path, cache_dir=cache_dir,
+                                chrome_root=chrome_root, env=env)
+    chroot2 = chroot_lib.Chroot(path=path, cache_dir=cache_dir,
+                                chrome_root=chrome_root, env=env)
+    chroot3 = chroot_lib.Chroot(path=path)
+    chroot4 = chroot_lib.Chroot(path=path)
+
+    self.assertEqual(chroot1, chroot2)
+    self.assertEqual(chroot3, chroot4)
+    self.assertNotEqual(chroot1, chroot3)
