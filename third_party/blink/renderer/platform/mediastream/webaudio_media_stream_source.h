@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_SOURCE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_SOURCE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_SOURCE_H_
 
 #include <memory>
 
@@ -12,9 +12,9 @@
 #include "media/base/audio_push_fifo.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_audio_destination_consumer.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -22,7 +22,7 @@ namespace blink {
 // audio data (i.e., the output from a graph of WebAudio nodes) to one or more
 // MediaStreamAudioTracks. Audio data is transported directly to the tracks in
 // 10 ms chunks.
-class BLINK_PLATFORM_EXPORT WebAudioMediaStreamSource final
+class PLATFORM_EXPORT WebAudioMediaStreamSource final
     : public MediaStreamAudioSource,
       public WebAudioDestinationConsumer {
  public:
@@ -82,4 +82,4 @@ class BLINK_PLATFORM_EXPORT WebAudioMediaStreamSource final
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_SOURCE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_WEBAUDIO_MEDIA_STREAM_SOURCE_H_
