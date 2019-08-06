@@ -4541,7 +4541,7 @@ void Element::UpdatePseudoElement(PseudoId pseudo_id,
 
   if (change.ShouldUpdatePseudoElement(*element)) {
     if (CanGeneratePseudoElement(pseudo_id)) {
-      element->RecalcStyle(change.ForChildren().ForceRecalcDescendants());
+      element->RecalcStyle(change.ForPseudoElement());
       if (!element->NeedsReattachLayoutTree())
         return;
       if (PseudoElementLayoutObjectIsNeeded(element->GetComputedStyle()))
