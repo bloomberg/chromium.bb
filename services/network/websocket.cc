@@ -228,7 +228,9 @@ void WebSocket::WebSocketEventHandler::OnFailChannel(
   DVLOG(3) << "WebSocketEventHandler::OnFailChannel @"
            << reinterpret_cast<void*>(this) << " message=\"" << message << "\"";
 
-  impl_->client_->OnFailChannel(message);
+  impl_->handshake_client_.ResetWithReason(mojom::WebSocket::kInternalFailure,
+                                           message);
+  impl_->client_.ResetWithReason(mojom::WebSocket::kInternalFailure, message);
   impl_->handshake_client_ = nullptr;
   impl_->client_ = nullptr;
   impl_->auth_handler_ = nullptr;
