@@ -205,6 +205,23 @@ static void set_good_speed_feature_framesize_dependent(
   }
 }
 
+static void set_rt_speed_feature_framesize_dependent(const AV1_COMP *const cpi,
+                                                     SPEED_FEATURES *const sf,
+                                                     int speed) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
+  const int is_480p_or_larger = AOMMIN(cm->width, cm->height) >= 480;
+
+  (void)is_720p_or_larger;  // Not used so far
+
+  if (!is_480p_or_larger) {
+    if (speed >= 8) {
+      sf->mv.subpel_search_method = SUBPEL_TREE;
+      sf->estimate_motion_for_var_based_partition = 1;
+    }
+  }
+}
+
 static void set_good_speed_features_framesize_independent(
     const AV1_COMP *const cpi, SPEED_FEATURES *const sf, int speed) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -654,6 +671,8 @@ void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi, int speed) {
 
   if (oxcf->mode == GOOD) {
     set_good_speed_feature_framesize_dependent(cpi, sf, speed);
+  } else if (oxcf->mode == REALTIME) {
+    set_rt_speed_feature_framesize_dependent(cpi, sf, speed);
   }
 
   // This is only used in motion vector unit test.
