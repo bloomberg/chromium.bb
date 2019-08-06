@@ -652,62 +652,60 @@ LoadState TransportClientSocketPool::GetLoadState(
   return LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET;
 }
 
-std::unique_ptr<base::DictionaryValue>
-TransportClientSocketPool::GetInfoAsValue(const std::string& name,
-                                          const std::string& type) const {
+base::Value TransportClientSocketPool::GetInfoAsValue(
+    const std::string& name,
+    const std::string& type) const {
   // TODO(mmenke): This currently doesn't return bound Requests or ConnectJobs.
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("name", name);
-  dict->SetString("type", type);
-  dict->SetInteger("handed_out_socket_count", handed_out_socket_count_);
-  dict->SetInteger("connecting_socket_count", connecting_socket_count_);
-  dict->SetInteger("idle_socket_count", idle_socket_count_);
-  dict->SetInteger("max_socket_count", max_sockets_);
-  dict->SetInteger("max_sockets_per_group", max_sockets_per_group_);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("name", name);
+  dict.SetStringKey("type", type);
+  dict.SetIntKey("handed_out_socket_count", handed_out_socket_count_);
+  dict.SetIntKey("connecting_socket_count", connecting_socket_count_);
+  dict.SetIntKey("idle_socket_count", idle_socket_count_);
+  dict.SetIntKey("max_socket_count", max_sockets_);
+  dict.SetIntKey("max_sockets_per_group", max_sockets_per_group_);
 
   if (group_map_.empty())
     return dict;
 
-  auto all_groups_dict = std::make_unique<base::DictionaryValue>();
-  for (auto it = group_map_.begin(); it != group_map_.end(); it++) {
-    const Group* group = it->second;
-    auto group_dict = std::make_unique<base::DictionaryValue>();
+  base::Value all_groups_dict(base::Value::Type::DICTIONARY);
+  for (const auto& entry : group_map_) {
+    const Group* group = entry.second;
+    base::Value group_dict(base::Value::Type::DICTIONARY);
 
-    group_dict->SetInteger("pending_request_count",
-                           group->unbound_request_count());
+    group_dict.SetIntKey("pending_request_count",
+                         group->unbound_request_count());
     if (group->has_unbound_requests()) {
-      group_dict->SetString(
+      group_dict.SetStringKey(
           "top_pending_priority",
           RequestPriorityToString(group->TopPendingPriority()));
     }
 
-    group_dict->SetInteger("active_socket_count", group->active_socket_count());
+    group_dict.SetIntKey("active_socket_count", group->active_socket_count());
 
-    auto idle_socket_list = std::make_unique<base::ListValue>();
-    std::list<IdleSocket>::const_iterator idle_socket;
-    for (idle_socket = group->idle_sockets().begin();
-         idle_socket != group->idle_sockets().end(); idle_socket++) {
-      int source_id = idle_socket->socket->NetLog().source().id;
-      idle_socket_list->AppendInteger(source_id);
+    std::vector<base::Value> idle_socket_list;
+    for (const auto& idle_socket : group->idle_sockets()) {
+      int source_id = idle_socket.socket->NetLog().source().id;
+      idle_socket_list.push_back(base::Value(source_id));
     }
-    group_dict->Set("idle_sockets", std::move(idle_socket_list));
+    group_dict.SetKey("idle_sockets", base::Value(std::move(idle_socket_list)));
 
-    auto connect_jobs_list = std::make_unique<base::ListValue>();
-    for (auto job = group->jobs().begin(); job != group->jobs().end(); job++) {
-      int source_id = (*job)->net_log().source().id;
-      connect_jobs_list->AppendInteger(source_id);
+    std::vector<base::Value> connect_jobs_list;
+    for (const auto& job : group->jobs()) {
+      int source_id = job->net_log().source().id;
+      connect_jobs_list.push_back(base::Value(source_id));
     }
-    group_dict->Set("connect_jobs", std::move(connect_jobs_list));
+    group_dict.SetKey("connect_jobs",
+                      base::Value(std::move(connect_jobs_list)));
 
-    group_dict->SetBoolean("is_stalled", group->CanUseAdditionalSocketSlot(
-                                             max_sockets_per_group_));
-    group_dict->SetBoolean("backup_job_timer_is_running",
-                           group->BackupJobTimerIsRunning());
+    group_dict.SetBoolKey("is_stalled", group->CanUseAdditionalSocketSlot(
+                                            max_sockets_per_group_));
+    group_dict.SetBoolKey("backup_job_timer_is_running",
+                          group->BackupJobTimerIsRunning());
 
-    all_groups_dict->SetWithoutPathExpansion(it->first.ToString(),
-                                             std::move(group_dict));
+    all_groups_dict.SetKey(entry.first.ToString(), std::move(group_dict));
   }
-  dict->Set("groups", std::move(all_groups_dict));
+  dict.SetKey("groups", std::move(all_groups_dict));
   return dict;
 }
 
