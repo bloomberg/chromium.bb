@@ -164,9 +164,6 @@ android_aar_prebuilt("com_android_support_appcompat_v7_java") {
     ":com_android_support_support_fragment_java",
     ":com_android_support_support_vector_drawable_java",
   ]
-  if (!is_java_debug) {
-    proguard_configs = [ "appcompat_extra.flags" ]
-  }
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

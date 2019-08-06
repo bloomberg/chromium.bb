@@ -17,7 +17,6 @@ Everything directly here is chromium code, and third_party code lives under
 ```
 third_party/android_deps
 ├── .gitignore (hand written)
-├── appcompat_extra.flags (hand written)
 ├── Android_SDK_License-December_9_2016.txt ([1])
 ├── additional_license_paths.json (generated)
 ├── BUILD.gn (partly generated)
