@@ -515,6 +515,12 @@ const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =
     "If enabled, adds the status of certain experiment variations when making "
     "calls to Google Payments.";
 
+const char kEnableAutofillUpdatedCardUnmaskPromptUiName[] =
+    "Enable new card unmask prompt UI";
+const char kEnableAutofillUpdatedCardUnmaskPromptUiDescription[] =
+    "If enabled, shows the updated card unmask prompt when performing CVC "
+    "verification.";
+
 const char kEnableDeferAllScriptName[] = "DeferAllScript previews";
 const char kEnableDeferAllScriptDescription[] =
     "Enable deferring synchronous script on slow pages.";

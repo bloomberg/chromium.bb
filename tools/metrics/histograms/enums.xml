@@ -34129,6 +34129,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2058762785"
       label="AllowDownloadResumptionWithoutStrongValidators:disabled"/>
   <int value="-2058656447" label="ContextualSearchUrlActions:enabled"/>
+  <int value="-2056351013" label="AutofillUpdatedCardUnmaskPromptUi:enabled"/>
   <int value="-2054612904" label="BuiltInModuleInfra:enabled"/>
   <int value="-2053860791" label="XGEOVisibleNetworks:enabled"/>
   <int value="-2048927838" label="AutoplayWhitelistSettings:enabled"/>
@@ -35481,6 +35482,7 @@ from previous Chrome versions.
   <int value="-234687894"
       label="NonValidatingReloadOnRefreshContentV2:disabled"/>
   <int value="-234231190" label="SharingDeviceRegistration:enabled"/>
+  <int value="-231967261" label="AutofillUpdatedCardUnmaskPromptUi:disabled"/>
   <int value="-231922000" label="enable-renderer-mojo-channel"/>
   <int value="-231426350" label="AutofillEnableToolbarStatusChip:enabled"/>
   <int value="-230824955" label="NTPMostLikelyFaviconsFromServer:enabled"/>

@@ -4311,6 +4311,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPolicyAtomicGroupsEnabledDescription, kOsAll,
      FEATURE_VALUE_TYPE(policy::features::kPolicyAtomicGroup)},
 
+    {"enable-autofill-updated-card-unmask-prompt-ui",
+     flag_descriptions::kEnableAutofillUpdatedCardUnmaskPromptUiName,
+     flag_descriptions::kEnableAutofillUpdatedCardUnmaskPromptUiDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpdatedCardUnmaskPromptUi)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
