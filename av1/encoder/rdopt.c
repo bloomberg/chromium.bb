@@ -1876,27 +1876,34 @@ static void get_txb_dimensions(const MACROBLOCKD *xd, int plane,
                                BLOCK_SIZE tx_bsize, int *width, int *height,
                                int *visible_width, int *visible_height) {
   assert(tx_bsize <= plane_bsize);
-  int txb_height = block_size_high[tx_bsize];
-  int txb_width = block_size_wide[tx_bsize];
-  const int block_height = block_size_high[plane_bsize];
-  const int block_width = block_size_wide[plane_bsize];
+  const int txb_height = block_size_high[tx_bsize];
+  const int txb_width = block_size_wide[tx_bsize];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const int tx_unit_size = tx_size_wide_log2[0];
+
   // TODO(aconverse@google.com): Investigate using crop_width/height here rather
   // than the MI size
-  const int block_rows =
-      (xd->mb_to_bottom_edge >= 0)
-          ? block_height
-          : (xd->mb_to_bottom_edge >> (3 + pd->subsampling_y)) + block_height;
-  const int block_cols =
-      (xd->mb_to_right_edge >= 0)
-          ? block_width
-          : (xd->mb_to_right_edge >> (3 + pd->subsampling_x)) + block_width;
-  const int tx_unit_size = tx_size_wide_log2[0];
-  if (width) *width = txb_width;
+  if (xd->mb_to_bottom_edge >= 0) {
+    *visible_height = txb_height;
+  } else {
+    const int block_height = block_size_high[plane_bsize];
+    const int block_rows =
+        (xd->mb_to_bottom_edge >> (3 + pd->subsampling_y)) + block_height;
+    *visible_height =
+        clamp(block_rows - (blk_row << tx_unit_size), 0, txb_height);
+  }
   if (height) *height = txb_height;
-  *visible_width = clamp(block_cols - (blk_col << tx_unit_size), 0, txb_width);
-  *visible_height =
-      clamp(block_rows - (blk_row << tx_unit_size), 0, txb_height);
+
+  if (xd->mb_to_right_edge >= 0) {
+    *visible_width = txb_width;
+  } else {
+    const int block_width = block_size_wide[plane_bsize];
+    const int block_cols =
+        (xd->mb_to_right_edge >> (3 + pd->subsampling_x)) + block_width;
+    *visible_width =
+        clamp(block_cols - (blk_col << tx_unit_size), 0, txb_width);
+  }
+  if (width) *width = txb_width;
 }
 
 // Compute the pixel domain distortion from src and dst on all visible 4x4s in
