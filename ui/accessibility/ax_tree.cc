@@ -544,6 +544,8 @@ AXTree::AXTree(const AXTreeUpdate& initial_state) {
 AXTree::~AXTree() {
   if (root_) {
     RecursivelyNotifyNodeWillBeDeleted(root_);
+    base::AutoReset<bool> update_state_resetter(&tree_update_in_progress_,
+                                                true);
     DestroyNodeAndSubtree(root_, nullptr);
   }
   for (auto& entry : table_info_map_)
@@ -756,11 +758,6 @@ const std::set<AXTreeID> AXTree::GetAllChildTreeIds() const {
 }
 
 bool AXTree::Unserialize(const AXTreeUpdate& update) {
-  // Set update state to true.
-  // tree_update_in_progress_ gets set back to false whenever this function
-  // exits.
-  base::AutoReset<bool> update_state_resetter(&tree_update_in_progress_, true);
-
   AXTreeUpdateState update_state(*this);
   const AXNode::AXID old_root_id = root_ ? root_->id() : AXNode::kInvalidAXID;
 
@@ -811,6 +808,11 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
         NotifyNodeDataWillChange(node->data(), new_data);
     }
   }
+
+  // Now that we have finished sending events for changes that will  happen,
+  // set update state to true. |tree_update_in_progress_| gets set back to
+  // false whenever this function exits.
+  base::AutoReset<bool> update_state_resetter(&tree_update_in_progress_, true);
 
   // Handle |node_id_to_clear| before applying ordinary node updates.
   // We distinguish between updating the root, e.g. changing its children or
@@ -1046,6 +1048,7 @@ AXNode* AXTree::CreateNode(AXNode* parent,
                            AXNode::AXID id,
                            size_t index_in_parent,
                            AXTreeUpdateState* update_state) {
+  DCHECK(GetTreeUpdateInProgressState());
   // |update_state| must already contain information about all of the expected
   // changes and invalidations to apply. If any of these are missing, observers
   // may not be notified of changes.
@@ -1247,6 +1250,7 @@ bool AXTree::ComputePendingChangesToNode(const AXNodeData& new_data,
 bool AXTree::UpdateNode(const AXNodeData& src,
                         bool is_new_root,
                         AXTreeUpdateState* update_state) {
+  DCHECK(GetTreeUpdateInProgressState());
   // This method updates one node in the tree based on serialized data
   // received in an AXTreeUpdate. See AXTreeUpdate for pre and post
   // conditions.
@@ -1305,6 +1309,7 @@ bool AXTree::UpdateNode(const AXNodeData& src,
 void AXTree::NotifySubtreeWillBeReparentedOrDeleted(
     AXNode* node,
     const AXTreeUpdateState* update_state) {
+  DCHECK(!GetTreeUpdateInProgressState());
   if (node->id() == AXNode::kInvalidAXID)
     return;
 
@@ -1320,6 +1325,7 @@ void AXTree::NotifySubtreeWillBeReparentedOrDeleted(
 void AXTree::NotifyNodeWillBeReparentedOrDeleted(
     AXNode* node,
     const AXTreeUpdateState* update_state) {
+  DCHECK(!GetTreeUpdateInProgressState());
   if (node->id() == AXNode::kInvalidAXID)
     return;
 
@@ -1333,6 +1339,7 @@ void AXTree::NotifyNodeWillBeReparentedOrDeleted(
 }
 
 void AXTree::RecursivelyNotifyNodeWillBeDeleted(AXNode* node) {
+  DCHECK(!GetTreeUpdateInProgressState());
   if (node->id() == AXNode::kInvalidAXID)
     return;
 
@@ -1345,6 +1352,7 @@ void AXTree::RecursivelyNotifyNodeWillBeDeleted(AXNode* node) {
 void AXTree::NotifyNodeHasBeenReparentedOrCreated(
     AXNode* node,
     const AXTreeUpdateState* update_state) {
+  DCHECK(!GetTreeUpdateInProgressState());
   if (node->id() == AXNode::kInvalidAXID)
     return;
 
@@ -1359,6 +1367,7 @@ void AXTree::NotifyNodeHasBeenReparentedOrCreated(
 
 void AXTree::NotifyNodeDataWillChange(const AXNodeData& old_data,
                                       const AXNodeData& new_data) {
+  DCHECK(!GetTreeUpdateInProgressState());
   if (new_data.id == AXNode::kInvalidAXID)
     return;
 
@@ -1369,6 +1378,7 @@ void AXTree::NotifyNodeDataWillChange(const AXNodeData& old_data,
 void AXTree::NotifyNodeDataHasBeenChanged(AXNode* node,
                                           const AXNodeData& old_data,
                                           const AXNodeData& new_data) {
+  DCHECK(!GetTreeUpdateInProgressState());
   if (node->id() == AXNode::kInvalidAXID)
     return;
 
@@ -1455,6 +1465,7 @@ void AXTree::NotifyNodeDataHasBeenChanged(AXNode* node,
 }
 
 void AXTree::UpdateReverseRelations(AXNode* node, const AXNodeData& new_data) {
+  DCHECK(GetTreeUpdateInProgressState());
   const AXNodeData& old_data = node->data();
   int id = new_data.id;
   auto int_callback = [this, id](ax::mojom::IntAttribute attr,
@@ -1593,6 +1604,7 @@ void AXTree::MarkNodesForDestructionRecursive(AXNode::AXID node_id,
 
 void AXTree::DestroySubtree(AXNode* node,
                             AXTreeUpdateState* update_state) {
+  DCHECK(GetTreeUpdateInProgressState());
   // |update_state| must already contain information about all of the expected
   // changes and invalidations to apply. If any of these are missing, observers
   // may not be notified of changes.
@@ -1606,6 +1618,7 @@ void AXTree::DestroySubtree(AXNode* node,
 
 void AXTree::DestroyNodeAndSubtree(AXNode* node,
                                    AXTreeUpdateState* update_state) {
+  DCHECK(GetTreeUpdateInProgressState());
   DCHECK(!update_state ||
          update_state->GetPendingDestroyNodeCount(node->id()) > 0);
 
@@ -1641,6 +1654,7 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
 void AXTree::DeleteOldChildren(AXNode* node,
                                const std::vector<int32_t>& new_child_ids,
                                AXTreeUpdateState* update_state) {
+  DCHECK(GetTreeUpdateInProgressState());
   // Create a set of child ids in |src| for fast lookup, we know the set does
   // not contain duplicate entries already, because that was handled when
   // populating |update_state| with information about all of the expected
@@ -1659,6 +1673,7 @@ bool AXTree::CreateNewChildVector(AXNode* node,
                                   const std::vector<int32_t>& new_child_ids,
                                   std::vector<AXNode*>* new_children,
                                   AXTreeUpdateState* update_state) {
+  DCHECK(GetTreeUpdateInProgressState());
   bool success = true;
   for (size_t i = 0; i < new_child_ids.size(); ++i) {
     int32_t child_id = new_child_ids[i];
