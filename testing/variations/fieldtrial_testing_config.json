@@ -6234,6 +6234,22 @@
             ]
         }
     ],
+    "WebRTC-Audio-NetEqDecelerationTargetLevelOffset": [
+        {
+            "platforms": [
+                "android",
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled-85"
+                }
+            ]
+        }
+    ],
     "WebRTC-Audio-NetEqDelayHistogram": [
         {
             "platforms": [
