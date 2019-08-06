@@ -84,6 +84,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
+#include "components/policy/core/common/features.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/printing/browser/features.h"
@@ -4304,6 +4305,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLockScreenMediaControlsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kLockScreenMediaControls)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"policy-atomic-group-enabled",
+     flag_descriptions::kPolicyAtomicGroupsEnabledName,
+     flag_descriptions::kPolicyAtomicGroupsEnabledDescription, kOsAll,
+     FEATURE_VALUE_TYPE(policy::features::kPolicyAtomicGroup)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
