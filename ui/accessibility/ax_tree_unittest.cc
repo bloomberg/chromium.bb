@@ -1871,10 +1871,10 @@ TEST(AXTreeTest, UnignoredAccessors) {
   //     |      |____
   //     |      |   |
   //     13(i)  14  15
-  //     |
-  //     16
+  //     |      |
+  //     16     17
   tree_update.root_id = 1;
-  tree_update.nodes.resize(16);
+  tree_update.nodes.resize(17);
   tree_update.nodes[0].id = 1;
   tree_update.nodes[0].child_ids = {2, 3, 4};
 
@@ -1915,10 +1915,14 @@ TEST(AXTreeTest, UnignoredAccessors) {
   tree_update.nodes[12].AddState(ax::mojom::State::kIgnored);
 
   tree_update.nodes[13].id = 14;
+  tree_update.nodes[13].child_ids = {17};
 
   tree_update.nodes[14].id = 15;
 
   tree_update.nodes[15].id = 16;
+
+  tree_update.nodes[16].id = 17;
+  tree_update.nodes[16].AddState(ax::mojom::State::kIgnored);
 
   AXTree tree(tree_update);
 
@@ -1938,6 +1942,7 @@ TEST(AXTreeTest, UnignoredAccessors) {
   EXPECT_EQ(nullptr, tree.GetFromId(14)->GetLastUnignoredChild());
   EXPECT_EQ(nullptr, tree.GetFromId(15)->GetLastUnignoredChild());
   EXPECT_EQ(nullptr, tree.GetFromId(16)->GetLastUnignoredChild());
+  EXPECT_EQ(nullptr, tree.GetFromId(17)->GetLastUnignoredChild());
 }
 
 TEST(AXTreeTest, UnignoredNextPreviousChild) {
