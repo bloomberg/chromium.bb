@@ -47,7 +47,7 @@ def Uprev(input_proto, output_proto, _config):
 
 
 @validate.validation_complete
-def UprevVersionedPackage(_input_proto, _output_proto):
+def UprevVersionedPackage(_input_proto, _output_proto, _config):
   """Uprev a versioned package.
 
   See go/pupr-generator for details about this endpoint.
