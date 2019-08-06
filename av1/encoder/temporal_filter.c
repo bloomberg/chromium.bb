@@ -1032,7 +1032,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
 
   // Make a temporary mbmi for temporal filtering
   MB_MODE_INFO **backup_mi_grid = mbd->mi;
-  MB_MODE_INFO mbmi = { 0 };
+  MB_MODE_INFO mbmi;
+  memset(&mbmi, 0, sizeof(mbmi));
   MB_MODE_INFO *mbmi_ptr = &mbmi;
   mbd->mi = &mbmi_ptr;
 

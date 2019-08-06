@@ -499,7 +499,8 @@ static void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx) {
 
   // Make a temporary mbmi for tpl model
   MB_MODE_INFO **backup_mi_grid = xd->mi;
-  MB_MODE_INFO mbmi = { 0 };
+  MB_MODE_INFO mbmi;
+  memset(&mbmi, 0, sizeof(mbmi));
   MB_MODE_INFO *mbmi_ptr = &mbmi;
   xd->mi = &mbmi_ptr;
 
