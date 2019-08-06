@@ -272,7 +272,7 @@ bool DefinitelyNewFormattingContext(const Node& node,
     // type, though, and may end up disregarding the display type and just
     // create block containers. And those don't necessarily create a formatting
     // context.
-    if (!IsHTMLDetailsElement(node) && !IsHTMLSummaryElement(node))
+    if (!IsA<HTMLDetailsElement>(node) && !IsHTMLSummaryElement(node))
       return true;
   }
   if (!style.IsOverflowVisible())
