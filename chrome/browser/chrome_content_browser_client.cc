@@ -609,10 +609,6 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
-#if BUILDFLAG(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
-#include "chrome/services/file_util/public/mojom/constants.mojom.h"
-#endif
-
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/offline_page_url_loader_request_interceptor.h"

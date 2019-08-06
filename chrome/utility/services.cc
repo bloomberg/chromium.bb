@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/services/patch/file_patcher_impl.h"
 #include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
@@ -30,6 +31,10 @@
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
 #include "chrome/services/ipp_parser/ipp_parser.h"  // nogncheck
 #include "chrome/services/ipp_parser/public/mojom/ipp_parser.mojom.h"  // nogncheck
+#endif
+
+#if BUILDFLAG(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
+#include "chrome/services/file_util/file_util_service.h"  // nogncheck
 #endif
 
 namespace {
@@ -64,6 +69,13 @@ auto RunCupsIppParser(
 }
 #endif
 
+#if BUILDFLAG(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
+auto RunFileUtil(
+    mojo::PendingReceiver<chrome::mojom::FileUtilService> receiver) {
+  return std::make_unique<FileUtilService>(std::move(receiver));
+}
+#endif
+
 }  // namespace
 
 mojo::ServiceFactory* GetMainThreadServiceFactory() {
@@ -78,6 +90,10 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
     RunCupsIppParser,
+#endif
+
+#if BUILDFLAG(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
+    RunFileUtil,
 #endif
   };
   // clang-format on
