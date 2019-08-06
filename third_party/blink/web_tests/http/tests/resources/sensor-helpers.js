@@ -30,11 +30,17 @@ function sensorMocks() {
       });
     }
 
+    // device.mojom.Sensor implementation
+    // Mojo functions that return a value must be async and return an object
+    // whose keys match the names declared in Mojo.
+
+    // GetDefaultConfiguration() => (SensorConfiguration configuration)
     // Returns default configuration.
     async getDefaultConfiguration() {
       return { frequency: DEFAULT_FREQUENCY };
     }
 
+    // AddConfiguration(SensorConfiguration configuration) => (bool success)
     // Adds configuration for the sensor and starts reporting fake data
     // through setSensorReading function.
     async addConfiguration(configuration) {
@@ -54,6 +60,7 @@ function sensorMocks() {
       return { success: !this.startShouldFail_ };
     }
 
+    // RemoveConfiguration(SensorConfiguration configuration)
     // Removes sensor configuration from the list of active configurations and
     // stops notification about sensor reading changes if
     // requestedFrequencies_ is empty.
@@ -71,7 +78,7 @@ function sensorMocks() {
         this.stopReading();
     }
 
-    // Suspends sensor.
+    // Suspend()
     suspend() {
       this.stopReading();
       if (this.suspendCalled_ != null) {
@@ -79,13 +86,20 @@ function sensorMocks() {
       }
     }
 
-    // Resumes sensor.
+    // Resume()
     resume() {
       assert_equals(this.sensorReadingTimerId_, null);
       this.startReading();
       if (this.resumeCalled_ != null) {
         this.resumeCalled_(this);
       }
+    }
+
+    // ConfigureReadingChangeNotifications(bool enabled)
+    // Configures whether to report a reading change when in ON_CHANGE
+    // reporting mode.
+    configureReadingChangeNotifications(notifyOnReadingChange) {
+      this.notifyOnReadingChange_ = notifyOnReadingChange;
     }
 
     // Mock functions
@@ -121,12 +135,6 @@ function sensorMocks() {
     // Sets flag that forces sensor to fail when addConfiguration is invoked.
     setStartShouldFail(shouldFail) {
       this.startShouldFail_ = shouldFail;
-    }
-
-    // Configures whether to report a reading change when in ON_CHANGE
-    // reporting mode.
-    configureReadingChangeNotifications(notifyOnReadingChange) {
-      this.notifyOnReadingChange_ = notifyOnReadingChange;
     }
 
     // Returns resolved promise if suspend() was called, rejected otherwise.
@@ -229,6 +237,12 @@ function sensorMocks() {
       this.interceptor_.start();
     }
 
+    // device.mojom.SensorProvider implementation
+    // Mojo functions that return a value must be async and return an object
+    // whose keys match the names declared in Mojo.
+
+    // GetSensor(SensorType type) => (SensorCreationResult result,
+    //                                SensorInitParams? init_params)
     // Returns initialized Sensor proxy to the client.
     async getSensor(type) {
       if (this.getSensorShouldFail_.get(type)) {
