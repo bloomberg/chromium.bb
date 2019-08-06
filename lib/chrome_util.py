@@ -355,6 +355,7 @@ _COPY_PATHS_CHROME = (
     Path('dbus/', optional=True),
     Path('keyboard_resources.pak'),
     Path('libassistant.so', exe=True, optional=True),
+    Path('libassistant_debug.so', exe=True, optional=True),
     Path('libmojo_core.so', exe=True),
 
     # The ARC++ mojo_core libraries are pre-stripped and don't play well with
