@@ -1681,8 +1681,8 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
 
   av1_nn_softmax(scores_2D_raw, scores_2D, 16);
 
-  const int prune_aggr_table[2][2] = { { 5, 2 }, { 7, 4 } };
-  int pruning_aggressiveness = 1;
+  const int prune_aggr_table[3][2] = { { 4, 1 }, { 6, 3 }, { 9, 6 } };
+  int pruning_aggressiveness = 0;
   if (tx_set_type == EXT_TX_SET_ALL16) {
     pruning_aggressiveness =
         prune_aggr_table[prune_mode - PRUNE_2D_ACCURATE][0];
@@ -1704,7 +1704,7 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   }
 
   const float score_thresh =
-      prune_2D_adaptive_thresholds[tx_size][pruning_aggressiveness - 1];
+      prune_2D_adaptive_thresholds[tx_size][pruning_aggressiveness];
 
   uint16_t prune_bitmask = 0;
   for (int i = 0; i < 16; i++) {

@@ -377,6 +377,8 @@ static void set_good_speed_features_framesize_independent(
     sf->intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V_CFL;
 
+    sf->tx_type_search.prune_mode = PRUNE_2D_MORE;
+
     // TODO(any): The following features have no impact on quality and speed,
     // and are disabled.
     // sf->disable_filter_search_var_thresh = 200;

@@ -162,6 +162,7 @@ enum {
   PRUNE_2D_ACCURATE = 1,
   // similar, but applies much more aggressive pruning to get better speed-up
   PRUNE_2D_FAST = 2,
+  PRUNE_2D_MORE = 3,
 } UENUM1BYTE(TX_TYPE_PRUNE_MODE);
 
 typedef struct {
