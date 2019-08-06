@@ -107,7 +107,7 @@ void VEAEncoder::RequireBitstreamBuffers(unsigned int /*input_count*/,
 
   vea_requested_input_coded_size_ = input_coded_size;
   output_buffers_.clear();
-  Deque<std::unique_ptr<base::SharedMemory>>().Swap(input_buffers_);
+  base::queue<std::unique_ptr<base::SharedMemory>>().swap(input_buffers_);
 
   for (int i = 0; i < kVEAEncoderOutputBufferCount; ++i) {
     std::unique_ptr<base::SharedMemory> shm =
@@ -139,7 +139,9 @@ void VEAEncoder::BitstreamBufferReady(
   data.append(static_cast<char*>(output_buffer->memory()),
               metadata.payload_size_bytes);
 
-  const auto front_frame = frames_in_encode_.TakeFirst();
+  const auto front_frame = frames_in_encode_.front();
+  frames_in_encode_.pop();
+
   PostCrossThreadTask(
       *origin_task_runner_.get(), FROM_HERE,
       CrossThreadBindOnce(
@@ -173,7 +175,7 @@ void VEAEncoder::UseOutputBitstreamBufferId(int32_t bitstream_buffer_id) {
 void VEAEncoder::FrameFinished(std::unique_ptr<base::SharedMemory> shm) {
   DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
-  input_buffers_.push_back(std::move(shm));
+  input_buffers_.push(std::move(shm));
 }
 
 void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
@@ -226,7 +228,8 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
       input_buffer = gpu_factories_->CreateSharedMemory(desired_mapped_size);
     } else {
       do {
-        input_buffer = input_buffers_.TakeFirst();
+        input_buffer = std::move(input_buffers_.front());
+        input_buffers_.pop();
       } while (!input_buffers_.empty() &&
                input_buffer->mapped_size() < desired_mapped_size);
       if (!input_buffer || input_buffer->mapped_size() < desired_mapped_size)
@@ -260,7 +263,7 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
                      video_frame->stride(media::VideoFrame::kVPlane),
                      input_visible_size_.width(), input_visible_size_.height());
   }
-  frames_in_encode_.push_back(std::make_pair(
+  frames_in_encode_.push(std::make_pair(
       media::WebmMuxer::VideoParameters(frame), capture_timestamp));
 
   video_encoder_->Encode(video_frame, force_next_frame_to_be_keyframe_);
