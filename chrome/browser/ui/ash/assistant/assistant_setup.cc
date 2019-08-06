@@ -101,9 +101,9 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
   if (state == ash::mojom::VoiceInteractionState::NOT_READY)
     return;
 
-  // Sync activity control state when assistant service started.
+  // Sync settings state when Assistant service started.
   if (!settings_manager_)
-    SyncActivityControlState();
+    SyncSettingsState();
 
   // If the OOBE flow is active, no need to show the notification since it is
   // included in the flow.
@@ -141,7 +141,7 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
       /*metadata=*/nullptr);
 }
 
-void AssistantSetup::SyncActivityControlState() {
+void AssistantSetup::SyncSettingsState() {
   // Set up settings mojom.
   connector_->BindInterface(chromeos::assistant::mojom::kServiceName,
                             mojo::MakeRequest(&settings_manager_));
@@ -152,6 +152,7 @@ void AssistantSetup::SyncActivityControlState() {
   consent_flow_ui->set_flow_id(
       chromeos::assistant::ActivityControlSettingsUiSelector::
           ASSISTANT_SUW_ONBOARDING_ON_CHROME_OS);
+  selector.set_gaia_user_context_ui(true);
   settings_manager_->GetSettings(
       selector.SerializeAsString(),
       base::BindOnce(&AssistantSetup::OnGetSettingsResponse,
@@ -163,13 +164,28 @@ void AssistantSetup::OnGetSettingsResponse(const std::string& settings) {
   if (!settings_ui.ParseFromString(settings))
     return;
 
+  // Sync domain policy status.
+  if (settings_ui.has_gaia_user_context_ui()) {
+    const auto& gaia_user_context_ui = settings_ui.gaia_user_context_ui();
+    if (gaia_user_context_ui.assistant_disabled_by_dasher_domain()) {
+      DVLOG(1) << "Assistant is disabled by domain policy.";
+      PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+      prefs->SetBoolean(chromeos::assistant::prefs::kAssistantDisabledByPolicy,
+                        true);
+      prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, false);
+      return;
+    }
+  } else {
+    LOG(ERROR) << "Failed to get gaia user context";
+  }
+
+  // Sync activity control status.
   if (!settings_ui.has_consent_flow_ui()) {
     LOG(ERROR) << "Failed to get activity control status.";
     return;
   }
-
-  auto consent_status = settings_ui.consent_flow_ui().consent_status();
-  auto& consent_ui = settings_ui.consent_flow_ui().consent_ui();
+  const auto& consent_status = settings_ui.consent_flow_ui().consent_status();
+  const auto& consent_ui = settings_ui.consent_flow_ui().consent_ui();
   Profile* profile = ProfileManager::GetActiveUserProfile();
   PrefService* prefs = profile->GetPrefs();
   switch (consent_status) {
