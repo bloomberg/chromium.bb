@@ -163,9 +163,7 @@ class BundledExchangesReaderTest : public testing::Test {
     items.push_back(std::move(item));
 
     data_decoder::mojom::BundleMetadataPtr metadata =
-        data_decoder::mojom::BundleMetadata::New(GURL() /* primary_url */,
-                                                 std::move(items),
-                                                 GURL() /* manifest_url */);
+        data_decoder::mojom::BundleMetadata::New(std::move(items), GURL());
     factory_->RunMetadataCallback(std::move(metadata));
     run_loop.Run();
   }
