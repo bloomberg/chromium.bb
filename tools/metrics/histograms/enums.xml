@@ -30177,6 +30177,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="IDBKeyType">
+  <obsolete>
+    Removed August 2019. Was added to measure use of features which not all
+    actively developed browser engines supported. No longer relevant.
+  </obsolete>
   <int value="0" label="Invalid">Invalid key.</int>
   <int value="1" label="Array">Key is an array.</int>
   <int value="2" label="Binary">Key is a binary buffer.</int>
