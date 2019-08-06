@@ -11,21 +11,26 @@ namespace chrome_pdf {
 const draw_utils::PageInsetSizes DocumentLayout::kSingleViewInsets{
     /*left=*/5, /*top=*/3, /*right=*/5, /*bottom=*/7};
 
-DocumentLayout::DocumentLayout() = default;
+DocumentLayout::Options::Options() = default;
 
-DocumentLayout::DocumentLayout(const DocumentLayout& other) = default;
-DocumentLayout& DocumentLayout::operator=(const DocumentLayout& other) =
-    default;
+DocumentLayout::Options::Options(const Options& other) = default;
+DocumentLayout::Options& DocumentLayout::Options::operator=(
+    const Options& other) = default;
 
-DocumentLayout::~DocumentLayout() = default;
+DocumentLayout::Options::~Options() = default;
 
-void DocumentLayout::RotatePagesClockwise() {
+void DocumentLayout::Options::RotatePagesClockwise() {
   default_page_orientation_ = (default_page_orientation_ + 1) % 4;
 }
 
-void DocumentLayout::RotatePagesCounterclockwise() {
-  default_page_orientation_ = (default_page_orientation_ - 1) % 4;
+void DocumentLayout::Options::RotatePagesCounterclockwise() {
+  // Use the modular additive inverse of -1 to avoid negative values.
+  default_page_orientation_ = (default_page_orientation_ + 3) % 4;
 }
+
+DocumentLayout::DocumentLayout() = default;
+
+DocumentLayout::~DocumentLayout() = default;
 
 std::vector<pp::Rect> DocumentLayout::GetTwoUpViewLayout(
     const std::vector<pp::Rect>& page_rects) {

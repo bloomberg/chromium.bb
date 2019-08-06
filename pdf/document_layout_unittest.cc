@@ -11,6 +11,11 @@ namespace chrome_pdf {
 
 namespace {
 
+class DocumentLayoutOptionsTest : public testing::Test {
+ protected:
+  DocumentLayout::Options options_;
+};
+
 class DocumentLayoutTest : public testing::Test {
  protected:
   DocumentLayout layout_;
@@ -29,79 +34,73 @@ inline bool PpRectEq(const pp::Rect& lhs, const pp::Rect& rhs) {
   return lhs == rhs;
 }
 
+TEST_F(DocumentLayoutOptionsTest, DefaultConstructor) {
+  EXPECT_EQ(options_.default_page_orientation(), 0);
+}
+
+TEST_F(DocumentLayoutOptionsTest, CopyConstructor) {
+  options_.RotatePagesClockwise();
+
+  DocumentLayout::Options copy(options_);
+  EXPECT_EQ(copy.default_page_orientation(), 1);
+
+  options_.RotatePagesClockwise();
+  EXPECT_EQ(copy.default_page_orientation(), 1);
+}
+
+TEST_F(DocumentLayoutOptionsTest, CopyAssignment) {
+  options_.RotatePagesClockwise();
+
+  DocumentLayout::Options copy;
+  EXPECT_EQ(copy.default_page_orientation(), 0);
+  copy = options_;
+  EXPECT_EQ(copy.default_page_orientation(), 1);
+
+  options_.RotatePagesClockwise();
+  EXPECT_EQ(copy.default_page_orientation(), 1);
+}
+
+TEST_F(DocumentLayoutOptionsTest, RotatePagesClockwise) {
+  options_.RotatePagesClockwise();
+  EXPECT_EQ(options_.default_page_orientation(), 1);
+
+  options_.RotatePagesClockwise();
+  EXPECT_EQ(options_.default_page_orientation(), 2);
+
+  options_.RotatePagesClockwise();
+  EXPECT_EQ(options_.default_page_orientation(), 3);
+
+  options_.RotatePagesClockwise();
+  EXPECT_EQ(options_.default_page_orientation(), 0);
+}
+
+TEST_F(DocumentLayoutOptionsTest, RotatePagesCounterclockwise) {
+  options_.RotatePagesCounterclockwise();
+  EXPECT_EQ(options_.default_page_orientation(), 3);
+
+  options_.RotatePagesCounterclockwise();
+  EXPECT_EQ(options_.default_page_orientation(), 2);
+
+  options_.RotatePagesCounterclockwise();
+  EXPECT_EQ(options_.default_page_orientation(), 1);
+
+  options_.RotatePagesCounterclockwise();
+  EXPECT_EQ(options_.default_page_orientation(), 0);
+}
+
 TEST_F(DocumentLayoutTest, DefaultConstructor) {
-  EXPECT_EQ(layout_.default_page_orientation(), 0);
+  EXPECT_EQ(layout_.options().default_page_orientation(), 0);
   EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(0, 0));
 }
 
-TEST_F(DocumentLayoutTest, CopyConstructor) {
-  layout_.RotatePagesClockwise();
-  layout_.EnlargeHeight(2);
+TEST_F(DocumentLayoutTest, SetOptionsDoesNotRecomputeLayout) {
+  layout_.set_size(pp::Size(1, 2));
 
-  DocumentLayout copy(layout_);
-  EXPECT_EQ(copy.default_page_orientation(), 1);
-  EXPECT_PRED2(PpSizeEq, copy.size(), pp::Size(0, 2));
-
-  layout_.RotatePagesClockwise();
-  layout_.EnlargeHeight(5);
-  EXPECT_EQ(copy.default_page_orientation(), 1);
-  EXPECT_PRED2(PpSizeEq, copy.size(), pp::Size(0, 2));
-}
-
-TEST_F(DocumentLayoutTest, CopyAssignment) {
-  layout_.RotatePagesClockwise();
-  layout_.EnlargeHeight(2);
-
-  DocumentLayout copy;
-  EXPECT_EQ(copy.default_page_orientation(), 0);
-  EXPECT_PRED2(PpSizeEq, copy.size(), pp::Size(0, 0));
-
-  copy = layout_;
-  EXPECT_EQ(copy.default_page_orientation(), 1);
-  EXPECT_PRED2(PpSizeEq, copy.size(), pp::Size(0, 2));
-
-  layout_.RotatePagesClockwise();
-  layout_.EnlargeHeight(5);
-  EXPECT_EQ(copy.default_page_orientation(), 1);
-  EXPECT_PRED2(PpSizeEq, copy.size(), pp::Size(0, 2));
-}
-
-TEST_F(DocumentLayoutTest, RotatePagesClockwise) {
-  layout_.RotatePagesClockwise();
-  EXPECT_EQ(layout_.default_page_orientation(), 1);
-
-  layout_.RotatePagesClockwise();
-  EXPECT_EQ(layout_.default_page_orientation(), 2);
-
-  layout_.RotatePagesClockwise();
-  EXPECT_EQ(layout_.default_page_orientation(), 3);
-
-  layout_.RotatePagesClockwise();
-  EXPECT_EQ(layout_.default_page_orientation(), 0);
-}
-
-TEST_F(DocumentLayoutTest, RotatePagesCounterclockwise) {
-  layout_.RotatePagesCounterclockwise();
-  EXPECT_EQ(layout_.default_page_orientation(), 3);
-
-  layout_.RotatePagesCounterclockwise();
-  EXPECT_EQ(layout_.default_page_orientation(), 2);
-
-  layout_.RotatePagesCounterclockwise();
-  EXPECT_EQ(layout_.default_page_orientation(), 1);
-
-  layout_.RotatePagesCounterclockwise();
-  EXPECT_EQ(layout_.default_page_orientation(), 0);
-}
-
-TEST_F(DocumentLayoutTest, RotatePagesDoesNotRecomputeLayout) {
-  layout_.EnlargeHeight(2);
-
-  layout_.RotatePagesClockwise();
-  EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(0, 2));
-
-  layout_.RotatePagesCounterclockwise();
-  EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(0, 2));
+  DocumentLayout::Options options;
+  options.RotatePagesClockwise();
+  layout_.set_options(options);
+  EXPECT_EQ(layout_.options().default_page_orientation(), 1);
+  EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(1, 2));
 }
 
 TEST_F(DocumentLayoutTest, EnlargeHeight) {

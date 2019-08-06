@@ -529,6 +529,9 @@ class PDFiumEngine : public PDFEngine,
   // The current document layout.
   DocumentLayout layout_;
 
+  // The options for the desired document layout.
+  DocumentLayout::Options desired_layout_options_;
+
   // The scroll position in screen coordinates.
   pp::Point position_;
   // The offset of the page into the viewport.
