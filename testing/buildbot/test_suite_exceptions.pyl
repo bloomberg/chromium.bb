@@ -1625,8 +1625,6 @@
     'remove_from': [
       # chromium.win
       'Win10 Tests x64',
-      # chromium.linux
-      'Fuchsia x64',  # https://crbug.com/961455
     ],
   },
   'vr_android_unittests': {
