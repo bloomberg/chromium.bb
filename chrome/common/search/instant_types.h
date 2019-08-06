@@ -115,13 +115,17 @@ struct ThemeBackgroundInfo {
   // The color id for Chrome Colors. It is -1 if Chrome Colors is not set, 0
   // when Chrome Colors is set but not from predefined color list, and > 0 if
   // Chrome Colors is set from predefined color list.
-  int color_id = 0;
+  int color_id = -1;
 
   // The dark color for Chrome Colors. Valid only if Chrome Colors is set.
   SkColor color_dark = gfx::kPlaceholderColor;
 
   // The light color for Chrome Colors. Valid only if Chrome Colors is set.
   SkColor color_light = gfx::kPlaceholderColor;
+
+  // The picked custom color for Chrome Colors. Valid only if Chrome Colors is
+  // set.
+  SkColor color_picked = gfx::kPlaceholderColor;
 };
 
 struct InstantMostVisitedItem {
