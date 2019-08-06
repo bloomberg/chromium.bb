@@ -79,17 +79,6 @@ static_assert(static_cast<int>(PDFEngine::FormType::kCount) == FORMTYPE_COUNT,
 
 namespace {
 
-constexpr int32_t kPageShadowTop = 3;
-constexpr int32_t kPageShadowBottom = 7;
-constexpr int32_t kPageShadowLeft = 5;
-constexpr int32_t kPageShadowRight = 5;
-
-constexpr draw_utils::PageInsetSizes kSingleViewInsets{
-    kPageShadowLeft, kPageShadowTop, kPageShadowRight, kPageShadowBottom};
-
-constexpr int32_t kBottomSeparator = 4;
-constexpr int32_t kHorizontalSeparator = 1;
-
 constexpr int32_t kHighlightColorR = 153;
 constexpr int32_t kHighlightColorG = 193;
 constexpr int32_t kHighlightColorB = 218;
@@ -2242,14 +2231,16 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
   // Calculate document size and all page sizes.
   std::vector<pp::Rect> page_rects;
   pp::Size page_size = GetPageSize(0);
-  page_size.Enlarge(kPageShadowLeft + kPageShadowRight,
-                    kPageShadowTop + kPageShadowBottom);
+  page_size.Enlarge(DocumentLayout::kSingleViewInsets.left +
+                        DocumentLayout::kSingleViewInsets.right,
+                    DocumentLayout::kSingleViewInsets.top +
+                        DocumentLayout::kSingleViewInsets.bottom);
   pp::Size old_document_size = layout_.size();
   layout_.set_size(pp::Size(page_size.width(), 0));
   for (int i = 0; i < num_pages; ++i) {
     if (i != 0) {
       // Add space for bottom separator.
-      layout_.EnlargeHeight(kBottomSeparator);
+      layout_.EnlargeHeight(DocumentLayout::kBottomSeparator);
     }
 
     pp::Rect rect(pp::Point(0, layout_.size().height()), page_size);
@@ -2261,8 +2252,10 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
   // Create blank pages.
   for (int i = 1; i < num_pages; ++i) {
     pp::Rect page_rect(page_rects[i]);
-    page_rect.Inset(kPageShadowLeft, kPageShadowTop, kPageShadowRight,
-                    kPageShadowBottom);
+    page_rect.Inset(DocumentLayout::kSingleViewInsets.left,
+                    DocumentLayout::kSingleViewInsets.top,
+                    DocumentLayout::kSingleViewInsets.right,
+                    DocumentLayout::kSingleViewInsets.bottom);
     double width_in_points =
         ConvertUnitDouble(page_rect.width(), kPixelsPerInch, kPointsPerInch);
     double height_in_points =
@@ -2424,7 +2417,7 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   for (size_t i = 0; i < new_page_count; ++i) {
     if (i != 0) {
       // Add space for bottom separator.
-      layout_.EnlargeHeight(kBottomSeparator);
+      layout_.EnlargeHeight(DocumentLayout::kBottomSeparator);
     }
 
     // Get page availability. If |reload| == true and the page is not new,
@@ -2642,10 +2635,11 @@ draw_utils::PageInsetSizes PDFiumEngine::GetInsetSizes(
 
   if (two_up_view_) {
     return draw_utils::GetPageInsetsForTwoUpView(
-        page_index, num_of_pages, kSingleViewInsets, kHorizontalSeparator);
+        page_index, num_of_pages, DocumentLayout::kSingleViewInsets,
+        DocumentLayout::kHorizontalSeparator);
   }
 
-  return kSingleViewInsets;
+  return DocumentLayout::kSingleViewInsets;
 }
 
 void PDFiumEngine::EnlargePage(size_t page_index,
@@ -2789,8 +2783,8 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
     // If in two-up view, only need to draw the left empty space for left pages
     // since the gap between the left and right page will be drawn by the left
     // page.
-    pp::Rect left_in_screen = GetScreenRect(
-        draw_utils::GetLeftFillRect(page_rect, inset_sizes, kBottomSeparator));
+    pp::Rect left_in_screen = GetScreenRect(draw_utils::GetLeftFillRect(
+        page_rect, inset_sizes, DocumentLayout::kBottomSeparator));
     left_in_screen = left_in_screen.Intersect(dirty_in_screen);
 
     FPDFBitmap_FillRect(bitmap, left_in_screen.x() - dirty_in_screen.x(),
@@ -2801,7 +2795,8 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
 
   if (page_rect.right() < layout_.size().width()) {
     pp::Rect right_in_screen = GetScreenRect(draw_utils::GetRightFillRect(
-        page_rect, inset_sizes, layout_.size().width(), kBottomSeparator));
+        page_rect, inset_sizes, layout_.size().width(),
+        DocumentLayout::kBottomSeparator));
     right_in_screen = right_in_screen.Intersect(dirty_in_screen);
 
     FPDFBitmap_FillRect(bitmap, right_in_screen.x() - dirty_in_screen.x(),
@@ -2824,7 +2819,7 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
     bottom_in_screen = bottom_in_screen.Intersect(dirty_in_screen);
   } else {
     bottom_in_screen = GetScreenRect(draw_utils::GetBottomFillRect(
-        page_rect, inset_sizes, kBottomSeparator));
+        page_rect, inset_sizes, DocumentLayout::kBottomSeparator));
     bottom_in_screen = bottom_in_screen.Intersect(dirty_in_screen);
   }
 
@@ -2993,7 +2988,7 @@ pp::Rect PDFiumEngine::GetPageScreenRect(int page_index) const {
 
   return GetScreenRect(draw_utils::GetSurroundingRect(
       page_rect.y(), max_page_height, inset_sizes, layout_.size().width(),
-      kBottomSeparator));
+      DocumentLayout::kBottomSeparator));
 }
 
 pp::Rect PDFiumEngine::GetScreenRect(const pp::Rect& rect) const {

@@ -5,9 +5,11 @@
 #include "pdf/document_layout.h"
 
 #include "base/logging.h"
-#include "pdf/draw_utils/coordinates.h"
 
 namespace chrome_pdf {
+
+const draw_utils::PageInsetSizes DocumentLayout::kSingleViewInsets{
+    /*left=*/5, /*top=*/3, /*right=*/5, /*bottom=*/7};
 
 DocumentLayout::DocumentLayout() = default;
 

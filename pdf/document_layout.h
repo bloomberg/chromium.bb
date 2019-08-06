@@ -5,6 +5,7 @@
 #ifndef PDF_DOCUMENT_LAYOUT_H_
 #define PDF_DOCUMENT_LAYOUT_H_
 
+#include "pdf/draw_utils/coordinates.h"
 #include "ppapi/cpp/size.h"
 
 namespace chrome_pdf {
@@ -17,6 +18,10 @@ namespace chrome_pdf {
 // TODO(crbug.com/51472): Support multiple columns.
 class DocumentLayout final {
  public:
+  static const draw_utils::PageInsetSizes kSingleViewInsets;
+  static constexpr int32_t kBottomSeparator = 4;
+  static constexpr int32_t kHorizontalSeparator = 1;
+
   DocumentLayout();
 
   DocumentLayout(const DocumentLayout& other);
