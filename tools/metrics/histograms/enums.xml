@@ -20233,6 +20233,7 @@ Called by update_net_error_codes.py.-->
   <int value="1363" label="ACTION_ENABLE"/>
   <int value="1364" label="ACTION_DISABLE"/>
   <int value="1365" label="FILEMANAGERPRIVATEINTERNAL_IMPORTCROSTINIIMAGE"/>
+  <int value="1366" label="AUTOTESTPRIVATE_GETSHELFITEMS"/>
 </enum>
 
 <enum name="ExtensionIconState">
