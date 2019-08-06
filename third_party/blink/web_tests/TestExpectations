@@ -3292,6 +3292,9 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-linet
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-underline-001.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
 
+# Flaky because of timestamps in error messages.
+crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Pass Failure ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-rule-nested-balancing-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-multicol/multicol-breaking-000.html [ Failure ]
