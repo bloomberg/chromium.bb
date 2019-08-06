@@ -294,10 +294,8 @@ def BuildPackages(target, sysroot, run_configs):
   cmd += run_configs.GetBuildPackagesArgs()
 
   with osutils.TempDir(base_dir='/tmp') as tempdir:
-    status_file = os.path.join(tempdir, 'status_file')
     extra_env = {
-        constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR: status_file,
-        'PARALLEL_EMERGE_MAX_RETRIES': '0'
+        constants.CROS_METRICS_DIR_ENVVAR: tempdir,
     }
 
     if run_configs.use_flags:
@@ -306,9 +304,9 @@ def BuildPackages(target, sysroot, run_configs):
     try:
       cros_build_lib.RunCommand(cmd, enter_chroot=True, extra_env=extra_env)
     except cros_build_lib.RunCommandError as e:
-      cpvs = portage_util.ParseParallelEmergeStatusFile(status_file)
-      raise sysroot_lib.PackageInstallError(e.message, e.result, exception=e,
-                                            packages=cpvs)
+      failed_pkgs = portage_util.ParseDieHookStatusFile(tempdir)
+      raise sysroot_lib.PackageInstallError(
+          e.message, e.result, exception=e, packages=failed_pkgs)
 
 
 def _CreateSysrootSkeleton(sysroot):

@@ -38,6 +38,13 @@ PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
 DEFAULT_CHROOT_PATH = os.path.join(SOURCE_ROOT, DEFAULT_CHROOT_DIR)
 
+# These constants are defined and used in the die_hook that logs failed
+# packages: 'cros_log_failed_packages' in profiles/base/profile.bashrc in
+# chromiumos-overlay. The status file is generated in CROS_METRICS_DIR, and
+# only if that environment variable is defined.
+CROS_METRICS_DIR_ENVVAR = 'CROS_METRICS_DIR'
+DIE_HOOK_STATUS_FILE_NAME = 'FAILED_PACKAGES'
+
 CHROMEOS_CONFIG_FILE = os.path.join(CHROMITE_DIR, 'config', 'config_dump.json')
 WATERFALL_CONFIG_FILE = os.path.join(
     CHROMITE_DIR, 'config', 'waterfall_layout_dump.txt')

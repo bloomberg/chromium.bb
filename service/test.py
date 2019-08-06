@@ -66,20 +66,18 @@ def BuildTargetUnitTest(build_target, chroot, blacklist=None, was_built=True):
   if not was_built:
     cmd.append('--assume-empty-sysroot')
 
-  # Set up the parallel emerge status file.
+  # Set up the failed package status file.
   extra_env = chroot.env
   base_dir = os.path.join(chroot.path, 'tmp')
   with osutils.TempDir(base_dir=base_dir) as tempdir:
-    full_sf_path = os.path.join(tempdir, 'status_file')
-    chroot_sf_path = full_sf_path.replace(chroot.path, '')
-    extra_env[constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR] = chroot_sf_path
+    extra_env[constants.CROS_METRICS_DIR_ENVVAR] = tempdir
 
     result = cros_build_lib.RunCommand(cmd, enter_chroot=True,
                                        extra_env=extra_env,
                                        chroot_args=chroot.GetEnterArgs(),
                                        error_code_ok=True)
 
-    failed_pkgs = portage_util.ParseParallelEmergeStatusFile(full_sf_path)
+    failed_pkgs = portage_util.ParseDieHookStatusFile(tempdir)
 
   return BuildTargetUnitTestResult(result.returncode, failed_pkgs)
 
