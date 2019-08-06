@@ -5404,6 +5404,10 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "zooming-min-memory-mb": "2048",
+                        "zooming-min-sdk-version": "23"
+                    },
                     "enable_features": [
                         "TabToGTSAnimation"
                     ]
