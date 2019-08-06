@@ -208,7 +208,6 @@ jumbo_source_set("browser") {
     "//third_party/webrtc/modules/desktop_capture:primitives",
     "//third_party/webrtc/rtc_base:rtc_base",
     "//third_party/zlib",
-    "//third_party/zlib/google:compression_utils",
     "//third_party/zlib/google:zip",
     "//ui/accessibility",
     "//ui/accessibility:ax_enums_mojo",
