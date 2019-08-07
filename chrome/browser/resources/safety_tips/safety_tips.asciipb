@@ -11,6 +11,7 @@
 version_id: 1
 
 # See chrome/browser/lookalikes/safety_tips.proto for the full format.
+# These entries must be sorted by url.
 flagged_page {
   url: "http://example.test/test-path-for-safety-tips/test.html"
   type: BAD_REP
