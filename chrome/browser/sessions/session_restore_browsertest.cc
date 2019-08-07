@@ -71,6 +71,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/color_palette.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -980,6 +981,44 @@ IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, TabsWithGroups) {
   Browser* new_browser = QuitBrowserAndRestore(browser(), kNumTabs);
   ASSERT_EQ(kNumTabs, new_browser->tab_strip_model()->count());
   EXPECT_EQ(groups, GetTabGroups(new_browser->tab_strip_model()));
+}
+
+IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, GroupMetadataRestored) {
+  // Open up 4 more tabs, making 5 including the initial tab.
+  for (int i = 0; i < 4; ++i) {
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), url1_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  }
+
+  TabStripModel* const tsm = browser()->tab_strip_model();
+  ASSERT_EQ(5, tsm->count());
+
+  // Group the first 2 and second 2 tabs, making for 2 groups with 2 tabs and 1
+  // ungrouped tab in the strip.
+  const TabGroupId group1 = tsm->AddToNewGroup({0, 1});
+  const TabGroupId group2 = tsm->AddToNewGroup({2, 3});
+
+  // Get the default visual data for the first group and set custom visual data
+  // for the second.
+  const TabGroupVisualData group1_data = *tsm->GetVisualDataForGroup(group1);
+  const TabGroupVisualData group2_data(base::ASCIIToUTF16("Foo"),
+                                       gfx::kGoogleBlue600);
+  tsm->SetVisualDataForGroup(group2, group2_data);
+
+  Browser* const new_browser = QuitBrowserAndRestore(browser(), 5);
+  TabStripModel* const new_tsm = new_browser->tab_strip_model();
+  ASSERT_EQ(5, new_tsm->count());
+
+  // Check that the restored visual data is the same.
+  const TabGroupVisualData* const group1_restored_data =
+      new_tsm->GetVisualDataForGroup(group1);
+  const TabGroupVisualData* const group2_restored_data =
+      new_tsm->GetVisualDataForGroup(group2);
+  EXPECT_EQ(group1_data.title(), group1_restored_data->title());
+  EXPECT_EQ(group1_data.color(), group1_restored_data->color());
+  EXPECT_EQ(group2_data.title(), group2_restored_data->title());
+  EXPECT_EQ(group2_data.color(), group2_restored_data->color());
 }
 
 INSTANTIATE_TEST_SUITE_P(WithAndWithoutReset,

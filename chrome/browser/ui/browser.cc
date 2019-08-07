@@ -1067,6 +1067,19 @@ void Browser::OnTabStripModelChanged(TabStripModel* tab_strip_model,
                      selection.new_model.active(), selection.reason);
 }
 
+void Browser::OnTabGroupVisualDataChanged(
+    TabStripModel* tab_strip_model,
+    TabGroupId group,
+    const TabGroupVisualData* visual_data) {
+  SessionService* const session_service =
+      SessionServiceFactory::GetForProfile(profile_);
+  if (session_service) {
+    session_service->SetTabGroupMetadata(session_id(), group.token(),
+                                         visual_data->title(),
+                                         visual_data->color());
+  }
+}
+
 void Browser::TabPinnedStateChanged(TabStripModel* tab_strip_model,
                                     WebContents* contents,
                                     int index) {
