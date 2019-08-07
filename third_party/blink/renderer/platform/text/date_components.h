@@ -65,7 +65,6 @@ class PLATFORM_EXPORT DateComponents {
   enum Type {
     kInvalid,
     kDate,
-    kDateTime,
     kDateTimeLocal,
     kMonth,
     kTime,
@@ -124,9 +123,6 @@ class PLATFORM_EXPORT DateComponents {
 
   // For kDate type. Updates FullYear, Month and MonthDay.
   bool SetMillisecondsSinceEpochForDate(double ms);
-  // For kDateTime type. Updates FullYear, Month, MonthDay, Hour, Minute,
-  // Second and Millisecond.
-  bool SetMillisecondsSinceEpochForDateTime(double ms);
   // For kDateTimeLocal type. Updates FullYear, Month, MonthDay, Hour,
   // Minute, Second and Millisecond.
   bool SetMillisecondsSinceEpochForDateTimeLocal(double ms);
@@ -193,9 +189,6 @@ class PLATFORM_EXPORT DateComponents {
   // The result is either of 52 and 53.
   int MaxWeekNumberInYear() const;
   bool ParseYear(const String&, unsigned start, unsigned& end);
-  bool AddDay(int);
-  bool AddMinute(int);
-  bool ParseTimeZone(const String&, unsigned start, unsigned& end);
   // Helper for MillisecondsSinceEpoch().
   double MillisecondsSinceEpochForTime() const;
   // Helpers for SetMillisecondsSinceEpochFor*().
