@@ -1260,7 +1260,7 @@ static int test_candidate_kf(TWO_PASS *twopass,
                              const FIRSTPASS_STATS *last_frame,
                              const FIRSTPASS_STATS *this_frame,
                              const FIRSTPASS_STATS *next_frame,
-                             int frame_count_so_far) {
+                             int frame_count_so_far, enum aom_rc_mode rc_mode) {
   int is_viable_kf = 0;
   double pcnt_intra = 1.0 - this_frame->pcnt_inter;
   double modified_pcnt_inter =
@@ -1271,7 +1271,7 @@ static int test_candidate_kf(TWO_PASS *twopass,
   // Does the frame satisfy the primary criteria of a key frame?
   // See above for an explanation of the test criteria.
   // If so, then examine how well it predicts subsequent frames.
-  if (frame_count_so_far >= 3 &&
+  if (IMPLIES(rc_mode == AOM_Q, frame_count_so_far >= 3) &&
       (this_frame->pcnt_second_ref < second_ref_usage_thresh) &&
       (next_frame->pcnt_second_ref < second_ref_usage_thresh) &&
       ((this_frame->pcnt_inter < VERY_LOW_INTER_THRESH) ||
@@ -1422,7 +1422,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 
       // Check for a scene cut.
       if (test_candidate_kf(twopass, &last_frame, this_frame, twopass->stats_in,
-                            rc->frames_to_key))
+                            rc->frames_to_key, oxcf->rc_mode))
         break;
 
       // How fast is the prediction quality decaying?
