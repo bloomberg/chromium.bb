@@ -1701,6 +1701,18 @@ const char kSettingsWindowName[] = "Show settings in a window";
 const char kSettingsWindowDescription[] =
     "Settings will be shown in a dedicated window instead of as a browser tab.";
 
+const char kSharedClipboardReceiverName[] =
+    "Enable receiver device to handle shared clipboard feature";
+const char kSharedClipboardReceiverDescription[] =
+    "Enables receiver device to handle shared clipboard feature by showing a "
+    "notification to receive the clipboard to share.";
+
+const char kSharedClipboardUIName[] =
+    "Enable shared clipboard feature signals to be handled";
+const char kSharedClipboardUIDescription[] =
+    "Enables shared clipboard feature signals to be handled by showing "
+    "a list of user's available devices to share the clipboard.";
+
 const char kSharingDeviceRegistrationName[] =
     "Enable device registration for Sharing features";
 const char kSharingDeviceRegistrationDescription[] =

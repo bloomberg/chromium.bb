@@ -2819,6 +2819,16 @@
     "owners": [ "binji" ],
     "expiry_milestone": 78
   },
+	{
+    "name": "shared-clipboard-receiver",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 80
+  },
+  {
+    "name": "shared-clipboard-ui",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 80
+  },
   {
     "name": "shelf-dense-clamshell",
     "owners": [ "manucornet", "mmourgos" ],

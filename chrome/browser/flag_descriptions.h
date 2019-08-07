@@ -1009,6 +1009,12 @@ extern const char kSessionRestorePrioritizesBackgroundUseCasesDescription[];
 extern const char kSettingsWindowName[];
 extern const char kSettingsWindowDescription[];
 
+extern const char kSharedClipboardReceiverName[];
+extern const char kSharedClipboardReceiverDescription[];
+
+extern const char kSharedClipboardUIName[];
+extern const char kSharedClipboardUIDescription[];
+
 extern const char kSharingDeviceRegistrationName[];
 extern const char kSharingDeviceRegistrationDescription[];
 

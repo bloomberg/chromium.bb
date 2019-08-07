@@ -37,6 +37,7 @@
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
+#include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -3633,6 +3634,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kClickToCallUIDescription, kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(kClickToCallUI)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
+    {"shared-clipboard-receiver",
+     flag_descriptions::kSharedClipboardReceiverName,
+     flag_descriptions::kSharedClipboardReceiverDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSharedClipboardReceiver)},
+
+    {"shared-clipboard-ui", flag_descriptions::kSharedClipboardUIName,
+     flag_descriptions::kSharedClipboardUIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSharedClipboardUI)},
 
     {"enable-ambient-authentication-in-incognito",
      flag_descriptions::kEnableAmbientAuthenticationInIncognitoName,

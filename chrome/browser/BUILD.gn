@@ -1554,6 +1554,8 @@ jumbo_split_static_library("browser") {
     "sharing/features.h",
     "sharing/ping_message_handler.cc",
     "sharing/ping_message_handler.h",
+    "sharing/shared_clipboard/feature_flags.cc",
+    "sharing/shared_clipboard/feature_flags.h",
     "sharing/sharing_constants.cc",
     "sharing/sharing_constants.h",
     "sharing/sharing_device_info.cc",
