@@ -3328,6 +3328,9 @@
   <message name="IDS_ASSISTANT_WAIT_MESSAGE" desc="Wait message for asssitant optin flow.">
     Please wait...
   </message>
+  <message name="IDS_ASSISTANT_OOBE_POPUP_OVERLAY_LOADING" desc="Loading message shown while the content of popup overlay is being downloaded.">
+    Loading...
+  </message>
 
   <!-- Supervision transition OOBE screen. -->
   <message name="IDS_REMOVING_SUPERVISION_TITLE" desc="Title of the supervision transition OOBE screen when stopping supervision.">
