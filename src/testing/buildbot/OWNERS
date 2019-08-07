@@ -1,0 +1,18 @@
+# This is reserved for people that are familiar with how Chromium builders
+# run tests and understand the implications of changing these files.
+
+file://infra/OWNERS
+
+jam@chromium.org
+jochen@chromium.org
+machenbach@chromium.org
+maruel@chromium.org
+sky@chromium.org
+
+per-file *chromium.perf*.json=crouleau@chromium.org
+per-file chromium.perf.json=simonhatch@chromium.org
+per-file chromium.webrtc.json=phoglund@chromium.org
+per-file chromium.webrtc.fyi.json=phoglund@chromium.org
+
+# TEAM: infra-dev@chromium.org
+# COMPONENT: Infra>Client>Chrome

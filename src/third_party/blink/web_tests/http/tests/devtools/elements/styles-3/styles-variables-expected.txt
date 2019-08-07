@@ -1,0 +1,126 @@
+Tests that computed styles expand and allow tracing to style rules.
+
+==== Computed style for ID1 ====
+color: rgb(0, 0, 0);
+    -internal-root-color - html user agent stylesheet
+display: block;
+    block - div user agent stylesheet
+[expanded] 
+element.style { ()
+
+[expanded] 
+#id1 { (<style>)
+    --b: 44px;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from body ========
+[expanded] 
+body { (<style>)
+    --a: red;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+value of --a:  red
+==== Computed style for ID2 ====
+color: rgb(0, 0, 0);
+    -internal-root-color - html user agent stylesheet
+display: block;
+    block - div user agent stylesheet
+[expanded] 
+element.style { ()
+
+[expanded] 
+#id2 { (<style>)
+    --a: green;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from div#id1 ========
+[expanded] 
+#id1 { (<style>)
+    --b: 44px;
+
+======== Inherited from body ========
+[expanded] 
+body { (<style>)
+/-- overloaded --/     --a: red;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+value of --b:  44px
+==== Computed style for ID3 ====
+color: rgb(0, 0, 0);
+    -internal-root-color - html user agent stylesheet
+display: block;
+    block - div user agent stylesheet
+[expanded] 
+element.style { ()
+
+[expanded] 
+#id3 { (<style>)
+    --a: inherit;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from div#id2 ========
+[expanded] 
+#id2 { (<style>)
+/-- overloaded --/     --a: green;
+
+======== Inherited from div#id1 ========
+[expanded] 
+#id1 { (<style>)
+    --b: 44px;
+
+======== Inherited from body ========
+[expanded] 
+body { (<style>)
+/-- overloaded --/     --a: red;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+value of --b:  44px
+==== Computed style for ID4 ====
+color: rgb(0, 0, 0);
+    -internal-root-color - html user agent stylesheet
+display: block;
+    block - div user agent stylesheet
+[expanded] 
+element.style { ()
+
+[expanded] 
+#id4 { (<style>)
+    --a: var(--z);
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from body ========
+[expanded] 
+body { (<style>)
+/-- overloaded --/     --a: red;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+value of --a: undefined
+

@@ -1,0 +1,9 @@
+[document web] focusable focused
+++[form]
+++++[panel] name='Browser Engines:' labelled-by
+++++++[label] label-for
+++++++++[text] name='Browser Engines:'
+++++++[text] name='Browser: '
+++++++[entry] editable focusable single-line selectable-text
+++++++[text] name=' Rendering Engine: '
+++++++[entry] editable focusable single-line selectable-text

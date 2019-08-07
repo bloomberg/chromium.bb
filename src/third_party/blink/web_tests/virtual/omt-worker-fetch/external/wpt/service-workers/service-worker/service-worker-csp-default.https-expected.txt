@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS CSP test for default-src in ServiceWorkerGlobalScope
+PASS importScripts test for default-src
+FAIL eval test for default-src assert_throws: eval() should throw EvalError. function "function() { eval('1 + 1'); }" did not throw
+PASS Fetch test for default-src
+PASS Redirected fetch test for default-src
+Harness: the test ran to completion.
+

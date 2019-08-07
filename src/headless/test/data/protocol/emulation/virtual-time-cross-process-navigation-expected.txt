@@ -1,0 +1,5 @@
+Tests that virtual time survives cross-process navigation.
+url: http://a.com/ @ 0
+url: http://b.com/ @ 1000
+url: http://c.com/ @ 2000
+url: http://d.com/ @ 3000

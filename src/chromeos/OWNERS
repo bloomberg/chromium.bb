@@ -1,0 +1,17 @@
+# NOTE: When references to other files are edited here, keep that in sync with
+# the list of needed files for uprevs in chromite;
+# https://chromium.googlesource.com/chromiumos/chromite/+/master/scripts/chrome_chromeos_lkgm.py#38
+# see also https://crbug.com/917623 and https://crbug.com/919552.
+
+per-file BUILD.gn=*
+# Translation artifacts:
+per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
+
+achuith@chromium.org
+alemate@chromium.org
+derat@chromium.org
+oshima@chromium.org
+rkc@chromium.org
+satorux@chromium.org
+stevenjb@chromium.org
+xiyuan@chromium.org

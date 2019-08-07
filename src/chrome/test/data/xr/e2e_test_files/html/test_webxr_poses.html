@@ -1,0 +1,84 @@
+<!doctype html>
+<!--
+Tests WebXR poses are correct through the pipeline.
+
+We encode frame id in the canvas/image, and cache the pose information.  The
+test can query for whether each submitted frame used the correct pose.
+-->
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="../resources/webxr_e2e.css">
+  </head>
+  <body>
+    <canvas id="webgl-canvas"></canvas>
+    <script src="../../../../../../third_party/blink/web_tests/resources/testharness.js"></script>
+    <script src="../resources/webxr_e2e.js"></script>
+    <script src="../resources/webxr_boilerplate.js"></script>
+    <script>
+      var frame_id = 0;
+      var frame_data_array = {};
+      var pose_array = {};
+      // We exit presentation before checking stuff that needs the frame of
+      // reference, so we need to cache its value.
+      var cached_frame_of_ref = null;
+
+      function FloatCompare(a, b) {
+        return Math.abs(a-b) < 0.001;
+      }
+
+      function MatrixCompare(a, b) {
+        for (var i = 0; i < 16; ++i) {
+          if (!FloatCompare(a[i], b[i])) return false;
+        }
+        return true;
+      }
+
+      function checkFrameOccurred(frame_id) {
+        return frame_id in frame_data_array;
+      }
+
+      function checkFrameProjection(frame_id, eye, expected) {
+        return MatrixCompare(frame_data_array[frame_id].views[eye].projectionMatrix, expected);
+      }
+
+      function checkFrameView(frame_id, eye, expected) {
+        let frame_data = frame_data_array[frame_id];
+        let pose = pose_array[frame_id];
+        return MatrixCompare(pose.views[eye].viewMatrix, expected);
+      }
+
+      function checkFramePose(frame_id, expected) {
+        let pose = pose_array[frame_id];
+        if (!pose) {
+          console.log("unexpected - null pose");
+          return false;
+        }
+
+        console.log("checkFramePose: " + pose.transform.matrix + "\n" + expected);
+        return MatrixCompare(pose.transform.matrix, expected);
+      }
+
+      onImmersiveXRFrameCallback = function(session, frame, gl) {
+        // Encode an index into the clear color.
+        frame_id++;
+        frame_data_array[frame_id] = frame;
+        cached_frame_of_ref = sessionInfos[sessionTypes.IMMERSIVE].currentRefSpace;
+        pose_array[frame_id] = frame.getViewerPose(cached_frame_of_ref);
+
+        var encoded_frame_id = {};
+        encoded_frame_id.r = frame_id % 256;
+        encoded_frame_id.g = ((frame_id - frame_id % 256) / 256) % 256;
+        encoded_frame_id.b = ((frame_id - frame_id % (256 * 256)) / (256 * 256)) % 256;
+        // We divide by 255 rather than 256, because our range of values is [0, 255],
+        // which should map to [0.0f, 1.0f].
+        gl.clearColor(encoded_frame_id.r / 255, encoded_frame_id.g / 255, encoded_frame_id.b / 255, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        console.log("Submitting frame: " + frame_id + " " + encoded_frame_id.r);
+      }
+
+      function finishTest() {
+        done();
+      }
+    </script>
+  </body>
+</html>

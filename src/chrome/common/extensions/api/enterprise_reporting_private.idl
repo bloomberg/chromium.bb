@@ -1,0 +1,27 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Private API for reporting Chrome browser status to admin console.
+namespace enterprise.reportingPrivate {
+
+  // Invoked by <code>UploadChromeDesktopReport</code> when the upload is
+  // finished.
+  callback DoneCallback = void();
+
+  // Invoked by <code>getDeviceId</code> to return the ID.
+  callback GetDeviceIdCallback = void(DOMString id);
+  interface Functions {
+
+    // Uploads the status of Chrome browser to the admin console by sending
+    // request to the DMServer. Sets runtime.lastError on failure.
+    static void uploadChromeDesktopReport(
+        object report,
+        optional DoneCallback callback);
+
+    // Gets the identity of device that Chrome browser is running on. The ID is
+    // retrieved from the local device and used by the Google admin console.
+    static void getDeviceId(optional GetDeviceIdCallback callback);
+  };
+
+};

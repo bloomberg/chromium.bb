@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Darwin Huang <huangdarwin@chromium.org>
+Date: Fri, 12 Apr 2019 18:09:06 -0700
+Subject: [PATCH 13/15] Do early detection for corrupt schema
+
+This backports https://www.sqlite.org/src/info/af1e5873d44d3146
+
+Bug: 949453
+---
+ third_party/sqlite/patched/src/insert.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/third_party/sqlite/patched/src/insert.c b/third_party/sqlite/patched/src/insert.c
+index 624ce29870f3..e0007afa15d7 100644
+--- a/third_party/sqlite/patched/src/insert.c
++++ b/third_party/sqlite/patched/src/insert.c
+@@ -2273,6 +2273,9 @@ static int xferOptimization(
+     if( pSrcIdx==0 ){
+       return 0;    /* pDestIdx has no corresponding index in pSrc */
+     }
++    if( pSrcIdx->tnum==pDestIdx->tnum && pSrc->pSchema==pDest->pSchema ){
++      return 0;   /* Corrupt schema - two indexes on the same btree */
++    }
+   }
+ #ifndef SQLITE_OMIT_CHECK
+   if( pDest->pCheck && sqlite3ExprListCompare(pSrc->pCheck,pDest->pCheck,-1) ){
+-- 
+2.21.0.392.gf8f6787159e-goog
+

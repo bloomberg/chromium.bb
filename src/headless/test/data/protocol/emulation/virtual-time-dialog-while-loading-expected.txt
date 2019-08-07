@@ -1,0 +1,1 @@
+Tests that virtual time pausing during loading of main resource works correctly when dialog is shown while page loads.

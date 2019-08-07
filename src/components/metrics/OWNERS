@@ -1,0 +1,8 @@
+file://base/metrics/OWNERS
+
+per-file *call_stack_profile*=wittman@chromium.org
+per-file metadata_recorder*=wittman@chromium.org
+per-file BUILD.gn=wittman@chromium.org
+per-file DEPS=wittman@chromium.org
+
+# COMPONENT: Internals>Metrics

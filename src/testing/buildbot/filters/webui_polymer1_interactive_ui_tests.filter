@@ -1,0 +1,28 @@
+# crbug.com/738611: Need to test all of WebUI with Polymer 1 while the migration
+# is still ongoing.
+
+# For practical reasons, we don't run all interactive_ui_tests with the
+# WebUIPolymer2 flag disabled. Only the tests matching below are executed. It is
+# possible that some tests that might be affected by the flag are not in the
+# list below. If additional failures are found, add the affected tests to the
+# list below, to prevent future regressions.
+
+BookmarksFocusTest.All
+CrElementsActionMenuTest.All
+CrElementsCheckboxTest.All
+CrElementsExpandButtonTest.All
+CrElementsIconButtonFocusTest.All
+CrElementsInputTest.All
+CrElementsProfileAvatarSelectorFocusTest.All
+CrElementsToggleTest.All
+CrExtensionsOptionsPageTest.All
+CrFocusRowBehaviorTest.FocusTest
+CrSettingsAnimatedPagesTest.All
+CrSettingsSyncPageTest.All
+HistoryFocusTest.All
+PrintPreviewDestinationDialogInteractiveTest.*
+PrintPreviewNumberSettingsSectionInteractiveTest.BlurResetsEmptyInput
+PrintPreviewPagesSettingsTest.*
+PrintPreviewPrintHeaderInteractiveTest.FocusPrintOnReady
+PrintPreviewScalingSettingsInteractiveTest.InputAutoFocus
+SettingsUIBrowserTest.All

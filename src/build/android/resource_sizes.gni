@@ -1,0 +1,39 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/internal_rules.gni")
+
+# Generates a script in the bin directory that runs
+# //build/android/resource_sizes.py against the provided apk.
+#
+# Variables:
+#   apk: The APK target against which resource_sizes.py should run.
+template("android_resource_sizes_test") {
+  generate_android_wrapper(target_name) {
+    executable = "//build/android/resource_sizes.py"
+    wrapper_script = "$root_out_dir/bin/${target_name}"
+
+    # Getting the _apk_path below at build time requires the APK's
+    # build config.
+    deps = [
+      invoker.apk,
+    ]
+
+    data_deps = [
+      "//build/android:resource_sizes_py",
+    ]
+
+    _apk_build_config = get_label_info(invoker.apk, "target_gen_dir") + "/" +
+                        get_label_info(invoker.apk, "name") + ".build_config"
+    _rebased_apk_build_config = rebase_path(_apk_build_config, root_build_dir)
+    _apk_path =
+        "@WrappedPath(@FileArg($_rebased_apk_build_config:deps_info:apk_path))"
+    executable_args = [
+      "--chartjson",
+      _apk_path,
+      "--chromium-output-directory",
+      "@WrappedPath(.)",
+    ]
+  }
+}

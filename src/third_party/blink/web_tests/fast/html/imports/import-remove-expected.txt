@@ -1,0 +1,10 @@
+CONSOLE WARNING: HTML Imports is deprecated and will be removed in M73, around March 2019. Please use ES modules instead. See https://www.chromestatus.com/features/5144752345317376 for more details.
+PASS hello.import is non-null.
+Node removal should make import deleted.
+PASS hello.import is null
+Re-inserting it shouldn't help.
+PASS hello.import is non-null.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

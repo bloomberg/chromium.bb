@@ -1,0 +1,8 @@
+include_rules = [
+    "+media/base/mime_util.h",
+    "+media/base/supported_types.h",
+    "+media/filters/stream_parser_factory.h",
+    "-third_party/blink/renderer/modules",
+    "+third_party/blink/renderer/modules/encryptedmedia",
+    "+third_party/blink/renderer/modules/media_capabilities",
+]

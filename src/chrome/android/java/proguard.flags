@@ -1,0 +1,59 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Fragments loaded by name via Fragment.instantiate(Context,String)
+# Not all fragments in this package are PreferenceFragments. E.g. HomepageEditor
+# is a normal Fragment.
+-keep public class org.chromium.chrome.browser.** extends android.app.Fragment {
+  public <init>();
+}
+
+# These classes aren't themselves referenced, but __ProcessService[0,1,2...] are
+# referenced, and we look up these services by appending a number onto the name
+# of the base class. Thus, we need to keep the base class name around so that
+# the child classes can be looked up.
+-keep class org.chromium.content.app.SandboxedProcessService {
+  public <init>();
+}
+-keep class org.chromium.content.app.PrivilegedProcessService {
+  public <init>();
+}
+
+# SearchView is used in website_preferences_menu.xml and is constructed by
+# Android using reflection.
+-keep class android.support.v7.widget.SearchView {
+  public <init>(...);
+}
+
+# This class member is referenced in BottomSheetBottomNav as a temporary
+# measure until the support library contains a solution for disabling shifting
+# mode. TODO(twellington): remove once support library has a fix and is rolled.
+-keepclassmembers class android.support.design.internal.BottomNavigationMenuView {
+    boolean mShiftingMode;
+}
+
+# Trichrome builds don't include a native library list in the main APK; it's
+# picked up from the library APK at runtime.
+-dontwarn org.chromium.base.library_loader.NativeLibraries
+
+# Let proguard know CastMediaOptions in CastOptions is always null, so it can
+# trim unused MediaNotificationService methods. This saves about 170 methods in
+# the dex file. https://crbug.com/855081
+-assumevalues class com.google.android.gms.cast.framework.CastOptions {
+  *** getCastMediaOptions() return null;
+}
+
+# Also, because CastOptions creates a default CastMediaOptions object upon
+# construction, we need to trim out the its builder as well, so we are truly
+# assuming there's no CastMediaOptions instances anywhere. This is to avoid
+# CastMediaOptions to reference resources upon construction.
+-assumevalues class com.google.android.gms.cast.framework.media.CastMediaOptions$Builder {
+  *** build() return null;
+}
+
+-assumenosideeffects class com.google.android.gms.cast.framework.media.CastMediaOptions$Builder {
+  public <init>();
+  public <clinit>();
+  *** build() return null;
+}

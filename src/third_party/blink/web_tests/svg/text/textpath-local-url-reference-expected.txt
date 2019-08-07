@@ -1,0 +1,2 @@
+Blocked access to external URL http://www.example.com/resources/ahem.js
+Blocked access to external URL http://www.example.com/resources/ahem.js

@@ -1,0 +1,45 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package app_list;
+
+// Configuration for an instance of |RecurrenceRanker|.
+//
+// Warning: this cannot contain any map fields, as they cannot be relied upon
+// for a consistent hash.
+message RecurrenceRankerConfigProto {
+  // Fields with IDs 1 (target_limit) and 2 (target_decay_coeff) have been
+  // deleted.
+  reserved 1;
+  reserved 2;
+
+  required uint32 min_seconds_between_saves = 3;
+
+  // Config for a fake predictor, used for testing.
+  message FakePredictorConfig {}
+
+  // Config for a frecency predictor.
+  message ZeroStateFrecencyPredictorConfig {
+    // The soft-maximum number of targets that are stored within the predictor.
+    required uint32 target_limit = 201;
+    // The frecency parameter used to control the frequency-recency tradeoff
+    // that determines when targets are removed. Must be in [0.5, 1.0], with 0.5
+    // meaning only-recency and 1.0 meaning only-frequency.
+    required float decay_coeff = 202;
+  }
+
+  // The choice of which kind of predictor to use, and its configuration.
+  oneof predictor_config {
+    FakePredictorConfig fake_predictor = 10001;
+    ZeroStateFrecencyPredictorConfig zero_state_frecency_predictor = 10002;
+  }
+
+  // Configuration for a frecency predictor used as a fallback if the user is
+  // ephemeral.
+  required ZeroStateFrecencyPredictorConfig fallback_predictor = 11000;
+}

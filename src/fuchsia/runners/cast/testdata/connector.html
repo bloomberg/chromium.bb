@@ -1,0 +1,18 @@
+<html>
+  <head><title>bindings</title></head>
+  <body>
+    <script>
+      var testChannel = cast.__platform__.connector.bind(
+          'hello',
+          function(msg) {
+            console.log('got ' + msg);
+            testChannel.sendMessage('ack ' + msg);
+            return true;
+          });
+
+      // Send some messages before the channel can be established.
+      testChannel.sendMessage('early 1');
+      testChannel.sendMessage('early 2');
+    </script>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://streams.spec.whatwg.org/#ts-class
+[
+    Exposed=(Window,Worker,Worklet),
+    Constructor(optional any transformer,
+                optional any writableStrategy,
+                optional any readableStrategy),
+    RaisesException=Constructor,
+    ConstructorCallWith=ScriptState
+] interface TransformStream {
+    [NotEnumerable] readonly attribute ReadableStream readable;
+    [NotEnumerable] readonly attribute WritableStream writable;
+};
