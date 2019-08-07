@@ -20251,6 +20251,8 @@ Called by update_net_error_codes.py.-->
   <int value="1364" label="ACTION_DISABLE"/>
   <int value="1365" label="FILEMANAGERPRIVATEINTERNAL_IMPORTCROSTINIIMAGE"/>
   <int value="1366" label="AUTOTESTPRIVATE_GETSHELFITEMS"/>
+  <int value="1367" label="MANAGEMENT_INSTALLREPLACEMENTANDROIDAPP"/>
+  <int value="1368" label="MANAGEMENT_CANINSTALLREPLACEMENTANDROIDAPP"/>
 </enum>
 
 <enum name="ExtensionIconState">
