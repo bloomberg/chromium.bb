@@ -50,6 +50,15 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
 @property(nonatomic, strong)
     NSLayoutConstraint* locationContainerViewLeadingAnchorConstraint;
 
+// Constraints to pin the badge view to the right next to the
+// |locationContainerView|.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* badgeViewFullScreenEnabledConstraints;
+
+// Constraints to pin the badge view to the left side of the LocationBar.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* badgeViewFullScreenDisabledConstraints;
+
 // Constraints to hide the location image view.
 @property(nonatomic, strong)
     NSArray<NSLayoutConstraint*>* hideLocationImageConstraints;
@@ -314,17 +323,51 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
     _badgeView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.locationButton addSubview:_badgeView];
 
+    // Lazy init.
+    self.badgeViewFullScreenEnabledConstraints = @[
+      [self.badgeView.leadingAnchor
+          constraintGreaterThanOrEqualToAnchor:self.leadingAnchor],
+      [self.badgeView.trailingAnchor
+          constraintEqualToAnchor:self.locationContainerView.leadingAnchor],
+    ];
+
+    self.badgeViewFullScreenDisabledConstraints = @[
+      [self.badgeView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+      [self.badgeView.trailingAnchor
+          constraintLessThanOrEqualToAnchor:self.locationContainerView
+                                                .leadingAnchor],
+    ];
+
     [NSLayoutConstraint deactivateConstraints:@[
       self.locationContainerViewLeadingAnchorConstraint
     ]];
-    [NSLayoutConstraint activateConstraints:@[
-      [_badgeView.topAnchor constraintEqualToAnchor:self.topAnchor],
-      [_badgeView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
-      [_badgeView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-      [_badgeView.trailingAnchor
-          constraintLessThanOrEqualToAnchor:self.locationContainerView
-                                                .leadingAnchor],
-    ]];
+
+    [NSLayoutConstraint
+        activateConstraints:
+            [self.badgeViewFullScreenDisabledConstraints
+                arrayByAddingObjectsFromArray:@[
+                  [self.badgeView.topAnchor
+                      constraintEqualToAnchor:self.topAnchor],
+                  [self.badgeView.bottomAnchor
+                      constraintEqualToAnchor:self.bottomAnchor],
+                ]]];
+  }
+}
+
+- (void)setFullScreenCollapsedMode:(BOOL)isFullScreenCollapsed {
+  if (!self.badgeView) {
+    return;
+  }
+  if (isFullScreenCollapsed) {
+    [NSLayoutConstraint
+        activateConstraints:self.badgeViewFullScreenEnabledConstraints];
+    [NSLayoutConstraint
+        deactivateConstraints:self.badgeViewFullScreenDisabledConstraints];
+  } else {
+    [NSLayoutConstraint
+        deactivateConstraints:self.badgeViewFullScreenEnabledConstraints];
+    [NSLayoutConstraint
+        activateConstraints:self.badgeViewFullScreenDisabledConstraints];
   }
 }
 

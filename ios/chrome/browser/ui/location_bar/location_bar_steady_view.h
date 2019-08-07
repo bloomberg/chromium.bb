@@ -44,6 +44,9 @@
 // |display| is NO. Will animate change if |animated| is YES.
 - (void)displayBadgeView:(BOOL)display animated:(BOOL)animated;
 
+// Reorients the badgeView's position depending on FullScreen mode.
+- (void)setFullScreenCollapsedMode:(BOOL)isFullScreenCollapsed;
+
 // Toggles |enabled| state of the trailing button and updates accessibility
 // appropriately.
 - (void)enableTrailingButton:(BOOL)enabled;

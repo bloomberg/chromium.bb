@@ -40,6 +40,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
   kVoiceSearchButton,
 };
 
+// FullScreen progress threshold in which to hide the badge view.
+const double kHideBadgeViewThreshold = 0.1;
+
 }  // namespace
 
 @interface LocationBarViewController ()
@@ -204,7 +207,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
   CGFloat scaleValue = 0.79 + 0.21 * progress;
   self.locationBarSteadyView.trailingButton.alpha = alphaValue;
   if (IsInfobarUIRebootEnabled()) {
-    self.locationBarSteadyView.badgeView.alpha = alphaValue;
+    BOOL badgeViewShouldCollapse = progress <= kHideBadgeViewThreshold;
+    [self.locationBarSteadyView
+        setFullScreenCollapsedMode:badgeViewShouldCollapse];
   }
   self.locationBarSteadyView.transform =
       CGAffineTransformMakeScale(scaleValue, scaleValue);
