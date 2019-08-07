@@ -1009,23 +1009,6 @@ java_strings_grd("strings_grd") {
 # Separate target to allow for a dependency on GmsCore without pulling in all of
 # android_webview_java. It compiles the abstract class; implementations are
 # compiled separately.
-android_library("android_webview_platform_services_java") {
-  java_files = [
-    "java/src/org/chromium/android_webview/PlatformServiceBridge.java",
-    "java/src/org/chromium/android_webview/PlatformServiceBridgeImpl.java",
-  ]
-
-  deps = [
-    "//base:base_java",
-    "//third_party/android_deps:com_android_support_support_annotations_java",
-  ]
-
-  # The appropriate .class file will be loaded via a dependency to a library
-  # like :platform_service_bridge_upstream_implementation_java below. We only include the
-  # .java file because other files in the target depend on it.
-  jar_excluded_patterns = [ "*/PlatformServiceBridgeImpl.class" ]
-}
-
 android_library("common_platform_services_java") {
   java_files = [
     "java/src/org/chromium/android_webview/common/PlatformServiceBridge.java",
@@ -1063,16 +1046,6 @@ android_library("common_crash_info_java") {
 android_library("common_java") {
   java_files =
       [ "java/src/org/chromium/android_webview/common/AwResource.java" ]
-  deps = [
-    "//base:base_java",
-  ]
-}
-
-android_library("android_webview_commandline_java") {
-  java_files = [
-    "java/src/org/chromium/android_webview/command_line/CommandLineUtil.java",
-  ]
-
   deps = [
     "//base:base_java",
   ]

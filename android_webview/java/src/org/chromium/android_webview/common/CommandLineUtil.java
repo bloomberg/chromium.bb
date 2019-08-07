@@ -23,7 +23,7 @@ public class CommandLineUtil {
             "enable-crash-reporter-for-testing";
 
     private static final String COMMAND_LINE_UTIL_INTERNAL =
-            "org.chromium.android_webview.command_line.CommandLineUtilInternal";
+            "org.chromium.android_webview.common.CommandLineUtilInternal";
 
     private static CommandLineUtil sInstance;
 
