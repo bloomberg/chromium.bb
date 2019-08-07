@@ -1714,6 +1714,14 @@
           'scripts': 'test_traffic_annotation_auditor_script',
         }
       },
+      'linux-bfcache-rel': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'bfcache_gtests',
+        },
+      },
       'linux-blink-animation-use-time-delta': {
         'mixins': [
           'linux-xenial',
@@ -1823,7 +1831,7 @@
           'linux-xenial',
         ],
         'test_suites': {
-          'gtest_tests': 'fieldtrial_gtests',
+          'gtest_tests': 'fieldtrial_browser_tests',
         },
       },
       'linux-wpt-fyi-rel': {
