@@ -329,6 +329,7 @@ source_set("common") {
     "//ui/gl",
     "//ui/gl/init",
     "//ui/latency/ipc",
+    "//ui/native_theme",
     "//ui/shell_dialogs",
     "//url",
     "//url/ipc:url_ipc",

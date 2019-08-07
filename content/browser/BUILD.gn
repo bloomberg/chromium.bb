@@ -1789,6 +1789,8 @@ jumbo_source_set("browser") {
     "storage_partition_impl_map.h",
     "system_connector_impl.cc",
     "system_connector_impl.h",
+    "theme_helper.cc",
+    "theme_helper.h",
     "theme_helper_mac.h",
     "theme_helper_mac.mm",
     "tracing/background_memory_tracing_observer.cc",
