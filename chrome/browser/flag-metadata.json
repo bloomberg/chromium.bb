@@ -49,6 +49,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "force-dice-migration",
+    "owners": [ "msalama" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "show-sync-paused-reason-cookies-cleared-on-exit",
     "owners": [ "msalama" ],
     "expiry_milestone": 85
