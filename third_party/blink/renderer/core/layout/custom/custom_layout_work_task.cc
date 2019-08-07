@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment_request.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_work_task.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_child.h"
@@ -14,19 +14,22 @@
 
 namespace blink {
 
-CustomLayoutFragmentRequest::CustomLayoutFragmentRequest(
+CustomLayoutWorkTask::CustomLayoutWorkTask(
     CustomLayoutChild* child,
+    CustomLayoutToken* token,
+    ScriptPromiseResolver* resolver,
     const CustomLayoutConstraintsOptions* options,
     scoped_refptr<SerializedScriptValue> constraint_data)
     : child_(child),
+      token_(token),
+      resolver_(resolver),
       options_(options),
       constraint_data_(std::move(constraint_data)) {}
 
-CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout(
-    v8::Isolate* isolate) {
-  // Abort if the child we are trying to perform layout upon doesn't exist.
-  if (!IsValid())
-    return nullptr;
+CustomLayoutWorkTask::~CustomLayoutWorkTask() = default;
+
+void CustomLayoutWorkTask::Run() {
+  DCHECK(token_->IsValid());
 
   LayoutBox* box = child_->GetLayoutBox();
   const ComputedStyle& style = box->StyleRef();
@@ -35,10 +38,8 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout(
   DCHECK(box->Parent()->IsLayoutCustom());
   DCHECK(box->Parent() == box->ContainingBlock());
 
-  LayoutObject* parent = box->Parent();
-
   bool is_parallel_writing_mode = IsParallelWritingMode(
-      parent->StyleRef().GetWritingMode(), style.GetWritingMode());
+      box->Parent()->StyleRef().GetWritingMode(), style.GetWritingMode());
 
   if (options_->hasFixedInlineSize()) {
     if (is_parallel_writing_mode) {
@@ -119,22 +120,9 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout(
   LayoutUnit fragment_block_size =
       is_parallel_writing_mode ? box->LogicalHeight() : box->LogicalWidth();
 
-  return MakeGarbageCollected<CustomLayoutFragment>(
-      this, fragment_inline_size, fragment_block_size, isolate);
-}
-
-LayoutBox* CustomLayoutFragmentRequest::GetLayoutBox() const {
-  return child_->GetLayoutBox();
-}
-
-bool CustomLayoutFragmentRequest::IsValid() const {
-  return child_->IsValid();
-}
-
-void CustomLayoutFragmentRequest::Trace(blink::Visitor* visitor) {
-  visitor->Trace(child_);
-  visitor->Trace(options_);
-  ScriptWrappable::Trace(visitor);
+  resolver_->Resolve(MakeGarbageCollected<CustomLayoutFragment>(
+      child_, token_, fragment_inline_size, fragment_block_size,
+      resolver_->GetScriptState()->GetIsolate()));
 }
 
 }  // namespace blink
