@@ -304,7 +304,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     // Some of these elements are handled with other adjustments above.
     if (IsA<HTMLBRElement>(element) || IsHTMLWBRElement(element) ||
         IsHTMLMeterElement(element) || IsHTMLProgressElement(element) ||
-        IsHTMLCanvasElement(element) || IsHTMLMediaElement(element) ||
+        IsA<HTMLCanvasElement>(element) || IsHTMLMediaElement(element) ||
         IsHTMLInputElement(element) || IsHTMLTextAreaElement(element) ||
         IsHTMLSelectElement(element)) {
       style.SetDisplay(EDisplay::kNone);
@@ -446,7 +446,7 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   TouchAction inherited_action = parent_style.GetEffectiveTouchAction();
 
   bool is_replaced_canvas =
-      element && IsHTMLCanvasElement(element) &&
+      element && IsA<HTMLCanvasElement>(element) &&
       element->GetDocument().GetFrame() &&
       element->GetDocument().CanExecuteScripts(kNotAboutToExecuteScript);
   bool is_non_replaced_inline_elements =

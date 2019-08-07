@@ -1267,7 +1267,7 @@ bool AXNodeObject::CanvasHasFallbackContent() const {
   if (IsDetached())
     return false;
   Node* node = this->GetNode();
-  return IsHTMLCanvasElement(node) && node->hasChildren();
+  return IsA<HTMLCanvasElement>(node) && node->hasChildren();
 }
 
 int AXNodeObject::HeadingLevel() const {
