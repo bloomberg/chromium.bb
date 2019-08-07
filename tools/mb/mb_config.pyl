@@ -740,6 +740,7 @@
       'gpu-fyi-try-linux-intel-dqp': 'deqp_release_trybot',
       'gpu-fyi-try-linux-intel-exp': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-linux-intel-rel': 'gpu_fyi_tests_release_trybot',
+      'gpu-fyi-try-linux-intel-skv': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-linux-nvidia-dbg': 'gpu_fyi_tests_debug_trybot',
       'gpu-fyi-try-linux-nvidia-dqp': 'deqp_release_trybot',
       'gpu-fyi-try-linux-nvidia-exp': 'gpu_fyi_tests_release_trybot',

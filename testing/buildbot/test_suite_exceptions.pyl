@@ -1420,6 +1420,7 @@
       'Linux FYI Experimental Release (Intel HD 630)',
       'Linux FYI Release (Intel HD 630)',
       'Linux FYI Release (NVIDIA)',
+      'Linux FYI SkiaRenderer Vulkan (Intel HD 630)',
       'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
       'Linux Release (NVIDIA)',
       'Linux Release Code Coverage (NVIDIA)',
