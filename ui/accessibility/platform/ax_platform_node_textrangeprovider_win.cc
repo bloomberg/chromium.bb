@@ -178,10 +178,19 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
       end_ = start_->CreateNextParagraphEndPosition(
           AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       break;
-
-    // Since web content is not paginated, TextUnit_Page is not supported.
-    // Substituting it by the next larger unit: TextUnit_Document.
-    case TextUnit_Page:
+    case TextUnit_Page: {
+      // If the document doesn't support pagination, default to document units
+      // per UIA spec
+      AXPositionInstance common_ancestor = start_->LowestCommonAncestor(*end_);
+      if (common_ancestor->GetAnchor()->tree()->HasPaginationSupport()) {
+        start_ = start_->CreatePreviousPageStartPosition(
+            ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+        end_ = start_->CreateNextPageEndPosition(
+            ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+        break;
+      }
+    }
+      FALLTHROUGH;
     case TextUnit_Document:
       start_ = start_->CreatePositionAtStartOfDocument()->AsLeafTextPosition();
       end_ = start_->CreatePositionAtEndOfDocument();
@@ -586,9 +595,10 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
       new_position = MoveEndpointByParagraph(
           position_to_move, is_start_endpoint, count, units_moved);
       break;
-    // Since web content is not paginated, TextUnit_Page is not supported.
-    // Substituting it by the next larger unit: TextUnit_Document.
     case TextUnit_Page:
+      new_position = MoveEndpointByPage(position_to_move, is_start_endpoint,
+                                        count, units_moved);
+      break;
     case TextUnit_Document:
       new_position =
           MoveEndpointByDocument(position_to_move, count, units_moved);
@@ -912,6 +922,53 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByParagraph(
               : current_endpoint->CreatePreviousParagraphEndPosition(behavior);
     }
 
+    // End of document
+    if (next_endpoint->IsNullPosition()) {
+      int document_moved;
+      next_endpoint = MoveEndpointByDocument(endpoint, count, &document_moved);
+      if (*endpoint != *next_endpoint && !next_endpoint->IsNullPosition()) {
+        ++iteration;
+        current_endpoint = std::move(next_endpoint);
+      }
+      break;
+    }
+    current_endpoint = std::move(next_endpoint);
+  }
+
+  *count_moved = (forwards) ? iteration : -iteration;
+  return current_endpoint;
+}
+
+AXPlatformNodeTextRangeProviderWin::AXPositionInstance
+AXPlatformNodeTextRangeProviderWin::MoveEndpointByPage(
+    const AXNodePosition::AXPositionInstance& endpoint,
+    const bool is_start_endpoint,
+    const int count,
+    int* count_moved) {
+  // If the document doesn't support pagination, default to document navigation
+  // per UIA spec
+  AXPositionInstance common_ancestor = start_->LowestCommonAncestor(*end_);
+  if (!common_ancestor->GetAnchor()->tree()->HasPaginationSupport())
+    return MoveEndpointByDocument(std::move(endpoint), count, count_moved);
+
+  auto current_endpoint = endpoint->Clone();
+  const bool forwards = count > 0;
+  const int count_abs = std::abs(count);
+  const auto behavior = ui::AXBoundaryBehavior::CrossBoundary;
+  int iteration = 0;
+  for (iteration = 0; iteration < count_abs; ++iteration) {
+    AXPositionInstance next_endpoint;
+    if (forwards) {
+      next_endpoint =
+          is_start_endpoint
+              ? current_endpoint->CreateNextPageStartPosition(behavior)
+              : current_endpoint->CreateNextPageEndPosition(behavior);
+    } else {
+      next_endpoint =
+          is_start_endpoint
+              ? current_endpoint->CreatePreviousPageStartPosition(behavior)
+              : current_endpoint->CreatePreviousPageEndPosition(behavior);
+    }
     // End of document
     if (next_endpoint->IsNullPosition()) {
       int document_moved;

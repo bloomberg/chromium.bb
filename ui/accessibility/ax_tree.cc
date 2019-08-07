@@ -1280,6 +1280,10 @@ bool AXTree::UpdateNode(const AXNodeData& src,
     node->SetData(src);
   }
 
+  // If we come across a page breaking object, mark the tree as a paginated root
+  if (src.GetBoolAttribute(ax::mojom::BoolAttribute::kIsPageBreakingObject))
+    has_pagination_support_ = true;
+
   update_state->node_data_changed_ids.insert(node->id());
 
   // First, delete nodes that used to be children of this node but aren't
@@ -1958,6 +1962,10 @@ bool AXTree::GetTreeUpdateInProgressState() const {
 
 void AXTree::SetTreeUpdateInProgressState(bool set_tree_update_value) {
   tree_update_in_progress_ = set_tree_update_value;
+}
+
+bool AXTree::HasPaginationSupport() const {
+  return has_pagination_support_;
 }
 
 }  // namespace ui

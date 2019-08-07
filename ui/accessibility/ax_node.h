@@ -41,6 +41,7 @@ class AX_EXPORT AXNode final {
     virtual int32_t GetSetSize(const AXNode& node,
                                const AXNode* ordered_set) = 0;
     virtual bool GetTreeUpdateInProgressState() const = 0;
+    virtual bool HasPaginationSupport() const = 0;
   };
 
   template <typename NodeType,

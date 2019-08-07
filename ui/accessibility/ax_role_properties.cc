@@ -138,6 +138,7 @@ bool IsControl(const ax::mojom::Role role) {
 
 bool IsDocument(const ax::mojom::Role role) {
   switch (role) {
+    case ax::mojom::Role::kDocument:
     case ax::mojom::Role::kRootWebArea:
     case ax::mojom::Role::kWebArea:
       return true;
