@@ -652,7 +652,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->HasTagName(kAddressTag))
     return ax::mojom::Role::kGenericContainer;
 
-  if (IsHTMLDialogElement(*GetNode()))
+  if (IsA<HTMLDialogElement>(*GetNode()))
     return ax::mojom::Role::kDialog;
 
   // The HTML element should not be exposed as an element. That's what the
@@ -1246,7 +1246,7 @@ bool AXNodeObject::IsModal() const {
   if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kModal, modal))
     return modal;
 
-  if (GetNode() && IsHTMLDialogElement(*GetNode()))
+  if (GetNode() && IsA<HTMLDialogElement>(*GetNode()))
     return To<Element>(GetNode())->IsInTopLayer();
 
   return false;
