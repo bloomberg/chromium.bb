@@ -1139,11 +1139,6 @@
     "args": ["--enable-blink-features=ForcedColors"]
   },
   {
-    "prefix": "forced-colors",
-    "base": "fast/css/forced-colors-mode",
-    "args": ["--force-high-contrast", "--enable-blink-features=ForcedColors"]
-  },
-  {
     "prefix": "force-defer-script",
     "base": "defer-script",
     "args": ["--enable-blink-features=ForceDeferScriptIntervention"]
