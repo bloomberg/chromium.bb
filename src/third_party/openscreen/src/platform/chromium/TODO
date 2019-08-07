@@ -1,0 +1,3 @@
+TODO: Implement the adapters for an embedded-in-Chromium build. The BUILD.gn for
+the platform code lists what is needed. Also, see the "build_with_chromium"
+global variable in //build_overrides/build.gni.
