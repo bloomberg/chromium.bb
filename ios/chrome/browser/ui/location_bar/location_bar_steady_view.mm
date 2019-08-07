@@ -68,7 +68,7 @@ const CGFloat kButtonTrailingSpacing = 10;
 
   scheme.fontColor = [UIColor colorNamed:kTextPrimaryColor];
   scheme.placeholderColor = [UIColor colorNamed:kTextfieldPlaceholderColor];
-  scheme.trailingButtonColor = [UIColor colorNamed:@"tab_toolbar_button_color"];
+  scheme.trailingButtonColor = [UIColor colorNamed:kToolbarButtonColor];
 
   return scheme;
 }
@@ -82,8 +82,7 @@ const CGFloat kButtonTrailingSpacing = 10;
   // TODO(crbug.com/981889): Clean up after iOS 12 support is dropped.
   scheme.fontColor = [UIColor colorNamed:kTextPrimaryDarkColor];
   scheme.placeholderColor = [UIColor colorNamed:kTextfieldPlaceholderDarkColor];
-  scheme.trailingButtonColor =
-      [UIColor colorNamed:@"tab_toolbar_button_color_incognito"];
+  scheme.trailingButtonColor = [UIColor colorNamed:kToolbarButtonDarkColor];
 
   return scheme;
 }
