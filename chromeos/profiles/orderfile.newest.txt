@@ -1,1 +1,0 @@
-chromeos-chrome-orderfile-77.0.3849.0_rc-r1.orderfile.xz
