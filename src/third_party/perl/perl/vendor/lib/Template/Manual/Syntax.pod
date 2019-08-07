@@ -1,0 +1,260 @@
+#============================================================= -*-perl-*-
+#
+# Template::Manual::Syntax
+#
+# AUTHOR
+#   Andy Wardley  <abw@wardley.org>
+#
+# COPYRIGHT
+#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#
+#   This module is free software; you can redistribute it and/or
+#   modify it under the same terms as Perl itself.
+#
+#========================================================================
+
+=head1 NAME
+
+Template::Manual::Syntax - Directive syntax, structure and semantics
+
+=head1 Tag Styles
+
+By default, template directives are embedded within the character sequences
+C<[%> and C<%]>.
+
+    [% PROCESS header %]
+    
+    <h1>Hello World!</h1>
+    <a href="[% page.next %]"><img src="[% icon.next %].gif"></a>
+    
+    [% PROCESS footer %]
+
+You can change the tag characters using the C<START_TAG>, C<END_TAG> and
+C<TAG_STYLE> configuration options. You can also use the C<TAGS> directive to
+define a new tag style for the current template file.
+
+You can also set the C<INTERPOLATE> option to allow simple variable references
+to be embedded directly in templates, prefixed by a C<$>.
+
+    # INTERPOLATE = 0
+    <td>[% name %]</td>
+    <td>[% email %]</td>
+    
+    # INTERPOLATE = 1
+    <td>$name</td>
+    <td>$email</td>
+
+Directives may be embedded anywhere in a line of text and can be split
+across several lines.  Insignificant whitespace is generally ignored
+within the directive.
+
+    [% INCLUDE header
+         title = 'Hello World' 
+         bgcol = '#ffffff' 
+    %]
+    
+    [%INCLUDE menu align='right'%]
+    
+    Name: [% name %]  ([%id%])
+
+=head1 Comments
+
+The C<#> character is used to indicate comments within a directive.
+When placed immediately inside the opening directive tag, it causes
+the entire directive to be ignored.
+
+    [%# this entire directive is ignored no
+        matter how many lines it wraps onto
+    %]
+
+In any other position, it causes the remainder of the current line to 
+be treated as a comment.
+
+    [% # this is a comment
+       theta = 20      # so is this
+       rho   = 30      # <aol>me too!</aol>
+    %]
+
+=head1 Chomping Whitespace
+
+You can add C<-> or C<+> to the immediate start or end of a directive
+tag to control the whitespace chomping options.  See the C<PRE_CHOMP> and
+C<POST_CHOMP> options for further details.
+
+    [% BLOCK foo -%]    # remove trailing newline
+    This is block foo
+    [%- END %]          # remove leading newline
+
+=head1 Implicit Directives: GET and SET
+
+The simplest directives are C<GET> and C<SET> which retrieve and update
+variable values respectively. The C<GET> and C<SET> keywords are actually
+optional as the parser is smart enough to see them for what they really are
+(but note the caveat below on using side-effect notation). Thus, you'll
+generally see:
+
+    [% SET foo = 10 %]
+    [% GET foo %]
+
+written as:
+
+    [% foo = 10 %]
+    [% foo %]
+
+You can also express simple logical statements as implicit C<GET> directives:
+
+    [% title or template.title or 'Default Title' %]
+    
+    [% mode == 'graphics' ? "Graphics Mode Enabled" : "Text Mode" %]
+
+All other directives should start with a keyword specified in UPPER
+CASE (but see the C<ANYCASE> option).  All directives keywords are in
+UPPER CASE to make them visually distinctive and to distinguish them
+from variables of the same name but different case.  It is perfectly
+valid, for example, to define a variable called C<stop> which is
+entirely separate from the C<STOP> directive.
+
+    [% stop = 'Clackett Lane Bus Depot' %]
+    
+    The bus will next stop at [% stop %]    # variable
+    
+    [% STOP %]                              # directive
+
+=head1 Block Directives
+
+Directives such as C<FOREACH>, C<WHILE>, C<BLOCK>, C<FILTER>, etc., mark the
+start of a block which may contain text or other directives up to the matching
+C<END> directive. Blocks may be nested indefinitely. The C<IF>, C<UNLESS>,
+C<ELSIF> and C<ELSE> directives also define blocks and may be grouped together
+in the usual manner.
+
+    [% FOREACH item = [ 'foo' 'bar' 'baz' ] %]
+       * Item: [% item %]
+    [% END %]
+    
+    [% BLOCK footer %]
+       Copyright 2000 [% me %]
+       [% INCLUDE company/logo %]
+    [% END %]
+    
+    [% IF foo %]
+       [% FOREACH thing = foo.things %]
+          [% thing %]
+       [% END %]
+    [% ELSIF bar %]
+       [% INCLUDE barinfo %]
+    [% ELSE %]
+       do nothing...
+    [% END %]
+
+Block directives can also be used in a convenient side-effect notation.
+
+    [% INCLUDE userinfo FOREACH user = userlist %]
+    
+    [% INCLUDE debugtxt msg="file: $error.info" 
+         IF debugging %] 
+         
+    [% "Danger Will Robinson" IF atrisk %]
+
+versus:
+
+    [% FOREACH user = userlist %]
+       [% INCLUDE userinfo %]
+    [% END %]
+    
+    [% IF debugging %]
+       [% INCLUDE debugtxt msg="file: $error.info" %]
+    [% END %]
+    
+    [% IF atrisk %]
+    Danger Will Robinson
+    [% END %]
+
+=head1 Capturing Block Output
+
+The output of a directive can be captured by simply assigning the directive
+to a variable.
+
+    [% headtext = PROCESS header title="Hello World" %]
+    
+    [% people = PROCESS userinfo FOREACH user = userlist %]
+
+This can be used in conjunction with the C<BLOCK> directive for defining large 
+blocks of text or other content.
+
+    [% poem = BLOCK %]
+       The boy stood on the burning deck,
+       His fleece was white as snow.
+       A rolling stone gathers no moss,
+       And Keith is sure to follow.
+    [% END %]
+
+Note one important caveat of using this syntax in conjunction with side-effect
+notation.  The following directive does not behave as might be expected:
+
+    [% var = 'value' IF some_condition %]   # does not work
+
+In this case, the directive is interpreted as (spacing added for clarity)
+
+    [% var = IF some_condition %]
+       value
+    [% END %]
+
+rather than
+
+    [% IF some_condition %]
+       [% var = 'value' %]
+    [% END %]
+
+The variable is assigned the output of the C<IF> block which returns
+C<'value'> if true, but nothing if false.  In other words, the following
+directive will always cause 'var' to be cleared.
+
+    [% var = 'value' IF 0 %]
+
+To achieve the expected behaviour, the directive should be written as:
+
+    [% SET var = 'value' IF some_condition %]
+
+=head1 Chaining Filters
+
+Multiple C<FILTER> directives can be chained together in sequence.  They
+are called in the order defined, piping the output of one into the 
+input of the next.
+
+    [% PROCESS somefile FILTER truncate(100) FILTER html %]
+
+The pipe character, C<|>, can also be used as an alias for C<FILTER>.
+
+    [% PROCESS somefile | truncate(100) | html %]
+
+=head1 Multiple Directive Blocks
+
+Multiple directives can be included within a single tag when delimited
+by semi-colons.  Note however that the C<TAGS> directive must always
+be specified in a tag by itself.
+
+    [% IF title; 
+          INCLUDE header; 
+       ELSE; 
+          INCLUDE other/header  title="Some Other Title";
+       END
+    %]
+
+versus
+
+    [% IF title %]
+       [% INCLUDE header %]
+    [% ELSE %]
+       [% INCLUDE other/header  title="Some Other Title" %]
+    [% END %]
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
+# vim: expandtab shiftwidth=4:
