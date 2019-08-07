@@ -145,6 +145,7 @@ TransportClientSocketPool::TransportClientSocketPool(
           max_sockets_per_group,
           unused_idle_socket_timeout,
           ClientSocketPool::used_idle_socket_timeout(),
+          proxy_server,
           std::make_unique<ConnectJobFactoryImpl>(proxy_server,
                                                   is_for_websockets,
                                                   common_connect_job_params),
@@ -174,14 +175,16 @@ TransportClientSocketPool::CreateForTesting(
     int max_sockets_per_group,
     base::TimeDelta unused_idle_socket_timeout,
     base::TimeDelta used_idle_socket_timeout,
+    const ProxyServer& proxy_server,
     std::unique_ptr<ConnectJobFactory> connect_job_factory,
     SSLClientContext* ssl_client_context,
     bool connect_backup_jobs_enabled) {
   return base::WrapUnique<TransportClientSocketPool>(
       new TransportClientSocketPool(
           max_sockets, max_sockets_per_group, unused_idle_socket_timeout,
-          used_idle_socket_timeout, std::move(connect_job_factory),
-          ssl_client_context, connect_backup_jobs_enabled));
+          used_idle_socket_timeout, proxy_server,
+          std::move(connect_job_factory), ssl_client_context,
+          connect_backup_jobs_enabled));
 }
 
 TransportClientSocketPool::CallbackResultPair::CallbackResultPair()
@@ -762,6 +765,7 @@ TransportClientSocketPool::TransportClientSocketPool(
     int max_sockets_per_group,
     base::TimeDelta unused_idle_socket_timeout,
     base::TimeDelta used_idle_socket_timeout,
+    const ProxyServer& proxy_server,
     std::unique_ptr<ConnectJobFactory> connect_job_factory,
     SSLClientContext* ssl_client_context,
     bool connect_backup_jobs_enabled)
@@ -772,6 +776,7 @@ TransportClientSocketPool::TransportClientSocketPool(
       max_sockets_per_group_(max_sockets_per_group),
       unused_idle_socket_timeout_(unused_idle_socket_timeout),
       used_idle_socket_timeout_(used_idle_socket_timeout),
+      proxy_server_(proxy_server),
       connect_job_factory_(std::move(connect_job_factory)),
       connect_backup_jobs_enabled_(connect_backup_jobs_enabled &&
                                    g_connect_backup_jobs_enabled),
@@ -791,6 +796,51 @@ void TransportClientSocketPool::OnSSLConfigChanged(
   // get re-used.
   FlushWithError(is_cert_database_change ? ERR_CERT_DATABASE_CHANGED
                                          : ERR_NETWORK_CHANGED);
+}
+
+void TransportClientSocketPool::OnSSLConfigForServerChanged(
+    const HostPortPair& server) {
+  bool refreshed_any = false;
+  // Current time value. Retrieving it once at the function start rather than
+  // inside the inner loop, since it shouldn't change by any meaningful amount.
+  //
+  // TODO(davidben): This value is not actually needed because
+  // CleanupIdleSocketsInGroup() is called with |force| = true. Tidy up
+  // interfaces so the parameter is not necessary.
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  if (proxy_server_.is_http_like() && !proxy_server_.is_http() &&
+      proxy_server_.host_port_pair() == server) {
+    // If the proxy is |server| and uses SSL settings (HTTPS or QUIC), refresh
+    // every group.
+    refreshed_any = !group_map_.empty();
+    for (auto it = group_map_.begin(); it != group_map_.end();) {
+      auto to_refresh = it++;
+      // Note this call may destroy the group and invalidate |to_refresh|.
+      RefreshGroup(to_refresh, now);
+    }
+  } else {
+    // Refresh the credentialed and uncredentialed pools for |server|.
+    for (auto privacy_mode : {PrivacyMode::PRIVACY_MODE_DISABLED,
+                              PrivacyMode::PRIVACY_MODE_ENABLED}) {
+      auto it =
+          group_map_.find(GroupId(server, SocketType::kSsl, privacy_mode));
+      if (it != group_map_.end()) {
+        refreshed_any = true;
+        // Note this call may destroy the group and invalidate |it|.
+        RefreshGroup(it, now);
+      }
+    }
+  }
+
+  if (refreshed_any) {
+    // Check to see if any group can use the freed up socket slots. It would be
+    // more efficient to give the slots to the refreshed groups, if the still
+    // exists and need them, but this should be rare enough that it doesn't
+    // matter. This will also make sure the slots are given to the group with
+    // the highest priority request without an assigned ConnectJob.
+    CheckForStalledSocketGroups();
+  }
 }
 
 bool TransportClientSocketPool::HasGroup(const GroupId& group_id) const {
@@ -876,11 +926,6 @@ void TransportClientSocketPool::RemoveGroup(const GroupId& group_id) {
 void TransportClientSocketPool::RemoveGroup(GroupMap::iterator it) {
   delete it->second;
   group_map_.erase(it);
-}
-
-void TransportClientSocketPool::RefreshGroupForTesting(
-    const GroupId& group_id) {
-  RefreshGroup(group_id);
 }
 
 // static
@@ -1323,31 +1368,21 @@ void TransportClientSocketPool::TryToCloseSocketsInLayeredPools() {
   }
 }
 
-void TransportClientSocketPool::RefreshGroup(const GroupId& group_id) {
-  auto group_it = group_map_.find(group_id);
-  if (group_it == group_map_.end())
-    return;
-  Group* group = group_it->second;
-
-  CleanupIdleSocketsInGroup(true /* force */, group, base::TimeTicks::Now());
+void TransportClientSocketPool::RefreshGroup(GroupMap::iterator it,
+                                             const base::TimeTicks& now) {
+  Group* group = it->second;
+  CleanupIdleSocketsInGroup(true /* force */, group, now);
 
   connecting_socket_count_ -= group->jobs().size();
   group->RemoveAllUnboundJobs();
 
-  if (group->IsEmpty()) {
-    // Remove group if it's now empty.
-    RemoveGroup(group_id);
-  } else {
-    // Otherwise, prevent reuse of existing sockets.
-    group->IncrementGeneration();
-  }
+  // Otherwise, prevent reuse of existing sockets.
+  group->IncrementGeneration();
 
-  // Check to see if any group (including |group_id|) can use the freed up
-  // socket slots. Would be more efficient to give the slots to |group|, if it
-  // still exists and needs them, but this should be rare enough that it doesn't
-  // matter. This will also make sure the slots are given to the group with the
-  // highest priority request without an assigned ConnectJob.
-  CheckForStalledSocketGroups();
+  // Delete group if no longer needed.
+  if (group->IsEmpty()) {
+    RemoveGroup(it);
+  }
 }
 
 TransportClientSocketPool::Group::Group(

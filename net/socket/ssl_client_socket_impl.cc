@@ -617,8 +617,7 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
       server_cert_verify_result_.is_issued_by_known_root;
   ssl_info->pkp_bypassed = pkp_bypassed_;
   ssl_info->public_key_hashes = server_cert_verify_result_.public_key_hashes;
-  ssl_info->client_cert_sent =
-      ssl_config_.send_client_cert && ssl_config_.client_cert.get();
+  ssl_info->client_cert_sent = send_client_cert_ && client_cert_.get();
   ssl_info->pinning_failure_log = pinning_failure_log_;
   ssl_info->ocsp_result = server_cert_verify_result_.ocsp_result;
   ssl_info->is_fatal_cert_error = is_fatal_cert_error_;
@@ -909,6 +908,12 @@ int SSLClientSocketImpl::Init() {
   SSL_set_renegotiate_mode(ssl_.get(), ssl_renegotiate_freely);
 
   SSL_set_shed_handshake_config(ssl_.get(), 1);
+
+  // TODO(https://crbug.com/775438), if |ssl_config_.privacy_mode| is enabled,
+  // this should always continue with no client certificate.
+  send_client_cert_ = context_->GetClientCertificate(
+      host_and_port_, &client_cert_, &client_private_key_);
+
   return OK;
 }
 
@@ -939,12 +944,11 @@ int SSLClientSocketImpl::DoHandshake() {
   int net_error = OK;
   if (rv <= 0) {
     int ssl_error = SSL_get_error(ssl_.get(), rv);
-    if (ssl_error == SSL_ERROR_WANT_X509_LOOKUP &&
-        !ssl_config_.send_client_cert) {
+    if (ssl_error == SSL_ERROR_WANT_X509_LOOKUP && !send_client_cert_) {
       return ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
     }
     if (ssl_error == SSL_ERROR_WANT_PRIVATE_KEY_OPERATION) {
-      DCHECK(ssl_config_.client_private_key);
+      DCHECK(client_private_key_);
       DCHECK_NE(kSSLClientSocketNoPendingResult, signature_result_);
       next_handshake_state_ = STATE_HANDSHAKE;
       return ERR_IO_PENDING;
@@ -1371,11 +1375,11 @@ int SSLClientSocketImpl::DoPayloadRead(IOBuffer* buf, int buf_len) {
     if (pending_read_ssl_error_ == SSL_ERROR_ZERO_RETURN) {
       pending_read_error_ = 0;
     } else if (pending_read_ssl_error_ == SSL_ERROR_WANT_X509_LOOKUP &&
-               !ssl_config_.send_client_cert) {
+               !send_client_cert_) {
       pending_read_error_ = ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
     } else if (pending_read_ssl_error_ ==
                SSL_ERROR_WANT_PRIVATE_KEY_OPERATION) {
-      DCHECK(ssl_config_.client_private_key);
+      DCHECK(client_private_key_);
       DCHECK_NE(kSSLClientSocketNoPendingResult, signature_result_);
       pending_read_error_ = ERR_IO_PENDING;
     } else {
@@ -1598,7 +1602,7 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
   // TODO(droger): Support client auth on iOS. See http://crbug.com/145954).
   LOG(WARNING) << "Client auth is not supported";
 #else   // !defined(OS_IOS)
-  if (!ssl_config_.send_client_cert) {
+  if (!send_client_cert_) {
     // First pass: we know that a client certificate is needed, but we do not
     // have one at hand. Suspend the handshake. SSL_get_error will return
     // SSL_ERROR_WANT_X509_LOOKUP.
@@ -1606,8 +1610,8 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
   }
 
   // Second pass: a client certificate should have been selected.
-  if (ssl_config_.client_cert.get()) {
-    if (!ssl_config_.client_private_key) {
+  if (client_cert_.get()) {
+    if (!client_private_key_) {
       // The caller supplied a null private key. Fail the handshake and surface
       // an appropriate error to the caller.
       LOG(WARNING) << "Client cert found without private key";
@@ -1615,21 +1619,21 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
       return -1;
     }
 
-    if (!SetSSLChainAndKey(ssl_.get(), ssl_config_.client_cert.get(), nullptr,
+    if (!SetSSLChainAndKey(ssl_.get(), client_cert_.get(), nullptr,
                            &SSLContext::kPrivateKeyMethod)) {
       OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_BAD_FORMAT);
       return -1;
     }
 
     std::vector<uint16_t> preferences =
-        ssl_config_.client_private_key->GetAlgorithmPreferences();
+        client_private_key_->GetAlgorithmPreferences();
     SSL_set_signing_algorithm_prefs(ssl_.get(), preferences.data(),
                                     preferences.size());
 
     net_log_.AddEventWithIntParams(
         NetLogEventType::SSL_CLIENT_CERT_PROVIDED, "cert_count",
-        base::checked_cast<int>(
-            1 + ssl_config_.client_cert->intermediate_buffers().size()));
+        base::checked_cast<int>(1 +
+                                client_cert_->intermediate_buffers().size()));
     return 1;
   }
 #endif  // defined(OS_IOS)
@@ -1705,18 +1709,18 @@ ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignCallback(
     size_t in_len) {
   DCHECK_EQ(kSSLClientSocketNoPendingResult, signature_result_);
   DCHECK(signature_.empty());
-  DCHECK(ssl_config_.client_private_key);
+  DCHECK(client_private_key_);
 
   net_log_.BeginEvent(NetLogEventType::SSL_PRIVATE_KEY_OP, [&] {
     return NetLogPrivateKeyOperationParams(
         algorithm,
         // Pass the SSLPrivateKey pointer to avoid making copies of the
         // provider name in the common case with logging disabled.
-        ssl_config_.client_private_key.get());
+        client_private_key_.get());
   });
 
   signature_result_ = ERR_IO_PENDING;
-  ssl_config_.client_private_key->Sign(
+  client_private_key_->Sign(
       algorithm, base::make_span(in, in_len),
       base::BindOnce(&SSLClientSocketImpl::OnPrivateKeyComplete,
                      weak_factory_.GetWeakPtr()));
@@ -1728,7 +1732,7 @@ ssl_private_key_result_t SSLClientSocketImpl::PrivateKeyCompleteCallback(
     size_t* out_len,
     size_t max_out) {
   DCHECK_NE(kSSLClientSocketNoPendingResult, signature_result_);
-  DCHECK(ssl_config_.client_private_key);
+  DCHECK(client_private_key_);
 
   if (signature_result_ == ERR_IO_PENDING)
     return ssl_private_key_retry;
@@ -1751,7 +1755,7 @@ void SSLClientSocketImpl::OnPrivateKeyComplete(
     const std::vector<uint8_t>& signature) {
   DCHECK_EQ(ERR_IO_PENDING, signature_result_);
   DCHECK(signature_.empty());
-  DCHECK(ssl_config_.client_private_key);
+  DCHECK(client_private_key_);
 
   net_log_.EndEventWithNetErrorCode(NetLogEventType::SSL_PRIVATE_KEY_OP, error);
 
@@ -1816,8 +1820,7 @@ int SSLClientSocketImpl::MapLastOpenSSLError(
     // certificate. See https://crbug.com/646567.
     if (ERR_GET_REASON(info->error_code) ==
             SSL_R_SSLV3_ALERT_HANDSHAKE_FAILURE &&
-        certificate_requested_ && ssl_config_.send_client_cert &&
-        !ssl_config_.client_cert) {
+        certificate_requested_ && send_client_cert_ && !client_cert_) {
       net_error = ERR_BAD_SSL_CLIENT_AUTH_CERT;
     }
 
