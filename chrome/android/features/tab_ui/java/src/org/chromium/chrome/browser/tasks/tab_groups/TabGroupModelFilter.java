@@ -590,11 +590,6 @@ public class TabGroupModelFilter extends TabModelFilter {
     }
 
     @Override
-    protected void removeTab(Tab tab) {
-        closeTab(tab);
-    }
-
-    @Override
     protected void resetFilterState() {
         mShouldRecordUma = false;
         mIsResetting = true;

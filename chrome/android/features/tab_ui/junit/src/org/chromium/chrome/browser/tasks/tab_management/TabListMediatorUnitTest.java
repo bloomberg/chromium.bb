@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -19,21 +18,16 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.ChromeFeatureList.TAB_GROUPS_ANDROID;
 import static org.chromium.chrome.browser.ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID;
 
-import android.app.Activity;
-import android.content.ComponentCallbacks;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
@@ -57,7 +51,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
-import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
@@ -126,12 +119,6 @@ public class TabListMediatorUnitTest {
     Drawable mFaviconDrawable;
     @Mock
     Bitmap mFaviconBitmap;
-    @Mock
-    Activity mContext;
-    @Mock
-    TabListMediator.TabActionListener mOpenGroupActionListener;
-    @Mock
-    GridLayoutManager mGridLayoutManager;
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
     @Captor
@@ -142,8 +129,6 @@ public class TabListMediatorUnitTest {
     ArgumentCaptor<Callback<Drawable>> mCallbackCaptor;
     @Captor
     ArgumentCaptor<TabGroupModelFilter.Observer> mTabGroupModelFilterObserverCaptor;
-    @Captor
-    ArgumentCaptor<ComponentCallbacks> mComponentCallbacksCaptor;
 
     private Tab mTab1;
     private Tab mTab2;
@@ -208,17 +193,12 @@ public class TabListMediatorUnitTest {
         doReturn(POSITION2).when(mTabGroupModelFilter).indexOf(mTab2);
         doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
         doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION2);
-        doReturn(mOpenGroupActionListener)
-                .when(mGridCardOnClickListenerProvider)
-                .openTabGridDialog(any(Tab.class));
-        doNothing().when(mContext).registerComponentCallbacks(mComponentCallbacksCaptor.capture());
 
         mModel = new TabListModel();
-        mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
+        mMediator = new TabListMediator(mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, null, mTabListFaviconProvider,
                 false, null, null, mGridCardOnClickListenerProvider, null,
                 getClass().getSimpleName());
-        mMediator.registerOrientationListener(mGridLayoutManager);
     }
 
     @After
@@ -489,60 +469,9 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
-    public void tabAddition_RestoreNotComplete() {
-        initAndAssertAllProperties();
-        mMediator.setActionOnAllRelatedTabsForTest(true);
-
-        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
-        doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
-        doReturn(mTab2).when(mTabModelFilter).getTabAt(1);
-        doReturn(newTab).when(mTabModelFilter).getTabAt(2);
-        doReturn(3).when(mTabModelFilter).getCount();
-        doReturn(Arrays.asList(newTab)).when(mTabModelFilter).getRelatedTabList(eq(TAB3_ID));
-        assertThat(mModel.size(), equalTo(2));
-
-        mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_RESTORE);
-
-        // When tab restoring stage is not yet finished, this tab info should not be added to
-        // property model.
-        assertThat(mModel.size(), equalTo(2));
-    }
-
-    @Test
-    public void tabAddition_Restore() {
-        initAndAssertAllProperties();
-        mMediator.setActionOnAllRelatedTabsForTest(true);
-        // Mock that tab restoring stage is over.
-        mMediator.setTabRestoreCompletedForTesting(true);
-        TabListMediator.TabActionListener actionListenerBeforeUpdate =
-                mModel.get(1).get(TabProperties.TAB_SELECTED_LISTENER);
-
-        // Mock that newTab was in the same group with tab, and now it is restored.
-        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
-        List<Tab> tabs = Arrays.asList(mTab2, newTab);
-        doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
-        doReturn(mTab2).when(mTabModelFilter).getTabAt(1);
-        doReturn(2).when(mTabModelFilter).getCount();
-        doReturn(1).when(mTabModelFilter).indexOf(newTab);
-        doReturn(tabs).when(mTabModelFilter).getRelatedTabList(eq(TAB3_ID));
-        doReturn(tabs).when(mTabModelFilter).getRelatedTabList(eq(TAB2_ID));
-        assertThat(mModel.size(), equalTo(2));
-
-        mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_RESTORE);
-
-        TabListMediator.TabActionListener actionListenerAfterUpdate =
-                mModel.get(1).get(TabProperties.TAB_SELECTED_LISTENER);
-        // The selection listener should be updated which indicates that corresponding property
-        // model is updated.
-        assertThat(actionListenerBeforeUpdate, not(actionListenerAfterUpdate));
-        assertThat(mModel.size(), equalTo(2));
-    }
-
-    @Test
     public void tabAddition_GTS() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTest(true);
-        mMediator.setTabRestoreCompletedForTesting(true);
 
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
@@ -552,7 +481,6 @@ public class TabListMediatorUnitTest {
         doReturn(Arrays.asList(newTab))
                 .when(mTabModelFilter)
                 .getRelatedTabList(eq(TAB3_ID));
-        assertThat(mModel.size(), equalTo(2));
 
         mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
 
@@ -565,7 +493,6 @@ public class TabListMediatorUnitTest {
     public void tabAddition_GTS_Skip() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTest(true);
-        mMediator.setTabRestoreCompletedForTesting(true);
 
         // Add a new tab to the group with mTab2.
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
@@ -575,7 +502,6 @@ public class TabListMediatorUnitTest {
         doReturn(Arrays.asList(mTab2, newTab))
                 .when(mTabModelFilter)
                 .getRelatedTabList(eq(TAB3_ID));
-        assertThat(mModel.size(), equalTo(2));
 
         mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
 
@@ -586,7 +512,6 @@ public class TabListMediatorUnitTest {
     public void tabAddition_GTS_Middle() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTest(true);
-        mMediator.setTabRestoreCompletedForTesting(true);
 
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
@@ -596,7 +521,6 @@ public class TabListMediatorUnitTest {
         doReturn(Arrays.asList(newTab))
                 .when(mTabModelFilter)
                 .getRelatedTabList(eq(TAB3_ID));
-        assertThat(mModel.size(), equalTo(2));
 
         mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
 
@@ -608,14 +532,12 @@ public class TabListMediatorUnitTest {
     @Test
     public void tabAddition_Dialog_End() {
         initAndAssertAllProperties();
-        mMediator.setTabRestoreCompletedForTesting(true);
 
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         doReturn(3).when(mTabModel).getCount();
         doReturn(Arrays.asList(mTab1, mTab2, newTab))
                 .when(mTabModelFilter)
                 .getRelatedTabList(eq(TAB1_ID));
-        assertThat(mModel.size(), equalTo(2));
 
         mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
 
@@ -627,14 +549,12 @@ public class TabListMediatorUnitTest {
     @Test
     public void tabAddition_Dialog_Middle() {
         initAndAssertAllProperties();
-        mMediator.setTabRestoreCompletedForTesting(true);
 
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         doReturn(3).when(mTabModel).getCount();
         doReturn(Arrays.asList(mTab1, newTab, mTab2))
                 .when(mTabModelFilter)
                 .getRelatedTabList(eq(TAB1_ID));
-        assertThat(mModel.size(), equalTo(2));
 
         mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
 
@@ -646,12 +566,10 @@ public class TabListMediatorUnitTest {
     @Test
     public void tabAddition_Dialog_Skip() {
         initAndAssertAllProperties();
-        mMediator.setTabRestoreCompletedForTesting(true);
 
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         // newTab is of another group.
         doReturn(Arrays.asList(mTab1, mTab2)).when(mTabModelFilter).getRelatedTabList(eq(TAB1_ID));
-        assertThat(mModel.size(), equalTo(2));
 
         mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
 
@@ -691,7 +609,7 @@ public class TabListMediatorUnitTest {
     public void tabMergeIntoGroup() {
         setUpForTabGroupOperation();
         // Setup the mediator with a CreateGroupButtonProvider.
-        mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
+        mMediator = new TabListMediator(mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, null, mTabListFaviconProvider,
                 true, mCreateGroupButtonProvider, null, null, null, getClass().getSimpleName());
 
@@ -726,7 +644,7 @@ public class TabListMediatorUnitTest {
     public void tabMoveOutOfGroup_GTS_Moved_Tab_Selected() {
         setUpForTabGroupOperation();
         // Setup the mediator with a CreateGroupButtonProvider.
-        mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
+        mMediator = new TabListMediator(mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, null, mTabListFaviconProvider,
                 true, mCreateGroupButtonProvider, null, null, null, getClass().getSimpleName());
 
@@ -758,7 +676,7 @@ public class TabListMediatorUnitTest {
     public void tabMoveOutOfGroup_GTS_Origin_Tab_Selected() {
         setUpForTabGroupOperation();
         // Setup the mediator with a CreateGroupButtonProvider.
-        mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
+        mMediator = new TabListMediator(mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, null, mTabListFaviconProvider,
                 true, mCreateGroupButtonProvider, null, null, null, getClass().getSimpleName());
 
@@ -791,7 +709,7 @@ public class TabListMediatorUnitTest {
         setUpForTabGroupOperation();
 
         // Setup the mediator with a DialogHandler.
-        mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
+        mMediator = new TabListMediator(mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, null, mTabListFaviconProvider,
                 false, null, null, null, mTabGridDialogHandler, getClass().getSimpleName());
         // Assume that filter is already updated.
@@ -815,7 +733,7 @@ public class TabListMediatorUnitTest {
     public void tabMoveOutOfGroup_Strip() {
         setUpForTabGroupOperation();
 
-        mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
+        mMediator = new TabListMediator(mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, null, mTabListFaviconProvider,
                 false, null, null, null, null, getClass().getSimpleName());
         // Assume that filter is already updated.
@@ -1027,54 +945,6 @@ public class TabListMediatorUnitTest {
         assertThat(mModel.indexFromId(TAB3_ID), equalTo(2));
     }
 
-    @Test
-    public void updateSpanCount_Portrait_SingleWindow() {
-        initAndAssertAllProperties();
-        // Mock that we are switching to portrait mode.
-        Configuration configuration = new Configuration();
-        configuration.orientation = Configuration.ORIENTATION_PORTRAIT;
-        // Mock that we are in single window mode.
-        MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(false);
-
-        mComponentCallbacksCaptor.getValue().onConfigurationChanged(configuration);
-
-        verify(mGridLayoutManager).setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT);
-    }
-
-    @Test
-    public void updateSpanCount_Landscape_SingleWindow() {
-        initAndAssertAllProperties();
-        // Mock that we are switching to landscape mode.
-        Configuration configuration = new Configuration();
-        configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;
-        // Mock that we are in single window mode.
-        MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(false);
-
-        mComponentCallbacksCaptor.getValue().onConfigurationChanged(configuration);
-
-        verify(mGridLayoutManager)
-                .setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_LANDSCAPE);
-    }
-
-    @Test
-    public void updateSpanCount_MultiWindow() {
-        initAndAssertAllProperties();
-        Configuration portraitConfiguration = new Configuration();
-        portraitConfiguration.orientation = Configuration.ORIENTATION_PORTRAIT;
-        Configuration landscapeConfiguration = new Configuration();
-        landscapeConfiguration.orientation = Configuration.ORIENTATION_LANDSCAPE;
-        // Mock that we are in multi window mode.
-        MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
-
-        mComponentCallbacksCaptor.getValue().onConfigurationChanged(landscapeConfiguration);
-        mComponentCallbacksCaptor.getValue().onConfigurationChanged(portraitConfiguration);
-        mComponentCallbacksCaptor.getValue().onConfigurationChanged(landscapeConfiguration);
-
-        // The span count is fixed to 2 for multi window mode regardless of the orientation change.
-        verify(mGridLayoutManager, times(3))
-                .setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT);
-    }
-
     private void initAndAssertAllProperties() {
         List<Tab> tabs = new ArrayList<>();
         for (int i = 0; i < mTabModel.getCount(); i++) {
@@ -1151,7 +1021,7 @@ public class TabListMediatorUnitTest {
                 .when(mTabGroupModelFilter)
                 .addTabGroupObserver(mTabGroupModelFilterObserverCaptor.capture());
 
-        mMediator = new TabListMediator(mContext, mModel, mTabModelSelector,
+        mMediator = new TabListMediator(mModel, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, null, mTabListFaviconProvider,
                 true, null, null, null, null, getClass().getSimpleName());
 
