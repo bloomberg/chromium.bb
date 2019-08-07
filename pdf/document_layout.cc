@@ -20,12 +20,11 @@ DocumentLayout::Options& DocumentLayout::Options::operator=(
 DocumentLayout::Options::~Options() = default;
 
 void DocumentLayout::Options::RotatePagesClockwise() {
-  default_page_orientation_ = (default_page_orientation_ + 1) % 4;
+  default_page_orientation_ = RotateClockwise(default_page_orientation_);
 }
 
 void DocumentLayout::Options::RotatePagesCounterclockwise() {
-  // Use the modular additive inverse of -1 to avoid negative values.
-  default_page_orientation_ = (default_page_orientation_ + 3) % 4;
+  default_page_orientation_ = RotateCounterclockwise(default_page_orientation_);
 }
 
 DocumentLayout::DocumentLayout() = default;

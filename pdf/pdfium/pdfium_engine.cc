@@ -2632,8 +2632,19 @@ pp::Size PDFiumEngine::GetPageSize(int index) {
         ConvertUnitDouble(width_in_points, kPointsPerInch, kPixelsPerInch));
     int height_in_pixels = static_cast<int>(
         ConvertUnitDouble(height_in_points, kPointsPerInch, kPixelsPerInch));
-    if (layout_.options().default_page_orientation() % 2 == 1)
-      std::swap(width_in_pixels, height_in_pixels);
+
+    switch (layout_.options().default_page_orientation()) {
+      case PageOrientation::kOriginal:
+      case PageOrientation::kClockwise180:
+        // No axis swap needed.
+        break;
+      case PageOrientation::kClockwise90:
+      case PageOrientation::kClockwise270:
+        // Rotated 90 degrees: swap axes.
+        std::swap(width_in_pixels, height_in_pixels);
+        break;
+    }
+
     size = pp::Size(width_in_pixels, height_in_pixels);
   }
   return size;
@@ -2729,8 +2740,8 @@ bool PDFiumEngine::ContinuePaint(int progressive_index,
                         0xFFFFFFFF);
     rv = FPDF_RenderPageBitmap_Start(
         new_bitmap.get(), page, start_x, start_y, size_x, size_y,
-        layout_.options().default_page_orientation(), GetRenderingFlags(),
-        this);
+        ToPDFiumRotation(layout_.options().default_page_orientation()),
+        GetRenderingFlags(), this);
     progressive_paints_[progressive_index].SetBitmapAndImageData(
         std::move(new_bitmap), *image_data);
   }
@@ -2757,7 +2768,8 @@ void PDFiumEngine::FinishPaint(int progressive_index,
 
   // Draw the forms.
   FPDF_FFLDraw(form(), bitmap, pages_[page_index]->GetPage(), start_x, start_y,
-               size_x, size_y, layout_.options().default_page_orientation(),
+               size_x, size_y,
+               ToPDFiumRotation(layout_.options().default_page_orientation()),
                GetRenderingFlags());
 
   FillPageSides(progressive_index);
@@ -3171,8 +3183,8 @@ void PDFiumEngine::DeviceToPage(int page_index,
   FPDF_BOOL ret = FPDF_DeviceToPage(
       pages_[page_index]->GetPage(), 0, 0, pages_[page_index]->rect().width(),
       pages_[page_index]->rect().height(),
-      layout_.options().default_page_orientation(), temp_x, temp_y, page_x,
-      page_y);
+      ToPDFiumRotation(layout_.options().default_page_orientation()), temp_x,
+      temp_y, page_x, page_y);
   DCHECK(ret);
 }
 

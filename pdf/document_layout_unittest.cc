@@ -35,61 +35,66 @@ inline bool PpRectEq(const pp::Rect& lhs, const pp::Rect& rhs) {
 }
 
 TEST_F(DocumentLayoutOptionsTest, DefaultConstructor) {
-  EXPECT_EQ(options_.default_page_orientation(), 0);
+  EXPECT_EQ(options_.default_page_orientation(), PageOrientation::kOriginal);
 }
 
 TEST_F(DocumentLayoutOptionsTest, CopyConstructor) {
   options_.RotatePagesClockwise();
 
   DocumentLayout::Options copy(options_);
-  EXPECT_EQ(copy.default_page_orientation(), 1);
+  EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kClockwise90);
 
   options_.RotatePagesClockwise();
-  EXPECT_EQ(copy.default_page_orientation(), 1);
+  EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kClockwise90);
 }
 
 TEST_F(DocumentLayoutOptionsTest, CopyAssignment) {
   options_.RotatePagesClockwise();
 
   DocumentLayout::Options copy;
-  EXPECT_EQ(copy.default_page_orientation(), 0);
+  EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kOriginal);
   copy = options_;
-  EXPECT_EQ(copy.default_page_orientation(), 1);
+  EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kClockwise90);
 
   options_.RotatePagesClockwise();
-  EXPECT_EQ(copy.default_page_orientation(), 1);
+  EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kClockwise90);
 }
 
 TEST_F(DocumentLayoutOptionsTest, RotatePagesClockwise) {
   options_.RotatePagesClockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 1);
+  EXPECT_EQ(options_.default_page_orientation(), PageOrientation::kClockwise90);
 
   options_.RotatePagesClockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 2);
+  EXPECT_EQ(options_.default_page_orientation(),
+            PageOrientation::kClockwise180);
 
   options_.RotatePagesClockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 3);
+  EXPECT_EQ(options_.default_page_orientation(),
+            PageOrientation::kClockwise270);
 
   options_.RotatePagesClockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 0);
+  EXPECT_EQ(options_.default_page_orientation(), PageOrientation::kOriginal);
 }
 
 TEST_F(DocumentLayoutOptionsTest, RotatePagesCounterclockwise) {
   options_.RotatePagesCounterclockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 3);
+  EXPECT_EQ(options_.default_page_orientation(),
+            PageOrientation::kClockwise270);
 
   options_.RotatePagesCounterclockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 2);
+  EXPECT_EQ(options_.default_page_orientation(),
+            PageOrientation::kClockwise180);
 
   options_.RotatePagesCounterclockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 1);
+  EXPECT_EQ(options_.default_page_orientation(), PageOrientation::kClockwise90);
 
   options_.RotatePagesCounterclockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 0);
+  EXPECT_EQ(options_.default_page_orientation(), PageOrientation::kOriginal);
 }
 
 TEST_F(DocumentLayoutTest, DefaultConstructor) {
-  EXPECT_EQ(layout_.options().default_page_orientation(), 0);
+  EXPECT_EQ(layout_.options().default_page_orientation(),
+            PageOrientation::kOriginal);
   EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(0, 0));
 }
 
@@ -99,7 +104,8 @@ TEST_F(DocumentLayoutTest, SetOptionsDoesNotRecomputeLayout) {
   DocumentLayout::Options options;
   options.RotatePagesClockwise();
   layout_.set_options(options);
-  EXPECT_EQ(layout_.options().default_page_orientation(), 1);
+  EXPECT_EQ(layout_.options().default_page_orientation(),
+            PageOrientation::kClockwise90);
   EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(1, 2));
 }
 

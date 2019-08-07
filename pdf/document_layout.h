@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "pdf/draw_utils/coordinates.h"
+#include "pdf/page_orientation.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 
@@ -32,14 +33,9 @@ class DocumentLayout final {
 
     ~Options();
 
-    // Returns the default page orientation, encoded as an integer from 0 to 3
-    // (inclusive).
-    //
-    // A return value of 0 indicates the original page orientation, with each
-    // increment indicating clockwise rotation by an additional 90 degrees.
-    //
-    // TODO(kmoon): Return an enum (class) instead of an integer.
-    int default_page_orientation() const { return default_page_orientation_; }
+    PageOrientation default_page_orientation() const {
+      return default_page_orientation_;
+    }
 
     // Rotates default page orientation 90 degrees clockwise.
     void RotatePagesClockwise();
@@ -48,8 +44,7 @@ class DocumentLayout final {
     void RotatePagesCounterclockwise();
 
    private:
-    // Orientations are non-negative integers modulo 4.
-    int default_page_orientation_ = 0;
+    PageOrientation default_page_orientation_ = PageOrientation::kOriginal;
   };
 
   static const draw_utils::PageInsetSizes kSingleViewInsets;
