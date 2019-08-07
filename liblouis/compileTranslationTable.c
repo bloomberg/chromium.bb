@@ -4141,9 +4141,6 @@ compileTable(const char *tableList, TranslationTableHeader **translationTable,
 	/* TODO: These definitions seem to be necessary for proper functioning of
 	   liblouisutdml. Find a way to satisfy those requirements without hard coding
 	   some characters in every table notably behind the users back */
-	compileString("space \\x001b 1b escape", characterClasses, characterClassAttribute,
-			opcodeLengths, newRuleOffset, newRule, ruleNames, translationTable,
-			displayTable);
 	compileString("space \\xffff 123456789abcdef LOU_ENDSEGMENT", characterClasses,
 			characterClassAttribute, opcodeLengths, newRuleOffset, newRule, ruleNames,
 			translationTable, displayTable);
