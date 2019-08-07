@@ -219,6 +219,7 @@ _CONFIG = [
             # cc painting types.
             'cc::PaintCanvas',
             'cc::PaintFlags',
+            'cc::PaintShader',
             'cc::PaintWorkletInput',
             'cc::NodeId',
 
