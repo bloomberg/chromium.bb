@@ -89,6 +89,8 @@ std::vector<pp::Rect> DocumentLayout::GetTwoUpViewLayout(
     EnlargeHeight(page_sizes.back().height());
   }
 
+  size_.set_width(2 * size_.width());
+
   return formatted_rects;
 }
 

@@ -153,7 +153,7 @@ TEST_F(DocumentLayoutTest, GetTwoUpViewLayout) {
   EXPECT_PRED2(PpRectEq, pp::Rect(1067, 3, 1060, 816), two_up_view_layout[1]);
   EXPECT_PRED2(PpRectEq, pp::Rect(245, 1069, 820, 1056), two_up_view_layout[2]);
   EXPECT_PRED2(PpRectEq, pp::Rect(1067, 1069, 820, 890), two_up_view_layout[3]);
-  EXPECT_PRED2(PpSizeEq, pp::Size(1066, 2132), layout_.size());
+  EXPECT_PRED2(PpSizeEq, pp::Size(2132, 2132), layout_.size());
 
   // Test case where the widest page is on the left.
   page_sizes = {{1066, 826}, {820, 1056}, {820, 890}, {826, 1066}};
@@ -164,7 +164,7 @@ TEST_F(DocumentLayoutTest, GetTwoUpViewLayout) {
   EXPECT_PRED2(PpRectEq, pp::Rect(251, 1059, 814, 880), two_up_view_layout[2]);
   EXPECT_PRED2(PpRectEq, pp::Rect(1067, 1059, 820, 1056),
                two_up_view_layout[3]);
-  EXPECT_PRED2(PpSizeEq, pp::Size(1066, 2122), layout_.size());
+  EXPECT_PRED2(PpSizeEq, pp::Size(2132, 2122), layout_.size());
 
   // Test case where there's an odd # of pages.
   page_sizes = {{200, 300}, {400, 200}, {300, 600}, {250, 500}, {300, 400}};
@@ -175,7 +175,7 @@ TEST_F(DocumentLayoutTest, GetTwoUpViewLayout) {
   EXPECT_PRED2(PpRectEq, pp::Rect(105, 303, 294, 590), two_up_view_layout[2]);
   EXPECT_PRED2(PpRectEq, pp::Rect(401, 303, 244, 490), two_up_view_layout[3]);
   EXPECT_PRED2(PpRectEq, pp::Rect(105, 903, 290, 390), two_up_view_layout[4]);
-  EXPECT_PRED2(PpSizeEq, pp::Size(400, 1300), layout_.size());
+  EXPECT_PRED2(PpSizeEq, pp::Size(800, 1300), layout_.size());
 }
 
 TEST_F(DocumentLayoutDeathTest, EnlargeHeightNegativeIncrement) {
