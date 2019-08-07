@@ -62,15 +62,12 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
@@ -519,71 +516,16 @@ String GetProtocol(const GURL& url, const network::ResourceResponseInfo& info) {
   return protocol;
 }
 
-class NetworkNavigationThrottle : public content::NavigationThrottle {
- public:
-  NetworkNavigationThrottle(
-      base::WeakPtr<protocol::NetworkHandler> network_handler,
-      content::NavigationHandle* navigation_handle)
-      : content::NavigationThrottle(navigation_handle),
-        network_handler_(network_handler) {}
-
-  ~NetworkNavigationThrottle() override {}
-
-  // content::NavigationThrottle implementation:
-  NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
-    if (network_handler_ && network_handler_->ShouldCancelNavigation(
-                                navigation_handle()->GetGlobalRequestID())) {
-      return CANCEL_AND_IGNORE;
-    }
-    return PROCEED;
-  }
-
-  const char* GetNameForLogging() override {
-    return "DevToolsNetworkNavigationThrottle";
-  }
-
- private:
-  base::WeakPtr<protocol::NetworkHandler> network_handler_;
-  DISALLOW_COPY_AND_ASSIGN(NetworkNavigationThrottle);
-};
-
-bool GetPostData(const net::URLRequest* request, std::string* post_data) {
-  if (!request->has_upload())
-    return false;
-
-  const net::UploadDataStream* stream = request->get_upload();
-  if (!stream->GetElementReaders())
-    return false;
-
-  const auto* element_readers = stream->GetElementReaders();
-
-  if (element_readers->empty())
-    return false;
-
-  post_data->clear();
-  for (const auto& element_reader : *element_readers) {
-    const net::UploadBytesElementReader* reader =
-        element_reader->AsBytesReader();
-    // TODO(caseq): Also support blobs.
-    if (!reader) {
-      post_data->clear();
-      return false;
-    }
-    // TODO(caseq): This should really be base64 encoded.
-    post_data->append(reader->bytes(), reader->length());
-  }
-  return true;
-}
-
-// TODO(caseq): all problems in the above function should be fixed here as well.
 bool GetPostData(const network::ResourceRequestBody& request_body,
                  std::string* result) {
   const std::vector<network::DataElement>* elements = request_body.elements();
   if (elements->empty())
     return false;
   for (const auto& element : *elements) {
+    // TODO(caseq): Also support blobs.
     if (element.type() != network::mojom::DataElementType::kBytes)
       return false;
+    // TODO(caseq): This should rather be sent as Binary.
     result->append(element.bytes(), element.length());
   }
   return true;
@@ -2014,43 +1956,6 @@ NetworkHandler::CreateRequestFromResourceRequest(
   if (request.request_body && GetPostData(*request.request_body, &post_data))
     request_object->SetPostData(std::move(post_data));
   return request_object;
-}
-
-// static
-std::unique_ptr<Network::Request> NetworkHandler::CreateRequestFromURLRequest(
-    const net::URLRequest* request,
-    const std::string& cookie) {
-  std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
-  for (net::HttpRequestHeaders::Iterator it(request->extra_request_headers());
-       it.GetNext();) {
-    headers_dict->setString(it.name(), it.value());
-  }
-  if (!cookie.empty())
-    headers_dict->setString(net::HttpRequestHeaders::kCookie, cookie);
-  if (!request->referrer().empty()) {
-    headers_dict->setString(net::HttpRequestHeaders::kReferer,
-                            request->referrer());
-  }
-  std::string url_fragment;
-  std::unique_ptr<protocol::Network::Request> request_object =
-      Network::Request::Create()
-          .SetUrl(ExtractFragment(request->url(), &url_fragment))
-          .SetMethod(request->method())
-          .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
-          .SetInitialPriority(resourcePriority(request->priority()))
-          .SetReferrerPolicy(referrerPolicy(request->referrer_policy()))
-          .Build();
-  if (!url_fragment.empty())
-    request_object->SetUrlFragment(url_fragment);
-  std::string post_data;
-  if (GetPostData(request, &post_data))
-    request_object->SetPostData(std::move(post_data));
-  return request_object;
-}
-
-bool NetworkHandler::ShouldCancelNavigation(
-    const GlobalRequestID& global_request_id) {
-  return false;
 }
 
 bool NetworkHandler::MaybeCreateProxyForInterception(

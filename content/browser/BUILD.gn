@@ -707,8 +707,6 @@ jumbo_source_set("browser") {
     "devtools/devtools_stream_file.h",
     "devtools/devtools_stream_pipe.cc",
     "devtools/devtools_stream_pipe.h",
-    "devtools/devtools_target_registry.cc",
-    "devtools/devtools_target_registry.h",
     "devtools/devtools_traceable_screenshot.cc",
     "devtools/devtools_traceable_screenshot.h",
     "devtools/devtools_url_loader_interceptor.cc",

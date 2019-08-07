@@ -24,7 +24,6 @@
 
 namespace net {
 class HttpRequestHeaders;
-class URLRequest;
 class SSLInfo;
 class X509Certificate;
 }  // namespace net
@@ -44,7 +43,6 @@ class RenderProcessHost;
 class NavigationRequest;
 class SignedExchangeEnvelope;
 class StoragePartition;
-struct GlobalRequestID;
 struct InterceptedRequestInfo;
 struct SignedExchangeError;
 
@@ -203,11 +201,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   static std::unique_ptr<Network::Request> CreateRequestFromResourceRequest(
       const network::ResourceRequest& request,
       const std::string& cookie_line);
-  static std::unique_ptr<Network::Request> CreateRequestFromURLRequest(
-      const net::URLRequest* request,
-      const std::string& cookie);
 
-  bool ShouldCancelNavigation(const GlobalRequestID& global_request_id);
   void WillSendNavigationRequest(net::HttpRequestHeaders* headers,
                                  bool* skip_service_worker,
                                  bool* disable_cache);
