@@ -4722,6 +4722,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You are using an unsupported feature flag: <ph name="BAD_FLAG">$1<ex>SignedHTTPExchange</ex></ph>. Stability and security will suffer.
       </message>
 
+      <!-- Bad Environment Variables Infobar-->
+      <message name="IDS_BAD_ENVIRONMENT_VARIABLES_WARNING_MESSAGE" desc="Message shown when an unsupported environment variable is used [Keep it short so it fits in the infobar.]">
+        You are using an unsupported environment variable: <ph name="BAD_VAR">$1<ex>SSLKEYLOGFILE</ex></ph>. Stability and security will suffer.
+      </message>
+
       <!-- Pepper Broker Infobar -->
       <if expr="enable_plugins">
         <message name="IDS_PEPPER_BROKER_MESSAGE" desc="Message shown when a pepper plugin wants to launch its broker. This message is followed by a 'Learn more' link.">
