@@ -18,7 +18,7 @@
       "fuchsia.logger.Log",
       "fuchsia.logger.LogSink",
       "fuchsia.media.Audio",
-      "fuchsia.media.drm.WidevineContentDecryptionModule",
+      "fuchsia.media.drm.Widevine",
       "fuchsia.mediacodec.CodecFactory",
       "fuchsia.net.NameLookup",
       "fuchsia.netstack.Netstack",
