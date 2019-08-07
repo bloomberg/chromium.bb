@@ -126,6 +126,63 @@ TEST(CoordinateTest, GetPageInsetsForTwoUpView) {
       GetPageInsetsForTwoUpView(1, 4, kSingleViewInsets, kHorizontalSeparator));
 }
 
+TEST(CoordinateTest, GetRectForSingleView) {
+  // Test portrait pages.
+  CompareRect({55, 503, 190, 390},
+              GetRectForSingleView({200, 400}, {300, 500}, kSingleViewInsets));
+  CompareRect({55, 603, 90, 330},
+              GetRectForSingleView({100, 340}, {200, 600}, kSingleViewInsets));
+
+  // Test landscape pages.
+  CompareRect({5, 1003, 490, 440},
+              GetRectForSingleView({500, 450}, {500, 1000}, kSingleViewInsets));
+  CompareRect({30, 1503, 640, 190},
+              GetRectForSingleView({650, 200}, {700, 1500}, kSingleViewInsets));
+}
+
+TEST(CoordinateTest, GetScreenRect) {
+  const pp::Rect rect(10, 20, 200, 300);
+
+  // Test various zooms with the position at the origin.
+  CompareRect({10, 20, 200, 300}, GetScreenRect(rect, {0, 0}, 1));
+  CompareRect({15, 30, 300, 450}, GetScreenRect(rect, {0, 0}, 1.5));
+  CompareRect({5, 10, 100, 150}, GetScreenRect(rect, {0, 0}, 0.5));
+
+  // Test various zooms with the position elsewhere.
+  CompareRect({-390, -10, 200, 300}, GetScreenRect(rect, {400, 30}, 1));
+  CompareRect({-385, 0, 300, 450}, GetScreenRect(rect, {400, 30}, 1.5));
+  CompareRect({-395, -20, 100, 150}, GetScreenRect(rect, {400, 30}, 0.5));
+
+  // Test various zooms with a negative position.
+  CompareRect({-90, 70, 200, 300}, GetScreenRect(rect, {100, -50}, 1));
+  CompareRect({-85, 80, 300, 450}, GetScreenRect(rect, {100, -50}, 1.5));
+  CompareRect({-95, 60, 100, 150}, GetScreenRect(rect, {100, -50}, 0.5));
+
+  // Test an empty rect always outputs an empty rect.
+  const pp::Rect empty_rect;
+  CompareRect({-20, -500, 0, 0}, GetScreenRect(empty_rect, {20, 500}, 1));
+  CompareRect({-20, -500, 0, 0}, GetScreenRect(empty_rect, {20, 500}, 1.5));
+  CompareRect({-20, -500, 0, 0}, GetScreenRect(empty_rect, {20, 500}, 0.5));
+}
+
+TEST(CoordinateTest, GetSurroundingRect) {
+  constexpr int kDocWidth = 1000;
+
+  // Test various position, sizes, and document width.
+  CompareRect({0, 97, 1000, 314},
+              GetSurroundingRect(100, 300, kSingleViewInsets, kDocWidth,
+                                 kBottomSeparator));
+  CompareRect({0, 37, 1000, 214},
+              GetSurroundingRect(40, 200, kSingleViewInsets, kDocWidth,
+                                 kBottomSeparator));
+  CompareRect({0, 197, 1000, 514},
+              GetSurroundingRect(200, 500, kSingleViewInsets, kDocWidth,
+                                 kBottomSeparator));
+  CompareRect(
+      {0, -103, 200, 314},
+      GetSurroundingRect(-100, 300, kSingleViewInsets, 200, kBottomSeparator));
+}
+
 TEST(CoordinateTest, GetLeftFillRect) {
   // Testing various rectangles with different positions and sizes.
   pp::Rect page_rect(10, 20, 400, 500);
@@ -192,63 +249,6 @@ TEST(CoordinateTest, GetBottomFillRect) {
   page_rect.SetRect(50, -200, 100, 300);
   CompareRect({45, 107, 110, 4}, GetBottomFillRect(page_rect, kSingleViewInsets,
                                                    kBottomSeparator));
-}
-
-TEST(CoordinateTest, GetRectForSingleView) {
-  // Test portrait pages.
-  CompareRect({55, 503, 190, 390},
-              GetRectForSingleView({200, 400}, {300, 500}, kSingleViewInsets));
-  CompareRect({55, 603, 90, 330},
-              GetRectForSingleView({100, 340}, {200, 600}, kSingleViewInsets));
-
-  // Test landscape pages.
-  CompareRect({5, 1003, 490, 440},
-              GetRectForSingleView({500, 450}, {500, 1000}, kSingleViewInsets));
-  CompareRect({30, 1503, 640, 190},
-              GetRectForSingleView({650, 200}, {700, 1500}, kSingleViewInsets));
-}
-
-TEST(CoordinateTest, GetScreenRect) {
-  const pp::Rect rect(10, 20, 200, 300);
-
-  // Test various zooms with the position at the origin.
-  CompareRect({10, 20, 200, 300}, GetScreenRect(rect, {0, 0}, 1));
-  CompareRect({15, 30, 300, 450}, GetScreenRect(rect, {0, 0}, 1.5));
-  CompareRect({5, 10, 100, 150}, GetScreenRect(rect, {0, 0}, 0.5));
-
-  // Test various zooms with the position elsewhere.
-  CompareRect({-390, -10, 200, 300}, GetScreenRect(rect, {400, 30}, 1));
-  CompareRect({-385, 0, 300, 450}, GetScreenRect(rect, {400, 30}, 1.5));
-  CompareRect({-395, -20, 100, 150}, GetScreenRect(rect, {400, 30}, 0.5));
-
-  // Test various zooms with a negative position.
-  CompareRect({-90, 70, 200, 300}, GetScreenRect(rect, {100, -50}, 1));
-  CompareRect({-85, 80, 300, 450}, GetScreenRect(rect, {100, -50}, 1.5));
-  CompareRect({-95, 60, 100, 150}, GetScreenRect(rect, {100, -50}, 0.5));
-
-  // Test an empty rect always outputs an empty rect.
-  const pp::Rect empty_rect;
-  CompareRect({-20, -500, 0, 0}, GetScreenRect(empty_rect, {20, 500}, 1));
-  CompareRect({-20, -500, 0, 0}, GetScreenRect(empty_rect, {20, 500}, 1.5));
-  CompareRect({-20, -500, 0, 0}, GetScreenRect(empty_rect, {20, 500}, 0.5));
-}
-
-TEST(CoordinateTest, GetSurroundingRect) {
-  constexpr int kDocWidth = 1000;
-
-  // Test various position, sizes, and document width.
-  CompareRect({0, 97, 1000, 314},
-              GetSurroundingRect(100, 300, kSingleViewInsets, kDocWidth,
-                                 kBottomSeparator));
-  CompareRect({0, 37, 1000, 214},
-              GetSurroundingRect(40, 200, kSingleViewInsets, kDocWidth,
-                                 kBottomSeparator));
-  CompareRect({0, 197, 1000, 514},
-              GetSurroundingRect(200, 500, kSingleViewInsets, kDocWidth,
-                                 kBottomSeparator));
-  CompareRect(
-      {0, -103, 200, 314},
-      GetSurroundingRect(-100, 300, kSingleViewInsets, 200, kBottomSeparator));
 }
 
 TEST(CoordinateTest, GetLeftRectForTwoUpView) {
