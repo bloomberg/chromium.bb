@@ -15,6 +15,7 @@ group("resources") {
     ":green_color",
     ":green_dark_color",
     ":mdc_ink_color",
+    ":placeholder_image_tint_color",
     ":red_color",
     ":red_dark_color",
     ":scrim_background_color",
@@ -95,6 +96,12 @@ colorset("red_dark_color") {
 colorset("mdc_ink_color") {
   sources = [
     "mdc_ink_color.colorset/Contents.json",
+  ]
+}
+
+colorset("placeholder_image_tint_color") {
+  sources = [
+    "placeholder_image_tint_color.colorset/Contents.json",
   ]
 }
 

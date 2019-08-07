@@ -14,6 +14,8 @@ extern NSString* const kDisabledTintColor;
 // Background color used in the rounded squares behind favicons.
 extern NSString* const kFaviconBackgroundColor;
 extern NSString* const kMDCInkColor;
+// Color used to tint placeholder images and icons.
+extern NSString* const kPlaceholderImageTintColor;
 extern NSString* const kScrimBackgroundColor;
 extern NSString* const kSolidButtonTextColor;
 extern NSString* const kTableViewRowHighlightColor;
