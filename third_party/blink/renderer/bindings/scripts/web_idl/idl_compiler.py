@@ -12,6 +12,7 @@ from .interface import Interface
 from .reference import RefByIdFactory
 from .typedef import Typedef
 from .union import Union
+from .user_defined_type import StubUserDefinedType
 from .user_defined_type import UserDefinedType
 
 
@@ -212,7 +213,7 @@ class IdlCompiler(object):
             except KeyError:
                 self._report_error("{}: Unresolved reference to {}".format(
                     ref.ref_own_debug_info.location, ref.identifier))
-                idl_def = UserDefinedType(ref.identifier)  # dummy stub
+                idl_def = StubUserDefinedType(ref.identifier)
             ref.set_target_object(idl_def)
 
         self._ref_to_idl_def_factory.for_each(resolve)
@@ -224,7 +225,7 @@ class IdlCompiler(object):
             except KeyError:
                 self._report_error("{}: Unresolved reference to {}".format(
                     ref.ref_own_debug_info.location, ref.identifier))
-                idl_def = UserDefinedType(ref.identifier)  # dummy stub
+                idl_def = StubUserDefinedType(ref.identifier)
             if isinstance(idl_def, UserDefinedType):
                 idl_type = self._idl_type_factory.definition_type(
                     user_defined_type=idl_def)
