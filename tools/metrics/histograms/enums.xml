@@ -29317,6 +29317,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="GPU"/>
 </enum>
 
+<enum name="HeavyAdStatus">
+  <int value="0" label="Not heavy"/>
+  <int value="1" label="Network">
+    The ad exceeded the network threshold for the Heavy Ad Intervention.
+  </int>
+  <int value="2" label="CPU">
+    The ad exceeded the CPU threshold for the Heavy Ad Intervention.
+  </int>
+</enum>
+
 <enum name="HeavyPageCappingInfoBarInteraction">
   <int value="0" label="InfoBar shown">
     The user was shown the capping heavy pages InfoBar.
