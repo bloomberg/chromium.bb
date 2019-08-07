@@ -936,8 +936,10 @@ void Browser::OpenFile() {
       this, std::make_unique<ChromeSelectFilePolicy>(
                 tab_strip_model_->GetActiveWebContents()));
 
-  const base::FilePath directory = profile_->last_selected_directory();
+  if (!select_file_dialog_)
+    return;
 
+  const base::FilePath directory = profile_->last_selected_directory();
   // TODO(beng): figure out how to juggle this.
   gfx::NativeWindow parent_window = window_->GetNativeWindow();
   ui::SelectFileDialog::FileTypeInfo file_types;
