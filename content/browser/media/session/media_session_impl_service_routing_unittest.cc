@@ -53,6 +53,11 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   MOCK_METHOD2(OnSetVolumeMultiplier,
                void(int player_id, double volume_multiplier));
 
+  base::Optional<media_session::MediaPosition> GetPosition(
+      int player_id) const override {
+    return base::nullopt;
+  }
+
   RenderFrameHost* render_frame_host() const override {
     return render_frame_host_;
   }
@@ -272,14 +277,6 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   ClearPlayersForFrame(main_frame_);
 
   ASSERT_EQ(services_[sub_frame_].get(), ComputeServiceForRouting());
-}
-
-TEST_F(MediaSessionImplServiceRoutingTest, NotifyMockPositionData) {
-  media_session::test::MockMediaSessionMojoObserver observer(
-      *GetMediaSession());
-
-  // Verify that the default/mock position data is received by the observer.
-  observer.WaitForNonEmptyPosition();
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
