@@ -2376,6 +2376,9 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
   DidCommitNavigationInternal(std::move(owned_request), validated_params.get(),
                               /*is_same_document_navigation=*/false);
 
+  // Now that the restored frame has been committed, unfreeze it.
+  frame_tree_node()->render_manager()->UnfreezeCurrentFrameHost();
+
   // The page is already loaded since it came from the cache, so fire the stop
   // loading event.
   OnDidStopLoading();
