@@ -7,8 +7,12 @@
 
 from __future__ import print_function
 
+import mock
+
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import device
+from chromite.lib import remote_access
 from chromite.lib import vm
 
 
@@ -20,7 +24,7 @@ class DeviceTester(cros_test_lib.RunCommandTestCase):
 
   def setUp(self):
     """Common set up method for all tests."""
-    opts = device.Device.GetParser().parse_args([])
+    opts = device.Device.GetParser().parse_args(['--device', '190.0.2.130'])
     self._device = device.Device(opts)
 
   def CreateDevice(self, device_name, is_vm):
@@ -35,6 +39,26 @@ class DeviceTester(cros_test_lib.RunCommandTestCase):
         vm.VM.GetParser().parse_args(['--device', device_name]))
     self.assertEqual(isinstance(created_device, vm.VM), is_vm)
     self.assertEqual(self._device.is_vm, is_vm)
+
+  def testWaitForBoot(self):
+    self._device.WaitForBoot()
+    # Verify that ssh command is called with all of the right configurations.
+    self.assertCommandContains(
+        ['ssh', '-p', '22', 'root@190.0.2.130', '--', 'true'])
+
+  @mock.patch('chromite.lib.cros_build_lib.RunCommand',
+              side_effect=remote_access.SSHConnectionError())
+  def testWaitForBootTimeOut(self, boot_mock):
+    """Verify an exception is raised when the device takes to long to boot."""
+    self.assertRaises(device.DeviceError, self._device.WaitForBoot, sleep=0)
+    boot_mock.assert_called()
+
+  @mock.patch('chromite.lib.device.Device.RemoteCommand',
+              return_value=cros_build_lib.CommandResult(returncode=1))
+  def testWaitForBootReturnCode(self, boot_mock):
+    """Verify an exception is raised when the returncode is not 0."""
+    self.assertRaises(device.DeviceError, self._device.WaitForBoot)
+    boot_mock.assert_called()
 
   def testRunCmd(self):
     """Verify that a command is run via RunCommand."""

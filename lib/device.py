@@ -59,7 +59,7 @@ class Device(object):
     if self.ssh_port:
       self.device_addr += ':%d' % self.ssh_port
 
-  def WaitForBoot(self):
+  def WaitForBoot(self, sleep=5):
     """Wait for the device to boot up.
 
     Wait for the ssh connection to become active.
@@ -69,7 +69,7 @@ class Device(object):
           exception=remote_access.SSHConnectionError,
           max_retry=10,
           functor=lambda: self.RemoteCommand(cmd=['true']),
-          sleep=5)
+          sleep=sleep)
     except remote_access.SSHConnectionError:
       raise DeviceError(
           'WaitForBoot timed out trying to connect to the device.')
