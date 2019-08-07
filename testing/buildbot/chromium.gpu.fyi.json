@@ -24567,7 +24567,8 @@
       {
         "args": [
           "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.desktop"
+          "--benchmarks=rendering.desktop",
+          "--browser=release_x64"
         ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
@@ -25572,7 +25573,8 @@
       {
         "args": [
           "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.desktop"
+          "--benchmarks=rendering.desktop",
+          "--browser=release_x64"
         ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
@@ -27474,7 +27476,8 @@
       {
         "args": [
           "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.desktop"
+          "--benchmarks=rendering.desktop",
+          "--browser=release_x64"
         ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
@@ -28444,7 +28447,8 @@
       {
         "args": [
           "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.desktop"
+          "--benchmarks=rendering.desktop",
+          "--browser=release_x64"
         ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
@@ -30682,7 +30686,8 @@
       {
         "args": [
           "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.desktop"
+          "--benchmarks=rendering.desktop",
+          "--browser=release_x64"
         ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",

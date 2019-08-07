@@ -1330,6 +1330,35 @@
       },
     },
   },
+  'rendering_representative_perf_tests': {
+    'modifications': {
+      'Win10 FYI x64 Exp Release (Intel HD 630)': {
+        'args': [
+          '--browser=release_x64',
+        ],
+      },
+      'Win10 FYI x64 Exp Release (NVIDIA)': {
+        'args': [
+          '--browser=release_x64',
+        ],
+      },
+      'Win10 FYI x64 Release (Intel HD 630)': {
+        'args': [
+          '--browser=release_x64',
+        ],
+      },
+      'Win10 FYI x64 Release (Intel UHD 630)': {
+        'args': [
+          '--browser=release_x64',
+        ],
+      },
+      'Win10 FYI x64 Release (NVIDIA)': {
+        'args': [
+          '--browser=release_x64',
+        ],
+      },
+    },
+  },
   'sandbox_linux_unittests': {
     'modifications': {
       'Lollipop Phone Tester': {
