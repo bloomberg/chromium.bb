@@ -931,7 +931,7 @@ tests:
   - ['\x2029', '\x0020']
   - ['\x202f', '\x0020']
   - ['\x205f', '\x0020']
-table: gr-bb.ctb
+table: grc-international-en.utb
 flags: {testmode: bothDirections}
 tests:
   - ['\x0009', '⡀']
