@@ -18,7 +18,6 @@
  */
 #include "aom/aom.h"
 #include "aom/aom_encoder.h"
-#include "av1/common/enums.h"
 
 /*!\file
  * \brief Provides definitions for using AOM or AV1 encoder algorithm within the
@@ -1250,8 +1249,8 @@ typedef struct aom_svc_ref_frame_config {
   // 7 references: LAST_FRAME (0), LAST2_FRAME(1), LAST3_FRAME(2),
   // GOLDEN_FRAME(3), BWDREF_FRAME(4), ALTREF2_FRAME(5), ALTREF_FRAME(6).
   /*! Buffer slot index for each of 7 references. */
-  int ref_idx[INTER_REFS_PER_FRAME];
-  int refresh[REF_FRAMES]; /**< Refresh flag for each of the 8 slots. */
+  int ref_idx[7];
+  int refresh[8]; /**< Refresh flag for each of the 8 slots. */
 } aom_svc_ref_frame_config_t;
 
 /*!\cond */
