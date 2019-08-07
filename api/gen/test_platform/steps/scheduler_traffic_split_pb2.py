@@ -13,6 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 from chromite.api.gen.test_platform import request_pb2 as test__platform_dot_request__pb2
+from chromite.api.gen.test_platform.config import config_pb2 as test__platform_dot_config_dot_config__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -20,9 +21,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.steps',
   syntax='proto3',
   serialized_options=_b('Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/steps'),
-  serialized_pb=_b('\n1test_platform/steps/scheduler_traffic_split.proto\x12\x13test_platform.steps\x1a\x1btest_platform/request.proto\"G\n\x1cSchedulerTrafficSplitRequest\x12\'\n\x07request\x18\x01 \x01(\x0b\x32\x16.test_platform.Request\"\x81\x01\n\x1dSchedulerTrafficSplitResponse\x12\x30\n\x10\x61utotest_request\x18\x01 \x01(\x0b\x32\x16.test_platform.Request\x12.\n\x0eskylab_request\x18\x02 \x01(\x0b\x32\x16.test_platform.RequestB?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
+  serialized_pb=_b('\n1test_platform/steps/scheduler_traffic_split.proto\x12\x13test_platform.steps\x1a\x1btest_platform/request.proto\x1a!test_platform/config/config.proto\"\x88\x01\n\x1cSchedulerTrafficSplitRequest\x12\'\n\x07request\x18\x01 \x01(\x0b\x32\x16.test_platform.Request\x12?\n\x06\x63onfig\x18\x02 \x01(\x0b\x32/.test_platform.config.Config.SchedulerMigration\"\x81\x01\n\x1dSchedulerTrafficSplitResponse\x12\x30\n\x10\x61utotest_request\x18\x01 \x01(\x0b\x32\x16.test_platform.Request\x12.\n\x0eskylab_request\x18\x02 \x01(\x0b\x32\x16.test_platform.RequestB?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
   ,
-  dependencies=[test__platform_dot_request__pb2.DESCRIPTOR,])
+  dependencies=[test__platform_dot_request__pb2.DESCRIPTOR,test__platform_dot_config_dot_config__pb2.DESCRIPTOR,])
 
 
 
@@ -41,6 +42,13 @@ _SCHEDULERTRAFFICSPLITREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='config', full_name='test_platform.steps.SchedulerTrafficSplitRequest.config', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -53,8 +61,8 @@ _SCHEDULERTRAFFICSPLITREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=103,
-  serialized_end=174,
+  serialized_start=139,
+  serialized_end=275,
 )
 
 
@@ -91,11 +99,12 @@ _SCHEDULERTRAFFICSPLITRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=177,
-  serialized_end=306,
+  serialized_start=278,
+  serialized_end=407,
 )
 
 _SCHEDULERTRAFFICSPLITREQUEST.fields_by_name['request'].message_type = test__platform_dot_request__pb2._REQUEST
+_SCHEDULERTRAFFICSPLITREQUEST.fields_by_name['config'].message_type = test__platform_dot_config_dot_config__pb2._CONFIG_SCHEDULERMIGRATION
 _SCHEDULERTRAFFICSPLITRESPONSE.fields_by_name['autotest_request'].message_type = test__platform_dot_request__pb2._REQUEST
 _SCHEDULERTRAFFICSPLITRESPONSE.fields_by_name['skylab_request'].message_type = test__platform_dot_request__pb2._REQUEST
 DESCRIPTOR.message_types_by_name['SchedulerTrafficSplitRequest'] = _SCHEDULERTRAFFICSPLITREQUEST

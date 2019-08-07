@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform',
   syntax='proto3',
   serialized_options=_b('Z7go.chromium.org/chromiumos/infra/proto/go/test_platform'),
-  serialized_pb=_b('\n\x1ctest_platform/response.proto\x12\rtest_platform\x1a\x1dtest_platform/taskstate.proto\"3\n\x08Response\x12\'\n\x05state\x18\x01 \x01(\x0b\x32\x18.test_platform.TaskStateB9Z7go.chromium.org/chromiumos/infra/proto/go/test_platformb\x06proto3')
+  serialized_pb=_b('\n\x1ctest_platform/response.proto\x12\rtest_platform\x1a\x1dtest_platform/taskstate.proto\"7\n\x08Response\x12+\n\x05state\x18\x01 \x01(\x0b\x32\x18.test_platform.TaskStateB\x02\x18\x01\x42\x39Z7go.chromium.org/chromiumos/infra/proto/go/test_platformb\x06proto3')
   ,
   dependencies=[test__platform_dot_taskstate__pb2.DESCRIPTOR,])
 
@@ -40,7 +40,7 @@ _RESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=_b('\030\001'), file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -54,7 +54,7 @@ _RESPONSE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=78,
-  serialized_end=129,
+  serialized_end=133,
 )
 
 _RESPONSE.fields_by_name['state'].message_type = test__platform_dot_taskstate__pb2._TASKSTATE
@@ -70,4 +70,5 @@ _sym_db.RegisterMessage(Response)
 
 
 DESCRIPTOR._options = None
+_RESPONSE.fields_by_name['state']._options = None
 # @@protoc_insertion_point(module_scope)
