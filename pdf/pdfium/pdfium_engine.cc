@@ -2392,24 +2392,17 @@ void PDFiumEngine::AppendPageRectToPages(const pp::Rect& page_rect,
   }
 }
 
-// TODO(chinsenj): Merge with LoadPagesInTwoUpView().
-void PDFiumEngine::LoadPagesInSingleView(std::vector<pp::Size> page_sizes,
-                                         bool reload) {
-  std::vector<pp::Rect> single_view_layout =
-      layout_.GetSingleViewLayout(page_sizes);
-
-  for (size_t i = 0; i < single_view_layout.size(); ++i) {
-    AppendPageRectToPages(single_view_layout[i], i, reload);
+void PDFiumEngine::LoadPagesInCurrentLayout(std::vector<pp::Size> page_sizes,
+                                            bool reload) {
+  std::vector<pp::Rect> formatted_pages;
+  if (two_up_view_) {
+    formatted_pages = layout_.GetTwoUpViewLayout(page_sizes);
+  } else {
+    formatted_pages = layout_.GetSingleViewLayout(page_sizes);
   }
-}
 
-void PDFiumEngine::LoadPagesInTwoUpView(std::vector<pp::Size> page_sizes,
-                                        bool reload) {
-  std::vector<pp::Rect> two_up_view_layout =
-      layout_.GetTwoUpViewLayout(page_sizes);
-
-  for (size_t i = 0; i < two_up_view_layout.size(); ++i) {
-    AppendPageRectToPages(two_up_view_layout[i], i, reload);
+  for (size_t i = 0; i < formatted_pages.size(); ++i) {
+    AppendPageRectToPages(formatted_pages[i], i, reload);
   }
 }
 
@@ -2452,11 +2445,7 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     layout_.set_size({std::max(layout_.size().width(), size.width()), 0});
   }
 
-  if (two_up_view_) {
-    LoadPagesInTwoUpView(std::move(page_sizes), reload);
-  } else {
-    LoadPagesInSingleView(std::move(page_sizes), reload);
-  }
+  LoadPagesInCurrentLayout(page_sizes, reload);
 
   // Remove pages that do not exist anymore.
   if (pages_.size() > new_page_count) {
