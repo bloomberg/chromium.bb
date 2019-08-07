@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/optimization_guide/host_filter.h"
-
 #include <string>
+
+#include "components/optimization_guide/optimization_filter.h"
 
 namespace optimization_guide {
 
@@ -14,18 +14,19 @@ const int kMaxSuffixCount = 5;
 // Realistic minimum length of a host suffix.
 const int kMinHostSuffix = 6;  // eg., abc.tv
 
-HostFilter::HostFilter(std::unique_ptr<BloomFilter> bloom_filter)
+OptimizationFilter::OptimizationFilter(
+    std::unique_ptr<BloomFilter> bloom_filter)
     : bloom_filter_(std::move(bloom_filter)) {
   // May be created on one thread but used on another. The first call to
   // CalledOnValidSequence() will re-bind it.
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-HostFilter::~HostFilter() {
+OptimizationFilter::~OptimizationFilter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-bool HostFilter::ContainsHostSuffix(const GURL& url) const {
+bool OptimizationFilter::ContainsHostSuffix(const GURL& url) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // First check full host name.
