@@ -8,6 +8,7 @@ from .database import DatabaseBody
 from .dictionary import Dictionary
 from .identifier_ir_map import IdentifierIRMap
 from .idl_type import IdlTypeFactory
+from .interface import Interface
 from .reference import RefByIdFactory
 from .typedef import Typedef
 from .union import Union
@@ -189,6 +190,11 @@ class IdlCompiler(object):
 
     def _create_public_objects(self):
         """Creates public representations of compiled objects."""
+        interface_irs = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.INTERFACE)
+        for ir in interface_irs.itervalues():
+            self._db.register(DatabaseBody.Kind.INTERFACE, Interface(ir))
+
         dictionary_irs = self._ir_map.find_by_kind(
             IdentifierIRMap.IR.Kind.DICTIONARY)
         for ir in dictionary_irs.itervalues():
