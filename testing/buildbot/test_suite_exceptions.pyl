@@ -2006,6 +2006,12 @@
           '--additional-driver-flag=--use-gpu-in-tests',
         ],
       },
+      # client.v8.fyi
+      'V8 Blink Linux Debug': {
+        'args': [
+          '--debug',
+        ],
+      },
     },
   },
   'webkit_unit_tests': {
