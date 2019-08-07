@@ -2392,19 +2392,26 @@ void PDFiumEngine::AppendPageRectToPages(const pp::Rect& page_rect,
   }
 }
 
-void PDFiumEngine::LoadPagesInSingleView(std::vector<pp::Rect> page_rects,
+void PDFiumEngine::LoadPagesInSingleView(std::vector<pp::Size> page_sizes,
                                          bool reload) {
-  for (size_t i = 0; i < page_rects.size(); ++i) {
-    draw_utils::CenterRectHorizontally(layout_.size().width(), &page_rects[i]);
-    InsetPage(i, page_rects.size(), /*multiplier=*/1, &page_rects[i]);
-    AppendPageRectToPages(page_rects[i], i, reload);
+  for (size_t i = 0; i < page_sizes.size(); ++i) {
+    if (i != 0) {
+      // Add space for bottom separator.
+      layout_.EnlargeHeight(DocumentLayout::kBottomSeparator);
+    }
+
+    pp::Rect page_rect({0, layout_.size().height()}, page_sizes[i]);
+    layout_.AppendPageRect(page_sizes[i]);
+    draw_utils::CenterRectHorizontally(layout_.size().width(), &page_rect);
+    InsetPage(i, page_sizes.size(), /*multiplier=*/1, &page_rect);
+    AppendPageRectToPages(page_rect, i, reload);
   }
 }
 
-void PDFiumEngine::LoadPagesInTwoUpView(std::vector<pp::Rect> page_rects,
+void PDFiumEngine::LoadPagesInTwoUpView(std::vector<pp::Size> page_sizes,
                                         bool reload) {
   std::vector<pp::Rect> two_up_view_layout =
-      layout_.GetTwoUpViewLayout(page_rects);
+      layout_.GetTwoUpViewLayout(page_sizes);
 
   for (size_t i = 0; i < two_up_view_layout.size(); ++i) {
     AppendPageRectToPages(two_up_view_layout[i], i, reload);
@@ -2419,18 +2426,13 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   pending_pages_.clear();
   pp::Size old_document_size = layout_.size();
   layout_.set_size(pp::Size());
-  std::vector<pp::Rect> page_rects;
+  std::vector<pp::Size> page_sizes;
   size_t new_page_count = FPDF_GetPageCount(doc());
 
   bool doc_complete = doc_loader_->IsDocumentComplete();
   bool is_linear =
       FPDFAvail_IsLinearized(fpdf_availability()) == PDF_LINEARIZED;
   for (size_t i = 0; i < new_page_count; ++i) {
-    if (i != 0) {
-      // Add space for bottom separator.
-      layout_.EnlargeHeight(DocumentLayout::kBottomSeparator);
-    }
-
     // Get page availability. If |reload| == true and the page is not new,
     // then the page has been constructed already. Get page availability flag
     // from already existing PDFiumPage object.
@@ -2450,16 +2452,15 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
 
     pp::Size size = page_available ? GetPageSize(i) : default_page_size_;
     EnlargePage(i, new_page_count, &size);
-    pp::Rect rect(pp::Point(0, layout_.size().height()), size);
-    page_rects.push_back(rect);
+    page_sizes.push_back(size);
 
-    layout_.AppendPageRect(size);
+    layout_.set_size({std::max(layout_.size().width(), size.width()), 0});
   }
 
   if (two_up_view_) {
-    LoadPagesInTwoUpView(std::move(page_rects), reload);
+    LoadPagesInTwoUpView(std::move(page_sizes), reload);
   } else {
-    LoadPagesInSingleView(std::move(page_rects), reload);
+    LoadPagesInSingleView(std::move(page_sizes), reload);
   }
 
   // Remove pages that do not exist anymore.
