@@ -3778,7 +3778,7 @@
       },
       'Linux Swarm': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_linux_gtests',
