@@ -17,6 +17,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Browser;
+import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -31,8 +32,6 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.Locale;
-
-import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * A class containing some utility static methods.

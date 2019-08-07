@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsService;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
@@ -40,7 +41,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import androidx.browser.customtabs.CustomTabsService;
 import dagger.Lazy;
 
 /**

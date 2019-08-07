@@ -19,6 +19,11 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsCallback;
+import android.support.customtabs.CustomTabsIntent;
+import android.support.customtabs.CustomTabsService;
+import android.support.customtabs.CustomTabsSessionToken;
+import android.support.customtabs.PostMessageServiceConnection;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 
@@ -83,12 +88,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import androidx.browser.customtabs.CustomTabsCallback;
-import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.browser.customtabs.CustomTabsService;
-import androidx.browser.customtabs.CustomTabsSessionToken;
-import androidx.browser.customtabs.PostMessageServiceConnection;
 
 /**
  * Implementation of the ICustomTabsService interface.
@@ -345,11 +344,7 @@ public class CustomTabsConnection {
                         .onSessionDisconnected(session);
             }
         };
-
-        // TODO(peconn): Make this not an anonymous class once PostMessageServiceConnection is made
-        // non-abstract in AndroidX.
-        PostMessageServiceConnection serviceConnection =
-                new PostMessageServiceConnection(session) {};
+        PostMessageServiceConnection serviceConnection = new PostMessageServiceConnection(session);
         PostMessageHandler handler = new PostMessageHandler(serviceConnection);
         return mClientManager.newSession(
                 session, Binder.getCallingUid(), onDisconnect, handler, serviceConnection);

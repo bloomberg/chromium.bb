@@ -15,6 +15,11 @@ import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
+import android.support.customtabs.CustomTabsCallback;
+import android.support.customtabs.CustomTabsService;
+import android.support.customtabs.CustomTabsService.Relation;
+import android.support.customtabs.CustomTabsSessionToken;
+import android.support.customtabs.PostMessageServiceConnection;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.SparseBooleanArray;
@@ -44,12 +49,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import androidx.browser.customtabs.CustomTabsCallback;
-import androidx.browser.customtabs.CustomTabsService;
-import androidx.browser.customtabs.CustomTabsService.Relation;
-import androidx.browser.customtabs.CustomTabsSessionToken;
-import androidx.browser.customtabs.PostMessageServiceConnection;
 
 /** Manages the clients' state for Custom Tabs. This class is threadsafe. */
 class ClientManager {

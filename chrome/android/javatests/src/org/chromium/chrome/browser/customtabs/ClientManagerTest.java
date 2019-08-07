@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.customtabs;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Process;
+import android.support.customtabs.CustomTabsService;
+import android.support.customtabs.CustomTabsSessionToken;
+import android.support.customtabs.PostMessageServiceConnection;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -28,10 +31,6 @@ import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-
-import androidx.browser.customtabs.CustomTabsService;
-import androidx.browser.customtabs.CustomTabsSessionToken;
-import androidx.browser.customtabs.PostMessageServiceConnection;
 
 /** Tests for ClientManager. */
 @RunWith(BaseJUnit4ClassRunner.class)
@@ -174,10 +173,7 @@ public class ClientManagerTest {
     @SmallTest
     public void testPostMessageOriginVerification() {
         final ClientManager cm = mClientManager;
-        // TODO(peconn): Get rid of this anonymous class once PostMessageServiceConnection is made
-        // non-abstract. Same with the other occurrences below.
-        PostMessageServiceConnection serviceConnection =
-                new PostMessageServiceConnection(mSession) {};
+        PostMessageServiceConnection serviceConnection = new PostMessageServiceConnection(mSession);
         Assert.assertTrue(cm.newSession(mSession, mUid, null,
                 new PostMessageHandler(serviceConnection), serviceConnection));
         // Should always start with no origin.
@@ -220,8 +216,7 @@ public class ClientManagerTest {
     @SmallTest
     public void testPostMessageOriginDifferentRelations() {
         final ClientManager cm = mClientManager;
-        PostMessageServiceConnection serviceConnection =
-                new PostMessageServiceConnection(mSession) {};
+        PostMessageServiceConnection serviceConnection = new PostMessageServiceConnection(mSession);
         Assert.assertTrue(cm.newSession(mSession, mUid, null,
                 new PostMessageHandler(serviceConnection), serviceConnection));
         // Should always start with no origin.
@@ -260,8 +255,7 @@ public class ClientManagerTest {
     @SmallTest
     public void testPostMessageOriginHttpNotAllowed() {
         final ClientManager cm = mClientManager;
-        PostMessageServiceConnection serviceConnection =
-                new PostMessageServiceConnection(mSession) {};
+        PostMessageServiceConnection serviceConnection = new PostMessageServiceConnection(mSession);
         Assert.assertTrue(cm.newSession(mSession, mUid, null,
                 new PostMessageHandler(serviceConnection), serviceConnection));
         // Should always start with no origin.

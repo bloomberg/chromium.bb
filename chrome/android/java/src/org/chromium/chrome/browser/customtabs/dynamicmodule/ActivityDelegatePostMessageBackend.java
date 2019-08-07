@@ -6,8 +6,7 @@ package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
 import android.content.Context;
 import android.os.Bundle;
-
-import androidx.browser.customtabs.PostMessageBackend;
+import android.support.customtabs.PostMessageBackend;
 
 /**
  * A {@link PostMessageBackend} which delegates incoming notifications to the {@link

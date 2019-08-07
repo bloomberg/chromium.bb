@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.support.customtabs.CustomTabsIntent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.view.MenuItem;
@@ -30,8 +31,6 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.ExecutionException;
-
-import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Instrumentation tests for {@link CustomTabActivity} launched in incognito mode.

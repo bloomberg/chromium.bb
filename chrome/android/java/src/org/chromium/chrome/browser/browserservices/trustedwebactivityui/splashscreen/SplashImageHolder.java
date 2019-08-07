@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashs
 
 import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsSessionToken;
 import android.util.ArrayMap;
 
 import java.util.Collections;
@@ -13,8 +14,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * Stores the splash images received from TWA clients between the call to

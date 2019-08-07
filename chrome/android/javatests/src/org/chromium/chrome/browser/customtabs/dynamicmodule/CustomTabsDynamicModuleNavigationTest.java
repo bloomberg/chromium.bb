@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
 import android.content.Intent;
+import android.support.customtabs.CustomTabsCallback;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -46,8 +47,6 @@ import org.chromium.ui.base.PageTransition;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
-
-import androidx.browser.customtabs.CustomTabsCallback;
 
 /**
  * Instrumentation tests for the CustomTabsDynamicModuleNavigationObserver.

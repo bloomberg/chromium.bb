@@ -9,6 +9,7 @@ import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.StrictMode;
 import android.provider.Browser;
+import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -25,8 +26,6 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 
 import java.net.URISyntaxException;
 import java.util.List;
-
-import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Asynchronously creates Tabs for navigation originating from an installed PWA.

@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
@@ -37,8 +38,6 @@ import org.chromium.ui.widget.TextViewWithClickableSpans;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
-
-import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Dialog to ask the user select what type of password to use for encryption.

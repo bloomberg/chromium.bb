@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.provider.Browser;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 import android.view.Window;
 
@@ -55,7 +56,6 @@ import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Inject;
 
-import androidx.browser.customtabs.CustomTabsSessionToken;
 import dagger.Lazy;
 
 /**
