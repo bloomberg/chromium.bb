@@ -1728,7 +1728,7 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
                                      std::vector<const AXNode*>& items,
                                      const AXNode& original_node) const {
   // Ignored nodes are not a part of ordered sets.
-  if (original_node.data().HasState(ax::mojom::State::kIgnored))
+  if (original_node.IsIgnored())
     return;
 
   // Stop searching current path if roles of local_parent and ordered set match.
@@ -1807,8 +1807,8 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
       items.push_back(child);
 
     // Recurse if there is a generic container, ignored, or unknown.
-    if (child->data().role == ax::mojom::Role::kGenericContainer ||
-        child->data().role == ax::mojom::Role::kIgnored ||
+    if (child->IsIgnored() ||
+        child->data().role == ax::mojom::Role::kGenericContainer ||
         child->data().role == ax::mojom::Role::kUnknown) {
       PopulateOrderedSetItems(ordered_set, child, items, original_node);
     }

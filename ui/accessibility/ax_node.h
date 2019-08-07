@@ -350,6 +350,9 @@ class AX_EXPORT AXNode final {
   // part of the language detection feature.
   void SetLanguageInfo(std::unique_ptr<AXLanguageInfo> lang_info);
 
+  // Returns true if node has ignored state or ignored role.
+  bool IsIgnored() const;
+
  private:
   // Computes the text offset where each line starts by traversing all child
   // leaf nodes.

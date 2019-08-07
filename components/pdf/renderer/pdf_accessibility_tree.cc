@@ -481,7 +481,7 @@ ui::AXNode* PdfAccessibilityTree::GetParent(const ui::AXNode* node) const {
 }
 
 bool PdfAccessibilityTree::IsIgnored(const ui::AXNode* node) const {
-  return node->data().HasState(ax::mojom::State::kIgnored);
+  return node->IsIgnored();
 }
 
 bool PdfAccessibilityTree::IsValid(const ui::AXNode* node) const {
