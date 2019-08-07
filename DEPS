@@ -1416,7 +1416,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@43dbb476f6af5174d90e971d3a3d812385af9e7b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f0631b5c5fe2a03e8820d347a7808573702425ff',
     'condition': 'checkout_src_internal',
   },
 
