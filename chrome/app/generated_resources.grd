@@ -194,6 +194,9 @@ are declared in tools/grit/grit_rule.gni.
       <!-- Media Router specific strings -->
       <part file="media_router_strings.grdp" />
 
+      <!-- Global Media Controls specific strings -->
+      <part file="global_media_controls_strings.grdp" />
+
       <!-- Profiles specific strings -->
       <part file="profiles_strings.grdp" />
 
