@@ -1,0 +1,57 @@
+#! /usr/bin/env python
+
+# Copyright 2018 Google Inc.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import argparse
+import os
+import sys
+
+from skqp_gn_args import SkqpGnArgs
+
+fmt = '''
+target_cpu = "{arch}"
+ndk = "{android_ndk_dir}"
+is_debug = {debug}
+ndk_api = {api_level}
+'''
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Generate args.gn file.')
+    parser.add_argument('target_build_dir')
+    parser.add_argument('android_ndk_dir' )
+    parser.add_argument('--arch',  metavar='architecture', default='arm',
+        help='defaults to "arm", valid values: "arm" "arm64" "x86" "x64"')
+    parser.add_argument('--api_level', type=int, metavar='api_level',
+        default=26, help='android API level, defaults to 26')
+    parser.add_argument('--enable_workarounds', default=False,
+        action='store_true', help="enable GPU work-arounds, defaults to false")
+    parser.add_argument('--debug', default=False, action='store_true',
+        help='compile native code in debug mode, defaults to false')
+
+    # parse the args and convert bools to strings.
+    args = parser.parse_args()
+    gn_bool = lambda b : 'true' if b else 'false'
+    args.enable_workarounds = gn_bool(args.enable_workarounds)
+    args.debug = gn_bool(args.debug)
+    args.android_ndk_dir = os.path.abspath(args.android_ndk_dir)
+    return args
+
+def write_gn(o, args):
+    o.write(fmt.format(**args))
+    for k, v in SkqpGnArgs.iteritems():
+        o.write('%s = %s\n' % (k,v) )
+
+def make_args_gn(out_dir, args):
+    if out_dir == '-':
+        write_gn(sys.stdout, args)
+        return
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    with open(os.path.join(out_dir, 'args.gn'), 'w') as o:
+        write_gn(o, args)
+
+if __name__ == '__main__':
+    args = parse_args()
+    make_args_gn(args.target_build_dir, vars(args))
