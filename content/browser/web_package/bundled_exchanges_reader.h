@@ -63,9 +63,9 @@ class CONTENT_EXPORT BundledExchangesReader final {
   // Should be called after ReadMetadata finishes.
   bool HasEntry(const GURL& url) const;
 
-  // Returns start page URL.
+  // Returns the bundle's primary URL.
   // Should be called after ReadMetadata finishes.
-  const GURL& GetStartURL() const;
+  const GURL& GetPrimaryURL() const;
 
   void SetBundledExchangesParserFactoryForTesting(
       mojo::Remote<data_decoder::mojom::BundledExchangesParserFactory> factory);
@@ -106,7 +106,7 @@ class CONTENT_EXPORT BundledExchangesReader final {
 
   data_decoder::SafeBundledExchangesParser parser_;
   scoped_refptr<SharedFile> file_;
-  GURL start_url_;
+  GURL primary_url_;
   base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> entries_;
   bool metadata_ready_ = false;
 
