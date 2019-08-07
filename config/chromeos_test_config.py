@@ -605,6 +605,8 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           site_config.templates.tast_vm_chrome_pfq_tests,
       'betty-arcnext-chrome-pfq':
           site_config.templates.tast_vm_chrome_pfq_tests,
+      'betty-pi-arc-chrome-pfq':
+          site_config.templates.tast_vm_chrome_pfq_tests,
       'betty-chrome-pfq': site_config.templates.tast_vm_chrome_pfq_tests,
 
       'betty-arc64-nyc-android-pfq':
@@ -613,6 +615,8 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           site_config.templates.tast_vm_android_pfq_tests,
       'betty-arcnext-pi-android-pfq':
           site_config.templates.tast_vm_android_pfq_tests,
+      'betty-pi-arc-pi-android-pfq':
+          site_config.templates.tast_vm_android_pfq_tests,
 
       # There's no amd64-generic-release builder, so we use amd64-generic-full
       # to validate informational Tast tests on amd64-generic:
@@ -620,6 +624,7 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'amd64-generic-full': site_config.templates.tast_vm_canary_tests,
       'betty-arc64-release': site_config.templates.tast_vm_canary_tests,
       'betty-arcnext-release': site_config.templates.tast_vm_canary_tests,
+      'betty-pi-arc-release': site_config.templates.tast_vm_canary_tests,
       'betty-release': site_config.templates.tast_vm_canary_tests,
 
       'kumo-pre-cq': {

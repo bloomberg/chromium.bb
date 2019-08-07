@@ -884,6 +884,7 @@
   betty-pi-arc-release-afdo-tryjob
   betty-pi-arc-release-afdo-use-tryjob
   betty-pi-arc-release-tryjob
+  betty-pi-arc-telemetry-tryjob
   betty-pi-arc-tot-chrome-pfq-informational-tryjob
   betty-pi-arc-tot-chromium-pfq-informational-tryjob
   betty-pi-arc-unittest-stress

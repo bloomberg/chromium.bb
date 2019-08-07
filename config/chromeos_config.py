@@ -1836,10 +1836,10 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'kevin',
   ])
   _pi_vmtest_boards = frozenset([
-      'betty-arcnext'
+      'betty-arcnext',
+      'betty-pi-arc',
   ])
   _pi_vmtest_experimental_boards = frozenset([
-      'betty-pi-arc',
   ])
 
   # Android VM PI master.
@@ -2216,6 +2216,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'betty',
       'betty-arc64',
       'betty-arcnext',
+      'betty-pi-arc',
       'bob',
       'capri',
       'capri-zfpga',
@@ -2325,7 +2326,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'moblab-generic-vm', # crbug.com/960998, crbug.com/976297
-      'betty-pi-arc', # Promote when we replace betty-arcnext. b/129410042
       'grunt', # crbug.com/984614
   ])
 
@@ -2338,27 +2338,32 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_simple_vmtest_boards = frozenset([
       'betty',
       'betty-arcnext',
+      'betty-pi-arc',
   ])
 
   _paladin_devmode_vmtest_boards = frozenset([
       'betty',
       'betty-arcnext',
+      'betty-pi-arc',
   ])
 
   _paladin_cros_vmtest_boards = frozenset([
       'betty',
       'betty-arcnext',
+      'betty-pi-arc',
   ])
 
   _paladin_smoke_vmtest_boards = frozenset([
       'betty',
       'betty-arc64',
       'betty-arcnext',
+      'betty-pi-arc',
   ])
 
   _paladin_default_vmtest_boards = frozenset([
       'betty',
       'betty-arcnext',
+      'betty-pi-arc',
   ])
 
   # Jetstream devices run unique hw tests
@@ -3119,6 +3124,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       'arm-generic',
       'betty',
       'betty-arcnext',
+      'betty-pi-arc',
   ])
 
   site_config.AddForBoards(
@@ -3215,6 +3221,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'atlas',
       'betty',
       'betty-arcnext',
+      'betty-pi-arc',
       'bob',
       'caroline',
       'caroline-arcnext',
@@ -3235,7 +3242,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
-      'betty-pi-arc',
   ])
 
   _chrome_pfq_skylab_boards = frozenset([
