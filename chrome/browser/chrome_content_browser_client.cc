@@ -848,25 +848,6 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
     return crash_handler->GetDeathSignalSocket();
   }
 
-#if defined(OS_CHROMEOS)
-  // Mash services are utility processes, but crashes are reported using the
-  // service name as the process type to make the crash console easier to read.
-  if (command_line.HasSwitch(switches::kMashServiceName)) {
-    static base::NoDestructor<
-        std::map<std::string, breakpad::CrashHandlerHostLinux*>>
-        crash_handlers;
-    std::string service_name =
-        command_line.GetSwitchValueASCII(switches::kMashServiceName);
-    auto it = crash_handlers->find(service_name);
-    if (it == crash_handlers->end()) {
-      auto insert_result = crash_handlers->insert(
-          std::make_pair(service_name, CreateCrashHandlerHost(service_name)));
-      it = insert_result.first;
-    }
-    return it->second->GetDeathSignalSocket();
-  }
-#endif  // defined(OS_CHROMEOS)
-
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
