@@ -10,6 +10,7 @@
 
 #pragma mark - Element Colors
 NSString* const kBackgroundColor = @"background_color";
+NSString* const kCloseButtonColor = @"close_button_color";
 NSString* const kDisabledTintColor = @"disabled_tint_color";
 NSString* const kFaviconBackgroundColor = @"favicon_background_color";
 NSString* const kMDCInkColor = @"mdc_ink_color";
@@ -30,6 +31,7 @@ NSString* const kRedColor = @"red_color";
 // Temporary for iOS 12
 
 NSString* const kBackgroundDarkColor = @"background_dark_color";
+NSString* const kCloseButtonDarkColor = @"close_button_dark_color";
 NSString* const kTableViewRowHighlightDarkColor =
     @"table_view_row_highlight_dark_color";
 NSString* const kTextPrimaryDarkColor = @"text_primary_dark_color";
