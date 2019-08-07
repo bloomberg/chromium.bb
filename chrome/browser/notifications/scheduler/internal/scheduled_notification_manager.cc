@@ -42,12 +42,16 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       NotificationStore notification_store,
       std::unique_ptr<IconStore> icon_store,
       const std::vector<SchedulerClientType>& clients,
-      const SchedulerConfig& config)
+      const SchedulerConfig& config,
+      EncodeIconsCallback encode_icons_callback,
+      DecodeIconsCallback decode_icons_callback)
       : notification_store_(std::move(notification_store)),
         icon_store_(std::move(icon_store)),
         clients_(clients.begin(), clients.end()),
         delegate_(nullptr),
-        config_(config) {}
+        config_(config),
+        encode_icons_callback_(std::move(encode_icons_callback)),
+        decode_icons_callback_(std::move(decode_icons_callback)) {}
 
  private:
   void Init(Delegate* delegate, InitCallback callback) override {
@@ -227,7 +231,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     // in following CLs.
     if (entry->notification_data.icons.empty())
       return;
-    notifications::ConvertIconToString(
+
+    encode_icons_callback_.Run(
         std::move(entry->notification_data.icons.front()),
         base::BindOnce(&ScheduledNotificationManagerImpl::OnIconEncoded,
                        weak_ptr_factory_.GetWeakPtr(), type, std::move(guid)));
@@ -306,6 +311,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
            std::map<std::string, std::unique_ptr<NotificationEntry>>>
       notifications_;
   const SchedulerConfig& config_;
+  EncodeIconsCallback encode_icons_callback_;
+  DecodeIconsCallback decode_icons_callback_;
   base::WeakPtrFactory<ScheduledNotificationManagerImpl> weak_ptr_factory_{
       this};
   DISALLOW_COPY_AND_ASSIGN(ScheduledNotificationManagerImpl);
@@ -318,9 +325,12 @@ ScheduledNotificationManager::Create(
     std::unique_ptr<CollectionStore<NotificationEntry>> notification_store,
     std::unique_ptr<IconStore> icon_store,
     const std::vector<SchedulerClientType>& clients,
-    const SchedulerConfig& config) {
+    const SchedulerConfig& config,
+    EncodeIconsCallback encode_icons_callback,
+    DecodeIconsCallback decode_icons_callback) {
   return std::make_unique<ScheduledNotificationManagerImpl>(
-      std::move(notification_store), std::move(icon_store), clients, config);
+      std::move(notification_store), std::move(icon_store), clients, config,
+      std::move(encode_icons_callback), std::move(decode_icons_callback));
 }
 
 ScheduledNotificationManager::ScheduledNotificationManager() = default;
