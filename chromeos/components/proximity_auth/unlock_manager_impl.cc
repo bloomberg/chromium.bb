@@ -25,6 +25,20 @@
 namespace proximity_auth {
 namespace {
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other). Entries should be never modified
+// or deleted. Only additions possible.
+enum class GetRemoteStatusResultFailureReason {
+  kTimedOutBluetoothDisabled = 0,
+  kTimedOutCouldNotEstablishAuthenticatedChannel = 1,
+  kTimedOutDidNotReceiveRemoteStatusUpdate = 2,
+  kUserEnteredPasswordWhileBluetoothDisabled = 3,
+  kUserEnteredPasswordWhileConnecting = 4,
+  kAuthenticatedChannelDropped = 5,
+  kMaxValue = kAuthenticatedChannelDropped
+};
+
 // The maximum amount of time that the unlock manager can stay in the 'waking
 // up' state after resuming from sleep.
 constexpr base::TimeDelta kWakingUpDuration = base::TimeDelta::FromSeconds(15);
@@ -88,17 +102,32 @@ metrics::RemoteSecuritySettingsState GetRemoteSecuritySettingsState(
   return metrics::RemoteSecuritySettingsState::UNKNOWN;
 }
 
+std::string GetHistogramStatusSuffix(bool unlockable) {
+  return unlockable ? "Unlockable" : "Other";
+}
+
+std::string GetHistogramScreenLockTypeName(
+    ProximityAuthSystem::ScreenlockType screenlock_type) {
+  return screenlock_type == ProximityAuthSystem::SESSION_LOCK ? "Unlock"
+                                                              : "SignIn";
+}
+
+void RecordGetRemoteStatusResultSuccess(
+    ProximityAuthSystem::ScreenlockType screenlock_type,
+    bool success = true) {
+  base::UmaHistogramBoolean("SmartLock.GetRemoteStatus." +
+                                GetHistogramScreenLockTypeName(screenlock_type),
+                            success);
+}
+
 void RecordGetRemoteStatusResultFailure(
     ProximityAuthSystem::ScreenlockType screenlock_type,
-    SmartLockMetricsRecorder::SmartLockGetRemoteStatusResultFailureReason
-        failure_reason) {
-  if (screenlock_type == ProximityAuthSystem::SESSION_LOCK) {
-    SmartLockMetricsRecorder::RecordGetRemoteStatusResultUnlockFailure(
-        failure_reason);
-  } else if (screenlock_type == ProximityAuthSystem::SIGN_IN) {
-    SmartLockMetricsRecorder::RecordGetRemoteStatusResultSignInFailure(
-        failure_reason);
-  }
+    GetRemoteStatusResultFailureReason failure_reason) {
+  RecordGetRemoteStatusResultSuccess(screenlock_type, false /* success */);
+  base::UmaHistogramEnumeration(
+      "SmartLock.GetRemoteStatus." +
+          GetHistogramScreenLockTypeName(screenlock_type) + ".Failure",
+      failure_reason);
 }
 
 void RecordAuthResultFailure(
@@ -118,10 +147,6 @@ void RecordExtendedDurationTimerMetric(const std::string& histogram_name,
   base::UmaHistogramCustomTimes(
       histogram_name, duration, kMinExtendedDuration /* min */,
       kMaxExtendedDuration /* max */, kNumDurationMetricBuckets /* buckets */);
-}
-
-std::string GetHistogramStatusSuffix(bool unlockable) {
-  return unlockable ? "Unlockable" : "Other";
 }
 
 }  // namespace
@@ -315,8 +340,7 @@ void UnlockManagerImpl::OnDisconnected() {
   } else {
     RecordGetRemoteStatusResultFailure(
         screenlock_type_,
-        SmartLockMetricsRecorder::SmartLockGetRemoteStatusResultFailureReason::
-            kAuthenticatedChannelDropped);
+        GetRemoteStatusResultFailureReason::kAuthenticatedChannelDropped);
   }
 
   if (GetMessenger())
@@ -458,6 +482,20 @@ void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
 }
 
 void UnlockManagerImpl::CancelConnectionAttempt() {
+  PA_LOG(VERBOSE) << "User entered password.";
+
+  if (!has_received_first_remote_status_) {
+    if (IsBluetoothPresentAndPowered()) {
+      RecordGetRemoteStatusResultFailure(
+          screenlock_type_, GetRemoteStatusResultFailureReason::
+                                kUserEnteredPasswordWhileConnecting);
+    } else {
+      RecordGetRemoteStatusResultFailure(
+          screenlock_type_, GetRemoteStatusResultFailureReason::
+                                kUserEnteredPasswordWhileBluetoothDisabled);
+    }
+  }
+
   SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
 }
 
@@ -621,21 +659,17 @@ void UnlockManagerImpl::OnInitialScanTimeout() {
         life_cycle_->GetState() ==
             RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
       RecordGetRemoteStatusResultFailure(
-          screenlock_type_, SmartLockMetricsRecorder::
-                                SmartLockGetRemoteStatusResultFailureReason::
-                                    kTimedOutDidNotReceiveRemoteStatusUpdate);
+          screenlock_type_, GetRemoteStatusResultFailureReason::
+                                kTimedOutDidNotReceiveRemoteStatusUpdate);
     } else {
       RecordGetRemoteStatusResultFailure(
-          screenlock_type_,
-          SmartLockMetricsRecorder::
-              SmartLockGetRemoteStatusResultFailureReason::
-                  kTimedOutCouldNotEstablishAuthenticatedChannel);
+          screenlock_type_, GetRemoteStatusResultFailureReason::
+                                kTimedOutCouldNotEstablishAuthenticatedChannel);
     }
   } else {
     RecordGetRemoteStatusResultFailure(
         screenlock_type_,
-        SmartLockMetricsRecorder::SmartLockGetRemoteStatusResultFailureReason::
-            kTimedOutBluetoothDisabled);
+        GetRemoteStatusResultFailureReason::kTimedOutBluetoothDisabled);
   }
 
   PA_LOG(INFO) << "Failed to connect to host within allotted time.";
@@ -708,6 +742,8 @@ void UnlockManagerImpl::RecordFirstRemoteStatusReceived(bool unlockable) {
   if (has_received_first_remote_status_)
     return;
   has_received_first_remote_status_ = true;
+
+  RecordGetRemoteStatusResultSuccess(screenlock_type_);
 
   if (initial_scan_start_time_.is_null() ||
       attempt_get_remote_status_start_time_.is_null()) {
