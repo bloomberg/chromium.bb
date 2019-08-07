@@ -55,7 +55,12 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
 
   base::Optional<media_session::MediaPosition> GetPosition(
       int player_id) const override {
-    return base::nullopt;
+    return position_;
+  }
+
+  void SetPosition(
+      const base::Optional<media_session::MediaPosition>& position) {
+    position_ = position;
   }
 
   RenderFrameHost* render_frame_host() const override {
@@ -64,6 +69,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
 
  private:
   RenderFrameHost* render_frame_host_;
+
+  base::Optional<media_session::MediaPosition> position_;
 };
 
 }  // anonymous namespace
@@ -976,6 +983,69 @@ TEST_F(MediaSessionImplServiceRoutingTest, StopBehaviourWhenActionEnabled) {
 
   MediaSessionImpl::Get(contents())->Stop(MediaSession::SuspendType::kUI);
   run_loop.Run();
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       PositionFromServiceShouldOverridePlayer) {
+  CreateServiceForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_);
+
+  media_session::MediaPosition player_position(
+      0.0, base::TimeDelta::FromSeconds(20), base::TimeDelta());
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+
+  players_[main_frame_].get()->SetPosition(player_position);
+  GetMediaSession()->RebuildAndNotifyMediaPositionChanged();
+
+  observer.WaitForExpectedPosition(player_position);
+
+  EXPECT_EQ(services_[main_frame_].get(), ComputeServiceForRouting());
+
+  media_session::MediaPosition expected_position(
+      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+
+  services_[main_frame_]->SetPositionState(expected_position);
+
+  observer.WaitForExpectedPosition(expected_position);
+
+  DestroyServiceForFrame(main_frame_);
+
+  EXPECT_EQ(nullptr, ComputeServiceForRouting());
+
+  observer.WaitForExpectedPosition(player_position);
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest, PositionFromServiceCanBeReset) {
+  CreateServiceForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_);
+
+  media_session::MediaPosition player_position(
+      0.0, base::TimeDelta::FromSeconds(20), base::TimeDelta());
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+
+  players_[main_frame_].get()->SetPosition(player_position);
+  GetMediaSession()->RebuildAndNotifyMediaPositionChanged();
+
+  observer.WaitForExpectedPosition(player_position);
+
+  EXPECT_EQ(services_[main_frame_].get(), ComputeServiceForRouting());
+
+  media_session::MediaPosition expected_position(
+      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+
+  services_[main_frame_]->SetPositionState(expected_position);
+
+  observer.WaitForExpectedPosition(expected_position);
+
+  services_[main_frame_]->SetPositionState(base::nullopt);
+
+  EXPECT_EQ(services_[main_frame_].get(), ComputeServiceForRouting());
+
+  observer.WaitForExpectedPosition(player_position);
 }
 
 }  // namespace content

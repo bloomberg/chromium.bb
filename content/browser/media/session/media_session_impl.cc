@@ -421,11 +421,12 @@ void MediaSessionImpl::OnPlayerPaused(MediaSessionPlayerObserver* observer,
 void MediaSessionImpl::RebuildAndNotifyMediaPositionChanged() {
   base::Optional<media_session::MediaPosition> position;
 
-  // TODO(https://crbug.com/984620): If there was a position specified from
-  // Blink then we should use that.
+  // If there was a position specified from Blink then we should use that.
+  if (routed_service_ && routed_service_->position())
+    position = routed_service_->position();
 
   // If we only have a single player then we should use the position from that.
-  if (normal_players_.size() == 1 && one_shot_players_.empty() &&
+  if (!position && normal_players_.size() == 1 && one_shot_players_.empty() &&
       pepper_players_.empty()) {
     auto& first = normal_players_.begin()->first;
     position = first.observer->GetPosition(first.player_id);
@@ -1169,6 +1170,7 @@ void MediaSessionImpl::UpdateRoutedService() {
   RebuildAndNotifyMetadataChanged();
   RebuildAndNotifyActionsChanged();
   RebuildAndNotifyMediaSessionInfoChanged();
+  RebuildAndNotifyMediaPositionChanged();
 }
 
 MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
