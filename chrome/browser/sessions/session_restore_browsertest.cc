@@ -928,12 +928,37 @@ std::vector<base::Optional<TabGroupId>> GetTabGroups(
   return result;
 }
 
+// Building session state from scratch and from an existing browser use
+// different code paths. So, create a parametrized test fixture to run each test
+// with and without a command reset. The bool test parameter determines whether
+// to do a command reset when quitting and restoring.
+class SessionRestoreTabGroupsTest : public SessionRestoreTest,
+                                    public testing::WithParamInterface<bool> {
+ protected:
+  void SetUpOnMainThread() override {
+    feature_override_.InitAndEnableFeature(features::kTabGroups);
+    SessionRestoreTest::SetUpOnMainThread();
+  }
+
+  Browser* QuitBrowserAndRestore(Browser* browser, int expected_tab_count) {
+    // The test parameter determines whether to do a command reset.
+    if (GetParam()) {
+      SessionService* const session_service =
+          SessionServiceFactory::GetForProfile(browser->profile());
+      session_service->ResetFromCurrentBrowsers();
+    }
+
+    return SessionRestoreTest::QuitBrowserAndRestore(browser,
+                                                     expected_tab_count);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_override_;
+};
+
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabsWithGroups) {
-  base::test::ScopedFeatureList feature_override;
-  feature_override.InitAndEnableFeature(features::kTabGroups);
-
+IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, TabsWithGroups) {
   constexpr int kNumTabs = 6;
   const std::array<base::Optional<int>, kNumTabs> group_spec = {
       0, 0, base::nullopt, base::nullopt, 1, 1};
@@ -957,40 +982,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabsWithGroups) {
   EXPECT_EQ(groups, GetTabGroups(new_browser->tab_strip_model()));
 }
 
-// Test that tab groups are restored correctly after the command set is rebuilt
-// from the browser state.
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabsWithGroupsCommandReset) {
-  base::test::ScopedFeatureList feature_override;
-  feature_override.InitAndEnableFeature(features::kTabGroups);
-
-  constexpr int kNumTabs = 6;
-  const std::array<base::Optional<int>, kNumTabs> group_spec = {
-      0, 0, base::nullopt, base::nullopt, 1, 1};
-
-  // Open |kNumTabs| tabs.
-  ui_test_utils::NavigateToURL(browser(), url1_);
-  for (int i = 1; i < kNumTabs; ++i) {
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), url1_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  }
-  ASSERT_EQ(kNumTabs, browser()->tab_strip_model()->count());
-
-  CreateTabGroups(browser()->tab_strip_model(), group_spec);
-  ASSERT_NO_FATAL_FAILURE(
-      CheckTabGrouping(browser()->tab_strip_model(), group_spec));
-  const auto groups = GetTabGroups(browser()->tab_strip_model());
-
-  // Rebuild commands.
-  SessionService* const session_service =
-      SessionServiceFactory::GetForProfile(browser()->profile());
-  ASSERT_TRUE(session_service);
-  session_service->ResetFromCurrentBrowsers();
-
-  Browser* new_browser = QuitBrowserAndRestore(browser(), kNumTabs);
-  ASSERT_EQ(kNumTabs, new_browser->tab_strip_model()->count());
-  EXPECT_EQ(groups, GetTabGroups(new_browser->tab_strip_model()));
-}
+INSTANTIATE_TEST_SUITE_P(WithAndWithoutReset,
+                         SessionRestoreTabGroupsTest,
+                         testing::Values(false, true));
 
 // Ensure tab groups aren't restored if |features::kTabGroups| is disabled.
 // Regression test for crbug.com/983962.
