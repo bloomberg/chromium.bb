@@ -34610,6 +34610,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1446425986" label="ProtectSyncCredentialOnReauth:disabled"/>
   <int value="-1444051091" label="ash-disable-night-light"/>
   <int value="-1443796945" label="OfflinePagesSharing:disabled"/>
+  <int value="-1442753429" label="SystemTrayFeaturePodsPagination:disabled"/>
   <int value="-1441340278" label="NewTabPageIcons:enabled"/>
   <int value="-1440440375" label="WebVrAutopresent:enabled"/>
   <int value="-1440152291" label="disable-gesture-typing"/>
@@ -37022,6 +37023,7 @@ from previous Chrome versions.
   <int value="1957472162"
       label="AutofillUpstreamEditableExpirationDate:disabled"/>
   <int value="1958387645" label="ScanCardsInWebPayments:enabled"/>
+  <int value="1959020463" label="SystemTrayFeaturePodsPagination:enabled"/>
   <int value="1959148757" label="OffMainThreadFetch:enabled"/>
   <int value="1960169775" label="NewPhotoPicker:disabled"/>
   <int value="1961425320" label="force-qtkit"/>

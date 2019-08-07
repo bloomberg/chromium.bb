@@ -2969,6 +2969,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "system-tray-pagination",
+    "owners": ["amehfooz", "tengs"],
+    "expiry_milestone": 81
+  },
+  {
     "name": "tab-groups",
     "owners": [ "chrome-desktop-ui-seattle@google.com", "bsep" ],
     "expiry_milestone": 82

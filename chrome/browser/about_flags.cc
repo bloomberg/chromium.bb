@@ -1594,6 +1594,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTrimOnMemoryPressureDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(
          performance_manager::features::chromeos::kTrimOnMemoryPressure)},
+    {"system-tray-pagination", flag_descriptions::kSystemTrayPaginationName,
+     flag_descriptions::kSystemTrayPaginationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kSystemTrayFeaturePodsPagination)},
 #endif  // OS_CHROMEOS
     {
         "disable-accelerated-video-decode",
