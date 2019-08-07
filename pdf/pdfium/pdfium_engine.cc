@@ -2413,7 +2413,6 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     return;
   pending_pages_.clear();
   pp::Size old_document_size = layout_.size();
-  layout_.set_size(pp::Size());
   std::vector<pp::Size> page_sizes;
   size_t new_page_count = FPDF_GetPageCount(doc());
 
@@ -2441,8 +2440,6 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     pp::Size size = page_available ? GetPageSize(i) : default_page_size_;
     EnlargePage(i, new_page_count, &size);
     page_sizes.push_back(size);
-
-    layout_.set_size({std::max(layout_.size().width(), size.width()), 0});
   }
 
   LoadPagesInCurrentLayout(page_sizes, reload);

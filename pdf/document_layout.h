@@ -70,17 +70,15 @@ class DocumentLayout final {
   // Sets the layout's total size.
   void set_size(const pp::Size& size) { size_ = size; }
 
-  // Given |page_sizes| and the layout's width set to the max width of the
-  // document's pages, return pp::Rects that represent |page_sizes|
-  // formatted for single view and update the layout's size to the size of the
-  // new single view layout.
+  // Given |page_sizes|, return pp::Rects that represent |page_sizes|
+  // formatted for single view and update the layout's size to the size of
+  // the new single view layout.
   std::vector<pp::Rect> GetSingleViewLayout(
       const std::vector<pp::Size>& page_sizes);
 
-  // Given |page_sizes| and the layout's width is set to the max page width of
-  // the document's pages, return pp::Rects that represent |page_sizes|
-  // formatted for two-up view and update the layout's size to the size of the
-  // new two-up view layout.
+  // Given |page_sizes|, return pp::Rects that represent |page_sizes|
+  // formatted for two-up view and update the layout's size to the size of
+  // the new two-up view layout.
   std::vector<pp::Rect> GetTwoUpViewLayout(
       const std::vector<pp::Size>& page_sizes);
 
