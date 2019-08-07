@@ -1,0 +1,144 @@
+/*
+ * Copyright (C) 2018 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto2";
+option optimize_for = LITE_RUNTIME;
+
+package perfetto.protos;
+
+message ProfilePacket {
+  repeated InternedString strings = 1;
+  message InternedString {
+    optional uint64 id = 1;
+    optional bytes str = 2;
+  }
+
+  repeated Mapping mappings = 4;
+  message Mapping {
+    optional uint64 id = 1;        // Interning key.
+    optional uint64 build_id = 2;  // Interning key.
+    optional uint64 offset = 3;
+    optional uint64 start = 4;
+    optional uint64 end = 5;
+    optional uint64 load_bias = 6;
+    // E.g. ["system", "lib64", "libc.so"]
+    repeated uint64 path_string_ids = 7;  // id of string.
+  }
+
+  repeated Frame frames = 2;
+  message Frame {
+    optional uint64 id = 1;  // Interning key
+    // E.g. "fopen"
+    optional uint64 function_name_id = 2;  // id of string.
+    optional uint64 mapping_id = 3;
+    optional uint64 rel_pc = 4;
+  }
+
+  repeated Callstack callstacks = 3;
+  message Callstack {
+    optional uint64 id = 1;
+    // Frames of this callstack. Bottom frame first.
+    repeated uint64 frame_ids = 2;
+  }
+
+  message HeapSample {
+    optional uint64 callstack_id = 1;
+    // bytes allocated at this callstack.
+    optional uint64 self_allocated = 2;
+    // bytes allocated at this callstack that have been freed.
+    optional uint64 self_freed = 3;
+    // bytes allocated at this callstack but not used since the last
+    // clear_refs.
+    // See documentation of idle_allocations in HeapprofdConfig for more
+    // details.
+    optional uint64 self_idle = 7;
+    optional uint64 timestamp = 4;  // timestamp [opt]
+    // Number of allocations that were sampled at this callstack.
+    optional uint64 alloc_count = 5;
+    // Number of allocations that were sampled at this callstack that have been
+    // freed.
+    optional uint64 free_count = 6;
+  }
+
+  message Histogram {
+    message Bucket {
+      // This bucket counts values from the previous bucket's (or -infinity if
+      // this is the first bucket) upper_limit (inclusive) to this upper_limit
+      // (exclusive).
+      optional uint64 upper_limit = 1;
+      // This is the highest bucket. This is set instead of the upper_limit. Any
+      // values larger or equal to the previous bucket's upper_limit are counted
+      // in this bucket.
+      optional bool max_bucket = 2;
+      // Number of values that fall into this range.
+      optional uint64 count = 3;
+    }
+    repeated Bucket buckets = 1;
+  }
+
+  message ProcessStats {
+    optional uint64 unwinding_errors = 1;
+    optional uint64 heap_samples = 2;
+    optional uint64 map_reparses = 3;
+    optional Histogram unwinding_time_us = 4;
+    optional uint64 total_unwinding_time_us = 5;
+  }
+
+  repeated ProcessHeapSamples process_dumps = 5;
+  message ProcessHeapSamples {
+    optional uint64 pid = 1;
+
+    // This process was profiled from startup.
+    // If false, this process was already running when profiling started.
+    optional bool from_startup = 3;
+
+    // This process was not profiled because a concurrent session was active.
+    // If this is true, samples will be empty.
+    optional bool rejected_concurrent = 4;
+
+    // This process disconnected while it was profiled.
+    // If false, the process outlived the profiling session.
+    optional bool disconnected = 6;
+
+    // If disconnected, this disconnect was caused by the client overrunning
+    // the buffer.
+    optional bool buffer_overran = 7;
+
+    // If disconnected, this disconnected was caused by the shared memory
+    // buffer being corrupted. THIS IS ALWAYS A BUG IN HEAPPROFD OR CLIENT
+    // MEMORY CORRUPTION.
+    optional bool buffer_corrupted = 8;
+
+    // Timestamp of the state of the target process that this dump represents.
+    // This can be different to the timestamp of the TracePackets for various
+    // reasons:
+    // * If disconnected is set above, this is the timestamp of last state
+    //   heapprofd had of the process before it disconnected.
+    // * Otherwise, if the rate of events produced by the process is high,
+    //   heapprofd might be behind.
+    //
+    // TODO(fmayer): This is MONOTONIC_COARSE. Refactor ClockSnapshot::Clock
+    //               to have a type enum that we can reuse here.
+    optional uint64 timestamp = 9;
+
+    optional ProcessStats stats = 5;
+
+    repeated HeapSample samples = 2;
+  }
+
+  optional bool continued = 6;
+  optional uint64 index = 7;
+}
