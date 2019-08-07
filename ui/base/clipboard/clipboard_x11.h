@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_CLIPBOARD_CLIPBOARD_AURAX11_H_
-#define UI_BASE_CLIPBOARD_CLIPBOARD_AURAX11_H_
+#ifndef UI_BASE_CLIPBOARD_CLIPBOARD_X11_H_
+#define UI_BASE_CLIPBOARD_CLIPBOARD_X11_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,12 +15,12 @@
 
 namespace ui {
 
-class ClipboardAuraX11 : public Clipboard {
+class ClipboardX11 : public Clipboard {
  private:
   friend class Clipboard;
 
-  ClipboardAuraX11();
-  ~ClipboardAuraX11() override;
+  ClipboardX11();
+  ~ClipboardX11() override;
 
   // Clipboard overrides:
   void OnPreShutdown() override;
@@ -65,12 +65,12 @@ class ClipboardAuraX11 : public Clipboard {
 
   // TODO(dcheng): Is this still needed now that each platform clipboard has its
   // own class derived from Clipboard?
-  class AuraX11Details;
-  std::unique_ptr<AuraX11Details> aurax11_details_;
+  class X11Details;
+  std::unique_ptr<X11Details> x11_details_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClipboardAuraX11);
+  DISALLOW_COPY_AND_ASSIGN(ClipboardX11);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_CLIPBOARD_CLIPBOARD_AURAX11_H_
+#endif  // UI_BASE_CLIPBOARD_CLIPBOARD_X11_H_

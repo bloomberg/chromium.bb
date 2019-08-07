@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/clipboard/clipboard_aurax11.h"
+#include "ui/base/clipboard/clipboard_x11.h"
 
 #include <stdint.h>
 
@@ -85,16 +85,16 @@ SelectionChangeObserver::SelectionChangeObserver()
     XFixesSelectSelectionInput(gfx::GetXDisplay(), GetX11RootWindow(),
                                clipboard_atom_,
                                XFixesSetSelectionOwnerNotifyMask |
-                               XFixesSelectionWindowDestroyNotifyMask |
-                               XFixesSelectionClientCloseNotifyMask);
+                                   XFixesSelectionWindowDestroyNotifyMask |
+                                   XFixesSelectionClientCloseNotifyMask);
     // This seems to be semi-optional. For some reason, registering for any
     // selection notify events seems to subscribe us to events for both the
     // primary and the clipboard buffers. Register anyway just to be safe.
     XFixesSelectSelectionInput(gfx::GetXDisplay(), GetX11RootWindow(),
                                XA_PRIMARY,
                                XFixesSetSelectionOwnerNotifyMask |
-                               XFixesSelectionWindowDestroyNotifyMask |
-                               XFixesSelectionClientCloseNotifyMask);
+                                   XFixesSelectionWindowDestroyNotifyMask |
+                                   XFixesSelectionClientCloseNotifyMask);
 
     PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
   }
@@ -128,7 +128,7 @@ void SelectionChangeObserver::WillProcessEvent(const PlatformEvent& event) {
 // Represents a list of possible return types. Copy constructable.
 class TargetList {
  public:
-  typedef std::vector< ::Atom> AtomVector;
+  using AtomVector = std::vector<::Atom>;
 
   explicit TargetList(const AtomVector& target_list);
 
@@ -161,21 +161,20 @@ bool TargetList::ContainsFormat(const ClipboardFormatType& format_type) const {
 }
 
 bool TargetList::ContainsAtom(::Atom atom) const {
-  return find(target_list_.begin(), target_list_.end(), atom)
-      != target_list_.end();
+  return base::Contains(target_list_, atom);
 }
 
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
-// ClipboardAuraX11::AuraX11Details
+// ClipboardX11::X11Details
 
 // Private implementation of our X11 integration. Keeps X11 headers out of the
 // majority of chrome, which break badly.
-class ClipboardAuraX11::AuraX11Details : public PlatformEventDispatcher {
+class ClipboardX11::X11Details : public PlatformEventDispatcher {
  public:
-  AuraX11Details();
-  ~AuraX11Details() override;
+  X11Details();
+  ~X11Details() override;
 
   // Returns the X11 type that we pass to various XSelection functions for the
   // given type.
@@ -203,7 +202,7 @@ class ClipboardAuraX11::AuraX11Details : public PlatformEventDispatcher {
   void TakeOwnershipOfSelection(ClipboardType type);
 
   // Returns the first of |types| offered by the current selection holder in
-  // |data_out|, or returns NULL if none of those types are available.
+  // |data_out|, or returns nullptr if none of those types are available.
   //
   // If the selection holder is us, this call is synchronous and we pull
   // the data out of |clipboard_selection_| or |primary_selection_|. If the
@@ -211,7 +210,7 @@ class ClipboardAuraX11::AuraX11Details : public PlatformEventDispatcher {
   // and do the asynchronous dance with whatever application is holding the
   // selection.
   ui::SelectionData RequestAndWaitForTypes(ClipboardType type,
-                                           const std::vector< ::Atom>& types);
+                                           const std::vector<::Atom>& types);
 
   // Retrieves the list of possible data types the current clipboard owner has.
   //
@@ -220,7 +219,7 @@ class ClipboardAuraX11::AuraX11Details : public PlatformEventDispatcher {
   TargetList WaitAndGetTargetsList(ClipboardType type);
 
   // Returns a list of all text atoms that we handle.
-  std::vector< ::Atom> GetTextAtoms() const;
+  std::vector<::Atom> GetTextAtoms() const;
 
   // Returns a vector with a |format| converted to an X11 atom.
   std::vector<::Atom> GetAtomsForFormat(const ClipboardFormatType& format);
@@ -257,10 +256,10 @@ class ClipboardAuraX11::AuraX11Details : public PlatformEventDispatcher {
   SelectionOwner clipboard_owner_;
   SelectionOwner primary_owner_;
 
-  DISALLOW_COPY_AND_ASSIGN(AuraX11Details);
+  DISALLOW_COPY_AND_ASSIGN(X11Details);
 };
 
-ClipboardAuraX11::AuraX11Details::AuraX11Details()
+ClipboardX11::X11Details::X11Details()
     : x_display_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(x_display_)),
       x_window_(XCreateWindow(x_display_,
@@ -286,14 +285,14 @@ ClipboardAuraX11::AuraX11Details::AuraX11Details()
     PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 }
 
-ClipboardAuraX11::AuraX11Details::~AuraX11Details() {
+ClipboardX11::X11Details::~X11Details() {
   if (PlatformEventSource::GetInstance())
     PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 
   XDestroyWindow(x_display_, x_window_);
 }
 
-::Atom ClipboardAuraX11::AuraX11Details::LookupSelectionForClipboardType(
+::Atom ClipboardX11::X11Details::LookupSelectionForClipboardType(
     ClipboardType type) const {
   if (type == ClipboardType::kCopyPaste)
     return GetCopyPasteSelection();
@@ -301,12 +300,12 @@ ClipboardAuraX11::AuraX11Details::~AuraX11Details() {
   return XA_PRIMARY;
 }
 
-::Atom ClipboardAuraX11::AuraX11Details::GetCopyPasteSelection() const {
+::Atom ClipboardX11::X11Details::GetCopyPasteSelection() const {
   return gfx::GetAtom(kClipboard);
 }
 
-const SelectionFormatMap&
-ClipboardAuraX11::AuraX11Details::LookupStorageForAtom(::Atom atom) {
+const SelectionFormatMap& ClipboardX11::X11Details::LookupStorageForAtom(
+    ::Atom atom) {
   if (atom == XA_PRIMARY)
     return primary_owner_.selection_format_map();
 
@@ -314,26 +313,25 @@ ClipboardAuraX11::AuraX11Details::LookupStorageForAtom(::Atom atom) {
   return clipboard_owner_.selection_format_map();
 }
 
-void ClipboardAuraX11::AuraX11Details::CreateNewClipboardData() {
+void ClipboardX11::X11Details::CreateNewClipboardData() {
   clipboard_data_ = SelectionFormatMap();
 }
 
-void ClipboardAuraX11::AuraX11Details::InsertMapping(
+void ClipboardX11::X11Details::InsertMapping(
     const std::string& key,
     const scoped_refptr<base::RefCountedMemory>& memory) {
   ::Atom atom_key = gfx::GetAtom(key.c_str());
   clipboard_data_.Insert(atom_key, memory);
 }
 
-void ClipboardAuraX11::AuraX11Details::TakeOwnershipOfSelection(
-    ClipboardType type) {
+void ClipboardX11::X11Details::TakeOwnershipOfSelection(ClipboardType type) {
   if (type == ClipboardType::kCopyPaste)
     return clipboard_owner_.TakeOwnershipOfSelection(clipboard_data_);
   else
     return primary_owner_.TakeOwnershipOfSelection(clipboard_data_);
 }
 
-SelectionData ClipboardAuraX11::AuraX11Details::RequestAndWaitForTypes(
+SelectionData ClipboardX11::X11Details::RequestAndWaitForTypes(
     ClipboardType type,
     const std::vector<::Atom>& types) {
   ::Atom selection_name = LookupSelectionForClipboardType(type);
@@ -351,7 +349,7 @@ SelectionData ClipboardAuraX11::AuraX11Details::RequestAndWaitForTypes(
     TargetList targets = WaitAndGetTargetsList(type);
 
     ::Atom selection_name = LookupSelectionForClipboardType(type);
-    std::vector< ::Atom> intersection;
+    std::vector<::Atom> intersection;
     GetAtomIntersection(types, targets.target_list(), &intersection);
     return selection_requestor_.RequestAndWaitForTypes(selection_name,
                                                        intersection);
@@ -360,10 +358,9 @@ SelectionData ClipboardAuraX11::AuraX11Details::RequestAndWaitForTypes(
   return SelectionData();
 }
 
-TargetList ClipboardAuraX11::AuraX11Details::WaitAndGetTargetsList(
-    ClipboardType type) {
+TargetList ClipboardX11::X11Details::WaitAndGetTargetsList(ClipboardType type) {
   ::Atom selection_name = LookupSelectionForClipboardType(type);
-  std::vector< ::Atom> out;
+  std::vector<::Atom> out;
   if (XGetSelectionOwner(x_display_, selection_name) == x_window_) {
     // We can local fastpath and return the list of local targets.
     const SelectionFormatMap& format_map = LookupStorageForAtom(selection_name);
@@ -392,7 +389,7 @@ TargetList ClipboardAuraX11::AuraX11Details::WaitAndGetTargetsList(
       // text. This is pretty unfortunate since it means we have to actually
       // copy the data to see if it is available, but at least this path
       // shouldn't be hit for conforming programs.
-      std::vector< ::Atom> types = GetTextAtoms();
+      std::vector<::Atom> types = GetTextAtoms();
       for (const auto& text_atom : types) {
         ::Atom type = x11::None;
         if (selection_requestor_.PerformBlockingConvertSelection(
@@ -407,25 +404,23 @@ TargetList ClipboardAuraX11::AuraX11Details::WaitAndGetTargetsList(
   return TargetList(out);
 }
 
-std::vector<::Atom> ClipboardAuraX11::AuraX11Details::GetTextAtoms() const {
+std::vector<::Atom> ClipboardX11::X11Details::GetTextAtoms() const {
   return GetTextAtomsFrom();
 }
 
-std::vector<::Atom> ClipboardAuraX11::AuraX11Details::GetAtomsForFormat(
+std::vector<::Atom> ClipboardX11::X11Details::GetAtomsForFormat(
     const ClipboardFormatType& format) {
-  std::vector< ::Atom> atoms;
-  atoms.push_back(gfx::GetAtom(format.ToString().c_str()));
-  return atoms;
+  return {gfx::GetAtom(format.ToString().c_str())};
 }
 
-void ClipboardAuraX11::AuraX11Details::Clear(ClipboardType type) {
+void ClipboardX11::X11Details::Clear(ClipboardType type) {
   if (type == ClipboardType::kCopyPaste)
     clipboard_owner_.ClearSelectionOwner();
   else
     primary_owner_.ClearSelectionOwner();
 }
 
-void ClipboardAuraX11::AuraX11Details::StoreCopyPasteDataAndWait() {
+void ClipboardX11::X11Details::StoreCopyPasteDataAndWait() {
   ::Atom selection = GetCopyPasteSelection();
   if (XGetSelectionOwner(x_display_, selection) != x_window_)
     return;
@@ -446,21 +441,19 @@ void ClipboardAuraX11::AuraX11Details::StoreCopyPasteDataAndWait() {
                       base::TimeTicks::Now() - start);
 }
 
-bool ClipboardAuraX11::AuraX11Details::CanDispatchEvent(
-    const PlatformEvent& event) {
+bool ClipboardX11::X11Details::CanDispatchEvent(const PlatformEvent& event) {
   if (event->xany.window == x_window_)
     return true;
 
   if (event->type == PropertyNotify) {
     return primary_owner_.CanDispatchPropertyEvent(*event) ||
-        clipboard_owner_.CanDispatchPropertyEvent(*event) ||
-        selection_requestor_.CanDispatchPropertyEvent(*event);
+           clipboard_owner_.CanDispatchPropertyEvent(*event) ||
+           selection_requestor_.CanDispatchPropertyEvent(*event);
   }
   return false;
 }
 
-uint32_t ClipboardAuraX11::AuraX11Details::DispatchEvent(
-    const PlatformEvent& xev) {
+uint32_t ClipboardX11::X11Details::DispatchEvent(const PlatformEvent& xev) {
   switch (xev->type) {
     case SelectionRequest: {
       if (xev->xselectionrequest.selection == XA_PRIMARY) {
@@ -485,7 +478,7 @@ uint32_t ClipboardAuraX11::AuraX11Details::DispatchEvent(
         // because we never take ownership of it.
         DCHECK_EQ(GetCopyPasteSelection(), xev->xselection.selection);
         clipboard_owner_.OnSelectionClear(*xev);
-        }
+      }
       break;
     }
     case PropertyNotify: {
@@ -507,26 +500,26 @@ uint32_t ClipboardAuraX11::AuraX11Details::DispatchEvent(
 ///////////////////////////////////////////////////////////////////////////////
 // Clipboard factory method.
 Clipboard* Clipboard::Create() {
-  return new ClipboardAuraX11;
+  return new ClipboardX11;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ClipboardAuraX11
+// ClipboardX11
 
-ClipboardAuraX11::ClipboardAuraX11() : aurax11_details_(new AuraX11Details) {
+ClipboardX11::ClipboardX11() : x11_details_(new X11Details) {
   DCHECK(CalledOnValidThread());
 }
 
-ClipboardAuraX11::~ClipboardAuraX11() {
+ClipboardX11::~ClipboardX11() {
   DCHECK(CalledOnValidThread());
 }
 
-void ClipboardAuraX11::OnPreShutdown() {
+void ClipboardX11::OnPreShutdown() {
   DCHECK(CalledOnValidThread());
-  aurax11_details_->StoreCopyPasteDataAndWait();
+  x11_details_->StoreCopyPasteDataAndWait();
 }
 
-uint64_t ClipboardAuraX11::GetSequenceNumber(ClipboardType type) const {
+uint64_t ClipboardX11::GetSequenceNumber(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   if (type == ClipboardType::kCopyPaste)
     return SelectionChangeObserver::GetInstance()->clipboard_sequence_number();
@@ -534,12 +527,12 @@ uint64_t ClipboardAuraX11::GetSequenceNumber(ClipboardType type) const {
     return SelectionChangeObserver::GetInstance()->primary_sequence_number();
 }
 
-bool ClipboardAuraX11::IsFormatAvailable(const ClipboardFormatType& format,
-                                         ClipboardType type) const {
+bool ClipboardX11::IsFormatAvailable(const ClipboardFormatType& format,
+                                     ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardType(type));
 
-  TargetList target_list = aurax11_details_->WaitAndGetTargetsList(type);
+  TargetList target_list = x11_details_->WaitAndGetTargetsList(type);
   if (format.Equals(ClipboardFormatType::GetPlainTextType()) ||
       format.Equals(ClipboardFormatType::GetUrlType())) {
     return target_list.ContainsText();
@@ -547,22 +540,22 @@ bool ClipboardAuraX11::IsFormatAvailable(const ClipboardFormatType& format,
   return target_list.ContainsFormat(format);
 }
 
-void ClipboardAuraX11::Clear(ClipboardType type) {
+void ClipboardX11::Clear(ClipboardType type) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardType(type));
-  aurax11_details_->Clear(type);
+  x11_details_->Clear(type);
 }
 
-void ClipboardAuraX11::ReadAvailableTypes(ClipboardType type,
-                                          std::vector<base::string16>* types,
-                                          bool* contains_filenames) const {
+void ClipboardX11::ReadAvailableTypes(ClipboardType type,
+                                      std::vector<base::string16>* types,
+                                      bool* contains_filenames) const {
   DCHECK(CalledOnValidThread());
   if (!types || !contains_filenames) {
     NOTREACHED();
     return;
   }
 
-  TargetList target_list = aurax11_details_->WaitAndGetTargetsList(type);
+  TargetList target_list = x11_details_->WaitAndGetTargetsList(type);
 
   types->clear();
 
@@ -576,42 +569,41 @@ void ClipboardAuraX11::ReadAvailableTypes(ClipboardType type,
     types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
 
-  SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      type, aurax11_details_->GetAtomsForFormat(
+  SelectionData data(x11_details_->RequestAndWaitForTypes(
+      type, x11_details_->GetAtomsForFormat(
                 ClipboardFormatType::GetWebCustomDataType())));
   if (data.IsValid())
     ReadCustomDataTypes(data.GetData(), data.GetSize(), types);
 }
 
-void ClipboardAuraX11::ReadText(ClipboardType type,
-                                base::string16* result) const {
+void ClipboardX11::ReadText(ClipboardType type, base::string16* result) const {
   DCHECK(CalledOnValidThread());
 
-  SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      type, aurax11_details_->GetTextAtoms()));
+  SelectionData data(
+      x11_details_->RequestAndWaitForTypes(type, x11_details_->GetTextAtoms()));
   if (data.IsValid()) {
     std::string text = data.GetText();
     *result = base::UTF8ToUTF16(text);
   }
 }
 
-void ClipboardAuraX11::ReadAsciiText(ClipboardType type,
-                                     std::string* result) const {
+void ClipboardX11::ReadAsciiText(ClipboardType type,
+                                 std::string* result) const {
   DCHECK(CalledOnValidThread());
 
-  SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      type, aurax11_details_->GetTextAtoms()));
+  SelectionData data(
+      x11_details_->RequestAndWaitForTypes(type, x11_details_->GetTextAtoms()));
   if (data.IsValid())
     result->assign(data.GetText());
 }
 
 // TODO(estade): handle different charsets.
 // TODO(port): set *src_url.
-void ClipboardAuraX11::ReadHTML(ClipboardType type,
-                                base::string16* markup,
-                                std::string* src_url,
-                                uint32_t* fragment_start,
-                                uint32_t* fragment_end) const {
+void ClipboardX11::ReadHTML(ClipboardType type,
+                            base::string16* markup,
+                            std::string* src_url,
+                            uint32_t* fragment_start,
+                            uint32_t* fragment_end) const {
   DCHECK(CalledOnValidThread());
   markup->clear();
   if (src_url)
@@ -619,9 +611,9 @@ void ClipboardAuraX11::ReadHTML(ClipboardType type,
   *fragment_start = 0;
   *fragment_end = 0;
 
-  SelectionData data(aurax11_details_->RequestAndWaitForTypes(
+  SelectionData data(x11_details_->RequestAndWaitForTypes(
       type,
-      aurax11_details_->GetAtomsForFormat(ClipboardFormatType::GetHtmlType())));
+      x11_details_->GetAtomsForFormat(ClipboardFormatType::GetHtmlType())));
   if (data.IsValid()) {
     *markup = data.GetHtml();
 
@@ -631,22 +623,22 @@ void ClipboardAuraX11::ReadHTML(ClipboardType type,
   }
 }
 
-void ClipboardAuraX11::ReadRTF(ClipboardType type, std::string* result) const {
+void ClipboardX11::ReadRTF(ClipboardType type, std::string* result) const {
   DCHECK(CalledOnValidThread());
 
-  SelectionData data(aurax11_details_->RequestAndWaitForTypes(
+  SelectionData data(x11_details_->RequestAndWaitForTypes(
       type,
-      aurax11_details_->GetAtomsForFormat(ClipboardFormatType::GetRtfType())));
+      x11_details_->GetAtomsForFormat(ClipboardFormatType::GetRtfType())));
   if (data.IsValid())
     data.AssignTo(result);
 }
 
-SkBitmap ClipboardAuraX11::ReadImage(ClipboardType type) const {
+SkBitmap ClipboardX11::ReadImage(ClipboardType type) const {
   DCHECK(CalledOnValidThread());
 
-  SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      type, aurax11_details_->GetAtomsForFormat(
-                ClipboardFormatType::GetBitmapType())));
+  SelectionData data(x11_details_->RequestAndWaitForTypes(
+      type,
+      x11_details_->GetAtomsForFormat(ClipboardFormatType::GetBitmapType())));
   if (data.IsValid()) {
     SkBitmap bitmap;
     if (gfx::PNGCodec::Decode(data.GetData(), data.GetSize(), &bitmap))
@@ -656,96 +648,95 @@ SkBitmap ClipboardAuraX11::ReadImage(ClipboardType type) const {
   return SkBitmap();
 }
 
-void ClipboardAuraX11::ReadCustomData(ClipboardType clipboard_type,
-                                      const base::string16& type,
-                                      base::string16* result) const {
+void ClipboardX11::ReadCustomData(ClipboardType clipboard_type,
+                                  const base::string16& type,
+                                  base::string16* result) const {
   DCHECK(CalledOnValidThread());
 
-  SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      clipboard_type, aurax11_details_->GetAtomsForFormat(
+  SelectionData data(x11_details_->RequestAndWaitForTypes(
+      clipboard_type, x11_details_->GetAtomsForFormat(
                           ClipboardFormatType::GetWebCustomDataType())));
   if (data.IsValid())
     ReadCustomDataForType(data.GetData(), data.GetSize(), type, result);
 }
 
-void ClipboardAuraX11::ReadBookmark(base::string16* title,
-                                    std::string* url) const {
+void ClipboardX11::ReadBookmark(base::string16* title, std::string* url) const {
   DCHECK(CalledOnValidThread());
   // TODO(erg): This was left NOTIMPLEMENTED() in the gtk port too.
   NOTIMPLEMENTED();
 }
 
-void ClipboardAuraX11::ReadData(const ClipboardFormatType& format,
-                                std::string* result) const {
+void ClipboardX11::ReadData(const ClipboardFormatType& format,
+                            std::string* result) const {
   DCHECK(CalledOnValidThread());
 
-  SelectionData data(aurax11_details_->RequestAndWaitForTypes(
-      ClipboardType::kCopyPaste, aurax11_details_->GetAtomsForFormat(format)));
+  SelectionData data(x11_details_->RequestAndWaitForTypes(
+      ClipboardType::kCopyPaste, x11_details_->GetAtomsForFormat(format)));
   if (data.IsValid())
     data.AssignTo(result);
 }
 
-void ClipboardAuraX11::WriteObjects(ClipboardType type,
-                                    const ObjectMap& objects) {
+void ClipboardX11::WriteObjects(ClipboardType type, const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardType(type));
 
-  aurax11_details_->CreateNewClipboardData();
+  x11_details_->CreateNewClipboardData();
   for (const auto& object : objects)
     DispatchObject(static_cast<ObjectType>(object.first), object.second);
-  aurax11_details_->TakeOwnershipOfSelection(type);
+  x11_details_->TakeOwnershipOfSelection(type);
 
   if (type == ClipboardType::kCopyPaste) {
     auto text_iter = objects.find(CBF_TEXT);
     if (text_iter != objects.end()) {
-      aurax11_details_->CreateNewClipboardData();
+      x11_details_->CreateNewClipboardData();
       const ObjectMapParams& params_vector = text_iter->second;
       if (params_vector.size()) {
         const ObjectMapParam& char_vector = params_vector[0];
         if (char_vector.size())
           WriteText(&char_vector.front(), char_vector.size());
       }
-      aurax11_details_->TakeOwnershipOfSelection(ClipboardType::kSelection);
+      x11_details_->TakeOwnershipOfSelection(ClipboardType::kSelection);
     }
   }
 }
 
-void ClipboardAuraX11::WriteText(const char* text_data, size_t text_len) {
+void ClipboardX11::WriteText(const char* text_data, size_t text_len) {
   std::string str(text_data, text_len);
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedString::TakeString(&str));
 
-  aurax11_details_->InsertMapping(kMimeTypeText, mem);
-  aurax11_details_->InsertMapping(kText, mem);
-  aurax11_details_->InsertMapping(kString, mem);
-  aurax11_details_->InsertMapping(kUtf8String, mem);
+  x11_details_->InsertMapping(kMimeTypeText, mem);
+  x11_details_->InsertMapping(kText, mem);
+  x11_details_->InsertMapping(kString, mem);
+  x11_details_->InsertMapping(kUtf8String, mem);
 }
 
-void ClipboardAuraX11::WriteHTML(const char* markup_data,
-                                 size_t markup_len,
-                                 const char* url_data,
-                                 size_t url_len) {
+void ClipboardX11::WriteHTML(const char* markup_data,
+                             size_t markup_len,
+                             const char* url_data,
+                             size_t url_len) {
   // TODO(estade): We need to expand relative links with |url_data|.
-  static const char* html_prefix = "<meta http-equiv=\"content-type\" "
-                                   "content=\"text/html; charset=utf-8\">";
+  static const char* html_prefix =
+      "<meta http-equiv=\"content-type\" "
+      "content=\"text/html; charset=utf-8\">";
   std::string data = html_prefix;
   data += std::string(markup_data, markup_len);
-  // Some programs expect NULL-terminated data. See http://crbug.com/42624
+  // Some programs expect '\0'-terminated data. See http://crbug.com/42624
   data += '\0';
 
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedString::TakeString(&data));
-  aurax11_details_->InsertMapping(kMimeTypeHTML, mem);
+  x11_details_->InsertMapping(kMimeTypeHTML, mem);
 }
 
-void ClipboardAuraX11::WriteRTF(const char* rtf_data, size_t data_len) {
+void ClipboardX11::WriteRTF(const char* rtf_data, size_t data_len) {
   WriteData(ClipboardFormatType::GetRtfType(), rtf_data, data_len);
 }
 
-void ClipboardAuraX11::WriteBookmark(const char* title_data,
-                                     size_t title_len,
-                                     const char* url_data,
-                                     size_t url_len) {
+void ClipboardX11::WriteBookmark(const char* title_data,
+                                 size_t title_len,
+                                 const char* url_data,
+                                 size_t url_len) {
   // Write as a mozilla url (UTF16: URL, newline, title).
   base::string16 url = base::UTF8ToUTF16(std::string(url_data, url_len) + "\n");
   base::string16 title =
@@ -757,32 +748,30 @@ void ClipboardAuraX11::WriteBookmark(const char* title_data,
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedBytes::TakeVector(&data));
 
-  aurax11_details_->InsertMapping(kMimeTypeMozillaURL, mem);
+  x11_details_->InsertMapping(kMimeTypeMozillaURL, mem);
 }
 
 // Write an extra flavor that signifies WebKit was the last to modify the
 // pasteboard. This flavor has no data.
-void ClipboardAuraX11::WriteWebSmartPaste() {
+void ClipboardX11::WriteWebSmartPaste() {
   std::string empty;
-  aurax11_details_->InsertMapping(
-      kMimeTypeWebkitSmartPaste,
-      scoped_refptr<base::RefCountedMemory>(
-          base::RefCountedString::TakeString(&empty)));
+  x11_details_->InsertMapping(kMimeTypeWebkitSmartPaste,
+                              scoped_refptr<base::RefCountedMemory>(
+                                  base::RefCountedString::TakeString(&empty)));
 }
 
-void ClipboardAuraX11::WriteBitmap(const SkBitmap& bitmap) {
+void ClipboardX11::WriteBitmap(const SkBitmap& bitmap) {
   // Encode the bitmap as a PNG for transport.
   std::vector<unsigned char> output;
   if (gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, false, &output)) {
-    aurax11_details_->InsertMapping(kMimeTypePNG,
-                                    base::RefCountedBytes::TakeVector(
-                                        &output));
+    x11_details_->InsertMapping(kMimeTypePNG,
+                                base::RefCountedBytes::TakeVector(&output));
   }
 }
 
-void ClipboardAuraX11::WriteData(const ClipboardFormatType& format,
-                                 const char* data_data,
-                                 size_t data_len) {
+void ClipboardX11::WriteData(const ClipboardFormatType& format,
+                             const char* data_data,
+                             size_t data_len) {
   // We assume that certain mapping types are only written by trusted code.
   // Therefore we must upkeep their integrity.
   if (format.Equals(ClipboardFormatType::GetBitmapType()))
@@ -791,7 +780,7 @@ void ClipboardAuraX11::WriteData(const ClipboardFormatType& format,
   std::vector<unsigned char> bytes(data_data, data_data + data_len);
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedBytes::TakeVector(&bytes));
-  aurax11_details_->InsertMapping(format.ToString(), mem);
+  x11_details_->InsertMapping(format.ToString(), mem);
 }
 
 }  // namespace ui
