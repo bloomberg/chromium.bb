@@ -992,6 +992,9 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
         customize.selectedOptions.background);
   }
 
+  // Remove any existing preview.
+  customize.richerPicker_unpreviewImage();
+
   customize.selectedOptions.background = tile;
   customize.selectedOptions.backgroundData = {
     id: tile.id,
