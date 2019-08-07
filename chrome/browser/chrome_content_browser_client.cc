@@ -1562,11 +1562,12 @@ bool ChromeContentBrowserClient::ShouldUseSpareRenderProcessHost(
 }
 
 bool ChromeContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    content::BrowserOrResourceContext browser_or_resource_context,
+    content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
-          browser_or_resource_context, effective_site_url)) {
+          browser_context, effective_site_url)) {
     return true;
   }
 #endif
