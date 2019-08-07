@@ -392,12 +392,6 @@ static void tpl_model_update_b(TplDepFrame *tpl_frame,
           (double)tpl_stats_ptr->inter_cost / tpl_stats_ptr->intra_cost);
       int64_t mc_flow = (int64_t)(quant_ratio * tpl_stats_ptr->mc_dep_cost *
                                   (1.0 - iiratio_nl));
-      /*
-      int64_t mc_flow =
-          tpl_stats_ptr->mc_dep_cost -
-          (tpl_stats_ptr->mc_dep_cost * tpl_stats_ptr->inter_cost) /
-              tpl_stats_ptr->intra_cost;
-              */
 #if !USE_TPL_CLASSIC_MODEL
       int64_t mc_saved = tpl_stats_ptr->intra_cost - tpl_stats_ptr->inter_cost;
 #endif  // #if !USE_TPL_CLASSIC_MODEL
