@@ -300,6 +300,7 @@ class StatusMediator {
 
         mIsSearchEngineGoogle = isSearchEngineGoogle;
         mShouldShowSearchEngineLogo = shouldShowSearchEngineLogo;
+        updateLocationBarIcon();
     }
 
     /**
