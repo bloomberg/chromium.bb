@@ -281,34 +281,5 @@ TEST(CoordinateTest, GetRightRectForTwoUpView) {
               GetRightRectForTwoUpView({0, 0}, {100, 0}, kRightInsets));
 }
 
-TEST(CoordinateTest, TwoUpViewLayout) {
-  pp::Point position(1066, 0);
-
-  // Test layout when the widest page is on the left.
-  CompareRect({245, 3, 820, 1056},
-              GetLeftRectForTwoUpView({826, 1066}, position, kLeftInsets));
-  CompareRect({1067, 3, 1060, 816},
-              GetRightRectForTwoUpView({1066, 826}, position, kRightInsets));
-
-  position.set_y(1066);
-  CompareRect({245, 1069, 820, 1056},
-              GetLeftRectForTwoUpView({826, 1066}, position, kLeftInsets));
-  CompareRect({1067, 1069, 820, 890},
-              GetRightRectForTwoUpView({826, 900}, position, kRightInsets));
-
-  // Test layout when the widest page is on the right.
-  position.set_y(0);
-  CompareRect({5, 3, 1060, 816},
-              GetLeftRectForTwoUpView({1066, 826}, position, kLeftInsets));
-  CompareRect({1067, 3, 820, 1056},
-              GetRightRectForTwoUpView({826, 1066}, position, kRightInsets));
-
-  position.set_y(1066);
-  CompareRect({245, 1069, 820, 890},
-              GetLeftRectForTwoUpView({826, 900}, position, kLeftInsets));
-  CompareRect({1067, 1069, 820, 1056},
-              GetRightRectForTwoUpView({826, 1066}, position, kRightInsets));
-}
-
 }  // namespace draw_utils
 }  // namespace chrome_pdf
