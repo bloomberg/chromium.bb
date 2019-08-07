@@ -7,6 +7,8 @@
 #include <list>
 #include <utility>
 
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/quic/mock_crypto_client_stream.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_http_utils.h"
@@ -516,7 +518,7 @@ QuicTestPacketMaker::MakeRstAckAndConnectionClosePacket(
 
   quic::QuicConnectionCloseFrame close;
   close.quic_error_code = quic_error;
-  close.error_details = quic_error_details;
+  close.error_details = MaybePrependErrorCode(quic_error_details, quic_error);
   if (version_.transport_version == quic::QUIC_VERSION_99) {
     close.close_type = quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
   }
@@ -555,7 +557,7 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
 
   quic::QuicConnectionCloseFrame close;
   close.quic_error_code = quic_error;
-  close.error_details = quic_error_details;
+  close.error_details = MaybePrependErrorCode(quic_error_details, quic_error);
   if (version_.transport_version == quic::QUIC_VERSION_99) {
     close.close_type = quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
   }
@@ -576,7 +578,7 @@ QuicTestPacketMaker::MakeConnectionClosePacket(
 
   quic::QuicConnectionCloseFrame close;
   close.quic_error_code = quic_error;
-  close.error_details = quic_error_details;
+  close.error_details = MaybePrependErrorCode(quic_error_details, quic_error);
   if (version_.transport_version == quic::QUIC_VERSION_99) {
     close.close_type = quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE;
   }
@@ -1523,6 +1525,18 @@ bool QuicTestPacketMaker::ShouldIncludeVersion(bool include_version) const {
     return encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE;
   }
   return include_version;
+}
+
+std::string QuicTestPacketMaker::MaybePrependErrorCode(
+    const std::string& quic_error_details,
+    quic::QuicErrorCode quic_error_code) const {
+  if (!quic::VersionHasIetfQuicFrames(version_.transport_version) ||
+      quic_error_code == quic::QUIC_IETF_GQUIC_ERROR_MISSING) {
+    // QUIC_IETF_GQUIC_ERROR_MISSING means not to encode the error value.
+    return quic_error_details;
+  }
+  return base::StrCat(
+      {base::NumberToString(quic_error_code), ":", quic_error_details});
 }
 
 quic::QuicStreamFrame QuicTestPacketMaker::GenerateNextStreamFrame(

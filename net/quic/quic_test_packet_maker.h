@@ -378,6 +378,11 @@ class QuicTestPacketMaker {
 
   bool ShouldIncludeVersion(bool include_version) const;
 
+  // This mirrors quic_framer.cc::{anonymous namespace}::GenerateErrorString()
+  // behavior.
+  std::string MaybePrependErrorCode(const std::string& quic_error_details,
+                                    quic::QuicErrorCode quic_error_code) const;
+
   quic::QuicStreamFrame GenerateNextStreamFrame(quic::QuicStreamId stream_id,
                                                 bool fin,
                                                 quic::QuicStringPiece data);
