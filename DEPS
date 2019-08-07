@@ -664,6 +664,11 @@ deps = {
       'dep_type': 'cipd',
   },
 
+  'src/third_party/android_sdk/androidx_browser/src': {
+      'url': Var('chromium_git') + '/external/gob/android/platform/frameworks/support/browser.git' + '@' + 'aeeea8bd0a6703bc4a148e9bcd6998553def74ab',
+      'condition': 'checkout_android',
+  },
+
   'src/third_party/android_sdk/public': {
       'packages': [
           {
