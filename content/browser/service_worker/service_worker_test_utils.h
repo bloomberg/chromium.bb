@@ -135,6 +135,12 @@ CreateProviderHostForServiceWorkerContext(
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint);
 
+// Creates a registration with a waiting version in INSTALLED state.
+scoped_refptr<ServiceWorkerRegistration>
+CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
+                                          const GURL& scope,
+                                          const GURL& script);
+
 // Writes the script down to |storage| synchronously. This should not be used in
 // base::RunLoop since base::RunLoop is used internally to wait for completing
 // all of tasks. If it's in another base::RunLoop, consider to use
