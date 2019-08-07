@@ -283,7 +283,6 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
   // Create two default buttons {Helpful, Unhelpful} for notification.
   void CreateInhrButtonsPair(std::vector<NotificationData::Button>* buttons) {
     buttons->clear();
-    // TODO(hesen): Fill button text field with GRD string resource.
     NotificationData::Button helpful_button;
     helpful_button.type = ActionButtonType::kHelpful;
     helpful_button.id = notifications::kDefaultHelpfulButtonId;
