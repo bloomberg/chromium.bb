@@ -404,7 +404,7 @@ deps = {
     'packages': [
       {
         'package': 'chromium/chrome/test/data/autofill/captured_sites',
-        'version': 'x-MlaiKZT7T-YaM3_ZEyIqsILkx9IvGpvrZHmXq0EiEC',
+        'version': '27xauHcZofjRobU1o1UZrUuYaK_No7r2SSaMT6gzwd0C',
       }
     ],
     'condition': 'checkout_chromium_autofill_test_dependencies',
@@ -415,7 +415,7 @@ deps = {
     'packages': [
       {
         'package': 'chromium/chrome/test/data/password/captured_sites',
-        'version': 'fh4O86nUCfRN5a1Piw48cbufqayIfZQjCDbFDKXnRwEC',
+        'version': '484POXsN4YniZtOU5CH6WWuVHJK82SmGIjbpxvEHaR0C',
       }
     ],
     'condition': 'checkout_chromium_password_manager_test_dependencies',
