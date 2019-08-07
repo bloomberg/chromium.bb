@@ -1291,17 +1291,17 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	int has_outline = !!(face->face_flags & FT_FACE_FLAG_SCALABLE);
 	int has_color = 0;
 
-	if (!FcPatternAddBool (pat, FC_OUTLINE, has_outline))
+	if (!FcPatternObjectAddBool (pat, FC_OUTLINE_OBJECT, has_outline))
 	    goto bail1;
 
 	has_color = FT_HAS_COLOR (face);
-	if (!FcPatternAddBool (pat, FC_COLOR, has_color))
+	if (!FcPatternObjectAddBool (pat, FC_COLOR_OBJECT, has_color))
 	    goto bail1;
 
 	/* All color fonts are designed to be scaled, even if they only have
 	 * bitmap strikes.  Client is responsible to scale the bitmaps.  This
 	 * is in constrast to non-color strikes... */
-	if (!FcPatternAddBool (pat, FC_SCALABLE, has_outline || has_color))
+	if (!FcPatternObjectAddBool (pat, FC_SCALABLE_OBJECT, has_outline || has_color))
 	    goto bail1;
     }
 
@@ -1320,7 +1320,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	      double min_value = master->axis[i].minimum / (double) (1U << 16);
 	      double def_value = master->axis[i].def / (double) (1U << 16);
 	      double max_value = master->axis[i].maximum / (double) (1U << 16);
-	      const char *elt = NULL;
+	      FcObject obj = FC_INVALID_OBJECT;
 
 	      if (min_value > def_value || def_value > max_value || min_value == max_value)
 		  continue;
@@ -1328,7 +1328,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	      switch (master->axis[i].tag)
 	      {
 		case FT_MAKE_TAG ('w','g','h','t'):
-		  elt = FC_WEIGHT;
+		  obj = FC_WEIGHT_OBJECT;
 		  min_value = FcWeightFromOpenTypeDouble (min_value);
 		  max_value = FcWeightFromOpenTypeDouble (max_value);
 		  variable_weight = FcTrue;
@@ -1336,23 +1336,23 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		  break;
 
 		case FT_MAKE_TAG ('w','d','t','h'):
-		  elt = FC_WIDTH;
+		  obj = FC_WIDTH_OBJECT;
 		  /* Values in 'wdth' match Fontconfig FC_WIDTH_* scheme directly. */
 		  variable_width = FcTrue;
 		  width = 0; /* To stop looking for width. */
 		  break;
 
 		case FT_MAKE_TAG ('o','p','s','z'):
-		  elt = FC_SIZE;
+		  obj = FC_SIZE_OBJECT;
 		  /* Values in 'opsz' match Fontconfig FC_SIZE, both are in points. */
 		  variable_size = FcTrue;
 		  break;
 	      }
 
-	      if (elt)
+	      if (obj != FC_INVALID_OBJECT)
 	      {
 		  FcRange *r = FcRangeCreateDouble (min_value, max_value);
-		  if (!FcPatternAddRange (pat, elt, r))
+		  if (!FcPatternObjectAddRange (pat, obj, r))
 		  {
 		      FcRangeDestroy (r);
 		      goto bail1;
@@ -1391,7 +1391,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 		  break;
 
 		case FT_MAKE_TAG ('o','p','s','z'):
-		  if (!FcPatternAddDouble (pat, FC_SIZE, value))
+		  if (!FcPatternObjectAddDouble (pat, FC_SIZE_OBJECT, value))
 		      goto bail1;
 		  break;
 	    }
@@ -1400,7 +1400,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
         else
 	    goto bail1;
     }
-    if (!FcPatternAddBool (pat, FC_VARIABLE, variable))
+    if (!FcPatternObjectAddBool (pat, FC_VARIABLE_OBJECT, variable))
 	goto bail1;
 
     /*
@@ -1631,9 +1631,9 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
     {
 	if (FcDebug () & FC_DBG_SCANV)
 	    printf ("using FreeType family \"%s\"\n", face->family_name);
-	if (!FcPatternAddString (pat, FC_FAMILY, (FcChar8 *) face->family_name))
+	if (!FcPatternObjectAddString (pat, FC_FAMILY_OBJECT, (FcChar8 *) face->family_name))
 	    goto bail1;
-	if (!FcPatternAddString (pat, FC_FAMILYLANG, (FcChar8 *) "en"))
+	if (!FcPatternObjectAddString (pat, FC_FAMILYLANG_OBJECT, (FcChar8 *) "en"))
 	    goto bail1;
 	++nfamily;
     }
@@ -1644,9 +1644,9 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	if (FcDebug () & FC_DBG_SCANV)
 	    printf ("using FreeType style \"%s\"\n", face->style_name);
 
-	if (!FcPatternAddString (pat, FC_STYLE, (FcChar8 *) face->style_name))
+	if (!FcPatternObjectAddString (pat, FC_STYLE_OBJECT, (FcChar8 *) face->style_name))
 	    goto bail1;
-	if (!FcPatternAddString (pat, FC_STYLELANG, (FcChar8 *) "en"))
+	if (!FcPatternObjectAddString (pat, FC_STYLELANG_OBJECT, (FcChar8 *) "en"))
 	    goto bail1;
 	++nstyle;
     }
@@ -1670,7 +1670,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	family[end - start] = '\0';
 	if (FcDebug () & FC_DBG_SCANV)
 	    printf ("using filename for family %s\n", family);
-	if (!FcPatternAddString (pat, FC_FAMILY, family))
+	if (!FcPatternObjectAddString (pat, FC_FAMILY_OBJECT, family))
 	{
 	    free (family);
 	    goto bail1;
@@ -1728,14 +1728,14 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	    strncpy (psname, tmp, 255);
 	    psname[255] = 0;
 	}
-	if (!FcPatternAddString (pat, FC_POSTSCRIPT_NAME, (const FcChar8 *)psname))
+	if (!FcPatternObjectAddString (pat, FC_POSTSCRIPT_NAME_OBJECT, (const FcChar8 *)psname))
 	    goto bail1;
     }
 
-    if (file && *file && !FcPatternAddString (pat, FC_FILE, file))
+    if (file && *file && !FcPatternObjectAddString (pat, FC_FILE_OBJECT, file))
 	goto bail1;
 
-    if (!FcPatternAddInteger (pat, FC_INDEX, id))
+    if (!FcPatternObjectAddInteger (pat, FC_INDEX_OBJECT, id))
 	goto bail1;
 
 #if 0
@@ -1745,7 +1745,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
      * the attribute.  Sigh.
      */
     if ((face->face_flags & FT_FACE_FLAG_FIXED_WIDTH) != 0)
-	if (!FcPatternAddInteger (pat, FC_SPACING, FC_MONO))
+	if (!FcPatternObjectAddInteger (pat, FC_SPACING_OBJECT, FC_MONO))
 	    goto bail1;
 #endif
 
@@ -1755,12 +1755,12 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
     head = (TT_Header *) FT_Get_Sfnt_Table (face, ft_sfnt_head);
     if (head)
     {
-	if (!FcPatternAddInteger (pat, FC_FONTVERSION, head->Font_Revision))
+	if (!FcPatternObjectAddInteger (pat, FC_FONTVERSION_OBJECT, head->Font_Revision))
 	    goto bail1;
     }
     else
     {
-	if (!FcPatternAddInteger (pat, FC_FONTVERSION, 0))
+	if (!FcPatternObjectAddInteger (pat, FC_FONTVERSION_OBJECT, 0))
 	    goto bail1;
     }
 
@@ -1824,7 +1824,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
     }
     if (os2 && (complex_ = FcFontCapabilities(face)))
     {
-	if (!FcPatternAddString (pat, FC_CAPABILITY, complex_))
+	if (!FcPatternObjectAddString (pat, FC_CAPABILITY_OBJECT, complex_))
 	{
 	    free (complex_);
 	    goto bail1;
@@ -1832,7 +1832,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	free (complex_);
     }
 
-    if (!FcPatternAddBool (pat, FC_FONT_HAS_HINT, FcFontHasHint (face)))
+    if (!FcPatternObjectAddBool (pat, FC_FONT_HAS_HINT_OBJECT, FcFontHasHint (face)))
 	goto bail1;
 
     if (!variable_size && os2 && os2->version >= 0x0005 && os2->version != 0xffff)
@@ -1846,13 +1846,13 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 
 	if (lower_size == upper_size)
 	{
-	    if (!FcPatternAddDouble (pat, FC_SIZE, lower_size))
+	    if (!FcPatternObjectAddDouble (pat, FC_SIZE_OBJECT, lower_size))
 		goto bail1;
 	}
 	else
 	{
 	    r = FcRangeCreateDouble (lower_size, upper_size);
-	    if (!FcPatternAddRange (pat, FC_SIZE, r))
+	    if (!FcPatternObjectAddRange (pat, FC_SIZE_OBJECT, r))
 	    {
 		FcRangeDestroy (r);
 		goto bail1;
@@ -1996,19 +1996,19 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
     if (foundry == 0)
 	foundry = (FcChar8 *) "unknown";
 
-    if (!FcPatternAddInteger (pat, FC_SLANT, slant))
+    if (!FcPatternObjectAddInteger (pat, FC_SLANT_OBJECT, slant))
 	goto bail1;
 
-    if (!variable_weight && !FcPatternAddDouble (pat, FC_WEIGHT, weight))
+    if (!variable_weight && !FcPatternObjectAddDouble (pat, FC_WEIGHT_OBJECT, weight))
 	goto bail1;
 
-    if (!variable_width && !FcPatternAddDouble (pat, FC_WIDTH, width))
+    if (!variable_width && !FcPatternObjectAddDouble (pat, FC_WIDTH_OBJECT, width))
 	goto bail1;
 
-    if (!FcPatternAddString (pat, FC_FOUNDRY, foundry))
+    if (!FcPatternObjectAddString (pat, FC_FOUNDRY_OBJECT, foundry))
 	goto bail1;
 
-    if (!FcPatternAddBool (pat, FC_DECORATIVE, decorative))
+    if (!FcPatternObjectAddBool (pat, FC_DECORATIVE_OBJECT, decorative))
 	goto bail1;
 
 
@@ -2028,7 +2028,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 
     /* The FcFreeTypeCharSet() chose the encoding; test it for symbol. */
     symbol = face->charmap && face->charmap->encoding == FT_ENCODING_MS_SYMBOL;
-    if (!FcPatternAddBool (pat, FC_SYMBOL, symbol))
+    if (!FcPatternObjectAddBool (pat, FC_SYMBOL_OBJECT, symbol))
 	goto bail1;
 
     spacing = FcFreeTypeSpacing (face);
@@ -2061,7 +2061,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 #endif
     }
 
-    if (!FcPatternAddCharSet (pat, FC_CHARSET, cs))
+    if (!FcPatternObjectAddCharSet (pat, FC_CHARSET_OBJECT, cs))
 	goto bail2;
 
     if (!symbol)
@@ -2084,7 +2084,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	ls = FcLangSetCreate ();
     }
 
-    if (!FcPatternAddLangSet (pat, FC_LANG, ls))
+    if (!FcPatternObjectAddLangSet (pat, FC_LANG_OBJECT, ls))
     {
 	FcLangSetDestroy (ls);
 	goto bail2;
@@ -2093,17 +2093,17 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
     FcLangSetDestroy (ls);
 
     if (spacing != FC_PROPORTIONAL)
-	if (!FcPatternAddInteger (pat, FC_SPACING, spacing))
+	if (!FcPatternObjectAddInteger (pat, FC_SPACING_OBJECT, spacing))
 	    goto bail2;
 
     if (!(face->face_flags & FT_FACE_FLAG_SCALABLE))
     {
 	int i;
 	for (i = 0; i < face->num_fixed_sizes; i++)
-	    if (!FcPatternAddDouble (pat, FC_PIXEL_SIZE,
-				     FcGetPixelSize (face, i)))
+	    if (!FcPatternObjectAddDouble (pat, FC_PIXEL_SIZE_OBJECT,
+					   FcGetPixelSize (face, i)))
 		goto bail2;
-	if (!FcPatternAddBool (pat, FC_ANTIALIAS, FcFalse))
+	if (!FcPatternObjectAddBool (pat, FC_ANTIALIAS_OBJECT, FcFalse))
 	    goto bail2;
     }
 #if HAVE_FT_GET_X11_FONT_FORMAT
@@ -2114,7 +2114,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
     {
 	const char *font_format = FT_Get_X11_Font_Format (face);
 	if (font_format)
-	    if (!FcPatternAddString (pat, FC_FONTFORMAT, (FcChar8 *) font_format))
+	    if (!FcPatternObjectAddString (pat, FC_FONTFORMAT_OBJECT, (FcChar8 *) font_format))
 		goto bail2;
     }
 #endif
