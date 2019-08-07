@@ -948,7 +948,7 @@ bool AXNodeObject::IsEmbeddedObject() const {
 }
 
 bool AXNodeObject::IsFieldset() const {
-  return IsHTMLFieldSetElement(GetNode());
+  return IsA<HTMLFieldSetElement>(GetNode());
 }
 
 bool AXNodeObject::IsHeading() const {
@@ -3253,14 +3253,15 @@ String AXNodeObject::NativeTextAlternative(
   }
 
   // Fieldset / legend.
-  if (IsHTMLFieldSetElement(GetNode())) {
+  if (auto* html_field_set_element =
+          DynamicTo<HTMLFieldSetElement>(GetNode())) {
     name_from = ax::mojom::NameFrom::kRelatedElement;
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative));
       name_sources->back().type = name_from;
       name_sources->back().native_source = kAXTextFromNativeHTMLLegend;
     }
-    HTMLElement* legend = ToHTMLFieldSetElement(GetNode())->Legend();
+    HTMLElement* legend = html_field_set_element->Legend();
     if (legend) {
       AXObject* legend_ax_object = AXObjectCache().GetOrCreate(legend);
       // Avoid an infinite loop
