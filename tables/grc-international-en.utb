@@ -1,7 +1,7 @@
 # liblouis: Unofficial table used by some for studying classical and biblical Greek.
 #
 # -----------
-#-display-name: Greek international braille
+#-display-name: Greek international braille as used by the English-speaking
 #
 #+locale: grc
 #+type: literary
