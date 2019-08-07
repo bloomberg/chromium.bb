@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_audio_processor.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -23,7 +23,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "media/base/audio_converter.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"

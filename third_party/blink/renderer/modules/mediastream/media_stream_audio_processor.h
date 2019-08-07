@@ -2,27 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_H_
 
 #include <memory>
 
 #include "base/atomicops.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/optional.h"
-#include "base/single_thread_task_runner.h"
-#include "base/synchronization/lock.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "media/base/audio_converter.h"
 #include "media/webrtc/audio_delay_stats_reporter.h"
-#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_source.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/rtc_base/task_queue.h"
@@ -48,7 +43,7 @@ using webrtc::AudioProcessorInterface;
 // processing components like AGC, AEC and NS. It enables the components based
 // on the getUserMedia constraints, processes the data and outputs it in a unit
 // of 10 ms data chunk.
-class PLATFORM_EXPORT MediaStreamAudioProcessor
+class MODULES_EXPORT MediaStreamAudioProcessor
     : public WebRtcPlayoutDataSource::Sink,
       public AudioProcessorInterface,
       public AecDumpAgentImpl::Delegate {
@@ -219,4 +214,4 @@ class PLATFORM_EXPORT MediaStreamAudioProcessor
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_H_

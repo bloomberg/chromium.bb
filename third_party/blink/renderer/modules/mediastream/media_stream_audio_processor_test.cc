@@ -14,7 +14,6 @@
 #include "base/memory/aligned_memory.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -28,7 +27,7 @@
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/web/modules/mediastream/mock_constraint_factory.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
-#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_audio_processor.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
@@ -172,7 +171,6 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
 #endif
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   media::AudioParameters params_;
 };
 
