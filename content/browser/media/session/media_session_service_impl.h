@@ -44,6 +44,8 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   void SetClient(blink::mojom::MediaSessionClientPtr client) override;
 
   void SetPlaybackState(blink::mojom::MediaSessionPlaybackState state) override;
+  void SetPositionState(
+      const base::Optional<media_session::MediaPosition>& position) override {}
   void SetMetadata(blink::mojom::SpecMediaMetadataPtr metadata) override;
 
   void EnableAction(media_session::mojom::MediaSessionAction action) override;
