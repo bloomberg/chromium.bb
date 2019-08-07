@@ -43,9 +43,9 @@ constexpr base::TimeDelta kBluetoothAdapterResumeMaxDuration =
 // in case something goes wrong.
 constexpr base::TimeDelta kAuthAttemptTimeout = base::TimeDelta::FromSeconds(5);
 
-constexpr base::TimeDelta kMinGetUnlockableRemoteStatusDuration =
+constexpr base::TimeDelta kMinExtendedDuration =
     base::TimeDelta::FromMilliseconds(1);
-constexpr base::TimeDelta kMaxGetUnlockableRemoteStatusDuration =
+constexpr base::TimeDelta kMaxExtendedDuration =
     base::TimeDelta::FromSeconds(15);
 const int kNumDurationMetricBuckets = 100;
 
@@ -111,6 +111,19 @@ void RecordAuthResultFailure(
   }
 }
 
+void RecordExtendedDurationTimerMetric(const std::string& histogram_name,
+                                       base::TimeDelta duration) {
+  // Use a custom |max| to account for Smart Lock's timeout (larger than the
+  // default 10 seconds).
+  base::UmaHistogramCustomTimes(
+      histogram_name, duration, kMinExtendedDuration /* min */,
+      kMaxExtendedDuration /* max */, kNumDurationMetricBuckets /* buckets */);
+}
+
+std::string GetHistogramStatusSuffix(bool unlockable) {
+  return unlockable ? "Unlockable" : "Other";
+}
+
 }  // namespace
 
 UnlockManagerImpl::UnlockManagerImpl(
@@ -166,20 +179,24 @@ void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
   if (life_cycle_) {
     life_cycle_->AddObserver(this);
 
-    attempt_secure_connection_start_time_ =
-        base::DefaultClock::GetInstance()->Now();
+    show_lock_screen_time_ = base::DefaultClock::GetInstance()->Now();
+    has_user_been_shown_first_status_ = false;
 
-    SetIsPerformingInitialScan(true /* is_performing_initial_scan */);
-    AttemptToStartRemoteDeviceLifecycle();
+    if (IsBluetoothPresentAndPowered()) {
+      SetIsPerformingInitialScan(true /* is_performing_initial_scan */);
+      AttemptToStartRemoteDeviceLifecycle();
+    } else {
+      SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
+    }
   } else {
     ResetPerformanceMetricsTimestamps();
 
     if (proximity_monitor_)
       proximity_monitor_->RemoveObserver(this);
     proximity_monitor_.reset();
-  }
 
-  UpdateLockScreen();
+    UpdateLockScreen();
+  }
 }
 
 void UnlockManagerImpl::OnLifeCycleStateChanged(
@@ -237,6 +254,14 @@ void UnlockManagerImpl::OnRemoteStatusUpdate(
 
   remote_screenlock_state_.reset(new RemoteScreenlockState(
       GetScreenlockStateFromRemoteUpdate(status_update)));
+
+  // Only record these metrics within the initial period of opening the laptop
+  // displaying the lock screen.
+  if (is_performing_initial_scan_) {
+    RecordFirstRemoteStatusReceived(
+        *remote_screenlock_state_ ==
+        RemoteScreenlockState::UNLOCKED /* unlockable */);
+  }
 
   // This also calls |UpdateLockScreen()|
   SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
@@ -311,12 +336,14 @@ void UnlockManagerImpl::OnBluetoothAdapterInitialized(
 
 void UnlockManagerImpl::AdapterPresentChanged(device::BluetoothAdapter* adapter,
                                               bool present) {
-  UpdateLockScreen();
+  if (!IsBluetoothAdapterRecoveringFromSuspend())
+    OnBluetoothAdapterPresentAndPoweredChanged();
 }
 
 void UnlockManagerImpl::AdapterPoweredChanged(device::BluetoothAdapter* adapter,
                                               bool powered) {
-  UpdateLockScreen();
+  if (!IsBluetoothAdapterRecoveringFromSuspend())
+    OnBluetoothAdapterPresentAndPoweredChanged();
 }
 
 void UnlockManagerImpl::SuspendImminent(
@@ -333,10 +360,11 @@ void UnlockManagerImpl::SuspendImminent(
 void UnlockManagerImpl::SuspendDone(const base::TimeDelta& sleep_duration) {
   bluetooth_suspension_recovery_timer_->Start(
       FROM_HERE, kBluetoothAdapterResumeMaxDuration,
-      base::Bind(&UnlockManagerImpl::UpdateLockScreen,
+      base::Bind(&UnlockManagerImpl::OnBluetoothAdapterPresentAndPoweredChanged,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  SetIsPerformingInitialScan(true /* is_performing_initial_scan */);
+  // The next scan after resuming is expected to be triggered by calling
+  // SetRemoteDeviceLifeCycle().
 }
 
 bool UnlockManagerImpl::IsBluetoothPresentAndPowered() const {
@@ -351,6 +379,18 @@ bool UnlockManagerImpl::IsBluetoothPresentAndPowered() const {
 
   return bluetooth_adapter_ && bluetooth_adapter_->IsPresent() &&
          bluetooth_adapter_->IsPowered();
+}
+
+void UnlockManagerImpl::OnBluetoothAdapterPresentAndPoweredChanged() {
+  DCHECK(!IsBluetoothAdapterRecoveringFromSuspend());
+
+  if (!IsBluetoothPresentAndPowered()) {
+    SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
+    return;
+  }
+
+  if (!is_performing_initial_scan_)
+    SetIsPerformingInitialScan(true /* is_performing_initial_scan */);
 }
 
 bool UnlockManagerImpl::IsBluetoothAdapterRecoveringFromSuspend() const {
@@ -539,8 +579,11 @@ void UnlockManagerImpl::UpdateLockScreen() {
   PA_LOG(INFO) << "Updating screenlock state from " << screenlock_state_
                << " to " << new_state;
 
-  if (new_state == ScreenlockState::AUTHENTICATED)
-    RecordUnlockableRemoteStatusReceived();
+  if (new_state != ScreenlockState::INACTIVE &&
+      new_state != ScreenlockState::BLUETOOTH_CONNECTING) {
+    RecordFirstStatusShownToUser(
+        new_state == ScreenlockState::AUTHENTICATED /* unlockable */);
+  }
 
   proximity_auth_client_->UpdateScreenlockState(new_state);
   screenlock_state_ = new_state;
@@ -559,6 +602,9 @@ void UnlockManagerImpl::SetIsPerformingInitialScan(
   // Clear the waking up state after a timeout.
   initial_scan_timeout_weak_ptr_factory_.InvalidateWeakPtrs();
   if (is_performing_initial_scan_) {
+    initial_scan_start_time_ = base::DefaultClock::GetInstance()->Now();
+    has_received_first_remote_status_ = false;
+
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&UnlockManagerImpl::OnInitialScanTimeout,
@@ -658,39 +704,91 @@ Messenger* UnlockManagerImpl::GetMessenger() {
   return life_cycle_->GetMessenger();
 }
 
-void UnlockManagerImpl::RecordUnlockableRemoteStatusReceived() {
-  if (attempt_secure_connection_start_time_.is_null() ||
+void UnlockManagerImpl::RecordFirstRemoteStatusReceived(bool unlockable) {
+  if (has_received_first_remote_status_)
+    return;
+  has_received_first_remote_status_ = true;
+
+  if (initial_scan_start_time_.is_null() ||
       attempt_get_remote_status_start_time_.is_null()) {
-    PA_LOG(WARNING) << "Attempted to RecordUnlockableRemoteStatusReceived() "
+    PA_LOG(WARNING) << "Attempted to RecordFirstRemoteStatusReceived() "
                        "without initial timestamps recorded.";
     NOTREACHED();
+    return;
   }
 
-  base::Time now = base::DefaultClock::GetInstance()->Now();
-  if (screenlock_type_ == ProximityAuthSystem::SESSION_LOCK) {
-    // Use a custom |max| to account for Smart Lock's timeout (larger than the
-    // default 10 seconds).
-    base::UmaHistogramCustomTimes(
-        "SmartLock.Performance.StartScanToReceiveUnlockableRemoteStatus."
-        "Duration.Unlock",
-        now - attempt_secure_connection_start_time_ /* sample */,
-        kMinGetUnlockableRemoteStatusDuration /* min */,
-        kMaxGetUnlockableRemoteStatusDuration /* max */,
-        kNumDurationMetricBuckets /* buckets */);
+  const std::string histogram_status_suffix =
+      GetHistogramStatusSuffix(unlockable);
 
+  base::Time now = base::DefaultClock::GetInstance()->Now();
+  base::TimeDelta start_scan_to_receive_first_remote_status_duration =
+      now - initial_scan_start_time_;
+  base::TimeDelta authentication_to_receive_first_remote_status_duration =
+      now - attempt_get_remote_status_start_time_;
+
+  if (screenlock_type_ == ProximityAuthSystem::SESSION_LOCK) {
+    RecordExtendedDurationTimerMetric(
+        "SmartLock.Performance.StartScanToReceiveFirstRemoteStatusDuration."
+        "Unlock",
+        start_scan_to_receive_first_remote_status_duration);
+    RecordExtendedDurationTimerMetric(
+        "SmartLock.Performance.StartScanToReceiveFirstRemoteStatusDuration."
+        "Unlock." +
+            histogram_status_suffix,
+        start_scan_to_receive_first_remote_status_duration);
+
+    // This should be much less than 10 seconds, so use UmaHistogramTimes.
     base::UmaHistogramTimes(
-        "SmartLock.Performance.AuthenticationToReceiveUnlockableRemoteStatus."
-        "Duration.Unlock",
-        now - attempt_get_remote_status_start_time_);
+        "SmartLock.Performance."
+        "AuthenticationToReceiveFirstRemoteStatusDuration.Unlock",
+        authentication_to_receive_first_remote_status_duration);
+    base::UmaHistogramTimes(
+        "SmartLock.Performance."
+        "AuthenticationToReceiveFirstRemoteStatusDuration.Unlock." +
+            histogram_status_suffix,
+        authentication_to_receive_first_remote_status_duration);
   }
 
   // TODO(crbug.com/905438): Implement similar SignIn metrics.
+}
 
-  ResetPerformanceMetricsTimestamps();
+void UnlockManagerImpl::RecordFirstStatusShownToUser(bool unlockable) {
+  if (has_user_been_shown_first_status_)
+    return;
+  has_user_been_shown_first_status_ = true;
+
+  if (show_lock_screen_time_.is_null()) {
+    PA_LOG(WARNING) << "Attempted to RecordFirstStatusShownToUser() "
+                       "without initial timestamp recorded.";
+    NOTREACHED();
+    return;
+  }
+
+  const std::string histogram_status_suffix =
+      GetHistogramStatusSuffix(unlockable);
+
+  base::Time now = base::DefaultClock::GetInstance()->Now();
+  base::TimeDelta show_lock_screen_to_show_first_status_to_user_duration =
+      now - show_lock_screen_time_;
+
+  if (screenlock_type_ == ProximityAuthSystem::SESSION_LOCK) {
+    RecordExtendedDurationTimerMetric(
+        "SmartLock.Performance.ShowLockScreenToShowFirstStatusToUserDuration."
+        "Unlock",
+        show_lock_screen_to_show_first_status_to_user_duration);
+    RecordExtendedDurationTimerMetric(
+        "SmartLock.Performance.ShowLockScreenToShowFirstStatusToUserDuration."
+        "Unlock." +
+            histogram_status_suffix,
+        show_lock_screen_to_show_first_status_to_user_duration);
+  }
+
+  // TODO(crbug.com/905438): Implement similar SignIn metrics.
 }
 
 void UnlockManagerImpl::ResetPerformanceMetricsTimestamps() {
-  attempt_secure_connection_start_time_ = base::Time();
+  show_lock_screen_time_ = base::Time();
+  initial_scan_start_time_ = base::Time();
   attempt_get_remote_status_start_time_ = base::Time();
 }
 
