@@ -902,14 +902,40 @@ class AXPosition {
     return CreateNullPosition();
   }
 
-  // Creates a position using the next text-only node as its anchor.
+  // Creates a tree position using the next text-only node as its anchor.
+  // Assumes that text-only nodes are leaf nodes.
+  AXPositionInstance CreateNextLeafTreePosition() const {
+    AXPositionInstance next_leaf = AsTreePosition()->CreateNextAnchorPosition();
+    while (!next_leaf->IsNullPosition() && next_leaf->AnchorChildCount()) {
+      next_leaf = next_leaf->CreateNextAnchorPosition();
+    }
+
+    DCHECK(next_leaf);
+    return next_leaf;
+  }
+
+  // Creates a tree position using the previous text-only node as its anchor.
+  // Assumes that text-only nodes are leaf nodes.
+  AXPositionInstance CreatePreviousLeafTreePosition() const {
+    AXPositionInstance previous_leaf =
+        AsTreePosition()->CreatePreviousAnchorPosition();
+    while (!previous_leaf->IsNullPosition() &&
+           previous_leaf->AnchorChildCount()) {
+      previous_leaf = previous_leaf->CreatePreviousAnchorPosition();
+    }
+
+    DCHECK(previous_leaf);
+    return previous_leaf;
+  }
+
+  // Creates a text position using the next text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
   AXPositionInstance CreateNextTextAnchorPosition() const {
     return CreateNextTextAnchorPosition(
         base::BindRepeating(&DefaultAbortMovePredicate));
   }
 
-  // Creates a position using the previous text-only node as its anchor.
+  // Creates a text position using the previous text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
   AXPositionInstance CreatePreviousTextAnchorPosition() const {
     return CreatePreviousTextAnchorPosition(

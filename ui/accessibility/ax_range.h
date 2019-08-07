@@ -182,8 +182,7 @@ class AXRange {
       if (current_start_->GetAnchor() == iterator_end_->GetAnchor()) {
         current_start_ = AXPositionType::CreateNullPosition();
       } else {
-        current_start_ =
-            current_start_->CreateNextAnchorPosition()->AsLeafTextPosition();
+        current_start_ = current_start_->CreateNextLeafTreePosition();
         DCHECK_LE(*current_start_, *iterator_end_);
       }
       return *this;
@@ -197,8 +196,8 @@ class AXRange {
               : iterator_end_->Clone();
       DCHECK_LE(*current_end, *iterator_end_);
 
-      AXRange current_leaf_text_range(current_start_->Clone(),
-                                      std::move(current_end));
+      AXRange current_leaf_text_range(current_start_->AsTextPosition(),
+                                      current_end->AsTextPosition());
       DCHECK(current_leaf_text_range.IsLeafTextRange());
       return std::move(current_leaf_text_range);
     }

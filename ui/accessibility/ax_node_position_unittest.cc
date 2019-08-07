@@ -199,6 +199,18 @@ class AXPositionTestWithParam : public AXPositionTest,
 const char* AXPositionTest::TEXT_VALUE = "Line 1\nLine 2";
 
 void AXPositionTest::SetUp() {
+  // root_
+  //  |
+  //  +------------+-----------+
+  //  |            |           |
+  // button_  check_box_  text_field_
+  //                           |
+  //               +-----------+------------+
+  //               |           |            |
+  //        static_text1_  line_break_   static_text2_
+  //               |                        |
+  //        inline_box1_                 inline_box2_
+
   root_.id = ROOT_ID;
   button_.id = BUTTON_ID;
   check_box_.id = CHECK_BOX_ID;
@@ -2437,6 +2449,110 @@ TEST_F(AXPositionTest, CreatePreviousTextAnchorPosition) {
   EXPECT_EQ(tree_.data().tree_id, test_position->tree_id());
   EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
   EXPECT_EQ(3, test_position->text_offset());
+}
+
+TEST_F(AXPositionTest, CreateNextLeafTreePosition) {
+  TestPositionType root_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, root_.id, 0 /* child_index */);
+  ASSERT_TRUE(root_position->IsTreePosition());
+
+  TestPositionType button_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, button_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType checkbox_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, check_box_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType inline_box1_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, inline_box1_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType line_break_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, line_break_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType inline_box2_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, inline_box2_.id, AXNodePosition::BEFORE_TEXT);
+
+  TestPositionType test_position = root_position->CreateNextLeafTreePosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *button_position);
+
+  test_position = test_position->CreateNextLeafTreePosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *checkbox_position);
+
+  test_position = test_position->CreateNextLeafTreePosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *inline_box1_position);
+
+  test_position = test_position->CreateNextLeafTreePosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *line_break_position);
+
+  test_position = test_position->CreateNextLeafTreePosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *inline_box2_position);
+
+  test_position = test_position->CreateNextLeafTreePosition();
+  EXPECT_TRUE(test_position->IsNullPosition());
+
+  TestPositionType root_text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, root_.id, 2 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  EXPECT_TRUE(root_text_position->IsTextPosition());
+
+  test_position = root_text_position->CreateNextLeafTreePosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *inline_box1_position);
+
+  TestPositionType inline_box1_text_position =
+      AXNodePosition::CreateTextPosition(tree_.data().tree_id, inline_box1_.id,
+                                         2 /* text_offset */,
+                                         ax::mojom::TextAffinity::kDownstream);
+  EXPECT_TRUE(inline_box1_text_position->IsTextPosition());
+
+  test_position = inline_box1_text_position->CreateNextLeafTreePosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *line_break_position);
+}
+
+TEST_F(AXPositionTest, CreatePreviousLeafTreePosition) {
+  TestPositionType inline_box2_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, inline_box2_.id, AXNodePosition::BEFORE_TEXT);
+  ASSERT_TRUE(inline_box2_position->IsTreePosition());
+
+  TestPositionType line_break_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, line_break_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType inline_box1_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, inline_box1_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType checkbox_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, check_box_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType button_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, button_.id, AXNodePosition::BEFORE_TEXT);
+
+  TestPositionType test_position =
+      inline_box2_position->CreatePreviousLeafTreePosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *line_break_position);
+
+  test_position = test_position->CreatePreviousLeafTreePosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *inline_box1_position);
+
+  test_position = test_position->CreatePreviousLeafTreePosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *checkbox_position);
+
+  test_position = test_position->CreatePreviousLeafTreePosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *button_position);
+
+  test_position = test_position->CreatePreviousLeafTreePosition();
+  EXPECT_TRUE(test_position->IsNullPosition());
+
+  TestPositionType inline_box2_text_position =
+      AXNodePosition::CreateTextPosition(tree_.data().tree_id, inline_box2_.id,
+                                         2 /* text_offset */,
+                                         ax::mojom::TextAffinity::kDownstream);
+  EXPECT_TRUE(inline_box2_text_position->IsTextPosition());
+
+  test_position = inline_box2_text_position->CreatePreviousLeafTreePosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *line_break_position);
 }
 
 TEST_F(AXPositionTest, AsPositionBeforeAndAfterCharacterWithNullPosition) {
