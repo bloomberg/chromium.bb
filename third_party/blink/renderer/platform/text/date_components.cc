@@ -44,8 +44,8 @@ const int DateComponents::kMinimumWeekNumber = 1;
 // HTML5 specification defines maximum week of year is 53.
 const int DateComponents::kMaximumWeekNumber = 53;
 
-static const int kMaximumMonthInMaximumYear =
-    8;  // This is September, since months are 0 based.
+// This is September, since months are 0 based.
+static const int kMaximumMonthInMaximumYear = 8;
 static const int kMaximumDayInMaximumMonth = 13;
 static const int kMaximumWeekInMaximumYear = 37;  // The week of 275760-09-13
 
@@ -178,7 +178,7 @@ static bool WithinHTMLDateLimits(int year,
   if (month_day > kMaximumDayInMaximumMonth)
     return false;
   // (year, month, monthDay) =
-  // (maximumYear, maximumMonthInMaximumYear, maximumDayInMaximumMonth)
+  // (MaximumYear, kMaximumMonthInMaximumYear, kMaximumDayInMaximumMonth)
   return !hour && !minute && !second && !millisecond;
 }
 
@@ -235,8 +235,8 @@ bool DateComponents::AddDay(int day_diff) {
 }
 
 bool DateComponents::AddMinute(int minute) {
-  // This function is used to adjust timezone offset. So m_year, m_month,
-  // m_monthDay have values between the lower and higher limits.
+  // This function is used to adjust timezone offset. So year_, month_,
+  // month_day_ have values between the lower and higher limits.
   DCHECK(WithinHTMLDateLimits(year_, month_, month_day_));
 
   int carry;
@@ -287,8 +287,8 @@ bool DateComponents::AddMinute(int minute) {
   return true;
 }
 
-// Parses a timezone part, and adjust year, month, monthDay, hour, minute,
-// second, millisecond.
+// Parses a timezone part, and adjust year_, month_, month_day_, hour_, minute_,
+// second_, and millisecond_.
 bool DateComponents::ParseTimeZone(const String& src,
                                    unsigned start,
                                    unsigned& end) {
@@ -451,7 +451,7 @@ bool DateComponents::ParseTime(const String& src,
             millisecond *= 10;
           } else if (digits_length == 3) {
             ok = ToInt(src, index, 3, millisecond);
-          } else {  // digitsLength >= 4
+          } else {  // digits_length >= 4
             return false;
           }
           DCHECK(ok);
@@ -541,8 +541,8 @@ bool DateComponents::SetMillisecondsSinceEpochForDateTime(double ms) {
 }
 
 bool DateComponents::SetMillisecondsSinceEpochForDateTimeLocal(double ms) {
-  // Internal representation of DateTimeLocal is the same as DateTime except
-  // m_type.
+  // Internal representation of kDateTimeLocal is the same as kDateTime except
+  // type_.
   if (!SetMillisecondsSinceEpochForDateTime(ms))
     return false;
   type_ = kDateTimeLocal;
