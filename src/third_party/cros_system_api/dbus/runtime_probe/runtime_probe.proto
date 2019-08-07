@@ -1,0 +1,134 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// The messages in this file comprise the DBus/Protobuf interface for
+// Runtime Probe.
+syntax = "proto3";
+
+package runtime_probe;
+
+// Defined error code.
+enum ErrorCode {
+  // 0 is the default value of ProbeResult::error. It should never be used.
+  RUNTIME_PROBE_ERROR_NOT_SET = 0;
+
+  // Not able to read the ProbeResult as DBus signature indicated.
+  RUNTIME_PROBE_ERROR_PROBE_REQUEST_INVALID = 1;
+  // Not able to find default probe config in the rootfs image.
+  RUNTIME_PROBE_ERROR_DEFAULT_PROBE_CONFIG_NOT_FOUND = 2;
+  // Assigned probe config is not holding a corret JSON format.
+  RUNTIME_PROBE_ERROR_PROBE_CONFIG_SYNTAX_ERROR = 3;
+  // Assigned probe config contains functions not able to be constructed.
+  RUNTIME_PROBE_ERROR_PROBE_CONFIG_INCOMPLETE_PROBE_FUNCTION = 4;
+}
+
+// Request from client that indicates what categories to probe. Category must
+// be existed on the per-board probe statement in rootfs.
+message ProbeRequest {
+  enum SupportCategory {
+    // The name style here is on purposely align with factory probe output.
+    audio_codec = 0;
+    battery = 1;
+    storage = 2;
+  }
+  // repeated string categories = 1;
+  repeated SupportCategory categories = 1;
+}
+
+// Things about audio_codec
+message AudioCodec {
+  message Fields {
+    // The name of the codec presents in sysfs.
+    string name = 1;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
+// Things about battery
+message Battery {
+  // TODO(itspeter): Add more fileds for battery.
+  message Fields {
+    // (1) Most fields are following the naming of exposed ACPI interface.
+    // (2) Most units is in µ because of this unexplained kernel patch:
+    // https://chromium.git.corp.google.com/chromiumos/third_party/kernel/+/d7380965752505951668e85de59c128d1d6fd21f%5E%21/#F1
+
+    // Index number of this battery, starts from 1.
+    int32 index = 1;
+    // Manufacturer for length not exceeding EC_COMM_TEXT_MAX.
+    string manufacturer = 2;
+    // Model name for length not exceeding EC_COMM_TEXT_MAX.
+    string model_name = 3;
+    // Serial number for length not exceeding EC_COMM_TEXT_MAX.
+    string serial_number = 4;
+    // Design Capacity (µAh).
+    int32 charge_full_design = 5;
+    // Full Capacity (µAh, might change occasionally).
+    int32 charge_full = 6;
+    // Remaining capacity (µAh)
+    int32 charge_now = 7;
+    // Current Battery voltage (µV)
+    int32 voltage_now = 8;
+    // Designed minimum output voltage (µV)
+    int32 voltage_min_design = 9;
+    // Smart Battery Cycle Count in http://sbs-forum.org/specs/sbdat110.pdf
+    int32 cycle_count_smart = 10;
+    // Smart Battery Status defined in http://sbs-forum.org/specs/sbdat110.pdf
+    int32 status_smart = 11;
+    // Temperature in 0.1°K as Smart Battery Temperature defined in
+    // http://sbs-forum.org/specs/sbdat110.pdf
+    int32 temperature_smart = 12;
+    // The path of this battery in system. It is useful if caller needs to
+    // correlate with other information
+    string path = 13;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
+// Things about storage
+message Storage {
+  // TODO(itspeter): Add more fileds for storage.
+  // Those fields are for eMMC now.
+  message Fields {
+    // The path of this storage in system. It is useful if caller needs to
+    // correlate with other information.
+    string path = 1;
+    // Number of sectors of this storage, traditionally 1 sector = 512 Bytes.
+    int64 sectors = 2;
+    // Exact size of this storage, reported in bytes
+    int64 size = 3;
+    // Storage type, could be MMC / NVMe / ATA
+    // TODO(b/122027599): NVMe/ATA is still underdevelopment.
+    string type = 4;
+    // Below are based on JEDEC Standard No. 84-B51, and kernel MMC driver
+    // exposed in sysfs:
+    //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v3.18/include/linux/mmc/card.h#17
+    //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v3.18/Documentation/mmc/mmc-dev-attrs.txt
+
+    // MID: Manufacturer ID, 8 bits.
+    uint32 manfid = 5;
+    // PNM: Product name, ASCII characters for 6 bytes.
+    string name = 6;
+    // PRV: Product revision, 8 bits
+    uint32 prv = 7;
+    // PSN: Product serial number, 32 bits
+    uint32 serial = 8;
+    // OID: OEM/Application ID, 8 bits
+    uint32 oemid = 9;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
+// A ProbeResult contains all potential probe results. For category not existed
+// or not requested for probing, field is expected to be empty.
+message ProbeResult {
+  // If a call was successful, error will not be defined.
+  // If a call failed, it must set an error code.
+  ErrorCode error = 1;
+  repeated AudioCodec audio_codec = 2;
+  repeated Battery battery = 3;
+  repeated Storage storage = 4;
+}
