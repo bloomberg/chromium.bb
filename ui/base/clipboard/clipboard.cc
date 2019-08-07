@@ -40,11 +40,8 @@ void Clipboard::SetClipboardForCurrentThread(
   base::PlatformThreadId id = Clipboard::GetAndValidateThreadID();
 
   ClipboardMap* clipboard_map = clipboard_map_.Pointer();
-  ClipboardMap::const_iterator it = clipboard_map->find(id);
-  if (it != clipboard_map->end()) {
-    // This shouldn't happen. The clipboard should not already exist.
-    NOTREACHED();
-  }
+  // This shouldn't happen. The clipboard should not already exist.
+  DCHECK(!base::Contains(*clipboard_map, id));
   clipboard_map->insert({id, std::move(platform_clipboard)});
 }
 
