@@ -1173,9 +1173,6 @@ extern const char kTreatUnsafeDownloadsAsActiveDescription[];
 extern const char kTrySupportedChannelLayoutsName[];
 extern const char kTrySupportedChannelLayoutsDescription[];
 
-extern const char kUnexpireFlagsM77Name[];
-extern const char kUnexpireFlagsM77Description[];
-
 extern const char kUnifiedConsentName[];
 extern const char kUnifiedConsentDescription[];
 
