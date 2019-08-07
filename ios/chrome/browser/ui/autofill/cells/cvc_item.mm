@@ -128,8 +128,7 @@ const CGFloat kDateTextFieldWidth = 40;
     _dateContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_dateContainerView];
 
-    _monthInput =
-        ios::GetChromeBrowserProvider()->CreateStyledTextField(CGRectZero);
+    _monthInput = ios::GetChromeBrowserProvider()->CreateStyledTextField();
     _monthInput.placeholder = l10n_util::GetNSString(
         IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH);
     _monthInput.accessibilityIdentifier = @"month_textField";
@@ -144,8 +143,7 @@ const CGFloat kDateTextFieldWidth = 40;
     _dateSeparator.translatesAutoresizingMaskIntoConstraints = NO;
     [_dateContainerView addSubview:_dateSeparator];
 
-    _yearInput =
-        ios::GetChromeBrowserProvider()->CreateStyledTextField(CGRectZero);
+    _yearInput = ios::GetChromeBrowserProvider()->CreateStyledTextField();
     _yearInput.placeholder =
         l10n_util::GetNSString(IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR);
     _yearInput.accessibilityIdentifier = @"year_textField";
@@ -158,8 +156,7 @@ const CGFloat kDateTextFieldWidth = 40;
     _CVCContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_CVCContainerView];
 
-    _CVCInput =
-        ios::GetChromeBrowserProvider()->CreateStyledTextField(CGRectZero);
+    _CVCInput = ios::GetChromeBrowserProvider()->CreateStyledTextField();
     _CVCInput.placeholder =
         l10n_util::GetNSString(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC);
     _CVCInput.accessibilityIdentifier = @"CVC_textField";
