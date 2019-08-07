@@ -597,8 +597,8 @@ ServiceWorkerUpdateCheckTestUtils::CreatePausedCacheWriter(
 std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
 ServiceWorkerUpdateCheckTestUtils::CreateUpdateCheckerPausedState(
     std::unique_ptr<ServiceWorkerCacheWriter> cache_writer,
-    ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state,
-    ServiceWorkerNewScriptLoader::WriterState body_writer_state,
+    ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
+    ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state,
     mojo::ScopedDataPipeConsumerHandle network_consumer) {
   network::mojom::URLLoaderPtr network_loader;
   network::mojom::URLLoaderClientPtr network_loader_client;
@@ -634,8 +634,8 @@ void ServiceWorkerUpdateCheckTestUtils::
         int64_t old_resource_id,
         int64_t new_resource_id,
         EmbeddedWorkerTestHelper* worker_test_helper,
-        ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state,
-        ServiceWorkerNewScriptLoader::WriterState body_writer_state,
+        ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
+        ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state,
         mojo::ScopedDataPipeConsumerHandle network_consumer,
         ServiceWorkerSingleScriptUpdateChecker::Result compare_result,
         ServiceWorkerVersion* version) {

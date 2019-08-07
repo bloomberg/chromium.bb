@@ -1,13 +1,14 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NEW_SCRIPT_LOADER_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NEW_SCRIPT_LOADER_H_
+#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UPDATED_SCRIPT_LOADER_H_
+#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UPDATED_SCRIPT_LOADER_H_
 
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -22,45 +23,37 @@ namespace content {
 class ServiceWorkerVersion;
 struct HttpResponseInfoIOBuffer;
 
+// Used only for ServiceWorkerImportedScriptUpdateCheck.
+//
 // This is the URLLoader used for loading scripts for a new (installing) service
-// worker. It fetches the script (the main script or imported script) and
-// returns the response to |client|, while also writing the response into the
-// service worker script storage.
+// worker. This is used for a script which has an update on the script during
+// update checking in the browser process. Also used when the request was a
+// network error during the update checking so that the same network error can
+// be observed at the initial script evaluation in the renderer.
 //
 // This loader works as follows:
-//   1. Makes a network request.
-//   2. OnReceiveResponse() is called, writes the response headers to the
-//      service worker script storage and responds with them to the |client|
-//      (which is the service worker in the renderer).
-//   3. OnStartLoadingResponseBody() is called, reads the network response from
-//      the data pipe. While reading the response, writes it to the service
-//      worker script storage and responds with it to the |client|.
-//   4. OnComplete() for the network load and OnWriteDataComplete() are called,
-//      calls CommitCompleted() and closes the connections with the network
-//      service and the renderer process.
-//
-// A set of |network_loader_state_|, |header_writer_state_|, and
-// |body_writer_state_| is the state of this loader. Each of them is changed
-// independently, while some state changes have dependency to other state
-// changes.  See the comment for each field below to see exactly when their
-// state changes happen. For resume loaders, these states are set to be
-// values extracted from ServiceWorkerSingleScriptUpdateChecker::PausedState
-// to make the loader seamlessly resume the download.
-//
-// In case there is already an installed service worker for this registration,
-// this class also performs the "byte-for-byte" comparison for updating the
-// worker. If the script is identical, the load succeeds but no script is
-// written, and ServiceWorkerVersion is told to terminate startup.
+//   1. The ServiceWorkerCacheWriter used in the update check is resumed. After
+//      that, the writer starts to make a new resource by copying the header and
+//      body which has already been provided by the update checker. This loader
+//      observes the copy (WillWriteInfo()/WillWriteData()), and sends the data
+//      to |client_|.
+//   2. After the copy has done, it resumes the network load. The rest of the
+//      script body is responded to the |client_| and also written to service
+//      worker storage.
+//   3. When OnComplete() is called and the Mojo data pipe for the script body
+//      is closed, it calls CommitCompleted() and closes the connections with
+//      the network service and the renderer process.
 //
 // NOTE: To perform the network request, this class uses |loader_factory_| which
 // may internally use a non-NetworkService factory if URL has a non-http(s)
 // scheme, e.g., a chrome-extension:// URL. Regardless, that is still called a
 // "network" request in comments and naming. "network" is meant to distinguish
 // from the load this URLLoader does for its client:
-//     "network" <------> SWNewScriptLoader <------> client
-class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
+//     "network" <------> SWResumeScriptLoader <------> client
+class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
     : public network::mojom::URLLoader,
-      public network::mojom::URLLoaderClient {
+      public network::mojom::URLLoaderClient,
+      public ServiceWorkerCacheWriter::WriteObserver {
  public:
   enum class LoaderState {
     kNotStarted,
@@ -72,17 +65,15 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
 
   enum class WriterState { kNotStarted, kWriting, kCompleted };
 
-  static std::unique_ptr<ServiceWorkerNewScriptLoader> CreateAndStart(
-      int32_t routing_id,
-      int32_t request_id,
+  // Creates a loader to continue downloading of a script paused during update
+  // check.
+  static std::unique_ptr<ServiceWorkerUpdatedScriptLoader> CreateAndStart(
       uint32_t options,
       const network::ResourceRequest& original_request,
       network::mojom::URLLoaderClientPtr client,
-      scoped_refptr<ServiceWorkerVersion> version,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
+      scoped_refptr<ServiceWorkerVersion> version);
 
-  ~ServiceWorkerNewScriptLoader() override;
+  ~ServiceWorkerUpdatedScriptLoader() override;
 
   // network::mojom::URLLoader:
   void FollowRedirect(const std::vector<std::string>& removed_headers,
@@ -108,29 +99,24 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
+  // Implements ServiceWorkerCacheWriter::WriteObserver.
+  int WillWriteInfo(
+      scoped_refptr<HttpResponseInfoIOBuffer> response_info) override;
+  int WillWriteData(scoped_refptr<net::IOBuffer> data,
+                    int length,
+                    base::OnceCallback<void(net::Error)> callback) override;
+
   // Buffer size for reading script data from network.
   const static uint32_t kReadBufferSize;
 
  private:
   class WrappedIOBuffer;
 
-  ServiceWorkerNewScriptLoader(
-      int32_t routing_id,
-      int32_t request_id,
+  ServiceWorkerUpdatedScriptLoader(
       uint32_t options,
       const network::ResourceRequest& original_request,
       network::mojom::URLLoaderClientPtr client,
-      scoped_refptr<ServiceWorkerVersion> version,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
-
-  // Writes the given headers into the service worker script storage.
-  void WriteHeaders(scoped_refptr<HttpResponseInfoIOBuffer> info_buffer);
-  void OnWriteHeadersComplete(net::Error error);
-
-  // Starts watching the data pipe for the network load (i.e.,
-  // |network_consumer_|) if it's ready.
-  void MaybeStartNetworkConsumerHandleWatcher();
+      scoped_refptr<ServiceWorkerVersion> version);
 
   // Called when |network_consumer_| is ready to be read. Can be called multiple
   // times.
@@ -170,9 +156,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
   // ResourceType::kScript for an imported script.
   const ResourceType resource_type_;
 
-  // Load options originally passed to this loader. The options passed to the
-  // network loader might be different from this.
-  const uint32_t original_options_;
+  // Loader options to pass to the network loader.
+  const uint32_t options_;
 
   scoped_refptr<ServiceWorkerVersion> version_;
 
@@ -185,50 +170,57 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
   mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
   mojo::ScopedDataPipeConsumerHandle network_consumer_;
   mojo::SimpleWatcher network_watcher_;
-  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
   // Used for responding with the fetched script to this loader's client.
   network::mojom::URLLoaderClientPtr client_;
   mojo::ScopedDataPipeProducerHandle client_producer_;
 
   // Represents the state of |network_loader_|.
-  // Corresponds to the steps described in the class comments.
+  // Corresponds to the steps of calls as a URLLoaderClient.
   //
-  // When response body exists:
   // CreateLoaderAndStart(): kNotStarted -> kLoadingHeader
   // OnReceiveResponse(): kLoadingHeader -> kWaitingForBody
   // OnStartLoadingResponseBody(): kWaitingForBody -> kLoadingBody
   // OnComplete(): kLoadingBody -> kCompleted
   //
-  // When response body is empty:
-  // CreateLoaderAndStart(): kNotStarted -> kLoadingHeader
-  // OnReceiveResponse(): kLoadingHeader -> kWaitingForBody
-  // OnComplete(): kWaitingForBody -> kCompleted
+  // When this loader is created, the state should be kLoadingBody or kCompleted
+  // because the update checking pauses the cache writer during loading the
+  // body for byte-for-byte comparison.
   LoaderState network_loader_state_ = LoaderState::kNotStarted;
 
-  // Represents the state of |cache_writer_|.
-  // Set to kWriting when it starts to write the header, and set to kCompleted
-  // when the header has been written.
+  // State of the cache writer.
+  // kNotStarted: not started to write the body.
+  // kWriting: writing the body into the cache writer.
+  // kCompleted: all body has been written into the cache writer.
   //
-  // OnReceiveResponse(): kNotStarted -> kWriting (in WriteHeaders())
-  // OnWriteHeadersComplete(): kWriting -> kCompleted
-  WriterState header_writer_state_ = WriterState::kNotStarted;
-
-  // Represents the state of |cache_writer_| and |network_consumer_|.
-  // Set to kWriting when |this| starts watching |network_consumer_|, and set to
-  // kCompleted when all data has been written to |cache_writer_|.
-  //
-  // OnStartLoadingResponseBody() && OnWriteHeadersComplete():
-  //     kNotStarted -> kWriting
-  // OnNetworkDataAvailable() && MOJO_RESULT_FAILED_PRECONDITION:
-  //     kWriting -> kCompleted
+  // When this loader is created, |body_writer_state_| should be kWriting or
+  // kCompleted because the response body should have started to be read during
+  // update checking.
   WriterState body_writer_state_ = WriterState::kNotStarted;
 
-  base::WeakPtrFactory<ServiceWorkerNewScriptLoader> weak_factory_{this};
+  mojo::SimpleWatcher client_producer_watcher_;
+  const base::TimeTicks request_start_;
+  network::mojom::URLLoaderClientRequest network_client_request_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNewScriptLoader);
+  // This is the data notified by OnBeforeWriteData() which would be sent
+  // to |client_|.
+  scoped_refptr<net::IOBuffer> data_to_send_;
+
+  // Length of |data_to_send_| in bytes.
+  int data_length_ = 0;
+
+  // Length of data in |data_to_send_| already sent to |client_|.
+  int bytes_sent_to_client_ = 0;
+
+  // Run this to notify ServiceWorkerCacheWriter that the observer completed
+  // its work. net::OK means all |data_to_send_| has been sent to |client_|.
+  base::OnceCallback<void(net::Error)> write_observer_complete_callback_;
+
+  base::WeakPtrFactory<ServiceWorkerUpdatedScriptLoader> weak_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerUpdatedScriptLoader);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NEW_SCRIPT_LOADER_H_
+#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_UPDATED_SCRIPT_LOADER_H_
