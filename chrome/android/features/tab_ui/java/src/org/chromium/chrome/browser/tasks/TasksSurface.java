@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks;
 
+import android.view.View;
+
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 
@@ -28,4 +30,10 @@ public interface TasksSurface {
      * @return TabListDelegate implementation to access the tab grid.
      */
     TabSwitcher.TabListDelegate getTabListDelegate();
+
+    /**
+     * Get the {@link View} of the surface.
+     * @return The surface view.
+     */
+    View getView();
 }

@@ -15,7 +15,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
-import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -29,6 +28,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,23 +69,22 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
 
     public TabSwitcherCoordinator(Context context, ActivityLifecycleDispatcher lifecycleDispatcher,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
-            CompositorViewHolder compositorViewHolder, ChromeFullscreenManager fullscreenManager,
+            DynamicResourceLoader dynamicResourceLoader, ChromeFullscreenManager fullscreenManager,
             TabCreatorManager tabCreatorManager,
             MenuOrKeyboardActionController menuOrKeyboardActionController,
-            SnackbarManager.SnackbarManageable snackbarManageable, @Nullable ViewGroup container,
+            SnackbarManager.SnackbarManageable snackbarManageable, ViewGroup container,
             @TabListCoordinator.TabListMode int mode) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
         mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
-                context, compositorViewHolder, tabModelSelector, tabContentManager);
+                context, container, tabModelSelector, tabContentManager);
 
         mMediator = new TabSwitcherMediator(this, containerViewModel, tabModelSelector,
-                fullscreenManager, compositorViewHolder,
-                mTabSelectionEditorCoordinator.getController());
+                fullscreenManager, container, mTabSelectionEditorCoordinator.getController(), mode);
 
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
-                    tabContentManager, tabCreatorManager, compositorViewHolder, this, mMediator,
+                    tabContentManager, tabCreatorManager, container, this, mMediator,
                     this::getTabGridCardPosition);
 
             mUndoGroupSnackbarController =
@@ -109,12 +108,10 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                     R.plurals.bottom_tab_grid_title_placeholder, numRelatedTabs, numRelatedTabs);
         };
 
-        ViewGroup tabListContainerView = container != null ? container : compositorViewHolder;
-        mTabListCoordinator =
-                new TabListCoordinator(mode, context, tabModelSelector, mMultiThumbnailCardProvider,
-                        titleProvider, true, mMediator::getCreateGroupButtonOnClickListener,
-                        mMediator, null, null, null, tabListContainerView,
-                        compositorViewHolder.getDynamicResourceLoader(), true, COMPONENT_NAME);
+        mTabListCoordinator = new TabListCoordinator(mode, context, tabModelSelector,
+                mMultiThumbnailCardProvider, titleProvider, true,
+                mMediator::getCreateGroupButtonOnClickListener, mMediator, null, null, null,
+                container, dynamicResourceLoader, true, COMPONENT_NAME);
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
 

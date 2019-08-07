@@ -23,19 +23,34 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 /** The mediator implements the logic to interact with the surfaces and caller. */
 class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.OverviewModeObserver {
+    /** Interface to control overlay visibility. */
+    interface OverlayVisibilityHandler {
+        /**
+         * Set the content overlay visibility.
+         * @param isVisible Whether the content overlay should be visible.
+         */
+        void setContentOverlayVisibility(boolean isVisible);
+    }
+
     private final ObserverList<StartSurface.OverviewModeObserver> mObservers = new ObserverList<>();
     private final TabSwitcher.Controller mController;
+    private final OverlayVisibilityHandler mOverlayVisibilityHandler;
     @Nullable
     private final PropertyModel mPropertyModel;
     @Nullable
     private final ExploreSurfaceCoordinator.FeedSurfaceCreator mFeedSurfaceCreator;
+    private final boolean mOnlyShowExploreSurface;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
+            OverlayVisibilityHandler overlayVisibilityHandler,
             @Nullable PropertyModel propertyModel,
-            @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator) {
+            @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator,
+            boolean onlyShowExploreSurface) {
         mController = controller;
+        mOverlayVisibilityHandler = overlayVisibilityHandler;
         mPropertyModel = propertyModel;
         mFeedSurfaceCreator = feedSurfaceCreator;
+        mOnlyShowExploreSurface = onlyShowExploreSurface;
 
         if (mPropertyModel != null) {
             mPropertyModel.set(
@@ -96,6 +111,8 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
 
         // TODO(crbug.com/982018): Animate the bottom bar together with the Tab Grid view.
         if (mPropertyModel != null) {
+            if (mOnlyShowExploreSurface) mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, true);
+
             // Make sure FeedSurfaceCoordinator is built before the explore surface is showing by
             // default.
             if (mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
@@ -110,7 +127,8 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
 
     @Override
     public boolean onBackPressed() {
-        if (mPropertyModel != null && mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)) {
+        if (mPropertyModel != null && mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
+                && !mOnlyShowExploreSurface) {
             setExploreSurfaceVisibility(false);
             return true;
         }
@@ -130,10 +148,12 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
         for (StartSurface.OverviewModeObserver observer : mObservers) {
             observer.finishedShowing();
         }
+        mOverlayVisibilityHandler.setContentOverlayVisibility(false);
     }
 
     @Override
     public void startedHiding() {
+        mOverlayVisibilityHandler.setContentOverlayVisibility(true);
         if (mPropertyModel != null) {
             mPropertyModel.set(IS_SHOWING_OVERVIEW, false);
             destroyFeedSurfaceCoordinator();
@@ -151,7 +171,7 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
     }
 
     /** This interface builds the feed surface coordinator when showing if needed. */
-    void setExploreSurfaceVisibility(boolean isVisible) {
+    private void setExploreSurfaceVisibility(boolean isVisible) {
         if (isVisible == mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)) return;
 
         if (isVisible && mPropertyModel.get(FEED_SURFACE_COORDINATOR) == null) {
@@ -167,7 +187,7 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
         mPropertyModel.set(BOTTOM_BAR_SELECTED_TAB_POSITION, isVisible ? 1 : 0);
     }
 
-    void updateIncognitoMode(boolean isIncognito) {
+    private void updateIncognitoMode(boolean isIncognito) {
         if (isIncognito == mPropertyModel.get(IS_INCOGNITO)) return;
 
         mPropertyModel.set(IS_INCOGNITO, isIncognito);
@@ -184,7 +204,7 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
         if (wasShown) setExploreSurfaceVisibility(true);
     }
 
-    void destroyFeedSurfaceCoordinator() {
+    private void destroyFeedSurfaceCoordinator() {
         FeedSurfaceCoordinator feedSurfaceCoordinator =
                 mPropertyModel.get(FEED_SURFACE_COORDINATOR);
         if (feedSurfaceCoordinator != null) feedSurfaceCoordinator.destroy();

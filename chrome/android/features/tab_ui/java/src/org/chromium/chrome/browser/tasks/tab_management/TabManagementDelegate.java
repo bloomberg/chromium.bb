@@ -28,9 +28,10 @@ public interface TabManagementDelegate {
     /**
      * Create the {@link TasksSurface}
      * @param activity The {@link ChromeActivity} that creates this surface.
+     * @param isTabCarousel Whether show the Tabs in carousel mode.
      * @return The {@TasksSurface}.
      */
-    TasksSurface createTasksSurface(ChromeActivity activity);
+    TasksSurface createTasksSurface(ChromeActivity activity, boolean isTabCarousel);
 
     /**
      * Create the {@link TabSwitcher} to display Tabs in grid.

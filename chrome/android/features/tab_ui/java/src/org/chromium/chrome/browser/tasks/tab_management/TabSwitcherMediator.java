@@ -17,6 +17,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.view.ViewGroup;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -25,7 +26,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -106,7 +106,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 }
             };
 
-    private final CompositorViewHolder mCompositorViewHolder;
+    private final ViewGroup mContainerView;
     private final TabSelectionEditorCoordinator
             .TabSelectionEditorController mTabSelectionEditorController;
     private TabSwitcher.OnTabSelectingListener mOnTabSelectingListener;
@@ -146,15 +146,16 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      *         grid or carousel.
      * @param tabModelSelector {@link TabModelSelector} to observer for model and selection changes.
      * @param fullscreenManager {@link FullscreenManager} to use.
-     * @param compositorViewHolder {@link CompositorViewHolder} to use.
+     * @param containerView The container {@link ViewGroup} to use.
      * @param tabSelectionEditorController The controller that can control the visibility of the
      *                                     TabSelectionEditor.
+     * @param mode One of the {@TabListCoordinator.TabListMode}.
      */
     TabSwitcherMediator(ResetHandler resetHandler, PropertyModel containerViewModel,
             TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager,
-            CompositorViewHolder compositorViewHolder,
-            TabSelectionEditorCoordinator
-                    .TabSelectionEditorController tabSelectionEditorController) {
+            ViewGroup containerView,
+            TabSelectionEditorCoordinator.TabSelectionEditorController tabSelectionEditorController,
+            @TabListCoordinator.TabListMode int mode) {
         mResetHandler = resetHandler;
         mContainerViewModel = containerViewModel;
         mTabModelSelector = tabModelSelector;
@@ -213,23 +214,27 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                         .getCurrentTabModelFilter()
                         .isIncognito());
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
-        mContainerViewModel.set(TOP_CONTROLS_HEIGHT, fullscreenManager.getTopControlsHeight());
-        mContainerViewModel.set(
-                BOTTOM_CONTROLS_HEIGHT, fullscreenManager.getBottomControlsHeight());
 
-        int toolbarHeight =
-                ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
-                        R.dimen.toolbar_height_no_shadow);
-        int topPadding = ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
-                ? toolbarHeight
-                : DEFAULT_TOP_PADDING;
-        mContainerViewModel.set(TOP_PADDING, topPadding);
-        int shadowTopMargin = ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
-                ? toolbarHeight * 2
-                : toolbarHeight;
-        mContainerViewModel.set(SHADOW_TOP_MARGIN, shadowTopMargin);
+        // Container view takes care of padding and margin in carousel mode.
+        if (mode != TabListCoordinator.TabListMode.CAROUSEL) {
+            mContainerViewModel.set(TOP_CONTROLS_HEIGHT, fullscreenManager.getTopControlsHeight());
+            mContainerViewModel.set(
+                    BOTTOM_CONTROLS_HEIGHT, fullscreenManager.getBottomControlsHeight());
 
-        mCompositorViewHolder = compositorViewHolder;
+            int toolbarHeight =
+                    ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
+                            R.dimen.toolbar_height_no_shadow);
+            int topPadding = ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
+                    ? toolbarHeight
+                    : DEFAULT_TOP_PADDING;
+            mContainerViewModel.set(TOP_PADDING, topPadding);
+            int shadowTopMargin = ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
+                    ? toolbarHeight * 2
+                    : toolbarHeight;
+            mContainerViewModel.set(SHADOW_TOP_MARGIN, shadowTopMargin);
+        }
+
+        mContainerView = containerView;
 
         mSoftClearTabListRunnable = mResetHandler::softCleanup;
         mClearTabListRunnable = () -> mResetHandler.resetWithTabList(null, false);
@@ -290,12 +295,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         }
 
         mContainerViewModel.set(IS_VISIBLE, isVisible);
-    }
-
-    private void setContentOverlayVisibility(boolean isVisible) {
-        Tab currentTab = mTabModelSelector.getCurrentTab();
-        if (currentTab == null) return;
-        mCompositorViewHolder.setContentOverlayVisibility(isVisible, true);
     }
 
     /**
@@ -420,12 +419,10 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         for (TabSwitcher.OverviewModeObserver observer : mObservers) {
             observer.finishedShowing();
         }
-        setContentOverlayVisibility(false);
     }
 
     @Override
     public void startedHiding(boolean isAnimating) {
-        setContentOverlayVisibility(true);
         for (TabSwitcher.OverviewModeObserver observer : mObservers) {
             observer.startedHiding();
         }

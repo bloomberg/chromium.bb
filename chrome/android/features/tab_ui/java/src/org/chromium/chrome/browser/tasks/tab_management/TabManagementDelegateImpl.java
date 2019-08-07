@@ -31,8 +31,8 @@ import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 @UsedByReflection("TabManagementModule")
 public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
-    public TasksSurface createTasksSurface(ChromeActivity activity) {
-        return new TasksSurfaceCoordinator(activity);
+    public TasksSurface createTasksSurface(ChromeActivity activity, boolean isTabCarousel) {
+        return new TasksSurfaceCoordinator(activity, isTabCarousel);
     }
 
     @Override
@@ -44,7 +44,8 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
         }
         return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
-                activity.getCompositorViewHolder(), activity.getFullscreenManager(), activity,
+                activity.getCompositorViewHolder().getDynamicResourceLoader(),
+                activity.getFullscreenManager(), activity,
                 activity.getMenuOrKeyboardActionController(), activity, containerView,
                 TabListCoordinator.TabListMode.GRID);
     }
@@ -53,7 +54,8 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     public TabSwitcher createCarouselTabSwitcher(ChromeActivity activity, ViewGroup containerView) {
         return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
-                activity.getCompositorViewHolder(), activity.getFullscreenManager(), activity,
+                activity.getCompositorViewHolder().getDynamicResourceLoader(),
+                activity.getFullscreenManager(), activity,
                 activity.getMenuOrKeyboardActionController(), activity, containerView,
                 TabListCoordinator.TabListMode.CAROUSEL);
     }
