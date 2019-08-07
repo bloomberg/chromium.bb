@@ -53,6 +53,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -261,7 +262,12 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     // intervention). We can get rid of the browser_default eventually, but
     // need to take care that ProfileSyncService doesn't get tripped up between
     // those two cases. Bug 88109.
-    init_params.start_behavior = browser_defaults::kSyncAutoStarts
+    bool is_auto_start = browser_defaults::kSyncAutoStarts;
+#if defined(OS_ANDROID)
+    if (base::FeatureList::IsEnabled(switches::kSyncManualStartAndroid))
+      is_auto_start = false;
+#endif
+    init_params.start_behavior = is_auto_start
                                      ? syncer::ProfileSyncService::AUTO_START
                                      : syncer::ProfileSyncService::MANUAL_START;
   }
