@@ -4577,43 +4577,21 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     av1_hash_table_create(&cm->cur_frame->hash_table);
     av1_generate_block_2x2_hash_value(cpi->source, block_hash_values[0],
                                       is_block_same[0], &cpi->td.mb);
-    av1_generate_block_hash_value(cpi->source, 4, block_hash_values[0],
-                                  block_hash_values[1], is_block_same[0],
-                                  is_block_same[1], &cpi->td.mb);
-    av1_add_to_hash_map_by_row_with_precal_data(
-        &cm->cur_frame->hash_table, block_hash_values[1], is_block_same[1][2],
-        pic_width, pic_height, 4);
-    av1_generate_block_hash_value(cpi->source, 8, block_hash_values[1],
-                                  block_hash_values[0], is_block_same[1],
-                                  is_block_same[0], &cpi->td.mb);
-    av1_add_to_hash_map_by_row_with_precal_data(
-        &cm->cur_frame->hash_table, block_hash_values[0], is_block_same[0][2],
-        pic_width, pic_height, 8);
-    av1_generate_block_hash_value(cpi->source, 16, block_hash_values[0],
-                                  block_hash_values[1], is_block_same[0],
-                                  is_block_same[1], &cpi->td.mb);
-    av1_add_to_hash_map_by_row_with_precal_data(
-        &cm->cur_frame->hash_table, block_hash_values[1], is_block_same[1][2],
-        pic_width, pic_height, 16);
-    av1_generate_block_hash_value(cpi->source, 32, block_hash_values[1],
-                                  block_hash_values[0], is_block_same[1],
-                                  is_block_same[0], &cpi->td.mb);
-    av1_add_to_hash_map_by_row_with_precal_data(
-        &cm->cur_frame->hash_table, block_hash_values[0], is_block_same[0][2],
-        pic_width, pic_height, 32);
-    av1_generate_block_hash_value(cpi->source, 64, block_hash_values[0],
-                                  block_hash_values[1], is_block_same[0],
-                                  is_block_same[1], &cpi->td.mb);
-    av1_add_to_hash_map_by_row_with_precal_data(
-        &cm->cur_frame->hash_table, block_hash_values[1], is_block_same[1][2],
-        pic_width, pic_height, 64);
-
-    av1_generate_block_hash_value(cpi->source, 128, block_hash_values[1],
-                                  block_hash_values[0], is_block_same[1],
-                                  is_block_same[0], &cpi->td.mb);
-    av1_add_to_hash_map_by_row_with_precal_data(
-        &cm->cur_frame->hash_table, block_hash_values[0], is_block_same[0][2],
-        pic_width, pic_height, 128);
+    const int max_size = 128, min_size = 4;
+    const int min_alloc_size = block_size_wide[cpi->mi_alloc_bsize];
+    int src_idx = 0;
+    for (int size = min_size; size <= max_size; size *= 2, src_idx = !src_idx) {
+      const int dst_idx = !src_idx;
+      av1_generate_block_hash_value(
+          cpi->source, size, block_hash_values[src_idx],
+          block_hash_values[dst_idx], is_block_same[src_idx],
+          is_block_same[dst_idx], &cpi->td.mb);
+      if (size >= min_alloc_size) {
+        av1_add_to_hash_map_by_row_with_precal_data(
+            &cm->cur_frame->hash_table, block_hash_values[dst_idx],
+            is_block_same[dst_idx][2], pic_width, pic_height, size);
+      }
+    }
 
     for (k = 0; k < 2; k++) {
       for (j = 0; j < 2; j++) {
