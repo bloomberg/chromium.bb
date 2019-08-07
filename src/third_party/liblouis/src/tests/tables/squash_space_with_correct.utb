@@ -1,0 +1,7 @@
+space \t 9
+space \n 0
+
+noback correct "\t" " "
+noback correct "\n" " "
+
+repeated \s 0

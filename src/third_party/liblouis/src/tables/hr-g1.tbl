@@ -1,0 +1,8 @@
+#-display-name: Croatian braille
+
+#+locale: hr
+#+type: literary
+#+grade: 1
+
+include hr-g1.ctb
+include braille-patterns.cti
