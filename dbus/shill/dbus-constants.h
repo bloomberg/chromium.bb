@@ -177,9 +177,9 @@ const char kForceWakeToScanTimerProperty[] = "ForceWakeToScanTimer";
 const char kInterfaceProperty[] = "Interface";
 const char kSelectedServiceProperty[] = "SelectedService";
 const char kIPConfigsProperty[] = "IPConfigs";
-const char kMACAddressRandomizationSupportedProperty[] =
+const char kMacAddressRandomizationSupportedProperty[] =
     "MACAddressRandomizationSupported";
-const char kMACAddressRandomizationEnabledProperty[] =
+const char kMacAddressRandomizationEnabledProperty[] =
     "MACAddressRandomizationEnabled";
 
 // Flimflam Cellular Device property names.
