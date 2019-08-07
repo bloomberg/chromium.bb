@@ -404,12 +404,12 @@ void EasyUnlockServiceSignin::OnScreenDidUnlock(
               SmartLockGetRemoteStatusResultFailureReason::
                   kUserEnteredPasswordWhileBluetoothDisabled);
     }
-  }
 
-  SmartLockMetricsRecorder::RecordSmartLockSignInAuthMethodChoice(
-      will_authenticate_using_easy_unlock()
-          ? SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kSmartLock
-          : SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kOther);
+    SmartLockMetricsRecorder::RecordSmartLockSignInAuthMethodChoice(
+        will_authenticate_using_easy_unlock()
+            ? SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kSmartLock
+            : SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kOther);
+  }
 
   // TODO(crbug.com/972156): A KeyedService shutting itself seems dangerous;
   // look into other ways to "reset state" besides this.
