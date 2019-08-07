@@ -904,7 +904,7 @@ class AXPosition {
 
   // Creates a tree position using the next text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
-  AXPositionInstance CreateNextLeafTreePosition() const {
+  AXPositionInstance CreateNextTreeAnchorPosition() const {
     AXPositionInstance next_leaf = AsTreePosition()->CreateNextAnchorPosition();
     while (!next_leaf->IsNullPosition() && next_leaf->AnchorChildCount()) {
       next_leaf = next_leaf->CreateNextAnchorPosition();
@@ -916,7 +916,7 @@ class AXPosition {
 
   // Creates a tree position using the previous text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
-  AXPositionInstance CreatePreviousLeafTreePosition() const {
+  AXPositionInstance CreatePreviousTreeAnchorPosition() const {
     AXPositionInstance previous_leaf =
         AsTreePosition()->CreatePreviousAnchorPosition();
     while (!previous_leaf->IsNullPosition() &&

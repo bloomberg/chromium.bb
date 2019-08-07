@@ -357,7 +357,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindText(
   if (search_string.length() <= 0)
     return E_INVALIDARG;
 
-  base::string16 text_range = GetString();
+  base::string16 text_range = GetString(-1);
   size_t find_start;
   size_t find_length;
   if (base::i18n::StringSearch(search_string, text_range, &find_start,
@@ -480,7 +480,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetText(int max_count,
   if (max_count < -1 || !text)
     return E_INVALIDARG;
 
-  base::string16 full_text = GetString();
+  base::string16 full_text = GetString(max_count);
   if (!full_text.empty()) {
     size_t length = full_text.length();
 
@@ -798,9 +798,9 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
   return S_OK;
 }
 
-base::string16 AXPlatformNodeTextRangeProviderWin::GetString() {
+base::string16 AXPlatformNodeTextRangeProviderWin::GetString(int max_count) {
   AXNodeRange range(start_->Clone(), end_->Clone());
-  return range.GetText(AXTextConcatenationBehavior::kAsInnerText);
+  return range.GetText(AXTextConcatenationBehavior::kAsInnerText, max_count);
 }
 
 AXPlatformNodeWin* AXPlatformNodeTextRangeProviderWin::owner() const {
