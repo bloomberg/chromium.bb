@@ -356,6 +356,17 @@ def UserActInspect(opts, *args):
 UserActInspect.usage = '<CLs...>'
 
 
+def UserActAutosubmit(opts, *args):
+  """Mark CLs with the Auto-Submit label"""
+  num = args[-1]
+  for arg in args[:-1]:
+    helper, cl = GetGerrit(opts, arg)
+    helper.SetReview(cl, labels={'Auto-Submit': num},
+                     dryrun=opts.dryrun, notify=opts.notify)
+UserActAutosubmit.arg_min = 2
+UserActAutosubmit.usage = '<CLs...> <0|1>'
+
+
 def UserActReview(opts, *args):
   """Mark CLs with a code review status"""
   num = args[-1]
