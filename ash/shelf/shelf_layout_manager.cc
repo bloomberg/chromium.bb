@@ -786,8 +786,7 @@ void ShelfLayoutManager::OnScreenRotationAnimationFinished(
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, private:
 
-ShelfLayoutManager::TargetBounds::TargetBounds()
-    : shelf_opacity(0.0f), status_opacity(0.0f) {}
+ShelfLayoutManager::TargetBounds::TargetBounds() : opacity(0.0f) {}
 
 ShelfLayoutManager::TargetBounds::~TargetBounds() = default;
 
@@ -912,15 +911,15 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     return;
 
   hide_animation_observer_.reset();
-  if (GetLayer(shelf_widget_)->opacity() != target_bounds.shelf_opacity) {
-    if (target_bounds.shelf_opacity == 0) {
+  if (GetLayer(shelf_widget_)->opacity() != target_bounds.opacity) {
+    if (target_bounds.opacity == 0) {
       // On hide, set the opacity after the animation completes.
       hide_animation_observer_ =
           std::make_unique<HideAnimationObserver>(GetLayer(shelf_widget_));
     } else {
       // On show, set the opacity before the animation begins to ensure the blur
       // is shown while the shelf moves.
-      GetLayer(shelf_widget_)->SetOpacity(target_bounds.shelf_opacity);
+      GetLayer(shelf_widget_)->SetOpacity(target_bounds.opacity);
     }
   }
 
@@ -966,18 +965,15 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
                               &shelf_bounds);
     shelf_widget_->SetBounds(shelf_bounds);
 
-    GetLayer(nav_widget)->SetOpacity(target_bounds.nav_opacity);
-    GetLayer(status_widget)->SetOpacity(target_bounds.status_opacity);
+    GetLayer(nav_widget)->SetOpacity(target_bounds.opacity);
+    GetLayer(status_widget)->SetOpacity(target_bounds.opacity);
 
     // Having a window which is visible but does not have an opacity is an
     // illegal state. We therefore hide the shelf here if required.
-    if (!target_bounds.status_opacity)
-      status_widget->Hide();
-
-    if (state_.IsActiveSessionState() && target_bounds.nav_opacity)
-      nav_widget->ShowInactive();
-    else
+    if (!target_bounds.opacity) {
       nav_widget->Hide();
+      status_widget->Hide();
+    }
 
     // Setting visibility during an animation causes the visibility property to
     // animate. Override the animation settings to immediately set the
@@ -1030,8 +1026,11 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
 
   // Setting visibility during an animation causes the visibility property to
   // animate. Set the visibility property without an animation.
-  if (target_bounds.status_opacity)
+  if (target_bounds.opacity) {
+    if (state_.IsActiveSessionState())
+      nav_widget->ShowInactive();
     status_widget->Show();
+  }
 }
 
 bool ShelfLayoutManager::IsDraggingWindowFromTopOrCaptionArea() const {
@@ -1118,14 +1117,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
   target_bounds->nav_bounds_in_shelf =
       gfx::Rect(nav_origin, shelf_widget_->navigation_widget()->GetIdealSize());
 
-  target_bounds->shelf_opacity = ComputeTargetOpacity(state);
-  if (state.IsShelfAutoHidden() && drag_status_ != kDragInProgress) {
-    target_bounds->nav_opacity = 0.0f;
-    target_bounds->status_opacity = 0.0f;
-  } else {
-    target_bounds->nav_opacity = target_bounds->shelf_opacity;
-    target_bounds->status_opacity = target_bounds->shelf_opacity;
-  }
+  target_bounds->opacity = ComputeTargetOpacity(state);
 
   if (drag_status_ == kDragInProgress)
     UpdateTargetBoundsForGesture(target_bounds);
@@ -1731,12 +1723,12 @@ void ShelfLayoutManager::CancelDrag() {
 }
 
 float ShelfLayoutManager::GetAppListBackgroundOpacityOnShelfOpacity() {
-  float shelf_opacity = shelf_widget_->GetBackgroundAlphaValue(
-                            shelf_background_type_before_drag_) /
-                        static_cast<float>(ShelfBackgroundAnimator::kMaxAlpha);
+  float opacity = shelf_widget_->GetBackgroundAlphaValue(
+                      shelf_background_type_before_drag_) /
+                  static_cast<float>(ShelfBackgroundAnimator::kMaxAlpha);
   const int shelf_size = ShelfConstants::shelf_size();
   if (launcher_above_shelf_bottom_amount_ < shelf_size)
-    return shelf_opacity;
+    return opacity;
   float launcher_above_shelf_amount =
       std::max(0.f, launcher_above_shelf_bottom_amount_ - shelf_size);
   float coefficient =
@@ -1747,8 +1739,7 @@ float ShelfLayoutManager::GetAppListBackgroundOpacityOnShelfOpacity() {
       is_background_blur_enabled_
           ? app_list::AppListView::kAppListOpacityWithBlur
           : app_list::AppListView::kAppListOpacity;
-  return app_list_view_opacity * coefficient +
-         (1 - coefficient) * shelf_opacity;
+  return app_list_view_opacity * coefficient + (1 - coefficient) * opacity;
 }
 
 bool ShelfLayoutManager::IsSwipingCorrectDirection() {
