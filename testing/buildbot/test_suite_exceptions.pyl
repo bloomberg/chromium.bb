@@ -1763,6 +1763,11 @@
           'shards': 1,
         },
       },
+      'linux-bfcache-rel': {
+        'args': [
+          '--additional-driver-flag=--enable-features=BackForwardCache',
+        ],
+      },
       'linux-blink-animation-use-time-delta': {
         'args': [
           '--debug',
