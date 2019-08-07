@@ -1810,7 +1810,7 @@
       },
       'linux-chromium-tests-staging-tests': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
