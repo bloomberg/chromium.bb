@@ -18,6 +18,7 @@ struct UdpSocketPosix : public UdpSocket {
   // Implementations of UdpSocket methods.
   bool IsIPv4() const final;
   bool IsIPv6() const final;
+  IPEndpoint GetLocalEndpoint() const final;
   Error Bind() final;
   Error SetMulticastOutboundInterface(NetworkInterfaceIndex ifindex) final;
   Error JoinMulticastGroup(const IPAddress& address,
@@ -32,7 +33,12 @@ struct UdpSocketPosix : public UdpSocket {
 
  private:
   const int fd_;
-  const IPEndpoint local_endpoint_;
+
+  // Cached value of current local endpoint. This can change (e.g., when the
+  // operating system auto-assigns a free local port when Bind() is called). If
+  // the port is zero, getsockname() is called to try to resolve it. Once the
+  // port is non-zero, it is assumed never to change again.
+  mutable IPEndpoint local_endpoint_;
 };
 
 }  // namespace platform

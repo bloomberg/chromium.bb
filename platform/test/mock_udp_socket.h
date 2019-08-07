@@ -22,6 +22,7 @@ class MockUdpSocket : public UdpSocket {
 
   bool IsIPv4() const override;
   bool IsIPv6() const override;
+  IPEndpoint GetLocalEndpoint() const override;
 
   MOCK_METHOD0(Bind, Error());
   MOCK_METHOD1(SetMulticastOutboundInterface, Error(NetworkInterfaceIndex));

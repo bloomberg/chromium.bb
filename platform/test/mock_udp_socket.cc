@@ -17,5 +17,9 @@ bool MockUdpSocket::IsIPv6() const {
   return version_ == UdpSocket::Version::kV6;
 }
 
+IPEndpoint MockUdpSocket::GetLocalEndpoint() const {
+  return IPEndpoint{};
+}
+
 }  // namespace platform
 }  // namespace openscreen

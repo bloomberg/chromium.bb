@@ -56,15 +56,25 @@ class UdpSocket {
 
   using Version = IPAddress::Version;
 
-  // Creates a new, scoped UdpSocket within the IPv4 or IPv6 family. This method
-  // must be defined in the platform-level implementation.
-  static ErrorOr<UdpSocketUniquePtr> Create(const IPEndpoint& endpoint);
+  // Creates a new, scoped UdpSocket within the IPv4 or IPv6 family.
+  // |local_endpoint| may be zero (see comments for Bind()). This method must be
+  // defined in the platform-level implementation.
+  static ErrorOr<UdpSocketUniquePtr> Create(const IPEndpoint& local_endpoint);
 
   // Returns true if |socket| belongs to the IPv4/IPv6 address family.
   virtual bool IsIPv4() const = 0;
   virtual bool IsIPv6() const = 0;
 
-  // Binds to the address specified in the constructor.
+  // Returns the current local endpoint's address and port. Initially, this will
+  // be the same as the value that was passed into Create(). However, it can
+  // later change after certain operations, such as Bind(), are executed.
+  virtual IPEndpoint GetLocalEndpoint() const = 0;
+
+  // Binds to the address specified in the constructor. If the local endpoint's
+  // address is zero, the operating system will bind to all interfaces. If the
+  // local endpoint's port is zero, the operating system will automatically find
+  // a free local port and bind to it. Future calls to local_endpoint() will
+  // reflect the resolved port.
   virtual Error Bind() = 0;
 
   // Sets the device to use for outgoing multicast packets on the socket.

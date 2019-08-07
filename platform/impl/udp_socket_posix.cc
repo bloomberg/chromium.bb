@@ -52,7 +52,6 @@ ErrorOr<int> CreateNonBlockingUdpSocket(int domain) {
 
 UdpSocketPosix::UdpSocketPosix(int fd, const IPEndpoint& local_endpoint)
     : fd_(fd), local_endpoint_(local_endpoint) {
-  OSP_DCHECK_NE(IPEndpoint{}, local_endpoint_);
   OSP_DCHECK(local_endpoint_.address.IsV4() || local_endpoint_.address.IsV6());
 }
 
@@ -85,6 +84,44 @@ bool UdpSocketPosix::IsIPv4() const {
 
 bool UdpSocketPosix::IsIPv6() const {
   return local_endpoint_.address.IsV6();
+}
+
+IPEndpoint UdpSocketPosix::GetLocalEndpoint() const {
+  if (local_endpoint_.port == 0) {
+    // Note: If the getsockname() call fails, just assume that's because the
+    // socket isn't bound yet. In this case, leave the original value in-place.
+    switch (local_endpoint_.address.version()) {
+      case UdpSocket::Version::kV4: {
+        struct sockaddr_in address;
+        socklen_t address_len = sizeof(address);
+        if (getsockname(fd_, reinterpret_cast<struct sockaddr*>(&address),
+                        &address_len) == 0) {
+          OSP_DCHECK_EQ(address.sin_family, AF_INET);
+          local_endpoint_.address =
+              IPAddress(IPAddress::Version::kV4,
+                        reinterpret_cast<uint8_t*>(&address.sin_addr.s_addr));
+          local_endpoint_.port = ntohs(address.sin_port);
+        }
+        break;
+      }
+
+      case UdpSocket::Version::kV6: {
+        struct sockaddr_in6 address;
+        socklen_t address_len = sizeof(address);
+        if (getsockname(fd_, reinterpret_cast<struct sockaddr*>(&address),
+                        &address_len) == 0) {
+          OSP_DCHECK_EQ(address.sin6_family, AF_INET6);
+          local_endpoint_.address =
+              IPAddress(IPAddress::Version::kV6,
+                        reinterpret_cast<uint8_t*>(&address.sin6_addr));
+          local_endpoint_.port = ntohs(address.sin6_port);
+        }
+        break;
+      }
+    }
+  }
+
+  return local_endpoint_;
 }
 
 Error UdpSocketPosix::Bind() {
