@@ -1,0 +1,384 @@
+=head1 NAME
+
+DBIx::Simple::Examples - Examples of how to use DBIx::Simple
+
+=head1 DESCRIPTION
+
+DBIx::Simple provides a simplified interface to DBI, Perl's powerful database
+module.
+
+=head1 EXAMPLES
+
+=head2 General
+
+    #!/usr/bin/perl -w
+    use strict;
+    use DBIx::Simple;
+
+    # Instant database with DBD::SQLite
+    my $db = DBIx::Simple->connect('dbi:SQLite:dbname=file.dat')
+        or die DBIx::Simple->error;
+
+    # Connecting to a MySQL database
+    my $db = DBIx::Simple->connect(
+	'DBI:mysql:database=test',     # DBI source specification
+	'test', 'test',                # Username and password
+	{ RaiseError => 1 }            # Additional options
+    );
+
+    # Using an existing database handle
+    my $db = DBIx::Simple->connect($dbh);
+
+    # Abstracted example: $db->query($query, @variables)->what_you_want;
+
+    $db->commit or die $db->error;
+
+=head2 Simple Queries
+
+    $db->query('DELETE FROM foo WHERE id = ?', $id) or die $db->error;
+
+    for (1..100) {
+	$db->query(
+	    'INSERT INTO randomvalues VALUES (?, ?)',
+	    int rand(10),
+	    int rand(10)
+	) or die $db->error;
+    }
+
+    $db->query(
+	'INSERT INTO sometable VALUES (??)',
+	$first, $second, $third, $fourth, $fifth, $sixth
+    );
+    # (??) is expanded to (?, ?, ?, ?, ?, ?) automatically
+
+=head2 Single row queries
+
+    my ($two)          = $db->query('SELECT 1 + 1')->list;
+    my ($three, $four) = $db->query('SELECT 3, 2 + 2')->list;
+
+    my ($name, $email) = $db->query(
+	'SELECT name, email FROM people WHERE email = ? LIMIT 1',
+	$mail
+    )->list;
+
+Or, more efficiently:
+
+    $db->query('SELECT 1 + 1')->into(my $two);
+    $db->query('SELECT 3, 2 + 2')->into(my ($three, $four));
+
+    $db->query(
+	'SELECT name, email FROM people WHERE email = ? LIMIT 1',
+	$mail
+    )->into(my ($name, $email));
+
+=head2 Fetching all rows in one go
+
+=head3 One big flattened list (primarily for single column queries)
+
+    my @names = $db->query('SELECT name FROM people WHERE id > 5')->flat;
+
+=head3 Rows as array references
+
+    for my $row ($db->query('SELECT name, email FROM people')->arrays) {
+	print "Name: $row->[0], Email: $row->[1]\n";
+    }
+
+=head3 Rows as hash references
+
+    for my $row ($db->query('SELECT name, email FROM people')->hashes) {
+	print "Name: $row->{name}, Email: $row->{email}\n";
+    }
+
+=head2 Fetching one row at a time
+
+=head3 Rows into separate variables
+
+    {
+        my $result = $db->query('SELECT name, email FROM people');
+        $result->bind(my ($name, $email));
+        while ($result->fetch) {
+            print "Name: $name, Email: $email\n";
+        }
+    }
+
+or:
+
+    {
+        my $result = $db->query('SELECT name, email FROM people');
+        while ($result->into(my ($name, $email))) {
+            print "Name: $name, Email: $email\n";
+        }
+    }
+
+=head3 Rows as lists
+
+    {
+	my $result = $db->query('SELECT name, email FROM people');
+	while (my @row = $result->list) {
+	    print "Name: $row[0], Email: $row[1]\n";
+	}
+    }
+
+=head3 Rows as array references
+
+    {
+	my $result = $db->query('SELECT name, email FROM people');
+	while (my $row = $result->array) {
+	    print "Name: $row->[0], Email: $row->[1]\n";
+	}
+    }
+
+=head3 Rows as hash references
+
+    {
+	my $result = $db->query('SELECT name, email FROM people');
+	while (my $row = $result->hash) {
+	    print "Name: $row->{name}, Email: $row->{email}\n";
+	}
+    }
+
+=head2 Building maps (also fetching all rows in one go)
+
+=head3 A hash of hashes
+
+    my $customers =
+	$db
+	-> query('SELECT id, name, location FROM people')
+	-> map_hashes('id');
+
+    # $customers = { $id => { name => $name, location => $location } }
+
+=head3 A hash of arrays
+
+    my $customers =
+	$db
+	-> query('SELECT id, name, location FROM people')
+	-> map_arrays(0);
+
+    # $customers = { $id => [ $name, $location ] }
+
+=head3 A hash of values (two-column queries)
+
+    my $names =
+	$db
+	-> query('SELECT id, name FROM people')
+	-> map;
+
+    # $names = { $id => $name }
+
+=head1 EXAMPLES WITH SQL::Interp
+
+If you have SQL::Interp installed, you can use the semi-abstracting method
+C<iquery>. This works just like C<query>, but with parts of the query
+interleaved with the bind arguments, passed as references.
+
+You should read L<SQL::Interp>. These examples are not enough to fully
+understand all the possibilities.
+
+The following examples are based on the documentation of SQL::Interp.
+
+    my $result = $db->iquery('INSERT INTO table', \%item);
+    my $result = $db->iquery('UPDATE table SET', \%item, 'WHERE y <> ', \2);
+    my $result = $db->iquery('DELETE FROM table WHERE y = ', \2);
+
+    # These two select syntax produce the same result
+    my $result = $db->iquery('SELECT * FROM table WHERE x = ', \$s, 'AND y IN', \@v);
+    my $result = $db->iquery('SELECT * FROM table WHERE', {x => $s, y => \@v});
+
+    for ($result->hashes) { ... }
+
+Use a syntax highlighting editor for good visual distinction.
+
+If you need the helper functions C<sql> and C<sql_type>, you can import them
+with C<use SQL::Interp;>
+
+=head1 EXAMPLES WITH SQL::Abstract
+
+If you have SQL::Abstract installed, you can use the abstracting methods
+C<select>, C<insert>, C<update>, C<delete>. These work like C<query>, but
+instead of a query and bind arguments, use abstracted arguments.
+
+You should read L<SQL::Abstract>. These examples are not enough to fully
+understand all the possibilities.
+
+The SQL::Abstract object is available (writable) through the C<abstract>
+property.
+
+The following examples are based on the documentation of SQL::Abstract.
+
+=head2 Overview
+
+If you don't like the defaults, just assign a new object:
+
+    $db->abstract = SQL::Abstract->new(
+        case    => 'lower',
+        cmp     => 'like', 
+        logic   => 'and', 
+        convert => 'upper'
+    );
+
+If you don't assign any object, one will be created automatically using the
+default options. The SQL::Abstract module is loaded on demand.
+
+    my $result = $db->select($table, \@fields, \%where, \@order);
+    my $result = $db->insert($table, \%fieldvals || \@values);
+    my $result = $db->update($table, \%fieldvals, \%where);
+    my $result = $db->delete($table, \%where);
+
+    for ($result->hashes) { ... }
+
+=head2 Complete examples
+
+=head3 select
+
+    my @tickets = $db->select(
+        'tickets', '*', {
+            requestor => 'inna',
+            worker    => ['nwiger', 'rcwe', 'sfz'],
+            status    => { '!=', 'completed' }
+        }
+    )->hashes;
+
+=head3 insert
+
+If you already have your data as a hash, inserting becomes much easier:
+
+    $db->insert('people', \%data);
+
+Instead of:
+
+    $db->query(
+        q[
+            INSERT 
+            INTO people (name, phone, address, ...)
+            VALUES (??)
+        ],
+        @data{'name', 'phone', 'address', ... }
+    );
+
+=head3 update, delete
+
+    $db->update(
+        'tickets', {
+            worker    => 'juerd',
+            status    => 'completed'
+        },
+        { id => $id }
+    )
+
+    $db->delete('tickets', { id => $id });
+
+=head3 where
+
+The C<where> method is not wrapped directly, because it doesn't generate a
+query and thus doesn't really have anything to do with the database module.
+
+But using the C<abstract> property, you can still easily access it:
+
+    my $where = $db->abstract->where({ foo => $foo });
+
+=head1 EXAMPLES WITH DBIx::XHTML_Table
+
+If you have DBIx::XHTML_Table installed, you can use the result methods
+C<xto> and C<html>. 
+
+You should read L<DBIx::XHTML_Table>. These examples are not enough to fully
+understand what is going on. When reading that documentation, note that you
+don't have to pass hash references to DBIx::Simple's methods. It is supported,
+though.
+
+DBIx::XHTML_Table is loaded on demand.
+
+=head2 Overview
+
+To print a simple table, all you have to do is:
+
+    print $db->query('SELECT * FROM foo')->html;
+
+Of course, anything that produces a result object can be used. The same thing
+using the abstraction method C<select> would be:
+
+    print $db->select('foo', '*')->html;
+
+A DBIx::XHTML_Table object can be generated with the C<xto> (B<X>HTML_B<T>able
+B<O>bject) method:
+
+    my $table = $db->query($query)->xto;
+
+=head2 Passing attributes
+
+DBIx::Simple sends the attributes you pass to C<html> both to the constructor
+and the output method. This allows you to specify both HTML attributes (like 
+C<bgcolor>) and options for XHTML_Table (like C<no_ucfirst> and C<no_indent>)
+all at once:
+
+    print $result->html(
+        tr         => { bgcolor => [ qw/silver white/ ] },
+        no_ucfirst => 1
+    );
+
+=head2 Using an XHTML_Table object
+
+Not everything can be controlled by passing attributes. For full flexibility,
+the XHTML_Table object can be used directly:
+
+    my $table = $db->query($query)->xto(
+        tr => { bgcolor => [ qw/silver white/ ] }
+    );
+
+    $table->set_group('client', 1);
+    $table->calc_totals('credit', '%.2f');
+
+    print $table->output({ no_ucfirst => 1 });  # note the {}!
+
+=head1 EXAMPLES WITH Text::Table
+
+=over 8
+
+=item C<< $result->text("neat") >>
+
+Neither neat nor pretty, but useful for debugging. Uses DBI's C<neat_list>
+method. Doesn't display column names.
+
+    '1', 'Camel', 'mammal'
+    '2', 'Llama', 'mammal'
+    '3', 'Owl', 'bird'
+    '4', 'Juerd', undef
+
+=item C<< $result->text("table") >>
+
+Displays a simple table using ASCII lines.
+
+    id | animal |  type
+    ---+--------+-------
+     1 |  Camel | mammal
+     2 |  Llama | mammal
+     3 |  Owl   | bird
+     4 |  Juerd |
+
+=item C<< $result->text("box") >>
+
+Displays a simple table using ASCII lines, with an outside border.
+
+    +----+--------+--------+
+    | id | animal |  type  |
+    +----+--------+--------+
+    |  1 |  Camel | mammal |
+    |  2 |  Llama | mammal |
+    |  3 |  Owl   | bird   |
+    |  4 |  Juerd |        |
+    +----+--------+--------+
+
+=back
+
+For C<table> and C<box>, you need Anno Siegel's Text::Table module installed.
+
+=head1 AUTHOR
+
+Juerd Waalboer <juerd@cpan.org> <http://juerd.nl/>
+
+=head1 SEE ALSO
+
+L<DBIx::Simple>, L<SQL::Abstract>
+
+=cut
