@@ -60,6 +60,7 @@
 #include <third_party/blink/public/mojom/frame/find_in_page.mojom.h>
 #include <third_party/blink/public/web/web_view.h>
 #include <ui/base/win/hidden_window.h>
+#include <ui/aura/window.h>
 #include <errno.h>
 namespace blpwtk2 {
 
@@ -140,6 +141,8 @@ WebViewImpl::~WebViewImpl()
     DCHECK(d_isReadyForDelete);
     DCHECK(d_isDeletingSoon);
 
+    StopObservingGpuCompositor();
+
     g_instances.erase(this);
 
     if (d_widget) {
@@ -216,6 +219,7 @@ void WebViewImpl::onRenderViewHostMadeCurrent(content::RenderViewHost *renderVie
 
 
     // patch section: gpu
+    StartObservingGpuCompositor();
 
 
     // patch section: rubberband
@@ -893,6 +897,53 @@ void WebViewImpl::DidFailLoad(content::RenderFrameHost *render_frame_host,
 
 
 // patch section: gpu
+void WebViewImpl::OnCompositorGpuErrorMessage(const std::string& message) {
+  d_renderViewHost->GetMainFrame()->AddMessageToConsole(
+      content::CONSOLE_MESSAGE_LEVEL_ERROR, 
+      "Gpu compositing error: " + message);
+}
+
+void WebViewImpl::OnCompositingShuttingDown(ui::Compositor* pCompositor) {
+  StopObservingGpuCompositor();
+}
+
+// Start Observing GPU compositor to receive the GPU error messages
+// from the GPU command buffer channel
+bool WebViewImpl::StartObservingGpuCompositor() {
+  if (!d_widget)
+    return false;
+
+  gfx::NativeWindow nativeWindow = d_widget->GetNativeWindow();
+  ui::Compositor *pCompositor =  nativeWindow && nativeWindow->layer() ?
+                                    nativeWindow->layer()->GetCompositor() : nullptr;
+  if (pCompositor) {
+    if (d_gpuCompositor != pCompositor) {
+      StopObservingGpuCompositor();
+      d_gpuCompositor = pCompositor;
+      if (!d_gpuCompositor->HasGpuObserver(this)) {
+        d_gpuCompositor->AddGpuObserver(this);
+        return true;
+      }
+    }
+  }
+  else {
+    LOG(WARNING) << "No Compositor to observe";
+  }
+  return false;
+}
+
+// Stop Observing GPU compositor
+bool WebViewImpl::StopObservingGpuCompositor() {
+  bool ret = false;
+  if (d_gpuCompositor) {
+    if (d_gpuCompositor->HasGpuObserver(this)) {
+        d_gpuCompositor->RemoveGpuObserver(this);
+        ret = true;
+    }
+    d_gpuCompositor = nullptr;
+  }
+  return ret;
+}
 
 
 
