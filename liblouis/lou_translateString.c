@@ -955,7 +955,8 @@ passDoAction(const TranslationTableHeader *table, const InString **input,
 		}
 
 			if (!copyCharacters(match.startReplace, match.endReplace, table, *input,
-						output, posMapping, transOpcode, cursorPosition, cursorStatus, mode))
+						output, posMapping, transOpcode, cursorPosition, cursorStatus,
+						mode))
 				return 0;
 			newPos = match.endMatch;
 			passIC++;
@@ -2213,24 +2214,24 @@ undefinedCharacter(widechar c, const TranslationTableHeader *table, int pos,
 		TranslationTableRule *rule =
 				(TranslationTableRule *)&table->ruleArea[table->undefined];
 
-		return 	for_updatePositions(&rule->charsdots[rule->charslen], rule->charslen,
-					    rule->dotslen, 0, pos, input, output, posMapping, cursorPosition,
-					    cursorStatus);
+		return for_updatePositions(&rule->charsdots[rule->charslen], rule->charslen,
+				rule->dotslen, 0, pos, input, output, posMapping, cursorPosition,
+				cursorStatus);
 	}
 
-	const char *text = (mode & noUndefined)? "": _lou_showString(&c, 1, 1);
+	const char *text = (mode & noUndefined) ? "" : _lou_showString(&c, 1, 1);
 	size_t length = strlen(text);
 	widechar dots[length];
 
-	for (unsigned int k=0; k<length; k+=1) {
+	for (unsigned int k = 0; k < length; k += 1) {
 		widechar c = text[k];
 		widechar d = _lou_getDotsForChar(c);
 		if (d == LOU_DOTS) d = _lou_charToFallbackDots(c);
 		dots[k] = d;
 	}
 
-	return for_updatePositions(dots, 1, length, 0, pos, input, output,
-				   posMapping, cursorPosition, cursorStatus);
+	return for_updatePositions(dots, 1, length, 0, pos, input, output, posMapping,
+			cursorPosition, cursorStatus);
 }
 
 static int
@@ -3805,7 +3806,8 @@ lou_dotsToChar(
 	if (table == NULL || length <= 0) return 0;
 	for (k = 0; k < length; k++) {
 		dots = inbuf[k];
-		if (!(dots & LOU_DOTS) && (dots & 0xff00) == LOU_ROW_BRAILLE) /* Unicode braille */
+		if (!(dots & LOU_DOTS) &&
+				(dots & 0xff00) == LOU_ROW_BRAILLE) /* Unicode braille */
 			dots = (dots & 0x00ff) | LOU_DOTS;
 		outbuf[k] = _lou_getCharFromDots(dots);
 	}

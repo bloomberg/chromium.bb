@@ -144,7 +144,8 @@ _lou_showString(widechar const *chars, int length, int forceHex) {
 	int bufPos = 0;
 	scratchBuf[bufPos++] = '\'';
 
-	for (int charPos=0; (charPos < length) && (bufPos < (MAXSTRING - 2)); charPos+=1) {
+	for (int charPos = 0; (charPos < length) && (bufPos < (MAXSTRING - 2));
+			charPos += 1) {
 		widechar c = chars[charPos];
 
 		if (!forceHex && isASCII(c)) {
@@ -336,6 +337,7 @@ _lou_charToFallbackDots(widechar c) {
 		 * 3) The bits to add to the character.
 		 * 4) The dots to add to the braille pattern.
 		 */
+		// clang-format off
 		0X7F, 0X20, 0X00, LOU_DOT_7,
 		0X60, 0X20, 0X00, 0,
 		0X5F, 0X00, 0X00, 0,
@@ -351,7 +353,7 @@ _lou_charToFallbackDots(widechar c) {
 		['$'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_6,
 		['%'] = LOU_DOT_1 | LOU_DOT_4 | LOU_DOT_6,
 		['&'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_6,
-	       ['\''] = LOU_DOT_3,
+		['\''] = LOU_DOT_3,
 		['('] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
 		[')'] = LOU_DOT_2 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
 		['*'] = LOU_DOT_1 | LOU_DOT_6,
@@ -406,10 +408,11 @@ _lou_charToFallbackDots(widechar c) {
 		['Y'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
 		['Z'] = LOU_DOT_1 | LOU_DOT_3 | LOU_DOT_5 | LOU_DOT_6,
 		['['] = LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_6,
-	       ['\\'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_5 | LOU_DOT_6,
+		['\\'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_5 | LOU_DOT_6,
 		[']'] = LOU_DOT_1 | LOU_DOT_2 | LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6,
 		['^'] = LOU_DOT_4 | LOU_DOT_5,
 		['_'] = LOU_DOT_4 | LOU_DOT_5 | LOU_DOT_6
+		// clang-format on
 	};
 
 	if (c >= 0X80) c = '?';

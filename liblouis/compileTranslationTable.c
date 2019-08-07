@@ -1917,7 +1917,8 @@ compilePassOpcode(FileInfo *nested, TranslationTableOpcode opcode,
 				break;
 			} else {
 				compileError(passNested, "%s is not a grouping name",
-						_lou_showString(&passHoldString.chars[0], passHoldString.length, 0));
+						_lou_showString(
+								&passHoldString.chars[0], passHoldString.length, 0));
 				return 0;
 			}
 			break;

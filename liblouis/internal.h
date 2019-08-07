@@ -802,7 +802,7 @@ widechar EXPORT_CALL
 _lou_charToFallbackDots(widechar c);
 
 static inline int
-isASCII (widechar c) {
+isASCII(widechar c) {
 	return (c >= 0X20) && (c < 0X7F);
 }
 
