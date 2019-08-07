@@ -75,7 +75,8 @@ bool IsUIShowing() {
 }
 
 void CloseWarningIgnore() {
-  auto* widget = PageInfoBubbleViewBase::GetPageInfoBubble()->GetWidget();
+  auto* widget =
+      PageInfoBubbleViewBase::GetPageInfoBubbleForTesting()->GetWidget();
   views::test::WidgetDestroyedWaiter waiter(widget);
   widget->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
   waiter.Wait();
@@ -103,7 +104,7 @@ void OpenPageInfoBubble(Browser* browser) {
   ClickEvent event;
   location_icon_view->ShowBubble(event);
   views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleViewBase::GetPageInfoBubble();
+      PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
   EXPECT_NE(nullptr, page_info);
   page_info->set_close_on_deactivate(false);
 }
@@ -111,7 +112,7 @@ void OpenPageInfoBubble(Browser* browser) {
 void CheckPageInfoShowsSafetyTipInfo(Browser* browser) {
   OpenPageInfoBubble(browser);
   views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleViewBase::GetPageInfoBubble();
+      PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
   CHECK(page_info);
   EXPECT_EQ(page_info->GetWindowTitle(),
             l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY));
@@ -120,7 +121,7 @@ void CheckPageInfoShowsSafetyTipInfo(Browser* browser) {
 void CheckPageInfoDoesNotShowSafetyTipInfo(Browser* browser) {
   OpenPageInfoBubble(browser);
   views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleViewBase::GetPageInfoBubble();
+      PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
   CHECK(page_info);
   EXPECT_NE(page_info->GetWindowTitle(),
             l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY));
@@ -151,7 +152,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
   void ClickLeaveButton() {
     // This class is a friend to SafetyTipPageInfoBubbleView.
     auto* bubble = static_cast<SafetyTipPageInfoBubbleView*>(
-        PageInfoBubbleViewBase::GetPageInfoBubble());
+        PageInfoBubbleViewBase::GetPageInfoBubbleForTesting());
     PerformMouseClickOnView(bubble->GetLeaveButtonForTesting());
   }
 
