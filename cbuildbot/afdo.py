@@ -96,6 +96,10 @@ KERNEL_PROFILE_WRITE_PATTERN = 'AFDO_PROFILE_VERSION="R%d-%d.%d-%d"'
 KERNEL_EBUILD_ROOT = os.path.join(
     constants.SOURCE_ROOT, 'src/third_party/chromiumos-overlay/sys-kernel')
 
+# Kernels that we can't generate afdo anymore because of reasons like
+# too few samples etc.
+KERNEL_SKIP_AFDO_UPDATE = ['3.8']
+
 GSURL_CWP_SUBDIR = {
     'silvermont': '',
     'airmont': 'airmont',

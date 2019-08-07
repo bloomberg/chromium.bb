@@ -191,6 +191,8 @@ class AFDOUpdateKernelEbuildStage(generic_stages.BuilderStage):
     expired = set()
     for candidate, kver in candidates:
       profile_version = None
+      if kver in afdo.KERNEL_SKIP_AFDO_UPDATE:
+        continue
       if kver in profile_versions:
         profile_version = afdo.FindLatestProfile(target_version,
                                                  profile_versions[kver])
