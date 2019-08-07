@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview;
+package org.chromium.android_webview.common.variations;
 
 import android.support.annotation.Nullable;
 
@@ -57,8 +57,8 @@ public class VariationsUtils {
         File oldSeedFile = getSeedFile();
         File newSeedFile = getNewSeedFile();
         if (!newSeedFile.renameTo(oldSeedFile)) {
-            Log.e(TAG, "Failed to replace old seed " + oldSeedFile +
-                    " with new seed " + newSeedFile);
+            Log.e(TAG,
+                    "Failed to replace old seed " + oldSeedFile + " with new seed " + newSeedFile);
         }
     }
 
@@ -103,11 +103,9 @@ public class VariationsUtils {
                 return null;
             }
 
-            if (!proto.hasSignature()        ||
-                !proto.hasCountry()          ||
-                !proto.hasDate()             ||
-                !proto.hasIsGzipCompressed() ||
-                !proto.hasSeedData()) return null;
+            if (!proto.hasSignature() || !proto.hasCountry() || !proto.hasDate()
+                    || !proto.hasIsGzipCompressed() || !proto.hasSeedData())
+                return null;
 
             SeedInfo info = new SeedInfo();
             info.signature = proto.getSignature();
@@ -136,12 +134,12 @@ public class VariationsUtils {
     public static boolean writeSeed(FileOutputStream out, SeedInfo info) {
         try {
             AwVariationsSeed proto = AwVariationsSeed.newBuilder()
-                .setSignature(info.signature)
-                .setCountry(info.country)
-                .setDate(info.date)
-                .setIsGzipCompressed(info.isGzipCompressed)
-                .setSeedData(ByteString.copyFrom(info.seedData))
-                .build();
+                                             .setSignature(info.signature)
+                                             .setCountry(info.country)
+                                             .setDate(info.date)
+                                             .setIsGzipCompressed(info.isGzipCompressed)
+                                             .setSeedData(ByteString.copyFrom(info.seedData))
+                                             .build();
             proto.writeTo(out);
             return true;
         } catch (IOException e) {

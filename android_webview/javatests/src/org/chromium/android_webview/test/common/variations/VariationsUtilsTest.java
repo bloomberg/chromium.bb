@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview.test;
+package org.chromium.android_webview.test.common.variations;
 
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
 
@@ -14,8 +14,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.android_webview.VariationsUtils;
+import org.chromium.android_webview.common.variations.VariationsUtils;
 import org.chromium.android_webview.proto.AwVariationsSeedOuterClass.AwVariationsSeed;
+import org.chromium.android_webview.test.AwJUnit4ClassRunner;
+import org.chromium.android_webview.test.OnlyRunIn;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 
@@ -57,10 +59,10 @@ public class VariationsUtilsTest {
                 stream = new FileOutputStream(file);
                 SeedInfo info = VariationsTestUtils.createMockSeed();
                 AwVariationsSeed proto = AwVariationsSeed.newBuilder()
-                    .setSignature(info.signature)
-                    .setCountry(info.country)
-                    .setDate(info.date)
-                    .build();
+                                                 .setSignature(info.signature)
+                                                 .setCountry(info.country)
+                                                 .setDate(info.date)
+                                                 .build();
                 proto.writeTo(stream);
 
                 Assert.assertNull("Seed with missing fields should've failed to load.",
@@ -80,12 +82,12 @@ public class VariationsUtilsTest {
         // Create a complete, serialized seed.
         SeedInfo info = VariationsTestUtils.createMockSeed();
         AwVariationsSeed proto = AwVariationsSeed.newBuilder()
-            .setSignature(info.signature)
-            .setCountry(info.country)
-            .setDate(info.date)
-            .setIsGzipCompressed(info.isGzipCompressed)
-            .setSeedData(ByteString.copyFrom(info.seedData))
-            .build();
+                                         .setSignature(info.signature)
+                                         .setCountry(info.country)
+                                         .setDate(info.date)
+                                         .setIsGzipCompressed(info.isGzipCompressed)
+                                         .setSeedData(ByteString.copyFrom(info.seedData))
+                                         .build();
         byte[] protoBytes = proto.toByteArray();
 
         // Sanity check: protoBytes is at least as long as the seedData field.
@@ -106,8 +108,9 @@ public class VariationsUtilsTest {
                 }
 
                 // Reading each truncated seed should fail.
-                Assert.assertNull("Seed truncated from " + protoBytes.length + " to " + offset +
-                        " bytes should've failed to load.", VariationsUtils.readSeedFile(file));
+                Assert.assertNull("Seed truncated from " + protoBytes.length + " to " + offset
+                                + " bytes should've failed to load.",
+                        VariationsUtils.readSeedFile(file));
             } finally {
                 if (file != null) file.delete();
             }
