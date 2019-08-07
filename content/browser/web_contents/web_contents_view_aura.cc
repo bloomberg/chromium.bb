@@ -1260,9 +1260,6 @@ void WebContentsViewAura::DragEnteredCallback(
     return;
   }
 
-  if (drag_dest_delegate_)
-    drag_dest_delegate_->DragInitialize(web_contents_);
-
   DCHECK(transformed_pt.has_value());
   gfx::PointF screen_pt(display::Screen::GetScreen()->GetCursorScreenPoint());
   current_rwh_for_drag_->DragTargetDragEnter(
@@ -1284,6 +1281,7 @@ void WebContentsViewAura::OnDragEntered(const ui::DropTargetEvent& event) {
   PrepareDropData(drop_data.get(), event.data());
 
   if (drag_dest_delegate_) {
+    drag_dest_delegate_->DragInitialize(web_contents_);
     drag_dest_delegate_->OnReceiveDragData(event.data());
   }
 
