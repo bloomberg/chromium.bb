@@ -100,8 +100,10 @@ void BookmarkAppRegistrar::OnShutdown(ExtensionRegistry* registry) {
 
 const Extension* BookmarkAppRegistrar::GetExtension(
     const web_app::AppId& app_id) const {
-  return ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
-      app_id);
+  const Extension* extension =
+      ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(app_id);
+  DCHECK(!extension || extension->from_bookmark());
+  return extension;
 }
 
 std::string BookmarkAppRegistrar::GetAppShortName(
