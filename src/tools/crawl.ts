@@ -9,6 +9,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { TestSuiteListingEntry } from '../framework/listing.js';
+import { TestSpec } from '../framework/loader.js';
 
 const specSuffix = '.spec.ts';
 
@@ -26,7 +27,14 @@ export async function crawl(suite: string): Promise<TestSuiteListingEntry[]> {
     const f = file.substring((specDir + '/').length);
     if (f.endsWith(specSuffix)) {
       const testPath = f.substring(0, f.length - specSuffix.length);
-      const mod = await import(`../../${specDir}/${testPath}.spec.js`);
+      const filename = `../../${specDir}/${testPath}.spec.js`;
+      const mod = (await import(filename)) as TestSpec;
+      if (mod.description === undefined) {
+        throw new Error('Test spec file missing description: ' + filename);
+      }
+      if (mod.g === undefined) {
+        throw new Error('Test spec file missing TestGroup definition: ' + filename);
+      }
       groups.push({
         path: testPath,
         description: mod.description.trim(),

@@ -254,10 +254,10 @@
   resolved "https://registry.yarnpkg.com/@types/sizzle/-/sizzle-2.3.2.tgz#a811b8c18e2babab7d542b3365887ae2e4d9de47"
   integrity sha512-7EJYyKTL7tFR8+gDbB6Wwz/arpGa0Mywk1TJbNzKzHtzbwVmY4HR9WqS5VV7dsBUKQmPNr192jHr/VpBluj/hg==
 
-"@webgpu/shaderc@0.0.7":
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/@webgpu/shaderc/-/shaderc-0.0.7.tgz#7a29eca2d6235651eded338b6b4119c5592ef4d4"
-  integrity sha512-lqOwotx4kVj6faUTEXQ19XsolKczNjKXMNNAZnzYhu5MdDGwqvE8Fj2JqM3X+zDiBMzmlwHx3OnDfvj0WYb2uQ==
+"@webgpu/glslang-web@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@webgpu/glslang-web/-/glslang-web-0.0.2.tgz#e99a427a537239798727251e6ae9e9bf9dcfa690"
+  integrity sha512-62+cNR3LoFEKSyf7zAP+8HkPh9229TPG6h7TFapUIBdwA7YYoVejqQLXVtcPq/nfMXBA+d7/uVi3ORF7v6J3Ow==
 
 "@webgpu/types@0.0.7":
   version "0.0.7"
@@ -408,11 +408,6 @@ babel-plugin-module-resolver@^3.2.0:
     pkg-up "^2.0.0"
     reselect "^3.0.1"
     resolve "^1.4.0"
-
-babel-plugin-transform-commonjs-es2015-modules@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/babel-plugin-transform-commonjs-es2015-modules/-/babel-plugin-transform-commonjs-es2015-modules-4.0.1.tgz#06cc33d655ac2b263ca6e4ec4393672013bf20d6"
-  integrity sha512-8h493ia3xNH5oQmckkQKl/Owtgk+wT6fCT0ZNAjos60YBNDu64UCAtd0mCWJg6N4lGvnmP++CIxWblxaJBdPwg==
 
 balanced-match@^1.0.0:
   version "1.0.0"

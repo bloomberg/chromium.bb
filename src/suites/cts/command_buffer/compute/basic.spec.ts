@@ -34,8 +34,8 @@ g.test('memcpy', async t => {
   });
 
   const module = t.makeShaderModule(
-    'c',
-    `#version 450
+    'compute',
+    `#version 310 es
     layout(std140, set = 0, binding = 0) buffer Src {
       int value;
     } src;

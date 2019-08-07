@@ -1,3 +1,5 @@
+export const description = ``;
+
 import { TestGroup } from '../../../../framework/index.js';
 import { GPUShaderTest } from '../../gpu_shader_test.js';
 
@@ -17,8 +19,8 @@ g.test('fullscreen quad', async t => {
   const colorAttachmentView = colorAttachment.createDefaultView();
 
   const vertexModule = t.makeShaderModule(
-    'v',
-    `#version 450
+    'vertex',
+    `#version 310 es
     void main() {
       const vec2 pos[3] = vec2[3](
           vec2(-1.f, -3.f), vec2(3.f, 1.f), vec2(-1.f, 1.f));
@@ -26,8 +28,9 @@ g.test('fullscreen quad', async t => {
     }
   `
   );
+  // TODO: Fix glslang build so '310 es' can be used here. 450 works for now.
   const fragmentModule = t.makeShaderModule(
-    'f',
+    'fragment',
     `#version 450
     layout(location = 0) out vec4 fragColor;
     void main() {
@@ -56,9 +59,8 @@ g.test('fullscreen quad', async t => {
     colorAttachments: [
       {
         attachment: colorAttachmentView,
-        loadOp: 'clear',
         storeOp: 'store',
-        clearColor: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+        loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
       },
     ],
   });

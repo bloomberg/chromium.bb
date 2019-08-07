@@ -30,17 +30,6 @@ module.exports = function(grunt) {
         cmd: 'node',
         args: ['node_modules/@babel/cli/bin/babel', '--source-maps', 'true', '--extensions', '.ts', '--out-dir', 'out/', 'src/'],
       },
-      'build-shaderc': {
-        cmd: 'node',
-        args: [
-          'node_modules/@babel/cli/bin/babel',
-          '--plugins',
-          'babel-plugin-transform-commonjs-es2015-modules',
-          'node_modules/@webgpu/shaderc/dist/index.js',
-          '-o',
-          'out/shaderc.js',
-        ],
-      },
       'gts-check': {
         cmd: 'node',
         args: ['node_modules/gts/build/src/cli', 'check'],
@@ -52,12 +41,18 @@ module.exports = function(grunt) {
     },
 
     copy: {
+      'glslang': {
+        files: [
+          { expand: true, cwd: 'node_modules/@webgpu/glslang-web/dist', src: 'glslang.{js,wasm}', dest: 'out/' },
+        ],
+      },
       'out-wpt': {
         files: [
           { expand: true, cwd: 'wpt', src: 'cts.html', dest: 'out-wpt/' },
           { expand: true, cwd: 'out', src: 'framework/**/*.js', dest: 'out-wpt/' },
           { expand: true, cwd: 'out', src: 'suites/cts/**/*.js', dest: 'out-wpt/' },
           { expand: true, cwd: 'out', src: 'runtime/wpt.js', dest: 'out-wpt/' },
+          { expand: true, cwd: 'out', src: 'glslang.{js,wasm}', dest: 'out-wpt/' },
         ],
       },
     },
@@ -102,7 +97,7 @@ module.exports = function(grunt) {
   registerTaskAndAddToHelp('build', 'Build out/ (without type checking)', [
     'clean',
     'mkdir:out',
-    'run:build-shaderc',
+    'copy:glslang',
     'run:build-out',
     'run:generate-version',
     'run:generate-listings',
