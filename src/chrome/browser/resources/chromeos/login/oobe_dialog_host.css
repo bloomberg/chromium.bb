@@ -1,0 +1,29 @@
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host(:not([hidden])) {
+  display: flex;
+  min-height: 0;
+}
+
+:host {
+  background-color: white;
+  border-radius: unset;
+  box-shadow: unset;
+  flex-direction: column;
+  height: 640px;
+  min-height: 0;
+  position: relative;
+  width: 768px;
+}
+
+:host(:not([full-screen-dialog])) {
+  border-radius: 4px;
+  box-shadow: 0 24px 24px rgba(0, 0, 0, .24), 0 0 24px rgba(0, 0, 0, .12);
+}
+
+:host([android]) {
+  min-height: 480px;
+  min-width: 576px;
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="fi">
+<translation id="1510238584712386396">Käynnistysohjelma</translation>
+<translation id="1734367976349034509">Tämä laite on yrityksen hallinnoima.</translation>
+<translation id="1930797645656624981">Chrome-käyttöjärjestelmän syöttöpalvelu</translation>
+<translation id="2049639323467105390">Tätä laitetta hallinnoi <ph name="DOMAIN" />.</translation>
+<translation id="2083960536266308407">Ei tuloksia näytöllä</translation>
+<translation id="2338501278241028356">Löydä lähellä olevat laitteet ottamalla ensin Bluetooth käyttöön.</translation>
+<translation id="2805756323405976993">Sovellukset</translation>
+<translation id="2872961005593481000">Sammuta</translation>
+<translation id="3147142846278915599">Käynnistysohjelma (synkronoidaan sovelluksia…)</translation>
+<translation id="3442261357327209537">Klikkaa tätä valitaksesi uuden salasanan</translation>
+<translation id="3506732833599356229">Salasana on vanhentunut</translation>
+<translation id="4731797938093519117">Avaus vanhemmille</translation>
+<translation id="476166673298332917">Laitteen järjestelmänvalvoja voi valvoa selaustoimintaasi.</translation>
+<translation id="5212543919916444558">En löydä näytöltä mitään, minkä kanssa voisin auttaa sinua.
+Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
+<translation id="5222676887888702881">Kirjaudu ulos</translation>
+<translation id="5457599981699367932">Selaa vierailijana</translation>
+<translation id="54609108002486618">Hallinnoitu</translation>
+<translation id="5832805196449965646">Lisää henkilö</translation>
+<translation id="5895138241574237353">Käynnistä uudelleen</translation>
+<translation id="6574601967010742428">Laitteen järjestelmänvalvoja voi ehkä seurata toimintaasi.</translation>
+<translation id="7467001599725918325">Salasana vanhenee pian</translation>
+<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Salasanasi on vanhentunut.}=1{Salasanasi vanhenee alle päivän päästä.}other{Salasanasi vanhenee alle # päivän päästä.}}</translation>
+<translation id="7658239707568436148">Peruuta</translation>
+<translation id="9111102763498581341">Poista lukitus</translation>
+</translationbundle>

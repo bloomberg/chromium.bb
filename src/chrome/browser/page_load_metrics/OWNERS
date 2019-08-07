@@ -1,0 +1,11 @@
+csharrison@chromium.org
+bmcquade@chromium.org
+jkarlin@chromium.org
+ryansturm@chromium.org
+
+# For straightforward addition/removal to existing observers only (for
+# APAC).
+kinuko@chromium.org
+
+# For QUIC version changes in ConnectionInfo switch statmenets.
+per-file protocol_util.cc=file://net/quic/OWNERS

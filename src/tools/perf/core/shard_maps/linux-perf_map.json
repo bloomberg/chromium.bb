@@ -1,0 +1,285 @@
+{
+    "0": {
+        "benchmarks": {
+            "blink_perf.accessibility": {},
+            "blink_perf.bindings": {},
+            "blink_perf.canvas": {},
+            "blink_perf.css": {
+                "end": 17
+            }
+        }
+    },
+    "1": {
+        "benchmarks": {
+            "blink_perf.css": {
+                "begin": 17
+            },
+            "blink_perf.dom": {},
+            "blink_perf.events": {},
+            "blink_perf.image_decoder": {},
+            "blink_perf.layout": {
+                "end": 72
+            }
+        }
+    },
+    "2": {
+        "benchmarks": {
+            "blink_perf.layout": {
+                "begin": 72
+            },
+            "blink_perf.owp_storage": {},
+            "blink_perf.paint": {},
+            "blink_perf.parser": {},
+            "blink_perf.shadow_dom": {},
+            "blink_perf.svg": {},
+            "dromaeo": {
+                "end": 2
+            }
+        }
+    },
+    "3": {
+        "benchmarks": {
+            "dromaeo": {
+                "begin": 2
+            },
+            "dummy_benchmark.noisy_benchmark_1": {},
+            "dummy_benchmark.stable_benchmark_1": {},
+            "jetstream": {},
+            "kraken": {},
+            "loading.desktop": {
+                "end": 41
+            }
+        }
+    },
+    "4": {
+        "benchmarks": {
+            "loading.desktop": {
+                "begin": 41,
+                "end": 89
+            }
+        }
+    },
+    "5": {
+        "benchmarks": {
+            "loading.desktop": {
+                "begin": 89
+            },
+            "media.desktop": {},
+            "memory.desktop": {
+                "end": 4
+            }
+        }
+    },
+    "6": {
+        "benchmarks": {
+            "memory.desktop": {
+                "begin": 4
+            },
+            "octane": {},
+            "power.desktop": {},
+            "rasterize_and_record_micro.partial_invalidation": {},
+            "rasterize_and_record_micro.top_25": {
+                "end": 11
+            }
+        }
+    },
+    "7": {
+        "benchmarks": {
+            "rasterize_and_record_micro.top_25": {
+                "begin": 11
+            },
+            "rendering.desktop": {
+                "end": 58
+            }
+        }
+    },
+    "8": {
+        "benchmarks": {
+            "rendering.desktop": {
+                "begin": 58,
+                "end": 140
+            }
+        }
+    },
+    "9": {
+        "benchmarks": {
+            "rendering.desktop": {
+                "begin": 140,
+                "end": 232
+            }
+        }
+    },
+    "10": {
+        "benchmarks": {
+            "rendering.desktop": {
+                "begin": 232
+            },
+            "speedometer": {},
+            "speedometer-future": {},
+            "speedometer2": {},
+            "speedometer2-future": {},
+            "system_health.common_desktop": {
+                "end": 24
+            }
+        }
+    },
+    "11": {
+        "benchmarks": {
+            "system_health.common_desktop": {
+                "begin": 24,
+                "end": 90
+            }
+        }
+    },
+    "12": {
+        "benchmarks": {
+            "system_health.common_desktop": {
+                "begin": 90,
+                "end": 112
+            }
+        }
+    },
+    "13": {
+        "benchmarks": {
+            "system_health.common_desktop": {
+                "begin": 112
+            },
+            "system_health.memory_desktop": {
+                "end": 15
+            }
+        }
+    },
+    "14": {
+        "benchmarks": {
+            "system_health.memory_desktop": {
+                "begin": 15,
+                "end": 27
+            }
+        }
+    },
+    "15": {
+        "benchmarks": {
+            "system_health.memory_desktop": {
+                "begin": 27,
+                "end": 52
+            }
+        }
+    },
+    "16": {
+        "benchmarks": {
+            "system_health.memory_desktop": {
+                "begin": 52,
+                "end": 78
+            }
+        }
+    },
+    "17": {
+        "benchmarks": {
+            "system_health.memory_desktop": {
+                "begin": 78,
+                "end": 95
+            }
+        }
+    },
+    "18": {
+        "benchmarks": {
+            "system_health.memory_desktop": {
+                "begin": 95,
+                "end": 105
+            }
+        }
+    },
+    "19": {
+        "benchmarks": {
+            "system_health.memory_desktop": {
+                "begin": 105
+            },
+            "tab_switching.typical_25": {},
+            "tracing.tracing_with_background_memory_infra": {}
+        }
+    },
+    "20": {
+        "benchmarks": {
+            "v8.browsing_desktop": {
+                "end": 25
+            }
+        }
+    },
+    "21": {
+        "benchmarks": {
+            "v8.browsing_desktop": {
+                "begin": 25
+            },
+            "v8.browsing_desktop-future": {
+                "end": 24
+            }
+        }
+    },
+    "22": {
+        "benchmarks": {
+            "v8.browsing_desktop-future": {
+                "begin": 24
+            },
+            "v8.runtime_stats.top_25": {
+                "end": 26
+            }
+        }
+    },
+    "23": {
+        "benchmarks": {
+            "v8.runtime_stats.top_25": {
+                "begin": 26,
+                "end": 67
+            }
+        }
+    },
+    "24": {
+        "benchmarks": {
+            "v8.runtime_stats.top_25": {
+                "begin": 67,
+                "end": 108
+            }
+        }
+    },
+    "25": {
+        "benchmarks": {
+            "v8.runtime_stats.top_25": {
+                "begin": 108
+            },
+            "webrtc": {}
+        }
+    },
+    "extra_infos": {
+        "num_stories": 1240,
+        "predicted_min_shard_time": 2286.0,
+        "predicted_min_shard_index": 14,
+        "predicted_max_shard_time": 2676.0,
+        "predicted_max_shard_index": 13,
+        "shard #0": 2542.0,
+        "shard #1": 2540.0,
+        "shard #2": 2542.0,
+        "shard #3": 2542.0,
+        "shard #4": 2544.0,
+        "shard #5": 2500.0,
+        "shard #6": 2566.0,
+        "shard #7": 2538.0,
+        "shard #8": 2516.0,
+        "shard #9": 2554.0,
+        "shard #10": 2498.0,
+        "shard #11": 2560.0,
+        "shard #12": 2520.0,
+        "shard #13": 2676.0,
+        "shard #14": 2286.0,
+        "shard #15": 2658.0,
+        "shard #16": 2598.0,
+        "shard #17": 2550.0,
+        "shard #18": 2424.0,
+        "shard #19": 2594.0,
+        "shard #20": 2564.0,
+        "shard #21": 2496.0,
+        "shard #22": 2560.0,
+        "shard #23": 2572.0,
+        "shard #24": 2530.0,
+        "shard #25": 2522.0
+    }
+}

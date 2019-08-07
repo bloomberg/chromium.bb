@@ -1,0 +1,19 @@
+<!--
+@UIA-WIN-DENY:Text_TextChanged*
+-->
+<!DOCTYPE html>
+<html>
+<body>
+<select>
+  <option selected>Apple</option>
+  <option>Orange</option>
+  <option>Banana</option>
+</select>
+<script>
+  document.querySelector('select').focus();
+  function go() {
+    document.querySelector('select').selectedIndex = 1;
+  }
+</script>
+</body>
+</html>

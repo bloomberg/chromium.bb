@@ -1,0 +1,36 @@
+{
+    "0": {
+        "benchmarks": {
+            "heap_profiling.mobile.disabled": {
+                "end": 1
+            }
+        }
+    },
+    "1": {
+        "benchmarks": {
+            "heap_profiling.mobile.disabled": {
+                "begin": 1,
+                "end": 2
+            }
+        }
+    },
+    "2": {
+        "benchmarks": {
+            "heap_profiling.mobile.disabled": {
+                "begin": 2
+            },
+            "heap_profiling.mobile.native": {},
+            "heap_profiling.mobile.pseudo": {}
+        }
+    },
+    "extra_infos": {
+        "num_stories": 9,
+        "predicted_min_shard_time": 74.0,
+        "predicted_min_shard_index": 1,
+        "predicted_max_shard_time": 108.0,
+        "predicted_max_shard_index": 2,
+        "shard #0": 76.0,
+        "shard #1": 74.0,
+        "shard #2": 108.0
+    }
+}

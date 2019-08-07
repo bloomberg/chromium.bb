@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="zh-CN">
+<translation id="1510238584712386396">启动器</translation>
+<translation id="1734367976349034509">此设备是受企业管理的设备</translation>
+<translation id="1930797645656624981">Chrome 操作系统输入法服务</translation>
+<translation id="2049639323467105390">此设备由 <ph name="DOMAIN" /> 管理。</translation>
+<translation id="2083960536266308407">在屏幕上找不到任何相符的内容</translation>
+<translation id="2338501278241028356">开启蓝牙以发现附近的设备</translation>
+<translation id="2805756323405976993">应用</translation>
+<translation id="2872961005593481000">关机</translation>
+<translation id="3147142846278915599">启动器（正在同步应用…）</translation>
+<translation id="3442261357327209537">点击此处即可选择新密码</translation>
+<translation id="3506732833599356229">密码已过期</translation>
+<translation id="4731797938093519117">家长访问</translation>
+<translation id="476166673298332917">此设备的管理员可能会监控您的浏览活动。</translation>
+<translation id="5212543919916444558">无法提供与您的屏幕上可以找到的任何内容相关的帮助。
+请尝试通过点按麦克风图标向我提问。</translation>
+<translation id="5222676887888702881">退出</translation>
+<translation id="5457599981699367932">以访客身份浏览</translation>
+<translation id="54609108002486618">托管</translation>
+<translation id="5832805196449965646">添加用户</translation>
+<translation id="5895138241574237353">重新启动</translation>
+<translation id="6574601967010742428">设备管理员或许能监控您的活动。</translation>
+<translation id="7467001599725918325">密码即将过期</translation>
+<translation id="7505377169174526985">{NUM_DAYS,plural, =0{您当前的密码已过期！}=1{您当前的密码将在 1 天内过期！}other{您当前的密码将在 # 天内过期！}}</translation>
+<translation id="7658239707568436148">取消</translation>
+<translation id="9111102763498581341">解锁</translation>
+</translationbundle>

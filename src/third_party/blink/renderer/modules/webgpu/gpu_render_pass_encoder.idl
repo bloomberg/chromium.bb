@@ -1,0 +1,35 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
+
+[
+    RuntimeEnabled=WebGPU
+] interface GPURenderPassEncoder {
+    void setBindGroup(unsigned long index,
+                      GPUBindGroup bindGroup,
+                      optional sequence<unsigned long long> dynamicOffsets = []);
+    void setPipeline(GPURenderPipeline pipeline);
+
+    void setBlendColor(GPUColor color);
+    void setStencilReference(unsigned long reference);
+    void setViewport(float x, float y,
+                     float width, float height,
+                     float minDepth, float maxDepth);
+    void setScissorRect(unsigned long x, unsigned long y,
+                        unsigned long width, unsigned long height);
+    void setIndexBuffer(GPUBuffer buffer, unsigned long long offset);
+    [RaisesException] void setVertexBuffers(unsigned long startSlot,
+                                            sequence<GPUBuffer> buffers,
+                                            sequence<unsigned long long> offsets);
+    void draw(unsigned long vertexCount, unsigned long instanceCount,
+              unsigned long firstVertex,
+              unsigned long firstInstance);
+    void drawIndexed(unsigned long indexCount, unsigned long instanceCount,
+                     unsigned long firstIndex,
+                     long baseVertex,
+                     unsigned long firstInstance);
+
+    void endPass();
+};

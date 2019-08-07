@@ -1,0 +1,5 @@
+file://components/sync/OWNERS
+
+per-file profile_sync_service_android*=nyquist@chromium.org
+
+# COMPONENT: Services>Sync

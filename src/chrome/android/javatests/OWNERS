@@ -1,0 +1,7 @@
+file://chrome/android/OWNERS
+
+peconn@chromium.org
+skyostil@chromium.org
+
+# COMPONENT: Test>Android
+# OS: Android

@@ -1,0 +1,41 @@
+(async function(testRunner) {
+  var {page, session, dp} = await testRunner.startURL(
+      'resources/repeat-fetch-service-worker.html',
+      'Verifies that service workers do not throw errors from devtools css enable initiated fetch.');
+
+  dp.ServiceWorker.onWorkerErrorReported(error => {
+    testRunner.log(
+        'serivce worker reported error: ' + JSON.stringify(error, null, 2));
+    testRunner.completeTest();
+  });
+
+  await dp.Runtime.enable();
+  await dp.ServiceWorker.enable();
+
+  let versions;
+  do {
+    const result = await dp.ServiceWorker.onceWorkerVersionUpdated();
+    versions = result.params.versions;
+  } while (!versions.length || versions[0].status !== 'activated');
+  await versions[0].registrationId;
+
+  await dp.Page.enable();
+  await dp.Page.reload();
+
+  await dp.DOM.enable();
+  await dp.CSS.enable();
+  testRunner.log('finished awaiting for CSS.enable');
+
+  // Also make sure changes from service workers are seen by CSS.enable
+  const getResourceTreeResponse = await dp.Page.getResourceTree();
+  const mainFrameId = getResourceTreeResponse.result.frameTree.frame.id;
+  const getResourceContentResponse = await dp.Page.getResourceContent({
+    frameId: mainFrameId,
+    url:
+        'http://127.0.0.1:8000/inspector-protocol/service-worker/resources/repeat-fetch-service-worker.html'
+  });
+  testRunner.log(
+      'document resource from CSS.enable:\n' +
+      getResourceContentResponse.result.content);
+  testRunner.completeTest();
+});

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Picture-in-Picture Pixel Test</title>
+</head>
+<body>
+  <video controls preload=auto src='pixel_test_video.webm'></video>
+</body>
+<script>
+  const video = document.querySelector('video');
+
+  function isInPictureInPicture() {
+    window.domAutomationController.send(document.pictureInPictureElement == video);
+  }
+
+  function enterPictureInPicture() {
+    video.requestPictureInPicture()
+    .then(win => {
+      win.addEventListener('resize', () => {
+        document.title = 'resized';
+      }, { once: true });
+
+      window.domAutomationController.send(true);
+    })
+    .catch(e => {
+      window.domAutomationController.send(false);
+    });
+  }
+
+  function changeVideoSrc() {
+    if (video.srcObject) {
+      video.srcObject.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
+    }
+    video.src = 'pixel_test_video.webm';
+    video.play()
+    .then(_ => { window.domAutomationController.send(true); })
+    .catch(e => { window.domAutomationController.send(false); });
+  }
+</script>
+</html>

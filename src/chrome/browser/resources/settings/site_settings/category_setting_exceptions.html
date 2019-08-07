@@ -1,0 +1,31 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="constants.html">
+<link rel="import" href="site_list.html">
+
+<dom-module id="category-setting-exceptions">
+  <template>
+    <site-list
+        category="[[category]]"
+        category-subtype="[[ContentSetting.BLOCK]]"
+        category-header="[[blockHeader]]"
+        read-only-list="[[readOnlyList]]"
+        search-filter="[[searchFilter]]">
+    </site-list>
+    <site-list
+        category="[[category]]"
+        category-subtype="[[ContentSetting.SESSION_ONLY]]"
+        category-header="$i18n{siteSettingsSessionOnly}"
+        read-only-list="[[readOnlyList]]"
+        search-filter="[[searchFilter]]">
+    </site-list>
+    <site-list
+        category="[[category]]"
+        category-subtype="[[ContentSetting.ALLOW]]"
+        category-header="$i18n{siteSettingsAllow}"
+        read-only-list="[[readOnlyList]]"
+        search-filter="[[searchFilter]]">
+    </site-list>
+  </template>
+  <script src="category_setting_exceptions.js"></script>
+</dom-module>

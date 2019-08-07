@@ -1,0 +1,132 @@
+{
+  "comments": [
+    "Cronet tests for 32- and 64-bit iOS 9.0 simulators.",
+    "Tests run on iPhone 5s (64-bit) and iPad Retina (32-bit)."
+  ],
+  "xcode build version": "10b61",
+  "gn_args": [
+    "additional_target_cpus=[\"x86\"]",
+    "disable_brotli_filter=false",
+    "disable_file_support=true",
+    "disable_ftp_support=true",
+    "enable_websockets=false",
+    "goma_dir=\"$(goma_dir)\"",
+    "include_transport_security_state_preload_list=false",
+    "ios_deployment_target=\"9.0\"",
+    "is_component_build=false",
+    "use_crash_key_stubs=true",
+    "is_cronet_build=true",
+    "is_debug=true",
+    "symbol_level=1",
+    "target_cpu=\"x64\"",
+    "target_os=\"ios\"",
+    "use_platform_icu_alternatives=true"
+  ],
+  "tests": [
+    {
+      "app": "cronet_unittests_ios",
+      "device type": "iPhone 5s",
+      "os": "9.3",
+      "host os": "Mac-10.13.6",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
+    },
+    {
+      "app": "cronet_test",
+      "device type": "iPhone 5s",
+      "os": "9.3",
+      "host os": "Mac-10.13.6",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
+    },
+    {
+      "app": "cronet_test",
+      "device type": "iPad Retina",
+      "os": "9.3",
+      "host os": "Mac-10.13.6",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
+    },
+    {
+      "app": "cronet_test",
+      "device type": "iPhone 5s",
+      "os": "11.4",
+      "host os": "Mac-10.13.6",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
+    },
+    {
+      "app": "cronet_test",
+      "device type": "iPad Air 2",
+      "os": "11.4",
+      "host os": "Mac-10.13.6",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
+    },
+    {
+      "app": "cronet_test",
+      "device type": "iPhone X",
+      "os": "11.4",
+      "host os": "Mac-10.13.6",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
+    },
+    {
+      "app": "cronet_test",
+      "device type": "iPhone X",
+      "os": "12.1",
+      "host os": "Mac-10.13.6",
+      "pool":"Chrome",
+      "optional_dimensions": {
+          "60": [{
+            "host os": "Mac-10.14.4"
+          }],
+          "120": [{
+            "host os": "Mac-10.14.3"
+          }]
+      }
+    }
+  ]
+}

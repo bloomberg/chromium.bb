@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
+<script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
+<script src="../xr/resources/xr-internal-device-mocking.js"></script>
+<script src="../xr/resources/xr-test-utils.js"></script>
+<canvas id="webgl-canvas"></canvas>
+
+<script>
+let testName =
+  "'XRBoundedReferenceSpace updates properly when the changes are applied";
+
+let fakeDeviceInitParams = { supportsImmersive:true };
+
+let requestSessionModes = [
+  'immersive-vr',
+];
+
+let testFunction = function(session, t, fakeDeviceController) {
+  // Session must have a baseLayer or else frame requests will be ignored.
+  session.updateRenderState({
+    baseLayer: new XRWebGLLayer(session, gl)
+  });
+
+  fakeDeviceController.setStageTransform(VALID_STAGE_TRANSFORM);
+  fakeDeviceController.setStageSize(2.0, 3.0);
+  fakeDeviceController.setXRPresentationFrameData(ORIGIN_POSE, [{
+      eye:"left",
+      projectionMatrix: VALID_PROJECTION_MATRIX,
+      viewMatrix: VALID_VIEW_MATRIX
+    }, {
+      eye:"right",
+      projectionMatrix: VALID_PROJECTION_MATRIX,
+      viewMatrix: VALID_VIEW_MATRIX
+    }]);
+  
+  return new Promise((resolve, reject) => {
+    session.requestAnimationFrame(() => {
+      session.requestReferenceSpace('bounded-floor')
+        .then((referenceSpace) => {
+          function onFirstFrame(time, xrFrame) {
+            t.step(() => {
+              // Ensure that the correct transform is being applied.
+              let pose = xrFrame.getViewerPose(referenceSpace);
+              assert_not_equals(pose, null);
+
+              let poseMatrix = pose.transform.matrix;
+              assert_matrices_approx_equal(poseMatrix, VALID_STAGE_TRANSFORM);
+
+              // If an explicit array of bounds points was not provided then the
+              // bounds geometry should represent the four corners of the rectangle
+              // defined by the stage size.
+              assert_equals(referenceSpace.boundsGeometry.length, 4);
+              for (point of referenceSpace.boundsGeometry) {
+                // Ensure corners are half the width & depth away from the origin.
+                assert_equals(Math.abs(point.x), 1.0);
+                assert_equals(point.y, 0.0);
+                assert_equals(Math.abs(point.z), 1.5);
+                assert_equals(point.w, 1.0);
+              }
+            });
+
+            // Now set the bounds explicitly and check again on the next frame.
+            fakeDeviceController.setStageBounds(VALID_BOUNDS);
+            session.requestAnimationFrame(onFrame);
+          }
+
+          function onFrame(time, xrFrame) {
+            t.step(() => {
+              // After setting the bounds explicitly, make sure that's reflected
+              // in the boundsGeometry.
+              assert_equals(referenceSpace.boundsGeometry.length, VALID_BOUNDS.length);
+              for (i = 0; i < VALID_BOUNDS.length; ++i) {
+                let valid_point = VALID_BOUNDS[i];
+                let bounds_point = referenceSpace.boundsGeometry[i];
+                assert_equals(valid_point.x, bounds_point.x);
+                assert_equals(point.y, 0.0);
+                assert_equals(valid_point.z, bounds_point.z);
+                assert_equals(point.w, 1.0);
+              }
+            });
+
+            // Finished.
+            resolve();
+          }
+
+          session.requestAnimationFrame(onFirstFrame);
+        });
+    });
+  });
+};
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+
+</script>

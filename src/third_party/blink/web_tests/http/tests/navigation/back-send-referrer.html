@@ -1,0 +1,13 @@
+<script>
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.dumpAsText();
+    }
+
+    window.onload = function() {
+        setTimeout(function() {
+            window.name = "0";
+            window.location = "resources/back-send-referrer-helper.php"
+        }, 0);
+    }
+</script>

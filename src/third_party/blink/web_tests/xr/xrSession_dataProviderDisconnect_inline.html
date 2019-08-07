@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
+<script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
+<script src="../xr/resources/xr-internal-device-mocking.js"></script>
+<script src="../xr/resources/xr-test-utils.js"></script>
+<script src="../xr/resources/test-constants.js"></script>
+<canvas id="webgl-canvas"></canvas>
+
+<script>
+
+let testName = "Inline session ends if magic window data provider disconnects.";
+let fakeDeviceInitParams = { supportsImmersive: false };
+let requestSessionModes = ['inline'];
+
+let testFunction = function(session, t, fakeDeviceController) {
+  return new Promise((resolve) => {
+    // Session must have a baseLayer or frame requests will be ignored.
+    session.updateRenderState({
+      baseLayer: new XRWebGLLayer(session, gl, { compositionDisabled: true })
+    });
+
+    session.addEventListener('end', () => resolve());
+
+    // Request an animation frame to ensure that everything has time to get
+    // initialized/connected and avoid a race-condition failure with the data
+    // binding not being able to get closed.
+    session.requestAnimationFrame(() => {
+      fakeDeviceController.closeDataProvider();
+      session.requestAnimationFrame(() => {});
+    });
+  });
+}
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+
+</script>

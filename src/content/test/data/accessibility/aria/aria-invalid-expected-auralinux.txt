@@ -1,0 +1,23 @@
+[document web]
+++[section] invalid-entry
+++++[text] name='invalid=true'
+++[entry] selectable-text
+++++[text] name='An '
+++++[section] invalid-entry
+++++++[text] name='eror'
+++++[text] name=' via invalid=spelling'
+++[entry] selectable-text
+++++[text] name='An '
+++++[section] invalid-entry
+++++++[text] name='errors'
+++++[text] name=' via invalid=grammar'
+++[section]
+++++[text] name='invalid=false'
+++[section]
+++++[text] name='invalid=<empty>'
+++[section]
+++++[text] name='invalid=<default>'
+++[section] invalid-entry
+++++[text] name='invalid=unknown'
+++[form]
+++++[entry] invalid-entry selectable-text

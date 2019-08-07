@@ -1,0 +1,54 @@
+/* Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+a {
+  color: var(--google-blue-600);
+  font-weight: 400;
+  text-decoration: none;
+}
+
+oobe-dialog {
+  height: calc(640px - var(--caption-bar-height));
+}
+
+.container {
+  height: 496px;
+  overflow: hidden;
+  padding: calc(60px - var(--caption-bar-height)) 64px 0 64px;
+  position: absolute;
+  width: 640px;
+}
+
+.line {
+  background-color: rgb(218, 220, 224);
+  height: 1px;
+  margin: 8px 0 8px 0;
+}
+
+.title {
+  color: var(--google-grey-900);
+  font-family: 'Google Sans', Roboto, sans-serif;
+  font-size: 28px;
+  padding: 32px 0 16px 0;
+}
+
+.sub-title {
+  color: var(--google-grey-900);
+  font: 13px Roboto, sans-serif;
+}
+
+.content {
+  color: var(--google-grey-700);
+  font: 13px Roboto, sans-serif;
+  line-height: 16px;
+}
+
+#logo {
+  height: 32px;
+  margin: 0;
+}
+
+#next-button {
+  margin-inline-end: 0;
+}

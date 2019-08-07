@@ -1,0 +1,5 @@
+include_rules = [
+  "+content/public/browser",
+  "+content/public/test",
+  "+content/public/common/window_container_type.mojom-shared.h",
+]

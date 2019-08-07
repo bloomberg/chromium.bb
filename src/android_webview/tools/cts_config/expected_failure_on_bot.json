@@ -1,0 +1,8 @@
+{
+  "android.webkit.cts.ServiceWorkerClientTest": [
+    {
+      "name": "testServiceWorkerClientInterceptCallback",
+      "_bug_id": "crbug.com/675809"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="et">
+<translation id="1510238584712386396">Käivitaja</translation>
+<translation id="1734367976349034509">Seda seadet haldab ettevõte</translation>
+<translation id="1930797645656624981">Chrome OS sisestusmeetodi teenus</translation>
+<translation id="2049639323467105390">Seadet haldab <ph name="DOMAIN" />.</translation>
+<translation id="2083960536266308407">Ekraanilt ei leitud midagi</translation>
+<translation id="2338501278241028356">Lülitage Bluetooth sisse, et läheduses olevaid seadmeid avastada</translation>
+<translation id="2805756323405976993">Rakendused</translation>
+<translation id="2872961005593481000">Lülita välja</translation>
+<translation id="3147142846278915599">Käivitusprogramm (rakenduste sünkroonimine ...)</translation>
+<translation id="3442261357327209537">Uue parooli valimiseks klõpsake siin</translation>
+<translation id="3506732833599356229">Parool on aegunud</translation>
+<translation id="4731797938093519117">Vanema juurdepääs</translation>
+<translation id="476166673298332917">Seadme administraator võib jälgida teie sirvimistegevust.</translation>
+<translation id="5212543919916444558">Ma ei leia teie ekraanilt midagi, mille puhul saaksin aidata.
+Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
+<translation id="5222676887888702881">Logi välja</translation>
+<translation id="5457599981699367932">Sirvi külalisena</translation>
+<translation id="54609108002486618">Hallatud</translation>
+<translation id="5832805196449965646">Lisa inimene</translation>
+<translation id="5895138241574237353">Taaskäivitamine</translation>
+<translation id="6574601967010742428">Seadme haldur võib saada teie tegevust jälgida.</translation>
+<translation id="7467001599725918325">Parool aegub peagi</translation>
+<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Teie praegune parool on aegunud.}=1{Teie praegune parool aegub vähem kui ühe päeva pärast.}other{Teie praegune parool aegub vähem kui # päeva pärast.}}</translation>
+<translation id="7658239707568436148">Tühista</translation>
+<translation id="9111102763498581341">Ava lukk</translation>
+</translationbundle>

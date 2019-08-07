@@ -1,0 +1,19 @@
+Verifies that links for URLs with spaces displayed properly for matched styles.
+
+[expanded] 
+element.style { ()
+
+[expanded] 
+#inspected { (style.css:1 -> style.css:1:13)
+    background-color: blue;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
+

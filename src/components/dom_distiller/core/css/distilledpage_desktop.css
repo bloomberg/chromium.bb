@@ -1,0 +1,13 @@
+/* Copyright 2019 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* This file should contain style used on desktop but not Android or iOS. */
+
+#mainContent {
+  width: 75%;
+  box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.4);
+  padding: 1em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}

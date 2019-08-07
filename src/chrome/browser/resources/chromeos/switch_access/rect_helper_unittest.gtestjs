@@ -1,0 +1,81 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * Test fixture for rect_helper.js.
+ * @constructor
+ * @extends {testing.Test}
+ */
+function SwitchAccessRectHelperUnitTest() {
+  testing.Test.call(this);
+}
+
+SwitchAccessRectHelperUnitTest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @override */
+  extraLibraries: [
+    'rect_helper.js',
+  ],
+
+  equal: (rect1, rect2) => rect1.left === rect2.left &&
+                           rect1.top === rect2.top &&
+                           rect1.width === rect2.width &&
+                           rect1.height === rect2.height,
+};
+
+TEST_F('SwitchAccessRectHelperUnitTest',
+       'ExpandToFitWithPadding_OuterContainedInInner', function() {
+  const padding = 5;
+  const inner = {left: 100, top: 100, width: 100, height: 100};
+
+  const outer = {left: 120, top: 120, width: 20, height: 20};
+  let expected = {left: 95, top: 95, width: 110, height: 110};
+
+  assertTrue(this.equal(expected,
+      RectHelper.expandToFitWithPadding(padding, outer, inner)));
+});
+
+TEST_F('SwitchAccessRectHelperUnitTest',
+       'ExpandToFitWithPadding_OuterContainsInner', function() {
+  const padding = 5;
+  const inner = {left: 100, top: 100, width: 100, height: 100};
+  const outer = {left: 50, top: 50, width: 200, height: 200};
+
+  assertTrue(this.equal(outer,
+      RectHelper.expandToFitWithPadding(padding, outer, inner)));
+});
+
+TEST_F('SwitchAccessRectHelperUnitTest', 'ExpandToFitWithPadding_NoOverlap',
+       function() {
+  const padding = 5;
+  const inner = {left: 100, top: 100, width: 100, height: 100};
+  const outer = {left: 10, top: 10, width: 10, height: 10};
+  expected = {left: 10, top: 10, width: 195, height: 195};
+
+  assertTrue(this.equal(expected,
+      RectHelper.expandToFitWithPadding(padding, outer, inner)));
+});
+
+TEST_F('SwitchAccessRectHelperUnitTest', 'ExpandToFitWithPadding_Overlap',
+       function() {
+  const padding = 5;
+  const inner = {left: 100, top: 100, width: 100, height: 100};
+  const outer = {left: 120, top: 50, width: 200, height: 200};
+  expected = {left: 95, top: 50, width: 225, height: 200};
+
+  assertTrue(this.equal(expected,
+      RectHelper.expandToFitWithPadding(padding, outer, inner)));
+});
+
+TEST_F('SwitchAccessRectHelperUnitTest', 'ExpandToFitWithPadding_WithinPadding',
+       function() {
+  const padding = 5;
+  const inner = {left: 100, top: 100, width: 100, height: 100};
+  const outer = {left: 97, top: 95, width: 108, height: 110};
+  expected = {left: 95, top: 95, width: 110, height: 110};
+
+  assertTrue(this.equal(expected,
+      RectHelper.expandToFitWithPadding(padding, outer, inner)));
+});

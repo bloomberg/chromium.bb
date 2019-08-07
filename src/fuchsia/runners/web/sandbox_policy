@@ -1,0 +1,20 @@
+{
+  "features": [
+    "isolated-persistent-storage"
+  ],
+  "services": [
+      "fuchsia.fonts.Provider",
+      "fuchsia.logger.LogSink",
+      "fuchsia.media.Audio",
+      "fuchsia.mediacodec.CodecFactory",
+      "fuchsia.net.SocketProvider",
+      "fuchsia.netstack.Netstack",
+      "fuchsia.process.Launcher",
+      "fuchsia.sysmem.Allocator",
+      "fuchsia.ui.input.ImeService",
+      "fuchsia.ui.input.ImeVisibilityService",
+      "fuchsia.ui.scenic.Scenic",
+      "fuchsia.vulkan.loader.Loader",
+      "fuchsia.web.ContextProvider"
+  ]
+}

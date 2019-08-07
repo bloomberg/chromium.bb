@@ -1,0 +1,9 @@
+ortuno@chromium.org
+reillyg@chromium.org
+odejesush@chromium.org
+dougt@chromium.org
+
+per-file BUILD.gn=*
+
+# TEAM: web-bluetooth@chromium.org
+# COMPONENT: IO>Bluetooth

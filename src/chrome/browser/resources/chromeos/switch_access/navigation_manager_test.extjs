@@ -1,0 +1,187 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+GEN_INCLUDE(['switch_access_e2e_test_base.js']);
+
+/**
+ * @constructor
+ * @extends {SwitchAccessE2ETest}
+ */
+function SwitchAccessNavigationManagerTest() {
+  SwitchAccessE2ETest.call(this);
+}
+
+SwitchAccessNavigationManagerTest.prototype = {
+  __proto__: SwitchAccessE2ETest.prototype
+}
+
+function navigateToWebpage(desktop) {
+  assertTrue(desktop != null);
+  const node = new AutomationTreeWalker(desktop, constants.Dir.FORWARD,
+      { visit: (node) => node.role === chrome.automation.RoleType.ROOT_WEB_AREA
+                      && SwitchAccessPredicate.isInterestingSubtree(node, node)
+      }
+  ).next().node;
+
+  assertTrue(node != null);
+  switchAccess.navigationManager_.node_ = node;
+  switchAccess.moveForward();
+}
+
+function currentNode() {
+  return switchAccess.navigationManager_.node_;
+}
+
+TEST_F('SwitchAccessNavigationManagerTest', 'SelectButton', function() {
+  const website = `data:text/html;charset=utf-8,
+                  <button id="test" aria-pressed="false"></button>
+                  <script>
+                    var state = false;
+                    var button = document.getElementById("test");
+                    button.onclick = () => {
+                      state = !state;
+                      button.setAttribute("aria-pressed", state);
+                    };
+                  </script>`;
+
+  this.runWithLoadedTree(website, function(desktop) {
+    navigateToWebpage(desktop);
+
+    currentNode().addEventListener(
+        chrome.automation.EventType.CHECKED_STATE_CHANGED,
+        this.newCallback(function(event) {
+          assertEquals(this.node.name, event.target.name);
+        }.bind({node: currentNode()}))
+    );
+
+    switchAccess.selectCurrentNode();
+  });
+});
+
+// The back button is inconsistently loaded before this test runs.
+// TODO(anastasi): Fix flakiness and re-enable the tests.
+TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveForward', function() {
+  const website = `data:text/html;charset=utf-8,
+                  <button>button1</button>
+                  <button>button2</button>
+                  <button>button3</button>`;
+
+  this.runWithLoadedTree(website, function(desktop) {
+    navigateToWebpage(desktop);
+
+    const initialScope = currentNode();
+    // We need to enter the container containing the buttons.
+    assertEquals(initialScope.role, chrome.automation.RoleType.GENERIC_CONTAINER);
+    switchAccess.selectCurrentNode();
+
+    const button1 = currentNode();
+    assertEquals('button1', button1.name);
+
+    switchAccess.moveForward();
+
+    const button2 = currentNode();
+    assertEquals('button2', button2.name);
+
+    switchAccess.moveForward();
+
+    const button3 = currentNode();
+    assertEquals('button3', button3.name);
+
+    switchAccess.moveForward();
+
+    // check that the initialScope is the final element.
+    assertEquals(currentNode(), initialScope);
+
+    switchAccess.moveForward();
+
+    // check that we loop around again.
+    assertEquals(currentNode(), button1);
+  });
+});
+
+// The back button is inconsistently loaded before this test runs.
+// TODO(anastasi): Fix flakiness and re-enable the tests.
+TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveBackward', function() {
+  const website = `data:text/html;charset=utf-8,
+                  <button>button1</button>
+                  <button>button2</button>
+                  <button>button3</button>`;
+
+  this.runWithLoadedTree(website, function(desktop) {
+    navigateToWebpage(desktop);
+
+    const initialScope = currentNode();
+    // We need to enter the container containing the buttons.
+    assertEquals(initialScope.role, chrome.automation.RoleType.GENERIC_CONTAINER);
+    switchAccess.selectCurrentNode();
+
+    const button1 = currentNode();
+    assertEquals('button1', button1.name);
+
+    switchAccess.moveBackward();
+
+    // Moving backwards from the first button should take us to the initialScope.
+    assertEquals(currentNode(), initialScope);
+
+    switchAccess.moveBackward();
+
+    // Moving backwards from the initialScope should take us to the last button.
+    const button3 = currentNode();
+    assertEquals('button3', button3.name);
+
+    switchAccess.moveBackward();
+
+    const button2 = currentNode();
+    assertEquals('button2', button2.name);
+
+    switchAccess.moveBackward();
+
+    // We should be back at buttton 1.
+    assertEquals(currentNode(), button1);
+  });
+});
+
+// The back button is inconsistently loaded before this test runs.
+// TODO(anastasi): Fix flakiness and re-enable the tests.
+TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveBackAndForth', function() {
+  const website = `data:text/html;charset=utf-8,
+                  <button>button1</button>
+                  <button>button2</button>
+                  <button>button3</button>`;
+
+  this.runWithLoadedTree(website, function(desktop) {
+    navigateToWebpage(desktop);
+
+    const initialScope = currentNode();
+    // We need to enter the container containing the buttons.
+    switchAccess.selectCurrentNode();
+
+    const button1 = currentNode();
+    assertEquals('button1', button1.name);
+
+    switchAccess.moveBackward();
+
+    // Moving backwards from the first button should take us to the initialScope.
+    assertEquals(currentNode(), initialScope);
+
+    switchAccess.moveBackward();
+
+    // Moving backwards from the initialScope should take us to the last button.
+    const button3 = currentNode();
+    assertEquals('button3', button3.name);
+
+    switchAccess.moveForward();
+
+    assertEquals(currentNode(), initialScope);
+
+    switchAccess.moveForward();
+
+    assertEquals(currentNode(), button1);
+
+    switchAccess.moveForward();
+
+    const button2 = currentNode();
+    assertEquals('button2', button2.name);
+  });
+});

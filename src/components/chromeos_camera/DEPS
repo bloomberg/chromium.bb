@@ -1,0 +1,6 @@
+include_rules = [
+  "+media",
+  "+mojo",
+  "+third_party/libyuv",
+  "+ui/gfx",
+]

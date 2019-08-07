@@ -1,0 +1,45 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="button-bar">
+  <template>
+    <style include="paper-button-style iron-flex">
+      :host {
+        @apply --layout-horizontal;
+        @apply --layout-justified;
+        padding: 10px 0;
+      }
+    </style>
+    <paper-button id="backward"
+        class="cancel-button"
+        on-click="onBackwardButtonClicked_"
+        hidden$="[[showCancelButton]]">
+      [[i18n('back')]]
+    </paper-button>
+    <paper-button id="cancel"
+        class="cancel-button"
+        on-click="onBackwardButtonClicked_"
+        hidden$="[[!showCancelButton]]">
+      [[i18n('cancel')]]
+    </paper-button>
+    <paper-button id="tryAgain"
+        class="action-button"
+        on-click="onTryAgainButtonClicked_"
+        hidden$="[[!showTryAgainButton]]">
+      [[i18n('tryAgain')]]
+    </paper-button>
+    <paper-button id="finish"
+        class="action-button"
+        on-click="onFinishButtonClicked_"
+        hidden$="[[!showFinishButton]]">
+      [[i18n('finish')]]
+    </paper-button>
+  </template>
+  <script src="button_bar.js"></script>
+</dom-module>

@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+FAIL Same events are ordered by elements assert_equals: Number of events received (0) should match expected number (2) (expected: animationstart, animationstart, actual: ) expected 2 but got 0
+FAIL Same events on pseudo-elements follow the prescribed order assert_equals: Number of events received (0) should match expected number (4) (expected: animationstart, animationstart, animationstart, animationstart, actual: ) expected 4 but got 0
+FAIL Start and iteration events are ordered by time assert_equals: Number of events received (0) should match expected number (2) (expected: animationiteration, animationstart, actual: ) expected 2 but got 0
+FAIL Iteration and end events are ordered by time assert_equals: Number of events received (0) should match expected number (2) (expected: animationiteration, animationend, actual: ) expected 2 but got 0
+FAIL Start and end events are sorted correctly when fired simultaneously assert_equals: Number of events received (0) should match expected number (4) (expected: animationstart, animationstart, animationend, animationend, actual: ) expected 4 but got 0
+Harness: the test ran to completion.
+

@@ -1,0 +1,276 @@
+{% macro generateMethodAnnotation(method) %}
+  /**
+{%-   for param in method.parameters %}
+   * @param { {{param.kind|lite_closure_type_with_nullability}} } {{param.name|sanitize_identifier}}
+{%-   endfor -%}
+{%-   if method.response_parameters != None %}
+{%-     if method.response_parameters|length == 0 %}
+   * @return {Promise}
+{%-     else %}
+   * @return {Promise<{
+{%-       for response_parameter in method.response_parameters %}
+        {{response_parameter.name}}: {{response_parameter.kind|lite_closure_type_with_nullability}},
+{%-       endfor %}
+   *  }>}
+{%-     endif %}
+{%-   endif %}
+   */
+{% endmacro %}
+
+{%  if generate_closure_exports -%}
+goog.provide('{{module.namespace}}.{{interface.name}}');
+goog.provide('{{module.namespace}}.{{interface.name}}CallbackRouter');
+goog.provide('{{module.namespace}}.{{interface.name}}Interface');
+goog.provide('{{module.namespace}}.{{interface.name}}Proxy');
+goog.provide('{{module.namespace}}.{{interface.name}}Request');
+{% endif %}
+
+/** @export */
+{{module.namespace}}.{{interface.name}}Request = class {
+  /** @param {!MojoHandle} handle */
+  constructor(handle) {
+    /** @public {!MojoHandle} */
+    this.handle = handle;
+  }
+};
+
+{%  if generate_closure_exports -%}
+/** @interface */
+{{module.namespace}}.{{interface.name}}Interface = class {
+{%-  for method in interface.methods %}
+  {{generateMethodAnnotation(method)}}
+  {{method.name}}(
+{%-   for param in method.parameters -%}
+{{param.name|sanitize_identifier}}{% if not loop.last %}, {% endif %}
+{%-   endfor -%}
+) {}
+{%- endfor %}
+};
+{%- endif %}
+
+/**
+ * @export
+ * @implements { {{module.namespace}}.{{interface.name}}Interface }
+ */
+{{module.namespace}}.{{interface.name}}Proxy = class {
+  /** @param {MojoHandle=} opt_handle */
+  constructor(opt_handle) {
+    /**
+     * @private {!mojo.internal.interfaceSupport.InterfaceProxyBase<!{{module.namespace}}.{{interface.name}}Request>}
+     */
+    this.proxy =
+        new mojo.internal.interfaceSupport.InterfaceProxyBase(
+          {{module.namespace}}.{{interface.name}}Request,
+          opt_handle);
+
+    /**
+     * @public {!mojo.internal.interfaceSupport.InterfaceProxyBaseWrapper<!{{module.namespace}}.{{interface.name}}Request>}
+     */
+    this.$ = new mojo.internal.interfaceSupport.InterfaceProxyBaseWrapper(this.proxy);
+
+    /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
+    this.onConnectionError = this.proxy.getConnectionErrorEventRouter();
+  }
+
+{%- for method in interface.methods -%}
+{%-   set interface_message_id =
+          interface.mojom_name ~ "_" ~ method.mojom_name %}
+
+  {{generateMethodAnnotation(method)}}
+  {{method.name}}(
+{%- for param in method.parameters %}
+      {{param.name}}{%- if not loop.last %},{% endif %}
+{%- endfor -%}) {
+{%- if method.response_parameters != None %}
+    return this.proxy.sendMessage(
+{%- else %}
+    this.proxy.sendMessage(
+{%- endif %}
+        {{method.ordinal}},
+        {{module.namespace}}.{{interface_message_id}}_ParamsSpec.$,
+{%-   if method.response_parameters != None %}
+        {{module.namespace}}.{{interface_message_id}}_ResponseParamsSpec.$,
+{%-   else %}
+        null,
+{%-   endif %}
+        [
+{%- for param in method.parameters %}
+          {{param.name}}{%- if not loop.last %},{% endif %}
+{%- endfor %}
+        ]);
+  }
+{%-  endfor %}
+};
+
+/**
+ * An object which receives request messages for the {{interface.name}}
+ * mojom interface. Must be constructed over an object which implements that
+ * interface.
+ *
+ * @export
+ */
+{{module.namespace}}.{{interface.name}} = class {
+  /**
+   * @param {!{{module.namespace}}.{{interface.name}}Interface } impl
+   */
+  constructor(impl) {
+    this.target_ = new mojo.internal.interfaceSupport.InterfaceTarget;
+{%  for method in interface.methods %}
+{%-   set interface_message_id =
+          interface.mojom_name ~ "_" ~ method.mojom_name %}
+    this.target_.registerHandler(
+        {{method.ordinal}},
+        {{module.namespace}}.{{interface_message_id}}_ParamsSpec.$,
+{%-   if method.response_parameters != None %}
+        {{module.namespace}}.{{interface_message_id}}_ResponseParamsSpec.$,
+{%-   else %}
+        null,
+{%-   endif %}
+        impl.{{method.name}}.bind(impl));
+{%- endfor %}
+    /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
+    this.onConnectionError = this.target_.getConnectionErrorEventRouter();
+  }
+
+  /**
+   * Binds a new handle to this object. Messages which arrive on the handle will
+   * be read and dispatched to this object.
+   *
+   * @param {!MojoHandle} handle
+   * @export
+   */
+  bindHandle(handle) {
+    this.target_.bindHandle(handle);
+  }
+
+  /**
+   * Closes all bindings bound to this target.
+   *
+   * @export
+   */
+  closeBindings() {
+    this.target_.closeBindings();
+  }
+
+  /**
+   * Returns a proxy for this interface which sends messages to the browser.
+   * The browser must have an interface request binder registered for this
+   * interface and accessible to the calling document's frame.
+   *
+   * @return {!{{module.namespace}}.{{interface.name}}Proxy}
+   * @export
+   */
+  static getProxy() {
+    let proxy = new {{module.namespace}}.{{interface.name}}Proxy;
+    Mojo.bindInterface('{{mojom_namespace}}.{{interface.name}}',
+                       proxy.$.createRequest().handle);
+    return proxy;
+  }
+
+  /**
+   * Returns a proxy for this interface which sends messages directly to this
+   * object. Any number of proxies may be created to the same object.
+   *
+   * @return {!{{module.namespace}}.{{interface.name}}Proxy}
+   * @export
+   */
+  createProxy() {
+    let proxy = new {{module.namespace}}.{{interface.name}}Proxy;
+    this.target_.bindHandle(proxy.$.createRequest().handle);
+    return proxy;
+  }
+};
+
+{#--- Enums #}
+{% from "lite/enum_definition.tmpl" import enum_def with context %}
+{%- for enum in interface.enums %}
+{{ enum_def("%s.%s"|format(module.namespace, interface.name),
+            "%s.%s"|format(module.namespace, interface.name),
+            enum) }}
+{%-  endfor %}
+
+/**
+ * @const {string}
+ * @export
+ */
+{{module.namespace}}.{{interface.name}}.$interfaceName =
+    '{{mojom_namespace}}.{{interface.name}}';
+
+/**
+ * An object which receives request messages for the {{interface.name}}
+ * mojom interface and dispatches them as callbacks. One callback target exists
+ * on this object for each message defined in the mojom interface, and each
+ * target can have any number of listeners added to it.
+ *
+ * @export
+ */
+{{module.namespace}}.{{interface.name}}CallbackRouter = class {
+  constructor() {
+    this.target_ = new mojo.internal.interfaceSupport.InterfaceTarget;
+    this.router_ = new mojo.internal.interfaceSupport.CallbackRouter;
+{%  for method in interface.methods %}
+{%-   set interface_message_id =
+          interface.mojom_name ~ "_" ~ method.mojom_name %}
+    /**
+     * @public {!mojo.internal.interfaceSupport.InterfaceCallbackTarget}
+     */
+    this.{{method.name}} =
+        new mojo.internal.interfaceSupport.InterfaceCallbackTarget(
+            this.router_);
+
+    this.target_.registerHandler(
+        {{method.ordinal}},
+        {{module.namespace}}.{{interface_message_id}}_ParamsSpec.$,
+{%-   if method.response_parameters != None %}
+        {{module.namespace}}.{{interface_message_id}}_ResponseParamsSpec.$,
+        this.{{method.name}}.createTargetHandler(true /* expectsResponse */));
+{%-   else %}
+        null,
+        this.{{method.name}}.createTargetHandler(false /* expectsResponse */));
+{%-   endif %}
+{%- endfor %}
+    /** @public {!mojo.internal.interfaceSupport.ConnectionErrorEventRouter} */
+    this.onConnectionError = this.target_.getConnectionErrorEventRouter();
+  }
+
+  /**
+   * Binds a new handle to this object. Messages which arrive on the handle will
+   * be read and dispatched as callbacks on this object.
+   *
+   * @param {!MojoHandle} handle
+   * @export
+   */
+  bindHandle(handle) {
+    this.target_.bindHandle(handle);
+  }
+
+  /**
+   * Closes all bindings bound to this target. The target will not receive any
+   * further message message events unless rebound to one or more handles.
+   */
+  closeBindings() {
+    this.target_.closeBindings();
+  }
+
+  /**
+   * Returns a proxy for this interface which sends messages directly to this
+   * object. Any number of proxies may be created to the same object.
+   *
+   * @return {!{{module.namespace}}.{{interface.name}}Proxy}
+   * @export
+   */
+  createProxy() {
+    let proxy = new {{module.namespace}}.{{interface.name}}Proxy;
+    this.target_.bindHandle(proxy.$.createRequest().handle);
+    return proxy;
+  }
+
+  /**
+   * @param {number} id An ID returned by a prior call to addListener.
+   * @return {boolean} True iff the identified listener was found and removed.
+   * @export
+   */
+  removeListener(id) {
+    return this.router_.removeListener(id);
+  }
+};

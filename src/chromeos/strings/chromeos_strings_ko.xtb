@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="ko">
+<translation id="1510238584712386396">런처</translation>
+<translation id="1734367976349034509">기업에서 관리하는 기기입니다.</translation>
+<translation id="1930797645656624981">Chrome OS 입력 방법 서비스</translation>
+<translation id="2049639323467105390">기기는 <ph name="DOMAIN" />에서 관리합니다.</translation>
+<translation id="2083960536266308407">화면에 정보가 없습니다.</translation>
+<translation id="2338501278241028356">블루투스를 사용 설정하여 근처 기기 탐색</translation>
+<translation id="2805756323405976993">앱</translation>
+<translation id="2872961005593481000">종료</translation>
+<translation id="3147142846278915599">런처(앱 동기화 중...)</translation>
+<translation id="3442261357327209537">새 비밀번호를 선택하려면 여기를 클릭하세요.</translation>
+<translation id="3506732833599356229">비밀번호가 만료됨</translation>
+<translation id="4731797938093519117">부모 액세스</translation>
+<translation id="476166673298332917">기기 관리자가 탐색 활동을 모니터링할 수 있습니다.</translation>
+<translation id="5212543919916444558">화면에 도움을 드릴 수 있는 항목이 보이지 않습니다.
+마이크를 탭하여 무엇이든지 물어보세요.</translation>
+<translation id="5222676887888702881">로그아웃</translation>
+<translation id="5457599981699367932">게스트로 로그인</translation>
+<translation id="54609108002486618">관리</translation>
+<translation id="5832805196449965646">사용자 추가</translation>
+<translation id="5895138241574237353">다시 시작</translation>
+<translation id="6574601967010742428">기기 관리자가 내 활동을 모니터링할 수도 있습니다.</translation>
+<translation id="7467001599725918325">비밀번호가 곧 만료됨</translation>
+<translation id="7505377169174526985">{NUM_DAYS,plural, =0{현재 비밀번호가 만료되었습니다.}=1{1일 이내에 현재 비밀번호가 만료됩니다.}other{#일 이내에 현재 비밀번호가 만료됩니다.}}</translation>
+<translation id="7658239707568436148">취소</translation>
+<translation id="9111102763498581341">잠금 해제</translation>
+</translationbundle>

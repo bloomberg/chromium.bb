@@ -1,0 +1,184 @@
+<!doctype html>
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<title>$i18n{title}</title>
+
+<link rel="stylesheet" href="chrome://policy/policy.css">
+<link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
+
+<script src="chrome://resources/js/action_link.js"></script>
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/cr/ui.js"></script>
+<script src="chrome://resources/js/cr/ui/focus_outline_manager.js"></script>
+<script src="chrome://resources/js/load_time_data.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+</head>
+
+<body>
+  <header>
+    <h1>$i18n{title}</h1>
+    <input id="filter" class="search-field-container" type="search"
+        placeholder="$i18n{filterPlaceholder}"
+        aria-label="$i18n{filterPlaceholder}" incremental>
+  </header>
+  <main id="policy-ui">
+    <section class="reload-show-unset-section">
+      <button id="reload-policies">$i18n{reloadPolicies}</button>
+      <button id="export-policies">$i18n{exportPoliciesJSON}</button>
+      <div id="show-unset-container" class="show-unset-checkbox">
+        <label>
+          <input id="show-unset" type="checkbox">
+          <span>$i18n{showUnset}</span>
+        </label>
+      </div>
+    </section>
+    <section id="status-section" class="status-box-section" hidden>
+      <h3>$i18n{status}</h3>
+      <div id="status-box-container"></div>
+    </section>
+    <section id="main-section" class="empty">
+      <!--  This is where policy tables get dynamically added. -->
+    </section>
+  </main>
+  <div hidden>
+    <fieldset id="status-box-template">
+      <legend class="legend"></legend>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelEnterpriseEnrollmentDomain}</div>
+        <div class="enterprise-enrollment-domain"></div>
+      </div>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelEnterpriseDisplayDomain}</div>
+        <div class="enterprise-display-domain"></div>
+      </div>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelMachineEnrollmentMachineName}</div>
+        <div class="machine-enrollment-name"></div>
+      </div>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelMachineEnrollmentDomain}</div>
+        <div class="machine-enrollment-domain"></div>
+      </div>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelMachineEnrollmentToken}</div>
+        <div class="machine-enrollment-token"></div>
+      </div>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelMachineEntrollmentDeviceId}</div>
+        <div class="machine-enrollment-device-id"></div>
+      </div>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelUsername}</div>
+        <div class="username"></div>
+      </div>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelGaiaId}</div>
+        <div class="gaia-id"></div>
+      </div>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelClientId}</div>
+        <div class="client-id"></div>
+      </div>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelAssetId}</div>
+        <div class="asset-id"></div>
+      </div>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelLocation}</div>
+        <div class="location"></div>
+      </div>
+      <div class="status-entry" hidden>
+        <div class="label">$i18n{labelDirectoryApiId}</div>
+        <div class="directory-api-id"></div>
+      </div>
+      <div class="status-entry">
+        <div class="label">$i18n{labelTimeSinceLastRefresh}</div>
+        <div class="time-since-last-refresh"></div>
+      </div>
+      <div class="status-entry">
+        <div class="label">$i18n{labelRefreshInterval}</div>
+        <div class="refresh-interval"></div>
+      </div>
+      <div class="status-entry">
+        <div class="label">$i18n{labelPoliciesPush}</div>
+        <div class="policy-push"></div>
+      </div>
+      <div class="status-entry">
+        <div class="label">$i18n{labelStatus}</div>
+        <div class="status"></div>
+      </div>
+    </fieldset>
+
+    <div class="policy-table" id="policy-table-template">
+      <h3 class="header"></h3>
+      <p class="id"></p>
+      <div class="main">
+        <div class="header row">
+          <div class="name">$i18n{headerName}</div>
+          <div class="value">$i18n{headerValue}</div>
+          <div class="source">$i18n{headerSource}</div>
+          <div class="scope">$i18n{headerScope}</div>
+          <div class="level">$i18n{headerLevel}</div>
+          <div class="messages">$i18n{headerStatus}</div>
+          <div class="toggle"></div>
+        </div>
+        <div class="no-policy">$i18n{noPoliciesSet}</div>
+      </div>
+    </div>
+
+    <div class="policy-conflict-data" id="policy-conflict-template" hidden>
+      <div class="policy conflict row">
+          <div class="name">$i18n{conflict}</div>
+          <div class="value"></div>
+          <div class="source"></div>
+          <div class="scope"></div>
+          <div class="level"></div>
+          <div class="messages"></div>
+          <div class="toggle"></div>
+      </div>
+      <div class="value row">
+        <div class="name"></div>
+        <div class="value"></div>
+      </div>
+    </div>
+
+    <div class="policy-data" id="policy-template">
+      <div class="policy row">
+        <div class="name">
+          <a class="link" target="_blank">
+            <span></span>
+            <img src="../../../../ui/webui/resources/images/open_in_new.svg">
+          </a>
+        </div>
+        <div class="value"></div>
+        <div class="source"></div>
+        <div class="scope"></div>
+        <div class="level"></div>
+        <div class="messages"></div>
+        <div class="toggle">
+          <a is="action-link" class="show-more">$i18n{showMore}</a>
+          <a is="action-link" class="show-less" hidden>$i18n{showLess}</a>
+        </div>
+      </div>
+      <div class="value row" hidden>
+        <div class="name">$i18n{value}</div>
+        <div class="value"></div>
+      </div>
+      <div class="errors row" hidden>
+        <div class="name">$i18n{error}</div>
+        <div class="value"></div>
+      </div>
+      <div class="warnings row" hidden>
+        <div class="name">$i18n{warning}</div>
+        <div class="value"></div>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script src="chrome://policy/strings.js"></script>
+<script src="chrome://policy/policy_base.js"></script>
+<script src="chrome://policy/policy.js"></script>
+</html>

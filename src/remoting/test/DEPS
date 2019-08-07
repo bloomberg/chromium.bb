@@ -1,0 +1,16 @@
+include_rules = [
+  "+extensions/browser/api/messaging",
+  "+google_apis",
+  "+jingle/glue",
+  "+mojo/core/embedder",
+  "+net",
+  "+remoting/client",
+  "+remoting/codec",
+  "+remoting/host",
+  "+remoting/protocol",
+  "+remoting/signaling",
+  "+ui/gfx",
+  "+ui/events/keycodes/dom",
+  "+services/network",
+  "+third_party/skia",
+]

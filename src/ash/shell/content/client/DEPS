@@ -1,0 +1,9 @@
+include_rules = [
+  "+ash/components/shortcut_viewer",
+  "+chromeos/dbus/biod",
+  "+components/discardable_memory/public/interfaces",
+  "+content/public",
+  "+content/shell",
+  "+storage/browser/quota",
+  "+services/device/public",
+]

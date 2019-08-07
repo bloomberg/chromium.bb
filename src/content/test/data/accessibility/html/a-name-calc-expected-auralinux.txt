@@ -1,0 +1,15 @@
+[document web]
+++[link] name='InnerText0'
+++++[text] name='InnerText0'
+++[text] name=' '
+++[link] name='InnerText1' description='Title1'
+++++[text] name='InnerText1'
+++[text] name=' '
+++[link] name='Title2' explicit-name:true
+++++[text] name='InnerText2'
+++[text] name=' '
+++[link] name='LabelledBy3' labelled-by explicit-name:true
+++++[text] name='InnerText3'
+++[link] name='Title4' explicit-name:true
+++[link] name='Label5' explicit-name:true
+++[link] name='LabelledBy6' labelled-by explicit-name:true

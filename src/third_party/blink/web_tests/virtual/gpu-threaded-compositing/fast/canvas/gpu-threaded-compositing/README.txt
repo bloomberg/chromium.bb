@@ -1,0 +1,1 @@
+Tests that ensure that "--enable-accelerated-2d-canvas", "--enable-threaded-compositing" are enabled.

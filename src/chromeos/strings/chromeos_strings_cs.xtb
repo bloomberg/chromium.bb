@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="cs">
+<translation id="1510238584712386396">Spouštěč</translation>
+<translation id="1734367976349034509">Toto zařízení je spravováno organizací</translation>
+<translation id="1930797645656624981">Služba metod zadávání systému Chrome OS</translation>
+<translation id="2049639323467105390">Zařízení je spravováno doménou <ph name="DOMAIN" />.</translation>
+<translation id="2083960536266308407">Na obrazovce nebylo nic nalezeno</translation>
+<translation id="2338501278241028356">Chcete-li objevit okolní zařízení, zapněte Bluetooth</translation>
+<translation id="2805756323405976993">Aplikace</translation>
+<translation id="2872961005593481000">Vypnout</translation>
+<translation id="3147142846278915599">Spouštěč (synchronizace aplikací...)</translation>
+<translation id="3442261357327209537">Klikněte sem a vyberte si nové heslo</translation>
+<translation id="3506732833599356229">Platnost hesla vypršela</translation>
+<translation id="4731797938093519117">Rodičovský přístup</translation>
+<translation id="476166673298332917">Správce tohoto zařízení může monitorovat vaše aktivity v prohlížeči.</translation>
+<translation id="5212543919916444558">Na obrazovce nevidím nic, s čím vám můžu pomoct.
+Zkuste klepnout na mikrofon a zeptat se.</translation>
+<translation id="5222676887888702881">Odhlásit se</translation>
+<translation id="5457599981699367932">Použít jako host</translation>
+<translation id="54609108002486618">Spravovaný</translation>
+<translation id="5832805196449965646">Přidat uživatele</translation>
+<translation id="5895138241574237353">Restartovat</translation>
+<translation id="6574601967010742428">Administrátor zařízení může mít možnost sledovat vaši aktivitu.</translation>
+<translation id="7467001599725918325">Platnost hesla brzy vyprší</translation>
+<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Platnost vašeho aktuálního hesla vypršela.}=1{Platnost vašeho aktuálního hesla vyprší za méně než jeden den.}few{Platnost vašeho aktuálního hesla vyprší za méně než # dny.}many{Platnost vašeho aktuálního hesla vyprší za méně než # dne.}other{Platnost vašeho aktuálního hesla vyprší za méně než # dní.}}</translation>
+<translation id="7658239707568436148">Zrušit</translation>
+<translation id="9111102763498581341">Odemknout</translation>
+</translationbundle>

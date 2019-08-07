@@ -1,0 +1,7 @@
+{
+  "features": [ "root-ssl-certificates", "vulkan" ],
+  "services": [
+    "fuchsia.logger.LogSink",
+    "fuchsia.process.Launcher"
+  ]
+}

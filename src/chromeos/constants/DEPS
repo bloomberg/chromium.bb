@@ -1,0 +1,8 @@
+noparent = True
+
+include_rules = [
+  "+base",
+  "+chromeos/chromeos_export.h",
+  "+chromeos/dbus/constants",
+  "+third_party/icu",
+]

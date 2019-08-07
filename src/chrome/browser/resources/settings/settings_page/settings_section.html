@@ -1,0 +1,40 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/util.html">
+
+<dom-module id="settings-section">
+  <template>
+    <style>
+      :host {
+        display: flex;
+        flex-direction: column;
+        outline: none;
+        position: relative;
+      }
+
+      #header .title {
+        @apply --cr-card-external-title;
+      }
+
+      :host(:not(.expanded)) #card {
+        @apply --cr-card-elevation;
+        background-color: var(--cr-card-background-color);
+        border-radius: var(--cr-card-border-radius);
+        flex: 1;
+      }
+
+      :host([hidden-by-search]) {
+        display: none;
+      }
+    </style>
+    <div id="header">
+      <h2 class="title"
+          aria-hidden$="[[getTitleHiddenStatus_(pageTitle)]]">[[pageTitle]]</h2>
+    </div>
+    <div id="card">
+      <slot></slot>
+    </div>
+  </template>
+  <script src="settings_section.js"></script>
+</dom-module>

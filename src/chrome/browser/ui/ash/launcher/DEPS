@@ -1,0 +1,13 @@
+specific_include_rules = {
+  # https://crbug.com/826386
+  "app_window_launcher_controller\.cc": [
+    "+ash/shell.h",
+  ],
+  # https://crbug.com/875111
+  "chrome_launcher_controller_unittest\.cc": [
+    "+ash/multi_user/multi_user_window_manager_impl.h",
+  ],
+  "browser_shortcut_launcher_item_controller\.cc": [
+    "+ash/wm/desks/desks_util.h",
+  ],
+}

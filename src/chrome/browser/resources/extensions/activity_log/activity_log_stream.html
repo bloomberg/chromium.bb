@@ -1,0 +1,93 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
+<link rel="import" href="activity_log_stream_item.html">
+<link rel="import" href="../shared_style.html">
+
+<dom-module id="activity-log-stream">
+  <template>
+    <style include="shared-style paper-button-style">
+      :host {
+        --activity-log-call-and-time-width: 575px;
+        --activity-type-width: 85px;
+        --activity-time-width: 100px;
+
+        display: flex;
+        flex-direction: column;
+      }
+
+      cr-search-field {
+        margin-inline-end: auto;
+      }
+
+      .activity-table-headings {
+        width: var(--activity-log-call-and-time-width);
+      }
+
+      #activity-type {
+        flex: 0 var(--activity-type-width);
+      }
+
+      #activity-key {
+        flex: 1;
+        margin-inline-start: 10px;
+      }
+
+      #activity-time {
+        flex: 0 var(--activity-time-width);
+        text-align: end;
+      }
+
+      iron-list {
+        flex: 1;
+      }
+    </style>
+    <div class="activity-subpage-header">
+      <cr-search-field label="$i18n{activityLogSearchLabel}"
+        on-search-changed="onSearchChanged_">
+      </cr-search-field >
+      <paper-button id="toggle-stream-button" on-click="onToggleButtonClick_">
+        <span hidden$="[[isStreamOn_]]">
+          $i18n{startActivityStream}
+        </span>
+        <span hidden$="[[!isStreamOn_]]">
+          $i18n{stopActivityStream}
+        </span>
+      </paper-button>
+      <paper-button class="clear-activities-button"
+          on-click="clearStream">
+        $i18n{clearActivities}
+      </paper-button>
+    </div>
+    <div id="empty-stream-message" class="activity-message"
+        hidden$="[[!isStreamEmpty_(activityStream_.length)]]">
+      <span id="stream-stopped-message" hidden$="[[isStreamOn_]]">
+        $i18n{emptyStreamStopped}
+      </span>
+      <span id="stream-started-message" hidden$="[[!isStreamOn_]]">
+        $i18n{emptyStreamStarted}
+      </span>
+    </div>
+    <div id="empty-search-message" class="activity-message"
+        hidden$="[[!shouldShowEmptySearchMessage_(
+            activityStream_.length, filteredActivityStream_.length)]]">
+      $i18n{noSearchResults}
+    </div>
+    <div class="activity-table-headings"
+        hidden$="[[isFilteredStreamEmpty_(filteredActivityStream_.length)]]">
+      <span id="activity-type">$i18n{activityLogTypeColumn}</span>
+      <span id="activity-key">$i18n{activityLogNameColumn}</span>
+      <span id="activity-time">$i18n{activityLogTimeColumn}</span>
+    </div>
+    <iron-list items="[[filteredActivityStream_]]">
+      <template>
+        <activity-log-stream-item data="[[item]]"></activity-log-stream-item>
+      </template>
+    </iron-list>
+  </template>
+  <script src="activity_log_stream.js"></script>
+</dom-module>

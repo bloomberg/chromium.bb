@@ -1,0 +1,26 @@
+CONSOLE WARNING: line 87: Element.createShadowRoot is deprecated and will be removed in M80, around February 2020. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 and https://developers.google.com/web/updates/2019/07/web-components-time-to-upgrade for more details.
+:focus and shadow host without delegatesFocus for crbug/479050
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+Test shadow host without tabindex
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+Test shadow host with tabindex=-1
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(0, 128, 0)"
+Test shadow host without tabindex=0
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(0, 128, 0)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+

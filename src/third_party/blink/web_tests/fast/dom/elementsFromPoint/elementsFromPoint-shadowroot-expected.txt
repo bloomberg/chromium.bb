@@ -1,0 +1,17 @@
+CONSOLE WARNING: line 38: Element.createShadowRoot is deprecated and will be removed in M80, around February 2020. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 and https://developers.google.com/web/updates/2019/07/web-components-time-to-upgrade for more details.
+ 
+PASS shadowRoot.elementsFromPoint() threw exception TypeError: Failed to execute 'elementsFromPoint' on 'ShadowRoot': 2 arguments required, but only 0 present..
+PASS shadowRoot.elementsFromPoint(0) threw exception TypeError: Failed to execute 'elementsFromPoint' on 'ShadowRoot': 2 arguments required, but only 1 present..
+PASS nodeListToString(shadowRoot.elementsFromPoint(x12, y12)) is "DIV, DIV#host, BODY, HTML"
+PASS nodeListToString(nestedShadowRoot.elementsFromPoint(x22, y22)) is "DIV, DIV, DIV#host, BODY, HTML"
+PASS nodeListToString(shadowRoot.elementsFromPoint(x22, y22)) is "DIV, DIV#host, BODY, HTML"
+PASS nodeListToString(document.elementsFromPoint(x22, y22)) is "DIV#host, BODY, HTML"
+PASS nodeListToString(root3.elementsFromPoint(centerX(blockHost), centerY(blockHost))) is "DIV#blockHost, BODY, HTML"
+PASS nodeListToString(document.elementsFromPoint(centerX(blockHost), centerY(blockHost))) is "DIV#blockHost, BODY, HTML"
+PASS nodeListToString(root4.elementsFromPoint(centerX(inlineBlockHost), centerY(inlineBlockHost))) is "SPAN#inlineBlockHost, BODY, HTML"
+PASS nodeListToString(document.elementsFromPoint(centerX(inlineBlockHost), centerY(inlineBlockHost))) is "SPAN#inlineBlockHost, BODY, HTML"
+PASS nodeListToString(document.elementsFromPoint(centerX(submit), centerY(submit))) is "INPUT#submit, BODY, HTML"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

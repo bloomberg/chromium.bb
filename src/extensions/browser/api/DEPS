@@ -1,0 +1,8 @@
+include_rules = [
+  "+components/device_event_log",
+  "+services/device/public",
+  "+storage/browser/fileapi",
+  "+storage/common/fileapi",
+  "+ui/accessibility",
+  "+ui/aura",
+]
