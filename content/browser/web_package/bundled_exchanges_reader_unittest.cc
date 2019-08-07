@@ -154,17 +154,15 @@ class BundledExchangesReaderTest : public testing::Test {
         },
         run_loop.QuitClosure()));
 
-    std::vector<data_decoder::mojom::BundleIndexItemPtr> items;
-    data_decoder::mojom::BundleIndexItemPtr item =
-        data_decoder::mojom::BundleIndexItem::New();
-    item->request_url = start_url_;
-    item->response_offset = 573u;
-    item->response_length = 765u;
-    items.push_back(std::move(item));
+    base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> items;
+    data_decoder::mojom::BundleIndexValuePtr item =
+        data_decoder::mojom::BundleIndexValue::New();
+    item->response_locations.push_back(
+        data_decoder::mojom::BundleResponseLocation::New(573u, 765u));
+    items.insert({start_url_, std::move(item)});
 
     data_decoder::mojom::BundleMetadataPtr metadata =
-        data_decoder::mojom::BundleMetadata::New(GURL() /* primary_url */,
-                                                 std::move(items),
+        data_decoder::mojom::BundleMetadata::New(start_url_, std::move(items),
                                                  GURL() /* manifest_url */);
     factory_->RunMetadataCallback(std::move(metadata));
     run_loop.Run();

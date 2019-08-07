@@ -107,7 +107,7 @@ class CONTENT_EXPORT BundledExchangesReader final {
   data_decoder::SafeBundledExchangesParser parser_;
   scoped_refptr<SharedFile> file_;
   GURL start_url_;
-  base::flat_map<GURL, data_decoder::mojom::BundleIndexItemPtr> entries_;
+  base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> entries_;
   bool metadata_ready_ = false;
 
   base::WeakPtrFactory<BundledExchangesReader> weak_factory_{this};
