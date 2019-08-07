@@ -2189,7 +2189,8 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
     ax::mojom::NameFrom child_name_from = ax::mojom::NameFrom::kUninitialized;
     String result;
     if (!is_continuation && child->IsPresentational()) {
-      result = child->TextFromDescendants(visited, true);
+      if (child->IsVisible())
+        result = child->TextFromDescendants(visited, true);
     } else {
       result =
           RecursiveTextAlternative(*child, false, visited, child_name_from);
