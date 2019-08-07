@@ -95,6 +95,7 @@ jumbo_source_set("test_support") {
 
   sources = [
     "mock_constraint_factory.cc",
+    "mock_constraint_factory.h",
     "mock_media_stream_registry.cc",
     "mock_media_stream_video_sink.cc",
     "mock_media_stream_video_source.cc",
