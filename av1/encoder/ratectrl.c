@@ -1976,9 +1976,12 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
     rc->constrained_gf_group =
         (rc->baseline_gf_interval >= rc->frames_to_key) ? 1 : 0;
     frame_update_type = GF_UPDATE;
-    // TODO(marpan): Replace this for 1 pass RT.
-    av1_gop_setup_structure(cpi, frame_params);
     gf_group->index = 0;
+    gf_group->size = rc->baseline_gf_interval;
+    gf_group->update_type[0] =
+        (frame_params->frame_type == KEY_FRAME) ? KF_UPDATE : GF_UPDATE;
+    for (int i = 1; i < rc->baseline_gf_interval; i++)
+      gf_group->update_type[i] = LF_UPDATE;
   }
   if (cpi->oxcf.rc_mode == AOM_CBR) {
     if (frame_params->frame_type == KEY_FRAME) {
