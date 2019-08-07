@@ -33,6 +33,27 @@ DocumentLayout::DocumentLayout() = default;
 DocumentLayout::~DocumentLayout() = default;
 
 // TODO(chinsenj): refactor to not rely on prior DocumentLayout state.
+std::vector<pp::Rect> DocumentLayout::GetSingleViewLayout(
+    const std::vector<pp::Size>& page_sizes) {
+  std::vector<pp::Rect> formatted_rects(page_sizes.size());
+  DCHECK_EQ(0, size_.height());
+
+  for (size_t i = 0; i < page_sizes.size(); ++i) {
+    if (i != 0) {
+      // Add space for bottom separator.
+      EnlargeHeight(kBottomSeparator);
+    }
+
+    const pp::Size& page_size = page_sizes[i];
+    formatted_rects[i] =
+        draw_utils::GetRectForSingleView(page_size, size_, kSingleViewInsets);
+    AppendPageRect(page_size);
+  }
+
+  return formatted_rects;
+}
+
+// TODO(chinsenj): refactor to not rely on prior DocumentLayout state.
 std::vector<pp::Rect> DocumentLayout::GetTwoUpViewLayout(
     const std::vector<pp::Size>& page_sizes) {
   DCHECK_EQ(0, size_.height());

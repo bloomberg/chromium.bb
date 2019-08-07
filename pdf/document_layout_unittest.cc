@@ -111,6 +111,32 @@ TEST_F(DocumentLayoutTest, EnlargeHeight) {
   EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(0, 16));
 }
 
+TEST_F(DocumentLayoutTest, GetSingleViewLayout) {
+  std::vector<pp::Rect> single_view_layout;
+
+  std::vector<pp::Size> page_sizes{
+      {300, 400}, {400, 500}, {300, 400}, {200, 300}};
+  layout_.set_size({400, 0});
+  single_view_layout = layout_.GetSingleViewLayout(page_sizes);
+  ASSERT_EQ(4u, single_view_layout.size());
+  EXPECT_PRED2(PpRectEq, pp::Rect(55, 3, 290, 390), single_view_layout[0]);
+  EXPECT_PRED2(PpRectEq, pp::Rect(5, 407, 390, 490), single_view_layout[1]);
+  EXPECT_PRED2(PpRectEq, pp::Rect(55, 911, 290, 390), single_view_layout[2]);
+  EXPECT_PRED2(PpRectEq, pp::Rect(105, 1315, 190, 290), single_view_layout[3]);
+  EXPECT_PRED2(PpSizeEq, pp::Size(400, 1612), layout_.size());
+
+  page_sizes = {{240, 300}, {320, 400}, {250, 360}, {300, 600}, {270, 555}};
+  layout_.set_size({320, 0});
+  single_view_layout = layout_.GetSingleViewLayout(page_sizes);
+  ASSERT_EQ(5u, single_view_layout.size());
+  EXPECT_PRED2(PpRectEq, pp::Rect(45, 3, 230, 290), single_view_layout[0]);
+  EXPECT_PRED2(PpRectEq, pp::Rect(5, 307, 310, 390), single_view_layout[1]);
+  EXPECT_PRED2(PpRectEq, pp::Rect(40, 711, 240, 350), single_view_layout[2]);
+  EXPECT_PRED2(PpRectEq, pp::Rect(15, 1075, 290, 590), single_view_layout[3]);
+  EXPECT_PRED2(PpRectEq, pp::Rect(30, 1679, 260, 545), single_view_layout[4]);
+  EXPECT_PRED2(PpSizeEq, pp::Size(320, 2231), layout_.size());
+}
+
 TEST_F(DocumentLayoutTest, GetTwoUpViewLayout) {
   std::vector<pp::Rect> two_up_view_layout;
 

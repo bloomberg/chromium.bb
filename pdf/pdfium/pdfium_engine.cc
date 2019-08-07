@@ -2392,19 +2392,14 @@ void PDFiumEngine::AppendPageRectToPages(const pp::Rect& page_rect,
   }
 }
 
+// TODO(chinsenj): Merge with LoadPagesInTwoUpView().
 void PDFiumEngine::LoadPagesInSingleView(std::vector<pp::Size> page_sizes,
                                          bool reload) {
-  for (size_t i = 0; i < page_sizes.size(); ++i) {
-    if (i != 0) {
-      // Add space for bottom separator.
-      layout_.EnlargeHeight(DocumentLayout::kBottomSeparator);
-    }
+  std::vector<pp::Rect> single_view_layout =
+      layout_.GetSingleViewLayout(page_sizes);
 
-    pp::Rect page_rect({0, layout_.size().height()}, page_sizes[i]);
-    layout_.AppendPageRect(page_sizes[i]);
-    draw_utils::CenterRectHorizontally(layout_.size().width(), &page_rect);
-    InsetPage(i, page_sizes.size(), /*multiplier=*/1, &page_rect);
-    AppendPageRectToPages(page_rect, i, reload);
+  for (size_t i = 0; i < single_view_layout.size(); ++i) {
+    AppendPageRectToPages(single_view_layout[i], i, reload);
   }
 }
 
