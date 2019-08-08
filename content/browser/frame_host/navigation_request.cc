@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
@@ -3113,6 +3114,9 @@ void NavigationRequest::OnCommitTimeout() {
                         render_frame_host()->GetProcess()->IsReady());
   UMA_HISTOGRAM_ENUMERATION("Navigation.CommitTimeout.Scheme",
                             GetScheme(common_params_->url));
+  UMA_HISTOGRAM_BOOLEAN("Navigation.CommitTimeout.IsMainFrame",
+                        frame_tree_node_->IsMainFrame());
+  base::UmaHistogramSparse("Navigation.CommitTimeout.ErrorCode", -net_error_);
   render_process_blocked_state_changed_subscription_.reset();
   render_frame_host()->GetRenderWidgetHost()->RendererIsUnresponsive(
       base::BindRepeating(&NavigationRequest::RestartCommitTimeout,
