@@ -4119,21 +4119,6 @@ static void init_encode_frame_mb_context(AV1_COMP *cpi) {
                          cm->seq_params.subsampling_y, num_planes);
 }
 
-static MV_REFERENCE_FRAME get_frame_type(const AV1_COMP *cpi) {
-  if (frame_is_intra_only(&cpi->common)) {
-    return INTRA_FRAME;
-  } else if ((cpi->rc.is_src_frame_alt_ref && cpi->refresh_golden_frame) ||
-             cpi->rc.is_src_frame_internal_arf) {
-    // We will not update the golden frame with an internal overlay frame
-    return ALTREF_FRAME;
-  } else if (cpi->refresh_golden_frame || cpi->refresh_alt2_ref_frame ||
-             cpi->refresh_alt_ref_frame) {
-    return GOLDEN_FRAME;
-  } else {
-    return LAST_FRAME;
-  }
-}
-
 static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
   if (cpi->common.coded_lossless) return ONLY_4X4;
   if (cpi->sf.tx_size_search_method == USE_LARGESTALL)
@@ -4994,27 +4979,9 @@ void av1_encode_frame(AV1_COMP *cpi) {
 #endif
 
   if (cpi->sf.frame_parameter_update) {
-    int i;
-    RD_OPT *const rd_opt = &cpi->rd;
     RD_COUNTS *const rdc = &cpi->td.rd_counts;
 
-    // This code does a single RD pass over the whole frame assuming
-    // either compound, single or hybrid prediction as per whatever has
-    // worked best for that type of frame in the past.
-    // It also predicts whether another coding mode would have worked
-    // better than this coding mode. If that is the case, it remembers
-    // that for subsequent frames.
-    // It does the same analysis for transform size selection also.
-    //
-    // TODO(zoeliu): To investigate whether a frame_type other than
-    // INTRA/ALTREF/GOLDEN/LAST needs to be specified seperately.
-    const MV_REFERENCE_FRAME frame_type = get_frame_type(cpi);
-    int64_t *const mode_thrs = rd_opt->prediction_type_threshes[frame_type];
-    const int is_alt_ref = frame_type == ALTREF_FRAME;
-
-    /* prediction (compound, single or hybrid) mode selection */
-    // NOTE: "is_alt_ref" is true only for OVERLAY/INTNL_OVERLAY frames
-    if (is_alt_ref || frame_is_intra_only(cm))
+    if (frame_is_intra_only(cm))
       current_frame->reference_mode = SINGLE_REFERENCE;
     else
       current_frame->reference_mode = REFERENCE_MODE_SELECT;
@@ -5028,9 +4995,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
     rdc->skip_mode_used_flag = 0;
 
     encode_frame_internal(cpi);
-
-    for (i = 0; i < REFERENCE_MODES; ++i)
-      mode_thrs[i] = (mode_thrs[i] + rdc->comp_pred_diff[i] / cm->MBs) / 2;
 
     if (current_frame->reference_mode == REFERENCE_MODE_SELECT) {
       // Use a flag that includes 4x4 blocks
